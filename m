@@ -1,66 +1,481 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbZDWTTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760197AbZDWTUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760176AbZDWTTv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 15:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758051AbZDWTTh
+	id S1760197AbZDWTUj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 15:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbZDWTUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 15:19:37 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:58194 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753232AbZDWTTg (ORCPT
+	Thu, 23 Apr 2009 15:20:30 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:54169 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754184AbZDWTU3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 15:19:36 -0400
-Date: Thu, 23 Apr 2009 13:19:35 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Alessio Igor Bogani <abogani@texware.it>
-Cc: Ingo Molnar <mingo@elte.hu>, Jonathan Corbet <corbet@lwn.net>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       LFSDEV <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 2/5 -tip] cifs: umount_begin BKL pushdown
-Message-ID: <20090423191934.GW1926@parisc-linux.org>
-References: <1240513925-5603-1-git-send-email-abogani@texware.it> <1240513925-5603-2-git-send-email-abogani@texware.it> <1240513925-5603-3-git-send-email-abogani@texware.it>
+	Thu, 23 Apr 2009 15:20:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=m0xMpi15groSGRl3NuW18V/edmj7JQsmxuc3bjo21G9V1NERWghQKzidXBc4MYQuT0
+         4zAVq7BciMdWmCkk1o0GNyQc7eWZv22b0xXiWO9L3k/pDG9ppwPhYFkfJ+QXZwQQXGg/
+         Rrs5I3QzLshULUPsj8c1fW2vj5pcVhIUZmTD8=
+Date: Thu, 23 Apr 2009 21:20:24 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Tim Bird <tim.bird@am.sony.com>, Ingo Molnar <mingo@elte.hu>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       linux-arm@lists.arm.linux.org.uk
+Subject: Re: [PATCH] Add function graph tracer support for ARM
+Message-ID: <20090423192022.GA5976@nowhere>
+References: <49F0AEA2.5010309@am.sony.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1240513925-5603-3-git-send-email-abogani@texware.it>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <49F0AEA2.5010309@am.sony.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 09:12:02PM +0200, Alessio Igor Bogani wrote:
-> @@ -525,18 +526,26 @@ static void cifs_umount_begin(struct super_block *sb)
->  	struct cifs_sb_info *cifs_sb = CIFS_SB(sb);
->  	struct cifsTconInfo *tcon;
->  
-> -	if (cifs_sb == NULL)
-> +	lock_kernel();
+Hi Tim,
+
+
+On Thu, Apr 23, 2009 at 11:08:34AM -0700, Tim Bird wrote:
+> Add ftrace function-graph tracer support for ARM.
+> 
+> This includes adding code in mcount to check for
+> (and call) a registered function graph trace entry
+> routine, and adding infrastructure to the threadinfo
+> structure to support a return trampoline.
+> 
+> I wrote a separate program to scan the kernel assembly
+> output and validate that callframes for mcount are
+> generated properly.
+> 
+> Much of the code in arch/arm/kernel/ftrace.c was
+> cloned from arch/x86/kernel/ftrace.c
+> 
+> IRQENTRY_TEXT was added to vmlinux.lds.S (to eliminate
+> a compiler error on kernel/trace/trace_functions_graph.c),
+> although no routines were marked as __irq_entry.
+> 
+> FIXTHIS indicates questions or areas of uncertainty.
+> 
+> This works for me with a gcc 4.1.1 compiler on an
+> OMAP OSK board, with kernel 2.6.29.
+
+
+There have been a lot of changes on the function graph tracer
+since 2.6.29 :)
+
+I don't know which tree would be the best to rebase this work on, 
+whether ARM or -tip. But anyway it should really be based against
+a 2.6.30 development tree.
+
+
+
+> 
+> The use of "already_here" works around trace entry nesting
+> (I believe due to instrumentation of either cpu_clock or
+> raw_smp_processor_id).  Advice on the best way to deal
+> with this would be appreciated.  (that is, whether
+> to use the guard variable, or just un-instrument the
+> offending routines).
+> Thanks for any feedback.
+> 
+> Signed-off-by: <tim.bird@am.sony.com>
+> ---
+>  arch/arm/Kconfig               |    1
+>  arch/arm/include/asm/ftrace.h  |   28 +++++++
+>  arch/arm/kernel/Makefile       |    3
+>  arch/arm/kernel/entry-common.S |   29 +++++++-
+>  arch/arm/kernel/ftrace.c       |  146 +++++++++++++++++++++++++++++++++++++++++
+>  arch/arm/kernel/vmlinux.lds.S  |    1
+>  6 files changed, 204 insertions(+), 4 deletions(-)
+> 
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -17,6 +17,7 @@ config ARM
+>  	select HAVE_KPROBES if (!XIP_KERNEL)
+>  	select HAVE_KRETPROBES if (HAVE_KPROBES)
+>  	select HAVE_FUNCTION_TRACER if (!XIP_KERNEL)
+> +	select HAVE_FUNCTION_GRAPH_TRACER if (!XIP_KERNEL)
+>  	select HAVE_GENERIC_DMA_COHERENT
+>  	help
+>  	  The ARM series is a line of low-power-consumption RISC chip designs
+> --- a/arch/arm/include/asm/ftrace.h
+> +++ b/arch/arm/include/asm/ftrace.h
+> @@ -7,8 +7,32 @@
+> 
+>  #ifndef __ASSEMBLY__
+>  extern void mcount(void);
+> -#endif
+> +#endif /* __ASSEMBLY__ */
+> 
+> -#endif
+> +#endif /* CONFIG_FUNCTION_TRACER */
 > +
-> +	if (cifs_sb == NULL) {
-> +		unlock_kernel();
->  		return;
+> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+> +
+> +#ifndef __ASSEMBLY__
+> +
+> +/*
+> + * Stack of return addresses for functions of a thread.
+> + * Used in struct thread_info
+> + */
+> +struct ftrace_ret_stack {
+> +	unsigned long ret;
+> +	unsigned long func;
+> +	unsigned long long calltime;
+> +};
 
-OK, what are you doing here?  Either the BKL protects the sb here,
-and you need to lock_kernel() before calling CIFS_SB(sb), or the BKL
-protects nothing, and the lock_kernel() should be moved down below the
-test for cifs_sb.
 
+This one is now on <linux/ftrace.h>
+
+
+
+> +
+> +/*
+> + * Primary handler of a function return.
+> + * It relays on ftrace_return_to_handler.
+> + * Defined in entry-common.S
+> + */
+> +extern void return_to_handler(void);
+> +
+> +#endif /* __ASSEMBLY__ */
+> +#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+> 
+>  #endif /* _ASM_ARM_FTRACE */
+> --- a/arch/arm/kernel/Makefile
+> +++ b/arch/arm/kernel/Makefile
+> @@ -4,7 +4,7 @@
+> 
+>  AFLAGS_head.o := -DTEXT_OFFSET=$(TEXT_OFFSET)
+> 
+> -ifdef CONFIG_DYNAMIC_FTRACE
+> +ifdef CONFIG_FUNCTION_TRACER
+>  CFLAGS_REMOVE_ftrace.o = -pg
+>  endif
+> 
+> @@ -23,6 +23,7 @@ obj-$(CONFIG_ISA_DMA)		+= dma-isa.o
+>  obj-$(CONFIG_PCI)		+= bios32.o isa.o
+>  obj-$(CONFIG_SMP)		+= smp.o
+>  obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
+> +obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
+>  obj-$(CONFIG_KEXEC)		+= machine_kexec.o relocate_kernel.o
+>  obj-$(CONFIG_KPROBES)		+= kprobes.o kprobes-decode.o
+>  obj-$(CONFIG_ATAGS_PROC)	+= atags.o
+> --- a/arch/arm/kernel/entry-common.S
+> +++ b/arch/arm/kernel/entry-common.S
+> @@ -135,8 +135,16 @@ ENTRY(mcount)
+>  	adr r0, ftrace_stub
+>  	cmp r0, r2
+>  	bne trace
+> +
+> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+> +	ldr r1, =ftrace_graph_return
+> +	ldr r2, [r1]
+> +	cmp r0, r2		@ if *ftrace_graph_return != ftrace_stub
+> +	bne ftrace_graph_caller
+> +#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+> +
+>  	ldr lr, [fp, #-4]			@ restore lr
+> -	ldmia sp!, {r0-r3, pc}
+> +	ldmia sp!, {r0-r3, pc}			@ return doing nothing
+> 
+>  trace:
+>  	ldr r1, [fp, #-4]			@ lr of instrumented routine
+> @@ -147,6 +155,25 @@ trace:
+>  	mov lr, r1				@ restore lr
+>  	ldmia sp!, {r0-r3, pc}
+> 
+> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+> +ENTRY(ftrace_graph_caller)
+> +	sub r0, fp, #4			@ &lr of instrumented routine (&parent)
+> +	mov r1, lr			@ instrumented routine (func)
+> +	sub r1, r1, #MCOUNT_INSN_SIZE
+> +	bl prepare_ftrace_return
+> +	ldr lr, [fp, #-4]		@ restore lr
+> +	ldmia sp!, {r0-r3, pc}
+> +
+> +	.globl return_to_handler
+> +return_to_handler:
+> +	stmdb sp!, {r0-r3}
+> +	bl ftrace_return_to_handler
+> +	mov lr, r0			@ r0 has real ret addr
+> +	ldmia sp!, {r0-r3}
+> +	mov pc, lr
+
+
+
+The assembly part looks good.
+
+
+
+> +#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+> +
+>  #endif /* CONFIG_DYNAMIC_FTRACE */
+> 
+>  	.globl ftrace_stub
+> --- a/arch/arm/kernel/ftrace.c
+> +++ b/arch/arm/kernel/ftrace.c
+> @@ -16,6 +16,8 @@
+>  #include <asm/cacheflush.h>
+>  #include <asm/ftrace.h>
+> 
+> +#ifdef CONFIG_DYNAMIC_FTRACE
+> +
+>  #define PC_OFFSET      8
+>  #define BL_OPCODE      0xeb000000
+>  #define BL_OFFSET_MASK 0x00ffffff
+> @@ -101,3 +103,147 @@ int __init ftrace_dyn_arch_init(void *da
+>  	ftrace_mcount_set(data);
+>  	return 0;
+>  }
+> +
+> +#endif /* CONFIG_DYNAMIC_FTRACE */
+> +
+> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+> +
+> +/* Add a function return address to the trace stack on thread info.*/
+> +static int push_return_trace(unsigned long ret, unsigned long long time,
+> +	unsigned long func, int *depth)
+> +{
+> +	int index;
+> +
+> +	if (!current->ret_stack)
+> +		return -EBUSY;
+> +
+> +	/* The return trace stack is full */
+> +	if (current->curr_ret_stack == FTRACE_RETFUNC_DEPTH - 1) {
+> +		atomic_inc(&current->trace_overrun);
+> +		return -EBUSY;
 > +	}
->  
->  	tcon = cifs_sb->tcon;
-> -	if (tcon == NULL)
-> +	if (tcon == NULL) {
-> +		unlock_kernel();
->  		return;
+> +
+> +	index = ++current->curr_ret_stack;
+> +	barrier();
+> +	current->ret_stack[index].ret = ret;
+> +	current->ret_stack[index].func = func;
+> +	current->ret_stack[index].calltime = time;
+> +	*depth = index;
+> +
+> +	return 0;
+> +}
+
+
+This part has been moved as generic code in kernel/trace/trace_function_graph.c
+
+
+
+> +
+> +/*
+> + * Retrieve a function return address from the trace stack on thread info.
+> + *   set the address to return to in *ret
+> + */
+> +static void pop_return_trace(struct ftrace_graph_ret *trace, unsigned long *ret)
+> +{
+> +	int index;
+> +
+> +	index = current->curr_ret_stack;
+> +
+> +	if (unlikely(index < 0)) {
+> +		ftrace_graph_stop();
+> +		WARN_ON(1);
+> +		/* Might as well panic, otherwise we have no where to go */
+> +		*ret = (unsigned long)panic;
+> +		return;
+> +	}
+> +
+> +	*ret = current->ret_stack[index].ret;
+> +	trace->func = current->ret_stack[index].func;
+> +	trace->calltime = current->ret_stack[index].calltime;
+> +	trace->overrun = atomic_read(&current->trace_overrun);
+> +	trace->depth = index;
+> +	barrier();
+> +	current->curr_ret_stack--;
+> +}
+
+
+
+Ditto.
+
+
+> +int already_here;	 /* starts at 0 */
+> +
+> +/*
+> + * Send the trace to the ring-buffer
+> + * @return the original return address
+> + */
+> +unsigned long ftrace_return_to_handler(void)
+> +{
+
+
+
+Ditto.
+
+
+> +	struct ftrace_graph_ret trace;
+> +	unsigned long ret;
+> +
+> +	/* guard against trace entry while handling a trace exit */
+> +	already_here++;
+
+
+
+I don't understand the purpose of this variable. Also it's not atomic,
+you will rapidly run into an imbalance of its value due to concurrent
+inc/decrementations.
+
+
+
+> +
+> +	pop_return_trace(&trace, &ret);
+> +	trace.rettime = cpu_clock(raw_smp_processor_id());
+> +	ftrace_graph_return(&trace);
+> +
+> +	if (unlikely(!ret)) {
+> +		ftrace_graph_stop();
+> +		WARN_ON(1);
+> +		/* Might as well panic. Where else to go? */
+> +		ret = (unsigned long)panic;
+> +	}
+> +
+> +	already_here--;
+> +	return ret;
+> +}
+> +
+> +/*
+> + * Hook the return address and push it in the stack of return addrs
+> + * in current thread info.
+> + */
+> +
+> +void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+> +{
+> +	unsigned long old;
+> +	unsigned long long calltime;
+> +
+> +	struct ftrace_graph_ent trace;
+> +	unsigned long return_hooker = (unsigned long)
+> +				&return_to_handler;
+> +
+> +	if (already_here)
+> +		return;
+> +	already_here++;
+
+
+
+I really don't understand why you want this.
+Not only doesn't it protect anything because it's not atomic
+but moreover this function is supposed to be reentrant.
+
+It's perfectly safe against irq, preemption.
+It's also not reentrant but safe against NMI if you pick the
+protection we have in 2.6.30:
+
+if (unlikely(in_nmi()))
+	return;
+
+Hmm, btw I should move this protection to a higher level,
+we should be able to trace NMI in some conditions.
+
+
+> +
+> +	if (unlikely(atomic_read(&current->tracing_graph_pause))) {
+> +		already_here--;
+> +		return;
+> +	}
+> +
+> +	/* FIXTHIS - need a local_irqsave here?, (to fend off ints?) */
+
+
+No you don't need to protect against irq here.
+This is not racy because an irq will push its return adress to the task stack
+(in struct task_struct) and on return it will pop its return address.
+Then the stack of return addresses will be left intact for the current interrupted
+traced function.
+
+
+> +	/* FIXTHIS - x86 protects against a fault during this operation!*/
+> +	old = *parent;
+> +	*parent = return_hooker;
+
+
+
+Yeah we protect against fault for that. But we never had any fault problem
+actually. But it's better to keep it, it doesn't impact performances and
+it can help to debug possible future issues in the function graph tracer itself.
+
+
+> +
+> +	if (unlikely(!__kernel_text_address(old))) {
+> +		ftrace_graph_stop();
+> +		*parent = old;
+> +		WARN_ON(1);
+> +		already_here--;
+> +		return;
 > +	}
 
-Likewise -- does cifs rely on the BKL to protect the 'tcon' or not?
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+We removed this check. It impacts performances and we haven't seen
+any warnings from this place.
+
+
+> +
+> +	/* FIXTHIS - trace entry appears to nest inside following */
+> +	calltime = cpu_clock(raw_smp_processor_id());
+
+
+
+Now we are using the local_clock from kernel/trace/trace_clock.c
+It's just a wrapping to sched_clock() and sched_clock() is faster
+though a bit less accurate.
+
+
+
+> +	if (push_return_trace(old, calltime,
+> +			self_addr, &trace.depth) == -EBUSY) {
+> +		*parent = old;
+> +		already_here--;
+> +		return;
+> +	}
+> +
+> +	trace.func = self_addr;
+> +
+> +	/* Only trace if the calling function expects to */
+> +	if (!ftrace_graph_entry(&trace)) {
+> +		current->curr_ret_stack--;
+> +		*parent = old;
+> +	}
+> +
+> +	already_here--;
+> +}
+> +#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+> --- a/arch/arm/kernel/vmlinux.lds.S
+> +++ b/arch/arm/kernel/vmlinux.lds.S
+> @@ -95,6 +95,7 @@ SECTIONS
+>  			SCHED_TEXT
+>  			LOCK_TEXT
+>  			KPROBES_TEXT
+> +			IRQENTRY_TEXT
+>  #ifdef CONFIG_MMU
+>  			*(.fixup)
+>  #endif
+
+
+
+But that's a good beginning. It's great that you've made it work on
+Arm.
+
+It would be very nice if you could rebase it against latest -tip
+or Arm though I can't tell you which one would be the best.
+
+-tip is the most up to date with tracing, and Arm is more
+up to date with...heh Arm :-)
+
+I guess Ingo and Russell could answer you on that.
+
+Thanks for this work!
+
+Frederic.
+
