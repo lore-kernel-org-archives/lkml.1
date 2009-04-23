@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759629AbZDWIB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758725AbZDWIAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759629AbZDWIB5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 04:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757775AbZDWHhQ
+	id S1758725AbZDWIAj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 04:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbZDWHgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:37:16 -0400
-Received: from sous-sol.org ([216.99.217.87]:47518 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:36:46 -0400
+Received: from sous-sol.org ([216.99.217.87]:47510 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756291AbZDWHhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:37:13 -0400
-Message-Id: <20090423073124.059922463@sous-sol.org>
+	id S1757743AbZDWHgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:36:45 -0400
+Message-Id: <20090423072916.611454394@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:58 -0700
+Date: Thu, 23 Apr 2009 00:21:38 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,10 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eric Paris <eparis@parisplace.org>
-Subject: [patch 098/100] scsi: mpt: suppress debugobjects warning
+       alan@lxorguk.ukuu.org.uk, Jonathan McDowell <noodles@earth.li>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 078/100] usb gadget: fix ethernet link reports to ethtool
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=scsi-mpt-suppress-debugobjects-warning.patch
+Content-Disposition: inline; filename=usb-gadget-fix-ethernet-link-reports-to-ethtool.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,76 +37,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Eric Paris <eparis@parisplace.org>
+From: Jonathan McDowell <noodles@earth.li>
 
-upstream commit: b298cecb3deddf76d60022473a57f1cb776cbdcd
+upstream commit: 237e75bf1e558f7330f8deb167fa3116405bef2c
 
-Addresses http://bugzilla.kernel.org/show_bug.cgi?id=13133
+The g_ether USB gadget driver currently decides whether or not there's a
+link to report back for eth_get_link based on if the USB link speed is
+set. The USB gadget speed is however often set even before the device is
+enumerated. It seems more sensible to only report a "link" if we're
+actually connected to a host that wants to talk to us. The patch below
+does this for me - tested with the PXA27x UDC driver.
 
-ODEBUG: object is on stack, but not annotated
-------------[ cut here ]------------
-WARNING: at lib/debugobjects.c:253 __debug_object_init+0x1f3/0x276()
-Hardware name: VMware Virtual Platform
-Modules linked in: mptspi(+) mptscsih mptbase scsi_transport_spi ext3 jbd mbcache
-Pid: 540, comm: insmod Not tainted 2.6.28-mm1 #2
-Call Trace:
- [<c042c51c>] warn_slowpath+0x74/0x8a
- [<c0469600>] ? start_critical_timing+0x96/0xb7
- [<c060c8ea>] ? _spin_unlock_irqrestore+0x2f/0x3c
- [<c0446fad>] ? trace_hardirqs_off_caller+0x18/0xaf
- [<c044704f>] ? trace_hardirqs_off+0xb/0xd
- [<c060c8ea>] ? _spin_unlock_irqrestore+0x2f/0x3c
- [<c042cb84>] ? release_console_sem+0x1a5/0x1ad
- [<c05013e6>] __debug_object_init+0x1f3/0x276
- [<c0501494>] debug_object_init+0x13/0x17
- [<c0433c56>] init_timer+0x10/0x1a
- [<e08e5b54>] mpt_config+0x1c1/0x2b7 [mptbase]
- [<e08e3b82>] ? kmalloc+0x8/0xa [mptbase]
- [<e08e3b82>] ? kmalloc+0x8/0xa [mptbase]
- [<e08e6fa2>] mpt_do_ioc_recovery+0x950/0x1212 [mptbase]
- [<c04496c2>] ? __lock_acquire+0xa69/0xacc
- [<c060c8f1>] ? _spin_unlock_irqrestore+0x36/0x3c
- [<c060c3af>] ? _spin_unlock_irq+0x22/0x26
- [<c04f2d8b>] ? string+0x2b/0x76
- [<c04f310e>] ? vsnprintf+0x338/0x7b3
- [<c04496c2>] ? __lock_acquire+0xa69/0xacc
- [<c060c8ea>] ? _spin_unlock_irqrestore+0x2f/0x3c
- [<c04496c2>] ? __lock_acquire+0xa69/0xacc
- [<c044897d>] ? debug_check_no_locks_freed+0xeb/0x105
- [<c060c8f1>] ? _spin_unlock_irqrestore+0x36/0x3c
- [<c04488bc>] ? debug_check_no_locks_freed+0x2a/0x105
- [<c0446b8c>] ? lock_release_holdtime+0x43/0x48
- [<c043f742>] ? up_read+0x16/0x29
- [<c05076f8>] ? pci_get_slot+0x66/0x72
- [<e08e89ca>] mpt_attach+0x881/0x9b1 [mptbase]
- [<e091c8e5>] mptspi_probe+0x11/0x354 [mptspi]
-
-Noticing that every caller of mpt_config has its CONFIGPARMS struct
-declared on the stack and thus the &pCfg->timer is always on the stack I
-changed init_timer() to init_timer_on_stack() and it seems to have shut
-up.....
-
-Cc: "Moore, Eric Dean" <Eric.Moore@lsil.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: "Desai, Kashyap" <Kashyap.Desai@lsi.com>
-Cc: <stable@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jonathan McDowell <noodles@earth.li>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Cc: stable <stable@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/message/fusion/mptbase.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/usb/gadget/u_ether.c |    8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
---- a/drivers/message/fusion/mptbase.c
-+++ b/drivers/message/fusion/mptbase.c
-@@ -5934,7 +5934,7 @@ mpt_config(MPT_ADAPTER *ioc, CONFIGPARMS
+--- a/drivers/usb/gadget/u_ether.c
++++ b/drivers/usb/gadget/u_ether.c
+@@ -175,12 +175,6 @@ static void eth_get_drvinfo(struct net_d
+ 	strlcpy(p->bus_info, dev_name(&dev->gadget->dev), sizeof p->bus_info);
+ }
  
- 	/* Initalize the timer
- 	 */
--	init_timer(&pCfg->timer);
-+	init_timer_on_stack(&pCfg->timer);
- 	pCfg->timer.data = (unsigned long) ioc;
- 	pCfg->timer.function = mpt_timer_expired;
- 	pCfg->wait_done = 0;
+-static u32 eth_get_link(struct net_device *net)
+-{
+-	struct eth_dev	*dev = netdev_priv(net);
+-	return dev->gadget->speed != USB_SPEED_UNKNOWN;
+-}
+-
+ /* REVISIT can also support:
+  *   - WOL (by tracking suspends and issuing remote wakeup)
+  *   - msglevel (implies updated messaging)
+@@ -189,7 +183,7 @@ static u32 eth_get_link(struct net_devic
+ 
+ static struct ethtool_ops ops = {
+ 	.get_drvinfo = eth_get_drvinfo,
+-	.get_link = eth_get_link
++	.get_link = ethtool_op_get_link,
+ };
+ 
+ static void defer_kevent(struct eth_dev *dev, int flag)
 
