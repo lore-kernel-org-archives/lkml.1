@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760193AbZDWH4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758912AbZDWHxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760193AbZDWH4R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbZDWHeO
+	id S1758912AbZDWHxT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757342AbZDWHdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:34:14 -0400
-Received: from sous-sol.org ([216.99.217.87]:51044 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:33:52 -0400
+Received: from sous-sol.org ([216.99.217.87]:50994 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756894AbZDWHeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:34:13 -0400
-Message-Id: <20090423072937.493824348@sous-sol.org>
+	id S1757339AbZDWHdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:33:50 -0400
+Message-Id: <20090423072834.298817206@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:41 -0700
+Date: Thu, 23 Apr 2009 00:21:31 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -24,11 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 081/100] USB: usb-storage: augment unusual_devs entry for Simple Tech/Datafab
+       alan@lxorguk.ukuu.org.uk, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 071/100] pata_hpt37x: fix HPT370 DMA timeouts
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=usb-usb-storage-augment-unusual_devs-entry-for-simple-tech-datafab.patch
+Content-Disposition: inline; filename=pata_hpt37x-fix-hpt370-dma-timeouts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,40 +36,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-upstream commit: e4813eec8d47c8299d968bd5349dc881fa481c26
+upstream commit: 265b7215aed36941620b65ecfff516200fb190c1
 
-This patch (as1227) adds the MAX_SECTORS_64 flag to the unusual_devs
-entry for the Simple Tech/Datafab controller.  This fixes Bugzilla
-#12882.
+The libata driver has copied the code from the IDE driver which caused a post
+2.4.18 regression on many HPT370[A] chips -- DMA stopped to work completely,
+only causing timeouts.  Now remove hpt370_bmdma_start() for good...
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Reported-and-tested-by: binbin <binbinsh@gmail.com>
-Cc: stable <stable@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/usb/storage/unusual_devs.h |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/ata/pata_hpt37x.c |   22 ++--------------------
+ 1 file changed, 2 insertions(+), 20 deletions(-)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -1218,12 +1218,14 @@ UNUSUAL_DEV(  0x07c4, 0xa400, 0x0000, 0x
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_INQUIRY | US_FL_FIX_CAPACITY ),
+--- a/drivers/ata/pata_hpt37x.c
++++ b/drivers/ata/pata_hpt37x.c
+@@ -8,7 +8,7 @@
+  * Copyright (C) 1999-2003		Andre Hedrick <andre@linux-ide.org>
+  * Portions Copyright (C) 2001	        Sun Microsystems, Inc.
+  * Portions Copyright (C) 2003		Red Hat Inc
+- * Portions Copyright (C) 2005-2007	MontaVista Software, Inc.
++ * Portions Copyright (C) 2005-2009	MontaVista Software, Inc.
+  *
+  * TODO
+  *	Look into engine reset on timeout errors. Should not be	required.
+@@ -24,7 +24,7 @@
+ #include <linux/libata.h>
  
--/* Reported by Rauch Wolke <rauchwolke@gmx.net> */
-+/* Reported by Rauch Wolke <rauchwolke@gmx.net>
-+ * and augmented by binbin <binbinsh@gmail.com> (Bugzilla #12882)
-+ */
- UNUSUAL_DEV(  0x07c4, 0xa4a5, 0x0000, 0xffff,
- 		"Simple Tech/Datafab",
- 		"CF+SM Reader",
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
--		US_FL_IGNORE_RESIDUE ),
-+		US_FL_IGNORE_RESIDUE | US_FL_MAX_SECTORS_64 ),
+ #define DRV_NAME	"pata_hpt37x"
+-#define DRV_VERSION	"0.6.11"
++#define DRV_VERSION	"0.6.12"
  
- /* Casio QV 2x00/3x00/4000/8000 digital still cameras are not conformant
-  * to the USB storage specification in two ways:
+ struct hpt_clock {
+ 	u8	xfer_speed;
+@@ -445,23 +445,6 @@ static void hpt370_set_dmamode(struct at
+ }
+ 
+ /**
+- *	hpt370_bmdma_start		-	DMA engine begin
+- *	@qc: ATA command
+- *
+- *	The 370 and 370A want us to reset the DMA engine each time we
+- *	use it. The 372 and later are fine.
+- */
+-
+-static void hpt370_bmdma_start(struct ata_queued_cmd *qc)
+-{
+-	struct ata_port *ap = qc->ap;
+-	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+-	pci_write_config_byte(pdev, 0x50 + 4 * ap->port_no, 0x37);
+-	udelay(10);
+-	ata_bmdma_start(qc);
+-}
+-
+-/**
+  *	hpt370_bmdma_end		-	DMA engine stop
+  *	@qc: ATA command
+  *
+@@ -598,7 +581,6 @@ static struct scsi_host_template hpt37x_
+ static struct ata_port_operations hpt370_port_ops = {
+ 	.inherits	= &ata_bmdma_port_ops,
+ 
+-	.bmdma_start 	= hpt370_bmdma_start,
+ 	.bmdma_stop	= hpt370_bmdma_stop,
+ 
+ 	.mode_filter	= hpt370_filter,
 
