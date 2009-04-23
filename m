@@ -1,31 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760504AbZDWVgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760557AbZDWVgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760504AbZDWVgU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 17:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759026AbZDWVfo
+	id S1760557AbZDWVgj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 17:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759985AbZDWVfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 17:35:44 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:59188 "EHLO mx2.suse.de"
+	Thu, 23 Apr 2009 17:35:48 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:59190 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759050AbZDWVfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759032AbZDWVfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 23 Apr 2009 17:35:41 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Christoph Hellwig <hch@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: [PATCH 0/4] Fix sys_sync() and cleanup code (version 3)
-Date: Thu, 23 Apr 2009 23:35:32 +0200
-Message-Id: <1240522536-2994-1-git-send-email-jack@suse.cz>
+       Trond Myklebust <trond.myklebust@fys.uio.no>, Jan Kara <jack@suse.cz>
+Subject: [PATCH 3/4] vfs: Make __fsync_super() a static function (version 3)
+Date: Thu, 23 Apr 2009 23:35:35 +0200
+Message-Id: <1240522536-2994-4-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1240522536-2994-1-git-send-email-jack@suse.cz>
+References: <1240522536-2994-1-git-send-email-jack@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+__fsync_super() does the same thing as fsync_super(). So change the only
+caller to use fsync_super() and make __fsync_super() static. This removes
+unnecessarily duplicated call to sync_blockdev() and prepares ground
+for the changes to __fsync_super() in the following patches.
 
-  this is a next version of the patches. I've modified comments a bit
-and mainly fixed a return value of __fsync_super() (forgot to commit
-the fix before). Thanks to Trond and Christoph for useful comments.
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ fs/block_dev.c     |    2 +-
+ fs/super.c         |    5 ++---
+ include/linux/fs.h |    1 -
+ 3 files changed, 3 insertions(+), 5 deletions(-)
 
-								Honza
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+index f45dbc1..48d1290 100644
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -240,7 +240,7 @@ struct super_block *freeze_bdev(struct block_device *bdev)
+ 		sb->s_frozen = SB_FREEZE_WRITE;
+ 		smp_wmb();
+ 
+-		__fsync_super(sb);
++		fsync_super(sb);
+ 
+ 		sb->s_frozen = SB_FREEZE_TRANS;
+ 		smp_wmb();
+diff --git a/fs/super.c b/fs/super.c
+index d9759e0..4c92068 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -263,7 +263,7 @@ EXPORT_SYMBOL(unlock_super);
+  * device.  Takes the superblock lock.  Requires a second blkdev
+  * flush by the caller to complete the operation.
+  */
+-void __fsync_super(struct super_block *sb)
++static int __fsync_super(struct super_block *sb)
+ {
+ 	sync_inodes_sb(sb, 0);
+ 	vfs_dq_sync(sb);
+@@ -284,8 +284,7 @@ void __fsync_super(struct super_block *sb)
+  */
+ int fsync_super(struct super_block *sb)
+ {
+-	__fsync_super(sb);
+-	return sync_blockdev(sb->s_bdev);
++	return __fsync_super(sb);
+ }
+ EXPORT_SYMBOL_GPL(fsync_super);
+ 
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 4bad02e..47a67c9 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2084,7 +2084,6 @@ extern int filemap_fdatawrite_range(struct address_space *mapping,
+ extern int vfs_fsync(struct file *file, struct dentry *dentry, int datasync);
+ extern void sync_supers(void);
+ extern void sync_filesystems(int wait);
+-extern void __fsync_super(struct super_block *sb);
+ extern void emergency_sync(void);
+ extern void emergency_remount(void);
+ extern int do_remount_sb(struct super_block *sb, int flags,
+-- 
+1.6.0.2
+
