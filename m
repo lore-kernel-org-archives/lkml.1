@@ -1,49 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbZDWLVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757582AbZDWLV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757602AbZDWLVX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 07:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbZDWLVL
+	id S1757582AbZDWLV4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 07:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757230AbZDWLVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 07:21:11 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:39186 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754866AbZDWLVK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 07:21:10 -0400
-Date: Thu, 23 Apr 2009 12:21:05 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Valerie Aurora Henson <vaurora@redhat.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>,
-       Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       Ric Wheeler <rwheeler@redhat.com>
-Subject: Re: [RFC PATCH] fpathconf() for fsync() behavior
-Message-ID: <20090423112105.GA1589@shareable.org>
-References: <20090423001257.GA16540@shell> <20090422221748.8c9022d1.akpm@linux-foundation.org>
+	Thu, 23 Apr 2009 07:21:44 -0400
+Received: from mga03.intel.com ([143.182.124.21]:42353 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757399AbZDWLVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 07:21:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,235,1239001200"; 
+   d="scan'208";a="134949106"
+Date: Thu, 23 Apr 2009 19:21:24 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
+	(take 3)
+Message-ID: <20090423112124.GA20425@localhost>
+References: <20090414071159.GV14687@one.firstfloor.org> <20090415131800.GA11191@localhost> <20090416111108.AC55.A69D9226@jp.fujitsu.com> <20090423022625.GA8822@localhost> <20090423074848.GJ13896@one.firstfloor.org> <20090423081047.GA18898@localhost> <20090423085405.GL13896@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090422221748.8c9022d1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090423085405.GL13896@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Would it be better to implement new syscall(s) with finer-grained control
-> and better semantics?  Then userspace would just need to to:
+On Thu, Apr 23, 2009 at 04:54:06PM +0800, Andi Kleen wrote:
+> > Good idea.
+> > 
+> > Would you recommend a good way to identify huge pages?
+> > Test by page order, or by (dtor == free_huge_page)?      
 > 
-> 	fsync_on_steroids(fd, FSYNC_BEFORE_RENAME);
-> 
-> and that all gets down into the filesystem which can then work out what
-> it needs to do to implement the command.
+> That doesn't work for GB pages. The best way would be to make
+> slub stop using it and then check for compound, but I don't know what 
+> this implies. Otherwise would need some other way, perhaps a new
+> flag?
 
-+1 from me.  Several flags come to mind for discussion.
-FSYNC_HARDWARE.  FSYNC_ORDER_ONLY, FSYNC_FLUSH.
-FSYNC_DATA_BEFORE_SIZE.  FSYNC_BEFORE_NEW_FILE.
+Or play the following trick? :-)
 
-Nick Piggin was working on  fsync_range().
+This helps hide the internal compound page consumers(SLAB/SLUB/... and
+loads of device drivers) to user space. However there are still huge
+pages of different orders(IA64?). Does this make a good reason for
+exporting both HEAD/TAIL flags, instead of a combined COMPOUND flag?
 
-Maybe it's time to do fsync properly?
+Thanks,
+Fengguang
+---
 
--- Jamie
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index c722aa6..7d0bd0d 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -298,6 +298,14 @@ void prep_compound_page(struct page *page, unsigned long order)
+ 	}
+ }
+ 
++/*
++ * This function helps distinguish gigantic pages from normal compound pages.
++ */
++static void free_gigantic_page(struct page *page)
++{
++	__free_pages_ok(page, compound_order(page));
++}
++
+ #ifdef CONFIG_HUGETLBFS
+ void prep_compound_gigantic_page(struct page *page, unsigned long order)
+ {
+@@ -305,7 +313,7 @@ void prep_compound_gigantic_page(struct page *page, unsigned long order)
+ 	int nr_pages = 1 << order;
+ 	struct page *p = page + 1;
+ 
+-	set_compound_page_dtor(page, free_compound_page);
++	set_compound_page_dtor(page, free_gigantic_page);
+ 	set_compound_order(page, order);
+ 	__SetPageHead(page);
+ 	for (i = 1; i < nr_pages; i++, p = mem_map_next(p, page, i)) {
