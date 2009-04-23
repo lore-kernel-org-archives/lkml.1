@@ -1,109 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZDWT3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbZDWTf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758174AbZDWT3q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 15:29:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbZDWT3i
+	id S1755400AbZDWTf3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 15:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZDWTfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 15:29:38 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:11036 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752256AbZDWT3h (ORCPT
+	Thu, 23 Apr 2009 15:35:15 -0400
+Received: from vms173005pub.verizon.net ([206.46.173.5]:43869 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753153AbZDWTfO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 15:29:37 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=Sp0AZjRiyqrCAtanocSnHhhcRYEjlgVDUfcs5osB9/gV0p+ihOVqYwjEAd0tCkPxo
-	5RDoTtCEZZzSR6mc8jwQw==
-Date: Thu, 23 Apr 2009 12:29:27 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 21/22] Use a pre-calculated value instead of num_online_nodes()
- in fast paths
-In-Reply-To: <20090423004427.GD26643@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0904231226140.29561@chino.kir.corp.google.com>
-References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-22-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.0904221602560.27097@chino.kir.corp.google.com> <20090423004427.GD26643@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Thu, 23 Apr 2009 15:35:14 -0400
+Date: Thu, 23 Apr 2009 15:35:10 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Dave Hansen <dave@sr71.net>
+Cc: john stultz <johnstul@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>
+Subject: Re: 2.6.30-rc2 soft lockups: ACPI?  clock source problem?
+In-reply-to: <1240514679.10627.168.camel@nimitz>
+Message-id: <alpine.LFD.2.00.0904231532240.15830@localhost.localdomain>
+References: <1240335038.11194.11.camel@nimitz>
+ <20090422204557.10c3cc37.akpm@linux-foundation.org>
+ <1240511508.10627.159.camel@nimitz>
+ <1240513827.7224.2.camel@localhost.localdomain>
+ <1240514679.10627.168.camel@nimitz>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Apr 2009, Mel Gorman wrote:
 
-> > > diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
-> > > index 848025c..474e73e 100644
-> > > --- a/include/linux/nodemask.h
-> > > +++ b/include/linux/nodemask.h
-> > > @@ -408,6 +408,19 @@ static inline int num_node_state(enum node_states state)
-> > >  #define next_online_node(nid)	next_node((nid), node_states[N_ONLINE])
-> > >  
-> > >  extern int nr_node_ids;
-> > > +extern int nr_online_nodes;
-> > > +
-> > > +static inline void node_set_online(int nid)
-> > > +{
-> > > +	node_set_state(nid, N_ONLINE);
-> > > +	nr_online_nodes = num_node_state(N_ONLINE);
-> > > +}
-> > > +
-> > > +static inline void node_set_offline(int nid)
-> > > +{
-> > > +	node_clear_state(nid, N_ONLINE);
-> > > +	nr_online_nodes = num_node_state(N_ONLINE);
-> > > +}
-> > >  #else
-> > >  
-> > >  static inline int node_state(int node, enum node_states state)
+
+On Thu, 23 Apr 2009, Dave Hansen wrote:
+
+> On Thu, 2009-04-23 at 12:10 -0700, john stultz wrote:
+> > On Thu, 2009-04-23 at 11:31 -0700, Dave Hansen wrote:
+> > > On Wed, 2009-04-22 at 20:45 -0700, Andrew Morton wrote:
+> > > > (Is jstultz@us.ibm.com correct?)
+> > > 
+> > > Only I want it to go to the black hole which is Lotus Notes. :)
+> > > 
+> > > > On Tue, 21 Apr 2009 10:30:38 -0700 Dave Hansen <dave@sr71.net> wrote:
+> > > > > This was during my first boot of 2.6.30-rc2.
+> > > > 
+> > > > Did it ever happen again?
+> > > 
+> > > I've seen it on three different boots, but the stack traces were a bit
+> > > different each time.  So, I assume it is a true timekeeping thing
+> > > instead of something *actually* locking up.
+> > > 
+> > > > I assume this is a post-2.6.29 regression?  (Yet another.  We've been
+> > > > extra bad this time)
+> > > 
+> > > This laptop has been quite good to me and I haven't rebooted since the
+> > > late 2.6.28 days.  It isn't anything special, though.  Just a Lenovo
+> > > T61.  I wonder if my .config is a bit different.
 > > 
-> > The later #define's of node_set_online() and node_set_offline() in 
-> > include/linux/nodemask.h should probably be removed now.
-> > 
+> > I've got a T61 at home, so I'll try to test it out. Dave, can you send
+> > me your .config? Also any chance you can bisect this down a tiny bit?
 > 
-> You'd think, but you can enable memory hotplug without NUMA and
-> node_set_online() is called when adding memory. Even though those
-> functions are nops on !NUMA, they're necessary.
-> 
+> http://sr71.net/~dave/linux/config-forjohn-04-23-2009
 
-The problem is that your new functions above are never used because 
-node_set_online and node_set_offline are macro defined later in this 
-header for all cases, not just !CONFIG_NUMA.
+ugh, my 64-bit T61 will not like this 32-bit config:-(
 
-You need this.
----
-diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
---- a/include/linux/nodemask.h
-+++ b/include/linux/nodemask.h
-@@ -448,6 +448,9 @@ static inline int num_node_state(enum node_states state)
- #define next_online_node(nid)	(MAX_NUMNODES)
- #define nr_node_ids		1
- #define nr_online_nodes		1
-+
-+#define node_set_online(node)	   node_set_state((node), N_ONLINE)
-+#define node_set_offline(node)	   node_clear_state((node), N_ONLINE)
- #endif
- 
- #define node_online_map 	node_states[N_ONLINE]
-@@ -467,9 +470,6 @@ static inline int num_node_state(enum node_states state)
- #define node_online(node)	node_state((node), N_ONLINE)
- #define node_possible(node)	node_state((node), N_POSSIBLE)
- 
--#define node_set_online(node)	   node_set_state((node), N_ONLINE)
--#define node_set_offline(node)	   node_clear_state((node), N_ONLINE)
--
- #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
- #define for_each_online_node(node) for_each_node_state(node, N_ONLINE)
- 
+> I'll work on bisecting it down in a bit.
+
+start by trying the various clocksource= cmdline options.
+
+also, as -rc3 is out, please verify that still fails before bisecting -rc2
+
+thanks,
+Len Brown, Intel Open Source Technology Center
+
