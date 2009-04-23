@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760704AbZDWIA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758403AbZDWHlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760704AbZDWIA5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 04:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757705AbZDWHgw
+	id S1758403AbZDWHlu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755535AbZDWHa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:36:52 -0400
-Received: from sous-sol.org ([216.99.217.87]:47512 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:30:26 -0400
+Received: from sous-sol.org ([216.99.217.87]:50403 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757642AbZDWHgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:36:51 -0400
-Message-Id: <20090423073043.020447940@sous-sol.org>
+	id S1756371AbZDWHaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:30:24 -0400
+Message-Id: <20090423072447.892598765@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:51 -0700
+Date: Thu, 23 Apr 2009 00:20:56 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -24,11 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: [patch 091/100] Input: gameport - fix attach driver code
+       alan@lxorguk.ukuu.org.uk, Mikulas Patocka <mpatocka@redhat.com>,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: [patch 036/100] dm raid1: switch read_record from kmalloc to slab to save memory
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=input-gameport-fix-attach-driver-code.patch
+Content-Disposition: inline; filename=dm-raid1-switch-read_record-from-kmalloc-to-slab-to-save-memory.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,69 +36,85 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+From: Mikulas Patocka <mpatocka@redhat.com>
 
-upstream commit: 4ced8e7cb990a2c3bbf0ac7f27b35c890e7ce895
+upstream commit: 95f8fac8dc6139fedfb87746e0c8fda9b803cb46
 
-The commit 6902c0bead4ce266226fc0c5b3828b850bdc884a that moved
-driver registration out of kgameportd thread was incomplete and
-did not add the code necessary to actually attach driver to
-already registered devices, rectify that.
+With my previous patch to save bi_io_vec, the size of dm_raid1_read_record
+is significantly increased (the vector list takes 3072 bytes on 32-bit machines
+and 4096 bytes on 64-bit machines).
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+The structure dm_raid1_read_record used to be allocated with kmalloc,
+but kmalloc aligns the size on the next power-of-two so an object
+slightly greater than 4096 will allocate 8192 bytes of memory and half of
+that memory will be wasted.
+
+This patch turns kmalloc into a slab cache which doesn't have this
+padding so it will reduce the memory consumed.
+
+Cc: stable@kernel.org
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/input/gameport/gameport.c |   14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ drivers/md/dm-raid1.c |   25 +++++++++++++++++++++----
+ 1 file changed, 21 insertions(+), 4 deletions(-)
 
---- a/drivers/input/gameport/gameport.c
-+++ b/drivers/input/gameport/gameport.c
-@@ -50,9 +50,8 @@ static LIST_HEAD(gameport_list);
- 
- static struct bus_type gameport_bus;
- 
--static void gameport_add_driver(struct gameport_driver *drv);
- static void gameport_add_port(struct gameport *gameport);
--static void gameport_destroy_port(struct gameport *gameport);
-+static void gameport_attach_driver(struct gameport_driver *drv);
- static void gameport_reconnect_port(struct gameport *gameport);
- static void gameport_disconnect_port(struct gameport *gameport);
- 
-@@ -230,7 +229,6 @@ static void gameport_find_driver(struct 
- 
- enum gameport_event_type {
- 	GAMEPORT_REGISTER_PORT,
--	GAMEPORT_REGISTER_DRIVER,
- 	GAMEPORT_ATTACH_DRIVER,
+--- a/drivers/md/dm-raid1.c
++++ b/drivers/md/dm-raid1.c
+@@ -145,6 +145,8 @@ struct dm_raid1_read_record {
+ 	struct dm_bio_details details;
  };
  
-@@ -374,8 +372,8 @@ static void gameport_handle_event(void)
- 				gameport_add_port(event->object);
- 				break;
++static struct kmem_cache *_dm_raid1_read_record_cache;
++
+ /*
+  * Every mirror should look like this one.
+  */
+@@ -764,9 +766,9 @@ static struct mirror_set *alloc_context(
+ 	atomic_set(&ms->suspend, 0);
+ 	atomic_set(&ms->default_mirror, DEFAULT_MIRROR);
  
--			case GAMEPORT_REGISTER_DRIVER:
--				gameport_add_driver(event->object);
-+			case GAMEPORT_ATTACH_DRIVER:
-+				gameport_attach_driver(event->object);
- 				break;
- 
- 			default:
-@@ -706,14 +704,14 @@ static int gameport_driver_remove(struct
- 	return 0;
- }
- 
--static void gameport_add_driver(struct gameport_driver *drv)
-+static void gameport_attach_driver(struct gameport_driver *drv)
+-	len = sizeof(struct dm_raid1_read_record);
+-	ms->read_record_pool = mempool_create_kmalloc_pool(MIN_READ_RECORDS,
+-							   len);
++	ms->read_record_pool = mempool_create_slab_pool(MIN_READ_RECORDS,
++						_dm_raid1_read_record_cache);
++
+ 	if (!ms->read_record_pool) {
+ 		ti->error = "Error creating mirror read_record_pool";
+ 		kfree(ms);
+@@ -1279,16 +1281,31 @@ static int __init dm_mirror_init(void)
  {
- 	int error;
+ 	int r;
  
--	error = driver_register(&drv->driver);
-+	error = driver_attach(&drv->driver);
- 	if (error)
- 		printk(KERN_ERR
--			"gameport: driver_register() failed for %s, error: %d\n",
-+			"gameport: driver_attach() failed for %s, error: %d\n",
- 			drv->driver.name, error);
++	_dm_raid1_read_record_cache = KMEM_CACHE(dm_raid1_read_record, 0);
++	if (!_dm_raid1_read_record_cache) {
++		DMERR("Can't allocate dm_raid1_read_record cache");
++		r = -ENOMEM;
++		goto bad_cache;
++	}
++
+ 	r = dm_register_target(&mirror_target);
+-	if (r < 0)
++	if (r < 0) {
+ 		DMERR("Failed to register mirror target");
++		goto bad_target;
++	}
++
++	return 0;
+ 
++bad_target:
++	kmem_cache_destroy(_dm_raid1_read_record_cache);
++bad_cache:
+ 	return r;
  }
  
+ static void __exit dm_mirror_exit(void)
+ {
+ 	dm_unregister_target(&mirror_target);
++	kmem_cache_destroy(_dm_raid1_read_record_cache);
+ }
+ 
+ /* Module hooks */
 
