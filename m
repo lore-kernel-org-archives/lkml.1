@@ -1,53 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758715AbZDXPTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbZDXPW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758715AbZDXPTp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 11:19:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbZDXPTh
+	id S1757909AbZDXPW3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 11:22:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbZDXPWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 11:19:37 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60109 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752513AbZDXPTg (ORCPT
+	Fri, 24 Apr 2009 11:22:19 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:51819 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753295AbZDXPWS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 11:19:36 -0400
-Message-ID: <6e429f293fa1e3d02900a41039861119.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <20090424122441.GD3944@balbir.in.ibm.com>
-References: <20090403170835.a2d6cbc3.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090424122441.GD3944@balbir.in.ibm.com>
-Date: Sat, 25 Apr 2009 00:19:33 +0900 (JST)
-Subject: Re: [RFC][PATCH 0/9] memcg soft limit v2 (new design)
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-User-Agent: SquirrelMail/1.4.16
+	Fri, 24 Apr 2009 11:22:18 -0400
+Date: Fri, 24 Apr 2009 11:13:32 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: slab tree boot failure
+In-Reply-To: <20090425005206.943530b6.sfr@canb.auug.org.au>
+Message-ID: <alpine.DEB.1.10.0904241112150.7258@qirst.com>
+References: <20090425005206.943530b6.sfr@canb.auug.org.au>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-03
-> 17:08:35]:
->> In this v2.
->>  - problems under use_hierarchy=1 case are fixed.
->>  - more hooks are added.
->>  - codes are cleaned up.
->>
->
-> The results seem good so far with some basic tests I've been doing.
-> I'll come back with more feedback, I would like to see this feature in
-> -mm soon.
->
-Thank you. I'll update this. But now I have bugfix patch for
-stale swap caches (coop with Nishimura). Then, I'll go ahead one by one.
+On Sat, 25 Apr 2009, Stephen Rothwell wrote:
 
-Regards,
--Kame
+> The last few days linux-next trees have failed to boot on one of our
+> PowerPC Power6 servers.  The partial boot log looks like this (full
+> log below):
 
+PowerPc has weird boot requirements like bootstrap from a node != 0 and
+unavailability of node 0. This has always been a challenge for
+bootstrapping any of the slab allocators.
