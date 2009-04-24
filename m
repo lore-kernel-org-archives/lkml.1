@@ -1,210 +1,302 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761043AbZDXRRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760319AbZDXRWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761043AbZDXRRr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 13:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbZDXRRj
+	id S1760319AbZDXRWI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 13:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZDXRVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 13:17:39 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:55359 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753313AbZDXRRh (ORCPT
+	Fri, 24 Apr 2009 13:21:55 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:52601 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751381AbZDXRVy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 13:17:37 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=q1Csvlwza9PDDSH/CT5vJZzNfX81iGFIsSzPK2U/MzlhbwQBXj+AeenvMYV5y02xN
-	BKgPw90kTrh0vgrk8VGqg==
-Date: Fri, 24 Apr 2009 10:17:29 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Zeno Davatz <zdavatz@gmail.com>
-cc: linux-kernel@vger.kernel.org, Hannes Wyss <hwyss@ywesee.com>
-Subject: Re: Kernel 2.6.29 runs out of memory and hangs.
-In-Reply-To: <40a4ed590904240309o66753264lf58f2910726f7efc@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0904241011280.24151@chino.kir.corp.google.com>
-References: <40a4ed590904240309o66753264lf58f2910726f7efc@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Fri, 24 Apr 2009 13:21:54 -0400
+Date: Fri, 24 Apr 2009 19:23:58 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tim Abbott <tabbott@MIT.EDU>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, "Theodore Ts'o" <tytso@MIT.EDU>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Subject: Re: [PATCH v3 1/3] Make section names compatible with -ffunction-sections -fdata-sections
+Message-ID: <20090424172358.GA21946@uranus.ravnborg.org>
+References: <alpine.DEB.1.10.0904221826180.24694@vinegar-pot.mit.edu> <1240519774-20307-1-git-send-email-tabbott@mit.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240519774-20307-1-git-send-email-tabbott@mit.edu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Apr 2009, Zeno Davatz wrote:
+> ---
+>  Documentation/mutex-design.txt              |    4 +-
+>  arch/alpha/kernel/head.S                    |    2 +-
+...
+>  include/linux/linkage.h                     |    4 +-
+>  include/linux/spinlock.h                    |    2 +-
+>  kernel/module.c                             |    2 +-
+>  scripts/mod/modpost.c                       |   12 ++++----
+>  scripts/recordmcount.pl                     |    6 ++--
+>  141 files changed, 356 insertions(+), 348 deletions(-)
 
-> Dear All
-> 
-> Our Kernel-Version:
-> 
-> Linux thinpower 2.6.29 #5 SMP Sun Apr 5 20:04:08 UTC 2009 x86_64
-> Intel(R) Xeon(R) CPU E5450 @ 3.00GHz GenuineIntel GNU/Linux
-> 
-> This morning our Server ran out of memory and had to be hard rebooted.
-> The system hast 32 GB or memory and 4 QuadCore Xeon CPUs.
-> /var/log/kernel/current tells us the following:
-> 
-> Apr 24 09:01:06 thinpower [1349923.491914] postgres invoked
-> oom-killer: gfp_mask=0x1201d2, order=0, oomkilladj=0
-> Apr 24 09:01:06 thinpower [1349923.491919] postgres cpuset=/ mems_allowed=0
-> Apr 24 09:01:06 thinpower [1349923.491922] Pid: 2393, comm: postgres
-> Not tainted 2.6.29 #5
-> Apr 24 09:01:06 thinpower [1349923.491924] Call Trace:
-> Apr 24 09:01:06 thinpower [1349923.491934]  [<ffffffff8106eda9>] ?
-> cpuset_print_task_mems_allowed+0x99/0x9f
-> Apr 24 09:01:06 thinpower [1349923.491939]  [<ffffffff81083d28>]
-> oom_kill_process+0x96/0x246
-> Apr 24 09:01:06 thinpower [1349923.491942]  [<ffffffff8106dcf0>] ?
-> cpuset_mems_allowed_intersects+0x1c/0x1e
-> Apr 24 09:01:06 thinpower [1349923.491944]  [<ffffffff810840a5>] ?
-> badness+0x1a3/0x1e6
-> Apr 24 09:01:06 thinpower [1349923.491946]  [<ffffffff8108421c>]
-> __out_of_memory+0x134/0x14b
-> Apr 24 09:01:06 thinpower [1349923.491949]  [<ffffffff8108438b>]
-> out_of_memory+0x158/0x18a
-> Apr 24 09:01:06 thinpower [1349923.491951]  [<ffffffff81087906>]
-> __alloc_pages_internal+0x372/0x434
-> Apr 24 09:01:06 thinpower [1349923.491954]  [<ffffffff810aa490>]
-> alloc_pages_current+0xb9/0xc2
-> Apr 24 09:01:06 thinpower [1349923.491957]  [<ffffffff81081a59>]
-> __page_cache_alloc+0x67/0x6b
-> Apr 24 09:01:06 thinpower [1349923.491959]  [<ffffffff81089426>]
-> __do_page_cache_readahead+0x96/0x192
-> Apr 24 09:01:06 thinpower [1349923.491961]  [<ffffffff81089575>]
-> do_page_cache_readahead+0x53/0x60
-> Apr 24 09:01:06 thinpower [1349923.491963]  [<ffffffff81081ec7>]
-> filemap_fault+0x15e/0x313
-> Apr 24 09:01:06 thinpower [1349923.491967]  [<ffffffff81094451>]
-> __do_fault+0x53/0x393
-> Apr 24 09:01:06 thinpower [1349923.491969]  [<ffffffff81030531>] ?
-> __wake_up_sync+0x45/0x4e
-> Apr 24 09:01:06 thinpower [1349923.491972]  [<ffffffff81096702>]
-> handle_mm_fault+0x36b/0x854
-> Apr 24 09:01:06 thinpower [1349923.491976]  [<ffffffff813a1acb>] ?
-> release_sock+0xb0/0xbb
-> Apr 24 09:01:06 thinpower [1349923.491979]  [<ffffffff81022c8f>] ?
-> default_spin_lock_flags+0x9/0xe
-> Apr 24 09:01:06 thinpower [1349923.491984]  [<ffffffff814ac6fe>]
-> do_page_fault+0x662/0xa5c
-> Apr 24 09:01:06 thinpower [1349923.491988]  [<ffffffff81400b8e>] ?
-> inet_sendmsg+0x46/0x53
-> Apr 24 09:01:06 thinpower [1349923.491992]  [<ffffffff8139ed97>] ?
-> __sock_sendmsg+0x59/0x62
-> Apr 24 09:01:06 thinpower [1349923.491994]  [<ffffffff8139f6d8>] ?
-> sock_sendmsg+0xc7/0xe0
-> Apr 24 09:01:06 thinpower [1349923.491996]  [<ffffffff81086b5e>] ?
-> free_pages+0x32/0x36
-> Apr 24 09:01:06 thinpower [1349923.492000]  [<ffffffff8104e7ec>] ?
-> autoremove_wake_function+0x0/0x38
-> Apr 24 09:01:06 thinpower [1349923.492004]  [<ffffffff810c1d76>] ?
-> core_sys_select+0x1df/0x213
-> Apr 24 09:01:06 thinpower [1349923.492007]  [<ffffffff810b2cc2>] ?
-> nameidata_to_filp+0x41/0x52
-> Apr 24 09:01:06 thinpower [1349923.492009]  [<ffffffff8139f028>] ?
-> sockfd_lookup_light+0x1b/0x54
-> Apr 24 09:01:06 thinpower [1349923.492013]  [<ffffffff81011ac8>] ?
-> read_tsc+0xe/0x24
-> Apr 24 09:01:06 thinpower [1349923.492017]  [<ffffffff81055990>] ?
-> getnstimeofday+0x58/0xb4
-> Apr 24 09:01:06 thinpower [1349923.492019]  [<ffffffff810516ed>] ?
-> ktime_get_ts+0x49/0x4e
-> Apr 24 09:01:06 thinpower [1349923.492022]  [<ffffffff810c0d35>] ?
-> poll_select_copy_remaining+0xc5/0xea
-> Apr 24 09:01:06 thinpower [1349923.492023]  [<ffffffff810c1ff3>] ?
-> sys_select+0xa7/0xbc
-> Apr 24 09:01:06 thinpower [1349923.492026]  [<ffffffff814aa305>]
-> page_fault+0x25/0x30
-> 
+This patch touches far too many files.
+We should try to work out a method so we are in better control
+of the section names, so renaming in the end is a simple patch
+touching only a few files.
 
-Are these the last messages in the dmesg?  There should be subsequent 
-information that describes the current state of memory following the stack 
-trace.
+A few suggestions follows.
 
-If this is reproducible, I'd recommend enabling 
-/proc/sys/vm/oom_dump_tasks so that the oom killer will dump the tasklist 
-and show us what may be causing the livelock.
+> diff --git a/arch/alpha/kernel/head.S b/arch/alpha/kernel/head.S
+> index 7ac1f13..16293d4 100644
+> --- a/arch/alpha/kernel/head.S
+> +++ b/arch/alpha/kernel/head.S
+> @@ -10,7 +10,7 @@
+>  #include <asm/system.h>
+>  #include <asm/asm-offsets.h>
+>  
+> -.section .text.head, "ax"
+> +.section .text..head, "ax"
 
-> Before that we had this:
-> 
-> Apr 24 08:59:24 thinpower [1349806.982419] 6954 total pagecache pages
-> Apr 24 08:59:24 thinpower [1349806.982420] 0 pages in swap cache
-> Apr 24 08:59:24 thinpower [1349806.982422] Swap cache stats: add 0,
-> delete 0, find 0/0
-> Apr 24 08:59:24 thinpower [1349806.982423] Free swap  = 0kB
-> Apr 24 08:59:24 thinpower [1349806.982423] Total swap = 0kB
-> Apr 24 08:59:24 thinpower [1349807.182725] 8388592 pages RAM
-> Apr 24 08:59:24 thinpower [1349807.182728] 136791 pages reserved
-> Apr 24 08:59:24 thinpower [1349807.182729] 35053 pages shared
-> Apr 24 08:59:24 thinpower [1349807.182729] 8207346 pages non-shared
-> Apr 24 08:59:24 thinpower [1349807.182732] Out of memory: kill process
-> 21592 (ruby) score 109489 or a child
-> Apr 24 08:59:24 thinpower [1349807.182795] Killed process 21592 (ruby)
-> Apr 24 09:00:59 thinpower [1349916.949909] apache2 invoked oom-killer:
-> gfp_mask=0x1201d2, order=0, oomkilladj=0
+Use __HEAD (from include/linux/init.h)
+Same goes for all other uses of .text.head.
 
-apache2 in this case (and postgres later) are valid oom killer targets 
-because their /proc/pid/oom_adj score is 0.  The only reason they wouldn't 
-be getting killed subsequently is because the already killed tasks, ruby, 
-is PF_EXITING and has failed to exit.  It has access to memory reserves 
-and if it hangs before dying, the machine will livelock.
 
-> Apr 24 09:01:00 thinpower [1349916.949915] apache2 cpuset=/ mems_allowed=0
-> Apr 24 09:01:00 thinpower [1349916.949918] Pid: 21599, comm: apache2
-> Not tainted 2.6.29 #5
-> Apr 24 09:01:00 thinpower [1349916.949920] Call Trace:
-> Apr 24 09:01:00 thinpower [1349916.949930]  [<ffffffff8106eda9>] ?
-> cpuset_print_task_mems_allowed+0x99/0x9f
-> Apr 24 09:01:00 thinpower [1349916.949936]  [<ffffffff81083d28>]
-> oom_kill_process+0x96/0x246
-> Apr 24 09:01:00 thinpower [1349916.949938]  [<ffffffff8106dcf0>] ?
-> cpuset_mems_allowed_intersects+0x1c/0x1e
-> Apr 24 09:01:00 thinpower [1349916.949940]  [<ffffffff810840a5>] ?
-> badness+0x1a3/0x1e6
-> Apr 24 09:01:00 thinpower [1349916.949942]  [<ffffffff8108421c>]
-> __out_of_memory+0x134/0x14b
-> Apr 24 09:01:00 thinpower [1349916.949945]  [<ffffffff8108438b>]
-> out_of_memory+0x158/0x18a
-> Apr 24 09:01:00 thinpower [1349916.949947]  [<ffffffff81087906>]
-> __alloc_pages_internal+0x372/0x434
-> Apr 24 09:01:00 thinpower [1349916.949950]  [<ffffffff810aa490>]
-> alloc_pages_current+0xb9/0xc2
-> Apr 24 09:01:00 thinpower [1349916.949953]  [<ffffffff81081a59>]
-> __page_cache_alloc+0x67/0x6b
-> Apr 24 09:01:00 thinpower [1349916.949954]  [<ffffffff81081841>] ?
-> sync_page+0x0/0x40
-> Apr 24 09:01:00 thinpower [1349916.949957]  [<ffffffff81089426>]
-> __do_page_cache_readahead+0x96/0x192
-> Apr 24 09:01:00 thinpower [1349916.949959]  [<ffffffff81089575>]
-> do_page_cache_readahead+0x53/0x60
-> Apr 24 09:01:00 thinpower [1349916.949961]  [<ffffffff81081ec7>]
-> filemap_fault+0x15e/0x313
-> Apr 24 09:01:00 thinpower [1349916.949964]  [<ffffffff81094451>]
-> __do_fault+0x53/0x393
-> Apr 24 09:01:00 thinpower [1349916.949967]  [<ffffffff81096702>]
-> handle_mm_fault+0x36b/0x854
-> Apr 24 09:01:00 thinpower [1349916.949971]  [<ffffffff8100cf6e>] ?
-> apic_timer_interrupt+0xe/0x20
-> Apr 24 09:01:00 thinpower [1349916.949974]  [<ffffffff81022c8f>] ?
-> default_spin_lock_flags+0x9/0xe
-> Apr 24 09:01:00 thinpower [1349916.949976]  [<ffffffff81022c8f>] ?
-> default_spin_lock_flags+0x9/0xe
-> Apr 24 09:01:00 thinpower [1349916.949981]  [<ffffffff814ac6fe>]
-> do_page_fault+0x662/0xa5c
-> Apr 24 09:01:00 thinpower [1349916.949985]  [<ffffffff813a1acb>] ?
-> release_sock+0xb0/0xbb
-> Apr 24 09:01:00 thinpower [1349916.949989]  [<ffffffff813e6628>] ?
-> tcp_recvmsg+0x720/0x833
-> Apr 24 09:01:00 thinpower [1349916.949991]  [<ffffffff813a0eb6>] ?
-> sock_common_recvmsg+0x32/0x47
-> Apr 24 09:01:00 thinpower [1349916.949995]  [<ffffffff81198a02>] ?
-> selinux_socket_recvmsg+0x1d/0x1f
-> Apr 24 09:01:00 thinpower [1349916.949999]  [<ffffffff8139ef03>] ?
-> __sock_recvmsg+0x6d/0x79
-> Apr 24 09:01:00 thinpower [1349916.950001]  [<ffffffff8139effd>] ?
-> sock_aio_read+0xee/0xfe
-> Apr 24 09:01:00 thinpower [1349916.950005]  [<ffffffff810b42b3>] ?
-> do_sync_read+0xe7/0x12d
-> Apr 24 09:01:00 thinpower [1349916.950008]  [<ffffffff813f22bd>] ?
-> tcp_write_xmit+0x453/0x913
-> 
+>  .globl swapper_pg_dir
+>  .globl _stext
+>  swapper_pg_dir=SWAPPER_PGD
+> diff --git a/arch/alpha/kernel/init_task.c b/arch/alpha/kernel/init_task.c
+> index c2938e5..7929755 100644
+> --- a/arch/alpha/kernel/init_task.c
+> +++ b/arch/alpha/kernel/init_task.c
+> @@ -17,5 +17,5 @@ EXPORT_SYMBOL(init_mm);
+>  EXPORT_SYMBOL(init_task);
+>  
+>  union thread_union init_thread_union
+> -	__attribute__((section(".data.init_thread")))
+> +	__attribute__((section(".data..init_thread")))
+>  	= { INIT_THREAD_INFO(init_task) };
+
+1) Either wait for the consolidation of init_tast or add a:
+#define SECTION_INIT_THREAD  __section(".data.init_thread")
+to sched.h and use that one for all archs.
+
+
+> diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
+> index ef37fc1..511f8ca 100644
+> --- a/arch/alpha/kernel/vmlinux.lds.S
+> +++ b/arch/alpha/kernel/vmlinux.lds.S
+> @@ -16,7 +16,7 @@ SECTIONS
+>  
+>  	_text = .;	/* Text and read-only data */
+>  	.text : {
+> -	*(.text.head)
+> +	*(.text..head)
+>  		TEXT_TEXT
+>  		SCHED_TEXT
+>  		LOCK_TEXT
+
+Use HEAD_TEXT (from include/asm-generic/vmlinux.lds.h)
+
+
+> @@ -93,18 +93,18 @@ SECTIONS
+>  	/* Freed after init ends here */
+>  
+>  	/* Note 2 page alignment above.  */
+> -	.data.init_thread : {
+> -		*(.data.init_thread)
+> +	.data..init_thread : {
+> +		*(.data..init_thread)
+>  	}
+
+Add something like:
+#define DATA_THREAD(aling) \
+	...
+to vmlinux.lds.h
+
+
+>  
+>  	. = ALIGN(PAGE_SIZE);
+> -	.data.page_aligned : {
+> -		*(.data.page_aligned)
+> +	.data..page_aligned : {
+> +		*(.data..page_aligned)
+>  	}
+
+Add something like:
+#define DATA_PAGE_ALIGNED() \
+	...
+to vmlinux.lds.h
+
+
+>  
+>  	. = ALIGN(64);
+> -	.data.cacheline_aligned : {
+> -		*(.data.cacheline_aligned)
+> +	.data..cacheline_aligned : {
+> +		*(.data..cacheline_aligned)
+>  	}
+
+Add something like:
+#define DATA_CACHE_ALIGNED() \
+	...
+to vmlinux.lds.h
+
+>  
+>  	_data = .;
+> diff --git a/arch/arm/kernel/head-nommu.S b/arch/arm/kernel/head-nommu.S
+> index cc87e17..fcd93f5 100644
+> --- a/arch/arm/kernel/head-nommu.S
+> +++ b/arch/arm/kernel/head-nommu.S
+> @@ -32,7 +32,7 @@
+>   * numbers for r1.
+>   *
+>   */
+> -	.section ".text.head", "ax"
+> +	.section ".text..head", "ax"
+__HEAD
+
+>  ENTRY(stext)
+>  	msr	cpsr_c, #PSR_F_BIT | PSR_I_BIT | SVC_MODE @ ensure svc mode
+>  						@ and irqs disabled
+> diff --git a/arch/arm/kernel/head.S b/arch/arm/kernel/head.S
+> index 21e17dc..705e759 100644
+> --- a/arch/arm/kernel/head.S
+> +++ b/arch/arm/kernel/head.S
+> @@ -74,7 +74,7 @@
+>   * crap here - that's what the boot loader (or in extreme, well justified
+>   * circumstances, zImage) is for.
+>   */
+> -	.section ".text.head", "ax"
+> +	.section ".text..head", "ax"
+__HEAD
+
+>  ENTRY(stext)
+>  	msr	cpsr_c, #PSR_F_BIT | PSR_I_BIT | SVC_MODE @ ensure svc mode
+>  						@ and irqs disabled
+> diff --git a/arch/arm/kernel/init_task.c b/arch/arm/kernel/init_task.c
+> index e859af3..0b81b8f 100644
+> --- a/arch/arm/kernel/init_task.c
+> +++ b/arch/arm/kernel/init_task.c
+> @@ -29,7 +29,7 @@ EXPORT_SYMBOL(init_mm);
+>   * The things we do for performance..
+>   */
+>  union thread_union init_thread_union
+> -	__attribute__((__section__(".data.init_task"))) =
+> +	__attribute__((__section__(".data..init_task"))) =
+>  		{ INIT_THREAD_INFO(init_task) };
+>  
+>  /*
+> diff --git a/arch/arm/kernel/vmlinux.lds.S b/arch/arm/kernel/vmlinux.lds.S
+> index c90f272..89c97c3 100644
+> --- a/arch/arm/kernel/vmlinux.lds.S
+> +++ b/arch/arm/kernel/vmlinux.lds.S
+> @@ -23,10 +23,10 @@ SECTIONS
+>  #else
+>  	. = PAGE_OFFSET + TEXT_OFFSET;
+>  #endif
+> -	.text.head : {
+> +	.text..head : {
+>  		_stext = .;
+>  		_sinittext = .;
+> -		*(.text.head)
+> +		*(.text..head)
+
+HEAD_TEXT
+>  	}
+>  
+>  	.init : {			/* Init code and data		*/
+> @@ -66,9 +66,9 @@ SECTIONS
+>  		. = ALIGN(4096);
+>  		__per_cpu_load = .;
+>  		__per_cpu_start = .;
+> -			*(.data.percpu.page_aligned)
+> -			*(.data.percpu)
+> -			*(.data.percpu.shared_aligned)
+> +			*(.data..percpu.page_aligned)
+> +			*(.data..percpu)
+> +			*(.data..percpu.shared_aligned)
+>  		__per_cpu_end = .;
+
+PERCPU / PERCPU_VADDR
+
+
+>  #ifndef CONFIG_XIP_KERNEL
+>  		__init_begin = _stext;
+> @@ -146,7 +146,7 @@ SECTIONS
+>  		 * first, the init task union, aligned
+>  		 * to an 8192 byte boundary.
+>  		 */
+> -		*(.data.init_task)
+> +		*(.data..init_task)
+
+
+>  
+>  #ifdef CONFIG_XIP_KERNEL
+>  		. = ALIGN(4096);
+> @@ -158,7 +158,7 @@ SECTIONS
+>  
+
+>  		. = ALIGN(4096);
+>  		__nosave_begin = .;
+> -		*(.data.nosave)
+> +		*(.data..nosave)
+>  		. = ALIGN(4096);
+>  		__nosave_end = .;
+
+Add whole bloce to a DATA_NOSAVE(align) in vmlinux.lds.h
+
+
+>  
+> @@ -166,7 +166,7 @@ SECTIONS
+>  		 * then the cacheline aligned data
+>  		 */
+>  		. = ALIGN(32);
+> -		*(.data.cacheline_aligned)
+> +		*(.data..cacheline_aligned)
+>  
+>  		/*
+>  		 * The exception fixup table (might need resorting at runtime)
+> diff --git a/arch/arm/mm/proc-v6.S b/arch/arm/mm/proc-v6.S
+> index f0cc599..39d8dd1 100644
+> --- a/arch/arm/mm/proc-v6.S
+> +++ b/arch/arm/mm/proc-v6.S
+> @@ -132,7 +132,7 @@ cpu_v6_name:
+>  	.asciz	"ARMv6-compatible processor"
+>  	.align
+>  
+> -	.section ".text.init", #alloc, #execinstr
+> +	.section ".text..init", #alloc, #execinstr
+
+Use __INIT (from init.h).
+
+
+I will recommend that you do this in separate steps.
+1) Is to define all the new sections to vmlinux.lds.h,
+init.h and maybe other files.
+
+To make this complete you need to go through several of the architectures.
+
+If you have this ready soon we can push this upstream so the individual
+architectures can apply their modifications.
+So step 2 is to create individual patches for each architecture
+and the remaining files. We can then carry this in -next until
+we hit a merge window.
+
+Until now this is pure cleanup.
+
+The final step is to do the renaming in the few files that hold
+the section definitions - it is a simple patch.
+And then we can try out function-sections etc.
+
+	Sam
