@@ -1,37 +1,31 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753349AbZDXBJF (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 23 Apr 2009 21:09:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbZDXBIt
+	id S1756835AbZDXKDE (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 24 Apr 2009 06:03:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbZDXKCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 21:08:49 -0400
-Received: from smtp.mcpsmd.org ([205.222.6.113]:12181 "EHLO HUBA.mcpsmd.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753658AbZDXBIs convert rfc822-to-8bit (ORCPT
+	Fri, 24 Apr 2009 06:02:53 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:37605 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752116AbZDXKCw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 21:08:48 -0400
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Fri, 24 Apr 2009 06:02:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=cvkXo3GI8bPtizKV4aH/zKJzjNYovzif6DbUkC/j0OlQnuaj4Y6FXlQBxn8tnUtQUO
+         Z9e2mSaIRzaIpsvOfOs+4VrsCr0dwKXnTwr9dvDeh+/G4Yq3Y4a3ZwpEzsPmd5BsPYg+
+         i43qgkYBkVd1mN9e3nERQM3lAuKKIYuPjvWsA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: Your Mailbox Has Exceeded Its Storage Limit
-Date: Thu, 23 Apr 2009 21:02:28 -0400
-Message-ID: <4E50929AC0DA38429C7387F1B4774A1501CDEF62@EVMAIL02.mcpsmd.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Your Mailbox Has Exceeded Its Storage Limit
-Thread-Index: AcnEeFSKHaAzw7mrTjuYgqjYMVX3Iw==
-From: "Davidson, Jeffrey H." <Jeffrey_H_Davidson@mcpsmd.org>
-X-OriginalArrivalTime: 24 Apr 2009 01:03:29.0195 (UTC) FILETIME=[7ACA07B0:01C9C478]
-To: unlisted-recipients:; (no To-header on input)
+Date: Fri, 24 Apr 2009 12:02:50 +0200
+Message-ID: <40a4ed590904240302u7da31c7du5a134869bb5c433d@mail.gmail.com>
+Subject: 
+From: Zeno Davatz <zdavatz@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Your mailbox has exceeded the storage limit set by your administrator. You may not be able to send or receive new mail until your mailbox size is increased by your system administrator. You are required to contact your system administrator through e-mail with your Username:{ } and Password:{ } to increase your storage limit.
-
-System Administrator
-E-mail: webct002@live.com
-
-You will continue to receive this warning message periodically if your inbox size continues to exceed its size limit.
-This email is intended only for the use of the individual or entity to which it is addressed and contains information that is privileged and confidential.
+subscribe
