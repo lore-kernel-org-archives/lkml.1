@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758904AbZDXOm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbZDXOnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758904AbZDXOm7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 10:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbZDXOmu
+	id S1760023AbZDXOnk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 10:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbZDXOnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 10:42:50 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:36945 "EHLO
+	Fri, 24 Apr 2009 10:43:31 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:36951 "EHLO
 	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751064AbZDXOmt (ORCPT
+	with ESMTP id S1753969AbZDXOna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 10:42:49 -0400
-Date: Fri, 24 Apr 2009 18:42:46 +0400
+	Fri, 24 Apr 2009 10:43:30 -0400
+Date: Fri, 24 Apr 2009 18:43:27 +0400
 From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Richard Henderson <rth@twiddle.net>, linux-kernel@vger.kernel.org
-Subject: [PATCH] alpha: titan and marvel build fixes
-Message-ID: <20090424144246.GA32087@jurassic.park.msu.ru>
+Subject: [PATCH] alpha: exception table sorting
+Message-ID: <20090424144327.GB32087@jurassic.park.msu.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,154 +24,91 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These platforms got broken after u64 => 'long long' conversion.
+Exception fixups for sections other than .text (like one in
+futex_init()) break the natural ordering of fixup entries,
+so sorting is required.
 
-Apparently that change was compile-tested with 'make allmodconfig',
-but it doesn't include systems that depend on !ALPHA_LEGACY_START_ADDRESS.
+Without that the result of the exception table search depends
+on phase of the moon.
 
 Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 ---
- arch/alpha/kernel/err_ev6.c    |    2 +-
- arch/alpha/kernel/err_ev7.c    |    4 ++--
- arch/alpha/kernel/err_impl.h   |   10 +++++-----
- arch/alpha/kernel/err_marvel.c |    2 +-
- arch/alpha/kernel/err_titan.c  |    4 ++--
- arch/alpha/kernel/proto.h      |    5 ++---
- 6 files changed, 13 insertions(+), 14 deletions(-)
+ arch/alpha/include/asm/uaccess.h |    2 +
+ arch/alpha/mm/extable.c          |   40 +++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 41 insertions(+), 1 deletions(-)
 
-diff --git a/arch/alpha/kernel/err_ev6.c b/arch/alpha/kernel/err_ev6.c
-index 985e5c1..8ca6345 100644
---- a/arch/alpha/kernel/err_ev6.c
-+++ b/arch/alpha/kernel/err_ev6.c
-@@ -229,7 +229,7 @@ ev6_process_logout_frame(struct el_common *mchk_header, int print)
- }
+diff --git a/arch/alpha/include/asm/uaccess.h b/arch/alpha/include/asm/uaccess.h
+index 163f305..b49ec2f 100644
+--- a/arch/alpha/include/asm/uaccess.h
++++ b/arch/alpha/include/asm/uaccess.h
+@@ -507,5 +507,7 @@ struct exception_table_entry
+ 	(pc) + (_fixup)->fixup.bits.nextinsn;			\
+ })
  
- void
--ev6_machine_check(u64 vector, u64 la_ptr)
-+ev6_machine_check(unsigned long vector, unsigned long la_ptr)
- {
- 	struct el_common *mchk_header = (struct el_common *)la_ptr;
++#define ARCH_HAS_SORT_EXTABLE
++#define ARCH_HAS_SEARCH_EXTABLE
  
-diff --git a/arch/alpha/kernel/err_ev7.c b/arch/alpha/kernel/err_ev7.c
-index 73770c6..d738a67 100644
---- a/arch/alpha/kernel/err_ev7.c
-+++ b/arch/alpha/kernel/err_ev7.c
-@@ -117,7 +117,7 @@ ev7_collect_logout_frame_subpackets(struct el_subpacket *el_ptr,
- }
- 
- void
--ev7_machine_check(u64 vector, u64 la_ptr)
-+ev7_machine_check(unsigned long vector, unsigned long la_ptr)
- {
- 	struct el_subpacket *el_ptr = (struct el_subpacket *)la_ptr;
- 	char *saved_err_prefix = err_print_prefix;
-@@ -246,7 +246,7 @@ ev7_process_pal_subpacket(struct el_subpacket *header)
- 
- 	switch(header->type) {
- 	case EL_TYPE__PAL__LOGOUT_FRAME:
--		printk("%s*** MCHK occurred on LPID %ld (RBOX %llx)\n",
-+		printk("%s*** MCHK occurred on LPID %lld (RBOX %llx)\n",
- 		       err_print_prefix,
- 		       packet->by_type.logout.whami, 
- 		       packet->by_type.logout.rbox_whami);
-diff --git a/arch/alpha/kernel/err_impl.h b/arch/alpha/kernel/err_impl.h
-index 3c12258..0c010ca 100644
---- a/arch/alpha/kernel/err_impl.h
-+++ b/arch/alpha/kernel/err_impl.h
-@@ -60,26 +60,26 @@ extern struct ev7_lf_subpackets *
- ev7_collect_logout_frame_subpackets(struct el_subpacket *,
- 				    struct ev7_lf_subpackets *);
- extern void ev7_register_error_handlers(void);
--extern void ev7_machine_check(u64, u64);
-+extern void ev7_machine_check(unsigned long, unsigned long);
- 
- /*
-  * err_ev6.c
+ #endif /* __ALPHA_UACCESS_H */
+diff --git a/arch/alpha/mm/extable.c b/arch/alpha/mm/extable.c
+index dc7aeda..62dc379 100644
+--- a/arch/alpha/mm/extable.c
++++ b/arch/alpha/mm/extable.c
+@@ -3,11 +3,49 @@
   */
- extern void ev6_register_error_handlers(void);
- extern int ev6_process_logout_frame(struct el_common *, int);
--extern void ev6_machine_check(u64, u64);
-+extern void ev6_machine_check(unsigned long, unsigned long);
  
- /*
-  * err_marvel.c
-  */
--extern void marvel_machine_check(u64, u64);
-+extern void marvel_machine_check(unsigned long, unsigned long);
- extern void marvel_register_error_handlers(void);
+ #include <linux/module.h>
++#include <linux/sort.h>
+ #include <asm/uaccess.h>
  
- /*
-  * err_titan.c
-  */
- extern int titan_process_logout_frame(struct el_common *, int);
--extern void titan_machine_check(u64, u64);
-+extern void titan_machine_check(unsigned long, unsigned long);
- extern void titan_register_error_handlers(void);
- extern int privateer_process_logout_frame(struct el_common *, int);
--extern void privateer_machine_check(u64, u64);
-+extern void privateer_machine_check(unsigned long, unsigned long);
-diff --git a/arch/alpha/kernel/err_marvel.c b/arch/alpha/kernel/err_marvel.c
-index 6bfd243..52a79df 100644
---- a/arch/alpha/kernel/err_marvel.c
-+++ b/arch/alpha/kernel/err_marvel.c
-@@ -1042,7 +1042,7 @@ marvel_process_logout_frame(struct ev7_lf_subpackets *lf_subpackets, int print)
++static inline unsigned long ex_to_addr(const struct exception_table_entry *x)
++{
++	return (unsigned long)&x->insn + x->insn;
++}
++
++static void swap_ex(void *a, void *b, int size)
++{
++	struct exception_table_entry *ex_a = a, *ex_b = b;
++	unsigned long addr_a = ex_to_addr(ex_a), addr_b = ex_to_addr(ex_b);
++	unsigned int t = ex_a->fixup.unit;
++
++	ex_a->fixup.unit = ex_b->fixup.unit;
++	ex_b->fixup.unit = t;
++	ex_a->insn = (int)(addr_b - (unsigned long)&ex_a->insn);
++	ex_b->insn = (int)(addr_a - (unsigned long)&ex_b->insn);
++}
++
++/*
++ * The exception table needs to be sorted so that the binary
++ * search that we use to find entries in it works properly.
++ * This is used both for the kernel exception table and for
++ * the exception tables of modules that get loaded.
++ */
++static int cmp_ex(const void *a, const void *b)
++{
++	const struct exception_table_entry *x = a, *y = b;
++
++	/* avoid overflow */
++	if (ex_to_addr(x) > ex_to_addr(y))
++		return 1;
++	if (ex_to_addr(x) < ex_to_addr(y))
++		return -1;
++	return 0;
++}
++
+ void sort_extable(struct exception_table_entry *start,
+ 		  struct exception_table_entry *finish)
+ {
++	sort(start, finish - start, sizeof(struct exception_table_entry),
++	     cmp_ex, swap_ex);
  }
  
- void
--marvel_machine_check(u64 vector, u64 la_ptr)
-+marvel_machine_check(unsigned long vector, unsigned long la_ptr)
- {
- 	struct el_subpacket *el_ptr = (struct el_subpacket *)la_ptr;
- 	int (*process_frame)(struct ev7_lf_subpackets *, int) = NULL;
-diff --git a/arch/alpha/kernel/err_titan.c b/arch/alpha/kernel/err_titan.c
-index c7e28a8..f7ed97c 100644
---- a/arch/alpha/kernel/err_titan.c
-+++ b/arch/alpha/kernel/err_titan.c
-@@ -380,7 +380,7 @@ titan_process_logout_frame(struct el_common *mchk_header, int print)
- }
+ const struct exception_table_entry *
+@@ -20,7 +58,7 @@ search_extable(const struct exception_table_entry *first,
+ 		unsigned long mid_value;
  
- void
--titan_machine_check(u64 vector, u64 la_ptr)
-+titan_machine_check(unsigned long vector, unsigned long la_ptr)
- {
- 	struct el_common *mchk_header = (struct el_common *)la_ptr;
- 	struct el_TITAN_sysdata_mcheck *tmchk =
-@@ -702,7 +702,7 @@ privateer_process_logout_frame(struct el_common *mchk_header, int print)
- }
- 
- void
--privateer_machine_check(u64 vector, u64 la_ptr)
-+privateer_machine_check(unsigned long vector, unsigned long la_ptr)
- {
- 	struct el_common *mchk_header = (struct el_common *)la_ptr;
- 	struct el_TITAN_sysdata_mcheck *tmchk =
-diff --git a/arch/alpha/kernel/proto.h b/arch/alpha/kernel/proto.h
-index 567f259..3d2627e 100644
---- a/arch/alpha/kernel/proto.h
-+++ b/arch/alpha/kernel/proto.h
-@@ -36,7 +36,6 @@ extern void cia_pci_tbi(struct pci_controller *, dma_addr_t, dma_addr_t);
- extern struct pci_ops irongate_pci_ops;
- extern int irongate_pci_clr_err(void);
- extern void irongate_init_arch(void);
--extern void irongate_machine_check(u64, u64);
- #define irongate_pci_tbi ((void *)0)
- 
- /* core_lca.c */
-@@ -49,7 +48,7 @@ extern void lca_pci_tbi(struct pci_controller *, dma_addr_t, dma_addr_t);
- extern struct pci_ops marvel_pci_ops;
- extern void marvel_init_arch(void);
- extern void marvel_kill_arch(int);
--extern void marvel_machine_check(u64, u64);
-+extern void marvel_machine_check(unsigned long, unsigned long);
- extern void marvel_pci_tbi(struct pci_controller *, dma_addr_t, dma_addr_t);
- extern int marvel_pa_to_nid(unsigned long);
- extern int marvel_cpuid_to_nid(int);
-@@ -86,7 +85,7 @@ extern void t2_pci_tbi(struct pci_controller *, dma_addr_t, dma_addr_t);
- extern struct pci_ops titan_pci_ops;
- extern void titan_init_arch(void);
- extern void titan_kill_arch(int);
--extern void titan_machine_check(u64, u64);
-+extern void titan_machine_check(unsigned long, unsigned long);
- extern void titan_pci_tbi(struct pci_controller *, dma_addr_t, dma_addr_t);
- extern struct _alpha_agp_info *titan_agp_info(void);
- 
+ 		mid = (last - first) / 2 + first;
+-		mid_value = (unsigned long)&mid->insn + mid->insn;
++		mid_value = ex_to_addr(mid);
+                 if (mid_value == value)
+                         return mid;
+                 else if (mid_value < value)
