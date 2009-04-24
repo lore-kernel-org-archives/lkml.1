@@ -1,43 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751419AbZDXLVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752215AbZDXLd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751419AbZDXLVR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 07:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZDXLVA
+	id S1752215AbZDXLd1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 07:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZDXLdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 07:21:00 -0400
-Received: from cluster-g.mailcontrol.com ([208.87.233.190]:34760 "EHLO
-	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752073AbZDXLVA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 07:21:00 -0400
-Message-ID: <49F1A064.6040100@csr.com>
-Date: Fri, 24 Apr 2009 12:20:04 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Fri, 24 Apr 2009 07:33:18 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:56485 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751110AbZDXLdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 07:33:17 -0400
+Date: Fri, 24 Apr 2009 12:33:12 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       cl@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
+       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com,
+       peterz@infradead.org, penberg@cs.helsinki.fi,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [PATCH 15/22] Do not disable interrupts in free_page_mlock()
+Message-ID: <20090424113312.GG14283@csn.ul.ie>
+References: <1240408407-21848-16-git-send-email-mel@csn.ul.ie> <20090423155951.6778bdd3.akpm@linux-foundation.org> <20090424090721.1047.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: dma_debug_device_change() gives bogus errors
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Apr 2009 11:20:04.0997 (UTC) FILETIME=[9E016B50:01C9C4CE]
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090424090721.1047.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dma_debug_device_change() gives bogus errors if a driver unmaps dma
-buffers within its driver->remove() method.  This is because the
-BUS_NOTIFY_UNBIND_DRIVER notification is raised before calling
-driver->remove() (see __device_release_driver() in drivers/base/dd.c).
+On Fri, Apr 24, 2009 at 09:33:50AM +0900, KOSAKI Motohiro wrote:
+> > > @@ -157,14 +157,9 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
+> > >   */
+> > >  static inline void free_page_mlock(struct page *page)
+> > >  {
+> > > -	if (unlikely(TestClearPageMlocked(page))) {
+> > > -		unsigned long flags;
+> > > -
+> > > -		local_irq_save(flags);
+> > > -		__dec_zone_page_state(page, NR_MLOCK);
+> > > -		__count_vm_event(UNEVICTABLE_MLOCKFREED);
+> > > -		local_irq_restore(flags);
+> > > -	}
+> > > +	__ClearPageMlocked(page);
+> > > +	__dec_zone_page_state(page, NR_MLOCK);
+> > > +	__count_vm_event(UNEVICTABLE_MLOCKFREED);
+> > >  }
+> > 
+> > The conscientuous reviewer runs around and checks for free_page_mlock()
+> > callers in other .c files which might be affected.
+> > 
+> > Only there are no such callers.
+> > 
+> > The reviewer's job would be reduced if free_page_mlock() wasn't
+> > needlessly placed in a header file!
+> 
+> very sorry.
+> 
+> How about this?
+> 
+> =============================================
+> Subject: [PATCH] move free_page_mlock() to page_alloc.c
+> 
+> Currently, free_page_mlock() is only called from page_alloc.c.
+> Thus, we can move it to page_alloc.c.
+> 
 
-By the time my driver->remove() completes, there are no DMA mappings
-(debug_dma_dump_mappings() produces no output).
+Looks good, but here is a version rebased on top of the patch series
+where it would be easier to merge with "Do not disable interrupts in
+free_page_mlock()".
 
-Also, somewhat surprisingly, it only prints the error the first time the
-driver is unbound.
+I do note why it might be in the header though - it keeps all the
+CONFIG_HAVE_MLOCKED_PAGE_BIT-related helper functions together making it
+easier to find them. Lee, was that the intention?
 
-David
+=======
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+Move free_page_mlock() from mm/internal.h to mm/page_alloc.c
+
+Currently, free_page_mlock() is only called from page_alloc.c. This patch
+moves it from a header to to page_alloc.c.
+
+[mel@csn.ul.ie: Rebase on top of page allocator patches]
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ mm/internal.h   |   13 -------------
+ mm/page_alloc.c |   16 ++++++++++++++++
+ 2 files changed, 16 insertions(+), 13 deletions(-)
+
+diff --git a/mm/internal.h b/mm/internal.h
+index 58ec1bc..4b1672a 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -150,18 +150,6 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
+ 	}
+ }
+ 
+-/*
+- * free_page_mlock() -- clean up attempts to free and mlocked() page.
+- * Page should not be on lru, so no need to fix that up.
+- * free_pages_check() will verify...
+- */
+-static inline void free_page_mlock(struct page *page)
+-{
+-	__ClearPageMlocked(page);
+-	__dec_zone_page_state(page, NR_MLOCK);
+-	__count_vm_event(UNEVICTABLE_MLOCKFREED);
+-}
+-
+ #else /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
+ static inline int is_mlocked_vma(struct vm_area_struct *v, struct page *p)
+ {
+@@ -170,7 +158,6 @@ static inline int is_mlocked_vma(struct vm_area_struct *v, struct page *p)
+ static inline void clear_page_mlock(struct page *page) { }
+ static inline void mlock_vma_page(struct page *page) { }
+ static inline void mlock_migrate_page(struct page *new, struct page *old) { }
+-static inline void free_page_mlock(struct page *page) { }
+ 
+ #endif /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
+ 
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index f08b4cb..3db5f57 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -433,6 +433,22 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_HAVE_MLOCKED_PAGE_BIT
++/*
++ * free_page_mlock() -- clean up attempts to free and mlocked() page.
++ * Page should not be on lru, so no need to fix that up.
++ * free_pages_check() will verify...
++ */
++static inline void free_page_mlock(struct page *page)
++{
++	__ClearPageMlocked(page);
++	__dec_zone_page_state(page, NR_MLOCK);
++	__count_vm_event(UNEVICTABLE_MLOCKFREED);
++}
++#else
++static inline void free_page_mlock(struct page *page) { }
++#endif /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
++
+ /*
+  * Freeing function for a buddy system allocator.
+  *
+
 -- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
