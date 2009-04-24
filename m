@@ -1,77 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbZDXDxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbZDXDy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755552AbZDXDxT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 23:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZDXDxI
+	id S1755687AbZDXDy2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 23:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbZDXDyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 23:53:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35543 "EHLO hera.kernel.org"
+	Thu, 23 Apr 2009 23:54:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54954 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751271AbZDXDxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 23:53:06 -0400
-Message-ID: <49F13717.4010106@kernel.org>
-Date: Thu, 23 Apr 2009 20:50:47 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751725AbZDXDyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 23:54:16 -0400
+Message-ID: <49F137B8.9020707@redhat.com>
+Date: Thu, 23 Apr 2009 23:53:28 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
+To: Jim Keniston <jkenisto@us.ibm.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Subject: [PATCH 4/4] x86/pci: make pci_mem_start to be aligned only -v5
-References: <20090420223305.GA15340@jurassic.park.msu.ru> <49ED0EBC.4070901@kernel.org> <20090421105629.GB17904@jurassic.park.msu.ru> <49EF9C10.6090107@kernel.org> <20090422154900.08f8f366@hobbes> <49EFBB0E.3030401@kernel.org> <20090422180505.2518e837@hobbes> <49EFCE15.3030605@kernel.org> <20090423132202.GB13984@jurassic.park.msu.ru> <49F08580.9050407@kernel.org> <20090423221936.GA24171@jurassic.park.msu.ru> <49F13690.3080902@kernel.org>
-In-Reply-To: <49F13690.3080902@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH -tip 3/6 V4.1] x86: instruction decorder API
+References: <49D4F4E6.6060401@redhat.com> <49D69BCA.8060506@redhat.com>	 <49D69F39.4010101@zytor.com>  <49D6ABD1.7040704@redhat.com>	 <1239058135.5212.43.camel@localhost.localdomain>	 <49DA8857.8030607@zytor.com>  <49E7BFDC.8040305@redhat.com>	 <1239926776.5883.17.camel@dyn9047018094.beaverton.ibm.com>	 <49E7C87E.8000202@zytor.com>  <49EE6235.20706@redhat.com>	 <1240447635.3713.21.camel@dyn9047018094.beaverton.ibm.com>	 <49F0A570.8000908@redhat.com> <1240525367.3461.10.camel@dyn9047018094.beaverton.ibm.com>
+In-Reply-To: <1240525367.3461.10.camel@dyn9047018094.beaverton.ibm.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jim Keniston wrote:
+> On Thu, 2009-04-23 at 13:29 -0400, Masami Hiramatsu wrote:
+> ...
+>> Hmm, maybe, parser can handle "(extra_info)" as a solid keyword.
+>> so let's define actual format.
+>>
+>> <opcode maps>
+>> Table: table-name
+>> Referrer: escamed-name
+>> opcode: mnemonic|Grp [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
 
-don't need to reserved one round after the gapstart.
+This should be:
+opcode: mnemonic|GrpXXX ...
 
-because have round up in via reserve stolen ram already.
+>> opcode: ESC # escaped-name
 
-[Impact: make more big space below 4g for assigning to unassigned pci devices]
+This should be
+opcode: escape # escaped-name
+because distinguishing from x87 ESC ops.
 
-Reported-by: Yannick <yannick.roehlly@free.fr>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>
+>> <group maps>
+>> reg: mnemonic ...
+> 
+> For some instruction groups -- e.g., Groups 12, 13, 14 -- the
+> instruction prefix (66, f2, f3) and the reg field both affect the
+> instruction type.  And for some x87 instructions, the value of the modrm
+> byte's rm field also affects the instruction type.  (For others, rm just
+> selects among the st(0)..st(7) registers, as one might expect.)
 
----
- arch/x86/kernel/e820.c |   11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+Sure, I updated the format. There are some special cases,
 
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -617,7 +617,7 @@ __init int e820_search_gap(unsigned long
-  */
- __init void e820_setup_gap(void)
- {
--	unsigned long gapstart, gapsize, round;
-+	unsigned long gapstart, gapsize;
- 	int found;
- 
- 	gapstart = 0x10000000;
-@@ -635,14 +635,9 @@ __init void e820_setup_gap(void)
- #endif
- 
- 	/*
--	 * See how much we want to round up: start off with
--	 * rounding to the next 1MB area.
-+	 * e820_reserve_resources_late protect stolen RAM already
- 	 */
--	round = 0x100000;
--	while ((gapsize >> 4) > round)
--		round += round;
--	/* Fun with two's complement */
--	pci_mem_start = (gapstart + round) & -round;
-+	pci_mem_start = gapstart;
- 
- 	printk(KERN_INFO
- 	       "Allocating PCI resources starting at %lx (gap: %lx:%lx)\n",
+(1) instructions which are switched by 64bit mode
+40: INC eAX (i64) | REX (o64)
+
+(2) instructions which are switched by the last prefix
+13: movlps Mq,Vq | movlpd Mq,Vq (66)
+
+(3) group instructions which are switched by modr/m
+0: SGDT Ms | VMCALL (11B),(001) | VMLAUNCH (11B),(010) | VMRESUME (11B),(011) | VMXOFF (11B),(100)
+
+
+> 
+> Of course, that's all about floating-point instructions, which are of
+> more interest to uprobes than kprobes. 
+
+Hmm, x87 instructions may need to have some special format...
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
