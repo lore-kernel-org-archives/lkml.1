@@ -1,80 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbZDXE5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbZDXFEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754537AbZDXE5m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 00:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbZDXE5c
+	id S1754662AbZDXFEL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 01:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZDXFD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 00:57:32 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38282 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751928AbZDXE5b (ORCPT
+	Fri, 24 Apr 2009 01:03:59 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:34404 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751910AbZDXFD6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 00:57:31 -0400
-Message-ID: <49F146B1.5010500@jp.fujitsu.com>
-Date: Fri, 24 Apr 2009 13:57:21 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+	Fri, 24 Apr 2009 01:03:58 -0400
+Message-ID: <49F146FF.5050200@cosmosbay.com>
+Date: Fri, 24 Apr 2009 06:58:39 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
 User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH 3/4] PCI: PCIE AER: PCIE AER software error injection
-References: <1240541127.6842.681.camel@yhuang-dev.sh.intel.com>	 <49F140F7.4030705@jp.fujitsu.com> <1240547769.6842.782.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1240547769.6842.782.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
+       David Miller <davem@davemloft.net>, kaber@trash.net,
+       jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com, jengelh@medozas.de,
+       r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH]  netfilter: use per-CPU recursive lock {XIV}
+References: <20090418094001.GA2369@ioremap.net>	<20090418141455.GA7082@linux.vnet.ibm.com>	<20090420103414.1b4c490f@nehalam>	<49ECBE0A.7010303@cosmosbay.com>	<18924.59347.375292.102385@cargo.ozlabs.ibm.com>	<20090420215827.GK6822@linux.vnet.ibm.com>	<18924.64032.103954.171918@cargo.ozlabs.ibm.com>	<20090420160121.268a8226@nehalam>	<alpine.LFD.2.00.0904210831560.2199@localhost.localdomain>	<20090421111541.228e977a@nehalam>	<20090421193924.GA24404@elte.hu>	<20090421143927.52d7d89d@nehalam>	<alpine.LFD.2.00.0904220821240.3101@localhost.localdomain> <20090423210938.1501507b@nehalam>
+In-Reply-To: <20090423210938.1501507b@nehalam>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 24 Apr 2009 06:58:48 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying wrote:
-> On Fri, 2009-04-24 at 12:32 +0800, Kenji Kaneshige wrote:
->> Huang Ying wrote:
->>> Debugging PCIE AER code can be very difficult because it is hard to
->>> trigger various real hardware errors. This patch provide a software
->>> based error injection tool, which can fake various PCIE errors with a
->>> user space helper tool named "aer-inject". Which can be gotten from:
->>>
->>>   http://www.kernel.org/pub/linux/kernel/people/yhuang/
->>>
->>> The patch fakes AER error by faking some PCIE AER related registers
->>> and an AER interrupt for specified the PCIE device.
->>>
->>> Signed-off-by: Huang Ying <ying.huang@intel.com>
->>>
->>> ---
->>>  drivers/pci/pcie/aer/Kconfig       |    2 
->>>  drivers/pci/pcie/aer/Kconfig.debug |   18 +
->>>  drivers/pci/pcie/aer/Makefile      |    1 
->>>  drivers/pci/pcie/aer/aer_inject.c  |  472 +++++++++++++++++++++++++++++++++++++
->>>  4 files changed, 493 insertions(+)
->>>
->>> --- /dev/null
->>> +++ b/drivers/pci/pcie/aer/aer_inject.c
->>> @@ -0,0 +1,472 @@
->>> +/*
->>> + * PCIE AER software error injection support.
->>> + *
->>> + * Debuging PCIE AER code is quite difficult because it is hard to
->>> + * trigger various real hardware errors. Software based error
->>> + * injection can fake almost all kinds of errors with the help of a
->>> + * user space helper tool aer-inject, which can be gotten from:
->>> + *   http://www.kernel.org/pub/utils/pcie/aer-inject
->> Shouldn't it be 
->>
->> http://www.kernel.org/pub/linux/kernel/people/yhuang/
+Stephen Hemminger a écrit :
+> In days of old in 2.6.29, netfilter did locketh using a 
+> lock of the reader kind when doing its table business, and do
+> a writer when with pen in hand like a overworked accountant
+> did replace the tables. This sucketh and caused the single
+> lock to fly back and forth like a poor errant boy.
 > 
-> Yes. I forget to change this. But the directory to put aer-inject tar
-> ball is subject to be changed. I am contacting with kernel.org ftp
-> maintainer for appropriate place.
+> But then netfilter was blessed with RCU and the performance
+> was divine, but alas there were those that suffered for
+> trying to replace their many rules one at a time.
+> 
+> So now RCU must be vanquished from the scene, and better
+> chastity belts be placed upon this valuable asset most dear.
+> The locks that were but one are now replaced by one per suitor.
+> 
+> The repair was made after much discussion involving
+> Eric the wise, and Linus the foul. With flowers springing
+> up amid the thorns some peace has finally prevailed and
+> all is soothed. This patch and purple prose was penned by
+> in honor of "Talk like Shakespeare" day.
+> 
+> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+
+
+Philip Davis of the university’s School of English said :
+
+  "Shakespeare surprises the brain and catches it off guard in
+  a manner that produces a sudden burst of activity - a sense 
+  of drama created out of the simplest of things."
+
+http://www.physorg.com/news85664210.html
+
+> 
+> ---
+> What hath changed over the last two setting suns:
+>   * more words, mostly correct...
+> 
+>   * no need to locketh for writeh on current cpu tis 
+>     always so
+> 
+>   * the locking of all cpu's on replace is always done as
+>     part of the get_counters cycle, so the sychronize swip
+>     in replace tables is gone with only a comment remaing
+> 
+>  include/linux/netfilter/x_tables.h |   55 ++++++++++++++--
+>  net/ipv4/netfilter/arp_tables.c    |  125 ++++++++++--------------------------
+>  net/ipv4/netfilter/ip_tables.c     |  126 ++++++++++---------------------------
+>  net/ipv6/netfilter/ip6_tables.c    |  123 ++++++++++--------------------------
+>  net/netfilter/x_tables.c           |   55 ++++++++--------
+>  5 files changed, 188 insertions(+), 296 deletions(-)
 > 
 
-I see.
 
-By the way, thank you for this very nice feature!
+>  
+>  static int __init xt_init(void)
+>  {
+> -	int i, rv;
+> +	unsigned int i;
+> +	int rv;
+> +	static struct lock_class_key xt_lock_key[NR_CPUS];
 
-Thanks,
-Kenji Kaneshige
+Could we avoid this [NR_CPUS] thing ?
 
+> +
+> +	for_each_possible_cpu(i) {
+> +		rwlock_t *lock = &per_cpu(xt_info_locks, i);
+> +
+> +		rwlock_init(lock);
+> +		lockdep_set_class(lock, xt_lock_key+i);
+> +	}
+
+
+Did you tried :
+
+static DECLARE_PER_CPU(struct lock_class_key, xt_locks_key);
+
+static int __init xt_init(void)
+ {
+	unsigned int i;
+	int rv;
+
+	for_each_possible_cpu(i) {
+		rwlock_t *lock = &per_cpu(xt_info_locks, i);
+
+		rwlock_init(lock);
+		lockdep_set_class(lock, &per_cpu(&xt_locks_key, i));
+	}
+...
+
+Thanks
 
