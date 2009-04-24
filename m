@@ -1,102 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbZDXKlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbZDXKra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757607AbZDXKlt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 06:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbZDXKlh
+	id S1757476AbZDXKra (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 06:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZDXKrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 06:41:37 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:41664 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752035AbZDXKlh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 06:41:37 -0400
-Date: Fri, 24 Apr 2009 06:40:39 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
+	Fri, 24 Apr 2009 06:47:22 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:38793 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753145AbZDXKrV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 06:47:21 -0400
+Date: Fri, 24 Apr 2009 11:47:17 +0100
+From: Mel Gorman <mel@csn.ul.ie>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: David Daney <ddaney@caviumnetworks.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Introduce a boolean "single_bit_set" function.
-In-Reply-To: <20090423165723.16c9f566.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0904240632240.16107@localhost.localdomain>
-References: <alpine.LFD.2.00.0904231339080.13089@localhost.localdomain> <49F0C817.8050407@caviumnetworks.com> <20090423165723.16c9f566.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+Cc: linux-mm@kvack.org, kosaki.motohiro@jp.fujitsu.com,
+       cl@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
+       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com,
+       peterz@infradead.org, penberg@cs.helsinki.fi
+Subject: Re: [PATCH 09/22] Calculate the alloc_flags for allocation only
+	once
+Message-ID: <20090424104716.GE14283@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-10-git-send-email-mel@csn.ul.ie> <20090423155216.07ef773e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090423155216.07ef773e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Apr 2009, Andrew Morton wrote:
-
-> On Thu, 23 Apr 2009 12:57:11 -0700
-> David Daney <ddaney@caviumnetworks.com> wrote:
->
-> > > +static inline __attribute__((const))
-> > > +bool single_bit_set(unsigned long n)
-> > > +{
-> > > +        return (n != 0 && ((n & (n - 1)) == 0));
-> > > +}
-> > > +
-> > > +
+On Thu, Apr 23, 2009 at 03:52:16PM -0700, Andrew Morton wrote:
+> On Wed, 22 Apr 2009 14:53:14 +0100
+> Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > Factor out the mapping between GFP and alloc_flags only once. Once factored
+> > out, it only needs to be calculated once but some care must be taken.
+> > 
+> > [neilb@suse.de says]
+> > As the test:
+> > 
+> > -       if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
+> > -                       && !in_interrupt()) {
+> > -               if (!(gfp_mask & __GFP_NOMEMALLOC)) {
+> > 
+> > has been replaced with a slightly weaker one:
+> > 
+> > +       if (alloc_flags & ALLOC_NO_WATERMARKS) {
+> > 
+> > Without care, this would allow recursion into the allocator via direct
+> > reclaim. This patch ensures we do not recurse when PF_MEMALLOC is set
+> > but TF_MEMDIE callers are now allowed to directly reclaim where they
+> > would have been prevented in the past.
+> > 
+> > ...
 > >
-> >
-> > It would be nice to be able to override this per architecture.
-> >
-> > For example a more efficient implementation on CPUs that have a
-> > population count instruction (__builtin_popcountl()) might be:
-> >
-> > static inline __attribute__((const))
-> > bool singe_bit_set(unsigned long n)
-> > {
-> > 	return __builtin_popcountl(n) == 1;
-> > }
->
-> Already done, via hweight_long().
+> > +static inline int
+> > +gfp_to_alloc_flags(gfp_t gfp_mask)
+> > +{
+> > +	struct task_struct *p = current;
+> > +	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
+> > +	const gfp_t wait = gfp_mask & __GFP_WAIT;
+> > +
+> > +	/*
+> > +	 * The caller may dip into page reserves a bit more if the caller
+> > +	 * cannot run direct reclaim, or if the caller has realtime scheduling
+> > +	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
+> > +	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
+> > +	 */
+> > +	if (gfp_mask & __GFP_HIGH)
+> > +		alloc_flags |= ALLOC_HIGH;
+> > +
+> > +	if (!wait) {
+> > +		alloc_flags |= ALLOC_HARDER;
+> > +		/*
+> > +		 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
+> > +		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
+> > +		 */
+> > +		alloc_flags &= ~ALLOC_CPUSET;
+> > +	} else if (unlikely(rt_task(p)))
+> > +		alloc_flags |= ALLOC_HARDER;
+> > +
+> > +	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+> > +		if (!in_interrupt() &&
+> > +		    ((p->flags & PF_MEMALLOC) ||
+> > +		     unlikely(test_thread_flag(TIF_MEMDIE))))
+> > +			alloc_flags |= ALLOC_NO_WATERMARKS;
+> > +	}
+> > +
+> > +	return alloc_flags;
+> > +}
+> 
+> hm.  Was there a particular reason for the explicit inline?
+> 
 
-  so it would be a simple matter to define the bit set boolean in
-terms of hweight_long(), yes?  so what about, in bitops.h:
+Only because it was known there was only one caller.
 
-  static inline bool
-  exactly_one_bit_set(unsigned long w)
-  {
-	return hweight_long(w) == 1;
-  }
+> It's OK as it stands, but might become suboptimal if we later add a
+> second caller?
+> 
 
-  static inline bool
-  more_than_one_bit_set(unsigned long w)
-  {
-	return hweight_long(w) > 1;
-  }
+This is true. As it is also in the slowpath and only called once, the
+following patch should make no difference to performance but potentially
+avoid a mistake later.
 
-or something to that effect, *if* people think it's worth it.
-obviously, none of the above is strictly necessary, but it would make
-a lot of code semantically cleaner.
+=======
+Uninline gfp_to_alloc_flags() in the page allocator slow path
 
+gfp_to_alloc_flags() is in the slowpath but inlined. While there is only one
+caller now, a future second call would add suprising text-bloat. Uninline
+it now to avoid surprises later as it should have no performance impact.
 
-rday
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ mm/page_alloc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-p.s.  i notice that, even in a single header file like bitops.h, there
-is a mixture of both "inline" and "__inline__".  what's the
-recommended choice these days?
-
---
-
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 1c60141..f08b4cb 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1639,7 +1639,7 @@ void wake_all_kswapd(unsigned int order, struct zonelist *zonelist,
+ 		wakeup_kswapd(zone, order);
+ }
+ 
+-static inline int
++static int
+ gfp_to_alloc_flags(gfp_t gfp_mask)
+ {
+ 	struct task_struct *p = current;
