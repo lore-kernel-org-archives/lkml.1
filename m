@@ -1,83 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757634AbZDXIbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbZDXIcK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757634AbZDXIbo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 04:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbZDXIb2
+	id S1758759AbZDXIcK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 04:32:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbZDXIbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 04:31:28 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:32818 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752047AbZDXIb0 (ORCPT
+	Fri, 24 Apr 2009 04:31:52 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:32895 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756029AbZDXIbu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 04:31:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Do0RksOGE7bvaCLyptWk1m1Vr9TMRPhRcLPaqEVQsLTX5dVfRn3rA4KD8keuE4yCnJ
-         WKNpl79xS/xrqfySbMWNlbsnY7NyPdqD4DhFWulwj/By840mTBw92LIlAsPj8O+LIZHr
-         rj/xqwB0BAcWq133bAN34cGle4LKSaxq7HZN0=
-Date: Fri, 24 Apr 2009 10:31:21 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
-       fchecconi@gmail.com, paolo.valente@unimore.it,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/7] page_cgroup: provide a generic page tracking
-	infrastructure
-Message-ID: <20090424083116.GB8535@linux>
-References: <1240090712-1058-1-git-send-email-righi.andrea@gmail.com> <1240090712-1058-4-git-send-email-righi.andrea@gmail.com> <49F11FBD.3070705@cn.fujitsu.com>
-MIME-Version: 1.0
+	Fri, 24 Apr 2009 04:31:50 -0400
+Date: Fri, 24 Apr 2009 10:35:32 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Huang Ying <ying.huang@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [PATCH] [4/4] x86: MCE: Fix EIPV behaviour with !PCC
+Message-ID: <20090424083532.GF13896@one.firstfloor.org>
+References: <20090407506.675031434@firstfloor.org> <20090407150657.61C4E1D046E@basil.firstfloor.org> <1240479838.6842.555.camel@yhuang-dev.sh.intel.com> <49F0D45D.3000706@zytor.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49F11FBD.3070705@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49F0D45D.3000706@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 10:11:09AM +0800, Gui Jianfeng wrote:
-> Andrea Righi wrote:
-> > Dirty pages in the page cache can be processed asynchronously by kernel
-> > threads (pdflush) using a writeback policy. For this reason the real
-> > writes to the underlying block devices occur in a different IO context
-> > respect to the task that originally generated the dirty pages involved
-> > in the IO operation. This makes the tracking and throttling of writeback
-> > IO more complicate respect to the synchronous IO.
-> > 
-> > The page_cgroup infrastructure, currently available only for the memory
-> > cgroup controller, can be used to store the owner of each page and
-> > opportunely track the writeback IO. This information is encoded in
-> > page_cgroup->flags.
+On Thu, Apr 23, 2009 at 01:49:33PM -0700, H. Peter Anvin wrote:
+> Huang Ying wrote:
+> >Add some description for the patch, hope that to be more clear.
 > 
->   You encode id in page_cgroup->flags, if a cgroup get removed, IMHO, you
->   should remove the corresponding id in flags.
+> The patch description makes sense.  I cannot, however, make head or tail 
+> out of the subject line or how it is related to the patch at all?
+> 
+> I have rewritten it to "always panic on tolerant == 0", ok with everyone?
 
-OK, the same same ID could be reused by another cgroup. I think this
-should happen very rarely because IDs are recovered slowly anyway.
+Ok for me.
 
-What about simply executing a sys_sync() when a io-throttle cgroup is
-removed? If we're going to remove a cgroup no additional dirty page will
-be generated by this cgroup, because it must be empty. And the sync
-would allow that old dirty pages will be flushed back to disk (for those
-pages the cgroup ID will be simply ignored).
+-Andi
 
->   One more thing, if a task is moving from a cgroup to another, the id in
->   flags also need to be changed.
-
-I do not agree here. Even if a task is moving from a cgroup to another
-the cgroup that generated the dirty page is always the old one. Remember
-that we want to save cgroup's identity in this case, and not the task.
-
-Thanks,
--Andrea
+-- 
+ak@linux.intel.com -- Speaking for myself only.
