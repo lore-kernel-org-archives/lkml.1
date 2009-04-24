@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbZDXOnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbZDXOrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760023AbZDXOnk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 10:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbZDXOnb
+	id S1756067AbZDXOrU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 10:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbZDXOrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 10:43:31 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:36951 "EHLO
+	Fri, 24 Apr 2009 10:47:03 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:34590 "EHLO
 	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753969AbZDXOna (ORCPT
+	with ESMTP id S1750992AbZDXOrB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 10:43:30 -0400
-Date: Fri, 24 Apr 2009 18:43:27 +0400
+	Fri, 24 Apr 2009 10:47:01 -0400
+Date: Fri, 24 Apr 2009 18:46:58 +0400
 From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Richard Henderson <rth@twiddle.net>, linux-kernel@vger.kernel.org
-Subject: [PATCH] alpha: exception table sorting
-Message-ID: <20090424144327.GB32087@jurassic.park.msu.ru>
+Subject: [PATCH] alpha: futex implementation
+Message-ID: <20090424144658.GC32087@jurassic.park.msu.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,91 +24,152 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Exception fixups for sections other than .text (like one in
-futex_init()) break the natural ordering of fixup entries,
-so sorting is required.
-
-Without that the result of the exception table search depends
-on phase of the moon.
-
 Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 ---
- arch/alpha/include/asm/uaccess.h |    2 +
- arch/alpha/mm/extable.c          |   40 +++++++++++++++++++++++++++++++++++++-
- 2 files changed, 41 insertions(+), 1 deletions(-)
+ arch/alpha/include/asm/barrier.h |    2 +
+ arch/alpha/include/asm/futex.h   |  118 ++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 116 insertions(+), 4 deletions(-)
 
-diff --git a/arch/alpha/include/asm/uaccess.h b/arch/alpha/include/asm/uaccess.h
-index 163f305..b49ec2f 100644
---- a/arch/alpha/include/asm/uaccess.h
-+++ b/arch/alpha/include/asm/uaccess.h
-@@ -507,5 +507,7 @@ struct exception_table_entry
- 	(pc) + (_fixup)->fixup.bits.nextinsn;			\
- })
+diff --git a/arch/alpha/include/asm/barrier.h b/arch/alpha/include/asm/barrier.h
+index ac78eba..ce8860a 100644
+--- a/arch/alpha/include/asm/barrier.h
++++ b/arch/alpha/include/asm/barrier.h
+@@ -16,11 +16,13 @@ __asm__ __volatile__("wmb": : :"memory")
+ __asm__ __volatile__("mb": : :"memory")
  
-+#define ARCH_HAS_SORT_EXTABLE
-+#define ARCH_HAS_SEARCH_EXTABLE
+ #ifdef CONFIG_SMP
++#define __ASM_SMP_MB	"\tmb\n"
+ #define smp_mb()	mb()
+ #define smp_rmb()	rmb()
+ #define smp_wmb()	wmb()
+ #define smp_read_barrier_depends()	read_barrier_depends()
+ #else
++#define __ASM_SMP_MB
+ #define smp_mb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+diff --git a/arch/alpha/include/asm/futex.h b/arch/alpha/include/asm/futex.h
+index 6a332a9..945de22 100644
+--- a/arch/alpha/include/asm/futex.h
++++ b/arch/alpha/include/asm/futex.h
+@@ -1,6 +1,116 @@
+-#ifndef _ASM_FUTEX_H
+-#define _ASM_FUTEX_H
++#ifndef _ASM_ALPHA_FUTEX_H
++#define _ASM_ALPHA_FUTEX_H
  
- #endif /* __ALPHA_UACCESS_H */
-diff --git a/arch/alpha/mm/extable.c b/arch/alpha/mm/extable.c
-index dc7aeda..62dc379 100644
---- a/arch/alpha/mm/extable.c
-+++ b/arch/alpha/mm/extable.c
-@@ -3,11 +3,49 @@
-  */
+-#include <asm-generic/futex.h>
++#ifdef __KERNEL__
  
- #include <linux/module.h>
-+#include <linux/sort.h>
- #include <asm/uaccess.h>
- 
-+static inline unsigned long ex_to_addr(const struct exception_table_entry *x)
+-#endif
++#include <linux/futex.h>
++#include <linux/uaccess.h>
++#include <asm/errno.h>
++#include <asm/barrier.h>
++
++#define __futex_atomic_op(insn, ret, oldval, uaddr, oparg)	\
++	__asm__ __volatile__(					\
++		__ASM_SMP_MB					\
++	"1:	ldl_l	%0,0(%2)\n"				\
++		insn						\
++	"2:	stl_c	%1,0(%2)\n"				\
++	"	beq	%1,4f\n"				\
++	"	mov	$31,%1\n"				\
++	"3:	.subsection 2\n"				\
++	"4:	br	1b\n"					\
++	"	.previous\n"					\
++	"	.section __ex_table,\"a\"\n"			\
++	"	.long	1b-.\n"					\
++	"	lda	$31,3b-1b(%1)\n"			\
++	"	.long	2b-.\n"					\
++	"	lda	$31,3b-2b(%1)\n"			\
++	"	.previous\n"					\
++	:	"=&r" (oldval), "=&r"(ret)			\
++	:	"r" (uaddr), "r"(oparg)				\
++	:	"memory")
++
++static inline int futex_atomic_op_inuser (int encoded_op, int __user *uaddr)
 +{
-+	return (unsigned long)&x->insn + x->insn;
++	int op = (encoded_op >> 28) & 7;
++	int cmp = (encoded_op >> 24) & 15;
++	int oparg = (encoded_op << 8) >> 20;
++	int cmparg = (encoded_op << 20) >> 20;
++	int oldval = 0, ret;
++	if (encoded_op & (FUTEX_OP_OPARG_SHIFT << 28))
++		oparg = 1 << oparg;
++
++	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(int)))
++		return -EFAULT;
++
++	pagefault_disable();
++
++	switch (op) {
++	case FUTEX_OP_SET:
++		__futex_atomic_op("mov %3,%1\n", ret, oldval, uaddr, oparg);
++		break;
++	case FUTEX_OP_ADD:
++		__futex_atomic_op("addl %0,%3,%1\n", ret, oldval, uaddr, oparg);
++		break;
++	case FUTEX_OP_OR:
++		__futex_atomic_op("or %0,%3,%1\n", ret, oldval, uaddr, oparg);
++		break;
++	case FUTEX_OP_ANDN:
++		__futex_atomic_op("andnot %0,%3,%1\n", ret, oldval, uaddr, oparg);
++		break;
++	case FUTEX_OP_XOR:
++		__futex_atomic_op("xor %0,%3,%1\n", ret, oldval, uaddr, oparg);
++		break;
++	default:
++		ret = -ENOSYS;
++	}
++
++	pagefault_enable();
++
++	if (!ret) {
++		switch (cmp) {
++		case FUTEX_OP_CMP_EQ: ret = (oldval == cmparg); break;
++		case FUTEX_OP_CMP_NE: ret = (oldval != cmparg); break;
++		case FUTEX_OP_CMP_LT: ret = (oldval < cmparg); break;
++		case FUTEX_OP_CMP_GE: ret = (oldval >= cmparg); break;
++		case FUTEX_OP_CMP_LE: ret = (oldval <= cmparg); break;
++		case FUTEX_OP_CMP_GT: ret = (oldval > cmparg); break;
++		default: ret = -ENOSYS;
++		}
++	}
++	return ret;
 +}
 +
-+static void swap_ex(void *a, void *b, int size)
++static inline int
++futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval, int newval)
 +{
-+	struct exception_table_entry *ex_a = a, *ex_b = b;
-+	unsigned long addr_a = ex_to_addr(ex_a), addr_b = ex_to_addr(ex_b);
-+	unsigned int t = ex_a->fixup.unit;
++	int prev, cmp;
 +
-+	ex_a->fixup.unit = ex_b->fixup.unit;
-+	ex_b->fixup.unit = t;
-+	ex_a->insn = (int)(addr_b - (unsigned long)&ex_a->insn);
-+	ex_b->insn = (int)(addr_a - (unsigned long)&ex_b->insn);
++	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(int)))
++		return -EFAULT;
++
++	__asm__ __volatile__ (
++		__ASM_SMP_MB
++	"1:	ldl_l	%0,0(%2)\n"
++	"	cmpeq	%0,%3,%1\n"
++	"	beq	%1,3f\n"
++	"	mov	%4,%1\n"
++	"2:	stl_c	%1,0(%2)\n"
++	"	beq	%1,4f\n"
++	"3:	.subsection 2\n"
++	"4:	br	1b\n"
++	"	.previous\n"
++	"	.section __ex_table,\"a\"\n"
++	"	.long	1b-.\n"
++	"	lda	$31,3b-1b(%0)\n"
++	"	.long	2b-.\n"
++	"	lda	$31,3b-2b(%0)\n"
++	"	.previous\n"
++	:	"=&r"(prev), "=&r"(cmp)
++	:	"r"(uaddr), "r"((long)oldval), "r"(newval)
++	:	"memory");
++
++	return prev;
 +}
 +
-+/*
-+ * The exception table needs to be sorted so that the binary
-+ * search that we use to find entries in it works properly.
-+ * This is used both for the kernel exception table and for
-+ * the exception tables of modules that get loaded.
-+ */
-+static int cmp_ex(const void *a, const void *b)
-+{
-+	const struct exception_table_entry *x = a, *y = b;
-+
-+	/* avoid overflow */
-+	if (ex_to_addr(x) > ex_to_addr(y))
-+		return 1;
-+	if (ex_to_addr(x) < ex_to_addr(y))
-+		return -1;
-+	return 0;
-+}
-+
- void sort_extable(struct exception_table_entry *start,
- 		  struct exception_table_entry *finish)
- {
-+	sort(start, finish - start, sizeof(struct exception_table_entry),
-+	     cmp_ex, swap_ex);
- }
- 
- const struct exception_table_entry *
-@@ -20,7 +58,7 @@ search_extable(const struct exception_table_entry *first,
- 		unsigned long mid_value;
- 
- 		mid = (last - first) / 2 + first;
--		mid_value = (unsigned long)&mid->insn + mid->insn;
-+		mid_value = ex_to_addr(mid);
-                 if (mid_value == value)
-                         return mid;
-                 else if (mid_value < value)
++#endif /* __KERNEL__ */
++#endif /* _ASM_ALPHA_FUTEX_H */
