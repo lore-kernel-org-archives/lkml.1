@@ -1,131 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbZDXUo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbZDXUr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757755AbZDXUo2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 16:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730AbZDXUoP
+	id S1756848AbZDXUr2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 16:47:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZDXUrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 16:44:15 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:60482 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753180AbZDXUoO (ORCPT
+	Fri, 24 Apr 2009 16:47:18 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:39816 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754211AbZDXUrR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 16:44:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        b=T+beGT4cIIpZ6jSIA7Tl0OdlU30cOAvMVISJxUopCrNYVD5H4QK2zTqPL+TuOG+re6
-         lCVokD8ZBRdU+MmyyrIJM2x7tpYnwSG2fA9wGE2p09/MZa9UU/V1ZsL2EluuGz1/o0XP
-         CyFXcDOPl/PCwkt9zRcX1WJJeKkF8cNzzc0Mc=
-Message-ID: <49F22465.80305@gmail.com>
-Date: Fri, 24 Apr 2009 22:43:17 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 24 Apr 2009 16:47:17 -0400
+From: Christian Lamparter <chunkeey@web.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: linux-next: Tree for April 24 (p54 build error) (and pull request: wireless-next-2.6 2009-04-24)
+Date: Fri, 24 Apr 2009 22:47:14 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-wl; KDE/4.2.2; x86_64; ; )
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       davem@davemloft.net
+References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au> <49F1FD4B.2020909@oracle.com>
+In-Reply-To: <49F1FD4B.2020909@oracle.com>
 MIME-Version: 1.0
-Newsgroups: gmane.comp.security.firewalls.netfilter.devel,gmane.linux.kernel,gmane.linux.network
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: Eric Dumazet <dada1@cosmosbay.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
-       David Miller <davem@davemloft.net>, kaber@trash.net,
-       jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com, jengelh@medozas.de,
-       r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH]  netfilter: use per-CPU recursive lock {XIV}
-References: <20090418094001.GA2369@ioremap.net>	<20090418141455.GA7082@linux.vnet.ibm.com>	<20090420103414.1b4c490f@nehalam>	<49ECBE0A.7010303@cosmosbay.com>	<18924.59347.375292.102385@cargo.ozlabs.ibm.com>	<20090420215827.GK6822@linux.vnet.ibm.com>	<18924.64032.103954.171918@cargo.ozlabs.ibm.com>	<20090420160121.268a8226@nehalam>	<alpine.LFD.2.00.0904210831560.2199@localhost.localdomain>	<20090421111541.228e977a@nehalam>	<20090421193924.GA24404@elte.hu>	<20090421143927.52d7d89d@nehalam>	<alpine.LFD.2.00.0904220821240.3101@localhost.localdomain>	<20090423210938.1501507b@nehalam>	<49F146FF.5050200@cosmosbay.com> <20090424091839.6e13ebec@nehalam>
-In-Reply-To: <20090424091839.6e13ebec@nehalam>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904242247.15042.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX18ZZjc59irCXv0RK5Z4IPi/onAAvhLZZzwHiB6j
+	SwsHVgNYpdVyBfoHY3ctutKg5BX0iV2Br2PHeGKBqE4hWt+uMs
+	r8PZ0x9Is=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote, On 04/24/2009 06:18 PM:
-
-> On Fri, 24 Apr 2009 06:58:39 +0200
-> Eric Dumazet <dada1@cosmosbay.com> wrote:
+On Friday 24 April 2009 19:56:27 Randy Dunlap wrote:
 > 
->> Stephen Hemminger a écrit :
->>> In days of old in 2.6.29, netfilter did locketh using a 
->>> lock of the reader kind when doing its table business, and do
->>> a writer when with pen in hand like a overworked accountant
->>> did replace the tables. This sucketh and caused the single
->>> lock to fly back and forth like a poor errant boy.
->>>
->>> But then netfilter was blessed with RCU and the performance
->>> was divine, but alas there were those that suffered for
->>> trying to replace their many rules one at a time.
->>>
->>> So now RCU must be vanquished from the scene, and better
->>> chastity belts be placed upon this valuable asset most dear.
->>> The locks that were but one are now replaced by one per suitor.
->>>
->>> The repair was made after much discussion involving
->>> Eric the wise, and Linus the foul. With flowers springing
->>> up amid the thorns some peace has finally prevailed and
->>> all is soothed. This patch and purple prose was penned by
->>> in honor of "Talk like Shakespeare" day.
->>>
->>> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
->>
->> Philip Davis of the university’s School of English said :
->>
->>   "Shakespeare surprises the brain and catches it off guard in
->>   a manner that produces a sudden burst of activity - a sense 
->>   of drama created out of the simplest of things."
->>
->> http://www.physorg.com/news85664210.html
->>
->>> ---
->>> What hath changed over the last two setting suns:
->>>   * more words, mostly correct...
->>>
->>>   * no need to locketh for writeh on current cpu tis 
->>>     always so
->>>
->>>   * the locking of all cpu's on replace is always done as
->>>     part of the get_counters cycle, so the sychronize swip
->>>     in replace tables is gone with only a comment remaing
->>>
->>>  include/linux/netfilter/x_tables.h |   55 ++++++++++++++--
->>>  net/ipv4/netfilter/arp_tables.c    |  125 ++++++++++--------------------------
->>>  net/ipv4/netfilter/ip_tables.c     |  126 ++++++++++---------------------------
->>>  net/ipv6/netfilter/ip6_tables.c    |  123 ++++++++++--------------------------
->>>  net/netfilter/x_tables.c           |   55 ++++++++--------
->>>  5 files changed, 188 insertions(+), 296 deletions(-)
->>>
->>
->>>  
->>>  static int __init xt_init(void)
->>>  {
->>> -	int i, rv;
->>> +	unsigned int i;
->>> +	int rv;
->>> +	static struct lock_class_key xt_lock_key[NR_CPUS];
->> Could we avoid this [NR_CPUS] thing ?
->>
->>> +
->>> +	for_each_possible_cpu(i) {
->>> +		rwlock_t *lock = &per_cpu(xt_info_locks, i);
->>> +
->>> +		rwlock_init(lock);
->>> +		lockdep_set_class(lock, xt_lock_key+i);
->>> +	}
->>
->> Did you tried :
->>
->> static DECLARE_PER_CPU(struct lock_class_key, xt_locks_key);
->>
+> drivers/net/wireless/p54/p54.h:193: error: array type has incomplete element type
 > 
-> The lock keys are really only used by lock dep, and I thought per cpu
-> space was more scarce on some arch.
+> struct p54_led_dev definition is controlled by
+> #ifdef CONFIG_P54_LEDS (is not set)
 > 
+> but the struct declaration is controlled by
+> #ifdef CONFIG_MAC80211_LEDS (=y)
+> 
+meh, [p54: more SoftLED updates] broke it
+( dce072580e095d1fb7be59a1be30dc0e8307821b )
 
-Maybe I'm wrong but after this change: "- only acquire one cpu write
-lock at a time" lockdep_set_class() might be unnecessary. Alas I'm
-not able to test it.
+this also affects "pull request: wireless-next-2.6 2009-04-24"
 
-Jarek P.
+and the current wireless-testing!
+
+however the patches on the linux-wireless are all fine?!
+(see: http://osdir.com/ml/linux-wireless/2009-03/msg01240.html )
+
+I guess there was merge conflict with [p54: more SoftLED updates] 
+and [p54: replace MAC80211_LEDS with P54_LEDS in p54.h] ?
+
+Regards,
+	Chr
+---
+In case someone want to fix it manually... here's the undo:
+---
+diff --git a/drivers/net/wireless/p54/p54.h b/drivers/net/wireless/p54/p54.h
+index 7fda1a9..db3df94 100644
+--- a/drivers/net/wireless/p54/p54.h
++++ b/drivers/net/wireless/p54/p54.h
+@@ -189,10 +189,10 @@ struct p54_common {
+ 	unsigned long *used_rxkeys;
+ 
+ 	/* LED management */
+-#ifdef CONFIG_MAC80211_LEDS
++#ifdef CONFIG_P54_LEDS
+ 	struct p54_led_dev leds[4];
+ 	struct delayed_work led_work;
+-#endif /* CONFIG_MAC80211_LEDS */
++#endif /* CONFIG_P54_LEDS */
+ 	u16 softled_state;		/* bit field of glowing LEDs */
+ 
+ 	/* statistics */
