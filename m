@@ -1,63 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbZDXXDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbZDXXKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758906AbZDXXDS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 19:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbZDXXDA
+	id S1754938AbZDXXKe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 19:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZDXXKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 19:03:00 -0400
-Received: from kroah.org ([198.145.64.141]:50225 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753837AbZDXXC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 19:02:59 -0400
-Date: Fri, 24 Apr 2009 15:51:22 -0700
-From: Greg KH <greg@kroah.com>
-To: Alessio Igor Bogani <abogani@texware.it>
-Cc: Ian Abbott <abbotti@mev.co.uk>,
-       Frank Mori Hess <fmhess@users.sourceforge.net>,
-       David Schleef <ds@schleef.org>, LKML <linux-kernel@vger.kernel.org>,
-       Comedi-ml <comedi_list@googlegroups.com>
-Subject: Re: RFC about Comedi on a patch that remove a lot fo code
-Message-ID: <20090424225122.GB3343@kroah.com>
-References: <63a49ef40904240228g6a28ba8dsf63d2e0bdc6b57d9@mail.gmail.com>
+	Fri, 24 Apr 2009 19:10:21 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:49634 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751437AbZDXXKS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 19:10:18 -0400
+X-IronPort-AV: E=Sophos;i="4.40,244,1238976000"; 
+   d="scan'208";a="292564449"
+Date: Fri, 24 Apr 2009 16:10:13 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Wait for console to become available, v3.2
+Message-ID: <20090424231013.GA18340@cuplxvomd02.corp.sa.net>
+References: <20090424003555.GA31173@cuplxvomd02.corp.sa.net> <Pine.LNX.4.44L0.0904241502440.4531-100000@iolanthe.rowland.org> <20090424213238.GA5973@cuplxvomd02.corp.sa.net> <20090424221951.GC18260@shareable.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <63a49ef40904240228g6a28ba8dsf63d2e0bdc6b57d9@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090424221951.GC18260@shareable.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 11:28:28AM +0200, Alessio Igor Bogani wrote:
-> Dear Comedi developers,
+On Fri, Apr 24, 2009 at 11:19:51PM +0100, Jamie Lokier wrote:
+> David VomLehn wrote:
+> > > This looks like a good plan and not hard to implement.  It even should 
+> > > be possible to fit USB disk drives into the scheme.
+> > 
+> > That would definitely rock. 
 > 
-> Sorry for my bad english.
+> How about this, perhaps in the generic device model:
 > 
-> I would be happy to receive your considerations about that patch:
+>   1. Whenever a device's existence is detected by its parent bus,
+>      add the device id to a pool of "potential devices worth waiting for".
 > 
-> http://marc.info/?l=linux-next&m=123792129500760&w=2
+>   2. Whenever a device is registered, remove that device id from the pool.
 > 
-> I know that some users use Comedi on dual kernel approach systems.
-> Obviously I don't have any against this but i think that Linux git
-> tree isn't the right place to support those software (RTAI, Xenomai,
-> RTLinux and others). Those projects already released patches against
-> Linux source code so it very easy for them add also patch for Comedi
-> drivers in the same tarball.
+>   3. Whenever a device is itself a bus, or has subdevices or
+>      attributes to be discovered, it triggers step 1 for all devices
+>      found by enumeration (or in the case of USB, whatever you have to
+>      wait for).  Then the bus can declare itself initialised.
+>  
+>   4. The top-level enumeration behaves as though there was a root bus,
+>      onto which the real buses like PCI etc. are attached as in step 3.
 > 
-> At the already listed 8 reasons  in that email I want added a ninth one:
-> 9) Give more chance for interested developers to fix it against RT_PREEMPT
-> http://marc.info/?l=linux-rt-users&m=124049407712792&w=2
+>   5. Waiting for console / boot device / userspace waiting for other
+>      mount points all check this pool for device ids of matching type.
+> In this, the pool serves the same role as Alan Stern's global counter,
+> the difference being you can wait for particular types of device when
+> you need to, and this is more explicit about how a hierarchy is handled.
+> 
+> Device ids in this pool are simply "category" values for what the
+> device is relevant to - and a waitqueue.  If a PCI device is a serial
+> port, then goes into category "serial port", because it's relevant if
+> serial console is requested on the boot command line.
+> 
+> When waiting for a newly powered USB bus to settle, you may get
+> notification of all devices on it, but you might not know enough about
+> each device until the individual drivers start fetching descriptors.
+> Then you can either make every device go temporarily into the pool,
+> much as if it were a little bus itself, until it has detailed
+> information about what type of device it is.  Or you can wait until
+> all those devices have fetched descriptors before the USB bus declares
+> that its enumeration is complete and removes its own id.
 
-I am siding with you, and agree all of the RT stuff should be deleted
-from the in-kernel comedi code, as there is on in-kernel users of it.
+I think this is over-engineered. This focused on boot devices, so you really
+don't care about things like buses, and I don't perceive a broader use. What
+really matters is particular boot device types, wherever they came from.
 
-Also, the recent Linux RT changes will not need any of these
-driver-specific changes at all from what I can tell, so they are now
-obsolete.
+I'm just about to send out an RFC patch. It may work, but it sure hasn't been
+tested (so we can actually be sure it doesn't work) and it is not integrated
+with any bus. Following it will be a patch to handle the specific case of a
+console, but even this is not intended for use.
 
-Frank, unless you have any major objections, I'd like to remove this
-code.
+I've been thinking about the issue of handling device classes because, as you
+clearly understand, distingishing between them can give you finer granularity
+during boot initialization. There are really three possible steps:
+1. Discover a device exists.
+2. Discover the device type
+3. Completion of the probe function for the device.
 
-thanks,
+The existing code is great if the interval between 1 and 2, or 2 and 3, is
+nearly zero. In the first case, you do nothing at step 1 and at step 2 you
+indicate that a boot device of the given type it found. In the second case,
+you indicate that you have found a device of unknown type was found (passing
+BOOTDEV_ANY_MASK) at step 1, ignore the information at step 2, and report
+completion of the probe for a generic device type at step 3 (again passing
+BOOTDEV_ANY_MASK).
 
-greg k-h
+There is one additional possibility, that there is a significant amount of time
+that passes between steps 1, 2, and 3. The existing interfaces already handle
+that, but I'm thinking a clearer interface is in order. The key is that, when
+you indicate a possible boot device was found, and when you indicate the
+completion of probing, you are actually passing a mask of boot device types.
+
+Say that the device is actually a console, my favorite example. In this case,
+you'd pass BOOTDEV_ANY_MASK to bootdev_found at step 1, indicating that you
+don't really know the device type. This increments the pending count for all
+boot device types. At step 2, you find out you have a console, so you pass
+BOOTDEV_ANY_MASK & ~BOOTDEV_CONSOLE_MASK to bootdev_probe_done. This decrements
+the pending count for all device types except consoles. Then, at step 3, you
+call bootdev_probe_done with BOOTDEV_CONSOLE_MASK. Which decrements the pending
+count for console devices and wakes up any waiters.
+
+This is useful functionality only if we have cases where the intervals between
+each of the three steps is significant. If so, then my approach is to add a
+function:
+	void bootdev_type_found(int old_mask, enum bootdev_type type);
+which is passed the mask that was passed to bootdev_found and the type the
+device is now known to be. Implementation-wise, all it really does, then, is
+to call bootdev_probe_done:
+	bootdev_probe_done(old_mask & ~(1 << type));
+This would be a cleaner interface than calling bootdev_probe_done twice..
+
+The key question is, are there cases where there is enough time between steps
+1 and 2, and steps 2 and 3, to add this complexity? If not, let's skip it.
+
+> -- Jamie
+
+David VomLehn
