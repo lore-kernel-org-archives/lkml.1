@@ -1,253 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbZDXLsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbZDXLso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755153AbZDXLsZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 07:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZDXLsQ
+	id S1756559AbZDXLso (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 07:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZDXLsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 07:48:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59943 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752230AbZDXLsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 07:48:15 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090423165546.GA7117@redhat.com>
-References: <20090423165546.GA7117@redhat.com> <1239649429.16771.9.camel@heimdal.trondhjem.org> <20090413181733.GA10424@redhat.com> <32260.1239658818@redhat.com> <20090413214852.GA1127@redhat.com> <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com> <14561.1239873018@redhat.com> <21239.1240407420@redhat.com> <5591.1240417398@redhat.com> <21209.1240504344@redhat.com> 
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: dhowells@redhat.com, Ingo Molnar <mingo@elte.hu>, torvalds@osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>, serue@us.ibm.com,
-       viro@zeniv.linux.org.uk,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] It may not be assumed that wake_up(), finish_wait() and co. imply a memory barrier
-Date: Fri, 24 Apr 2009 12:46:41 +0100
-Message-ID: <26028.1240573601@redhat.com>
+	Fri, 24 Apr 2009 07:48:33 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:39782 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754108AbZDXLsc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 07:48:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=NXaZHD9oAcOBr6EP+E68PClt1eYHIiaCeuPv7HVr3SYh6/9iLzttIqGuZvySl6cgnz
+         2nQn+pJQKlKu89W4+KUC+jUqO87wcI/b5jGtW/JMu26Bw/l58lHM4sVEyyMU0YjWnG6S
+         XhkpuScv7riSGWqhJEMz9pNik8M05m83l87/8=
+MIME-Version: 1.0
+Date: Fri, 24 Apr 2009 13:48:31 +0200
+Message-ID: <40a4ed590904240448r6aead083m73c866ab76532c65@mail.gmail.com>
+Subject: Kernel 2.6.29 runs out of memory and hangs. V1.1
+From: Zeno Davatz <zdavatz@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Hannes Wyss <hwyss@ywesee.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@redhat.com> wrote:
+Before I rebooted the machine, we also got these messages. The machine
+basically just hung and when I typed from the keyboard it would not
+show on the screen:
 
-> Well. I am starting to suspect I missed something, but I disagree. Or I just
-> (this is very possible) misunderstand the above.
+Apr 24 09:01:06 thinpower [1349923.492053] Node 0 Normal per-cpu:
+Apr 24 09:01:06 thinpower [1349923.492055] CPU    0: hi:  186, btch:
+31 usd:  50
+Apr 24 09:01:06 thinpower [1349923.492056] CPU    1: hi:  186, btch:
+31 usd:  20
+Apr 24 09:01:06 thinpower [1349923.492057] CPU    2: hi:  186, btch:
+31 usd:  42
+Apr 24 09:01:06 thinpower [1349923.492059] CPU    3: hi:  186, btch:
+31 usd: 124
+Apr 24 09:01:06 thinpower [1349923.492060] CPU    4: hi:  186, btch:
+31 usd: 104
+Apr 24 09:01:06 thinpower [1349923.492061] CPU    5: hi:  186, btch:
+31 usd:  95
+Apr 24 09:01:06 thinpower [1349923.492062] CPU    6: hi:  186, btch:
+31 usd: 178
+Apr 24 09:01:06 thinpower [1349923.492064] CPU    7: hi:  186, btch:
+31 usd:  60
+Apr 24 09:01:06 thinpower [1349923.492066] Active_anon:7595417
+active_file:641 inactive_anon:551929
+Apr 24 09:01:06 thinpower [1349923.492067]  inactive_file:5122
+unevictable:0 dirty:0 writeback:0 unstable:0
+Apr 24 09:01:06 thinpower [1349923.492068]  free:39401 slab:12443
+mapped:1801 pagetables:22566 bounce:0
+Apr 24 09:01:06 thinpower [1349923.492069] Node 0 DMA free:15700kB
+min:8kB low:8kB high:12kB active_anon:0kB inactive_anon:0kB
+active_file:0kB inactive_file:0kB unevictable:0kB present:15156kB
+pages_scanned:0 all_unreclaimable? yes
+Apr 24 09:01:06 thinpower [1349923.492073] lowmem_reserve[]: 0 3255 32292 32292
+Apr 24 09:01:06 thinpower [1349923.492076] Node 0 DMA32 free:118848kB
+min:2316kB low:2892kB high:3472kB active_anon:2265276kB
+inactive_anon:452944kB active_file:4kB inactive_file:0kB
+unevictable:0kB present:3333280kB pages_scanned:2692832
+all_unreclaimable? no
+Apr 24 09:01:06 thinpower [1349923.492080] lowmem_reserve[]: 0 0 29037 29037
+Apr 24 09:01:06 thinpower [1349923.492082] Node 0 Normal free:23056kB
+min:20672kB low:25840kB high:31008kB active_anon:28116392kB
+inactive_anon:1754772kB active_file:2560kB inactive_file:20488kB
+unevictable:0kB present:29734400kB pages_scanned:77696
+all_unreclaimable? no
+Apr 24 09:01:06 thinpower [1349923.492086] lowmem_reserve[]: 0 0 0 0
+Apr 24 09:01:06 thinpower [1349923.492088] Node 0 DMA: 1*4kB 0*8kB
+1*16kB 2*32kB 2*64kB 1*128kB 0*256kB 0*512kB 1*1024kB 1*2048kB
+3*4096kB = 15700kB
+Apr 24 09:01:06 thinpower [1349923.492095] Node 0 DMA32: 172*4kB
+134*8kB 66*16kB 18*32kB 18*64kB 7*128kB 21*256kB 15*512kB 6*1024kB
+2*2048kB 22*4096kB = 118848kB
+Apr 24 09:01:06 thinpower [1349923.492101] Node 0 Normal: 251*4kB
+24*8kB 144*16kB 1*32kB 1*64kB 1*128kB 1*256kB 1*512kB 0*1024kB
+1*2048kB 4*4096kB = 22924kB
+Apr 24 09:01:06 thinpower [1349923.492107] 12705 total pagecache pages
+Apr 24 09:01:06 thinpower [1349923.492108] 0 pages in swap cache
+Apr 24 09:01:06 thinpower [1349923.492109] Swap cache stats: add 0,
+delete 0, find 0/0
+Apr 24 09:01:06 thinpower [1349923.492110] Free swap  = 0kB
+Apr 24 09:01:06 thinpower [1349923.492111] Total swap = 0kB
+Apr 24 09:01:06 thinpower [1349923.693323] 8388592 pages RAM
+Apr 24 09:01:06 thinpower [1349923.693326] 136791 pages reserved
+Apr 24 09:01:06 thinpower [1349923.693327] 69633 pages shared
+Apr 24 09:01:06 thinpower [1349923.693328] 8205493 pages non-shared
+Apr 24 09:01:06 thinpower [1349923.693331] Out of memory: kill process
+21490 (apache2) score 53801 or a child
+Apr 24 09:01:06 thinpower [1349923.693410] Killed process 21490 (apache2)
 
-No, it's me getting myself confused.  After thinking about it for a while, I
-see that you're right: the potential misordering, I think, is between the
-setting of the task state and reading the data value in the sleeper, and
-between the writing of the data value and the clearing of the task state in
-the waker.
+This is the last message before the reboot in /var/log/kernel/current.
 
-That means that provided that:
+Best
+Zeno
 
- (1) set_current_state() interpolates a full memory barrier after setting the
-     task state then there's no problem in the sleeper, and
-
- (2) wake_up() interpolates a write memory barrier before clearing the task
-     state - _if_ it wakes anything up - then there's no problem in the waker
-     either.
-
-How about the attached doc patch?
-
-David
----
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Document memory barriers implied by sleep/wake-up primitives
-
-Add a section to the memory barriers document to note the implied memory
-barriers of sleep primitives (set_current_state() and wrappers) and wake-up
-primitives (wake_up() and co.).
-
-Also extend the in-code comments on the wake_up() functions to note these
-implied barriers.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- Documentation/memory-barriers.txt |   93 +++++++++++++++++++++++++++++++++++++
- kernel/sched.c                    |   23 +++++++++
- 2 files changed, 115 insertions(+), 1 deletions(-)
+---------- Forwarded message ----------
+From: Zeno Davatz <zdavatz@gmail.com>
+Date: Fri, Apr 24, 2009 at 12:09 PM
+Subject: Kernel 2.6.29 runs out of memory and hangs.
+To: linux-kernel@vger.kernel.org
+Cc: Hannes Wyss <hwyss@ywesee.com>
 
 
-diff --git a/Documentation/memory-barriers.txt b/Documentation/memory-barriers.txt
-index f5b7127..48d3c77 100644
---- a/Documentation/memory-barriers.txt
-+++ b/Documentation/memory-barriers.txt
-@@ -31,6 +31,7 @@ Contents:
- 
-      - Locking functions.
-      - Interrupt disabling functions.
-+     - Sleep and wake-up functions.
-      - Miscellaneous functions.
- 
-  (*) Inter-CPU locking barrier effects.
-@@ -1217,6 +1218,96 @@ barriers are required in such a situation, they must be provided from some
- other means.
- 
- 
-+SLEEP AND WAKE-UP FUNCTIONS
-+---------------------------
-+
-+Sleeping and waking on an event flagged in global data can be viewed as an
-+interaction between two pieces of data: the task state of the task waiting for
-+the event and the global data used to indicate the event.  To make sure that
-+these appear to happen in the right order, the primitives to begin the process
-+of going to sleep, and the primitives to initiate a wake up imply certain
-+barriers.
-+
-+Firstly, the sleeper normally follows something like this sequence of events:
-+
-+	for (;;) {
-+		set_current_state(TASK_UNINTERRUPTIBLE);
-+		if (event_indicated)
-+			break;
-+		schedule();
-+	}
-+
-+A general memory barrier is interpolated automatically by set_current_state()
-+after it has altered the task state:
-+
-+	CPU 1
-+	===============================
-+	set_current_state();
-+	  set_mb();
-+	    STORE current->state
-+	    <general barrier>
-+	LOAD event_indicated
-+
-+set_current_state() may be wrapped by:
-+
-+	prepare_to_wait();
-+	prepare_to_wait_exclusive();
-+
-+which therefore also imply a general memory barrier after setting the state.
-+The whole sequence above is available in various canned forms, all of which
-+interpolate the memory barrier in the right place:
-+
-+	wait_event();
-+	wait_event_interruptible();
-+	wait_event_interruptible_exclusive();
-+	wait_event_interruptible_timeout();
-+	wait_event_killable();
-+	wait_event_timeout();
-+	wait_on_bit();
-+	wait_on_bit_lock();
-+
-+
-+Secondly, code that performs a wake up normally follows something like this:
-+
-+	event_indicated = 1;
-+	wake_up(&event_wait_queue);
-+
-+or:
-+
-+	event_indicated = 1;
-+	wake_up_process(event_daemon);
-+
-+A write memory barrier is implied by wake_up() and co. if and only if they wake
-+something up.  The barrier occurs before the task state is cleared, and so sits
-+between the STORE to indicate the event and the STORE to set TASK_RUNNING:
-+
-+	CPU 1				CPU 2
-+	===============================	===============================
-+	set_current_state();		STORE event_indicated
-+	  set_mb();			wake_up();
-+	    STORE current->state	  <write barrier>
-+	    <general barrier>		  STORE current->state
-+	LOAD event_indicated
-+
-+The available waker functions include:
-+
-+	complete();
-+	wake_up();
-+	wake_up_all();
-+	wake_up_bit();
-+	wake_up_interruptible();
-+	wake_up_interruptible_all();
-+	wake_up_interruptible_nr();
-+	wake_up_interruptible_poll();
-+	wake_up_interruptible_sync();
-+	wake_up_interruptible_sync_poll();
-+	wake_up_locked();
-+	wake_up_locked_poll();
-+	wake_up_nr();
-+	wake_up_poll();
-+	wake_up_process();
-+
-+
- MISCELLANEOUS FUNCTIONS
- -----------------------
- 
-@@ -1366,7 +1457,7 @@ WHERE ARE MEMORY BARRIERS NEEDED?
- 
- Under normal operation, memory operation reordering is generally not going to
- be a problem as a single-threaded linear piece of code will still appear to
--work correctly, even if it's in an SMP kernel.  There are, however, three
-+work correctly, even if it's in an SMP kernel.  There are, however, four
- circumstances in which reordering definitely _could_ be a problem:
- 
-  (*) Interprocessor interaction.
-diff --git a/kernel/sched.c b/kernel/sched.c
-index b902e58..fd0c2ce 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2458,6 +2458,17 @@ out:
- 	return success;
- }
- 
-+/**
-+ * wake_up_process - Wake up a specific process
-+ * @p: The process to be woken up.
-+ *
-+ * Attempt to wake up the nominated process and move it to the set of runnable
-+ * processes.  Returns 1 if the process was woken up, 0 if it was already
-+ * running.
-+ *
-+ * It may be assumed that this function implies a write memory barrier before
-+ * changing the task state if and only if any tasks are woken up.
-+ */
- int wake_up_process(struct task_struct *p)
- {
- 	return try_to_wake_up(p, TASK_ALL, 0);
-@@ -5241,6 +5252,9 @@ void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
-  * @mode: which threads
-  * @nr_exclusive: how many wake-one or wake-many threads to wake up
-  * @key: is directly passed to the wakeup function
-+ *
-+ * It may be assumed that this function implies a write memory barrier before
-+ * changing the task state if and only if any tasks are woken up.
-  */
- void __wake_up(wait_queue_head_t *q, unsigned int mode,
- 			int nr_exclusive, void *key)
-@@ -5279,6 +5293,9 @@ void __wake_up_locked_key(wait_queue_head_t *q, unsigned int mode, void *key)
-  * with each other. This can prevent needless bouncing between CPUs.
-  *
-  * On UP it can prevent extra preemption.
-+ *
-+ * It may be assumed that this function implies a write memory barrier before
-+ * changing the task state if and only if any tasks are woken up.
-  */
- void __wake_up_sync_key(wait_queue_head_t *q, unsigned int mode,
- 			int nr_exclusive, void *key)
-@@ -5315,6 +5332,9 @@ EXPORT_SYMBOL_GPL(__wake_up_sync);	/* For internal use only */
-  * awakened in the same order in which they were queued.
-  *
-  * See also complete_all(), wait_for_completion() and related routines.
-+ *
-+ * It may be assumed that this function implies a write memory barrier before
-+ * changing the task state if and only if any tasks are woken up.
-  */
- void complete(struct completion *x)
- {
-@@ -5332,6 +5352,9 @@ EXPORT_SYMBOL(complete);
-  * @x:  holds the state of this particular completion
-  *
-  * This will wake up all threads waiting on this particular completion event.
-+ *
-+ * It may be assumed that this function implies a write memory barrier before
-+ * changing the task state if and only if any tasks are woken up.
-  */
- void complete_all(struct completion *x)
- {
+Dear All
+
+Our Kernel-Version:
+
+Linux thinpower 2.6.29 #5 SMP Sun Apr 5 20:04:08 UTC 2009 x86_64
+Intel(R) Xeon(R) CPU E5450 @ 3.00GHz GenuineIntel GNU/Linux
+
+This morning our Server ran out of memory and had to be hard rebooted.
+The system hast 32 GB or memory and 4 QuadCore Xeon CPUs.
+/var/log/kernel/current tells us the following:
+
+Apr 24 09:01:06 thinpower [1349923.491914] postgres invoked
+oom-killer: gfp_mask=0x1201d2, order=0, oomkilladj=0
+Apr 24 09:01:06 thinpower [1349923.491919] postgres cpuset=/ mems_allowed=0
+Apr 24 09:01:06 thinpower [1349923.491922] Pid: 2393, comm: postgres
+Not tainted 2.6.29 #5
+Apr 24 09:01:06 thinpower [1349923.491924] Call Trace:
+Apr 24 09:01:06 thinpower [1349923.491934]  [<ffffffff8106eda9>] ?
+cpuset_print_task_mems_allowed+0x99/0x9f
+Apr 24 09:01:06 thinpower [1349923.491939]  [<ffffffff81083d28>]
+oom_kill_process+0x96/0x246
+Apr 24 09:01:06 thinpower [1349923.491942]  [<ffffffff8106dcf0>] ?
+cpuset_mems_allowed_intersects+0x1c/0x1e
+Apr 24 09:01:06 thinpower [1349923.491944]  [<ffffffff810840a5>] ?
+badness+0x1a3/0x1e6
+Apr 24 09:01:06 thinpower [1349923.491946]  [<ffffffff8108421c>]
+__out_of_memory+0x134/0x14b
+Apr 24 09:01:06 thinpower [1349923.491949]  [<ffffffff8108438b>]
+out_of_memory+0x158/0x18a
+Apr 24 09:01:06 thinpower [1349923.491951]  [<ffffffff81087906>]
+__alloc_pages_internal+0x372/0x434
+Apr 24 09:01:06 thinpower [1349923.491954]  [<ffffffff810aa490>]
+alloc_pages_current+0xb9/0xc2
+Apr 24 09:01:06 thinpower [1349923.491957]  [<ffffffff81081a59>]
+__page_cache_alloc+0x67/0x6b
+Apr 24 09:01:06 thinpower [1349923.491959]  [<ffffffff81089426>]
+__do_page_cache_readahead+0x96/0x192
+Apr 24 09:01:06 thinpower [1349923.491961]  [<ffffffff81089575>]
+do_page_cache_readahead+0x53/0x60
+Apr 24 09:01:06 thinpower [1349923.491963]  [<ffffffff81081ec7>]
+filemap_fault+0x15e/0x313
+Apr 24 09:01:06 thinpower [1349923.491967]  [<ffffffff81094451>]
+__do_fault+0x53/0x393
+Apr 24 09:01:06 thinpower [1349923.491969]  [<ffffffff81030531>] ?
+__wake_up_sync+0x45/0x4e
+Apr 24 09:01:06 thinpower [1349923.491972]  [<ffffffff81096702>]
+handle_mm_fault+0x36b/0x854
+Apr 24 09:01:06 thinpower [1349923.491976]  [<ffffffff813a1acb>] ?
+release_sock+0xb0/0xbb
+Apr 24 09:01:06 thinpower [1349923.491979]  [<ffffffff81022c8f>] ?
+default_spin_lock_flags+0x9/0xe
+Apr 24 09:01:06 thinpower [1349923.491984]  [<ffffffff814ac6fe>]
+do_page_fault+0x662/0xa5c
+Apr 24 09:01:06 thinpower [1349923.491988]  [<ffffffff81400b8e>] ?
+inet_sendmsg+0x46/0x53
+Apr 24 09:01:06 thinpower [1349923.491992]  [<ffffffff8139ed97>] ?
+__sock_sendmsg+0x59/0x62
+Apr 24 09:01:06 thinpower [1349923.491994]  [<ffffffff8139f6d8>] ?
+sock_sendmsg+0xc7/0xe0
+Apr 24 09:01:06 thinpower [1349923.491996]  [<ffffffff81086b5e>] ?
+free_pages+0x32/0x36
+Apr 24 09:01:06 thinpower [1349923.492000]  [<ffffffff8104e7ec>] ?
+autoremove_wake_function+0x0/0x38
+Apr 24 09:01:06 thinpower [1349923.492004]  [<ffffffff810c1d76>] ?
+core_sys_select+0x1df/0x213
+Apr 24 09:01:06 thinpower [1349923.492007]  [<ffffffff810b2cc2>] ?
+nameidata_to_filp+0x41/0x52
+Apr 24 09:01:06 thinpower [1349923.492009]  [<ffffffff8139f028>] ?
+sockfd_lookup_light+0x1b/0x54
+Apr 24 09:01:06 thinpower [1349923.492013]  [<ffffffff81011ac8>] ?
+read_tsc+0xe/0x24
+Apr 24 09:01:06 thinpower [1349923.492017]  [<ffffffff81055990>] ?
+getnstimeofday+0x58/0xb4
+Apr 24 09:01:06 thinpower [1349923.492019]  [<ffffffff810516ed>] ?
+ktime_get_ts+0x49/0x4e
+Apr 24 09:01:06 thinpower [1349923.492022]  [<ffffffff810c0d35>] ?
+poll_select_copy_remaining+0xc5/0xea
+Apr 24 09:01:06 thinpower [1349923.492023]  [<ffffffff810c1ff3>] ?
+sys_select+0xa7/0xbc
+Apr 24 09:01:06 thinpower [1349923.492026]  [<ffffffff814aa305>]
+page_fault+0x25/0x30
+
+Before that we had this:
+
+Apr 24 08:59:24 thinpower [1349806.982419] 6954 total pagecache pages
+Apr 24 08:59:24 thinpower [1349806.982420] 0 pages in swap cache
+Apr 24 08:59:24 thinpower [1349806.982422] Swap cache stats: add 0,
+delete 0, find 0/0
+Apr 24 08:59:24 thinpower [1349806.982423] Free swap  = 0kB
+Apr 24 08:59:24 thinpower [1349806.982423] Total swap = 0kB
+Apr 24 08:59:24 thinpower [1349807.182725] 8388592 pages RAM
+Apr 24 08:59:24 thinpower [1349807.182728] 136791 pages reserved
+Apr 24 08:59:24 thinpower [1349807.182729] 35053 pages shared
+Apr 24 08:59:24 thinpower [1349807.182729] 8207346 pages non-shared
+Apr 24 08:59:24 thinpower [1349807.182732] Out of memory: kill process
+21592 (ruby) score 109489 or a child
+Apr 24 08:59:24 thinpower [1349807.182795] Killed process 21592 (ruby)
+Apr 24 09:00:59 thinpower [1349916.949909] apache2 invoked oom-killer:
+gfp_mask=0x1201d2, order=0, oomkilladj=0
+Apr 24 09:01:00 thinpower [1349916.949915] apache2 cpuset=/ mems_allowed=0
+Apr 24 09:01:00 thinpower [1349916.949918] Pid: 21599, comm: apache2
+Not tainted 2.6.29 #5
+Apr 24 09:01:00 thinpower [1349916.949920] Call Trace:
+Apr 24 09:01:00 thinpower [1349916.949930]  [<ffffffff8106eda9>] ?
+cpuset_print_task_mems_allowed+0x99/0x9f
+Apr 24 09:01:00 thinpower [1349916.949936]  [<ffffffff81083d28>]
+oom_kill_process+0x96/0x246
+Apr 24 09:01:00 thinpower [1349916.949938]  [<ffffffff8106dcf0>] ?
+cpuset_mems_allowed_intersects+0x1c/0x1e
+Apr 24 09:01:00 thinpower [1349916.949940]  [<ffffffff810840a5>] ?
+badness+0x1a3/0x1e6
+Apr 24 09:01:00 thinpower [1349916.949942]  [<ffffffff8108421c>]
+__out_of_memory+0x134/0x14b
+Apr 24 09:01:00 thinpower [1349916.949945]  [<ffffffff8108438b>]
+out_of_memory+0x158/0x18a
+Apr 24 09:01:00 thinpower [1349916.949947]  [<ffffffff81087906>]
+__alloc_pages_internal+0x372/0x434
+Apr 24 09:01:00 thinpower [1349916.949950]  [<ffffffff810aa490>]
+alloc_pages_current+0xb9/0xc2
+Apr 24 09:01:00 thinpower [1349916.949953]  [<ffffffff81081a59>]
+__page_cache_alloc+0x67/0x6b
+Apr 24 09:01:00 thinpower [1349916.949954]  [<ffffffff81081841>] ?
+sync_page+0x0/0x40
+Apr 24 09:01:00 thinpower [1349916.949957]  [<ffffffff81089426>]
+__do_page_cache_readahead+0x96/0x192
+Apr 24 09:01:00 thinpower [1349916.949959]  [<ffffffff81089575>]
+do_page_cache_readahead+0x53/0x60
+Apr 24 09:01:00 thinpower [1349916.949961]  [<ffffffff81081ec7>]
+filemap_fault+0x15e/0x313
+Apr 24 09:01:00 thinpower [1349916.949964]  [<ffffffff81094451>]
+__do_fault+0x53/0x393
+Apr 24 09:01:00 thinpower [1349916.949967]  [<ffffffff81096702>]
+handle_mm_fault+0x36b/0x854
+Apr 24 09:01:00 thinpower [1349916.949971]  [<ffffffff8100cf6e>] ?
+apic_timer_interrupt+0xe/0x20
+Apr 24 09:01:00 thinpower [1349916.949974]  [<ffffffff81022c8f>] ?
+default_spin_lock_flags+0x9/0xe
+Apr 24 09:01:00 thinpower [1349916.949976]  [<ffffffff81022c8f>] ?
+default_spin_lock_flags+0x9/0xe
+Apr 24 09:01:00 thinpower [1349916.949981]  [<ffffffff814ac6fe>]
+do_page_fault+0x662/0xa5c
+Apr 24 09:01:00 thinpower [1349916.949985]  [<ffffffff813a1acb>] ?
+release_sock+0xb0/0xbb
+Apr 24 09:01:00 thinpower [1349916.949989]  [<ffffffff813e6628>] ?
+tcp_recvmsg+0x720/0x833
+Apr 24 09:01:00 thinpower [1349916.949991]  [<ffffffff813a0eb6>] ?
+sock_common_recvmsg+0x32/0x47
+Apr 24 09:01:00 thinpower [1349916.949995]  [<ffffffff81198a02>] ?
+selinux_socket_recvmsg+0x1d/0x1f
+Apr 24 09:01:00 thinpower [1349916.949999]  [<ffffffff8139ef03>] ?
+__sock_recvmsg+0x6d/0x79
+Apr 24 09:01:00 thinpower [1349916.950001]  [<ffffffff8139effd>] ?
+sock_aio_read+0xee/0xfe
+Apr 24 09:01:00 thinpower [1349916.950005]  [<ffffffff810b42b3>] ?
+do_sync_read+0xe7/0x12d
+Apr 24 09:01:00 thinpower [1349916.950008]  [<ffffffff813f22bd>] ?
+tcp_write_xmit+0x453/0x913
+
+Thank your for Feedback.
+
+Best regards
+Zeno Davatz
