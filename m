@@ -1,65 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbZDXIui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbZDXIwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758213AbZDXIui (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 04:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZDXIu1
+	id S1758280AbZDXIwk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 04:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbZDXIwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 04:50:27 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42242 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752069AbZDXIu0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 04:50:26 -0400
-Date: Fri, 24 Apr 2009 04:50:17 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LFSDEV <linux-fsdevel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH 1/1] vfs: umount_begin BKL pushdown v2
-Message-ID: <20090424085017.GB28592@infradead.org>
-References: <20090423191934.GW1926@parisc-linux.org> <1240556813-8739-1-git-send-email-abogani@texware.it> <1240556813-8739-2-git-send-email-abogani@texware.it> <20090424071312.GE8633@ZenIV.linux.org.uk> <20090424071853.GG8633@ZenIV.linux.org.uk> <20090424080634.GG24912@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090424080634.GG24912@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 24 Apr 2009 04:52:31 -0400
+Received: from mga14.intel.com ([143.182.124.37]:26256 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751654AbZDXIwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 04:52:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,240,1239001200"; 
+   d="asc'?scan'208";a="135415169"
+Subject: Re: [PATCH] [3/4] x86: MCE: Improve mce_get_rip
+From: Huang Ying <ying.huang@intel.com>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>, "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+In-Reply-To: <49F16A38.1030306@jp.fujitsu.com>
+References: <20090407506.675031434@firstfloor.org>
+	 <20090407150656.43E161D046D@basil.firstfloor.org>
+	 <49DC5D11.4060505@jp.fujitsu.com>
+	 <1240479833.6842.554.camel@yhuang-dev.sh.intel.com>
+	 <49F15922.5090704@jp.fujitsu.com>
+	 <1240554911.6842.880.camel@yhuang-dev.sh.intel.com>
+	 <49F16A38.1030306@jp.fujitsu.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-odkzvjh8amXoJKuDG3SJ"
+Date: Fri, 24 Apr 2009 16:52:27 +0800
+Message-Id: <1240563147.6842.891.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 10:06:34AM +0200, Ingo Molnar wrote:
-> 
-> You've not replied to my request (attached below) to put these 
-> trivial BKL-pushdown bits into a separate branch/tree and not into 
-> the VFS tree. You've now mixed that commit with other VFS changes.
-> 
-> Had it been in a separate branch, and had we tested it, Linus could 
-> have pulled the trivial BKL pushdown bits out of normal merge order 
-> as well. That is not possible now.
 
-It shouldn't be pushed out of order.  It's a normal VFS locking change
-and should be pushed with the next VFS push for 2.6.31.
+--=-odkzvjh8amXoJKuDG3SJ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> Furthermore, by doing this you are also hindering the 
-> tip:kill-the-BKL effort (which has been ongoing for a year chipping 
-> away at various BKL details) which facilitated these changes. 
-> Alessio did these fixes to fix bugs he can trigger in that tree.
-> 
-> You've also not explained why you have done it this way. It would 
-> cost you almost nothing to apply these bits into a separate branch 
-> and merge that branch into your main tree. Lots of other maintainer 
-> are doing that.
+On Fri, 2009-04-24 at 15:28 +0800, Hidetoshi Seto wrote:
+> Huang Ying wrote:
+> > On Fri, 2009-04-24 at 14:16 +0800, Hidetoshi Seto wrote:
+> >> One question is: if (RIPV,EIPV) =3D (0,0), then is the IP on the stack
+> >> really invalid value, or is it still point IP when MCE is generated?
+> >> I suppose it is not invalid.  If a processor encounters MCE and if it
+> >> is not sure what happened, then it will store the IP on the stack,
+> >> indicating neither of flags.
+> >>
+> >> If this supposition is correct, the best way is pick the value on
+> >> the stack unconditionally, and record valid flags together.
+> >=20
+> > According to spec, the IP on stack can be not related to MCE if
+> > (RIPV,EIPV) =3D (0,0). So it is meaningless to report them. If you repo=
+rt
+> > them unconditionally, you just push the logic to user space or
+> > administrator.
+>=20
+> Sorry, I could not find good page in the spec (Intel64 and IA-32 ASDM)...
+> Could you point one?
 
-Having a separate kill the BKL tree is a stupid idea.  Locking changes
-need deep subsystem knowledge and should always go through the subsystem
-trees.
+14.3.1.2 IA32_MCG_STATUS MSR
+* EIPV
+
+> I believe that the IP with (RIPV,EIPV) =3D (1,0) is "not associated with =
+the
+> error" too, so is it meaningless to report the IP?
+> If you think so then correct fix is replacing RIPV check by EIPV check.
+
+In theory, that is possible (not associated), but I think in practical,
+IP with (RIPV,EIPV) =3D (1,0) is still meaningful as Andi said.
+
+> From another point of view, the reported IP will be one of followings:
+>   - IP that associated with error (=3D related to MCE)
+>   - IP that the interrupted program can restart from
+>   - IP that when MCE is generated
+> Are there no way to distinguish them in user space?
+
+I think you just push same logic to user space.
+
+Best Regards,
+Huang Ying
+
+
+--=-odkzvjh8amXoJKuDG3SJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknxfcIACgkQKhFGF+eHlphk0gCfatgSF7elOVNEz2PxsOnVm4+n
+IbQAoK1HEbBKXhUxoNuoshrY0poKUefX
+=IEWC
+-----END PGP SIGNATURE-----
+
+--=-odkzvjh8amXoJKuDG3SJ--
 
