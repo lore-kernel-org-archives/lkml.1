@@ -1,75 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbZDXVYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758347AbZDXVc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758267AbZDXVYU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 17:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756279AbZDXVYH
+	id S1758347AbZDXVc6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 17:32:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756917AbZDXVcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 17:24:07 -0400
-Received: from smtp.flash.net.br ([201.46.240.48]:40542 "EHLO
-	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755671AbZDXVYG (ORCPT
+	Fri, 24 Apr 2009 17:32:45 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:27023 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756692AbZDXVco (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 17:24:06 -0400
-Date: Fri, 24 Apr 2009 18:23:12 -0300
-From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Kumar Gala <galak@kernel.crashing.org>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: Regarding the linkstation defconfig
-Message-ID: <20090424212311.GA7858@ime.usp.br>
-References: <20090424065816.GA15525@ime.usp.br> <Pine.LNX.4.64.0904242158210.8309@axis700.grange>
+	Fri, 24 Apr 2009 17:32:44 -0400
+X-IronPort-AV: E=Sophos;i="4.40,243,1238976000"; 
+   d="scan'208";a="292518748"
+Date: Fri, 24 Apr 2009 14:32:38 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jamie Lokier <jamie@shareable.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Wait for console to become available, v3.2
+Message-ID: <20090424213238.GA5973@cuplxvomd02.corp.sa.net>
+References: <20090424003555.GA31173@cuplxvomd02.corp.sa.net> <Pine.LNX.4.44L0.0904241502440.4531-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0904242158210.8309@axis700.grange>
+In-Reply-To: <Pine.LNX.4.44L0.0904241502440.4531-100000@iolanthe.rowland.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Guennadi, and Kumar.
-
-On Apr 24 2009, Guennadi Liakhovetski wrote:
-> On Fri, 24 Apr 2009, Rogério Brito wrote:
-> > Guennadi, since you seem to be the one responsible for the
-> > linkstation/kurobox in the kernel,
+On Fri, Apr 24, 2009 at 03:20:42PM -0400, Alan Stern wrote:
+> On Thu, 23 Apr 2009, David VomLehn wrote:
 > 
-> That's not howI interpret my role in linkstation development /
-> support.
-
-Sorry. I thought that you were. I have, nonetheless, interest in helping
-and understanding more about the platform.
-
-> > - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-> >  01. why is anticipatory the default scheduler for linkstations when CFQ
-> >      is the default scheduler for the rest of the kernel?
-(...)
-> >  12. wouldn't it be a good thing to enable CONFIG_PRINTK_TIME?
-> > - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> > I'm still scratching my head, trying to figure out where I can tap into the
+> > 'USB notion of "all devices that were present at boot time have been probed"'
+> > that Alan mentions above, so I don't have a specific implementation yet. I'm
+> > open to any tips in this area.
 > 
-> As I already replied to you earlier, I am not particularly interested in 
-> fine-tuning and optimisation of defconfigs. IMHO *_defconfigs are only 
-> examples of board configuration, that are known to build and work. The 
-> rest is up to the user / packager.
-
-IMVHO, defconfigs should be examples of board configuration, known to
-build and work (like you said) *and* be, in a way, exemplary to the
-user/packager.
-
-> > Again, please, forgive my ignorance here regarding the questions above.
-> > I'm really looking for some clarification and to get things in shape
-> > both on my systems and in the default kernel configuration, in general.
+> This is a general notion; it applies to all subsystems that do
+> asynchronous device discovery or registration.  The idea is simple
+> enough: Keep a count of all devices which are known or suspected to be
+> present, and decrement the count each time one of them is registered or
+> determined not to exist.  When the count first reaches 0, all devices
+> that were present (or reachable) at boot time will have been
+> registered.
 > 
-> Feel free to submit patches with reasoning to the powerpc ML and 
-> respective maintainer as per MAINTAINERS file.
+> Isn't this basically what you had in mind?  If you're concerned about 
+> the USB implementation, don't be -- I can write it quite easily.
 
-I'm doing that as a reply to this message.
+I will absolutely take you up on your offer to lash this into USB. I'm still
+fine-tuning a few details but will send out a patch soon, probably today. It's
+a bit hard to test it and I'm sure it will need revision, but it will help a
+whole bunch to have a USB implementation to play with.
 
+> It's not just hot-pluggable devices.  These ideas are appropriate 
+> whenever detection or registration is asynchronous.
 
-Thanks for your guiding, Rogério Brito.
+This is very true, and I should modify the nomenclature to reflect this.
 
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+> > There currently two types supported:
+> > -	consoles
+> > -	network devices
+> 
+> You might as well add block devices too.
+
+Yes, we should. My guess is block devices that hang off of buses besides USB
+would be able to use this.
+
+> > bus_bootdev_initialized(int bootdev_mask)
+> > 	This function must be called by the bus support code after it calls the
+> > 	initialiation function for a boot device. Every call to
+> > 	bus_bootdev_found must be matched by a call to
+> > 	bus_bootdev_initialized with the same bootdev_mask.
+> 
+> Even if the device can't be initialized for some reason, or if it turns
+> out not the be the sort of boot device originally thought, this
+> function still has to be called.  That should be made extremely clear.
+
+True, and I was hoping that was clear enough, but I'll go back and emphasize
+this more.
+
+> > 	Device initialization functions must have called the appropriate
+> > 	registration function for that device before bus_bootdev_initialized
+> > 	is called. So, for console devices, register_console must be called
+> > 	before bus_bootdev_initialized, and for network devices,
+> > 	register_netdevice must be called first.
+> 
+> It's not clear how either of these two functions is bus-specific.
+
+They aren't, not directly.  I *think* there isn't a problem here, but it
+is certainly possible that the driver wouldn't register the device until some
+time after its probe function is called. If that's the case, we would still
+have a race condition when we went to use the device, which would defeat the
+whole purpose of this change. Determining whether actually have a problem
+here is probably too difficult to do beforehand; if an issue exists will find
+it during use. Not the ideal approach, but this is engineering and not math.
+
+> This looks like a good plan and not hard to implement.  It even should 
+> be possible to fit USB disk drives into the scheme.
+
+That would definitely rock. 
+
+> Alan Stern
+
+David VomLehn
