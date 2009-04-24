@@ -1,83 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbZDXPdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759554AbZDXPdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755143AbZDXPdZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 11:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbZDXPdM
+	id S1759554AbZDXPdv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 11:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256AbZDXPdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 11:33:12 -0400
-Received: from stinky.trash.net ([213.144.137.162]:47734 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753931AbZDXPdK (ORCPT
+	Fri, 24 Apr 2009 11:33:42 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:50900 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752812AbZDXPdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 11:33:10 -0400
-Message-ID: <49F1DBAC.8090101@trash.net>
-Date: Fri, 24 Apr 2009 17:33:00 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 24 Apr 2009 11:33:41 -0400
+Date: Fri, 24 Apr 2009 11:32:55 -0400 (EDT)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>, "Theodore Ts'o" <tytso@MIT.EDU>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Ralf Baechle <ralf@linux-mips.org>, Kyle McMaartin <kyle@mcmartin.ca>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH v3 0/3] Add support for compiling with -ffunction-sections
+ -fdata-sections
+In-Reply-To: <49F1CA6E.5080407@redhat.com>
+Message-ID: <alpine.DEB.1.10.0904241057440.23249@vinegar-pot.mit.edu>
+References: <1238973278-31735-1-git-send-email-tabbott@mit.edu> <alpine.DEB.1.10.0904072019560.17274@vinegar-pot.mit.edu> <alpine.DEB.1.10.0904201255080.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201637280.2199@localhost.localdomain>
+ <alpine.DEB.1.10.0904202010220.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain> <alpine.DEB.1.10.0904221826180.24694@vinegar-pot.mit.edu> <49F1CA6E.5080407@redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Stephen Hemminger <shemminger@vyatta.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
-       David Miller <davem@davemloft.net>, jeff.chua.linux@gmail.com,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org,
-       mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH]  netfilter: use per-CPU recursive lock {XIV}
-References: <20090418094001.GA2369@ioremap.net>	<20090418141455.GA7082@linux.vnet.ibm.com>	<20090420103414.1b4c490f@nehalam>	<49ECBE0A.7010303@cosmosbay.com>	<18924.59347.375292.102385@cargo.ozlabs.ibm.com>	<20090420215827.GK6822@linux.vnet.ibm.com>	<18924.64032.103954.171918@cargo.ozlabs.ibm.com>	<20090420160121.268a8226@nehalam>	<alpine.LFD.2.00.0904210831560.2199@localhost.localdomain>	<20090421111541.228e977a@nehalam>	<20090421193924.GA24404@elte.hu>	<20090421143927.52d7d89d@nehalam>	<alpine.LFD.2.00.0904220821240.3101@localhost.localdomain> <20090423210938.1501507b@nehalam> <49F146FF.5050200@cosmosbay.com>
-In-Reply-To: <49F146FF.5050200@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> Stephen Hemminger a écrit :
->> In days of old in 2.6.29, netfilter did locketh using a 
->> lock of the reader kind when doing its table business, and do
->> a writer when with pen in hand like a overworked accountant
->> did replace the tables. This sucketh and caused the single
->> lock to fly back and forth like a poor errant boy.
->>
->> But then netfilter was blessed with RCU and the performance
->> was divine, but alas there were those that suffered for
->> trying to replace their many rules one at a time.
->>
->> So now RCU must be vanquished from the scene, and better
->> chastity belts be placed upon this valuable asset most dear.
->> The locks that were but one are now replaced by one per suitor.
->>
->> The repair was made after much discussion involving
->> Eric the wise, and Linus the foul. With flowers springing
->> up amid the thorns some peace has finally prevailed and
->> all is soothed. This patch and purple prose was penned by
->> in honor of "Talk like Shakespeare" day.
+On Fri, 24 Apr 2009, Masami Hiramatsu wrote:
 
-Hehe.
+> What would you think about posting these patches plus -ffunction-sections/
+> -fdata-sections patch to -mm tree, -tip tree, or -next tree as
+> "playable" Ksplice patchset?
 
->>  static int __init xt_init(void)
->>  {
->> -	int i, rv;
->> +	unsigned int i;
->> +	int rv;
->> +	static struct lock_class_key xt_lock_key[NR_CPUS];
-> 
-> Could we avoid this [NR_CPUS] thing ?
-> 
->> +
->> +	for_each_possible_cpu(i) {
->> +		rwlock_t *lock = &per_cpu(xt_info_locks, i);
->> +
->> +		rwlock_init(lock);
->> +		lockdep_set_class(lock, xt_lock_key+i);
->> +	}
-> 
-> 
-> Did you tried :
-> 
-> static DECLARE_PER_CPU(struct lock_class_key, xt_locks_key);
+The section rename patch often merge conflicts with other changes.  I 
+think that having it sit out in one of those trees for another release 
+would result in a lot of unnecessary work rebasing patches between that 
+tree and Linus' tree.
 
-Either way is fine with me, I'll wait for Stephen to state his opinion.
+Once these -ffunction-sections support patches are merged, I intend to 
+post the rest of the Ksplice patchset for one of those trees.
+
+> If there are actual problems on those arch, I think you'd better post
+> these patches as bugfixes with bug reports.
+
+These problems are all discussed in the commit messages of the relevant 
+patches.
+
+One patch fixes modposting a kernel with more than 65536 ELF sections.  
+It is certainly possible to get this many with allyesconfig and 
+-ffunction-sections -fdata-sections.
+
+Another fixes the issue that when you build with -ffunction-sections, 
+modpost will print a large number of spurious warnings when it sees 
+sections like .rodata.__func__.12345 which are generated by the __FUNC__ 
+macro.
+
+The patch with many scattered changes fixes the problem that with 
+-ffunction-sections -fdata-sections, a function named head gets put in the 
+".text.head" section, and your "static int percpu" ends up in the 
+".data.percpu" section and probably ends up being made percpu.  This is a 
+potentially nasty problem.
+
+	-Tim Abbott
