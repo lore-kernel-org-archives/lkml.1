@@ -1,82 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759455AbZDXNt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759485AbZDXNw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759455AbZDXNt1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 09:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbZDXNtJ
+	id S1759485AbZDXNw3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 09:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756571AbZDXNwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 09:49:09 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:47936 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752254AbZDXNtH (ORCPT
+	Fri, 24 Apr 2009 09:52:21 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:55734 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756546AbZDXNwV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 09:49:07 -0400
-To: "ext Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>
-Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
-From: Kalle Valo <kalle.valo@nokia.com>
-Date: Fri, 24 Apr 2009 16:44:22 +0300
-In-Reply-To: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> (ext Rafael J. Wysocki's message of "Thu\, 16 Apr 2009 23\:42\:31 +0200")
-Message-ID: <87ljpqqi89.fsf@nokia.com>
-User-Agent: Gnus/5.101 (Gnus v5.10.10) Emacs/22.3 (gnu/linux)
+	Fri, 24 Apr 2009 09:52:21 -0400
+Date: Fri, 24 Apr 2009 09:51:21 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: David Daney <ddaney@caviumnetworks.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Introduce a boolean "single_bit_set" function.
+In-Reply-To: <20090423165723.16c9f566.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0904240948550.17112@localhost.localdomain>
+References: <alpine.LFD.2.00.0904231339080.13089@localhost.localdomain> <49F0C817.8050407@caviumnetworks.com> <20090423165723.16c9f566.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 24 Apr 2009 13:44:26.0377 (UTC) FILETIME=[C8971F90:01C9C4E2]
-X-Nokia-AV: Clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Thu, 23 Apr 2009, Andrew Morton wrote:
 
-> This message contains a list of some regressions from 2.6.29, for
-> which there are no fixes in the mainline I know of. If any of them
-> have been fixed already, please let me know.
+> On Thu, 23 Apr 2009 12:57:11 -0700
+> David Daney <ddaney@caviumnetworks.com> wrote:
 >
-> If you know of any other unresolved regressions from 2.6.29, please
-> let me know either and I'll add them to the list. Also, please let
-> me know if any of the entries below are invalid.
+> > > +static inline __attribute__((const))
+> > > +bool single_bit_set(unsigned long n)
+> > > +{
+> > > +        return (n != 0 && ((n & (n - 1)) == 0));
+> > > +}
+> > > +
+> > > +
+> >
+> >
+> > It would be nice to be able to override this per architecture.
+> >
+> > For example a more efficient implementation on CPUs that have a
+> > population count instruction (__builtin_popcountl()) might be:
+> >
+> > static inline __attribute__((const))
+> > bool singe_bit_set(unsigned long n)
+> > {
+> > 	return __builtin_popcountl(n) == 1;
+> > }
 >
-> Each entry from the list will be sent additionally in an automatic reply to
-> this message with CCs to the people involved in reporting and handling the
-> issue.
->
+> Already done, via hweight_long().
 
-[...]
+  i'm guessing that taking advantage of helper functions like that
+might simplify code like, say, this from fs/nfs/internal.h:
 
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13067
-> Subject         : iwl3945: wlan0: beacon loss from AP - sending probe request
-> Submitter       : Maciej Rutecki <maciej.rutecki@gmail.com>
-> Date            : 2009-04-05 9:11 (12 days old)
-> References      : http://marc.info/?l=linux-kernel&m=123892272218266&w=4
+/*
+ * Determine the actual block size (and log2 thereof)
+ */
+static inline
+unsigned long nfs_block_bits(unsigned long bsize, unsigned char *nrbitsp)
+{
+        /* make sure blocksize is a power of two */
+        if ((bsize & (bsize - 1)) || nrbitsp) {
+                unsigned char   nrbits;
 
-The regression here is that I added a printk() to inform about beacon
-loss. The issue has been there a long time, the printk() just exposed
-it.
+                for (nrbits = 31; nrbits && !(bsize & (1 << nrbits)); nrbits--)
+                        ;
+                bsize = 1 << nrbits;
+                if (nrbitsp)
+                        *nrbitsp = nrbits;
+        }
 
-Michael wrote a patch which silences the printk:
+        return bsize;
+}
 
-http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=commit;h=16eaea5faa37d552b14e246ca56a436e55ca67b3
 
-I fixed the beacon loss detection here:
+  surely, there's a simpler way to write that.
 
-http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=commit;h=3b6dc5a431e4fef35717cba53544a95209f49b68
+rday
+--
 
-John, I think Michael's patch should be sent to 2.6.30. Any chances
-for that?
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
 
-Rafael, is it possible to send your regression mails to
-linux-wireless@vger.kernel.org as well? Very few wireless developers
-have time to follow netdev or lkml.
+        Linux Consulting, Training and Annoying Kernel Pedantry.
 
--- 
-Kalle Valo
+Web page:                                          http://crashcourse.ca
+Linked In:                             http://www.linkedin.com/in/rpjday
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
