@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbZDXHex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbZDXHjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755707AbZDXHex (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 03:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbZDXHeo
+	id S1754806AbZDXHjY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 03:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZDXHjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 03:34:44 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:46192 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752510AbZDXHeo (ORCPT
+	Fri, 24 Apr 2009 03:39:16 -0400
+Received: from smtpauth.net4india.com ([202.71.129.139]:34345 "EHLO
+	smtpauth.net4india.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751212AbZDXHjP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 03:34:44 -0400
-Date: Fri, 24 Apr 2009 09:34:01 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, Chris Zankel <chris@zankel.net>,
-       David Howells <dhowells@redhat.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Greg Ungerer <gerg@uclinux.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Helge Deller <deller@gmx.de>, Hirokazu Takata <takata@linux-m32r.org>,
-       Jeff Dike <jdike@addtoit.com>, Kyle McMartin <kyle@mcmartin.ca>,
-       Mike Frysinger <vapier.adi@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] ptrace: remove PT_DTRACE from avr32, mn10300,
- parisc, s390, sh, xtensa
-Message-ID: <20090424093401.1dd8086b@skybase>
-In-Reply-To: <20090423193206.GA14885@redhat.com>
-References: <20090423193206.GA14885@redhat.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 24 Apr 2009 03:39:15 -0400
+Message-ID: <49F16C75.9040702@xenontk.org>
+Date: Fri, 24 Apr 2009 13:08:29 +0530
+From: David John <davidjon@xenontk.org>
+Reply-To: davidjon@xenontk.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090324 Fedora/3.0-2.1.beta2.fc11 Thunderbird/3.0b2 ThunderBrowse/3.2.4
+MIME-Version: 1.0
+To: Len Brown <lenb@kernel.org>
+CC: We La <w.landgraf@yahoo.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.30-rc3 : Regression: i915 , video
+References: <72010.86725.qm@web112215.mail.gq1.yahoo.com> <alpine.LFD.2.00.0904231537590.15830@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904231537590.15830@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Apr 2009 21:32:06 +0200
-Oleg Nesterov <oleg@redhat.com> wrote:
-
-> avr32, mn10300, parisc, s390, sh, xtensa:
+On 04/24/2009 01:18 AM, Len Brown wrote:
+>> Problems on MSI U100 laptop:
+>>
+>> root@werner:~# modprobe i915
+>> WARNING: Error inserting video (/lib/modules/2.6.30-rc3/kernel/drivers/acpi/video.ko): No such device
+>> FATAL: Error inserting i915 (/lib/modules/2.6.30-rc3/kernel/drivers/gpu/drm/i915/i915.ko): Unknown symbol in module, or unknown parameter (see dmesg)
+>> root@werner:~#
+>>
+>> Apr 23 16:16:57 localhost kernel: i915: Unknown symbol acpi_video_register
+>>
+>>
+>> On older kernels this drivers worked
+>>
+>> Werner Landgraf
+>> Linux  SYS
 > 
-> they never set PT_DTRACE, but clear it after do_execve().
+> you've got modular i915 and no acpi video driver?
+> Does this patch help?
 > 
-> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+> http://patchwork.kernel.org/patch/18420/
+> 
+> thanks,
+> -Len Brown, Intel Open Source Technology Center
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Hi,
 
--- 
-blue skies,
-   Martin.
+Can you forward this patch to Linus? This regression breaks quite a few
+configs where ACPI Video is compiled as a module and i915 is built in.
+This should have been in stable, but I guess it's too late now.
 
-"Reality continues to ruin my life." - Calvin.
-
+Regards,
+David
