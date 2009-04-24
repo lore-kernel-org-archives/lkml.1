@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbZDXTmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZDXUDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757501AbZDXTmT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 15:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZDXTmI
+	id S1754728AbZDXUDI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 16:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbZDXUCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 15:42:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37671 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751272AbZDXTmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 15:42:06 -0400
+	Fri, 24 Apr 2009 16:02:55 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:47948 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752649AbZDXUCy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 16:02:54 -0400
+Date: Fri, 24 Apr 2009 16:02:52 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Kernel development list <linux-kernel@vger.kernel.org>
+cc: USB list <linux-usb@vger.kernel.org>
+Subject: NLS: utf8 conversions
+Message-ID: <Pine.LNX.4.44L0.0904241534110.4531-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: ptrace && cred_exec_mutex (Was: [PATCH] ptrace:
-	tracehook_unsafe_exec: remove the stale comment)
-In-Reply-To: Oleg Nesterov's message of  Friday, 24 April 2009 18:39:49 +0200 <20090424163949.GA12035@redhat.com>
-References: <20090423212250.GA22537@redhat.com>
-	<20090423232717.975ABFC3C7@magilla.sf.frob.com>
-	<20090424163949.GA12035@redhat.com>
-X-Zippy-Says: I can't think about that.  It doesn't go with HEDGES in the shape
-    of LITTLE LULU -- or ROBOTS making BRICKS...
-Message-Id: <20090424193835.A765BFC3C7@magilla.sf.frob.com>
-Date: Fri, 24 Apr 2009 12:38:35 -0700 (PDT)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> (change subject, add more CCs)
-> 
-> On 04/23, Roland McGrath wrote:
-> >
-> > > tracehook_unsafe_exec() doesn't need task_lock(), remove the old comment.
-> >
-> > Please make it instead say that cred_exec_mutex is held by the caller
-> > through the exec.
-> 
-> Yes. Except it looks like ->cred_exec_mutex is never used in fact.
-> 
-> ptrace_attach() takes current->cred_exec_mutex ? iow, ptrace and exec
-> use different locks ?
+Although nobody seems to have made a big deal about it, the conversions
+between utf8 and utf16 done by fs/nls/nls_base.c are wrong in a couple
+of important respects:
 
-Good point!  That sure looks broken to me.  David?
+	They don't handle Unicode code points larger than U+FFFF.
 
-Either that should be task->cred_exec_mutex, or Oleg and I
-are completely confused about what cred_exec_mutex is meant for.
+	They don't detect invalid values, in particular, surrogate
+	code points.
 
+The problems stem from the fact the characters at issue can't be
+represented by a single 16-bit wchar_t.  But that's no excuse for
+performing an incorrect conversion to or from utf16.
 
-Thanks,
-Roland
+Are there any definite thoughts on how this should be handled?  I don't 
+see any way for the single-character conversion routines (utf8_mbtowc 
+and utf8_wctomb) to come to grips with these issues, except perhaps for 
+returning an error when a character would be invalid or too big to fit 
+in 16 bits.
+
+The string-oriented routines (utf8_mbstowcs and utf8_wcstombs) could be 
+adapted to deal with these issues properly.
+
+Any comments or suggestions for other approaches?
+
+Alan Stern
+
