@@ -1,85 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbZDXK5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbZDXK6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752874AbZDXK5W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 06:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZDXK5M
+	id S1755267AbZDXK6a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 06:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbZDXK6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 06:57:12 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:38465 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750704AbZDXK5L convert rfc822-to-8bit (ORCPT
+	Fri, 24 Apr 2009 06:58:22 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:50765 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751274AbZDXK6V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 06:57:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=ZZNl6eAFw0Aq0VgUuI2LcnGH4ybe8A2L28nV3sKjg+1ygJylknGG3AaKeuIJ26r1N+
-         CUEXml41E1t388hMG5tDXCUpro85G/CcMp7dZulXwPs4wm2J8JJFHgnd4UNwV7n5Akr5
-         opu0MOlP5Ph6Pov0voZIGqTJKNbZIDGo8JD3Q=
+	Fri, 24 Apr 2009 06:58:21 -0400
+Date: Fri, 24 Apr 2009 13:57:56 +0300
+From: "Peter 'p2' De Schrijver" <peter.de-schrijver@nokia.com>
+To: ext David Brownell <david-b@pacbell.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] TWL4030: Activate VDD1, VDD2 and VPLL1 at startup
+Message-ID: <20090424105756.GB4720@codecarver.research.nokia.com>
+References: <1240492208-14791-1-git-send-email-peter.de-schrijver@nokia.com> <1240492208-14791-2-git-send-email-peter.de-schrijver@nokia.com> <200904231453.47223.david-b@pacbell.net>
 MIME-Version: 1.0
-In-Reply-To: <m2tz4e5psn.fsf@igel.home>
-References: <20090423193211.GA14892@redhat.com> <m2tz4e5psn.fsf@igel.home>
-Date: Fri, 24 Apr 2009 12:57:09 +0200
-X-Google-Sender-Auth: 47c1b6e8e0715310
-Message-ID: <10f740e80904240357r63fc9d4i5f8a4e6a5530b671@mail.gmail.com>
-Subject: Re: [PATCH 3/4] ptrace: remove PT_DTRACE from m68k, m68knommu
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andreas Schwab <schwab@linux-m68k.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, Chris Zankel <chris@zankel.net>,
-       David Howells <dhowells@redhat.com>, Greg Ungerer <gerg@uclinux.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Helge Deller <deller@gmx.de>, Hirokazu Takata <takata@linux-m32r.org>,
-       Jeff Dike <jdike@addtoit.com>, Kyle McMartin <kyle@mcmartin.ca>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Mike Frysinger <vapier.adi@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904231453.47223.david-b@pacbell.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-OriginalArrivalTime: 24 Apr 2009 10:57:58.0446 (UTC) FILETIME=[8751CCE0:01C9C4CB]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 12:06, Andreas Schwab <schwab@linux-m68k.org> wrote:
-> Oleg Nesterov <oleg@redhat.com> writes:
->
->> m68k sets PT_DTRACE in trap_c() but never uses it.
->>
->> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
->>
->>  arch/m68k/kernel/traps.c            |    1 -
->>  arch/m68knommu/kernel/asm-offsets.c |    1 -
->>  arch/m68knommu/kernel/traps.c       |    1 -
->>  3 files changed, 3 deletions(-)
->>
->> --- PTRACE/arch/m68k/kernel/traps.c~DT_3_SET  2009-04-06 00:03:35.000000000 +0200
->> +++ PTRACE/arch/m68k/kernel/traps.c   2009-04-22 21:52:23.000000000 +0200
->> @@ -1057,7 +1057,6 @@ asmlinkage void trap_c(struct frame *fp)
->>       if (fp->ptregs.sr & PS_S) {
->>               if ((fp->ptregs.vector >> 2) == VEC_TRACE) {
->>                       /* traced a trapping instruction */
->> -                     current->ptrace |= PT_DTRACE;
->
-> This is supposed to be setting the TIF_DELAYED_TRACE thread flag.
+On Thu, Apr 23, 2009 at 11:53:47PM +0200, ext David Brownell wrote:
+> On Thursday 23 April 2009, Peter 'p2' De Schrijver wrote:
+> > This patch activates VDD1, VDD2 and VPLL1 when booting. This is necessary
+> > because these resources are in warm reset state after a reboot.
+> 
+> Warm reset state?  I thought there were only ACTIVE, SLEEP, and OFF
+> states for individual resources.  Do you mean SLEEP?  And if so, is
+> this not something that should be dealt with by the power script
+> which runs inside the twl4030 when it handles the warm reset event?
+> 
 
-This code already looks different in the m68k tree, due to your fix to
-`Allow all kernel traps to be handled via exception fixups' for
-ARAnyM, and some related cleanups by you and Roman.
+No. I don't mean SLEEP. WARM-RESET state means the output level has its
+default value. I think this is used to prevent any DVFS or smartreflex
+related changes during warm reset. At least the TRM suggests to do this
+from the 'software'. I will ask my contact at TI why they suggest to do
+it this way.
 
-But more interestingly, Roman's last cleanup said there's no need to
-set TIF_DELAYED_TRACE?
+> I thought those regulators couldn't provide enough power from SLEEP
+> state to let the system boot.  So being able to run this code means
+> they're not in SLEEP state...
+> 
 
-Gr{oetje,eeting}s,
+That's correct.
 
-						Geert
+> Please explain.  (Remembering that most of us haven't really looked
+> in much detail at this level of reset even handling!)
+> 
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I haven't read the public TRM on this part, so I don't know how much of
+this is undocumented for you.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+> 
+> > This means 
+> > their voltage levels cannot be modified so DVFS and smartreflex don't work.
+> 
+> Three thoughts on this:
+> 
+>  - These three switching regulators are currently ignored by this
+>    driver, because I've expected them to be managed as part of the
+>    DVFS framework.  (Mostly via the hardware SmartReflex support.
+>    They don't seem particularly geared for software control.)
+> 
+
+VPLL1 is not managed by DVFS or smartreflex. OTOH it needs to be on all
+the time, so there is no point in controlling them from software I
+guess.
+
+>    It seems odd to add these hooks for regulators that are otherwise
+>    consciously ignored by this driver, and not software-controlled...
+> 
+>  - This *could* be done with the twl4030-power.c (nyet in mainline)
+>    resource_config hooks.  But those hooks are board-specific (and
+>    nyet in mainline), while these should "always" be done.
+> 
+
+Indeed. At least that's my understanding now.
+
+>    Should we maybe have all those power resource init hooks done
+>    by the twl4030_core.c code?  So as to work even if regulator
+>    and power (script) drivers aren't present.
+> 
+
+You mean moving this to twl4030_core.c ?
+
+>  - The policy you described is specific to OMAP3 ... so shouldn't
+>    these changes be conditionalized so they only kick in on OMAP3
+>    based platforms?  (Just as code-cleanliness for now; no other
+>    platform yet uses these PMIC solutions, that I've heard of.)
+> 
+
+I don't really know. Even on non OMAP3 platforms, I would expect VDD1
+and VDD2 to control core voltages, as those are the ones which you can
+easily use for DVFS and they are SMPS. I don't really see why you would
+use TWL4030 (and cope with its complexity) if you don't want to make use
+of these features. 
+
+>    And if they only matter for DVFS + SmartReflex ... should they
+>    maybe be conditionalized for those, too?  (Minor point at best;
+>    it "shouldn't" hurt to do this at other times too.)  Or maybe
+>    even put into a twl4030-smartreflex.c driver, if there'd be
+>    much for that to do.  Setting FLOOR and CEILING voltages and
+>    other stuff in section 5.5.1 of the tps65950 manual (step 4),
+>    for example.
+> 
+> Having this in twl4030-core.c would affect the patch you sent to
+> move the "send PowerBus message" logic to its own function; that
+> would need to be in twl4030_core too.
+> 
+
+I think that might be a good idea anyway. It seems sending these
+powerbus messages needs to be done more often then we expected when
+initially writing the twl4030 code.
+
+Cheers,
+
+Peter.
+
+-- 
+goa is a state of mind
