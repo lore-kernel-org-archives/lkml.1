@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbZDXRnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757981AbZDXRpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757944AbZDXRnS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 13:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbZDXRnG
+	id S1757981AbZDXRpb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 13:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbZDXRpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 13:43:06 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:48246 "EHLO e6.ny.us.ibm.com"
+	Fri, 24 Apr 2009 13:45:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40982 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753325AbZDXRnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 13:43:04 -0400
-Date: Fri, 24 Apr 2009 10:43:01 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: David Howells <dhowells@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       torvalds@osdl.org, Andrew Morton <akpm@linux-foundation.org>,
-       serue@us.ibm.com, viro@zeniv.linux.org.uk,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] It may not be assumed that wake_up(), finish_wait()
-	and co. imply a memory barrier
-Message-ID: <20090424174301.GB6754@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090413214852.GA1127@redhat.com> <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com> <14561.1239873018@redhat.com> <21239.1240407420@redhat.com> <5591.1240417398@redhat.com> <21209.1240504344@redhat.com> <26028.1240573601@redhat.com> <20090424150809.GA6754@linux.vnet.ibm.com> <20090424170830.GA13026@redhat.com>
+	id S1753153AbZDXRpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 13:45:22 -0400
+Date: Fri, 24 Apr 2009 19:41:40 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Jan Kratochvil <jan.kratochvil@redhat.com>,
+       Denys Vlasenko <dvlasenk@redhat.com>
+Subject: Re: Q: ptrace_signal() && PTRACE_SETSIGINFO (Was: SIGSTOP &&
+	ptrace)
+Message-ID: <20090424174140.GA15020@redhat.com>
+References: <1158166a0904230515h333a78c9uf49931824c1dfe72@mail.gmail.com> <20090423142627.GA31572@redhat.com> <20090423151633.GA3120@redhat.com> <20090424063159.BCEDAFC3C7@magilla.sf.frob.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090424170830.GA13026@redhat.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090424063159.BCEDAFC3C7@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 07:08:30PM +0200, Oleg Nesterov wrote:
-> On 04/24, Paul E. McKenney wrote:
+On 04/23, Roland McGrath wrote:
+>
+> > Yes. PTRACE_SETSIGINFO can change *info if debugger wants something
+> > special. But then we do:
 > >
-> > One question, assuming that this documentation intends to guide the
-> > reader on where to put the locking and/or memory-barrier primitives...
-> >
-> > Suppose we have the following sequence of events:
-> >
-> > 1.	The waiter does "set_current_state(TASK_UNINTERRUPTIBLE);".
-> > 	This implies a full memory barrier.
-> >
-> > 2.	The awakener updates some shared state.
-> >
-> > 3.	The awakener does "event_indicated = 1;".
-> >
-> > 4.	The waiter does "if (event_indicated)", and, finding that
-> > 	the event has in fact been indicated, does "break".
-> >
-> > 5.	The waiter accesses the shared state set in #2 above.
-> >
-> > 6.	Some time later, the awakener does "wake_up(&event_wait_queue);"
-> > 	This does not awaken anyone, so no memory barrier.
-> >
-> > Because there is no memory barrier between #2 and #3, reordering by
-> > either the compiler or the CPU might cause the awakener to update the
-> > event_indicated flag in #3 -before- completing its update of shared
-> > state in #2.  Less likely (but still possible) optimizations might
-> > cause the waiter to access the shared state in #5 before checking
-> > the event_indicated flag in #4.
-> 
-> Do you mean something like
-> 
-> 	awakener:
-> 
-> 		DATA = value;
-> 		DATA_IS_READY = true;
-> 		wake_up(wq);
-> 
-> 
-> 	waiter:
-> 
-> 		set_current_state(UNINTERRUPTIBLE);
-> 		if (DATA_IS_READY)
-> 			do_something(DATA);
-> 
-> ?
-> 
-> Imho, the code above is just buggy and should be ignored by documentation ;)
-> 
-> Or do I miss your point?
+> > 	if (signr != info->si_signo) {
+> > 		info->si_signo = signr;
+> [...]
+> > Why? If the tracer changes ->exit_code it should know what it does.
+>
+> If it uses PTRACE_SETSIGINFO it should know what it does, and update
+> the siginfo_t to match the signal it passes to PTRACE_CONT et al.
+>
+> > Why do we reset *info?
+>
+> PTRACE_SETSIGINFO did not always exist, and even now might not be used by a
+> simple-minded application.  If the user is sophisticated, it calls
+> PTRACE_SETSIGINFO and then passes the signal number to match.  If not, it
+> never calls PTRACE_SETSIGINFO at all, but expects the signal number it
+> chose to pass in PTRACE_CONT to behave "normally" in the tracee.
 
-I was hoping that this sort of code might be actively discouraged by the
-documentation.  ;-)
+OK, understand.
 
-							Thanx, Paul
+> > But the real question, how can PTRACE_SETSIGINFO change ->si_signo
+> > (for example, for do_signal_stop(si_signo)) if this in fact is not
+> > allowed?
+>
+> It's allowed.  You just have to pass the same value you set in si_signo as
+> the argument to PTRACE_CONT after you do PTRACE_SETSIGINFO.
+
+Yes, yes, I see. I meant "the tracer can not use signr != ->si_signo",
+but now I don't see the reason it should.
+
+Oleg.
+
