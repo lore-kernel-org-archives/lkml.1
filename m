@@ -1,106 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbZDXTSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbZDXTSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756633AbZDXTSY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 15:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbZDXTSM
+	id S1756908AbZDXTSj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 15:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbZDXTSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 15:18:12 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:60276 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752352AbZDXTSL (ORCPT
+	Fri, 24 Apr 2009 15:18:13 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:46861 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752317AbZDXTSL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 24 Apr 2009 15:18:11 -0400
-Message-ID: <49F2105E.8010001@vlnb.net>
-Date: Fri, 24 Apr 2009 23:17:50 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ev8Fg9oVpdsvICL/iVto1YlQ5DIfC+ZRRwtfW32mvQeJhBfqi7zAIYfDM6b3EedqZQ
+         ew8445LfLsc8t+QloyTapyR59UtdGg7u/r8qp3bw+Ix/9D/M3KK4X6MmGV7PIoQHt1Ah
+         MtoI0Cg+s+9MWimEmCaplSkPb000nuYklfw9k=
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: Tejun Heo <tj@kernel.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Douglas Gilbert <dgilbert@interlog.com>, Christoph Hellwig <hch@lst.de>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH] [Target_Core_Mod/pSCSI]: Add optional legacy scsi_execute_async()
- usage for Linux/SCSI passthrough
-References: <1239930560.4176.577.camel@haakon2.linux-iscsi.org> <49EB036B.8090607@panasas.com> <49EDB8EF.7040503@vlnb.net> <49EF1A88.1040105@panasas.com>
-In-Reply-To: <49EF1A88.1040105@panasas.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+Na/CI9XavwqIcJ4xfx/e4T8OghE8R9MjKLYv
- xNDSxrVEPt05D3mry8kc+leV6TfuOV+LB5omgTPKEREwX1EVFy
- 2wnp2BQiTw7Pd60oas8OQ==
+In-Reply-To: <20090422140107.GD3288@tuxdriver.com>
+References: <c4e36d110904220333u37304c79k6ab528f92b5f3718@mail.gmail.com>
+	 <20090422140107.GD3288@tuxdriver.com>
+Date: Fri, 24 Apr 2009 21:18:09 +0200
+Message-ID: <c4e36d110904241218x209a4b76kf271f7288f1a33da@mail.gmail.com>
+Subject: Re: regression IWl3945 - doesn't work with recent 2.6.30-rcX
+From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh, on 04/22/2009 05:24 PM wrote:
-> On 04/21/2009 03:15 PM, Vladislav Bolkhovitin wrote:
->> Boaz Harrosh, on 04/19/2009 02:56 PM wrote:
->>> On 04/17/2009 04:09 AM, Nicholas A. Bellinger wrote:
->> [..]
+2009/4/22 John W. Linville <linville@tuxdriver.com>:
+> On Wed, Apr 22, 2009 at 12:33:03PM +0200, Zdenek Kabelac wrote:
+>> Hi
 >>
->>> Are you aware that scsi_execute_async() has gone in 2.6.30-rc1?
->>>
->>> I'm not sure what would be the best alternative for you. I would say
->>> a bio, but it is still being debated. Your current options are:
->>>
->>> 1. bio_alloc then loop () bio_add_pc_page, and finally blk_rq_append_bio
->>>    (Which block people don't like)
->>> 2. sglist => page-pointers-array translation and blk_rq_map_user with 
->>>    struct rq_map_data mode. (not possible with all kind of sglists)
->>> 2. sglist => iovec translation and blk_rq_map_user_iov()
->>>    (Very very ugly mapping of pages to virtual pointers)
->>>
->>> I have a similar situation with my OSD code.
->> Do you have somewhere in it a need to run an arbitrary CDB with data 
->> pages stored in an sglist? Is that code accepted in the mainline?
->>
-> 
-> No, I have a direct bio which comes from two sources.
-> 1. A bio prepared by a filesystem to describe a write/read to a file (osd object)
-> 2. A cloned bio that comes from a stacking block-device over osd-object.
-> 
-> So I do not have an sglist at all, anywhere in code.
-> 
->> If yes, why not to resurrect the necessary bits of scsi_execute_async() 
->> (option (1) above)? It was deleted, because in 2.6.30 there are no users 
->> of it left, but if there are users (OSD), then why not to return it? 
->> Seems nothing better for the sg->bio case can be invented.
->>
-> 
-> I hate scsi_execute_async() for lots of reasons, 
-> 1. The cover-up of an historical abuse of sglists by sg/sr
-> 2. Override of use_sg/data-pointer crap
-> 3. What is data-format got to do with sync/async execution
-> 4. the need of all that scsi_io_context and the re-invention
->    of async_done API.
-> 5. ...
-> Good riddence
+>> I'm checking whether -rcX kernel could be usable on my
+>> T61/4GB/C2D/x86_64 - but wireless seems to be still out of
+>> functionality:
+>> I'm getting lots of weird trace-back messages and it looks like
+>> iwl3945 is not working at all.
+>> (attached messages from fresh build of -rc3 - but it never worked even in -rc1)
+>
+> Looks like this one did _not_ make -rc3:
+>
+> commit df833b1d73680f9f9dc72cbc3215edbbc6ab740d
+> Author: Reinette Chatre <reinette.chatre@intel.com>
+> Date:   Tue Apr 21 10:55:48 2009 -0700
+>
+>    iwlwifi: DMA fixes
+>
+>    A few issues wrt DMA were uncovered when using the driver with swiotlb.
+> ...
+>
+> It is in wireless-2.6 and should be in net-2.6 -- please try one of those kernels.
 
-Removal of what can be removed from the above I meant under "the 
-necessary bits".
 
-> But you might be looking into an API introduced by an RFC by
-> Tejun Heo in the form of blk_rq_map_kern_sgl() which should
-> be a more appropriate general API for your use.
+I can confirm that current upstream linux commit
+9f5a691253924fd033a58c6b1fed57bb0a4eccf4 works again with iwlwifi.
+and it already contains the patch you suggested to check.
 
-Yes, it looks like what's needed.
-
-> (And is not directly usable for me in OSD)
-> 
->> Vlad
-> 
-> Boaz
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
+Zdenek
