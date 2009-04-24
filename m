@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbZDXPI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbZDXPK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755557AbZDXPI4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 11:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbZDXPIr
+	id S1757331AbZDXPK1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 11:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbZDXPKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 11:08:47 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:61518 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754539AbZDXPIq (ORCPT
+	Fri, 24 Apr 2009 11:10:15 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:30458 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751917AbZDXPKO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 11:08:46 -0400
+	Fri, 24 Apr 2009 11:10:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=d0wOqeUp//F9e1f4QQeTAMDWqROS7VosnDRlErNZnD4dCoP4Nk84Aoz8KYmLl+fDZY
-         meoymLq0Pk5elcR6yF2DJx2Xkxv+UkBkeLjfPlPK9O7mZ5vDCGAhtPFufjxLwY2Fsf7w
-         Yx8+czdWvILuq2aSFVOCXVMWw1pnBq46FhhRo=
+        b=OuGPwQP11PRBNHO7I4hGxsC0l4awxB897pus3BGBclgdqyAS6GfdMSPP/b3dsZXR/S
+         nX3zgZMjv5rstwcjAyNykFSgPuL3ZLCRHU90fnAQGH7GJIYJKwkP4ikPauY0dxzKEmn5
+         4FXszq/+w5yp0QQ+k1A5U7gKJrL2vPBG0L4FI=
 From: tom.leiming@gmail.com
-To: ingo@elte.hu, akpm@osdl.org
+To: mingo@elte.hu, akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, Ming Lei <tom.leiming@gmail.com>
 Subject: [PATCH] Documentation:lockdep-design: fix note of state bits
-Date: Fri, 24 Apr 2009 23:08:39 +0800
-Message-Id: <1240585719-5715-1-git-send-email-tom.leiming@gmail.com>
+Date: Fri, 24 Apr 2009 23:10:06 +0800
+Message-Id: <1240585806-5744-1-git-send-email-tom.leiming@gmail.com>
 X-Mailer: git-send-email 1.6.0.GIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
