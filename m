@@ -1,52 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbZDXEdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757416AbZDXEcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752590AbZDXEdf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 00:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbZDXEcT
+	id S1757416AbZDXEcx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 00:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbZDXEbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 00:32:19 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:42254 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756595AbZDXEcS (ORCPT
+	Fri, 24 Apr 2009 00:31:17 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:40426 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751654AbZDXEbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 00:32:18 -0400
-Date: Fri, 24 Apr 2009 05:29:51 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Oleg Nesterov <oleg@redhat.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
-       Kenneth Baker <bakerk@metacarta.com>,
-       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH 2/2] check_unsafe_exec: s/lock_task_sighand/rcu_read_lock/
-In-Reply-To: <20090423230245.GB31302@redhat.com>
-Message-ID: <Pine.LNX.4.64.0904240526080.15735@blonde.anvils>
-References: <Pine.LNX.4.64.0904010106310.16500@blonde.anvils>
- <20090401023849.GW28946@ZenIV.linux.org.uk> <20090401030339.GX28946@ZenIV.linux.org.uk>
- <20090406153127.GA21220@redhat.com> <Pine.LNX.4.64.0904191710320.9099@blonde.anvils>
- <20090421161006.GC5402@redhat.com> <alpine.LFD.2.00.0904210924270.2199@localhost.localdomain>
- <20090421171530.GA12014@redhat.com> <alpine.LFD.2.00.0904211032191.2199@localhost.localdomain>
- <Pine.LNX.4.64.0904212031120.10256@blonde.anvils> <20090423230245.GB31302@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 24 Apr 2009 00:31:16 -0400
+Message-Id: <20090424043114.991222530@goodmis.org>
+References: <20090424043005.338878133@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 24 Apr 2009 00:30:10 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 5/6] tracing: fix cut and paste macro error
+Content-Disposition: inline; filename=0005-tracing-fix-cut-and-paste-macro-error.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Apr 2009, Oleg Nesterov wrote:
->  	write_lock(&p->fs->lock);
-> -	lock_task_sighand(p, &flags);
-> +	rcu_read_lock();
->  	for (t = next_thread(p); t != p; t = next_thread(t)) {
->  		if (t->fs == p->fs)
->  			n_fs++;
->  	}
-> +	rcu_read_lock();
+From: Steven Rostedt <srostedt@redhat.com>
 
-Not quite! if second rcu_read_lock() changed to rcu_read_unlock(), then
-Acked-by: Hugh Dickins <hugh@veritas.com>
+In case a module uses the TRACE_EVENT macro for creating automated
+events in ftrace, it may choose to use a different file name
+than the defined system name, or choose to use a different path than
+the default "include/trace/events" include path.
+
+If this is done, then before including trace/define_trace.h the
+header would define either "TRACE_INCLUDE_FILE" for the file
+name or "TRACE_INCLUDE_PATH" for the include path.
+
+If it does not define these, then the define_trace.h defines them
+instead. If define trace defines them, then define_trace.h should
+also undefine them before exiting. To do this a macro is used
+to note this:
+
+ #ifndef TRACE_INCLUDE_FILE
+ # define TRACE_INCLUDE_FILE TRACE_SYSTEM
+ # define UNDEF_TRACE_INCLUDE_FILE
+ #endif
+
+[...]
+
+ #ifdef UNDEF_TRACE_INCLUDE_FILE
+ # undef TRACE_INCLUDE_FILE
+ # undef UNDEF_TRACE_INCLUDE_FILE
+ #endif
+
+The UNDEF_TRACE_INCLUDE_FILE acts as a CPP variable to know to undef
+the TRACE_INCLUDE_FILE before leaving define_trace.h.
+
+Unfortunately, due to cut and paste errors, the macros between
+FILE and PATH got mixed up.
+
+[ Impact: undef TRACE_INCLUDE_FILE and/or TRACE_INCLUDE_PATH when needed ]
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ include/trace/define_trace.h |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
+index 7f1f23d..abc611f 100644
+--- a/include/trace/define_trace.h
++++ b/include/trace/define_trace.h
+@@ -44,7 +44,7 @@
+ 
+ #ifndef TRACE_INCLUDE_PATH
+ # define __TRACE_INCLUDE(system) <trace/events/system.h>
+-# define UNDEF_TRACE_INCLUDE_FILE
++# define UNDEF_TRACE_INCLUDE_PATH
+ #else
+ # define __TRACE_INCLUDE(system) __stringify(TRACE_INCLUDE_PATH/system.h)
+ #endif
+@@ -64,13 +64,13 @@
+ 
+ /* Only undef what we defined in this file */
+ #ifdef UNDEF_TRACE_INCLUDE_FILE
+-# undef TRACE_INCLUDE_PATH
++# undef TRACE_INCLUDE_FILE
+ # undef UNDEF_TRACE_INCLUDE_FILE
+ #endif
+ 
+-#ifdef UNDEF_TRACE_INCLUDE_FILE
++#ifdef UNDEF_TRACE_INCLUDE_PATH
+ # undef TRACE_INCLUDE_PATH
+-# undef UNDEF_TRACE_INCLUDE_FILE
++# undef UNDEF_TRACE_INCLUDE_PATH
+ #endif
+ 
+ /* We may be processing more files */
+-- 
+1.6.2.1
+
+-- 
