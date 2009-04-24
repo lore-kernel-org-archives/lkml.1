@@ -1,127 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbZDXFEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbZDXFF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbZDXFEL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 01:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZDXFD7
+	id S1755153AbZDXFF1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 01:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbZDXFFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 01:03:59 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:34404 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751910AbZDXFD6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 01:03:58 -0400
-Message-ID: <49F146FF.5050200@cosmosbay.com>
-Date: Fri, 24 Apr 2009 06:58:39 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
-       David Miller <davem@davemloft.net>, kaber@trash.net,
-       jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com, jengelh@medozas.de,
-       r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH]  netfilter: use per-CPU recursive lock {XIV}
-References: <20090418094001.GA2369@ioremap.net>	<20090418141455.GA7082@linux.vnet.ibm.com>	<20090420103414.1b4c490f@nehalam>	<49ECBE0A.7010303@cosmosbay.com>	<18924.59347.375292.102385@cargo.ozlabs.ibm.com>	<20090420215827.GK6822@linux.vnet.ibm.com>	<18924.64032.103954.171918@cargo.ozlabs.ibm.com>	<20090420160121.268a8226@nehalam>	<alpine.LFD.2.00.0904210831560.2199@localhost.localdomain>	<20090421111541.228e977a@nehalam>	<20090421193924.GA24404@elte.hu>	<20090421143927.52d7d89d@nehalam>	<alpine.LFD.2.00.0904220821240.3101@localhost.localdomain> <20090423210938.1501507b@nehalam>
-In-Reply-To: <20090423210938.1501507b@nehalam>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 24 Apr 2009 06:58:48 +0200 (CEST)
+	Fri, 24 Apr 2009 01:05:09 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55648 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752280AbZDXFFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 01:05:06 -0400
+Date: Fri, 24 Apr 2009 15:04:56 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for April 24
+Message-Id: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__24_Apr_2009_15_04_56_+1000_Ei+.=PU=XmTyee/k"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger a écrit :
-> In days of old in 2.6.29, netfilter did locketh using a 
-> lock of the reader kind when doing its table business, and do
-> a writer when with pen in hand like a overworked accountant
-> did replace the tables. This sucketh and caused the single
-> lock to fly back and forth like a poor errant boy.
-> 
-> But then netfilter was blessed with RCU and the performance
-> was divine, but alas there were those that suffered for
-> trying to replace their many rules one at a time.
-> 
-> So now RCU must be vanquished from the scene, and better
-> chastity belts be placed upon this valuable asset most dear.
-> The locks that were but one are now replaced by one per suitor.
-> 
-> The repair was made after much discussion involving
-> Eric the wise, and Linus the foul. With flowers springing
-> up amid the thorns some peace has finally prevailed and
-> all is soothed. This patch and purple prose was penned by
-> in honor of "Talk like Shakespeare" day.
-> 
-> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+--Signature=_Fri__24_Apr_2009_15_04_56_+1000_Ei+.=PU=XmTyee/k
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi all,
 
-Philip Davis of the university’s School of English said :
+I have added a tree that contains only simple build fixes for Linus'
+tree.  It currently contains:
 
-  "Shakespeare surprises the brain and catches it off guard in
-  a manner that produces a sudden burst of activity - a sense 
-  of drama created out of the simplest of things."
+	lib: find_next_bit.o needed by a module only, move it from lib to obj
+	powerpc: fix for long standing bug noticed by gcc 4.4.0
 
-http://www.physorg.com/news85664210.html
+This is just an experiment for now and I am not sure if I should push
+these fixes directly to Linus ...
 
-> 
-> ---
-> What hath changed over the last two setting suns:
->   * more words, mostly correct...
-> 
->   * no need to locketh for writeh on current cpu tis 
->     always so
-> 
->   * the locking of all cpu's on replace is always done as
->     part of the get_counters cycle, so the sychronize swip
->     in replace tables is gone with only a comment remaing
-> 
->  include/linux/netfilter/x_tables.h |   55 ++++++++++++++--
->  net/ipv4/netfilter/arp_tables.c    |  125 ++++++++++--------------------------
->  net/ipv4/netfilter/ip_tables.c     |  126 ++++++++++---------------------------
->  net/ipv6/netfilter/ip6_tables.c    |  123 ++++++++++--------------------------
->  net/netfilter/x_tables.c           |   55 ++++++++--------
->  5 files changed, 188 insertions(+), 296 deletions(-)
-> 
+Changes since 20090423:
 
+New tree:
+	fixes
 
->  
->  static int __init xt_init(void)
->  {
-> -	int i, rv;
-> +	unsigned int i;
-> +	int rv;
-> +	static struct lock_class_key xt_lock_key[NR_CPUS];
+The acpi tree gained a build failure for which I reverted a commit.
 
-Could we avoid this [NR_CPUS] thing ?
+----------------------------------------------------------------------------
 
-> +
-> +	for_each_possible_cpu(i) {
-> +		rwlock_t *lock = &per_cpu(xt_info_locks, i);
-> +
-> +		rwlock_init(lock);
-> +		lockdep_set_class(lock, xt_lock_key+i);
-> +	}
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
 
-Did you tried :
+Below is a summary of the state of the merge.
 
-static DECLARE_PER_CPU(struct lock_class_key, xt_locks_key);
+We are up to 135 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
 
-static int __init xt_init(void)
- {
-	unsigned int i;
-	int rv;
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
 
-	for_each_possible_cpu(i) {
-		rwlock_t *lock = &per_cpu(xt_info_locks, i);
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
 
-		rwlock_init(lock);
-		lockdep_set_class(lock, &per_cpu(&xt_locks_key, i));
-	}
-...
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
 
-Thanks
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging configfs/linux-next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging ubifs/linux-next
+Merging xfs/master
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging tracing/auto-tracing-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging kbuild/master
+Merging ide/for-next
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging wireless/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/rndis_wlan.c
+CONFLICT (content): Merge conflict in include/linux/mmc/sdio_ids.h
+CONFLICT (content): Merge conflict in net/mac80211/pm.c
+[master ad362c6] Revert "rfkill: remove user_claim stuff"
+Merging mtd/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
+req.c
+Merging cifs/master
+Merging mmc/next
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in drivers/usb/serial/cypress_m8.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/option.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/usb-serial.c
+Merging agp/agp-next
+Merging generic-ipi/auto-generic-ipi-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging suspend/linux-next
+Merging quilt/driver-core
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+[master 15570ec] Revert "ACPI/i915: build fix"
+
+--Signature=_Fri__24_Apr_2009_15_04_56_+1000_Ei+.=PU=XmTyee/k
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknxSHgACgkQjjKRsyhoI8zaywCghBCi/LzD8y4FQlsZUyl4bGBV
+nmIAmQHu08Y7YTJRlyOSbEjKpofpKv0T
+=Q/+w
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__24_Apr_2009_15_04_56_+1000_Ei+.=PU=XmTyee/k--
