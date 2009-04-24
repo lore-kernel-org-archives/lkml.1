@@ -1,92 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbZDXHza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756462AbZDXIBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757321AbZDXHza (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 03:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbZDXHzU
+	id S1756462AbZDXIBZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 04:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbZDXIBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 03:55:20 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:33241 "EHLO smtps.tip.net.au"
+	Fri, 24 Apr 2009 04:01:12 -0400
+Received: from mga02.intel.com ([134.134.136.20]:3771 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753153AbZDXHzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 03:55:19 -0400
-Date: Fri, 24 Apr 2009 17:55:09 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Sachin Sant <sachinp@in.ibm.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
-       peterz@infradead.org, Hugh Dickins <hugh@veritas.com>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Oleg Nesterov <oleg@redhat.com>
-Subject: Re: Next April 24 : BUG: lock held at task exit time!
-Message-Id: <20090424175509.561c96ad.sfr@canb.auug.org.au>
-In-Reply-To: <49F1626D.6080102@in.ibm.com>
-References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
-	<49F1626D.6080102@in.ibm.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	id S1752088AbZDXIBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 04:01:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,240,1239001200"; 
+   d="scan'208";a="406442833"
+Date: Fri, 24 Apr 2009 10:00:55 +0200
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: mingo@elte.hu, a.p.zijlstra@chello.nl, akpm@linux-foundation.org
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
+       eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
+       ak@linux.jf.intel.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       hpa@zytor.com
+Subject: [rfc 2/2] x86, bts: use physically non-contiguous trace buffer
+Message-ID: <20090424100055.A30408@sedona.ch.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__24_Apr_2009_17_55_09_+1000_BzaLvDqRx/gHM5wx"
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__24_Apr_2009_17_55_09_+1000_BzaLvDqRx/gHM5wx
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Use vmalloc to allocate the branch trace buffer.
 
-Hi Sachin,
+Peter Zijlstra suggested to use vmalloc rather than kmalloc to
+allocate the potentially multi-page branch trace buffer.
 
-On Fri, 24 Apr 2009 12:25:41 +0530 Sachin Sant <sachinp@in.ibm.com> wrote:
->
-> While booting today's next tree on a powerpc box [ power 6 blade]
-> observed the following :
->=20
-> khelper used greatest stack depth: 10176 bytes left
->=20
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> [ BUG: lock held at task exit time! ]
-> -------------------------------------
-> khelper/21 is exiting with locks still held!
-> 2 locks held by khelper/21:
->  #0:  (rcu_read_lock){.+.+.+}, at: [<c0000000001382fc>]=20
-> .check_unsafe_exec+0x44/0x148
->  #1:  (rcu_read_lock){.+.+.+}, at: [<c000000000138368>]=20
-> .check_unsafe_exec+0xb0/0x148
->=20
-> stack backtrace:
-> Call Trace:
-> [c000000044483cf0] [c000000000011a54] .show_stack+0x6c/0x16c (unreliable)
-> [c000000044483da0] [c00000000009ae14] .debug_check_no_locks_held+0x98/0xb4
-> [c000000044483e20] [c000000000073b1c] .do_exit+0x758/0x7b0
-> [c000000044483f00] [c0000000000853d8] .____call_usermodehelper+0x170/0x174
-> [c000000044483f90] [c00000000002bd8c] .kernel_thread+0x54/0x70
-> net_namespace: 2000 bytes
->=20
-> Complete dmesg attached. Let me know if you need any other info. I will=20
-> try yesterday's next
-> tree to check if this problem can be recreated.
+Is there a way to have vmalloc allocate a physically non-contiguous
+buffer for test purposes? Ideally, the memory area would have big
+holes in it with sensitive data in between so I would know immediately
+when this is overwritten.
 
-Almost certainly commit 874a9e18f25c86dbc199ad32ddd9ca44d25290e8
-("check_unsafe_exec: s/lock_task_sighand/rcu_read_lock/") which has a
-typo (two locks instead of lock/unlock) as pointed out by Hugh Dickins
-(<Pine.LNX.4.64.0904240526080.15735@blonde.anvils> on LKML).
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Reported-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
+ arch/x86/kernel/ptrace.c |    5 	3 +	2 -	0 !
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---Signature=_Fri__24_Apr_2009_17_55_09_+1000_BzaLvDqRx/gHM5wx
-Content-Type: application/pgp-signature
+Index: b/arch/x86/kernel/ptrace.c
+===================================================================
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -22,6 +22,7 @@
+ #include <linux/seccomp.h>
+ #include <linux/signal.h>
+ #include <linux/workqueue.h>
++#include <linux/vmalloc.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/pgtable.h>
+@@ -626,7 +627,7 @@ static int alloc_bts_buffer(struct bts_c
+ 	if (err < 0)
+ 		return err;
+ 
+-	buffer = kzalloc(size, GFP_KERNEL);
++	buffer = vmalloc(size);
+ 	if (!buffer)
+ 		goto out_refund;
+ 
+@@ -646,7 +647,7 @@ static inline void free_bts_buffer(struc
+ 	if (!context->buffer)
+ 		return;
+ 
+-	kfree(context->buffer);
++	vfree(context->buffer);
+ 	context->buffer = NULL;
+ 
+ 	refund_locked_memory(context->mm, context->size);
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
-iEYEARECAAYFAknxcF0ACgkQjjKRsyhoI8xbwQCeOIN6mOp7i/Fzwosg5CC9/UuW
-El8An3/bga4D8EL7FtrPCG+D4VUzvBx2
-=Yo2H
------END PGP SIGNATURE-----
-
---Signature=_Fri__24_Apr_2009_17_55_09_+1000_BzaLvDqRx/gHM5wx--
