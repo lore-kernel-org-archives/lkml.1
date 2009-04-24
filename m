@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759585AbZDXQdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759613AbZDXQgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759585AbZDXQdT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 12:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758092AbZDXQdJ
+	id S1759613AbZDXQgl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 12:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbZDXQgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 12:33:09 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36781 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757670AbZDXQdI (ORCPT
+	Fri, 24 Apr 2009 12:36:22 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:41219 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754933AbZDXQgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 12:33:08 -0400
-Message-ID: <49F1E99F.20501@zytor.com>
-Date: Fri, 24 Apr 2009 09:32:31 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 24 Apr 2009 12:36:21 -0400
+Date: Fri, 24 Apr 2009 12:35:23 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] Makefile:  "make prepare" should be "make modules_prepare"
+Message-ID: <alpine.LFD.2.00.0904241233220.22684@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-CC: Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: [PATCH] [4/4] x86: MCE: Fix EIPV behaviour with !PCC
-References: <20090407506.675031434@firstfloor.org> <20090407150657.61C4E1D046E@basil.firstfloor.org> <1240479838.6842.555.camel@yhuang-dev.sh.intel.com> <49F1077A.5030801@jp.fujitsu.com> <1240535513.6842.561.camel@yhuang-dev.sh.intel.com> <49F150BA.9040407@zytor.com> <20090424084647.GI13896@one.firstfloor.org> <49F194BC.4000704@jp.fujitsu.com>
-In-Reply-To: <49F194BC.4000704@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hidetoshi Seto wrote:
-> Andi Kleen wrote:
->> On Thu, Apr 23, 2009 at 10:40:10PM -0700, H. Peter Anvin wrote:
->>> Huang Ying wrote:
->>>> On Fri, 2009-04-24 at 08:27 +0800, Hidetoshi Seto wrote:
->>>>> Huang Ying wrote:
->>>>>
->>>>> Or, should this patch be applied after committing some of Andi's patches?
->>>>> It means this patch targets a bug in Andi's patch set and the bug is not
->>>>> in 2.6.30-rc* yet.
->>>> Yes. I think you are right. I fix a "bug" that doesn't exist.
->>>>
->>> Thanks for catching that now :)
->> Sorry we still need it I think, see previous email.
-> 
-> ... Really?
-> Still I believe this patch is not needed by .30
-> 
-> And, sorry, which email?
-> 
 
-I presume he was referring to your email.
-Andi, right?
+Correct the Makefile help text to read "make modules_prepare".
 
-	-hpa
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+---
 
+  i'm fairly sure that the correct target for configuring external
+module builds is "modules_prepare," no?
+
+diff --git a/Makefile b/Makefile
+index 9e5dc8f..5a96549 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1293,7 +1293,7 @@ help:
+ 	@echo  '  dir/            - Build all files in dir and below'
+ 	@echo  '  dir/file.[ois]  - Build specified target only'
+ 	@echo  '  dir/file.ko     - Build module including final link'
+-	@echo  '  prepare         - Set up for building external modules'
++	@echo  '  modules_prepare - Set up for building external modules'
+ 	@echo  '  tags/TAGS	  - Generate tags file for editors'
+ 	@echo  '  cscope	  - Generate cscope index'
+ 	@echo  '  kernelrelease	  - Output the release version string'
+
+
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Linked In:                             http://www.linkedin.com/in/rpjday
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
