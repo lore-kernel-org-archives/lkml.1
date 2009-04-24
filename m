@@ -1,202 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760021AbZDXQmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759815AbZDXQmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760021AbZDXQmh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 12:42:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758013AbZDXQl4
+	id S1759815AbZDXQmV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 12:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757278AbZDXQlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 12:41:56 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:41469 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758487AbZDXQlz (ORCPT
+	Fri, 24 Apr 2009 12:41:46 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:53112 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753447AbZDXQlo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 12:41:55 -0400
-Subject: [PATCH 02/14] kmemleak: Add documentation on the memory leak detector
-To: linux-kernel@vger.kernel.org
-From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Fri, 24 Apr 2009 17:41:09 +0100
-Message-ID: <20090424164109.4476.23890.stgit@pc1117.cambridge.arm.com>
-In-Reply-To: <20090424163500.4476.62146.stgit@pc1117.cambridge.arm.com>
-References: <20090424163500.4476.62146.stgit@pc1117.cambridge.arm.com>
-User-Agent: StGit/0.14.3.369.gbbd9.dirty
+	Fri, 24 Apr 2009 12:41:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=SSZup8+YszdmLZhqHbXv0s3gxx/4tNEbnYZFF5bEuNghRqJ7u2RI81+M7UwrrkQJCt
+         LmqWD6N5Mf0BOziPC74VpfSpEaJeowSh9UHf4LGYMaRSaewNTUfsJ+3elligsd8wJ85D
+         LPXjSguZi/+ZTyGppLzBmtyqva2/iLyjh/nZk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Apr 2009 16:41:54.0065 (UTC) FILETIME=[931B6010:01C9C4FB]
+Reply-To: petkovbb@gmail.com
+In-Reply-To: <200904241154.04860.bzolnier@gmail.com>
+References: <200904232248.31735.bzolnier@gmail.com>
+	 <49F17390.7070003@ru.mvista.com>
+	 <200904241154.04860.bzolnier@gmail.com>
+Date: Fri, 24 Apr 2009 18:41:42 +0200
+Message-ID: <9ea470500904240941s53f41b2dq1c4e5bc85b6244d7@mail.gmail.com>
+Subject: Re: [PATCH] MAINTAINERS: update IDE entry
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the Documentation/kmemleak.txt file with some
-information about how kmemleak works.
+Hi,
 
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
----
- Documentation/kernel-parameters.txt |    4 +
- Documentation/kmemleak.txt          |  142 +++++++++++++++++++++++++++++++++++
- 2 files changed, 146 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/kmemleak.txt
+On Fri, Apr 24, 2009 at 11:54 AM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+> On Friday 24 April 2009 10:08:48 Sergei Shtylyov wrote:
+>> Hello.
+>>
+>> Bartlomiej Zolnierkiewicz wrote:
+>>
+>> > By a popular demand quilt tree was replaced by a git one.
+>> >
+>> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>> > ---
+>> >  MAINTAINERS |    2 +-
+>> >  1 file changed, 1 insertion(+), 1 deletion(-)
+>> >
+>> > Index: b/MAINTAINERS
+>> > ===================================================================
+>> > --- a/MAINTAINERS
+>> > +++ b/MAINTAINERS
+>> > @@ -2743,7 +2743,7 @@ IDE SUBSYSTEM
+>> >  P: Bartlomiej Zolnierkiewicz
+>> >  M: bzolnier@gmail.com
+>> >  L: linux-ide@vger.kernel.org
+>> > -T: quilt kernel.org/pub/linux/kernel/people/bart/pata-2.6/
+>> > +T: git git://git.kernel.org/pub/scm/linux/kernel/git/bart/ide-2.6.git
+>> >
+>>
+>>   Does that mean that the patches that have been already accepeted into
+>> the git tree, can't be updated afterwards (i.e. I have a habit of
+>> sometimes sending several takes of the same patch)?
+>
+> Yes, please just send incremental updates once the patch has been merged.
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 600cdd7..242ffc9 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1066,6 +1066,10 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Configure the RouterBoard 532 series on-chip
- 			Ethernet adapter MAC address.
- 
-+	kmemleak=	[KNL] Boot-time kmemleak enable/disable
-+			Valid arguments: on, off
-+			Default: on
-+
- 	kstack=N	[X86] Print N words from the kernel stack
- 			in oops dumps.
- 
-diff --git a/Documentation/kmemleak.txt b/Documentation/kmemleak.txt
-new file mode 100644
-index 0000000..0112da3
---- /dev/null
-+++ b/Documentation/kmemleak.txt
-@@ -0,0 +1,142 @@
-+Kernel Memory Leak Detector
-+===========================
-+
-+Introduction
-+------------
-+
-+Kmemleak provides a way of detecting possible kernel memory leaks in a
-+way similar to a tracing garbage collector
-+(http://en.wikipedia.org/wiki/Garbage_collection_%28computer_science%29#Tracing_garbage_collectors),
-+with the difference that the orphan objects are not freed but only
-+reported via /sys/kernel/debug/kmemleak. A similar method is used by the
-+Valgrind tool (memcheck --leak-check) to detect the memory leaks in
-+user-space applications.
-+
-+Usage
-+-----
-+
-+CONFIG_DEBUG_KMEMLEAK in "Kernel hacking" has to be enabled. A kernel
-+thread scans the memory every 10 minutes (by default) and prints any new
-+unreferenced objects found. To trigger an intermediate scan and display
-+all the possible memory leaks:
-+
-+  # mount -t debugfs nodev /sys/kernel/debug/
-+  # cat /sys/kernel/debug/kmemleak
-+
-+Note that the orphan objects are listed in the order they were allocated
-+and one object at the beginning of the list may cause other subsequent
-+objects to be reported as orphan.
-+
-+Memory scanning parameters can be modified at run-time by writing to the
-+/sys/kernel/debug/kmemleak file. The following parameters are supported:
-+
-+  off		- disable kmemleak (irreversible)
-+  stack=on	- enable the task stacks scanning
-+  stack=off	- disable the tasks stacks scanning
-+  scan=on	- start the automatic memory scanning thread
-+  scan=off	- stop the automatic memory scanning thread
-+  scan=<secs>	- set the automatic memory scanning period in seconds (0
-+		  to disable it)
-+
-+Kmemleak can also be disabled at boot-time by passing "kmemleak=off" on
-+the kernel command line.
-+
-+Basic Algorithm
-+---------------
-+
-+The memory allocations via kmalloc, vmalloc, kmem_cache_alloc and
-+friends are traced and the pointers, together with additional
-+information like size and stack trace, are stored in a prio search tree.
-+The corresponding freeing function calls are tracked and the pointers
-+removed from the kmemleak data structures.
-+
-+An allocated block of memory is considered orphan if no pointer to its
-+start address or to any location inside the block can be found by
-+scanning the memory (including saved registers). This means that there
-+might be no way for the kernel to pass the address of the allocated
-+block to a freeing function and therefore the block is considered a
-+memory leak.
-+
-+The scanning algorithm steps:
-+
-+  1. mark all objects as white (remaining white objects will later be
-+     considered orphan)
-+  2. scan the memory starting with the data section and stacks, checking
-+     the values against the addresses stored in the prio search tree. If
-+     a pointer to a white object is found, the object is added to the
-+     gray list
-+  3. scan the gray objects for matching addresses (some white objects
-+     can become gray and added at the end of the gray list) until the
-+     gray set is finished
-+  4. the remaining white objects are considered orphan and reported via
-+     /sys/kernel/debug/kmemleak
-+
-+Some allocated memory blocks have pointers stored in the kernel's
-+internal data structures and they cannot be detected as orphans. To
-+avoid this, kmemleak can also store the number of values pointing to an
-+address inside the block address range that need to be found so that the
-+block is not considered a leak. One example is __vmalloc().
-+
-+Kmemleak API
-+------------
-+
-+See the include/linux/kmemleak.h header for the functions prototype.
-+
-+kmemleak_init		 - initialize kmemleak
-+kmemleak_alloc		 - notify of a memory block allocation
-+kmemleak_free		 - notify of a memory block freeing
-+kmemleak_not_leak	 - mark an object as not a leak
-+kmemleak_ignore		 - do not scan or report an object as leak
-+kmemleak_scan_area	 - add scan areas inside a memory block
-+kmemleak_no_scan	 - do not scan a memory block
-+kmemleak_erase		 - erase an old value in a pointer variable
-+kmemleak_alloc_recursive - as kmemleak_alloc but checks the recursiveness
-+kmemleak_free_recursive	 - as kmemleak_free but checks the recursiveness
-+
-+Dealing with false positives/negatives
-+--------------------------------------
-+
-+The false negatives are real memory leaks (orphan objects) but not
-+reported by kmemleak because values found during the memory scanning
-+point to such objects. To reduce the number of false negatives, kmemleak
-+provides the kmemleak_ignore, kmemleak_scan_area, kmemleak_no_scan and
-+kmemleak_erase functions (see above). The task stacks also increase the
-+amount of false negatives and their scanning is not enabled by default.
-+
-+The false positives are objects wrongly reported as being memory leaks
-+(orphan). For objects known not to be leaks, kmemleak provides the
-+kmemleak_not_leak function. The kmemleak_ignore could also be used if
-+the memory block is known not to contain other pointers and it will no
-+longer be scanned.
-+
-+Some of the reported leaks are only transient, especially on SMP
-+systems, because of pointers temporarily stored in CPU registers or
-+stacks. Kmemleak defines MSECS_MIN_AGE (defaulting to 1000) representing
-+the minimum age of an object to be reported as a memory leak.
-+
-+Limitations and Drawbacks
-+-------------------------
-+
-+The main drawback is the reduced performance of memory allocation and
-+freeing. To avoid other penalties, the memory scanning is only performed
-+when the /sys/kernel/debug/kmemleak file is read. Anyway, this tool is
-+intended for debugging purposes where the performance might not be the
-+most important requirement.
-+
-+To keep the algorithm simple, kmemleak scans for values pointing to any
-+address inside a block's address range. This may lead to an increased
-+number of false negatives. However, it is likely that a real memory leak
-+will eventually become visible.
-+
-+Another source of false negatives is the data stored in non-pointer
-+values. In a future version, kmemleak could only scan the pointer
-+members in the allocated structures. This feature would solve many of
-+the false negative cases described above.
-+
-+The tool can report false positives. These are cases where an allocated
-+block doesn't need to be freed (some cases in the init_call functions),
-+the pointer is calculated by other methods than the usual container_of
-+macro or the pointer is stored in a location not scanned by kmemleak.
-+
-+Page allocations and ioremap are not tracked. Only the ARM and x86
-+architectures are currently supported.
+Or, you can interactively rebase the tree to the commit right before the patch
+to be replaced and then add the updated patch in place of the old one. There's a
+very hands-on example in the manpage in section "INTERACTIVE MODE."
 
+A problem with that might be that others who've pulled from your branch will see
+the rewritten history with a new SHA1 commit, but that would be still ok since
+we'll be pulling from the linux-next branch and the for-linus branch is the one
+that is cast in stone once Linus pulls from you.
+
+-- 
+Regards/Gruss,
+Boris
