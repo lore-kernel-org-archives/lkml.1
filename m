@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760276AbZDYBqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760818AbZDYBqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760276AbZDYBqe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 21:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbZDYBqH
+	id S1760818AbZDYBqt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 21:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbZDYBqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 21:46:07 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:53445 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752891AbZDYBqE convert rfc822-to-8bit (ORCPT
+	Fri, 24 Apr 2009 21:46:38 -0400
+Received: from web2.rbftpnetworks.com ([195.224.144.73]:37642 "EHLO
+	web2.rbftpnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760770AbZDYBqh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 21:46:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=HatVn71wc4thadOxSMOxMT3jAb3/lJLBRxFPOxS5ZoE7/Z9Cy83r2Fxuccgo8q3FZq
-         ZfpoNmDeOt09eZ4gWs/ygWbEj2TReroxjKos7/ozyZxWrOPiENBAB85Dpx24Ft7ECzDg
-         MIZYoht9wp0n6BUN12aASgGJAEe790cXSl0qU=
+	Fri, 24 Apr 2009 21:46:37 -0400
+X-Greylist: delayed 27184 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Apr 2009 21:46:37 EDT
+To: linux-kernel@vger.kernel.org
+Subject: Gaming news link
+Date: Fri, 24 Apr 2009 19:13:31 +0100
+From: ryan@rbftpnetworks.com
+Message-ID: <7279950f332198314c4fcafa61aa42ad@www.list.flyawaysimulation.com>
+X-Priority: 3
+X-Mailer: PHPMailer [version 1.73]
+X-Mailer: phplist v2.10.3
+X-MessageID: 81
+X-ListMember: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-In-Reply-To: <49C919B9.70302@msgid.tls.msk.ru>
-References: <874ozu2hcl.fsf@divinity.mikat.iki.fi> <20090310101807.GD20716@alberich.amd.com> 
-	<20090311100525.GE20716@alberich.amd.com> <49B7A79A.6090008@msgid.tls.msk.ru> 
-	<87ocw8qfwg.fsf@divinity.mikat.iki.fi> <49C919B9.70302@msgid.tls.msk.ru>
-From: David Rees <drees76@gmail.com>
-Date: Fri, 24 Apr 2009 18:45:46 -0700
-Message-ID: <72dbd3150904241845q5ed1fe15ob4fa2ba06e96ea72@mail.gmail.com>
-Subject: Re: Slow clock on AMD 740G chipset
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Mika Tiainen <mikat@iki.fi>, Andreas Herrmann <andreas.herrmann3@amd.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 10:34 AM, Michael Tokarev <mjt@tls.msk.ru> wrote:
-> To refresh what has been said.  Several people observed slow clock
-> on their - mostly AMD 780g, 740g and 690g-based systems with 2.6.28
-> 2.6.27 kernels.  Slow to a point when ntpd wasn't successful to
-> keep up with the drift.  It has been said that the motherboards are
-> flaky or something and that the clocks has to be calibrated, for
-> which there are known procedures available (adjtimex).  Which helped.
-> Before the "calibration" the clock were off by ~15 minutes per day.
+Dear Sir / Madam,
 
-This is really weird.  I earlier posted to the thread saying things
-were fine on a Fedora 10 2.6.27.9-159.fc10.x86_64 kernel.
+We are interested in posting our gaming news and information site on
+your links section. Our site is GamerBeef.com and can be found at
+http://www.gamerbeef.com
 
-Then mysteriously after a machine reboot to install new hardware[1] on
-March 27th on kernel 2.6.27.19-170.2.35.fc10.x86_64 (previous running
-kernel was the same), the clock started running slow to the tune of
-ntpd resetting the time every 15-18 minutes forward about 2.3 seconds.
+Our site includes daily updated gaming news from all genres and
+consoles, with focus on PC gaming. We also have a new discussion
+forum, cheats and screenshots section.
 
-Fast forward to today (now running 2.6.29.1-30.fc10.x86_64) and the
-clock is still running slow.
+We would of course offer a link back to your site in return.
 
-> So it seems that with 2.6.29, all the motherboards suddenly become
-> non-flaky and the timers need no calibration anymore, working just
-> fine.  Other operating systems and kernel versions also agree with
-> this conclusion of 2.6.29.
+Let me know your thoughts.
 
-I don't know - my system (GA-MA74GM-S2 mobo) is still broken.
+Best Regards,
 
-[1] So the hardware I installed was a SATA SSD (OCZ Vertex). Ever
-since then, the clock has been running fast.  Previously, the only
-thing on the SATA bus was a DVD drive - it has two IDE drives, one
-plugged in on board and the other into a Promise IDE card.
+Ryan
 
-When doing so, the sata ports are now running in AHCI mode instead of
-native mode.  I'll have to try switching later.
+--
+Ryan Barclay
 
--Dave
+Managing Director
+
+RBFTP Networks Limited.
+
+DDI: +44 (0)870 490 1870
+WWW: http://www.rbftpnetworks.com
+
+RBFTP Networks Limited Registered in England No 05718807 Registered Office:
+68 Aldersbrook Road, London, E12 5DL.
+
