@@ -1,55 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758439AbZDXKbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbZDXKeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758439AbZDXKbY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 06:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbZDXKaz
+	id S1759009AbZDXKeU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 06:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbZDXKeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 06:30:55 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60235 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756486AbZDXKay (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 06:30:54 -0400
-Message-ID: <49F194BC.4000704@jp.fujitsu.com>
-Date: Fri, 24 Apr 2009 19:30:20 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Fri, 24 Apr 2009 06:34:11 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:38828 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751642AbZDXKeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 06:34:09 -0400
+Date: Fri, 24 Apr 2009 11:34:05 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 02/22] Do not sanity check order in the fast path
+Message-ID: <20090424103405.GC14283@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-3-git-send-email-mel@csn.ul.ie> <1240416791.10627.78.camel@nimitz> <20090422171151.GF15367@csn.ul.ie> <1240421415.10627.93.camel@nimitz> <20090423001311.GA26643@csn.ul.ie> <1240450447.10627.119.camel@nimitz> <20090423095821.GA25102@csn.ul.ie> <1240508211.10627.139.camel@nimitz>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Huang Ying <ying.huang@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: [PATCH] [4/4] x86: MCE: Fix EIPV behaviour with !PCC
-References: <20090407506.675031434@firstfloor.org> <20090407150657.61C4E1D046E@basil.firstfloor.org> <1240479838.6842.555.camel@yhuang-dev.sh.intel.com> <49F1077A.5030801@jp.fujitsu.com> <1240535513.6842.561.camel@yhuang-dev.sh.intel.com> <49F150BA.9040407@zytor.com> <20090424084647.GI13896@one.firstfloor.org>
-In-Reply-To: <20090424084647.GI13896@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1240508211.10627.139.camel@nimitz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Thu, Apr 23, 2009 at 10:40:10PM -0700, H. Peter Anvin wrote:
->> Huang Ying wrote:
->>> On Fri, 2009-04-24 at 08:27 +0800, Hidetoshi Seto wrote:
->>>> Huang Ying wrote:
->>>>
->>>> Or, should this patch be applied after committing some of Andi's patches?
->>>> It means this patch targets a bug in Andi's patch set and the bug is not
->>>> in 2.6.30-rc* yet.
->>> Yes. I think you are right. I fix a "bug" that doesn't exist.
->>>
->> Thanks for catching that now :)
+On Thu, Apr 23, 2009 at 10:36:50AM -0700, Dave Hansen wrote:
+> On Thu, 2009-04-23 at 10:58 +0100, Mel Gorman wrote:
+> > > How about this:  I'll go and audit the use of order in page_alloc.c to
+> > > make sure that having an order>MAX_ORDER-1 floating around is OK and
+> > > won't break anything. 
+> > 
+> > Great. Right now, I think it's ok but I haven't audited for this
+> > explicily and a second set of eyes never hurts.
 > 
-> Sorry we still need it I think, see previous email.
+> OK, after looking through this, I have a couple of ideas.  One is that
+> we do the MAX_ORDER check in __alloc_pages_internal(), but *after* the
+> first call to get_page_from_freelist().  That's because I'm worried if
+> we ever got into the reclaim code with a >MAX_ORDER 'order'.  Such as:
+> 
+> void wakeup_kswapd(struct zone *zone, int order)
+> {
+> ...
+>         if (pgdat->kswapd_max_order < order)
+>                 pgdat->kswapd_max_order = order;
+>         if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
+>                 return;
+>         if (!waitqueue_active(&pgdat->kswapd_wait))
+>                 return;
+>         wake_up_interruptible(&pgdat->kswapd_wait);
+> }
+> 
+> unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
+>                                 gfp_t gfp_mask, nodemask_t *nodemask)
+> {
+>         struct scan_control sc = {
+> ...
+>                 .order = order,
+>                 .mem_cgroup = NULL,
+>                 .isolate_pages = isolate_pages_global,
+>                 .nodemask = nodemask,
+>         };
+> 
+>         return do_try_to_free_pages(zonelist, &sc);
+> }
+> 
 
-... Really?
-Still I believe this patch is not needed by .30
+That is perfectly rational.
 
-And, sorry, which email?
+> This will keep us only checking 'order' once for each
+> alloc_pages_internal() call.  It is an extra branch, but it is out of
+> the really, really hot path since we're about to start reclaim here
+> anyway.
+> 
 
+I combined yours and Andrew's suggestions into a patch that applies on
+top of the series. Dave, as it's basically your patch it needs your
+sign-off if you agree it's ok.
 
-Thanks,
-H.Seto
+I tested this with a bodge that allocates with increasing orders up to a
+very large number.  As you'd expect, it worked until it hit order-11 on an
+x86 machine and failed for every higher order by returning NULL.
 
+It reports a warning once. We'll probably drop the warning in time but this
+will be a chance to check if there are callers that really are being stupid
+and are not just callers that are trying to get the best buffer for the job.
+
+=====
+Sanity check order in the page allocator slow path
+
+Callers may speculatively call different allocators in order of preference
+trying to allocate a buffer of a given size. The order needed to allocate
+this may be larger than what the page allocator can normally handle. While
+the allocator mostly does the right thing, it should not direct reclaim or
+wakeup kswapd with a bogus order. This patch sanity checks the order in the
+slow path and returns NULL if it is too large.
+
+Needs-signed-off-by from Dave Hansen here before merging. Based on his
+not-signed-off-by patch.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ mm/page_alloc.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 1464aca..1c60141 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1434,7 +1434,6 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+ 	int did_zlc_setup = 0;		/* just call zlc_setup() one time */
+ 
+ 	classzone_idx = zone_idx(preferred_zone);
+-	VM_BUG_ON(order >= MAX_ORDER);
+ 
+ zonelist_scan:
+ 	/*
+@@ -1692,6 +1691,15 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
+ 	struct task_struct *p = current;
+ 
+ 	/*
++	 * In the slowpath, we sanity check order to avoid ever trying to
++	 * reclaim >= MAX_ORDER areas which will never succeed. Callers may
++	 * be using allocators in order of preference for an area that is
++	 * too large. 
++	 */
++	if (WARN_ON_ONCE(order >= MAX_ORDER))
++		return NULL;
++
++	/*
+ 	 * GFP_THISNODE (meaning __GFP_THISNODE, __GFP_NORETRY and
+ 	 * __GFP_NOWARN set) should not cause reclaim since the subsystem
+ 	 * (f.e. slab) using GFP_THISNODE may choose to trigger reclaim
