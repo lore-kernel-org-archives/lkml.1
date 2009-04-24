@@ -1,59 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758358AbZDXCrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbZDXC5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758358AbZDXCrx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 22:47:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524AbZDXCrm
+	id S1757701AbZDXC5T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 22:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbZDXC5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 22:47:42 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:37975 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753799AbZDXCrl (ORCPT
+	Thu, 23 Apr 2009 22:57:09 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40781 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752858AbZDXC5I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 22:47:41 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 23 Apr 2009 19:43:59 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: kvm@vger.kernel.org,
+	Thu, 23 Apr 2009 22:57:08 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [PATCH 02/22] Do not sanity check order in the fast path
+Cc: kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com
-Subject: Re: [KVM PATCH 2/3] eventfd: add a notifier mechanism
-In-Reply-To: <49F0E7B4.90702@novell.com>
-Message-ID: <alpine.DEB.1.10.0904231942000.18603@makko.or.mcafeemobile.com>
-References: <20090423150910.14094.73708.stgit@dev.haskins.net> <20090423151436.14094.35875.stgit@dev.haskins.net> <alpine.DEB.1.10.0904230922180.18603@makko.or.mcafeemobile.com> <49F09B78.7000403@novell.com> <alpine.DEB.1.10.0904231500570.18603@makko.or.mcafeemobile.com>
- <49F0E7B4.90702@novell.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1240508211.10627.139.camel@nimitz>
+References: <20090423095821.GA25102@csn.ul.ie> <1240508211.10627.139.camel@nimitz>
+Message-Id: <20090424115601.1061.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Fri, 24 Apr 2009 11:57:03 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Apr 2009, Gregory Haskins wrote:
-
-> > Take a look at init_waitqueue_func_entry(), in particula at that "func" 
-> > parameter. Then look at how __wake_up_common() does its thing.
-> > You don't need to be "waiting" for our wakeup system to work. Callbacks 
-> > works just fine, otherwise things like epoll could not work at all.
-> >   
+> On Thu, 2009-04-23 at 10:58 +0100, Mel Gorman wrote:
+> > > How about this:  I'll go and audit the use of order in page_alloc.c to
+> > > make sure that having an order>MAX_ORDER-1 floating around is OK and
+> > > won't break anything. 
+> > 
+> > Great. Right now, I think it's ok but I haven't audited for this
+> > explicily and a second set of eyes never hurts.
 > 
-> Yeah, I was looking at that this afternoon after you mentioned it.  That
-> makes sense.
+> OK, after looking through this, I have a couple of ideas.  One is that
+> we do the MAX_ORDER check in __alloc_pages_internal(), but *after* the
+> first call to get_page_from_freelist().  That's because I'm worried if
+> we ever got into the reclaim code with a >MAX_ORDER 'order'.  Such as:
 > 
-> As of right now the wqh is embedded in the eventfd, accessible only by
-> the .read() vtable entry.  In order to do this as you suggest, I imagine
-> I need to slightly modify the eventfd interface to allow waiters other
-> than the embedded readers to join the wait-queue.  How would you like to
-> see that interface look?
+> void wakeup_kswapd(struct zone *zone, int order)
+> {
+> ...
+>         if (pgdat->kswapd_max_order < order)
+>                 pgdat->kswapd_max_order = order;
+>         if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
+>                 return;
+>         if (!waitqueue_active(&pgdat->kswapd_wait))
+>                 return;
+>         wake_up_interruptible(&pgdat->kswapd_wait);
+> }
+> 
+> unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
+>                                 gfp_t gfp_mask, nodemask_t *nodemask)
+> {
+>         struct scan_control sc = {
+> ...
+>                 .order = order,
+>                 .mem_cgroup = NULL,
+>                 .isolate_pages = isolate_pages_global,
+>                 .nodemask = nodemask,
+>         };
+> 
+>         return do_try_to_free_pages(zonelist, &sc);
+> }
+> 
+> This will keep us only checking 'order' once for each
+> alloc_pages_internal() call.  It is an extra branch, but it is out of
+> the really, really hot path since we're about to start reclaim here
+> anyway.
+> 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index e2f2699..1e3a01e 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1498,6 +1498,13 @@ restart:
+>  			zonelist, high_zoneidx, ALLOC_WMARK_LOW|ALLOC_CPUSET);
+>  	if (page)
+>  		goto got_pg;
+> +	/*
+> +	 * We're out of the rocket-hot area above, so do a quick sanity
+> +	 * check.  We do this here to avoid ever trying to do any reclaim
+> +	 * of >=MAX_ORDER areas which can never succeed, of course.
+> +	 */
+> +	if (order >= MAX_ORDER)
+> +		goto nopage;
+>  
+>  	/*
+>  	 * GFP_THISNODE (meaning __GFP_THISNODE, __GFP_NORETRY and
 
-Actually, you need no changes in eventfd, since you can use its poll() 
-directly, by dropping a callback entry.
-Take a look at how epoll does it in ep_insert()...
+Good point.
+if (WARN_ON_ONCE(order >= MAX_ORDER)) is better?
 
-
-- Davide
 
 
