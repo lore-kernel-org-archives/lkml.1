@@ -1,62 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZDXOrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbZDXOrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756039AbZDXOrf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 10:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbZDXOrK
+	id S1757535AbZDXOrw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 10:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbZDXOrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 10:47:10 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:50957 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755361AbZDXOrI (ORCPT
+	Fri, 24 Apr 2009 10:47:42 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:34593 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753654AbZDXOrl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 10:47:08 -0400
-Date: Fri, 24 Apr 2009 08:47:06 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Carl Henrik Lunde <chlunde@ping.uio.no>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Jeff Garzik <jeff@garzik.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       rwheeler@redhat.com, snitzer@redhat.com, neilb@suse.de,
-       James.Bottomley@hansenpartnership.com, dgilbert@interlog.com,
-       jens.axboe@oracle.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2 of 9] block: Export I/O topology for block devices and partitions
-Message-ID: <20090424144706.GC1926@parisc-linux.org>
-References: <patchbomb.1240551141@sermon.lab.mkp.net> <72f4e15760670febdb40.1240551143@sermon.lab.mkp.net> <ac3eb2510904240514y660973abj7621864e11e514f2@mail.gmail.com> <49F1B68D.3010304@garzik.org> <ed038eb20904240737u4d248b63s580f7d4d1831e173@mail.gmail.com>
+	Fri, 24 Apr 2009 10:47:41 -0400
+Date: Fri, 24 Apr 2009 18:47:38 +0400
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, Richard Henderson <rth@twiddle.net>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] alpha: binfmt_aout fix
+Message-ID: <20090424144738.GD32087@jurassic.park.msu.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ed038eb20904240737u4d248b63s580f7d4d1831e173@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 04:37:17PM +0200, Carl Henrik Lunde wrote:
-> > On Fri, Apr 24, 2009 at 07:32, Martin K. Petersen <martin.petersen@oracle.com> wrote:
-> > +What: ? ? ? ? ?/sys/block/<disk>/alignment
-> > +What: ? ? ? ? ?/sys/block/<disk>/<partition>/alignment
-> > +What: ? ? ? ? ?/sys/block/<disk>/queue/minimum_io_size
-> > +What: ? ? ? ? ?/sys/block/<disk>/queue/optimal_io_size
-> 
-> Would it also be possible and useful to include the number of
-> spindles/channels, i.e., how many requests the device can handle
-> concurrently?  CFQ could for example serve two time slices
-> concurrently if you have sequential reads and the device reports two
-> spindles.
+This fixes the problem introduced by commit 3bfacef412 (get rid of
+special-casing the /sbin/loader on alpha): osf/1 ecoff binary
+segfaults when binfmt_aout built as module. That happens because
+aout binary handler gets on the top of the binfmt list due to late
+registration, and kernel attempts to execute the binary without
+preparatory work that must be done by binfmt_loader.
 
-This is what we call "creeping featurism" (or other names not as nice).
-You'll then want to know which data are provided by which spindle.
-Then you'll want to know how fast each spindle is.  Then you'll find that
-not all storage gives you that information (try asking an EMC Symmetrix
-how many spindles it has and where data is mapped ...)
+Fixed by changing the registration order of the default
+binfmt handlers using list_add_tail() and introducing insert_binfmt()
+function which places new handler on the top of the binfmt list.
+This might be generally useful for installing arch-specific frontends
+for default handlers or just for overriding them.
 
-Let's just get something merged which gives us an improvement.
-Then you're free to experiment with adding the spindles count yourself,
-and if you can show a real advantage to it, come back and we can argue
-over it with data.
+Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+---
+ arch/alpha/kernel/Makefile        |    6 +++++-
+ arch/alpha/kernel/binfmt_loader.c |    2 +-
+ fs/exec.c                         |    7 ++++---
+ include/linux/binfmts.h           |   14 +++++++++++++-
+ 4 files changed, 23 insertions(+), 6 deletions(-)
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+diff --git a/arch/alpha/kernel/Makefile b/arch/alpha/kernel/Makefile
+index a427538..7739a62 100644
+--- a/arch/alpha/kernel/Makefile
++++ b/arch/alpha/kernel/Makefile
+@@ -8,7 +8,7 @@ EXTRA_CFLAGS	:= -Werror -Wno-sign-compare
+ 
+ obj-y    := entry.o traps.o process.o init_task.o osf_sys.o irq.o \
+ 	    irq_alpha.o signal.o setup.o ptrace.o time.o \
+-	    alpha_ksyms.o systbls.o err_common.o io.o binfmt_loader.o
++	    alpha_ksyms.o systbls.o err_common.o io.o
+ 
+ obj-$(CONFIG_VGA_HOSE)	+= console.o
+ obj-$(CONFIG_SMP)	+= smp.o
+@@ -43,6 +43,10 @@ else
+ # Misc support
+ obj-$(CONFIG_ALPHA_SRM)		+= srmcons.o
+ 
++ifdef CONFIG_BINFMT_AOUT
++obj-y	+= binfmt_loader.o
++endif
++
+ # Core logic support
+ obj-$(CONFIG_ALPHA_APECS)	+= core_apecs.o
+ obj-$(CONFIG_ALPHA_CIA)		+= core_cia.o
+diff --git a/arch/alpha/kernel/binfmt_loader.c b/arch/alpha/kernel/binfmt_loader.c
+index 4a0af90..3fcfad4 100644
+--- a/arch/alpha/kernel/binfmt_loader.c
++++ b/arch/alpha/kernel/binfmt_loader.c
+@@ -46,6 +46,6 @@ static struct linux_binfmt loader_format = {
+ 
+ static int __init init_loader_binfmt(void)
+ {
+-	return register_binfmt(&loader_format);
++	return insert_binfmt(&loader_format);
+ }
+ arch_initcall(init_loader_binfmt);
+diff --git a/fs/exec.c b/fs/exec.c
+index 052a961..974098d 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -69,17 +69,18 @@ int suid_dumpable = 0;
+ static LIST_HEAD(formats);
+ static DEFINE_RWLOCK(binfmt_lock);
+ 
+-int register_binfmt(struct linux_binfmt * fmt)
++int __register_binfmt(struct linux_binfmt * fmt, int insert)
+ {
+ 	if (!fmt)
+ 		return -EINVAL;
+ 	write_lock(&binfmt_lock);
+-	list_add(&fmt->lh, &formats);
++	insert ? list_add(&fmt->lh, &formats) :
++		 list_add_tail(&fmt->lh, &formats);
+ 	write_unlock(&binfmt_lock);
+ 	return 0;	
+ }
+ 
+-EXPORT_SYMBOL(register_binfmt);
++EXPORT_SYMBOL(__register_binfmt);
+ 
+ void unregister_binfmt(struct linux_binfmt * fmt)
+ {
+diff --git a/include/linux/binfmts.h b/include/linux/binfmts.h
+index 6638b81..61ee18c 100644
+--- a/include/linux/binfmts.h
++++ b/include/linux/binfmts.h
+@@ -82,7 +82,19 @@ struct linux_binfmt {
+ 	int hasvdso;
+ };
+ 
+-extern int register_binfmt(struct linux_binfmt *);
++extern int __register_binfmt(struct linux_binfmt *fmt, int insert);
++
++/* Registration of default binfmt handlers */
++static inline int register_binfmt(struct linux_binfmt *fmt)
++{
++	return __register_binfmt(fmt, 0);
++}
++/* Same as above, but adds a new binfmt at the top of the list */
++static inline int insert_binfmt(struct linux_binfmt *fmt)
++{
++	return __register_binfmt(fmt, 1);
++}
++
+ extern void unregister_binfmt(struct linux_binfmt *);
+ 
+ extern int prepare_binprm(struct linux_binprm *);
