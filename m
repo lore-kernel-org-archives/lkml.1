@@ -1,129 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbZDXAla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbZDXAwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbZDXAla (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 20:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZDXAlQ
+	id S1754528AbZDXAwk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 20:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZDXAwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 20:41:16 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58038 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750710AbZDXAlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 20:41:15 -0400
-Message-ID: <49F10A3E.3030102@cn.fujitsu.com>
-Date: Fri, 24 Apr 2009 08:39:26 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 23 Apr 2009 20:52:32 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:12593 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751136AbZDXAwb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 20:52:31 -0400
+Message-ID: <49F10D49.5010604@gawab.com>
+Date: Thu, 23 Apr 2009 17:52:25 -0700
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v1 expedited "big hammer" RCU grace periods
-References: <20090423052520.GA13036@linux.vnet.ibm.com> <49F006AE.5040104@cn.fujitsu.com> <20090423151509.GB6877@linux.vnet.ibm.com>
-In-Reply-To: <20090423151509.GB6877@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+To: lkml <linux-kernel@vger.kernel.org>, Eric Anholt <eric@anholt.net>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [.30-rc2 regression] garbled screen on video
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Thu, Apr 23, 2009 at 02:11:58PM +0800, Lai Jiangshan wrote:
->> Paul E. McKenney wrote:
-> 
-> [ . . . ]
-> 
->> Hi, Paul
->>
->> I just typed codes in email, very like these two pathes:
->>
->> [PATCH 1/2] sched: Introduce APIs for waiting multi events
->> http://lkml.org/lkml/2009/4/14/733
->>
->> [PATCH 2/2] rcupdate: use struct ref_completion
->> http://lkml.org/lkml/2009/4/14/734
->>
->> Lai.
->> --------------
-> 
-> Interesting approach!  This would get a second use for your multi-events
-> waiting code above.  ;-)
-> 
-> Looks like the idea is to have the task doing the
-> synchronize_rcu_bh_expedited() hold a reference across the process,
-> and have each rcu_bh_fast_qs() also acquire a reference, which would
-> be released in the softirq handler synchronize_rcu_bh_expedited_help().
-> 
-> One question -- does this approach correctly handle all the CPU hotplug
-> scenarios?  (I think that it might, but am not completely certain.)
-> 
-> 							Thanx, Paul
+Hi everyone,
 
-Ah, raise_softirq(RCU_EXPEDITED_SOFTIRQ) can not ensure the softirq
-will be called when hotplug.
+Summary:
+After playing a video for a little bit, the screen gets garbled. The 
+only way to fix it is to
+switch to a virtual console and then back. The screen is fixed but 
+unfortunately only for
+less than a few minuets and the screen gets corrupted again.
 
-It needs get_online_cpus() and put_online_cpus().
+Effected Version: 2.6.30-rc2+
+Picture showing a corrupt screen: 
+http://ecs.fullerton.edu/~cs351a15/badscreen.jpg
 
-> 
->> #ifndef CONFIG_SMP
->>
->> static void __init synchronize_rcu_expedited_init(void)
->> {
->> }
->>
->> void synchronize_rcu_bh_expedited(void)
->> {
->> 	cond_resched();
->> }
->>
->> #else /* #ifndef CONFIG_SMP */
->>
->> static DEFINE_MUTEX(synchronize_rcu_bh_mutex);
->> static DEFINE_PER_CPU(int, call_only_once); /* is it need ? */
->> static struct ref_completion rcu_bh_expedited_completion
->>
->> static void synchronize_rcu_bh_expedited_help(struct softirq_action *unused)
->> {
->> 	if (__get_cpu_var(call_only_once)) {
->> 		smp_mb();
->> 		ref_completion_put(&rcu_bh_expedited_completion);
->> 		__get_cpu_var(call_only_once) = 0;
->> 	}
->> }
->>
->> static void rcu_bh_fast_qs(void *unused)
->> {
->> 	__get_cpu_var(call_only_once) = 1;
->> 	ref_completion_get(&rcu_bh_expedited_completion);
->> 	raise_softirq(RCU_EXPEDITED_SOFTIRQ);
->> }
->>
->> static void __init synchronize_rcu_expedited_init(void)
->> {
->> 	open_softirq(RCU_EXPEDITED_SOFTIRQ, synchronize_rcu_bh_expedited_help);
->> }
->>
->> void synchronize_rcu_bh_expedited(void)
->> {
->> 	mutex_lock(&synchronize_rcu_bh_mutex);
->>
->> 	ref_completion_get_init(&rcu_bh_expedited_completion);
->>
->> 	smp_call_function(rcu_bh_fast_qs, NULL, 1);
->>
->> 	ref_completion_put_init(&rcu_bh_expedited_completion);
->> 	ref_completion_wait(&rcu_bh_expedited_completion);
->>
->> 	mutex_unlock(&synchronize_rcu_bh_mutex);
->> }
->>
->> #endif /* #else #ifndef CONFIG_SMP */
->>
-> 
-> 
-> 
+My System:
+Ubuntu 9.4 with 943/940GML Express Integrated Graphics Controller 
+[8086:27a2]
+UXA/GEM/DRI2 enable. Full info at 
+http://jdserver.homelinux.org/bugreports/004/
 
+Syslog Messages:
+None, but switching virtual consoles gives
+[drm:i915_get_vblank_counter] *ERROR* trying to get vblank count for 
+disabled pipe 0
+But I think that is another bug introduced with .30-rc1.
 
+Bisecting gave me the following (verified) commit
+
+280b713b5b0fd84cf2469098aee88acbb5de859c is first bad commit
+commit 280b713b5b0fd84cf2469098aee88acbb5de859c
+Author: Eric Anholt <eric@anholt.net>
+Date:   Thu Mar 12 16:56:27 2009 -0700
+
+    drm/i915: Allow tiling of objects with bit 17 swizzling by the CPU.
+
+    Save the bit 17 state of the pages when freeing the page list, and
+    reswizzle them if necessary when rebinding the pages (in case they were
+    swapped out).  Since we have userland with expectations that the swizzle
+    enums let it pread and pwrite contents accurately, we can't expose a new
+    swizzle enum for bit 17 (which it would have to GTT map to handle), 
+so we
+    handle it down in pread and pwrite by swizzling the copy when bit 17 
+of the
+    page address is set.
+
+    Signed-off-by: Eric Anholt <eric@anholt.net>
+
+:040000 040000 32f68f62b336326cee85e22f068d4410197994ef 
+e820ef2a2fd3f9133960f390f27c79caa5ec83d2 M      drivers
+:040000 040000 573ade35bd21d9c37c43f470d8ab718f728ef101 
+32642903c265079acfa20b71d4ec2ee427a70c3a M      include
+
+Justin Madru
