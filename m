@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZDXSzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbZDXTAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754124AbZDXSzt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 14:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbZDXSzi
+	id S1754281AbZDXTAb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 15:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbZDXTAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 14:55:38 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59668 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753525AbZDXSzi (ORCPT
+	Fri, 24 Apr 2009 15:00:15 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:2361 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751188AbZDXTAN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 14:55:38 -0400
-Date: Fri, 24 Apr 2009 19:55:24 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Fr?d?ric Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LFSDEV <linux-fsdevel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH 1/1] vfs: umount_begin BKL pushdown v2
-Message-ID: <20090424185524.GO8633@ZenIV.linux.org.uk>
-References: <20090423191934.GW1926@parisc-linux.org> <1240556813-8739-1-git-send-email-abogani@texware.it> <1240556813-8739-2-git-send-email-abogani@texware.it> <20090424071312.GE8633@ZenIV.linux.org.uk> <20090424071853.GG8633@ZenIV.linux.org.uk> <20090424080634.GG24912@elte.hu> <20090424085017.GB28592@infradead.org> <c62985530904240216j2760e3dbvca5b8e9da22d009f@mail.gmail.com> <20090424175025.GA30091@infradead.org>
+	Fri, 24 Apr 2009 15:00:13 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=nmWGjv/9FQJ+8Qk3ZERey3c8D1s6HBkHtYUCjvKq0Kux5vTejDloOAnqM61LaK4SW
+	Q5BtHqKK06PeylkrM4rhA==
+Date: Fri, 24 Apr 2009 12:00:05 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Zeno Davatz <zdavatz@gmail.com>
+cc: linux-kernel@vger.kernel.org, Hannes Wyss <hwyss@ywesee.com>
+Subject: Re: Kernel 2.6.29 runs out of memory and hangs.
+In-Reply-To: <40a4ed590904241113p4949a020y46e0641e77f6f4e3@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0904241155550.26080@chino.kir.corp.google.com>
+References: <40a4ed590904240309o66753264lf58f2910726f7efc@mail.gmail.com> <alpine.DEB.2.00.0904241011280.24151@chino.kir.corp.google.com> <40a4ed590904241113p4949a020y46e0641e77f6f4e3@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090424175025.GA30091@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 01:50:25PM -0400, Christoph Hellwig wrote:
+On Fri, 24 Apr 2009, Zeno Davatz wrote:
 
-> Having a working tree for debugging stuff is fine, but the point is
-> that it should never be pulled into mainline and probably frequently
-> reabsed to avoid cruft.  In that case there's really no point in
-> creating branches to share pieces of tree history, just apply the patch
-> locally if you think you want it and merge or rebase once mainline gets
-> the patch.
+> Apr 24 09:01:06 thinpower [1349923.693331] Out of memory: kill process
+> 21490 (apache2) score 53801 or a child
+> Apr 24 09:01:06 thinpower [1349923.693410] Killed process 21490 (apache2)
 > 
-> Al frequently rebases the vfs tree, btw - so even if it was a separate
-> branch now there's a fair chance it would end up in mainline with a
-> different commit id.
 
-Nah, it's not that.  I can hold that in a separate branch and keep it
-anchored.  The question is, what else will end up there?
-	* the work inside the methods on BKL _removal_
-	* things like merging that ->write_super() call into ->put_super(),
-etc.
-	* probably parts of work on s_flags mess and ro (tied to remout)
+If your machine hangs here, then it's most likely because apache2 is 
+getting stuck in D state and cannot exit (and it has access to memory 
+reserves because of TIF_MEMDIE since it has been oom killed, so it may 
+deplete all memory).
 
-I agree that getting rid of BKL in that area is a good thing; no arguments
-about that.  If it had been entirely self-contained, I'd gladly drop that
-stuff into a separate branch, let mingo pull it and forgot about the entire
-thing.
+I'm assuming that you're describing a machine hang as the inability to 
+ping it or ssh into it, not simply your apache server dying.
 
-The things get tricky, though, since we have two more things in the same
-area: remount (once Nick comes back with the latest on mnt_write_count,
-I'm going to merge that and start on per-sb side, BTW) and stuff around
-Jan's sync series.
+These types of livelocks are possible with the oom killer when a task 
+fails to exit, one possible way to fix that is to introduce an oom killer 
+timeout such that if a task fails to exit for a pre-defined period of 
+time, the oom killer will choose to kill another task in the hopes of 
+future memory freeing.  The problem with that approach, however, is that 
+the hung task can consume an enormous amount of memory that will never be 
+freed.
 
-So let's figure out how do we do that.  I have no problem with a single
-branch for *all* of that, separate from the rest of VFS stuff.  However,
-I very much suspect that it's not what mingo et.al. have in mind - too
-much stuff alien for them.  I can keep a cherry-picked branch with minimal
-BKL-affecting backports from that one.  It might or might not be OK,
-depending on what the hell their workflow is in -tip.  I honestly have
-no idea how the devil the things are done there, except that it apparently
-involves much more merges than I'd be comfortable with, but then I never
-had a taste for literal clusterf*cks either.
+> > If this is reproducible, I'd recommend enabling
+> > /proc/sys/vm/oom_dump_tasks so that the oom killer will dump the tasklist
+> > and show us what may be causing the livelock.
+> 
+> Ok, how do I enable that? I will google for it.
+> 
 
-Could the folks from the other side tell
-	* what kind of patches do they want in that branch
-	* what kind of patches can they accept in that branch
-	* when do they intend to see it merged into mainline
-	* how much is going to be merged on top of that and how often
-(if ever) is it going to be thrown out and re-pulled.  I.e. is that for
-a devel/debugging tree pulled together from many topic branches on
-regular basis, with branches dropped/re-added/etc. (i.e. something a-la
-linux-next) or is that something more cast in stone?
+You're right in your reply, you can enable it with
 
-Seriously, let's sort that out; flamefests being what they are, there's
-a real problem with keeping two streams of development tolerable for
-participants.  I *do* have very unkind words to say to Ingo, but that's
-a matter for private mail and I'm not going to let that anywhere near
-development question.
+	echo 1 > /proc/sys/vm/oom_dump_tasks
+
+This will print the tasklist and some pertinent information alongside the 
+oom killer output you've already posted.  It will give a better idea of 
+the memory usage on the machine and if killing a subsequent task would 
+actually help in this case.
