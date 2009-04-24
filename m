@@ -1,67 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbZDXBMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbZDXBNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754625AbZDXBMI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 21:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbZDXBL4
+	id S1756108AbZDXBNc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 21:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZDXBNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 21:11:56 -0400
-Received: from mga09.intel.com ([134.134.136.24]:22485 "EHLO mga09.intel.com"
+	Thu, 23 Apr 2009 21:13:22 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:49158 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752262AbZDXBLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 21:11:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,238,1239001200"; 
-   d="asc'?scan'208";a="406349678"
-Subject: Re: [PATCH] [4/4] x86: MCE: Fix EIPV behaviour with !PCC
-From: Huang Ying <ying.huang@intel.com>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-In-Reply-To: <49F1077A.5030801@jp.fujitsu.com>
-References: <20090407506.675031434@firstfloor.org>
-	 <20090407150657.61C4E1D046E@basil.firstfloor.org>
-	 <1240479838.6842.555.camel@yhuang-dev.sh.intel.com>
-	 <49F1077A.5030801@jp.fujitsu.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-eO2Tq3TbDK0mWQB5R0yM"
-Date: Fri, 24 Apr 2009 09:11:53 +0800
-Message-Id: <1240535513.6842.561.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	id S1752538AbZDXBNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 21:13:21 -0400
+Date: Thu, 23 Apr 2009 18:13:17 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
+       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
+       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH RFC] v1 expedited "big hammer" RCU grace periods
+Message-ID: <20090424011317.GI6877@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090423052520.GA13036@linux.vnet.ibm.com> <49F006AE.5040104@cn.fujitsu.com> <20090423151509.GB6877@linux.vnet.ibm.com> <49F10A3E.3030102@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49F10A3E.3030102@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 24, 2009 at 08:39:26AM +0800, Lai Jiangshan wrote:
+> Paul E. McKenney wrote:
+> > On Thu, Apr 23, 2009 at 02:11:58PM +0800, Lai Jiangshan wrote:
+> >> Paul E. McKenney wrote:
+> > 
+> > [ . . . ]
+> > 
+> >> Hi, Paul
+> >>
+> >> I just typed codes in email, very like these two pathes:
+> >>
+> >> [PATCH 1/2] sched: Introduce APIs for waiting multi events
+> >> http://lkml.org/lkml/2009/4/14/733
+> >>
+> >> [PATCH 2/2] rcupdate: use struct ref_completion
+> >> http://lkml.org/lkml/2009/4/14/734
+> >>
+> >> Lai.
+> >> --------------
+> > 
+> > Interesting approach!  This would get a second use for your multi-events
+> > waiting code above.  ;-)
+> > 
+> > Looks like the idea is to have the task doing the
+> > synchronize_rcu_bh_expedited() hold a reference across the process,
+> > and have each rcu_bh_fast_qs() also acquire a reference, which would
+> > be released in the softirq handler synchronize_rcu_bh_expedited_help().
+> > 
+> > One question -- does this approach correctly handle all the CPU hotplug
+> > scenarios?  (I think that it might, but am not completely certain.)
+> > 
+> > 							Thanx, Paul
+> 
+> Ah, raise_softirq(RCU_EXPEDITED_SOFTIRQ) can not ensure the softirq
+> will be called when hotplug.
+> 
+> It needs get_online_cpus() and put_online_cpus().
 
---=-eO2Tq3TbDK0mWQB5R0yM
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+OK, easy fix, then.  ;-)
 
-On Fri, 2009-04-24 at 08:27 +0800, Hidetoshi Seto wrote:
-> Huang Ying wrote:
->
-> Or, should this patch be applied after committing some of Andi's patches?
-> It means this patch targets a bug in Andi's patch set and the bug is not
-> in 2.6.30-rc* yet.
+							Thanx, Paul
 
-Yes. I think you are right. I fix a "bug" that doesn't exist.
-
-Best Regards,
-Huang Ying
-
-
---=-eO2Tq3TbDK0mWQB5R0yM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknxEdYACgkQKhFGF+eHlpjmPACghTb4hslAiUKcCOMGVbBFaH6p
-UDQAoIslTjmJvjAzVxgtUKr2uEHNMLxh
-=13U8
------END PGP SIGNATURE-----
-
---=-eO2Tq3TbDK0mWQB5R0yM--
-
+> >> #ifndef CONFIG_SMP
+> >>
+> >> static void __init synchronize_rcu_expedited_init(void)
+> >> {
+> >> }
+> >>
+> >> void synchronize_rcu_bh_expedited(void)
+> >> {
+> >> 	cond_resched();
+> >> }
+> >>
+> >> #else /* #ifndef CONFIG_SMP */
+> >>
+> >> static DEFINE_MUTEX(synchronize_rcu_bh_mutex);
+> >> static DEFINE_PER_CPU(int, call_only_once); /* is it need ? */
+> >> static struct ref_completion rcu_bh_expedited_completion
+> >>
+> >> static void synchronize_rcu_bh_expedited_help(struct softirq_action *unused)
+> >> {
+> >> 	if (__get_cpu_var(call_only_once)) {
+> >> 		smp_mb();
+> >> 		ref_completion_put(&rcu_bh_expedited_completion);
+> >> 		__get_cpu_var(call_only_once) = 0;
+> >> 	}
+> >> }
+> >>
+> >> static void rcu_bh_fast_qs(void *unused)
+> >> {
+> >> 	__get_cpu_var(call_only_once) = 1;
+> >> 	ref_completion_get(&rcu_bh_expedited_completion);
+> >> 	raise_softirq(RCU_EXPEDITED_SOFTIRQ);
+> >> }
+> >>
+> >> static void __init synchronize_rcu_expedited_init(void)
+> >> {
+> >> 	open_softirq(RCU_EXPEDITED_SOFTIRQ, synchronize_rcu_bh_expedited_help);
+> >> }
+> >>
+> >> void synchronize_rcu_bh_expedited(void)
+> >> {
+> >> 	mutex_lock(&synchronize_rcu_bh_mutex);
+> >>
+> >> 	ref_completion_get_init(&rcu_bh_expedited_completion);
+> >>
+> >> 	smp_call_function(rcu_bh_fast_qs, NULL, 1);
+> >>
+> >> 	ref_completion_put_init(&rcu_bh_expedited_completion);
+> >> 	ref_completion_wait(&rcu_bh_expedited_completion);
+> >>
+> >> 	mutex_unlock(&synchronize_rcu_bh_mutex);
+> >> }
+> >>
+> >> #endif /* #else #ifndef CONFIG_SMP */
+> >>
+> > 
+> > 
+> > 
+> 
+> 
