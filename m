@@ -1,255 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbZDXFF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbZDXFPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755153AbZDXFF1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 01:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbZDXFFJ
+	id S1754662AbZDXFPa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 01:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZDXFPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 01:05:09 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:55648 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752280AbZDXFFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 01:05:06 -0400
-Date: Fri, 24 Apr 2009 15:04:56 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for April 24
-Message-Id: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__24_Apr_2009_15_04_56_+1000_Ei+.=PU=XmTyee/k"
+	Fri, 24 Apr 2009 01:15:20 -0400
+Received: from e28smtp08.in.ibm.com ([59.145.155.8]:52903 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751257AbZDXFPT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 01:15:19 -0400
+Date: Fri, 24 Apr 2009 10:44:22 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Theodore Tso <tytso@mit.edu>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       akpm@linux-foundation.org, Andrea Righi <righi.andrea@gmail.com>,
+       randy.dunlap@oracle.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       Jens Axboe <jens.axboe@oracle.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, dradford@bluehost.com,
+       Gui@smtp1.linux-foundation.org, agk@sourceware.org,
+       subrata@linux.vnet.ibm.com, Paul Menage <menage@google.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, matt@bluehost.com, roberto@unbit.it,
+       ngupta@google.com
+Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
+Message-ID: <20090424051422.GA6867@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090421181429.GO19637@balbir.in.ibm.com> <20090421191401.GF15541@mit.edu> <20090421204905.GA5573@linux> <20090422093349.1ee9ae82.kamezawa.hiroyu@jp.fujitsu.com> <20090422102153.9aec17b9.kamezawa.hiroyu@jp.fujitsu.com> <20090422102239.GA1935@linux> <20090423090535.ec419269.kamezawa.hiroyu@jp.fujitsu.com> <20090423012254.GZ15541@mit.edu> <20090423115419.c493266a.kamezawa.hiroyu@jp.fujitsu.com> <20090423043547.GB2723@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090423043547.GB2723@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__24_Apr_2009_15_04_56_+1000_Ei+.=PU=XmTyee/k
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* Theodore Tso <tytso@mit.edu> [2009-04-23 00:35:48]:
 
-Hi all,
+> On Thu, Apr 23, 2009 at 11:54:19AM +0900, KAMEZAWA Hiroyuki wrote:
+> > > How much testing has been done in terms of whether the I/O throttling
+> > > actually works?  Not just, "the kernel doesn't crash", but that where
+> > > you have one process generating a large amount of I/O load, in various
+> > > different ways, and whether the right things happens?  If so, how has
+> > > this been measured?
+> > 
+> > I/O control people should prove it. And they do, I think.
+> > 
+> 
+> Well, with all due respect, the fact that they only tested removing
+> the ext3 patch to fs/jbd2/commit.c, and discovered it had no effect,
+> only after I asked some questions about how it could possibly work
+> from a theoretical basis, makes me wonder exactly how much testing has
+> actually been done to date.  Which is why I asked the question....
+>
 
-I have added a tree that contains only simple build fixes for Linus'
-tree.  It currently contains:
+The IO controller patches (now 3 in total) are undergoing review and
+comparison. I had suggested we setup a wiki to track requirements and
+design. I'll try to get that setup.
+ 
+> > > I'm really concerned that given some of the ways that I/O will "leak"
+> > > out --- the via pdflush, swap writeout, etc., that without the rest of
+> > > the pieces in place, I/O throttling by itself might not prove to be
+> > > very effective.  Sure, if the workload is only doing direct I/O, life
+> > > is pretty easy and it shouldn't be hard to throttle the cgroup.
+> > 
+> > It's just a problem of "what we do and what we don't, now".
+> > Andrea, Vivek, could you clarify ? As other project, I/O controller
+> > will not be 100% at first implementation.
+> 
+> Yeah, but if the design hasn't been fully validated, maybe the
+> implementation isn't ready for merging yet.  I only came across these
+> patch series because of the ext3 patch, and when I started looking at
+> it just from a high level point of view, I'm concerned about the
+> design gaps and exactly how much high level thinking has gone into the
+> patches.  This isn't a NACK per se, because I haven't spent the time
+> to look at this code very closely (nor do I have the time).
+> 
+> Consider this more of a yellow flag being thrown on the field, in the
+> hopes that the block layer and VM experts will take a much closer
+> review of these patches.  I have a vague sense of disquiet that the
+> container patches are touching a very large number of subsystems
+> across the kernels, and it's not clear to me the maintainers of all of
+> the subsystems have been paying very close attention and doing a
+> proper high-level review of the design.
+> 
+> Simply on the strength of a very cursory reivew and asking a few
+> questions, it seems to me that the I/O controller was implemented,
+> apparently without even thinking about the write throttling problems,
+> and this just making me.... very, very, nervous.  
+> 
+> I hope someone like akpm is paying very close attention and auditing
+> these patches both from an low-level patch cleanliness point of view
+> as well as a high-level design review.  Or at least that *someone* is
+> doing so and can perhaps document how all of these knobs interact.
+> After all, if they are going to be separate, and someone turns the I/O
+> throttling knob without bothering to turn the write throttling knob
+> --- what's going to happen?  An OOM?  That's not going to be very safe
+> or friendly for the sysadmin who plans to be configuring the system.
+> 
+> Maybe this high level design considerations is happening, and I just
+> haven't have seen it.  I sure hope so.
 
-	lib: find_next_bit.o needed by a module only, move it from lib to obj
-	powerpc: fix for long standing bug noticed by gcc 4.4.0
+My understanding is that, it will happen and the patches are
+undergoing several iterations, some of them being design iterations.
+May be a larger RFC with requirements might help grab more attention.
 
-This is just an experiment for now and I am not sure if I should push
-these fixes directly to Linus ...
-
-Changes since 20090423:
-
-New tree:
-	fixes
-
-The acpi tree gained a build failure for which I reverted a commit.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 135 trees (counting Linus' and 18 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging configfs/linux-next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging tracing/auto-tracing-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging ide/for-next
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging wireless/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/rndis_wlan.c
-CONFLICT (content): Merge conflict in include/linux/mmc/sdio_ids.h
-CONFLICT (content): Merge conflict in net/mac80211/pm.c
-[master ad362c6] Revert "rfkill: remove user_claim stuff"
-Merging mtd/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
-req.c
-Merging cifs/master
-Merging mmc/next
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-CONFLICT (content): Merge conflict in drivers/usb/serial/cypress_m8.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/option.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/usb-serial.c
-Merging agp/agp-next
-Merging generic-ipi/auto-generic-ipi-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging kmemleak/kmemleak
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging suspend/linux-next
-Merging quilt/driver-core
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-[master 15570ec] Revert "ACPI/i915: build fix"
-
---Signature=_Fri__24_Apr_2009_15_04_56_+1000_Ei+.=PU=XmTyee/k
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknxSHgACgkQjjKRsyhoI8zaywCghBCi/LzD8y4FQlsZUyl4bGBV
-nmIAmQHu08Y7YTJRlyOSbEjKpofpKv0T
-=Q/+w
------END PGP SIGNATURE-----
-
---Signature=_Fri__24_Apr_2009_15_04_56_+1000_Ei+.=PU=XmTyee/k--
+-- 
+	Balbir
