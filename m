@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbZDXVXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbZDXVYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758022AbZDXVXL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 17:23:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbZDXVWy
+	id S1758267AbZDXVYU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 17:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756279AbZDXVYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 17:22:54 -0400
-Received: from ppp-110-77.adsl.restena.lu ([158.64.110.77]:54076 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752302AbZDXVWx (ORCPT
+	Fri, 24 Apr 2009 17:24:07 -0400
+Received: from smtp.flash.net.br ([201.46.240.48]:40542 "EHLO
+	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755671AbZDXVYG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 17:22:53 -0400
-X-Greylist: delayed 374 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Apr 2009 17:22:53 EDT
-Date: Fri, 24 Apr 2009 23:16:33 +0200
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: "Alexander V. Lukyanov" <lav@netis.ru>, linux-kernel@vger.kernel.org,
-       <netdev@vger.kernel.org>
-Subject: Re: 2.6.29.1: unregister_netdevice problem
-Message-ID: <20090424231633.2dc051aa@neptune.home>
-In-Reply-To: <m1hc0fuevi.fsf@fess.ebiederm.org>
-References: <20090422055735.GA4334@night.netis.ru>
-	<m1hc0fuevi.fsf@fess.ebiederm.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Apr 2009 17:24:06 -0400
+Date: Fri, 24 Apr 2009 18:23:12 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Kumar Gala <galak@kernel.crashing.org>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: Regarding the linkstation defconfig
+Message-ID: <20090424212311.GA7858@ime.usp.br>
+References: <20090424065816.GA15525@ime.usp.br> <Pine.LNX.4.64.0904242158210.8309@axis700.grange>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0904242158210.8309@axis700.grange>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 April 2009 ebiederm@xmission.com (Eric W. Biederman) wrote:
-> "Alexander V. Lukyanov" <lav@netis.ru> writes:
+Dear Guennadi, and Kumar.
+
+On Apr 24 2009, Guennadi Liakhovetski wrote:
+> On Fri, 24 Apr 2009, Rogério Brito wrote:
+> > Guennadi, since you seem to be the one responsible for the
+> > linkstation/kurobox in the kernel,
 > 
-> > Eventually I have an increased load average without apparent reason.
-> > When I reboot the server in such a case, I get infinitely repeating
-> > messages on the console:
-> >
-> > unregister_netdevice: waiting for eth0.2 to become free. Usage
-> > count = 4
-> >
-> > eth0.2 is a vlan interface, eth0 is 02:00.0 Ethernet controller:
-> > Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit
-> > Ethernet controller (rev 01)
+> That's not howI interpret my role in linkstation development /
+> support.
+
+Sorry. I thought that you were. I have, nonetheless, interest in helping
+and understanding more about the platform.
+
+> > - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> >  01. why is anticipatory the default scheduler for linkstations when CFQ
+> >      is the default scheduler for the rest of the kernel?
+(...)
+> >  12. wouldn't it be a good thing to enable CONFIG_PRINTK_TIME?
+> > - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 > 
-> CC: netdev where someone might have a better clue.
+> As I already replied to you earlier, I am not particularly interested in 
+> fine-tuning and optimisation of defconfigs. IMHO *_defconfigs are only 
+> examples of board configuration, that are known to build and work. The 
+> rest is up to the user / packager.
+
+IMVHO, defconfigs should be examples of board configuration, known to
+build and work (like you said) *and* be, in a way, exemplary to the
+user/packager.
+
+> > Again, please, forgive my ignorance here regarding the questions above.
+> > I'm really looking for some clarification and to get things in shape
+> > both on my systems and in the default kernel configuration, in general.
 > 
-> Infinitely repeating unregister_netdevice messages means something
-> isn't releasing it's reference count to your network device.
-> 
-> There really isn't enough information in your email to figure out
-> what you were doing that, or what piece of code triggered this.
+> Feel free to submit patches with reasoning to the powerpc ML and 
+> respective maintainer as per MAINTAINERS file.
+
+I'm doing that as a reply to this message.
 
 
-A few I similar cases I have encountered are related to:
-  vlan, netconsole
+Thanks for your guiding, Rogério Brito.
 
-If you attempt to rmmod the driver of a network interface for which
-you have a vlan or netconsole setup on top of you end up with this
-kind of lock.
-
-At least the two above do not react of removal attempt notifications
-and thus keep the network device referenced.
-
-Bruno
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
