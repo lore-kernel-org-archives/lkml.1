@@ -1,186 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755101AbZDXDBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbZDXDNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755101AbZDXDBE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 23:01:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbZDXDAx
+	id S1755556AbZDXDNR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 23:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZDXDND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 23:00:53 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:48536 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750927AbZDXDAw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 23:00:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=f9SO1qLktDvOyzsDx+NGXsyVrwltKcPaGuEdc7vJjM6FhZ5z7cA92oXbSRA3R8/8Hj
-         s0ZeL0MRtzuADAUQK6L6LDY4Uu/BsASiVxmtQCDd/B9zSLyR5j++J9yEMfMCK7HZPLa0
-         aepY2jSxXxyfICAxyCJ6bei3qC3gr3gfiiUJ0=
+	Thu, 23 Apr 2009 23:13:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50903 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752629AbZDXDNB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 23:13:01 -0400
+Message-ID: <49F12DEA.6070404@redhat.com>
+Date: Thu, 23 Apr 2009 23:11:38 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <200904232331.13729.bzolnier@gmail.com>
-References: <E693AEE4-7895-4650-A1DC-1FB16D409D5B@ime.usp.br>
-	 <200904211459.26965.bzolnier@gmail.com>
-	 <20090423055618.GA23042@ime.usp.br>
-	 <200904232331.13729.bzolnier@gmail.com>
-Date: Fri, 24 Apr 2009 00:00:50 -0300
-X-Google-Sender-Auth: 9478096d58166c33
-Message-ID: <6540c930904232000t76aa4954l4f5cee5bad64aacb@mail.gmail.com>
-Subject: Re: Quick question about libata and hdparm
-From: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, Mark Lord <lkml@rtr.ca>,
-       linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary=001e680f1610445a2c04684434b9
+To: Tim Abbott <tabbott@MIT.EDU>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Anders Kaseorg <andersk@MIT.EDU>, Ingo Molnar <mingo@elte.hu>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jeffrey B Arnold <jbarnold@MIT.EDU>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH 1/5] ftrace: use module notifier for function tracer
+References: <20090416021830.556671772@goodmis.org> <20090416021928.040177084@goodmis.org> <200904192055.04213.rusty@rustcorp.com.au> <alpine.DEB.1.10.0904191437250.31802@vinegar-pot.mit.edu> <20090422091645.GB18226@elte.hu> <alpine.DEB.1.10.0904221250280.24280@vinegar-pot.mit.edu> <49EFA0DE.9070407@redhat.com> <alpine.DEB.2.00.0904221901190.7725@vinegar-pot.mit.edu> <20090423195754.GA24963@Krystal> <alpine.DEB.1.10.0904231612180.28329@vinegar-pot.mit.edu>
+In-Reply-To: <alpine.DEB.1.10.0904231612180.28329@vinegar-pot.mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---001e680f1610445a2c04684434b9
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Tim Abbott wrote:
+> The reason that we want to export text_mutex is that it can be useful for 
+> the Ksplice core (still kernel/ksplice.c) to be built as a module.  This 
+> is desirable when a different version of the kernel/ksplice.c code is 
+> needed in order to apply a particular update (e.g. because there was a bug 
+> in Ksplice).
 
-Hi, Bart, Alan & Co.
-
-On 4/23/09, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
->  You can try booting with "libata.force=3D1.00:mwdma2" kernel paramater t=
-o
->  force use of "regular" MWDMA2 transfer mode instead of UDMA ones so we a=
-re
->  sure that the issue is specific to pata_pdc202xx_old + UDMA.
-
-This *did* work. I see no other error messages, while using multword
-dma. So I think that this serves for us to rule out some unknown
-variables.
-
->  Other than that I'm out of ideas, though the hint that the original driv=
-er
->  works just fine should help driver's maintainer in fixing this regressio=
-n.
-
-Well, it worked now. I'm attaching what I see now.
+Ah, OK. Certainly, Ksplice can't patch itself. It might be a good reason for
+exporting text_mutex.
 
 
-Thanks, Rog=E9rio Brito.
+> I agree that great care should be taken when writing code that patches the 
+> kernel's text.  However, I don't think failing to export text_mutex to GPL 
+> modules helps ensure that.  In particular, not exporting text_mutex 
+> doesn't prevent modules from patching the kernel text.  It just prevents 
+> any modules that do so from grabbing the appropriate lock.
 
-P.S.: This is still with kernel 2.6.29, since compiling a new kernel
-in this computer takes a lot of time.
---=20
-Rog=E9rio Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+What I'm concerned about exporting locking staffs is that may cause
+a dead lock. However, we've already exported module_mutex.
+I don't think that exporting text_mutex is more considerable than that. :-)
 
---001e680f1610445a2c04684434b9
-Content-Type: text/plain; charset=US-ASCII; name="dmesg-2.6.29-with-force-mwdma2.txt"
-Content-Disposition: attachment; 
-	filename="dmesg-2.6.29-with-force-mwdma2.txt"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ftwao5yn
+Thank you,
 
-WyAgICAzLjA0Mjk4NV0gc2NzaTAgOiBwYXRhX3BkYzIwMnh4X29sZApbICAgIDMuMDQ5NzY5XSBz
-Y3NpMSA6IHBhdGFfcGRjMjAyeHhfb2xkClsgICAgMy4wNDk5MTddIGF0YTE6IFBBVEEgbWF4IFVE
-TUEvMTAwIGNtZCAweDg0MDAgY3RsIDB4ODAwMCBibWRtYSAweDcwMDAgaXJxIDEwClsgICAgMy4w
-NDk5MjRdIGF0YTI6IFBBVEEgbWF4IFVETUEvMTAwIGNtZCAweDc4MDAgY3RsIDB4NzQwMCBibWRt
-YSAweDcwMDggaXJxIDEwClsgICAgMy4yMDQ3MTBdIGF0YTEuMDA6IEFUQS00OiBRVUFOVFVNIEZJ
-UkVCQUxMIENYMTMuMEEsIEEzRi4wQjAwLCBtYXggVURNQS82NgpbICAgIDMuMjA0NzIwXSBhdGEx
-LjAwOiAyNTQyOTgyNCBzZWN0b3JzLCBtdWx0aSAxNjogTEJBIApbICAgIDMuMjA0NzY4XSBhdGEx
-LjAwOiBsaW1pdGVkIHRvIFVETUEvMzMgZHVlIHRvIDQwLXdpcmUgY2FibGUKWyAgICAzLjIwNDc3
-M10gYXRhMS4wMDogRk9SQ0U6IHhmZXJfbWFzayBzZXQgdG8gbXdkbWEyClsgICAgMy4yMTA1MTdd
-IGF0YTEuMDA6IGNvbmZpZ3VyZWQgZm9yIE1XRE1BMgpbICAgIDMuMjIyMjM4XSBzY3NpIDA6MDow
-OjA6IERpcmVjdC1BY2Nlc3MgICAgIEFUQSAgICAgIFFVQU5UVU0gRklSRUJBTEwgQTNGLiBQUTog
-MCBBTlNJOiA1ClsgICAgMy4yNTcwOTRdIHVzYiAyLTI6IG5ldyBmdWxsIHNwZWVkIFVTQiBkZXZp
-Y2UgdXNpbmcgdWhjaV9oY2QgYW5kIGFkZHJlc3MgMgpbICAgIDMuMzkzNDAwXSBwYXRhX3ZpYSAw
-MDAwOjAwOjA0LjE6IHZlcnNpb24gMC4zLjMKWyAgICAzLjM5MzgyNF0gc2NzaTIgOiBwYXRhX3Zp
-YQpbICAgIDMuMzk5OTQ1XSBzY3NpMyA6IHBhdGFfdmlhClsgICAgMy40MDEyODRdIGF0YTM6IFBB
-VEEgbWF4IFVETUEvNjYgY21kIDB4MWYwIGN0bCAweDNmNiBibWRtYSAweGQ4MDAgaXJxIDE0Clsg
-ICAgMy40MDEyOTNdIGF0YTQ6IFBBVEEgbWF4IFVETUEvNjYgY21kIDB4MTcwIGN0bCAweDM3NiBi
-bWRtYSAweGQ4MDggaXJxIDE1ClsgICAgMy41NzEzOTFdIGF0YTMuMDA6IEFUQVBJOiBITC1EVC1T
-VCBEVkRSQU0gR1NBLTQxNjBCLCBBMzA2LCBtYXggVURNQS82NgpbICAgIDMuNTkzMzcwXSBhdGEz
-LjAwOiBjb25maWd1cmVkIGZvciBVRE1BLzY2ClsgICAgMy42MTA3NThdIHNjc2kgMjowOjA6MDog
-Q0QtUk9NICAgICAgICAgICAgSEwtRFQtU1QgRFZEUkFNIEdTQS00MTYwQiBBMzA2IFBROiAwIEFO
-U0k6IDUKWyAgICAzLjc2NTQxNl0gYXRhNC4wMDogQVRBUEk6IENSRUFUSVZFIENENTIzMEUsIEMx
-LjAxLCBtYXggTVdETUEyClsgICAgMy43NjgzNzFdIGF0YTQuMDA6IGNvbmZpZ3VyZWQgZm9yIE1X
-RE1BMgpbICAgIDMuNzc5Njc2XSBzY3NpIDM6MDowOjA6IENELVJPTSAgICAgICAgICAgIENSRUFU
-SVZFIENENTIzMEUgICAgICAgICAgMS4wMSBQUTogMCBBTlNJOiA1ClsgICAgNC40MjY3MDddIHNj
-c2kgMDowOjA6MDogQXR0YWNoZWQgc2NzaSBnZW5lcmljIHNnMCB0eXBlIDAKWyAgICA0LjQyNjgx
-MV0gc2NzaSAyOjA6MDowOiBBdHRhY2hlZCBzY3NpIGdlbmVyaWMgc2cxIHR5cGUgNQpbICAgIDQu
-NDI2ODk5XSBzY3NpIDM6MDowOjA6IEF0dGFjaGVkIHNjc2kgZ2VuZXJpYyBzZzIgdHlwZSA1Clsg
-ICAgNC40NTk1MTldIERyaXZlciAnc2QnIG5lZWRzIHVwZGF0aW5nIC0gcGxlYXNlIHVzZSBidXNf
-dHlwZSBtZXRob2RzClsgICAgNC40NTk3NjNdIHNkIDA6MDowOjA6IFtzZGFdIDI1NDI5ODI0IDUx
-Mi1ieXRlIGhhcmR3YXJlIHNlY3RvcnM6ICgxMy4wIEdCLzEyLjEgR2lCKQpbICAgIDQuNDU5Nzk5
-XSBzZCAwOjA6MDowOiBbc2RhXSBXcml0ZSBQcm90ZWN0IGlzIG9mZgpbICAgIDQuNDU5ODA1XSBz
-ZCAwOjA6MDowOiBbc2RhXSBNb2RlIFNlbnNlOiAwMCAzYSAwMCAwMApbICAgIDQuNDU5ODQ2XSBz
-ZCAwOjA6MDowOiBbc2RhXSBXcml0ZSBjYWNoZTogZW5hYmxlZCwgcmVhZCBjYWNoZTogZW5hYmxl
-ZCwgZG9lc24ndCBzdXBwb3J0IERQTyBvciBGVUEKWyAgICA0LjQ1OTk4Ml0gc2QgMDowOjA6MDog
-W3NkYV0gMjU0Mjk4MjQgNTEyLWJ5dGUgaGFyZHdhcmUgc2VjdG9yczogKDEzLjAgR0IvMTIuMSBH
-aUIpClsgICAgNC40NjAwNDldIHNkIDA6MDowOjA6IFtzZGFdIFdyaXRlIFByb3RlY3QgaXMgb2Zm
-ClsgICAgNC40NjAwNTVdIHNkIDA6MDowOjA6IFtzZGFdIE1vZGUgU2Vuc2U6IDAwIDNhIDAwIDAw
-ClsgICAgNC40NjAwOThdIHNkIDA6MDowOjA6IFtzZGFdIFdyaXRlIGNhY2hlOiBlbmFibGVkLCBy
-ZWFkIGNhY2hlOiBlbmFibGVkLCBkb2Vzbid0IHN1cHBvcnQgRFBPIG9yIEZVQQpbICAgIDQuNDYw
-MTA5XSAgc2RhOiBzZGExIHNkYTIgPCBzZGE1ID4KWyAgICA0LjUwNTM0MV0gc2QgMDowOjA6MDog
-W3NkYV0gQXR0YWNoZWQgU0NTSSBkaXNrClsgICAgNC41NTg0ODhdIERyaXZlciAnc3InIG5lZWRz
-IHVwZGF0aW5nIC0gcGxlYXNlIHVzZSBidXNfdHlwZSBtZXRob2RzClsgICAgNC41NzI5NTZdIHNy
-MDogc2NzaTMtbW1jIGRyaXZlOiA0MHgvNDB4IHdyaXRlciBkdmQtcmFtIGNkL3J3IHhhL2Zvcm0y
-IGNkZGEgdHJheQpbICAgIDQuNTcyOTcwXSBVbmlmb3JtIENELVJPTSBkcml2ZXIgUmV2aXNpb246
-IDMuMjAKWyAgICA0LjU3MzIyNl0gc3IgMjowOjA6MDogQXR0YWNoZWQgc2NzaSBDRC1ST00gc3Iw
-ClsgICAgNC41NzU1NDhdIHNyMTogc2NzaTMtbW1jIGRyaXZlOiAweC81MnggY2QvcncgeGEvZm9y
-bTIgY2RkYSB0cmF5ClsgICAgNC41NzU3NTFdIHNyIDM6MDowOjA6IEF0dGFjaGVkIHNjc2kgQ0Qt
-Uk9NIHNyMQpbICAgIDQuNjYwMDE0XSBNYXJraW5nIFRTQyB1bnN0YWJsZSBkdWUgdG8gVFNDIGhh
-bHRzIGluIGlkbGUKWyAgICA1LjAzMTg4N10gUE06IFN0YXJ0aW5nIG1hbnVhbCByZXN1bWUgZnJv
-bSBkaXNrClsgICAgNS4wMzE4OTldIFBNOiBSZXN1bWUgZnJvbSBwYXJ0aXRpb24gODo1ClsgICAg
-NS4wMzE5MDNdIFBNOiBDaGVja2luZyBoaWJlcm5hdGlvbiBpbWFnZS4KWyAgICA1LjAzMjQzNF0g
-UE06IFJlc3VtZSBmcm9tIGRpc2sgZmFpbGVkLgpbICAgIDUuMTExNzQ4XSBram91cm5hbGQgc3Rh
-cnRpbmcuICBDb21taXQgaW50ZXJ2YWwgNSBzZWNvbmRzClsgICAgNS4xMTE3ODhdIEVYVDMtZnM6
-IG1vdW50ZWQgZmlsZXN5c3RlbSB3aXRoIG9yZGVyZWQgZGF0YSBtb2RlLgpbICAgMTYuNTQ2NzQ5
-XSB1ZGV2ZCB2ZXJzaW9uIDEyNCBzdGFydGVkClsgICAxNy4wNDM2NTNdIExpbnV4IGFncGdhcnQg
-aW50ZXJmYWNlIHYwLjEwMwpbICAgMTcuMDkwMjE3XSBhZ3BnYXJ0OiBEZXRlY3RlZCBWSUEgVHdp
-c3Rlci1LL0tUMTMzeC9LTTEzMyBjaGlwc2V0ClsgICAxNy4wOTM4NzRdIGFncGdhcnQtdmlhIDAw
-MDA6MDA6MDAuMDogQUdQIGFwZXJ0dXJlIGlzIDMyTSBAIDB4ZTYwMDAwMDAKWyAgIDE3LjExNzQy
-Nl0gcGFycG9ydF9wYzogVklBIDY4NkEvODIzMSBkZXRlY3RlZApbICAgMTcuMTE3NDM5XSBwYXJw
-b3J0X3BjOiBwcm9iaW5nIGN1cnJlbnQgY29uZmlndXJhdGlvbgpbICAgMTcuMTE3NDU5XSBwYXJw
-b3J0X3BjOiBDdXJyZW50IHBhcmFsbGVsIHBvcnQgYmFzZTogMHgzNzgKWyAgIDE3LjExNzU0MV0g
-cGFycG9ydDA6IFBDLXN0eWxlIGF0IDB4Mzc4ICgweDc3OCksIGlycSA3LCB1c2luZyBGSUZPIFtQ
-Q1NQUCxUUklTVEFURSxDT01QQVQsRUNQXQpbICAgMTcuMTQxNzk4XSBBQ1BJOiBJL08gcmVzb3Vy
-Y2UgdnQ1OTZfc21idXMgWzB4ZTgwMC0weGU4MDddIGNvbmZsaWN0cyB3aXRoIEFDUEkgcmVnaW9u
-IFNNMDAgWzB4ZTgwMC0weGU4MDZdClsgICAxNy4xNDE4MDhdIEFDUEk6IERldmljZSBuZWVkcyBh
-biBBQ1BJIGRyaXZlcgpbICAgMTcuMTYzNjk1XSB2aWE2ODZhIDAwMDA6MDA6MDQuNDogU2Vuc29y
-cyBkaXNhYmxlZCwgZW5hYmxlIHdpdGggZm9yY2VfYWRkcj0weGUyMDAKWyAgIDE3LjIwMTA5OF0g
-cGFycG9ydF9wYzogVklBIHBhcmFsbGVsIHBvcnQ6IGlvPTB4Mzc4LCBpcnE9NwpbICAgMTcuMzU5
-ODU1XSBEcml2ZXIgZm9yIDEtd2lyZSBEYWxsYXMgbmV0d29yayBwcm90b2NvbC4KWyAgIDE3LjQw
-MDYzMF0gbWF0cm94X3cxIDAwMDA6MDE6MDAuMDogTWF0cm94IEc0MDAgR1BJTyB0cmFuc3BvcnQg
-bGF5ZXIgZm9yIDEtd2lyZS4KWyAgIDE3LjQ1NDU3MV0gU2VyaWFsOiA4MjUwLzE2NTUwIGRyaXZl
-ciwgNCBwb3J0cywgSVJRIHNoYXJpbmcgZW5hYmxlZApbICAgMTcuNDU0OTA3XSBzZXJpYWw4MjUw
-OiB0dHlTMCBhdCBJL08gMHgzZjggKGlycSA9IDQpIGlzIGEgMTY1NTBBClsgICAxNy40NTU1ODld
-IHNlcmlhbDgyNTA6IHR0eVMxIGF0IEkvTyAweDJmOCAoaXJxID0gMykgaXMgYSAxNjU1MEEKWyAg
-IDE3LjQ2NjMxNV0gMDA6MGE6IHR0eVMwIGF0IEkvTyAweDNmOCAoaXJxID0gNCkgaXMgYSAxNjU1
-MEEKWyAgIDE3LjQ2NzU3Ml0gMDA6MGI6IHR0eVMxIGF0IEkvTyAweDJmOCAoaXJxID0gMykgaXMg
-YSAxNjU1MEEKWyAgIDE3Ljg4NDY5OV0gc2VyaWFsIDAwMDA6MDA6MGMuMDogUENJIElOVCBBIC0+
-IExpbmtbTE5LQV0gLT4gR1NJIDExIChsZXZlbCwgbG93KSAtPiBJUlEgMTEKWyAgIDE3Ljg5MTQz
-NV0gMDAwMDowMDowYy4wOiB0dHlTMiBhdCBJL08gMHg5NDAwIChpcnEgPSAxMSkgaXMgYSAxNjU1
-MEEKWyAgIDE4LjIyMzg2OV0gQUNQSTogUENJIEludGVycnVwdCBMaW5rIFtMTktDXSBlbmFibGVk
-IGF0IElSUSA1ClsgICAxOC4yMjM4NzldIFBDSTogc2V0dGluZyBJUlEgNSBhcyBsZXZlbC10cmln
-Z2VyZWQKWyAgIDE4LjIyMzg4OV0gRU5TMTM3MSAwMDAwOjAwOjBhLjA6IFBDSSBJTlQgQSAtPiBM
-aW5rW0xOS0NdIC0+IEdTSSA1IChsZXZlbCwgbG93KSAtPiBJUlEgNQpbICAgMTguMjY5ODA3XSBp
-bnB1dDogUEMgU3BlYWtlciBhcyAvZGV2aWNlcy9wbGF0Zm9ybS9wY3Nwa3IvaW5wdXQvaW5wdXQx
-ClsgICAxOS4wODcyMTFdIGlucHV0OiBJbVBTLzIgR2VuZXJpYyBXaGVlbCBNb3VzZSBhcyAvZGV2
-aWNlcy9wbGF0Zm9ybS9pODA0Mi9zZXJpbzEvaW5wdXQvaW5wdXQyClsgICAxOS44NTc2MTFdIENv
-bnRyb2wgbmFtZSAnU2lnbWF0ZWwgU3Vycm91bmQgUGhhc2UgSW52ZXJzaW9uIFBsYXliYWNrIFN3
-aXRjaCcgdHJ1bmNhdGVkIHRvICdTaWdtYXRlbCBTdXJyb3VuZCBQaGFzZSBJbnZlcnNpb24gUGxh
-eWJhY2sgJwpbICAgMjIuNDc0NDkyXSBscDA6IHVzaW5nIHBhcnBvcnQwIChpbnRlcnJ1cHQtZHJp
-dmVuKS4KWyAgIDIyLjc1MTU4Ml0gQWRkaW5nIDU3ODMwMGsgc3dhcCBvbiAvZGV2L3NkYTUuICBQ
-cmlvcml0eTotMSBleHRlbnRzOjEgYWNyb3NzOjU3ODMwMGsgClsgICAyMy4zNDk1MjVdIEVYVDMg
-RlMgb24gc2RhMSwgaW50ZXJuYWwgam91cm5hbApbICAgMjguNTMyNzMwXSB3YXJuaW5nOiBgYXZh
-aGktZGFlbW9uJyB1c2VzIDMyLWJpdCBjYXBhYmlsaXRpZXMgKGxlZ2FjeSBzdXBwb3J0IGluIHVz
-ZSkKWyAgIDM1LjczMTcwNl0gZXRoMDogbGluayB1cCwgMTAwTWJwcywgZnVsbC1kdXBsZXgsIGxw
-YSAweDQ1RTEKWyAgIDM2LjA2NjAwM10gTkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAx
-NwpbICAgNDEuNzQ2NTM4XSBbZHJtXSBJbml0aWFsaXplZCBkcm0gMS4xLjAgMjAwNjA4MTAKWyAg
-IDQxLjc1ODE3OF0gbWF0cm94X3cxIDAwMDA6MDE6MDAuMDogUENJIElOVCBBIC0+IExpbmtbTE5L
-QV0gLT4gR1NJIDExIChsZXZlbCwgbG93KSAtPiBJUlEgMTEKWyAgIDQxLjc1ODU5NV0gW2RybV0g
-SW5pdGlhbGl6ZWQgbWdhIDMuMi4xIDIwMDUxMTAyIG9uIG1pbm9yIDAKWyAgIDQxLjc2MDI4Ml0g
-YWdwZ2FydC12aWEgMDAwMDowMDowMC4wOiBBR1AgMi4wIGJyaWRnZQpbICAgNDEuNzYwMzE4XSBh
-Z3BnYXJ0LXZpYSAwMDAwOjAwOjAwLjA6IHB1dHRpbmcgQUdQIFYyIGRldmljZSBpbnRvIDR4IG1v
-ZGUKWyAgIDQxLjc2MDM4N10gbWF0cm94X3cxIDAwMDA6MDE6MDAuMDogcHV0dGluZyBBR1AgVjIg
-ZGV2aWNlIGludG8gNHggbW9kZQpbICAgNDEuNzY0NzM1XSBbZHJtXSBJbml0aWFsaXplZCBjYXJk
-IGZvciBBR1AgRE1BLgo=
---001e680f1610445a2c04684434b9--
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
