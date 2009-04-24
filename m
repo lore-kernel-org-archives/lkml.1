@@ -1,40 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbZDXUHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbZDXUI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754791AbZDXUHp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 16:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbZDXUHg
+	id S1756653AbZDXUI6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 16:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbZDXUIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 16:07:36 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58769 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752567AbZDXUHg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 16:07:36 -0400
-Date: Fri, 24 Apr 2009 20:59:28 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Catalin Marinas <catalin.marinas@arm.com>,
-       David Woodhouse <dwmw2@infradead.org>
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add armflash support for multiple blocks of flash
-Message-ID: <20090424195928.GI28748@n2100.arm.linux.org.uk>
-References: <20090423164110.31264.42300.stgit@pc1117.cambridge.arm.com>
+	Fri, 24 Apr 2009 16:08:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41047 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752567AbZDXUIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 16:08:47 -0400
+Message-ID: <49F21C49.8030101@redhat.com>
+Date: Fri, 24 Apr 2009 16:08:41 -0400
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090423164110.31264.42300.stgit@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Steve Dickson <SteveD@redhat.com>
+CC: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Linux NFS Mailing list <linux-nfs@vger.kernel.org>,
+       Linux Kernel Mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sunrpc: Adding trace points to status routines.
+References: <49F1E348.2060309@RedHat.com>
+In-Reply-To: <49F1E348.2060309@RedHat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 05:41:10PM +0100, Catalin Marinas wrote:
-> This patch adds MTD concatenation support to integrator-flash.c for
-> platforms with more than one block of flash memory (e.g. RealView
-> PB11MPCore). The implementation is based on the sa1100-flash.c one.
-> 
-> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Russell King <linux@arm.linux.org.uk>
+Steve Dickson wrote:
+> Hey Trond,
+>
+> Here is a very simple patch that adds three trace points 
+> to the sunrpc state machine. The trace points are strategically
+> placed so they will only be called during error conditions. The 
+> purpose of these trace point is to show processes that are spinning
+> or get hung up in the NFS code and its associated subsystems.
+>
+> Case in point. Recently I had a customer that was seeing 
+> rpciod spinning (using %100 of the cpu) for a relative
+> short amount time (actually I think I mentioned this bug
+> to you). 
+>
+> Using systemtap scripts that only showed errors in the 
+> rpc status routines, I was able to determine the process was
+> spinning in the bind code. Basically doing an IPv6 bind
+> with no takers (although we are still working on it).
+>
+> So it occurred to me, that it would have been very handy to
+> have a light weight mechanism that only showed errors the sunrpc 
+> code was processing. So I ported those systemtap scripts into 
+> trace points.
+>
+> Note, we did try to use the existing dprintk() but it took much 
+> much longer for the problem to occur, if at all. Plus when the 
+> problem did happen, the volume of data to sieve through 
+> as a bit daunting.
+>
+> An example of the the output is:
+>
+> <...>-2684  [001]  1437.010389: call_status: 100003[4]:0 status=-107
+>                                routine name: prog[version]:Proc tk_status
+>
+> which shows who is failing (i.e. the program number and version) and 
+> what they are trying to do (the procedure number).
+>
+> Now there are some common errors like ETIMOUT and EAGAIN, but we can 
+> filter those  out using the 'filer' file that the trace points 
+> system supplies.
+>
+> Please consider... I really think light weight information will be
+> very handy... 
+>
+>   
 
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+I agree.  This information could be very handy at times.
 
-David, please merge via the mtd tree, thanks.
+The problem with this whole approach that it is impossible
+to figure out what trace_bind_status() does using cscope or
+tags or any tools like that.  One will have to figure out
+that it is a trace event and then figure out how and where
+it is defined.  Bleah.
+
+    Thanx...
+
+       ps
+
+
+> steved.
+>  
+> Author: Steve Dickson <steved@redhat.com>
+> Date:   Fri Apr 24 11:12:31 2009 -0400
+>
+>     Adds three trace points to the status routines in the
+>     sunrpc state machine. The trace points will only execute
+>     in error conditions.
+>     
+>     The goal of these trace points it to make it easier to
+>     debug process that spin or get hung up in the NFS and
+>     related subsystems.
+>     
+>     Signed-off-by: Steve Dickson <steved@redhat.com>
+>
+> diff --git a/include/trace/events/sunrpc.h b/include/trace/events/sunrpc.h
+> new file mode 100644
+> index 0000000..f502eb4
+> --- /dev/null
+> +++ b/include/trace/events/sunrpc.h
+> @@ -0,0 +1,86 @@
+> +#if !defined(_TRACE_SUNRPC_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_SUNRPC_H
+> +
+> +#include <linux/tracepoint.h>
+> +
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM sunrpc
+> +
+> +TRACE_EVENT(call_status,
+> +
+> +	TP_PROTO(struct rpc_task *task),
+> +
+> +	TP_ARGS(task),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(u32, cl_prog)
+> +		__field(u32, cl_vers)
+> +		__field(u32, p_proc)
+> +		__field(int, tk_status)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->cl_prog = task->tk_client->cl_prog;
+> +		__entry->cl_vers = task->tk_client->cl_vers;
+> +		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
+> +		__entry->cl_prog = task->tk_client->cl_prog;
+> +		__entry->tk_status = task->tk_status;
+> +	),
+> +
+> +	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
+> +		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
+> +);
+> +
+> +TRACE_EVENT(bind_status,
+> +
+> +	TP_PROTO(struct rpc_task *task),
+> +
+> +	TP_ARGS(task),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(u32, cl_prog)
+> +		__field(u32, cl_vers)
+> +		__field(u32, p_proc)
+> +		__field(int, tk_status)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->cl_prog = task->tk_client->cl_prog;
+> +		__entry->cl_vers = task->tk_client->cl_vers;
+> +		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
+> +		__entry->cl_prog = task->tk_client->cl_prog;
+> +		__entry->tk_status = task->tk_status;
+> +	),
+> +
+> +	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
+> +		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
+> +);
+> +TRACE_EVENT(connect_status,
+> +
+> +	TP_PROTO(struct rpc_task *task, int status),
+> +
+> +	TP_ARGS(task, status),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(u32, cl_prog)
+> +		__field(u32, cl_vers)
+> +		__field(u32, p_proc)
+> +		__field(int, tk_status)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->cl_prog = task->tk_client->cl_prog;
+> +		__entry->cl_vers = task->tk_client->cl_vers;
+> +		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
+> +		__entry->cl_prog = task->tk_client->cl_prog;
+> +		__entry->tk_status = status;
+> +	),
+> +
+> +	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
+> +		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
+> +
+> +);
+> +#endif /* __TRACE_SUNRPC_H */
+> +
+> +/* This part must be outside protection */
+> +#include <trace/define_trace.h>
+> diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
+> index 5abab09..b86ee2a 100644
+> --- a/net/sunrpc/clnt.c
+> +++ b/net/sunrpc/clnt.c
+> @@ -37,6 +37,9 @@
+>  #include <linux/sunrpc/rpc_pipe_fs.h>
+>  #include <linux/sunrpc/metrics.h>
+>  
+> +#include <linux/ftrace.h>
+> +#define CREATE_TRACE_POINTS
+> +#include <trace/events/sunrpc.h>
+>  
+>  #ifdef RPC_DEBUG
+>  # define RPCDBG_FACILITY	RPCDBG_CALL
+> @@ -957,6 +960,7 @@ call_bind_status(struct rpc_task *task)
+>  		return;
+>  	}
+>  
+> +	trace_bind_status(task);
+>  	switch (task->tk_status) {
+>  	case -ENOMEM:
+>  		dprintk("RPC: %5u rpcbind out of memory\n", task->tk_pid);
+> @@ -1038,6 +1042,7 @@ call_connect_status(struct rpc_task *task)
+>  		return;
+>  	}
+>  
+> +	trace_connect_status(task, status);
+>  	switch (status) {
+>  		/* if soft mounted, test if we've timed out */
+>  	case -ETIMEDOUT:
+> @@ -1141,6 +1146,7 @@ call_status(struct rpc_task *task)
+>  		return;
+>  	}
+>  
+> +	trace_call_status(task);
+>  	task->tk_status = 0;
+>  	switch(status) {
+>  	case -EHOSTDOWN:
+>
+>                                         
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>   
+
