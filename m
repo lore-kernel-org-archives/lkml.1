@@ -1,51 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZDXUDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757090AbZDXUFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754728AbZDXUDI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 16:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbZDXUCz
+	id S1757090AbZDXUFy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 16:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbZDXUFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 16:02:55 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:47948 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752649AbZDXUCy (ORCPT
+	Fri, 24 Apr 2009 16:05:45 -0400
+Received: from mail.gmx.net ([213.165.64.20]:44692 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751924AbZDXUFp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 16:02:54 -0400
-Date: Fri, 24 Apr 2009 16:02:52 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Kernel development list <linux-kernel@vger.kernel.org>
-cc: USB list <linux-usb@vger.kernel.org>
-Subject: NLS: utf8 conversions
-Message-ID: <Pine.LNX.4.44L0.0904241534110.4531-100000@iolanthe.rowland.org>
+	Fri, 24 Apr 2009 16:05:45 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18vQHFkoo0vtJaWt+dL5bimUsrbMdzOjx9Vd8S75p
+	d/NABmbyUREstr
+Date: Fri, 24 Apr 2009 22:05:39 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+cc: Kumar Gala <galak@kernel.crashing.org>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: Regarding the linkstation defconfig
+In-Reply-To: <20090424065816.GA15525@ime.usp.br>
+Message-ID: <Pine.LNX.4.64.0904242158210.8309@axis700.grange>
+References: <20090424065816.GA15525@ime.usp.br>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Although nobody seems to have made a big deal about it, the conversions
-between utf8 and utf16 done by fs/nls/nls_base.c are wrong in a couple
-of important respects:
+On Fri, 24 Apr 2009, Rogério Brito wrote:
 
-	They don't handle Unicode code points larger than U+FFFF.
+> Hi, Guennadi, Kumar & Co.
+> 
+> Guennadi, since you seem to be the one responsible for the
+> linkstation/kurobox in the kernel,
 
-	They don't detect invalid values, in particular, surrogate
-	code points.
+That's not howI interpret my role in linkstation development / support.
 
-The problems stem from the fact the characters at issue can't be
-represented by a single 16-bit wchar_t.  But that's no excuse for
-performing an incorrect conversion to or from utf16.
+> I would like to ask you a few things
+> that I couldn't quite understand. Please, forgive my ignorance here
+> while I ask you some things:
+> 
+> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+>  01. why is anticipatory the default scheduler for linkstations when CFQ
+>      is the default scheduler for the rest of the kernel?
+> 
+>  02. since kuroboxes/linkstations are meant to store files, is there any
+>      reason why they don't have support for large blk devs enabled by
+>      default?
+> 
+>  03. why is CONFIG_MIGRATION enabled in such low memory devices?
+> 
+>  04. why is CONFIG_BLK_DEV_RAM enabled by default?
+> 
+>  05. why is SCSI_LOWLEVEL enabled, if no device under that tree is used?
+> 
+>  06. idem for CONFIG_NETDEV_10000.
+> 
+>  07. idem for CONFIG_WIRELESS.
+> 
+>  08. idem for CONFIG_HWMON.
+> 
+>  09. idem for CONFIG_CRYPTO_HW.
+> 
+>  10. any reason why CONFIG_VIDEO_OUTPUT_CONTROL is configured as a
+>      module?
+> 
+>  11. any reason why CIFS is not configured with extended attributes,
+>      while both ext3 and nfs are?
+> 
+>  12. wouldn't it be a good thing to enable CONFIG_PRINTK_TIME?
+> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-Are there any definite thoughts on how this should be handled?  I don't 
-see any way for the single-character conversion routines (utf8_mbtowc 
-and utf8_wctomb) to come to grips with these issues, except perhaps for 
-returning an error when a character would be invalid or too big to fit 
-in 16 bits.
+As I already replied to you earlier, I am not particularly interested in 
+fine-tuning and optimisation of defconfigs. IMHO *_defconfigs are only 
+examples of board configuration, that are known to build and work. The 
+rest is up to the user / packager.
 
-The string-oriented routines (utf8_mbstowcs and utf8_wcstombs) could be 
-adapted to deal with these issues properly.
+> Perhaps similar remarks would apply to the other device that you
+> maintain? I forgot its name.
+> 
+> Again, please, forgive my ignorance here regarding the questions above.
+> I'm really looking for some clarification and to get things in shape
+> both on my systems and in the default kernel configuration, in general.
 
-Any comments or suggestions for other approaches?
+Feel free to submit patches with reasoning to the powerpc ML and 
+respective maintainer as per MAINTAINERS file.
 
-Alan Stern
-
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
