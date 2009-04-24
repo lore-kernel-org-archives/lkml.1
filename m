@@ -1,96 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbZDXOWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbZDXOZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757337AbZDXOWT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 10:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758089AbZDXOWF
+	id S1760130AbZDXOZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 10:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756831AbZDXOZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 10:22:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56816 "EHLO mx2.redhat.com"
+	Fri, 24 Apr 2009 10:25:12 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:38265 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759497AbZDXOWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 10:22:04 -0400
-Message-ID: <49F1CA6E.5080407@redhat.com>
-Date: Fri, 24 Apr 2009 10:19:26 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Tim Abbott <tabbott@MIT.EDU>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>, "Theodore Ts'o" <tytso@MIT.EDU>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Subject: Re: [PATCH v3 0/3] Add support for compiling with -ffunction-sections
- -fdata-sections
-References: <1238973278-31735-1-git-send-email-tabbott@mit.edu> <alpine.DEB.1.10.0904072019560.17274@vinegar-pot.mit.edu> <alpine.DEB.1.10.0904201255080.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201637280.2199@localhost.localdomain> <alpine.DEB.1.10.0904202010220.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain> <alpine.DEB.1.10.0904221826180.24694@vinegar-pot.mit.edu>
-In-Reply-To: <alpine.DEB.1.10.0904221826180.24694@vinegar-pot.mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1753868AbZDXOZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 10:25:10 -0400
+Subject: Re: [PATCH 02/22] Do not sanity check order in the fast path
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090424092151.GA14283@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
+	 <1240408407-21848-3-git-send-email-mel@csn.ul.ie>
+	 <1240416791.10627.78.camel@nimitz> <20090422171151.GF15367@csn.ul.ie>
+	 <1240421415.10627.93.camel@nimitz> <20090423001311.GA26643@csn.ul.ie>
+	 <1240450447.10627.119.camel@nimitz> <1240514784.10627.171.camel@nimitz>
+	 <1240515930.10627.175.camel@nimitz>  <20090424092151.GA14283@csn.ul.ie>
+Content-Type: text/plain
+Date: Fri, 24 Apr 2009 07:25:00 -0700
+Message-Id: <1240583100.29485.5.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Abbott wrote:
-> On Mon, 20 Apr 2009, Linus Torvalds wrote:
+On Fri, 2009-04-24 at 10:21 +0100, Mel Gorman wrote:
+> > dave@kernel:~/work/mhp-build$ ../linux-2.6.git/scripts/bloat-o-meter
+> > i386-numaq-sparse.{1,2}/vmlinux 
+> > add/remove: 0/0 grow/shrink: 9/16 up/down: 81/-99 (-18)
+> > function                                     old     new   delta
+> > st_int_ioctl                                2600    2624     +24
+> > tcp_sendmsg                                 2153    2169     +16
+> > diskstats_show                               739     753     +14
+> > iov_shorten                                   49      58      +9
+> > unmap_vmas                                  1653    1661      +8
+> > sg_build_indirect                            449     455      +6
+> > ahc_linux_biosparam                          251     253      +2
+> > nlmclnt_call                                 557     558      +1
+> > do_mount                                    1533    1534      +1
 > 
->> I'd be ok with merging it, but I haven't really gotten a strong feeling 
->> that anybody is going to enable it or use it.
-> 
-> Linus,
-> 
-> Would you be willing to merge the first 3 patches in this patch series at 
-> this point?  I'm resending these patches to resolve some conflicts that 
-> was recently introduced.
+> It doesn't make sense at all that text increased in size. Did you make clean
+> between each .config change and patch application? Are you using distcc
+> or anything else that might cause confusion? I found I had to eliminate
+> distscc and clean after each patch application because sometimes
+> net/ipv4/udp.c would sometimes generate different assembly when
+> accessing struct zone. Not really sure what was going on there.
 
-Hi Tim,
+There's a ccache in there but no distcc.
 
-What would you think about posting these patches plus -ffunction-sections/
--fdata-sections patch to -mm tree, -tip tree, or -next tree as
-"playable" Ksplice patchset?
+I'll redo with clean builds.
 
-If people use it and see it enough stable and useful, those patches
-will be automatically pulled into linus kernel.
-
-
-> To summarize the discussion, there are three uses for this code that have 
-> significant interest.
-> 
-> One is decreasing the kernel size.  Denys Vlasenko has numbers that using 
-> the linker's --gc-sections option (for which these patches are a 
-> prerequisite) saves 10% of the kernel size when CONFIG_MODULES=n, and 1% 
-> when CONFIG_MODULES=y.  Paul Mundt thinks many embedded users would use 
-> this if it were available.
-> 
-> A related use is cleaning up a lot of ifdefs that exist only to decrease 
-> the kernel size.  Several developers commented favorably on the direction 
-> of using section garbage collection for dead code removal.
-> 
-> Finally, Ksplice depends on the option added by this patch series.
-> 
-> The first 3 patches in this patch series fix problems associated with 
-> using -ffunction-sections.  As there are some architectures currently 
-> using -ffunction-sections, these should ideally be merged now, especially 
-> the first patch which involves scattered changes.
-
-If there are actual problems on those arch, I think you'd better post
-these patches as bugfixes with bug reports.
-
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+-- Dave
 
