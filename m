@@ -1,144 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759302AbZDXIlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759469AbZDXIl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759302AbZDXIlF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 04:41:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759087AbZDXIkv
+	id S1759469AbZDXIl3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 04:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759103AbZDXIlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 04:40:51 -0400
-Received: from mga01.intel.com ([192.55.52.88]:3662 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759336AbZDXIks convert rfc822-to-8bit (ORCPT
+	Fri, 24 Apr 2009 04:41:15 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:37344 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759087AbZDXIlM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 04:40:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,240,1239001200"; 
-   d="scan'208";a="684582922"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>
-CC: "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>
-Date: Fri, 24 Apr 2009 09:39:38 +0100
-Subject: RE: [rfc 2/2] x86, bts: use physically non-contiguous trace buffer
-Thread-Topic: [rfc 2/2] x86, bts: use physically non-contiguous trace buffer
-Thread-Index: AcnEtxmvI5JbLj3VTOC8+hMAYB53XgAAC6FQ
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E9BA9BB93@irsmsx504.ger.corp.intel.com>
-References: <20090424100055.A30408@sedona.ch.intel.com>
- <20090424011328.b5e949ce.akpm@linux-foundation.org>
- <20090424083128.GI24912@elte.hu>
-In-Reply-To: <20090424083128.GI24912@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+	Fri, 24 Apr 2009 04:41:12 -0400
+Date: Fri, 24 Apr 2009 10:41:08 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sachin Sant <sachinp@in.ibm.com>, Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       linux-s390@vger.kernel.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: Next April 24: [S390] allmodconfig build failure (trace/events)
+Message-ID: <20090424104108.0f2c0f05@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20090424072533.GE24912@elte.hu>
+References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
+	<49F16654.8040208@in.ibm.com>
+	<20090424072533.GE24912@elte.hu>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Ingo Molnar [mailto:mingo@elte.hu]
->Sent: Friday, April 24, 2009 10:31 AM
->To: Andrew Morton
->Cc: Metzger, Markus T; a.p.zijlstra@chello.nl; markus.t.metzger@gmail.com; roland@redhat.com;
->eranian@googlemail.com; oleg@redhat.com; Villacis, Juan; ak@linux.jf.intel.com; linux-
->kernel@vger.kernel.org; tglx@linutronix.de; hpa@zytor.com
->Subject: Re: [rfc 2/2] x86, bts: use physically non-contiguous trace buffer
->
->
->* Andrew Morton <akpm@linux-foundation.org> wrote:
->
->> On Fri, 24 Apr 2009 10:00:55 +0200 Markus Metzger <markus.t.metzger@intel.com> wrote:
->>
->> > Use vmalloc to allocate the branch trace buffer.
->> >
->> > Peter Zijlstra suggested to use vmalloc rather than kmalloc to
->> > allocate the potentially multi-page branch trace buffer.
->>
->> The changelog provides no reason for this change.  It should do so.
->>
->> > Is there a way to have vmalloc allocate a physically non-contiguous
->> > buffer for test purposes? Ideally, the memory area would have big
->> > holes in it with sensitive data in between so I would know immediately
->> > when this is overwritten.
->>
->> I suppose you could allocate the pages by hand and then vmap() them.
->> Allocating 2* the number you need and then freeing every second one
->> should make them physically holey.
->>
->> > --- a/arch/x86/kernel/ptrace.c
->> > +++ b/arch/x86/kernel/ptrace.c
->> > @@ -22,6 +22,7 @@
->> >  #include <linux/seccomp.h>
->> >  #include <linux/signal.h>
->> >  #include <linux/workqueue.h>
->> > +#include <linux/vmalloc.h>
->> >
->> >  #include <asm/uaccess.h>
->> >  #include <asm/pgtable.h>
->> > @@ -626,7 +627,7 @@ static int alloc_bts_buffer(struct bts_c
->> >  	if (err < 0)
->> >  		return err;
->> >
->> > -	buffer = kzalloc(size, GFP_KERNEL);
->> > +	buffer = vmalloc(size);
->> >  	if (!buffer)
->> >  		goto out_refund;
->> >
->> > @@ -646,7 +647,7 @@ static inline void free_bts_buffer(struc
->> >  	if (!context->buffer)
->> >  		return;
->> >
->> > -	kfree(context->buffer);
->> > +	vfree(context->buffer);
->> >  	context->buffer = NULL;
->> >
->>
->> The patch looks like a regression to me.  vmalloc memory is slower
->> to allocate, slower to free, slower to access and can exhaust or
->> fragment the vmalloc arena.  Confused.
->
->Performance does not matter here (this is really a slowpath), but
->fragmentation does matter, especially on 32-bit systems.
->
->I'd not uglify the code via vmap() - and vmap has the same
->fundamental address space limitations on 32-bit as vmalloc().
->
->The existing kmalloc() is fine. We do larger than PAGE_SIZE
->allocations elsewhere too (the kernel stack for example), and this
->is a debug facility, so failing the allocation is not a big problem
->even if it happens.
+On Fri, 24 Apr 2009 09:25:33 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-OK. I'll drop 2/2 and send out 1/2 as a patch, then.
+> 
+> * Sachin Sant <sachinp@in.ibm.com> wrote:
+> 
+> > Today's next tree build(s390 allmodconfig) failed with
+> >
+> > kernel/built-in.o: In function `trace_softirq_entry'
+> > include/trace/events/irq.h:42: undefined reference to  
+> > `'
+> > include/trace/events/irq.h:42: undefined reference to  
+> > `__tracepoint_softirq_entry'
+> > kernel/built-in.o: In function `trace_softirq_exit':
+> > include/trace/events/irq.h:48: undefined reference to  
+> > `__tracepoint_softirq_exit'
+> > include/trace/events/irq.h:48: undefined reference to  
+> > `__tracepoint_softirq_exit'
+> 
+> Hm, that's weird - s390 does not build kernel/softirq.o? Hm, it does 
+> - softirq.o is an obj-y object.
 
-The original suggestion was to use the page allocator and vmap().
-I assume you don't want that, either.
+s390 does build kernel/softirq.o. However it's anything but obvious to
+me how the tracepoint infrastructure works. Too many #ifdefs, #define's
+and #undefine's...
 
-thanks,
-markus.
+I would expect that struct __tracepoint_softirq_entry somehow gets
+defined via one of the TRACE_FORMAT macros, no?
 
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+kernel/softirq.i has these parts wrt. __tracepoint_softirq_entry:
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+# 42 "include/trace/events/irq.h"
+extern struct tracepoint __tracepoint_softirq_entry; static inline __attribute__((always_inline)) void trace_softirq_entry(struc
+t softirq_action *h, struct softirq_action *vec) { if (__builtin_expect(!!(__tracepoint_softirq_entry.state), 0)) do { void **it
+_func; do { } while (0); it_func = ({ typeof((&__tracepoint_softirq_entry)->funcs) _________p1 = (*(volatile typeof((&__tracepoi
+nt_softirq_entry)->funcs) *)&((&__tracepoint_softirq_entry)->funcs)); do { } while(0); (_________p1); }); if (it_func) { do { ((
+void(*)(struct softirq_action *h, struct softirq_action *vec))(*it_func))(h, vec); } while (*(++it_func)); } do { } while (0); }
+ while (0); } static inline __attribute__((always_inline)) int register_trace_softirq_entry(void (*probe)(struct softirq_action 
+*h, struct softirq_action *vec)) { return tracepoint_probe_register("softirq_entry", (void *)probe); } static inline __attribute
+__((always_inline)) int unregister_trace_softirq_entry(void (*probe)(struct softirq_action *h, struct softirq_action *vec)) { re
+turn tracepoint_probe_unregister("softirq_entry", (void *)probe); };
 
+extern struct tracepoint __tracepoint_softirq_exit; static inline __attribute__((always_inline)) void trace_softirq_exit(struct 
+softirq_action *h, struct softirq_action *vec) { if (__builtin_expect(!!(__tracepoint_softirq_exit.state), 0)) do { void **it_fu
+nc; do { } while (0); it_func = ({ typeof((&__tracepoint_softirq_exit)->funcs) _________p1 = (*(volatile typeof((&__tracepoint_s
+oftirq_exit)->funcs) *)&((&__tracepoint_softirq_exit)->funcs)); do { } while(0); (_________p1); }); if (it_func) { do { ((void(*
+)(struct softirq_action *h, struct softirq_action *vec))(*it_func))(h, vec); } while (*(++it_func)); } do { } while (0); } while
+ (0); } static inline __attribute__((always_inline)) int register_trace_softirq_exit(void (*probe)(struct softirq_action *h, str
+uct softirq_action *vec)) { return tracepoint_probe_register("softirq_exit", (void *)probe); } static inline __attribute__((alwa
+ys_inline)) int unregister_trace_softirq_exit(void (*probe)(struct softirq_action *h, struct softirq_action *vec)) { return trac
+epoint_probe_unregister("softirq_exit", (void *)probe); };
+
+__do_softirq looks like below. So I would expect some header file include dependency? Dunno...
+
+ void __do_softirq(void)
+{
+ struct softirq_action *h;
+ __u32 pending;
+ int max_restart = 10;
+ int cpu;
+
+ pending = ((*((struct _lowcore *) 0)).softirq_pending);
+ account_system_vtime(((struct task_struct *const)(*((struct _lowcore *) 0)).current_task));
+
+ __local_bh_disable((unsigned long)__builtin_return_address(0));
+ do { ((struct task_struct *const)(*((struct _lowcore *) 0)).current_task)->softirq_context++; } while (0);
+
+ cpu = ((*((struct _lowcore *) 0)).cpu_nr);
+restart:
+
+ (((*((struct _lowcore *) 0)).softirq_pending) = (0));
+
+ do { trace_hardirqs_on(); raw_local_irq_enable(); } while (0);
+
+ h = softirq_vec;
+
+ do {
+  if (pending & 1) {
+   int prev_count = (current_thread_info()->preempt_count);
+
+   trace_softirq_entry(h, softirq_vec);
+   h->action(h);
+   trace_softirq_exit(h, softirq_vec);
+   if (__builtin_expect(!!(prev_count != (current_thread_info()->preempt_count)), 0)) {
+    printk("<3>" "huh, entered softirq %td %s %p"
+           "with preempt_count %08x,"
+           " exited with %08x?\n", h - softirq_vec,
+           softirq_to_name[h - softirq_vec],
+           h->action, prev_count, (current_thread_info()->preempt_count));
+    (current_thread_info()->preempt_count) = prev_count;
+   }
+
+   rcu_bh_qsctr_inc(cpu);
+  }
+  h++;
+  pending >>= 1;
+ } while (pending);
+
+ do { raw_local_irq_disable(); trace_hardirqs_off(); } while (0);
+
+ pending = ((*((struct _lowcore *) 0)).softirq_pending);
+ if (pending && --max_restart)
+  goto restart;
+
+ if (pending)
+  wakeup_softirqd();
+
+ do { ((struct task_struct *const)(*((struct _lowcore *) 0)).current_task)->softirq_context--; } while (0);
+
+ account_system_vtime(((struct task_struct *const)(*((struct _lowcore *) 0)).current_task));
+ _local_bh_enable();
+}
