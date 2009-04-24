@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbZDXGZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757157AbZDXGcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757476AbZDXGZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 02:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZDXGZM
+	id S1757157AbZDXGcU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 02:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755286AbZDXGcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 02:25:12 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:62034 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751902AbZDXGZK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 02:25:10 -0400
-Date: Fri, 24 Apr 2009 15:21:03 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "hugh@veritas.com" <hugh@veritas.com>
-Subject: Re: [RFC][PATCH] fix swap entries is not reclaimed in proper way
- for mem+swap controller
-Message-Id: <20090424152103.a5ee8d13.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090424133306.0d9fb2ce.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090421162121.1a1d15fe.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090422143833.2e11e10b.nishimura@mxp.nes.nec.co.jp>
-	<20090424133306.0d9fb2ce.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 24 Apr 2009 02:32:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56552 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753886AbZDXGcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 02:32:02 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org, Jan Kratochvil <jan.kratochvil@redhat.com>,
+       Denys Vlasenko <dvlasenk@redhat.com>
+Subject: Re: Q: ptrace_signal() && PTRACE_SETSIGINFO (Was: SIGSTOP && ptrace)
+In-Reply-To: Oleg Nesterov's message of  Thursday, 23 April 2009 17:16:33 +0200 <20090423151633.GA3120@redhat.com>
+References: <1158166a0904230515h333a78c9uf49931824c1dfe72@mail.gmail.com>
+	<20090423142627.GA31572@redhat.com>
+	<20090423151633.GA3120@redhat.com>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20090424063159.BCEDAFC3C7@magilla.sf.frob.com>
+Date: Thu, 23 Apr 2009 23:31:59 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Apr 2009 13:33:06 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Wed, 22 Apr 2009 14:38:33 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> Yes. PTRACE_SETSIGINFO can change *info if debugger wants something
+> special. But then we do:
 > 
-> > >  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-> > >  extern void mem_cgroup_uncharge_swap(swp_entry_t ent);
-> > > +extern void mem_cgroup_mark_swapcache_stale(struct page *page);
-> > > +extern void mem_cgroup_fixup_swapcache(struct page *page);
-> > >  #else
-> > >  static inline void mem_cgroup_uncharge_swap(swp_entry_t ent)
-> > >  {
-> > >  }
-> > > +static void mem_cgroup_check_mark_swapcache_stale(struct page *page)
-> > > +{
-> > > +}
-> > > +static void mem_cgroup_fixup_swapcache(struct page *page)
-> > > +{
-> > > +}
-> > >  #endif
-> > >  
-> > I think they should be defined in MEM_RES_CTLR case.
-> > Exhausting swap entries problem is not depend on MEM_RES_CTLR_SWAP.
-> > 
-> Could you explain this more ? I can't understand.
-> 
-STALE(!PageCgroupUsed) SwapCache *without owner process* can be created by
-the race between exit()..free_swap_and_cache() and read_swap_cache_async()(type-1)
-or between exit()..page_remove_rmap() and shrink_page_list()(type-2).
-(I don't think STALE SwapCache itself is problematic as long as there is
-an actual user of the SwapCache.)
+> 	if (signr != info->si_signo) {
+> 		info->si_signo = signr;
+[...]
+> Why? If the tracer changes ->exit_code it should know what it does.
 
-Those NOUSER STALE SwapCache are NOT depend on MEM_RES_CTLR_SWAP.
+If it uses PTRACE_SETSIGINFO it should know what it does, and update
+the siginfo_t to match the signal it passes to PTRACE_CONT et al.
 
-If total_swap_size is small enough not to trigger global LRU scan,
-all swap space can be used up.
-I confirmed before that all swap space were used up(and caused oom)
-with mem.limit=32M/total_swap_size=50M.
+> Why do we reset *info?
+
+PTRACE_SETSIGINFO did not always exist, and even now might not be used by a
+simple-minded application.  If the user is sophisticated, it calls
+PTRACE_SETSIGINFO and then passes the signal number to match.  If not, it
+never calls PTRACE_SETSIGINFO at all, but expects the signal number it
+chose to pass in PTRACE_CONT to behave "normally" in the tracee.  
+
+We reset the siginfo_t the tracee will see to match what a kill() from the
+debugger would have looked like.  Otherwise the tracee could be confused by
+the siginfo_t values that don't make sense for the signal number delivered.
+(The simple-minded debugger's ptrace code could even predate SA_SIGINFO
+handlers and tracees that could see the siginfo_t.)
+
+> But the real question, how can PTRACE_SETSIGINFO change ->si_signo
+> (for example, for do_signal_stop(si_signo)) if this in fact is not
+> allowed?
+
+It's allowed.  You just have to pass the same value you set in si_signo as
+the argument to PTRACE_CONT after you do PTRACE_SETSIGINFO.
 
 
 Thanks,
-Daisuke Nishimura.
+Roland
