@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbZDXPK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757797AbZDXPMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757331AbZDXPK1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 11:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbZDXPKP
+	id S1757797AbZDXPMA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 11:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbZDXPLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 11:10:15 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:30458 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751917AbZDXPKO (ORCPT
+	Fri, 24 Apr 2009 11:11:51 -0400
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:34682 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752876AbZDXPLu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 11:10:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=OuGPwQP11PRBNHO7I4hGxsC0l4awxB897pus3BGBclgdqyAS6GfdMSPP/b3dsZXR/S
-         nX3zgZMjv5rstwcjAyNykFSgPuL3ZLCRHU90fnAQGH7GJIYJKwkP4ikPauY0dxzKEmn5
-         4FXszq/+w5yp0QQ+k1A5U7gKJrL2vPBG0L4FI=
-From: tom.leiming@gmail.com
-To: mingo@elte.hu, akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH] Documentation:lockdep-design: fix note of state bits
-Date: Fri, 24 Apr 2009 23:10:06 +0800
-Message-Id: <1240585806-5744-1-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.6.0.GIT
+	Fri, 24 Apr 2009 11:11:50 -0400
+Date: Fri, 24 Apr 2009 20:40:51 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Theodore Tso <tytso@mit.edu>, Andrea Righi <righi.andrea@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Paul Menage <menage@google.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
+Message-ID: <20090424151051.GF3944@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-10-git-send-email-righi.andrea@gmail.com> <20090417123805.GC7117@mit.edu> <20090417125004.GY4593@kernel.dk> <20090417143903.GA30365@linux> <20090421001822.GB19186@mit.edu> <20090421083001.GA8441@linux> <20090421140631.GF19186@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090421140631.GF19186@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+* Theodore Tso <tytso@mit.edu> [2009-04-21 10:06:31]:
 
->From source code of get_usage_char(), the previous note is not correct,
-so fix it.
+> On Tue, Apr 21, 2009 at 10:30:02AM +0200, Andrea Righi wrote:
+> > 
+> > We're trying to address also this issue, setting max dirty pages limit
+> > per cgroup, and force a direct writeback when these limits are exceeded.
+> > 
+> > In this case dirty ratio throttling should happen automatically because
+> > the process will be throttled by the IO controller when it tries to
+> > writeback the dirty pages and submit IO requests.
+> 
+> The challenge here will be the accounting; consider that you may have
+> a file that had some of its pages in its page cache dirtied by a
+> process in cgroup A.  Now another process in cgroup B dirties some
+> more pages.  This could happen either via a mmap'ed file or via the
+> standard read/write system calls.  How do you track which dirty pages
+> should be charged against which cgroup?
 
-static char get_usage_char(struct lock_class *class, enum lock_usage_bit bit)
-{
-	char c = '.';
+We have ways to track the cgroup from either "mm_struct" or the
+"page". Given the context, vma or mm, we should be able to charge the
+page to the cgroup, undoing the charge might be challenge since we'll
+need to figure out whom to uncharge from the write context. This needs
+some investigation. We could even decay the charge or use similar
+techniques, don't know yet.
 
-	if (class->usage_mask & lock_flag(bit + 2))/*LOCK_ENABLED_##STATE*/
-		c = '+';
-	if (class->usage_mask & lock_flag(bit)) {/*LOCK_USED_IN_##STATE*/
-		c = '-';
-		if (class->usage_mask & lock_flag(bit + 2))
-			c = '?';
-	}
-
-	return c;
-}
-note:
-1),The 'bit' parameter always is passed as  LOCK_USED_IN_##STATE
-or LOCK_USED_IN_##STATE_READ , from get_usage_chars().
-
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
----
- Documentation/lockdep-design.txt |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/Documentation/lockdep-design.txt b/Documentation/lockdep-design.txt
-index 938ea22..e20d913 100644
---- a/Documentation/lockdep-design.txt
-+++ b/Documentation/lockdep-design.txt
-@@ -54,9 +54,9 @@ locking error messages, inside curlies. A contrived example:
- The bit position indicates STATE, STATE-read, for each of the states listed
- above, and the character displayed in each indicates:
- 
--   '.'  acquired while irqs disabled
--   '+'  acquired in irq context
--   '-'  acquired with irqs enabled
-+   '.'  acquired while irqs disabled and not in irq context
-+   '-'  acquired in irq context
-+   '+'  acquired with irqs enabled
-    '?'  acquired in irq context with irqs enabled.
- 
- Unused mutexes cannot be part of the cause of an error.
 -- 
-1.6.0.GIT
-
+	Balbir
