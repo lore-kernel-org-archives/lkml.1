@@ -1,155 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbZDXFvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbZDXF5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754914AbZDXFvW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 01:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZDXFvE
+	id S1755093AbZDXF5R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 01:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbZDXF5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 01:51:04 -0400
-Received: from mga11.intel.com ([192.55.52.93]:1624 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756538AbZDXFvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 01:51:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,240,1239001200"; 
-   d="asc'?scan'208";a="451016800"
-Subject: Re: Re-implement MCE log ring buffer as per-CPU ring buffer
-From: Huang Ying <ying.huang@intel.com>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <49EEFB7E.4020605@linux.intel.com>
-References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com>
-	 <49EEFB7E.4020605@linux.intel.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-hFlwJyKTyhUs4gmkXHSV"
-Date: Fri, 24 Apr 2009 13:51:01 +0800
-Message-Id: <1240552261.6842.857.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Fri, 24 Apr 2009 01:57:00 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:52846 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751499AbZDXF47 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 01:56:59 -0400
+Date: Fri, 24 Apr 2009 11:26:37 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, maneesh@linux.vnet.ibm.com,
+       Roland McGrath <roland@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [Patch 00/11] Hardware Breakpoint interfaces
+Message-ID: <20090424055637.GA7909@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090417031221.GA4837@in.ibm.com> <Pine.LNX.4.44L0.0904171000470.6220-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0904171000470.6220-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 17, 2009 at 10:37:13AM -0400, Alan Stern wrote:
+> On Fri, 17 Apr 2009, K.Prasad wrote:
+> 
 
---=-hFlwJyKTyhUs4gmkXHSV
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Hi Alan,
+	I have modified the patch by accepting all of your suggestions
+excepting one - which I try to explain below.
 
-On Wed, 2009-04-22 at 19:11 +0800, Andi Kleen wrote:
-> Huang Ying wrote:
->=20
-> Basic concept is good and it fixes some long standing problems.
->=20
-> But some details need to be improved I think:
->=20
-> > +/*
-> > + * Initialize MCE per-CPU log buffer
-> > + */
-> > +static void mce_log_init(void)
-> > +{
-> > +	int cpu;
-> > +	struct mce_log_cpu *mcelog_cpu;
-> > +
-> > +	if (mcelog.log_cpus)
-> > +		return;
-> > +	mcelog.log_cpus =3D kmalloc(num_possible_cpus() * sizeof(mcelog_cpu),
-> > +				  GFP_KERNEL);
-> > +	for_each_possible_cpu(cpu) {
-> > +		mcelog_cpu =3D &per_cpu(mcelog_cpus, cpu);
-> > +		mcelog.log_cpus[cpu] =3D mcelog_cpu;
-> > +	}
->=20
-> I don't understand why the separate allocation. Can't you just put
-> the whole log buffer directly into the per cpu data?
->=20
-> This would also make the initialization cleaner because you would need to=
- only
-> initialize state for the currently initialized CPU.
+I will send the patchset containing changes suggested by you and a few
+others (have explained that in the changelog).
 
-The original intention to use mcelog.log_cpus is to make it easier to
-find per-cpu buffers from memory image produced by kdump. But is seems
-that something as follow is just sufficient.
-
-mcelog.log_cpus =3D alloc_percpu(struct mce_log_cpu);
-
-Is this what you suggested?
-
->=20
-> > +			while (!mcelog_cpu->entry[i].finished) {
-> > +				rdtscll(now);
-> > +				if (now - start > WRITER_TIMEOUT_CYC) {
-> > +					memset(mcelog_cpu->entry + i, 0,
-> >  					       sizeof(struct mce));
-> > +					head =3D mcelog_cpu->head;
-> >  					goto timeout;
->=20
-> This timeout should be reported somehow, perhaps with a printk.
-> Also it's problematic to hardcode cycles here, i think it would
-> be better to use a similar scheme as the Monarch timeout
-> with a ndelay() and a spinunit. That is guaranteed to stay
-> the same even as CPU frequencies change.
-
-Yes. I will change this.
-
-> > +static ssize_t mce_read(struct file *filp, char __user *inubuf, size_t=
- usize,
-> > +			loff_t *off)
-> > +{
-> > +	char __user *ubuf =3D inubuf;
-> > +	struct mce_log_cpu *mcelog_cpu;
-> > +	int cpu, new_mce, err =3D 0;
-> > +	static DEFINE_MUTEX(mce_read_mutex);
-> > +	size_t usize_limit;
-> > +
-> > +	/* Too large user buffer size may cause system not response */
->=20
-> Did you understand why that happens? It's worrying.
-
-The loop in mce_read() does not release the CPU in non-preempt kernel.
-If the user buffer size is too large, it may cause the CPU to be
-soft-lock-upped or not response. One way to solve the issue is to
-constrain the size of user buffer, another way may be insert a
-schedule() in the loop.=20
-
-> > +static ssize_t show_log_flags(struct sys_device *s,
-> > +			      struct sysdev_attribute *attr,
-> > +			      char *buf)
-> > +{
-> > +	int cpu =3D s->id;
-> > +	struct mce_log_cpu *mcelog_cpu =3D &per_cpu(mcelog_cpus, cpu);
-> > +	unsigned flags;
-> > +	do {
-> > +		flags =3D mcelog_cpu->flags;
-> > +	} while (cmpxchg((unsigned *)&mcelog_cpu->flags, flags, 0) !=3D flags=
-);
-> > +	return sprintf(buf, "0x%x\n", flags);
-> > +}
-> > +
-> >  static SYSDEV_ATTR(trigger, 0644, show_trigger, set_trigger);
-> >  static SYSDEV_INT_ATTR(tolerant, 0644, tolerant);
-> >  ACCESSOR(check_interval,check_interval,mce_restart())
-> > +static SYSDEV_ATTR(log_flags, 0644, show_log_flags, NULL);
->=20
-> Do we really need that interface? It seems rather obscure.
-> mcelog should get these flags anyways. Better to drop it.
-
-For overflow flag, it seems not very useful. I will drop this.
-
-Best Regards,
-Huang Ying
+Kindly review the new code.
 
 
---=-hFlwJyKTyhUs4gmkXHSV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+> > 
+> > > > +	on_each_cpu(arch_update_kernel_hw_breakpoints, NULL, 0);
+> > > > +	hbp_kernel_pos++;
+> > > 
+> > > Don't you want to increment hbp_kernel_pos _before_ calling
+> > > on_each_cpu()?  Otherwise you're telling the other CPUs to install an
+> > > empty breakpoint.
+> > > 
+> > 
+> > Incrementing hbp_kernel_pos after arch_update_kernel_hw_breakpoints()
+> > during unregister_kernel_ is of the following significance:
+> > 
+> > - The 'pos' numbered debug register is reset to 0 through the code 
+> >   "set_debugreg(hbp_kernel[i]->info.address, i)" where 'i' ranges from
+> >   hbp_kernel_pos to HB_NUM. This is necessary during unregister operation.
+> 
+> It _isn't_ necessary.  The contents of that debug register don't matter 
+> at all if it isn't enabled.  (And there's nothing special about 0; if 
+> the breakpoint were enabled then you would get a breakpoint interrupt 
+> whenever something tried to access address 0.)
+> 
+> Besides, the "set_debugreg" line of code in
+> arch_update_kernel_hw_breakpoints doesn't get executed when
+> hbp_kernel[i] is NULL.  So this whole point is moot; the debug register
+> wouldn't be affected anyway.
+> 
+> > - The following statements would reset the bits corresponding to
+> >   unregistered breakpoint only then.
+> > 	kdr7 &= ~kdr7_masks[hbp_kernel_pos];
+> > 	dr7 &= ~kdr7_masks[hbp_kernel_pos];
+> 
+> But if hbp_kernel_pos is wrong (i.e., if it hasn't been incremented)
+> then these statements will set kdr7 and dr7 incorrectly.
+> 
+> > - Helps keep the arch_update_kernel_hw_breakpoints() code generic enough
+> >   to be invoked during register and unregister operations.
+> 
+> This is another moot point.  Your code is _wrong_ -- how generic it is
+> doesn't matter.
+> 
+>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+The arch_update_kernel_hw_breakpoints() was designed to work like this -
+it updates all registers beginning 'hbp_kernel_pos' to (HB_NUM - 1) with
+the values stored in hbp_kernel[] array.
 
-iEYEABECAAYFAknxU0IACgkQKhFGF+eHlpiDUACgqvS5PObKnHwXv0+6z18JblEG
-zXMAoJsf4/Yk5l7Q4fCcrErX7BUMjia+
-=1VyK
------END PGP SIGNATURE-----
+When inserting a new breakpoint, hbp_kernel_pos is decremented *before*
+invoking arch_update_kernel_hw_breakpoints() so that the new value is
+also written onto the physical debug register.
 
---=-hFlwJyKTyhUs4gmkXHSV--
+On removal, 'hbp_kernel_pos' is incremented *after*
+arch_update_kernel_hw_breakpoints() so that the physical debug registers
+i.e. both DR7 and DR<pos> are updated with the changes post removal and
+compaction. I'm ready to make changes but don't see where the code
+actually goes wrong. Can you explain that?
+
+Thanks,
+K.Prasad
 
