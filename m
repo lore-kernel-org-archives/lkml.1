@@ -1,265 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755651AbZDXLrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbZDXLsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755651AbZDXLrV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 07:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZDXLrL
+	id S1755153AbZDXLsZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 07:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZDXLsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 07:47:11 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59409 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753280AbZDXLrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 07:47:09 -0400
-Message-ID: <49F1A69B.9070206@cn.fujitsu.com>
-Date: Fri, 24 Apr 2009 19:46:35 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 4/4] workqueue_trace: Separate worklet_insertion into worklet_enqueue
- and worklet_enqueue_delayed
-References: <20090415085310.AC0D.A69D9226@jp.fujitsu.com> <20090415011533.GI5968@nowhere> <20090415141250.AC46.A69D9226@jp.fujitsu.com> <49E8282A.6010004@cn.fujitsu.com> <49E82CA7.2040606@cn.fujitsu.com> <20090417134557.GA23493@elte.hu> <49F1A59B.3080206@cn.fujitsu.com>
-In-Reply-To: <49F1A59B.3080206@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Apr 2009 07:48:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59943 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752230AbZDXLsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 07:48:15 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090423165546.GA7117@redhat.com>
+References: <20090423165546.GA7117@redhat.com> <1239649429.16771.9.camel@heimdal.trondhjem.org> <20090413181733.GA10424@redhat.com> <32260.1239658818@redhat.com> <20090413214852.GA1127@redhat.com> <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com> <14561.1239873018@redhat.com> <21239.1240407420@redhat.com> <5591.1240417398@redhat.com> <21209.1240504344@redhat.com> 
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: dhowells@redhat.com, Ingo Molnar <mingo@elte.hu>, torvalds@osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>, serue@us.ibm.com,
+       viro@zeniv.linux.org.uk,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] It may not be assumed that wake_up(), finish_wait() and co. imply a memory barrier
+Date: Fri, 24 Apr 2009 12:46:41 +0100
+Message-ID: <26028.1240573601@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To get more information about delayed work.
-Suggest by Ingo Molnar <mingo@elte.hu>
-> i'd suggest the following complete set of events instead:
-> TRACE_EVENT(worklet_enqueue              /* NEW */
-> TRACE_EVENT(worklet_enqueue_delayed      /* NEW */
-> i'd suggest a 'cpu' parameter to the enqueue events, to allow the
-> mapping of the _on(..cpu) variants too.
+Oleg Nesterov <oleg@redhat.com> wrote:
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> Well. I am starting to suspect I missed something, but I disagree. Or I just
+> (this is very possible) misunderstand the above.
+
+No, it's me getting myself confused.  After thinking about it for a while, I
+see that you're right: the potential misordering, I think, is between the
+setting of the task state and reading the data value in the sleeper, and
+between the writing of the data value and the clearing of the task state in
+the waker.
+
+That means that provided that:
+
+ (1) set_current_state() interpolates a full memory barrier after setting the
+     task state then there's no problem in the sleeper, and
+
+ (2) wake_up() interpolates a write memory barrier before clearing the task
+     state - _if_ it wakes anything up - then there's no problem in the waker
+     either.
+
+How about the attached doc patch?
+
+David
 ---
- include/trace/events/workqueue.h |   54 ++++++++++++++++++++++++++++++++-----
- kernel/trace/trace_workqueue.c   |   41 +++++++++++++++++++---------
- kernel/workqueue.c               |   19 ++++++++++---
- 3 files changed, 88 insertions(+), 26 deletions(-)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Document memory barriers implied by sleep/wake-up primitives
 
-diff --git a/include/trace/events/workqueue.h b/include/trace/events/workqueue.h
-index fb35cc7..e4c74f2 100644
---- a/include/trace/events/workqueue.h
-+++ b/include/trace/events/workqueue.h
-@@ -8,26 +8,64 @@
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM workqueue
+Add a section to the memory barriers document to note the implied memory
+barriers of sleep primitives (set_current_state() and wrappers) and wake-up
+primitives (wake_up() and co.).
+
+Also extend the in-code comments on the wake_up() functions to note these
+implied barriers.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ Documentation/memory-barriers.txt |   93 +++++++++++++++++++++++++++++++++++++
+ kernel/sched.c                    |   23 +++++++++
+ 2 files changed, 115 insertions(+), 1 deletions(-)
+
+
+diff --git a/Documentation/memory-barriers.txt b/Documentation/memory-barriers.txt
+index f5b7127..48d3c77 100644
+--- a/Documentation/memory-barriers.txt
++++ b/Documentation/memory-barriers.txt
+@@ -31,6 +31,7 @@ Contents:
  
--TRACE_EVENT(worklet_insertion,
-+TRACE_EVENT(worklet_enqueue,
+      - Locking functions.
+      - Interrupt disabling functions.
++     - Sleep and wake-up functions.
+      - Miscellaneous functions.
  
--	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
-+	TP_PROTO(
-+		struct task_struct *wq_thread,
-+		struct work_struct *work,
-+		int cpu
-+	),
+  (*) Inter-CPU locking barrier effects.
+@@ -1217,6 +1218,96 @@ barriers are required in such a situation, they must be provided from some
+ other means.
  
--	TP_ARGS(wq_thread, work),
-+	TP_ARGS(wq_thread, work, cpu),
  
- 	TP_STRUCT__entry(
--		__array(char,		thread_comm,	TASK_COMM_LEN)
--		__field(pid_t,		thread_pid)
--		__field(work_func_t,	func)
-+		__array(char,			thread_comm,	TASK_COMM_LEN)
-+		__field(pid_t,			thread_pid)
-+		__field(work_func_t,		func)
-+		__field(int,			cpu)
- 	),
- 
- 	TP_fast_assign(
- 		memcpy(__entry->thread_comm, wq_thread->comm, TASK_COMM_LEN);
- 		__entry->thread_pid	= wq_thread->pid;
- 		__entry->func		= work->func;
-+		__entry->cpu		= cpu;
-+	),
++SLEEP AND WAKE-UP FUNCTIONS
++---------------------------
 +
-+	TP_printk("thread=%s:%d func=%pF cpu=%d", __entry->thread_comm,
-+		__entry->thread_pid, __entry->func, __entry->cpu)
-+);
++Sleeping and waking on an event flagged in global data can be viewed as an
++interaction between two pieces of data: the task state of the task waiting for
++the event and the global data used to indicate the event.  To make sure that
++these appear to happen in the right order, the primitives to begin the process
++of going to sleep, and the primitives to initiate a wake up imply certain
++barriers.
 +
-+TRACE_EVENT(worklet_enqueue_delayed,
++Firstly, the sleeper normally follows something like this sequence of events:
 +
-+	TP_PROTO(
-+		struct task_struct *wq_thread,
-+		struct work_struct *work,
-+		int cpu,
-+		unsigned long delay
-+	),
++	for (;;) {
++		set_current_state(TASK_UNINTERRUPTIBLE);
++		if (event_indicated)
++			break;
++		schedule();
++	}
 +
-+	TP_ARGS(wq_thread, work, cpu, delay),
++A general memory barrier is interpolated automatically by set_current_state()
++after it has altered the task state:
 +
-+	TP_STRUCT__entry(
-+		__array(char,			thread_comm,	TASK_COMM_LEN)
-+		__field(pid_t,			thread_pid)
-+		__field(work_func_t,		func)
-+		__field(int,			cpu)
-+		__field(unsigned long,		delay)
-+	),
++	CPU 1
++	===============================
++	set_current_state();
++	  set_mb();
++	    STORE current->state
++	    <general barrier>
++	LOAD event_indicated
 +
-+	TP_fast_assign(
-+		memcpy(__entry->thread_comm, wq_thread->comm, TASK_COMM_LEN);
-+		__entry->thread_pid	= wq_thread->pid;
-+		__entry->func		= work->func;
-+		__entry->cpu		= cpu;
-+		__entry->delay		= delay;
- 	),
++set_current_state() may be wrapped by:
++
++	prepare_to_wait();
++	prepare_to_wait_exclusive();
++
++which therefore also imply a general memory barrier after setting the state.
++The whole sequence above is available in various canned forms, all of which
++interpolate the memory barrier in the right place:
++
++	wait_event();
++	wait_event_interruptible();
++	wait_event_interruptible_exclusive();
++	wait_event_interruptible_timeout();
++	wait_event_killable();
++	wait_event_timeout();
++	wait_on_bit();
++	wait_on_bit_lock();
++
++
++Secondly, code that performs a wake up normally follows something like this:
++
++	event_indicated = 1;
++	wake_up(&event_wait_queue);
++
++or:
++
++	event_indicated = 1;
++	wake_up_process(event_daemon);
++
++A write memory barrier is implied by wake_up() and co. if and only if they wake
++something up.  The barrier occurs before the task state is cleared, and so sits
++between the STORE to indicate the event and the STORE to set TASK_RUNNING:
++
++	CPU 1				CPU 2
++	===============================	===============================
++	set_current_state();		STORE event_indicated
++	  set_mb();			wake_up();
++	    STORE current->state	  <write barrier>
++	    <general barrier>		  STORE current->state
++	LOAD event_indicated
++
++The available waker functions include:
++
++	complete();
++	wake_up();
++	wake_up_all();
++	wake_up_bit();
++	wake_up_interruptible();
++	wake_up_interruptible_all();
++	wake_up_interruptible_nr();
++	wake_up_interruptible_poll();
++	wake_up_interruptible_sync();
++	wake_up_interruptible_sync_poll();
++	wake_up_locked();
++	wake_up_locked_poll();
++	wake_up_nr();
++	wake_up_poll();
++	wake_up_process();
++
++
+ MISCELLANEOUS FUNCTIONS
+ -----------------------
  
--	TP_printk("thread=%s:%d func=%pF", __entry->thread_comm,
--		__entry->thread_pid, __entry->func)
-+	TP_printk("thread=%s:%d func=%pF cpu=%d delay=%lu",
-+		__entry->thread_comm, __entry->thread_pid, __entry->func,
-+		__entry->cpu, __entry->delay)
- );
+@@ -1366,7 +1457,7 @@ WHERE ARE MEMORY BARRIERS NEEDED?
  
- TRACE_EVENT(worklet_execute,
-diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
-index e3e1218..69ae4aa 100644
---- a/kernel/trace/trace_workqueue.c
-+++ b/kernel/trace/trace_workqueue.c
-@@ -57,7 +57,7 @@ static DEFINE_PER_CPU(struct workqueue_global_stats, all_workqueue_stat);
-  * Update record when insert a work into workqueue
-  * Caller need to hold cpu_workqueue_stats spin_lock
+ Under normal operation, memory operation reordering is generally not going to
+ be a problem as a single-threaded linear piece of code will still appear to
+-work correctly, even if it's in an SMP kernel.  There are, however, three
++work correctly, even if it's in an SMP kernel.  There are, however, four
+ circumstances in which reordering definitely _could_ be a problem:
+ 
+  (*) Interprocessor interaction.
+diff --git a/kernel/sched.c b/kernel/sched.c
+index b902e58..fd0c2ce 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2458,6 +2458,17 @@ out:
+ 	return success;
+ }
+ 
++/**
++ * wake_up_process - Wake up a specific process
++ * @p: The process to be woken up.
++ *
++ * Attempt to wake up the nominated process and move it to the set of runnable
++ * processes.  Returns 1 if the process was woken up, 0 if it was already
++ * running.
++ *
++ * It may be assumed that this function implies a write memory barrier before
++ * changing the task state if and only if any tasks are woken up.
++ */
+ int wake_up_process(struct task_struct *p)
+ {
+ 	return try_to_wake_up(p, TASK_ALL, 0);
+@@ -5241,6 +5252,9 @@ void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
+  * @mode: which threads
+  * @nr_exclusive: how many wake-one or wake-many threads to wake up
+  * @key: is directly passed to the wakeup function
++ *
++ * It may be assumed that this function implies a write memory barrier before
++ * changing the task state if and only if any tasks are woken up.
   */
--int do_worklet_insertion(struct cpu_workqueue_stats *cws,
-+int do_worklet_enqueue(struct cpu_workqueue_stats *cws,
- 			 struct work_struct *work)
+ void __wake_up(wait_queue_head_t *q, unsigned int mode,
+ 			int nr_exclusive, void *key)
+@@ -5279,6 +5293,9 @@ void __wake_up_locked_key(wait_queue_head_t *q, unsigned int mode, void *key)
+  * with each other. This can prevent needless bouncing between CPUs.
+  *
+  * On UP it can prevent extra preemption.
++ *
++ * It may be assumed that this function implies a write memory barrier before
++ * changing the task state if and only if any tasks are woken up.
+  */
+ void __wake_up_sync_key(wait_queue_head_t *q, unsigned int mode,
+ 			int nr_exclusive, void *key)
+@@ -5315,6 +5332,9 @@ EXPORT_SYMBOL_GPL(__wake_up_sync);	/* For internal use only */
+  * awakened in the same order in which they were queued.
+  *
+  * See also complete_all(), wait_for_completion() and related routines.
++ *
++ * It may be assumed that this function implies a write memory barrier before
++ * changing the task state if and only if any tasks are woken up.
+  */
+ void complete(struct completion *x)
  {
- 	struct workfunc_stats *wfstat;
-@@ -85,26 +85,34 @@ found:
- 	return 0;
- }
- 
--/* Insertion of a work */
-+/* Enqueue of a work */
- static void
--probe_worklet_insertion(struct task_struct *wq_thread,
--			  struct work_struct *work)
-+probe_worklet_enqueue(struct task_struct *wq_thread, struct work_struct *work,
-+		      int cpu)
+@@ -5332,6 +5352,9 @@ EXPORT_SYMBOL(complete);
+  * @x:  holds the state of this particular completion
+  *
+  * This will wake up all threads waiting on this particular completion event.
++ *
++ * It may be assumed that this function implies a write memory barrier before
++ * changing the task state if and only if any tasks are woken up.
+  */
+ void complete_all(struct completion *x)
  {
--	int cpu = cpumask_first(&wq_thread->cpus_allowed);
-+	int wqcpu = cpumask_first(&wq_thread->cpus_allowed);
- 	struct cpu_workqueue_stats *node;
- 	unsigned long flags;
- 
--	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
--	list_for_each_entry(node, &workqueue_cpu_stat(cpu)->list, list) {
-+	spin_lock_irqsave(&workqueue_cpu_stat(wqcpu)->lock, flags);
-+	list_for_each_entry(node, &workqueue_cpu_stat(wqcpu)->list, list) {
- 		if (node->pid == wq_thread->pid) {
- 			/* we ignore error of do_worklet_insertion */
--			do_worklet_insertion(node, work);
-+			do_worklet_enqueue(node, work);
- 			goto found;
- 		}
- 	}
- 	pr_debug("trace_workqueue: entry not found\n");
- found:
--	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
-+	spin_unlock_irqrestore(&workqueue_cpu_stat(wqcpu)->lock, flags);
-+}
-+
-+static void
-+probe_worklet_enqueue_delayed(struct task_struct *wq_thread,
-+			      struct work_struct *work, int cpu,
-+			      unsigned long delay)
-+{
-+	probe_worklet_enqueue(wq_thread, work, cpu);
- }
- 
- /* Execution of a work */
-@@ -368,13 +376,18 @@ int __init trace_workqueue_early_init(void)
- {
- 	int ret, cpu;
- 
--	ret = register_trace_worklet_insertion(probe_worklet_insertion);
-+	ret = register_trace_worklet_enqueue(probe_worklet_enqueue);
- 	if (ret)
- 		goto out;
- 
-+	ret = register_trace_worklet_enqueue_delayed(
-+		probe_worklet_enqueue_delayed);
-+	if (ret)
-+		goto no_enqueue;
-+
- 	ret = register_trace_worklet_execute(probe_worklet_execute);
- 	if (ret)
--		goto no_insertion;
-+		goto no_enqueue_delayed;
- 
- 	ret = register_trace_workqueue_creation(probe_workqueue_creation);
- 	if (ret)
-@@ -395,8 +408,10 @@ no_creation:
- 	unregister_trace_workqueue_creation(probe_workqueue_creation);
- no_handler_entry:
- 	unregister_trace_worklet_execute(probe_worklet_execute);
--no_insertion:
--	unregister_trace_worklet_insertion(probe_worklet_insertion);
-+no_enqueue_delayed:
-+	unregister_trace_worklet_enqueue_delayed(probe_worklet_enqueue_delayed);
-+no_enqueue:
-+	unregister_trace_worklet_enqueue(probe_worklet_enqueue);
- out:
- 	pr_warning("trace_workqueue: unable to trace workqueues\n");
- 
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index a3c9848..0cc14b9 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -128,8 +128,6 @@ struct cpu_workqueue_struct *get_wq_data(struct work_struct *work)
- static void insert_work(struct cpu_workqueue_struct *cwq,
- 			struct work_struct *work, struct list_head *head)
- {
--	trace_worklet_insertion(cwq->thread, work);
--
- 	set_wq_data(work, cwq);
- 	/*
- 	 * Ensure that we get the right work->data if we see the
-@@ -188,8 +186,12 @@ queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *work)
- 	int ret = 0;
- 
- 	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
-+		struct cpu_workqueue_struct *cwq;
-+
- 		BUG_ON(!list_empty(&work->entry));
--		__queue_work(wq_per_cpu(wq, cpu), work);
-+		cwq = wq_per_cpu(wq, cpu);
-+		__queue_work(cwq, work);
-+		trace_worklet_enqueue(cwq->thread, work, cpu);
- 		ret = 1;
- 	}
- 	return ret;
-@@ -251,10 +253,17 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
- 		timer->data = (unsigned long)dwork;
- 		timer->function = delayed_work_timer_fn;
- 
--		if (unlikely(cpu >= 0))
-+		if (unlikely(cpu >= 0)) {
- 			add_timer_on(timer, cpu);
--		else
-+			trace_worklet_enqueue_delayed(
-+				wq_per_cpu(wq, cpu)->thread, work, cpu, delay);
-+		} else {
- 			add_timer(timer);
-+			trace_worklet_enqueue_delayed(
-+				wq_per_cpu(wq, raw_smp_processor_id())->thread,
-+				work, cpu, delay);
-+		}
-+
- 		ret = 1;
- 	}
- 	return ret;
--- 
-1.5.5.3
-
-
