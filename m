@@ -1,175 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753703AbZDXLw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbZDXL4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753703AbZDXLw3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 07:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbZDXLwU
+	id S1755950AbZDXL4g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 07:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbZDXL41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 07:52:20 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:10953 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752277AbZDXLwT (ORCPT
+	Fri, 24 Apr 2009 07:56:27 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:42047 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741AbZDXL40 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 07:52:19 -0400
-Subject: Re: [PATCH 15/22] Do not disable interrupts in free_page_mlock()
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       cl@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com,
-       peterz@infradead.org, penberg@cs.helsinki.fi,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-In-Reply-To: <20090424113312.GG14283@csn.ul.ie>
-References: <1240408407-21848-16-git-send-email-mel@csn.ul.ie>
-	 <20090423155951.6778bdd3.akpm@linux-foundation.org>
-	 <20090424090721.1047.A69D9226@jp.fujitsu.com>
-	 <20090424113312.GG14283@csn.ul.ie>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 24 Apr 2009 07:52:16 -0400
-Message-Id: <1240573936.4315.2.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Apr 2009 07:56:26 -0400
+Date: Fri, 24 Apr 2009 12:55:44 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Sachin Sant <sachinp@in.ibm.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Ingo Molnar <mingo@redhat.com>, peterz@infradead.org,
+       Al Viro <viro@ZenIV.linux.org.uk>, Oleg Nesterov <oleg@redhat.com>
+Subject: Re: Next April 24 : BUG: lock held at task exit time!
+In-Reply-To: <20090424175509.561c96ad.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0904241249180.20196@blonde.anvils>
+References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au> <49F1626D.6080102@in.ibm.com>
+ <20090424175509.561c96ad.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-24 at 12:33 +0100, Mel Gorman wrote: 
-> On Fri, Apr 24, 2009 at 09:33:50AM +0900, KOSAKI Motohiro wrote:
-> > > > @@ -157,14 +157,9 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
-> > > >   */
-> > > >  static inline void free_page_mlock(struct page *page)
-> > > >  {
-> > > > -	if (unlikely(TestClearPageMlocked(page))) {
-> > > > -		unsigned long flags;
-> > > > -
-> > > > -		local_irq_save(flags);
-> > > > -		__dec_zone_page_state(page, NR_MLOCK);
-> > > > -		__count_vm_event(UNEVICTABLE_MLOCKFREED);
-> > > > -		local_irq_restore(flags);
-> > > > -	}
-> > > > +	__ClearPageMlocked(page);
-> > > > +	__dec_zone_page_state(page, NR_MLOCK);
-> > > > +	__count_vm_event(UNEVICTABLE_MLOCKFREED);
-> > > >  }
-> > > 
-> > > The conscientuous reviewer runs around and checks for free_page_mlock()
-> > > callers in other .c files which might be affected.
-> > > 
-> > > Only there are no such callers.
-> > > 
-> > > The reviewer's job would be reduced if free_page_mlock() wasn't
-> > > needlessly placed in a header file!
+On Fri, 24 Apr 2009, Stephen Rothwell wrote:
+> On Fri, 24 Apr 2009 12:25:41 +0530 Sachin Sant <sachinp@in.ibm.com> wrote:
+> >
+> > While booting today's next tree on a powerpc box [ power 6 blade]
+> > observed the following :
 > > 
-> > very sorry.
+> > khelper used greatest stack depth: 10176 bytes left
 > > 
-> > How about this?
+> > =====================================
+> > [ BUG: lock held at task exit time! ]
+> > -------------------------------------
+> > khelper/21 is exiting with locks still held!
+> > 2 locks held by khelper/21:
+> >  #0:  (rcu_read_lock){.+.+.+}, at: [<c0000000001382fc>] 
+> > .check_unsafe_exec+0x44/0x148
+> >  #1:  (rcu_read_lock){.+.+.+}, at: [<c000000000138368>] 
+> > .check_unsafe_exec+0xb0/0x148
 > > 
-> > =============================================
-> > Subject: [PATCH] move free_page_mlock() to page_alloc.c
+> > stack backtrace:
+> > Call Trace:
+> > [c000000044483cf0] [c000000000011a54] .show_stack+0x6c/0x16c (unreliable)
+> > [c000000044483da0] [c00000000009ae14] .debug_check_no_locks_held+0x98/0xb4
+> > [c000000044483e20] [c000000000073b1c] .do_exit+0x758/0x7b0
+> > [c000000044483f00] [c0000000000853d8] .____call_usermodehelper+0x170/0x174
+> > [c000000044483f90] [c00000000002bd8c] .kernel_thread+0x54/0x70
+> > net_namespace: 2000 bytes
 > > 
-> > Currently, free_page_mlock() is only called from page_alloc.c.
-> > Thus, we can move it to page_alloc.c.
-> > 
+> > Complete dmesg attached. Let me know if you need any other info. I will 
+> > try yesterday's next
+> > tree to check if this problem can be recreated.
 > 
-> Looks good, but here is a version rebased on top of the patch series
-> where it would be easier to merge with "Do not disable interrupts in
-> free_page_mlock()".
-> 
-> I do note why it might be in the header though - it keeps all the
-> CONFIG_HAVE_MLOCKED_PAGE_BIT-related helper functions together making it
-> easier to find them. Lee, was that the intention?
+> Almost certainly commit 874a9e18f25c86dbc199ad32ddd9ca44d25290e8
+> ("check_unsafe_exec: s/lock_task_sighand/rcu_read_lock/") which has a
+> typo (two locks instead of lock/unlock) as pointed out by Hugh Dickins
+> (<Pine.LNX.4.64.0904240526080.15735@blonde.anvils> on LKML).
 
-Yes.  Having been dinged one too many times for adding extraneous
-#ifdef's to .c's I try to avoid that...
+Indeed, thanks for the headsup Stephen.  My own config gives, not
+Sachin's message (or not still visibly on screen anyway), but an
+outright panic.  Shame that leaked out into the big world, we'd
+all have preferred a quiet fixup!  Here's a patch, which I'll
+also send as reply to the relevant thread.
 
-Note that in page-flags.h, we define MLOCK_PAGES as 0 or 1 based on
-CONFIG_HAVE_MLOCKED_PAGE_BIT, so you could test that in
-free_page_mlock() to eliminate the #ifdef in page_alloc.c as we do in
-try_to_unmap_*() over in rmap.c.  Guess I could have done that when I
-added MLOCK_PAGES.  Got lost in the heat of the battle.
+[PATCH] check_unsafe_exec: rcu_read_unlock
 
-Lee
+Fix typo in previous commit: second rcu_read_lock should be rcu_read_unlock.
 
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
-> 
-> =======
-> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> 
-> Move free_page_mlock() from mm/internal.h to mm/page_alloc.c
-> 
-> Currently, free_page_mlock() is only called from page_alloc.c. This patch
-> moves it from a header to to page_alloc.c.
-> 
-> [mel@csn.ul.ie: Rebase on top of page allocator patches]
-> Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-> Cc: Christoph Lameter <cl@linux-foundation.org>
-> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-> Cc: Dave Hansen <dave@linux.vnet.ibm.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> ---
->  mm/internal.h   |   13 -------------
->  mm/page_alloc.c |   16 ++++++++++++++++
->  2 files changed, 16 insertions(+), 13 deletions(-)
-> 
-> diff --git a/mm/internal.h b/mm/internal.h
-> index 58ec1bc..4b1672a 100644
-> --- a/mm/internal.h
-> +++ b/mm/internal.h
-> @@ -150,18 +150,6 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
->  	}
->  }
->  
-> -/*
-> - * free_page_mlock() -- clean up attempts to free and mlocked() page.
-> - * Page should not be on lru, so no need to fix that up.
-> - * free_pages_check() will verify...
-> - */
-> -static inline void free_page_mlock(struct page *page)
-> -{
-> -	__ClearPageMlocked(page);
-> -	__dec_zone_page_state(page, NR_MLOCK);
-> -	__count_vm_event(UNEVICTABLE_MLOCKFREED);
-> -}
-> -
->  #else /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
->  static inline int is_mlocked_vma(struct vm_area_struct *v, struct page *p)
->  {
-> @@ -170,7 +158,6 @@ static inline int is_mlocked_vma(struct vm_area_struct *v, struct page *p)
->  static inline void clear_page_mlock(struct page *page) { }
->  static inline void mlock_vma_page(struct page *page) { }
->  static inline void mlock_migrate_page(struct page *new, struct page *old) { }
-> -static inline void free_page_mlock(struct page *page) { }
->  
->  #endif /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
->  
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index f08b4cb..3db5f57 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -433,6 +433,22 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
->  	return 0;
->  }
->  
-> +#ifdef CONFIG_HAVE_MLOCKED_PAGE_BIT
-> +/*
-> + * free_page_mlock() -- clean up attempts to free and mlocked() page.
-> + * Page should not be on lru, so no need to fix that up.
-> + * free_pages_check() will verify...
-> + */
-> +static inline void free_page_mlock(struct page *page)
-> +{
-> +	__ClearPageMlocked(page);
-> +	__dec_zone_page_state(page, NR_MLOCK);
-> +	__count_vm_event(UNEVICTABLE_MLOCKFREED);
-> +}
-> +#else
-> +static inline void free_page_mlock(struct page *page) { }
-> +#endif /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
-> +
->  /*
->   * Freeing function for a buddy system allocator.
->   *
-> 
+ fs/exec.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+--- 2.6.30-rc3-next-20090424/fs/exec.c	2009-04-24 12:23:43.000000000 +0100
++++ linux/fs/exec.c	2009-04-24 12:26:10.000000000 +0100
+@@ -1043,7 +1043,7 @@ int check_unsafe_exec(struct linux_binpr
+ 		if (t->fs == p->fs)
+ 			n_fs++;
+ 	}
+-	rcu_read_lock();
++	rcu_read_unlock();
+ 
+ 	if (p->fs->users > n_fs) {
+ 		bprm->unsafe |= LSM_UNSAFE_SHARE;
