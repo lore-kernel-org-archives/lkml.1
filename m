@@ -1,141 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbZDXMPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbZDXMTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755606AbZDXMPz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 08:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbZDXMPq
+	id S1756780AbZDXMTR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 08:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbZDXMTC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 08:15:46 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:12238 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753212AbZDXMPp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 08:15:45 -0400
-Subject: Re: [PATCH 5/5] mm: remove unlikelys for unlock in rmap.c
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Steven Rostedt <srostedt@redhat.com>, Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <20090424200713.108B.A69D9226@jp.fujitsu.com>
-References: <20090325051920.406564281@goodmis.org>
-	 <20090325052023.994667072@goodmis.org>
-	 <20090424200713.108B.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 24 Apr 2009 08:15:43 -0400
-Message-Id: <1240575343.4315.15.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Apr 2009 08:19:02 -0400
+Received: from wa4ehsobe002.messaging.microsoft.com ([216.32.181.12]:4894 "EHLO
+	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753310AbZDXMTA convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 08:19:00 -0400
+X-BigFish: VPS-43(zz1432R98dR936eQ1447R1805M936fK8c8aizz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KILU74-04-TSN-01
+Date: Fri, 24 Apr 2009 14:18:40 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: David Vrabel <david.vrabel@csr.com>
+CC: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: dma_debug_device_change() gives bogus errors
+Message-ID: <20090424121840.GO17438@amd.com>
+References: <49F1A064.6040100@csr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <49F1A064.6040100@csr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 24 Apr 2009 12:18:41.0177 (UTC) FILETIME=[CDCFE890:01C9C4D6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-24 at 20:12 +0900, KOSAKI Motohiro wrote:
-> (cc to lee)
+On Fri, Apr 24, 2009 at 12:20:04PM +0100, David Vrabel wrote:
+> dma_debug_device_change() gives bogus errors if a driver unmaps dma
+> buffers within its driver->remove() method.  This is because the
+> BUS_NOTIFY_UNBIND_DRIVER notification is raised before calling
+> driver->remove() (see __device_release_driver() in drivers/base/dd.c).
 > 
-> > From: Steven Rostedt <rostedt@goodmis.org>
-> > 
-> > Impact: clean up
-> > 
-> > The annotated branch profiler shows that the rmap calls are likely
-> > called with unlock set.
-> > 
-> >  correct incorrect  %        Function                  File              Line
-> >  ------- ---------  -        --------                  ----              ----
-> >        0    46100 100 try_to_unmap_anon              rmap.c               1013
-> >        0    46100 100 try_to_unmap_anon              rmap.c               1005
-> >        0     5763 100 try_to_unmap_file              rmap.c               1074
-> >        0     5763 100 try_to_unmap_file              rmap.c               1069
-> > 
-> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> By the time my driver->remove() completes, there are no DMA mappings
+> (debug_dma_dump_mappings() produces no output).
 > 
-> unlock==1 mean munlock() is called.
-> unlock==0 mean memory shortage and reclaim happend.
-> 
-> So, we did guess end-user don't use munlock() so frequently.
-> but reclaim is frequently happend.
-> 
-> Oh well, but you have rich machine. hmm...
-> ok, I can agree user can use munlock() frequently.
-> 
-> 
-> 	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> 
+> Also, somewhat surprisingly, it only prints the error the first time the
+> driver is unbound.
 
-In current mainline, try_to_munlock() is called only from
-munlock_vma_page() and then only when page is actually mlocked.  So, you
-should only see the profile above during a test that is munlock()ing a
-lot of pages.  However, after try_to_munlock() was introduced, we'd
-added a call to it in vmscan.c to test for mlocked anon pages to avoid
-allocating swap to mlocked pages.  At the time, we couldn't reliably
-free swap there.  Hugh fixed this and removed the call from vmscan.  If
-Steve was testing a kernel before the call was removed, he would have
-seen the calls when reclaiming any anon pages.
+Thanks for the report. This is being worked on already. I will disable
+this check for 2.6.30 and try to get a solution upstream for 2.6.31.
 
-Steve:  what test were you using and on what version?
+Joerg
 
-Regards,
-Lee
-
-> 
-> 
-> 
-> > ---
-> >  mm/rmap.c |    8 ++++----
-> >  1 files changed, 4 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/mm/rmap.c b/mm/rmap.c
-> > index 1652166..ad62fe0 100644
-> > --- a/mm/rmap.c
-> > +++ b/mm/rmap.c
-> > @@ -1002,7 +1002,7 @@ static int try_to_unmap_anon(struct page *page, int unlock, int migration)
-> >  	unsigned int mlocked = 0;
-> >  	int ret = SWAP_AGAIN;
-> >  
-> > -	if (MLOCK_PAGES && unlikely(unlock))
-> > +	if (MLOCK_PAGES && unlock)
-> >  		ret = SWAP_SUCCESS;	/* default for try_to_munlock() */
-> >  
-> >  	anon_vma = page_lock_anon_vma(page);
-> > @@ -1010,7 +1010,7 @@ static int try_to_unmap_anon(struct page *page, int unlock, int migration)
-> >  		return ret;
-> >  
-> >  	list_for_each_entry(vma, &anon_vma->head, anon_vma_node) {
-> > -		if (MLOCK_PAGES && unlikely(unlock)) {
-> > +		if (MLOCK_PAGES && unlock) {
-> >  			if (!((vma->vm_flags & VM_LOCKED) &&
-> >  			      page_mapped_in_vma(page, vma)))
-> >  				continue;  /* must visit all unlocked vmas */
-> > @@ -1066,12 +1066,12 @@ static int try_to_unmap_file(struct page *page, int unlock, int migration)
-> >  	unsigned int mapcount;
-> >  	unsigned int mlocked = 0;
-> >  
-> > -	if (MLOCK_PAGES && unlikely(unlock))
-> > +	if (MLOCK_PAGES && unlock)
-> >  		ret = SWAP_SUCCESS;	/* default for try_to_munlock() */
-> >  
-> >  	spin_lock(&mapping->i_mmap_lock);
-> >  	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
-> > -		if (MLOCK_PAGES && unlikely(unlock)) {
-> > +		if (MLOCK_PAGES && unlock) {
-> >  			if (!((vma->vm_flags & VM_LOCKED) &&
-> >  						page_mapped_in_vma(page, vma)))
-> >  				continue;	/* must visit all vmas */
-> > -- 
-> > 1.6.2
-> > 
-> > -- 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-> 
+-- 
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
 
