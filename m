@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbZDXHpF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbZDXHv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754806AbZDXHpF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 03:45:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZDXHoy
+	id S1755250AbZDXHv7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 03:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbZDXHvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 03:44:54 -0400
-Received: from mga11.intel.com ([192.55.52.93]:2249 "EHLO mga11.intel.com"
+	Fri, 24 Apr 2009 03:51:50 -0400
+Received: from mga01.intel.com ([192.55.52.88]:62660 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750832AbZDXHox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 03:44:53 -0400
+	id S1750859AbZDXHvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 03:51:49 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.40,240,1239001200"; 
-   d="scan'208";a="451040912"
-Date: Fri, 24 Apr 2009 09:44:48 +0200
+   d="scan'208";a="451042311"
+Date: Fri, 24 Apr 2009 09:51:43 +0200
 From: Markus Metzger <markus.t.metzger@intel.com>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com
+To: a.p.zijlstra@chello.nl, akpm@linux-foundation.org
 Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
        eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
-       ak@linux.jf.intel.com
-Subject: [patch] x86, bts: reenable ptrace branch trace support
-Message-ID: <20090424094448.A30216@sedona.ch.intel.com>
+       ak@linux.jf.intel.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de, hpa@zytor.com
+Subject: [rfc 1/2] x86, bts, mm: buffer allocation
+Message-ID: <20090424095143.A30265@sedona.ch.intel.com>
 Mime-Version: 1.0
 Content-Disposition: inline
 User-Agent: Mutt/1.2.5i
@@ -30,29 +30,175 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The races found by Oleg Nesterov have been fixed.
+The current mm interface is asymetric. One function allocates a locked
+buffer, another function only refunds the memory.
 
-Reenable branch trace support.
+Change this to have two functions for accounting and refunding locked
+memory, respectively; and do the actual buffer allocation in ptrace.
 
 
-CC: Oleg Nesterov <oleg@redhat.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
- arch/x86/Kconfig.cpu |    1 	0 +	1 -	0 !
- 1 files changed, 1 deletion(-)
+ arch/x86/kernel/ptrace.c |   39 	26 +	13 -	0 !
+ include/linux/mm.h       |    6 	4 +	2 -	0 !
+ mm/mlock.c               |   36 	17 +	19 -	0 !
+ 3 files changed, 47 insertions(+), 34 deletions(-)
 
-Index: b/arch/x86/Kconfig.cpu
+Index: b/include/linux/mm.h
 ===================================================================
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -506,7 +506,6 @@ config X86_PTRACE_BTS
- 	bool "Branch Trace Store"
- 	default y
- 	depends on X86_DEBUGCTLMSR
--	depends on BROKEN
- 	---help---
- 	  This adds a ptrace interface to the hardware's branch trace store.
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -19,6 +19,7 @@ struct anon_vma;
+ struct file_ra_state;
+ struct user_struct;
+ struct writeback_control;
++struct rlimit;
  
+ #ifndef CONFIG_DISCONTIGMEM          /* Don't use mapnrs, do it properly */
+ extern unsigned long max_mapnr;
+@@ -1319,7 +1320,8 @@ int vmemmap_populate_basepages(struct pa
+ int vmemmap_populate(struct page *start_page, unsigned long pages, int node);
+ void vmemmap_populate_print_last(void);
+ 
+-extern void *alloc_locked_buffer(size_t size);
+-extern void refund_locked_buffer_memory(struct mm_struct *mm, size_t size);
++extern int account_locked_memory(struct mm_struct *mm, struct rlimit *rlim,
++				 size_t size);
++extern void refund_locked_memory(struct mm_struct *mm, size_t size);
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_MM_H */
+Index: b/mm/mlock.c
+===================================================================
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -629,38 +629,36 @@ void user_shm_unlock(size_t size, struct
+ 	free_uid(user);
+ }
+ 
+-void *alloc_locked_buffer(size_t size)
++int account_locked_memory(struct mm_struct *mm, struct rlimit *rlim,
++			  size_t size)
+ {
+-	unsigned long rlim, vm, pgsz;
+-	void *buffer = NULL;
++	unsigned long lim, vm, pgsz;
++	int error = -ENOMEM;
+ 
+ 	pgsz = PAGE_ALIGN(size) >> PAGE_SHIFT;
+ 
+-	down_write(&current->mm->mmap_sem);
+-
+-	rlim = current->signal->rlim[RLIMIT_AS].rlim_cur >> PAGE_SHIFT;
+-	vm   = current->mm->total_vm + pgsz;
+-	if (rlim < vm)
+-		goto out;
++	down_write(&mm->mmap_sem);
+ 
+-	rlim = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur >> PAGE_SHIFT;
+-	vm   = current->mm->locked_vm + pgsz;
+-	if (rlim < vm)
++	lim = rlim[RLIMIT_AS].rlim_cur >> PAGE_SHIFT;
++	vm   = mm->total_vm + pgsz;
++	if (lim < vm)
+ 		goto out;
+ 
+-	buffer = kzalloc(size, GFP_KERNEL);
+-	if (!buffer)
++	lim = rlim[RLIMIT_MEMLOCK].rlim_cur >> PAGE_SHIFT;
++	vm   = mm->locked_vm + pgsz;
++	if (lim < vm)
+ 		goto out;
+ 
+-	current->mm->total_vm  += pgsz;
+-	current->mm->locked_vm += pgsz;
++	mm->total_vm  += pgsz;
++	mm->locked_vm += pgsz;
+ 
++	error = 0;
+  out:
+-	up_write(&current->mm->mmap_sem);
+-	return buffer;
++	up_write(&mm->mmap_sem);
++	return error;
+ }
+ 
+-void refund_locked_buffer_memory(struct mm_struct *mm, size_t size)
++void refund_locked_memory(struct mm_struct *mm, size_t size)
+ {
+ 	unsigned long pgsz = PAGE_ALIGN(size) >> PAGE_SHIFT;
+ 
+Index: b/arch/x86/kernel/ptrace.c
+===================================================================
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -617,17 +617,28 @@ struct bts_context {
+ 	struct work_struct	work;
+ };
+ 
+-static inline void alloc_bts_buffer(struct bts_context *context,
+-				    unsigned int size)
++static int alloc_bts_buffer(struct bts_context *context, unsigned int size)
+ {
+-	void *buffer;
++	void *buffer = NULL;
++	int err = -ENOMEM;
+ 
+-	buffer = alloc_locked_buffer(size);
+-	if (buffer) {
+-		context->buffer = buffer;
+-		context->size = size;
+-		context->mm = get_task_mm(current);
+-	}
++	err = account_locked_memory(current->mm, current->signal->rlim, size);
++	if (err < 0)
++		return err;
++
++	buffer = kzalloc(size, GFP_KERNEL);
++	if (!buffer)
++		goto out_refund;
++
++	context->buffer = buffer;
++	context->size = size;
++	context->mm = get_task_mm(current);
++
++	return 0;
++
++ out_refund:
++	refund_locked_memory(current->mm, size);
++	return err;
+ }
+ 
+ static inline void free_bts_buffer(struct bts_context *context)
+@@ -638,7 +649,7 @@ static inline void free_bts_buffer(struc
+ 	kfree(context->buffer);
+ 	context->buffer = NULL;
+ 
+-	refund_locked_buffer_memory(context->mm, context->size);
++	refund_locked_memory(context->mm, context->size);
+ 	context->size = 0;
+ 
+ 	mmput(context->mm);
+@@ -786,13 +797,15 @@ static int ptrace_bts_config(struct task
+ 	context->tracer = NULL;
+ 
+ 	if ((cfg.flags & PTRACE_BTS_O_ALLOC) && (cfg.size != context->size)) {
++		int err;
++
+ 		free_bts_buffer(context);
+ 		if (!cfg.size)
+ 			return 0;
+ 
+-		alloc_bts_buffer(context, cfg.size);
+-		if (!context->buffer)
+-			return -ENOMEM;
++		err = alloc_bts_buffer(context, cfg.size);
++		if (err < 0)
++			return err;
+ 	}
+ 
+ 	if (cfg.flags & PTRACE_BTS_O_TRACE)
 ---------------------------------------------------------------------
 Intel GmbH
 Dornacher Strasse 1
