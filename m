@@ -1,212 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbZDXA1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbZDXA2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754986AbZDXA1z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 20:27:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZDXA1q
+	id S1754428AbZDXA2W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 20:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZDXA2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 20:27:46 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53960 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751362AbZDXA1o (ORCPT
+	Thu, 23 Apr 2009 20:28:12 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53573 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752370AbZDXA2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 20:27:44 -0400
-Date: Fri, 24 Apr 2009 09:26:09 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: Theodore Tso <tytso@mit.edu>, akpm@linux-foundation.org,
-       randy.dunlap@oracle.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
-       Jens Axboe <jens.axboe@oracle.com>, eric.rannaud@gmail.com,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, fernando@oss.ntt.co.jp,
-       dradford@bluehost.com, Gui@smtp1.linux-foundation.org,
-       agk@sourceware.org, subrata@linux.vnet.ibm.com,
-       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, dave@linux.vnet.ibm.com,
-       matt@bluehost.com, roberto@unbit.it, ngupta@google.com
-Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
-Message-Id: <20090424092609.aa1da56a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090423211300.GA20176@linux>
-References: <20090421204905.GA5573@linux>
-	<20090422093349.1ee9ae82.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090422102153.9aec17b9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090422102239.GA1935@linux>
-	<20090423090535.ec419269.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090423012254.GZ15541@mit.edu>
-	<20090423115419.c493266a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090423043547.GB2723@mit.edu>
-	<20090423094423.GA9756@linux>
-	<20090423121745.GC2723@mit.edu>
-	<20090423211300.GA20176@linux>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 23 Apr 2009 20:28:10 -0400
+Message-ID: <49F1077A.5030801@jp.fujitsu.com>
+Date: Fri, 24 Apr 2009 09:27:38 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Huang Ying <ying.huang@intel.com>
+CC: Andi Kleen <andi@firstfloor.org>, "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [PATCH] [4/4] x86: MCE: Fix EIPV behaviour with !PCC
+References: <20090407506.675031434@firstfloor.org>	 <20090407150657.61C4E1D046E@basil.firstfloor.org> <1240479838.6842.555.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1240479838.6842.555.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Apr 2009 23:13:04 +0200
-Andrea Righi <righi.andrea@gmail.com> wrote:
-
-> On Thu, Apr 23, 2009 at 08:17:45AM -0400, Theodore Tso wrote:
-> > On Thu, Apr 23, 2009 at 11:44:24AM +0200, Andrea Righi wrote:
-> > > This is true in part. Actually io-throttle v12 has been largely tested,
-> > > also in production environments (Matt and David in cc can confirm
-> > > this) with quite interesting results.
-> > > 
-> > > I tested the previous versions usually with many parallel iozone, dd,
-> > > using many different configurations.
-> > > 
-> > > In v12 writeback IO is not actually limited, what io-throttle did was to
-> > > account and limit reads and direct IO in submit_bio() and limit and
-> > > account page cache writes in balance_dirty_pages_ratelimited_nr().
-> > 
-> > Did the testing include what happened if the system was also
-> > simultaneously under memory pressure?  What you might find happening
-> > then is that the cgroups which have lots of dirty pages, which are not
-> > getting written out, have their memory usage "protected", while
-> > cgroups that have lots of clean pages have more of their pages
-> > (unfairly) evicted from memory.  The worst case, of course, would be
-> > if the memory pressure is coming from an uncapped cgroup.
+Huang Ying wrote:
+> Add some description for the patch, hope that to be more clear.
 > 
-> This is an interesting case that should be considered of course. The
-> tests I did were mainly focused in distinct environment where each
-> cgroup writes its own files and dirties its own memory. I'll add this
-> case to the next tests I'll do with io-throttle.
+> Best Regards,
+> Huang Ying
+> -------------------------------------------------->
+> Impact: Spec compliance
 > 
-> But it's a general problem IMHO and doesn't depend only on the presence
-> of an IO controller. The same issue can happen if a cgroup reads a file
-> from a slow device and another cgroup writes to all the pages of the
-> other cgroup.
+> Tolerant level 0 means: always panic on uncorrected errors, that is,
+> panic even for recoverable uncorrected errors. This is a useful option
+> for someone think panic is the better hardware error containment
+> mechanism than trying to recover.
 > 
-> Maybe this kind of cgroup unfairness should be addressed by the memory
-> controller, the IO controller should be just like another slow device in
-> this particular case.
+> Current implementation does not comply with the tolerant == 0 spec,
+> that is, it tries to recover (by killing related processes) for
+> recoverable uncorrected errors (errors triggered in userspace) when
+> tolerant == 0. This patch fixes this by going panic for that case.
 > 
-"soft limit"...for selecting victim at memory shortage is under development.
-
-
-> >    
-> > So that's basically the same worry I have; which is we're looking at
-> > things at a too-low-level basis, and not at the big picture.
-> > 
-> > There wasn't discussion about the I/O controller on this thread at
-> > all, at least as far as I could find; nor that splitting the problem
-> > was the right way to solve the problem.  Maybe somewhere there was a
-> > call for someone to step back and take a look at the "big picture"
-> > (what I've been calling the high level design), but I didn't see it in
-> > the thread.
-> > 
-> > It would seem to be much simpler if there was a single tuning knob for
-> > the I/O controller and for dirty page writeback --- after all, why
-> > *else* would you be trying to control the rate at which pages get
-> > dirty?  And if you have a cgroup which sometimes does a lot of writes
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
 > 
-> Actually we do already control the rate at which dirty pages are
-> generated. In balance_dirty_pages() we add a congestion_wait() when the
-> bdi is congested.
+> ---
+>  arch/x86/kernel/cpu/mcheck/mce_64.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> We do that when we write to a slow device for example. Slow because it
-> is intrinsically slow or because it is limited by some IO controlling
-> rules.
-> 
-> It is a very similar issue IMHO.
-> 
-I think so, too.
-
-> > via direct I/O, and sometimes does a lot of writes through the page
-> > cache, and sometimes does *both*, it would seem to me that if you want
-> > to be able to smoothly limit the amount of I/O it does, you would want
-> > to account and charge for direct I/O and page cache I/O under the same
-> > "bucket".   Is that what the user would want?   
-> > 
-> > Suppose you only have 200 MB/sec worth of disk bandwidth, and you
-> > parcel it out in 50 MB/sec chunks to 4 cgroups.  But you also parcel
-> > out 50MB/sec of dirty writepages quota to each of the 4 cgroups. 
-
-50MB/sec of diry writepages sounds strange. It's just "50MB of dirty pages limit".
-not 50MB/sec if we use a logic like dirty_ratio.
-
-
-> > Now suppose one of the cgroups, which was normally doing not much of
-> > anything, suddenly starts doing a database backup which does 50 MB/sec
-> > of direct I/O reading from the database file, and 50 MB/sec dirtying
-> > pages in the page cache as it writes the backup file.  Suddenly that
-> > one cgroup is using half of the system's I/O bandwidth!
-> 
-Hmm ? buffered I/O tracking can't be a help ? Of course, I/O controller 
-should chase this. And dirty_ratio is not 50MB/sec but 50MB. Then,
-read will get slow down very soon if read/write is done by 1 thread.
-(I'm not sure if there are 2 threads, one only read and another only write.)
-
-BTW, read B/W and write B/W can be handled under a limit ?
-
-
-> Agreed. The bucket should be the same. The dirty memory should be
-> probably limited only in terms of "space" for this case instead of BW.
-> 
-> And we should guarantee that a cgroup doesn't fill unfairly the memory
-> with dirty pages (system-wide or in other cgroups).
-> 
-> > 
-> > And before you say this is "correct" from a definitional point of
-> > view, is it "correct" from what a system administrator would want to
-> > control?  Is it the right __feature__?  If you just say, well, we
-> > defined the problem that way, and we're doing things the way we
-> > defined it, that's a case of garbage in, garbage out.  You also have
-> > to ask the question, "did we define the _problem_ in the right way?"
-> > What does the user of this feature really want to do?  
-> > 
-> > It would seem to me that the system administrator would want a single
-> > knob, saying "I don't know or care how the processes in a cgroup does
-> > its I/O; I just want to limit things so that the cgroup can only hog
-> > 25% of the I/O bandwidth."
-> 
-> Agreed.
-> 
-Agreed. It will be the best.
-
-> > 
-> > And note this is completely separate from the question of what happens
-> > if you throttle I/O in the page cache writeback loop, and you end up
-> > with an imbalance in the clean/dirty ratios of the cgroups. 
-dirty_ratio for memcg is in plan. just delayed.
-
-> > And
-> > looking at this thread, life gets even *more* amusing on NUMA machines
-> > if you do this; what if you end up starving a cpuset as a result of
-> > this I/O balancing decision, so a particular cpuset doesn't have
-> > enough memory?  That's when you'll *definitely* start having OOM
-> > problems.
-> > 
-cpuset users shouldn't use I/O limiting, in general.
-Or I/O cotroller should have a switch as "toggle I/O limit if I/O is from
-kswapd/vmscan.c". (Or categorize it to kernel I/O.)
-
-
-> Honestly, I've never considered the cgroups "interactions" and the
-> unfair distribution of dirty pages among cgroups, for example, as
-> correctly pointed out by Ted.
+> --- a/arch/x86/kernel/cpu/mcheck/mce_64.c
+> +++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
+> @@ -400,7 +400,7 @@ void do_machine_check(struct pt_regs * r
+>  		 * force_sig() takes an awful lot of locks and has a slight
+>  		 * risk of deadlocking.
+>  		 */
+> -		if (user_space) {
+> +		if (user_space && tolerant > 0) {
+>  			force_sig(SIGBUS, current);
+>  		} else if (panic_on_oops || tolerant < 2) {
+>  			mce_panic("Uncorrected machine check",
 > 
 
-If we really want that, scheduler-cgroup should be considered, too.
+Wait, I want confirmation.
 
-Considering optimisically, 99% of cgroup users will use "container" and
-all resource control cgroup will be set up at once. Then, user-land
-container tools can tell users the container has good balance(of cpu,memory,I/O, etc)
-or not.
+Given:
+ * Tolerant levels:
+ *   0: always panic on uncorrected errors, log corrected errors
 
-_interactions_ is important. But cgroup is desined to have many independent subsystems
-because it's considered as generic infrastructure.
-I didn't read the cgroup design discussion but it's strange to say  "we need
-balance under subsystem in the kernel" _now_.
+Let's walk do_machine_check():
 
-A container, the user interface of cgroups which most people think of, should
-know that. If we can't do in user land, we should find a way to _ineractions_ in
-the kernel, of course.
+    266 void do_machine_check(struct pt_regs * regs, long error_code)
+    267 {
+	:
+    302         for (i = 0; i < banks; i++) {
+	:
+    311                 rdmsrl(MSR_IA32_MC0_STATUS + i*4, m.status);
+    312                 if ((m.status & MCI_STATUS_VAL) == 0)
+    313                         continue;
+	:
+    319                 if ((m.status & MCI_STATUS_UC) == 0)
+    320                         continue;
+	:
+# Now we start checking status with VAL and UC
+	:
+    329                 if (m.status & MCI_STATUS_EN) {
+    330                         /* if PCC was set, there's no way out */
+    331                         no_way_out |= !!(m.status & MCI_STATUS_PCC);
+    332                         /*
+    333                          * If this error was uncorrectable and there was
+    334                          * an overflow, we're in trouble.  If no overflow,
+    335                          * we might get away with just killing a task.
+    336                          */
+    337                         if (m.status & MCI_STATUS_UC) {
+    338                                 if (tolerant < 1 || m.status & MCI_STATUS_OVER)
+    339                                         no_way_out = 1;
+    340                                 kill_it = 1;
+    341                         }
+    342                 } else {
+    343                         /*
+    344                          * Machine check event was not enabled. Clear, but
+    345                          * ignore.
+    346                          */
+    347                         continue;
+    348                 }
+	:
+# Humm, second UC check should be removed...
+# Anyway, in case of tolerant == 0, no_way_out == 1 if the event is enabled.
+# And kill_it == 1 unless there are no event enabled.
+# Therefore, in case of tolerant == 0, always "no_way_out == kill_it".
+	:
+    364                 }
+    365         }
+	:
+    376         if (no_way_out && tolerant < 3)
+    377                 mce_panic("Machine check", &panicm, mcestart);
+	:
+# in case of tolerant == 0, we usually hit here.
+	:
+    385         if (kill_it && tolerant < 3) {
+    386                 int user_space = 0;
+    387
+    388                 /*
+    389                  * If the EIPV bit is set, it means the saved IP is the
+    390                  * instruction which caused the MCE.
+    391                  */
+    392                 if (m.mcgstatus & MCG_STATUS_EIPV)
+    393                         user_space = panicm.ip && (panicm.cs & 3);
+    394
+    395                 /*
+    396                  * If we know that the error was in user space, send a
+    397                  * SIGBUS.  Otherwise, panic if tolerance is low.
+    398                  *
+    399                  * force_sig() takes an awful lot of locks and has a slight
+    400                  * risk of deadlocking.
+    401                  */
+    402                 if (user_space) {
+    403                         force_sig(SIGBUS, current);
+    404                 } else if (panic_on_oops || tolerant < 2) {
+    405                         mce_panic("Uncorrected machine check",
+    406                                 &panicm, mcestart);
+    407                 }
+    408         }
+	:
+# Then, when we enter here with tolerant == 0 ?
+	:
+    421 }
+
+Or, should this patch be applied after committing some of Andi's patches?
+It means this patch targets a bug in Andi's patch set and the bug is not
+in 2.6.30-rc* yet.
+
 
 Thanks,
--Kame
-
-
+H.Seto
 
