@@ -1,60 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754211AbZDXUnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbZDXUo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754211AbZDXUnl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 16:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbZDXUna
+	id S1757755AbZDXUo2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 16:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730AbZDXUoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 16:43:30 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:36220 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752751AbZDXUn3 (ORCPT
+	Fri, 24 Apr 2009 16:44:15 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:60482 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753180AbZDXUoO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 16:43:29 -0400
-Date: Fri, 24 Apr 2009 21:43:17 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Fr?d?ric Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LFSDEV <linux-fsdevel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH 1/1] vfs: umount_begin BKL pushdown v2
-Message-ID: <20090424204317.GR8633@ZenIV.linux.org.uk>
-References: <1240556813-8739-1-git-send-email-abogani@texware.it> <1240556813-8739-2-git-send-email-abogani@texware.it> <20090424071312.GE8633@ZenIV.linux.org.uk> <20090424071853.GG8633@ZenIV.linux.org.uk> <20090424080634.GG24912@elte.hu> <20090424085017.GB28592@infradead.org> <c62985530904240216j2760e3dbvca5b8e9da22d009f@mail.gmail.com> <20090424175025.GA30091@infradead.org> <20090424185524.GO8633@ZenIV.linux.org.uk> <20090424190201.GA420@infradead.org>
+	Fri, 24 Apr 2009 16:44:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        b=T+beGT4cIIpZ6jSIA7Tl0OdlU30cOAvMVISJxUopCrNYVD5H4QK2zTqPL+TuOG+re6
+         lCVokD8ZBRdU+MmyyrIJM2x7tpYnwSG2fA9wGE2p09/MZa9UU/V1ZsL2EluuGz1/o0XP
+         CyFXcDOPl/PCwkt9zRcX1WJJeKkF8cNzzc0Mc=
+Message-ID: <49F22465.80305@gmail.com>
+Date: Fri, 24 Apr 2009 22:43:17 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090424190201.GA420@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Newsgroups: gmane.comp.security.firewalls.netfilter.devel,gmane.linux.kernel,gmane.linux.network
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Eric Dumazet <dada1@cosmosbay.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
+       David Miller <davem@davemloft.net>, kaber@trash.net,
+       jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com, jengelh@medozas.de,
+       r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH]  netfilter: use per-CPU recursive lock {XIV}
+References: <20090418094001.GA2369@ioremap.net>	<20090418141455.GA7082@linux.vnet.ibm.com>	<20090420103414.1b4c490f@nehalam>	<49ECBE0A.7010303@cosmosbay.com>	<18924.59347.375292.102385@cargo.ozlabs.ibm.com>	<20090420215827.GK6822@linux.vnet.ibm.com>	<18924.64032.103954.171918@cargo.ozlabs.ibm.com>	<20090420160121.268a8226@nehalam>	<alpine.LFD.2.00.0904210831560.2199@localhost.localdomain>	<20090421111541.228e977a@nehalam>	<20090421193924.GA24404@elte.hu>	<20090421143927.52d7d89d@nehalam>	<alpine.LFD.2.00.0904220821240.3101@localhost.localdomain>	<20090423210938.1501507b@nehalam>	<49F146FF.5050200@cosmosbay.com> <20090424091839.6e13ebec@nehalam>
+In-Reply-To: <20090424091839.6e13ebec@nehalam>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 03:02:01PM -0400, Christoph Hellwig wrote:
-> On Fri, Apr 24, 2009 at 07:55:24PM +0100, Al Viro wrote:
-> > Nah, it's not that.  I can hold that in a separate branch and keep it
-> > anchored.  The question is, what else will end up there?
-> > 	* the work inside the methods on BKL _removal_
-> > 	* things like merging that ->write_super() call into ->put_super(),
-> > etc.
-> > 	* probably parts of work on s_flags mess and ro (tied to remout)
+Stephen Hemminger wrote, On 04/24/2009 06:18 PM:
+
+> On Fri, 24 Apr 2009 06:58:39 +0200
+> Eric Dumazet <dada1@cosmosbay.com> wrote:
 > 
-> 	* moving lock_super from callers into ->write_super and
-> 	  ->remount_fs.  No need to only push one lock down when we
-> 	  touch them anyway.
+>> Stephen Hemminger a écrit :
+>>> In days of old in 2.6.29, netfilter did locketh using a 
+>>> lock of the reader kind when doing its table business, and do
+>>> a writer when with pen in hand like a overworked accountant
+>>> did replace the tables. This sucketh and caused the single
+>>> lock to fly back and forth like a poor errant boy.
+>>>
+>>> But then netfilter was blessed with RCU and the performance
+>>> was divine, but alas there were those that suffered for
+>>> trying to replace their many rules one at a time.
+>>>
+>>> So now RCU must be vanquished from the scene, and better
+>>> chastity belts be placed upon this valuable asset most dear.
+>>> The locks that were but one are now replaced by one per suitor.
+>>>
+>>> The repair was made after much discussion involving
+>>> Eric the wise, and Linus the foul. With flowers springing
+>>> up amid the thorns some peace has finally prevailed and
+>>> all is soothed. This patch and purple prose was penned by
+>>> in honor of "Talk like Shakespeare" day.
+>>>
+>>> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+>>
+>> Philip Davis of the university’s School of English said :
+>>
+>>   "Shakespeare surprises the brain and catches it off guard in
+>>   a manner that produces a sudden burst of activity - a sense 
+>>   of drama created out of the simplest of things."
+>>
+>> http://www.physorg.com/news85664210.html
+>>
+>>> ---
+>>> What hath changed over the last two setting suns:
+>>>   * more words, mostly correct...
+>>>
+>>>   * no need to locketh for writeh on current cpu tis 
+>>>     always so
+>>>
+>>>   * the locking of all cpu's on replace is always done as
+>>>     part of the get_counters cycle, so the sychronize swip
+>>>     in replace tables is gone with only a comment remaing
+>>>
+>>>  include/linux/netfilter/x_tables.h |   55 ++++++++++++++--
+>>>  net/ipv4/netfilter/arp_tables.c    |  125 ++++++++++--------------------------
+>>>  net/ipv4/netfilter/ip_tables.c     |  126 ++++++++++---------------------------
+>>>  net/ipv6/netfilter/ip6_tables.c    |  123 ++++++++++--------------------------
+>>>  net/netfilter/x_tables.c           |   55 ++++++++--------
+>>>  5 files changed, 188 insertions(+), 296 deletions(-)
+>>>
+>>
+>>>  
+>>>  static int __init xt_init(void)
+>>>  {
+>>> -	int i, rv;
+>>> +	unsigned int i;
+>>> +	int rv;
+>>> +	static struct lock_class_key xt_lock_key[NR_CPUS];
+>> Could we avoid this [NR_CPUS] thing ?
+>>
+>>> +
+>>> +	for_each_possible_cpu(i) {
+>>> +		rwlock_t *lock = &per_cpu(xt_info_locks, i);
+>>> +
+>>> +		rwlock_init(lock);
+>>> +		lockdep_set_class(lock, xt_lock_key+i);
+>>> +	}
+>>
+>> Did you tried :
+>>
+>> static DECLARE_PER_CPU(struct lock_class_key, xt_locks_key);
+>>
+> 
+> The lock keys are really only used by lock dep, and I thought per cpu
+> space was more scarce on some arch.
+> 
 
-Aye.  We want lock_super() dead anyway, and the most obvious way to do that
-is to shove it down to filesystems and let them kill it one by one.
+Maybe I'm wrong but after this change: "- only acquire one cpu write
+lock at a time" lockdep_set_class() might be unnecessary. Alas I'm
+not able to test it.
 
-We might want to switch sync_supers() et.al. to down_write() and do
-similar thing in callers of fsync_super/__fsync_super() (i.e. instead
-of get_super() use a variant that would lock for write), while we are
-at it; OTOH, that'll need careful thinking about - things like
-shrink_dcache() currently don't care about write_super done in parallel
-and we might add contention where it hurts.
-
-It's worth investigating, though - switching s_umount to mutex is attractive
-per se and we might simplify locking e.g. in freeze/thaw on that.
+Jarek P.
