@@ -1,90 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755602AbZDXJPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757746AbZDXJQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755602AbZDXJPl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 05:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbZDXJP3
+	id S1757746AbZDXJQd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 05:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755743AbZDXJQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 05:15:29 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:65175 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755547AbZDXJP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 05:15:28 -0400
-Message-ID: <49F1830F.8020609@cn.fujitsu.com>
-Date: Fri, 24 Apr 2009 17:14:55 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Fri, 24 Apr 2009 05:16:22 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:50147 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753549AbZDXJQU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 05:16:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=HMBjKly79Vnc+F/FiD9PIm4g8FHAlU3gLembrvx+a0lvszs/Ax3+0YMPJ9FfzY3t9u
+         NG6/crsLNNyZYCjyAhlcjVg4qhap5v291EmOiyB+/kpsCrV+NTa2Gn/WD5rdKBog7vww
+         M19vpijJi5d/f/Sz7jsX6zP0vPI4jIG1A6b08=
 MIME-Version: 1.0
-To: Andrea Righi <righi.andrea@gmail.com>
-CC: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
-       fchecconi@gmail.com, paolo.valente@unimore.it,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/7] page_cgroup: provide a generic page tracking	infrastructure
-References: <1240090712-1058-1-git-send-email-righi.andrea@gmail.com> <1240090712-1058-4-git-send-email-righi.andrea@gmail.com> <49F11FBD.3070705@cn.fujitsu.com> <20090424083116.GB8535@linux>
-In-Reply-To: <20090424083116.GB8535@linux>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20090424085017.GB28592@infradead.org>
+References: <20090423191934.GW1926@parisc-linux.org>
+	 <1240556813-8739-1-git-send-email-abogani@texware.it>
+	 <1240556813-8739-2-git-send-email-abogani@texware.it>
+	 <20090424071312.GE8633@ZenIV.linux.org.uk>
+	 <20090424071853.GG8633@ZenIV.linux.org.uk>
+	 <20090424080634.GG24912@elte.hu>
+	 <20090424085017.GB28592@infradead.org>
+Date: Fri, 24 Apr 2009 11:16:18 +0200
+Message-ID: <c62985530904240216j2760e3dbvca5b8e9da22d009f@mail.gmail.com>
+Subject: Re: [PATCH 1/1] vfs: umount_begin BKL pushdown v2
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Al Viro <viro@zeniv.linux.org.uk>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LFSDEV <linux-fsdevel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Righi wrote:
-> On Fri, Apr 24, 2009 at 10:11:09AM +0800, Gui Jianfeng wrote:
->> Andrea Righi wrote:
->>> Dirty pages in the page cache can be processed asynchronously by kernel
->>> threads (pdflush) using a writeback policy. For this reason the real
->>> writes to the underlying block devices occur in a different IO context
->>> respect to the task that originally generated the dirty pages involved
->>> in the IO operation. This makes the tracking and throttling of writeback
->>> IO more complicate respect to the synchronous IO.
->>>
->>> The page_cgroup infrastructure, currently available only for the memory
->>> cgroup controller, can be used to store the owner of each page and
->>> opportunely track the writeback IO. This information is encoded in
->>> page_cgroup->flags.
->>   You encode id in page_cgroup->flags, if a cgroup get removed, IMHO, you
->>   should remove the corresponding id in flags.
-> 
-> OK, the same same ID could be reused by another cgroup. I think this
-> should happen very rarely because IDs are recovered slowly anyway.
-> 
-> What about simply executing a sys_sync() when a io-throttle cgroup is
-> removed? If we're going to remove a cgroup no additional dirty page will
-> be generated by this cgroup, because it must be empty. And the sync
-> would allow that old dirty pages will be flushed back to disk (for those
-> pages the cgroup ID will be simply ignored).
-> 
->>   One more thing, if a task is moving from a cgroup to another, the id in
->>   flags also need to be changed.
-> 
-> I do not agree here. Even if a task is moving from a cgroup to another
-> the cgroup that generated the dirty page is always the old one. Remember
-> that we want to save cgroup's identity in this case, and not the task.
+2009/4/24 Christoph Hellwig <hch@infradead.org>:
+>> Furthermore, by doing this you are also hindering the
+>> tip:kill-the-BKL effort (which has been ongoing for a year chipping
+>> away at various BKL details) which facilitated these changes.
+>> Alessio did these fixes to fix bugs he can trigger in that tree.
+>>
+>> You've also not explained why you have done it this way. It would
+>> cost you almost nothing to apply these bits into a separate branch
+>> and merge that branch into your main tree. Lots of other maintainer
+>> are doing that.
+>
+> Having a separate kill the BKL tree is a stupid idea.  Locking changes
+> need deep subsystem knowledge and should always go through the subsystem
+> trees.
 
-  If the task moves to a new cgroup, the dirty page generated from the old
-  group still uses the old id. When these dirty pages is writing back to disk, 
-  the corresponding bios will be delayed according to old group's bandwidth 
-  limitation. Am i right? I think we should use the new bandwidth limitation
-  when actual IO happens. So we need to use new id for these pages. But i think
-  the implementation for this functionality must be very complicated. :)
 
-> 
-> Thanks,
-> -Andrea
-> 
-> 
-> 
+I disagree with you. The kill-the-BKL tree does not only aggregate patches
+to turn the BKL into more traditional locks. The Bkl has been
+converted to a common mutex in
+this tree, making it losing its common horrid properties:
 
--- 
-Regards
-Gui Jianfeng
+- release/reacquire on schedule
+- not preemptable
+- can be reacquired recursively by a same task
 
+Such a basis is very useful because we can easily find these places
+which won't support a usual lock conversion without reworking the
+locking scheme.
+This is a necessary preliminary for the Bkl removal.
+All the places which have been designed very tightly with Bkl
+properties are rapidly detected
+with lockdep in this tree and reworked, still using lockdep, code
+reviewing and the help of
+this Bkl-to-mutex conversion.
+
+The work done with this tree can be merged inside and also on the
+matching subsytem tree for
+each patchset. That's a very sane workflow IMHO.
+
+Thanks,
+Frederic.
