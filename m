@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbZDXXpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbZDXX7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755256AbZDXXpb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 19:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZDXXpV
+	id S1753503AbZDXX7j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 19:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZDXX7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 19:45:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46085 "EHLO mx2.mail.elte.hu"
+	Fri, 24 Apr 2009 19:59:30 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37162 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751052AbZDXXpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 19:45:20 -0400
-Date: Sat, 25 Apr 2009 01:45:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Len Brown <lenb@kernel.org>
-Cc: x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-acpi@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86/hpet: prevent boot hang when hpet=force used on
-	old ICH
-Message-ID: <20090424234502.GF6403@elte.hu>
-References: <alpine.LFD.2.00.0904222223200.21119@localhost.localdomain> <20090423060936.GA1917@elte.hu> <alpine.LFD.2.00.0904231901570.15843@localhost.localdomain>
+	id S1751773AbZDXX7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 19:59:30 -0400
+Date: Fri, 24 Apr 2009 16:44:32 -0700
+From: Greg KH <gregkh@suse.de>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, iommu@lists.linux-foundation.org,
+       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] driver/base: add BUS_NOTIFY_UNBOUND_DRIVER event
+Message-ID: <20090424234432.GA6054@suse.de>
+References: <1240577820-13783-1-git-send-email-joerg.roedel@amd.com> <20090424184425.GB20845@suse.de> <20090424232447.GB12658@8bytes.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904231901570.15843@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090424232447.GB12658@8bytes.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Len Brown <lenb@kernel.org> wrote:
-
-> Ingo,
-> Thanks for the reply.
+On Sat, Apr 25, 2009 at 01:24:47AM +0200, Joerg Roedel wrote:
+> On Fri, Apr 24, 2009 at 11:44:25AM -0700, Greg KH wrote:
+> > On Fri, Apr 24, 2009 at 02:57:00PM +0200, Joerg Roedel wrote:
+> > > This patch adds a new bus notifier event which is emitted _after_ a
+> > > device is removed from its driver. This event will be used by the
+> > > dma-api debug code to check if a driver has released all dma allocations
+> > > for that device.
+> > 
+> > Heh, I was wondering if people were going to need that.  I'll queue it
+> > up for 2.6.31, is that ok with you?  Do you have patches that depend on
+> > it?
 > 
-> But please disregard that patch -- we've cooked up a better one
-> that allows ICH4M to continue to use hpet=force, even for clocksource.
-> (and it is an ACPI patch rather than an x86 patch:-)
+> 2.6.31 is ok for me. I sent Ingo a patch to remove the broken feature
+> which uses the wrong event for 2.6.30. I can reintroduce the fixed
+> version for 2.6.31 too.
+> Other way may be to send this patch to 2.6.30 which makes a smaller fix
+> possible for dma-api debugging. But I am not sure if this new event
+> could go in after the merge window. So I choosed this way :)
+> For me, 2.6.31 for this patch is fine.
 
-ok.
+Great, it will go in for 2.6.31 then.
 
-> However, I'll also send a 2nd patch to stop soliciting more 
-> hpet=force users, since technically we shouldn't be encouraging 
-> the use of this un-documented and lightly-validated hardware.
+thanks,
 
-agreed - i've applied this patch.
-
-	Ingo
+greg k-h
