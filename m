@@ -1,134 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbZDXBNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbZDXBRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756108AbZDXBNc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 21:13:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZDXBNW
+	id S1754819AbZDXBRT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 21:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbZDXBRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 21:13:22 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:49158 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752538AbZDXBNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 21:13:21 -0400
-Date: Thu, 23 Apr 2009 18:13:17 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v1 expedited "big hammer" RCU grace periods
-Message-ID: <20090424011317.GI6877@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090423052520.GA13036@linux.vnet.ibm.com> <49F006AE.5040104@cn.fujitsu.com> <20090423151509.GB6877@linux.vnet.ibm.com> <49F10A3E.3030102@cn.fujitsu.com>
+	Thu, 23 Apr 2009 21:17:07 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:47595 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752502AbZDXBRF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 21:17:05 -0400
+Message-ID: <49F1130D.5080804@snapgear.com>
+Date: Fri, 24 Apr 2009 11:17:01 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49F10A3E.3030102@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Oleg Nesterov <oleg@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, Chris Zankel <chris@zankel.net>,
+       David Howells <dhowells@redhat.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Greg Ungerer <gerg@uclinux.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Helge Deller <deller@gmx.de>, Hirokazu Takata <takata@linux-m32r.org>,
+       Jeff Dike <jdike@addtoit.com>, Kyle McMartin <kyle@mcmartin.ca>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] ptrace: remove PT_DTRACE from m68k, m68knommu
+References: <20090423193211.GA14892@redhat.com>
+In-Reply-To: <20090423193211.GA14892@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 08:39:26AM +0800, Lai Jiangshan wrote:
-> Paul E. McKenney wrote:
-> > On Thu, Apr 23, 2009 at 02:11:58PM +0800, Lai Jiangshan wrote:
-> >> Paul E. McKenney wrote:
-> > 
-> > [ . . . ]
-> > 
-> >> Hi, Paul
-> >>
-> >> I just typed codes in email, very like these two pathes:
-> >>
-> >> [PATCH 1/2] sched: Introduce APIs for waiting multi events
-> >> http://lkml.org/lkml/2009/4/14/733
-> >>
-> >> [PATCH 2/2] rcupdate: use struct ref_completion
-> >> http://lkml.org/lkml/2009/4/14/734
-> >>
-> >> Lai.
-> >> --------------
-> > 
-> > Interesting approach!  This would get a second use for your multi-events
-> > waiting code above.  ;-)
-> > 
-> > Looks like the idea is to have the task doing the
-> > synchronize_rcu_bh_expedited() hold a reference across the process,
-> > and have each rcu_bh_fast_qs() also acquire a reference, which would
-> > be released in the softirq handler synchronize_rcu_bh_expedited_help().
-> > 
-> > One question -- does this approach correctly handle all the CPU hotplug
-> > scenarios?  (I think that it might, but am not completely certain.)
-> > 
-> > 							Thanx, Paul
-> 
-> Ah, raise_softirq(RCU_EXPEDITED_SOFTIRQ) can not ensure the softirq
-> will be called when hotplug.
-> 
-> It needs get_online_cpus() and put_online_cpus().
 
-OK, easy fix, then.  ;-)
+Oleg Nesterov wrote:
+> m68k sets PT_DTRACE in trap_c() but never uses it.
+> 
+> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-							Thanx, Paul
+Acked-by: Greg Ungerer <gerg@uclinux.org>
 
-> >> #ifndef CONFIG_SMP
-> >>
-> >> static void __init synchronize_rcu_expedited_init(void)
-> >> {
-> >> }
-> >>
-> >> void synchronize_rcu_bh_expedited(void)
-> >> {
-> >> 	cond_resched();
-> >> }
-> >>
-> >> #else /* #ifndef CONFIG_SMP */
-> >>
-> >> static DEFINE_MUTEX(synchronize_rcu_bh_mutex);
-> >> static DEFINE_PER_CPU(int, call_only_once); /* is it need ? */
-> >> static struct ref_completion rcu_bh_expedited_completion
-> >>
-> >> static void synchronize_rcu_bh_expedited_help(struct softirq_action *unused)
-> >> {
-> >> 	if (__get_cpu_var(call_only_once)) {
-> >> 		smp_mb();
-> >> 		ref_completion_put(&rcu_bh_expedited_completion);
-> >> 		__get_cpu_var(call_only_once) = 0;
-> >> 	}
-> >> }
-> >>
-> >> static void rcu_bh_fast_qs(void *unused)
-> >> {
-> >> 	__get_cpu_var(call_only_once) = 1;
-> >> 	ref_completion_get(&rcu_bh_expedited_completion);
-> >> 	raise_softirq(RCU_EXPEDITED_SOFTIRQ);
-> >> }
-> >>
-> >> static void __init synchronize_rcu_expedited_init(void)
-> >> {
-> >> 	open_softirq(RCU_EXPEDITED_SOFTIRQ, synchronize_rcu_bh_expedited_help);
-> >> }
-> >>
-> >> void synchronize_rcu_bh_expedited(void)
-> >> {
-> >> 	mutex_lock(&synchronize_rcu_bh_mutex);
-> >>
-> >> 	ref_completion_get_init(&rcu_bh_expedited_completion);
-> >>
-> >> 	smp_call_function(rcu_bh_fast_qs, NULL, 1);
-> >>
-> >> 	ref_completion_put_init(&rcu_bh_expedited_completion);
-> >> 	ref_completion_wait(&rcu_bh_expedited_completion);
-> >>
-> >> 	mutex_unlock(&synchronize_rcu_bh_mutex);
-> >> }
-> >>
-> >> #endif /* #else #ifndef CONFIG_SMP */
-> >>
-> > 
-> > 
-> > 
+
+>  arch/m68k/kernel/traps.c            |    1 -
+>  arch/m68knommu/kernel/asm-offsets.c |    1 -
+>  arch/m68knommu/kernel/traps.c       |    1 -
+>  3 files changed, 3 deletions(-)
+> 
+> --- PTRACE/arch/m68k/kernel/traps.c~DT_3_SET	2009-04-06 00:03:35.000000000 +0200
+> +++ PTRACE/arch/m68k/kernel/traps.c	2009-04-22 21:52:23.000000000 +0200
+> @@ -1057,7 +1057,6 @@ asmlinkage void trap_c(struct frame *fp)
+>  	if (fp->ptregs.sr & PS_S) {
+>  		if ((fp->ptregs.vector >> 2) == VEC_TRACE) {
+>  			/* traced a trapping instruction */
+> -			current->ptrace |= PT_DTRACE;
+>  		} else
+>  			bad_super_trap(fp);
+>  		return;
+> --- PTRACE/arch/m68knommu/kernel/asm-offsets.c~DT_3_SET	2009-04-06 00:03:35.000000000 +0200
+> +++ PTRACE/arch/m68knommu/kernel/asm-offsets.c	2009-04-22 21:53:46.000000000 +0200
+> @@ -79,7 +79,6 @@ int main(void)
+>  	DEFINE(TRAP_TRACE, TRAP_TRACE);
+>  
+>  	DEFINE(PT_PTRACED, PT_PTRACED);
+> -	DEFINE(PT_DTRACE, PT_DTRACE);
+>  
+>  	DEFINE(THREAD_SIZE, THREAD_SIZE);
+>  
+> --- PTRACE/arch/m68knommu/kernel/traps.c~DT_3_SET	2009-04-06 00:03:35.000000000 +0200
+> +++ PTRACE/arch/m68knommu/kernel/traps.c	2009-04-22 21:54:29.000000000 +0200
+> @@ -200,7 +200,6 @@ asmlinkage void trap_c(struct frame *fp)
+>  	if (fp->ptregs.sr & PS_S) {
+>  		if ((fp->ptregs.vector >> 2) == VEC_TRACE) {
+>  			/* traced a trapping instruction */
+> -			current->ptrace |= PT_DTRACE;
+>  		} else
+>  			bad_super_trap(fp);
+>  		return;
 > 
 > 
+
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
