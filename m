@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbZDXMCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758980AbZDXME3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759232AbZDXMCL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 08:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757000AbZDXL7d
+	id S1758980AbZDXME3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 08:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbZDXMET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 07:59:33 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:5286 "EHLO
-	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756921AbZDXL7c (ORCPT
+	Fri, 24 Apr 2009 08:04:19 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:45940 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbZDXMET (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 07:59:32 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j)
-X-WSS-ID: 0KILTA4-02-NGX-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <marcelo@kvack.or>
-CC: <linux-kernel@vger.kernel.org>, <kvm@vger.kernel.org>,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 6/7] kvm/mmu: enable gbpages by increasing nr of pagesizes
-Date: Fri, 24 Apr 2009 13:58:46 +0200
-Message-ID: <1240574327-21575-7-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1240574327-21575-1-git-send-email-joerg.roedel@amd.com>
-References: <1240574327-21575-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 24 Apr 2009 11:58:48.0409 (UTC) FILETIME=[06DDF490:01C9C4D4]
+	Fri, 24 Apr 2009 08:04:19 -0400
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, Chris Zankel <chris@zankel.net>,
+       David Howells <dhowells@redhat.com>, Greg Ungerer <gerg@uclinux.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Helge Deller <deller@gmx.de>, Hirokazu Takata <takata@linux-m32r.org>,
+       Jeff Dike <jdike@addtoit.com>, Kyle McMartin <kyle@mcmartin.ca>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] ptrace: remove PT_DTRACE from m68k, m68knommu
+References: <20090423193211.GA14892@redhat.com> <m2tz4e5psn.fsf@igel.home>
+	<10f740e80904240357r63fc9d4i5f8a4e6a5530b671@mail.gmail.com>
+X-Yow: This ASEXUAL PIG really BOILS my BLOOD...  He's so..so.....URGENT!!
+Date: Fri, 24 Apr 2009 14:04:09 +0200
+In-Reply-To: <10f740e80904240357r63fc9d4i5f8a4e6a5530b671@mail.gmail.com>
+	(Geert Uytterhoeven's message of "Fri, 24 Apr 2009 12:57:09 +0200")
+Message-ID: <m2d4b25kcm.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.92 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/include/asm/kvm_host.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Geert Uytterhoeven <geert@linux-m68k.org> writes:
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 5795177..6215d10 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -52,7 +52,7 @@
- #define UNMAPPED_GVA (~(gpa_t)0)
- 
- /* KVM Hugepage definitions for x86 */
--#define KVM_NR_PAGE_SIZES	2
-+#define KVM_NR_PAGE_SIZES	3
- #define KVM_HPAGE_SHIFT(x)	(PAGE_SHIFT + (((x) - 1) * 9))
- #define KVM_HPAGE_SIZE(x)	(1UL << KVM_HPAGE_SHIFT(x))
- #define KVM_HPAGE_MASK(x)	(~(KVM_HPAGE_SIZE(x) - 1))
+> But more interestingly, Roman's last cleanup said there's no need to
+> set TIF_DELAYED_TRACE?
+
+Ok, I remember now.
+
+Andreas.
+
 -- 
-1.6.2.3
-
-
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
