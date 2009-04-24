@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbZDXHlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757816AbZDXHl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754819AbZDXHlE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 03:41:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZDXHkx
+	id S1757816AbZDXHl0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 03:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbZDXHlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 03:40:53 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46714 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751358AbZDXHkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 03:40:53 -0400
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH linux-2.6-block/for-linus] Fix discard requests accounting in the diskstats
-Date: Fri, 24 Apr 2009 13:08:35 +0530
-User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org
-References: <200904232013.n3NKD4PP017241@imap1.linux-foundation.org> <200904241118.30919.knikanth@suse.de> <20090424061518.GY4593@kernel.dk>
-In-Reply-To: <20090424061518.GY4593@kernel.dk>
+	Fri, 24 Apr 2009 03:41:12 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:37889 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751631AbZDXHlJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 03:41:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ovc3Ty2El0YRlBW8MGV63Z/zQHHklmdeThgP+REM8GKsusWL/ui0rD5KTE3Pvz48sT
+         6eEaNhZ/x6vCNhCp8ikqRnyV2lWn9f1c/VdiCefGYjgg4+Ps7H8c1h3XVv9Xl2zsP1Ci
+         aNwN5gHsiMdvoZ3xnoW87mkfo2GeZPCBHTGwU=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <20090424071853.GG8633@ZenIV.linux.org.uk>
+References: <20090423191934.GW1926@parisc-linux.org>
+	 <1240556813-8739-1-git-send-email-abogani@texware.it>
+	 <1240556813-8739-2-git-send-email-abogani@texware.it>
+	 <20090424071312.GE8633@ZenIV.linux.org.uk>
+	 <20090424071853.GG8633@ZenIV.linux.org.uk>
+Date: Fri, 24 Apr 2009 09:41:08 +0200
+X-Google-Sender-Auth: 1b9da5537e575ad9
+Message-ID: <63a49ef40904240041n1af201e0k41b8436bb91dad41@mail.gmail.com>
+Subject: Re: [PATCH 1/1] vfs: umount_begin BKL pushdown v2
+From: Alessio Igor Bogani <abogani@texware.it>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Jonathan Corbet <corbet@lwn.net>,
+       "Fr??d??ric Weisbecker" <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LFSDEV <linux-fsdevel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Wilcox <matthew@wil.cx>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904241308.35738.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 24 April 2009 11:45:18 Jens Axboe wrote:
-> On Fri, Apr 24 2009, Nikanth Karthikesan wrote:
-> > When 2 discard requests are merged, the stats gets updated, but we do not
-> > update statistics normally when a discard request is issued or completed.
-> > For example the in_flight counter would be decremented when 2 discard
-> > requests are merged, but it was not at all incremented when they were
-> > issued, and in_flight counter will not be decremented, when they are
-> > completed as well.
-> >
-> > This patch fixes this by adding discard requests to the statistics.
-> >
-> > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+2009/4/24 Al Viro <viro@zeniv.linux.org.uk>:
+[...]
+> commit 208f6be8f9244f4a3e8de7b4c6ca97069698303a in
+> git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/
 >
-> OK, so that's not quite what I had in mind. If we first do this as a
-> preparatory patch:
->
-> http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=42fd769da4edadad83a7
->79867ff1910ec35c6de7
->
+> if you want to see the version after that change (or wait for linux-next
+> to pick it).
 
-Oh! I thought this cleanup along with the 
-block-turn-some-buggy-macros-into-c-functions.patch from Andrew could be done 
-on top of my original fix. But didn't, as you said, you would do it. Anyway, 
-Thanks.
+Thank Sir.
 
-> then the discard fix becomes this one-liner:
->
-> http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=999ae79ae7f853bb9e60
->e95753ebf8d1628e632a
-
-Thanks
-Nikanth
+Ciao,
+Alessio
