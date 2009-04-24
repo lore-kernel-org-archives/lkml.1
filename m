@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbZDXObl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756890AbZDXOhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428AbZDXObl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 10:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753153AbZDXObb
+	id S1756890AbZDXOhe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 10:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbZDXOhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 10:31:31 -0400
-Received: from vena.lwn.net ([206.168.112.25]:44786 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752328AbZDXOba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 10:31:30 -0400
-Date: Fri, 24 Apr 2009 08:31:28 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Ingo Molnar <mingo@elte.hu>, Al Viro <viro@ZenIV.linux.org.uk>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       "=?ISO-8859-1?B?RnLpZOlyaWM=?= Weisbecker" <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LFSDEV <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 0/5 -tip] umount_begin BKL pushdown
-Message-ID: <20090424083128.0bf549df@bike.lwn.net>
-In-Reply-To: <20090424115744.bd2d8444.sfr@canb.auug.org.au>
-References: <1240513925-5603-1-git-send-email-abogani@texware.it>
-	<20090423191817.GW8633@ZenIV.linux.org.uk>
-	<20090423213249.GA4814@elte.hu>
-	<20090424115744.bd2d8444.sfr@canb.auug.org.au>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	Fri, 24 Apr 2009 10:37:22 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:65204 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752843AbZDXOhU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 10:37:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=pu325YUHnC2zLzJfnCJktenhDSvlZ/C8jRwkzy72m5AT0CoD2Tx5jMfg7AI6DEfEPa
+         6gg+iplxR0ObM/OIPXjKNXX7z+oe3kqoJq8MMlaR3e0cn0vSk0WAUld5H93XazrosTM9
+         P9M4vGJjprFpAJFAqRWs/c6kU6kfz9LJPWAaQ=
+MIME-Version: 1.0
+In-Reply-To: <49F1B68D.3010304@garzik.org>
+References: <patchbomb.1240551141@sermon.lab.mkp.net>
+	 <72f4e15760670febdb40.1240551143@sermon.lab.mkp.net>
+	 <ac3eb2510904240514y660973abj7621864e11e514f2@mail.gmail.com>
+	 <49F1B68D.3010304@garzik.org>
+Date: Fri, 24 Apr 2009 16:37:17 +0200
+X-Google-Sender-Auth: 5cc727e9fe75cfef
+Message-ID: <ed038eb20904240737u4d248b63s580f7d4d1831e173@mail.gmail.com>
+Subject: Re: [PATCH 2 of 9] block: Export I/O topology for block devices and 
+	partitions
+From: Carl Henrik Lunde <chlunde@ping.uio.no>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       rwheeler@redhat.com, snitzer@redhat.com, neilb@suse.de,
+       James.Bottomley@hansenpartnership.com, dgilbert@interlog.com,
+       jens.axboe@oracle.com, matthew@wil.cx, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Apr 2009 11:57:44 +1000
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> On Fri, Apr 24, 2009 at 07:32, Martin K. Petersen <martin.petersen@oracle.com> wrote:
+> +What:          /sys/block/<disk>/alignment
+> +What:          /sys/block/<disk>/<partition>/alignment
+> +What:          /sys/block/<disk>/queue/minimum_io_size
+> +What:          /sys/block/<disk>/queue/optimal_io_size
 
-> > When that happens, could you please put it into a separate, 
-> > append-only branch i could pull (after some initial test-time) into 
-> > tip:kill-the-BKL?  
-> 
-> And just wondering how all this relates to Jonathan's (currently empty)
-> bkl-removal tree (that is merged into linux-next)?
+Would it also be possible and useful to include the number of
+spindles/channels, i.e., how many requests the device can handle
+concurrently?  CFQ could for example serve two time slices
+concurrently if you have sequential reads and the device reports two
+spindles.
 
-I set up my tree after a request from Linus; it was meant as a place
-for near-term BKL-removal stuff to accumulate.  In the last couple of
-cycles, it's only had a small trickle of stuff that I've been able to
-do myself.  Ingo's tree is a rather grander vision, including a bunch
-of debugging stuff and more.
-
-The time for my tree may be nearing its end, but I'd just as soon keep
-it around for a little longer.  I may yet find some time to do some
-more work in this area.
-
-jon
+[sorry for replying in the middle of the thread, but I didn't get the
+original email]
+-- 
+mvh
+Carl Henrik
