@@ -1,135 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbZDXOrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbZDXOtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757535AbZDXOrw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 10:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbZDXOrm
+	id S1756130AbZDXOtU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 10:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbZDXOtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 10:47:42 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:34593 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753654AbZDXOrl (ORCPT
+	Fri, 24 Apr 2009 10:49:12 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:56861 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751461AbZDXOtL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 10:47:41 -0400
-Date: Fri, 24 Apr 2009 18:47:38 +0400
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, Richard Henderson <rth@twiddle.net>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] alpha: binfmt_aout fix
-Message-ID: <20090424144738.GD32087@jurassic.park.msu.ru>
+	Fri, 24 Apr 2009 10:49:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=dG3uyWsLTz7unwWZyt/c/7Ssw96m7xkKVsOsC1vUZmQNytl7TxM7h0aPYdC9efqH4s
+         hL+loprQ+ZiYiDH1KQu9oG/2mB+Ppg+tTpY3VVRmBZs2Lno6zDjNb/FXGp8VYC8ClVSH
+         D16+Vng/3CZw1nJ43Qd3FfeDkxIXPOhAtej2E=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1240414831-20429-1-git-send-email-anemo@mba.ocn.ne.jp>
+References: <1240414831-20429-1-git-send-email-anemo@mba.ocn.ne.jp>
+Date: Fri, 24 Apr 2009 07:49:10 -0700
+X-Google-Sender-Auth: 103c66f36e12f74e
+Message-ID: <e9c3a7c20904240749g79b7b54cufa64149e44b5753a@mail.gmail.com>
+Subject: Re: [PATCH] DMA: TXx9 Soc DMA Controller driver (v3)
+From: Dan Williams <dan.j.williams@intel.com>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: linux-mips@linux-mips.org, ralf@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes the problem introduced by commit 3bfacef412 (get rid of
-special-casing the /sbin/loader on alpha): osf/1 ecoff binary
-segfaults when binfmt_aout built as module. That happens because
-aout binary handler gets on the top of the binfmt list due to late
-registration, and kernel attempts to execute the binary without
-preparatory work that must be done by binfmt_loader.
+On Wed, Apr 22, 2009 at 8:40 AM, Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> This patch adds support for the integrated DMAC of the TXx9 family.
+>
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 
-Fixed by changing the registration order of the default
-binfmt handlers using list_add_tail() and introducing insert_binfmt()
-function which places new handler on the top of the binfmt list.
-This might be generally useful for installing arch-specific frontends
-for default handlers or just for overriding them.
+Acked-by: Dan Williams <dan.j.williams@intel.com>
 
-Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
----
- arch/alpha/kernel/Makefile        |    6 +++++-
- arch/alpha/kernel/binfmt_loader.c |    2 +-
- fs/exec.c                         |    7 ++++---
- include/linux/binfmts.h           |   14 +++++++++++++-
- 4 files changed, 23 insertions(+), 6 deletions(-)
+> +static void
+> +txx9dmac_descriptor_complete(struct txx9dmac_chan *dc,
+> +                            struct txx9dmac_desc *desc)
+[..]
+> +       /*
+> +        * We use dma_unmap_page() regardless of how the buffers were
+> +        * mapped before they were submitted...
+> +        */
 
-diff --git a/arch/alpha/kernel/Makefile b/arch/alpha/kernel/Makefile
-index a427538..7739a62 100644
---- a/arch/alpha/kernel/Makefile
-+++ b/arch/alpha/kernel/Makefile
-@@ -8,7 +8,7 @@ EXTRA_CFLAGS	:= -Werror -Wno-sign-compare
- 
- obj-y    := entry.o traps.o process.o init_task.o osf_sys.o irq.o \
- 	    irq_alpha.o signal.o setup.o ptrace.o time.o \
--	    alpha_ksyms.o systbls.o err_common.o io.o binfmt_loader.o
-+	    alpha_ksyms.o systbls.o err_common.o io.o
- 
- obj-$(CONFIG_VGA_HOSE)	+= console.o
- obj-$(CONFIG_SMP)	+= smp.o
-@@ -43,6 +43,10 @@ else
- # Misc support
- obj-$(CONFIG_ALPHA_SRM)		+= srmcons.o
- 
-+ifdef CONFIG_BINFMT_AOUT
-+obj-y	+= binfmt_loader.o
-+endif
-+
- # Core logic support
- obj-$(CONFIG_ALPHA_APECS)	+= core_apecs.o
- obj-$(CONFIG_ALPHA_CIA)		+= core_cia.o
-diff --git a/arch/alpha/kernel/binfmt_loader.c b/arch/alpha/kernel/binfmt_loader.c
-index 4a0af90..3fcfad4 100644
---- a/arch/alpha/kernel/binfmt_loader.c
-+++ b/arch/alpha/kernel/binfmt_loader.c
-@@ -46,6 +46,6 @@ static struct linux_binfmt loader_format = {
- 
- static int __init init_loader_binfmt(void)
- {
--	return register_binfmt(&loader_format);
-+	return insert_binfmt(&loader_format);
- }
- arch_initcall(init_loader_binfmt);
-diff --git a/fs/exec.c b/fs/exec.c
-index 052a961..974098d 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -69,17 +69,18 @@ int suid_dumpable = 0;
- static LIST_HEAD(formats);
- static DEFINE_RWLOCK(binfmt_lock);
- 
--int register_binfmt(struct linux_binfmt * fmt)
-+int __register_binfmt(struct linux_binfmt * fmt, int insert)
- {
- 	if (!fmt)
- 		return -EINVAL;
- 	write_lock(&binfmt_lock);
--	list_add(&fmt->lh, &formats);
-+	insert ? list_add(&fmt->lh, &formats) :
-+		 list_add_tail(&fmt->lh, &formats);
- 	write_unlock(&binfmt_lock);
- 	return 0;	
- }
- 
--EXPORT_SYMBOL(register_binfmt);
-+EXPORT_SYMBOL(__register_binfmt);
- 
- void unregister_binfmt(struct linux_binfmt * fmt)
- {
-diff --git a/include/linux/binfmts.h b/include/linux/binfmts.h
-index 6638b81..61ee18c 100644
---- a/include/linux/binfmts.h
-+++ b/include/linux/binfmts.h
-@@ -82,7 +82,19 @@ struct linux_binfmt {
- 	int hasvdso;
- };
- 
--extern int register_binfmt(struct linux_binfmt *);
-+extern int __register_binfmt(struct linux_binfmt *fmt, int insert);
-+
-+/* Registration of default binfmt handlers */
-+static inline int register_binfmt(struct linux_binfmt *fmt)
-+{
-+	return __register_binfmt(fmt, 0);
-+}
-+/* Same as above, but adds a new binfmt at the top of the list */
-+static inline int insert_binfmt(struct linux_binfmt *fmt)
-+{
-+	return __register_binfmt(fmt, 1);
-+}
-+
- extern void unregister_binfmt(struct linux_binfmt *);
- 
- extern int prepare_binprm(struct linux_binprm *);
+This will be caught by the new dma-mapping debug infrastructure that
+went in for 2.6.30, but I would not hold up merging this driver for
+this issue.  Once Maciej's fix [1] goes upstream you can fix up your
+driver to use the new "unmap single" flags.
+
+Thanks,
+Dan
+
+[1]: http://marc.info/?l=linux-kernel&m=124049040806961&w=2
