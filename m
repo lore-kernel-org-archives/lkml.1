@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758993AbZDXGRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758948AbZDXGR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758993AbZDXGRi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 02:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758902AbZDXGRW
+	id S1758948AbZDXGR4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 02:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759024AbZDXGRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 02:17:22 -0400
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:53198 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758936AbZDXGRU (ORCPT
+	Fri, 24 Apr 2009 02:17:33 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:47931 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759084AbZDXGRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 02:17:20 -0400
-Date: Fri, 24 Apr 2009 11:47:03 +0530
+	Fri, 24 Apr 2009 02:17:31 -0400
+Date: Fri, 24 Apr 2009 11:47:20 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Alan Stern <stern@rowland.harvard.edu>,
        Steven Rostedt <rostedt@goodmis.org>,
@@ -21,13 +21,13 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
        Roland McGrath <roland@redhat.com>,
        "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 04/12] Modifying generic debug exception to use
-	thread-specific debug registers
-Message-ID: <20090424061703.GE23812@in.ibm.com>
+Subject: [Patch 05/12] Use wrapper routines around debug registers in
+	processor related functions
+Message-ID: <20090424061720.GF23812@in.ibm.com>
 References: <20090424055710.764502564@prasadkr_t60p.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=modify_debug_exception_handler_04
+Content-Disposition: inline; filename=modify_processor_related_05
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -35,8 +35,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Stern <stern@rowland.harvard.edu>
 
-This patch modifies the breakpoint exception handler code to use the abstract
-register names.
+This patch enables the use of wrapper routines to access the debug/breakpoint
+registers.
 
 [K.Prasad: Split-out from the bigger patch and minor changes following
            re-basing]
@@ -44,115 +44,116 @@ register names.
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 ---
- arch/x86/kernel/traps.c |   76 +++++++++++++++++-------------------------------
- 1 file changed, 27 insertions(+), 49 deletions(-)
+ arch/x86/kernel/smpboot.c |    3 +++
+ arch/x86/power/cpu_32.c   |   16 +++-------------
+ arch/x86/power/cpu_64.c   |   15 +++------------
+ 3 files changed, 9 insertions(+), 25 deletions(-)
 
-Index: arch/x86/kernel/traps.c
+Index: arch/x86/kernel/smpboot.c
 ===================================================================
---- arch/x86/kernel/traps.c.orig
-+++ arch/x86/kernel/traps.c
-@@ -530,76 +530,54 @@ asmlinkage __kprobes struct pt_regs *syn
- dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
- {
- 	struct task_struct *tsk = current;
--	unsigned long condition;
-+	unsigned long dr6;
- 	int si_code;
+--- arch/x86/kernel/smpboot.c.orig
++++ arch/x86/kernel/smpboot.c
+@@ -63,6 +63,7 @@
+ #include <asm/apic.h>
+ #include <asm/setup.h>
+ #include <asm/uv/uv.h>
++#include <asm/debugreg.h>
+ #include <linux/mc146818rtc.h>
  
--	get_debugreg(condition, 6);
-+	get_debugreg(dr6, 6);
+ #include <asm/smpboot_hooks.h>
+@@ -326,6 +327,7 @@ notrace static void __cpuinit start_seco
+ 	setup_secondary_clock();
  
- 	/* Catch kmemcheck conditions first of all! */
--	if (condition & DR_STEP && kmemcheck_trap(regs))
-+	if (((dr6 & DR_STEP) && kmemcheck_trap(regs)) &&
-+		!(dr6 & DR_TRAP_BITS))
- 		return;
--
-+	/* DR6 may or may not be cleared by the CPU */
-+	set_debugreg(0, 6);
- 	/*
- 	 * The processor cleared BTF, so don't mark that we need it set.
- 	 */
- 	clear_tsk_thread_flag(tsk, TIF_DEBUGCTLMSR);
- 	tsk->thread.debugctlmsr = 0;
+ 	wmb();
++	load_debug_registers();
+ 	cpu_idle();
+ }
  
--	if (notify_die(DIE_DEBUG, "debug", regs, condition, error_code,
-+	/* Store the virtualized DR6 value */
-+	tsk->thread.debugreg6 = dr6;
-+
-+	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
- 						SIGTRAP) == NOTIFY_STOP)
- 		return;
+@@ -1252,6 +1254,7 @@ void cpu_disable_common(void)
+ 	remove_cpu_from_maps(cpu);
+ 	unlock_vector_lock();
+ 	fixup_irqs();
++	hw_breakpoint_disable();
+ }
  
- 	/* It's safe to allow irq's after DR6 has been saved */
- 	preempt_conditional_sti(regs);
+ int native_cpu_disable(void)
+Index: arch/x86/power/cpu_32.c
+===================================================================
+--- arch/x86/power/cpu_32.c.orig
++++ arch/x86/power/cpu_32.c
+@@ -13,6 +13,7 @@
+ #include <asm/mce.h>
+ #include <asm/xcr.h>
+ #include <asm/suspend.h>
++#include <asm/debugreg.h>
  
--	/* Mask out spurious debug traps due to lazy DR7 setting */
--	if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) {
--		if (!tsk->thread.debugreg7)
--			goto clear_dr7;
+ static struct saved_context saved_context;
+ 
+@@ -48,6 +49,7 @@ static void __save_processor_state(struc
+ 	ctxt->cr2 = read_cr2();
+ 	ctxt->cr3 = read_cr3();
+ 	ctxt->cr4 = read_cr4_safe();
++	hw_breakpoint_disable();
+ }
+ 
+ /* Needed by apm.c */
+@@ -80,19 +82,7 @@ static void fix_processor_context(void)
+ 	load_TR_desc();				/* This does ltr */
+ 	load_LDT(&current->active_mm->context);	/* This does lldt */
+ 
+-	/*
+-	 * Now maybe reload the debug registers
+-	 */
+-	if (current->thread.debugreg7) {
+-		set_debugreg(current->thread.debugreg0, 0);
+-		set_debugreg(current->thread.debugreg1, 1);
+-		set_debugreg(current->thread.debugreg2, 2);
+-		set_debugreg(current->thread.debugreg3, 3);
+-		/* no 4 and 5 */
+-		set_debugreg(current->thread.debugreg6, 6);
+-		set_debugreg(current->thread.debugreg7, 7);
 -	}
 -
--#ifdef CONFIG_X86_32
--	if (regs->flags & X86_VM_MASK)
--		goto debug_vm86;
--#endif
--
--	/* Save debug status register where ptrace can see it */
--	tsk->thread.debugreg6 = condition;
--
--	/*
--	 * Single-stepping through TF: make sure we ignore any events in
--	 * kernel space (but re-enable TF when returning to user mode).
--	 */
--	if (condition & DR_STEP) {
--		if (!user_mode(regs))
--			goto clear_TF_reenable;
-+	if (regs->flags & X86_VM_MASK) {
-+		handle_vm86_trap((struct kernel_vm86_regs *) regs,
-+				error_code, 1);
-+		return;
- 	}
++	load_debug_registers();
+ }
  
--	si_code = get_si_code(condition);
--	/* Ok, finally something we can handle */
--	send_sigtrap(tsk, regs, error_code, si_code);
--
- 	/*
--	 * Disable additional traps. They'll be re-enabled when
--	 * the signal is delivered.
-+	 * Single-stepping through system calls: ignore any exceptions in
-+	 * kernel space, but re-enable TF when returning to user mode.
-+	 *
-+	 * We already checked v86 mode above, so we can check for kernel mode
-+	 * by just checking the CPL of CS.
- 	 */
--clear_dr7:
--	set_debugreg(0, 7);
--	preempt_conditional_cli(regs);
--	return;
--
--#ifdef CONFIG_X86_32
--debug_vm86:
--	/* reenable preemption: handle_vm86_trap() might sleep */
--	dec_preempt_count();
--	handle_vm86_trap((struct kernel_vm86_regs *) regs, error_code, 1);
--	conditional_cli(regs);
--	return;
--#endif
--
--clear_TF_reenable:
--	set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
--	regs->flags &= ~X86_EFLAGS_TF;
-+	if ((dr6 & DR_STEP) && !user_mode(regs)) {
-+		tsk->thread.debugreg6 &= ~DR_STEP;
-+		set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
-+		regs->flags &= ~X86_EFLAGS_TF;
-+	}
-+	si_code = get_si_code(tsk->thread.debugreg6);
-+	if (tsk->thread.debugreg6 & (DR_STEP | DR_TRAP_BITS))
-+		send_sigtrap(tsk, regs, error_code, si_code);
- 	preempt_conditional_cli(regs);
- 	return;
+ static void __restore_processor_state(struct saved_context *ctxt)
+Index: arch/x86/power/cpu_64.c
+===================================================================
+--- arch/x86/power/cpu_64.c.orig
++++ arch/x86/power/cpu_64.c
+@@ -16,6 +16,7 @@
+ #include <asm/mtrr.h>
+ #include <asm/xcr.h>
+ #include <asm/suspend.h>
++#include <asm/debugreg.h>
+ 
+ static void fix_processor_context(void);
+ 
+@@ -71,6 +72,7 @@ static void __save_processor_state(struc
+ 	ctxt->cr3 = read_cr3();
+ 	ctxt->cr4 = read_cr4();
+ 	ctxt->cr8 = read_cr8();
++	hw_breakpoint_disable();
+ }
+ 
+ void save_processor_state(void)
+@@ -159,16 +161,5 @@ static void fix_processor_context(void)
+ 	load_TR_desc();				/* This does ltr */
+ 	load_LDT(&current->active_mm->context);	/* This does lldt */
+ 
+-	/*
+-	 * Now maybe reload the debug registers
+-	 */
+-	if (current->thread.debugreg7){
+-                loaddebug(&current->thread, 0);
+-                loaddebug(&current->thread, 1);
+-                loaddebug(&current->thread, 2);
+-                loaddebug(&current->thread, 3);
+-                /* no 4 and 5 */
+-                loaddebug(&current->thread, 6);
+-                loaddebug(&current->thread, 7);
+-	}
++	load_debug_registers();
  }
 
