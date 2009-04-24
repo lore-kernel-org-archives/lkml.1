@@ -1,111 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbZDXGCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbZDXGHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757542AbZDXGCc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 02:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756186AbZDXGB4
+	id S1756694AbZDXGHF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 02:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755853AbZDXGGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 02:01:56 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52028 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755881AbZDXGBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 02:01:53 -0400
-Message-ID: <49F15607.1090707@cn.fujitsu.com>
-Date: Fri, 24 Apr 2009 14:02:47 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/6] tracing: increase size of number of possible events
-References: <20090424043005.338878133@goodmis.org> <20090424043111.983189535@goodmis.org>
-In-Reply-To: <20090424043111.983189535@goodmis.org>
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Apr 2009 02:06:53 -0400
+Received: from mga09.intel.com ([134.134.136.24]:19857 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755399AbZDXGGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 02:06:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,240,1239001200"; 
+   d="asc'?scan'208";a="509526267"
+Subject: Re: Re-implement MCE log ring buffer as per-CPU ring buffer
+From: Huang Ying <ying.huang@intel.com>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+In-Reply-To: <20090422101600.GL3226@erda.amd.com>
+References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com>
+	 <20090422092259.GC18226@elte.hu>  <20090422101600.GL3226@erda.amd.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-SMJQwRiDDQFfEnVmveYi"
+Date: Fri, 24 Apr 2009 14:06:50 +0800
+Message-Id: <1240553210.6842.871.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Steven Rostedt <srostedt@redhat.com>
-> 
-> With the new event tracing registration, we must increase the number
-> of events that can be registered. Currently the type field is only
-> one byte, which leaves us only 256 possible events.
-> 
-> Since we do not save the CPU number in the tracer anymore (it is determined
-> by the per cpu ring buffer that is used) we have an extra byte to use.
-> 
-> This patch increases the size of type from 1 byte (256 events) to
-> 2 bytes (65,536 events).
-> 
 
-You forgot to change this:
+--=-SMJQwRiDDQFfEnVmveYi
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-@@ -198,7 +198,7 @@ ftrace_define_fields_##call(void)					\
- 	struct ftrace_event_call *event_call = &event_##call;		\
- 	int ret;							\
- 									\
--	__common_field(int, type);					\
-+	__common_field(unsigned short, type);				\
+On Wed, 2009-04-22 at 18:16 +0800, Robert Richter wrote:
+> On 22.04.09 11:22:59, Ingo Molnar wrote:
+> >=20
+> > * Huang Ying <ying.huang@intel.com> wrote:
+> >=20
+> > > Re-implement MCE log ring buffer as per-CPU ring buffer for better=20
+> > > scalability. Basic design is as follow:
+> >=20
+> > Before changing anything substantial in the MCE code it would be=20
+> > necessary to clean up and then unify the 32-bit and 64-bit side of=20
+> > the MCE code first. (Which essentially means extending the=20
+> > 64-bit-only code to 32-bit)
+>=20
+> You may also want to consider to use the in-kernel ring_buffer api
+> (include/linux/ring_buffer.h).
 
-And we can apply the check in 3/6 to __common_field(). :)
+It seems that ring_buffer is not NMI-safe, while mcelog buffer will be
+used in NMI context and interrupt context. When will ring_buffer to be
+NMI-safe?
 
-> It also adds a WARN_ON_ONCE if we exceed that limit.
-> 
+Best Regards,
+Huang Ying
 
-WARN_ON_ONCE() may not be sufficient IMO:
+--=-SMJQwRiDDQFfEnVmveYi
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-We can reach 65536 this way (It took me 15 mins):
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-while (foo_bar.id < 65536) {
-	insmod trace-events-sample.ko
-	rmmod trace-events-sample.ko
-}
+iEYEABECAAYFAknxVvgACgkQKhFGF+eHlpgUYACeI1mRVFfvqTvegWPiYoCpdEWR
+pQcAniR7oksfLBubg+bDFXEgG7/X/IUe
+=uvPE
+-----END PGP SIGNATURE-----
 
-Now next id will be 0! Then do this:
-
-console 1:
- # cat /debug/tracing/trace_pipe
-
-console 2:
-while (1) {
-	insmod trace-events-sample.ko
-	echo foo_bar > /debug/tracing/set_event
-	rmmod trace-events-sample.ko
-}
-
-I got this immediately:
-
-BUG: unable to handle kernel NULL pointer dereference at 0000006f
-IP: [<c05210f3>] bstr_printf+0x2ce/0x302
-...
-Call Trace:
- [<c0476d12>] ? trace_seq_bprintf+0x28/0x41
- [<c0477569>] ? trace_bprint_print+0x58/0x6c
- [<c0472ffc>] ? print_trace_line+0x2c5/0x2df
- [<c0428a41>] ? sub_preempt_count+0x85/0xa0
- [<c04758cf>] ? tracing_read_pipe+0x118/0x191
- [<c04757b7>] ? tracing_read_pipe+0x0/0x191
- [<c04b09f9>] ? vfs_read+0x8f/0x136
- [<c04b0da3>] ? sys_read+0x40/0x65
- [<c0402a68>] ? sysenter_do_call+0x12/0x36
-
-(We can even get other crashes..)
-
-So I think we should fail the initialization of the event, instead of
-WARN_ON().
-
-> @@ -537,6 +537,8 @@ int register_ftrace_event(struct trace_event *event)
->   out:
->  	mutex_unlock(&trace_event_mutex);
->  
-> +	WARN_ON_ONCE(next_event_type > FTRACE_MAX_EVENT);
-> +
-
-This WARN_ON is triggered when we create an event with id == 65535,
-but not 65536.
-
+--=-SMJQwRiDDQFfEnVmveYi--
 
