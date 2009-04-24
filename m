@@ -1,166 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932103AbZDXGUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752654AbZDXGYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932103AbZDXGUr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 02:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759519AbZDXGTY
+	id S1752654AbZDXGYR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 02:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZDXGYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 02:19:24 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:57706 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759517AbZDXGTW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 02:19:22 -0400
-Date: Fri, 24 Apr 2009 11:49:06 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
-       Roland McGrath <roland@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 12/12] Reset bits in dr6 after the corresponding exception
-	is handled
-Message-ID: <20090424061906.GM23812@in.ibm.com>
-References: <20090424055710.764502564@prasadkr_t60p.in.ibm.com>
+	Fri, 24 Apr 2009 02:24:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53521 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751205AbZDXGX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 02:23:59 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=dr6_changes_12
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Denys Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org,
+       Jan Kratochvil <jan.kratochvil@redhat.com>
+Subject: Re: SIGSTOP && ptrace (Was: ptrace(PTRACE_SYSCALL/CONT/DETACH, ...,
+	SIGSTOP) does not work)
+In-Reply-To: Oleg Nesterov's message of  Thursday, 23 April 2009 16:26:27 +0200 <20090423142627.GA31572@redhat.com>
+References: <1158166a0904230515h333a78c9uf49931824c1dfe72@mail.gmail.com>
+	<20090423142627.GA31572@redhat.com>
+X-Zippy-Says: I'm not available for comment..
+Message-Id: <20090424062354.A1F88FC3C7@magilla.sf.frob.com>
+Date: Thu, 23 Apr 2009 23:23:54 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch resets the bit in dr6 after the corresponding exception is
-handled in code.
+> > IOW: strace does NOT want to see this signal reported back to strace -
+> > it already saw that, what's the point in seeing it again?
+> 
+> As I said many times, the second report is not about the signal, it
+> reports that the group-stop is completed.
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- arch/x86/kernel/hw_breakpoint.c |   13 +++++++++++--
- arch/x86/kernel/kgdb.c          |    6 ++++++
- arch/x86/kernel/kprobes.c       |    9 ++++++++-
- arch/x86/kernel/traps.c         |    4 ++--
- arch/x86/mm/kmmio.c             |    8 +++++++-
- 5 files changed, 34 insertions(+), 6 deletions(-)
+Oleg is correct.  The "second" report, is not "WIFSTOPPED means a ptrace
+stop".  It is "WIFSTOPPED means a job control stop".  This is not meant as
+a notification to tracer, but a notification to parent.  In case of
+PTRACE_ATTACH, this is "unnatural" because the tracer steals the parent's
+notifications, but that's just the known crime against nature that is
+ptrace semantics.
 
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/traps.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/traps.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/traps.c
-@@ -550,8 +550,8 @@ dotraplinkage void __kprobes do_debug(st
- 	/* Store the virtualized DR6 value */
- 	tsk->thread.debugreg6 = dr6;
- 
--	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
--						SIGTRAP) == NOTIFY_STOP)
-+	if (notify_die(DIE_DEBUG, "debug", regs, PTR_ERR(&dr6), error_code,
-+							SIGTRAP) == NOTIFY_STOP)
- 		return;
- 
- 	/* It's safe to allow irq's after DR6 has been saved */
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/kgdb.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/kgdb.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/kgdb.c
-@@ -43,6 +43,7 @@
- #include <linux/smp.h>
- #include <linux/nmi.h>
- 
-+#include <asm/debugreg.h>
- #include <asm/apicdef.h>
- #include <asm/system.h>
- 
-@@ -433,6 +434,11 @@ single_step_cont(struct pt_regs *regs, s
- 			"resuming...\n");
- 	kgdb_arch_handle_exception(args->trapnr, args->signr,
- 				   args->err, "c", "", regs);
-+	/*
-+	 * Reset the BS bit in dr6 (pointed by args->err) to
-+	 * denote completion of processing
-+	 */
-+	(*(unsigned long *)ERR_PTR(args->err)) &= ~DR_STEP;
- 
- 	return NOTIFY_STOP;
- }
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/kprobes.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/kprobes.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/kprobes.c
-@@ -54,6 +54,7 @@
- #include <asm/pgtable.h>
- #include <asm/uaccess.h>
- #include <asm/alternative.h>
-+#include <asm/debugreg.h>
- 
- void jprobe_return_end(void);
- 
-@@ -967,8 +968,14 @@ int __kprobes kprobe_exceptions_notify(s
- 			ret = NOTIFY_STOP;
- 		break;
- 	case DIE_DEBUG:
--		if (post_kprobe_handler(args->regs))
-+		if (post_kprobe_handler(args->regs)) {
-+			/*
-+			 * Reset the BS bit in dr6 (pointed by args->err) to
-+			 * denote completion of processing
-+			 */
-+			(*(unsigned long *)ERR_PTR(args->err)) &= ~DR_STEP;
- 			ret = NOTIFY_STOP;
-+		}
- 		break;
- 	case DIE_GPF:
- 		/*
-Index: linux-2.6-tip.hbkpt/arch/x86/mm/kmmio.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/mm/kmmio.c
-+++ linux-2.6-tip.hbkpt/arch/x86/mm/kmmio.c
-@@ -534,8 +534,14 @@ static int kmmio_die_notifier(struct not
- 	struct die_args *arg = args;
- 
- 	if (val == DIE_DEBUG && (arg->err & DR_STEP))
--		if (post_kmmio_handler(arg->err, arg->regs) == 1)
-+		if (post_kmmio_handler(arg->err, arg->regs) == 1) {
-+			/*
-+			 * Reset the BS bit in dr6 (pointed by args->err) to
-+			 * denote completion of processing
-+			 */
-+			(*(unsigned long *)ERR_PTR(arg->err)) &= ~DR_STEP;
- 			return NOTIFY_STOP;
-+		}
- 
- 	return NOTIFY_DONE;
- }
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
-@@ -307,8 +307,12 @@ int __kprobes hw_breakpoint_handler(stru
- {
- 	int i, rc = NOTIFY_STOP;
- 	struct hw_breakpoint *bp;
--	/* The DR6 value is stored in args->err */
--	unsigned long dr7, dr6 = args->err;
-+	unsigned long dr7, dr6;
-+	unsigned long *dr6_p;
-+
-+	/* The DR6 value is pointed by args->err */
-+	dr6_p = (unsigned long *)ERR_PTR(args->err);
-+	dr6 = *dr6_p;
- 
- 	/* Do an early return if no trap bits are set in DR6 */
- 	if ((dr6 & DR_TRAP_BITS) == 0)
-@@ -346,6 +350,11 @@ int __kprobes hw_breakpoint_handler(stru
- 			rc = NOTIFY_DONE;
- 		}
- 		(bp->triggered)(bp, args->regs);
-+		/*
-+		 * Reset the 'i'th TRAP bit in dr6 to denote completion of
-+		 * exception handling
-+		 */
-+		(*dr6_p) &= ~(DR_TRAP0 << i);
- 	}
- 	if (dr6 & (~DR_TRAP_BITS))
- 		rc = NOTIFY_DONE;
+> I guess, you don't like the fact that finish_stop() always clear ->exit_code
+> after wake up. This is why the next ptrace(PTRACE_SYSCALL, SIGSTOP) (called
+> when the tracee sleeps in finish_stop) "loses" SIGSTOP.
+> 
+> I can't say if this really right or not, but I guess it is too late to
+> change this behaviour. I may be wrong.
 
+I agree it's unfortunate.  But TBH it's more unfortunate that PTRACE_CONT
+et al are allowed here at all.  It's a job control stop, and if the world
+were right then it would only be broken by SIGCONT.  But Oleg is right,
+it's too late to change it now.  Them's the semantics.
+
+> Perhaps, you should ask how strace can distinguish between "SIGSTOP
+> recieved" and "group-stop completed". I am not 100% sure, but at first
+> glance this looks possible.
+
+It is, but it's easier than the hack you suggest.  PTRACE_GETSIGINFO only
+works for a ptrace stop, not a job control stop.  If wait reported SIGSTOP,
+PTRACE_GETSIGINFO will fail with EINVAL for a job control stop but will
+succeed for a ptrace stop.
+
+
+Thanks,
+Roland
