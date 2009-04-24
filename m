@@ -1,88 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbZDXBt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbZDXB6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757557AbZDXBt2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 21:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755519AbZDXBtS
+	id S1756244AbZDXB6O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 21:58:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbZDXB54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 21:49:18 -0400
-Received: from [65.98.92.6] ([65.98.92.6]:2135 "EHLO b32.net"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755399AbZDXBtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 21:49:18 -0400
-Message-Id: <5d2b9b9e6bb054c2d09fa362a4570156ea8ceca1.1240533480.git@localhost>
-In-Reply-To: <0483452db22e72f57289e63fcf097120d94c2a37.1240533480.git@localhost>
-References: <0483452db22e72f57289e63fcf097120d94c2a37.1240533480.git@localhost>
-From: Kevin Cernekee <cernekee@gmail.com>
-To: ralf@linux-mips.org
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Date: Thu, 23 Apr 2009 17:36:53 -0700
-Subject: [PATCH 3/3] MIPS: Support 64-byte D-cache line size
+	Thu, 23 Apr 2009 21:57:56 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:49310 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750962AbZDXB5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 21:57:55 -0400
+Date: Fri, 24 Apr 2009 11:57:44 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Jonathan Corbet <corbet@lwn.net>,
+       =?UTF-8?B?IkZy?= =?UTF-8?B?w6lkw6lyaWMgV2Vpc2JlY2tlciI=?= 
+	<fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LFSDEV <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 0/5 -tip] umount_begin BKL pushdown
+Message-Id: <20090424115744.bd2d8444.sfr@canb.auug.org.au>
+In-Reply-To: <20090423213249.GA4814@elte.hu>
+References: <1240513925-5603-1-git-send-email-abogani@texware.it>
+	<20090423191817.GW8633@ZenIV.linux.org.uk>
+	<20090423213249.GA4814@elte.hu>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__24_Apr_2009_11_57_44_+1000__KSg4cMX1rrhp_Yt"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Kevin Cernekee <cernekee@gmail.com>
----
- arch/mips/include/asm/r4kcache.h |    1 +
- arch/mips/mm/c-r4k.c             |   12 ++++++++++++
- 2 files changed, 13 insertions(+), 0 deletions(-)
+--Signature=_Fri__24_Apr_2009_11_57_44_+1000__KSg4cMX1rrhp_Yt
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/mips/include/asm/r4kcache.h b/arch/mips/include/asm/r4kcache.h
-index 4c140db..387bf59 100644
---- a/arch/mips/include/asm/r4kcache.h
-+++ b/arch/mips/include/asm/r4kcache.h
-@@ -399,6 +399,7 @@ __BUILD_BLAST_CACHE(s, scache, Index_Writeback_Inv_SD, Hit_Writeback_Inv_SD, 16)
- __BUILD_BLAST_CACHE(d, dcache, Index_Writeback_Inv_D, Hit_Writeback_Inv_D, 32)
- __BUILD_BLAST_CACHE(i, icache, Index_Invalidate_I, Hit_Invalidate_I, 32)
- __BUILD_BLAST_CACHE(s, scache, Index_Writeback_Inv_SD, Hit_Writeback_Inv_SD, 32)
-+__BUILD_BLAST_CACHE(d, dcache, Index_Writeback_Inv_D, Hit_Writeback_Inv_D, 64)
- __BUILD_BLAST_CACHE(i, icache, Index_Invalidate_I, Hit_Invalidate_I, 64)
- __BUILD_BLAST_CACHE(s, scache, Index_Writeback_Inv_SD, Hit_Writeback_Inv_SD, 64)
- __BUILD_BLAST_CACHE(s, scache, Index_Writeback_Inv_SD, Hit_Writeback_Inv_SD, 128)
-diff --git a/arch/mips/mm/c-r4k.c b/arch/mips/mm/c-r4k.c
-index 171951d..71fe4cb 100644
---- a/arch/mips/mm/c-r4k.c
-+++ b/arch/mips/mm/c-r4k.c
-@@ -100,6 +100,12 @@ static inline void r4k_blast_dcache_page_dc32(unsigned long addr)
- 	blast_dcache32_page(addr);
- }
- 
-+static inline void r4k_blast_dcache_page_dc64(unsigned long addr)
-+{
-+	R4600_HIT_CACHEOP_WAR_IMPL;
-+	blast_dcache64_page(addr);
-+}
-+
- static void __cpuinit r4k_blast_dcache_page_setup(void)
- {
- 	unsigned long  dc_lsize = cpu_dcache_line_size();
-@@ -110,6 +116,8 @@ static void __cpuinit r4k_blast_dcache_page_setup(void)
- 		r4k_blast_dcache_page = blast_dcache16_page;
- 	else if (dc_lsize == 32)
- 		r4k_blast_dcache_page = r4k_blast_dcache_page_dc32;
-+	else if (dc_lsize == 64)
-+		r4k_blast_dcache_page = r4k_blast_dcache_page_dc64;
- }
- 
- static void (* r4k_blast_dcache_page_indexed)(unsigned long addr);
-@@ -124,6 +132,8 @@ static void __cpuinit r4k_blast_dcache_page_indexed_setup(void)
- 		r4k_blast_dcache_page_indexed = blast_dcache16_page_indexed;
- 	else if (dc_lsize == 32)
- 		r4k_blast_dcache_page_indexed = blast_dcache32_page_indexed;
-+	else if (dc_lsize == 64)
-+		r4k_blast_dcache_page_indexed = blast_dcache64_page_indexed;
- }
- 
- static void (* r4k_blast_dcache)(void);
-@@ -138,6 +148,8 @@ static void __cpuinit r4k_blast_dcache_setup(void)
- 		r4k_blast_dcache = blast_dcache16;
- 	else if (dc_lsize == 32)
- 		r4k_blast_dcache = blast_dcache32;
-+	else if (dc_lsize == 64)
-+		r4k_blast_dcache = blast_dcache64;
- }
- 
- /* force code alignment (used for TX49XX_ICACHE_INDEX_INV_WAR) */
--- 
-1.5.3.6
+Hi all,
 
+On Thu, 23 Apr 2009 23:32:49 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Al Viro <viro@ZenIV.linux.org.uk> wrote:
+> >=20
+> > Another thing: -tip is no place for that.  I can put that into VFS=20
+> > tree, provided that comments above are dealt with.
+>=20
+> When that happens, could you please put it into a separate,=20
+> append-only branch i could pull (after some initial test-time) into=20
+> tip:kill-the-BKL?
+
+And just wondering how all this relates to Jonathan's (currently empty)
+bkl-removal tree (that is merged into linux-next)?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__24_Apr_2009_11_57_44_+1000__KSg4cMX1rrhp_Yt
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknxHJgACgkQjjKRsyhoI8xjjwCgm0AFsf5vkDSwamUlpTlA70ab
+C0YAoLK2ACqim33PNAs5Oylv+UapGWV1
+=OiAz
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__24_Apr_2009_11_57_44_+1000__KSg4cMX1rrhp_Yt--
