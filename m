@@ -1,96 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758408AbZDXEgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbZDXEg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758408AbZDXEgK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 00:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755293AbZDXEfu
+	id S1758626AbZDXEg2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 00:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758561AbZDXEgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 00:35:50 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:36221 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752983AbZDXEft (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 00:35:49 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsQEACbd8ElMQW1W/2dsb2JhbACBUM5Ug3QF
-Date: Fri, 24 Apr 2009 00:35:46 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: gregkh@suse.de, stable@kernel.org, cpufreq@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, rjw@sisk.pl,
-       Ben Slusky <sluskyb@paranoiacs.org>, Dave Jones <davej@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] cpufreq fix timer teardown in conservative governor
-	(2.6.30-rc2)
-Message-ID: <20090424043546.GB8091@Krystal>
-References: <20090423140002.GA12852@Krystal> <20090423164638.3b5769c6.akpm@linux-foundation.org>
+	Fri, 24 Apr 2009 00:36:13 -0400
+Received: from mga02.intel.com ([134.134.136.20]:23699 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758542AbZDXEgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 00:36:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,239,1239001200"; 
+   d="asc'?scan'208";a="509510345"
+Subject: Re: [PATCH 3/4] PCI: PCIE AER: PCIE AER software error injection
+From: Huang Ying <ying.huang@intel.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+In-Reply-To: <49F140F7.4030705@jp.fujitsu.com>
+References: <1240541127.6842.681.camel@yhuang-dev.sh.intel.com>
+	 <49F140F7.4030705@jp.fujitsu.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-mEg5Ds2WsurX4kC7Ordy"
+Date: Fri, 24 Apr 2009 12:36:09 +0800
+Message-Id: <1240547769.6842.782.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090423164638.3b5769c6.akpm@linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 00:34:18 up 55 days,  1:00,  1 user,  load average: 0.53, 0.44,
-	0.31
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The problem is that dbs_timer_exit() uses cancel_delayed_work() when it should
-use cancel_delayed_work_sync(). cancel_delayed_work() does not wait for the
-workqueue handler to exit.
 
-The ondemand governor does not seem to be affected because the
-"if (!dbs_info->enable)" check at the beginning of the workqueue handler returns
-immediately without rescheduling the work. The conservative governor in
-2.6.30-rc has the same check as the ondemand governor, which makes things
-usually run smoothly. However, if the governor is quickly stopped and then
-started, this could lead to the following race :
+--=-mEg5Ds2WsurX4kC7Ordy
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-dbs_enable could be reenabled and multiple do_dbs_timer handlers would run.
-This is why a synchronized teardown is required.
+On Fri, 2009-04-24 at 12:32 +0800, Kenji Kaneshige wrote:
+> Huang Ying wrote:
+> > Debugging PCIE AER code can be very difficult because it is hard to
+> > trigger various real hardware errors. This patch provide a software
+> > based error injection tool, which can fake various PCIE errors with a
+> > user space helper tool named "aer-inject". Which can be gotten from:
+> >=20
+> >   http://www.kernel.org/pub/linux/kernel/people/yhuang/
+> >=20
+> > The patch fakes AER error by faking some PCIE AER related registers
+> > and an AER interrupt for specified the PCIE device.
+> >=20
+> > Signed-off-by: Huang Ying <ying.huang@intel.com>
+> >=20
+> > ---
+> >  drivers/pci/pcie/aer/Kconfig       |    2=20
+> >  drivers/pci/pcie/aer/Kconfig.debug |   18 +
+> >  drivers/pci/pcie/aer/Makefile      |    1=20
+> >  drivers/pci/pcie/aer/aer_inject.c  |  472 ++++++++++++++++++++++++++++=
++++++++++
+> >  4 files changed, 493 insertions(+)
+> >=20
+> > --- /dev/null
+> > +++ b/drivers/pci/pcie/aer/aer_inject.c
+> > @@ -0,0 +1,472 @@
+> > +/*
+> > + * PCIE AER software error injection support.
+> > + *
+> > + * Debuging PCIE AER code is quite difficult because it is hard to
+> > + * trigger various real hardware errors. Software based error
+> > + * injection can fake almost all kinds of errors with the help of a
+> > + * user space helper tool aer-inject, which can be gotten from:
+> > + *   http://www.kernel.org/pub/utils/pcie/aer-inject
+>=20
+> Shouldn't it be=20
+>=20
+> http://www.kernel.org/pub/linux/kernel/people/yhuang/
 
-The following patch applies to 2.6.30-rc2.
+Yes. I forget to change this. But the directory to put aer-inject tar
+ball is subject to be changed. I am contacting with kernel.org ftp
+maintainer for appropriate place.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: gregkh@suse.de
-CC: stable@kernel.org
-CC: cpufreq@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>
-CC: rjw@sisk.pl
-CC: Ben Slusky <sluskyb@paranoiacs.org>
-CC: Dave Jones <davej@redhat.com>
----
- drivers/cpufreq/cpufreq_conservative.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Best Regards,
+Huang Ying
 
-Index: linux-2.6-lttng/drivers/cpufreq/cpufreq_conservative.c
-===================================================================
---- linux-2.6-lttng.orig/drivers/cpufreq/cpufreq_conservative.c	2009-04-23 23:22:15.000000000 -0400
-+++ linux-2.6-lttng/drivers/cpufreq/cpufreq_conservative.c	2009-04-23 23:24:38.000000000 -0400
-@@ -91,6 +91,9 @@ static unsigned int dbs_enable;	/* numbe
-  * (like __cpufreq_driver_target()) is being called with dbs_mutex taken, then
-  * cpu_hotplug lock should be taken before that. Note that cpu_hotplug lock
-  * is recursive for the same process. -Venki
-+ * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the dbs_mutex, because it
-+ * would deadlock with cancel_delayed_work_sync(), which is needed for proper
-+ * raceless workqueue teardown.
-  */
- static DEFINE_MUTEX(dbs_mutex);
- 
-@@ -542,7 +545,7 @@ static inline void dbs_timer_init(struct
- static inline void dbs_timer_exit(struct cpu_dbs_info_s *dbs_info)
- {
- 	dbs_info->enable = 0;
--	cancel_delayed_work(&dbs_info->work);
-+	cancel_delayed_work_sync(&dbs_info->work);
- }
- 
- static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+--=-mEg5Ds2WsurX4kC7Ordy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknxQbYACgkQKhFGF+eHlpgUGgCfdm4/W/IVxQoN1pcNQOTHX2uP
+R3YAoISrPhQOOmIN27TRxImbi8QQE1ng
+=r31m
+-----END PGP SIGNATURE-----
+
+--=-mEg5Ds2WsurX4kC7Ordy--
+
