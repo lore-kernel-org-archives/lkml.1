@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbZDXHnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbZDXHnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755147AbZDXHnZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 03:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbZDXHnQ
+	id S1756729AbZDXHnr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 03:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZDXHng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 03:43:16 -0400
-Received: from mga02.intel.com ([134.134.136.20]:41867 "EHLO mga02.intel.com"
+	Fri, 24 Apr 2009 03:43:36 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:41466 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751188AbZDXHnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 03:43:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,240,1239001200"; 
-   d="scan'208";a="509544424"
-Date: Fri, 24 Apr 2009 09:43:09 +0200
-From: Markus Metzger <markus.t.metzger@intel.com>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com
-Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com
-Subject: [patch] x86, ds: fix buffer alignment in debug store selftest
-Message-ID: <20090424094309.A30145@sedona.ch.intel.com>
-Mime-Version: 1.0
+	id S1751241AbZDXHnf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 03:43:35 -0400
+Date: Fri, 24 Apr 2009 09:43:34 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, dwmw2@infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH linux-2.6-block/for-linus] Fix discard requests
+	accounting in the diskstats
+Message-ID: <20090424074334.GC4593@kernel.dk>
+References: <200904232013.n3NKD4PP017241@imap1.linux-foundation.org> <200904241118.30919.knikanth@suse.de> <20090424061518.GY4593@kernel.dk> <200904241308.35738.knikanth@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <200904241308.35738.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The debug store selftest code uses a stack-allocated buffer, which is
-not necessarily correctly aligned.
+On Fri, Apr 24 2009, Nikanth Karthikesan wrote:
+> On Friday 24 April 2009 11:45:18 Jens Axboe wrote:
+> > On Fri, Apr 24 2009, Nikanth Karthikesan wrote:
+> > > When 2 discard requests are merged, the stats gets updated, but we do not
+> > > update statistics normally when a discard request is issued or completed.
+> > > For example the in_flight counter would be decremented when 2 discard
+> > > requests are merged, but it was not at all incremented when they were
+> > > issued, and in_flight counter will not be decremented, when they are
+> > > completed as well.
+> > >
+> > > This patch fixes this by adding discard requests to the statistics.
+> > >
+> > > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> >
+> > OK, so that's not quite what I had in mind. If we first do this as a
+> > preparatory patch:
+> >
+> > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=42fd769da4edadad83a7
+> >79867ff1910ec35c6de7
+> >
+> 
+> Oh! I thought this cleanup along with the 
+> block-turn-some-buggy-macros-into-c-functions.patch from Andrew could be done 
+> on top of my original fix. But didn't, as you said, you would do it. Anyway, 
+> Thanks.
 
-For tests using a buffer to hold a single entry, the buffer that is
-passed to ds_request must already be suitably aligned.
+Refactor and then fix is the cleanest I think. Anyway, queued up for
+2.6.31!
 
-Pass a suitably aligned portion of the bigger buffer.
-
-
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
- arch/x86/kernel/ds_selftest.c |    6 	4 +	2 -	0 !
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-Index: b/arch/x86/kernel/ds_selftest.c
-===================================================================
---- a/arch/x86/kernel/ds_selftest.c
-+++ b/arch/x86/kernel/ds_selftest.c
-@@ -323,13 +323,15 @@ static int ds_selftest_bts_bad_request_t
- int ds_selftest_bts(void)
- {
- 	struct ds_selftest_bts_conf conf;
--	unsigned char buffer[BUFFER_SIZE];
-+	unsigned char buffer[BUFFER_SIZE], *small_buffer;
- 	unsigned long irq;
- 	int cpu;
- 
- 	printk(KERN_INFO "[ds] bts selftest...");
- 	conf.error = 0;
- 
-+	small_buffer = (unsigned char *)ALIGN((unsigned long)buffer, 8) + 8;
-+
- 	get_online_cpus();
- 	for_each_online_cpu(cpu) {
- 		conf.suspend = ds_suspend_bts_wrap;
-@@ -381,7 +383,7 @@ int ds_selftest_bts(void)
- 	conf.suspend = ds_suspend_bts_noirq;
- 	conf.resume = ds_resume_bts_noirq;
- 	conf.tracer =
--		ds_request_bts_task(current, buffer, SMALL_BUFFER_SIZE,
-+		ds_request_bts_task(current, small_buffer, SMALL_BUFFER_SIZE,
- 				   NULL, (size_t)-1, BTS_KERNEL);
- 	local_irq_save(irq);
- 	ds_selftest_bts_cpu(&conf);
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+-- 
+Jens Axboe
 
