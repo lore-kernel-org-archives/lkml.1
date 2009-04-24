@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755504AbZDXIsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbZDXIso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755504AbZDXIsW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 04:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZDXIsK
+	id S1758116AbZDXIso (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 04:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZDXIsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 04:48:10 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:62068 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751899AbZDXIsJ (ORCPT
+	Fri, 24 Apr 2009 04:48:33 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40019 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754561AbZDXIsc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 04:48:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=M3Vr2TqXO9LCLUsPf93ErxaC6NR+qE9D3K7vDDf4okNI4GMvdRqpPQMim5txtTNus3
-         IsAZa0jdoue2YVg3oakWRqQ/EAU5Akc2+bZv1GmIrQhb/N3yyt4+hpQwvw7xUWv1+hQw
-         sghUmbKk/tbmFOF3ElgVUFQXBa5GqdPK0u6B8=
+	Fri, 24 Apr 2009 04:48:32 -0400
+Date: Fri, 24 Apr 2009 04:48:20 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Alessio Igor Bogani <abogani@texware.it>, Jonathan Corbet <corbet@lwn.net>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LFSDEV <linux-fsdevel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH 1/1] vfs: umount_begin BKL pushdown v2
+Message-ID: <20090424084820.GA28592@infradead.org>
+References: <20090423191934.GW1926@parisc-linux.org> <1240556813-8739-1-git-send-email-abogani@texware.it> <1240556813-8739-2-git-send-email-abogani@texware.it> <20090424071312.GE8633@ZenIV.linux.org.uk> <20090424071536.GF8633@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <b647ffbd0904240146mdcb84f7mcefa0850da425155@mail.gmail.com>
-References: <c4e36d110904170213q24c2688ag9bcaa8562dddaa3f@mail.gmail.com>
-	 <20090423130930.50a6c9db.akpm@linux-foundation.org>
-	 <b647ffbd0904240146mdcb84f7mcefa0850da425155@mail.gmail.com>
-Date: Fri, 24 Apr 2009 10:48:08 +0200
-Message-ID: <b647ffbd0904240148i52fd77b6j7ba3ee432170e6d@mail.gmail.com>
-Subject: Re: WARNING: at fs/sysfs/group.c:138 sysfs_remove_group
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090424071536.GF8633@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/24 Dmitry Adamushko <dmitry.adamushko@gmail.com>:
-> 2009/4/23 Andrew Morton <akpm@linux-foundation.org>:
->> On Fri, 17 Apr 2009 11:13:08 +0200
->> Zdenek Kabelac <zdenek.kabelac@gmail.com> wrote:
->>
->>> Hi
->>>
->>>
->>> When I've checked  2.6.30-rc2 kernel and  I've got among other errors
->>> with Wifi message below.
->>> As I've noticed - some people were reporting this problem already earlier:
->>>
->>> http://www.gossamer-threads.com/lists/linux/kernel/1058276?page=last
->>>
->>> But for me - it started with 2.6.30-rc kernels.
->>> I've T61, 4GB, C2D, X86_64.
->>>
->>>
->>>
->>> Zdenek
->>>
->>>
->>> platform microcode: firmware: requesting intel-ucode/06-0f-0a
->>> platform microcode: firmware: requesting intel-ucode/06-0f-0a
->>
->> Lots of people are reporting this.  One person reported that each
->> attempt takes 60 seconds, thus delaying boot be several minutes.
->
-> These microcode messages are normal per-se.
->
-> From the original report [1] follows that there is another 60s. delay
-> when loading a firmware for an eth device.
+On Fri, Apr 24, 2009 at 08:15:36AM +0100, Al Viro wrote:
+> On Fri, Apr 24, 2009 at 08:13:12AM +0100, Al Viro wrote:
+> > On Fri, Apr 24, 2009 at 09:06:53AM +0200, Alessio Igor Bogani wrote:
+> > >  static void cifs_umount_begin(struct super_block *sb)
+> > >  {
+> > > -	struct cifs_sb_info *cifs_sb = CIFS_SB(sb);
+> > > +	struct cifs_sb_info *cifs_sb;
+> > >  	struct cifsTconInfo *tcon;
+> > >  
+> > > -	if (cifs_sb == NULL)
+> > > +	lock_kernel();
+> > > +	cifs_sb = CIFS_SB(sb);
+> > > +
+> > > +	if (cifs_sb == NULL) {
+> > > +		unlock_kernel();
+> > >  		return;
+> > > +	}
+> > >  
+> > >  	tcon = cifs_sb->tcon;
+> > > -	if (tcon == NULL)
+> > > +	if (tcon == NULL) {
+> > > +		unlock_kernel();
+> > >  		return;
+> > > +	}
+> > 
+> > AFAICS, both CIFS_SB(sb) and ->tcon are assign-once, so lock_kernel() should
+> > really go here (if it can't be removed completely, of course, but that's up
+> > to CIFS folks).  Applied with such modification.
+> 
+> PS: I suspect that checks for NULL are actually "what if kernel memory got
+> corrupted", but I'm too lazy to verify that at the moment; again, up to
+> CIFS folks.
 
-[1] http://marc.info/?l=linux-kernel&m=124032374206220&w=2
+NULL checks are superflous here, but that should be a separate patch.
 
-
--- 
-Best regards,
-Dmitry Adamushko
