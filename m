@@ -1,150 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbZDXAeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755764AbZDXAgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925AbZDXAeI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 20:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbZDXAdy
+	id S1755764AbZDXAgY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 20:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbZDXAgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 20:33:54 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53842 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886AbZDXAdy (ORCPT
+	Thu, 23 Apr 2009 20:36:12 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:15796 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752370AbZDXAgK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 20:33:54 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 15/22] Do not disable interrupts in free_page_mlock()
-Cc: kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>,
-       linux-mm@kvack.org, cl@linux-foundation.org, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, ming.m.lin@intel.com,
-       yanmin_zhang@linux.intel.com, peterz@infradead.org,
-       penberg@cs.helsinki.fi, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-In-Reply-To: <20090423155951.6778bdd3.akpm@linux-foundation.org>
-References: <1240408407-21848-16-git-send-email-mel@csn.ul.ie> <20090423155951.6778bdd3.akpm@linux-foundation.org>
-Message-Id: <20090424090721.1047.A69D9226@jp.fujitsu.com>
+	Thu, 23 Apr 2009 20:36:10 -0400
+X-IronPort-AV: E=Sophos;i="4.40,238,1238976000"; 
+   d="scan'208";a="176142454"
+Date: Thu, 23 Apr 2009 17:35:55 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jamie Lokier <jamie@shareable.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Wait for console to become available, v3.2
+Message-ID: <20090424003555.GA31173@cuplxvomd02.corp.sa.net>
+References: <20090422220853.0af12ece@lxorguk.ukuu.org.uk> <Pine.LNX.4.44L0.0904221723010.23158-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Fri, 24 Apr 2009 09:33:50 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0904221723010.23158-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-1; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > @@ -157,14 +157,9 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
-> >   */
-> >  static inline void free_page_mlock(struct page *page)
-> >  {
-> > -	if (unlikely(TestClearPageMlocked(page))) {
-> > -		unsigned long flags;
-> > -
-> > -		local_irq_save(flags);
-> > -		__dec_zone_page_state(page, NR_MLOCK);
-> > -		__count_vm_event(UNEVICTABLE_MLOCKFREED);
-> > -		local_irq_restore(flags);
-> > -	}
-> > +	__ClearPageMlocked(page);
-> > +	__dec_zone_page_state(page, NR_MLOCK);
-> > +	__count_vm_event(UNEVICTABLE_MLOCKFREED);
-> >  }
+On Wed, Apr 22, 2009 at 05:24:18PM -0400, Alan Stern wrote:
+> On Wed, 22 Apr 2009, Alan Cox wrote:
 > 
-> The conscientuous reviewer runs around and checks for free_page_mlock()
-> callers in other .c files which might be affected.
+> > > 2.	All devices have been probed
+> > > If we exit for reason 2, it means that no such device is present,
+> > > and we go on to the do the appropriate thing for that device class.
+> > 
+> > USB has no notion of #2 really
 > 
-> Only there are no such callers.
+> That's true, it doesn't.  But it _does_ rather have a notion of "all 
+> devices that were present at boot time have been probed".  That should 
+> be good enough.
 > 
-> The reviewer's job would be reduced if free_page_mlock() wasn't
-> needlessly placed in a header file!
+> Alan Stern
 
-very sorry.
+Okay, I've been slugging away at this and have a proposed interface. The
+interface is at the level of devices of particular types because that would
+maximize the opportunities for concurrency, but I don't know if interesting
+buses actually provide that level of detail early enough for this to be
+useful. If not, the fallback is just to do things on a bus granularity.
 
-How about this?
+If bus granularity is the best that can be done, it is still interesting
+to distingish between boot device types. If a boot device type is not 
+upported by a particular bus, we don't have to wait for probing to complete
+on that bus.
 
-=============================================
-Subject: [PATCH] move free_page_mlock() to page_alloc.c
+I'm still scratching my head, trying to figure out where I can tap into the
+'USB notion of "all devices that were present at boot time have been probed"'
+that Alan mentions above, so I don't have a specific implementation yet. I'm
+open to any tips in this area.
 
-Currently, free_page_mlock() is only called from page_alloc.c.
-Thus, we can move it to page_alloc.c.
+Below is a write-up of the interface that looks like it should be added to
+Documentation/driver-model/bus.txt. Comments are much appreciated.
 
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- mm/internal.h   |   18 ------------------
- mm/page_alloc.c |   21 +++++++++++++++++++++
- 2 files changed, 21 insertions(+), 18 deletions(-)
+----------------------------- CUT HERE -------------------------------------
+Synchronization with hot pluggable boot devices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Earlier versions of the Linux kernel used a single-threaded approach to
+boot initialization. This took a number of seconds, which mean that
+hotpluggable devices used or configured during boot were generally available
+before they were used. Modern kernels use a multithreaded approach, which
+requires synchronization between code that wants to act upon boot devices
+and the probing and initialization of those devices. Support of fine-grained
+boot concurrency requires distinguishing between types of boot devices, so
+that devices can be used as soon as they are initialized.
 
-Index: b/mm/internal.h
-===================================================================
---- a/mm/internal.h	2009-04-24 09:12:03.000000000 +0900
-+++ b/mm/internal.h	2009-04-24 09:12:10.000000000 +0900
-@@ -150,23 +150,6 @@ static inline void mlock_migrate_page(st
- 	}
- }
- 
--/*
-- * free_page_mlock() -- clean up attempts to free and mlocked() page.
-- * Page should not be on lru, so no need to fix that up.
-- * free_pages_check() will verify...
-- */
--static inline void free_page_mlock(struct page *page)
--{
--	if (unlikely(TestClearPageMlocked(page))) {
--		unsigned long flags;
--
--		local_irq_save(flags);
--		__dec_zone_page_state(page, NR_MLOCK);
--		__count_vm_event(UNEVICTABLE_MLOCKFREED);
--		local_irq_restore(flags);
--	}
--}
--
- #else /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
- static inline int is_mlocked_vma(struct vm_area_struct *v, struct page *p)
- {
-@@ -175,7 +158,6 @@ static inline int is_mlocked_vma(struct 
- static inline void clear_page_mlock(struct page *page) { }
- static inline void mlock_vma_page(struct page *page) { }
- static inline void mlock_migrate_page(struct page *new, struct page *old) { }
--static inline void free_page_mlock(struct page *page) { }
- 
- #endif /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
- 
-Index: b/mm/page_alloc.c
-===================================================================
---- a/mm/page_alloc.c	2009-04-24 09:12:03.000000000 +0900
-+++ b/mm/page_alloc.c	2009-04-24 09:13:25.000000000 +0900
-@@ -491,6 +491,27 @@ static inline void __free_one_page(struc
- 	zone->free_area[order].nr_free++;
- }
- 
-+#ifdef CONFIG_HAVE_MLOCKED_PAGE_BIT
-+/*
-+ * free_page_mlock() -- clean up attempts to free and mlocked() page.
-+ * Page should not be on lru, so no need to fix that up.
-+ * free_pages_check() will verify...
-+ */
-+static void free_page_mlock(struct page *page)
-+{
-+	if (unlikely(TestClearPageMlocked(page))) {
-+		unsigned long flags;
-+
-+		local_irq_save(flags);
-+		__dec_zone_page_state(page, NR_MLOCK);
-+		__count_vm_event(UNEVICTABLE_MLOCKFREED);
-+		local_irq_restore(flags);
-+	}
-+}
-+#else
-+static void free_page_mlock(struct page *page) { }
-+#endif
-+
- static inline int free_pages_check(struct page *page)
- {
- 	free_page_mlock(page);
+There currently two types supported:
+-	consoles
+-	network devices
 
+There is a distinction between the hardware type and the boot device type.
+>From the hardware view, most any serial device can be used as a console,
+but console support is generally be configured separately. For example,
+consider USB serial devices. These should be considered a console only if
+the software is configured to support this usage, which is done by enabling
+the CONFIG_USB_SERIAL_CONSOLE option. If this option is disabled, the USB bus
+driver should not report that it has found any console devices.
 
+Two functions are available for use by the per-bus support code:
+
+bus_bootdev_found(int bootdev_mask)
+	This function must be called each time a boot device device is found.
+	It is passed a bit mask created by ORing any of the following flags
+	that apply to the device found:
+		BOOTDEV_CONSOLE_MASK
+		BOOTDEV_NETDEV_MASK
+	There is no need to call this function for a given device if it is
+	known that it cannot be used as a boot device. If it is not
+	possible to determine whether a device is usable as a boot device,
+	or what the specific type of boot device it may be, the argument
+	BOOTDEV_ANY_MASK can be passed.  This should be used only when
+	necessary as it reduces the level of concurrency that can be
+	achieved from boot time initialization.
+
+bus_bootdev_initialized(int bootdev_mask)
+	This function must be called by the bus support code after it calls the
+	initialiation function for a boot device. Every call to
+	bus_bootdev_found must be matched by a call to
+	bus_bootdev_initialized with the same bootdev_mask.
+
+	Device initialization functions must have called the appropriate
+	registration function for that device before bus_bootdev_initialized
+	is called. So, for console devices, register_console must be called
+	before bus_bootdev_initialized, and for network devices,
+	register_netdevice must be called first.
+
+It is possible for bus code to avoid the need to call bus_bootdev_found
+for each device if it calls it once at the beginning of device discovery and
+once at the end with a mask for all of the possible types of boot devices
+that could be on that bus. This approach should be avoid if at all possible
+because it reduces the available boot-time concurency, which can lead
+to increased boot times.
+
+When it is time to use a given boot device type, the following function
+should be used:
+
+bus_wait_for_bootdev(enum bootdev_type type, bool (*done)(void))
+	The type is one of:
+		BOOTDEV_CONSOLE
+		BOOTDEV_NETDEV
+	The done function checks to see whether all of the boot devices
+	required have been registered. If it determines that this is the
+	case, it can return true. This will cause the wait to be terminated
+	even though some boot devices of the given type have not yet been
+	initialized, which can decrease the time to boot. If this is not
+	possible, it can return false. In that case, bus_wait_for_bootdev
+	won't return until all devices of the given type on all buses have
+	been initialized. Not surprisingly, this limit the opportunities to
+	reduce boot time.
