@@ -1,37 +1,31 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759297AbZDXKcV (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 24 Apr 2009 06:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbZDXKcG
+	id S1758097AbZDXKmj (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 24 Apr 2009 06:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbZDXKma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 06:32:06 -0400
-Received: from f127.mail.ru ([194.67.57.236]:58799 "EHLO f127.mail.ru"
+	Fri, 24 Apr 2009 06:42:30 -0400
+Received: from f139.mail.ru ([194.67.57.120]:57041 "EHLO f139.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755394AbZDXKcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 06:32:03 -0400
-X-Greylist: delayed 1837 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Apr 2009 06:32:01 EDT
+	id S1752423AbZDXKm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 06:42:29 -0400
 From: Rutkov Denis <dendron2000@mail.ru>
-To: linux-kernel@vger.kernel.org
-Subject: =?koi8-r?Q?Re[2]=3A_High_kernel_CPU_usage_when_copying_files?=
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: =?koi8-r?Q?Re[3]=3A_High_kernel_CPU_usage_when_copying_files?=
 Mime-Version: 1.0
 X-Mailer: mPOP Web-Mail 2.19
 X-Originating-IP: 194.226.199.147 via proxy [194.226.199.226]
-Date: Fri, 24 Apr 2009 14:30:03 +0400
-References: <20090424112348.64fb5c73@lxorguk.ukuu.org.uk>
-X-Mru-Data: 14358:0:1:0:107:0
-In-Reply-To: <20090424112348.64fb5c73@lxorguk.ukuu.org.uk>
+Date: Fri, 24 Apr 2009 14:42:25 +0400
+References: <S1754762AbZDXKcG20090424103206Z+228@vger.kernel.org>
+In-Reply-To: <S1754762AbZDXKcG20090424103206Z+228@vger.kernel.org>
 Reply-To: Rutkov Denis <dendron2000@mail.ru>
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
+Message-Id: <E1LxIrR-000JB0-00.dendron2000-mail-ru@f139.mail.ru>
 X-Spam: Not detected
 X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Message-Id: <S1754762AbZDXKcG/20090424103206Z+228@vger.kernel.org>
 
-Thanks for replying.
-
-> Are you seeing high CPU usage or just a lot of D state processes (blocked
-waiting I/O) ?
-
-Yes, I see high CPU usage, my whole system gets unresponsive. However, I can check this to be sure, just tell me how.
+Yes, definitely high CPU usage. In "top" I get high "sy" percentage. Processes waiting for I/O cannot cause this, right?
