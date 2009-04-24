@@ -1,175 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbZDXOrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZDXOrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756067AbZDXOrU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 10:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbZDXOrD
+	id S1756039AbZDXOrf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 10:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbZDXOrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 10:47:03 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:34590 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbZDXOrB (ORCPT
+	Fri, 24 Apr 2009 10:47:10 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:50957 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755361AbZDXOrI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 10:47:01 -0400
-Date: Fri, 24 Apr 2009 18:46:58 +0400
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Richard Henderson <rth@twiddle.net>, linux-kernel@vger.kernel.org
-Subject: [PATCH] alpha: futex implementation
-Message-ID: <20090424144658.GC32087@jurassic.park.msu.ru>
+	Fri, 24 Apr 2009 10:47:08 -0400
+Date: Fri, 24 Apr 2009 08:47:06 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Carl Henrik Lunde <chlunde@ping.uio.no>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Jeff Garzik <jeff@garzik.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       rwheeler@redhat.com, snitzer@redhat.com, neilb@suse.de,
+       James.Bottomley@hansenpartnership.com, dgilbert@interlog.com,
+       jens.axboe@oracle.com, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2 of 9] block: Export I/O topology for block devices and partitions
+Message-ID: <20090424144706.GC1926@parisc-linux.org>
+References: <patchbomb.1240551141@sermon.lab.mkp.net> <72f4e15760670febdb40.1240551143@sermon.lab.mkp.net> <ac3eb2510904240514y660973abj7621864e11e514f2@mail.gmail.com> <49F1B68D.3010304@garzik.org> <ed038eb20904240737u4d248b63s580f7d4d1831e173@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <ed038eb20904240737u4d248b63s580f7d4d1831e173@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
----
- arch/alpha/include/asm/barrier.h |    2 +
- arch/alpha/include/asm/futex.h   |  118 ++++++++++++++++++++++++++++++++++++-
- 2 files changed, 116 insertions(+), 4 deletions(-)
+On Fri, Apr 24, 2009 at 04:37:17PM +0200, Carl Henrik Lunde wrote:
+> > On Fri, Apr 24, 2009 at 07:32, Martin K. Petersen <martin.petersen@oracle.com> wrote:
+> > +What: ? ? ? ? ?/sys/block/<disk>/alignment
+> > +What: ? ? ? ? ?/sys/block/<disk>/<partition>/alignment
+> > +What: ? ? ? ? ?/sys/block/<disk>/queue/minimum_io_size
+> > +What: ? ? ? ? ?/sys/block/<disk>/queue/optimal_io_size
+> 
+> Would it also be possible and useful to include the number of
+> spindles/channels, i.e., how many requests the device can handle
+> concurrently?  CFQ could for example serve two time slices
+> concurrently if you have sequential reads and the device reports two
+> spindles.
 
-diff --git a/arch/alpha/include/asm/barrier.h b/arch/alpha/include/asm/barrier.h
-index ac78eba..ce8860a 100644
---- a/arch/alpha/include/asm/barrier.h
-+++ b/arch/alpha/include/asm/barrier.h
-@@ -16,11 +16,13 @@ __asm__ __volatile__("wmb": : :"memory")
- __asm__ __volatile__("mb": : :"memory")
- 
- #ifdef CONFIG_SMP
-+#define __ASM_SMP_MB	"\tmb\n"
- #define smp_mb()	mb()
- #define smp_rmb()	rmb()
- #define smp_wmb()	wmb()
- #define smp_read_barrier_depends()	read_barrier_depends()
- #else
-+#define __ASM_SMP_MB
- #define smp_mb()	barrier()
- #define smp_rmb()	barrier()
- #define smp_wmb()	barrier()
-diff --git a/arch/alpha/include/asm/futex.h b/arch/alpha/include/asm/futex.h
-index 6a332a9..945de22 100644
---- a/arch/alpha/include/asm/futex.h
-+++ b/arch/alpha/include/asm/futex.h
-@@ -1,6 +1,116 @@
--#ifndef _ASM_FUTEX_H
--#define _ASM_FUTEX_H
-+#ifndef _ASM_ALPHA_FUTEX_H
-+#define _ASM_ALPHA_FUTEX_H
- 
--#include <asm-generic/futex.h>
-+#ifdef __KERNEL__
- 
--#endif
-+#include <linux/futex.h>
-+#include <linux/uaccess.h>
-+#include <asm/errno.h>
-+#include <asm/barrier.h>
-+
-+#define __futex_atomic_op(insn, ret, oldval, uaddr, oparg)	\
-+	__asm__ __volatile__(					\
-+		__ASM_SMP_MB					\
-+	"1:	ldl_l	%0,0(%2)\n"				\
-+		insn						\
-+	"2:	stl_c	%1,0(%2)\n"				\
-+	"	beq	%1,4f\n"				\
-+	"	mov	$31,%1\n"				\
-+	"3:	.subsection 2\n"				\
-+	"4:	br	1b\n"					\
-+	"	.previous\n"					\
-+	"	.section __ex_table,\"a\"\n"			\
-+	"	.long	1b-.\n"					\
-+	"	lda	$31,3b-1b(%1)\n"			\
-+	"	.long	2b-.\n"					\
-+	"	lda	$31,3b-2b(%1)\n"			\
-+	"	.previous\n"					\
-+	:	"=&r" (oldval), "=&r"(ret)			\
-+	:	"r" (uaddr), "r"(oparg)				\
-+	:	"memory")
-+
-+static inline int futex_atomic_op_inuser (int encoded_op, int __user *uaddr)
-+{
-+	int op = (encoded_op >> 28) & 7;
-+	int cmp = (encoded_op >> 24) & 15;
-+	int oparg = (encoded_op << 8) >> 20;
-+	int cmparg = (encoded_op << 20) >> 20;
-+	int oldval = 0, ret;
-+	if (encoded_op & (FUTEX_OP_OPARG_SHIFT << 28))
-+		oparg = 1 << oparg;
-+
-+	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(int)))
-+		return -EFAULT;
-+
-+	pagefault_disable();
-+
-+	switch (op) {
-+	case FUTEX_OP_SET:
-+		__futex_atomic_op("mov %3,%1\n", ret, oldval, uaddr, oparg);
-+		break;
-+	case FUTEX_OP_ADD:
-+		__futex_atomic_op("addl %0,%3,%1\n", ret, oldval, uaddr, oparg);
-+		break;
-+	case FUTEX_OP_OR:
-+		__futex_atomic_op("or %0,%3,%1\n", ret, oldval, uaddr, oparg);
-+		break;
-+	case FUTEX_OP_ANDN:
-+		__futex_atomic_op("andnot %0,%3,%1\n", ret, oldval, uaddr, oparg);
-+		break;
-+	case FUTEX_OP_XOR:
-+		__futex_atomic_op("xor %0,%3,%1\n", ret, oldval, uaddr, oparg);
-+		break;
-+	default:
-+		ret = -ENOSYS;
-+	}
-+
-+	pagefault_enable();
-+
-+	if (!ret) {
-+		switch (cmp) {
-+		case FUTEX_OP_CMP_EQ: ret = (oldval == cmparg); break;
-+		case FUTEX_OP_CMP_NE: ret = (oldval != cmparg); break;
-+		case FUTEX_OP_CMP_LT: ret = (oldval < cmparg); break;
-+		case FUTEX_OP_CMP_GE: ret = (oldval >= cmparg); break;
-+		case FUTEX_OP_CMP_LE: ret = (oldval <= cmparg); break;
-+		case FUTEX_OP_CMP_GT: ret = (oldval > cmparg); break;
-+		default: ret = -ENOSYS;
-+		}
-+	}
-+	return ret;
-+}
-+
-+static inline int
-+futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval, int newval)
-+{
-+	int prev, cmp;
-+
-+	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(int)))
-+		return -EFAULT;
-+
-+	__asm__ __volatile__ (
-+		__ASM_SMP_MB
-+	"1:	ldl_l	%0,0(%2)\n"
-+	"	cmpeq	%0,%3,%1\n"
-+	"	beq	%1,3f\n"
-+	"	mov	%4,%1\n"
-+	"2:	stl_c	%1,0(%2)\n"
-+	"	beq	%1,4f\n"
-+	"3:	.subsection 2\n"
-+	"4:	br	1b\n"
-+	"	.previous\n"
-+	"	.section __ex_table,\"a\"\n"
-+	"	.long	1b-.\n"
-+	"	lda	$31,3b-1b(%0)\n"
-+	"	.long	2b-.\n"
-+	"	lda	$31,3b-2b(%0)\n"
-+	"	.previous\n"
-+	:	"=&r"(prev), "=&r"(cmp)
-+	:	"r"(uaddr), "r"((long)oldval), "r"(newval)
-+	:	"memory");
-+
-+	return prev;
-+}
-+
-+#endif /* __KERNEL__ */
-+#endif /* _ASM_ALPHA_FUTEX_H */
+This is what we call "creeping featurism" (or other names not as nice).
+You'll then want to know which data are provided by which spindle.
+Then you'll want to know how fast each spindle is.  Then you'll find that
+not all storage gives you that information (try asking an EMC Symmetrix
+how many spindles it has and where data is mapped ...)
+
+Let's just get something merged which gives us an improvement.
+Then you're free to experiment with adding the spindles count yourself,
+and if you can show a real advantage to it, come back and we can argue
+over it with data.
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
