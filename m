@@ -1,81 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759554AbZDXPdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbZDXPqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759554AbZDXPdv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 11:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256AbZDXPdm
+	id S1754938AbZDXPqS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 11:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZDXPqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 11:33:42 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:50900 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752812AbZDXPdl (ORCPT
+	Fri, 24 Apr 2009 11:46:09 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:41081 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751064AbZDXPqI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 11:33:41 -0400
-Date: Fri, 24 Apr 2009 11:32:55 -0400 (EDT)
-From: Tim Abbott <tabbott@MIT.EDU>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>, "Theodore Ts'o" <tytso@MIT.EDU>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Ralf Baechle <ralf@linux-mips.org>, Kyle McMaartin <kyle@mcmartin.ca>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH v3 0/3] Add support for compiling with -ffunction-sections
- -fdata-sections
-In-Reply-To: <49F1CA6E.5080407@redhat.com>
-Message-ID: <alpine.DEB.1.10.0904241057440.23249@vinegar-pot.mit.edu>
-References: <1238973278-31735-1-git-send-email-tabbott@mit.edu> <alpine.DEB.1.10.0904072019560.17274@vinegar-pot.mit.edu> <alpine.DEB.1.10.0904201255080.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201637280.2199@localhost.localdomain>
- <alpine.DEB.1.10.0904202010220.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain> <alpine.DEB.1.10.0904221826180.24694@vinegar-pot.mit.edu> <49F1CA6E.5080407@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 24 Apr 2009 11:46:08 -0400
+Date: Fri, 24 Apr 2009 19:46:02 +0400
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Richard Henderson <rth@twiddle.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] alpha: binfmt_aout fix
+Message-ID: <20090424154602.GA368@jurassic.park.msu.ru>
+References: <20090424144738.GD32087@jurassic.park.msu.ru> <20090424150549.GN8633@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090424150549.GN8633@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Apr 2009, Masami Hiramatsu wrote:
+On Fri, Apr 24, 2009 at 04:05:49PM +0100, Al Viro wrote:
+> On Fri, Apr 24, 2009 at 06:47:38PM +0400, Ivan Kokshaysky wrote:
+> > Fixed by changing the registration order of the default
+> > binfmt handlers using list_add_tail() and introducing insert_binfmt()
+> > function which places new handler on the top of the binfmt list.
+> > This might be generally useful for installing arch-specific frontends
+> > for default handlers or just for overriding them.
+> 
+> Hmm...  How about always doing list_add_tail() instead?
 
-> What would you think about posting these patches plus -ffunction-sections/
-> -fdata-sections patch to -mm tree, -tip tree, or -next tree as
-> "playable" Ksplice patchset?
+That would fix the module case, but gets broken when binfmt_aout
+in built-in, because the generic handlers are registered pretty
+early (core_initcall) and alpha binfmt_loader is an arch_initcall.
 
-The section rename patch often merge conflicts with other changes.  I 
-think that having it sit out in one of those trees for another release 
-would result in a lot of unnecessary work rebasing patches between that 
-tree and Linus' tree.
-
-Once these -ffunction-sections support patches are merged, I intend to 
-post the rest of the Ksplice patchset for one of those trees.
-
-> If there are actual problems on those arch, I think you'd better post
-> these patches as bugfixes with bug reports.
-
-These problems are all discussed in the commit messages of the relevant 
-patches.
-
-One patch fixes modposting a kernel with more than 65536 ELF sections.  
-It is certainly possible to get this many with allyesconfig and 
--ffunction-sections -fdata-sections.
-
-Another fixes the issue that when you build with -ffunction-sections, 
-modpost will print a large number of spurious warnings when it sees 
-sections like .rodata.__func__.12345 which are generated by the __FUNC__ 
-macro.
-
-The patch with many scattered changes fixes the problem that with 
--ffunction-sections -fdata-sections, a function named head gets put in the 
-".text.head" section, and your "static int percpu" ends up in the 
-".data.percpu" section and probably ends up being made percpu.  This is a 
-potentially nasty problem.
-
-	-Tim Abbott
+Ivan.
