@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbZDXEXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbZDXEZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754479AbZDXEXn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 00:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbZDXEXd
+	id S1753916AbZDXEZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 00:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbZDXEZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 00:23:33 -0400
-Received: from ftp.linux-mips.org ([213.58.128.207]:36509 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751271AbZDXEXc (ORCPT
+	Fri, 24 Apr 2009 00:25:14 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:35845 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751129AbZDXEZN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 00:23:32 -0400
-Date: Fri, 24 Apr 2009 06:23:10 +0200
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Kevin Cernekee <cernekee@gmail.com>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] MIPS: Extend plat_* abstractions, cache support
-Message-ID: <20090424042310.GA19096@linux-mips.org>
-References: <0483452db22e72f57289e63fcf097120d94c2a37.1240533480.git@localhost>
+	Fri, 24 Apr 2009 00:25:13 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [KVM PATCH v2 0/2] irqfd
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com, davidel@xmailserver.org
+Date: Fri, 24 Apr 2009 00:25:08 -0400
+Message-ID: <20090424042142.1796.60756.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0483452db22e72f57289e63fcf097120d94c2a37.1240533480.git@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 05:03:43PM -0700, Kevin Cernekee wrote:
+(Applies to kvm.git b59cd3560111)
 
-> I am upgrading an SoC to the 2.6.29.1 kernel from an earlier version,
-> and in the process I am switching over the old board support
-> customizations to use the newer, cleaner plat_* functions.  I found two
-> cases where the plat_* functions did not provide enough information,
-> so I had to modify the API:
-> 
-> plat_unmap_dma_mem() - Our handler needs to know the size and direction
-> of the DMA mapping.  This information is not encoded in the DMA address,
-> so it needed to be passed in explicitly.
-> 
-> plat_dma_addr_to_phys() - The bus<->physical address mappings differ
-> based on which bus is being used.  It is not always possible to infer
-> which bus is being used from the bus address alone, so I added a
-> "struct device" to the function definition.
-> 
-> Also, our MIPS core uses 64-byte D$ lines, so I needed to generate the
-> corresponding blast* functions.
-> 
-> These patches apply against the linux-mips.org GIT tree.
+This series implements a mechanism called "irqfd".  It lets you create
+an eventfd based file-desriptor to inject interrupts to the guest.  We
+associate one gsi per fd for proper routing granularity.
 
-Queued for 2.6.31.  Thanks Kevin!
+This is v2.  Changes since v1
 
-Which SoC port are you working on btw?
+*) Dropped notifier_chain based callbacks in favor of wait_queue_t::func
+   and file::poll based callbacks (Thanks to Davide for the suggestion)
 
-  Ralf
+--------
+
+We do not have a user of this interface in this series, though note
+future version of virtual-bus (v4 and above) will be based on this.
+
+The first patch will require mainline buy-in, particularly from Davide
+(cc'd).  The last patch is kvm specific.
+
+kvm-userspace.git patch to follow.
+
+-Greg
+
+---
+
+Gregory Haskins (2):
+      kvm: add support for irqfd via eventfd-notification interface
+      eventfd: export fget and signal interfaces for module use
+
+
+ arch/x86/kvm/Makefile    |    2 -
+ arch/x86/kvm/x86.c       |    1 
+ fs/eventfd.c             |    3 +
+ include/linux/kvm.h      |    7 ++
+ include/linux/kvm_host.h |    7 ++
+ virt/kvm/irqfd.c         |  146 ++++++++++++++++++++++++++++++++++++++++++++++
+ virt/kvm/kvm_main.c      |   12 ++++
+ 7 files changed, 177 insertions(+), 1 deletions(-)
+ create mode 100644 virt/kvm/irqfd.c
+
+-- 
+Signature
