@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758014AbZDXCq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758358AbZDXCrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758014AbZDXCq2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 22:46:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757349AbZDXCpj
+	id S1758358AbZDXCrx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 22:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524AbZDXCrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 22:45:39 -0400
-Received: from mga02.intel.com ([134.134.136.20]:21165 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755399AbZDXCpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 22:45:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,238,1239001200"; 
-   d="asc'?scan'208";a="509490975"
-Subject: [PATCH 4/4] PCI: PCIE AER: Document for PCIE AER software error
- injection
-From: Huang Ying <ying.huang@intel.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-FFCyloB5OGPBJfKhw3Uu"
-Date: Fri, 24 Apr 2009 10:45:31 +0800
-Message-Id: <1240541131.6842.682.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Thu, 23 Apr 2009 22:47:42 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:37975 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753799AbZDXCrl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 22:47:41 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 23 Apr 2009 19:43:59 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com
+Subject: Re: [KVM PATCH 2/3] eventfd: add a notifier mechanism
+In-Reply-To: <49F0E7B4.90702@novell.com>
+Message-ID: <alpine.DEB.1.10.0904231942000.18603@makko.or.mcafeemobile.com>
+References: <20090423150910.14094.73708.stgit@dev.haskins.net> <20090423151436.14094.35875.stgit@dev.haskins.net> <alpine.DEB.1.10.0904230922180.18603@makko.or.mcafeemobile.com> <49F09B78.7000403@novell.com> <alpine.DEB.1.10.0904231500570.18603@makko.or.mcafeemobile.com>
+ <49F0E7B4.90702@novell.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 23 Apr 2009, Gregory Haskins wrote:
 
---=-FFCyloB5OGPBJfKhw3Uu
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > Take a look at init_waitqueue_func_entry(), in particula at that "func" 
+> > parameter. Then look at how __wake_up_common() does its thing.
+> > You don't need to be "waiting" for our wakeup system to work. Callbacks 
+> > works just fine, otherwise things like epoll could not work at all.
+> >   
+> 
+> Yeah, I was looking at that this afternoon after you mentioned it.  That
+> makes sense.
+> 
+> As of right now the wqh is embedded in the eventfd, accessible only by
+> the .read() vtable entry.  In order to do this as you suggest, I imagine
+> I need to slightly modify the eventfd interface to allow waiters other
+> than the embedded readers to join the wait-queue.  How would you like to
+> see that interface look?
 
-This patch add a minimal HOWTO for PCIE AER software error injection
-in Documentation/PCI/pcieaer-howto.txt.
-
-Signed-off-by: Huang Ying <ying.huang@intel.com>
-
----
- Documentation/PCI/pcieaer-howto.txt |   21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
-
---- a/Documentation/PCI/pcieaer-howto.txt
-+++ b/Documentation/PCI/pcieaer-howto.txt
-@@ -246,3 +246,24 @@ with the PCI Express AER Root driver?
- A: It could call the helper functions to enable AER in devices and
- cleanup uncorrectable status register. Pls. refer to section 3.3.
-=20
-+
-+4. Software error injection
-+
-+Debugging PCIE AER error recovery code is quite difficult because it
-+is hard to trigger real hardware errors. Software based error
-+injection can be used to fake various kinds of PCIE errors.
-+
-+First you should enable PCIE AER software error injection in kernel
-+configuration, that is, following item should be in your .config.
-+
-+CONFIG_PCIEAER_INJECT=3Dy or CONFIG_PCIEAER_INJECT=3Dm
-+
-+After reboot with new kernel or insert the module, a device file named
-+/dev/aer_inject should be created.
-+
-+Then, you need a user space tool named aer-inject, which can be gotten
-+from:
-+    http://www.kernel.org/pub/linux/kernel/people/yhuang/
-+
-+More information about aer-inject can be found in the document comes
-+with its source code.
+Actually, you need no changes in eventfd, since you can use its poll() 
+directly, by dropping a callback entry.
+Take a look at how epoll does it in ep_insert()...
 
 
---=-FFCyloB5OGPBJfKhw3Uu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+- Davide
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknxJ8kACgkQKhFGF+eHlphYFwCfYKMytsDCUPQXo/3Zi1mRrxMY
-cioAnRuIj8RzV8bxkRooWP1bVPjlBouz
-=zEU8
------END PGP SIGNATURE-----
-
---=-FFCyloB5OGPBJfKhw3Uu--
 
