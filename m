@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753717AbZDXDvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbZDXDw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753717AbZDXDvr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 23:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbZDXDvi
+	id S1755403AbZDXDw2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 23:52:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbZDXDwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 23:51:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35454 "EHLO hera.kernel.org"
+	Thu, 23 Apr 2009 23:52:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35498 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751750AbZDXDvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 23:51:37 -0400
-Message-ID: <49F136C5.3000403@kernel.org>
-Date: Thu, 23 Apr 2009 20:49:25 -0700
+	id S1752173AbZDXDwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 23:52:17 -0400
+Message-ID: <49F136EE.4020001@kernel.org>
+Date: Thu, 23 Apr 2009 20:50:06 -0700
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
@@ -22,8 +22,7 @@ CC: "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Subject: [PATCH 2/4] pci: try to assign res for device under transparent bridges
- -v2
+Subject: [PATCH 3/4] x86: reserve range near the ram
 References: <20090420223305.GA15340@jurassic.park.msu.ru> <49ED0EBC.4070901@kernel.org> <20090421105629.GB17904@jurassic.park.msu.ru> <49EF9C10.6090107@kernel.org> <20090422154900.08f8f366@hobbes> <49EFBB0E.3030401@kernel.org> <20090422180505.2518e837@hobbes> <49EFCE15.3030605@kernel.org> <20090423132202.GB13984@jurassic.park.msu.ru> <49F08580.9050407@kernel.org> <20090423221936.GA24171@jurassic.park.msu.ru> <49F13690.3080902@kernel.org>
 In-Reply-To: <49F13690.3080902@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -32,110 +31,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-we could run out of space under under 4g, but device under transparent bridge
-still use 64bit resource, so try on parent bus again and again.
+The point is to take all RAM resources we have, and 
+_after_ we've added all the resources we've seen in the E820 tree, we then 
+_also_ try to add fake reserved entries for any "round up to X" at the end 
+of the RAM resources.
 
-[ Impact: better support for assigne unassigned resources ]
+[ Impact: protect stolen RAM ]
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
- 
----
- drivers/pci/setup-bus.c |    1 
- drivers/pci/setup-res.c |   49 +++++++++++++++++++++++++++++++++++-------------
- 2 files changed, 36 insertions(+), 14 deletions(-)
 
-Index: linux-2.6/drivers/pci/setup-bus.c
+---
+ arch/x86/kernel/e820.c |   35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+Index: linux-2.6/arch/x86/kernel/e820.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/setup-bus.c
-+++ linux-2.6/drivers/pci/setup-bus.c
-@@ -58,7 +58,6 @@ static void pbus_assign_resources_sorted
- 		res = list->res;
- 		idx = res - &list->dev->resource[0];
- 		if (pci_assign_resource(list->dev, idx)) {
--			/* FIXME: get rid of this */
- 			res->start = 0;
- 			res->end = 0;
- 			res->flags = 0;
-Index: linux-2.6/drivers/pci/setup-res.c
-===================================================================
---- linux-2.6.orig/drivers/pci/setup-res.c
-+++ linux-2.6/drivers/pci/setup-res.c
-@@ -135,23 +135,16 @@ void pci_disable_bridge_window(struct pc
- }
- #endif	/* CONFIG_PCI_QUIRKS */
- 
--int pci_assign_resource(struct pci_dev *dev, int resno)
-+static int __pci_assign_resource(struct pci_bus *bus, struct pci_dev *dev,
-+				 int resno)
- {
--	struct pci_bus *bus = dev->bus;
- 	struct resource *res = dev->resource + resno;
- 	resource_size_t size, min, align;
- 	int ret;
- 
- 	size = resource_size(res);
- 	min = (res->flags & IORESOURCE_IO) ? PCIBIOS_MIN_IO : PCIBIOS_MIN_MEM;
--
- 	align = resource_alignment(res);
--	if (!align) {
--		dev_info(&dev->dev, "BAR %d: can't allocate resource (bogus "
--			"alignment) %pR flags %#lx\n",
--			resno, res, res->flags);
--		return -EINVAL;
--	}
- 
- 	/* First, try exact prefetching match.. */
- 	ret = pci_bus_alloc_resource(bus, res, size, align, min,
-@@ -169,10 +162,7 @@ int pci_assign_resource(struct pci_dev *
- 					     pcibios_align_resource, dev);
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -1370,6 +1370,23 @@ void __init e820_reserve_resources(void)
  	}
- 
--	if (ret) {
--		dev_info(&dev->dev, "BAR %d: can't allocate %s resource %pR\n",
--			resno, res->flags & IORESOURCE_IO ? "I/O" : "mem", res);
--	} else {
-+	if (!ret) {
- 		res->flags &= ~IORESOURCE_STARTALIGN;
- 		if (resno < PCI_BRIDGE_RESOURCES)
- 			pci_update_resource(dev, resno);
-@@ -180,6 +170,39 @@ int pci_assign_resource(struct pci_dev *
- 
- 	return ret;
  }
-+
-+int pci_assign_resource(struct pci_dev *dev, int resno)
-+{
-+	struct resource *res = dev->resource + resno;
-+	resource_size_t align;
-+	struct pci_bus *bus;
-+	int ret;
-+
-+	align = resource_alignment(res);
-+	if (!align) {
-+		dev_info(&dev->dev, "BAR %d: can't allocate resource (bogus "
-+			"alignment) %pR flags %#lx\n",
-+			resno, res, res->flags);
-+		return -EINVAL;
-+	}
-+
-+	bus = dev->bus;
-+	while ((ret = __pci_assign_resource(bus, dev, resno))) {
-+		if (bus->parent && bus->self->transparent)
-+			bus = bus->parent;
-+		else
-+			bus = NULL;
-+		if (bus)
-+			continue;
-+		break;
-+	}
-+
-+	if (ret)
-+		dev_info(&dev->dev, "BAR %d: can't allocate %s resource %pR\n",
-+			resno, res->flags & IORESOURCE_IO ? "I/O" : "mem", res);
-+
-+	return ret;
-+}
  
- #if 0
- int pci_assign_resource_fixed(struct pci_dev *dev, int resno)
++/* How much should we pad RAM ending depending on where it is? */
++static unsigned long ram_alignment(resource_size_t pos)
++{
++	unsigned long mb = pos >> 20;
++
++	/* To 64kB in the first megabyte */
++	if (!mb)
++		return 64*1024;
++
++	/* To 1MB in the first 16MB */
++	if (mb < 16)
++		return 1024*1024;
++
++	/* To 32MB for anything above that */
++	return 32*1024*1024;
++}
++
+ void __init e820_reserve_resources_late(void)
+ {
+ 	int i;
+@@ -1381,6 +1398,24 @@ void __init e820_reserve_resources_late(
+ 			insert_resource_expand_to_fit(&iomem_resource, res);
+ 		res++;
+ 	}
++
++	/*
++	 * Try to bump up RAM regions to reasonable boundaries to
++	 * avoid stolen RAM
++	 */
++	for (i = 0; i < e820.nr_map; i++) {
++		struct e820entry *entry = &e820_saved.map[i];
++		resource_size_t start, end;
++
++		if (entry->type != E820_RAM)
++			continue;
++		start = entry->addr + entry->size;
++		end = round_up(start, ram_alignment(start));
++		if (start == end)
++			continue;
++		reserve_region_with_split(&iomem_resource, start,
++						  end - 1, "RAM buffer");
++	}
+ }
+ 
+ char *__init default_machine_specific_memory_setup(void)
