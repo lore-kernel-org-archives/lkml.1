@@ -1,112 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759024AbZDXMgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbZDXMiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759024AbZDXMgU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 08:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755013AbZDXMgL
+	id S1757430AbZDXMiI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 08:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbZDXMh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 08:36:11 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:23368 "EHLO
-	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755352AbZDXMgJ (ORCPT
+	Fri, 24 Apr 2009 08:37:56 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:59431 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754586AbZDXMhz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 08:36:09 -0400
-X-BigFish: VPS-12(z21eWzzz1202hzzz32i43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KILUZW-04-U61-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@redhat.com>
-CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH] dma-debug: remove broken dma memory leak detection for 2.6.30
-Date: Fri, 24 Apr 2009 14:35:57 +0200
-Message-ID: <1240576557-22442-1-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.6.2.3
-X-OriginalArrivalTime: 24 Apr 2009 12:35:57.0458 (UTC) FILETIME=[377BD720:01C9C4D9]
+	Fri, 24 Apr 2009 08:37:55 -0400
+Date: Fri, 24 Apr 2009 13:23:57 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Peter Oruba <peter.oruba@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86 microcode: work_on_cpu and cleanup of the 
+ synchronization logic
+In-Reply-To: <b647ffbd0904231516x576c7ae4y36fedc9bc4fcf0f@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0904241300340.21735@blonde.anvils>
+References: <1240258569.6195.8.camel@earth> <1240344440.5861.10.camel@earth>
+  <1240439073.12721.23.camel@earth> <20090423082704.GD599@elte.hu> 
+ <b647ffbd0904230155t61578496pf75fb79e54def3a3@mail.gmail.com> 
+ <Pine.LNX.4.64.0904231807370.7545@blonde.anvils>
+ <b647ffbd0904231516x576c7ae4y36fedc9bc4fcf0f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The feature needs some more work because the notfier which is used to
-check for pending allocations is called before the device drivers
-->remove() function. Therefore this feature reports false positives. A
-real fix for this issue is to introduce a new notifier event which sent
-_after_ the driver has deinitialized itself. That will done for the next
-kernel version.
+On Fri, 24 Apr 2009, Dmitry Adamushko wrote:
+> 2009/4/23 Hugh Dickins <hugh@veritas.com>:
+> >
+> > I guess your mutex Synchronization works out, but are interrupts
+> > still disabled around the critical wrmsr()s, wherever they're getting
+> > called from?
+> 
+> Yes, *msr() calls are only done from functions that are now being
+> called via smp_call_function_single(). The later seems to always do it
+> with disabled interrupts. The only exception is mc_sysdev_resume()
+> calling  ->apply_microcode() directly but this one in turn is always
+> called with disabled interrupts.
+> 
+> But now that you mentioned it I wonder if we may actually need a
+> spinlock there... can we have multi-threaded cpus/cores with (all |
+> some) shared msr registers?
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- lib/dma-debug.c |   53 +----------------------------------------------------
- 1 files changed, 1 insertions(+), 52 deletions(-)
+Good thinking, yes we can and do, unless I'm misinterpreting the
+evidence.  Though P4 Xeon and Atom startup messages give the opposite
+impression, claiming to update all cpus from lower revision, more
+careful tests starting from "maxcpus=1" and then "echo 1 >online"
+(which, unless you've fiddled around putting the microcode_ctl'ed
+microcode.dat into /lib/firmware/intel-ucode/wherever, isn't able
+to update at online time on Intel) shows that the later onlined
+siblings already have the updated microcode applied to their
+previously onlined siblings.  Which isn't surprising, but I'd
+been lulled into thinking the opposite by the startup sequence.
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index d3da7ed..69da09a 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -400,60 +400,9 @@ out_err:
- 	return -ENOMEM;
- }
- 
--static int device_dma_allocations(struct device *dev)
--{
--	struct dma_debug_entry *entry;
--	unsigned long flags;
--	int count = 0, i;
--
--	for (i = 0; i < HASH_SIZE; ++i) {
--		spin_lock_irqsave(&dma_entry_hash[i].lock, flags);
--		list_for_each_entry(entry, &dma_entry_hash[i].list, list) {
--			if (entry->dev == dev)
--				count += 1;
--		}
--		spin_unlock_irqrestore(&dma_entry_hash[i].lock, flags);
--	}
--
--	return count;
--}
--
--static int dma_debug_device_change(struct notifier_block *nb,
--				    unsigned long action, void *data)
--{
--	struct device *dev = data;
--	int count;
--
--
--	switch (action) {
--	case BUS_NOTIFY_UNBIND_DRIVER:
--		count = device_dma_allocations(dev);
--		if (count == 0)
--			break;
--		err_printk(dev, NULL, "DMA-API: device driver has pending "
--				"DMA allocations while released from device "
--				"[count=%d]\n", count);
--		break;
--	default:
--		break;
--	}
--
--	return 0;
--}
--
- void dma_debug_add_bus(struct bus_type *bus)
- {
--	struct notifier_block *nb;
--
--	nb = kzalloc(sizeof(struct notifier_block), GFP_KERNEL);
--	if (nb == NULL) {
--		printk(KERN_ERR "dma_debug_add_bus: out of memory\n");
--		return;
--	}
--
--	nb->notifier_call = dma_debug_device_change;
--
--	bus_register_notifier(bus, nb);
-+	/* FIXME: register notifier */
- }
- 
- /*
--- 
-1.6.2.3
+Please add "HT versus not" to my earlier list of confusions.
 
+microcode_mutex still covers most cases: is it the case of onlining
+two threads at the same time that slips through?  Is that permitted
+at the outer level?  Though even if it is, I'd feel safest to have
+the spin_lock_irqsaves back (or if not, comment to say why not needed).
 
+Hugh
