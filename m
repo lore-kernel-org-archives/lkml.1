@@ -1,130 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbZDXKra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbZDXK5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757476AbZDXKra (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 06:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZDXKrW
+	id S1752874AbZDXK5W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 06:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZDXK5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 06:47:22 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:38793 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753145AbZDXKrV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 06:47:21 -0400
-Date: Fri, 24 Apr 2009 11:47:17 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, kosaki.motohiro@jp.fujitsu.com,
-       cl@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com,
-       peterz@infradead.org, penberg@cs.helsinki.fi
-Subject: Re: [PATCH 09/22] Calculate the alloc_flags for allocation only
-	once
-Message-ID: <20090424104716.GE14283@csn.ul.ie>
-References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-10-git-send-email-mel@csn.ul.ie> <20090423155216.07ef773e.akpm@linux-foundation.org>
+	Fri, 24 Apr 2009 06:57:12 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:38465 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750704AbZDXK5L convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 06:57:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ZZNl6eAFw0Aq0VgUuI2LcnGH4ybe8A2L28nV3sKjg+1ygJylknGG3AaKeuIJ26r1N+
+         CUEXml41E1t388hMG5tDXCUpro85G/CcMp7dZulXwPs4wm2J8JJFHgnd4UNwV7n5Akr5
+         opu0MOlP5Ph6Pov0voZIGqTJKNbZIDGo8JD3Q=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090423155216.07ef773e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <m2tz4e5psn.fsf@igel.home>
+References: <20090423193211.GA14892@redhat.com> <m2tz4e5psn.fsf@igel.home>
+Date: Fri, 24 Apr 2009 12:57:09 +0200
+X-Google-Sender-Auth: 47c1b6e8e0715310
+Message-ID: <10f740e80904240357r63fc9d4i5f8a4e6a5530b671@mail.gmail.com>
+Subject: Re: [PATCH 3/4] ptrace: remove PT_DTRACE from m68k, m68knommu
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andreas Schwab <schwab@linux-m68k.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, Chris Zankel <chris@zankel.net>,
+       David Howells <dhowells@redhat.com>, Greg Ungerer <gerg@uclinux.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Helge Deller <deller@gmx.de>, Hirokazu Takata <takata@linux-m32r.org>,
+       Jeff Dike <jdike@addtoit.com>, Kyle McMartin <kyle@mcmartin.ca>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 03:52:16PM -0700, Andrew Morton wrote:
-> On Wed, 22 Apr 2009 14:53:14 +0100
-> Mel Gorman <mel@csn.ul.ie> wrote:
-> 
-> > Factor out the mapping between GFP and alloc_flags only once. Once factored
-> > out, it only needs to be calculated once but some care must be taken.
-> > 
-> > [neilb@suse.de says]
-> > As the test:
-> > 
-> > -       if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
-> > -                       && !in_interrupt()) {
-> > -               if (!(gfp_mask & __GFP_NOMEMALLOC)) {
-> > 
-> > has been replaced with a slightly weaker one:
-> > 
-> > +       if (alloc_flags & ALLOC_NO_WATERMARKS) {
-> > 
-> > Without care, this would allow recursion into the allocator via direct
-> > reclaim. This patch ensures we do not recurse when PF_MEMALLOC is set
-> > but TF_MEMDIE callers are now allowed to directly reclaim where they
-> > would have been prevented in the past.
-> > 
-> > ...
-> >
-> > +static inline int
-> > +gfp_to_alloc_flags(gfp_t gfp_mask)
-> > +{
-> > +	struct task_struct *p = current;
-> > +	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
-> > +	const gfp_t wait = gfp_mask & __GFP_WAIT;
-> > +
-> > +	/*
-> > +	 * The caller may dip into page reserves a bit more if the caller
-> > +	 * cannot run direct reclaim, or if the caller has realtime scheduling
-> > +	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
-> > +	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
-> > +	 */
-> > +	if (gfp_mask & __GFP_HIGH)
-> > +		alloc_flags |= ALLOC_HIGH;
-> > +
-> > +	if (!wait) {
-> > +		alloc_flags |= ALLOC_HARDER;
-> > +		/*
-> > +		 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
-> > +		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
-> > +		 */
-> > +		alloc_flags &= ~ALLOC_CPUSET;
-> > +	} else if (unlikely(rt_task(p)))
-> > +		alloc_flags |= ALLOC_HARDER;
-> > +
-> > +	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
-> > +		if (!in_interrupt() &&
-> > +		    ((p->flags & PF_MEMALLOC) ||
-> > +		     unlikely(test_thread_flag(TIF_MEMDIE))))
-> > +			alloc_flags |= ALLOC_NO_WATERMARKS;
-> > +	}
-> > +
-> > +	return alloc_flags;
-> > +}
-> 
-> hm.  Was there a particular reason for the explicit inline?
-> 
+On Fri, Apr 24, 2009 at 12:06, Andreas Schwab <schwab@linux-m68k.org> wrote:
+> Oleg Nesterov <oleg@redhat.com> writes:
+>
+>> m68k sets PT_DTRACE in trap_c() but never uses it.
+>>
+>> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+>>
+>>  arch/m68k/kernel/traps.c            |    1 -
+>>  arch/m68knommu/kernel/asm-offsets.c |    1 -
+>>  arch/m68knommu/kernel/traps.c       |    1 -
+>>  3 files changed, 3 deletions(-)
+>>
+>> --- PTRACE/arch/m68k/kernel/traps.c~DT_3_SET  2009-04-06 00:03:35.000000000 +0200
+>> +++ PTRACE/arch/m68k/kernel/traps.c   2009-04-22 21:52:23.000000000 +0200
+>> @@ -1057,7 +1057,6 @@ asmlinkage void trap_c(struct frame *fp)
+>>       if (fp->ptregs.sr & PS_S) {
+>>               if ((fp->ptregs.vector >> 2) == VEC_TRACE) {
+>>                       /* traced a trapping instruction */
+>> -                     current->ptrace |= PT_DTRACE;
+>
+> This is supposed to be setting the TIF_DELAYED_TRACE thread flag.
 
-Only because it was known there was only one caller.
+This code already looks different in the m68k tree, due to your fix to
+`Allow all kernel traps to be handled via exception fixups' for
+ARAnyM, and some related cleanups by you and Roman.
 
-> It's OK as it stands, but might become suboptimal if we later add a
-> second caller?
-> 
+But more interestingly, Roman's last cleanup said there's no need to
+set TIF_DELAYED_TRACE?
 
-This is true. As it is also in the slowpath and only called once, the
-following patch should make no difference to performance but potentially
-avoid a mistake later.
+Gr{oetje,eeting}s,
 
-=======
-Uninline gfp_to_alloc_flags() in the page allocator slow path
+						Geert
 
-gfp_to_alloc_flags() is in the slowpath but inlined. While there is only one
-caller now, a future second call would add suprising text-bloat. Uninline
-it now to avoid surprises later as it should have no performance impact.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- mm/page_alloc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 1c60141..f08b4cb 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1639,7 +1639,7 @@ void wake_all_kswapd(unsigned int order, struct zonelist *zonelist,
- 		wakeup_kswapd(zone, order);
- }
- 
--static inline int
-+static int
- gfp_to_alloc_flags(gfp_t gfp_mask)
- {
- 	struct task_struct *p = current;
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
