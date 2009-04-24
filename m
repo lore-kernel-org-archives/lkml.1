@@ -1,162 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbZDXA2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbZDXAeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428AbZDXA2W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 20:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZDXA2M
+	id S1753925AbZDXAeI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 20:34:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbZDXAdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 20:28:12 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53573 "EHLO
+	Thu, 23 Apr 2009 20:33:54 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53842 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752370AbZDXA2K (ORCPT
+	with ESMTP id S1750886AbZDXAdy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 20:28:10 -0400
-Message-ID: <49F1077A.5030801@jp.fujitsu.com>
-Date: Fri, 24 Apr 2009 09:27:38 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 23 Apr 2009 20:33:54 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 15/22] Do not disable interrupts in free_page_mlock()
+Cc: kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>,
+       linux-mm@kvack.org, cl@linux-foundation.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, ming.m.lin@intel.com,
+       yanmin_zhang@linux.intel.com, peterz@infradead.org,
+       penberg@cs.helsinki.fi, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>
+In-Reply-To: <20090423155951.6778bdd3.akpm@linux-foundation.org>
+References: <1240408407-21848-16-git-send-email-mel@csn.ul.ie> <20090423155951.6778bdd3.akpm@linux-foundation.org>
+Message-Id: <20090424090721.1047.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: Andi Kleen <andi@firstfloor.org>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: [PATCH] [4/4] x86: MCE: Fix EIPV behaviour with !PCC
-References: <20090407506.675031434@firstfloor.org>	 <20090407150657.61C4E1D046E@basil.firstfloor.org> <1240479838.6842.555.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1240479838.6842.555.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Fri, 24 Apr 2009 09:33:50 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying wrote:
-> Add some description for the patch, hope that to be more clear.
+> > @@ -157,14 +157,9 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
+> >   */
+> >  static inline void free_page_mlock(struct page *page)
+> >  {
+> > -	if (unlikely(TestClearPageMlocked(page))) {
+> > -		unsigned long flags;
+> > -
+> > -		local_irq_save(flags);
+> > -		__dec_zone_page_state(page, NR_MLOCK);
+> > -		__count_vm_event(UNEVICTABLE_MLOCKFREED);
+> > -		local_irq_restore(flags);
+> > -	}
+> > +	__ClearPageMlocked(page);
+> > +	__dec_zone_page_state(page, NR_MLOCK);
+> > +	__count_vm_event(UNEVICTABLE_MLOCKFREED);
+> >  }
 > 
-> Best Regards,
-> Huang Ying
-> -------------------------------------------------->
-> Impact: Spec compliance
+> The conscientuous reviewer runs around and checks for free_page_mlock()
+> callers in other .c files which might be affected.
 > 
-> Tolerant level 0 means: always panic on uncorrected errors, that is,
-> panic even for recoverable uncorrected errors. This is a useful option
-> for someone think panic is the better hardware error containment
-> mechanism than trying to recover.
+> Only there are no such callers.
 > 
-> Current implementation does not comply with the tolerant == 0 spec,
-> that is, it tries to recover (by killing related processes) for
-> recoverable uncorrected errors (errors triggered in userspace) when
-> tolerant == 0. This patch fixes this by going panic for that case.
-> 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
-> ---
->  arch/x86/kernel/cpu/mcheck/mce_64.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- a/arch/x86/kernel/cpu/mcheck/mce_64.c
-> +++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
-> @@ -400,7 +400,7 @@ void do_machine_check(struct pt_regs * r
->  		 * force_sig() takes an awful lot of locks and has a slight
->  		 * risk of deadlocking.
->  		 */
-> -		if (user_space) {
-> +		if (user_space && tolerant > 0) {
->  			force_sig(SIGBUS, current);
->  		} else if (panic_on_oops || tolerant < 2) {
->  			mce_panic("Uncorrected machine check",
-> 
+> The reviewer's job would be reduced if free_page_mlock() wasn't
+> needlessly placed in a header file!
 
-Wait, I want confirmation.
+very sorry.
 
-Given:
- * Tolerant levels:
- *   0: always panic on uncorrected errors, log corrected errors
+How about this?
 
-Let's walk do_machine_check():
+=============================================
+Subject: [PATCH] move free_page_mlock() to page_alloc.c
 
-    266 void do_machine_check(struct pt_regs * regs, long error_code)
-    267 {
-	:
-    302         for (i = 0; i < banks; i++) {
-	:
-    311                 rdmsrl(MSR_IA32_MC0_STATUS + i*4, m.status);
-    312                 if ((m.status & MCI_STATUS_VAL) == 0)
-    313                         continue;
-	:
-    319                 if ((m.status & MCI_STATUS_UC) == 0)
-    320                         continue;
-	:
-# Now we start checking status with VAL and UC
-	:
-    329                 if (m.status & MCI_STATUS_EN) {
-    330                         /* if PCC was set, there's no way out */
-    331                         no_way_out |= !!(m.status & MCI_STATUS_PCC);
-    332                         /*
-    333                          * If this error was uncorrectable and there was
-    334                          * an overflow, we're in trouble.  If no overflow,
-    335                          * we might get away with just killing a task.
-    336                          */
-    337                         if (m.status & MCI_STATUS_UC) {
-    338                                 if (tolerant < 1 || m.status & MCI_STATUS_OVER)
-    339                                         no_way_out = 1;
-    340                                 kill_it = 1;
-    341                         }
-    342                 } else {
-    343                         /*
-    344                          * Machine check event was not enabled. Clear, but
-    345                          * ignore.
-    346                          */
-    347                         continue;
-    348                 }
-	:
-# Humm, second UC check should be removed...
-# Anyway, in case of tolerant == 0, no_way_out == 1 if the event is enabled.
-# And kill_it == 1 unless there are no event enabled.
-# Therefore, in case of tolerant == 0, always "no_way_out == kill_it".
-	:
-    364                 }
-    365         }
-	:
-    376         if (no_way_out && tolerant < 3)
-    377                 mce_panic("Machine check", &panicm, mcestart);
-	:
-# in case of tolerant == 0, we usually hit here.
-	:
-    385         if (kill_it && tolerant < 3) {
-    386                 int user_space = 0;
-    387
-    388                 /*
-    389                  * If the EIPV bit is set, it means the saved IP is the
-    390                  * instruction which caused the MCE.
-    391                  */
-    392                 if (m.mcgstatus & MCG_STATUS_EIPV)
-    393                         user_space = panicm.ip && (panicm.cs & 3);
-    394
-    395                 /*
-    396                  * If we know that the error was in user space, send a
-    397                  * SIGBUS.  Otherwise, panic if tolerance is low.
-    398                  *
-    399                  * force_sig() takes an awful lot of locks and has a slight
-    400                  * risk of deadlocking.
-    401                  */
-    402                 if (user_space) {
-    403                         force_sig(SIGBUS, current);
-    404                 } else if (panic_on_oops || tolerant < 2) {
-    405                         mce_panic("Uncorrected machine check",
-    406                                 &panicm, mcestart);
-    407                 }
-    408         }
-	:
-# Then, when we enter here with tolerant == 0 ?
-	:
-    421 }
+Currently, free_page_mlock() is only called from page_alloc.c.
+Thus, we can move it to page_alloc.c.
 
-Or, should this patch be applied after committing some of Andi's patches?
-It means this patch targets a bug in Andi's patch set and the bug is not
-in 2.6.30-rc* yet.
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ mm/internal.h   |   18 ------------------
+ mm/page_alloc.c |   21 +++++++++++++++++++++
+ 2 files changed, 21 insertions(+), 18 deletions(-)
 
+Index: b/mm/internal.h
+===================================================================
+--- a/mm/internal.h	2009-04-24 09:12:03.000000000 +0900
++++ b/mm/internal.h	2009-04-24 09:12:10.000000000 +0900
+@@ -150,23 +150,6 @@ static inline void mlock_migrate_page(st
+ 	}
+ }
+ 
+-/*
+- * free_page_mlock() -- clean up attempts to free and mlocked() page.
+- * Page should not be on lru, so no need to fix that up.
+- * free_pages_check() will verify...
+- */
+-static inline void free_page_mlock(struct page *page)
+-{
+-	if (unlikely(TestClearPageMlocked(page))) {
+-		unsigned long flags;
+-
+-		local_irq_save(flags);
+-		__dec_zone_page_state(page, NR_MLOCK);
+-		__count_vm_event(UNEVICTABLE_MLOCKFREED);
+-		local_irq_restore(flags);
+-	}
+-}
+-
+ #else /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
+ static inline int is_mlocked_vma(struct vm_area_struct *v, struct page *p)
+ {
+@@ -175,7 +158,6 @@ static inline int is_mlocked_vma(struct 
+ static inline void clear_page_mlock(struct page *page) { }
+ static inline void mlock_vma_page(struct page *page) { }
+ static inline void mlock_migrate_page(struct page *new, struct page *old) { }
+-static inline void free_page_mlock(struct page *page) { }
+ 
+ #endif /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
+ 
+Index: b/mm/page_alloc.c
+===================================================================
+--- a/mm/page_alloc.c	2009-04-24 09:12:03.000000000 +0900
++++ b/mm/page_alloc.c	2009-04-24 09:13:25.000000000 +0900
+@@ -491,6 +491,27 @@ static inline void __free_one_page(struc
+ 	zone->free_area[order].nr_free++;
+ }
+ 
++#ifdef CONFIG_HAVE_MLOCKED_PAGE_BIT
++/*
++ * free_page_mlock() -- clean up attempts to free and mlocked() page.
++ * Page should not be on lru, so no need to fix that up.
++ * free_pages_check() will verify...
++ */
++static void free_page_mlock(struct page *page)
++{
++	if (unlikely(TestClearPageMlocked(page))) {
++		unsigned long flags;
++
++		local_irq_save(flags);
++		__dec_zone_page_state(page, NR_MLOCK);
++		__count_vm_event(UNEVICTABLE_MLOCKFREED);
++		local_irq_restore(flags);
++	}
++}
++#else
++static void free_page_mlock(struct page *page) { }
++#endif
++
+ static inline int free_pages_check(struct page *page)
+ {
+ 	free_page_mlock(page);
 
-Thanks,
-H.Seto
 
