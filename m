@@ -1,55 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbZDXWJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758523AbZDXWMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758961AbZDXWJV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 18:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbZDXWJK
+	id S1758523AbZDXWMJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 18:12:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755602AbZDXWLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 18:09:10 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:42755 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754194AbZDXWJJ (ORCPT
+	Fri, 24 Apr 2009 18:11:55 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58760 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754834AbZDXWLx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 18:09:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=iTBkwP/TLboTsxjoBEpdMtcHtn0bXSDaqxR2ZEuqkfKj5NL8PZepAbgjBqLs4zPqpV
-         2LP56NtOIl8XZDcPYvUMtS1viWAjxYNzJ0X9/m1tllSjnhmIlu6mzjhKlfsjuwj7TIdM
-         ms9rhAndEIwmkEkoX5IrfMGkyxe1g7bopbs8o=
+	Fri, 24 Apr 2009 18:11:53 -0400
+Date: Sat, 25 Apr 2009 00:14:55 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-sh <linux-sh@vger.kernel.org>
+Subject: Re: [RFC][patch] filesystem: Vmufat filesystem, version 4
+Message-ID: <20090424221455.GB5342@elf.ucw.cz>
+References: <1239654768.6542.10.camel@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <49F22D49.6000806@garzik.org>
-References: <49F210C2.8050703@gmx.net> <49F22D49.6000806@garzik.org>
-From: Ray Lee <ray-lk@madrabbit.org>
-Date: Fri, 24 Apr 2009 15:08:52 -0700
-X-Google-Sender-Auth: 43aab17807e9abb2
-Message-ID: <2c0942db0904241508y7b8cf90bw71b9e25e71e3f34@mail.gmail.com>
-Subject: Re: Link to sata drives fail randomly
-To: Jeff Garzik <jeff@garzik.org>
-Cc: LCID Fire <lcid-fire@gmx.net>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239654768.6542.10.camel@localhost.localdomain>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 2:21 PM, Jeff Garzik <jeff@garzik.org> wrote:
-> LCID Fire wrote:
->>
->> First of - I have a Asus P5K WS where I'm running (or actually trying) a
->> raid10 based on 4 sata drives. All drives are connected to esata slot panels
->> which connect to the mainboard ports.
->> The problem I'm encountering is the links to random drives fail every week
->> or so.
->> The strange thing is - the link is often failing for 2 drives at a time -
->> which is the best when running a raid10 *sarcasm*
->> The drives are WD, Samsung and Hitachi - so I think some specific driver
->> failure can be ruled out.
->> I attached the dmesg - perhaps someone could tell me which component is
->> responsible for my drives losing their link.
->
-> Looks like a flaky cable, or bad connector.
+On Mon 2009-04-13 21:32:48, Adrian McMenamin wrote:
+> I know this still has issues that others have raised but I wanted to
+> post a version before the end of the long weekend...
+> 
+> As before - some documentation about the filesystem:
+> http://mc.pp.se/dc/vms/flashmem.html
+> 
+> A shell filesystem (eg for mount over loopback) available here:
+> http://newgolddream.dyndns.info/pristine
+> 
+> A few people commented that this is a bit long for a single file - but
+> it is comparable to other files in the filesystem hierarchy - comments
+> welcome.
+> 
+> The filesystem is hardware independent but is also written on the basis
+> that this is most likely to be used with a Dreamcast VMU - though it may
+> be of more use to emulator writers in the end.
+> 
+>  fs/Kconfig         |    1 +
+>  fs/Makefile        |    1 +
+>  fs/vmufat/Kconfig  |   14 +
+>  fs/vmufat/Makefile |    7 +
+>  fs/vmufat/inode.c  | 1362 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  5 files changed, 1385 insertions(+), 0 deletions(-)
+> 
+> Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+> ---
+> diff --git a/fs/Kconfig b/fs/Kconfig
+> index 9f7270f..b7cb23d 100644
+> --- a/fs/Kconfig
+> +++ b/fs/Kconfig
+> @@ -176,6 +176,7 @@ source "fs/romfs/Kconfig"
+>  source "fs/sysv/Kconfig"
+>  source "fs/ufs/Kconfig"
+>  source "fs/exofs/Kconfig"
+> +source "fs/vmufat/Kconfig"
+>  
+>  config NILFS2_FS
+>  	tristate "NILFS2 file system support (EXPERIMENTAL)"
+> diff --git a/fs/Makefile b/fs/Makefile
+> index af6d047..9d2d469 100644
+> --- a/fs/Makefile
+> +++ b/fs/Makefile
+> @@ -124,3 +124,4 @@ obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
+>  obj-$(CONFIG_BTRFS_FS)		+= btrfs/
+>  obj-$(CONFIG_GFS2_FS)           += gfs2/
+>  obj-$(CONFIG_EXOFS_FS)          += exofs/
+> +obj-$(CONFIG_VMUFAT_FS)		+= vmufat/
+> diff --git a/fs/vmufat/Kconfig b/fs/vmufat/Kconfig
+> new file mode 100644
+> index 0000000..bdad4c6
+> --- /dev/null
+> +++ b/fs/vmufat/Kconfig
+> @@ -0,0 +1,14 @@
+> +config VMUFAT_FS
+> +	tristate "Dreamcast VMU FAT filesystem"
+> +	depends on BLOCK
+> +	help
+> +	  This implements the simple FAT type filesystem found on SEGA
+> +	  Dreamcast visual memory units.
+> +
+> +	  Dreamcast users who want to mount their VMUs to view the native
+> +	  filesystem will say 'Y' here. The filesystem is hardware independent
+> +	  but is not recommended for any serious use in other circumstances, so
+> +	  just about everyone else should say 'N'.
+> +
+> +	  To compile this as a module say 'M' here. The module will be called
+> +	  vmufat
 
-Or a marginal power supply that can't handle 4 hard drives, a dvd
-drive, and whatever else is attached to that system.
+"vmufat.ko." ?
+
+> +static unsigned long vmufat_save_bcd(char *bh, int z)
+> +{
+> +	unsigned char day, year, century, nl_day, month;
+> +	unsigned char u8year;
+
+u8year? Should this be "u8 u8year"?
+
+> +	unsigned long unix_date = CURRENT_TIME.tv_sec;
+> +
+> +	day = unix_date / 86400 - 3652;
+> +	year = day / 365;
+> +
+> +	if ((year + 3) / 4 + 365 * year > day)
+> +		year--;
+> +
+> +	day -= (year + 3) / 4 + 365 * year;
+> +	if (day == 59 && !(year & 3)) {
+> +		nl_day = day;
+> +		month = 2;
+> +	} else {
+> +		nl_day = (year & 3) || day <= 59 ? day : day - 1;
+> +		for (month = 0; month < 12; month++)
+> +			if (day_n[month] > nl_day)
+> +				break;
+> +	}
+> +
+> +	century = 19;
+> +	if (year > 19)
+> +		century = 20;
+> +
+> +	bh[z + 0x10] = bin2bcd(century);
+> +	u8year = year + 80;
+> +	if (u8year > 99)
+> +		u8year = u8year - 100;
+
+It would be nice to document when this stops working.
+
+> +	bh[z + 0x11] = bin2bcd(u8year);
+> +	bh[z + 0x12] = bin2bcd(month);
+> +	bh[z + 0x13] =
+> +	    bin2bcd(day - day_n[month - 1] + 1);
+> +	bh[z + 0x14] =
+> +	    bin2bcd((unix_date / 3600) % 24);
+> +	bh[z + 0x15] = bin2bcd((unix_date / 60) % 60);
+> +	bh[z + 0x16] = bin2bcd(unix_date % 60);
+> +	return unix_date;
+> +}
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
