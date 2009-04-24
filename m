@@ -1,96 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756595AbZDXEiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbZDXEnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756595AbZDXEiY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 00:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbZDXEiM
+	id S1756997AbZDXEnU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 00:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbZDXEnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 00:38:12 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:36335 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750986AbZDXEiL (ORCPT
+	Fri, 24 Apr 2009 00:43:07 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:18268 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751391AbZDXEnF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 00:38:11 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsQEAPzb8ElMQW1W/2dsb2JhbACBUM5Jg3QF
-Date: Fri, 24 Apr 2009 00:38:09 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: gregkh@suse.de, stable@kernel.org, cpufreq@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, rjw@sisk.pl,
-       Ben Slusky <sluskyb@paranoiacs.org>, Dave Jones <davej@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] cpufreq fix timer teardown in ondemand governor (2.6.28.x,
-	2.6.29.1, 2.6.30-rc2)
-Message-ID: <20090424043809.GC8091@Krystal>
-References: <20090423140002.GA12852@Krystal> <20090423164638.3b5769c6.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090423164638.3b5769c6.akpm@linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 00:35:48 up 55 days,  1:02,  1 user,  load average: 0.64, 0.51,
-	0.34
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 24 Apr 2009 00:43:05 -0400
+Date: Fri, 24 Apr 2009 00:43:00 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: intel-gfx@lists.freedesktop.org, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] i915: Register ACPI video even when not modesetting
+In-reply-to: <20090415204636.GA32365@srcf.ucam.org>
+Message-id: <alpine.LFD.2.00.0904240040460.15843@localhost.localdomain>
+References: <20090415204636.GA32365@srcf.ucam.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The problem is that dbs_timer_exit() uses cancel_delayed_work() when it should
-use cancel_delayed_work_sync(). cancel_delayed_work() does not wait for the
-workqueue handler to exit.
+applied
 
-The ondemand governor does not seem to be affected because the
-"if (!dbs_info->enable)" check at the beginning of the workqueue handler returns
-immediately without rescheduling the work. The conservative governor in
-2.6.30-rc has the same check as the ondemand governor, which makes things
-usually run smoothly. However, if the governor is quickly stopped and then
-started, this could lead to the following race :
+(and acpi-devel fixed to linux-acpi on cc:-)
 
-dbs_enable could be reenabled and multiple do_dbs_timer handlers would run.
-This is why a synchronized teardown is required.
+thanks,
+Len Brown, Intel Open Source Technology Center
 
-The following patch applies to, at least, 2.6.28.x, 2.6.29.1, 2.6.30-rc2.
+On Wed, 15 Apr 2009, Matthew Garrett wrote:
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: gregkh@suse.de
-CC: stable@kernel.org
-CC: cpufreq@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>
-CC: rjw@sisk.pl
-CC: Ben Slusky <sluskyb@paranoiacs.org>
-CC: Dave Jones <davej@redhat.com>
----
- drivers/cpufreq/cpufreq_ondemand.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-Index: linux-2.6-lttng/drivers/cpufreq/cpufreq_ondemand.c
-===================================================================
---- linux-2.6-lttng.orig/drivers/cpufreq/cpufreq_ondemand.c	2009-04-23 23:25:00.000000000 -0400
-+++ linux-2.6-lttng/drivers/cpufreq/cpufreq_ondemand.c	2009-04-23 23:25:39.000000000 -0400
-@@ -98,6 +98,9 @@ static unsigned int dbs_enable;	/* numbe
-  * (like __cpufreq_driver_target()) is being called with dbs_mutex taken, then
-  * cpu_hotplug lock should be taken before that. Note that cpu_hotplug lock
-  * is recursive for the same process. -Venki
-+ * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the dbs_mutex, because it
-+ * would deadlock with cancel_delayed_work_sync(), which is needed for proper
-+ * raceless workqueue teardown.
-  */
- static DEFINE_MUTEX(dbs_mutex);
- 
-@@ -562,7 +565,7 @@ static inline void dbs_timer_init(struct
- static inline void dbs_timer_exit(struct cpu_dbs_info_s *dbs_info)
- {
- 	dbs_info->enable = 0;
--	cancel_delayed_work(&dbs_info->work);
-+	cancel_delayed_work_sync(&dbs_info->work);
- }
- 
- static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> The ACPI video driver defers registration to the i915 driver if the 
+> system supports opregion-mediated backlight control. This registration 
+> was only being performed in the KMS case. Ensure it's done even if we 
+> don't have modesetting enabled.
+> 
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> 
+> diff --git a/drivers/gpu/drm/i915/i915_opregion.c b/drivers/gpu/drm/i915/i915_opregion.c
+> index 6942772..8dc1fd3 100644
+> --- a/drivers/gpu/drm/i915/i915_opregion.c
+> +++ b/drivers/gpu/drm/i915/i915_opregion.c
+> @@ -370,11 +370,8 @@ int intel_opregion_init(struct drm_device *dev, int resume)
+>  	if (mboxes & MBOX_ACPI) {
+>  		DRM_DEBUG("Public ACPI methods supported\n");
+>  		opregion->acpi = base + OPREGION_ACPI_OFFSET;
+> -		if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+> +		if (drm_core_check_feature(dev, DRIVER_MODESET))
+>  			intel_didl_outputs(dev);
+> -			if (!resume)
+> -				acpi_video_register();
+> -		}
+>  	} else {
+>  		DRM_DEBUG("Public ACPI methods not supported\n");
+>  		err = -ENOTSUPP;
+> @@ -391,6 +388,10 @@ int intel_opregion_init(struct drm_device *dev, int resume)
+>  		opregion->asle = base + OPREGION_ASLE_OFFSET;
+>  	}
+>  
+> +	if (!resume)
+> +		acpi_video_register();
+> +
+> +
+>  	/* Notify BIOS we are ready to handle ACPI video ext notifs.
+>  	 * Right now, all the events are handled by the ACPI video module.
+>  	 * We don't actually need to do anything with them. */
+> 
+> -- 
+> Matthew Garrett | mjg59@srcf.ucam.org
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
