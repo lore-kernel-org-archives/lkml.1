@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759063AbZDXGj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759123AbZDXGld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759063AbZDXGj4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 02:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755130AbZDXGjq
+	id S1759123AbZDXGld (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 02:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256AbZDXGlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 02:39:46 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:48902 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754555AbZDXGjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 02:39:45 -0400
-Date: Fri, 24 Apr 2009 08:39:44 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Aaron Carroll <aaronc@cse.unsw.edu.au>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Reduce latencies for syncronous writes and high I/O priority
-	requests in deadline IO scheduler
-Message-ID: <20090424063944.GA4593@kernel.dk>
-References: <4e5e476b0904221407v7f43c058l8fc61198a2e4bb6e@mail.gmail.com> <49F05699.2070006@cse.unsw.edu.au> <4e5e476b0904230910r685e8300oa2323e8985c97a00@mail.gmail.com>
+	Fri, 24 Apr 2009 02:41:23 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41655 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751941AbZDXGlW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 02:41:22 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 18/22] Use allocation flags as an index to the zone watermark
+Cc: kosaki.motohiro@jp.fujitsu.com, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090423100348.GA26953@csn.ul.ie>
+References: <20090423092350.F6E6.A69D9226@jp.fujitsu.com> <20090423100348.GA26953@csn.ul.ie>
+Message-Id: <20090424154013.1083.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4e5e476b0904230910r685e8300oa2323e8985c97a00@mail.gmail.com>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Fri, 24 Apr 2009 15:41:19 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23 2009, Corrado Zoccolo wrote:
-> >> * minimum batch timespan (time quantum): partners with fifo_batch to
-> >> improve throughput, by sending more consecutive requests together. A
-> >> given number of requests will not always take the same time (due to
-> >> amount of seek needed), therefore fifo_batch must be tuned for worst
-> >> cases, while in best cases, having longer batches would give a
-> >> throughput boost.
-> >> * batch start request is chosen fifo_batch/3 requests before the
-> >> expired one, to improve fairness for requests with lower start sector,
-> >> that otherwise have higher probability to miss a deadline than
-> >> mid-sector requests.
-> >
-> > I don't like the rest of it.  I use deadline because it's a simple,
-> > no surprises, no bullshit scheduler with reasonably good performance
-> > in all situations.  Is there some reason why CFQ won't work for you?
+> Considering that they are the same type for elements and arrays, I
+> didn't think padding would ever be a problem.
 > 
-> I actually like CFQ, and use it almost everywhere, and switch to
-> deadline only when submitting an heavy-duty workload (having a SysRq
-> combination to switch I/O schedulers could sometimes be very handy).
+> > However, all gcc version don't do that. I think. but perhaps I missed
+> > some minor gcc release..
+> > 
+> > So, I also like Dave's idea. but it only personal feeling.
+> > 
 > 
-> However, on SSDs it's not optimal, so I'm developing this to overcome
-> those limitations.
+> The tide is against me on this one :).
+> 
+> How about I roll a patch on top of this set that replaces the union by
+> calling all sites? I figure that patch will go through a few revisions before
+> people are happy with the final API. However, as the patch wouldn't change
+> functionality, I'd like to see this series getting wider testing if possible. The
+> replace-union-with-single-array patch can be easily folded in then when
+> it settles.
+> 
+> Sound like a plan?
 
-I find your solution quite confusing - the statement is that it CFQ
-isn't optimal on SSD, so you modify deadline? ;-)
+Yeah, I agree testing is important than ugliness discussion :)
 
-Most of the "CFQ doesn't work well on SSD" statements are mostly wrong.
-Now, you seem to have done some testing, so when you say that you
-probably have actually done some testing that tells you that this is the
-case. But lets attempt to fix that issue, then!
 
-One thing you pointed out is that CFQ doesn't treat the device as a
-"real" SSD unless it does queueing. This is very much on purpose, for
-two reasons:
-
-1) I have never seen a non-queueing SSD that actually performs well for
-   reads-vs-write situations, so CFQ still does idling for those.
-2) It's a problem that is going away. SSD that are coming out today and
-   in the future WILL definitely do queuing. We can attribute most of
-   the crap behaviour to the lacking jmicron flash controller, which
-   also has a crappy SATA interface.
-
-What I am worried about in the future is even faster SSD devices. CFQ is
-already down a percent or two when we are doing 100k iops and such, this
-problem will only get worse. So I'm very much interested in speeding up
-CFQ for such devices, which I think will mainly be slimming down the IO
-path and bypassing much of the (unneeded) complexity for them. The last
-thing I want is to have to tell people to use deadline or noop on SSD
-devices.
-
-> In the meantime, I wanted to overcome also deadline limitations, i.e.
-> the high latencies on fsync/fdatasync.
-
-This is very much something you could pull out of the patchset and we
-could include without much questioning.
-
--- 
-Jens Axboe
 
