@@ -1,62 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbZDXN3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbZDXNbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758733AbZDXN3k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 09:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbZDXN3a
+	id S1757570AbZDXNbj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 09:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbZDXNbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 09:29:30 -0400
-Received: from mail.windriver.com ([147.11.1.11]:45079 "EHLO mail.wrs.com"
+	Fri, 24 Apr 2009 09:31:31 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:53604 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754239AbZDXN3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 09:29:30 -0400
-Date: Fri, 24 Apr 2009 09:26:55 -0400
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, tytso@mit.edu
-Subject: Re: [PATCH] documentation: list common guidelines for commit log
-	content
-Message-ID: <20090424132655.GA4132@windriver.com>
-References: <1239908456-24871-1-git-send-email-paul.gortmaker@windriver.com> <20090423170827.47618b4e@bike.lwn.net>
+	id S1754741AbZDXNba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 09:31:30 -0400
+Date: Fri, 24 Apr 2009 14:31:27 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: David Rientjes <rientjes@google.com>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Do not override definition of node_set_online() with macro
+Message-ID: <20090424133127.GJ14283@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-22-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.0904221602560.27097@chino.kir.corp.google.com> <20090423004427.GD26643@csn.ul.ie> <alpine.DEB.2.00.0904231226140.29561@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090423170827.47618b4e@bike.lwn.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 24 Apr 2009 13:27:37.0854 (UTC) FILETIME=[6F76B9E0:01C9C4E0]
+In-Reply-To: <alpine.DEB.2.00.0904231226140.29561@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Re: [PATCH] documentation: list common guidelines for commit log content] On 23/04/2009 (Thu 17:08) Jonathan Corbet wrote:
+On Thu, Apr 23, 2009 at 12:29:27PM -0700, David Rientjes wrote:
+> On Thu, 23 Apr 2009, Mel Gorman wrote:
+> 
+> > > > diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
+> > > > index 848025c..474e73e 100644
+> > > > --- a/include/linux/nodemask.h
+> > > > +++ b/include/linux/nodemask.h
+> > > > @@ -408,6 +408,19 @@ static inline int num_node_state(enum node_states state)
+> > > >  #define next_online_node(nid)	next_node((nid), node_states[N_ONLINE])
+> > > >  
+> > > >  extern int nr_node_ids;
+> > > > +extern int nr_online_nodes;
+> > > > +
+> > > > +static inline void node_set_online(int nid)
+> > > > +{
+> > > > +	node_set_state(nid, N_ONLINE);
+> > > > +	nr_online_nodes = num_node_state(N_ONLINE);
+> > > > +}
+> > > > +
+> > > > +static inline void node_set_offline(int nid)
+> > > > +{
+> > > > +	node_clear_state(nid, N_ONLINE);
+> > > > +	nr_online_nodes = num_node_state(N_ONLINE);
+> > > > +}
+> > > >  #else
+> > > >  
+> > > >  static inline int node_state(int node, enum node_states state)
+> > > 
+> > > The later #define's of node_set_online() and node_set_offline() in 
+> > > include/linux/nodemask.h should probably be removed now.
+> > > 
+> > 
+> > You'd think, but you can enable memory hotplug without NUMA and
+> > node_set_online() is called when adding memory. Even though those
+> > functions are nops on !NUMA, they're necessary.
+> > 
+> 
+> The problem is that your new functions above are never used because 
+> node_set_online and node_set_offline are macro defined later in this 
+> header for all cases, not just !CONFIG_NUMA.
+> 
+> You need this.
 
-> On Thu, 16 Apr 2009 15:00:56 -0400
-> Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
-> 
-> > Recent discussions on lkml have brought to light that it is
-> > probably worthwhile documenting some of the common (yet up to
-> > now implicit) requirements that exist for commit log content.
-> > This is by no means exhaustive, but it is a start.
-> 
-> Sorry I sat on this for a week; I've not ignored it.
-> 
-> The change made me uncomfortable, despite the fact that I didn't really
-> disagree with anything in it.  I guess I feel that there's only so far
-> that it makes sense to go with big long lists of do's and don't's.
-> That document is plenty long already...  So I put together something
-> shorter which tries to focus on the problem at a higher level.  
+You're absolutly correct, well spotted. I mistook what the #endif was
+closing. Here it the patch again with a changelog. Thanks very much
 
-Fine by me.  I agree that not everything can live in the kernel, and
-long lists can test the limits of a person's attention span.  I've
-found value in using such a list internally, so thought it worth
-sharing.  If nothing else, people can reference the list via a mailing
-list archive or similar now.
+==== CUT HERE ====
+From: David Rientjes <rientjes@google.com>
 
-Paul.
+Do not override definition of node_set_online() with macro
 
-> 
-> But maybe others disagree?
-> 
-> Thanks,
-> 
-> jon
+node_set_online() updates node_states[] and updates the value of
+nr_online_nodes. However, its definition is being accidentally overridden
+by a macro definition intended for use in the !CONFIG_NUMA case. This patch
+fixes the problem by moving the !CONFIG_NUMA macro definition.
+
+This should be considered a fix to the patch 
+page-allocator-use-a-pre-calculated-value-instead-of-num_online_nodes-in-fast-paths.patch
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ include/linux/nodemask.h |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
+index 474e73e..829b94b 100644
+--- a/include/linux/nodemask.h
++++ b/include/linux/nodemask.h
+@@ -448,6 +448,9 @@ static inline int num_node_state(enum node_states state)
+ #define next_online_node(nid)	(MAX_NUMNODES)
+ #define nr_node_ids		1
+ #define nr_online_nodes		1
++
++#define node_set_online(node)	   node_set_state((node), N_ONLINE)
++#define node_set_offline(node)	   node_clear_state((node), N_ONLINE)
+ #endif
+ 
+ #define node_online_map 	node_states[N_ONLINE]
+@@ -467,9 +470,6 @@ static inline int num_node_state(enum node_states state)
+ #define node_online(node)	node_state((node), N_ONLINE)
+ #define node_possible(node)	node_state((node), N_POSSIBLE)
+ 
+-#define node_set_online(node)	   node_set_state((node), N_ONLINE)
+-#define node_set_offline(node)	   node_clear_state((node), N_ONLINE)
+-
+ #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
+ #define for_each_online_node(node) for_each_node_state(node, N_ONLINE)
+ 
