@@ -1,924 +1,317 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751453AbZDXEKH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752510AbZDXELc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751453AbZDXEKH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 00:10:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbZDXEJt
+	id S1752510AbZDXELc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 00:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbZDXELX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 00:09:49 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:49215 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750832AbZDXEJp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 00:09:45 -0400
-Date: Thu, 23 Apr 2009 21:09:38 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, Eric Dumazet <dada1@cosmosbay.com>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: [PATCH]  netfilter: use per-CPU recursive lock {XIV}
-Message-ID: <20090423210938.1501507b@nehalam>
-In-Reply-To: <alpine.LFD.2.00.0904220821240.3101@localhost.localdomain>
-References: <20090418094001.GA2369@ioremap.net>
-	<20090418141455.GA7082@linux.vnet.ibm.com>
-	<20090420103414.1b4c490f@nehalam>
-	<49ECBE0A.7010303@cosmosbay.com>
-	<18924.59347.375292.102385@cargo.ozlabs.ibm.com>
-	<20090420215827.GK6822@linux.vnet.ibm.com>
-	<18924.64032.103954.171918@cargo.ozlabs.ibm.com>
-	<20090420160121.268a8226@nehalam>
-	<alpine.LFD.2.00.0904210831560.2199@localhost.localdomain>
-	<20090421111541.228e977a@nehalam>
-	<20090421193924.GA24404@elte.hu>
-	<20090421143927.52d7d89d@nehalam>
-	<alpine.LFD.2.00.0904220821240.3101@localhost.localdomain>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 24 Apr 2009 00:11:23 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43382 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751262AbZDXELW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 00:11:22 -0400
+Message-ID: <49F13BDE.2060403@jp.fujitsu.com>
+Date: Fri, 24 Apr 2009 13:11:10 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Andrew Patterson <andrew.patterson@hp.com>
+CC: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org
+Subject: Re: [PATCH v3] PCI: Add support for turning PCIe ECRC on or off
+References: <20090422225203.16081.94717.stgit@bluto.andrew> <20090422225208.16081.73220.stgit@bluto.andrew>
+In-Reply-To: <20090422225208.16081.73220.stgit@bluto.andrew>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In days of old in 2.6.29, netfilter did locketh using a 
-lock of the reader kind when doing its table business, and do
-a writer when with pen in hand like a overworked accountant
-did replace the tables. This sucketh and caused the single
-lock to fly back and forth like a poor errant boy.
+Looks good to me.
 
-But then netfilter was blessed with RCU and the performance
-was divine, but alas there were those that suffered for
-trying to replace their many rules one at a time.
+Reviewed-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 
-So now RCU must be vanquished from the scene, and better
-chastity belts be placed upon this valuable asset most dear.
-The locks that were but one are now replaced by one per suitor.
 
-The repair was made after much discussion involving
-Eric the wise, and Linus the foul. With flowers springing
-up amid the thorns some peace has finally prevailed and
-all is soothed. This patch and purple prose was penned by
-in honor of "Talk like Shakespeare" day.
+Andrew Patterson wrote:
+> PCI: Add support for turning PCIe ECRC on or off
+> 
+> Adds support for PCI Express transaction layer end-to-end CRC checking
+> (ECRC).  This patch will enable/disable ECRC checking by setting/clearing
+> the ECRC Check Enable and/or ECRC Generation Enable bits for devices that
+> support ECRC.
+> 
+> The ECRC setting is controlled by the "pci=ecrc=<policy>" command-line
+> option. If this option is not set or is set to 'bios", the enable and
+> generation bits are left in whatever state that firmware/BIOS set them to.
+> The "off" setting turns them off, and the "on" option turns them on (if the
+> device supports it).
+> 
+> Turning ECRC on or off can be a data integrity versus performance
+> tradeoff.  In theory, turning it on will catch more data errors, turning
+> it off means possibly better performance since CRC does not need to be
+> calculated by the PCIe hardware and packet sizes are reduced.
+> 
+> Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
+> ---
+> 
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index 1754fed..56cdd5f 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -1769,6 +1769,12 @@ and is between 256 and 4096 characters. It is defined in the file
+>  				PAGE_SIZE is used as alignment.
+>  				PCI-PCI bridge can be specified, if resource
+>  				windows need to be expanded.
+> +		ecrc=		Enable/disable PCIe ECRC (transaction layer
+> +				end-to-end CRC checking).
+> +				bios: Use BIOS/firmware settings. This is the
+> +				the default.
+> +				off: Turn ECRC off
+> +				on: Turn ECRC on.
+>  
+>  	pcie_aspm=	[PCIE] Forcibly enable or disable PCIe Active State Power
+>  			Management.
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 59569b8..65e8a53 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -2555,6 +2555,8 @@ static int __init pci_setup(char *str)
+>  			} else if (!strncmp(str, "resource_alignment=", 19)) {
+>  				pci_set_resource_alignment_param(str + 19,
+>  							strlen(str + 19));
+> +			} else if (!strncmp(str, "ecrc=", 5)) {
+> +				pcie_ecrc_get_policy(str + 5);
+>  			} else {
+>  				printk(KERN_ERR "PCI: Unknown option `%s'\n",
+>  						str);
+> diff --git a/drivers/pci/pcie/aer/Kconfig b/drivers/pci/pcie/aer/Kconfig
+> index c3bde58..db4cb95 100644
+> --- a/drivers/pci/pcie/aer/Kconfig
+> +++ b/drivers/pci/pcie/aer/Kconfig
+> @@ -10,3 +10,16 @@ config PCIEAER
+>  	  This enables PCI Express Root Port Advanced Error Reporting
+>  	  (AER) driver support. Error reporting messages sent to Root
+>  	  Port will be handled by PCI Express AER driver.
+> +
+> +
+> +#
+> +# PCI Express ECRC
+> +#
+> +config PCIE_ECRC
+> +	bool "PCI Express ECRC settings control"
+> +	depends on PCIEAER
+> +	help
+> +	  Used to override firmware/bios settings for PCI Express ECRC
+> +	  (transaction layer end-to-end CRC checking).
+> +
+> +	  When in doubt, say N.
+> diff --git a/drivers/pci/pcie/aer/Makefile b/drivers/pci/pcie/aer/Makefile
+> index 8da3bd8..7f93411 100644
+> --- a/drivers/pci/pcie/aer/Makefile
+> +++ b/drivers/pci/pcie/aer/Makefile
+> @@ -4,6 +4,8 @@
+>  
+>  obj-$(CONFIG_PCIEAER) += aerdriver.o
+>  
+> +obj-$(CONFIG_PCIE_ECRC)	+= ecrc.o
+> +
+>  aerdriver-objs := aerdrv_errprint.o aerdrv_core.o aerdrv.o
+>  aerdriver-$(CONFIG_ACPI) += aerdrv_acpi.o
+>  
+> diff --git a/drivers/pci/pcie/aer/aerdrv_core.c b/drivers/pci/pcie/aer/aerdrv_core.c
+> index 307452f..dd3829e 100644
+> --- a/drivers/pci/pcie/aer/aerdrv_core.c
+> +++ b/drivers/pci/pcie/aer/aerdrv_core.c
+> @@ -113,15 +113,17 @@ static void set_device_error_reporting(struct pci_dev *dev, void *data)
+>  {
+>  	bool enable = *((bool *)data);
+>  
+> -	if (dev->pcie_type != PCIE_RC_PORT &&
+> -	    dev->pcie_type != PCIE_SW_UPSTREAM_PORT &&
+> -	    dev->pcie_type != PCIE_SW_DOWNSTREAM_PORT)
+> -		return;
+> +	if (dev->pcie_type == PCIE_RC_PORT ||
+> +	    dev->pcie_type == PCIE_SW_UPSTREAM_PORT ||
+> +	    dev->pcie_type == PCIE_SW_DOWNSTREAM_PORT) {
+> +		if (enable)
+> +			pci_enable_pcie_error_reporting(dev);
+> +		else
+> +			pci_disable_pcie_error_reporting(dev);
+> +	}
+>  
+>  	if (enable)
+> -		pci_enable_pcie_error_reporting(dev);
+> -	else
+> -		pci_disable_pcie_error_reporting(dev);
+> +		pcie_set_ecrc_checking(dev);
+>  }
+>  
+>  /**
+> diff --git a/drivers/pci/pcie/aer/ecrc.c b/drivers/pci/pcie/aer/ecrc.c
+> new file mode 100644
+> index 0000000..ece97df
+> --- /dev/null
+> +++ b/drivers/pci/pcie/aer/ecrc.c
+> @@ -0,0 +1,131 @@
+> +/*
+> + *    Enables/disables PCIe ECRC checking.
+> + *
+> + *    (C) Copyright 2009 Hewlett-Packard Development Company, L.P.
+> + *    Andrew Patterson <andrew.patterson@hp.com>
+> + *
+> + *    This program is free software; you can redistribute it and/or modify
+> + *    it under the terms of the GNU General Public License as published by
+> + *    the Free Software Foundation; version 2 of the License.
+> + *
+> + *    This program is distributed in the hope that it will be useful,
+> + *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *    MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+> + *    General Public License for more details.
+> + *
+> + *    You should have received a copy of the GNU General Public License
+> + *    along with this program; if not, write to the Free Software
+> + *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+> + *    02111-1307, USA.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/moduleparam.h>
+> +#include <linux/pci.h>
+> +#include <linux/pci_regs.h>
+> +#include <linux/errno.h>
+> +#include "../../pci.h"
+> +
+> +#define ECRC_POLICY_DEFAULT 0		/* ECRC set by BIOS */
+> +#define ECRC_POLICY_OFF     1		/* ECRC off for performance */
+> +#define ECRC_POLICY_ON      2		/* ECRC on for data integrity */
+> +
+> +static int ecrc_policy = ECRC_POLICY_DEFAULT;
+> +
+> +static const char *ecrc_policy_str[] = {
+> +	[ECRC_POLICY_DEFAULT] = "bios",
+> +	[ECRC_POLICY_OFF] = "off",
+> +	[ECRC_POLICY_ON] = "on"
+> +};
+> +
+> +/**
+> + * enable_ercr_checking - enable PCIe ECRC checking for a device
+> + * @dev: the PCI device
+> + *
+> + * Returns 0 on success, or negative on failure.
+> + */
+> +static int enable_ecrc_checking(struct pci_dev *dev)
+> +{
+> +	int pos;
+> +	u32 reg32;
+> +
+> +	if (!dev->is_pcie)
+> +		return -ENODEV;
+> +
+> +	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
+> +	if (!pos)
+> +		return -ENODEV;
+> +
+> +	pci_read_config_dword(dev, pos + PCI_ERR_CAP, &reg32);
+> +	if (reg32 & PCI_ERR_CAP_ECRC_GENC)
+> +		reg32 |= PCI_ERR_CAP_ECRC_GENE;
+> +	if (reg32 & PCI_ERR_CAP_ECRC_CHKC)
+> +		reg32 |= PCI_ERR_CAP_ECRC_CHKE;
+> +	pci_write_config_dword(dev, pos + PCI_ERR_CAP, reg32);
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * disable_ercr_checking - disables PCIe ECRC checking for a device
+> + * @dev: the PCI device
+> + *
+> + * Returns 0 on success, or negative on failure.
+> + */
+> +static int disable_ecrc_checking(struct pci_dev *dev)
+> +{
+> +	int pos;
+> +	u32 reg32;
+> +
+> +	if (!dev->is_pcie)
+> +		return -ENODEV;
+> +
+> +	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
+> +	if (!pos)
+> +		return -ENODEV;
+> +
+> +	pci_read_config_dword(dev, pos + PCI_ERR_CAP, &reg32);
+> +	reg32 &= ~(PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
+> +	pci_write_config_dword(dev, pos + PCI_ERR_CAP, reg32);
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * pcie_set_ecrc_checking - set/unset PCIe ECRC checking for a device based on global policy
+> + * @dev: the PCI device
+> + */
+> +void pcie_set_ecrc_checking(struct pci_dev *dev)
+> +{
+> +	switch (ecrc_policy) {
+> +	case ECRC_POLICY_DEFAULT:
+> +		return;
+> +	case ECRC_POLICY_OFF:
+> +		disable_ecrc_checking(dev);
+> +		break;
+> +	case ECRC_POLICY_ON:
+> +		enable_ecrc_checking(dev);;
+> +		break;
+> +	default:
+> +		return;
+> +	}
+> +}
+> +
+> +/**
+> + * pcie_ecrc_get_policy - parse kernel command-line ecrc option
+> + */
+> +void pcie_ecrc_get_policy(char *str)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(ecrc_policy_str); i++)
+> +		if (!strncmp(str, ecrc_policy_str[i],
+> +			     strlen(ecrc_policy_str[i])))
+> +			break;
+> +	if (i >= ARRAY_SIZE(ecrc_policy_str))
+> +		return;
+> +
+> +	ecrc_policy = i;
+> +}
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 6fb335b..0a25ccc 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -874,6 +874,17 @@ static inline int pcie_aspm_enabled(void)
+>  extern int pcie_aspm_enabled(void);
+>  #endif
+>  
+> +#ifndef CONFIG_PCIE_ECRC
+> +static inline void pcie_set_ecrc_checking(struct pci_dev *dev)
+> +{
+> +	return;
+> +}
+> +static inline void pcie_ecrc_get_policy(char *str) {};
+> +#else
+> +extern void pcie_set_ecrc_checking(struct pci_dev *dev);
+> +extern void pcie_ecrc_get_policy(char *str);
+> +#endif
+> +
+>  #define pci_enable_msi(pdev)	pci_enable_msi_block(pdev, 1)
+>  
+>  #ifdef CONFIG_HT_IRQ
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
 
-Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
 
----
-What hath changed over the last two setting suns:
-  * more words, mostly correct...
-
-  * no need to locketh for writeh on current cpu tis 
-    always so
-
-  * the locking of all cpu's on replace is always done as
-    part of the get_counters cycle, so the sychronize swip
-    in replace tables is gone with only a comment remaing
-
- include/linux/netfilter/x_tables.h |   55 ++++++++++++++--
- net/ipv4/netfilter/arp_tables.c    |  125 ++++++++++--------------------------
- net/ipv4/netfilter/ip_tables.c     |  126 ++++++++++---------------------------
- net/ipv6/netfilter/ip6_tables.c    |  123 ++++++++++--------------------------
- net/netfilter/x_tables.c           |   55 ++++++++--------
- 5 files changed, 188 insertions(+), 296 deletions(-)
-
---- a/include/linux/netfilter/x_tables.h	2009-04-23 19:59:36.076558199 -0700
-+++ b/include/linux/netfilter/x_tables.h	2009-04-23 20:22:06.566001575 -0700
-@@ -354,9 +354,6 @@ struct xt_table
- 	/* What hooks you will enter on */
- 	unsigned int valid_hooks;
- 
--	/* Lock for the curtain */
--	struct mutex lock;
--
- 	/* Man behind the curtain... */
- 	struct xt_table_info *private;
- 
-@@ -434,8 +431,56 @@ extern void xt_proto_fini(struct net *ne
- 
- extern struct xt_table_info *xt_alloc_table_info(unsigned int size);
- extern void xt_free_table_info(struct xt_table_info *info);
--extern void xt_table_entry_swap_rcu(struct xt_table_info *old,
--				    struct xt_table_info *new);
-+
-+/*
-+ * Per-CPU read/write lock associated with per-cpu table entries.
-+ * This is not a general solution but makes reader locking fast since
-+ * there is no shared variable to cause cache ping-pong; but adds an
-+ * additional write-side penalty since update must lock all
-+ * possible CPU's.
-+ *
-+ * Read lock is used by ip/arp/ip6 tables rule processing which runs per-cpu.
-+ * It needs to ensure that the rules are not being changed while packet
-+ * is being processed. In some cases, the read lock will be acquired
-+ * twice on the same CPU; this is okay because read locks handle nesting.
-+ *
-+ * Write lock is used in two cases:
-+ *    1. reading counter values
-+ *       all readers need to be stopped and the per-CPU values are summed.
-+ *
-+ *    2. replacing tables
-+ *       any readers that are using the old tables have to complete
-+ *       before freeing the old table. This is handled by reading
-+ *	  as a side effect of reading counters
-+ */
-+DECLARE_PER_CPU(rwlock_t, xt_info_locks);
-+
-+static inline void xt_info_rdlock_bh(void)
-+{
-+	/*
-+	 * Note: can not use read_lock_bh(&__get_cpu_var(xt_info_locks))
-+	 * because need to ensure that preemption is disable before
-+	 * acquiring per-cpu-variable, so do it as a two step process
-+	 */
-+	local_bh_disable();
-+	read_lock(&__get_cpu_var(xt_info_locks));
-+}
-+
-+static inline void xt_info_rdunlock_bh(void)
-+{
-+	read_unlock_bh(&__get_cpu_var(xt_info_locks));
-+}
-+
-+static inline void xt_info_wrlock(unsigned int cpu)
-+{
-+	write_lock(&per_cpu(xt_info_locks, cpu));
-+}
-+
-+static inline void xt_info_wrunlock(unsigned int cpu)
-+{
-+
-+	write_unlock(&per_cpu(xt_info_locks, cpu));
-+}
- 
- /*
-  * This helper is performance critical and must be inlined
---- a/net/ipv4/netfilter/arp_tables.c	2009-04-23 19:59:36.055558989 -0700
-+++ b/net/ipv4/netfilter/arp_tables.c	2009-04-23 20:38:48.270239729 -0700
-@@ -253,9 +253,9 @@ unsigned int arpt_do_table(struct sk_buf
- 	indev = in ? in->name : nulldevname;
- 	outdev = out ? out->name : nulldevname;
- 
--	rcu_read_lock_bh();
--	private = rcu_dereference(table->private);
--	table_base = rcu_dereference(private->entries[smp_processor_id()]);
-+	xt_info_rdlock_bh();
-+	private = table->private;
-+	table_base = private->entries[smp_processor_id()];
- 
- 	e = get_entry(table_base, private->hook_entry[hook]);
- 	back = get_entry(table_base, private->underflow[hook]);
-@@ -273,6 +273,7 @@ unsigned int arpt_do_table(struct sk_buf
- 
- 			hdr_len = sizeof(*arp) + (2 * sizeof(struct in_addr)) +
- 				(2 * skb->dev->addr_len);
-+
- 			ADD_COUNTER(e->counters, hdr_len, 1);
- 
- 			t = arpt_get_target(e);
-@@ -328,8 +329,7 @@ unsigned int arpt_do_table(struct sk_buf
- 			e = (void *)e + e->next_offset;
- 		}
- 	} while (!hotdrop);
--
--	rcu_read_unlock_bh();
-+	xt_info_rdunlock_bh();
- 
- 	if (hotdrop)
- 		return NF_DROP;
-@@ -711,9 +711,12 @@ static void get_counters(const struct xt
- 	/* Instead of clearing (by a previous call to memset())
- 	 * the counters and using adds, we set the counters
- 	 * with data used by 'current' CPU
--	 * We dont care about preemption here.
-+	 *
-+	 * Bottom half has to be disabled to prevent deadlock
-+	 * if new softirq were to run and call ipt_do_table
- 	 */
--	curcpu = raw_smp_processor_id();
-+	local_bh_disable();
-+	curcpu = smp_processor_id();
- 
- 	i = 0;
- 	ARPT_ENTRY_ITERATE(t->entries[curcpu],
-@@ -726,73 +729,22 @@ static void get_counters(const struct xt
- 		if (cpu == curcpu)
- 			continue;
- 		i = 0;
-+		xt_info_wrlock(cpu);
- 		ARPT_ENTRY_ITERATE(t->entries[cpu],
- 				   t->size,
- 				   add_entry_to_counter,
- 				   counters,
- 				   &i);
-+		xt_info_wrunlock(cpu);
- 	}
--}
--
--
--/* We're lazy, and add to the first CPU; overflow works its fey magic
-- * and everything is OK. */
--static int
--add_counter_to_entry(struct arpt_entry *e,
--		     const struct xt_counters addme[],
--		     unsigned int *i)
--{
--	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
--
--	(*i)++;
--	return 0;
--}
--
--/* Take values from counters and add them back onto the current cpu */
--static void put_counters(struct xt_table_info *t,
--			 const struct xt_counters counters[])
--{
--	unsigned int i, cpu;
--
--	local_bh_disable();
--	cpu = smp_processor_id();
--	i = 0;
--	ARPT_ENTRY_ITERATE(t->entries[cpu],
--			  t->size,
--			  add_counter_to_entry,
--			  counters,
--			  &i);
- 	local_bh_enable();
- }
- 
--static inline int
--zero_entry_counter(struct arpt_entry *e, void *arg)
--{
--	e->counters.bcnt = 0;
--	e->counters.pcnt = 0;
--	return 0;
--}
--
--static void
--clone_counters(struct xt_table_info *newinfo, const struct xt_table_info *info)
--{
--	unsigned int cpu;
--	const void *loc_cpu_entry = info->entries[raw_smp_processor_id()];
--
--	memcpy(newinfo, info, offsetof(struct xt_table_info, entries));
--	for_each_possible_cpu(cpu) {
--		memcpy(newinfo->entries[cpu], loc_cpu_entry, info->size);
--		ARPT_ENTRY_ITERATE(newinfo->entries[cpu], newinfo->size,
--				  zero_entry_counter, NULL);
--	}
--}
--
- static struct xt_counters *alloc_counters(struct xt_table *table)
- {
- 	unsigned int countersize;
- 	struct xt_counters *counters;
- 	struct xt_table_info *private = table->private;
--	struct xt_table_info *info;
- 
- 	/* We need atomic snapshot of counters: rest doesn't change
- 	 * (other than comefrom, which userspace doesn't care
-@@ -802,30 +754,11 @@ static struct xt_counters *alloc_counter
- 	counters = vmalloc_node(countersize, numa_node_id());
- 
- 	if (counters == NULL)
--		goto nomem;
--
--	info = xt_alloc_table_info(private->size);
--	if (!info)
--		goto free_counters;
--
--	clone_counters(info, private);
-+		return ERR_PTR(-ENOMEM);
- 
--	mutex_lock(&table->lock);
--	xt_table_entry_swap_rcu(private, info);
--	synchronize_net();	/* Wait until smoke has cleared */
--
--	get_counters(info, counters);
--	put_counters(private, counters);
--	mutex_unlock(&table->lock);
--
--	xt_free_table_info(info);
-+	get_counters(private, counters);
- 
- 	return counters;
--
-- free_counters:
--	vfree(counters);
-- nomem:
--	return ERR_PTR(-ENOMEM);
- }
- 
- static int copy_entries_to_user(unsigned int total_size,
-@@ -1094,8 +1027,9 @@ static int __do_replace(struct net *net,
- 	    (newinfo->number <= oldinfo->initial_entries))
- 		module_put(t->me);
- 
--	/* Get the old counters. */
-+	/* Get the old counters, and synchronize with replace */
- 	get_counters(oldinfo, counters);
-+
- 	/* Decrease module usage counts and free resource */
- 	loc_cpu_old_entry = oldinfo->entries[raw_smp_processor_id()];
- 	ARPT_ENTRY_ITERATE(loc_cpu_old_entry, oldinfo->size, cleanup_entry,
-@@ -1165,10 +1099,23 @@ static int do_replace(struct net *net, v
- 	return ret;
- }
- 
-+/* We're lazy, and add to the first CPU; overflow works its fey magic
-+ * and everything is OK. */
-+static int
-+add_counter_to_entry(struct arpt_entry *e,
-+		     const struct xt_counters addme[],
-+		     unsigned int *i)
-+{
-+	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-+
-+	(*i)++;
-+	return 0;
-+}
-+
- static int do_add_counters(struct net *net, void __user *user, unsigned int len,
- 			   int compat)
- {
--	unsigned int i;
-+	unsigned int i, curcpu;
- 	struct xt_counters_info tmp;
- 	struct xt_counters *paddc;
- 	unsigned int num_counters;
-@@ -1224,26 +1171,26 @@ static int do_add_counters(struct net *n
- 		goto free;
- 	}
- 
--	mutex_lock(&t->lock);
-+	local_bh_disable();
- 	private = t->private;
- 	if (private->number != num_counters) {
- 		ret = -EINVAL;
- 		goto unlock_up_free;
- 	}
- 
--	preempt_disable();
- 	i = 0;
- 	/* Choose the copy that is on our node */
--	loc_cpu_entry = private->entries[smp_processor_id()];
-+	curcpu = smp_processor_id();
-+	loc_cpu_entry = private->entries[curcpu];
-+	xt_info_wrlock(curcpu);
- 	ARPT_ENTRY_ITERATE(loc_cpu_entry,
- 			   private->size,
- 			   add_counter_to_entry,
- 			   paddc,
- 			   &i);
--	preempt_enable();
-+	xt_info_wrunlock(curcpu);
-  unlock_up_free:
--	mutex_unlock(&t->lock);
--
-+	local_bh_enable();
- 	xt_table_unlock(t);
- 	module_put(t->me);
-  free:
---- a/net/ipv4/netfilter/ip_tables.c	2009-04-23 19:59:36.065578531 -0700
-+++ b/net/ipv4/netfilter/ip_tables.c	2009-04-23 20:14:24.483579537 -0700
-@@ -338,10 +338,9 @@ ipt_do_table(struct sk_buff *skb,
- 	tgpar.hooknum = hook;
- 
- 	IP_NF_ASSERT(table->valid_hooks & (1 << hook));
--
--	rcu_read_lock_bh();
--	private = rcu_dereference(table->private);
--	table_base = rcu_dereference(private->entries[smp_processor_id()]);
-+	xt_info_rdlock_bh();
-+	private = table->private;
-+	table_base = private->entries[smp_processor_id()];
- 
- 	e = get_entry(table_base, private->hook_entry[hook]);
- 
-@@ -436,8 +435,7 @@ ipt_do_table(struct sk_buff *skb,
- 			e = (void *)e + e->next_offset;
- 		}
- 	} while (!hotdrop);
--
--	rcu_read_unlock_bh();
-+	xt_info_rdunlock_bh();
- 
- #ifdef DEBUG_ALLOW_ALL
- 	return NF_ACCEPT;
-@@ -896,10 +894,13 @@ get_counters(const struct xt_table_info 
- 
- 	/* Instead of clearing (by a previous call to memset())
- 	 * the counters and using adds, we set the counters
--	 * with data used by 'current' CPU
--	 * We dont care about preemption here.
-+	 * with data used by 'current' CPU.
-+	 *
-+	 * Bottom half has to be disabled to prevent deadlock
-+	 * if new softirq were to run and call ipt_do_table
- 	 */
--	curcpu = raw_smp_processor_id();
-+	local_bh_disable();
-+	curcpu = smp_processor_id();
- 
- 	i = 0;
- 	IPT_ENTRY_ITERATE(t->entries[curcpu],
-@@ -912,74 +913,22 @@ get_counters(const struct xt_table_info 
- 		if (cpu == curcpu)
- 			continue;
- 		i = 0;
-+		xt_info_wrlock(cpu);
- 		IPT_ENTRY_ITERATE(t->entries[cpu],
- 				  t->size,
- 				  add_entry_to_counter,
- 				  counters,
- 				  &i);
-+		xt_info_wrunlock(cpu);
- 	}
--
--}
--
--/* We're lazy, and add to the first CPU; overflow works its fey magic
-- * and everything is OK. */
--static int
--add_counter_to_entry(struct ipt_entry *e,
--		     const struct xt_counters addme[],
--		     unsigned int *i)
--{
--	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
--
--	(*i)++;
--	return 0;
--}
--
--/* Take values from counters and add them back onto the current cpu */
--static void put_counters(struct xt_table_info *t,
--			 const struct xt_counters counters[])
--{
--	unsigned int i, cpu;
--
--	local_bh_disable();
--	cpu = smp_processor_id();
--	i = 0;
--	IPT_ENTRY_ITERATE(t->entries[cpu],
--			  t->size,
--			  add_counter_to_entry,
--			  counters,
--			  &i);
- 	local_bh_enable();
- }
- 
--
--static inline int
--zero_entry_counter(struct ipt_entry *e, void *arg)
--{
--	e->counters.bcnt = 0;
--	e->counters.pcnt = 0;
--	return 0;
--}
--
--static void
--clone_counters(struct xt_table_info *newinfo, const struct xt_table_info *info)
--{
--	unsigned int cpu;
--	const void *loc_cpu_entry = info->entries[raw_smp_processor_id()];
--
--	memcpy(newinfo, info, offsetof(struct xt_table_info, entries));
--	for_each_possible_cpu(cpu) {
--		memcpy(newinfo->entries[cpu], loc_cpu_entry, info->size);
--		IPT_ENTRY_ITERATE(newinfo->entries[cpu], newinfo->size,
--				  zero_entry_counter, NULL);
--	}
--}
--
- static struct xt_counters * alloc_counters(struct xt_table *table)
- {
- 	unsigned int countersize;
- 	struct xt_counters *counters;
- 	struct xt_table_info *private = table->private;
--	struct xt_table_info *info;
- 
- 	/* We need atomic snapshot of counters: rest doesn't change
- 	   (other than comefrom, which userspace doesn't care
-@@ -988,30 +937,11 @@ static struct xt_counters * alloc_counte
- 	counters = vmalloc_node(countersize, numa_node_id());
- 
- 	if (counters == NULL)
--		goto nomem;
-+		return ERR_PTR(-ENOMEM);
- 
--	info = xt_alloc_table_info(private->size);
--	if (!info)
--		goto free_counters;
--
--	clone_counters(info, private);
--
--	mutex_lock(&table->lock);
--	xt_table_entry_swap_rcu(private, info);
--	synchronize_net();	/* Wait until smoke has cleared */
--
--	get_counters(info, counters);
--	put_counters(private, counters);
--	mutex_unlock(&table->lock);
--
--	xt_free_table_info(info);
-+	get_counters(private, counters);
- 
- 	return counters;
--
-- free_counters:
--	vfree(counters);
-- nomem:
--	return ERR_PTR(-ENOMEM);
- }
- 
- static int
-@@ -1306,8 +1236,9 @@ __do_replace(struct net *net, const char
- 	    (newinfo->number <= oldinfo->initial_entries))
- 		module_put(t->me);
- 
--	/* Get the old counters. */
-+	/* Get the old counters, and synchronize with replace */
- 	get_counters(oldinfo, counters);
-+
- 	/* Decrease module usage counts and free resource */
- 	loc_cpu_old_entry = oldinfo->entries[raw_smp_processor_id()];
- 	IPT_ENTRY_ITERATE(loc_cpu_old_entry, oldinfo->size, cleanup_entry,
-@@ -1377,11 +1308,23 @@ do_replace(struct net *net, void __user 
- 	return ret;
- }
- 
-+/* We're lazy, and add to the first CPU; overflow works its fey magic
-+ * and everything is OK. */
-+static int
-+add_counter_to_entry(struct ipt_entry *e,
-+		     const struct xt_counters addme[],
-+		     unsigned int *i)
-+{
-+	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-+
-+	(*i)++;
-+	return 0;
-+}
- 
- static int
- do_add_counters(struct net *net, void __user *user, unsigned int len, int compat)
- {
--	unsigned int i;
-+	unsigned int i, curcpu;
- 	struct xt_counters_info tmp;
- 	struct xt_counters *paddc;
- 	unsigned int num_counters;
-@@ -1437,25 +1380,26 @@ do_add_counters(struct net *net, void __
- 		goto free;
- 	}
- 
--	mutex_lock(&t->lock);
-+	local_bh_disable();
- 	private = t->private;
- 	if (private->number != num_counters) {
- 		ret = -EINVAL;
- 		goto unlock_up_free;
- 	}
- 
--	preempt_disable();
- 	i = 0;
- 	/* Choose the copy that is on our node */
--	loc_cpu_entry = private->entries[raw_smp_processor_id()];
-+	curcpu = smp_processor_id();
-+	loc_cpu_entry = private->entries[curcpu];
-+	xt_info_wrlock(curcpu);
- 	IPT_ENTRY_ITERATE(loc_cpu_entry,
- 			  private->size,
- 			  add_counter_to_entry,
- 			  paddc,
- 			  &i);
--	preempt_enable();
-+	xt_info_wrunlock(curcpu);
-  unlock_up_free:
--	mutex_unlock(&t->lock);
-+	local_bh_enable();
- 	xt_table_unlock(t);
- 	module_put(t->me);
-  free:
---- a/net/ipv6/netfilter/ip6_tables.c	2009-04-23 19:59:36.047577942 -0700
-+++ b/net/ipv6/netfilter/ip6_tables.c	2009-04-23 20:46:47.356237966 -0700
-@@ -365,9 +365,9 @@ ip6t_do_table(struct sk_buff *skb,
- 
- 	IP_NF_ASSERT(table->valid_hooks & (1 << hook));
- 
--	rcu_read_lock_bh();
--	private = rcu_dereference(table->private);
--	table_base = rcu_dereference(private->entries[smp_processor_id()]);
-+	xt_info_rdlock_bh();
-+	private = table->private;
-+	table_base = private->entries[smp_processor_id()];
- 
- 	e = get_entry(table_base, private->hook_entry[hook]);
- 
-@@ -466,7 +466,7 @@ ip6t_do_table(struct sk_buff *skb,
- #ifdef CONFIG_NETFILTER_DEBUG
- 	((struct ip6t_entry *)table_base)->comefrom = NETFILTER_LINK_POISON;
- #endif
--	rcu_read_unlock_bh();
-+	xt_info_rdunlock_bh();
- 
- #ifdef DEBUG_ALLOW_ALL
- 	return NF_ACCEPT;
-@@ -926,9 +926,12 @@ get_counters(const struct xt_table_info 
- 	/* Instead of clearing (by a previous call to memset())
- 	 * the counters and using adds, we set the counters
- 	 * with data used by 'current' CPU
--	 * We dont care about preemption here.
-+	 *
-+	 * Bottom half has to be disabled to prevent deadlock
-+	 * if new softirq were to run and call ipt_do_table
- 	 */
--	curcpu = raw_smp_processor_id();
-+	local_bh_disable();
-+	curcpu = smp_processor_id();
- 
- 	i = 0;
- 	IP6T_ENTRY_ITERATE(t->entries[curcpu],
-@@ -941,72 +944,22 @@ get_counters(const struct xt_table_info 
- 		if (cpu == curcpu)
- 			continue;
- 		i = 0;
-+		xt_info_wrlock(cpu);
- 		IP6T_ENTRY_ITERATE(t->entries[cpu],
- 				  t->size,
- 				  add_entry_to_counter,
- 				  counters,
- 				  &i);
-+		xt_info_wrunlock(cpu);
- 	}
--}
--
--/* We're lazy, and add to the first CPU; overflow works its fey magic
-- * and everything is OK. */
--static int
--add_counter_to_entry(struct ip6t_entry *e,
--		     const struct xt_counters addme[],
--		     unsigned int *i)
--{
--	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
--
--	(*i)++;
--	return 0;
--}
--
--/* Take values from counters and add them back onto the current cpu */
--static void put_counters(struct xt_table_info *t,
--			 const struct xt_counters counters[])
--{
--	unsigned int i, cpu;
--
--	local_bh_disable();
--	cpu = smp_processor_id();
--	i = 0;
--	IP6T_ENTRY_ITERATE(t->entries[cpu],
--			   t->size,
--			   add_counter_to_entry,
--			   counters,
--			   &i);
- 	local_bh_enable();
- }
- 
--static inline int
--zero_entry_counter(struct ip6t_entry *e, void *arg)
--{
--	e->counters.bcnt = 0;
--	e->counters.pcnt = 0;
--	return 0;
--}
--
--static void
--clone_counters(struct xt_table_info *newinfo, const struct xt_table_info *info)
--{
--	unsigned int cpu;
--	const void *loc_cpu_entry = info->entries[raw_smp_processor_id()];
--
--	memcpy(newinfo, info, offsetof(struct xt_table_info, entries));
--	for_each_possible_cpu(cpu) {
--		memcpy(newinfo->entries[cpu], loc_cpu_entry, info->size);
--		IP6T_ENTRY_ITERATE(newinfo->entries[cpu], newinfo->size,
--				   zero_entry_counter, NULL);
--	}
--}
--
- static struct xt_counters *alloc_counters(struct xt_table *table)
- {
- 	unsigned int countersize;
- 	struct xt_counters *counters;
- 	struct xt_table_info *private = table->private;
--	struct xt_table_info *info;
- 
- 	/* We need atomic snapshot of counters: rest doesn't change
- 	   (other than comefrom, which userspace doesn't care
-@@ -1015,30 +968,11 @@ static struct xt_counters *alloc_counter
- 	counters = vmalloc_node(countersize, numa_node_id());
- 
- 	if (counters == NULL)
--		goto nomem;
--
--	info = xt_alloc_table_info(private->size);
--	if (!info)
--		goto free_counters;
--
--	clone_counters(info, private);
--
--	mutex_lock(&table->lock);
--	xt_table_entry_swap_rcu(private, info);
--	synchronize_net();	/* Wait until smoke has cleared */
--
--	get_counters(info, counters);
--	put_counters(private, counters);
--	mutex_unlock(&table->lock);
-+		return ERR_PTR(-ENOMEM);
- 
--	xt_free_table_info(info);
-+	get_counters(private, counters);
- 
- 	return counters;
--
-- free_counters:
--	vfree(counters);
-- nomem:
--	return ERR_PTR(-ENOMEM);
- }
- 
- static int
-@@ -1334,8 +1268,9 @@ __do_replace(struct net *net, const char
- 	    (newinfo->number <= oldinfo->initial_entries))
- 		module_put(t->me);
- 
--	/* Get the old counters. */
-+	/* Get the old counters, and synchronize with replace */
- 	get_counters(oldinfo, counters);
-+
- 	/* Decrease module usage counts and free resource */
- 	loc_cpu_old_entry = oldinfo->entries[raw_smp_processor_id()];
- 	IP6T_ENTRY_ITERATE(loc_cpu_old_entry, oldinfo->size, cleanup_entry,
-@@ -1405,11 +1340,24 @@ do_replace(struct net *net, void __user 
- 	return ret;
- }
- 
-+/* We're lazy, and add to the first CPU; overflow works its fey magic
-+ * and everything is OK. */
-+static int
-+add_counter_to_entry(struct ip6t_entry *e,
-+		     const struct xt_counters addme[],
-+		     unsigned int *i)
-+{
-+	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-+
-+	(*i)++;
-+	return 0;
-+}
-+
- static int
- do_add_counters(struct net *net, void __user *user, unsigned int len,
- 		int compat)
- {
--	unsigned int i;
-+	unsigned int i, curcpu;
- 	struct xt_counters_info tmp;
- 	struct xt_counters *paddc;
- 	unsigned int num_counters;
-@@ -1465,25 +1413,28 @@ do_add_counters(struct net *net, void __
- 		goto free;
- 	}
- 
--	mutex_lock(&t->lock);
-+
-+	local_bh_disable();
- 	private = t->private;
- 	if (private->number != num_counters) {
- 		ret = -EINVAL;
- 		goto unlock_up_free;
- 	}
- 
--	preempt_disable();
- 	i = 0;
- 	/* Choose the copy that is on our node */
--	loc_cpu_entry = private->entries[raw_smp_processor_id()];
-+	curcpu = smp_processor_id();
-+	xt_info_wrlock(curcpu);
-+	loc_cpu_entry = private->entries[curcpu];
- 	IP6T_ENTRY_ITERATE(loc_cpu_entry,
- 			  private->size,
- 			  add_counter_to_entry,
- 			  paddc,
- 			  &i);
--	preempt_enable();
-+	xt_info_wrunlock(curcpu);
-+
-  unlock_up_free:
--	mutex_unlock(&t->lock);
-+	local_bh_enable();
- 	xt_table_unlock(t);
- 	module_put(t->me);
-  free:
---- a/net/netfilter/x_tables.c	2009-04-23 19:59:36.038563216 -0700
-+++ b/net/netfilter/x_tables.c	2009-04-23 20:09:04.809576277 -0700
-@@ -625,20 +625,6 @@ void xt_free_table_info(struct xt_table_
- }
- EXPORT_SYMBOL(xt_free_table_info);
- 
--void xt_table_entry_swap_rcu(struct xt_table_info *oldinfo,
--			     struct xt_table_info *newinfo)
--{
--	unsigned int cpu;
--
--	for_each_possible_cpu(cpu) {
--		void *p = oldinfo->entries[cpu];
--		rcu_assign_pointer(oldinfo->entries[cpu], newinfo->entries[cpu]);
--		newinfo->entries[cpu] = p;
--	}
--
--}
--EXPORT_SYMBOL_GPL(xt_table_entry_swap_rcu);
--
- /* Find table by name, grabs mutex & ref.  Returns ERR_PTR() on error. */
- struct xt_table *xt_find_table_lock(struct net *net, u_int8_t af,
- 				    const char *name)
-@@ -676,32 +662,43 @@ void xt_compat_unlock(u_int8_t af)
- EXPORT_SYMBOL_GPL(xt_compat_unlock);
- #endif
- 
-+DEFINE_PER_CPU(rwlock_t, xt_info_locks);
-+EXPORT_PER_CPU_SYMBOL_GPL(xt_info_locks);
-+
-+
- struct xt_table_info *
- xt_replace_table(struct xt_table *table,
- 	      unsigned int num_counters,
- 	      struct xt_table_info *newinfo,
- 	      int *error)
- {
--	struct xt_table_info *oldinfo, *private;
-+	struct xt_table_info *private;
- 
- 	/* Do the substitution. */
--	mutex_lock(&table->lock);
-+	local_bh_disable();
- 	private = table->private;
-+
- 	/* Check inside lock: is the old number correct? */
- 	if (num_counters != private->number) {
- 		duprintf("num_counters != table->private->number (%u/%u)\n",
- 			 num_counters, private->number);
--		mutex_unlock(&table->lock);
-+		local_bh_enable();
- 		*error = -EAGAIN;
- 		return NULL;
- 	}
--	oldinfo = private;
--	rcu_assign_pointer(table->private, newinfo);
--	newinfo->initial_entries = oldinfo->initial_entries;
--	mutex_unlock(&table->lock);
- 
--	synchronize_net();
--	return oldinfo;
-+	table->private = newinfo;
-+	newinfo->initial_entries = private->initial_entries;
-+
-+	/*
-+	 * Even though table entries have now been swapped, other CPU's
-+	 * may still be using the old entries. This is okay, because
-+	 * resynchronization happens because of the locking done
-+	 * during the get_counters() routine.
-+	 */
-+	local_bh_enable();
-+
-+	return private;
- }
- EXPORT_SYMBOL_GPL(xt_replace_table);
- 
-@@ -734,7 +731,6 @@ struct xt_table *xt_register_table(struc
- 
- 	/* Simplifies replace_table code. */
- 	table->private = bootstrap;
--	mutex_init(&table->lock);
- 
- 	if (!xt_replace_table(table, 0, newinfo, &ret))
- 		goto unlock;
-@@ -1147,7 +1143,16 @@ static struct pernet_operations xt_net_o
- 
- static int __init xt_init(void)
- {
--	int i, rv;
-+	unsigned int i;
-+	int rv;
-+	static struct lock_class_key xt_lock_key[NR_CPUS];
-+
-+	for_each_possible_cpu(i) {
-+		rwlock_t *lock = &per_cpu(xt_info_locks, i);
-+
-+		rwlock_init(lock);
-+		lockdep_set_class(lock, xt_lock_key+i);
-+	}
- 
- 	xt = kmalloc(sizeof(struct xt_af) * NFPROTO_NUMPROTO, GFP_KERNEL);
- 	if (!xt)
