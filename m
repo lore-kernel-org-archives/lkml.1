@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757260AbZDXGqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbZDXGuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757260AbZDXGqr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 02:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbZDXGqi
+	id S1754678AbZDXGuU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 02:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZDXGuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 02:46:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53834 "EHLO hera.kernel.org"
+	Fri, 24 Apr 2009 02:50:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46159 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752659AbZDXGqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 02:46:37 -0400
-Date: Fri, 24 Apr 2009 06:45:58 GMT
-From: tip-bot for Len Brown <len.brown@intel.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       venkatesh.pallipadi@intel.com, tglx@linutronix.de, mingo@elte.hu,
-       len.brown@intel.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, tglx@linutronix.de, len.brown@intel.com,
-       mingo@elte.hu
-In-Reply-To: <alpine.LFD.2.00.0904231918510.15843@localhost.localdomain>
-References: <alpine.LFD.2.00.0904231918510.15843@localhost.localdomain>
-Subject: [tip:x86/urgent] x86, hpet: Stop soliciting hpet=force users on ICH4M
-Message-ID: <tip-d2c8604121648b744ebb127991f1c5876931885e@git.kernel.org>
-Git-Commit-ID: d2c8604121648b744ebb127991f1c5876931885e
-X-Mailer: tip-git-log-daemon
+	id S1750974AbZDXGuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 02:50:03 -0400
+Date: Fri, 24 Apr 2009 08:49:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Subject: Re: [BUG] 2.6.29.1 debugobjects warning
+Message-ID: <20090424064937.GD21739@elte.hu>
+References: <20090423140002.GA12852@Krystal> <20090423164638.3b5769c6.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 24 Apr 2009 06:46:00 +0000 (UTC)
+In-Reply-To: <20090423164638.3b5769c6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d2c8604121648b744ebb127991f1c5876931885e
-Gitweb:     http://git.kernel.org/tip/d2c8604121648b744ebb127991f1c5876931885e
-Author:     Len Brown <len.brown@intel.com>
-AuthorDate: Thu, 23 Apr 2009 19:19:42 -0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 24 Apr 2009 08:41:39 +0200
 
-x86, hpet: Stop soliciting hpet=force users on ICH4M
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-The HPET in the ICH4M is not documented in the data sheet
-because it was not officially validated.
+> On Thu, 23 Apr 2009 10:00:02 -0400
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > ODEBUG: init active object type: timer_list
 
-While it is fine for hackers to continue to use "hpet=force"
-to enable the hardware that they have, it is not prudent to
-solicit additional "hpet=force" users on this hardware.
+> It seems to be complaining that cpufreq_governor_dbs() is running 
+> init_timer() against a timer which has already been initialised 
+> once.
 
-[ Impact: remove hpet=force syslog message on old-ICH systems ]
+Not just already initialized - but also active. There's these states 
+for an object:
 
-Signed-off-by: Len Brown <len.brown@intel.com>
-Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-LKML-Reference: <alpine.LFD.2.00.0904231918510.15843@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+        ODEBUG_STATE_NONE,
+        ODEBUG_STATE_INIT,
+        ODEBUG_STATE_INACTIVE,
+        ODEBUG_STATE_ACTIVE,
+        ODEBUG_STATE_DESTROYED,
 
+So the 'init active object type' warning above suggests that an 
+init_timer() has been done on an already running timer. If true then 
+that is a bad bug - can corrupt timer state, etc.
 
----
- arch/x86/kernel/quirks.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+Thomas, do you agree?
 
-diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
-index e95022e..7563b31 100644
---- a/arch/x86/kernel/quirks.c
-+++ b/arch/x86/kernel/quirks.c
-@@ -261,8 +261,6 @@ static void old_ich_force_enable_hpet_user(struct pci_dev *dev)
- {
- 	if (hpet_force_user)
- 		old_ich_force_enable_hpet(dev);
--	else
--		hpet_print_force_info();
- }
- 
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ESB_1,
+	Ingo
