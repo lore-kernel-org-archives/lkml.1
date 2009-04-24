@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbZDXOya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757182AbZDXO6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbZDXOya (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 10:54:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbZDXOyV
+	id S1757182AbZDXO6G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 10:58:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbZDXO5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 10:54:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57920 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753444AbZDXOyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 10:54:20 -0400
-Date: Fri, 24 Apr 2009 10:53:42 -0400
-From: Dave Jones <davej@redhat.com>
-To: Luis Henriques <henrix@sapo.pt>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Devriendt <paul.devriendt@amd.com>,
-       Mark Langsdorf <mark.langsdorf@amd.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] powernow-k8.c: mess cleanup
-Message-ID: <20090424145342.GC18310@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Luis Henriques <henrix@sapo.pt>, Ingo Molnar <mingo@elte.hu>,
-	Paul Devriendt <paul.devriendt@amd.com>,
-	Mark Langsdorf <mark.langsdorf@amd.com>,
-	linux-kernel@vger.kernel.org
-References: <20090423184504.GA5487@hades.domain.com>
+	Fri, 24 Apr 2009 10:57:54 -0400
+Received: from ftp.linux-mips.org ([213.58.128.207]:47066 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754692AbZDXO5y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 10:57:54 -0400
+Date: Fri, 24 Apr 2009 16:57:35 +0200
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] DMA: TXx9 Soc DMA Controller driver (v3)
+Message-ID: <20090424145735.GA5930@linux-mips.org>
+References: <1240414831-20429-1-git-send-email-anemo@mba.ocn.ne.jp> <e9c3a7c20904240749g79b7b54cufa64149e44b5753a@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090423184504.GA5487@hades.domain.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <e9c3a7c20904240749g79b7b54cufa64149e44b5753a@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 07:45:04PM +0100, Luis Henriques wrote:
- > Mess cleanup in powernow_k8_acpi_pst_values() function.
- > 
- > Signed-off-by: Luis Henriques <henrix@sapo.pt>
- 
-Introduced by me in 0e64a0c982c06a6b8f5e2a7f29eb108fdf257b2f
+On Fri, Apr 24, 2009 at 07:49:10AM -0700, Dan Williams wrote:
 
-I have no idea wtf I did there, nor how I missed it
-before submitting.
+> On Wed, Apr 22, 2009 at 8:40 AM, Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> > This patch adds support for the integrated DMAC of the TXx9 family.
+> >
+> > Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> 
+> Acked-by: Dan Williams <dan.j.williams@intel.com>
 
-	Dave
+Thanks, queued for 2.6.31.
+
+  Ralf
