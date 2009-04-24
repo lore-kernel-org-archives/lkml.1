@@ -1,80 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbZDXIV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757634AbZDXIbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757591AbZDXIV6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 04:21:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZDXIVk
+	id S1757634AbZDXIbo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 04:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbZDXIb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 04:21:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57421 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751952AbZDXIVj (ORCPT
+	Fri, 24 Apr 2009 04:31:28 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:32818 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbZDXIb0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 04:21:39 -0400
-Date: Fri, 24 Apr 2009 01:13:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Markus Metzger <markus.t.metzger@intel.com>
-Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, markus.t.metzger@gmail.com,
-       roland@redhat.com, eranian@googlemail.com, oleg@redhat.com,
-       juan.villacis@intel.com, ak@linux.jf.intel.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com
-Subject: Re: [rfc 2/2] x86, bts: use physically non-contiguous trace buffer
-Message-Id: <20090424011328.b5e949ce.akpm@linux-foundation.org>
-In-Reply-To: <20090424100055.A30408@sedona.ch.intel.com>
-References: <20090424100055.A30408@sedona.ch.intel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Apr 2009 04:31:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Do0RksOGE7bvaCLyptWk1m1Vr9TMRPhRcLPaqEVQsLTX5dVfRn3rA4KD8keuE4yCnJ
+         WKNpl79xS/xrqfySbMWNlbsnY7NyPdqD4DhFWulwj/By840mTBw92LIlAsPj8O+LIZHr
+         rj/xqwB0BAcWq133bAN34cGle4LKSaxq7HZN0=
+Date: Fri, 24 Apr 2009 10:31:21 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
+       fchecconi@gmail.com, paolo.valente@unimore.it,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/7] page_cgroup: provide a generic page tracking
+	infrastructure
+Message-ID: <20090424083116.GB8535@linux>
+References: <1240090712-1058-1-git-send-email-righi.andrea@gmail.com> <1240090712-1058-4-git-send-email-righi.andrea@gmail.com> <49F11FBD.3070705@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49F11FBD.3070705@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Apr 2009 10:00:55 +0200 Markus Metzger <markus.t.metzger@intel.com> wrote:
-
-> Use vmalloc to allocate the branch trace buffer.
+On Fri, Apr 24, 2009 at 10:11:09AM +0800, Gui Jianfeng wrote:
+> Andrea Righi wrote:
+> > Dirty pages in the page cache can be processed asynchronously by kernel
+> > threads (pdflush) using a writeback policy. For this reason the real
+> > writes to the underlying block devices occur in a different IO context
+> > respect to the task that originally generated the dirty pages involved
+> > in the IO operation. This makes the tracking and throttling of writeback
+> > IO more complicate respect to the synchronous IO.
+> > 
+> > The page_cgroup infrastructure, currently available only for the memory
+> > cgroup controller, can be used to store the owner of each page and
+> > opportunely track the writeback IO. This information is encoded in
+> > page_cgroup->flags.
 > 
-> Peter Zijlstra suggested to use vmalloc rather than kmalloc to
-> allocate the potentially multi-page branch trace buffer.
+>   You encode id in page_cgroup->flags, if a cgroup get removed, IMHO, you
+>   should remove the corresponding id in flags.
 
-The changelog provides no reason for this change.  It should do so.
+OK, the same same ID could be reused by another cgroup. I think this
+should happen very rarely because IDs are recovered slowly anyway.
 
-> Is there a way to have vmalloc allocate a physically non-contiguous
-> buffer for test purposes? Ideally, the memory area would have big
-> holes in it with sensitive data in between so I would know immediately
-> when this is overwritten.
+What about simply executing a sys_sync() when a io-throttle cgroup is
+removed? If we're going to remove a cgroup no additional dirty page will
+be generated by this cgroup, because it must be empty. And the sync
+would allow that old dirty pages will be flushed back to disk (for those
+pages the cgroup ID will be simply ignored).
 
-I suppose you could allocate the pages by hand and then vmap() them. 
-Allocating 2* the number you need and then freeing every second one
-should make them physically holey.
+>   One more thing, if a task is moving from a cgroup to another, the id in
+>   flags also need to be changed.
 
-> --- a/arch/x86/kernel/ptrace.c
-> +++ b/arch/x86/kernel/ptrace.c
-> @@ -22,6 +22,7 @@
->  #include <linux/seccomp.h>
->  #include <linux/signal.h>
->  #include <linux/workqueue.h>
-> +#include <linux/vmalloc.h>
->  
->  #include <asm/uaccess.h>
->  #include <asm/pgtable.h>
-> @@ -626,7 +627,7 @@ static int alloc_bts_buffer(struct bts_c
->  	if (err < 0)
->  		return err;
->  
-> -	buffer = kzalloc(size, GFP_KERNEL);
-> +	buffer = vmalloc(size);
->  	if (!buffer)
->  		goto out_refund;
->  
-> @@ -646,7 +647,7 @@ static inline void free_bts_buffer(struc
->  	if (!context->buffer)
->  		return;
->  
-> -	kfree(context->buffer);
-> +	vfree(context->buffer);
->  	context->buffer = NULL;
->  
+I do not agree here. Even if a task is moving from a cgroup to another
+the cgroup that generated the dirty page is always the old one. Remember
+that we want to save cgroup's identity in this case, and not the task.
 
-The patch looks like a regression to me.  vmalloc memory is slower to
-allocate, slower to free, slower to access and can exhaust or fragment
-the vmalloc arena.  Confused.
+Thanks,
+-Andrea
