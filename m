@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932188AbZDXRzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761428AbZDXR5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932188AbZDXRzr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 13:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761296AbZDXRze
+	id S1761428AbZDXR5R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 13:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbZDXR5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 13:55:34 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:42082 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761379AbZDXRzc (ORCPT
+	Fri, 24 Apr 2009 13:57:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46156 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756130AbZDXR5A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 13:55:32 -0400
-Message-ID: <49F1FD4B.2020909@oracle.com>
-Date: Fri, 24 Apr 2009 10:56:27 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: Re: linux-next: Tree for April 24 (p54 build error)
-References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
-In-Reply-To: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 24 Apr 2009 13:57:00 -0400
+Date: Fri, 24 Apr 2009 10:51:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linux-mm@kvack.org, kosaki.motohiro@jp.fujitsu.com,
+       cl@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
+       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com,
+       peterz@infradead.org, penberg@cs.helsinki.fi
+Subject: Re: [PATCH 09/22] Calculate the alloc_flags for allocation only
+ once
+Message-Id: <20090424105115.18fec653.akpm@linux-foundation.org>
+In-Reply-To: <20090424104716.GE14283@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
+	<1240408407-21848-10-git-send-email-mel@csn.ul.ie>
+	<20090423155216.07ef773e.akpm@linux-foundation.org>
+	<20090424104716.GE14283@csn.ul.ie>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.49F1FD0B.02C6:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 24 Apr 2009 11:47:17 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
 
-drivers/net/wireless/p54/p54.h:193: error: array type has incomplete element type
+> Uninline gfp_to_alloc_flags() in the page allocator slow path
 
-struct p54_led_dev definition is controlled by
-#ifdef CONFIG_P54_LEDS (is not set)
+Well, there are <boggle> 37 inlines in page_alloc.c, so uninlining a
+single function (and leaving its layout mucked up ;)) is a bit random.
 
-but the struct declaration is controlled by
-#ifdef CONFIG_MAC80211_LEDS (=y)
+Perhaps sometime you could take a look at "[patch] page allocator:
+rationalise inlining"?
 
+I'm kind of in two minds about it.  Do we really know that all approved
+versions of gcc will do the most desirable thing in all circumstances
+on all architectures?
 
--- 
-~Randy
