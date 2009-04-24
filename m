@@ -1,159 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752215AbZDXLd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbZDXLnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752215AbZDXLd1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 07:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZDXLdS
+	id S1752655AbZDXLnT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 07:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZDXLnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 07:33:18 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:56485 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751110AbZDXLdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 07:33:17 -0400
-Date: Fri, 24 Apr 2009 12:33:12 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       cl@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com,
-       peterz@infradead.org, penberg@cs.helsinki.fi,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH 15/22] Do not disable interrupts in free_page_mlock()
-Message-ID: <20090424113312.GG14283@csn.ul.ie>
-References: <1240408407-21848-16-git-send-email-mel@csn.ul.ie> <20090423155951.6778bdd3.akpm@linux-foundation.org> <20090424090721.1047.A69D9226@jp.fujitsu.com>
+	Fri, 24 Apr 2009 07:43:09 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57786 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751917AbZDXLnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 07:43:08 -0400
+Message-ID: <49F1A59B.3080206@cn.fujitsu.com>
+Date: Fri, 24 Apr 2009 19:42:19 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090424090721.1047.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/4] workqueue_tracepoint: Add worklet tracepoints for worklet
+ lifecycle tracing
+References: <20090415085310.AC0D.A69D9226@jp.fujitsu.com> <20090415011533.GI5968@nowhere> <20090415141250.AC46.A69D9226@jp.fujitsu.com> <49E8282A.6010004@cn.fujitsu.com> <49E82CA7.2040606@cn.fujitsu.com> <20090417134557.GA23493@elte.hu>
+In-Reply-To: <20090417134557.GA23493@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 09:33:50AM +0900, KOSAKI Motohiro wrote:
-> > > @@ -157,14 +157,9 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
-> > >   */
-> > >  static inline void free_page_mlock(struct page *page)
-> > >  {
-> > > -	if (unlikely(TestClearPageMlocked(page))) {
-> > > -		unsigned long flags;
-> > > -
-> > > -		local_irq_save(flags);
-> > > -		__dec_zone_page_state(page, NR_MLOCK);
-> > > -		__count_vm_event(UNEVICTABLE_MLOCKFREED);
-> > > -		local_irq_restore(flags);
-> > > -	}
-> > > +	__ClearPageMlocked(page);
-> > > +	__dec_zone_page_state(page, NR_MLOCK);
-> > > +	__count_vm_event(UNEVICTABLE_MLOCKFREED);
-> > >  }
-> > 
-> > The conscientuous reviewer runs around and checks for free_page_mlock()
-> > callers in other .c files which might be affected.
-> > 
-> > Only there are no such callers.
-> > 
-> > The reviewer's job would be reduced if free_page_mlock() wasn't
-> > needlessly placed in a header file!
+Ingo Molnar wrote:
+> ...
+> Basically, i'd suggest the following complete set of events instead:
 > 
-> very sorry.
+>  TRACE_EVENT(workqueue_create
+>  TRACE_EVENT(workqueue_flush              /* NEW */
+>  TRACE_EVENT(workqueue_destroy
 > 
-> How about this?
+>  TRACE_EVENT(worklet_enqueue              /* NEW */
+>  TRACE_EVENT(worklet_enqueue_delayed      /* NEW */
 > 
-> =============================================
-> Subject: [PATCH] move free_page_mlock() to page_alloc.c
+>  TRACE_EVENT(worklet_execute              /* instead of workqueue_execution */
+>  TRACE_EVENT(worklet_complete             /* NEW */
 > 
-> Currently, free_page_mlock() is only called from page_alloc.c.
-> Thus, we can move it to page_alloc.c.
+>  TRACE_EVENT(worklet_cancel               /* NEW */
 > 
+> This allows the understanding of the life cycle of a workqueue and 
+> of worklets that enter that workqueue. Note the distinction between 
+> workqueue and worklet (work) - that is essential.
+> 
+> The parameters of the events are obvious, with one detail: i'd 
+> suggest a 'cpu' parameter to the enqueue events, to allow the 
+> mapping of the _on(..cpu) variants too.
+> 
+> I would not bother with schedule_on_each_cpu() instrumentation - 
+> it's rarely used.
+> 
+> 	Ingo
+> 
+Hello, Ingo
 
-Looks good, but here is a version rebased on top of the patch series
-where it would be easier to merge with "Do not disable interrupts in
-free_page_mlock()".
+These patchs add tracepoints for per-worklet tracing.
+Now we have enough tracepoints to start makeing trace_workqueue.c support
+worklet time mesurement.
 
-I do note why it might be in the header though - it keeps all the
-CONFIG_HAVE_MLOCKED_PAGE_BIT-related helper functions together making it
-easier to find them. Lee, was that the intention?
+Thanks
+Zhaolei
 
-=======
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
-Move free_page_mlock() from mm/internal.h to mm/page_alloc.c
-
-Currently, free_page_mlock() is only called from page_alloc.c. This patch
-moves it from a header to to page_alloc.c.
-
-[mel@csn.ul.ie: Rebase on top of page allocator patches]
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- mm/internal.h   |   13 -------------
- mm/page_alloc.c |   16 ++++++++++++++++
- 2 files changed, 16 insertions(+), 13 deletions(-)
-
-diff --git a/mm/internal.h b/mm/internal.h
-index 58ec1bc..4b1672a 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -150,18 +150,6 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
- 	}
- }
- 
--/*
-- * free_page_mlock() -- clean up attempts to free and mlocked() page.
-- * Page should not be on lru, so no need to fix that up.
-- * free_pages_check() will verify...
-- */
--static inline void free_page_mlock(struct page *page)
--{
--	__ClearPageMlocked(page);
--	__dec_zone_page_state(page, NR_MLOCK);
--	__count_vm_event(UNEVICTABLE_MLOCKFREED);
--}
--
- #else /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
- static inline int is_mlocked_vma(struct vm_area_struct *v, struct page *p)
- {
-@@ -170,7 +158,6 @@ static inline int is_mlocked_vma(struct vm_area_struct *v, struct page *p)
- static inline void clear_page_mlock(struct page *page) { }
- static inline void mlock_vma_page(struct page *page) { }
- static inline void mlock_migrate_page(struct page *new, struct page *old) { }
--static inline void free_page_mlock(struct page *page) { }
- 
- #endif /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
- 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index f08b4cb..3db5f57 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -433,6 +433,22 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
- 	return 0;
- }
- 
-+#ifdef CONFIG_HAVE_MLOCKED_PAGE_BIT
-+/*
-+ * free_page_mlock() -- clean up attempts to free and mlocked() page.
-+ * Page should not be on lru, so no need to fix that up.
-+ * free_pages_check() will verify...
-+ */
-+static inline void free_page_mlock(struct page *page)
-+{
-+	__ClearPageMlocked(page);
-+	__dec_zone_page_state(page, NR_MLOCK);
-+	__count_vm_event(UNEVICTABLE_MLOCKFREED);
-+}
-+#else
-+static inline void free_page_mlock(struct page *page) { }
-+#endif /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
-+
- /*
-  * Freeing function for a buddy system allocator.
-  *
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
