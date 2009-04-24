@@ -1,440 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbZDXGPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758610AbZDXGQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbZDXGPq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 02:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758627AbZDXGPZ
+	id S1758610AbZDXGQy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 02:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757768AbZDXGQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 02:15:25 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:41815 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758234AbZDXGPX (ORCPT
+	Fri, 24 Apr 2009 02:16:41 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48686 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758025AbZDXGQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 02:15:23 -0400
-Date: Fri, 24 Apr 2009 11:45:04 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
-       Roland McGrath <roland@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 02/12] Introducing generic hardware breakpoint handler
-	interfaces
-Message-ID: <20090424061504.GC23812@in.ibm.com>
-References: <20090424055710.764502564@prasadkr_t60p.in.ibm.com>
+	Fri, 24 Apr 2009 02:16:39 -0400
+Message-ID: <49F15922.5090704@jp.fujitsu.com>
+Date: Fri, 24 Apr 2009 15:16:02 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=generic_hwbkpt_02
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Huang Ying <ying.huang@intel.com>
+CC: Andi Kleen <andi@firstfloor.org>, "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [PATCH] [3/4] x86: MCE: Improve mce_get_rip
+References: <20090407506.675031434@firstfloor.org>	 <20090407150656.43E161D046D@basil.firstfloor.org>	 <49DC5D11.4060505@jp.fujitsu.com> <1240479833.6842.554.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1240479833.6842.554.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces the generic Hardware Breakpoint interfaces for both user
-and kernel space requests.
+Huang Ying wrote:
+> Add some description for the patch, hope that to be more clear.
+> 
+> Best Regards,
+> Huang Ying
+> --------------------------------------------->
+> mce_get_rip() is used to get IP when MCE is generated, usually from
+> the stack. But the IP on the stack is not always valid.
+> MCG_STATUS_RIPV indicates program can restart from the IP on the stack,
+> so if it is set, the IP is valid. MCG_STATUS_EIPV indicate IP on the
+> stack is directly associated with the error, so if it is set, the IP
+> is valid too.
+> 
+> In current implementation, no IP will be returned (and then reported)
+> if MCG_STATUS_RIPV is not set and MCG_STATUS_EIPV is set. This patch
+> fixes this issue by returning IP on the stack when MCG_STATUS_EIPV is
+> set.
+> 
+> In some CPU, a MSR (rip_msr) provides another way to get IP when MCE
+> is generated. This is used by mce_get_rip() too.
+> 
+> There is no MSR for CS, in current implementation, if rip_msr is used
+> to get IP, reported CS is set to 0. But in fact, the CS on the stack
+> can be trusted if MCG_STATUS_RIPV or MCG_STATUS_EIPV is set. This
+> patch fixes this issue by keeping reported CS when rip_msr is used.
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
----
- arch/Kconfig           |    4 
- kernel/Makefile        |    1 
- kernel/hw_breakpoint.c |  364 +++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 369 insertions(+)
+So the bug is in short:
+ In some cases no IP/CS reported even there were valid records.
+Right?
 
-Index: arch/Kconfig
-===================================================================
---- arch/Kconfig.orig
-+++ arch/Kconfig
-@@ -112,3 +112,7 @@ config HAVE_DMA_API_DEBUG
- 
- config HAVE_DEFAULT_NO_SPIN_MUTEXES
- 	bool
-+
-+config HAVE_HW_BREAKPOINT
-+	bool
-+
-Index: kernel/Makefile
-===================================================================
---- kernel/Makefile.orig
-+++ kernel/Makefile
-@@ -97,6 +97,7 @@ obj-$(CONFIG_X86_DS) += trace/
- obj-$(CONFIG_SMP) += sched_cpupri.o
- obj-$(CONFIG_SLOW_WORK) += slow-work.o
- obj-$(CONFIG_PERF_COUNTERS) += perf_counter.o
-+obj-$(CONFIG_HAVE_HW_BREAKPOINT) += hw_breakpoint.o
- 
- ifneq ($(CONFIG_SCHED_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
-Index: kernel/hw_breakpoint.c
-===================================================================
---- /dev/null
-+++ kernel/hw_breakpoint.c
-@@ -0,0 +1,364 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) 2007 Alan Stern
-+ * Copyright (C) IBM Corporation, 2009
-+ */
-+
-+/*
-+ * HW_breakpoint: a unified kernel/user-space hardware breakpoint facility,
-+ * using the CPU's debug registers.
-+ *
-+ * This file contains the arch-independent routines.  It is not meant
-+ * to be compiled as a standalone source file; rather it should be
-+ * #include'd by the arch-specific implementation.
-+ */
-+
-+#include <linux/irqflags.h>
-+#include <linux/kallsyms.h>
-+#include <linux/notifier.h>
-+#include <linux/kprobes.h>
-+#include <linux/kdebug.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/percpu.h>
-+#include <linux/mutex.h>
-+#include <linux/sched.h>
-+#include <linux/init.h>
-+#include <linux/smp.h>
-+
-+#include <asm/hw_breakpoint.h>
-+#include <asm/processor.h>
-+
-+#ifdef CONFIG_X86
-+#include <asm/debugreg.h>
-+#endif
-+/*
-+ * Spinlock that protects all (un)register operations over kernel/user-space
-+ * breakpoint requests
-+ */
-+DEFINE_SPINLOCK(hw_breakpoint_lock);
-+
-+/* Array of kernel-space breakpoint structures */
-+struct hw_breakpoint *hbp_kernel[HB_NUM];
-+
-+/*
-+ * Kernel breakpoints grow downwards, starting from HB_NUM
-+ * 'hbp_kernel_pos' denotes lowest numbered breakpoint register occupied for
-+ * kernel-space request. We will initialise it here and not in an __init
-+ * routine because load_debug_registers(), which uses this variable can be
-+ * called very early during CPU initialisation.
-+ */
-+unsigned int hbp_kernel_pos = HB_NUM;
-+
-+/*
-+ * An array containing refcount of threads using a given bkpt register
-+ * Accesses are synchronised by acquiring hw_breakpoint_lock
-+ */
-+unsigned int hbp_user_refcount[HB_NUM];
-+
-+DEFINE_PER_CPU(struct task_struct *, last_debugged_task);
-+
-+/*
-+ * Install the debug register values for a new thread.
-+ */
-+void switch_to_thread_hw_breakpoint(struct task_struct *tsk)
-+{
-+	/* Set the debug register */
-+	arch_install_thread_hw_breakpoint(tsk);
-+	per_cpu(last_debugged_task, get_cpu()) = current;
-+	put_cpu_no_resched();
-+}
-+
-+/*
-+ * Install the debug register values for just the kernel, no thread.
-+ */
-+void switch_to_none_hw_breakpoint(void)
-+{
-+	arch_uninstall_thread_hw_breakpoint();
-+}
-+
-+/*
-+ * Load the debug registers during startup of a CPU.
-+ */
-+void load_debug_registers(void)
-+{
-+	unsigned long flags;
-+	struct task_struct *tsk = current;
-+
-+	spin_lock(&hw_breakpoint_lock);
-+
-+	/* Prevent IPIs for new kernel breakpoint updates */
-+	local_irq_save(flags);
-+	arch_update_kernel_hw_breakpoints(NULL);
-+	local_irq_restore(flags);
-+
-+	if (test_tsk_thread_flag(tsk, TIF_DEBUG))
-+		switch_to_thread_hw_breakpoint(tsk);
-+
-+	spin_unlock(&hw_breakpoint_lock);
-+}
-+
-+/*
-+ * Erase all the hardware breakpoint info associated with a thread.
-+ *
-+ * If tsk != current then tsk must not be usable (for example, a
-+ * child being cleaned up from a failed fork).
-+ */
-+void flush_thread_hw_breakpoint(struct task_struct *tsk)
-+{
-+	int i;
-+	struct thread_struct *thread = &(tsk->thread);
-+
-+	spin_lock(&hw_breakpoint_lock);
-+
-+	/* The thread no longer has any breakpoints associated with it */
-+	clear_tsk_thread_flag(tsk, TIF_DEBUG);
-+	for (i = 0; i < HB_NUM; i++) {
-+		if (thread->hbp[i]) {
-+			hbp_user_refcount[i]--;
-+			kfree(thread->hbp[i]);
-+			thread->hbp[i] = NULL;
-+		}
-+	}
-+
-+	arch_flush_thread_hw_breakpoint(tsk);
-+
-+	/* Actually uninstall the breakpoints if necessary */
-+	if (tsk == current)
-+		switch_to_none_hw_breakpoint();
-+	spin_unlock(&hw_breakpoint_lock);
-+}
-+
-+/*
-+ * Copy the hardware breakpoint info from a thread to its cloned child.
-+ */
-+int copy_thread_hw_breakpoint(struct task_struct *tsk,
-+		struct task_struct *child, unsigned long clone_flags)
-+{
-+	/*
-+	 * We will assume that breakpoint settings are not inherited
-+	 * and the child starts out with no debug registers set.
-+	 * But what about CLONE_PTRACE?
-+	 */
-+	clear_tsk_thread_flag(child, TIF_DEBUG);
-+
-+	/* We will call flush routine since the debugregs are not inherited */
-+	arch_flush_thread_hw_breakpoint(child);
-+
-+	return 0;
-+}
-+
-+int __register_user_hw_breakpoint(int pos, struct task_struct *tsk,
-+					struct hw_breakpoint *bp)
-+{
-+	struct thread_struct *thread = &(tsk->thread);
-+	int rc;
-+
-+	/* Do not overcommit. Fail if kernel has used the hbp registers */
-+	if (pos >= hbp_kernel_pos)
-+		return -ENOSPC;
-+
-+	rc = arch_validate_hwbkpt_settings(bp, tsk);
-+	if (rc)
-+		return rc;
-+
-+	thread->hbp[pos] = bp;
-+	hbp_user_refcount[pos]++;
-+
-+	arch_update_user_hw_breakpoint(pos, tsk);
-+	/*
-+	 * Does it need to be installed right now?
-+	 * Otherwise it will get installed the next time tsk runs
-+	 */
-+	if (tsk == current)
-+		switch_to_thread_hw_breakpoint(tsk);
-+
-+	return rc;
-+}
-+
-+/*
-+ * Modify the address of a hbp register already in use by the task
-+ * Do not invoke this in-lieu of a __unregister_user_hw_breakpoint()
-+ */
-+int __modify_user_hw_breakpoint(int pos, struct task_struct *tsk,
-+					struct hw_breakpoint *bp)
-+{
-+	struct thread_struct *thread = &(tsk->thread);
-+
-+	if ((pos >= hbp_kernel_pos) || (arch_validate_hwbkpt_settings(bp, tsk)))
-+		return -EINVAL;
-+
-+	if (thread->hbp[pos] == NULL)
-+		return -EINVAL;
-+
-+	thread->hbp[pos] = bp;
-+	/*
-+	 * 'pos' must be that of a hbp register already used by 'tsk'
-+	 * Otherwise arch_modify_user_hw_breakpoint() will fail
-+	 */
-+	arch_update_user_hw_breakpoint(pos, tsk);
-+
-+	if (tsk == current)
-+		switch_to_thread_hw_breakpoint(tsk);
-+
-+	return 0;
-+}
-+
-+void __unregister_user_hw_breakpoint(int pos, struct task_struct *tsk)
-+{
-+	hbp_user_refcount[pos]--;
-+	tsk->thread.hbp[pos] = NULL;
-+
-+	arch_update_user_hw_breakpoint(pos, tsk);
-+
-+	if (tsk == current)
-+		switch_to_thread_hw_breakpoint(tsk);
-+}
-+
-+/**
-+ * register_user_hw_breakpoint - register a hardware breakpoint for user space
-+ * @tsk: pointer to 'task_struct' of the process to which the address belongs
-+ * @bp: the breakpoint structure to register
-+ *
-+ * @bp.info->name or @bp.info->address, @bp.info->len, @bp.info->type and
-+ * @bp->triggered must be set properly before invocation
-+ *
-+ */
-+int register_user_hw_breakpoint(struct task_struct *tsk,
-+					struct hw_breakpoint *bp)
-+{
-+	struct thread_struct *thread = &(tsk->thread);
-+	int i, rc = -ENOSPC;
-+
-+	spin_lock(&hw_breakpoint_lock);
-+
-+	for (i = 0; i < hbp_kernel_pos; i++) {
-+		if (!thread->hbp[i]) {
-+			rc = __register_user_hw_breakpoint(i, tsk, bp);
-+			break;
-+		}
-+	}
-+
-+	spin_unlock(&hw_breakpoint_lock);
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(register_user_hw_breakpoint);
-+
-+/**
-+ * unregister_user_hw_breakpoint - unregister a user-space hardware breakpoint
-+ * @tsk: pointer to 'task_struct' of the process to which the address belongs
-+ * @bp: the breakpoint structure to unregister
-+ *
-+ */
-+void unregister_user_hw_breakpoint(struct task_struct *tsk,
-+						struct hw_breakpoint *bp)
-+{
-+	struct thread_struct *thread = &(tsk->thread);
-+	int i;
-+
-+	spin_lock(&hw_breakpoint_lock);
-+	for (i = 0; i < hbp_kernel_pos; i++) {
-+		if (bp == thread->hbp[i]) {
-+			__unregister_user_hw_breakpoint(i, tsk);
-+			break;
-+		}
-+	}
-+	spin_unlock(&hw_breakpoint_lock);
-+}
-+EXPORT_SYMBOL_GPL(unregister_user_hw_breakpoint);
-+
-+/**
-+ * register_kernel_hw_breakpoint - register a hardware breakpoint for kernel space
-+ * @bp: the breakpoint structure to register
-+ *
-+ * @bp.info->name or @bp.info->address, @bp.info->len, @bp.info->type and
-+ * @bp->triggered must be set properly before invocation
-+ *
-+ */
-+int register_kernel_hw_breakpoint(struct hw_breakpoint *bp)
-+{
-+	int rc;
-+
-+	rc = arch_validate_hwbkpt_settings(bp, NULL);
-+	if (rc)
-+		return rc;
-+
-+	spin_lock(&hw_breakpoint_lock);
-+
-+	rc = -EINVAL;
-+	/* Check if we are over-committing */
-+	if ((hbp_kernel_pos > 0) && (!hbp_user_refcount[hbp_kernel_pos-1])) {
-+		hbp_kernel_pos--;
-+		hbp_kernel[hbp_kernel_pos] = bp;
-+		on_each_cpu(arch_update_kernel_hw_breakpoints, NULL, 0);
-+		rc = 0;
-+	}
-+
-+	spin_unlock(&hw_breakpoint_lock);
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(register_kernel_hw_breakpoint);
-+
-+/**
-+ * unregister_kernel_hw_breakpoint - unregister a HW breakpoint for kernel space
-+ * @bp: the breakpoint structure to unregister
-+ *
-+ * Uninstalls and unregisters @bp.
-+ */
-+void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp)
-+{
-+	int i, j;
-+
-+	spin_lock(&hw_breakpoint_lock);
-+
-+	/* Find the 'bp' in our list of breakpoints for kernel */
-+	for (i = hbp_kernel_pos; i < HB_NUM; i++)
-+		if (bp == hbp_kernel[i])
-+			break;
-+
-+	/* Check if we did not find a match for 'bp'. If so return early */
-+	if (i == HB_NUM) {
-+		spin_unlock(&hw_breakpoint_lock);
-+		return;
-+	}
-+
-+	/*
-+	 * We'll shift the breakpoints one-level above to compact if
-+	 * unregistration creates a hole
-+	 */
-+	for (j = i; j > hbp_kernel_pos; j--)
-+		hbp_kernel[j] = hbp_kernel[j-1];
-+
-+	hbp_kernel[hbp_kernel_pos] = NULL;
-+	on_each_cpu(arch_update_kernel_hw_breakpoints, NULL, 0);
-+	hbp_kernel_pos++;
-+
-+	spin_unlock(&hw_breakpoint_lock);
-+}
-+EXPORT_SYMBOL_GPL(unregister_kernel_hw_breakpoint);
-+
-+static struct notifier_block hw_breakpoint_exceptions_nb = {
-+	.notifier_call = hw_breakpoint_exceptions_notify,
-+	/* we need to be notified first */
-+	.priority = 0x7fffffff
-+};
-+
-+static int __init init_hw_breakpoint(void)
-+{
-+	return register_die_notifier(&hw_breakpoint_exceptions_nb);
-+}
-+
-+core_initcall(init_hw_breakpoint);
+Then in other words it will mean lost of error information, that is not
+good for error investigation.
+
+One question is: if (RIPV,EIPV) = (0,0), then is the IP on the stack
+really invalid value, or is it still point IP when MCE is generated?
+I suppose it is not invalid.  If a processor encounters MCE and if it
+is not sure what happened, then it will store the IP on the stack,
+indicating neither of flags.
+
+If this supposition is correct, the best way is pick the value on
+the stack unconditionally, and record valid flags together.
+
+
+Thanks,
+H.Seto
 
