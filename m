@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761119AbZDXRri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761186AbZDXRtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761119AbZDXRri (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 13:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbZDXRr3
+	id S1761186AbZDXRtU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 13:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbZDXRtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 13:47:29 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:46585 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754186AbZDXRr2 (ORCPT
+	Fri, 24 Apr 2009 13:49:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50182 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753198AbZDXRtL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 13:47:28 -0400
-X-Greylist: delayed 596 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Apr 2009 13:47:27 EDT
-X-Trace: 184404096/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.72.3/None/adrian@newgolddream.info
-X-SBRS: None
-X-RemoteIP: 79.69.72.3
-X-IP-MAIL-FROM: adrian@newgolddream.info
-X-SMTP-AUTH: 
-X-MUA: Evolution 2.26.1 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AkYHABSW8UlPRUgD/2dsb2JhbACBUIEwzVWCNoE+BQ
-X-IronPort-AV: E=Sophos;i="4.40,243,1238972400"; 
-   d="scan'208";a="184404096"
-Subject: Re: [Bug #13069] regression in 2.6.29-git3 on SH/Dreamcast
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Manuel Lauss <mano@roarinelk.homelinux.net>
-In-Reply-To: <nY3-4PrO6XH.A.QZB.ow85JB@chimera>
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
-	 <nY3-4PrO6XH.A.QZB.ow85JB@chimera>
-Content-Type: text/plain
-Date: Fri, 24 Apr 2009 18:37:18 +0100
-Message-Id: <1240594638.4777.1.camel@localhost.localdomain>
+	Fri, 24 Apr 2009 13:49:11 -0400
+Date: Fri, 24 Apr 2009 10:46:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: David Daney <ddaney@caviumnetworks.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Introduce a boolean "single_bit_set" function.
+Message-Id: <20090424104651.7c751735.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0904240632240.16107@localhost.localdomain>
+References: <alpine.LFD.2.00.0904231339080.13089@localhost.localdomain>
+	<49F0C817.8050407@caviumnetworks.com>
+	<20090423165723.16c9f566.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0904240632240.16107@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-16 at 23:45 +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Fri, 24 Apr 2009 06:40:39 -0400 (EDT) "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
+
+>   so it would be a simple matter to define the bit set boolean in
+> terms of hweight_long(), yes?  so what about, in bitops.h:
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.29.  Please verify if it still should be listed and let me know
-> (either way).
+>   static inline bool
+>   exactly_one_bit_set(unsigned long w)
+>   {
+> 	return hweight_long(w) == 1;
+>   }
 > 
+>   static inline bool
+>   more_than_one_bit_set(unsigned long w)
+>   {
+> 	return hweight_long(w) > 1;
+>   }
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13069
-> Subject		: regression in 2.6.29-git3 on SH/Dreamcast
-> Submitter	: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-> Date		: 2009-03-29 19:04 (19 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123835353115372&w=4
+> or something to that effect, *if* people think it's worth it.
+> obviously, none of the above is strictly necessary, but it would make
+> a lot of code semantically cleaner.
 > 
 
-At this point it *looks* as though it was simply a question of
-insufficient memory to boot, but I think it needs further testing.
-Nobody else seems to have picked it up though.
+Doing plain old
 
+	if (hweight32(foo) == 1)
+
+(say) at the call sites quite clearly expresses what the code is trying
+to do.
+
+> rday
+> 
+> p.s.  i notice that, even in a single header file like bitops.h, there
+> is a mixture of both "inline" and "__inline__".  what's the
+> recommended choice these days?
+
+`inline'.  Or uninline the function ;)
