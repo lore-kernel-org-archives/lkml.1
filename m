@@ -1,145 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759469AbZDXIl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbZDXInT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759469AbZDXIl3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 04:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759103AbZDXIlP
+	id S1756134AbZDXInT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 04:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbZDXInJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 04:41:15 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:37344 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759087AbZDXIlM (ORCPT
+	Fri, 24 Apr 2009 04:43:09 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:51445 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751960AbZDXInG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 04:41:12 -0400
-Date: Fri, 24 Apr 2009 10:41:08 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sachin Sant <sachinp@in.ibm.com>, Steven Rostedt <rostedt@goodmis.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       linux-s390@vger.kernel.org, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: Next April 24: [S390] allmodconfig build failure (trace/events)
-Message-ID: <20090424104108.0f2c0f05@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20090424072533.GE24912@elte.hu>
-References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
-	<49F16654.8040208@in.ibm.com>
-	<20090424072533.GE24912@elte.hu>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+	Fri, 24 Apr 2009 04:43:06 -0400
+Date: Fri, 24 Apr 2009 10:46:47 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Huang Ying <ying.huang@intel.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [PATCH] [4/4] x86: MCE: Fix EIPV behaviour with !PCC
+Message-ID: <20090424084647.GI13896@one.firstfloor.org>
+References: <20090407506.675031434@firstfloor.org> <20090407150657.61C4E1D046E@basil.firstfloor.org> <1240479838.6842.555.camel@yhuang-dev.sh.intel.com> <49F1077A.5030801@jp.fujitsu.com> <1240535513.6842.561.camel@yhuang-dev.sh.intel.com> <49F150BA.9040407@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49F150BA.9040407@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Apr 2009 09:25:33 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
-
+On Thu, Apr 23, 2009 at 10:40:10PM -0700, H. Peter Anvin wrote:
+> Huang Ying wrote:
+> > On Fri, 2009-04-24 at 08:27 +0800, Hidetoshi Seto wrote:
+> >> Huang Ying wrote:
+> >>
+> >> Or, should this patch be applied after committing some of Andi's patches?
+> >> It means this patch targets a bug in Andi's patch set and the bug is not
+> >> in 2.6.30-rc* yet.
+> > 
+> > Yes. I think you are right. I fix a "bug" that doesn't exist.
+> > 
 > 
-> * Sachin Sant <sachinp@in.ibm.com> wrote:
-> 
-> > Today's next tree build(s390 allmodconfig) failed with
-> >
-> > kernel/built-in.o: In function `trace_softirq_entry'
-> > include/trace/events/irq.h:42: undefined reference to  
-> > `'
-> > include/trace/events/irq.h:42: undefined reference to  
-> > `__tracepoint_softirq_entry'
-> > kernel/built-in.o: In function `trace_softirq_exit':
-> > include/trace/events/irq.h:48: undefined reference to  
-> > `__tracepoint_softirq_exit'
-> > include/trace/events/irq.h:48: undefined reference to  
-> > `__tracepoint_softirq_exit'
-> 
-> Hm, that's weird - s390 does not build kernel/softirq.o? Hm, it does 
-> - softirq.o is an obj-y object.
+> Thanks for catching that now :)
 
-s390 does build kernel/softirq.o. However it's anything but obvious to
-me how the tracepoint infrastructure works. Too many #ifdefs, #define's
-and #undefine's...
+Sorry we still need it I think, see previous email.
 
-I would expect that struct __tracepoint_softirq_entry somehow gets
-defined via one of the TRACE_FORMAT macros, no?
-
-kernel/softirq.i has these parts wrt. __tracepoint_softirq_entry:
-
-# 42 "include/trace/events/irq.h"
-extern struct tracepoint __tracepoint_softirq_entry; static inline __attribute__((always_inline)) void trace_softirq_entry(struc
-t softirq_action *h, struct softirq_action *vec) { if (__builtin_expect(!!(__tracepoint_softirq_entry.state), 0)) do { void **it
-_func; do { } while (0); it_func = ({ typeof((&__tracepoint_softirq_entry)->funcs) _________p1 = (*(volatile typeof((&__tracepoi
-nt_softirq_entry)->funcs) *)&((&__tracepoint_softirq_entry)->funcs)); do { } while(0); (_________p1); }); if (it_func) { do { ((
-void(*)(struct softirq_action *h, struct softirq_action *vec))(*it_func))(h, vec); } while (*(++it_func)); } do { } while (0); }
- while (0); } static inline __attribute__((always_inline)) int register_trace_softirq_entry(void (*probe)(struct softirq_action 
-*h, struct softirq_action *vec)) { return tracepoint_probe_register("softirq_entry", (void *)probe); } static inline __attribute
-__((always_inline)) int unregister_trace_softirq_entry(void (*probe)(struct softirq_action *h, struct softirq_action *vec)) { re
-turn tracepoint_probe_unregister("softirq_entry", (void *)probe); };
-
-extern struct tracepoint __tracepoint_softirq_exit; static inline __attribute__((always_inline)) void trace_softirq_exit(struct 
-softirq_action *h, struct softirq_action *vec) { if (__builtin_expect(!!(__tracepoint_softirq_exit.state), 0)) do { void **it_fu
-nc; do { } while (0); it_func = ({ typeof((&__tracepoint_softirq_exit)->funcs) _________p1 = (*(volatile typeof((&__tracepoint_s
-oftirq_exit)->funcs) *)&((&__tracepoint_softirq_exit)->funcs)); do { } while(0); (_________p1); }); if (it_func) { do { ((void(*
-)(struct softirq_action *h, struct softirq_action *vec))(*it_func))(h, vec); } while (*(++it_func)); } do { } while (0); } while
- (0); } static inline __attribute__((always_inline)) int register_trace_softirq_exit(void (*probe)(struct softirq_action *h, str
-uct softirq_action *vec)) { return tracepoint_probe_register("softirq_exit", (void *)probe); } static inline __attribute__((alwa
-ys_inline)) int unregister_trace_softirq_exit(void (*probe)(struct softirq_action *h, struct softirq_action *vec)) { return trac
-epoint_probe_unregister("softirq_exit", (void *)probe); };
-
-__do_softirq looks like below. So I would expect some header file include dependency? Dunno...
-
- void __do_softirq(void)
-{
- struct softirq_action *h;
- __u32 pending;
- int max_restart = 10;
- int cpu;
-
- pending = ((*((struct _lowcore *) 0)).softirq_pending);
- account_system_vtime(((struct task_struct *const)(*((struct _lowcore *) 0)).current_task));
-
- __local_bh_disable((unsigned long)__builtin_return_address(0));
- do { ((struct task_struct *const)(*((struct _lowcore *) 0)).current_task)->softirq_context++; } while (0);
-
- cpu = ((*((struct _lowcore *) 0)).cpu_nr);
-restart:
-
- (((*((struct _lowcore *) 0)).softirq_pending) = (0));
-
- do { trace_hardirqs_on(); raw_local_irq_enable(); } while (0);
-
- h = softirq_vec;
-
- do {
-  if (pending & 1) {
-   int prev_count = (current_thread_info()->preempt_count);
-
-   trace_softirq_entry(h, softirq_vec);
-   h->action(h);
-   trace_softirq_exit(h, softirq_vec);
-   if (__builtin_expect(!!(prev_count != (current_thread_info()->preempt_count)), 0)) {
-    printk("<3>" "huh, entered softirq %td %s %p"
-           "with preempt_count %08x,"
-           " exited with %08x?\n", h - softirq_vec,
-           softirq_to_name[h - softirq_vec],
-           h->action, prev_count, (current_thread_info()->preempt_count));
-    (current_thread_info()->preempt_count) = prev_count;
-   }
-
-   rcu_bh_qsctr_inc(cpu);
-  }
-  h++;
-  pending >>= 1;
- } while (pending);
-
- do { raw_local_irq_disable(); trace_hardirqs_off(); } while (0);
-
- pending = ((*((struct _lowcore *) 0)).softirq_pending);
- if (pending && --max_restart)
-  goto restart;
-
- if (pending)
-  wakeup_softirqd();
-
- do { ((struct task_struct *const)(*((struct _lowcore *) 0)).current_task)->softirq_context--; } while (0);
-
- account_system_vtime(((struct task_struct *const)(*((struct _lowcore *) 0)).current_task));
- _local_bh_enable();
-}
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
