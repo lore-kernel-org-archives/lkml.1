@@ -1,91 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbZDXTQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbZDXTSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754791AbZDXTQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 15:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbZDXTQu
+	id S1756633AbZDXTSY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 15:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbZDXTSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 15:16:50 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:15238 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751924AbZDXTQt convert rfc822-to-8bit (ORCPT
+	Fri, 24 Apr 2009 15:18:12 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:60276 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752352AbZDXTSL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 15:16:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=gnlwUpTukSukWKMsLwVJAo0Xnw/vk7X0kyIEnoRx416GUpIt4nI5C987Ru7cpyRgUK
-         7AD5oM4J7Q0U+h5PbcIVJ2RWMcpY291SA+FEHMZL5IXEBa4o43LH5Y/fgS9o5wtlomsB
-         dkLDkYG/rBBDNDbtHFzcbHB5m1s5FaVosmgBQ=
+	Fri, 24 Apr 2009 15:18:11 -0400
+Message-ID: <49F2105E.8010001@vlnb.net>
+Date: Fri, 24 Apr 2009 23:17:50 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0904241155550.26080@chino.kir.corp.google.com>
-References: <40a4ed590904240309o66753264lf58f2910726f7efc@mail.gmail.com>
-	 <alpine.DEB.2.00.0904241011280.24151@chino.kir.corp.google.com>
-	 <40a4ed590904241113p4949a020y46e0641e77f6f4e3@mail.gmail.com>
-	 <alpine.DEB.2.00.0904241155550.26080@chino.kir.corp.google.com>
-Date: Fri, 24 Apr 2009 21:16:48 +0200
-Message-ID: <40a4ed590904241216u655300ddvaa4660e11ad2cffc@mail.gmail.com>
-Subject: Re: Kernel 2.6.29 runs out of memory and hangs.
-From: Zeno Davatz <zdavatz@gmail.com>
-To: David Rientjes <rientjes@google.com>
-Cc: linux-kernel@vger.kernel.org, Hannes Wyss <hwyss@ywesee.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Tejun Heo <tj@kernel.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       Douglas Gilbert <dgilbert@interlog.com>, Christoph Hellwig <hch@lst.de>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH] [Target_Core_Mod/pSCSI]: Add optional legacy scsi_execute_async()
+ usage for Linux/SCSI passthrough
+References: <1239930560.4176.577.camel@haakon2.linux-iscsi.org> <49EB036B.8090607@panasas.com> <49EDB8EF.7040503@vlnb.net> <49EF1A88.1040105@panasas.com>
+In-Reply-To: <49EF1A88.1040105@panasas.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+Na/CI9XavwqIcJ4xfx/e4T8OghE8R9MjKLYv
+ xNDSxrVEPt05D3mry8kc+leV6TfuOV+LB5omgTPKEREwX1EVFy
+ 2wnp2BQiTw7Pd60oas8OQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear David
-
-On Fri, Apr 24, 2009 at 9:00 PM, David Rientjes <rientjes@google.com> wrote:
-> On Fri, 24 Apr 2009, Zeno Davatz wrote:
->
->> Apr 24 09:01:06 thinpower [1349923.693331] Out of memory: kill process
->> 21490 (apache2) score 53801 or a child
->> Apr 24 09:01:06 thinpower [1349923.693410] Killed process 21490 (apache2)
+Boaz Harrosh, on 04/22/2009 05:24 PM wrote:
+> On 04/21/2009 03:15 PM, Vladislav Bolkhovitin wrote:
+>> Boaz Harrosh, on 04/19/2009 02:56 PM wrote:
+>>> On 04/17/2009 04:09 AM, Nicholas A. Bellinger wrote:
+>> [..]
 >>
->
-> If your machine hangs here, then it's most likely because apache2 is
-> getting stuck in D state and cannot exit (and it has access to memory
-> reserves because of TIF_MEMDIE since it has been oom killed, so it may
-> deplete all memory).
->
-> I'm assuming that you're describing a machine hang as the inability to
-> ping it or ssh into it, not simply your apache server dying.
-
-Yes correct. I could neither SSH into the machine nor could I type
-anything on the screen after I connected the monitor and the keyboard
-directly to the machine.
-
-> These types of livelocks are possible with the oom killer when a task
-> fails to exit, one possible way to fix that is to introduce an oom killer
-> timeout such that if a task fails to exit for a pre-defined period of
-> time, the oom killer will choose to kill another task in the hopes of
-> future memory freeing.  The problem with that approach, however, is that
-> the hung task can consume an enormous amount of memory that will never be
-> freed.
-
-Thanks for the hint! Is there another solution as well? Any
-Kernel-Upgrades in the Pipeline? What does Linus think about this?
-
->> > If this is reproducible, I'd recommend enabling
->> > /proc/sys/vm/oom_dump_tasks so that the oom killer will dump the tasklist
->> > and show us what may be causing the livelock.
+>>> Are you aware that scsi_execute_async() has gone in 2.6.30-rc1?
+>>>
+>>> I'm not sure what would be the best alternative for you. I would say
+>>> a bio, but it is still being debated. Your current options are:
+>>>
+>>> 1. bio_alloc then loop () bio_add_pc_page, and finally blk_rq_append_bio
+>>>    (Which block people don't like)
+>>> 2. sglist => page-pointers-array translation and blk_rq_map_user with 
+>>>    struct rq_map_data mode. (not possible with all kind of sglists)
+>>> 2. sglist => iovec translation and blk_rq_map_user_iov()
+>>>    (Very very ugly mapping of pages to virtual pointers)
+>>>
+>>> I have a similar situation with my OSD code.
+>> Do you have somewhere in it a need to run an arbitrary CDB with data 
+>> pages stored in an sglist? Is that code accepted in the mainline?
 >>
->> Ok, how do I enable that? I will google for it.
+> 
+> No, I have a direct bio which comes from two sources.
+> 1. A bio prepared by a filesystem to describe a write/read to a file (osd object)
+> 2. A cloned bio that comes from a stacking block-device over osd-object.
+> 
+> So I do not have an sglist at all, anywhere in code.
+> 
+>> If yes, why not to resurrect the necessary bits of scsi_execute_async() 
+>> (option (1) above)? It was deleted, because in 2.6.30 there are no users 
+>> of it left, but if there are users (OSD), then why not to return it? 
+>> Seems nothing better for the sg->bio case can be invented.
 >>
->
-> You're right in your reply, you can enable it with
->
->        echo 1 > /proc/sys/vm/oom_dump_tasks
->
-> This will print the tasklist and some pertinent information alongside the
-> oom killer output you've already posted.  It will give a better idea of
-> the memory usage on the machine and if killing a subsequent task would
-> actually help in this case.
+> 
+> I hate scsi_execute_async() for lots of reasons, 
+> 1. The cover-up of an historical abuse of sglists by sg/sr
+> 2. Override of use_sg/data-pointer crap
+> 3. What is data-format got to do with sync/async execution
+> 4. the need of all that scsi_io_context and the re-invention
+>    of async_done API.
+> 5. ...
+> Good riddence
 
-Ok done that. Actually not looking forward that it hangs again but if
-it does we should catch some fish. ;)
+Removal of what can be removed from the above I meant under "the 
+necessary bits".
 
-Best
-Zeno
+> But you might be looking into an API introduced by an RFC by
+> Tejun Heo in the form of blk_rq_map_kern_sgl() which should
+> be a more appropriate general API for your use.
+
+Yes, it looks like what's needed.
+
+> (And is not directly usable for me in OSD)
+> 
+>> Vlad
+> 
+> Boaz
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
