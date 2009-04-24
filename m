@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbZDXHnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbZDXHpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756729AbZDXHnr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 03:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZDXHng
+	id S1754806AbZDXHpF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 03:45:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZDXHoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 03:43:36 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:41466 "EHLO kernel.dk"
+	Fri, 24 Apr 2009 03:44:54 -0400
+Received: from mga11.intel.com ([192.55.52.93]:2249 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751241AbZDXHnf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 03:43:35 -0400
-Date: Fri, 24 Apr 2009 09:43:34 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH linux-2.6-block/for-linus] Fix discard requests
-	accounting in the diskstats
-Message-ID: <20090424074334.GC4593@kernel.dk>
-References: <200904232013.n3NKD4PP017241@imap1.linux-foundation.org> <200904241118.30919.knikanth@suse.de> <20090424061518.GY4593@kernel.dk> <200904241308.35738.knikanth@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750832AbZDXHox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 03:44:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,240,1239001200"; 
+   d="scan'208";a="451040912"
+Date: Fri, 24 Apr 2009 09:44:48 +0200
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
+       eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
+       ak@linux.jf.intel.com
+Subject: [patch] x86, bts: reenable ptrace branch trace support
+Message-ID: <20090424094448.A30216@sedona.ch.intel.com>
+Mime-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <200904241308.35738.knikanth@suse.de>
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24 2009, Nikanth Karthikesan wrote:
-> On Friday 24 April 2009 11:45:18 Jens Axboe wrote:
-> > On Fri, Apr 24 2009, Nikanth Karthikesan wrote:
-> > > When 2 discard requests are merged, the stats gets updated, but we do not
-> > > update statistics normally when a discard request is issued or completed.
-> > > For example the in_flight counter would be decremented when 2 discard
-> > > requests are merged, but it was not at all incremented when they were
-> > > issued, and in_flight counter will not be decremented, when they are
-> > > completed as well.
-> > >
-> > > This patch fixes this by adding discard requests to the statistics.
-> > >
-> > > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-> >
-> > OK, so that's not quite what I had in mind. If we first do this as a
-> > preparatory patch:
-> >
-> > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=42fd769da4edadad83a7
-> >79867ff1910ec35c6de7
-> >
-> 
-> Oh! I thought this cleanup along with the 
-> block-turn-some-buggy-macros-into-c-functions.patch from Andrew could be done 
-> on top of my original fix. But didn't, as you said, you would do it. Anyway, 
-> Thanks.
+The races found by Oleg Nesterov have been fixed.
 
-Refactor and then fix is the cleanest I think. Anyway, queued up for
-2.6.31!
+Reenable branch trace support.
 
--- 
-Jens Axboe
+
+CC: Oleg Nesterov <oleg@redhat.com>
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
+ arch/x86/Kconfig.cpu |    1 	0 +	1 -	0 !
+ 1 files changed, 1 deletion(-)
+
+Index: b/arch/x86/Kconfig.cpu
+===================================================================
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -506,7 +506,6 @@ config X86_PTRACE_BTS
+ 	bool "Branch Trace Store"
+ 	default y
+ 	depends on X86_DEBUGCTLMSR
+-	depends on BROKEN
+ 	---help---
+ 	  This adds a ptrace interface to the hardware's branch trace store.
+ 
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
