@@ -1,33 +1,56 @@
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZECBtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757350AbZDOW6p (ORCPT <rfc822;ralf@linux-mips.org>);
-	Wed, 15 Apr 2009 18:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757336AbZDOW62
+	id S1753838AbZECBtT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 21:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbZECBtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 18:58:28 -0400
-Received: from solcza.etanetas.lt ([82.135.221.82]:56954 "EHLO
-	solcza.etanetas.lt" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755471AbZDOW60 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 18:58:26 -0400
-From: Lillie <bingham@danban.dk>
-To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
-	linux-usb@vger.kernel.org, linux-usb@vger.kernel.org,
-	netdev@vger.kernel.org
-CC: linux-usb@vger.kernel.org, linux-usb@vger.kernel.org,
-	linux-usb@vger.kernel.org
-Subject: =?iso-8859-1?b?QWNhaSBEaWV0LCB0aGUgYWxsIG5hdHVyYWx5IGJhbGFuY2VkIHdheSA=?=
- =?iso-8859-1?b?dG8gbG9zZSB3ZWlnaHQg?=
-Date: Tue, 14 Apr 2009 22:45:32 +0200
-User-Agent: KMail/1.9.7
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
-Message-Id: <0904142245329S.02468.bingham@danban.dk>
+	Sat, 2 May 2009 21:49:05 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:62762 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751323AbZECBtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 21:49:04 -0400
+X-IronPort-AV: E=Sophos;i="4.40,284,1239001200"; 
+   d="scan'208";a="165675975"
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Fri, 24 Apr 2009 17:32:22 -0400
+Subject: [PATCH] NFS: Close page_mkwrite() races
+Message-Id: <1241315252.15825.0.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+X-OriginalArrivalTime: 03 May 2009 01:48:41.0076 (UTC) FILETIME=[48E9FB40:01C9CB91]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757350AbZDOW6p@vger.kernel.org>
 
-Z29vZCBldmVuaW5nDQoNCkdldCB5b3VyIGhlYWx0aHkgbGlmZXR5bGUgbm93LiBXaXRoIEFjYWkgQmVycnkgeW91IHdpbGwgRW5oYW5jZSB5b3VyIGJvZHkgYWJpbGl0eSB0byBidXJuIGZhdC4gWW91IHdpbGwgYmUgYWJsZSB0byBlbmpveSBldmVyeWRheSB0byBpdHMgZnVsbGVzdCB3aXRoIHlvdXIgbmV3IGZvdW5kIGVuZXJneSAuIFlvdSBhcmUgb25lIGNsaWNrIGF3YXkgZnJvbSBxdWFsaWZ5aW5nIGZvciBhIGZyZWUgdHJpYWwgb2YgYWNhaSBiZXJyeSANCnZpc2l0IHNpdGUgaHR0cDovL2hnbWlvaTdnaS5ibG9nc3BvdC5jb20NCg0KY29kZSBtc2cgZ3hmdHloeGNoZnkNCmlkIDkt
+Follow up to Nick Piggin's patches to ensure that nfs_vm_page_mkwrite
+returns with the page lock held, and sets the VM_FAULT_LOCKED flag.
+
+See http://bugzilla.kernel.org/show_bug.cgi?id=12913
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+ fs/nfs/file.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+index 5a97bcf..ec7e27d 100644
+--- a/fs/nfs/file.c
++++ b/fs/nfs/file.c
+@@ -517,10 +517,10 @@ static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
+ 
+ 	ret = nfs_updatepage(filp, page, 0, pagelen);
+ out_unlock:
++	if (!ret)
++		return VM_FAULT_LOCKED;
+ 	unlock_page(page);
+-	if (ret)
+-		ret = VM_FAULT_SIGBUS;
+-	return ret;
++	return VM_FAULT_SIGBUS;
+ }
+ 
+ static struct vm_operations_struct nfs_file_vm_ops = {
+-- 
+1.6.0.6
