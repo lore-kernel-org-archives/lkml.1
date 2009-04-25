@@ -1,76 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbZDYO1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZDYO5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753924AbZDYO1t (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 10:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbZDYO1l
+	id S1754695AbZDYO5c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 10:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbZDYO5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 10:27:41 -0400
-Received: from kuber.nabble.com ([216.139.236.158]:35184 "EHLO
-	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751422AbZDYO1l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 10:27:41 -0400
-Message-ID: <23232689.post@talk.nabble.com>
-Date: Sat, 25 Apr 2009 07:27:40 -0700 (PDT)
-From: nbj <niraj.b.jain@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Query regarding IPv6 stack modification
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 25 Apr 2009 10:57:21 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:50662 "EHLO mail-out2.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751597AbZDYO5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Apr 2009 10:57:20 -0400
+Subject: Re: NFS BUG_ON in nfs_do_writepage
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Rince <rincebrain@gmail.com>, Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+In-Reply-To: <5da0588e0904240226j3454941y5f58c17a32a9a23d@mail.gmail.com>
+References: <alpine.LFD.2.00.0904130145050.4396@centaur.acm.jhu.edu>
+	 <20090412235010.c8e3475b.akpm@linux-foundation.org>
+	 <1239650202.16771.15.camel@heimdal.trondhjem.org>
+	 <5da0588e0904131506k5c58e8ddob9bf38f61da6302a@mail.gmail.com>
+	 <5da0588e0904131644g131dc816r61884e83bc4cd006@mail.gmail.com>
+	 <5da0588e0904240226j3454941y5f58c17a32a9a23d@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 25 Apr 2009 10:57:08 -0400
+Message-Id: <1240671428.6112.1.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Nabble-From: niraj.b.jain@gmail.com
+X-UiO-Ratelimit-Test: rcpts/h 5 msgs/h 1 sum rcpts/h 11 sum msgs/h 1 total rcpts 49 max rcpts/h 10 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=_BLID_, uiouri=_URIID_)
+X-UiO-Scanned: B66EEDDF9D6F24C76E06B69FFFD324FECC616610
+X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 200 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-04-24 at 05:26 -0400, Rince wrote:
+> Applied try 3 of Nick Piggin's patch to 2.6.30-rc3 (cleanly, no less!)
+> 
+> Doesn't appear to have helped at all - I received my favorite BUG ON
+> write.c:252 just like always, within 24 hours of booting the kernel,
+> even.
 
-I am facing a strange problem when adding a module in the ipv6 stack. (This
-is a part of my project on IPv4 to IPv6 Gateway)
-Here is the description:
+Can you apply the following incremental patch on top of Nick's. This
+appears to suffice to close the race on my setup.
 
-Whenever the IPv6 machine intends to communicate with an IPv4 machine, an
-extension header is being added(which contains the IPv4 address) and the
-destination address in the packet is replaced by the address of the gateway.
-This is done by modifying the address in the sk_buff structure.
-On receiving a packet from this gateway, I check for the presence of the
-extension header. If present, the IPv4 address is extracted from it and the
-source address (that of the gateway) replaced by the mapped address of the
-v4 machine.   
+Cheers
+  Trond
+---------------------------------------------------------------------
+>From f0258852dcb43c748854d2ee550c9c270bb25f21 Mon Sep 17 00:00:00 2001
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date: Fri, 24 Apr 2009 17:32:22 -0400
+Subject: [PATCH] NFS: Close page_mkwrite() races
 
-Changes have been made in the following functions for the purpose:  
+Follow up to Nick Piggin's patches to ensure that nfs_vm_page_mkwrite
+returns with the page lock held, and sets the VM_FAULT_LOCKED flag.
 
-ip6_xmit & ip6_push_pending_frames: These functions are called in the
-transmit path of the packet. These functions are used by TCP and UDP/ICMP
-respectively to serve similar purpose.
---I am adding my own extension header (called SHIM header) in the packet at
-this point. This is done by making changes in the "ipv6_txoptions" structure
-to add another field for my custom extension header. I am adding the IP
-address of the IPv4 host in the extension header (this will be used by the
-translator).
---After adding this extension header, I am replacing the destination address
-in sk_buff with the translator's address.
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+ fs/nfs/file.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-ip6_input_finish:- This function is called in the receive path of the
-packet. It calls the protocol handler for all the extension headers and the
-higher layer protocol.
---I have written a handler for our custom header (SHIM) which gets called
-here whenever the packet contains one. This handler replaces the source
-address (which would be that of the translator) with the mapped address of
-the IPv4 host as extracted from the SHIM header.
-
-Using the above, I have tested TCP, UDP and ICMP applications. For UDP and
-ICMP (ping) applications, everything works as expected. i.e., the
-applications uses mapped addresses for the IPv4 hosts and the actual
-communication happens with the translator's address.
-For TCP however it failed in the following scenario:
-I have apache server running on the IPv6 host and IPv4 host trying to access
-a web page (using mozilla). Initially the IPv4 host is able to access data
-from the web server. But when a FIN-ACK is sent from the TCP server and a
-FIN-ACK is obtained from the client, the IPv6 machine hangs. 
-(I also tried testing this using some simple client-server socket program.
-In that case, everything works fine)
-
+diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+index 5a97bcf..ec7e27d 100644
+--- a/fs/nfs/file.c
++++ b/fs/nfs/file.c
+@@ -517,10 +517,10 @@ static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
+ 
+ 	ret = nfs_updatepage(filp, page, 0, pagelen);
+ out_unlock:
++	if (!ret)
++		return VM_FAULT_LOCKED;
+ 	unlock_page(page);
+-	if (ret)
+-		ret = VM_FAULT_SIGBUS;
+-	return ret;
++	return VM_FAULT_SIGBUS;
+ }
+ 
+ static struct vm_operations_struct nfs_file_vm_ops = {
 -- 
-View this message in context: http://www.nabble.com/Query-regarding-IPv6-stack-modification-tp23232689p23232689.html
-Sent from the linux-kernel mailing list archive at Nabble.com.
+1.6.0.6
+
+
 
