@@ -1,53 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbZDXX7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754409AbZDYAIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753503AbZDXX7j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 19:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZDXX7a
+	id S1754409AbZDYAIU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 20:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751083AbZDYAIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 19:59:30 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37162 "EHLO mx2.suse.de"
+	Fri, 24 Apr 2009 20:08:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46436 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751773AbZDXX7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 19:59:30 -0400
-Date: Fri, 24 Apr 2009 16:44:32 -0700
-From: Greg KH <gregkh@suse.de>
-To: Joerg Roedel <joro@8bytes.org>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, iommu@lists.linux-foundation.org,
-       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] driver/base: add BUS_NOTIFY_UNBOUND_DRIVER event
-Message-ID: <20090424234432.GA6054@suse.de>
-References: <1240577820-13783-1-git-send-email-joerg.roedel@amd.com> <20090424184425.GB20845@suse.de> <20090424232447.GB12658@8bytes.org>
+	id S1751110AbZDYAIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 20:08:11 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090424232447.GB12658@8bytes.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Russell King <rmk@arm.linux.org.uk>
+X-Fcc: ~/Mail/linus
+Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org
+In-Reply-To: Roland McGrath's message of  Friday, 24 April 2009 17:06:34 -0700 <20090425000634.313E4FC3C8@magilla.sf.frob.com>
+References: <20090425000634.313E4FC3C8@magilla.sf.frob.com>
+Subject: [PATCH 02/17] arm: arch_ptrace indentation
+Message-Id: <20090425000801.254D1FC3C8@magilla.sf.frob.com>
+Date: Fri, 24 Apr 2009 17:08:01 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 25, 2009 at 01:24:47AM +0200, Joerg Roedel wrote:
-> On Fri, Apr 24, 2009 at 11:44:25AM -0700, Greg KH wrote:
-> > On Fri, Apr 24, 2009 at 02:57:00PM +0200, Joerg Roedel wrote:
-> > > This patch adds a new bus notifier event which is emitted _after_ a
-> > > device is removed from its driver. This event will be used by the
-> > > dma-api debug code to check if a driver has released all dma allocations
-> > > for that device.
-> > 
-> > Heh, I was wondering if people were going to need that.  I'll queue it
-> > up for 2.6.31, is that ok with you?  Do you have patches that depend on
-> > it?
-> 
-> 2.6.31 is ok for me. I sent Ingo a patch to remove the broken feature
-> which uses the wrong event for 2.6.30. I can reintroduce the fixed
-> version for 2.6.31 too.
-> Other way may be to send this patch to 2.6.30 which makes a smaller fix
-> possible for dma-api debugging. But I am not sure if this new event
-> could go in after the merge window. So I choosed this way :)
-> For me, 2.6.31 for this patch is fine.
+This changes the arch_ptrace() indentation to match the standard style.
+No change but the whitespace.
 
-Great, it will go in for 2.6.31 then.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/arm/kernel/ptrace.c |  116 +++++++++++++++++++++++-----------------------
+ 1 files changed, 58 insertions(+), 58 deletions(-)
 
-thanks,
-
-greg k-h
+diff --git a/arch/arm/kernel/ptrace.c b/arch/arm/kernel/ptrace.c
+index 825b7ab..93d7822 100644
+--- a/arch/arm/kernel/ptrace.c
++++ b/arch/arm/kernel/ptrace.c
+@@ -706,13 +706,13 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 	int ret;
+ 
+ 	switch (request) {
+-		case PTRACE_PEEKUSR:
+-			ret = ptrace_read_user(child, addr, (unsigned long __user *)data);
+-			break;
++	case PTRACE_PEEKUSR:
++		ret = ptrace_read_user(child, addr, (unsigned long __user *)data);
++		break;
+ 
+-		case PTRACE_POKEUSR:
+-			ret = ptrace_write_user(child, addr, data);
+-			break;
++	case PTRACE_POKEUSR:
++		ret = ptrace_write_user(child, addr, data);
++		break;
+ 
+ 		/*
+ 		 * The generic code handles these mostly, but we have to
+@@ -723,11 +723,11 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 		 * come back through here or PTRACE_SINGLESTEP again
+ 		 * before it matters.
+ 		 */
+-		case PTRACE_SYSCALL:
+-		case PTRACE_CONT:
+-		case PTRACE_KILL:
+-			single_step_disable(child);
+-			goto common;
++	case PTRACE_SYSCALL:
++	case PTRACE_CONT:
++	case PTRACE_KILL:
++		single_step_disable(child);
++		goto common;
+ 
+ 		/*
+ 		 * After we set up single-step state, the generic
+@@ -735,71 +735,71 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 		 * Note as above we don't bother with checking early
+ 		 * for the error case.
+ 		 */
+-		case PTRACE_SINGLESTEP:
+-			single_step_enable(child);
+-			request = PTRACE_CONT;
+-			goto common;
++	case PTRACE_SINGLESTEP:
++		single_step_enable(child);
++		request = PTRACE_CONT;
++		goto common;
+ 
+-		case PTRACE_GETREGS:
+-			ret = ptrace_getregs(child, (void __user *)data);
+-			break;
++	case PTRACE_GETREGS:
++		ret = ptrace_getregs(child, (void __user *)data);
++		break;
+ 
+-		case PTRACE_SETREGS:
+-			ret = ptrace_setregs(child, (void __user *)data);
+-			break;
++	case PTRACE_SETREGS:
++		ret = ptrace_setregs(child, (void __user *)data);
++		break;
+ 
+-		case PTRACE_GETFPREGS:
+-			ret = ptrace_getfpregs(child, (void __user *)data);
+-			break;
+-		
+-		case PTRACE_SETFPREGS:
+-			ret = ptrace_setfpregs(child, (void __user *)data);
+-			break;
++	case PTRACE_GETFPREGS:
++		ret = ptrace_getfpregs(child, (void __user *)data);
++		break;
++
++	case PTRACE_SETFPREGS:
++		ret = ptrace_setfpregs(child, (void __user *)data);
++		break;
+ 
+ #ifdef CONFIG_IWMMXT
+-		case PTRACE_GETWMMXREGS:
+-			ret = ptrace_getwmmxregs(child, (void __user *)data);
+-			break;
++	case PTRACE_GETWMMXREGS:
++		ret = ptrace_getwmmxregs(child, (void __user *)data);
++		break;
+ 
+-		case PTRACE_SETWMMXREGS:
+-			ret = ptrace_setwmmxregs(child, (void __user *)data);
+-			break;
++	case PTRACE_SETWMMXREGS:
++		ret = ptrace_setwmmxregs(child, (void __user *)data);
++		break;
+ #endif
+ 
+-		case PTRACE_GET_THREAD_AREA:
+-			ret = put_user(task_thread_info(child)->tp_value,
+-				       (unsigned long __user *) data);
+-			break;
++	case PTRACE_GET_THREAD_AREA:
++		ret = put_user(task_thread_info(child)->tp_value,
++			       (unsigned long __user *) data);
++		break;
+ 
+-		case PTRACE_SET_SYSCALL:
+-			task_thread_info(child)->syscall = data;
+-			ret = 0;
+-			break;
++	case PTRACE_SET_SYSCALL:
++		task_thread_info(child)->syscall = data;
++		ret = 0;
++		break;
+ 
+ #ifdef CONFIG_CRUNCH
+-		case PTRACE_GETCRUNCHREGS:
+-			ret = ptrace_getcrunchregs(child, (void __user *)data);
+-			break;
++	case PTRACE_GETCRUNCHREGS:
++		ret = ptrace_getcrunchregs(child, (void __user *)data);
++		break;
+ 
+-		case PTRACE_SETCRUNCHREGS:
+-			ret = ptrace_setcrunchregs(child, (void __user *)data);
+-			break;
++	case PTRACE_SETCRUNCHREGS:
++		ret = ptrace_setcrunchregs(child, (void __user *)data);
++		break;
+ #endif
+ 
+ #ifdef CONFIG_VFP
+-		case PTRACE_GETVFPREGS:
+-			ret = ptrace_getvfpregs(child, (void __user *)data);
+-			break;
++	case PTRACE_GETVFPREGS:
++		ret = ptrace_getvfpregs(child, (void __user *)data);
++		break;
+ 
+-		case PTRACE_SETVFPREGS:
+-			ret = ptrace_setvfpregs(child, (void __user *)data);
+-			break;
++	case PTRACE_SETVFPREGS:
++		ret = ptrace_setvfpregs(child, (void __user *)data);
++		break;
+ #endif
+ 
+-		default:
+-		common:
+-			ret = ptrace_request(child, request, addr, data);
+-			break;
++	default:
++	common:
++		ret = ptrace_request(child, request, addr, data);
++		break;
+ 	}
+ 
+ 	return ret;
