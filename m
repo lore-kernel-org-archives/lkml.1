@@ -1,99 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754393AbZDYQH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbZDYRbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754393AbZDYQH0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 12:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbZDYQHL
+	id S1754067AbZDYRbH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 13:31:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbZDYRav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 12:07:11 -0400
-Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.67]:41858 "EHLO
-	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752786AbZDYQHK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 12:07:10 -0400
-X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
-Date: Sun, 26 Apr 2009 01:06:58 +0900
-From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "hugh@veritas.com" <hugh@veritas.com>, d-nishimura@mtf.biglobe.ne.jp,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH] fix swap entries is not reclaimed in proper way
- for memg v3.
-Message-Id: <20090426010658.c0fa3258.d-nishimura@mtf.biglobe.ne.jp>
-In-Reply-To: <20090425215459.5cab7285.d-nishimura@mtf.biglobe.ne.jp>
-References: <20090421162121.1a1d15fe.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090422143833.2e11e10b.nishimura@mxp.nes.nec.co.jp>
-	<20090424133306.0d9fb2ce.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090424152103.a5ee8d13.nishimura@mxp.nes.nec.co.jp>
-	<20090424162840.2ad06d8a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090425215459.5cab7285.d-nishimura@mtf.biglobe.ne.jp>
-Reply-To: nishimura@mxp.nes.nec.co.jp
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 25 Apr 2009 13:30:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39153 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752880AbZDYRav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Apr 2009 13:30:51 -0400
+Date: Sat, 25 Apr 2009 19:25:24 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: David Howells <dhowells@redhat.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>, Hugh Dickins <hugh@veritas.com>
+Subject: Re: ptrace && cred_exec_mutex (Was: [PATCH] ptrace:
+	tracehook_unsafe_exec: remove the stale comment)
+Message-ID: <20090425172524.GA3432@redhat.com>
+References: <20090424163949.GA12035@redhat.com> <20090423212250.GA22537@redhat.com> <20090423232717.975ABFC3C7@magilla.sf.frob.com> <31842.1240656853@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <31842.1240656853@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A few minor nitpicks :)
+On 04/25, David Howells wrote:
+>
+> Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> > Yes. Except it looks like ->cred_exec_mutex is never used in fact.
+>
+> I must to be missing something...  I see that:
+>
+> 	int ptrace_attach(struct task_struct *task)
+> 	{
+> 	...
+> 		/* Protect exec's credential calculations against our interference;
+> 		 * SUID, SGID and LSM creds get determined differently under ptrace.
+> 		 */
+> 		retval = mutex_lock_interruptible(&current->cred_exec_mutex);
+> 	...
+> 	}
+>
+> And:
+>
+> 	int do_execve(...)
+> 	{
+> 	...
+> 		retval = mutex_lock_interruptible(&current->cred_exec_mutex);
+> 		if (retval < 0)
+> 			goto out_free;
+> 	...
+> 	}
 
-> > +static void memcg_fixup_stale_swapcache(struct work_struct *work)
-> > +{
-> > +	int pos = 0;
-> > +	swp_entry_t entry;
-> > +	struct page *page;
-> > +	int forget, ret;
-> > +
-> > +	while (ssc.num) {
-> > +		spin_lock(&ssc.lock);
-> > +		pos = find_next_bit(ssc.usemap, STALE_ENTS, pos);
-> > +		spin_unlock(&ssc.lock);
-> > +
-> > +		if (pos >= STALE_ENTS)
-> > +			break;
-> > +
-> > +		entry = ssc.ents[pos];
-> > +
-> > +		forget = 1;
-> > +		page = lookup_swap_cache(entry);
-I think using find_get_page() would be better.
-lookup_swap_cache() update swapcache_info.
+Sorry David, I was very unclear.
 
-> > +		if (page) {
-> > +			lock_page(page);
-> > +			ret = try_to_free_swap(page);
-> > +			/* If it's still under I/O, don't forget it */
-> > +			if (!ret && PageWriteback(page))
-> > +				forget = 0;
-> > +			unlock_page(page);
-> I think we need page_cache_release().
-> lookup_swap_cache() gets the page.
-> 
-> > +		}
-> > +		if (forget) {
-> > +			spin_lock(&ssc.lock);
-> > +			clear_bit(pos, ssc.usemap);
-> > +			ssc.num--;
-> > +			if (ssc.num < STALE_ENTS/2)
-> > +				ssc.congestion = 0;
-> > +			spin_unlock(&ssc.lock);
-> > +		}
-> > +		pos++;
-> > +	}
-> > +	if (ssc.num) /* schedule me again */
-> > +		schedule_delayed_work(&ssc.gc_work, HZ/10);
-We can use schedule_ssc_gc() here.
-(It should be defined before this, of course. And can be inlined.)
+These 2 current's are different tasks, and hence we take to unrelated locks.
 
-> "if (ssc.congestion)" would be better ?
-> 
-> > +	return;
-> > +}
-> > +
-> 
+We can never block taking current->cred_exec_mutex because nobody else
+touches this mutex, we always use current. This means this lock is "nop".
 
-Thanks,
-Daisuke Nishimura.
+Unless I missed something, ptrace_attach() should take task->cred_exec_mutex.
+
+Oleg.
+
