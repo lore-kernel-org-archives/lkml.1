@@ -1,81 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbZDYBjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758514AbZDYBmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761567AbZDYBjc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 21:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760730AbZDYBeM
+	id S1758514AbZDYBmn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 21:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbZDYBma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 21:34:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49125 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760702AbZDYBeK (ORCPT
+	Fri, 24 Apr 2009 21:42:30 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:53458 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751152AbZDYBm3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 21:34:10 -0400
-Date: Fri, 24 Apr 2009 18:28:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: zhaolei@cn.fujitsu.com, mingo@elte.hu, kosaki.motohiro@jp.fujitsu.com,
-       rostedt@goodmis.org, tzanussi@gmail.com, linux-kernel@vger.kernel.org,
-       oleg@redhat.com
-Subject: Re: [PATCH 0/4] workqueue_tracepoint: Add worklet tracepoints for
- worklet lifecycle tracing
-Message-Id: <20090424182821.8263f445.akpm@linux-foundation.org>
-In-Reply-To: <20090425003702.GC6658@nowhere>
-References: <20090415085310.AC0D.A69D9226@jp.fujitsu.com>
-	<20090415011533.GI5968@nowhere>
-	<20090415141250.AC46.A69D9226@jp.fujitsu.com>
-	<49E8282A.6010004@cn.fujitsu.com>
-	<49E82CA7.2040606@cn.fujitsu.com>
-	<20090417134557.GA23493@elte.hu>
-	<49F1A59B.3080206@cn.fujitsu.com>
-	<20090424130616.a3c217cb.akpm@linux-foundation.org>
-	<20090424225909.GA6658@nowhere>
-	<20090424162056.45907fef.akpm@linux-foundation.org>
-	<20090425003702.GC6658@nowhere>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Apr 2009 21:42:29 -0400
+Date: Sat, 25 Apr 2009 02:41:52 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: David VomLehn <dvomlehn@cisco.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Wait for console to become available, v3.2
+Message-ID: <20090425014152.GD23106@shareable.org>
+References: <20090424003555.GA31173@cuplxvomd02.corp.sa.net> <Pine.LNX.4.44L0.0904241502440.4531-100000@iolanthe.rowland.org> <20090424213238.GA5973@cuplxvomd02.corp.sa.net> <20090424221951.GC18260@shareable.org> <20090424231013.GA18340@cuplxvomd02.corp.sa.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090424231013.GA18340@cuplxvomd02.corp.sa.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 Apr 2009 02:37:03 +0200
-Frederic Weisbecker <fweisbec@gmail.com> wrote:
+David VomLehn wrote:
+> I think this is over-engineered. This focused on boot devices, so you really
+> don't care about things like buses, and I don't perceive a broader use. What
+> really matters is particular boot device types, wherever they came from.
 
-> I discovered it with this tracer. Then it brought me to
-> write this patch:
-> 
-> http://lkml.org/lkml/2009/1/31/184
-> 
-> ...
-> 
-> Still with these same observations, I wrote this another one:
-> 
-> http://lkml.org/lkml/2009/1/26/363
+I'm thinking this broader use:
 
-OK, it's great that you're working to improve the workqueue code.  But
-does this justify permanently adding debug code to the core workqueue
-code?  In fact, because you've discovered these problem, the reasons
-for adding the debug code have lessened!
+    - My boot _script_ is waiting for a disk which identifies as
+      UUID=392852908752345749857 to appear before it can mount it on
+      /data.  If there's no such disk, it proceeds without it.  It's a
+      USB disk, behind a USB hub.
 
-What we need are curious developers looking into how well subsystems
-are performing and how well callers are using them.  Adding fairly
-large amounts of permanent debug code into the core subsystems is a
-peculiar way of encouraging such activity.
+    - My boot script is looking to see if I'm holding down 'z' on the
+      keyboard, to do something different.  But how does it know if
+      there's a USB keyboard plugged in (behind two USB hubs) that
+      hasn't finished being detected?
 
-If a developer is motivated to improve (say) workqueues then they will
-write a bit of ad-hoc code, or poke at it with systemtap or will
-maintain a private ftrace patch - that's all pretty simple stuff for
-such people.
+It just seemed to fit comfortably into what's being discussed.
 
-So what is the remaining case for adding these patches?  What I see is
+(I do have these a system with these requirements, by the way.  It's
+solved at the moment by waiting 5 seconds after booting, and by using
+an older kernel which doesn't have boot parallelisation yet...)
 
-a) that their presence will entice people to run them and maybe find
-   some problems and
+There was a thread about BTRFS wanting to match up multiple disks
+being scranned with volume ids some months ago, which might have
+similar requirements, I'm not sure.
 
-b) the workqueue-maintainer's task is lessened a bit by not having
-   to forward-port his debugging patch.
+> I've been thinking about the issue of handling device classes because, as you
+> clearly understand, distingishing between them can give you finer granularity
+> during boot initialization. There are really three possible steps:
+> 1. Discover a device exists.
+> 2. Discover the device type
+> 3. Completion of the probe function for the device.
 
-I dunno, it all seems a bit thin to me.  Especially when you multiply
-it all by nr_core_subsystems?
+Yes.
 
+> The existing code is great if the interval between 1 and 2, or 2 and 3, is
+> nearly zero. In the first case, you do nothing at step 1 and at step 2 you
+> indicate that a boot device of the given type it found. In the second case,
+> you indicate that you have found a device of unknown type was found (passing
+> BOOTDEV_ANY_MASK) at step 1, ignore the information at step 2, and report
+> completion of the probe for a generic device type at step 3 (again passing
+> BOOTDEV_ANY_MASK).
+
+Yes.
+
+> There is one additional possibility, that there is a significant
+> amount of time that passes between steps 1, 2, and 3. The existing
+> interfaces already handle that, but I'm thinking a clearer interface
+> is in order. The key is that, when you indicate a possible boot
+> device was found, and when you indicate the completion of probing,
+> you are actually passing a mask of boot device types.
+
+This too, yes.
+
+> Say that the device is actually a console, my favorite example. In
+> this case, you'd pass BOOTDEV_ANY_MASK to bootdev_found at step 1,
+> indicating that you don't really know the device type. This
+> increments the pending count for all boot device types. At step 2,
+> you find out you have a console, so you pass BOOTDEV_ANY_MASK &
+> ~BOOTDEV_CONSOLE_MASK to bootdev_probe_done. This decrements the
+> pending count for all device types except consoles. Then, at step 3,
+> you call bootdev_probe_done with BOOTDEV_CONSOLE_MASK. Which
+> decrements the pending count for console devices and wakes up any
+> waiters.
+
+Only one problem I see: what happens when there's an attempt to open
+/dev/console before you increment the pending count?  It seems to me
+you have to wait for all buses to have been detected, which is why I
+mentioned buses, as some buses are _themselves_ slow devices to detect.
+
+> The key question is, are there cases where there is enough time between steps
+> 1 and 2, and steps 2 and 3, to add this complexity? If not, let's skip it.
+
+The time between enumerating that a USB device exists and what it's
+class is (could be a console?), and actually initialising the device
+to find out if it's then usable, including loading firmware, can be a
+little while.
+
+I don't know if the times are long enough to matter.
+
+Possibly related to all this: it would be really nice if the ATA
+rather slow probe time didn't have to delay boot scripts until they
+depend on the not-yet-probed disks, as sometimes they might not.
+
+-- Jamie
+ 
