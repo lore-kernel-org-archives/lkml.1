@@ -1,153 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758523AbZDYBau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759578AbZDYBbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758523AbZDYBau (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 21:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbZDYB2y
+	id S1759578AbZDYBbb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 21:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbZDYB3D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 21:28:54 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38456 "EHLO mx2.suse.de"
+	Fri, 24 Apr 2009 21:29:03 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38460 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752220AbZDYB2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 21:28:49 -0400
-Message-Id: <20090425012209.986630138@suse.de>
+	id S1752627AbZDYB2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 21:28:50 -0400
+Message-Id: <20090425012212.529358405@suse.de>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Sat, 25 Apr 2009 11:20:27 +1000
+Date: Sat, 25 Apr 2009 11:20:44 +1000
 From: npiggin@suse.de
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 07/27] fs: dcache scale hash
+Subject: [patch 24/27] fs: icache atomic inodes_stat
 References: <20090425012020.457460929@suse.de>
-Content-Disposition: inline; filename=fs-dcache-scale-d_hash.patch
+Content-Disposition: inline; filename=fs-inode_lock-scale-5.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a new lock, dcache_hash_lock, to protect the dcache hash table from
-concurrent modification. d_hash is also protected by d_lock.
+Protect inodes_stat statistics with atomic ops rather than inode_lock.
 ---
- fs/dcache.c            |   35 ++++++++++++++++++++++++-----------
- include/linux/dcache.h |    3 +++
- 2 files changed, 27 insertions(+), 11 deletions(-)
+ fs/cifs/inode.c      |    2 +-
+ fs/fs-writeback.c    |    3 ++-
+ fs/hugetlbfs/inode.c |    6 +++---
+ fs/inode.c           |   28 +++++++++++++++-------------
+ include/linux/fs.h   |    5 +++--
+ mm/page-writeback.c  |    3 ++-
+ 6 files changed, 26 insertions(+), 21 deletions(-)
 
-Index: linux-2.6/fs/dcache.c
+Index: linux-2.6/fs/fs-writeback.c
 ===================================================================
---- linux-2.6.orig/fs/dcache.c
-+++ linux-2.6/fs/dcache.c
-@@ -34,12 +34,23 @@
- #include <linux/fs_struct.h>
- #include "internal.h"
+--- linux-2.6.orig/fs/fs-writeback.c
++++ linux-2.6/fs/fs-writeback.c
+@@ -691,7 +691,8 @@ void sync_inodes_sb(struct super_block *
+ 		unsigned long nr_unstable = global_page_state(NR_UNSTABLE_NFS);
  
-+/*
-+ * Usage:
-+ * dcache_hash_lock protects dcache hash table
-+ *
-+ * Ordering:
-+ * dcache_lock
-+ *   dentry->d_lock
-+ *     dcache_hash_lock
-+ */
- int sysctl_vfs_cache_pressure __read_mostly = 100;
- EXPORT_SYMBOL_GPL(sysctl_vfs_cache_pressure);
+ 		wbc.nr_to_write = nr_dirty + nr_unstable +
+-			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
++			(atomic_read(&inodes_stat.nr_inodes) -
++			atomic_read(&inodes_stat.nr_unused));
+ 	} else
+ 		wbc.nr_to_write = LONG_MAX; /* doesn't actually matter */
  
-- __cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_lock);
-+__cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_hash_lock);
-+__cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_lock);
- __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
- 
-+EXPORT_SYMBOL(dcache_hash_lock);
- EXPORT_SYMBOL(dcache_lock);
- 
- static struct kmem_cache *dentry_cache __read_mostly;
-@@ -1466,17 +1477,20 @@ int d_validate(struct dentry *dentry, st
- 		goto out;
- 
- 	spin_lock(&dcache_lock);
-+	spin_lock(&dcache_hash_lock);
- 	base = d_hash(dparent, dentry->d_name.hash);
- 	hlist_for_each(lhp,base) { 
- 		/* hlist_for_each_entry_rcu() not required for d_hash list
- 		 * as it is parsed under dcache_lock
- 		 */
- 		if (dentry == hlist_entry(lhp, struct dentry, d_hash)) {
-+			spin_unlock(&dcache_hash_lock);
- 			__dget_locked(dentry);
- 			spin_unlock(&dcache_lock);
- 			return 1;
- 		}
- 	}
-+	spin_unlock(&dcache_hash_lock);
- 	spin_unlock(&dcache_lock);
- out:
- 	return 0;
-@@ -1550,7 +1564,9 @@ void d_rehash(struct dentry * entry)
- {
- 	spin_lock(&dcache_lock);
- 	spin_lock(&entry->d_lock);
-+	spin_lock(&dcache_hash_lock);
- 	_d_rehash(entry);
-+	spin_unlock(&dcache_hash_lock);
- 	spin_unlock(&entry->d_lock);
- 	spin_unlock(&dcache_lock);
- }
-@@ -1629,8 +1645,6 @@ static void switch_names(struct dentry *
+Index: linux-2.6/fs/hugetlbfs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/hugetlbfs/inode.c
++++ linux-2.6/fs/hugetlbfs/inode.c
+@@ -395,7 +395,7 @@ static void hugetlbfs_forget_inode(struc
+ 	if (!hlist_unhashed(&inode->i_hash)) {
+ 		if (!(inode->i_state & (I_DIRTY|I_SYNC)))
+ 			list_move(&inode->i_list, &inode_unused);
+-		inodes_stat.nr_unused++;
++		atomic_inc(&inodes_stat.nr_unused);
+ 		if (!sb || (sb->s_flags & MS_ACTIVE)) {
+ 			spin_unlock(&inode_lock);
+ 			return;
+@@ -413,7 +413,7 @@ static void hugetlbfs_forget_inode(struc
+ 		spin_lock(&inode->i_lock);
+ 		inode->i_state &= ~I_WILL_FREE;
+ 		spin_unlock(&inode->i_lock);
+-		inodes_stat.nr_unused--;
++		atomic_dec(&inodes_stat.nr_unused);
+ 		spin_lock(&inode_hash_lock);
+ 		hlist_del_init(&inode->i_hash);
+ 		spin_unlock(&inode_hash_lock);
+@@ -425,7 +425,7 @@ static void hugetlbfs_forget_inode(struc
+ 	spin_lock(&inode->i_lock);
+ 	inode->i_state |= I_FREEING;
+ 	spin_unlock(&inode->i_lock);
+-	inodes_stat.nr_inodes--;
++	atomic_dec(&inodes_stat.nr_unused);
+ 	spin_unlock(&inode_lock);
+ 	truncate_hugepages(inode, 0);
+ 	clear_inode(inode);
+Index: linux-2.6/fs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/inode.c
++++ linux-2.6/fs/inode.c
+@@ -99,7 +99,10 @@ static DEFINE_MUTEX(iprune_mutex);
+ /*
+  * Statistics gathering..
   */
- static void d_move_locked(struct dentry * dentry, struct dentry * target)
- {
--	struct hlist_head *list;
--
- 	if (!dentry->d_inode)
- 		printk(KERN_WARNING "VFS: moving negative dcache entry\n");
+-struct inodes_stat_t inodes_stat;
++struct inodes_stat_t inodes_stat = {
++	.nr_inodes = ATOMIC_INIT(0),
++	.nr_unused = ATOMIC_INIT(0),
++};
  
-@@ -1647,14 +1661,11 @@ static void d_move_locked(struct dentry
- 	}
+ static struct kmem_cache * inode_cachep __read_mostly;
  
- 	/* Move the dentry to the target hash queue, if on different bucket */
--	if (d_unhashed(dentry))
--		goto already_unhashed;
--
--	hlist_del_rcu(&dentry->d_hash);
--
--already_unhashed:
--	list = d_hash(target->d_parent, target->d_name.hash);
--	__d_rehash(dentry, list);
-+	spin_lock(&dcache_hash_lock);
-+	if (!d_unhashed(dentry))
-+		hlist_del_rcu(&dentry->d_hash);
-+	__d_rehash(dentry, d_hash(target->d_parent, target->d_name.hash));
-+	spin_unlock(&dcache_hash_lock);
+@@ -276,7 +279,7 @@ void __iget(struct inode * inode)
  
- 	/* Unhash the target: dput() will then get rid of it */
- 	__d_drop(target);
-@@ -1850,7 +1861,9 @@ struct dentry *d_materialise_unique(stru
- found_lock:
- 	spin_lock(&actual->d_lock);
- found:
-+	spin_lock(&dcache_hash_lock);
- 	_d_rehash(actual);
-+	spin_unlock(&dcache_hash_lock);
- 	spin_unlock(&actual->d_lock);
- 	spin_unlock(&dcache_lock);
- out_nolock:
-Index: linux-2.6/include/linux/dcache.h
-===================================================================
---- linux-2.6.orig/include/linux/dcache.h
-+++ linux-2.6/include/linux/dcache.h
-@@ -184,6 +184,7 @@ d_iput:		no		no		no       yes
- 
- #define DCACHE_COOKIE		0x0040	/* For use by dcookie subsystem */
- 
-+extern spinlock_t dcache_hash_lock;
- extern spinlock_t dcache_lock;
- extern seqlock_t rename_lock;
- 
-@@ -207,7 +208,9 @@ static inline void __d_drop(struct dentr
- {
- 	if (!(dentry->d_flags & DCACHE_UNHASHED)) {
- 		dentry->d_flags |= DCACHE_UNHASHED;
-+		spin_lock(&dcache_hash_lock);
- 		hlist_del_rcu(&dentry->d_hash);
-+		spin_unlock(&dcache_hash_lock);
- 	}
+ 	if (!(inode->i_state & (I_DIRTY|I_SYNC)))
+ 		list_move(&inode->i_list, &inode_in_use);
+-	inodes_stat.nr_unused--;
++	atomic_dec(&inodes_stat.nr_unused);
  }
  
+ /**
+@@ -342,9 +345,7 @@ static void dispose_list(struct list_hea
+ 		destroy_inode(inode);
+ 		nr_disposed++;
+ 	}
+-	spin_lock(&inode_lock);
+-	inodes_stat.nr_inodes -= nr_disposed;
+-	spin_unlock(&inode_lock);
++	atomic_sub(nr_disposed, &inodes_stat.nr_inodes);
+ }
+ 
+ /*
+@@ -391,7 +392,7 @@ static int invalidate_list(struct list_h
+ 		busy = 1;
+ 	}
+ 	/* only unused inodes may be cached with i_count zero */
+-	inodes_stat.nr_unused -= count;
++	atomic_sub(count, &inodes_stat.nr_unused);
+ 	return busy;
+ }
+ 
+@@ -498,7 +499,7 @@ static void prune_icache(int nr_to_scan)
+ 		spin_unlock(&inode->i_lock);
+ 		nr_pruned++;
+ 	}
+-	inodes_stat.nr_unused -= nr_pruned;
++	atomic_sub(nr_pruned, &inodes_stat.nr_unused);
+ 	if (current_is_kswapd())
+ 		__count_vm_events(KSWAPD_INODESTEAL, reap);
+ 	else
+@@ -530,7 +531,8 @@ static int shrink_icache_memory(int nr,
+ 			return -1;
+ 		prune_icache(nr);
+ 	}
+-	return (inodes_stat.nr_unused / 100) * sysctl_vfs_cache_pressure;
++	return (atomic_read(&inodes_stat.nr_unused) / 100) *
++					sysctl_vfs_cache_pressure;
+ }
+ 
+ static struct shrinker icache_shrinker = {
+@@ -619,7 +621,7 @@ static inline void
+ __inode_add_to_lists(struct super_block *sb, struct hlist_head *head,
+ 			struct inode *inode)
+ {
+-	inodes_stat.nr_inodes++;
++	atomic_inc(&inodes_stat.nr_inodes);
+ 	spin_lock(&sb_inode_list_lock);
+ 	list_add(&inode->i_sb_list, &sb->s_inodes);
+ 	spin_unlock(&sb_inode_list_lock);
+@@ -1227,7 +1229,7 @@ void generic_delete_inode(struct inode *
+ 	WARN_ON(inode->i_state & I_NEW);
+ 	inode->i_state |= I_FREEING;
+ 	spin_unlock(&inode->i_lock);
+-	inodes_stat.nr_inodes--;
++	atomic_dec(&inodes_stat.nr_inodes);
+ 	spin_unlock(&inode_lock);
+ 
+ 	security_inode_delete(inode);
+@@ -1264,7 +1266,7 @@ static void generic_forget_inode(struct
+ 	if (!hlist_unhashed(&inode->i_hash)) {
+ 		if (!(inode->i_state & (I_DIRTY|I_SYNC)))
+ 			list_move(&inode->i_list, &inode_unused);
+-		inodes_stat.nr_unused++;
++		atomic_inc(&inodes_stat.nr_unused);
+ 		if (sb->s_flags & MS_ACTIVE) {
+ 			spin_unlock(&inode->i_lock);
+ 			spin_unlock(&sb_inode_list_lock);
+@@ -1282,7 +1284,7 @@ static void generic_forget_inode(struct
+ 		spin_lock(&inode->i_lock);
+ 		WARN_ON(inode->i_state & I_NEW);
+ 		inode->i_state &= ~I_WILL_FREE;
+-		inodes_stat.nr_unused--;
++		atomic_dec(&inodes_stat.nr_unused);
+ 		spin_lock(&inode_hash_lock);
+ 		hlist_del_init(&inode->i_hash);
+ 		spin_unlock(&inode_hash_lock);
+@@ -1292,7 +1294,7 @@ static void generic_forget_inode(struct
+ 	spin_unlock(&sb_inode_list_lock);
+ 	WARN_ON(inode->i_state & I_NEW);
+ 	inode->i_state |= I_FREEING;
+-	inodes_stat.nr_inodes--;
++	atomic_dec(&inodes_stat.nr_inodes);
+ 	spin_unlock(&inode->i_lock);
+ 	spin_unlock(&inode_lock);
+ 	if (inode->i_data.nrpages)
+Index: linux-2.6/include/linux/fs.h
+===================================================================
+--- linux-2.6.orig/include/linux/fs.h
++++ linux-2.6/include/linux/fs.h
+@@ -8,6 +8,7 @@
+ 
+ #include <linux/limits.h>
+ #include <linux/ioctl.h>
++#include <asm/atomic.h>
+ 
+ /*
+  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
+@@ -39,8 +40,8 @@ struct files_stat_struct {
+ };
+ 
+ struct inodes_stat_t {
+-	int nr_inodes;
+-	int nr_unused;
++	atomic_t nr_inodes;
++	atomic_t nr_unused;
+ 	int dummy[5];		/* padding for sysctl ABI compatibility */
+ };
+ 
+Index: linux-2.6/mm/page-writeback.c
+===================================================================
+--- linux-2.6.orig/mm/page-writeback.c
++++ linux-2.6/mm/page-writeback.c
+@@ -775,7 +775,8 @@ static void wb_kupdate(unsigned long arg
+ 	next_jif = start_jif + msecs_to_jiffies(dirty_writeback_interval * 10);
+ 	nr_to_write = global_page_state(NR_FILE_DIRTY) +
+ 			global_page_state(NR_UNSTABLE_NFS) +
+-			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
++			(atomic_read(&inodes_stat.nr_inodes) -
++			atomic_read(&inodes_stat.nr_unused));
+ 	while (nr_to_write > 0) {
+ 		wbc.more_io = 0;
+ 		wbc.encountered_congestion = 0;
+Index: linux-2.6/fs/cifs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/cifs/inode.c
++++ linux-2.6/fs/cifs/inode.c
+@@ -1507,7 +1507,7 @@ int cifs_revalidate(struct dentry *diren
+ 	}
+ 	cFYI(1, ("Revalidate: %s inode 0x%p count %d dentry: 0x%p d_time %ld "
+ 		 "jiffies %ld", full_path, direntry->d_inode,
+-		 direntry->d_inode->i_count.counter, direntry,
++		 direntry->d_inode->i_count, direntry,
+ 		 direntry->d_time, jiffies));
+ 
+ 	if (cifsInode->time == 0) {
 
 
