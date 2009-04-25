@@ -1,58 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbZDYRxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbZDYSLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755313AbZDYRxV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 13:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbZDYRxI
+	id S1755167AbZDYSLq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 14:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZDYSLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 13:53:08 -0400
-Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:58364 "EHLO
-	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752706AbZDYRxH convert rfc822-to-8bit (ORCPT
+	Sat, 25 Apr 2009 14:11:32 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:10654 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbZDYSLb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 13:53:07 -0400
-Date: Sat, 25 Apr 2009 10:53:05 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] v4l2: fill the unused fields with zeros in case of
- VIDIOC_S_FMT
-In-Reply-To: <49F2C59A.9010703@freemail.hu>
-Message-ID: <Pine.LNX.4.58.0904251045070.3753@shell2.speakeasy.net>
-References: <49F2C59A.9010703@freemail.hu>
+	Sat, 25 Apr 2009 14:11:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=oaVunNZzx5AoFLFtVDSt2MKAfyH/5ooBfoZh+6AsSs3Ir99HMsgwZUtZuJb4QIbqAX
+         rWDOLlgatvNi/CBhGg05LWzAmqW3CNT1/k8M4d+eQZvVKYP/HuOfyhILrcwehITTI++S
+         Gmv+Jv5sJecsLVFOt9fVyPAn+3UrckeaCoyXo=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <23232689.post@talk.nabble.com>
+References: <23232689.post@talk.nabble.com>
+Date: Sat, 25 Apr 2009 15:05:58 -0300
+Message-ID: <ce0170d90904251105pe6ecc68o72359c4dc6e06a2d@mail.gmail.com>
+Subject: Re: Query regarding IPv6 stack modification
+From: Sergio Luis <eeeesti@gmail.com>
+To: nbj <niraj.b.jain@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 Apr 2009, [UTF-8] Németh Márton wrote:
-> The VIDIOC_S_FMT is a write-read ioctl: it sets the format and returns
-> the current format in case of success. The parameter of VIDIOC_S_FMT
-> ioctl is a pointer to struct v4l2_format. [1] This structure contains some
-> fields which are not used depending on the .type value. These unused
-> fields are filled with zeros with this patch.
-
-It's a union, so it's not really the case the the fields are unused.  If
-it's a non-private format, the structure will have some empty padding space
-at the end of the structure after the last field for the format's type.
-Since it's just padding space and there are no fields defined, I don't
-think we have to clear it.
-
->  		struct v4l2_format *f = (struct v4l2_format *)arg;
+On Sat, Apr 25, 2009 at 11:27 AM, nbj <niraj.b.jain@gmail.com> wrote:
 >
-> +#define CLEAR_UNUSED_FIELDS(data, last_member) \
-> +	memset(((u8 *)f)+ \
-> +		offsetof(struct v4l2_format, fmt)+ \
-> +		sizeof(struct v4l2_ ## last_member), \
-> +		0, \
-> +		sizeof(*f)- \
-> +		offsetof(struct v4l2_format, fmt)+ \
-> +		sizeof(struct v4l2_ ## last_member))
-> +
+> I am facing a strange problem when adding a module in the ipv6 stack. (This
+> is a part of my project on IPv4 to IPv6 Gateway)
+> Here is the description:
+>
+> Whenever the IPv6 machine intends to communicate with an IPv4 machine, an
+> extension header is being added(which contains the IPv4 address) and the
+> destination address in the packet is replaced by the address of the gateway.
+> This is done by modifying the address in the sk_buff structure.
+> On receiving a packet from this gateway, I check for the presence of the
+> extension header. If present, the IPv4 address is extracted from it and the
+> source address (that of the gateway) replaced by the mapped address of the
+> v4 machine.
+>
+> Changes have been made in the following functions for the purpose:
+>
+> ip6_xmit & ip6_push_pending_frames: These functions are called in the
+> transmit path of the packet. These functions are used by TCP and UDP/ICMP
+> respectively to serve similar purpose.
+> --I am adding my own extension header (called SHIM header) in the packet at
+> this point. This is done by making changes in the "ipv6_txoptions" structure
+> to add another field for my custom extension header. I am adding the IP
+> address of the IPv4 host in the extension header (this will be used by the
+> translator).
+> --After adding this extension header, I am replacing the destination address
+> in sk_buff with the translator's address.
+>
+> ip6_input_finish:- This function is called in the receive path of the
+> packet. It calls the protocol handler for all the extension headers and the
+> higher layer protocol.
+> --I have written a handler for our custom header (SHIM) which gets called
+> here whenever the packet contains one. This handler replaces the source
+> address (which would be that of the translator) with the mapped address of
+> the IPv4 host as extracted from the SHIM header.
+>
+> Using the above, I have tested TCP, UDP and ICMP applications. For UDP and
+> ICMP (ping) applications, everything works as expected. i.e., the
+> applications uses mapped addresses for the IPv4 hosts and the actual
+> communication happens with the translator's address.
+> For TCP however it failed in the following scenario:
+> I have apache server running on the IPv6 host and IPv4 host trying to access
+> a web page (using mozilla). Initially the IPv4 host is able to access data
+> from the web server. But when a FIN-ACK is sent from the TCP server and a
+> FIN-ACK is obtained from the client, the IPv6 machine hangs.
+> (I also tried testing this using some simple client-server socket program.
+> In that case, everything works fine)
+>
+> --
+> View this message in context: http://www.nabble.com/Query-regarding-IPv6-stack-modification-tp23232689p23232689.html
+> Sent from the linux-kernel mailing list archive at Nabble.com.
+>
 
-What is "data" used for?  The length in your memset is wrong.  You didn't
-run this through "make patch" did you?  Because there are spacing/formatting
-errors that that would have caught.
+CC'ing netdev.
