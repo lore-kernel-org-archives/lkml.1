@@ -1,221 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbZDYE2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752230AbZDYEjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756850AbZDYE2Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 00:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbZDYE0g
+	id S1752230AbZDYEjw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 00:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbZDYEjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 00:26:36 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37200 "EHLO
+	Sat, 25 Apr 2009 00:39:43 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:45504 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450AbZDYE0f (ORCPT
+	with ESMTP id S1751032AbZDYEjn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 00:26:35 -0400
-Message-Id: <20090425042633.428284874@goodmis.org>
-References: <20090425042030.431477667@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Sat, 25 Apr 2009 00:20:35 -0400
+	Sat, 25 Apr 2009 00:39:43 -0400
+Date: Sat, 25 Apr 2009 00:39:40 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Greg KH <greg@kroah.com>
-Subject: [PATCH 5/5] tracing/events: make modules have their own file_operations structure
-Content-Disposition: inline; filename=0005-tracing-events-make-modules-have-their-own-file_ope.patch
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       gregkh@kroah.com
+Subject: [PATCH][RFC] debugfs: dont stop on first failed recursive delete
+Message-ID: <alpine.DEB.2.00.0904250037570.24293@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
 
-For proper module reference counting, the file_operations that modules use
-must have the "owner" field set to the module. Unfortunately, the trace events
-use share file_operations. The same file_operations are used by all both
-kernel core and all modules.
+The following patch is in:
 
-This patch makes the modules allocate their own file_operations and
-copies the functions from the core kernel. This allows those file
-operations to be owned by the module.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
 
-Care is taken to free this code on module unload.
+    branch: rfc/debugfs
 
-Thanks to Greg KH for reminding me that file_operations must be owned
-by the module to have reference counting take place.
 
-Cc: Greg KH <greg@kroah.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace_events.c |   95 +++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 88 insertions(+), 7 deletions(-)
+Steven Rostedt (1):
+      debugfs: dont stop on first failed recursive delete
 
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index b920815..be4d3a4 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -770,7 +770,11 @@ event_subsystem_dir(const char *name, struct dentry *d_events)
- }
- 
- static int
--event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
-+event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
-+		 const struct file_operations *id,
-+		 const struct file_operations *enable,
-+		 const struct file_operations *filter,
-+		 const struct file_operations *format)
- {
- 	struct dentry *entry;
- 	int ret;
-@@ -800,11 +804,11 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
- 
- 	if (call->regfunc)
- 		entry = trace_create_file("enable", 0644, call->dir, call,
--					  &ftrace_enable_fops);
-+					  enable);
- 
- 	if (call->id)
- 		entry = trace_create_file("id", 0444, call->dir, call,
--					  &ftrace_event_id_fops);
-+					  id);
- 
- 	if (call->define_fields) {
- 		ret = call->define_fields();
-@@ -814,7 +818,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
- 			return ret;
+----
+ fs/debugfs/inode.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+---------------------------
+commit 2f1680c7a8a9e974ad22b4b145ef7724a76d0e1f
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Sat Apr 25 00:26:51 2009 -0400
+
+    debugfs: dont stop on first failed recursive delete
+    
+    While running a while loop of removing a module that removes a debugfs
+    directory with debugfs_remove_recursive, and at the same time doing a
+    while loop of cat of a file in that directory, I would hit a point where
+    somehow the cat of the file caused the remove to fail.
+    
+    The result is that other files did not get removed when the module
+    was removed. I simple read of one of those file can oops the kernel
+    because the operations to the file no longer exist (removed by module).
+    
+    The funny thing is that the file being cat'ed was removed. It was
+    the siblings that were not. I see in the code to debugfs_remove_recursive
+    there's a test that checks if the child fails to bail out of the loop
+    to prevent an infinite loop.
+    
+    What this patch does is to still try any siblings in that directory.
+    If all the siblings fail, or there are no more siblings, then we exit
+    the loop.
+    
+    This fixes the above symptom, but...
+    
+    This is no full proof. It makes the debugfs_remove_recursive a bit more
+    robust, but it does not explain why the one file failed. There may
+    be some kind of delay deletion that makes the debugfs think it did
+    not succeed. So this patch is more of a fix for the symptom but not
+    the disease.
+    
+    This patch still makes the debugfs_remove_recursive more robust and
+    until I can find out why the bug exists, this patch will keep
+    the kernel from oopsing in most cases.  Even after the cause is found
+    I think this change can stand on its own and should be kept.
+    
+    [ Impact: prevent kernel oops on module unload and reading debugfs files ]
+    
+    Cc: Greg KH <greg@kroah.com>
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
+index 0662ba6..d22438e 100644
+--- a/fs/debugfs/inode.c
++++ b/fs/debugfs/inode.c
+@@ -403,6 +403,7 @@ void debugfs_remove_recursive(struct dentry *dentry)
  		}
- 		entry = trace_create_file("filter", 0644, call->dir, call,
--					  &ftrace_event_filter_fops);
-+					  filter);
- 	}
+ 		child = list_entry(parent->d_subdirs.next, struct dentry,
+ 				d_u.d_child);
++ next_sibling:
  
- 	/* A trace may not want to export its format */
-@@ -822,7 +826,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
- 		return 0;
- 
- 	entry = trace_create_file("format", 0444, call->dir, call,
--				  &ftrace_event_format_fops);
-+				  format);
- 
- 	return 0;
- }
-@@ -833,8 +837,60 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
- 	     event++)
- 
- #ifdef CONFIG_MODULES
+ 		/*
+ 		 * If "child" isn't empty, walk down the tree and
+@@ -417,6 +418,16 @@ void debugfs_remove_recursive(struct dentry *dentry)
+ 		__debugfs_remove(child, parent);
+ 		if (parent->d_subdirs.next == &child->d_u.d_child) {
+ 			/*
++			 * Try the next sibling.
++			 */
++			if (child->d_u.d_child.next != &parent->d_subdirs) {
++				child = list_entry(child->d_u.d_child.next,
++						   struct dentry,
++						   d_u.d_child);
++				goto next_sibling;
++			}
 +
-+static LIST_HEAD(ftrace_module_file_list);
-+
-+/*
-+ * Modules must own their file_operations to keep up with
-+ * reference counting.
-+ */
-+struct ftrace_module_file_ops {
-+	struct list_head		list;
-+	struct module			*mod;
-+	struct file_operations		id;
-+	struct file_operations		enable;
-+	struct file_operations		format;
-+	struct file_operations		filter;
-+};
-+
-+static struct ftrace_module_file_ops *
-+trace_create_file_ops(struct module *mod)
-+{
-+	struct ftrace_module_file_ops *file_ops;
-+
-+	/*
-+	 * This is a bit of a PITA. To allow for correct reference
-+	 * counting, modules must "own" their file_operations.
-+	 * To do this, we allocate the file operations that will be
-+	 * used in the event directory.
-+	 */
-+
-+	file_ops = kmalloc(sizeof(*file_ops), GFP_KERNEL);
-+	if (!file_ops)
-+		return NULL;
-+
-+	file_ops->mod = mod;
-+
-+	file_ops->id = ftrace_event_id_fops;
-+	file_ops->id.owner = mod;
-+
-+	file_ops->enable = ftrace_enable_fops;
-+	file_ops->enable.owner = mod;
-+
-+	file_ops->filter = ftrace_event_filter_fops;
-+	file_ops->filter.owner = mod;
-+
-+	file_ops->format = ftrace_event_format_fops;
-+	file_ops->format.owner = mod;
-+
-+	list_add(&file_ops->list, &ftrace_module_file_list);
-+
-+	return file_ops;
-+}
-+
- static void trace_module_add_events(struct module *mod)
- {
-+	struct ftrace_module_file_ops *file_ops = NULL;
- 	struct ftrace_event_call *call, *start, *end;
- 	struct dentry *d_events;
- 
-@@ -852,14 +908,27 @@ static void trace_module_add_events(struct module *mod)
- 		/* The linker may leave blanks */
- 		if (!call->name)
- 			continue;
-+
-+		/*
-+		 * This module has events, create file ops for this module
-+		 * if not already done.
-+		 */
-+		if (!file_ops) {
-+			file_ops = trace_create_file_ops(mod);
-+			if (!file_ops)
-+				return;
-+		}
- 		call->mod = mod;
- 		list_add(&call->list, &ftrace_events);
--		event_create_dir(call, d_events);
-+		event_create_dir(call, d_events,
-+				 &file_ops->id, &file_ops->enable,
-+				 &file_ops->filter, &file_ops->format);
- 	}
- }
- 
- static void trace_module_remove_events(struct module *mod)
- {
-+	struct ftrace_module_file_ops *file_ops;
- 	struct ftrace_event_call *call, *p;
- 
- 	list_for_each_entry_safe(call, p, &ftrace_events, list) {
-@@ -874,6 +943,16 @@ static void trace_module_remove_events(struct module *mod)
- 			list_del(&call->list);
- 		}
- 	}
-+
-+	/* Now free the file_operations */
-+	list_for_each_entry(file_ops, &ftrace_module_file_list, list) {
-+		if (file_ops->mod == mod)
-+			break;
-+	}
-+	if (&file_ops->list != &ftrace_module_file_list) {
-+		list_del(&file_ops->list);
-+		kfree(file_ops);
-+	}
- }
- 
- static int trace_module_notify(struct notifier_block *self,
-@@ -954,7 +1033,9 @@ static __init int event_trace_init(void)
- 		if (!call->name)
- 			continue;
- 		list_add(&call->list, &ftrace_events);
--		event_create_dir(call, d_events);
-+		event_create_dir(call, d_events, &ftrace_event_id_fops,
-+				 &ftrace_enable_fops, &ftrace_event_filter_fops,
-+				 &ftrace_event_format_fops);
- 	}
- 
- 	ret = register_module_notifier(&trace_module_nb);
--- 
-1.6.2.1
++			/*
+ 			 * Avoid infinite loop if we fail to remove
+ 			 * one dentry.
+ 			 */
 
--- 
