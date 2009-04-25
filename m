@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbZDYHYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZDYH0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755186AbZDYHYZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 03:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbZDYHYQ
+	id S1755454AbZDYH0V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 03:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZDYH0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 03:24:16 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:51542 "EHLO
+	Sat, 25 Apr 2009 03:26:04 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:41613 "EHLO
 	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752540AbZDYHYQ (ORCPT
+	with ESMTP id S1751395AbZDYH0C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 03:24:16 -0400
-Date: Sat, 25 Apr 2009 09:26:24 +0200
+	Sat, 25 Apr 2009 03:26:02 -0400
+Date: Sat, 25 Apr 2009 09:28:11 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: =?iso-8859-1?B?RnLpZOlyaWMgQnJp6HJl?= <fbriere@fbriere.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kbuild: clean Module.markers and modules.order for out-of-tree modules
-Message-ID: <20090425072624.GA27747@uranus.ravnborg.org>
-References: <1240160320-7466-1-git-send-email-fbriere@fbriere.net>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Makefile:  "make prepare" should be "make modules_prepare"
+Message-ID: <20090425072810.GB27747@uranus.ravnborg.org>
+References: <alpine.LFD.2.00.0904241233220.22684@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1240160320-7466-1-git-send-email-fbriere@fbriere.net>
+In-Reply-To: <alpine.LFD.2.00.0904241233220.22684@localhost.localdomain>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 19, 2009 at 12:58:40PM -0400, Frédéric Brière wrote:
+On Fri, Apr 24, 2009 at 12:35:23PM -0400, Robert P. J. Day wrote:
 > 
-> Signed-off-by: Frédéric Brière <fbriere@fbriere.net>
+> Correct the Makefile help text to read "make modules_prepare".
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+> 
 > ---
->  Makefile |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
 > 
-> diff --git a/Makefile b/Makefile
-> index bfdef56..afbef69 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -1421,7 +1421,9 @@ $(clean-dirs):
->  	$(Q)$(MAKE) $(clean)=$(patsubst _clean_%,%,$@)
->  
->  clean:	rm-dirs := $(MODVERDIR)
-> -clean: rm-files := $(KBUILD_EXTMOD)/Module.symvers
-> +clean: rm-files := $(KBUILD_EXTMOD)/Module.symvers \
-> +                   $(KBUILD_EXTMOD)/Module.markers \
-> +                   $(KBUILD_EXTMOD)/modules.order
->  clean: $(clean-dirs)
->  	$(call cmd,rmdirs)
->  	$(call cmd,rmfiles)
+>   i'm fairly sure that the correct target for configuring external
+> module builds is "modules_prepare," no?
 
-Applied,
+Correct - applied.
+
 	Sam
