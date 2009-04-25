@@ -1,73 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbZDYDQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbZDYDVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754900AbZDYDQf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 23:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbZDYDQ0
+	id S1753795AbZDYDVA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 23:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZDYDUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 23:16:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38180 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752649AbZDYDQZ (ORCPT
+	Fri, 24 Apr 2009 23:20:50 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:42221 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752649AbZDYDUt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 23:16:25 -0400
-Date: Fri, 24 Apr 2009 20:10:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, zhaolei@cn.fujitsu.com,
-       Ingo Molnar <mingo@elte.hu>, kosaki.motohiro@jp.fujitsu.com,
-       tzanussi@gmail.com, LKML <linux-kernel@vger.kernel.org>,
-       oleg@redhat.com
-Subject: Re: [PATCH 0/4] workqueue_tracepoint: Add worklet tracepoints for
- worklet lifecycle tracing
-Message-Id: <20090424201051.b10797bb.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.0904242238350.24293@gandalf.stny.rr.com>
-References: <20090415085310.AC0D.A69D9226@jp.fujitsu.com>
-	<20090415011533.GI5968@nowhere>
-	<20090415141250.AC46.A69D9226@jp.fujitsu.com>
-	<49E8282A.6010004@cn.fujitsu.com>
-	<49E82CA7.2040606@cn.fujitsu.com>
-	<20090417134557.GA23493@elte.hu>
-	<49F1A59B.3080206@cn.fujitsu.com>
-	<20090424130616.a3c217cb.akpm@linux-foundation.org>
-	<20090424225909.GA6658@nowhere>
-	<20090424162056.45907fef.akpm@linux-foundation.org>
-	<20090425003702.GC6658@nowhere>
-	<20090424182821.8263f445.akpm@linux-foundation.org>
-	<alpine.DEB.2.00.0904242149150.24293@gandalf.stny.rr.com>
-	<20090424192415.1291a76b.akpm@linux-foundation.org>
-	<alpine.DEB.2.00.0904242238350.24293@gandalf.stny.rr.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Apr 2009 23:20:49 -0400
+Date: Sat, 25 Apr 2009 04:20:49 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: npiggin@suse.de
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch 01/27] fs: cleanup files_lock
+Message-ID: <20090425032049.GT8633@ZenIV.linux.org.uk>
+References: <20090425012020.457460929@suse.de> <20090425012209.061706790@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090425012209.061706790@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Apr 2009 22:51:03 -0400 (EDT) Steven Rostedt <rostedt@goodmis.org> wrote:
+[Alan Cc'ed due to tty part of it]
 
-> In the old -rt patch series, we had trace points scattered all over the 
-> kernel. This was the original "event tracer". It was low overhead and can 
-> still give a good overview of the system when the function tracer was too 
-> much data. Yes, we solved many issues in -rt because of the event tracer. 
+On Sat, Apr 25, 2009 at 11:20:21AM +1000, npiggin@suse.de wrote:
 
-Sure, tracers can be useful.  The ext3 tracer I did way back when
-maintained a 32-element trace buffer inside each buffer_head and then would
-emit that trace when an assertion failed against that buffer_head, so
-you can see the last 32 things which happened to that bh.  It would
-have been nigh impossible to fix many of the things which were fixed
-without that facility.  (I doubt, incidentally, whether ftrace can do
-this sort of data-centric tracing?).
+>  	set_bit(TTY_PTY_LOCK, &tty->flags); /* LOCK THE SLAVE */
+>  	filp->private_data = tty;
+> -	file_move(filp, &tty->tty_files);
+> +
+> +	mutex_lock(&tty_mutex);
+> +	file_list_del(filp);
+> +	list_add(&filp->f_u.fu_list, &tty->tty_files);
+> +	mutex_unlock(&tty_mutex);
 
-But I never merged it into Linux.  Some of the tracepoints are in there
-(grep TRACE fs/ext3/*.c) but the core was kept out-of-tree.
+Is there any problem with just shifting mutex_unlock down from several lines
+above?
 
-> BTW, you work for Google,
 
-Hey, it's the other way round ;)
+(in do_tty_hangup)
+> +	mutex_lock(&tty_mutex);
+> +
+>  	/* inuse_filps is protected by the single kernel lock */
+>  	lock_kernel();
 
-> doesn't google claim to have some magical 
-> 20-some tracepoints that is all they need? Could you give us a hint to 
-> what and where they are?
+isn't it too early?
 
-Wouldn't have a clue.  Jiaying Zhang should be able to find out.
+> @@ -553,8 +566,7 @@ static void do_tty_hangup(struct work_st
+>  	}
+>  	spin_unlock(&redirect_lock);
+>  
+> -	check_tty_count(tty, "do_tty_hangup");
+> -	file_list_lock();
+
+i.e. why not here?
+
+> +	__check_tty_count(tty, "do_tty_hangup");
+>  	/* This breaks for file handles being sent over AF_UNIX sockets ? */
+>  	list_for_each_entry(filp, &tty->tty_files, f_u.fu_list) {
+>  		if (filp->f_op->write == redirected_tty_write)
+
+> @@ -1467,9 +1479,9 @@ static void release_one_tty(struct kref
+>  	tty_driver_kref_put(driver);
+>  	module_put(driver->owner);
+>  
+> -	file_list_lock();
+> +	mutex_lock(&tty_mutex);
+>  	list_del_init(&tty->tty_files);
+> -	file_list_unlock();
+> +	mutex_unlock(&tty_mutex);
+
+Umm... why is it safe from the deadlock POV?
+
+> @@ -1836,8 +1849,12 @@ got_driver:
+>  		return PTR_ERR(tty);
+>  
+>  	filp->private_data = tty;
+> -	file_move(filp, &tty->tty_files);
+> -	check_tty_count(tty, "tty_open");
+> +	mutex_lock(&tty_mutex);
+> +	BUG_ON(list_empty(&filp->f_u.fu_list));
+> +	file_list_del(filp); /* __dentry_open has put it on the sb list */
+> +	list_add(&filp->f_u.fu_list, &tty->tty_files);
+> +	__check_tty_count(tty, "tty_open");
+> +	mutex_unlock(&tty_mutex);
+
+a) why not simply shift mutex_unlock from several lines above?
+b) that code really looks b0rken - what happens if you block on that
+mutex_lock and somebody else comes and sees (at least) inconsistent
+tty->count?
+
+====
+
+Could you split that into direct move (one patch) + changes?
+
+> +/**
+> + *	mark_files_ro - mark all files read-only
+> + *	@sb: superblock in question
+> + *
+> + *	All files are marked read-only.  We don't care about pending
+> + *	delete files so this should be used in 'force' mode only.
+> + */
+> +void mark_files_ro(struct super_block *sb)
+
+BTW, I'd rather merge mnt_write_count one first, so reordering of those
+would be appreciated; mnt_write_count + move that function + this patch
+is the order I'd prefer.
