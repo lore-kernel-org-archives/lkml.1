@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187AbZDYLgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753563AbZDYLsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753187AbZDYLgQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 07:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbZDYLgA
+	id S1753563AbZDYLsZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 07:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbZDYLsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 07:36:00 -0400
-Received: from utopia.booyaka.com ([72.9.107.138]:49806 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751391AbZDYLf7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 07:35:59 -0400
-X-Greylist: delayed 442 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Apr 2009 07:35:59 EDT
-Date: Sat, 25 Apr 2009 05:28:36 -0600 (MDT)
-From: Paul Walmsley <paul@pwsan.com>
-To: lrg@slimlogic.co.uk, broonie@opensource.wolfsonmicro.com
-cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       dbrownell@users.sourceforge.net
-Subject: [PATCH] regulator core: fix double-free in regulator_register()
- error path
-Message-ID: <alpine.DEB.2.00.0904250526210.28378@utopia.booyaka.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 25 Apr 2009 07:48:15 -0400
+Received: from b186.blue.fastwebserver.de ([62.141.42.186]:53991 "EHLO
+	mail.gw90.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751615AbZDYLsM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Apr 2009 07:48:12 -0400
+X-Greylist: delayed 9562 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Apr 2009 07:48:12 EDT
+Subject: [PATCH] Add video modes for resolutions and timings of PAL RGB.
+From: Paul Menzel <paulepanter@users.sourceforge.net>
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Hilber <sparkie@lowbyte.de>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-qwQDfBj1zwCeMAdIbEY2"
+Date: Sat, 25 Apr 2009 11:08:31 +0200
+Message-Id: <1240650511.6916.19.camel@mattotaupa.wohnung.familie-menzel.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-During regulator registration, any error after device_register() will 
-cause a double-free on the struct regulator_dev 'rdev'.  The bug is in 
-drivers/regulator/core.c:regulator_register():
+--=-qwQDfBj1zwCeMAdIbEY2
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-...
-scrub:
-	device_unregister(&rdev->dev);
-clean:
-	kfree(rdev);                           <---
-	rdev = ERR_PTR(ret);
-	goto out;
-...
+This patch was taken from vga-sync-field version 0.0.3 [1][2].
 
-device_unregister() calls regulator_dev_release() which frees rdev.  The 
-subsequent kfree corrupts memory and causes some OMAP3 systems to oops on 
-boot in regulator_get().
+[1] http://lowbyte.de/vga-sync-fields/vga-sync-fields-0.0.3.tgz
+[2] http://git.hellersdorfer-jugendchor.de/?p=3Dvga2scart.git;a=3Dcommit;h=
+=3Dc5c8ed6c51fc9879dbf38d8b91d5db6f4300ea03
 
-Applies against 2.6.30-rc3.
-
-Signed-off-by: Paul Walmsley <paul@pwsan.com>
+Signed-off-by: Thomas Hilber <sparkie@lowbyte.de>
+Signed-off-by: Paul Menzel <paulepanter@users.sourceforge.net>
 ---
- drivers/regulator/core.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ drivers/video/modedb.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index 01f7702..fabd2e0 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -2080,6 +2080,10 @@ out:
- 
- scrub:
- 	device_unregister(&rdev->dev);
-+	/* device core frees rdev */
-+	rdev = ERR_PTR(ret);
-+	goto out;
-+
- clean:
- 	kfree(rdev);
- 	rdev = ERR_PTR(ret);
--- 
-1.6.3.rc1.51.gea0b7
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index 1618624..6175882 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -264,6 +264,14 @@ static const struct fb_videomode modedb[] =3D {
+ 	/* 1280x800, 60 Hz, 47.403 kHz hsync, WXGA 16:10 aspect ratio */
+ 	NULL, 60, 1280, 800, 12048, 200, 64, 24, 1, 136, 3,
+ 	0, FB_VMODE_NONINTERLACED
++    }, {
++       /* 720x576i @ 50 Hz, 15.625 kHz hsync (PAL RGB) */
++       NULL, 50, 720, 576, 74074, 64, 16, 39, 5, 64, 5,=20
++       0, FB_VMODE_INTERLACED
++    }, {
++       /* 800x520i @ 50 Hz, 15.625 kHz hsync (PAL RGB) */
++       NULL, 50, 800, 520, 58823, 144, 64, 72, 28, 80, 5,=20
++       0, FB_VMODE_INTERLACED
+     },
+ };
+=20
+--=20
+1.6.2.4
+
+--=-qwQDfBj1zwCeMAdIbEY2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Dies ist ein digital signierter Nachrichtenteil
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkny0w8ACgkQPX1aK2wOHVgaFgCdGm5pXwntnBK4Q/jI9KoVckCG
+iXAAn1UV2v3apy0mcosekRWBspzud2+3
+=JHit
+-----END PGP SIGNATURE-----
+
+--=-qwQDfBj1zwCeMAdIbEY2--
 
