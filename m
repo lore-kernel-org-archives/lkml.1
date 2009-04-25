@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbZDYE05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbZDYE1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753795AbZDYE05 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 00:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZDYE0c
+	id S1753955AbZDYE1W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 00:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbZDYE0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 00:26:32 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37153 "EHLO
+	Sat, 25 Apr 2009 00:26:33 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:42499 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751223AbZDYE0b (ORCPT
+	with ESMTP id S1751394AbZDYE0c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 00:26:31 -0400
-Message-Id: <20090425042629.332398282@goodmis.org>
+	Sat, 25 Apr 2009 00:26:32 -0400
+Message-Id: <20090425042630.348109173@goodmis.org>
 References: <20090425042030.431477667@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Sat, 25 Apr 2009 00:20:31 -0400
+Date: Sat, 25 Apr 2009 00:20:32 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: [PATCH 1/5] tracing/lockdep: convert lockdep to use TRACE_EVENT macro
-Content-Disposition: inline; filename=0001-tracing-lockdep-convert-lockdep-to-use-TRACE_EVENT.patch
+       Li Zefan <lizf@cn.fujitsu.com>, Jason Baron <jbaron@redhat.com>
+Subject: [PATCH 2/5] tracing/irq: convert irq traces to use TRACE_EVENT macro
+Content-Disposition: inline; filename=0002-tracing-irq-convert-irq-traces-to-use-TRACE_EVENT-m.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,91 +35,94 @@ Note, this change should also speed up the tracing.
 
 [ Impact: remove a user of deprecated TRACE_FORMAT ]
 
-Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Jason Baron <jbaron@redhat.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/trace/events/lockdep.h |   56 ++++++++++++++++++++++++++++++++-------
- 1 files changed, 46 insertions(+), 10 deletions(-)
+ include/trace/events/irq.h |   57 +++++++++++++++++++++++++++++++++++++-------
+ 1 files changed, 48 insertions(+), 9 deletions(-)
 
-diff --git a/include/trace/events/lockdep.h b/include/trace/events/lockdep.h
-index 3ca315c..0e956c9 100644
---- a/include/trace/events/lockdep.h
-+++ b/include/trace/events/lockdep.h
-@@ -9,28 +9,64 @@
- 
- #ifdef CONFIG_LOCKDEP
- 
--TRACE_FORMAT(lock_acquire,
-+TRACE_EVENT(lock_acquire,
+diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
+index 75e3468..7686864 100644
+--- a/include/trace/events/irq.h
++++ b/include/trace/events/irq.h
+@@ -10,11 +10,24 @@
+ /*
+  * Tracepoint for entry of interrupt handler:
+  */
+-TRACE_FORMAT(irq_handler_entry,
++TRACE_EVENT(irq_handler_entry,
 +
- 	TP_PROTO(struct lockdep_map *lock, unsigned int subclass,
- 		int trylock, int read, int check,
- 		struct lockdep_map *next_lock, unsigned long ip),
+ 	TP_PROTO(int irq, struct irqaction *action),
 +
- 	TP_ARGS(lock, subclass, trylock, read, check, next_lock, ip),
--	TP_FMT("%s%s%s", trylock ? "try " : "",
--		read ? "read " : "", lock->name)
--	);
- 
--TRACE_FORMAT(lock_release,
-+	TP_STRUCT__entry(
-+		__field(unsigned int, flags)
-+		__string(name, lock->name)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->flags = (trylock ? 1 : 0) | (read ? 2 : 0);
-+		__assign_str(name, lock->name);
-+	),
-+
-+	TP_printk("%s%s%s", (__entry->flags & 1) ? "try " : "",
-+		  (__entry->flags & 2) ? "read " : "",
-+		  __get_str(name))
-+);
-+
-+TRACE_EVENT(lock_release,
-+
- 	TP_PROTO(struct lockdep_map *lock, int nested, unsigned long ip),
-+
- 	TP_ARGS(lock, nested, ip),
--	TP_FMT("%s", lock->name)
+ 	TP_ARGS(irq, action),
+-	TP_FMT("irq=%d handler=%s", irq, action->name)
 -	);
 +
 +	TP_STRUCT__entry(
-+		__string(name, lock->name)
++		__field(	int,	irq		)
++		__string(	name,	action->name	)
 +	),
 +
 +	TP_fast_assign(
-+		__assign_str(name, lock->name);
++		__entry->irq = irq;
++		__assign_str(name, action->name);
 +	),
 +
-+	TP_printk("%s", __get_str(name))
++	TP_printk("irq=%d handler=%s", __entry->irq, __get_str(name))
 +);
  
- #ifdef CONFIG_LOCK_STAT
+ /*
+  * Tracepoint for return of an interrupt handler:
+@@ -39,17 +52,43 @@ TRACE_EVENT(irq_handler_exit,
+ 		  __entry->irq, __entry->ret ? "handled" : "unhandled")
+ );
  
--TRACE_FORMAT(lock_contended,
-+TRACE_EVENT(lock_contended,
+-TRACE_FORMAT(softirq_entry,
++TRACE_EVENT(softirq_entry,
 +
- 	TP_PROTO(struct lockdep_map *lock, unsigned long ip),
+ 	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
 +
- 	TP_ARGS(lock, ip),
--	TP_FMT("%s", lock->name)
+ 	TP_ARGS(h, vec),
+-	TP_FMT("softirq=%d action=%s", (int)(h - vec), softirq_to_name[h-vec])
+-	);
+ 
+-TRACE_FORMAT(softirq_exit,
++	TP_STRUCT__entry(
++		__field(	int,	vec			)
++		__string(	name,	softirq_to_name[h-vec]	)
++	),
++
++	TP_fast_assign(
++		__entry->vec = (int)(h - vec);
++		__assign_str(name, softirq_to_name[h-vec]);
++	),
++
++	TP_printk("softirq=%d action=%s", __entry->vec, __get_str(name))
++);
++
++TRACE_EVENT(softirq_exit,
++
+ 	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
++
+ 	TP_ARGS(h, vec),
+-	TP_FMT("softirq=%d action=%s", (int)(h - vec), softirq_to_name[h-vec])
 -	);
 +
 +	TP_STRUCT__entry(
-+		__string(name, lock->name)
++		__field(	int,	vec			)
++		__string(	name,	softirq_to_name[h-vec]	)
 +	),
 +
 +	TP_fast_assign(
-+		__assign_str(name, lock->name);
++		__entry->vec = (int)(h - vec);
++		__assign_str(name, softirq_to_name[h-vec]);
 +	),
 +
-+	TP_printk("%s", __get_str(name))
++	TP_printk("softirq=%d action=%s", __entry->vec, __get_str(name))
 +);
  
- TRACE_EVENT(lock_acquired,
- 	TP_PROTO(struct lockdep_map *lock, unsigned long ip, s64 waittime),
+ #endif /*  _TRACE_IRQ_H */
+ 
 -- 
 1.6.2.1
 
