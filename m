@@ -1,140 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760010AbZDYAQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbZDYAh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760010AbZDYAQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 20:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZDYAQu
+	id S1754278AbZDYAh0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 20:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZDYAhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 20:16:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34423 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752567AbZDYAQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 20:16:49 -0400
+	Fri, 24 Apr 2009 20:37:10 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:44626 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751924AbZDYAhJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 20:37:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=H8wfmCaaSOkn9jViVAY/eMS3IwlKAI+ZT+JnStt7Ti7L/jmMMKky3XT7CrX+vJ6Rc/
+         39BbeXLKFvsbpsVQTeKuvXL9jxyBz0SckWtp2zwp2Tveo1V7jzHwFnXuQp83dahebBkz
+         bOpQxj97ZE/B6HHCbrss2wS3U88qtPZ4vx3aM=
+Date: Sat, 25 Apr 2009 02:37:03 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: zhaolei@cn.fujitsu.com, mingo@elte.hu, kosaki.motohiro@jp.fujitsu.com,
+       rostedt@goodmis.org, tzanussi@gmail.com, linux-kernel@vger.kernel.org,
+       oleg@redhat.com
+Subject: Re: [PATCH 0/4] workqueue_tracepoint: Add worklet tracepoints for
+	worklet lifecycle tracing
+Message-ID: <20090425003702.GC6658@nowhere>
+References: <20090415085310.AC0D.A69D9226@jp.fujitsu.com> <20090415011533.GI5968@nowhere> <20090415141250.AC46.A69D9226@jp.fujitsu.com> <49E8282A.6010004@cn.fujitsu.com> <49E82CA7.2040606@cn.fujitsu.com> <20090417134557.GA23493@elte.hu> <49F1A59B.3080206@cn.fujitsu.com> <20090424130616.a3c217cb.akpm@linux-foundation.org> <20090424225909.GA6658@nowhere> <20090424162056.45907fef.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Russell King <rmk@arm.linux.org.uk>
-X-Fcc: ~/Mail/linus
-Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org
-In-Reply-To: Roland McGrath's message of  Friday, 24 April 2009 17:06:34 -0700 <20090425000634.313E4FC3C8@magilla.sf.frob.com>
-References: <20090425000634.313E4FC3C8@magilla.sf.frob.com>
-Subject: [PATCH 16/17] arm: asm/syscall.h (unfinished)
-Message-Id: <20090425001503.85473FC3C8@magilla.sf.frob.com>
-Date: Fri, 24 Apr 2009 17:15:03 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20090424162056.45907fef.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This provides the user_stack_pointer() macro in asm/ptrace.h,
-which some new arch-independent code wants to be able to use.
+On Fri, Apr 24, 2009 at 04:20:56PM -0700, Andrew Morton wrote:
+> On Sat, 25 Apr 2009 00:59:10 +0200
+> Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > 
+> > [useful info]
+> >
+> 
+> OK, thanks.  It was waaaay more useful than the original description.
+> 
+> > So this latest patchset provides all these required informations on the events
+> > tracing level.
+> 
+> Well.. required by who?
+> 
+> I don't recall ever seeing any problems of this nature, nor patches to
+> solve any such problems.  If someone wants to get down and optimise our use
+> of workqueues then good for them, but that exercise doesn't require the
+> permanent addition of large amounts of code to the kernel.
+> 
+> The same amount of additional code and additional churn could be added
+> to probably tens of core kernel subsystems, but what _point_ is there
+> to all this?  Who is using it, what problems are they solving?
+> 
+> We keep on adding all these fancy debug gizmos to the core kernel which look
+> like they will be used by one person, once.  If that!
+> 
 
-It also adds the asm/syscall.h header to let arch-independent
-code interpret the registers as system call arguments or return.
 
-The syscall_get_nr() function here is not really right.  I don't
-know enough about ARM to finish it correctly.  It needs to figure
-out if the blocked user task is really in the kernel for a system
-call and return -1 if not.  I also did not try to handle all the
-different ABI variants, which I don't really understand.
+If you don't recall problems revealed by this tracer or patches
+motivated by its results, I have examples.
 
-Until this is fixed, /proc/pid/syscall can show bogus results
-for a process that is blocked inside a fault or something else
-that's not a system call.  (It's probably all wrong for !AEABI too.)
+Soon after writing the first version of th workqueue tracer, I saw
+this incredible rate of unused workqueue on my box.
+Note that's still the case today (I've cut the worklet informations):
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/arm/include/asm/ptrace.h  |    4 +-
- arch/arm/include/asm/syscall.h |   65 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 67 insertions(+), 2 deletions(-)
- create mode 100644 arch/arm/include/asm/syscall.h
+# cat trace_stat/workqueues 
+# CPU  INSERTED  EXECUTED   TASKNAME:PID
+# |      |         |        `-WORKFUNC
+# |      |         |          |
+  0   9587       9650       events/0:9
+  0      0          0       cpuset:11
+  0   1384       1384       khelper:12
+  0      0          0       kintegrityd/0:178
+  0    385        385       kblockd/0:184
+  0      0          0       kacpid:190
+  0      0          0       kacpi_notify:191
+  0      0          0       tifm:498
+  0  24061      24061       ata/0:507
+  0      0          0       ata_aux:511
+  0      0          0       aio/0:871
+  0      0          0       crypto/0:897
+  0      0          0       scsi_tgtd/0:2368
+  0      0          0       iscsi_eh:2387
+  0      0          0       kpsmoused:2521
+  0      0          0       hd-audio0:2660
+  0      0          0       krxrpcd/0:2745
+  0    147        147       reiserfs/0:2895
+  1  11023      11046       events/1:10
+  1      0          0       kintegrityd/1:181
+  1    293        293       kblockd/1:185
+  1  33783      33783       ata/1:509
+  1      0          0       aio/1:878
+  1      0          0       crypto/1:898
+  1      0          0       scsi_tgtd/1:2370
+  1      0          0       krxrpcd/1:2746
+  1     99         99       reiserfs/1:2896
 
-diff --git a/arch/arm/include/asm/ptrace.h b/arch/arm/include/asm/ptrace.h
-index 236a06b..34075dc 100644
---- a/arch/arm/include/asm/ptrace.h
-+++ b/arch/arm/include/asm/ptrace.h
-@@ -140,7 +140,8 @@ static inline int valid_user_regs(struct pt_regs *regs)
- 	return 0;
- }
- 
--#define instruction_pointer(regs)	(regs)->ARM_pc
-+#define instruction_pointer(regs)	((regs)->ARM_pc)
-+#define user_stack_pointer(regs)	((regs)->ARM_sp)
- 
- #ifdef CONFIG_SMP
- extern unsigned long profile_pc(struct pt_regs *regs);
-@@ -156,4 +157,3 @@ extern unsigned long profile_pc(struct pt_regs *regs);
- #endif /* __ASSEMBLY__ */
- 
- #endif
--
-diff --git a/arch/arm/include/asm/syscall.h b/arch/arm/include/asm/syscall.h
-new file mode 100644
-index 0000000..56aefe6
---- /dev/null
-+++ b/arch/arm/include/asm/syscall.h
-@@ -0,0 +1,65 @@
-+/*
-+ * Access to user system call parameters and results
-+ *
-+ * See asm-generic/syscall.h for descriptions of what we must do here.
-+ */
-+
-+#ifndef _ASM_SYSCALL_H
-+#define _ASM_SYSCALL_H	1
-+
-+#include <linux/sched.h>
-+#include <linux/err.h>
-+
-+static inline long syscall_get_nr(struct task_struct *task,
-+				  struct pt_regs *regs)
-+{
-+	/* XXX how to figure out if blocked in a syscall or not?? */
-+
-+	return regs->ARM_r7;	/* XXX apparently */
-+	return task_thread_info(task)->syscall; /* XXX if changed via ptrace */
-+}
-+
-+static inline void syscall_rollback(struct task_struct *task,
-+				    struct pt_regs *regs)
-+{
-+	regs->ARM_r0 = regs->ARM_ORIG_r0;
-+}
-+
-+static inline long syscall_get_error(struct task_struct *task,
-+				     struct pt_regs *regs)
-+{
-+	return IS_ERR_VALUE(regs->ARM_r0) ? regs->ARM_r0 : 0;
-+}
-+
-+static inline long syscall_get_return_value(struct task_struct *task,
-+					    struct pt_regs *regs)
-+{
-+	return regs->ARM_r0;
-+}
-+
-+static inline void syscall_set_return_value(struct task_struct *task,
-+					    struct pt_regs *regs,
-+					    int error, long val)
-+{
-+	regs->ARM_r0 = (long) error ?: val;
-+}
-+
-+static inline void syscall_get_arguments(struct task_struct *task,
-+					 struct pt_regs *regs,
-+					 unsigned int i, unsigned int n,
-+					 unsigned long *args)
-+{
-+	BUG_ON(i + n > 6);
-+	memcpy(args, &regs->uregs[i], n * sizeof(args[0]));
-+}
-+
-+static inline void syscall_set_arguments(struct task_struct *task,
-+					 struct pt_regs *regs,
-+					 unsigned int i, unsigned int n,
-+					 const unsigned long *args)
-+{
-+	BUG_ON(i + n > 6);
-+	memcpy(&regs->uregs[i], args, n * sizeof(args[0]));
-+}
-+
-+#endif	/* _ASM_SYSCALL_H */
+
+27 threads. 15 are unused, 12 are used.
+
+And still, I've only two CPUS.
+More than half of my workqueues are unused.
+I also have a small config. I can't imagine the result
+with a distro config which enables a lot of options
+by default.
+
+I discovered it with this tracer. Then it brought me to
+write this patch:
+
+http://lkml.org/lkml/2009/1/31/184
+
+Btw, if one day I can see something like async but which is able
+to accept work that _must_ be ran async in any case, then I'm still willing
+to rework this patch.
+
+Still with these same observations, I wrote this another one:
+
+http://lkml.org/lkml/2009/1/26/363
+
+Without this tracer, I wouldn't have had the informations which
+motivated me to write these patches. And although they weren't accepted
+(the first is more about pending than refused, my bad), which is
+justified, they reveal a real problem.
+
+
+Who knows what kind of other things we can discover with worklet tracing?
+
+Frederic.
+
+
