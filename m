@@ -1,61 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760818AbZDYBqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbZDYBvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760818AbZDYBqt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 21:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbZDYBqi
+	id S1754397AbZDYBvR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 21:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbZDYBvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 21:46:38 -0400
-Received: from web2.rbftpnetworks.com ([195.224.144.73]:37642 "EHLO
-	web2.rbftpnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760770AbZDYBqh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 21:46:37 -0400
-X-Greylist: delayed 27184 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Apr 2009 21:46:37 EDT
-To: linux-kernel@vger.kernel.org
-Subject: Gaming news link
-Date: Fri, 24 Apr 2009 19:13:31 +0100
-From: ryan@rbftpnetworks.com
-Message-ID: <7279950f332198314c4fcafa61aa42ad@www.list.flyawaysimulation.com>
-X-Priority: 3
-X-Mailer: PHPMailer [version 1.73]
-X-Mailer: phplist v2.10.3
-X-MessageID: 81
-X-ListMember: linux-kernel@vger.kernel.org
+	Fri, 24 Apr 2009 21:51:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47166 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752627AbZDYBu7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 21:50:59 -0400
+Message-ID: <49F26C38.9000301@redhat.com>
+Date: Fri, 24 Apr 2009 21:49:44 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
+To: Tim Abbott <tabbott@MIT.EDU>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>, "Theodore Ts'o" <tytso@MIT.EDU>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Ralf Baechle <ralf@linux-mips.org>, Kyle McMaartin <kyle@mcmartin.ca>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH v3 0/3] Add support for compiling with -ffunction-sections
+ -fdata-sections
+References: <1238973278-31735-1-git-send-email-tabbott@mit.edu> <alpine.DEB.1.10.0904072019560.17274@vinegar-pot.mit.edu> <alpine.DEB.1.10.0904201255080.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201637280.2199@localhost.localdomain> <alpine.DEB.1.10.0904202010220.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain> <alpine.DEB.1.10.0904221826180.24694@vinegar-pot.mit.edu> <49F1CA6E.5080407@redhat.com> <alpine.DEB.1.10.0904241057440.23249@vinegar-pot.mit.edu>
+In-Reply-To: <alpine.DEB.1.10.0904241057440.23249@vinegar-pot.mit.edu>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Sir / Madam,
+Tim Abbott wrote:
+> On Fri, 24 Apr 2009, Masami Hiramatsu wrote:
+> 
+>> What would you think about posting these patches plus -ffunction-sections/
+>> -fdata-sections patch to -mm tree, -tip tree, or -next tree as
+>> "playable" Ksplice patchset?
+> 
+> The section rename patch often merge conflicts with other changes.  I 
+> think that having it sit out in one of those trees for another release 
+> would result in a lot of unnecessary work rebasing patches between that 
+> tree and Linus' tree.
 
-We are interested in posting our gaming news and information site on
-your links section. Our site is GamerBeef.com and can be found at
-http://www.gamerbeef.com
+I think those are not unnecessary work, because those changes will also
+be merged to linus tree in the future. Don't you think new feature
+proposer should pay the cost for updating related works (or, obtaining
+agreement of each developer for updating their patches)?
 
-Our site includes daily updated gaming news from all genres and
-consoles, with focus on PC gaming. We also have a new discussion
-forum, cheats and screenshots section.
 
-We would of course offer a link back to your site in return.
+> Once these -ffunction-sections support patches are merged, I intend to 
+> post the rest of the Ksplice patchset for one of those trees.
 
-Let me know your thoughts.
+Of course, but doesn't it need to be merged into linus tree?
 
-Best Regards,
 
-Ryan
+>> If there are actual problems on those arch, I think you'd better post
+>> these patches as bugfixes with bug reports.
+> 
+> These problems are all discussed in the commit messages of the relevant 
+> patches.
+> 
+> One patch fixes modposting a kernel with more than 65536 ELF sections.  
+> It is certainly possible to get this many with allyesconfig and 
+> -ffunction-sections -fdata-sections.
 
---
-Ryan Barclay
+This will be reasonable bugfix for the arches which already use
+-ffunction-sections -fdata-sections.
 
-Managing Director
+> Another fixes the issue that when you build with -ffunction-sections, 
+> modpost will print a large number of spurious warnings when it sees 
+> sections like .rodata.__func__.12345 which are generated by the __FUNC__ 
+> macro.
 
-RBFTP Networks Limited.
+Is that possible to change the patches to work if the kernel is compiled
+with -ffunction-sections?
+If so, no one will complain about those changes.
 
-DDI: +44 (0)870 490 1870
-WWW: http://www.rbftpnetworks.com
+> The patch with many scattered changes fixes the problem that with 
+> -ffunction-sections -fdata-sections, a function named head gets put in the 
+> ".text.head" section, and your "static int percpu" ends up in the 
+> ".data.percpu" section and probably ends up being made percpu.  This is a 
+> potentially nasty problem.
 
-RBFTP Networks Limited Registered in England No 05718807 Registered Office:
-68 Aldersbrook Road, London, E12 5DL.
+For this patch, I agree with Sam Ravnborg.
+I think his suggestion is a good idea.
+
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
