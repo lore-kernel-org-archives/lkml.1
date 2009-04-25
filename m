@@ -1,194 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759693AbZDYBiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754956AbZDYBif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759693AbZDYBiM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 21:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758154AbZDYBad
+	id S1754956AbZDYBif (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 21:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758334AbZDYBae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 21:30:33 -0400
-Received: from cantor.suse.de ([195.135.220.2]:44579 "EHLO mx1.suse.de"
+	Fri, 24 Apr 2009 21:30:34 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44578 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752875AbZDYB2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752804AbZDYB2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 24 Apr 2009 21:28:50 -0400
-Message-Id: <20090425012209.513109971@suse.de>
+Message-Id: <20090425012210.306040986@suse.de>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Sat, 25 Apr 2009 11:20:24 +1000
+Date: Sat, 25 Apr 2009 11:20:29 +1000
 From: npiggin@suse.de
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Dave Hansen <haveblue@us.ibm.com>
-Subject: [patch 04/27] fs: introduce mnt_clone_write
+Subject: [patch 09/27] fs: dcache scale nr_dentry
 References: <20090425012020.457460929@suse.de>
-Content-Disposition: inline; filename=mnt_clone_write.patch
+Content-Disposition: inline; filename=fs-dcache-scale-nr_dentry.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch speeds up lmbench lat_mmap test by about another 2% after the
-first patch.
-
-Before:
- avg = 462.286
- std = 5.46106
-
-After:
- avg = 453.12
- std = 9.58257
-
-(50 runs of each, stddev gives a reasonable confidence)
-
-It does this by introducing mnt_clone_write, which avoids some heavyweight
-operations of mnt_want_write if called on a vfsmount which we know already
-has a write count; and mnt_want_write_file, which can call mnt_clone_write
-if the file is open for write.
-
-After these two patches, mnt_want_write and mnt_drop_write go from 7% on
-the profile down to 1.3% (including mnt_clone_write).
-
-Cc: Dave Hansen <haveblue@us.ibm.com>
-Signed-off-by: Nick Piggin <npiggin@suse.de>
+Make dentry_stat_t.nr_dentry an atomic_t type, and move it from under
+dcache_lock.
 ---
- fs/file_table.c       |    3 +--
- fs/inode.c            |    2 +-
- fs/namespace.c        |   38 ++++++++++++++++++++++++++++++++++++++
- fs/open.c             |    4 ++--
- fs/xattr.c            |    4 ++--
- include/linux/mount.h |    4 ++++
- 6 files changed, 48 insertions(+), 7 deletions(-)
+ fs/dcache.c            |   20 +++++++++-----------
+ include/linux/dcache.h |    4 ++--
+ kernel/sysctl.c        |    6 ++++++
+ 3 files changed, 17 insertions(+), 13 deletions(-)
 
-Index: linux-2.6/fs/file_table.c
+Index: linux-2.6/fs/dcache.c
 ===================================================================
---- linux-2.6.orig/fs/file_table.c
-+++ linux-2.6/fs/file_table.c
-@@ -217,8 +217,7 @@ int init_file(struct file *file, struct
- 	 */
- 	if ((mode & FMODE_WRITE) && !special_file(dentry->d_inode->i_mode)) {
- 		file_take_write(file);
--		error = mnt_want_write(mnt);
--		WARN_ON(error);
-+		mnt_clone_write(mnt);
+--- linux-2.6.orig/fs/dcache.c
++++ linux-2.6/fs/dcache.c
+@@ -83,6 +83,7 @@ static struct hlist_head *dentry_hashtab
+ 
+ /* Statistics gathering. */
+ struct dentry_stat_t dentry_stat = {
++	.nr_dentry = ATOMIC_INIT(0),
+ 	.age_limit = 45,
+ };
+ 
+@@ -101,11 +102,11 @@ static void d_callback(struct rcu_head *
+ }
+ 
+ /*
+- * no dcache_lock, please.  The caller must decrement dentry_stat.nr_dentry
+- * inside dcache_lock.
++ * no dcache_lock, please.
+  */
+ static void d_free(struct dentry *dentry)
+ {
++	atomic_dec(&dentry_stat.nr_dentry);
+ 	if (dentry->d_op && dentry->d_op->d_release)
+ 		dentry->d_op->d_release(dentry);
+ 	/* if dentry was never inserted into hash, immediate free is OK */
+@@ -212,7 +213,6 @@ static struct dentry *d_kill(struct dent
+ 	struct dentry *parent;
+ 
+ 	list_del(&dentry->d_u.d_child);
+-	dentry_stat.nr_dentry--;	/* For d_free, below */
+ 	/*drops the locks, at that point nobody can reach this dentry */
+ 	dentry_iput(dentry);
+ 	if (IS_ROOT(dentry))
+@@ -777,10 +777,7 @@ static void shrink_dcache_for_umount_sub
+ 				    struct dentry, d_u.d_child);
  	}
- 	return error;
+ out:
+-	/* several dentries were freed, need to correct nr_dentry */
+-	spin_lock(&dcache_lock);
+-	dentry_stat.nr_dentry -= detached;
+-	spin_unlock(&dcache_lock);
++	return;
  }
-Index: linux-2.6/fs/inode.c
-===================================================================
---- linux-2.6.orig/fs/inode.c
-+++ linux-2.6/fs/inode.c
-@@ -1401,7 +1401,7 @@ void file_update_time(struct file *file)
- 	if (IS_NOCMTIME(inode))
- 		return;
  
--	err = mnt_want_write(file->f_path.mnt);
-+	err = mnt_want_write_file(file->f_path.mnt, file);
- 	if (err)
- 		return;
+ /*
+@@ -1035,11 +1032,12 @@ struct dentry *d_alloc(struct dentry * p
+ 		INIT_LIST_HEAD(&dentry->d_u.d_child);
+ 	}
  
-Index: linux-2.6/fs/namespace.c
-===================================================================
---- linux-2.6.orig/fs/namespace.c
-+++ linux-2.6/fs/namespace.c
-@@ -265,6 +265,44 @@ out:
- EXPORT_SYMBOL_GPL(mnt_want_write);
- 
- /**
-+ * mnt_clone_write - get write access to a mount
-+ * @mnt: the mount on which to take a write
-+ *
-+ * This is effectively like mnt_want_write, except
-+ * it must only be used to take an extra write reference
-+ * on a mountpoint that we already know has a write reference
-+ * on it. This allows some optimisation.
-+ *
-+ * After finished, mnt_drop_write must be called as usual to
-+ * drop the reference.
-+ */
-+void mnt_clone_write(struct vfsmount *mnt)
-+{
-+	preempt_disable();
-+	inc_mnt_writers(mnt);
-+	preempt_enable();
-+}
-+EXPORT_SYMBOL_GPL(mnt_clone_write);
-+
-+/**
-+ * mnt_want_write_file - get write access to a file's mount
-+ * @file: the file who's mount on which to take a write
-+ *
-+ * This is like mnt_want_write, but it takes a file and can
-+ * do some optimisations if the file is open for write already
-+ */
-+int mnt_want_write_file(struct vfsmount *mnt, struct file *file)
-+{
-+	if (!(file->f_mode & FMODE_WRITE))
-+		return mnt_want_write(mnt);
-+	else {
-+		mnt_clone_write(mnt);
-+		return 0;
+-	spin_lock(&dcache_lock);
+-	if (parent)
++	if (parent) {
++		spin_lock(&dcache_lock);
+ 		list_add(&dentry->d_u.d_child, &parent->d_subdirs);
+-	dentry_stat.nr_dentry++;
+-	spin_unlock(&dcache_lock);
++		spin_unlock(&dcache_lock);
 +	}
-+}
-+EXPORT_SYMBOL_GPL(mnt_want_write_file);
-+
-+/**
-  * mnt_drop_write - give up write access to a mount
-  * @mnt: the mount on which to give up write access
-  *
-Index: linux-2.6/fs/open.c
-===================================================================
---- linux-2.6.orig/fs/open.c
-+++ linux-2.6/fs/open.c
-@@ -612,7 +612,7 @@ SYSCALL_DEFINE2(fchmod, unsigned int, fd
++	atomic_inc(&dentry_stat.nr_dentry);
  
- 	audit_inode(NULL, dentry);
- 
--	err = mnt_want_write(file->f_path.mnt);
-+	err = mnt_want_write_file(file->f_path.mnt, file);
- 	if (err)
- 		goto out_putf;
- 	mutex_lock(&inode->i_mutex);
-@@ -761,7 +761,7 @@ SYSCALL_DEFINE3(fchown, unsigned int, fd
- 	if (!file)
- 		goto out;
- 
--	error = mnt_want_write(file->f_path.mnt);
-+	error = mnt_want_write_file(file->f_path.mnt, file);
- 	if (error)
- 		goto out_fput;
- 	dentry = file->f_path.dentry;
-Index: linux-2.6/fs/xattr.c
-===================================================================
---- linux-2.6.orig/fs/xattr.c
-+++ linux-2.6/fs/xattr.c
-@@ -297,7 +297,7 @@ SYSCALL_DEFINE5(fsetxattr, int, fd, cons
- 		return error;
- 	dentry = f->f_path.dentry;
- 	audit_inode(NULL, dentry);
--	error = mnt_want_write(f->f_path.mnt);
-+	error = mnt_want_write_file(f->f_path.mnt, f);
- 	if (!error) {
- 		error = setxattr(dentry, name, value, size, flags);
- 		mnt_drop_write(f->f_path.mnt);
-@@ -524,7 +524,7 @@ SYSCALL_DEFINE2(fremovexattr, int, fd, c
- 		return error;
- 	dentry = f->f_path.dentry;
- 	audit_inode(NULL, dentry);
--	error = mnt_want_write(f->f_path.mnt);
-+	error = mnt_want_write_file(f->f_path.mnt, f);
- 	if (!error) {
- 		error = removexattr(dentry, name);
- 		mnt_drop_write(f->f_path.mnt);
-Index: linux-2.6/include/linux/mount.h
-===================================================================
---- linux-2.6.orig/include/linux/mount.h
-+++ linux-2.6/include/linux/mount.h
-@@ -88,7 +88,11 @@ static inline struct vfsmount *mntget(st
- 	return mnt;
+ 	return dentry;
  }
+Index: linux-2.6/include/linux/dcache.h
+===================================================================
+--- linux-2.6.orig/include/linux/dcache.h
++++ linux-2.6/include/linux/dcache.h
+@@ -37,8 +37,8 @@ struct qstr {
+ };
  
-+struct file; /* forward dec */
-+
- extern int mnt_want_write(struct vfsmount *mnt);
-+extern int mnt_want_write_file(struct vfsmount *mnt, struct file *file);
-+extern void mnt_clone_write(struct vfsmount *mnt);
- extern void mnt_drop_write(struct vfsmount *mnt);
- extern void mntput_no_expire(struct vfsmount *mnt);
- extern void mnt_pin(struct vfsmount *mnt);
+ struct dentry_stat_t {
+-	int nr_dentry;
+-	int nr_unused;
++	atomic_t nr_dentry;
++	int nr_unused;		/* protected by dcache_lru_lock */
+ 	int age_limit;          /* age in seconds */
+ 	int want_pages;         /* pages requested by system */
+ 	int dummy[2];
+Index: linux-2.6/kernel/sysctl.c
+===================================================================
+--- linux-2.6.orig/kernel/sysctl.c
++++ linux-2.6/kernel/sysctl.c
+@@ -1358,6 +1358,12 @@ static struct ctl_table fs_table[] = {
+ 		.extra2		= &sysctl_nr_open_max,
+ 	},
+ 	{
++		/*
++		 * dentry_stat has an atomic_t member, so this is a bit of
++		 * a hack, but it works for the moment, and I won't bother
++		 * changing it now because we'll probably want to change to
++		 * a more scalable counter anyway.
++		 */
+ 		.ctl_name	= FS_DENTRY,
+ 		.procname	= "dentry-state",
+ 		.data		= &dentry_stat,
 
 
