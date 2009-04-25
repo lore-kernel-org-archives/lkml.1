@@ -1,195 +1,454 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbZDYBfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761096AbZDYBfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758109AbZDYBfT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 21:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757484AbZDYB3y
+	id S1761096AbZDYBfo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 21:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757586AbZDYB3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 21:29:54 -0400
-Received: from cantor.suse.de ([195.135.220.2]:44591 "EHLO mx1.suse.de"
+	Fri, 24 Apr 2009 21:29:55 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44584 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753780AbZDYB2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753563AbZDYB2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 24 Apr 2009 21:28:52 -0400
-Message-Id: <20090425012212.087880019@suse.de>
+Message-Id: <20090425012209.368626734@suse.de>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Sat, 25 Apr 2009 11:20:41 +1000
+Date: Sat, 25 Apr 2009 11:20:23 +1000
 From: npiggin@suse.de
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 21/27] fs: icache lock inode hash
+Cc: Dave Hansen <haveblue@us.ibm.com>
+Subject: [patch 03/27] fs: mnt_want_write speedup
 References: <20090425012020.457460929@suse.de>
-Content-Disposition: inline; filename=fs-inode_lock-scale-2.patch
+Content-Disposition: inline; filename=mnt-want-write-speedup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a new lock, inode_hash_lock, to protect the inode hash table lists.
----
- fs/hugetlbfs/inode.c      |    2 ++
- fs/inode.c                |   26 +++++++++++++++++++++++++-
- include/linux/writeback.h |    1 +
- 3 files changed, 28 insertions(+), 1 deletion(-)
+This patch speeds up lmbench lat_mmap test by about 8%. lat_mmap is set up
+basically to mmap a 64MB file on tmpfs, fault in its pages, then unmap it.
+A microbenchmark yes, but it exercises some important paths in the mm.
 
-Index: linux-2.6/fs/hugetlbfs/inode.c
+Before:
+ avg = 501.9
+ std = 14.7773
+
+After:
+ avg = 462.286
+ std = 5.46106
+
+(50 runs of each, stddev gives a reasonable confidence, but there is quite
+a bit of variation there still)
+
+It does this by removing the complex per-cpu locking and counter-cache and
+replaces it with a percpu counter in struct vfsmount. This makes the code
+much simpler, and avoids spinlocks (although the msync is still pretty
+costly, unfortunately). It results in about 900 bytes smaller code too. It
+does increase the size of a vfsmount, however.
+
+It should also give a speedup on large systems if CPUs are frequently operating
+on different mounts (because the existing scheme has to operate on an atomic in
+the struct vfsmount when switching between mounts). But I'm most interested in
+the single threaded path performance for the moment.
+
+Cc: Dave Hansen <haveblue@us.ibm.com>
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+ fs/namespace.c        |  263 ++++++++++++++++----------------------------------
+ include/linux/mount.h |   21 ++-
+ 2 files changed, 103 insertions(+), 181 deletions(-)
+
+Index: linux-2.6/fs/namespace.c
 ===================================================================
---- linux-2.6.orig/fs/hugetlbfs/inode.c
-+++ linux-2.6/fs/hugetlbfs/inode.c
-@@ -410,7 +410,9 @@ static void hugetlbfs_forget_inode(struc
- 		spin_lock(&inode_lock);
- 		inode->i_state &= ~I_WILL_FREE;
- 		inodes_stat.nr_unused--;
-+		spin_lock(&inode_hash_lock);
- 		hlist_del_init(&inode->i_hash);
-+		spin_unlock(&inode_hash_lock);
+--- linux-2.6.orig/fs/namespace.c
++++ linux-2.6/fs/namespace.c
+@@ -131,10 +131,20 @@ struct vfsmount *alloc_vfsmnt(const char
+ 		INIT_LIST_HEAD(&mnt->mnt_share);
+ 		INIT_LIST_HEAD(&mnt->mnt_slave_list);
+ 		INIT_LIST_HEAD(&mnt->mnt_slave);
+-		atomic_set(&mnt->__mnt_writers, 0);
++#ifdef CONFIG_SMP
++		mnt->mnt_writers = alloc_percpu(int);
++		if (!mnt->mnt_writers)
++			goto out_free_devname;
++#else
++		mnt->mnt_writers = 0;
++#endif
  	}
- 	list_del_init(&inode->i_list);
- 	spin_lock(&sb_inode_list_lock);
-Index: linux-2.6/fs/inode.c
-===================================================================
---- linux-2.6.orig/fs/inode.c
-+++ linux-2.6/fs/inode.c
-@@ -84,6 +84,7 @@ static struct hlist_head *inode_hashtabl
-  */
- DEFINE_SPINLOCK(inode_lock);
- DEFINE_SPINLOCK(sb_inode_list_lock);
-+DEFINE_SPINLOCK(inode_hash_lock);
+ 	return mnt;
+ 
++#ifdef CONFIG_SMP
++out_free_devname:
++	kfree(mnt->mnt_devname);
++#endif
+ out_free_id:
+ 	mnt_free_id(mnt);
+ out_free_cache:
+@@ -171,65 +181,38 @@ int __mnt_is_readonly(struct vfsmount *m
+ }
+ EXPORT_SYMBOL_GPL(__mnt_is_readonly);
+ 
+-struct mnt_writer {
+-	/*
+-	 * If holding multiple instances of this lock, they
+-	 * must be ordered by cpu number.
+-	 */
+-	spinlock_t lock;
+-	struct lock_class_key lock_class; /* compiles out with !lockdep */
+-	unsigned long count;
+-	struct vfsmount *mnt;
+-} ____cacheline_aligned_in_smp;
+-static DEFINE_PER_CPU(struct mnt_writer, mnt_writers);
++static inline void inc_mnt_writers(struct vfsmount *mnt)
++{
++#ifdef CONFIG_SMP
++	(*per_cpu_ptr(mnt->mnt_writers, smp_processor_id()))++;
++#else
++	mnt->mnt_writers++;
++#endif
++}
+ 
+-static int __init init_mnt_writers(void)
++static inline void dec_mnt_writers(struct vfsmount *mnt)
+ {
+-	int cpu;
+-	for_each_possible_cpu(cpu) {
+-		struct mnt_writer *writer = &per_cpu(mnt_writers, cpu);
+-		spin_lock_init(&writer->lock);
+-		lockdep_set_class(&writer->lock, &writer->lock_class);
+-		writer->count = 0;
+-	}
+-	return 0;
++#ifdef CONFIG_SMP
++	(*per_cpu_ptr(mnt->mnt_writers, smp_processor_id()))--;
++#else
++	mnt->mnt_writers--;
++#endif
+ }
+-fs_initcall(init_mnt_writers);
+ 
+-static void unlock_mnt_writers(void)
++static unsigned int count_mnt_writers(struct vfsmount *mnt)
+ {
++#ifdef CONFIG_SMP
++	unsigned int count = 0;
+ 	int cpu;
+-	struct mnt_writer *cpu_writer;
+ 
+ 	for_each_possible_cpu(cpu) {
+-		cpu_writer = &per_cpu(mnt_writers, cpu);
+-		spin_unlock(&cpu_writer->lock);
++		count += *per_cpu_ptr(mnt->mnt_writers, cpu);
+ 	}
+-}
+ 
+-static inline void __clear_mnt_count(struct mnt_writer *cpu_writer)
+-{
+-	if (!cpu_writer->mnt)
+-		return;
+-	/*
+-	 * This is in case anyone ever leaves an invalid,
+-	 * old ->mnt and a count of 0.
+-	 */
+-	if (!cpu_writer->count)
+-		return;
+-	atomic_add(cpu_writer->count, &cpu_writer->mnt->__mnt_writers);
+-	cpu_writer->count = 0;
+-}
+- /*
+- * must hold cpu_writer->lock
+- */
+-static inline void use_cpu_writer_for_mount(struct mnt_writer *cpu_writer,
+-					  struct vfsmount *mnt)
+-{
+-	if (cpu_writer->mnt == mnt)
+-		return;
+-	__clear_mnt_count(cpu_writer);
+-	cpu_writer->mnt = mnt;
++	return count;
++#else
++	return mnt->mnt_writers;
++#endif
+ }
  
  /*
-  * iprune_mutex provides exclusion between the kswapd or try_to_free_pages
-@@ -329,7 +330,9 @@ static void dispose_list(struct list_hea
- 		clear_inode(inode);
+@@ -253,75 +236,34 @@ static inline void use_cpu_writer_for_mo
+ int mnt_want_write(struct vfsmount *mnt)
+ {
+ 	int ret = 0;
+-	struct mnt_writer *cpu_writer;
  
- 		spin_lock(&inode_lock);
-+		spin_lock(&inode_hash_lock);
- 		hlist_del_init(&inode->i_hash);
-+		spin_unlock(&inode_hash_lock);
- 		spin_lock(&sb_inode_list_lock);
- 		list_del_init(&inode->i_sb_list);
- 		spin_unlock(&sb_inode_list_lock);
-@@ -536,17 +539,20 @@ static struct inode * find_inode(struct
- 	struct inode * inode = NULL;
- 
- repeat:
-+	spin_lock(&inode_hash_lock);
- 	hlist_for_each_entry(inode, node, head, i_hash) {
- 		if (inode->i_sb != sb)
- 			continue;
- 		if (!test(inode, data))
- 			continue;
- 		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE)) {
-+			spin_unlock(&inode_hash_lock);
- 			__wait_on_freeing_inode(inode);
- 			goto repeat;
- 		}
- 		break;
+-	cpu_writer = &get_cpu_var(mnt_writers);
+-	spin_lock(&cpu_writer->lock);
++	preempt_disable();
++	inc_mnt_writers(mnt);
++	/*
++	 * The store to inc_mnt_writers must be visible before we pass
++	 * MNT_WRITE_HOLD loop below, so that the slowpath can see our
++	 * incremented count after it has set MNT_WRITE_HOLD.
++	 */
++	smp_mb();
++	while (mnt->mnt_flags & MNT_WRITE_HOLD)
++		cpu_relax();
++	/*
++	 * After the slowpath clears MNT_WRITE_HOLD, mnt_is_readonly will
++	 * be set to match its requirements. So we must not load that until
++	 * MNT_WRITE_HOLD is cleared.
++	 */
++	smp_rmb();
+ 	if (__mnt_is_readonly(mnt)) {
++		dec_mnt_writers(mnt);
+ 		ret = -EROFS;
+ 		goto out;
  	}
-+	spin_unlock(&inode_hash_lock);
- 	return node ? inode : NULL;
+-	use_cpu_writer_for_mount(cpu_writer, mnt);
+-	cpu_writer->count++;
+ out:
+-	spin_unlock(&cpu_writer->lock);
+-	put_cpu_var(mnt_writers);
++	preempt_enable();
+ 	return ret;
  }
+ EXPORT_SYMBOL_GPL(mnt_want_write);
  
-@@ -560,17 +566,20 @@ static struct inode * find_inode_fast(st
- 	struct inode * inode = NULL;
- 
- repeat:
-+	spin_lock(&inode_hash_lock);
- 	hlist_for_each_entry(inode, node, head, i_hash) {
- 		if (inode->i_ino != ino)
- 			continue;
- 		if (inode->i_sb != sb)
- 			continue;
- 		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE)) {
-+			spin_unlock(&inode_hash_lock);
- 			__wait_on_freeing_inode(inode);
- 			goto repeat;
- 		}
- 		break;
- 	}
-+	spin_unlock(&inode_hash_lock);
- 	return node ? inode : NULL;
- }
- 
-@@ -593,8 +602,11 @@ __inode_add_to_lists(struct super_block
- 	spin_lock(&sb_inode_list_lock);
- 	list_add(&inode->i_sb_list, &sb->s_inodes);
- 	spin_unlock(&sb_inode_list_lock);
--	if (head)
-+	if (head) {
-+		spin_lock(&inode_hash_lock);
- 		hlist_add_head(&inode->i_hash, head);
-+		spin_unlock(&inode_hash_lock);
-+	}
- }
- 
+-static void lock_mnt_writers(void)
+-{
+-	int cpu;
+-	struct mnt_writer *cpu_writer;
+-
+-	for_each_possible_cpu(cpu) {
+-		cpu_writer = &per_cpu(mnt_writers, cpu);
+-		spin_lock(&cpu_writer->lock);
+-		__clear_mnt_count(cpu_writer);
+-		cpu_writer->mnt = NULL;
+-	}
+-}
+-
+-/*
+- * These per-cpu write counts are not guaranteed to have
+- * matched increments and decrements on any given cpu.
+- * A file open()ed for write on one cpu and close()d on
+- * another cpu will imbalance this count.  Make sure it
+- * does not get too far out of whack.
+- */
+-static void handle_write_count_underflow(struct vfsmount *mnt)
+-{
+-	if (atomic_read(&mnt->__mnt_writers) >=
+-	    MNT_WRITER_UNDERFLOW_LIMIT)
+-		return;
+-	/*
+-	 * It isn't necessary to hold all of the locks
+-	 * at the same time, but doing it this way makes
+-	 * us share a lot more code.
+-	 */
+-	lock_mnt_writers();
+-	/*
+-	 * vfsmount_lock is for mnt_flags.
+-	 */
+-	spin_lock(&vfsmount_lock);
+-	/*
+-	 * If coalescing the per-cpu writer counts did not
+-	 * get us back to a positive writer count, we have
+-	 * a bug.
+-	 */
+-	if ((atomic_read(&mnt->__mnt_writers) < 0) &&
+-	    !(mnt->mnt_flags & MNT_IMBALANCED_WRITE_COUNT)) {
+-		WARN(1, KERN_DEBUG "leak detected on mount(%p) writers "
+-				"count: %d\n",
+-			mnt, atomic_read(&mnt->__mnt_writers));
+-		/* use the flag to keep the dmesg spam down */
+-		mnt->mnt_flags |= MNT_IMBALANCED_WRITE_COUNT;
+-	}
+-	spin_unlock(&vfsmount_lock);
+-	unlock_mnt_writers();
+-}
+-
  /**
-@@ -1070,7 +1082,9 @@ int insert_inode_locked(struct inode *in
- 		spin_lock(&inode_lock);
- 		old = find_inode_fast(sb, head, ino);
- 		if (likely(!old)) {
-+			spin_lock(&inode_hash_lock);
- 			hlist_add_head(&inode->i_hash, head);
-+			spin_unlock(&inode_hash_lock);
- 			spin_unlock(&inode_lock);
- 			return 0;
- 		}
-@@ -1100,7 +1114,9 @@ int insert_inode_locked4(struct inode *i
- 		spin_lock(&inode_lock);
- 		old = find_inode(sb, head, test, data);
- 		if (likely(!old)) {
-+			spin_lock(&inode_hash_lock);
- 			hlist_add_head(&inode->i_hash, head);
-+			spin_unlock(&inode_hash_lock);
- 			spin_unlock(&inode_lock);
- 			return 0;
- 		}
-@@ -1129,7 +1145,9 @@ void __insert_inode_hash(struct inode *i
+  * mnt_drop_write - give up write access to a mount
+  * @mnt: the mount on which to give up write access
+@@ -332,37 +274,9 @@ static void handle_write_count_underflow
+  */
+ void mnt_drop_write(struct vfsmount *mnt)
  {
- 	struct hlist_head *head = inode_hashtable + hash(inode->i_sb, hashval);
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode_hash_lock);
- 	hlist_add_head(&inode->i_hash, head);
-+	spin_unlock(&inode_hash_lock);
- 	spin_unlock(&inode_lock);
+-	int must_check_underflow = 0;
+-	struct mnt_writer *cpu_writer;
+-
+-	cpu_writer = &get_cpu_var(mnt_writers);
+-	spin_lock(&cpu_writer->lock);
+-
+-	use_cpu_writer_for_mount(cpu_writer, mnt);
+-	if (cpu_writer->count > 0) {
+-		cpu_writer->count--;
+-	} else {
+-		must_check_underflow = 1;
+-		atomic_dec(&mnt->__mnt_writers);
+-	}
+-
+-	spin_unlock(&cpu_writer->lock);
+-	/*
+-	 * Logically, we could call this each time,
+-	 * but the __mnt_writers cacheline tends to
+-	 * be cold, and makes this expensive.
+-	 */
+-	if (must_check_underflow)
+-		handle_write_count_underflow(mnt);
+-	/*
+-	 * This could be done right after the spinlock
+-	 * is taken because the spinlock keeps us on
+-	 * the cpu, and disables preemption.  However,
+-	 * putting it here bounds the amount that
+-	 * __mnt_writers can underflow.  Without it,
+-	 * we could theoretically wrap __mnt_writers.
+-	 */
+-	put_cpu_var(mnt_writers);
++	preempt_disable();
++	dec_mnt_writers(mnt);
++	preempt_enable();
+ }
+ EXPORT_SYMBOL_GPL(mnt_drop_write);
+ 
+@@ -370,24 +284,44 @@ static int mnt_make_readonly(struct vfsm
+ {
+ 	int ret = 0;
+ 
+-	lock_mnt_writers();
++	spin_lock(&vfsmount_lock);
++	mnt->mnt_flags |= MNT_WRITE_HOLD;
++	/*
++	 * After storing MNT_WRITE_HOLD, we'll read the counters. This store
++	 * should be visible before we do.
++	 */
++	smp_mb();
++
+ 	/*
+-	 * With all the locks held, this value is stable
++	 * With writers on hold, if this value is zero, then there are
++	 * definitely no active writers (although held writers may subsequently
++	 * increment the count, they'll have to wait, and decrement it after
++	 * seeing MNT_READONLY).
++	 *
++	 * It is OK to have counter incremented on one CPU and decremented on
++	 * another: the sum will add up correctly. The danger would be when we
++	 * sum up each counter, if we read a counter before it is incremented,
++	 * but then read another CPU's count which it has been subsequently
++	 * decremented from -- we would see more decrements than we should.
++	 * MNT_WRITE_HOLD protects against this scenario, because
++	 * mnt_want_write first increments count, then smp_mb, then spins on
++	 * MNT_WRITE_HOLD, so it can't be decremented by another CPU while
++	 * we're counting up here.
+ 	 */
+-	if (atomic_read(&mnt->__mnt_writers) > 0) {
++	if (count_mnt_writers(mnt) > 0) {
+ 		ret = -EBUSY;
+ 		goto out;
+ 	}
+-	/*
+-	 * nobody can do a successful mnt_want_write() with all
+-	 * of the counts in MNT_DENIED_WRITE and the locks held.
+-	 */
+-	spin_lock(&vfsmount_lock);
+ 	if (!ret)
+ 		mnt->mnt_flags |= MNT_READONLY;
+-	spin_unlock(&vfsmount_lock);
+ out:
+-	unlock_mnt_writers();
++	/*
++	 * MNT_READONLY must become visible before ~MNT_WRITE_HOLD, so writers
++	 * that become unheld will see MNT_READONLY.
++	 */
++	smp_wmb();
++	mnt->mnt_flags &= ~MNT_WRITE_HOLD;
++	spin_unlock(&vfsmount_lock);
+ 	return ret;
  }
  
-@@ -1144,7 +1162,9 @@ EXPORT_SYMBOL(__insert_inode_hash);
- void remove_inode_hash(struct inode *inode)
+@@ -410,6 +344,9 @@ void free_vfsmnt(struct vfsmount *mnt)
  {
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode_hash_lock);
- 	hlist_del_init(&inode->i_hash);
-+	spin_unlock(&inode_hash_lock);
- 	spin_unlock(&inode_lock);
+ 	kfree(mnt->mnt_devname);
+ 	mnt_free_id(mnt);
++#ifdef CONFIG_SMP
++	free_percpu(mnt->mnt_writers);
++#endif
+ 	kmem_cache_free(mnt_cache, mnt);
  }
  
-@@ -1191,7 +1211,9 @@ void generic_delete_inode(struct inode *
- 		clear_inode(inode);
- 	}
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode_hash_lock);
- 	hlist_del_init(&inode->i_hash);
-+	spin_unlock(&inode_hash_lock);
- 	spin_unlock(&inode_lock);
- 	wake_up_inode(inode);
- 	BUG_ON(inode->i_state != I_CLEAR);
-@@ -1220,7 +1242,9 @@ static void generic_forget_inode(struct
- 		WARN_ON(inode->i_state & I_NEW);
- 		inode->i_state &= ~I_WILL_FREE;
- 		inodes_stat.nr_unused--;
-+		spin_lock(&inode_hash_lock);
- 		hlist_del_init(&inode->i_hash);
-+		spin_unlock(&inode_hash_lock);
- 	}
- 	list_del_init(&inode->i_list);
- 	spin_lock(&sb_inode_list_lock);
-Index: linux-2.6/include/linux/writeback.h
+@@ -604,38 +541,14 @@ static struct vfsmount *clone_mnt(struct
+ 
+ static inline void __mntput(struct vfsmount *mnt)
+ {
+-	int cpu;
+ 	struct super_block *sb = mnt->mnt_sb;
+ 	/*
+-	 * We don't have to hold all of the locks at the
+-	 * same time here because we know that we're the
+-	 * last reference to mnt and that no new writers
+-	 * can come in.
+-	 */
+-	for_each_possible_cpu(cpu) {
+-		struct mnt_writer *cpu_writer = &per_cpu(mnt_writers, cpu);
+-		spin_lock(&cpu_writer->lock);
+-		if (cpu_writer->mnt != mnt) {
+-			spin_unlock(&cpu_writer->lock);
+-			continue;
+-		}
+-		atomic_add(cpu_writer->count, &mnt->__mnt_writers);
+-		cpu_writer->count = 0;
+-		/*
+-		 * Might as well do this so that no one
+-		 * ever sees the pointer and expects
+-		 * it to be valid.
+-		 */
+-		cpu_writer->mnt = NULL;
+-		spin_unlock(&cpu_writer->lock);
+-	}
+-	/*
+ 	 * This probably indicates that somebody messed
+ 	 * up a mnt_want/drop_write() pair.  If this
+ 	 * happens, the filesystem was probably unable
+ 	 * to make r/w->r/o transitions.
+ 	 */
+-	WARN_ON(atomic_read(&mnt->__mnt_writers));
++	WARN_ON(count_mnt_writers(mnt));
+ 	dput(mnt->mnt_root);
+ 	free_vfsmnt(mnt);
+ 	deactivate_super(sb);
+Index: linux-2.6/include/linux/mount.h
 ===================================================================
---- linux-2.6.orig/include/linux/writeback.h
-+++ linux-2.6/include/linux/writeback.h
-@@ -11,6 +11,7 @@ struct backing_dev_info;
+--- linux-2.6.orig/include/linux/mount.h
++++ linux-2.6/include/linux/mount.h
+@@ -30,7 +30,7 @@ struct mnt_namespace;
+ #define MNT_STRICTATIME 0x80
  
- extern spinlock_t inode_lock;
- extern spinlock_t sb_inode_list_lock;
-+extern spinlock_t inode_hash_lock;
- extern struct list_head inode_in_use;
- extern struct list_head inode_unused;
+ #define MNT_SHRINKABLE	0x100
+-#define MNT_IMBALANCED_WRITE_COUNT	0x200 /* just for debugging */
++#define MNT_WRITE_HOLD	0x200
  
+ #define MNT_SHARED	0x1000	/* if the vfsmount is a shared mount */
+ #define MNT_UNBINDABLE	0x2000	/* if the vfsmount is a unbindable mount */
+@@ -65,13 +65,22 @@ struct vfsmount {
+ 	int mnt_expiry_mark;		/* true if marked for expiry */
+ 	int mnt_pinned;
+ 	int mnt_ghosts;
+-	/*
+-	 * This value is not stable unless all of the mnt_writers[] spinlocks
+-	 * are held, and all mnt_writer[]s on this mount have 0 as their ->count
+-	 */
+-	atomic_t __mnt_writers;
++#ifdef CONFIG_SMP
++	int *mnt_writers;
++#else
++	int mnt_writers;
++#endif
+ };
+ 
++static inline int *get_mnt_writers_ptr(struct vfsmount *mnt)
++{
++#ifdef CONFIG_SMP
++	return mnt->mnt_writers;
++#else
++	return &mnt->mnt_writers;
++#endif
++}
++
+ static inline struct vfsmount *mntget(struct vfsmount *mnt)
+ {
+ 	if (mnt)
 
 
