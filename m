@@ -1,225 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbZDYOMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbZDYO1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754221AbZDYOMo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 10:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbZDYOMe
+	id S1753924AbZDYO1t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 10:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbZDYO1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 10:12:34 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:61137 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751850AbZDYOMd (ORCPT
+	Sat, 25 Apr 2009 10:27:41 -0400
+Received: from kuber.nabble.com ([216.139.236.158]:35184 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751422AbZDYO1l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 10:12:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZIC62Xb7pz/ScqLLCkAmJlBvoGFmEHxX/rBEVEPKU2k6D+sbfN86noIjdMgKtpcIsF
-         lZVWYu0ysOOYc3wWNEXP4ErPkaTPviBAddldef0sFvaPQ84aAIF0u92RCRIp70GxhK07
-         M+xRpg7vW3wftwRKqrsnZGaT81Bp0cKC1Vh40=
+	Sat, 25 Apr 2009 10:27:41 -0400
+Message-ID: <23232689.post@talk.nabble.com>
+Date: Sat, 25 Apr 2009 07:27:40 -0700 (PDT)
+From: nbj <niraj.b.jain@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Query regarding IPv6 stack modification
 MIME-Version: 1.0
-In-Reply-To: <20090419151306.GA15048@srcf.ucam.org>
-References: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain>
-	 <gemini.ket9w800w44dc0hvg.linux@youmustbejoking.demon.co.uk>
-	 <20090209234911.GB862@elte.hu>
-	 <5030E21460%linux@youmustbejoking.demon.co.uk>
-	 <20090210150431.GA26798@srcf.ucam.org>
-	 <5030E7CFF4%linux@youmustbejoking.demon.co.uk>
-	 <20090419015614.GA6926@srcf.ucam.org>
-	 <71cd59b00904190020x7d946c29w736d89fc27d39594@mail.gmail.com>
-	 <20090419151306.GA15048@srcf.ucam.org>
-Date: Sat, 25 Apr 2009 16:12:29 +0200
-Message-ID: <71cd59b00904250712k332bfc14nb181aaabd7c605e5@mail.gmail.com>
-Subject: Re: [PATCH] eee-laptop: Register as a pci-hotplug device
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Len Brown <lenb@kernel.org>,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Nabble-From: niraj.b.jain@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I take your patch and make it works against acpi4asus tree.
-If you think it's ok, then I'll send a serie including this patch to Len.
-(the tree is at http://git.iksaif.net/ )
 
-From: Matthew Garrett <mjg@redhat.com>
+I am facing a strange problem when adding a module in the ipv6 stack. (This
+is a part of my project on IPv4 to IPv6 Gateway)
+Here is the description:
 
-The eee contains a logically (but not physically) hotpluggable PCIe slot.
-Currently this is handled by adding or removing the PCI device in response
-to rfkill events, but if a user has forced pciehp to bind to it (with the
-force=1 argument) then both drivers will try to handle the event and
-hilarity (in the form of oopses) will ensue. This can be avoided by having
-eee-laptop register the slot as a hotplug slot. Only one of pciehp and
-eee-laptop will successfully register this, avoiding the problem.
+Whenever the IPv6 machine intends to communicate with an IPv4 machine, an
+extension header is being added(which contains the IPv4 address) and the
+destination address in the packet is replaced by the address of the gateway.
+This is done by modifying the address in the sk_buff structure.
+On receiving a packet from this gateway, I check for the presence of the
+extension header. If present, the IPv4 address is extracted from it and the
+source address (that of the gateway) replaced by the mapped address of the
+v4 machine.   
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
-Signed-off-by: Corentin Chary <corentincj@iksaif.net>
-Tested-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
----
- drivers/platform/x86/Kconfig        |    1 +
- drivers/platform/x86/eeepc-laptop.c |   87 +++++++++++++++++++++++++++++++++++
- 2 files changed, 88 insertions(+), 0 deletions(-)
+Changes have been made in the following functions for the purpose:  
 
-diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
-index 284ebac..afbe441 100644
---- a/drivers/platform/x86/Kconfig
-+++ b/drivers/platform/x86/Kconfig
-@@ -341,6 +341,7 @@ config EEEPC_LAPTOP
- 	select BACKLIGHT_CLASS_DEVICE
- 	select HWMON
- 	select RFKILL
-+	select HOTPLUG_PCI
- 	---help---
- 	  This driver supports the Fn-Fx keys on Eee PC laptops.
- 	  It also adds the ability to switch camera/wlan on/off.
-diff --git a/drivers/platform/x86/eeepc-laptop.c
-b/drivers/platform/x86/eeepc-laptop.c
-index 7aaf587..4440f6c 100644
---- a/drivers/platform/x86/eeepc-laptop.c
-+++ b/drivers/platform/x86/eeepc-laptop.c
-@@ -31,6 +31,7 @@
- #include <linux/input.h>
- #include <linux/rfkill.h>
- #include <linux/pci.h>
-+#include <linux/pci_hotplug.h>
+ip6_xmit & ip6_push_pending_frames: These functions are called in the
+transmit path of the packet. These functions are used by TCP and UDP/ICMP
+respectively to serve similar purpose.
+--I am adding my own extension header (called SHIM header) in the packet at
+this point. This is done by making changes in the "ipv6_txoptions" structure
+to add another field for my custom extension header. I am adding the IP
+address of the IPv4 host in the extension header (this will be used by the
+translator).
+--After adding this extension header, I am replacing the destination address
+in sk_buff with the translator's address.
 
- #define EEEPC_LAPTOP_VERSION	"0.1"
+ip6_input_finish:- This function is called in the receive path of the
+packet. It calls the protocol handler for all the extension headers and the
+higher layer protocol.
+--I have written a handler for our custom header (SHIM) which gets called
+here whenever the packet contains one. This handler replaces the source
+address (which would be that of the translator) with the mapped address of
+the IPv4 host as extracted from the SHIM header.
 
-@@ -132,6 +133,7 @@ struct eeepc_hotk {
- 	u16 *keycode_map;
- 	struct rfkill *eeepc_wlan_rfkill;
- 	struct rfkill *eeepc_bluetooth_rfkill;
-+	struct hotplug_slot *hotplug_slot;
- };
+Using the above, I have tested TCP, UDP and ICMP applications. For UDP and
+ICMP (ping) applications, everything works as expected. i.e., the
+applications uses mapped addresses for the IPv4 hosts and the actual
+communication happens with the translator's address.
+For TCP however it failed in the following scenario:
+I have apache server running on the IPv6 host and IPv4 host trying to access
+a web page (using mozilla). Initially the IPv4 host is able to access data
+from the web server. But when a FIN-ACK is sent from the TCP server and a
+FIN-ACK is obtained from the client, the IPv6 machine hangs. 
+(I also tried testing this using some simple client-server socket program.
+In that case, everything works fine)
 
- /* The actual device the driver binds to */
-@@ -197,6 +199,15 @@ static struct acpi_driver eeepc_hotk_driver = {
- 	},
- };
-
-+/* PCI hotplug ops */
-+static int eeepc_get_adapter_status(struct hotplug_slot *slot, u8 *value);
-+
-+static struct hotplug_slot_ops eeepc_hotplug_slot_ops = {
-+	.owner = THIS_MODULE,
-+	.get_adapter_status = eeepc_get_adapter_status,
-+	.get_power_status = eeepc_get_adapter_status,
-+};
-+
- /* The backlight device /sys/class/backlight */
- static struct backlight_device *eeepc_backlight_device;
-
-@@ -529,6 +540,19 @@ static int notify_brn(void)
- 	return -1;
- }
-
-+static int eeepc_get_adapter_status(struct hotplug_slot *hotplug_slot,
-+				    u8 *value)
-+{
-+	int val = get_acpi(CM_ASL_WLAN);
-+
-+	if (val == 1 || val == 0)
-+		*value = val;
-+	else
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
- static void eeepc_rfkill_notify(acpi_handle handle, u32 event, void *data)
- {
- 	enum rfkill_state state;
-@@ -655,6 +679,54 @@ static void eeepc_unregister_rfkill_notifier(char *node)
- 	}
- }
-
-+static void eeepc_cleanup_pci_hotplug(struct hotplug_slot *hotplug_slot)
-+{
-+	kfree(hotplug_slot->info);
-+	kfree(hotplug_slot);
-+}
-+
-+static int eeepc_setup_pci_hotplug(void)
-+{
-+	int ret = -ENOMEM;
-+	struct pci_bus *bus = pci_find_bus(0, 1);
-+
-+	if (!bus) {
-+		printk(EEEPC_ERR "Unable to find wifi PCI bus\n");
-+		return -ENODEV;
-+	}
-+
-+	ehotk->hotplug_slot = kzalloc(sizeof(struct hotplug_slot), GFP_KERNEL);
-+	if (!ehotk->hotplug_slot)
-+		goto error_slot;
-+
-+	ehotk->hotplug_slot->info = kzalloc(sizeof(struct hotplug_slot_info),
-+					    GFP_KERNEL);
-+	if (!ehotk->hotplug_slot->info)
-+		goto error_info;
-+
-+	ehotk->hotplug_slot->private = ehotk;
-+	ehotk->hotplug_slot->release = &eeepc_cleanup_pci_hotplug;
-+	ehotk->hotplug_slot->ops = &eeepc_hotplug_slot_ops;
-+	eeepc_get_adapter_status(ehotk->hotplug_slot,
-+				 &ehotk->hotplug_slot->info->adapter_status);
-+
-+	ret = pci_hp_register(ehotk->hotplug_slot, bus, 0, "eeepc-wifi");
-+	if (ret) {
-+		printk(EEEPC_ERR "Unable to register hotplug slot - %d\n", ret);
-+		goto error_register;
-+	}
-+
-+	return 0;
-+
-+error_register:
-+	kfree(ehotk->hotplug_slot->info);
-+error_info:
-+	kfree(ehotk->hotplug_slot);
-+	ehotk->hotplug_slot = NULL;
-+error_slot:
-+	return ret;
-+}
-+
- static int eeepc_hotk_add(struct acpi_device *device)
- {
- 	acpi_status status = AE_OK;
-@@ -738,8 +810,21 @@ static int eeepc_hotk_add(struct acpi_device *device)
- 			goto bluetooth_fail;
- 	}
-
-+	result = eeepc_setup_pci_hotplug();
-+	/*
-+	 * If we get -EBUSY then something else is handling the PCI hotplug -
-+	 * don't fail in this case
-+	 */
-+	if (result == -EBUSY)
-+		return 0;
-+	else if (result)
-+		goto pci_fail;
-+
- 	return 0;
-
-+ pci_fail:
-+	if (ehotk->eeepc_bluetooth_rfkill)
-+		rfkill_unregister(ehotk->eeepc_bluetooth_rfkill);
-  bluetooth_fail:
- 	if (ehotk->eeepc_bluetooth_rfkill)
- 		rfkill_free(ehotk->eeepc_bluetooth_rfkill);
-@@ -768,6 +853,8 @@ static int eeepc_hotk_remove(struct acpi_device
-*device, int type)
-
- 	eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
- 	eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
-+	if (ehotk->hotplug_slot)
-+		pci_hp_deregister(ehotk->hotplug_slot);
-
- 	kfree(ehotk);
- 	return 0;
 -- 
-1.6.2.3
+View this message in context: http://www.nabble.com/Query-regarding-IPv6-stack-modification-tp23232689p23232689.html
+Sent from the linux-kernel mailing list archive at Nabble.com.
+
