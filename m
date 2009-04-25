@@ -1,136 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbZDYJ0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756540AbZDYJ2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756146AbZDYJ0s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 05:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbZDYJ0i
+	id S1756540AbZDYJ2T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 05:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbZDYJ2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 05:26:38 -0400
-Received: from ppp-111-148.adsl.restena.lu ([158.64.111.148]:58761 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753953AbZDYJ0g convert rfc822-to-8bit (ORCPT
+	Sat, 25 Apr 2009 05:28:10 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:46908 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753036AbZDYJ2I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 05:26:36 -0400
-X-Greylist: delayed 495 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Apr 2009 05:26:36 EDT
-Date: Sat, 25 Apr 2009 11:18:18 +0200
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: Ciprian Dorin =?UTF-8?B?Q3LEg2NpdW4=?= <ciprian.craciun@gmail.com>
-Cc: Linux IDE <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux SCSI <linux-scsi@vger.kernel.org>, Tejun Heo <htejun@gmail.com>
-Subject: Re: Stop disks on reboot for laptop which cuts power
-Message-ID: <20090425111818.1728cf21@neptune.home>
-In-Reply-To: <9f0e232d-4901-4e60-ac83-c14a6405202d@z5g2000yqn.googlegroups.com>
-References: <cslAV-2lq-113@gated-at.bofh.it>
-	<9f0e232d-4901-4e60-ac83-c14a6405202d@z5g2000yqn.googlegroups.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i686-pc-linux-gnu)
+	Sat, 25 Apr 2009 05:28:08 -0400
+Date: Sat, 25 Apr 2009 12:28:06 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Greg KH <gregkh@suse.de>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: staging indentation & braces disagreement list
+Message-ID: <Pine.LNX.4.64.0904251221060.22716@wrl-59.cs.helsinki.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 April 2009 Ciprian Dorin Craciun wrote:
-> On Apr 18, 7:30 pm, Bruno Prémont <bonb...@linux-vserver.org> wrote:
-> > Hi,
-> >
-> > During shutdown (power off) the disks are stopped gracefully thus
-> > the stopping is skipped for reboot case.
-> >
-> > On my Acer Travelmate 660 reboot is more like power-off as it cuts
-> > all power during reboot which currently causes the disk to
-> > emergency-park its head (noisy and shortens disk life).
-> >
-> > This patch series adds a DMI-based check to ide-gd and sd to still
-> > stop the disks for affected laptop during reboot.
-> >
-> > Has been compile an run-tested with libata and just compile-tested
-> > for ide.
-> >
-> > Bruno Prémont
-> 
->     (I've tried to reply to the group by google-groups, but it didn't
-> worked...)
-> 
->     I have a Benq JoyBook S32 laptop that has the same behaviour...
-> I've applied you patch, and just replaced the condition (dmi_...) with
-> true, and now my laptop works OK while rebooting (it doesn't just cut
-> power to the disks)...
-> 
->     So I would say this is a very needed patch for the mainline
-> kernel... Will it be included? Also how do I add my laptop to the
-> table provided in your patch?
-> 
->     Thanks,
->     Ciprian Craciun.
-> 
-Just a note, my patches do not change the BIOS behavior on reboot, thus
-power is still being cut if it was so before applying the patches. But
-it stops the disks first so those do not suffer from the power cut.
+Hi,
 
-The variant for IDE-GD is on its way for inclusion, for the SD one I
-don't know.
-
-Below is a sample patch to add your system to the list, please check if
-it works when applied on top of my 2 patches. If it doesn't you will
-have to adjust the name of your laptop's manufacturer and it's product
-name to correctly match your system. Please report if it works (or what
-manufacturer/product name it works with) for you.
-The right information can be extracted from dmidecode (System
-Information block)
+Below is a list from my braces vs indentation pipeline against  
+staging (mainline 0c8454f56623)... Plenty of add-bracing/reindentation 
+required but I'm busy elsewhere so I leave it up to somebody who wants
+to eyeball the code to see which of the alternatives is the
+right one. Please disregard the line numbers, they don't match
+with the source because the source was trimmed beforehand.
 
 
-Tejun suggested eventually stopping the disks for all machines though
-as far as I can see here my laptop is the only one affected out of a
-dozen different boxes I have around. (eventually just doing it for
-laptops might be reasonable as generalization)
+-- 
+ i.
 
-Bruno
-
----
-
-sd, ide-gd: stop disk on reboot for Benq JoyBook S32
-
-Ciprian Craciun reported that Benq JoyBook S32 was affected by
-the same power-cut on reboot as Acer TravelMate 660, so add it
-to the list.
-
----
-diff --git a/drivers/ide/ide-gd.c b/drivers/ide/ide-gd.c
-index 4b6b71e..a78813d 100644
---- a/drivers/ide/ide-gd.c
-+++ b/drivers/ide/ide-gd.c
-@@ -109,6 +109,14 @@ static const struct dmi_system_id ide_coldreboot_table[] = {
- 			DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 660"),
- 		},
- 	},
-+	{
-+		/* Benq JoyBook S32 cuts power during reboot */
-+		.ident   = "Benq JoyBook S32",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Benq"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "JoyBook S32"),
-+		},
-+	},
- 
- 	{ }	/* terminate list */
- };
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index fdad8bc..68c828a 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -2137,6 +2137,14 @@ static const struct dmi_system_id sd_coldreboot_table[] = {
- 			DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 660"),
- 		},
- 	},
-+	{
-+		/* Benq JoyBook S32 cuts power during reboot */
-+		.ident   = "Benq JoyBook S32",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Benq"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "JoyBook S32"),
-+		},
-+	},
- 
- 	{ }	/* terminate list */
- };
+drivers/staging/frontier/tranzport.c
+183
+	if (dev->offline == 2 && dev->interrupt_in_buffer[1] == 0xff)
+		goto resubmit;
+		if (dev->offline == 1 && dev->interrupt_in_buffer[1] == 0xff) {
+			dev->offline = 2;
+--
+drivers/staging/otus/ioctl.c
+242
+		else
+			iwe.u.mode = IW_MODE_ADHOC;
+			current_ev = iwe_stream_add_event(info,	current_ev,
+						end_buf, &iwe, IW_EV_UINT_LEN);
+--
+drivers/staging/rt2860/common/mlme.c
+5159
+					else
+						DBGPRINT_RAW(RT_DEBUG_TRACE,("AsicAdjustTxPower (i/j=%d/%d, Value=%d, %d, no change)\n", i, j, Value, AdjustMaxTxPwr[i*8+j]));
+						TxPwr[i] = (TxPwr[i] & ~(0x0000000F << j*4)) | (Value << j*4);
+				}
+--
+drivers/staging/rt2860/common/rtmp_init.c
+2650
+		if (pTimer->State == FALSE)
+			pTimer->Repeat = FALSE;
+			RTMP_OS_Del_Timer(&pTimer->TimerObj, pCancelled);
+		if (*pCancelled == TRUE)
+--
+drivers/staging/rt2860/rt_profile.c
+1202
+							else
+								pAd->StaCfg.bTGnWifiTest = TRUE;
+								DBGPRINT(RT_DEBUG_TRACE, ("TGnWifiTest=%d\n", pAd->StaCfg.bTGnWifiTest));
+						}
+--
+drivers/staging/rt2870/common/mlme.c
+5111
+					else
+						DBGPRINT_RAW(RT_DEBUG_TRACE,("AsicAdjustTxPower (i/j=%d/%d, Value=%d, %d, no change)\n", i, j, Value, AdjustMaxTxPwr[i*8+j]));
+						TxPwr[i] = (TxPwr[i] & ~(0x0000000F << j*4)) | (Value << j*4);
+				}
+--
+drivers/staging/rt2870/common/rtmp_init.c
+2837
+		if (pTimer->State == FALSE)
+			pTimer->Repeat = FALSE;
+			RTMP_OS_Del_Timer(&pTimer->TimerObj, pCancelled);
+		if (*pCancelled == TRUE)
+--
+drivers/staging/rt2870/common/rtusb_io.c
+533
+	if ((status != NDIS_STATUS_SUCCESS) || (cmdqelmt == NULL))
+		return (NDIS_STATUS_RESOURCES);
+		cmdqelmt->buffer = NULL;
+		if (pInformationBuffer != NULL)
+--
+drivers/staging/rt2870/rt_profile.c
+1206
+							else
+								pAd->StaCfg.bTGnWifiTest = TRUE;
+								DBGPRINT(RT_DEBUG_TRACE, ("TGnWifiTest=%d\n", pAd->StaCfg.bTGnWifiTest));
+						}
+--
+drivers/staging/rt3070/common/mlme.c
+5366
+					else
+						DBGPRINT_RAW(RT_DEBUG_TRACE,("AsicAdjustTxPower (i/j=%d/%d, Value=%d, %d, no change)\n", i, j, Value, AdjustMaxTxPwr[i*8+j]));
+						TxPwr[i] = (TxPwr[i] & ~(0x0000000F << j*4)) | (Value << j*4);
+				}
+--
+drivers/staging/rt3070/common/rtmp_init.c
+2916
+		if (pTimer->State == FALSE)
+			pTimer->Repeat = FALSE;
+			RTMP_OS_Del_Timer(&pTimer->TimerObj, pCancelled);
+		if (*pCancelled == TRUE)
+--
+drivers/staging/rt3070/common/rtusb_io.c
+487
+	if ((status != NDIS_STATUS_SUCCESS) || (cmdqelmt == NULL))
+		return (NDIS_STATUS_RESOURCES);
+		cmdqelmt->buffer = NULL;
+		if (pInformationBuffer != NULL)
+--
+drivers/staging/rt3070/rt_profile.c
+1207
+							else
+								pAd->StaCfg.bTGnWifiTest = TRUE;
+								DBGPRINT(RT_DEBUG_TRACE, ("TGnWifiTest=%d\n", pAd->StaCfg.bTGnWifiTest));
+						}
+--
