@@ -1,170 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbZDYE1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbZDYE2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756161AbZDYE1x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 00:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbZDYE0f
+	id S1756850AbZDYE2Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 00:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbZDYE0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 00:26:35 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:42514 "EHLO
+	Sat, 25 Apr 2009 00:26:36 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37200 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751946AbZDYE0e (ORCPT
+	with ESMTP id S1751450AbZDYE0f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 00:26:34 -0400
-Message-Id: <20090425042632.320062940@goodmis.org>
+	Sat, 25 Apr 2009 00:26:35 -0400
+Message-Id: <20090425042633.428284874@goodmis.org>
 References: <20090425042030.431477667@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Sat, 25 Apr 2009 00:20:34 -0400
+Date: Sat, 25 Apr 2009 00:20:35 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: [PATCH 4/5] tracing/events: reuse trace event ids after overflow
-Content-Disposition: inline; filename=0004-tracing-events-reuse-trace-event-ids-after-overflow.patch
+       Li Zefan <lizf@cn.fujitsu.com>, Greg KH <greg@kroah.com>
+Subject: [PATCH 5/5] tracing/events: make modules have their own file_operations structure
+Content-Disposition: inline; filename=0005-tracing-events-make-modules-have-their-own-file_ope.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-With modules being able to add trace events, and the max trace event
-counter is 16 bits (65536) we can overflow the counter easily
-with a simple while loop adding and removing modules that contain
-trace events.
+For proper module reference counting, the file_operations that modules use
+must have the "owner" field set to the module. Unfortunately, the trace events
+use share file_operations. The same file_operations are used by all both
+kernel core and all modules.
 
-This patch links together the registered trace events and on overflow
-searches for available trace event ids. It will still fail if
-over 65536 events are registered, but considering that a typical
-kernel only has 22000 functions, 65000 events should be sufficient.
+This patch makes the modules allocate their own file_operations and
+copies the functions from the core kernel. This allows those file
+operations to be owned by the module.
 
-Reported-by: Li Zefan <lizf@cn.fujitsu.com>
+Care is taken to free this code on module unload.
+
+Thanks to Greg KH for reminding me that file_operations must be owned
+by the module to have reference counting take place.
+
+Cc: Greg KH <greg@kroah.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/ftrace_event.h |    1 +
- kernel/trace/trace_output.c  |   71 +++++++++++++++++++++++++++++++++++------
- 2 files changed, 61 insertions(+), 11 deletions(-)
+ kernel/trace/trace_events.c |   95 +++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 88 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index 07e0a6d..78a9ba2 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -56,6 +56,7 @@ typedef enum print_line_t (*trace_print_func)(struct trace_iterator *iter,
- 					      int flags);
- struct trace_event {
- 	struct hlist_node	node;
-+	struct list_head	list;
- 	int			type;
- 	trace_print_func	trace;
- 	trace_print_func	raw;
-diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 06997e7..5fc51f0 100644
---- a/kernel/trace/trace_output.c
-+++ b/kernel/trace/trace_output.c
-@@ -483,6 +483,36 @@ struct trace_event *ftrace_find_event(int type)
- 	return NULL;
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index b920815..be4d3a4 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -770,7 +770,11 @@ event_subsystem_dir(const char *name, struct dentry *d_events)
  }
  
-+static LIST_HEAD(ftrace_event_list);
-+
-+static int trace_search_list(struct list_head **list)
-+{
-+	struct trace_event *e;
-+	int last = __TRACE_LAST_TYPE;
-+
-+	if (list_empty(&ftrace_event_list)) {
-+		*list = &ftrace_event_list;
-+		return last + 1;
-+	}
-+
-+	/*
-+	 * We used up all possible max events,
-+	 * lets see if somebody freed one.
-+	 */
-+	list_for_each_entry(e, &ftrace_event_list, list) {
-+		if (e->type != last + 1)
-+			break;
-+		last++;
-+	}
-+
-+	/* Did we used up all 65 thousand events??? */
-+	if ((last + 1) > FTRACE_MAX_EVENT)
-+		return 0;
-+
-+	*list = &e->list;
-+	return last + 1;
-+}
-+
- /**
-  * register_ftrace_event - register output for an event type
-  * @event: the event type to register
-@@ -505,20 +535,40 @@ int register_ftrace_event(struct trace_event *event)
- 
- 	mutex_lock(&trace_event_mutex);
- 
--	if (!event) {
--		ret = next_event_type++;
-+	if (WARN_ON(!event))
- 		goto out;
--	}
- 
--	if (!event->type)
--		event->type = next_event_type++;
--	else if (event->type > __TRACE_LAST_TYPE) {
-+	INIT_LIST_HEAD(&event->list);
-+
-+	if (!event->type) {
-+		struct list_head *list;
-+
-+		if (next_event_type > FTRACE_MAX_EVENT) {
-+
-+			event->type = trace_search_list(&list);
-+			if (!event->type)
-+				goto out;
-+
-+		} else {
-+			
-+			event->type = next_event_type++;
-+			list = &ftrace_event_list;
-+		}
-+
-+		if (WARN_ON(ftrace_find_event(event->type)))
-+			goto out;
-+
-+		list_add_tail(&event->list, list);
-+
-+	} else if (event->type > __TRACE_LAST_TYPE) {
- 		printk(KERN_WARNING "Need to add type to trace.h\n");
- 		WARN_ON(1);
--	}
--
--	if (ftrace_find_event(event->type))
- 		goto out;
-+	} else {
-+		/* Is this event already used */
-+		if (ftrace_find_event(event->type))
-+			goto out;
-+	}
- 
- 	if (event->trace == NULL)
- 		event->trace = trace_nop_print;
-@@ -537,8 +587,6 @@ int register_ftrace_event(struct trace_event *event)
-  out:
- 	mutex_unlock(&trace_event_mutex);
- 
--	WARN_ON_ONCE(next_event_type > FTRACE_MAX_EVENT);
--
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(register_ftrace_event);
-@@ -551,6 +599,7 @@ int unregister_ftrace_event(struct trace_event *event)
+ static int
+-event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
++event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
++		 const struct file_operations *id,
++		 const struct file_operations *enable,
++		 const struct file_operations *filter,
++		 const struct file_operations *format)
  {
- 	mutex_lock(&trace_event_mutex);
- 	hlist_del(&event->node);
-+	list_del(&event->list);
- 	mutex_unlock(&trace_event_mutex);
+ 	struct dentry *entry;
+ 	int ret;
+@@ -800,11 +804,11 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
+ 
+ 	if (call->regfunc)
+ 		entry = trace_create_file("enable", 0644, call->dir, call,
+-					  &ftrace_enable_fops);
++					  enable);
+ 
+ 	if (call->id)
+ 		entry = trace_create_file("id", 0444, call->dir, call,
+-					  &ftrace_event_id_fops);
++					  id);
+ 
+ 	if (call->define_fields) {
+ 		ret = call->define_fields();
+@@ -814,7 +818,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
+ 			return ret;
+ 		}
+ 		entry = trace_create_file("filter", 0644, call->dir, call,
+-					  &ftrace_event_filter_fops);
++					  filter);
+ 	}
+ 
+ 	/* A trace may not want to export its format */
+@@ -822,7 +826,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
+ 		return 0;
+ 
+ 	entry = trace_create_file("format", 0444, call->dir, call,
+-				  &ftrace_event_format_fops);
++				  format);
  
  	return 0;
+ }
+@@ -833,8 +837,60 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
+ 	     event++)
+ 
+ #ifdef CONFIG_MODULES
++
++static LIST_HEAD(ftrace_module_file_list);
++
++/*
++ * Modules must own their file_operations to keep up with
++ * reference counting.
++ */
++struct ftrace_module_file_ops {
++	struct list_head		list;
++	struct module			*mod;
++	struct file_operations		id;
++	struct file_operations		enable;
++	struct file_operations		format;
++	struct file_operations		filter;
++};
++
++static struct ftrace_module_file_ops *
++trace_create_file_ops(struct module *mod)
++{
++	struct ftrace_module_file_ops *file_ops;
++
++	/*
++	 * This is a bit of a PITA. To allow for correct reference
++	 * counting, modules must "own" their file_operations.
++	 * To do this, we allocate the file operations that will be
++	 * used in the event directory.
++	 */
++
++	file_ops = kmalloc(sizeof(*file_ops), GFP_KERNEL);
++	if (!file_ops)
++		return NULL;
++
++	file_ops->mod = mod;
++
++	file_ops->id = ftrace_event_id_fops;
++	file_ops->id.owner = mod;
++
++	file_ops->enable = ftrace_enable_fops;
++	file_ops->enable.owner = mod;
++
++	file_ops->filter = ftrace_event_filter_fops;
++	file_ops->filter.owner = mod;
++
++	file_ops->format = ftrace_event_format_fops;
++	file_ops->format.owner = mod;
++
++	list_add(&file_ops->list, &ftrace_module_file_list);
++
++	return file_ops;
++}
++
+ static void trace_module_add_events(struct module *mod)
+ {
++	struct ftrace_module_file_ops *file_ops = NULL;
+ 	struct ftrace_event_call *call, *start, *end;
+ 	struct dentry *d_events;
+ 
+@@ -852,14 +908,27 @@ static void trace_module_add_events(struct module *mod)
+ 		/* The linker may leave blanks */
+ 		if (!call->name)
+ 			continue;
++
++		/*
++		 * This module has events, create file ops for this module
++		 * if not already done.
++		 */
++		if (!file_ops) {
++			file_ops = trace_create_file_ops(mod);
++			if (!file_ops)
++				return;
++		}
+ 		call->mod = mod;
+ 		list_add(&call->list, &ftrace_events);
+-		event_create_dir(call, d_events);
++		event_create_dir(call, d_events,
++				 &file_ops->id, &file_ops->enable,
++				 &file_ops->filter, &file_ops->format);
+ 	}
+ }
+ 
+ static void trace_module_remove_events(struct module *mod)
+ {
++	struct ftrace_module_file_ops *file_ops;
+ 	struct ftrace_event_call *call, *p;
+ 
+ 	list_for_each_entry_safe(call, p, &ftrace_events, list) {
+@@ -874,6 +943,16 @@ static void trace_module_remove_events(struct module *mod)
+ 			list_del(&call->list);
+ 		}
+ 	}
++
++	/* Now free the file_operations */
++	list_for_each_entry(file_ops, &ftrace_module_file_list, list) {
++		if (file_ops->mod == mod)
++			break;
++	}
++	if (&file_ops->list != &ftrace_module_file_list) {
++		list_del(&file_ops->list);
++		kfree(file_ops);
++	}
+ }
+ 
+ static int trace_module_notify(struct notifier_block *self,
+@@ -954,7 +1033,9 @@ static __init int event_trace_init(void)
+ 		if (!call->name)
+ 			continue;
+ 		list_add(&call->list, &ftrace_events);
+-		event_create_dir(call, d_events);
++		event_create_dir(call, d_events, &ftrace_event_id_fops,
++				 &ftrace_enable_fops, &ftrace_event_filter_fops,
++				 &ftrace_event_format_fops);
+ 	}
+ 
+ 	ret = register_module_notifier(&trace_module_nb);
 -- 
 1.6.2.1
 
