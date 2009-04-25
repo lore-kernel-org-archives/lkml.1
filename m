@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753076AbZDYNFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbZDYNHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753076AbZDYNFV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 09:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZDYNFB
+	id S1754521AbZDYNHr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 09:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbZDYNHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 09:05:01 -0400
-Received: from www.tglx.de ([62.245.132.106]:44346 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751422AbZDYNFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 09:05:00 -0400
-Date: Sat, 25 Apr 2009 15:03:13 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>
-Subject: [Announce] 2.6.29.1-rt9
-In-Reply-To: <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain> <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
- <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain> <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain> <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain> <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain>
- <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain> <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain> <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain> <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>
- <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain> <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain> <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 25 Apr 2009 09:07:37 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:54065 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752557AbZDYNHg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Apr 2009 09:07:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
+         :message-id:content-type:content-transfer-encoding;
+        b=HYXJ3bipAtyDoF/RSpnhZzIkazJWJAWm1uaciirJ5sdjX5KWLSzyQDJZc/vFiF0+qf
+         Y+sWJi30+EYTrZymUST+ZeKVWtvXfHw+cUj1s8reHHY29DBv5hVKOG20KsUVzjwsTiQm
+         Li5wlvpOxNhYdRAwfMUiaThUegdIbMdDCPsHY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: unsik Kim <donari75@gmail.com>
+Subject: [PATCH 1/3] mg_disk: fix CONFIG_LBD=y warning
+Date: Sat, 25 Apr 2009 15:03:23 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29-next-20090403; KDE/4.2.2; i686; ; )
+Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200904251503.23211.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the next update to our new preempt-rt
-series.
-  
-    	- hrtimer fix softirq handling
-  	- x86/64 build fix for empty sections
+drivers/block/mg_disk.c: In function ‘mg_dump_status’:
+drivers/block/mg_disk.c:265: warning: format ‘%ld’ expects type ‘long int’, but
+argument 2 has type ‘sector_t’
 
-Download locations:
+Cc: unsik Kim <donari75@gmail.com>
+Cc: Tejun Heo <tj@kernel.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+few more mg_disk patches on top of http://lkml.org/lkml/2009/4/24/334
 
-     http://rt.et.redhat.com/download/
-     http://www.kernel.org/pub/linux/kernel/projects/rt/
+ drivers/block/mg_disk.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Information on the RT patch can be found at:
-
-     http://rt.wiki.kernel.org/index.php/Main_Page
-
-to build the 2.6.29.1-rt9 tree, the following patches should be
-applied:
-
-     http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.1.tar.bz2
-     http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29.1-rt9.bz2
-
-The broken out patches are also available at the same download
-locations.
-
-Enjoy !
-
-       tglx
-
+Index: b/drivers/block/mg_disk.c
+===================================================================
+--- a/drivers/block/mg_disk.c
++++ b/drivers/block/mg_disk.c
+@@ -262,7 +262,7 @@ static void mg_dump_status(const char *m
+ 			if (host->breq) {
+ 				req = elv_next_request(host->breq);
+ 				if (req)
+-					printk(", sector=%ld", req->sector);
++					printk(", sector=%u", (u32)req->sector);
+ 			}
+ 
+ 		}
