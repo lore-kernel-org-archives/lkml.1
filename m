@@ -1,71 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751734AbZDYE0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbZDYE05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751734AbZDYE0o (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 00:26:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbZDYE0a
+	id S1753795AbZDYE05 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 00:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZDYE0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 00:26:30 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37144 "EHLO
+	Sat, 25 Apr 2009 00:26:32 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37153 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751165AbZDYE0a (ORCPT
+	with ESMTP id S1751223AbZDYE0b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 00:26:30 -0400
-Message-Id: <20090425042030.431477667@goodmis.org>
+	Sat, 25 Apr 2009 00:26:31 -0400
+Message-Id: <20090425042629.332398282@goodmis.org>
+References: <20090425042030.431477667@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Sat, 25 Apr 2009 00:20:30 -0400
+Date: Sat, 25 Apr 2009 00:20:31 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Li Zefan <lizf@cn.fujitsu.com>
-Subject: [PATCH 0/5] [GIT PULL] tracing/events: remove TRACE_FORMAT and handle overflow ids
+Subject: [PATCH 1/5] tracing/lockdep: convert lockdep to use TRACE_EVENT macro
+Content-Disposition: inline; filename=0001-tracing-lockdep-convert-lockdep-to-use-TRACE_EVENT.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Steven Rostedt <srostedt@redhat.com>
 
-Ingo,
+The TRACE_FORMAT will soon be deprecated. This patch converts it to
+the TRACE_EVENT macro.
 
-This patch series first removes TRACE_FORMAT. It is no longer needed,
-and with the new __string feature of TRACE_EVENT (thanks Frederic!)
-these formats can be easly converted.
+Note, this change should also speed up the tracing.
 
-The ending patch (and reason that the TRACE_FORMAT is removed)
-is to make the trace event ids reusable. That is, if a module
-with a trace point is added and removed more than the number
-of events possible (event->type is only 16 bits), it will then
-search the list for freed events.
+[ Impact: remove a user of deprecated TRACE_FORMAT ]
 
-It is very unlikely that a trace event id will exceed the max number,
-and before that happens the operation is O(1). But once the max
-is exceeded, it is O(n). But this only runs once on module load
-so it should not be a cause for alarm.
+Cc: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ include/trace/events/lockdep.h |   56 ++++++++++++++++++++++++++++++++-------
+ 1 files changed, 46 insertions(+), 10 deletions(-)
 
-The last patch is a fix for reference counting of event files used by
-modules.
+diff --git a/include/trace/events/lockdep.h b/include/trace/events/lockdep.h
+index 3ca315c..0e956c9 100644
+--- a/include/trace/events/lockdep.h
++++ b/include/trace/events/lockdep.h
+@@ -9,28 +9,64 @@
+ 
+ #ifdef CONFIG_LOCKDEP
+ 
+-TRACE_FORMAT(lock_acquire,
++TRACE_EVENT(lock_acquire,
++
+ 	TP_PROTO(struct lockdep_map *lock, unsigned int subclass,
+ 		int trylock, int read, int check,
+ 		struct lockdep_map *next_lock, unsigned long ip),
++
+ 	TP_ARGS(lock, subclass, trylock, read, check, next_lock, ip),
+-	TP_FMT("%s%s%s", trylock ? "try " : "",
+-		read ? "read " : "", lock->name)
+-	);
+ 
+-TRACE_FORMAT(lock_release,
++	TP_STRUCT__entry(
++		__field(unsigned int, flags)
++		__string(name, lock->name)
++	),
++
++	TP_fast_assign(
++		__entry->flags = (trylock ? 1 : 0) | (read ? 2 : 0);
++		__assign_str(name, lock->name);
++	),
++
++	TP_printk("%s%s%s", (__entry->flags & 1) ? "try " : "",
++		  (__entry->flags & 2) ? "read " : "",
++		  __get_str(name))
++);
++
++TRACE_EVENT(lock_release,
++
+ 	TP_PROTO(struct lockdep_map *lock, int nested, unsigned long ip),
++
+ 	TP_ARGS(lock, nested, ip),
+-	TP_FMT("%s", lock->name)
+-	);
++
++	TP_STRUCT__entry(
++		__string(name, lock->name)
++	),
++
++	TP_fast_assign(
++		__assign_str(name, lock->name);
++	),
++
++	TP_printk("%s", __get_str(name))
++);
+ 
+ #ifdef CONFIG_LOCK_STAT
+ 
+-TRACE_FORMAT(lock_contended,
++TRACE_EVENT(lock_contended,
++
+ 	TP_PROTO(struct lockdep_map *lock, unsigned long ip),
++
+ 	TP_ARGS(lock, ip),
+-	TP_FMT("%s", lock->name)
+-	);
++
++	TP_STRUCT__entry(
++		__string(name, lock->name)
++	),
++
++	TP_fast_assign(
++		__assign_str(name, lock->name);
++	),
++
++	TP_printk("%s", __get_str(name))
++);
+ 
+ TRACE_EVENT(lock_acquired,
+ 	TP_PROTO(struct lockdep_map *lock, unsigned long ip, s64 waittime),
+-- 
+1.6.2.1
 
-Please pull the latest tip/tracing/ftrace-2 tree, which can be found at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/ftrace-2
-
-
-Steven Rostedt (5):
-      tracing/lockdep: convert lockdep to use TRACE_EVENT macro
-      tracing/irq: convert irq traces to use TRACE_EVENT macro
-      tracing: remove deprecated TRACE_FORMAT
-      tracing/events: reuse trace event ids after overflow
-      tracing/events: make modules have their own file_operations structure
-
-----
- include/linux/ftrace_event.h   |    1 +
- include/linux/tracepoint.h     |    5 --
- include/trace/define_trace.h   |    4 --
- include/trace/events/irq.h     |   57 ++++++++++++++++++++----
- include/trace/events/lockdep.h |   56 +++++++++++++++++++----
- include/trace/ftrace.h         |   66 ---------------------------
- kernel/trace/trace_events.c    |   95 +++++++++++++++++++++++++++++++++++++---
- kernel/trace/trace_output.c    |   71 +++++++++++++++++++++++++-----
- 8 files changed, 243 insertions(+), 112 deletions(-)
 -- 
