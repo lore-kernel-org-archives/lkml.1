@@ -1,598 +1,422 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761381AbZDYBh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761376AbZDYBg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761381AbZDYBh0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 21:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757579AbZDYBaS
+	id S1761376AbZDYBg6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 21:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbZDYBaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 21:30:18 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38461 "EHLO mx2.suse.de"
+	Fri, 24 Apr 2009 21:30:14 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44587 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751270AbZDYB2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753612AbZDYB2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 24 Apr 2009 21:28:52 -0400
-Message-Id: <20090425012212.236165067@suse.de>
+Message-Id: <20090425012211.032997694@suse.de>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Sat, 25 Apr 2009 11:20:42 +1000
+Date: Sat, 25 Apr 2009 11:20:34 +1000
 From: npiggin@suse.de
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 22/27] fs: icache lock i_state
+Subject: [patch 14/27] fs: use RCU / seqlock logic for reverse and multi-step operaitons
 References: <20090425012020.457460929@suse.de>
-Content-Disposition: inline; filename=fs-inode_lock-scale-3.patch
+Content-Disposition: inline; filename=fs-dcache_lock-multi-step.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Protect i_state updates with i_lock
----
- fs/drop_caches.c     |    9 ++++--
- fs/fs-writeback.c    |   46 ++++++++++++++++++++++++---------
- fs/hugetlbfs/inode.c |    6 ++++
- fs/inode.c           |   71 +++++++++++++++++++++++++++++++++++++++++++--------
- fs/nilfs2/gcdat.c    |    1 
- fs/quota/dquot.c     |   14 +++++++---
- 6 files changed, 118 insertions(+), 29 deletions(-)
+The remaining usages for dcache_lock is to allow atomic, multi-step read-side
+operations over the directory tree by excluding modifications to the tree.
+Also, to walk in the leaf->root direction in the tree where we don't have
+a natural d_lock ordering.
 
-Index: linux-2.6/fs/drop_caches.c
+This could be accomplished by taking every d_lock, but this would mean a
+huge number of locks and actually gets very tricky.
+
+Solve this instead by using the rename seqlock for multi-step read-side
+operations. Insert operations are not serialised. Delete operations are
+tricky when walking up the directory our parent might have been deleted
+when dropping locks so also need to check and retry for that.
+
+XXX: hmm, we could of course just take the rename lock if there is any worry
+about livelock. Most of these are slow paths.
+
+---
+ drivers/staging/pohmelfs/path_entry.c |    7 ++
+ fs/autofs4/waitq.c                    |   10 +++
+ fs/dcache.c                           |  108 ++++++++++++++++++++++++++++++----
+ fs/nfs/namespace.c                    |   10 +++
+ fs/seq_file.c                         |    6 +
+ 5 files changed, 130 insertions(+), 11 deletions(-)
+
+Index: linux-2.6/fs/dcache.c
 ===================================================================
---- linux-2.6.orig/fs/drop_caches.c
-+++ linux-2.6/fs/drop_caches.c
-@@ -19,11 +19,14 @@ static void drop_pagecache_sb(struct sup
- 	spin_lock(&inode_lock);
- 	spin_lock(&sb_inode_list_lock);
- 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
--		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
--			continue;
--		if (inode->i_mapping->nrpages == 0)
-+		spin_lock(&inode->i_lock);
-+		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW)
-+				|| inode->i_mapping->nrpages == 0) {
-+			spin_unlock(&inode->i_lock);
- 			continue;
+--- linux-2.6.orig/fs/dcache.c
++++ linux-2.6/fs/dcache.c
+@@ -936,11 +936,15 @@ void shrink_dcache_for_umount(struct sup
+  * Return true if the parent or its subdirectories contain
+  * a mount point
+  */
+- 
+ int have_submounts(struct dentry *parent)
+ {
+-	struct dentry *this_parent = parent;
++	struct dentry *this_parent;
+ 	struct list_head *next;
++	unsigned seq;
++
++rename_retry:
++	this_parent = parent;
++	seq = read_seqbegin(&rename_lock);
+ 
+ 	spin_lock(&dcache_lock);
+ 	if (d_mountpoint(parent))
+@@ -974,17 +978,37 @@ resume:
+ 	 * All done at this level ... ascend and resume the search.
+ 	 */
+ 	if (this_parent != parent) {
++		struct dentry *tmp;
++		struct dentry *child;
++
+ 		next = this_parent->d_u.d_child.next;
++		tmp = this_parent->d_parent;
++		rcu_read_lock();
+ 		spin_unlock(&this_parent->d_lock);
+-		this_parent = this_parent->d_parent;
++		child = this_parent;
++		this_parent = tmp;
+ 		spin_lock(&this_parent->d_lock);
++		/* might go back up the wrong parent if we have had a rename
++		 * or deletion */
++		if (this_parent != child->d_parent ||
++				read_seqretry(&rename_lock, seq)) {
++			spin_unlock(&this_parent->d_lock);
++			spin_unlock(&dcache_lock);
++			rcu_read_unlock();
++			goto rename_retry;
 +		}
- 		__iget(inode);
-+		spin_unlock(&inode->i_lock);
- 		spin_unlock(&sb_inode_list_lock);
- 		spin_unlock(&inode_lock);
- 		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
-Index: linux-2.6/fs/fs-writeback.c
-===================================================================
---- linux-2.6.orig/fs/fs-writeback.c
-+++ linux-2.6/fs/fs-writeback.c
-@@ -118,6 +118,7 @@ void __mark_inode_dirty(struct inode *in
- 		struct dentry *dentry = NULL;
- 		const char *name = "?";
- 
-+		/* XXX: someone forgot their locking here */
- 		if (!list_empty(&inode->i_dentry)) {
- 			dentry = list_entry(inode->i_dentry.next,
- 					    struct dentry, d_alias);
-@@ -133,6 +134,7 @@ void __mark_inode_dirty(struct inode *in
++		rcu_read_unlock();
+ 		goto resume;
  	}
+ 	spin_unlock(&this_parent->d_lock);
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
+ 	return 0; /* No mount points found in tree */
+ positive:
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
+ 	return 1;
+ }
  
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode->i_lock);
- 	if ((inode->i_state & flags) != flags) {
- 		const int was_dirty = inode->i_state & I_DIRTY;
+@@ -1004,10 +1028,15 @@ positive:
+  */
+ static int select_parent(struct dentry * parent)
+ {
+-	struct dentry *this_parent = parent;
++	struct dentry *this_parent;
+ 	struct list_head *next;
++	unsigned seq;
+ 	int found = 0;
  
-@@ -167,6 +169,7 @@ void __mark_inode_dirty(struct inode *in
- 		}
++rename_retry:
++	this_parent = parent;
++	seq = read_seqbegin(&rename_lock);
++
+ 	spin_lock(&dcache_lock);
+ 	spin_lock(&this_parent->d_lock);
+ repeat:
+@@ -1058,17 +1087,35 @@ resume:
+ 	 */
+ 	if (this_parent != parent) {
+ 		struct dentry *tmp;
++		struct dentry *child;
++
+ 		next = this_parent->d_u.d_child.next;
+ 		tmp = this_parent->d_parent;
++		rcu_read_lock();
+ 		spin_unlock(&this_parent->d_lock);
+-		BUG_ON(tmp == this_parent);
++		child = this_parent;
+ 		this_parent = tmp;
+ 		spin_lock(&this_parent->d_lock);
++		/* might go back up the wrong parent if we have had a rename
++		 * or deletion */
++		if (this_parent != child->d_parent ||
++				read_seqretry(&rename_lock, seq)) {
++//		if (this_parent != parent &&
++//				(/* d_unhashed(this_parent) XXX: hmm... */ 0 ||
++//				read_seqretry(&rename_lock, seq))) {
++			spin_unlock(&this_parent->d_lock);
++			spin_unlock(&dcache_lock);
++			rcu_read_unlock();
++			goto rename_retry;
++		}
++		rcu_read_unlock();
+ 		goto resume;
  	}
  out:
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
+ 	spin_unlock(&this_parent->d_lock);
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
+ 	return found;
  }
  
-@@ -296,6 +299,7 @@ __sync_single_inode(struct inode *inode,
- 	inode->i_state |= I_SYNC;
- 	inode->i_state &= ~I_DIRTY;
+@@ -2173,6 +2220,7 @@ char *__d_path(const struct path *path,
+ 	char *end = buffer + buflen;
+ 	char *retval;
  
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- 
- 	ret = do_writepages(mapping, wbc);
-@@ -314,6 +318,7 @@ __sync_single_inode(struct inode *inode,
++	rcu_read_lock();
+ 	prepend(&end, &buflen, "\0", 1);
+ 	if (!IS_ROOT(dentry) && d_unhashed(dentry) &&
+ 		(prepend(&end, &buflen, " (deleted)", 10) != 0))
+@@ -2208,6 +2256,7 @@ char *__d_path(const struct path *path,
  	}
  
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode->i_lock);
- 	WARN_ON(inode->i_state & I_NEW);
- 	inode->i_state &= ~I_SYNC;
- 	if (!(inode->i_state & I_FREEING)) {
-@@ -419,10 +424,12 @@ __writeback_single_inode(struct inode *i
+ out:
++	rcu_read_unlock();
+ 	return retval;
  
- 		wqh = bit_waitqueue(&inode->i_state, __I_SYNC);
- 		do {
-+			spin_unlock(&inode->i_lock);
- 			spin_unlock(&inode_lock);
- 			__wait_on_bit(wqh, &wq, inode_wait,
- 							TASK_UNINTERRUPTIBLE);
- 			spin_lock(&inode_lock);
-+			spin_lock(&inode->i_lock);
- 		} while (inode->i_state & I_SYNC);
- 	}
- 	return __sync_single_inode(inode, wbc);
-@@ -487,11 +494,6 @@ void generic_sync_sb_inodes(struct super
- 			break;
- 		}
+ global_root:
+@@ -2244,6 +2293,7 @@ char *d_path(const struct path *path, ch
+ 	char *res;
+ 	struct path root;
+ 	struct path tmp;
++	unsigned seq;
  
--		if (inode->i_state & I_NEW) {
--			requeue_io(inode);
--			continue;
--		}
--
- 		if (wbc->nonblocking && bdi_write_congested(bdi)) {
- 			wbc->encountered_congestion = 1;
- 			if (!sb_is_blkdev_sb(sb))
-@@ -507,16 +509,27 @@ void generic_sync_sb_inodes(struct super
- 			continue;		/* blockdev has wrong queue */
- 		}
- 
-+		spin_lock(&inode->i_lock);
-+		if (inode->i_state & I_NEW) {
-+			spin_unlock(&inode->i_lock);
-+			requeue_io(inode);
-+			continue;
-+		}
+ 	/*
+ 	 * We have various synthetic filesystems that never get mounted.  On
+@@ -2259,6 +2309,9 @@ char *d_path(const struct path *path, ch
+ 	root = current->fs->root;
+ 	path_get(&root);
+ 	read_unlock(&current->fs->lock);
 +
- 		/*
- 		 * Was this inode dirtied after sync_sb_inodes was called?
- 		 * This keeps sync from extra jobs and livelock.
- 		 */
--		if (inode_dirtied_after(inode, start))
-+		if (inode_dirtied_after(inode, start)) {
-+			spin_unlock(&inode->i_lock);
- 			break;
-+		}
- 
- 		/* Is another pdflush already flushing this queue? */
--		if (current_is_pdflush() && !writeback_acquire(bdi))
-+		if (current_is_pdflush() && !writeback_acquire(bdi)) {
-+			spin_unlock(&inode->i_lock);
- 			break;
-+		}
- 
- 		BUG_ON(inode->i_state & I_FREEING);
- 		__iget(inode);
-@@ -531,6 +544,7 @@ void generic_sync_sb_inodes(struct super
- 			 */
- 			redirty_tail(inode);
- 		}
-+		spin_unlock(&inode->i_lock);
- 		spin_unlock(&inode_lock);
- 		iput(inode);
- 		cond_resched();
-@@ -555,15 +569,17 @@ void generic_sync_sb_inodes(struct super
- 		 */
- 		spin_lock(&sb_inode_list_lock);
- 		list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
--			struct address_space *mapping;
-+			struct address_space *mapping = inode->i_mapping;
- 
-+			spin_lock(&inode->i_lock);
- 			if (inode->i_state &
--					(I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
--				continue;
--			mapping = inode->i_mapping;
--			if (mapping->nrpages == 0)
-+					(I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW)
-+					|| mapping->nrpages == 0) {
-+				spin_unlock(&inode->i_lock);
- 				continue;
-+			}
- 			__iget(inode);
-+			spin_unlock(&inode->i_lock);
- 			spin_unlock(&sb_inode_list_lock);
- 			spin_unlock(&inode_lock);
- 			/*
-@@ -756,7 +772,9 @@ int write_inode_now(struct inode *inode,
- 
- 	might_sleep();
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode->i_lock);
- 	ret = __writeback_single_inode(inode, &wbc);
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- 	if (sync)
- 		inode_sync_wait(inode);
-@@ -780,7 +798,9 @@ int sync_inode(struct inode *inode, stru
- 	int ret;
- 
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode->i_lock);
- 	ret = __writeback_single_inode(inode, wbc);
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- 	return ret;
++rename_retry:
++	seq = read_seqbegin(&rename_lock);
+ 	spin_lock(&dcache_lock);
+ 	vfsmount_read_lock();
+ 	spin_lock(&path->dentry->d_lock);
+@@ -2267,6 +2320,9 @@ char *d_path(const struct path *path, ch
+ 	spin_unlock(&path->dentry->d_lock);
+ 	vfsmount_read_unlock();
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
++
+ 	path_put(&root);
+ 	return res;
  }
-@@ -823,9 +843,11 @@ int generic_osync_inode(struct inode *in
- 	}
- 
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode->i_lock);
- 	if ((inode->i_state & I_DIRTY) &&
- 	    ((what & OSYNC_INODE) || (inode->i_state & I_DIRTY_DATASYNC)))
- 		need_write_inode_now = 1;
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- 
- 	if (need_write_inode_now) {
-Index: linux-2.6/fs/inode.c
-===================================================================
---- linux-2.6.orig/fs/inode.c
-+++ linux-2.6/fs/inode.c
-@@ -269,6 +269,7 @@ static void init_once(void *foo)
+@@ -2297,9 +2353,14 @@ char *dynamic_dname(struct dentry *dentr
   */
- void __iget(struct inode * inode)
+ char *dentry_path(struct dentry *dentry, char *buf, int buflen)
  {
-+	assert_spin_locked(&inode->i_lock);
- 	if (atomic_read(&inode->i_count)) {
- 		atomic_inc(&inode->i_count);
- 		return;
-@@ -373,16 +374,21 @@ static int invalidate_list(struct list_h
- 		if (tmp == head)
- 			break;
- 		inode = list_entry(tmp, struct inode, i_sb_list);
--		if (inode->i_state & I_NEW)
-+		spin_lock(&inode->i_lock);
-+		if (inode->i_state & I_NEW) {
-+			spin_unlock(&inode->i_lock);
- 			continue;
-+		}
- 		invalidate_inode_buffers(inode);
- 		if (!atomic_read(&inode->i_count)) {
- 			list_move(&inode->i_list, dispose);
- 			WARN_ON(inode->i_state & I_NEW);
- 			inode->i_state |= I_FREEING;
-+			spin_unlock(&inode->i_lock);
- 			count++;
- 			continue;
- 		}
-+		spin_unlock(&inode->i_lock);
- 		busy = 1;
+-	char *end = buf + buflen;
++	char *end;
+ 	char *retval;
++	unsigned seq;
+ 
++rename_retry:
++	end = buf + buflen;
++	seq = read_seqbegin(&rename_lock);
++	rcu_read_lock(); /* protect parent */
+ 	spin_lock(&dcache_lock);
+ 	spin_lock(&dentry->d_lock);
+ 	prepend(&end, &buflen, "\0", 1);
+@@ -2323,13 +2384,16 @@ char *dentry_path(struct dentry *dentry,
+ 		retval = end;
+ 		dentry = parent;
  	}
- 	/* only unused inodes may be cached with i_count zero */
-@@ -462,12 +468,15 @@ static void prune_icache(int nr_to_scan)
- 
- 		inode = list_entry(inode_unused.prev, struct inode, i_list);
- 
-+		spin_lock(&inode->i_lock);
- 		if (inode->i_state || atomic_read(&inode->i_count)) {
- 			list_move(&inode->i_list, &inode_unused);
-+			spin_unlock(&inode->i_lock);
- 			continue;
- 		}
- 		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
- 			__iget(inode);
-+			spin_unlock(&inode->i_lock);
- 			spin_unlock(&inode_lock);
- 			if (remove_inode_buffers(inode))
- 				reap += invalidate_mapping_pages(&inode->i_data,
-@@ -478,12 +487,16 @@ static void prune_icache(int nr_to_scan)
- 			if (inode != list_entry(inode_unused.next,
- 						struct inode, i_list))
- 				continue;	/* wrong inode or list_empty */
--			if (!can_unuse(inode))
-+			spin_lock(&inode->i_lock);
-+			if (!can_unuse(inode)) {
-+				spin_unlock(&inode->i_lock);
- 				continue;
-+			}
- 		}
- 		list_move(&inode->i_list, &freeable);
- 		WARN_ON(inode->i_state & I_NEW);
- 		inode->i_state |= I_FREEING;
-+		spin_unlock(&inode->i_lock);
- 		nr_pruned++;
- 	}
- 	inodes_stat.nr_unused -= nr_pruned;
-@@ -543,8 +556,14 @@ repeat:
- 	hlist_for_each_entry(inode, node, head, i_hash) {
- 		if (inode->i_sb != sb)
- 			continue;
--		if (!test(inode, data))
-+		if (!spin_trylock(&inode->i_lock)) {
-+			spin_unlock(&inode_hash_lock);
-+			goto repeat;
-+		}
-+		if (!test(inode, data)) {
-+			spin_unlock(&inode->i_lock);
- 			continue;
-+		}
- 		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE)) {
- 			spin_unlock(&inode_hash_lock);
- 			__wait_on_freeing_inode(inode);
-@@ -572,6 +591,10 @@ repeat:
- 			continue;
- 		if (inode->i_sb != sb)
- 			continue;
-+		if (!spin_trylock(&inode->i_lock)) {
-+			spin_unlock(&inode_hash_lock);
-+			goto repeat;
-+		}
- 		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE)) {
- 			spin_unlock(&inode_hash_lock);
- 			__wait_on_freeing_inode(inode);
-@@ -598,10 +621,10 @@ __inode_add_to_lists(struct super_block
- 			struct inode *inode)
- {
- 	inodes_stat.nr_inodes++;
--	list_add(&inode->i_list, &inode_in_use);
- 	spin_lock(&sb_inode_list_lock);
- 	list_add(&inode->i_sb_list, &sb->s_inodes);
- 	spin_unlock(&sb_inode_list_lock);
-+	list_add(&inode->i_list, &inode_in_use);
- 	if (head) {
- 		spin_lock(&inode_hash_lock);
- 		hlist_add_head(&inode->i_hash, head);
-@@ -658,9 +681,9 @@ struct inode *new_inode(struct super_blo
- 	inode = alloc_inode(sb);
- 	if (inode) {
- 		spin_lock(&inode_lock);
--		__inode_add_to_lists(sb, NULL, inode);
- 		inode->i_ino = ++last_ino;
- 		inode->i_state = 0;
-+		__inode_add_to_lists(sb, NULL, inode);
- 		spin_unlock(&inode_lock);
- 	}
- 	return inode;
-@@ -718,8 +741,8 @@ static struct inode * get_new_inode(stru
- 			if (set(inode, data))
- 				goto set_failed;
- 
--			__inode_add_to_lists(sb, head, inode);
- 			inode->i_state = I_LOCK|I_NEW;
-+			__inode_add_to_lists(sb, head, inode);
- 			spin_unlock(&inode_lock);
- 
- 			/* Return the locked inode with I_NEW set, the
-@@ -734,6 +757,7 @@ static struct inode * get_new_inode(stru
- 		 * allocated.
- 		 */
- 		__iget(old);
-+		spin_unlock(&old->i_lock);
- 		spin_unlock(&inode_lock);
- 		destroy_inode(inode);
- 		inode = old;
-@@ -742,6 +766,7 @@ static struct inode * get_new_inode(stru
- 	return inode;
- 
- set_failed:
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- 	destroy_inode(inode);
- 	return NULL;
-@@ -764,8 +789,8 @@ static struct inode * get_new_inode_fast
- 		old = find_inode_fast(sb, head, ino);
- 		if (!old) {
- 			inode->i_ino = ino;
--			__inode_add_to_lists(sb, head, inode);
- 			inode->i_state = I_LOCK|I_NEW;
-+			__inode_add_to_lists(sb, head, inode);
- 			spin_unlock(&inode_lock);
- 
- 			/* Return the locked inode with I_NEW set, the
-@@ -780,6 +805,7 @@ static struct inode * get_new_inode_fast
- 		 * allocated.
- 		 */
- 		__iget(old);
-+		spin_unlock(&old->i_lock);
- 		spin_unlock(&inode_lock);
- 		destroy_inode(inode);
- 		inode = old;
-@@ -821,6 +847,7 @@ ino_t iunique(struct super_block *sb, in
- 		res = counter++;
- 		head = inode_hashtable + hash(sb, res);
- 		inode = find_inode_fast(sb, head, res);
-+		spin_unlock(&inode->i_lock);
- 	} while (inode != NULL);
- 	spin_unlock(&inode_lock);
- 
-@@ -830,7 +857,10 @@ EXPORT_SYMBOL(iunique);
- 
- struct inode *igrab(struct inode *inode)
- {
-+	struct inode *ret = inode;
-+
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode->i_lock);
- 	if (!(inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE)))
- 		__iget(inode);
- 	else
-@@ -839,9 +869,11 @@ struct inode *igrab(struct inode *inode)
- 		 * called yet, and somebody is calling igrab
- 		 * while the inode is getting freed.
- 		 */
--		inode = NULL;
-+		ret = NULL;
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
--	return inode;
-+
-+	return ret;
++out:
+ 	spin_unlock(&dentry->d_lock);
+ 	spin_unlock(&dcache_lock);
++	rcu_read_unlock();
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
+ 	return retval;
+ Elong:
+-	spin_unlock(&dentry->d_lock);
+-	spin_unlock(&dcache_lock);
+-	return ERR_PTR(-ENAMETOOLONG);
++	retval = ERR_PTR(-ENAMETOOLONG);
++	goto out;
  }
  
- EXPORT_SYMBOL(igrab);
-@@ -875,6 +907,7 @@ static struct inode *ifind(struct super_
- 	inode = find_inode(sb, head, test, data);
- 	if (inode) {
- 		__iget(inode);
-+		spin_unlock(&inode->i_lock);
- 		spin_unlock(&inode_lock);
- 		if (likely(wait))
- 			wait_on_inode(inode);
-@@ -908,6 +941,7 @@ static struct inode *ifind_fast(struct s
- 	inode = find_inode_fast(sb, head, ino);
- 	if (inode) {
- 		__iget(inode);
-+		spin_unlock(&inode->i_lock);
- 		spin_unlock(&inode_lock);
- 		wait_on_inode(inode);
- 		return inode;
-@@ -1089,6 +1123,7 @@ int insert_inode_locked(struct inode *in
- 			return 0;
- 		}
- 		__iget(old);
-+		spin_unlock(&old->i_lock);
- 		spin_unlock(&inode_lock);
- 		wait_on_inode(old);
- 		if (unlikely(!hlist_unhashed(&old->i_hash))) {
-@@ -1121,6 +1156,7 @@ int insert_inode_locked4(struct inode *i
- 			return 0;
- 		}
- 		__iget(old);
-+		spin_unlock(&old->i_lock);
- 		spin_unlock(&inode_lock);
- 		wait_on_inode(old);
- 		if (unlikely(!hlist_unhashed(&old->i_hash))) {
-@@ -1186,12 +1222,14 @@ void generic_delete_inode(struct inode *
+ /*
+@@ -2449,9 +2513,13 @@ int is_subdir(struct dentry *new_dentry,
+ 
+ void d_genocide(struct dentry *root)
  {
- 	const struct super_operations *op = inode->i_sb->s_op;
+-	struct dentry *this_parent = root;
++	struct dentry *this_parent;
+ 	struct list_head *next;
++	unsigned seq;
  
--	list_del_init(&inode->i_list);
- 	spin_lock(&sb_inode_list_lock);
-+	spin_lock(&inode->i_lock);
-+	list_del_init(&inode->i_list);
- 	list_del_init(&inode->i_sb_list);
- 	spin_unlock(&sb_inode_list_lock);
- 	WARN_ON(inode->i_state & I_NEW);
- 	inode->i_state |= I_FREEING;
-+	spin_unlock(&inode->i_lock);
- 	inodes_stat.nr_inodes--;
- 	spin_unlock(&inode_lock);
- 
-@@ -1226,19 +1264,27 @@ static void generic_forget_inode(struct
- {
- 	struct super_block *sb = inode->i_sb;
- 
-+	spin_lock(&sb_inode_list_lock);
-+	spin_lock(&inode->i_lock);
- 	if (!hlist_unhashed(&inode->i_hash)) {
- 		if (!(inode->i_state & (I_DIRTY|I_SYNC)))
- 			list_move(&inode->i_list, &inode_unused);
- 		inodes_stat.nr_unused++;
- 		if (sb->s_flags & MS_ACTIVE) {
-+			spin_unlock(&inode->i_lock);
-+			spin_unlock(&sb_inode_list_lock);
- 			spin_unlock(&inode_lock);
- 			return;
- 		}
- 		WARN_ON(inode->i_state & I_NEW);
- 		inode->i_state |= I_WILL_FREE;
-+		spin_unlock(&inode->i_lock);
-+		spin_unlock(&sb_inode_list_lock);
- 		spin_unlock(&inode_lock);
- 		write_inode_now(inode, 1);
- 		spin_lock(&inode_lock);
-+		spin_lock(&sb_inode_list_lock);
-+		spin_lock(&inode->i_lock);
- 		WARN_ON(inode->i_state & I_NEW);
- 		inode->i_state &= ~I_WILL_FREE;
- 		inodes_stat.nr_unused--;
-@@ -1247,12 +1293,12 @@ static void generic_forget_inode(struct
- 		spin_unlock(&inode_hash_lock);
++rename_retry:
++	this_parent = root;
++	seq = read_seqbegin(&rename_lock);
+ 	spin_lock(&dcache_lock);
+ 	spin_lock(&this_parent->d_lock);
+ repeat:
+@@ -2477,15 +2545,33 @@ resume:
+ 		spin_unlock(&dentry->d_lock);
  	}
- 	list_del_init(&inode->i_list);
--	spin_lock(&sb_inode_list_lock);
- 	list_del_init(&inode->i_sb_list);
- 	spin_unlock(&sb_inode_list_lock);
- 	WARN_ON(inode->i_state & I_NEW);
- 	inode->i_state |= I_FREEING;
- 	inodes_stat.nr_inodes--;
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- 	if (inode->i_data.nrpages)
- 		truncate_inode_pages(&inode->i_data, 0);
-@@ -1493,6 +1539,8 @@ EXPORT_SYMBOL(inode_wait);
-  * wake_up_inode() after removing from the hash list will DTRT.
-  *
-  * This is called with inode_lock held.
-+ *
-+ * Called with i_lock held and returns with it dropped.
-  */
- static void __wait_on_freeing_inode(struct inode *inode)
+ 	if (this_parent != root) {
++		struct dentry *tmp;
++		struct dentry *child;
++
+ 		next = this_parent->d_u.d_child.next;
++		tmp = this_parent->d_parent;
+ 		this_parent->d_count--;
++		rcu_read_lock();
+ 		spin_unlock(&this_parent->d_lock);
+-		this_parent = this_parent->d_parent;
++		child = this_parent;
++		this_parent = tmp;
+ 		spin_lock(&this_parent->d_lock);
++		/* might go back up the wrong parent if we have had a rename
++		 * or deletion */
++		if (this_parent != child->d_parent ||
++				read_seqretry(&rename_lock, seq)) {
++			spin_unlock(&this_parent->d_lock);
++			spin_unlock(&dcache_lock);
++			rcu_read_unlock();
++			goto rename_retry;
++		}
++		rcu_read_unlock();
+ 		goto resume;
+ 	}
+ 	spin_unlock(&this_parent->d_lock);
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
+ }
+ 
+ /**
+Index: linux-2.6/fs/seq_file.c
+===================================================================
+--- linux-2.6.orig/fs/seq_file.c
++++ linux-2.6/fs/seq_file.c
+@@ -459,12 +459,18 @@ int seq_path_root(struct seq_file *m, st
+ 	if (m->count < m->size) {
+ 		char *s = m->buf + m->count;
+ 		char *p;
++		unsigned seq;
+ 
++rename_retry:
++		seq = read_seqbegin(&rename_lock);
+ 		spin_lock(&dcache_lock);
+ 		vfsmount_read_lock();
+ 		p = __d_path(path, root, s, m->size - m->count);
+ 		vfsmount_read_unlock();
+ 		spin_unlock(&dcache_lock);
++		if (read_seqretry(&rename_lock, seq))
++			goto rename_retry;
++
+ 		err = PTR_ERR(p);
+ 		if (!IS_ERR(p)) {
+ 			s = mangle_path(s, p, esc);
+Index: linux-2.6/drivers/staging/pohmelfs/path_entry.c
+===================================================================
+--- linux-2.6.orig/drivers/staging/pohmelfs/path_entry.c
++++ linux-2.6/drivers/staging/pohmelfs/path_entry.c
+@@ -85,6 +85,7 @@ int pohmelfs_path_length(struct pohmelfs
  {
-@@ -1500,6 +1548,7 @@ static void __wait_on_freeing_inode(stru
- 	DEFINE_WAIT_BIT(wait, &inode->i_state, __I_LOCK);
- 	wq = bit_waitqueue(&inode->i_state, __I_LOCK);
- 	prepare_to_wait(wq, &wait.wait, TASK_UNINTERRUPTIBLE);
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- 	schedule();
- 	finish_wait(wq, &wait.wait);
-Index: linux-2.6/fs/hugetlbfs/inode.c
-===================================================================
---- linux-2.6.orig/fs/hugetlbfs/inode.c
-+++ linux-2.6/fs/hugetlbfs/inode.c
-@@ -400,7 +400,9 @@ static void hugetlbfs_forget_inode(struc
- 			spin_unlock(&inode_lock);
- 			return;
- 		}
-+		spin_lock(&inode->i_lock);
- 		inode->i_state |= I_WILL_FREE;
-+		spin_unlock(&inode->i_lock);
- 		spin_unlock(&inode_lock);
- 		/*
- 		 * write_inode_now is a noop as we set BDI_CAP_NO_WRITEBACK
-@@ -408,7 +410,9 @@ static void hugetlbfs_forget_inode(struc
- 		 */
- 		write_inode_now(inode, 1);
- 		spin_lock(&inode_lock);
-+		spin_lock(&inode->i_lock);
- 		inode->i_state &= ~I_WILL_FREE;
-+		spin_unlock(&inode->i_lock);
- 		inodes_stat.nr_unused--;
- 		spin_lock(&inode_hash_lock);
- 		hlist_del_init(&inode->i_hash);
-@@ -418,7 +422,9 @@ static void hugetlbfs_forget_inode(struc
- 	spin_lock(&sb_inode_list_lock);
- 	list_del_init(&inode->i_sb_list);
- 	spin_unlock(&sb_inode_list_lock);
-+	spin_lock(&inode->i_lock);
- 	inode->i_state |= I_FREEING;
-+	spin_unlock(&inode->i_lock);
- 	inodes_stat.nr_inodes--;
- 	spin_unlock(&inode_lock);
- 	truncate_hugepages(inode, 0);
-Index: linux-2.6/fs/nilfs2/gcdat.c
-===================================================================
---- linux-2.6.orig/fs/nilfs2/gcdat.c
-+++ linux-2.6/fs/nilfs2/gcdat.c
-@@ -27,6 +27,7 @@
- #include "page.h"
- #include "mdt.h"
+ 	struct dentry *d, *root, *first;
+ 	int len = 1; /* Root slash */
++	unsigned seq;
  
-+/* XXX: what protects i_state? */
- int nilfs_init_gcdat_inode(struct the_nilfs *nilfs)
+ 	first = d = d_find_alias(&pi->vfs_inode);
+ 	if (!d) {
+@@ -96,6 +97,9 @@ int pohmelfs_path_length(struct pohmelfs
+ 	root = dget(current->fs->root.dentry);
+ 	read_unlock(&current->fs->lock);
+ 
++	rcu_read_lock();
++rename_retry:
++	seq = read_seqbegin(&rename_lock);
+ 	spin_lock(&dcache_lock);
+ 
+ 	if (!IS_ROOT(d) && d_unhashed(d))
+@@ -106,6 +110,9 @@ int pohmelfs_path_length(struct pohmelfs
+ 		d = d->d_parent;
+ 	}
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
++	rcu_read_unlock();
+ 
+ 	dput(root);
+ 	dput(first);
+Index: linux-2.6/fs/autofs4/waitq.c
+===================================================================
+--- linux-2.6.orig/fs/autofs4/waitq.c
++++ linux-2.6/fs/autofs4/waitq.c
+@@ -189,13 +189,20 @@ static int autofs4_getpath(struct autofs
+ 	char *buf = *name;
+ 	char *p;
+ 	int len = 0;
++	unsigned seq;
+ 
++	rcu_read_lock();
++rename_retry:
++	seq = read_seqbegin(&rename_lock);
+ 	spin_lock(&dcache_lock);
+ 	for (tmp = dentry ; tmp != root ; tmp = tmp->d_parent)
+ 		len += tmp->d_name.len + 1;
+ 
+ 	if (!len || --len > NAME_MAX) {
+ 		spin_unlock(&dcache_lock);
++		if (read_seqretry(&rename_lock, seq))
++			goto rename_retry;
++		rcu_read_unlock();
+ 		return 0;
+ 	}
+ 
+@@ -209,6 +216,9 @@ static int autofs4_getpath(struct autofs
+ 		strncpy(p, tmp->d_name.name, tmp->d_name.len);
+ 	}
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
++	rcu_read_unlock();
+ 
+ 	return len;
+ }
+Index: linux-2.6/fs/nfs/namespace.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/namespace.c
++++ linux-2.6/fs/nfs/namespace.c
+@@ -50,9 +50,13 @@ char *nfs_path(const char *base,
  {
- 	struct inode *dat = nilfs->ns_dat, *gcdat = nilfs->ns_gc_dat;
-Index: linux-2.6/fs/quota/dquot.c
-===================================================================
---- linux-2.6.orig/fs/quota/dquot.c
-+++ linux-2.6/fs/quota/dquot.c
-@@ -824,14 +824,22 @@ static void add_dquot_ref(struct super_b
- 	spin_lock(&inode_lock);
- 	spin_lock(&sb_inode_list_lock);
- 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
--		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
-+		spin_lock(&inode->i_lock);
-+		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW)) {
-+			spin_unlock(&inode->i_lock);
- 			continue;
--		if (!atomic_read(&inode->i_writecount))
-+		}
-+		if (!atomic_read(&inode->i_writecount)) {
-+			spin_unlock(&inode->i_lock);
- 			continue;
--		if (!dqinit_needed(inode, type))
-+		}
-+		if (!dqinit_needed(inode, type)) {
-+			spin_unlock(&inode->i_lock);
- 			continue;
-+		}
+ 	char *end = buffer+buflen;
+ 	int namelen;
++	unsigned seq;
  
- 		__iget(inode);
-+		spin_unlock(&inode->i_lock);
- 		spin_unlock(&sb_inode_list_lock);
- 		spin_unlock(&inode_lock);
- 
+ 	*--end = '\0';
+ 	buflen--;
++	rcu_read_lock();
++rename_retry:
++	seq = read_seqbegin(&rename_lock);
+ 	spin_lock(&dcache_lock);
+ 	while (!IS_ROOT(dentry) && dentry != droot) {
+ 		namelen = dentry->d_name.len;
+@@ -65,6 +69,9 @@ char *nfs_path(const char *base,
+ 		dentry = dentry->d_parent;
+ 	}
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
++	rcu_read_unlock();
+ 	namelen = strlen(base);
+ 	/* Strip off excess slashes in base string */
+ 	while (namelen > 0 && base[namelen - 1] == '/')
+@@ -77,6 +84,9 @@ char *nfs_path(const char *base,
+ 	return end;
+ Elong_unlock:
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
++	rcu_read_unlock();
+ Elong:
+ 	return ERR_PTR(-ENAMETOOLONG);
+ }
 
 
