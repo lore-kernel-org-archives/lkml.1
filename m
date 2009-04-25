@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZDYK5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187AbZDYLgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbZDYK5w (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 06:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbZDYK5n
+	id S1753187AbZDYLgQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 07:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbZDYLgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 06:57:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50995 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751159AbZDYK5m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 06:57:42 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090424163949.GA12035@redhat.com>
-References: <20090424163949.GA12035@redhat.com> <20090423212250.GA22537@redhat.com> <20090423232717.975ABFC3C7@magilla.sf.frob.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: dhowells@redhat.com, Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       James Morris <jmorris@namei.org>, Hugh Dickins <hugh@veritas.com>
-Subject: Re: ptrace && cred_exec_mutex (Was: [PATCH] ptrace: tracehook_unsafe_exec: remove the stale comment)
-Date: Sat, 25 Apr 2009 11:54:13 +0100
-Message-ID: <31842.1240656853@redhat.com>
+	Sat, 25 Apr 2009 07:36:00 -0400
+Received: from utopia.booyaka.com ([72.9.107.138]:49806 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751391AbZDYLf7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Apr 2009 07:35:59 -0400
+X-Greylist: delayed 442 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Apr 2009 07:35:59 EDT
+Date: Sat, 25 Apr 2009 05:28:36 -0600 (MDT)
+From: Paul Walmsley <paul@pwsan.com>
+To: lrg@slimlogic.co.uk, broonie@opensource.wolfsonmicro.com
+cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+       dbrownell@users.sourceforge.net
+Subject: [PATCH] regulator core: fix double-free in regulator_register()
+ error path
+Message-ID: <alpine.DEB.2.00.0904250526210.28378@utopia.booyaka.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@redhat.com> wrote:
 
-> Yes. Except it looks like ->cred_exec_mutex is never used in fact.
+During regulator registration, any error after device_register() will 
+cause a double-free on the struct regulator_dev 'rdev'.  The bug is in 
+drivers/regulator/core.c:regulator_register():
 
-I must to be missing something...  I see that:
+...
+scrub:
+	device_unregister(&rdev->dev);
+clean:
+	kfree(rdev);                           <---
+	rdev = ERR_PTR(ret);
+	goto out;
+...
 
-	int ptrace_attach(struct task_struct *task)
-	{
-	...
-		/* Protect exec's credential calculations against our interference;
-		 * SUID, SGID and LSM creds get determined differently under ptrace.
-		 */
-		retval = mutex_lock_interruptible(&current->cred_exec_mutex);
-	...
-	}
+device_unregister() calls regulator_dev_release() which frees rdev.  The 
+subsequent kfree corrupts memory and causes some OMAP3 systems to oops on 
+boot in regulator_get().
 
-And:
+Applies against 2.6.30-rc3.
 
-	int do_execve(...)
-	{
-	...
-		retval = mutex_lock_interruptible(&current->cred_exec_mutex);
-		if (retval < 0)
-			goto out_free;
-	...
-	}
+Signed-off-by: Paul Walmsley <paul@pwsan.com>
+---
+ drivers/regulator/core.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-So how is it not used?
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 01f7702..fabd2e0 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -2080,6 +2080,10 @@ out:
+ 
+ scrub:
+ 	device_unregister(&rdev->dev);
++	/* device core frees rdev */
++	rdev = ERR_PTR(ret);
++	goto out;
++
+ clean:
+ 	kfree(rdev);
+ 	rdev = ERR_PTR(ret);
+-- 
+1.6.3.rc1.51.gea0b7
 
-David
