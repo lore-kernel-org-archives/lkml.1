@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756308AbZDYIUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbZDYIYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756308AbZDYIUg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 04:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbZDYIUV
+	id S1753704AbZDYIYO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 04:24:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZDYIX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 04:20:21 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50508 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751516AbZDYIUT (ORCPT
+	Sat, 25 Apr 2009 04:23:57 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:47241 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394AbZDYIX4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 04:20:19 -0400
-Date: Sat, 25 Apr 2009 10:19:33 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: James Kosin <jkosin@beta.intcomgrp.com>, linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: Re: [RFD] voltage/current regulator consumer interface
-Message-ID: <20090425081933.GE2428@ucw.cz>
-References: <ct38K-3Fq-11@gated-at.bofh.it> <49EC9709.8070002@support.intcomgrp.com> <49ED628A.4000505@compulab.co.il> <49EDC935.7080308@beta.intcomgrp.com> <49EDD2A7.9090300@compulab.co.il>
+	Sat, 25 Apr 2009 04:23:56 -0400
+Date: Sat, 25 Apr 2009 04:23:49 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Alessio Igor Bogani <abogani@texware.it>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Jonathan Corbet <corbet@lwn.net>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LFSDEV <linux-fsdevel@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH vfs-2.6:for-next] vfs: remount_fs BKL pushdown
+Message-ID: <20090425082349.GA2475@infradead.org>
+References: <1240646945-7970-1-git-send-email-abogani@texware.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49EDD2A7.9090300@compulab.co.il>
+In-Reply-To: <1240646945-7970-1-git-send-email-abogani@texware.it>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sat, Apr 25, 2009 at 10:09:05AM +0200, Alessio Igor Bogani wrote:
+> Push BKL down into ->remount_fs()
 
+Please also push down lock_super, no need to have two locking changes in
+this area just after another.
 
-> > Then the GPS drivers should be made aware and let the drivers handle the
-> > on/off interface.  If a user is allowed to turn interfaces on/off at
-> > will with this then drivers could suffer from (shock)...  ie: you could
-> > turn off your hard-drive in a middle of a write by the driver corrupting
-> > data, if handled in the driver it could finish the write before turning
-> > off the drive.  I know this is a far stretch from a GPS were the device
-> > is only READ only.
-> 
-> The point is there's no GPS driver... GPS transceivers are usually connected to
-> a serial line and the applications access the GPS data through ttySX. The case
-> when there is a kernel driver for device connected to a regulator is completely
-> different. It is then the driver responsibility to decide when to power on/off
-> the device.
-
-Well, then you should teach serial driver to power the (GPS) device up on
-open() and power it off on close()...
-
-Giving it better name then ttyS2 would help, too. ttyGPS?
-
-IOW write a trivial driver even through  you could get away w/o that...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
