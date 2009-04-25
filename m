@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbZDYITi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756308AbZDYIUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755844AbZDYITi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 04:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZDYITW
+	id S1756308AbZDYIUg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 04:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbZDYIUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 04:19:22 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50157 "EHLO
+	Sat, 25 Apr 2009 04:20:21 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50508 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751734AbZDYITV (ORCPT
+	with ESMTP id S1751516AbZDYIUT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 04:19:21 -0400
-Date: Sat, 25 Apr 2009 10:19:14 +0200
+	Sat, 25 Apr 2009 04:20:19 -0400
+Date: Sat, 25 Apr 2009 10:19:33 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, mark.langsdorf@amd.com, arekm@maven.pl,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Avi Kivity <avi@qumranet.com>
-Subject: Re: [patch 2/2] x86 amd fix cmpxchg read acquire barrier
-Message-ID: <20090425081914.GD2428@ucw.cz>
-References: <20090422201852.092307236@polymtl.ca> <20090422202453.829846363@polymtl.ca>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: James Kosin <jkosin@beta.intcomgrp.com>, linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: [RFD] voltage/current regulator consumer interface
+Message-ID: <20090425081933.GE2428@ucw.cz>
+References: <ct38K-3Fq-11@gated-at.bofh.it> <49EC9709.8070002@support.intcomgrp.com> <49ED628A.4000505@compulab.co.il> <49EDC935.7080308@beta.intcomgrp.com> <49EDD2A7.9090300@compulab.co.il>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090422202453.829846363@polymtl.ca>
+In-Reply-To: <49EDD2A7.9090300@compulab.co.il>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-04-22 16:18:54, Mathieu Desnoyers wrote:
-> http://google-perftools.googlecode.com/svn-history/r48/trunk/src/base/atomicops-internals-x86.cc
-> 
-> says
-> 
-> "  // Opteron Rev E has a bug in which on very rare occasions a locked
->   // instruction doesn't act as a read-acquire barrier if followed by a
->   // non-locked read-modify-write instruction.  Rev F has this bug in 
->   // pre-release versions, but not in versions released to customers,
->   // so we test only for Rev E, which is family 15, model 32..63 inclusive.
+Hi!
 
-Could we be more careful  here and catch the F pre-release versions,
-too? Stepping should help there...
 
+> > Then the GPS drivers should be made aware and let the drivers handle the
+> > on/off interface.  If a user is allowed to turn interfaces on/off at
+> > will with this then drivers could suffer from (shock)...  ie: you could
+> > turn off your hard-drive in a middle of a write by the driver corrupting
+> > data, if handled in the driver it could finish the write before turning
+> > off the drive.  I know this is a far stretch from a GPS were the device
+> > is only READ only.
+> 
+> The point is there's no GPS driver... GPS transceivers are usually connected to
+> a serial line and the applications access the GPS data through ttySX. The case
+> when there is a kernel driver for device connected to a regulator is completely
+> different. It is then the driver responsibility to decide when to power on/off
+> the device.
+
+Well, then you should teach serial driver to power the (GPS) device up on
+open() and power it off on close()...
+
+Giving it better name then ttyS2 would help, too. ttyGPS?
+
+IOW write a trivial driver even through  you could get away w/o that...
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
