@@ -1,44 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbZDYHsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbZDYHyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754070AbZDYHsZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 03:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbZDYHsO
+	id S1754507AbZDYHyw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 03:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZDYHyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 03:48:14 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:55537 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751311AbZDYHsN (ORCPT
+	Sat, 25 Apr 2009 03:54:43 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41755 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbZDYHyn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 03:48:13 -0400
-Date: Sat, 25 Apr 2009 09:50:19 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Nico Schottelius <nico-linux-20090330@schottelius.org>,
-       Jiri Kosina <jkosina@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       trivial@kernel.org
-Subject: Re: [Resend] [PATCH] Fix scripts/setlocalversion with git
-Message-ID: <20090425075019.GB28196@uranus.ravnborg.org>
-References: <20090330122137.GA6918@denkbrett.schottelius.org> <20090407154437.GA31758@ikn.schottelius.org> <alpine.LNX.2.00.0904071755540.5327@wotan.suse.de> <20090407174550.GB13089@uranus.ravnborg.org> <20090417213436.GA16933@ikn.schottelius.org> <20090417215802.GA16568@uranus.ravnborg.org> <20090418091653.GB16933@ikn.schottelius.org>
-Mime-Version: 1.0
+	Sat, 25 Apr 2009 03:54:43 -0400
+To: Alessio Igor Bogani <abogani@texware.it>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Suggestions request for speed-up kernel compilation
+From: Andi Kleen <andi@firstfloor.org>
+References: <63a49ef40904240257w45cc9c03n6e71ff4e4f69209b@mail.gmail.com>
+Date: Sat, 25 Apr 2009 09:54:40 +0200
+In-Reply-To: <63a49ef40904240257w45cc9c03n6e71ff4e4f69209b@mail.gmail.com> (Alessio Igor Bogani's message of "Fri, 24 Apr 2009 11:57:35 +0200")
+Message-ID: <878wlpkw1r.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090418091653.GB16933@ikn.schottelius.org>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 18, 2009 at 11:16:53AM +0200, Nico Schottelius wrote:
-> Sam Ravnborg [Fri, Apr 17, 2009 at 11:58:02PM +0200]:
-> > I thought I already applied a similar fix.
-> > Care to resend.
-> 
-> - git: git://git.schottelius.org/foreign/linux-2.6 (URL changed!):
->   f43ba0be1204e7c26cc700a75bdb688a788fbf2fcommit
-> - Original patch attached (p1)
-> - Diff against your tree attached (p2)
-> 
-> Nico
+Alessio Igor Bogani <abogani@texware.it> writes:
 
-Applied p2 - had to do so manually.
+> I'm a kernel newbie and I would be very happy to receive some tips
+> about kernel compilation from experienced developers.
+>
 
-	Sam
+Some tricks:
+
+If you just want to test that the file you've been hacking
+on compiles you can use make dir/path/file.o
+
+Use the minimum config file for your machines, 
+except for occasional fuller verification builds
+
+Set the right -j make level. You have to experiment 
+what is best.
+
+Not enabling CONFIG_DEBUGINFO speeds up compilation significantly
+
+When you use ccache make sure you have the cache directory on
+the same partition and enable CCACHE_HARDLINK=1. Alternatively
+what also works (but is a bit more expensive) is to put
+the ccache cache on a SSD.
+
+What works very well is to throw some money at it -- compilation
+scales very well in a cluster. Get the cheapest quad core you can get
+as an additional machine and use a tool like icecream
+(http://en.opensuse.org/Icecream) to distribute the compilation.
+
+You need special wrappers like 
+ftp://firstfloor.org/pub/ak/smallsrc/icecache.c to combine
+icecream with ccache
+
+I also found using the "gold" linker in latest binutils
+speeds up builds because especially when you already
+have parallel compilations the linker is often a bottleneck.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
