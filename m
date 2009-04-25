@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757087AbZDYAKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758484AbZDYAKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757087AbZDYAKj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Apr 2009 20:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755142AbZDYAK3
+	id S1758484AbZDYAKy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Apr 2009 20:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757829AbZDYAKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Apr 2009 20:10:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42675 "EHLO mx1.redhat.com"
+	Fri, 24 Apr 2009 20:10:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42678 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753001AbZDYAK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Apr 2009 20:10:29 -0400
+	id S1757626AbZDYAKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Apr 2009 20:10:32 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -18,136 +18,67 @@ X-Fcc: ~/Mail/linus
 Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org
 In-Reply-To: Roland McGrath's message of  Friday, 24 April 2009 17:06:34 -0700 <20090425000634.313E4FC3C8@magilla.sf.frob.com>
 References: <20090425000634.313E4FC3C8@magilla.sf.frob.com>
-Subject: [PATCH 06/17] arm: user_regset: general regs
-Message-Id: <20090425001019.20460FC3C8@magilla.sf.frob.com>
-Date: Fri, 24 Apr 2009 17:10:19 -0700 (PDT)
+Subject: [PATCH 03/17] arm: tracehook_report_syscall
+Message-Id: <20090425000842.DDDE3FC3C8@magilla.sf.frob.com>
+Date: Fri, 24 Apr 2009 17:08:42 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This converts PTRACE_GETREGS/PTRACE_SETREGS into user_regset form.
-There should be no change in the ptrace behavior.
+This makes arm use the standard tracehook_report_syscall_entry()
+and tracehook_report_syscall_exit() hooks in <linux/tracehook.h>.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/arm/kernel/ptrace.c |   72 +++++++++++++++++++++++++++++++++++----------
- 1 files changed, 56 insertions(+), 16 deletions(-)
+ arch/arm/kernel/ptrace.c |   22 +++++++++-------------
+ 1 files changed, 9 insertions(+), 13 deletions(-)
 
 diff --git a/arch/arm/kernel/ptrace.c b/arch/arm/kernel/ptrace.c
-index effada1..fbb18e4 100644
+index 93d7822..effada1 100644
 --- a/arch/arm/kernel/ptrace.c
 +++ b/arch/arm/kernel/ptrace.c
-@@ -15,6 +15,8 @@
+@@ -14,6 +14,7 @@
+ #include <linux/mm.h>
  #include <linux/smp.h>
  #include <linux/ptrace.h>
- #include <linux/tracehook.h>
-+#include <linux/regset.h>
-+#include <linux/elf.h>
++#include <linux/tracehook.h>
  #include <linux/user.h>
  #include <linux/security.h>
  #include <linux/init.h>
-@@ -547,30 +549,38 @@ static int ptrace_write_user(struct task_struct *tsk, unsigned long off,
- /*
-  * Get all user integer registers.
-  */
--static int ptrace_getregs(struct task_struct *tsk, void __user *uregs)
-+static int gpr_get(struct task_struct *target,
-+		   const struct user_regset *regset,
-+		   unsigned int pos, unsigned int count,
-+		   void *kbuf, void __user *ubuf)
- {
--	struct pt_regs *regs = task_pt_regs(tsk);
--
--	return copy_to_user(uregs, regs, sizeof(struct pt_regs)) ? -EFAULT : 0;
-+	struct pt_regs *regs = task_pt_regs(target);
-+	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+				   regs, 0, sizeof(*regs));
- }
+@@ -811,8 +812,6 @@ asmlinkage int syscall_trace(int why, struct pt_regs *regs, int scno)
  
- /*
-  * Set all user integer registers.
-  */
--static int ptrace_setregs(struct task_struct *tsk, void __user *uregs)
-+static int gpr_set(struct task_struct *target,
-+		   const struct user_regset *regset,
-+		   unsigned int pos, unsigned int count,
-+		   const void *kbuf, const void __user *ubuf)
- {
-+	struct pt_regs *regs = task_pt_regs(target);
- 	struct pt_regs newregs;
- 	int ret;
+ 	if (!test_thread_flag(TIF_SYSCALL_TRACE))
+ 		return scno;
+-	if (!(current->ptrace & PT_PTRACED))
+-		return scno;
  
--	ret = -EFAULT;
--	if (copy_from_user(&newregs, uregs, sizeof(struct pt_regs)) == 0) {
--		struct pt_regs *regs = task_pt_regs(tsk);
-+	if (pos != 0 || count != sizeof(newregs))
-+		newregs = *regs;
+ 	/*
+ 	 * Save IP.  IP is used to denote syscall entry/exit:
+@@ -823,19 +822,16 @@ asmlinkage int syscall_trace(int why, struct pt_regs *regs, int scno)
  
--		ret = -EINVAL;
--		if (valid_user_regs(&newregs)) {
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+				 &newregs, 0, sizeof(newregs));
-+	if (!ret) {
-+		if (valid_user_regs(&newregs))
- 			*regs = newregs;
--			ret = 0;
--		}
-+		else
-+			ret = -EINVAL;
- 	}
+ 	current_thread_info()->syscall = scno;
  
- 	return ret;
-@@ -702,6 +712,34 @@ static int ptrace_setvfpregs(struct task_struct *tsk, void __user *data)
- }
- #endif
- 
-+/*
-+ * Indices in arm_regsets[] array.  These are used only in arch_ptrace(),
-+ * below.  The ordering that matters is that the NT_PRSTATUS regset is
-+ * first.  Other than that, ever use outside this file should just look at
-+ * the contents of the table entries.
-+ */
-+enum {
-+	REGSET_GPR,
-+};
+-	/* the 0x80 provides a way for the tracing parent to distinguish
+-	   between a syscall stop and SIGTRAP delivery */
+-	ptrace_notify(SIGTRAP | ((current->ptrace & PT_TRACESYSGOOD)
+-				 ? 0x80 : 0));
+ 	/*
+-	 * this isn't the same as continuing with a signal, but it will do
+-	 * for normal use.  strace only continues with a signal if the
+-	 * stopping signal is not SIGTRAP.  -brl
++	 * Report the system call for tracing.  Entry tracing can
++	 * decide to abort the call.  We handle that by setting an
++	 * invalid syscall number (-1) to force an ENOSYS error.
+ 	 */
+-	if (current->exit_code) {
+-		send_sig(current->exit_code, current, 1);
+-		current->exit_code = 0;
+-	}
++	if (why)
++		tracehook_report_syscall_exit(regs, 0);
++	else if (tracehook_report_syscall_entry(regs))
++		current_thread_info()->syscall = -1;
 +
-+static const struct user_regset arm_regsets[] = {
-+	[REGSET_GPR] = {
-+		.core_note_type = NT_PRSTATUS, .n = ELF_NGREG,
-+		.size = sizeof(long), .align = sizeof(long),
-+		.get = gpr_get, .set = gpr_set
-+	},
-+};
-+
-+static const struct user_regset_view user_arm_view = {
-+	.name = "arm", .e_machine = ELF_ARCH, .ei_osabi = ELF_OSABI,
-+	.regsets = arm_regsets, .n = ARRAY_SIZE(arm_regsets)
-+};
-+
-+const struct user_regset_view *task_user_regset_view(struct task_struct *task)
-+{
-+	return &user_arm_view;
-+}
-+
- long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- {
- 	int ret;
-@@ -742,12 +780,14 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- 		goto common;
+ 	regs->ARM_ip = ip;
  
- 	case PTRACE_GETREGS:
--		ret = ptrace_getregs(child, (void __user *)data);
--		break;
-+		return copy_regset_to_user(child, &user_arm_view, REGSET_GPR,
-+					   0, sizeof(struct pt_regs),
-+					   (void __user *) data);
- 
- 	case PTRACE_SETREGS:
--		ret = ptrace_setregs(child, (void __user *)data);
--		break;
-+		return copy_regset_from_user(child, &user_arm_view, REGSET_GPR,
-+					     0, sizeof(struct pt_regs),
-+					     (const void __user *) data);
- 
- 	case PTRACE_GETFPREGS:
- 		ret = ptrace_getfpregs(child, (void __user *)data);
+ 	return current_thread_info()->syscall;
