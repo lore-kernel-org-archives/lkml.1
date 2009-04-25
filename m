@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbZDYRbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079AbZDYRbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754067AbZDYRbH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 13:31:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbZDYRav
+	id S1755079AbZDYRbZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 13:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbZDYRbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 13:30:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39153 "EHLO mx2.redhat.com"
+	Sat, 25 Apr 2009 13:31:06 -0400
+Received: from kroah.org ([198.145.64.141]:56677 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752880AbZDYRav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 13:30:51 -0400
-Date: Sat, 25 Apr 2009 19:25:24 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       James Morris <jmorris@namei.org>, Hugh Dickins <hugh@veritas.com>
-Subject: Re: ptrace && cred_exec_mutex (Was: [PATCH] ptrace:
-	tracehook_unsafe_exec: remove the stale comment)
-Message-ID: <20090425172524.GA3432@redhat.com>
-References: <20090424163949.GA12035@redhat.com> <20090423212250.GA22537@redhat.com> <20090423232717.975ABFC3C7@magilla.sf.frob.com> <31842.1240656853@redhat.com>
+	id S1754592AbZDYRbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Apr 2009 13:31:05 -0400
+Date: Sat, 25 Apr 2009 10:26:54 -0700
+From: Greg KH <greg@kroah.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 5/5] tracing/events: make modules have their own
+	file_operations structure
+Message-ID: <20090425172654.GC12135@kroah.com>
+References: <20090425042030.431477667@goodmis.org> <20090425042633.428284874@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <31842.1240656853@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090425042633.428284874@goodmis.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/25, David Howells wrote:
->
-> Oleg Nesterov <oleg@redhat.com> wrote:
->
-> > Yes. Except it looks like ->cred_exec_mutex is never used in fact.
->
-> I must to be missing something...  I see that:
->
-> 	int ptrace_attach(struct task_struct *task)
-> 	{
-> 	...
-> 		/* Protect exec's credential calculations against our interference;
-> 		 * SUID, SGID and LSM creds get determined differently under ptrace.
-> 		 */
-> 		retval = mutex_lock_interruptible(&current->cred_exec_mutex);
-> 	...
-> 	}
->
-> And:
->
-> 	int do_execve(...)
-> 	{
-> 	...
-> 		retval = mutex_lock_interruptible(&current->cred_exec_mutex);
-> 		if (retval < 0)
-> 			goto out_free;
-> 	...
-> 	}
+On Sat, Apr 25, 2009 at 12:20:35AM -0400, Steven Rostedt wrote:
+> From: Steven Rostedt <srostedt@redhat.com>
+> 
+> For proper module reference counting, the file_operations that modules use
+> must have the "owner" field set to the module. Unfortunately, the trace events
+> use share file_operations. The same file_operations are used by all both
+> kernel core and all modules.
+> 
+> This patch makes the modules allocate their own file_operations and
+> copies the functions from the core kernel. This allows those file
+> operations to be owned by the module.
+> 
+> Care is taken to free this code on module unload.
+> 
+> Thanks to Greg KH for reminding me that file_operations must be owned
+> by the module to have reference counting take place.
+> 
+> Cc: Greg KH <greg@kroah.com>
+> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-Sorry David, I was very unclear.
+Looks good, feel free to add an:
+	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+to it.
 
-These 2 current's are different tasks, and hence we take to unrelated locks.
+thanks,
 
-We can never block taking current->cred_exec_mutex because nobody else
-touches this mutex, we always use current. This means this lock is "nop".
-
-Unless I missed something, ptrace_attach() should take task->cred_exec_mutex.
-
-Oleg.
-
+greg k-h
