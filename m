@@ -1,191 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbZDZIXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbZDZIrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755509AbZDZIXg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 04:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbZDZIXZ
+	id S1753338AbZDZIrj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 04:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbZDZIr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 04:23:25 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:25899 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751615AbZDZIXY (ORCPT
+	Sun, 26 Apr 2009 04:47:29 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52957 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751010AbZDZIr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 04:23:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:user-agent:mime-version
-         :content-type;
-        b=cDaRsMK2yi1oKYSwKXgXFrfPyFzh8hIGWXzzCcN4zGjrPpjNtIn584/LV7STANyYJJ
-         Rr/MVISYHOewsYOSbM2dWDDVRo6duemncDkfLY6KSn34pa+uXUhq9bH3OMzgRoOIjGVE
-         ZQAQeFsK1IdfnkiCvjrobYHTW32cOXqiDiCds=
-Date: Sun, 26 Apr 2009 10:23:50 +0200 (CEST)
-From: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2.6.29-rc8] drivers/staging/otus/80211core/amsdu.c: Fix Coding
- Style
-Message-ID: <alpine.DEB.2.00.0904261022490.9155@Sentinel>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 26 Apr 2009 04:47:28 -0400
+Date: Sat, 25 Apr 2009 13:54:55 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Bug #13108] 2.6.30-rc1: white screen during boot (regression)
+	on spitz
+Message-ID: <20090425115455.GA1339@ucw.cz>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <nY3-4PrO6XH.A.sZ.Ww85JB@chimera>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <nY3-4PrO6XH.A.sZ.Ww85JB@chimera>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
+On Thu 2009-04-16 23:45:04, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13108
+> Subject		: 2.6.30-rc1: white screen during boot (regression) on spitz
+> Submitter	: Pavel Machek <pavel@ucw.cz>
+> Date		: 2009-04-10 10:34 (7 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123935954223418&w=4
+> Handled-By	: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 
---- drivers/staging/otus/80211core/amsdu.c	2009-03-19 20:26:41.000000000 +0100
-+++ drivers/staging/otus/80211core/amsdu_cs_fix.c	2009-03-25 00:15:52.000000000 +0100
-@@ -34,53 +34,53 @@
- /*      Stephen Chen        Atheros Communications, INC.    2007.2      */
- /*                                                                      */
- /************************************************************************/
--zbuf_t* zfGetAmsduSubFrame(zdev_t* dev, zbuf_t* buf, u16_t* offset)
-+zbuf_t *zfGetAmsduSubFrame(zdev_t *dev, zbuf_t *buf, u16_t *offset)
- {
--    u16_t subframeLen;
--    u16_t amsduLen = zfwBufGetSize(dev, buf);
--    zbuf_t* newBuf;
--
--    ZM_PERFORMANCE_RX_AMSDU(dev, buf, amsduLen);
--
--    /* Verify A-MSDU length */
--    if (amsduLen < (*offset + 14))
--    {
--        return NULL;
--    }
--
--    /* Locate A-MSDU subframe by offset and verify subframe length */
--    subframeLen = (zmw_buf_readb(dev, buf, *offset + 12) << 8) +
--                  zmw_buf_readb(dev, buf, *offset + 13);
--    if (subframeLen == 0)
--    {
--        return NULL;
--    }
--
--    /* Verify A-MSDU subframe length */
--    if ((*offset+14+subframeLen) <= amsduLen)
--    {
--        /* Allocate a new buffer */
--        if ((newBuf = zfwBufAllocate(dev, 24+2+subframeLen)) != NULL)
--        {
-+	u16_t subframeLen;
-+	u16_t amsduLen = zfwBufGetSize(dev, buf);
-+	zbuf_t *newBuf;
-+
-+	ZM_PERFORMANCE_RX_AMSDU(dev, buf, amsduLen);
-+
-+	/* Verify A-MSDU length */
-+	if (amsduLen < (*offset + 14))
-+		return NULL;
-+
-+	/* Locate A-MSDU subframe by offset and verify subframe length */
-+	subframeLen = (zmw_buf_readb(dev, buf, *offset + 12) << 8) +
-+		zmw_buf_readb(dev, buf, *offset + 13);
-+
-+	if (subframeLen == 0)
-+		return NULL;
-+
-+	/* Verify A-MSDU subframe length */
-+	if ((*offset+14+subframeLen) <= amsduLen) {
-+		/* Allocate a new buffer */
-+		newBuf = zfwBufAllocate(dev, 24+2+subframeLen);
-+		if (newBuf != NULL) {
- #ifdef ZM_ENABLE_NATIVE_WIFI
--            /* Copy and convert subframe to wlan frame format */
--            /* SHALL NOT INCLUDE QOS and AMSDU header. Ray 20070807 For Vista */
--            zfRxBufferCopy(dev, newBuf, buf, 0, 0, 24);
--            zfRxBufferCopy(dev, newBuf, buf, 24, *offset+14, subframeLen);
--            zfwBufSetSize(dev, newBuf, 24+subframeLen);
-+			/* Copy and convert subframe to wlan frame format
-+			* SHALL NOT INCLUDE QOS and AMSDU header.
-+			* Ray 20070807 For Vista
-+			*/
-+			zfRxBufferCopy(dev, newBuf, buf, 0, 0, 24);
-+			zfRxBufferCopy(dev, newBuf, buf, 24, *offset+14,
-+					subframeLen);
-+			zfwBufSetSize(dev, newBuf, 24+subframeLen);
- #else
--            /* Copy subframe to new buffer */
--            zfRxBufferCopy(dev, newBuf, buf, 0, *offset, 14+subframeLen);
--            zfwBufSetSize(dev, newBuf, 14+subframeLen);
-+			/* Copy subframe to new buffer */
-+			zfRxBufferCopy(dev, newBuf, buf, 0, *offset,
-+					14+subframeLen);
-+			zfwBufSetSize(dev, newBuf, 14+subframeLen);
- #endif
--            /* Update offset */
--            *offset += (((14+subframeLen)+3) & 0xfffc);
-+			/* Update offset */
-+			*offset += (((14+subframeLen)+3) & 0xfffc);
- 
--            /* Return buffer pointer */
--            return newBuf;
--        }
--    }
--    return NULL;
-+			/* Return buffer pointer */
-+			return newBuf;
-+		}
-+	}
-+	return NULL;
- }
- 
- 
-@@ -101,34 +101,29 @@ zbuf_t* zfGetAmsduSubFrame(zdev_t* dev, 
- /*      Stephen Chen        Atheros Communications, INC.    2007.2      */
- /*                                                                      */
- /************************************************************************/
--void zfDeAmsdu(zdev_t* dev, zbuf_t* buf, u16_t vap, u8_t encryMode)
-+void zfDeAmsdu(zdev_t *dev, zbuf_t *buf, u16_t vap, u8_t encryMode)
- {
--    u16_t offset = ZM_SIZE_OF_WLAN_DATA_HEADER+ZM_SIZE_OF_QOS_CTRL;
--    zbuf_t* subframeBuf;
--    zmw_get_wlan_dev(dev);
--
--    ZM_BUFFER_TRACE(dev, buf)
--
--    if (encryMode == ZM_AES || encryMode == ZM_TKIP)
--    {
--        offset += (ZM_SIZE_OF_IV + ZM_SIZE_OF_EXT_IV);
--    }
--    else if (encryMode == ZM_WEP64 || encryMode == ZM_WEP128)
--    {
--        offset += ZM_SIZE_OF_IV;
--    }
--
--    /* Repeatly calling zfGetAmsduSubFrame() until NULL returned */
--    while ((subframeBuf = zfGetAmsduSubFrame(dev, buf, &offset)) != NULL)
--    {
--        wd->commTally.NotifyNDISRxFrmCnt++;
--        if (wd->zfcbRecvEth != NULL)
--    	{
--            wd->zfcbRecvEth(dev, subframeBuf, (u8_t)vap);
--            ZM_PERFORMANCE_RX_MSDU(dev, wd->tick);
--        }
--    }
--    zfwBufFree(dev, buf, 0);
-+	u16_t offset = ZM_SIZE_OF_WLAN_DATA_HEADER+ZM_SIZE_OF_QOS_CTRL;
-+	zbuf_t *subframeBuf;
-+	zmw_get_wlan_dev(dev);
-+
-+	ZM_BUFFER_TRACE(dev, buf)
-+
-+	if (encryMode == ZM_AES || encryMode == ZM_TKIP)
-+		offset += (ZM_SIZE_OF_IV + ZM_SIZE_OF_EXT_IV);
-+	else if (encryMode == ZM_WEP64 || encryMode == ZM_WEP128)
-+		offset += ZM_SIZE_OF_IV;
-+
-+
-+	/* Repeatly calling zfGetAmsduSubFrame() until NULL returned */
-+	while ((subframeBuf = zfGetAmsduSubFrame(dev, buf, &offset)) != NULL) {
-+		wd->commTally.NotifyNDISRxFrmCnt++;
-+		if (wd->zfcbRecvEth != NULL) {
-+			wd->zfcbRecvEth(dev, subframeBuf, (u8_t)vap);
-+			ZM_PERFORMANCE_RX_MSDU(dev, wd->tick);
-+		}
-+	}
-+	zfwBufFree(dev, buf, 0);
- 
--    return;
-+	return;
- }
+It was fixed in 2.6.30-rc3 as a test boot confirmed... (I have a link
+to patch fixing it, but I guess we can simply close this.) Thanks!
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
