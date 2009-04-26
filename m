@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbZDZEF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbZDZEJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755017AbZDZEF2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 00:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZDZEFN
+	id S1754049AbZDZEJR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 00:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbZDZEI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 00:05:13 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50382 "EHLO mail.dvmed.net"
+	Sun, 26 Apr 2009 00:08:58 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48295 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750957AbZDZEFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 00:05:12 -0400
-Message-ID: <49F3DD74.9030609@garzik.org>
-Date: Sun, 26 Apr 2009 00:05:08 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1750776AbZDZEI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 00:08:58 -0400
+Message-ID: <49F3DE55.8070302@kernel.org>
+Date: Sun, 26 Apr 2009 13:08:53 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: unsik Kim <donari75@gmail.com>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org,
+To: Jeff Garzik <jeff@garzik.org>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       unsik Kim <donari75@gmail.com>, linux-kernel@vger.kernel.org,
        Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH 3/3] mg_disk: use defines from <linux/ata.h>
-References: <200904251510.03924.bzolnier@gmail.com>
-In-Reply-To: <200904251510.03924.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: [PATCH 2/3] mg_disk: fix dependency on libata
+References: <200904251509.11912.bzolnier@gmail.com> <49F3D994.7020304@kernel.org> <49F3DCD5.2070909@garzik.org>
+In-Reply-To: <49F3DCD5.2070909@garzik.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 26 Apr 2009 04:07:54 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> While at it:
-> - remove MG_REG_HEAD_MUST_BE_ON define
-> - remove MG_REG_CTRL_INTR_ENABLE define
-> - remove MG_REG_HEAD_LBA_MODE define
-> - remove unused defines
-> 
-> Cc: unsik Kim <donari75@gmail.com>
-> Cc: Tejun Heo <tj@kernel.org>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/block/mg_disk.c |  143 ++++++++++++++----------------------------------
->  1 file changed, 43 insertions(+), 100 deletions(-)
+Jeff Garzik wrote:
+> Actually...  NVMHCI[1] uses the same style of id string extraction, even
+> though its command set is wholly new and unrelated to ATA.  I copied
+> into drivers/block/nvmhci.c[2] id_string, id_c_string and another
+> useful, generic routine: ata_wait_register.
+>
+> So, once nvmhci goes upstream, that will be a third copy...  nvmhci
+> still has rough edges, but it's mainly waiting on hardware "it works"
+> verification at this point.
 
-ACK
+For two copies, copying seems to be the right way to go.  For many
+more copies, making a library function is.  Three is a difficult
+number.  Maybe just make these inline functions for now?
 
+Thanks.
+
+-- 
+tejun
