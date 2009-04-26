@@ -1,59 +1,310 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbZDZMo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755697AbZDZMsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757239AbZDZMo6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 08:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbZDZMoq
+	id S1755697AbZDZMsN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 08:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZDZMr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 08:44:46 -0400
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:41287 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753955AbZDZMop (ORCPT
+	Sun, 26 Apr 2009 08:47:56 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:48495 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751257AbZDZMry (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 08:44:45 -0400
-X-Loopcount0: from 143.166.82.43
-Date: Sun, 26 Apr 2009 07:44:43 -0500
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Michael E Brown <Michael_E_Brown@dell.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: Class device namespaces
-Message-ID: <20090426124443.GA12455@auslistsprd01.us.dell.com>
-References: <20090329174836.6de797d6@hyperion.delvare> <ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com> <20090330104952.26f03c13@hyperion.delvare> <ac3eb2510903300424s2604d027h653a3f77163e0242@mail.gmail.com> <20090426085401.3788fc9c@hyperion.delvare>
-Mime-Version: 1.0
+	Sun, 26 Apr 2009 08:47:54 -0400
+Date: Sun, 26 Apr 2009 06:47:53 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       dri-devel@lists.sourceforge.net
+Subject: Re: 2.6.30-rc3-git1: Reported regressions 2.6.28 -> 2.6.29
+Message-ID: <20090426124752.GF1926@parisc-linux.org>
+References: <tur5OtdUm3E.A.r2B.7oE9JB@chimera>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090426085401.3788fc9c@hyperion.delvare>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <tur5OtdUm3E.A.r2B.7oE9JB@chimera>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 26, 2009 at 08:54:01AM +0200, Jean Delvare wrote:
-> Hi Kay,
+On Sun, Apr 26, 2009 at 11:42:21AM +0200, Rafael J. Wysocki wrote:
+> [NOTES:
+>  * The number of regressions related to DRI is alarming, especially that for
+>    some of the reporters have identified the "bad" commits.
+
+Probably worth letting dri-devel know about this then ... cc added.
+
+>  * I have closed some bugs where there was no activity.]
 > 
-> Sorry, completely overlooked your reply... Ah, now I remember, I was
-> waiting for Michael to show up and comment on this. Michael, ping? As
-> long as we don't know the exact requirements and constraints of the
-> dell firmware tool, we're somewhat stuck.
+> This message contains a list of some regressions introduced between 2.6.28 and
+> 2.6.29, for which there are no fixes in the mainline I know of.  If any of them
+> have been fixed already, please let me know.
 > 
-> Matt, maybe you can help? Could you please point us to the source code
-> of the dell firmware tool which relies on the dell_rbu driver?
-
-
-There's a git tree at:
-  http://linux.dell.com/git/?p=libsmbios.git
-
-which you can get via rsync at:
-  rsync -va rsync://linux.dell.com/git/libsmbios.git/
-
-the application is dellBiosUpdate, and the source is at this point in
-the tree:
-
-  http://linux.dell.com/git/?p=libsmbios.git;a=blob;f=src/bin/dellBiosUpdate.cpp;h=b32e157b7ceb0be0d53eed4a4d171d24fe6456a7;hb=HEAD
+> If you know of any other unresolved regressions introduced between 2.6.28
+> and 2.6.29, please let me know either and I'll add them to the list.
+> Also, please let me know if any of the entries below are invalid.
+> 
+> Each entry from the list will be sent additionally in an automatic reply to
+> this message with CCs to the people involved in reporting and handling the
+> issue.
+> 
+> 
+> Listed regressions statistics:
+> 
+>   Date          Total  Pending  Unresolved
+>   ----------------------------------------
+>   2009-04-26      160       29          27
+>   2009-04-06      142       37          31
+>   2009-03-21      128       29          26
+>   2009-03-14      124       36          32
+>   2009-03-03      108       33          28
+>   2009-02-24       95       32          24
+>   2009-02-14       85       33          27
+>   2009-02-08       82       45          36
+>   2009-02-04       66       51          39
+>   2009-01-20       38       35          27
+>   2009-01-11       13       13          10
+> 
+> 
+> Unresolved regressions
+> ----------------------
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13184
+> Subject		: Left audio channel broken after resume from suspend with Intel HDA
+> Submitter	: Tino Keitel <tino.keitel@tikei.de>
+> Date		: 2009-04-20 18:40 (7 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124025290831292&w=4
+> Handled-By	: Takashi Iwai <tiwai@suse.de>
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13183
+> Subject		: forcedeth: no link during initialization
+> Submitter	: Harald Dunkel <harald.dunkel@t-online.de>
+> Date		: 2009-04-23 13:02 (4 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124049180309233&w=4
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13178
+> Subject		: Booting very slow
+> Submitter	: Martin Knoblauch <spamtrap@knobisoft.de>
+> Date		: 2009-04-24 12:45 (3 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124057716231773&w=4
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13175
+> Subject		: sata_nv incompatible with async scsi scan
+> Submitter	: Benny Halevy <bhalevy@panasas.com>
+> Date		: 2009-04-21 7:03 (6 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124029746431777&w=4
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13172
+> Subject		: Spontaneous reboots since 2.6.29-rc*
+> Submitter	: Maciej Rutecki <maciej.rutecki@gmail.com>
+> Date		: 2009-04-17 17:03 (10 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123998788921733&w=4
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13144
+> Subject		: resume from suspend fails using video card i915
+> Submitter	: C Sights <csights@fastmail.fm>
+> Date		: 2009-04-21 17:03 (6 days old)
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13112
+> Subject		: Oops in drain_array
+> Submitter	: Bart <mmx@riz.pl>
+> Date		: 2009-04-14 10:21 (13 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123970493224628&w=4
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13100
+> Subject		: can't anymore even do a s2ram-s2disk-s2ram cycle on acer aspire 5720G
+> Submitter	: Maxim Levitsky <maximlevitsky@gmail.com>
+> Date		: 2009-04-06 23:52 (21 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a0d4922da2e4ccb0973095d8d29f36f6b1b5f703
+> References	: http://marc.info/?l=linux-kernel&m=123906202829074&w=4
+> Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13074
+> Subject		: gspca_stv06xx doesn't work with Logitech QuickCam Express (046d:0840)
+> Submitter	: Paulo Matias <matias@archlinux-br.org>
+> Date		: 2009-04-12 14:10 (15 days old)
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13072
+> Subject		: forcedeth seems to switch off eth on shutdown
+> Submitter	: Daniel Bierstedt <daniel.bierstedt@gmx.de>
+> Date		: 2009-04-12 07:00 (15 days old)
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13040
+> Subject		: DRM radeon
+> Submitter	: Roger Luethi <rl@hellgate.ch>
+> Date		: 2009-04-07 20:07 (20 days old)
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13032
+> Subject		: 2.6.29 regression: network interfaces drop after suspend/resume
+> Submitter	: Jose Marino <braket@hotmail.com>
+> Date		: 2009-04-07 00:08 (20 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=31878dd86b7df9a147f5e6cc6e07092b4308782b
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13025
+> Subject		: After upgrading to kernel 2.6.29, pulseaudio stopped with some strange error
+> Submitter	: Yaroslav Isakov <yaroslav.isakov@gmail.com>
+> Date		: 2009-04-06 19:47 (21 days old)
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13003
+> Subject		: [2.6.29 regression] ivtv driver causes strange oops'es, disrupts software suspend
+> Submitter	: Artem S. Tashkinov <t.artem@mailcity.com>
+> Date		: 2009-04-03 14:57 (24 days old)
+> Handled-By	: Hans Verkuil <hverkuil@xs4all.nl>
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13001
+> Subject		: PCI-DMA: Out of IOMMU space
+> Submitter	:  <optimusgd@gmail.com>
+> Date		: 2009-04-03 09:30 (24 days old)
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12980
+> Subject		: lockup in X.org
+> Submitter	: Marcus Better <marcus@better.se>
+> Date		: 2009-03-31 08:58 (27 days old)
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12971
+> Subject		: "tg3 transmit timed out" when transmitting at high bitrate
+> Submitter	: Nikolay <dobrev666@gmail.com>
+> Date		: 2009-03-29 18:02 (29 days old)
+> Handled-By	: Matt Carlson <mcarlson@broadcom.com>
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12947
+> Subject		: r128: system hangs when X is started with DRI enabled
+> Submitter	: Jos van der Ende <seraph@xs4all.nl>
+> Date		: 2009-03-26 16:14 (32 days old)
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12909
+> Subject		: boot/kernel init duration regression from 2.6.28
+> Submitter	: CaT <cat@zip.com.au>
+> Date		: 2009-03-16 10:25 (42 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123720083515950&w=4
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12899
+> Subject		: Crash in i915.ko: i915_driver_irq_handler
+> Submitter	: Helge Bahmann <helge.bahmann@secunet.com>
+> Date		: 2009-03-20 07:13 (38 days old)
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12861
+> Subject		: Xorg fails to start "Failed to allocate space for kernel memory manager"
+> Submitter	: Emil Karlson <jkarlson@cc.hut.fi>
+> Date		: 2009-03-12 12:06 (46 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ab657db12d7020629f26f30d287558a8d0e32b41
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12836
+> Subject		: 2.6.29-rc breaks STD using Intel 945
+> Submitter	: Rolf Eike Beer <eike-kernel@sf-tec.de>
+> Date		: 2009-03-04 19:20 (54 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123619451406192&w=4
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12765
+> Subject		: i915 VT switch with AIGLX causes X lock up
+> Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
+> Date		: 2009-02-21 15:38 (65 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=14d200c5e5bd19219d930bbb9a5a22758c8f5bec
+> References	: http://marc.info/?l=linux-kernel&m=123523074304955&w=4
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12705
+> Subject		: X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
+> Submitter	: Nico Schottelius <nico-linux-20090213@schottelius.org>
+> Date		: 2009-02-13 9:33 (73 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e806b4957412bf472d826bd8cc571da041248799
+> References	: http://marc.info/?l=linux-kernel&m=123451768406825&w=4
+> 		  http://marc.info/?l=linux-kernel&m=123479975503827&w=2
+> Handled-By	: Eric Anholt <eric@anholt.net>
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12681
+> Subject		: s2ram: fails to wake up on Acer Extensa 4220 (SMP disabled)
+> Submitter	: Orivej Desh <smpuj@bk.ru>
+> Date		: 2009-02-09 13:01 (77 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1cfe62c8010ac56e1bd3827e30386a87cc2f3594
+> Handled-By	: Alexey Starikovskiy <astarikovskiy@suse.de>
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12499
+> Subject		: Problem with using bluetooth adaper connected to usb port
+> Submitter	: Maciej Rutecki <maciej.rutecki@gmail.com>
+> Date		: 2009-01-13 18:34 (104 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123187185426236&w=4
+> Handled-By	: Marcel Holtmann <marcel@holtmann.org>
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12490
+> Subject		: ath5k related kernel panic in 2.6.29-rc1
+> Submitter	: Sergey S. Kostyliov <rathamahata@gmail.com>
+> Date		: 2009-01-12 7:38 (105 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123174591509586&w=4
+> 		  http://lkml.org/lkml/2009/4/6/527
+> Handled-By	: Bob Copeland <me@bobcopeland.com>
+> 
+> 
+> Regressions with patches
+> ------------------------
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13186
+> Subject		: cpufreq timer teardown problem
+> Submitter	: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Date		: 2009-04-23 14:00 (4 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124049523515036&w=4
+> Handled-By	: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Patch		: http://patchwork.kernel.org/patch/19754/
+> 		  http://patchwork.kernel.org/patch/19753/
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12961
+> Subject		: Kernel panics in early boot: IO-APIC + timer doesn't work
+> Submitter	: Daniel Vetter <daniel@ffwll.ch>
+> Date		: 2009-03-28 19:00 (30 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8d6f0c8214928f7c5083dd54ecb69c5d615b516e
+> Handled-By	: Andreas Herrmann <andreas.herrmann3@amd.com>
+> Patch		: http://bugzilla.kernel.org/attachment.cgi?id=21070
+> 
+> 
+> For details, please visit the bug entries and follow the links given in
+> references.
+> 
+> As you can see, there is a Bugzilla entry for each of the listed regressions.
+> There also is a Bugzilla entry used for tracking the regressions introduced
+> between 2.6.28 and 2.6.29, unresolved as well as resolved, at:
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=12398
+> 
+> Please let me know if there are any Bugzilla entries that should be added to
+> the list in there.
+> 
+> Thanks,
+> Rafael
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
