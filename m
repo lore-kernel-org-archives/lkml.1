@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbZDZDtF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbZDZDtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754552AbZDZDtF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 23:49:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZDZDsy
+	id S1755704AbZDZDtu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 23:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755349AbZDZDte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 23:48:54 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57959 "EHLO hera.kernel.org"
+	Sat, 25 Apr 2009 23:49:34 -0400
+Received: from THUNK.ORG ([69.25.196.29]:60014 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752219AbZDZDsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 23:48:53 -0400
-Message-ID: <49F3D9E0.3010100@kernel.org>
-Date: Sun, 26 Apr 2009 12:49:52 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: unsik Kim <donari75@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] mg_disk: use defines from <linux/ata.h>
-References: <200904251510.03924.bzolnier@gmail.com>
-In-Reply-To: <200904251510.03924.bzolnier@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 26 Apr 2009 03:48:52 +0000 (UTC)
+	id S1754516AbZDZDtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Apr 2009 23:49:32 -0400
+From: "Theodore Ts'o" <tytso@mit.edu>
+To: Ext4 Developers List <linux-ext4@vger.kernel.org>
+Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: [PATCH RFC 0/5] Eliminate most lock_super() calls from ext4
+Date: Sat, 25 Apr 2009 23:49:20 -0400
+Message-Id: <1240717765-16572-1-git-send-email-tytso@mit.edu>
+X-Mailer: git-send-email 1.5.6.3
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> While at it:
-> - remove MG_REG_HEAD_MUST_BE_ON define
-> - remove MG_REG_CTRL_INTR_ENABLE define
-> - remove MG_REG_HEAD_LBA_MODE define
-> - remove unused defines
-> 
-> Cc: unsik Kim <donari75@gmail.com>
-> Cc: Tejun Heo <tj@kernel.org>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Generally looks good to me.  unsik, what do you think?
+On Fri, Apr 24, 2009 at 08:40:47PM +0200, Christoph Hellwig wrote:
+> ext3/4 internal bits?  Doesn't seem to be used for any journal related
+> activity but mostly as protection against resizing (the whole lock_super
+> usage in ext3/4 looks odd to me, interestingly there's none at all in
+> ext2.  Maybe someone of the extN crowd should audit and get rid of it in
+> favour of a better fs-specific lock)
 
-Thanks.
+Here are some patches which eliminate most of the lock_super() and
+unlock_super() calls from ext4.  The last remaining calls are designed
+to proect against another CPU calling write_super(), which is the
+original intended use.   
 
--- 
-tejun
+If these patches work out, we can backport these patches to ext3.
+
+Comments and review appreciated; thanks!!
+
+						- Ted
+
