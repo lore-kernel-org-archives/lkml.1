@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbZDZSc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243AbZDZSnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756112AbZDZSc3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 14:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZDZScJ
+	id S1754243AbZDZSnI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 14:43:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbZDZSmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 14:32:09 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:33975 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753193AbZDZScH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 14:32:07 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqEFAJBE9ElMQW1W/2dsb2JhbACBUMk2gjaBPgU
-Date: Sun, 26 Apr 2009 14:32:05 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>, stable@kernel.org
-Subject: Re: [Bug #13186] cpufreq timer teardown problem
-Message-ID: <20090426183205.GA29238@Krystal>
-References: <tur5OtdUm3E.A.r2B.7oE9JB@chimera> <egHshlwQQFE.A.X-B._oE9JB@chimera> <20090426162800.GB25774@Krystal> <200904261945.11690.rjw@sisk.pl>
-Mime-Version: 1.0
+	Sun, 26 Apr 2009 14:42:55 -0400
+Received: from kroah.org ([198.145.64.141]:58781 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752538AbZDZSmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 14:42:55 -0400
+Date: Sun, 26 Apr 2009 11:39:54 -0700
+From: Greg KH <greg@kroah.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [git patches] Staging: rtxxx0: cleanup and "dumb" merge
+Message-ID: <20090426183954.GA18449@kroah.com>
+References: <200904261759.20923.bzolnier@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200904261945.11690.rjw@sisk.pl>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:30:21 up 57 days, 14:56,  1 user,  load average: 0.22, 0.31,
-	0.25
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200904261759.20923.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> On Sunday 26 April 2009, Mathieu Desnoyers wrote:
-> > * Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of regressions introduced between 2.6.28 and 2.6.29.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-> > > be listed and let me know (either way).
-> > > 
-> > 
-> > I've had no news that the patches I proposed has been considered for
-> > -stable. They fix the teardown problem here. So I guess it's better to
-> > wait for the patches to get into -stable before we close this bug ?
+On Sun, Apr 26, 2009 at 05:59:20PM +0200, Bartlomiej Zolnierkiewicz wrote:
 > 
-> In fact the bug is closeable as soon as they are in the Linus' tree.  Are they
-> in it right now?
+> Hi,
 > 
+> This patchset cleans up rt{286,287,307}0 drivers (66 KLOC removed) and then
+> "dumb" (i.e. rt3070 shares code with rt2870 by including rt2870's .c files
+> and depends on ifdefs to get the correct end result) merges them (142 KLOC
+> removed).  All in all 208 KLOC are gone and we now use the common code for
+> all three Ralink drivers.
 
-Nope, Andrew pulled the conservative governor fix for 2.6.30-rc in his
-tree, but that's about it.
+Wonderful!
 
-The fixes for ondemand 2.6.28, 2.6.29 and 2.6.30-rc have not been pulled
-yet. The fix for conservative 2.6.28, 2.6.29 has not been pulled
-neither.
+Were you able to test that this still works afterward?
 
-Mathieu
+> "dumb" merge is of course not the ideal solution but allows relatively easy
+> verification, makes the eventual real merge much easier and in the meantime
+> allows us to work with the common code for all drivers (since the initial
+> merge these drivers already became slightly out-of-sync with each other).
+> 
+> [ I know about rt2x00 project (http://rt2x00.serialmonkey.com/) and I praise
+>   their efforts.  However I still wanted to skim through the original code,
+>   mainly because I heard a lot of "interesting" things about it. ;)  Then I
+>   started to clean it to make reading easier and before I knew it I ended up
+>   with this monster patchset... ]
+> 
+> 
+> All changes are available in the following git tree (which is based on top
+> of next-20090424):
+> 
+> git://git.kernel.org:/pub/scm/linux/kernel/git/bart/misc.git rtsta-for-next
+> 
+> [ I'm not sending individual patches to LKML (they are too big and there
+>   is too many of them) but if somebody prefers to get them by mail instead
+>   of grabbing them from git tree please just ping me. ]
 
-> Thanks,
-> Rafael
+I'll suck them in from the git tree, that's fine with me.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+thanks again for doing this work, it is much appreciated.
+
+greg k-h
