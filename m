@@ -1,120 +1,371 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755016AbZDZWhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbZDZWjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755016AbZDZWhs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 18:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZDZWhU
+	id S1755666AbZDZWjA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 18:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZDZWir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 18:37:20 -0400
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:55783 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753505AbZDZWhQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 18:37:16 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqEFAIh59ElMQW1W/2dsb2JhbACBUMhzg3QF
-Date: Sun, 26 Apr 2009 18:32:11 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       Jarek Poplawski <jarkao2@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] netfilter: use per-CPU recursive lock {XV}
-Message-ID: <20090426223211.GB825@Krystal>
-References: <20090421143927.52d7d89d@nehalam> <alpine.LFD.2.00.0904220821240.3101@localhost.localdomain> <20090423210938.1501507b@nehalam> <49F146FF.5050200@cosmosbay.com> <20090424091839.6e13ebec@nehalam> <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam> <49F4A6E3.7080102@cosmosbay.com> <20090426185646.GB29238@Krystal> <20090426145746.1184aeba@nehalam>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090426145746.1184aeba@nehalam>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:08:03 up 57 days, 18:34,  2 users,  load average: 0.16, 0.22,
-	0.20
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 26 Apr 2009 18:38:47 -0400
+Received: from tundra.namei.org ([65.99.196.166]:56157 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753115AbZDZWiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 18:38:46 -0400
+Date: Mon, 27 Apr 2009 08:37:46 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: npiggin@suse.de
+cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@redhat.com>
+Subject: Re: [patch 5/5] fs: cleanup files_lock
+In-Reply-To: <20090426102953.788377292@suse.de>
+Message-ID: <alpine.LRH.2.00.0904270836590.12135@tundra.namei.org>
+References: <20090426102552.947523845@suse.de> <20090426102953.788377292@suse.de>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Stephen Hemminger (shemminger@vyatta.com) wrote:
-> On Sun, 26 Apr 2009 14:56:46 -0400
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+On Sun, 26 Apr 2009, npiggin@suse.de wrote:
+
+> Lock tty_files with a new spinlock, tty_files_lock; provide helpers to
+> manipulate the per-sb files list; unexport the files_lock spinlock.
 > 
-> > * Eric Dumazet (dada1@cosmosbay.com) wrote:
-> > > From: Stephen Hemminger <shemminger@vyatta.com>
-> > > 
-> > > > Epilogue due to master Jarek. Lockdep carest not about the locking
-> > > > doth bestowed. Therefore no keys are needed.
-> > > > 
-> > > > Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> > > 
-> > > So far, so good, should be ready for inclusion now, nobody complained :)
-> > > 
-> > > I include the final patch, merge of your last two patches.
-> > > 
-> > > David, could you please review it once again and apply it if it's OK ?
-> > 
-> > > Thanks to all for your help and patience
-> > > 
-> > > [PATCH] netfilter: use per-CPU recursive lock {XV}
-> > 
-> > Hi Eric, 
-> > 
-> > Suitable name would probably be :
-> > 
+> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
 
-Hi Stephen,
+The SELinux tty part looks fine to me.
 
-[I see that you have cutted my name proposal from the original email,
-which might make it difficult for others to follow. I will assume you
-did it by mistake.]
+Acked-by: James Morris <jmorris@namei.org>
 
-(re-added)
-[PATCH] netfilter: use bh disabling with per-cpu read-write lock
-
+> ---
+>  drivers/char/pty.c       |    6 +++++-
+>  drivers/char/tty_io.c    |   26 ++++++++++++++++++--------
+>  fs/file_table.c          |   44 +++++++++++++++++++-------------------------
+>  fs/open.c                |    4 ++--
+>  include/linux/fs.h       |    8 +++-----
+>  include/linux/tty.h      |    1 +
+>  security/selinux/hooks.c |    4 ++--
+>  7 files changed, 50 insertions(+), 43 deletions(-)
 > 
-> But Linus is trying to delude himself.
+> Index: linux-2.6/drivers/char/pty.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/char/pty.c
+> +++ linux-2.6/drivers/char/pty.c
+> @@ -662,7 +662,11 @@ static int __ptmx_open(struct inode *ino
+>  
+>  	set_bit(TTY_PTY_LOCK, &tty->flags); /* LOCK THE SLAVE */
+>  	filp->private_data = tty;
+> -	file_move(filp, &tty->tty_files);
+> +
+> +	file_sb_list_del(filp); /* __dentry_open has put it on the sb list */
+> +	spin_lock(&tty_files_lock);
+> +	list_add(&filp->f_u.fu_list, &tty->tty_files);
+> +	spin_unlock(&tty_files_lock);
+>  
+>  	retval = devpts_pty_new(inode, tty->link);
+>  	if (retval)
+> Index: linux-2.6/drivers/char/tty_io.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/char/tty_io.c
+> +++ linux-2.6/drivers/char/tty_io.c
+> @@ -136,6 +136,9 @@ LIST_HEAD(tty_drivers);			/* linked list
+>  DEFINE_MUTEX(tty_mutex);
+>  EXPORT_SYMBOL(tty_mutex);
+>  
+> +/* Spinlock to protect the tty->tty_files list */
+> +DEFINE_SPINLOCK(tty_files_lock);
+> +
+>  static ssize_t tty_read(struct file *, char __user *, size_t, loff_t *);
+>  static ssize_t tty_write(struct file *, const char __user *, size_t, loff_t *);
+>  ssize_t redirected_tty_write(struct file *, const char __user *,
+> @@ -235,11 +238,11 @@ static int check_tty_count(struct tty_st
+>  	struct list_head *p;
+>  	int count = 0;
+>  
+> -	file_list_lock();
+> +	spin_lock(&tty_files_lock);
+>  	list_for_each(p, &tty->tty_files) {
+>  		count++;
+>  	}
+> -	file_list_unlock();
+> +	spin_unlock(&tty_files_lock);
+>  	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
+>  	    tty->driver->subtype == PTY_TYPE_SLAVE &&
+>  	    tty->link && tty->link->count)
+> @@ -554,7 +557,7 @@ static void do_tty_hangup(struct work_st
+>  	spin_unlock(&redirect_lock);
+>  
+>  	check_tty_count(tty, "do_tty_hangup");
+> -	file_list_lock();
+> +	spin_lock(&tty_files_lock);
+>  	/* This breaks for file handles being sent over AF_UNIX sockets ? */
+>  	list_for_each_entry(filp, &tty->tty_files, f_u.fu_list) {
+>  		if (filp->f_op->write == redirected_tty_write)
+> @@ -565,7 +568,7 @@ static void do_tty_hangup(struct work_st
+>  		tty_fasync(-1, filp, 0);	/* can't block */
+>  		filp->f_op = &hung_up_tty_fops;
+>  	}
+> -	file_list_unlock();
+> +	spin_unlock(&tty_files_lock);
+>  	/*
+>  	 * FIXME! What are the locking issues here? This may me overdoing
+>  	 * things... This question is especially important now that we've
+> @@ -1467,9 +1470,9 @@ static void release_one_tty(struct kref
+>  	tty_driver_kref_put(driver);
+>  	module_put(driver->owner);
+>  
+> -	file_list_lock();
+> +	spin_lock(&tty_files_lock);
+>  	list_del_init(&tty->tty_files);
+> -	file_list_unlock();
+> +	spin_unlock(&tty_files_lock);
+>  
+>  	free_tty_struct(tty);
+>  }
+> @@ -1678,7 +1681,10 @@ void tty_release_dev(struct file *filp)
+>  	 *  - do_tty_hangup no longer sees this file descriptor as
+>  	 *    something that needs to be handled for hangups.
+>  	 */
+> -	file_kill(filp);
+> +	spin_lock(&tty_files_lock);
+> +	BUG_ON(list_empty(&filp->f_u.fu_list));
+> +	list_del_init(&filp->f_u.fu_list);
+> +	spin_unlock(&tty_files_lock);
+>  	filp->private_data = NULL;
+>  
+>  	/*
+> @@ -1836,7 +1842,11 @@ got_driver:
+>  		return PTR_ERR(tty);
+>  
+>  	filp->private_data = tty;
+> -	file_move(filp, &tty->tty_files);
+> +	BUG_ON(list_empty(&filp->f_u.fu_list));
+> +	file_sb_list_del(filp); /* __dentry_open has put it on the sb list */
+> +	spin_lock(&tty_files_lock);
+> +	list_add(&filp->f_u.fu_list, &tty->tty_files);
+> +	spin_unlock(&tty_files_lock);
+>  	check_tty_count(tty, "tty_open");
+>  	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
+>  	    tty->driver->subtype == PTY_TYPE_MASTER)
+> Index: linux-2.6/fs/file_table.c
+> ===================================================================
+> --- linux-2.6.orig/fs/file_table.c
+> +++ linux-2.6/fs/file_table.c
+> @@ -30,8 +30,7 @@ struct files_stat_struct files_stat = {
+>  	.max_files = NR_FILE
+>  };
+>  
+> -/* public. Not pretty! */
+> -__cacheline_aligned_in_smp DEFINE_SPINLOCK(files_lock);
+> +static __cacheline_aligned_in_smp DEFINE_SPINLOCK(files_lock);
+>  
+>  /* SLAB cache for file structures */
+>  static struct kmem_cache *filp_cachep __read_mostly;
+> @@ -285,7 +284,7 @@ void __fput(struct file *file)
+>  		cdev_put(inode->i_cdev);
+>  	fops_put(file->f_op);
+>  	put_pid(file->f_owner.pid);
+> -	file_kill(file);
+> +	file_sb_list_del(file);
+>  	if (file->f_mode & FMODE_WRITE)
+>  		drop_file_write_access(file);
+>  	file->f_path.dentry = NULL;
+> @@ -347,31 +346,29 @@ struct file *fget_light(unsigned int fd,
+>  	return file;
+>  }
+>  
+> -
+>  void put_filp(struct file *file)
+>  {
+>  	if (atomic_long_dec_and_test(&file->f_count)) {
+>  		security_file_free(file);
+> -		file_kill(file);
+> +		file_sb_list_del(file);
+>  		file_free(file);
+>  	}
+>  }
+>  
+> -void file_move(struct file *file, struct list_head *list)
+> +void file_sb_list_add(struct file *file, struct super_block *sb)
+>  {
+> -	if (!list)
+> -		return;
+> -	file_list_lock();
+> -	list_move(&file->f_u.fu_list, list);
+> -	file_list_unlock();
+> +	spin_lock(&files_lock);
+> +	BUG_ON(!list_empty(&file->f_u.fu_list));
+> +	list_add(&file->f_u.fu_list, &sb->s_files);
+> +	spin_unlock(&files_lock);
+>  }
+>  
+> -void file_kill(struct file *file)
+> +void file_sb_list_del(struct file *file)
+>  {
+>  	if (!list_empty(&file->f_u.fu_list)) {
+> -		file_list_lock();
+> +		spin_lock(&files_lock);
+>  		list_del_init(&file->f_u.fu_list);
+> -		file_list_unlock();
+> +		spin_unlock(&files_lock);
+>  	}
+>  }
+>  
+> @@ -380,7 +377,7 @@ int fs_may_remount_ro(struct super_block
+>  	struct file *file;
+>  
+>  	/* Check that no files are currently opened for writing. */
+> -	file_list_lock();
+> +	spin_lock(&files_lock);
+>  	list_for_each_entry(file, &sb->s_files, f_u.fu_list) {
+>  		struct inode *inode = file->f_path.dentry->d_inode;
+>  
+> @@ -392,10 +389,10 @@ int fs_may_remount_ro(struct super_block
+>  		if (S_ISREG(inode->i_mode) && (file->f_mode & FMODE_WRITE))
+>  			goto too_bad;
+>  	}
+> -	file_list_unlock();
+> +	spin_unlock(&files_lock);
+>  	return 1; /* Tis' cool bro. */
+>  too_bad:
+> -	file_list_unlock();
+> +	spin_unlock(&files_lock);
+>  	return 0;
+>  }
+>  
+> @@ -406,12 +403,12 @@ too_bad:
+>   *	All files are marked read-only.  We don't care about pending
+>   *	delete files so this should be used in 'force' mode only.
+>   */
+> -static void mark_files_ro(struct super_block *sb)
+> +void mark_files_ro(struct super_block *sb)
+>  {
+>  	struct file *f;
+>  
+>  retry:
+> -	file_list_lock();
+> +	spin_lock(&files_lock);
+>  	list_for_each_entry(f, &sb->s_files, f_u.fu_list) {
+>  		struct vfsmount *mnt;
+>  		if (!S_ISREG(f->f_path.dentry->d_inode->i_mode))
+> @@ -425,16 +422,13 @@ retry:
+>  			continue;
+>  		file_release_write(f);
+>  		mnt = mntget(f->f_path.mnt);
+> -		file_list_unlock();
+> -		/*
+> -		 * This can sleep, so we can't hold
+> -		 * the file_list_lock() spinlock.
+> -		 */
+> +		/* This can sleep, so we can't hold the spinlock. */
+> +		spin_unlock(&files_lock);
+>  		mnt_drop_write(mnt);
+>  		mntput(mnt);
+>  		goto retry;
+>  	}
+> -	file_list_unlock();
+> +	spin_unlock(&files_lock);
+>  }
+>  
+>  void __init files_init(unsigned long mempages)
+> Index: linux-2.6/fs/open.c
+> ===================================================================
+> --- linux-2.6.orig/fs/open.c
+> +++ linux-2.6/fs/open.c
+> @@ -828,7 +828,7 @@ static struct file *__dentry_open(struct
+>  	f->f_path.mnt = mnt;
+>  	f->f_pos = 0;
+>  	f->f_op = fops_get(inode->i_fop);
+> -	file_move(f, &inode->i_sb->s_files);
+> +	file_sb_list_add(f, inode->i_sb);
+>  
+>  	error = security_dentry_open(f, cred);
+>  	if (error)
+> @@ -873,7 +873,7 @@ cleanup_all:
+>  			mnt_drop_write(mnt);
+>  		}
+>  	}
+> -	file_kill(f);
+> +	file_sb_list_del(f);
+>  	f->f_path.dentry = NULL;
+>  	f->f_path.mnt = NULL;
+>  cleanup_file:
+> Index: linux-2.6/include/linux/fs.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/fs.h
+> +++ linux-2.6/include/linux/fs.h
+> @@ -934,9 +934,6 @@ struct file {
+>  	unsigned long f_mnt_write_state;
+>  #endif
+>  };
+> -extern spinlock_t files_lock;
+> -#define file_list_lock() spin_lock(&files_lock);
+> -#define file_list_unlock() spin_unlock(&files_lock);
+>  
+>  #define get_file(x)	atomic_long_inc(&(x)->f_count)
+>  #define file_count(x)	atomic_long_read(&(x)->f_count)
+> @@ -2021,6 +2018,7 @@ extern const struct file_operations read
+>  extern const struct file_operations write_pipefifo_fops;
+>  extern const struct file_operations rdwr_pipefifo_fops;
+>  
+> +extern void mark_files_ro(struct super_block *sb);
+>  extern int fs_may_remount_ro(struct super_block *);
+>  
+>  #ifdef CONFIG_BLOCK
+> @@ -2172,8 +2170,8 @@ static inline void insert_inode_hash(str
+>  }
+>  
+>  extern struct file * get_empty_filp(void);
+> -extern void file_move(struct file *f, struct list_head *list);
+> -extern void file_kill(struct file *f);
+> +extern void file_sb_list_add(struct file *f, struct super_block *sb);
+> +extern void file_sb_list_del(struct file *f);
+>  #ifdef CONFIG_BLOCK
+>  struct bio;
+>  extern void submit_bio(int, struct bio *);
+> Index: linux-2.6/security/selinux/hooks.c
+> ===================================================================
+> --- linux-2.6.orig/security/selinux/hooks.c
+> +++ linux-2.6/security/selinux/hooks.c
+> @@ -2244,7 +2244,7 @@ static inline void flush_unauthorized_fi
+>  
+>  	tty = get_current_tty();
+>  	if (tty) {
+> -		file_list_lock();
+> +		spin_lock(&tty_files_lock);
+>  		if (!list_empty(&tty->tty_files)) {
+>  			struct inode *inode;
+>  
+> @@ -2260,7 +2260,7 @@ static inline void flush_unauthorized_fi
+>  				drop_tty = 1;
+>  			}
+>  		}
+> -		file_list_unlock();
+> +		spin_unlock(&tty_files_lock);
+>  		tty_kref_put(tty);
+>  	}
+>  	/* Reset controlling tty. */
+> Index: linux-2.6/include/linux/tty.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/tty.h
+> +++ linux-2.6/include/linux/tty.h
+> @@ -426,6 +426,7 @@ extern void tty_release_dev(struct file
+>  extern int tty_init_termios(struct tty_struct *tty);
+>  
+>  extern struct mutex tty_mutex;
+> +extern spinlock_t tty_files_lock;
+>  
+>  extern void tty_write_unlock(struct tty_struct *tty);
+>  extern int tty_write_lock(struct tty_struct *tty, int ndelay);
 > 
-> This usage is recursive even if he doesn't like the terminology.
-> The same CPU has to be able to reacquire the read lock without deadlocking.
-> If reader/writer locks were implemented in a pure writer gets priority
-> method, then this code would break!  So yes read locks can be used recursively
-> now in Linux, but if the were implemented differently then this code
-> would break.  For example, the -rt kernel turns all read/write locks into
-> mutexs, so the -rt kernel developers will have to address this.
-
-Reading Documentation/spinlocks.txt, which states the lock usage
-guidelines :
-
-"Note that you can be clever with read-write locks and interrupts. For
-example, if you know that the interrupt only ever gets a read-lock, then
-you can use a non-irq version of read locks everywhere - because they
-don't block on each other (and thus there is no dead-lock wrt interrupts.
-But when you do the write-lock, you have to use the irq-safe version."
-
-So it's assumed in the kernel-wide read lock usage that nested read
-locks are OK. I'm adding Thomas and Steven in CC, but I'm quite sure
-they must have dealt with nested read-lock transformation into mutexes
-by detecting nesting in some way in -rt. But I'll let them confirm this.
-
-So I don't see why you are dreaming about a different semantic than the
-one of the primitives you are using. I guess I'll leave the semantics to
-you. I just find it astonishing that you persist saying that everbody is
-wrong on a topic like semantic, which is in the end a mean to
-communicate ideas clearly within the overall community you disagree
-with.
-
-Good luck !
-
-Mathieu
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+James Morris
+<jmorris@namei.org>
