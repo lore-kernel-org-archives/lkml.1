@@ -1,67 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbZDZQ2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbZDZQg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753911AbZDZQ2U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 12:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZDZQ2G
+	id S1753679AbZDZQg6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 12:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZDZQgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 12:28:06 -0400
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:63075 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752615AbZDZQ2F (ORCPT
+	Sun, 26 Apr 2009 12:36:48 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:36183 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752682AbZDZQgr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 12:28:05 -0400
+	Sun, 26 Apr 2009 12:36:47 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtAHAG8o9ElMQW1W/2dsb2JhbACBUIEwxzaCNoE+BQ
-Date: Sun, 26 Apr 2009 12:28:00 -0400
+X-IronPort-Anti-Spam-Result: Ai8FADIo9ElMQW1W/2dsb2JhbACBUMhpg3QF
+Date: Sun, 26 Apr 2009 12:31:39 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>, stable@kernel.org
-Subject: Re: [Bug #13186] cpufreq timer teardown problem
-Message-ID: <20090426162800.GB25774@Krystal>
-References: <tur5OtdUm3E.A.r2B.7oE9JB@chimera> <egHshlwQQFE.A.X-B._oE9JB@chimera>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       gregkh@suse.de, stable@kernel.org, cpufreq@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, rjw@sisk.pl,
+       Ben Slusky <sluskyb@paranoiacs.org>, Dave Jones <davej@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpufreq fix timer teardown in conservative governor
+	(2.6.30-rc2)
+Message-ID: <20090426163139.GA26154@Krystal>
+References: <20090423140002.GA12852@Krystal> <20090423164638.3b5769c6.akpm@linux-foundation.org> <20090424043546.GB8091@Krystal> <alpine.LFD.2.00.0904240217390.15843@localhost.localdomain> <20090424161217.GA25650@Krystal> <20090426144701.GD19338@khazad-dum.debian.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <egHshlwQQFE.A.X-B._oE9JB@chimera>
+In-Reply-To: <20090426144701.GD19338@khazad-dum.debian.net>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:24:19 up 57 days, 12:50,  1 user,  load average: 0.17, 0.38,
-	0.38
+X-Uptime: 12:28:51 up 57 days, 12:55,  2 users,  load average: 1.18, 0.79,
+	0.54
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.28 and 2.6.29.
+* Henrique de Moraes Holschuh (hmh@hmh.eng.br) wrote:
+> On Fri, 24 Apr 2009, Mathieu Desnoyers wrote:
+> > * Len Brown (lenb@kernel.org) wrote:
+> > > Somebody please remind me why we are spending effort to 
+> > > maintain the conservative governor instead of deleting it.
+> > 
+> > Documentation/cpu-freq/governors.txt
+> > 
+> > "The CPUfreq governor "conservative", much like the "ondemand"
+> > governor, sets the CPU depending on the current usage.  It differs in
+> > behaviour in that it gracefully increases and decreases the CPU speed
+> > rather than jumping to max speed the moment there is any load on the
+> > CPU.  This behaviour more suitable in a battery powered environment."
+> > 
+> > So better battery usage seems to be the reason why conservative lives.
 > 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-> be listed and let me know (either way).
+> Yeah, but the question is: is it really better in practice? race-to-idle
+> works better with ondemand.  Note: that needs to be answered not just for
+> the current crop of mobile processors, but also for at least stuff as old as
+> the Pentium M and Pentium 4 M.
+> 
+> What it _does_ help, is in broken !@#$ hardware that makes a lot of noise
+> due to "singing capacitors" if you use ondemand (because conservative will
+> make less noise as it causes more smooth transitions).  NOHZ helped a great
+> deal there, too.
 > 
 
-I've had no news that the patches I proposed has been considered for
--stable. They fix the teardown problem here. So I guess it's better to
-wait for the patches to get into -stable before we close this bug ?
+I effectively have such singing capacitors on my laptop, and I still
+have good ears.
+
+> I don't know if there are battery environments where a harsher work profile
+> by the CPU are a bad idea.  If there are any, conservative will also help
+> there.
+> 
+
+Good question. We might also consider that anyway code duplication
+between ondemand and conservative is a bad thing. Those look so similar
+that part of them should probably be merged, with a sysfs flag and
+kernel parameter to select the behavior.
 
 Mathieu
 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13186
-> Subject		: cpufreq timer teardown problem
-> Submitter	: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Date		: 2009-04-23 14:00 (4 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124049523515036&w=4
-> Handled-By	: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Patch		: http://patchwork.kernel.org/patch/19754/
-> 		  http://patchwork.kernel.org/patch/19753/
-> 
-> 
-> 
+
+> -- 
+>   "One disk to rule them all, One disk to find them. One disk to bring
+>   them all and in the darkness grind them. In the Land of Redmond
+>   where the shadows lie." -- The Silicon Valley Tarot
+>   Henrique Holschuh
 
 -- 
 Mathieu Desnoyers
