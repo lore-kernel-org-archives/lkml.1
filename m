@@ -1,109 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbZDZOiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbZDZOjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755636AbZDZOiy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 10:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbZDZOin
+	id S1755120AbZDZOjo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 10:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbZDZOje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 10:38:43 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:58315 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754066AbZDZOim (ORCPT
+	Sun, 26 Apr 2009 10:39:34 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:61108 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754042AbZDZOjd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 10:38:42 -0400
+	Sun, 26 Apr 2009 10:39:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :mime-version:content-type:content-disposition:user-agent;
-        b=ni8Xru5vsHekxqn2krNGh7emsxGjunrJmgJxZXvwocLzUeMT3Ie2s6ULhwzpIoHfrM
-         l2h3PnE7yuA2U1wejHHQ10q56n2y+EXlC+/pKit2NKqWChwsMyk6W6ek5JzioHYyttqi
-         kCE/PFD1/9VwajuD4VE85CcjVUlAs4KFTMSKs=
-Date: Sun, 26 Apr 2009 16:38:36 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] libata: fix suspend/resume for ATA SEMB devices
-Message-ID: <20090426143836.GA3643@liondog.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com, Tejun Heo <htejun@gmail.com>,
-	Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-	linux-kernel@vger.kernel.org
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=iBOp0zWLqaudPZbU6nHLmyMKIcO9aY6Bs52/vBek6UFMv0T7vH3t2NdYGLdw0QP3ib
+         Y5SgAxo3pCEv052+LMur3h54QYvSQGKCMVA6I8D/FNJH8DPDBnspSW0742Nk/RsJmkoC
+         xH1qZ5vQzDyk98SwSj0j7a5SXPkFQYVYcGaC0=
+Message-ID: <49F4E29F.8030409@gmail.com>
+Date: Mon, 27 Apr 2009 00:39:27 +0200
+From: jan sonnek <ha2nny@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+Subject: oops on 2.6.30-rc3-mm1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Borislav Petkov <petkovbb@gmail.com>
-Date: Sun, 26 Apr 2009 16:33:34 +0200
-Subject: [PATCH] libata: fix suspend/resume for ATA SEMB devices
+I get this oops, when I try to start my X windows (startx)
+I have some bug later, but when I switch off some new modules, I was able to start X windows.
 
-79b42babbac2a5a522b8e269fb2811b6e1063030 fixed identifying ATA devices
-reporting 3c/c3 signature which belongs to SEMB devices now. However,
-suspending the machine with such device (WDC WD2500AAJS-6 01.0) fails
-with the following:
+Later:
+------------
 
-hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-hda: UDMA/100 mode selected
-hdb: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-hdb: UDMA/66 mode selected
-sd 1:0:0:0: [sda] Starting disk
-ata5: SATA link down (SStatus 0 SControl 300)
-ata1: SATA link down (SStatus 0 SControl 300)
-ata3: SATA link down (SStatus 0 SControl 300)
-ata6: SATA link down (SStatus 0 SControl 300)
-ata2: softreset failed (device not ready)
-ata2: failed due to HW bug, retry pmp=0
-ata4: softreset failed (device not ready)
-ata4: failed due to HW bug, retry pmp=0
-ata4: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata2.00: class mismatch 1 != 7
-ata2.00: revalidation failed (errno=-19)
-ata2: limiting SATA link speed to 1.5 Gbps
-ata4.00: configured for UDMA/133
-ata2: softreset failed (device not ready)
-ata2: failed due to HW bug, retry pmp=0
-ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-ata2.00: class mismatch 1 != 7
-ata2.00: revalidation failed (errno=-19)
-ata2.00: disabled
-sd 1:0:0:0: rejecting I/O to offline device
-sd 1:0:0:0: [sda] START_STOP FAILED
-sd 1:0:0:0: [sda] Result: hostbyte=0x01 driverbyte=0x00
-PM: Device 1:0:0:0 failed to thaw: error 65536
-sd 3:0:0:0: [sdb] Starting disk
+http://bugzilla.kernel.org/show_bug.cgi?id=12619
 
-due to a class mismatch in ata_dev_revalidate(). Fix it by adding the
-ATA_DEV_SEMB device class to the check.
+Now:
+------------
 
-CC: Tejun Heo <htejun@gmail.com>
-CC: Jeff Garzik <jeff@garzik.org>
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
----
- drivers/ata/libata-core.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+BUG: unable to handle kernel NULL pointer dereference at 00000040
+IP: [<c015409c>] balance_dirty_pages_ratelimited_nr+0x10/0x29b
+*pde = 36b28067 *pte = 00000000
+Oops: 0000 [#1] PREEMPT SMP
+last sysfs file: /sys/devices/virtual/dmi/id/chassis_asset_tag
+Modules linked in: sco bnep l2cap bluetooth coretemp hwmon ipv6 fuse iwl3945 iwlcore sdhci_pci sr_mod sg sdhci ohci1394 ieee1394 cdrom mmc_core battery mac80211 led_class ricoh_mmc cfg80211 usb_storage [last unloaded: scsi_wait_scan]
 
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 17c5d48..c924230 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -4091,7 +4091,9 @@ int ata_dev_revalidate(struct ata_device *dev, unsigned int new_class,
- 
- 	/* fail early if !ATA && !ATAPI to avoid issuing [P]IDENTIFY to PMP */
- 	if (ata_class_enabled(new_class) &&
--	    new_class != ATA_DEV_ATA && new_class != ATA_DEV_ATAPI) {
-+	    new_class != ATA_DEV_ATA &&
-+	    new_class != ATA_DEV_ATAPI &&
-+	    new_class != ATA_DEV_SEMB) {
- 		ata_dev_printk(dev, KERN_INFO, "class mismatch %u != %u\n",
- 			       dev->class, new_class);
- 		rc = -ENODEV;
--- 
-1.6.2.4
-
--- 
-Regards/Gruss,
-    Boris.
+Pid: 2867, comm: X Not tainted (2.6.30-rc3-mm1-hanny #27) F3F
+EIP: 0060:[<c015409c>] EFLAGS: 00213296 CPU: 0
+EIP is at balance_dirty_pages_ratelimited_nr+0x10/0x29b
+EAX: 00000000 EBX: 00000008 ECX: 00000000 EDX: 00000001
+ESI: 00000000 EDI: 5f372067 EBP: f69a1eec ESP: f69a1e84
+  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process X (pid: 2867, ti=f69a1000 task=f7164380 task.ti=f69a1000)
+Stack:
+  f69a1e8c c03691fe f69a1eac 00203292 000000d0 00203292 f7001324 f6ad4474
+  000f877d 000f877e f69a1ebc c023ea66 f6b003e0 f6b003e0 f69a1ec4 c03691fe
+  f69a1ed8 c017e704 c1be6e40 f6ad43a8 f6823600 00000000 c049f9c0 c1be6e40
+Call Trace:
+  [<c03691fe>] ? _spin_unlock+0x19/0x24
+  [<c023ea66>] ? drm_vm_open_locked+0x5b/0x94
+  [<c03691fe>] ? _spin_unlock+0x19/0x24
+  [<c017e704>] ? mnt_drop_write+0x6d/0xe6
+  [<c015d26c>] ? __do_fault+0x283/0x2bd
+  [<c015e784>] ? handle_mm_fault+0x1f7/0x454
+  [<c0115472>] ? do_page_fault+0x1e0/0x1ef
+  [<c0115292>] ? do_page_fault+0x0/0x1ef
+  [<c03694dd>] ? error_code+0x6d/0x74
+  [<c0115292>] ? do_page_fault+0x0/0x1ef
+Code: e8 af 7a 00 00 89 f0 25 c0 00 00 00 3d c0 00 00 00 74 a1 8d 65 f4 5b 5e 5f c9 c3 55 89 e5 57 56 89 c6 53 bb 08 00 00 00 83 ec 5c <8b> 40 40 83 78 70 00 89 e0 0f 44 1d d8 73 45 c0 25 00 f0 ff ff
+EIP: [<c015409c>] balance_dirty_pages_ratelimited_nr+0x10/0x29b SS:ESP 0068:f69a1e84
+CR2: 0000000000000040
+---[ end trace 84b1cd49fe3274a1 ]---
