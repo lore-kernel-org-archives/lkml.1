@@ -1,124 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbZDZOSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbZDZOiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754905AbZDZOSv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 10:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbZDZOSj
+	id S1755636AbZDZOiy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 10:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbZDZOin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 10:18:39 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:36241 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751696AbZDZOSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 10:18:37 -0400
-Subject: Re: NFS BUG_ON in nfs_do_writepage
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, Rince <rincebrain@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-In-Reply-To: <20090426064026.GD28555@wotan.suse.de>
-References: <alpine.LFD.2.00.0904130145050.4396@centaur.acm.jhu.edu>
-	 <20090412235010.c8e3475b.akpm@linux-foundation.org>
-	 <1239650202.16771.15.camel@heimdal.trondhjem.org>
-	 <5da0588e0904131506k5c58e8ddob9bf38f61da6302a@mail.gmail.com>
-	 <5da0588e0904131644g131dc816r61884e83bc4cd006@mail.gmail.com>
-	 <5da0588e0904240226j3454941y5f58c17a32a9a23d@mail.gmail.com>
-	 <1240671428.6112.1.camel@heimdal.trondhjem.org>
-	 <20090426064026.GD28555@wotan.suse.de>
-Content-Type: text/plain
-Date: Sun, 26 Apr 2009 10:18:29 -0400
-Message-Id: <1240755509.5055.34.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 10 sum msgs/h 1 total rcpts 55 max rcpts/h 10 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=_BLID_, uiouri=_URIID_)
-X-UiO-Scanned: 2A8CC59DB109C7CF19EE62BE6AEA50105D371D22
-X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 201 max/h 5 blacklist 0 greylist 0 ratelimit 0
+	Sun, 26 Apr 2009 10:38:43 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:58315 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754066AbZDZOim (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 10:38:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :mime-version:content-type:content-disposition:user-agent;
+        b=ni8Xru5vsHekxqn2krNGh7emsxGjunrJmgJxZXvwocLzUeMT3Ie2s6ULhwzpIoHfrM
+         l2h3PnE7yuA2U1wejHHQ10q56n2y+EXlC+/pKit2NKqWChwsMyk6W6ek5JzioHYyttqi
+         kCE/PFD1/9VwajuD4VE85CcjVUlAs4KFTMSKs=
+Date: Sun, 26 Apr 2009 16:38:36 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] libata: fix suspend/resume for ATA SEMB devices
+Message-ID: <20090426143836.GA3643@liondog.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, Tejun Heo <htejun@gmail.com>,
+	Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-04-26 at 08:40 +0200, Nick Piggin wrote:
-> On Sat, Apr 25, 2009 at 10:57:08AM -0400, Trond Myklebust wrote:
-> > On Fri, 2009-04-24 at 05:26 -0400, Rince wrote:
-> > > Applied try 3 of Nick Piggin's patch to 2.6.30-rc3 (cleanly, no less!)
-> > > 
-> > > Doesn't appear to have helped at all - I received my favorite BUG ON
-> > > write.c:252 just like always, within 24 hours of booting the kernel,
-> > > even.
-> > 
-> > Can you apply the following incremental patch on top of Nick's. This
-> > appears to suffice to close the race on my setup.
-> 
-> Thanks, yes that looks good. Note: I deliberately didn't try to
-> convert filesystems because it needs much better understanding
-> of each one. So any fs maintainers using page_mkwrite I hope have
-> looked at these patches and considered whether they need to
-> do anything differently (ditto for the page_mkwrite return value
-> fixup patch).
+From: Borislav Petkov <petkovbb@gmail.com>
+Date: Sun, 26 Apr 2009 16:33:34 +0200
+Subject: [PATCH] libata: fix suspend/resume for ATA SEMB devices
 
-Note that after applying this, I put a WARN_ON(!PageDirty()) in the NFS
-set_page_dirty() method, and ran some mmap stress tests.
+79b42babbac2a5a522b8e269fb2811b6e1063030 fixed identifying ATA devices
+reporting 3c/c3 signature which belongs to SEMB devices now. However,
+suspending the machine with such device (WDC WD2500AAJS-6 01.0) fails
+with the following:
 
-As far as I can tell, the WARN_ON is never triggering. I take this to
-mean that the remaining cases where the VM is calling set_page_dirty()
-are basically all cases where we've already seen a page fault and set
-the page dirty flag, but haven't yet written it out (i.e. we haven't yet
-called clear_page_dirty_for_io() and so the pte is still marked as
-dirty).
-That again implies that set_page_dirty() is now fully redundant for
-filesystems that define page_mkwrite(), provided that the filesystem
-takes charge of marking the page as dirty.
+hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+hda: UDMA/100 mode selected
+hdb: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+hdb: UDMA/66 mode selected
+sd 1:0:0:0: [sda] Starting disk
+ata5: SATA link down (SStatus 0 SControl 300)
+ata1: SATA link down (SStatus 0 SControl 300)
+ata3: SATA link down (SStatus 0 SControl 300)
+ata6: SATA link down (SStatus 0 SControl 300)
+ata2: softreset failed (device not ready)
+ata2: failed due to HW bug, retry pmp=0
+ata4: softreset failed (device not ready)
+ata4: failed due to HW bug, retry pmp=0
+ata4: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+ata2.00: class mismatch 1 != 7
+ata2.00: revalidation failed (errno=-19)
+ata2: limiting SATA link speed to 1.5 Gbps
+ata4.00: configured for UDMA/133
+ata2: softreset failed (device not ready)
+ata2: failed due to HW bug, retry pmp=0
+ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ata2.00: class mismatch 1 != 7
+ata2.00: revalidation failed (errno=-19)
+ata2.00: disabled
+sd 1:0:0:0: rejecting I/O to offline device
+sd 1:0:0:0: [sda] START_STOP FAILED
+sd 1:0:0:0: [sda] Result: hostbyte=0x01 driverbyte=0x00
+PM: Device 1:0:0:0 failed to thaw: error 65536
+sd 3:0:0:0: [sdb] Starting disk
 
-This suggests an alternative fix for the stable kernels in the form of
-the following patch.
-Comments?
+due to a class mismatch in ata_dev_revalidate(). Fix it by adding the
+ATA_DEV_SEMB device class to the check.
 
-Cheers
-  Trond
-------------------------------------------------------------------
-commit 684049bf73059aa9be35f9cdf07acda29ebb0340
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Sun Apr 26 10:14:34 2009 -0400
-
-    NFS: Fix page dirtying races in NFS
-    
-    If a filesystem defines a page_mkwrite() callback that also marks the page
-    as being dirty, then we don't need to define a set_page_dirty() callback.
-    
-    The following patch fixes http://bugzilla.kernel.org/show_bug.cgi?id=12913
-    by eliminating a race in do_wp_page() and __do_fault(). The latter two
-    mark the page as dirty after the call to page_mkwrite(). Since
-    nfs_vm_page_mkwrite() has already marked the page as dirty, this means that
-    there is a race whereby the filesystem may actually have cleaned the
-    page by the time it is marked as dirty (again) by the VM.
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+CC: Tejun Heo <htejun@gmail.com>
+CC: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
-diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-index 5a97bcf..21bffaf 100644
---- a/fs/nfs/file.c
-+++ b/fs/nfs/file.c
-@@ -465,10 +465,19 @@ static int nfs_launder_page(struct page *page)
- 	return nfs_wb_page(inode, page);
- }
+ drivers/ata/libata-core.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 17c5d48..c924230 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -4091,7 +4091,9 @@ int ata_dev_revalidate(struct ata_device *dev, unsigned int new_class,
  
-+static int nfs_set_page_dirty(struct page *page)
-+{
-+	/* We don't need to have the VM mark the page as dirty, since
-+	 * nfs_updatepage() will do it. This eliminates the race
-+	 * that caused http://bugzilla.kernel.org/show_bug.cgi?id=12913
-+	 */
-+	return 0;
-+}
-+
- const struct address_space_operations nfs_file_aops = {
- 	.readpage = nfs_readpage,
- 	.readpages = nfs_readpages,
--	.set_page_dirty = __set_page_dirty_nobuffers,
-+	.set_page_dirty = nfs_set_page_dirty,
- 	.writepage = nfs_writepage,
- 	.writepages = nfs_writepages,
- 	.write_begin = nfs_write_begin,
+ 	/* fail early if !ATA && !ATAPI to avoid issuing [P]IDENTIFY to PMP */
+ 	if (ata_class_enabled(new_class) &&
+-	    new_class != ATA_DEV_ATA && new_class != ATA_DEV_ATAPI) {
++	    new_class != ATA_DEV_ATA &&
++	    new_class != ATA_DEV_ATAPI &&
++	    new_class != ATA_DEV_SEMB) {
+ 		ata_dev_printk(dev, KERN_INFO, "class mismatch %u != %u\n",
+ 			       dev->class, new_class);
+ 		rc = -ENODEV;
+-- 
+1.6.2.4
 
-
+-- 
+Regards/Gruss,
+    Boris.
