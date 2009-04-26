@@ -1,94 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbZDZNP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbZDZNU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbZDZNP0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 09:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZDZNPK
+	id S1753876AbZDZNU4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 09:20:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbZDZNUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 09:15:10 -0400
-Received: from smtp6.welho.com ([213.243.153.40]:39578 "EHLO smtp6.welho.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751058AbZDZNPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 09:15:09 -0400
-Date: Sun, 26 Apr 2009 16:15:05 +0300
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       adaplas@gmail.com
-Subject: Re: [Linux-fbdev-devel] fbcmap: non working tests on unsigned
-	cmap->start
-Message-ID: <20090426131505.GG7134@sci.fi>
-Mail-Followup-To: Roel Kluin <roel.kluin@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-fbdev-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, adaplas@gmail.com
-References: <49EDD799.8060607@gmail.com> <20090423134110.51ea8df2.akpm@linux-foundation.org> <20090423214738.GF7134@sci.fi> <49F4519F.4090003@gmail.com>
+	Sun, 26 Apr 2009 09:20:46 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:45049 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbZDZNUp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 09:20:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=NI50PY/CQ0PbjOMbQ/yOzxXbp5KObeNJ8pw+5FOG0/Ar8yjepIYKUPtYM0TOAIGWDj
+         Te0T87oGhExHqQg33+Ib9x4g03F1ADdE6P9suoaFVDE5fOMrnQreRFGX5H9BKGqAHXGk
+         9OWtpiIsA7IVdU+UX6b29kzHLw1z+PfK5Ziu8=
+Message-ID: <49F45FA4.6020307@panasas.com>
+Date: Sun, 26 Apr 2009 16:20:36 +0300
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49F4519F.4090003@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for April 24
+References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
+In-Reply-To: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 26, 2009 at 02:20:47PM +0200, Roel Kluin wrote:
-> cmap->start is unsigned, A negative start could result in incorrect
-> colors. `start' is used as the starting index for the hardware palette,
-> 'start+len-1' is the last index.
+On Apr. 24, 2009, 8:04 +0300, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi all,
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> >>> vi include/linux/fb.h +478
-> >>>
-> >>> Note that struct fb_cmap_user cmap->start in fb_set_user_cmap() is unsigned.
-> >>> Should there maybe be a test:
-> >>>
-> >>> if (cmap->start > MAX || ...)
-> >>>
-> >>> (and what should MAX be then?)
-> >>>
+> I have added a tree that contains only simple build fixes for Linus'
+> tree.  It currently contains:
 > 
-> > On Thu, Apr 23, 2009 at 01:41:10PM -0700, Andrew Morton wrote:
-> >> argh.
-> >>
-> >> - Perhaps userspace can kill the kernel by sending a "negative"
-> >>   `start'.  Removing the test will make it even less likely that we'll
-> >>   fix this bug.
-> > 
-> > Shouldn't happen. 'start' is used as the starting index for the hardware
-> > palette, 'start+len-1' is the last index. All drivers should already check
-> > the passed values since the maximum index depends on the display mode.
-> > And I suppose the worst thing that could happen if the driver fails to
-> > check the values would be incorrect colors.
+> 	lib: find_next_bit.o needed by a module only, move it from lib to obj
+
+Thanks Stephan!
+I've already sent this patch directly to Linus (and while at it,
+correcting its subject)
+It's committed as a5422a5111811401f7756345e4c237ff06cf6d1e
+in Linus' tree.
+
+Benny
+
+> 	powerpc: fix for long standing bug noticed by gcc 4.4.0
 > 
-> Thanks for your explanation, I think this should fix it?
+> This is just an experiment for now and I am not sure if I should push
+> these fixes directly to Linus ...
 > 
-> diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
-> index f53b9f1..ea62d87 100644
-> --- a/drivers/video/fbcmap.c
-> +++ b/drivers/video/fbcmap.c
-> @@ -266,7 +266,7 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
->  		rc = -ENODEV;
->  		goto out;
->  	}
-> -	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
-> +	if (cmap->start >= cmap->len || (!info->fbops->fb_setcolreg &&
->  				!info->fbops->fb_setcmap)) {
->  		rc = -EINVAL;
->  		goto out1;
+> Changes since 20090423:
+> 
+> New tree:
+> 	fixes
+> 
+> The acpi tree gained a build failure for which I reverted a commit.
+> 
+> ----------------------------------------------------------------------------
+> 
+> I have created today's linux-next tree at
+> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+> (patches at
+> http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+> are tracking the linux-next tree using git, you should not use "git pull"
+> to do so as that will try to merge the new linux-next release with the
+> old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+> (see below).
+> 
+> You can see which trees have been included by looking in the Next/Trees
+> file in the source.  There are also quilt-import.log and merge.log files
+> in the Next directory.  Between each merge, the tree was built with
+> a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+> final fixups (if any), it is also built with powerpc allnoconfig (32 and
+> 64 bit), ppc44x_defconfig and allyesconfig (minus
+> CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+> These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+> CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+> 
+> Below is a summary of the state of the merge.
+> 
+> We are up to 135 trees (counting Linus' and 18 trees of patches pending for
+> Linus' tree), more are welcome (even if they are currently empty).
+> Thanks to those who have contributed, and to those who haven't, please do.
+> 
+> Status of my local build tests will be at
+> http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+> advice about cross compilers/configs that work, we are always open to add
+> more builds.
+> 
+> Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+> at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+> Dunlap for doing many randconfig builds.
+> 
+> There is a wiki covering stuff to do with linux-next at
+> http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+> 
 
-That's not correct. There's nothing wrong with having 'start' >= 'len'.
-
-You would rather need something like
-'if (start+len > 1 << max(red.len, green.len, blue.len, transp.len))'
-and a check to make sure that start+len doesn't overflow.
-
-Oh and I guess it should also check that the visual is pseudocolor or
-directcolor.
-
--- 
-Ville Syrjälä
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
