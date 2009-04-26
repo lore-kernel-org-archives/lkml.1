@@ -1,106 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbZDZO4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbZDZO7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755674AbZDZO4d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 10:56:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754935AbZDZO4Y
+	id S1756219AbZDZO7e (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 10:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbZDZO7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 10:56:24 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:18886 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754905AbZDZO4X (ORCPT
+	Sun, 26 Apr 2009 10:59:25 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:39717 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1754793AbZDZO7Y convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 10:56:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=eiHlTk8WbQSaSlEumzBgkcGaA9ComdpF0vDDFObyzRgb7X3qRRd0J/53LE778IDKoz
-         jQ2trXpd9BMfBihG1QUJRT5IPg3zTcBnndSkfvb/OKLb+/hp/AWFwpabrmFTOwHFqbQB
-         RLt7e13SIoxPTDcCBc/oomQNdaaupEUvspnzA=
-Message-ID: <49F47616.8040102@gmail.com>
-Date: Sun, 26 Apr 2009 16:56:22 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Sun, 26 Apr 2009 10:59:24 -0400
+Message-ID: <440758024.12507@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: ylmao@mail.ustc.edu.cn
+From: "Mao Yilu" <ylmao@mail.ustc.edu.cn>
+To: <linux-kernel@vger.kernel.org>
+Subject: TSC unstable on Intel Pentium M processor 750
+Date: Sun, 26 Apr 2009 22:59:13 +0800
+Message-ID: <9E8AFFF282BE4091BA53C5D4F911F6F0@xiaomao>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] staging: scalar tests on pointers
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Microsoft Office Outlook 11
+thread-index: AcnGe4SH2KXZ7QL4QG2xYqctInFiTA==
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-RTUSBCmdThr_pid, TimerQThr_pid and MLMEThr_pid are pointers.
+Hi,
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-I think this is correct, right?
+I masked all the interrupts except keyboard interrupt before the instruction “hlt”, So the CPU ran nothing until I click the keyboard button. And I used “rdtscll” and “do_gettimeofday” to get the halt time. But the result of “do_gettimeofday” was longer than the one of “rdtscll” about 3s per minute. I don’t know why.
+I timed some math job using the same way in contrary to the “hlt” instruction. The TSC was not correct either. In 3 minutes, the result of “do_gettimeofday” was longer than the one of “rdtscll” about 5s.
+The processor is Intel Pentium M processor 750. From the software developer’s manual of Intel, the processor clock of Pentium M processors is impacted by Intel SpeedStep technology, while some other processors is not. Maybe this is another feature Pentium M processors own.
+Pentium M processors support 5 C-states. I am sure the TSC doesn’t stop in C0 and C1 states. But I am not sure about other states. Maybe other states will stop the clock, and “hlt” instruction will make the CPU into deeper state.
+These are my guess. I wanna the truth. Thank you.
 
-diff --git a/drivers/staging/rt3070/2870_main_dev.c b/drivers/staging/rt3070/2870_main_dev.c
-index 401ddb0..6f405f9 100644
---- a/drivers/staging/rt3070/2870_main_dev.c
-+++ b/drivers/staging/rt3070/2870_main_dev.c
-@@ -976,7 +976,7 @@ VOID RT28xxThreadTerminate(
- 		}
- 	}
- 
--	if (pObj->RTUSBCmdThr_pid >= 0)
-+	if (pid_nr(pObj->RTUSBCmdThr_pid) >= 0)
- 	{
- 		printk("Terminate the RTUSBCmdThr_pid=%d!\n", pid_nr(pObj->RTUSBCmdThr_pid));
- 		mb();
-@@ -998,7 +998,7 @@ VOID RT28xxThreadTerminate(
- 			pObj->RTUSBCmdThr_pid = NULL;
- 		}
- 	}
--	if (pObj->TimerQThr_pid >= 0)
-+	if (pid_nr(pObj->TimerQThr_pid) >= 0)
- 	{
- 		POS_COOKIE pObj = (POS_COOKIE)pAd->OS_Cookie;
- 
-diff --git a/drivers/staging/rt3070/common/rtusb_io.c b/drivers/staging/rt3070/common/rtusb_io.c
-index a6a52e3..aa6eecc 100644
---- a/drivers/staging/rt3070/common/rtusb_io.c
-+++ b/drivers/staging/rt3070/common/rtusb_io.c
-@@ -873,7 +873,7 @@ NDIS_STATUS	RTUSBEnqueueCmdFromNdis(
- 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;
- 
- 
--	if (pObj->RTUSBCmdThr_pid < 0)
-+	if (pid_nr(pObj->RTUSBCmdThr_pid) < 0)
- 		return (NDIS_STATUS_RESOURCES);
- 
- 	status = RTMPAllocateMemory((PVOID *)&cmdqelmt, sizeof(CmdQElmt));
-diff --git a/drivers/staging/rt3070/rt2870.h b/drivers/staging/rt3070/rt2870.h
-index d32a2bf..193bff4 100644
---- a/drivers/staging/rt3070/rt2870.h
-+++ b/drivers/staging/rt3070/rt2870.h
-@@ -567,18 +567,18 @@ VOID RTUSBBulkOutPsPollComplete(purbb_t pUrb, struct pt_regs *pt_regs);
- VOID RTUSBBulkRxComplete(purbb_t pUrb, struct pt_regs *pt_regs);
- 
- 
--#define RTUSBMlmeUp(pAd)	        \
--{								    \
-+#define RTUSBMlmeUp(pAd)				\
-+{							\
- 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;	\
--	if(pObj->MLMEThr_pid>0)		    \
--        up(&(pAd->mlme_semaphore)); \
-+	if (pid_nr(pObj->MLMEThr_pid) > 0)		\
-+		up(&(pAd->mlme_semaphore));		\
- }
- 
--#define RTUSBCMDUp(pAd)	                \
--{									    \
-+#define RTUSBCMDUp(pAd)					\
-+{							\
- 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;	\
--	if(pObj->RTUSBCmdThr_pid>0)		    \
--	    up(&(pAd->RTUSBCmd_semaphore)); \
-+	if (pid_nr(pObj->RTUSBCmdThr_pid) > 0)		\
-+		up(&(pAd->RTUSBCmd_semaphore));		\
- }
- 
- 
+Mao Yilu
+
