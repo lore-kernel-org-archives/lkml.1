@@ -1,46 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753055AbZDZExq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750871AbZDZEzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753055AbZDZExq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 00:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbZDZExh
+	id S1750871AbZDZEzn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 00:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZDZEzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 00:53:37 -0400
-Received: from utopia.booyaka.com ([72.9.107.138]:55955 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750831AbZDZExg (ORCPT
+	Sun, 26 Apr 2009 00:55:32 -0400
+Received: from mail00d.mail.t-online.hu ([84.2.42.5]:49794 "EHLO
+	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbZDZEzb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 00:53:36 -0400
-Date: Sat, 25 Apr 2009 22:53:35 -0600 (MDT)
-From: Paul Walmsley <paul@pwsan.com>
-To: linux-omap@vger.kernel.org
-cc: lrg@slimlogic.co.uk, broonie@opensource.wolfsonmicro.com,
-       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net
-Subject: Re: [PATCH] regulator core: fix double-free in regulator_register()
- error path
-In-Reply-To: <alpine.DEB.2.00.0904250526210.28378@utopia.booyaka.com>
-Message-ID: <alpine.DEB.2.00.0904252250230.4291@utopia.booyaka.com>
-References: <alpine.DEB.2.00.0904250526210.28378@utopia.booyaka.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 26 Apr 2009 00:55:31 -0400
+Message-ID: <49F3E917.70604@freemail.hu>
+Date: Sun, 26 Apr 2009 06:54:47 +0200
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Trent Piepho <xyzzy@speakeasy.org>
+CC: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] v4l2: fill the unused fields with zeros in case of VIDIOC_S_FMT
+References: <49F2C59A.9010703@freemail.hu> <Pine.LNX.4.58.0904251045070.3753@shell2.speakeasy.net>
+In-Reply-To: <Pine.LNX.4.58.0904251045070.3753@shell2.speakeasy.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail00d.mail.t-online.hu 32720; Body=4 Fuz1=4
+	Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 Apr 2009, Paul Walmsley wrote:
-
-> During regulator registration, any error after device_register() will 
-> cause a double-free on the struct regulator_dev 'rdev'.  The bug is in 
-> drivers/regulator/core.c:regulator_register():
->
-> ...
+Trent Piepho wrote:
+> On Sat, 25 Apr 2009, [UTF-8] Németh Márton wrote:
+>> The VIDIOC_S_FMT is a write-read ioctl: it sets the format and returns
+>> the current format in case of success. The parameter of VIDIOC_S_FMT
+>> ioctl is a pointer to struct v4l2_format. [1] This structure contains some
+>> fields which are not used depending on the .type value. These unused
+>> fields are filled with zeros with this patch.
 > 
-> device_unregister() calls regulator_dev_release() which frees rdev.  The 
-> subsequent kfree corrupts memory and causes some OMAP3 systems to oops on 
-> boot in regulator_get().
+> It's a union, so it's not really the case the the fields are unused.  If
+> it's a non-private format, the structure will have some empty padding space
+> at the end of the structure after the last field for the format's type.
 
-For the 3430SDP users out there, this patch also fixes the boot hang after 
-"regulator_init_complete: incomplete constraints, leaving VAUX3 on"
-on that device.
+Maybe I used the wrong word: my intention was to clear the unused padding bytes
+at the end of the fmt union.
 
-- Paul
+> Since it's just padding space and there are no fields defined, I don't
+> think we have to clear it.
+
+Think about a case when in a future kernel version one additional field
+is defined for example for struct v4l2_pix_format. Then an application is
+built with this extended structure. When the application runs on an older
+kernel then this new field will be not touched by the older kernel in other
+words the last field(s) of struct v4l2_pix_format will be uninitialized.
+
+The other reason why I think is useful to fill the padding bytes with zero
+is that this prevents doing dirty tricks between the application and the
+driver, for example communicating through padding bytes in case of a
+non-private format.
+
+>>  		struct v4l2_format *f = (struct v4l2_format *)arg;
+>>
+>> +#define CLEAR_UNUSED_FIELDS(data, last_member) \
+>> +	memset(((u8 *)f)+ \
+>> +		offsetof(struct v4l2_format, fmt)+ \
+>> +		sizeof(struct v4l2_ ## last_member), \
+>> +		0, \
+>> +		sizeof(*f)- \
+>> +		offsetof(struct v4l2_format, fmt)+ \
+>> +		sizeof(struct v4l2_ ## last_member))
+>> +
+> 
+> What is "data" used for?  The length in your memset is wrong.  You didn't
+> run this through "make patch" did you?  Because there are spacing/formatting
+> errors that that would have caught.
+
+Thank you for pointing out these problems. I'll send an update soon.
+
+I don't know anything about "make patch", but I have run the
+linux/scripts/checkpatch.pl against my patch and it found the patch OK.
+
+Regards,
+
+	Márton Németh
