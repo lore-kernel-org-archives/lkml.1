@@ -1,90 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbZDZQnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZDZQnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685AbZDZQnZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 12:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZDZQnO
+	id S1754728AbZDZQnk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 12:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbZDZQn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 12:43:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43956 "EHLO hera.kernel.org"
+	Sun, 26 Apr 2009 12:43:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43962 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752994AbZDZQnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 12:43:13 -0400
-Date: Sun, 26 Apr 2009 16:42:32 GMT
-From: tip-bot for Ming Lei <tom.leiming@gmail.com>
+	id S1754301AbZDZQnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 12:43:25 -0400
+Date: Sun, 26 Apr 2009 16:42:42 GMT
+From: tip-bot for Joerg Roedel <joerg.roedel@amd.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, tom.leiming@gmail.com, mingo@elte.hu
+       joerg.roedel@amd.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, tom.leiming@gmail.com, mingo@elte.hu
-In-Reply-To: <1240585806-5744-1-git-send-email-tom.leiming@gmail.com>
-References: <1240585806-5744-1-git-send-email-tom.leiming@gmail.com>
-Subject: [tip:core/urgent] locking: Documentation: lockdep-design.txt, fix note of state bits
-Message-ID: <tip-992d7ced75322307035a0e94074eb7188612a680@git.kernel.org>
-Git-Commit-ID: 992d7ced75322307035a0e94074eb7188612a680
+       joerg.roedel@amd.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1240576557-22442-1-git-send-email-joerg.roedel@amd.com>
+References: <1240576557-22442-1-git-send-email-joerg.roedel@amd.com>
+Subject: [tip:core/urgent] dma-debug: remove broken dma memory leak detection for 2.6.30
+Message-ID: <tip-314eeac9e35d8b934dd7a09ed3a8e00d41977b84@git.kernel.org>
+Git-Commit-ID: 314eeac9e35d8b934dd7a09ed3a8e00d41977b84
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 26 Apr 2009 16:42:34 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 26 Apr 2009 16:42:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  992d7ced75322307035a0e94074eb7188612a680
-Gitweb:     http://git.kernel.org/tip/992d7ced75322307035a0e94074eb7188612a680
-Author:     Ming Lei <tom.leiming@gmail.com>
-AuthorDate: Fri, 24 Apr 2009 23:10:06 +0800
+Commit-ID:  314eeac9e35d8b934dd7a09ed3a8e00d41977b84
+Gitweb:     http://git.kernel.org/tip/314eeac9e35d8b934dd7a09ed3a8e00d41977b84
+Author:     Joerg Roedel <joerg.roedel@amd.com>
+AuthorDate: Fri, 24 Apr 2009 14:35:57 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 26 Apr 2009 18:21:24 +0200
+CommitDate: Sun, 26 Apr 2009 18:23:56 +0200
 
-locking: Documentation: lockdep-design.txt, fix note of state bits
+dma-debug: remove broken dma memory leak detection for 2.6.30
 
->From source code of get_usage_char(), the previous note is not correct,
-so fix it.
+The feature needs some more work because the notfier which is used to
+check for pending allocations is called before the device drivers
+->remove() function. Therefore this feature reports false positives.
 
-static char get_usage_char(struct lock_class *class, enum lock_usage_bit bit)
-{
-	char c = '.';
+A real fix for this issue is to introduce a new notifier event which sent
+_after_ the driver has deinitialized itself. That will done for the next
+kernel version.
 
-	if (class->usage_mask & lock_flag(bit + 2))/*LOCK_ENABLED_##STATE*/
-		c = '+';
-	if (class->usage_mask & lock_flag(bit)) {/*LOCK_USED_IN_##STATE*/
-		c = '-';
-		if (class->usage_mask & lock_flag(bit + 2))
-			c = '?';
-	}
+[ Impact: reduce the scope of CONFIG_DMA_API_DEBUG=y checks ]
 
-	return c;
-}
-
-note:
-
-1) The 'bit' parameter always is passed as  LOCK_USED_IN_##STATE
-   or LOCK_USED_IN_##STATE_READ , from get_usage_chars().
-
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
-LKML-Reference: <1240585806-5744-1-git-send-email-tom.leiming@gmail.com>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Cc: iommu@lists.linux-foundation.org
+LKML-Reference: <1240576557-22442-1-git-send-email-joerg.roedel@amd.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- Documentation/lockdep-design.txt |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ lib/dma-debug.c |   53 +----------------------------------------------------
+ 1 files changed, 1 insertions(+), 52 deletions(-)
 
-diff --git a/Documentation/lockdep-design.txt b/Documentation/lockdep-design.txt
-index 938ea22..e20d913 100644
---- a/Documentation/lockdep-design.txt
-+++ b/Documentation/lockdep-design.txt
-@@ -54,9 +54,9 @@ locking error messages, inside curlies. A contrived example:
- The bit position indicates STATE, STATE-read, for each of the states listed
- above, and the character displayed in each indicates:
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index d3da7ed..69da09a 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -400,60 +400,9 @@ out_err:
+ 	return -ENOMEM;
+ }
  
--   '.'  acquired while irqs disabled
--   '+'  acquired in irq context
--   '-'  acquired with irqs enabled
-+   '.'  acquired while irqs disabled and not in irq context
-+   '-'  acquired in irq context
-+   '+'  acquired with irqs enabled
-    '?'  acquired in irq context with irqs enabled.
+-static int device_dma_allocations(struct device *dev)
+-{
+-	struct dma_debug_entry *entry;
+-	unsigned long flags;
+-	int count = 0, i;
+-
+-	for (i = 0; i < HASH_SIZE; ++i) {
+-		spin_lock_irqsave(&dma_entry_hash[i].lock, flags);
+-		list_for_each_entry(entry, &dma_entry_hash[i].list, list) {
+-			if (entry->dev == dev)
+-				count += 1;
+-		}
+-		spin_unlock_irqrestore(&dma_entry_hash[i].lock, flags);
+-	}
+-
+-	return count;
+-}
+-
+-static int dma_debug_device_change(struct notifier_block *nb,
+-				    unsigned long action, void *data)
+-{
+-	struct device *dev = data;
+-	int count;
+-
+-
+-	switch (action) {
+-	case BUS_NOTIFY_UNBIND_DRIVER:
+-		count = device_dma_allocations(dev);
+-		if (count == 0)
+-			break;
+-		err_printk(dev, NULL, "DMA-API: device driver has pending "
+-				"DMA allocations while released from device "
+-				"[count=%d]\n", count);
+-		break;
+-	default:
+-		break;
+-	}
+-
+-	return 0;
+-}
+-
+ void dma_debug_add_bus(struct bus_type *bus)
+ {
+-	struct notifier_block *nb;
+-
+-	nb = kzalloc(sizeof(struct notifier_block), GFP_KERNEL);
+-	if (nb == NULL) {
+-		printk(KERN_ERR "dma_debug_add_bus: out of memory\n");
+-		return;
+-	}
+-
+-	nb->notifier_call = dma_debug_device_change;
+-
+-	bus_register_notifier(bus, nb);
++	/* FIXME: register notifier */
+ }
  
- Unused mutexes cannot be part of the cause of an error.
+ /*
