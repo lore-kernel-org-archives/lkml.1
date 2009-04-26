@@ -1,371 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbZDZWjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbZDZXGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755666AbZDZWjA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 18:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZDZWir
+	id S1754691AbZDZXGy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 19:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZDZXGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 18:38:47 -0400
-Received: from tundra.namei.org ([65.99.196.166]:56157 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753115AbZDZWiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 18:38:46 -0400
-Date: Mon, 27 Apr 2009 08:37:46 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: npiggin@suse.de
-cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@redhat.com>
-Subject: Re: [patch 5/5] fs: cleanup files_lock
-In-Reply-To: <20090426102953.788377292@suse.de>
-Message-ID: <alpine.LRH.2.00.0904270836590.12135@tundra.namei.org>
-References: <20090426102552.947523845@suse.de> <20090426102953.788377292@suse.de>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Sun, 26 Apr 2009 19:06:47 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:23313 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbZDZXGq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 19:06:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=oyVUpzljBIrQ7LV3GHBd5SFKt2WVaV8jJacsl3Ivj3Uxne7UEOpSDWWJK5loSp/eaK
+         SU6hP6fenSeNqROnuDG0njNiZaVUInaAEdsmvNEMrU7hjpmhBFu6xnu97eiM//HuLCpt
+         ugrb7zEKd/cngx+Ejmwn0gOptnbKI70vyOdvg=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <m3y6tnaxh8.fsf@intrepid.localdomain>
+References: <m3y6tnaxh8.fsf@intrepid.localdomain>
+Date: Sun, 26 Apr 2009 19:06:45 -0400
+Message-ID: <f7910e810904261606g6f946f87wb45e3c356cf7999d@mail.gmail.com>
+Subject: Re: IXP42x rev. A0 support for network devices
+From: John Woods <johnrw@gmail.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Benoit LIETAER <blietaer@free.fr>, lkml <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 26 Apr 2009, npiggin@suse.de wrote:
-
-> Lock tty_files with a new spinlock, tty_files_lock; provide helpers to
-> manipulate the per-sb files list; unexport the files_lock spinlock.
-> 
-> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-
-The SELinux tty part looks fine to me.
-
-Acked-by: James Morris <jmorris@namei.org>
-
-> ---
->  drivers/char/pty.c       |    6 +++++-
->  drivers/char/tty_io.c    |   26 ++++++++++++++++++--------
->  fs/file_table.c          |   44 +++++++++++++++++++-------------------------
->  fs/open.c                |    4 ++--
->  include/linux/fs.h       |    8 +++-----
->  include/linux/tty.h      |    1 +
->  security/selinux/hooks.c |    4 ++--
->  7 files changed, 50 insertions(+), 43 deletions(-)
-> 
-> Index: linux-2.6/drivers/char/pty.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/char/pty.c
-> +++ linux-2.6/drivers/char/pty.c
-> @@ -662,7 +662,11 @@ static int __ptmx_open(struct inode *ino
->  
->  	set_bit(TTY_PTY_LOCK, &tty->flags); /* LOCK THE SLAVE */
->  	filp->private_data = tty;
-> -	file_move(filp, &tty->tty_files);
-> +
-> +	file_sb_list_del(filp); /* __dentry_open has put it on the sb list */
-> +	spin_lock(&tty_files_lock);
-> +	list_add(&filp->f_u.fu_list, &tty->tty_files);
-> +	spin_unlock(&tty_files_lock);
->  
->  	retval = devpts_pty_new(inode, tty->link);
->  	if (retval)
-> Index: linux-2.6/drivers/char/tty_io.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/char/tty_io.c
-> +++ linux-2.6/drivers/char/tty_io.c
-> @@ -136,6 +136,9 @@ LIST_HEAD(tty_drivers);			/* linked list
->  DEFINE_MUTEX(tty_mutex);
->  EXPORT_SYMBOL(tty_mutex);
->  
-> +/* Spinlock to protect the tty->tty_files list */
-> +DEFINE_SPINLOCK(tty_files_lock);
-> +
->  static ssize_t tty_read(struct file *, char __user *, size_t, loff_t *);
->  static ssize_t tty_write(struct file *, const char __user *, size_t, loff_t *);
->  ssize_t redirected_tty_write(struct file *, const char __user *,
-> @@ -235,11 +238,11 @@ static int check_tty_count(struct tty_st
->  	struct list_head *p;
->  	int count = 0;
->  
-> -	file_list_lock();
-> +	spin_lock(&tty_files_lock);
->  	list_for_each(p, &tty->tty_files) {
->  		count++;
->  	}
-> -	file_list_unlock();
-> +	spin_unlock(&tty_files_lock);
->  	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
->  	    tty->driver->subtype == PTY_TYPE_SLAVE &&
->  	    tty->link && tty->link->count)
-> @@ -554,7 +557,7 @@ static void do_tty_hangup(struct work_st
->  	spin_unlock(&redirect_lock);
->  
->  	check_tty_count(tty, "do_tty_hangup");
-> -	file_list_lock();
-> +	spin_lock(&tty_files_lock);
->  	/* This breaks for file handles being sent over AF_UNIX sockets ? */
->  	list_for_each_entry(filp, &tty->tty_files, f_u.fu_list) {
->  		if (filp->f_op->write == redirected_tty_write)
-> @@ -565,7 +568,7 @@ static void do_tty_hangup(struct work_st
->  		tty_fasync(-1, filp, 0);	/* can't block */
->  		filp->f_op = &hung_up_tty_fops;
->  	}
-> -	file_list_unlock();
-> +	spin_unlock(&tty_files_lock);
->  	/*
->  	 * FIXME! What are the locking issues here? This may me overdoing
->  	 * things... This question is especially important now that we've
-> @@ -1467,9 +1470,9 @@ static void release_one_tty(struct kref
->  	tty_driver_kref_put(driver);
->  	module_put(driver->owner);
->  
-> -	file_list_lock();
-> +	spin_lock(&tty_files_lock);
->  	list_del_init(&tty->tty_files);
-> -	file_list_unlock();
-> +	spin_unlock(&tty_files_lock);
->  
->  	free_tty_struct(tty);
->  }
-> @@ -1678,7 +1681,10 @@ void tty_release_dev(struct file *filp)
->  	 *  - do_tty_hangup no longer sees this file descriptor as
->  	 *    something that needs to be handled for hangups.
->  	 */
-> -	file_kill(filp);
-> +	spin_lock(&tty_files_lock);
-> +	BUG_ON(list_empty(&filp->f_u.fu_list));
-> +	list_del_init(&filp->f_u.fu_list);
-> +	spin_unlock(&tty_files_lock);
->  	filp->private_data = NULL;
->  
->  	/*
-> @@ -1836,7 +1842,11 @@ got_driver:
->  		return PTR_ERR(tty);
->  
->  	filp->private_data = tty;
-> -	file_move(filp, &tty->tty_files);
-> +	BUG_ON(list_empty(&filp->f_u.fu_list));
-> +	file_sb_list_del(filp); /* __dentry_open has put it on the sb list */
-> +	spin_lock(&tty_files_lock);
-> +	list_add(&filp->f_u.fu_list, &tty->tty_files);
-> +	spin_unlock(&tty_files_lock);
->  	check_tty_count(tty, "tty_open");
->  	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
->  	    tty->driver->subtype == PTY_TYPE_MASTER)
-> Index: linux-2.6/fs/file_table.c
-> ===================================================================
-> --- linux-2.6.orig/fs/file_table.c
-> +++ linux-2.6/fs/file_table.c
-> @@ -30,8 +30,7 @@ struct files_stat_struct files_stat = {
->  	.max_files = NR_FILE
->  };
->  
-> -/* public. Not pretty! */
-> -__cacheline_aligned_in_smp DEFINE_SPINLOCK(files_lock);
-> +static __cacheline_aligned_in_smp DEFINE_SPINLOCK(files_lock);
->  
->  /* SLAB cache for file structures */
->  static struct kmem_cache *filp_cachep __read_mostly;
-> @@ -285,7 +284,7 @@ void __fput(struct file *file)
->  		cdev_put(inode->i_cdev);
->  	fops_put(file->f_op);
->  	put_pid(file->f_owner.pid);
-> -	file_kill(file);
-> +	file_sb_list_del(file);
->  	if (file->f_mode & FMODE_WRITE)
->  		drop_file_write_access(file);
->  	file->f_path.dentry = NULL;
-> @@ -347,31 +346,29 @@ struct file *fget_light(unsigned int fd,
->  	return file;
->  }
->  
-> -
->  void put_filp(struct file *file)
->  {
->  	if (atomic_long_dec_and_test(&file->f_count)) {
->  		security_file_free(file);
-> -		file_kill(file);
-> +		file_sb_list_del(file);
->  		file_free(file);
->  	}
->  }
->  
-> -void file_move(struct file *file, struct list_head *list)
-> +void file_sb_list_add(struct file *file, struct super_block *sb)
->  {
-> -	if (!list)
-> -		return;
-> -	file_list_lock();
-> -	list_move(&file->f_u.fu_list, list);
-> -	file_list_unlock();
-> +	spin_lock(&files_lock);
-> +	BUG_ON(!list_empty(&file->f_u.fu_list));
-> +	list_add(&file->f_u.fu_list, &sb->s_files);
-> +	spin_unlock(&files_lock);
->  }
->  
-> -void file_kill(struct file *file)
-> +void file_sb_list_del(struct file *file)
->  {
->  	if (!list_empty(&file->f_u.fu_list)) {
-> -		file_list_lock();
-> +		spin_lock(&files_lock);
->  		list_del_init(&file->f_u.fu_list);
-> -		file_list_unlock();
-> +		spin_unlock(&files_lock);
->  	}
->  }
->  
-> @@ -380,7 +377,7 @@ int fs_may_remount_ro(struct super_block
->  	struct file *file;
->  
->  	/* Check that no files are currently opened for writing. */
-> -	file_list_lock();
-> +	spin_lock(&files_lock);
->  	list_for_each_entry(file, &sb->s_files, f_u.fu_list) {
->  		struct inode *inode = file->f_path.dentry->d_inode;
->  
-> @@ -392,10 +389,10 @@ int fs_may_remount_ro(struct super_block
->  		if (S_ISREG(inode->i_mode) && (file->f_mode & FMODE_WRITE))
->  			goto too_bad;
->  	}
-> -	file_list_unlock();
-> +	spin_unlock(&files_lock);
->  	return 1; /* Tis' cool bro. */
->  too_bad:
-> -	file_list_unlock();
-> +	spin_unlock(&files_lock);
->  	return 0;
->  }
->  
-> @@ -406,12 +403,12 @@ too_bad:
->   *	All files are marked read-only.  We don't care about pending
->   *	delete files so this should be used in 'force' mode only.
->   */
-> -static void mark_files_ro(struct super_block *sb)
-> +void mark_files_ro(struct super_block *sb)
->  {
->  	struct file *f;
->  
->  retry:
-> -	file_list_lock();
-> +	spin_lock(&files_lock);
->  	list_for_each_entry(f, &sb->s_files, f_u.fu_list) {
->  		struct vfsmount *mnt;
->  		if (!S_ISREG(f->f_path.dentry->d_inode->i_mode))
-> @@ -425,16 +422,13 @@ retry:
->  			continue;
->  		file_release_write(f);
->  		mnt = mntget(f->f_path.mnt);
-> -		file_list_unlock();
-> -		/*
-> -		 * This can sleep, so we can't hold
-> -		 * the file_list_lock() spinlock.
-> -		 */
-> +		/* This can sleep, so we can't hold the spinlock. */
-> +		spin_unlock(&files_lock);
->  		mnt_drop_write(mnt);
->  		mntput(mnt);
->  		goto retry;
->  	}
-> -	file_list_unlock();
-> +	spin_unlock(&files_lock);
->  }
->  
->  void __init files_init(unsigned long mempages)
-> Index: linux-2.6/fs/open.c
-> ===================================================================
-> --- linux-2.6.orig/fs/open.c
-> +++ linux-2.6/fs/open.c
-> @@ -828,7 +828,7 @@ static struct file *__dentry_open(struct
->  	f->f_path.mnt = mnt;
->  	f->f_pos = 0;
->  	f->f_op = fops_get(inode->i_fop);
-> -	file_move(f, &inode->i_sb->s_files);
-> +	file_sb_list_add(f, inode->i_sb);
->  
->  	error = security_dentry_open(f, cred);
->  	if (error)
-> @@ -873,7 +873,7 @@ cleanup_all:
->  			mnt_drop_write(mnt);
->  		}
->  	}
-> -	file_kill(f);
-> +	file_sb_list_del(f);
->  	f->f_path.dentry = NULL;
->  	f->f_path.mnt = NULL;
->  cleanup_file:
-> Index: linux-2.6/include/linux/fs.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/fs.h
-> +++ linux-2.6/include/linux/fs.h
-> @@ -934,9 +934,6 @@ struct file {
->  	unsigned long f_mnt_write_state;
->  #endif
->  };
-> -extern spinlock_t files_lock;
-> -#define file_list_lock() spin_lock(&files_lock);
-> -#define file_list_unlock() spin_unlock(&files_lock);
->  
->  #define get_file(x)	atomic_long_inc(&(x)->f_count)
->  #define file_count(x)	atomic_long_read(&(x)->f_count)
-> @@ -2021,6 +2018,7 @@ extern const struct file_operations read
->  extern const struct file_operations write_pipefifo_fops;
->  extern const struct file_operations rdwr_pipefifo_fops;
->  
-> +extern void mark_files_ro(struct super_block *sb);
->  extern int fs_may_remount_ro(struct super_block *);
->  
->  #ifdef CONFIG_BLOCK
-> @@ -2172,8 +2170,8 @@ static inline void insert_inode_hash(str
->  }
->  
->  extern struct file * get_empty_filp(void);
-> -extern void file_move(struct file *f, struct list_head *list);
-> -extern void file_kill(struct file *f);
-> +extern void file_sb_list_add(struct file *f, struct super_block *sb);
-> +extern void file_sb_list_del(struct file *f);
->  #ifdef CONFIG_BLOCK
->  struct bio;
->  extern void submit_bio(int, struct bio *);
-> Index: linux-2.6/security/selinux/hooks.c
-> ===================================================================
-> --- linux-2.6.orig/security/selinux/hooks.c
-> +++ linux-2.6/security/selinux/hooks.c
-> @@ -2244,7 +2244,7 @@ static inline void flush_unauthorized_fi
->  
->  	tty = get_current_tty();
->  	if (tty) {
-> -		file_list_lock();
-> +		spin_lock(&tty_files_lock);
->  		if (!list_empty(&tty->tty_files)) {
->  			struct inode *inode;
->  
-> @@ -2260,7 +2260,7 @@ static inline void flush_unauthorized_fi
->  				drop_tty = 1;
->  			}
->  		}
-> -		file_list_unlock();
-> +		spin_unlock(&tty_files_lock);
->  		tty_kref_put(tty);
->  	}
->  	/* Reset controlling tty. */
-> Index: linux-2.6/include/linux/tty.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/tty.h
-> +++ linux-2.6/include/linux/tty.h
-> @@ -426,6 +426,7 @@ extern void tty_release_dev(struct file
->  extern int tty_init_termios(struct tty_struct *tty);
->  
->  extern struct mutex tty_mutex;
-> +extern spinlock_t tty_files_lock;
->  
->  extern void tty_write_unlock(struct tty_struct *tty);
->  extern int tty_write_lock(struct tty_struct *tty, int ndelay);
-> 
-> 
+On Sun, Apr 26, 2009 at 5:58 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> Hi,
+>
+> well, I finally found that old prototype board with IXP425 rev A0 and
+> I was even able to implant some modern RedBoot to it, so I gave it
+> a try.
+>
+> It seems that a list of rev. A0 bugs (or "bugs") isn't that long after
+> all (those affecting Ethernet at least). Basically the QMgr IRQ status
+> is unreliable, and the undocumented "feature" register is write-only.
+>
+> This patch is a bit of handcraft but it applies to 2.6.29 and
+> probably to older kernels.
+> Benoit, John, please let me know if it works or not. Thanks.
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+> Krzysztof Halasa
+>
+> --- a/arch/arm/mach-ixp4xx/include/mach/cpu.h
+> +++ b/arch/arm/mach-ixp4xx/include/mach/cpu.h
+> @@ -26,6 +26,8 @@
+>  #define IXP46X_PROCESSOR_ID_VALUE      0x69054200
+>  #define IXP46X_PROCESSOR_ID_MASK       0xfffffff0
+>
+> +#define cpu_is_ixp42x_rev_a0() ((read_cpuid_id() & (IXP4XX_PROCESSOR_ID_MASK | 0xF)) == \
+> +                               IXP42X_PROCESSOR_ID_VALUE)
+>  #define cpu_is_ixp42x()        ((read_cpuid_id() & IXP4XX_PROCESSOR_ID_MASK) == \
+>                         IXP42X_PROCESSOR_ID_VALUE)
+>  #define cpu_is_ixp43x()        ((read_cpuid_id() & IXP43X_PROCESSOR_ID_MASK) == \
+> @@ -35,6 +35,9 @@
+>  {
+>        unsigned int val = ~*IXP4XX_EXP_CFG2;
+>        val &= ~IXP4XX_FEATURE_RESERVED;
+> +       if (cpu_is_ixp42x_rev_a0())
+> +               return ~IXP4XX_FEATURE_IXP46X_ONLY & ~(IXP4XX_FEATURE_RCOMP |
+> +                                                      IXP4XX_FEATURE_AES);
+>        if (!cpu_is_ixp46x())
+>                val &= ~IXP4XX_FEATURE_IXP46X_ONLY;
+>
+> --- a/arch/arm/mach-ixp4xx/ixp4xx_npe.c
+> +++ b/arch/arm/mach-ixp4xx/ixp4xx_npe.c
+> @@ -386,15 +386,6 @@ static int npe_reset(struct npe *npe)
+>        /* reset the NPE */
+>        ixp4xx_write_feature_bits(val &
+>                                  ~(IXP4XX_FEATURE_RESET_NPEA << npe->id));
+> -       for (i = 0; i < MAX_RETRIES; i++) {
+> -               if (!(ixp4xx_read_feature_bits() &
+> -                     (IXP4XX_FEATURE_RESET_NPEA << npe->id)))
+> -                       break;  /* reset completed */
+> -               udelay(1);
+> -       }
+> -       if (i == MAX_RETRIES)
+> -               return -ETIMEDOUT;
+> -
+>        /* deassert reset */
+>        ixp4xx_write_feature_bits(val |
+>                                  (IXP4XX_FEATURE_RESET_NPEA << npe->id));
+> --- a/arch/arm/mach-ixp4xx/ixp4xx_qmgr.c
+> +++ b/arch/arm/mach-ixp4xx/ixp4xx_qmgr.c
+> @@ -41,6 +41,31 @@ void qmgr_set_irq(unsigned int queue, int src,
+>  }
+>
+>
+> +static irqreturn_t qmgr_irq1_a0(int irq, void *pdev)
+> +{
+> +       int i, ret = 0;
+> +
+> +       /* ACK - it may also clear newly requested irqs so don't rely on it */
+> +       __raw_writel(__raw_readl(&qmgr_regs->irqstat[0]),
+> +                    &qmgr_regs->irqstat[0]);
+> +
+> +       for (i = 0; i < HALF_QUEUES; i++) {
+> +               u32 src, stat;
+> +               if (!(qmgr_regs->irqen[0] & BIT(i)))
+> +                       continue;
+> +               src = qmgr_regs->irqsrc[i >> 3];
+> +               stat = qmgr_regs->stat1[i >> 3];
+> +               if (src & 4) /* the IRQ condition is inverted */
+> +                       stat = ~stat;
+> +               if (stat & BIT(src & 3)) {
+> +                       irq_handlers[i](irq_pdevs[i]);
+> +                       ret = IRQ_HANDLED;
+> +               }
+> +       }
+> +       return ret;
+> +}
+> +
+> +
+>  static irqreturn_t qmgr_irq1(int irq, void *pdev)
+>  {
+>        int i;
+> @@ -250,8 +275,8 @@ static int qmgr_init(void)
+>        for (i = 0; i < QUEUES; i++)
+>                __raw_writel(0, &qmgr_regs->sram[i]);
+>
+> -       err = request_irq(IRQ_IXP4XX_QM1, qmgr_irq1, 0,
+> -                         "IXP4xx Queue Manager", NULL);
+> +       err = request_irq(IRQ_IXP4XX_QM1, cpu_is_ixp42x_rev_a0() ? qmgr_irq1_a0
+> +                         : qmgr_irq1, 0, "IXP4xx Queue Manager", NULL);
+>        if (err) {
+>                printk(KERN_ERR "qmgr: failed to request IRQ%i\n",
+>                       IRQ_IXP4XX_QM1);
+>
 
--- 
-James Morris
-<jmorris@namei.org>
+Hi Krzysztof,
+
+I should be able to test it, in a day.
+Thank You!
+
+John Woods
