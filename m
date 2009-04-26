@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755112AbZDZONv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZDZOO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755112AbZDZONv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 10:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbZDZONj
+	id S1755304AbZDZOO0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 10:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbZDZOOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 10:13:39 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:45956 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753120AbZDZONh convert rfc822-to-8bit (ORCPT
+	Sun, 26 Apr 2009 10:14:16 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:14240 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754108AbZDZOOP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 10:13:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xbR7jCinF8LtMdte7uuKhSAp+8a6Gab/5br8oeY5omLMIiFYDKkw19eU3yw5GZ8G3S
-         pe4mLSaH77ohQwb4I9dAt1ojDeHQ6pHN8z512Owq+l9vebH/GufY7AOdwgH0ObA02Kkh
-         IyYG1bnNxffiR5CRKTFaaav9l6q8CPu88RrNY=
+	Sun, 26 Apr 2009 10:14:15 -0400
+Message-ID: <49F46C22.7020401@panasas.com>
+Date: Sun, 26 Apr 2009 17:13:54 +0300
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <49F43975.2060106@gmail.com>
-References: <1240661363-16631-1-git-send-email-jirislaby@gmail.com>
-	 <20090426020047.GA10885@hash.localnet> <49F43975.2060106@gmail.com>
-Date: Sun, 26 Apr 2009 17:13:35 +0300
-Message-ID: <40f31dec0904260713o97f5cs95f87d72e8772e64@mail.gmail.com>
-Subject: Re: [PATCH 1/1] ath5k: 5211, don't crypt every protected frame
-From: Nick Kossifidis <mickflemm@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Bob Copeland <me@bobcopeland.com>, linville@tuxdriver.com,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Christoph Hellwig <hch@infradead.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Fred Isaman <iisaman@citi.umich.edu>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: Re: [PATCH] lib: find_last_bit.o needed by a module only, move it
+ from lib to obj
+References: <1240494032-9674-1-git-send-email-bhalevy@panasas.com> <200904262205.20608.rusty@rustcorp.com.au> <20090426131422.GA19701@infradead.org>
+In-Reply-To: <20090426131422.GA19701@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Apr 2009 14:14:10.0284 (UTC) FILETIME=[44B53AC0:01C9C679]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/26 Jiri Slaby <jirislaby@gmail.com>:
-> On 04/26/2009 04:00 AM, Bob Copeland wrote:
->> On Sat, Apr 25, 2009 at 02:09:23PM +0200, Jiri Slaby wrote:
->>> Hi guys,
->>> do you remember some 5211 HW which didn't work with this?
->>> --
+On Apr. 26, 2009, 16:14 +0300, Christoph Hellwig <hch@infradead.org> wrote:
+> On Sun, Apr 26, 2009 at 10:05:19PM +0930, Rusty Russell wrote:
+>> On Thu, 23 Apr 2009 11:10:32 pm Benny Halevy wrote:
+>>> From: Fred Isaman <iisaman@citi.umich.edu>
 >>>
->>> Set null key type even on ar5211, otherwise it en/decrypts every frame with
->>> protected bit set which renders the card unusable on encrypted networks.
+>>> Currently, although find_last_bit is EXPORTed, it is statically linked with
+>>> the lernel and is referenced only under CONFIG_SMP.
+>> Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 >>
->> Not me.  I don't have the hardware, so I would say if your patch is known
->> to work on a 5211 then we go with it.
->
-> Ok, thanks. Of course the HW I used (IBM T40 Thinkpad) needs the patch ;).
->
+>> We know that any EXPORT_SYMBOL in lib-y is dubious, at least, but we're
+>> lazy (ISTR it would gut lib-y to exclude them all).
+> 
+> The whole of lib-y is dangerous and we should just kill it..
+> 
 
-Acked-by: Nick Kossifidis <mickflemm@gmail.com>
+Why isn't it a standalone module?
 
--- 
-GPG ID: 0xD21DB2DB
-As you read this post global entropy rises. Have Fun ;-)
-Nick
+Benny
