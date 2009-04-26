@@ -1,89 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524AbZDZTVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZDZTby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756524AbZDZTVj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 15:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbZDZTV0
+	id S1756175AbZDZTby (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 15:31:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZDZTbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 15:21:26 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:45908 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755624AbZDZTVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 15:21:24 -0400
-Date: Sun, 26 Apr 2009 21:21:18 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Carlos Aguiar <carlos.aguiar@indt.org.br>,
-       Anderson Briglia <briglia.anderson@gmail.com>,
-       "Syed Mohammed, Khasim" <x0khasim@ti.com>
-Cc: Ben Nizette <bn@niasdigital.com>, linux-omap@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 9/9] omap mmc host: Use disable_irq_nosync() from within
- irq handlers.
-Message-ID: <20090426212118.19526712@mjolnir.ossman.eu>
-In-Reply-To: <1239861321.29831.130.camel@linux-51e8.site>
-References: <1239861321.29831.130.camel@linux-51e8.site>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+	Sun, 26 Apr 2009 15:31:40 -0400
+Received: from bc.sympatico.ca ([209.226.175.184]:39253 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753281AbZDZTbj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 15:31:39 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqEFAFhP9ElMQW1W/2dsb2JhbACBUMkog3QF
+Date: Sun, 26 Apr 2009 15:31:35 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Stephen Hemminger <shemminger@vyatta.com>,
+       David Miller <davem@davemloft.net>, Jarek Poplawski <jarkao2@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
+       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-CPU recursive lock {XV}
+Message-ID: <20090426193135.GA30851@Krystal>
+References: <20090421111541.228e977a@nehalam> <20090421193924.GA24404@elte.hu> <20090421143927.52d7d89d@nehalam> <alpine.LFD.2.00.0904220821240.3101@localhost.localdomain> <20090423210938.1501507b@nehalam> <49F146FF.5050200@cosmosbay.com> <20090424091839.6e13ebec@nehalam> <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam> <49F4A6E3.7080102@cosmosbay.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-16764-1240773681-0001-2"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <49F4A6E3.7080102@cosmosbay.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:28:25 up 57 days, 15:54,  1 user,  load average: 0.48, 0.34,
+	0.32
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+* Eric Dumazet (dada1@cosmosbay.com) wrote:
+> From: Stephen Hemminger <shemminger@vyatta.com>
+> 
+> > Epilogue due to master Jarek. Lockdep carest not about the locking
+> > doth bestowed. Therefore no keys are needed.
+> > 
+> > Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> 
+> So far, so good, should be ready for inclusion now, nobody complained :)
+> 
+> I include the final patch, merge of your last two patches.
+> 
+> David, could you please review it once again and apply it if it's OK ?
+> 
+[...]
+> +/*
+> + * Per-CPU read/write lock associated with per-cpu table entries.
+> + * This is not a general solution but makes reader locking fast since
+> + * there is no shared variable to cause cache ping-pong; but adds an
+> + * additional write-side penalty since update must lock all
+> + * possible CPU's.
+> + *
+> + * Read lock is used by ip/arp/ip6 tables rule processing which runs per-cpu.
+> + * It needs to ensure that the rules are not being changed while packet
+> + * is being processed. In some cases, the read lock will be acquired
+> + * twice on the same CPU; this is okay because read locks handle nesting.
+> + *
+> + * Write lock is used in two cases:
+> + *    1. reading counter values
+> + *       all readers need to be stopped and the per-CPU values are summed.
+> + *
+> + *    2. replacing tables
+> + *       any readers that are using the old tables have to complete
+> + *       before freeing the old table. This is handled by reading
+> + *	  as a side effect of reading counters
+> + */
+> +DECLARE_PER_CPU(rwlock_t, xt_info_locks);
+> +
+> +static inline void xt_info_rdlock_bh(void)
+> +{
+> +	/*
+> +	 * Note: can not use read_lock_bh(&__get_cpu_var(xt_info_locks))
+> +	 * because need to ensure that preemption is disable before
+> +	 * acquiring per-cpu-variable, so do it as a two step process
+> +	 */
+> +	local_bh_disable();
 
---=_freyr.ossman.eu-16764-1240773681-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Why do you need to disable bottom halves on the read-side ? You could
+probably just disable preemption, given this lock is nestable on the
+read-side anyway. Or I'm missing something obvious ?
 
-Should I queue this up or do you want to do something differently for
-this?
+> +	read_lock(&__get_cpu_var(xt_info_locks));
+> +}
+> +
+> +static inline void xt_info_rdunlock_bh(void)
+> +{
+> +	read_unlock_bh(&__get_cpu_var(xt_info_locks));
+> +}
+> +
+> +static inline void xt_info_wrlock(unsigned int cpu)
+> +{
+> +	write_lock(&per_cpu(xt_info_locks, cpu));
+> +}
+> +
+> +static inline void xt_info_wrunlock(unsigned int cpu)
+> +{
+> +
+> +	write_unlock(&per_cpu(xt_info_locks, cpu));
+> +}
+>  
 
-On Thu, 16 Apr 2009 15:55:21 +1000
-Ben Nizette <bn@niasdigital.com> wrote:
+[...]
 
->=20
-> disable_irq() should wait for all running handlers to complete
-> before returning.  As such, if it's used to disable an interrupt
-> from that interrupt's handler it will deadlock.  This replaces
-> the dangerous instances with the _nosync() variant which doesn't
-> have this problem.
->=20
-> Signed-off-by: Ben Nizette <bn@niasdigital.com>
-> ---
-> diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
-> index 5570849..d5ea652 100644
-> --- a/drivers/mmc/host/omap.c
-> +++ b/drivers/mmc/host/omap.c
-> @@ -824,7 +824,7 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
->  		del_timer(&host->cmd_abort_timer);
->  		host->abort =3D 1;
->  		OMAP_MMC_WRITE(host, IE, 0);
-> -		disable_irq(host->irq);
-> +		disable_irq_nosync(host->irq);
->  		schedule_work(&host->cmd_abort_work);
->  		return IRQ_HANDLED;
->  	}
+Mathieu
 
-
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-16764-1240773681-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkn0tDAACgkQ7b8eESbyJLhMjgCeIOsOCqpjAs8cLBQWxOG6RvLP
-rYAAoNOgjanoctKCYgD78Ds/b5YTsiJK
-=9vxk
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-16764-1240773681-0001-2--
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
