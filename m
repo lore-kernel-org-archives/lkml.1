@@ -1,70 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbZDZLGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbZDZLL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753979AbZDZLGV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 07:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZDZLGK
+	id S1754244AbZDZLL7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 07:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbZDZLLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 07:06:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52839 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751258AbZDZLGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 07:06:09 -0400
-Date: Sun, 26 Apr 2009 13:05:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <greg@kroah.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+	Sun, 26 Apr 2009 07:11:49 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:35467 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751019AbZDZLLs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 07:11:48 -0400
+Date: Sun, 26 Apr 2009 13:13:49 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tim Abbott <tabbott@MIT.EDU>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 5/5] tracing/events: make modules have their own
-	file_operations structure
-Message-ID: <20090426110526.GA10391@elte.hu>
-References: <20090425042030.431477667@goodmis.org> <20090425042633.428284874@goodmis.org> <20090425172654.GC12135@kroah.com>
-MIME-Version: 1.0
+       Jon Masters <jonathan@jonmasters.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, "Theodore Ts'o" <tytso@MIT.EDU>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       David Howells <dhowells@redhat.com>, Chris Zankel <chris@zankel.net>
+Subject: Re: [PATCH 02/15] xtensa: convert to use __HEAD and HEAD_TEXT macros.
+Message-ID: <20090426111349.GA28642@uranus.ravnborg.org>
+References: <alpine.DEB.1.10.0904251304120.7631@vinegar-pot.mit.edu> <1240711870-30505-1-git-send-email-tabbott@mit.edu> <1240711870-30505-2-git-send-email-tabbott@mit.edu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090425172654.GC12135@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1240711870-30505-2-git-send-email-tabbott@mit.edu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Greg KH <greg@kroah.com> wrote:
-
-> On Sat, Apr 25, 2009 at 12:20:35AM -0400, Steven Rostedt wrote:
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > For proper module reference counting, the file_operations that modules use
-> > must have the "owner" field set to the module. Unfortunately, the trace events
-> > use share file_operations. The same file_operations are used by all both
-> > kernel core and all modules.
-> > 
-> > This patch makes the modules allocate their own file_operations and
-> > copies the functions from the core kernel. This allows those file
-> > operations to be owned by the module.
-> > 
-> > Care is taken to free this code on module unload.
-> > 
-> > Thanks to Greg KH for reminding me that file_operations must be owned
-> > by the module to have reference counting take place.
-> > 
-> > Cc: Greg KH <greg@kroah.com>
-> > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+On Sat, Apr 25, 2009 at 10:10:57PM -0400, Tim Abbott wrote:
+> Signed-off-by: Tim Abbott <tabbott@mit.edu>
+> Cc: Chris Zankel <chris@zankel.net>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> ---
+>  arch/xtensa/kernel/head.S        |    3 ++-
+>  arch/xtensa/kernel/vmlinux.lds.S |    4 ++--
+>  2 files changed, 4 insertions(+), 3 deletions(-)
 > 
-> Looks good, feel free to add an:
-> 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> to it.
-
-I've amended the final commit with your ack - thanks guys!
-
-	Ingo
+> diff --git a/arch/xtensa/kernel/head.S b/arch/xtensa/kernel/head.S
+> index 0817f9d..d9ddc1b 100644
+> --- a/arch/xtensa/kernel/head.S
+> +++ b/arch/xtensa/kernel/head.S
+> @@ -19,6 +19,7 @@
+>  #include <asm/page.h>
+>  #include <asm/cacheasm.h>
+>  
+> +#include <linux/init.h>
+>  #include <linux/linkage.h>
+>  
+>  /*
+> @@ -45,7 +46,7 @@
+>  	 * instruction.
+>  	 */
+>  
+> -	.section .head.text, "ax"
+> +	__HEAD
+>  	.globl _start
+>  _start:	_j	2f
+>  	.align	4
+> diff --git a/arch/xtensa/kernel/vmlinux.lds.S b/arch/xtensa/kernel/vmlinux.lds.S
+> index c1be9a4..5accf51 100644
+> --- a/arch/xtensa/kernel/vmlinux.lds.S
+> +++ b/arch/xtensa/kernel/vmlinux.lds.S
+> @@ -85,8 +85,8 @@ SECTIONS
+>  
+>    .text :
+>    {
+> -    /* The .head.text section must be the first section! */
+> -    *(.head.text)
+> +    /* The HEAD_TEXT section must be the first section! */
+> +    HEAD_TEXT
+>      *(.literal .text)
+>      VMLINUX_SYMBOL(__sched_text_start) = .;
+>      *(.sched.literal .sched.text)
+> -- 
+> 1.6.2.1
+> 
