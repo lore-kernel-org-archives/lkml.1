@@ -1,103 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbZDZNU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbZDZNgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753876AbZDZNU4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 09:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbZDZNUq
+	id S1754595AbZDZNgU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 09:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbZDZNgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 09:20:46 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:45049 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbZDZNUp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 09:20:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=NI50PY/CQ0PbjOMbQ/yOzxXbp5KObeNJ8pw+5FOG0/Ar8yjepIYKUPtYM0TOAIGWDj
-         Te0T87oGhExHqQg33+Ib9x4g03F1ADdE6P9suoaFVDE5fOMrnQreRFGX5H9BKGqAHXGk
-         9OWtpiIsA7IVdU+UX6b29kzHLw1z+PfK5Ziu8=
-Message-ID: <49F45FA4.6020307@panasas.com>
-Date: Sun, 26 Apr 2009 16:20:36 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
+	Sun, 26 Apr 2009 09:36:01 -0400
+Received: from mail001.aei.ca ([206.123.6.130]:37627 "EHLO mail001.aei.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752145AbZDZNgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 09:36:00 -0400
+From: Ed Tomlinson <edt@aei.ca>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
+Date: Sun, 26 Apr 2009 09:35:55 -0400
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-crc; KDE/4.2.2; x86_64; ; )
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <200904170752.48078.edt@aei.ca> <200904171648.38172.rjw@sisk.pl>
+In-Reply-To: <200904171648.38172.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for April 24
-References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
-In-Reply-To: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904260935.56655.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr. 24, 2009, 8:04 +0300, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi all,
+On Friday 17 April 2009 10:48:38 you wrote:
+> On Friday 17 April 2009, Ed Tomlinson wrote:
+> > On Thursday 16 April 2009 17:42:31 you wrote:
+> > > If you know of any other unresolved regressions from 2.6.29, please let me know
+> > > either and I'll add them to the list.  Also, please let me know if any of the
+> > > entries below are invalid.
+> > 
+> > Rafael,
+> > 
+> > Do you want a bug raised?  The stall reported in thread "2.6.30-rc1 A few issues and a stall"
+> > is still a problem with rc2.  The other issues mentioned in the thread are fixed.
 > 
-> I have added a tree that contains only simple build fixes for Linus'
-> tree.  It currently contains:
-> 
-> 	lib: find_next_bit.o needed by a module only, move it from lib to obj
+> If there's only one issue remaining unfixed, please file a bug in the Bugzilla
+> and put my address in the CC list of the bug entry.
 
-Thanks Stephan!
-I've already sent this patch directly to Linus (and while at it,
-correcting its subject)
-It's committed as a5422a5111811401f7756345e4c237ff06cf6d1e
-in Linus' tree.
+There is not need for me to raise a bug.  The problem is fixed with rc3 + Dave Miller's latest
+network tree for Linus.
 
-Benny
-
-> 	powerpc: fix for long standing bug noticed by gcc 4.4.0
-> 
-> This is just an experiment for now and I am not sure if I should push
-> these fixes directly to Linus ...
-> 
-> Changes since 20090423:
-> 
-> New tree:
-> 	fixes
-> 
-> The acpi tree gained a build failure for which I reverted a commit.
-> 
-> ----------------------------------------------------------------------------
-> 
-> I have created today's linux-next tree at
-> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> (patches at
-> http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-> are tracking the linux-next tree using git, you should not use "git pull"
-> to do so as that will try to merge the new linux-next release with the
-> old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-> (see below).
-> 
-> You can see which trees have been included by looking in the Next/Trees
-> file in the source.  There are also quilt-import.log and merge.log files
-> in the Next directory.  Between each merge, the tree was built with
-> a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-> final fixups (if any), it is also built with powerpc allnoconfig (32 and
-> 64 bit), ppc44x_defconfig and allyesconfig (minus
-> CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-> These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-> CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-> 
-> Below is a summary of the state of the merge.
-> 
-> We are up to 135 trees (counting Linus' and 18 trees of patches pending for
-> Linus' tree), more are welcome (even if they are currently empty).
-> Thanks to those who have contributed, and to those who haven't, please do.
-> 
-> Status of my local build tests will be at
-> http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-> advice about cross compilers/configs that work, we are always open to add
-> more builds.
-> 
-> Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-> at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-> Dunlap for doing many randconfig builds.
-> 
-> There is a wiki covering stuff to do with linux-next at
-> http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-> 
-
+Thanks
+Ed
