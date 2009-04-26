@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbZDZCLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbZDZCLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753597AbZDZCLc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 22:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbZDZCLW
+	id S1755151AbZDZCLr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 22:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZDZCL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 22:11:22 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:53428 "EHLO
+	Sat, 25 Apr 2009 22:11:29 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:53466 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752262AbZDZCLV (ORCPT
+	by vger.kernel.org with ESMTP id S1754621AbZDZCL2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 22:11:21 -0400
+	Sat, 25 Apr 2009 22:11:28 -0400
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -28,63 +28,62 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        =?utf-8?q?Am=C3=A9rico=20Wang?= <xiyou.wangcong@gmail.com>,
        Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
        David Howells <dhowells@redhat.com>, Tim Abbott <tabbott@MIT.EDU>,
-       Chris Zankel <chris@zankel.net>
-Subject: [PATCH 02/15] xtensa: convert to use __HEAD and HEAD_TEXT macros.
-Date: Sat, 25 Apr 2009 22:10:57 -0400
-Message-Id: <1240711870-30505-2-git-send-email-tabbott@mit.edu>
+       Hirokazu Takata <takata@linux-m32r.org>
+Subject: [PATCH 07/15] m32r: convert to use __HEAD and HEAD_TEXT macros.
+Date: Sat, 25 Apr 2009 22:11:02 -0400
+Message-Id: <1240711870-30505-7-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1240711870-30505-1-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1240711870-30505-6-git-send-email-tabbott@mit.edu>
 References: <alpine.DEB.1.10.0904251304120.7631@vinegar-pot.mit.edu>
  <1240711870-30505-1-git-send-email-tabbott@mit.edu>
+ <1240711870-30505-2-git-send-email-tabbott@mit.edu>
+ <1240711870-30505-3-git-send-email-tabbott@mit.edu>
+ <1240711870-30505-4-git-send-email-tabbott@mit.edu>
+ <1240711870-30505-5-git-send-email-tabbott@mit.edu>
+ <1240711870-30505-6-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Tim Abbott <tabbott@mit.edu>
-Cc: Chris Zankel <chris@zankel.net>
----
- arch/xtensa/kernel/head.S        |    3 ++-
- arch/xtensa/kernel/vmlinux.lds.S |    4 ++--
- 2 files changed, 4 insertions(+), 3 deletions(-)
+This has the consequence of changing the section name use for head
+code from ".text.head" to ".head.text".  Since this commit changes all
+users in the architecture, this change should be harmless.
 
-diff --git a/arch/xtensa/kernel/head.S b/arch/xtensa/kernel/head.S
-index 0817f9d..d9ddc1b 100644
---- a/arch/xtensa/kernel/head.S
-+++ b/arch/xtensa/kernel/head.S
-@@ -19,6 +19,7 @@
- #include <asm/page.h>
- #include <asm/cacheasm.h>
- 
-+#include <linux/init.h>
- #include <linux/linkage.h>
- 
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Cc: Hirokazu Takata <takata@linux-m32r.org>
+---
+ arch/m32r/kernel/head.S        |    2 +-
+ arch/m32r/kernel/vmlinux.lds.S |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/m32r/kernel/head.S b/arch/m32r/kernel/head.S
+index 9091606..0a71944 100644
+--- a/arch/m32r/kernel/head.S
++++ b/arch/m32r/kernel/head.S
+@@ -23,7 +23,7 @@ __INITDATA
  /*
-@@ -45,7 +46,7 @@
- 	 * instruction.
- 	 */
- 
--	.section .head.text, "ax"
-+	__HEAD
- 	.globl _start
- _start:	_j	2f
- 	.align	4
-diff --git a/arch/xtensa/kernel/vmlinux.lds.S b/arch/xtensa/kernel/vmlinux.lds.S
-index c1be9a4..5accf51 100644
---- a/arch/xtensa/kernel/vmlinux.lds.S
-+++ b/arch/xtensa/kernel/vmlinux.lds.S
-@@ -85,8 +85,8 @@ SECTIONS
- 
-   .text :
-   {
--    /* The .head.text section must be the first section! */
--    *(.head.text)
-+    /* The HEAD_TEXT section must be the first section! */
-+    HEAD_TEXT
-     *(.literal .text)
-     VMLINUX_SYMBOL(__sched_text_start) = .;
-     *(.sched.literal .sched.text)
+  * References to members of the boot_cpu_data structure.
+  */
+-.section .text.head, "ax"
++__HEAD
+ 	.global	start_kernel
+ 	.global __bss_start
+ 	.global _end
+diff --git a/arch/m32r/kernel/vmlinux.lds.S b/arch/m32r/kernel/vmlinux.lds.S
+index 9db05df..4179adf 100644
+--- a/arch/m32r/kernel/vmlinux.lds.S
++++ b/arch/m32r/kernel/vmlinux.lds.S
+@@ -27,7 +27,7 @@ SECTIONS
+   _text = .;			/* Text and read-only data */
+   .boot : { *(.boot) } = 0
+   .text : {
+-	*(.text.head)
++	HEAD_TEXT
+ 	TEXT_TEXT
+ 	SCHED_TEXT
+ 	LOCK_TEXT
 -- 
 1.6.2.1
 
