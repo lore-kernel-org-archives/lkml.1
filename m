@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbZDZMJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZDZMLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755654AbZDZMJj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 08:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbZDZMJ3
+	id S1755220AbZDZMLa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 08:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZDZMLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 08:09:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43688 "EHLO ogre.sisk.pl"
+	Sun, 26 Apr 2009 08:11:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43706 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751799AbZDZMJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 08:09:28 -0400
+	id S1751019AbZDZMLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 08:11:20 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Subject: Re: [Bug #13118] iptables very slow after commit 784544739a25c30637397ace5489eeb6e15d7d49
-Date: Sun, 26 Apr 2009 14:09:25 +0200
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #13185] New x86 warning
+Date: Sun, 26 Apr 2009 14:11:17 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-rjw; KDE/4.2.2; x86_64; ; )
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, Patrick McHardy <kaber@trash.net>,
-       Stephen Hemminger <shemminger@vyatta.com>
-References: <47KgT3nlbjD.A.lnB.jc48JB@chimera> <Fg2zLW93smL.A.wAE.Xd48JB@chimera> <b6a2187b0904252024w38530211icd4525e4d2c65dd6@mail.gmail.com>
-In-Reply-To: <b6a2187b0904252024w38530211icd4525e4d2c65dd6@mail.gmail.com>
+       Andi Kleen <andi@firstfloor.org>, Jeff Garzik <jeff@garzik.org>
+References: <47KgT3nlbjD.A.lnB.jc48JB@chimera> <Fg2zLW93smL.A.07B.qc48JB@chimera> <20090426093103.GA19267@elte.hu>
+In-Reply-To: <20090426093103.GA19267@elte.hu>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200904261409.26574.rjw@sisk.pl>
+Message-Id: <200904261411.18097.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 26 April 2009, Jeff Chua wrote:
-> On Sun, Apr 26, 2009 at 3:31 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+On Sunday 26 April 2009, Ingo Molnar wrote:
 > 
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13118
-> > Subject         : iptables very slow after commit 784544739a25c30637397ace5489eeb6e15d7d49
-> > Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
-> > Date            : 2009-04-10 16:05 (16 days old)
-> > References      : http://lkml.org/lkml/2009/4/10/111
-> > Handled-By      : Eric Dumazet <dada1@cosmosbay.com>
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> Several iteration of patches are in progress. Latest one being
-> http://lkml.org/lkml/2009/4/25/83
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.29.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13185
+> > Subject		: New x86 warning
+> > Submitter	: Jeff Garzik <jeff@garzik.org>
+> > Date		: 2009-04-22 6:46 (4 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124038280020950&w=4
+> 
+> I saw this warning with certain GCC versions for several kernel 
+> cycles, so it's not any recent change that triggers this and it is 
+> not a regression.
+> 
+> GCC is simply wrong here - i have posted a workaround for that but 
+> it is too ugly to be merged upstream.
+> 
+> > Handled-By	: Andi Kleen <andi@firstfloor.org>
+> > Patch		: http://patchwork.kernel.org/patch/19330/
+> > 		  http://patchwork.kernel.org/patch/19406/
+> 
+> This patch regresses on older GCC versions and doesnt really address 
+> the GCC false positive warning either, it just removes the inline 
+> function that triggers the warning.
 
-Thanks for the update.
+OK, so this is not a kernel bug in fact.  I'm going to close it.
 
+Thanks,
 Rafael
