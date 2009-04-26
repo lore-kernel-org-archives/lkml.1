@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbZDZDvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbZDZDvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756585AbZDZDvN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 23:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755711AbZDZDtk
+	id S1755017AbZDZDvb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 23:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbZDZDtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 23:49:40 -0400
-Received: from THUNK.ORG ([69.25.196.29]:60012 "EHLO thunker.thunk.org"
+	Sat, 25 Apr 2009 23:49:41 -0400
+Received: from THUNK.ORG ([69.25.196.29]:60016 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753677AbZDZDtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753597AbZDZDtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 25 Apr 2009 23:49:32 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Ext4 Developers List <linux-ext4@vger.kernel.org>
 Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
        Christoph Hellwig <hch@infradead.org>,
        Al Viro <viro@ZenIV.linux.org.uk>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 5/5] ext4: Replace lock/unlock_super() with an explicit lock for resizing
-Date: Sat, 25 Apr 2009 23:49:25 -0400
-Message-Id: <1240717765-16572-6-git-send-email-tytso@mit.edu>
+Subject: [PATCH 1/5] ext4: Avoid races caused by on-line resizing and SMP memory reordering
+Date: Sat, 25 Apr 2009 23:49:21 -0400
+Message-Id: <1240717765-16572-2-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1240717765-16572-5-git-send-email-tytso@mit.edu>
+In-Reply-To: <1240717765-16572-1-git-send-email-tytso@mit.edu>
 References: <1240717765-16572-1-git-send-email-tytso@mit.edu>
- <1240717765-16572-2-git-send-email-tytso@mit.edu>
- <1240717765-16572-3-git-send-email-tytso@mit.edu>
- <1240717765-16572-4-git-send-email-tytso@mit.edu>
- <1240717765-16572-5-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -31,163 +27,418 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use a separate lock to protect s_groups_count and the other block
-group descriptors which get changed via an on-line resize operation,
-so we can stop overloading the use of lock_super().
+Ext4's on-line resizing adds a new block group and then, only at the
+last step adjusts s_groups_count.  However, it's possible on SMP
+systems that another CPU could see the updated the s_group_count and
+not see the newly initialized data structures for the just-added block
+group.  For this reason, it's important to insert a SMP read barrier
+after reading s_groups_count and before reading any, say, block group
+descriptors allowed by the block group count.
+
+Unfortunately, we rather blatently violate this locking protocol as
+documented in fs/ext4/resize.c.  Fortunately, (1) on-line resizes
+happen relatively rarely, and (2) it seems rare that the filesystem
+code will immediately try to use just-added block group before any
+memory ordering issues resolve themselves.  So apparently problems
+here are relatively hard to hit, since ext3 also is vulnerable to this
+race and no one has apparently complained.
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/ext4_sb.h |    1 +
- fs/ext4/resize.c  |   35 ++++++++++++++++++-----------------
- fs/ext4/super.c   |    1 +
- 3 files changed, 20 insertions(+), 17 deletions(-)
+ fs/ext4/balloc.c  |    6 ++++--
+ fs/ext4/ialloc.c  |   34 +++++++++++++++++++++-------------
+ fs/ext4/mballoc.c |   49 ++++++++++++++++++++++++++++++++-----------------
+ 3 files changed, 57 insertions(+), 32 deletions(-)
 
-diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
-index 4bda2f7..2d36223 100644
---- a/fs/ext4/ext4_sb.h
-+++ b/fs/ext4/ext4_sb.h
-@@ -72,6 +72,7 @@ struct ext4_sb_info {
- 	struct journal_s *s_journal;
- 	struct list_head s_orphan;
- 	struct mutex s_orphan_lock;
-+	struct mutex s_resize_lock;
- 	unsigned long s_commit_interval;
- 	u32 s_max_batch_time;
- 	u32 s_min_batch_time;
-diff --git a/fs/ext4/resize.c b/fs/ext4/resize.c
-index 546c7dd..e8ded13 100644
---- a/fs/ext4/resize.c
-+++ b/fs/ext4/resize.c
-@@ -193,7 +193,7 @@ static int setup_new_group_blocks(struct super_block *sb,
- 	if (IS_ERR(handle))
- 		return PTR_ERR(handle);
+diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
+index 53c72ad..d1615f2 100644
+--- a/fs/ext4/balloc.c
++++ b/fs/ext4/balloc.c
+@@ -88,9 +88,11 @@ unsigned ext4_init_block_bitmap(struct super_block *sb, struct buffer_head *bh,
+ 		 ext4_group_t block_group, struct ext4_group_desc *gdp)
+ {
+ 	int bit, bit_max;
++	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
+ 	unsigned free_blocks, group_blocks;
+ 	struct ext4_sb_info *sbi = EXT4_SB(sb);
  
--	lock_super(sb);
-+	mutex_lock(&sbi->s_resize_lock);
- 	if (input->group != sbi->s_groups_count) {
- 		err = -EBUSY;
- 		goto exit_journal;
-@@ -302,7 +302,7 @@ exit_bh:
- 	brelse(bh);
++	smp_rmb();		/* after reading s_groups_count first */
+ 	if (bh) {
+ 		J_ASSERT_BH(bh, buffer_locked(bh));
  
- exit_journal:
--	unlock_super(sb);
-+	mutex_unlock(&sbi->s_resize_lock);
- 	if ((err2 = ext4_journal_stop(handle)) && !err)
- 		err = err2;
- 
-@@ -643,11 +643,12 @@ exit_free:
-  * important part is that the new block and inode counts are in the backup
-  * superblocks, and the location of the new group metadata in the GDT backups.
-  *
-- * We do not need lock_super() for this, because these blocks are not
-- * otherwise touched by the filesystem code when it is mounted.  We don't
-- * need to worry about last changing from sbi->s_groups_count, because the
-- * worst that can happen is that we do not copy the full number of backups
-- * at this time.  The resize which changed s_groups_count will backup again.
-+ * We do not need take the s_resize_lock for this, because these
-+ * blocks are not otherwise touched by the filesystem code when it is
-+ * mounted.  We don't need to worry about last changing from
-+ * sbi->s_groups_count, because the worst that can happen is that we
-+ * do not copy the full number of backups at this time.  The resize
-+ * which changed s_groups_count will backup again.
-  */
- static void update_backups(struct super_block *sb,
- 			   int blk_off, char *data, int size)
-@@ -809,7 +810,7 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
- 		goto exit_put;
+@@ -123,7 +125,7 @@ unsigned ext4_init_block_bitmap(struct super_block *sb, struct buffer_head *bh,
+ 		bit_max += ext4_bg_num_gdb(sb, block_group);
  	}
  
--	lock_super(sb);
-+	mutex_lock(&sbi->s_resize_lock);
- 	if (input->group != sbi->s_groups_count) {
- 		ext4_warning(sb, __func__,
- 			     "multiple resizers run on filesystem!");
-@@ -840,7 +841,7 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
-         /*
-          * OK, now we've set up the new group.  Time to make it active.
-          *
--         * Current kernels don't lock all allocations via lock_super(),
-+         * We do not lock all allocations via s_resize_lock
-          * so we have to be safe wrt. concurrent accesses the group
-          * data.  So we need to be careful to set all of the relevant
-          * group descriptor data etc. *before* we enable the group.
-@@ -900,12 +901,12 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
- 	 *
- 	 * The precise rules we use are:
- 	 *
--	 * * Writers of s_groups_count *must* hold lock_super
-+	 * * Writers of s_groups_count *must* hold s_resize_lock
- 	 * AND
- 	 * * Writers must perform a smp_wmb() after updating all dependent
- 	 *   data and before modifying the groups count
- 	 *
--	 * * Readers must hold lock_super() over the access
-+	 * * Readers must hold s_resize_lock over the access
- 	 * OR
- 	 * * Readers must perform an smp_rmb() after reading the groups count
- 	 *   and before reading any dependent data.
-@@ -948,7 +949,7 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
- 	sb->s_dirt = 1;
+-	if (block_group == sbi->s_groups_count - 1) {
++	if (block_group == ngroups - 1) {
+ 		/*
+ 		 * Even though mke2fs always initialize first and last group
+ 		 * if some other tool enabled the EXT4_BG_BLOCK_UNINIT we need
+@@ -131,7 +133,7 @@ unsigned ext4_init_block_bitmap(struct super_block *sb, struct buffer_head *bh,
+ 		 */
+ 		group_blocks = ext4_blocks_count(sbi->s_es) -
+ 			le32_to_cpu(sbi->s_es->s_first_data_block) -
+-			(EXT4_BLOCKS_PER_GROUP(sb) * (sbi->s_groups_count - 1));
++			(EXT4_BLOCKS_PER_GROUP(sb) * (ngroups - 1));
+ 	} else {
+ 		group_blocks = EXT4_BLOCKS_PER_GROUP(sb);
+ 	}
+diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
+index f18e0a0..52ce274 100644
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -322,6 +322,7 @@ static int find_group_dir(struct super_block *sb, struct inode *parent,
+ 	ext4_group_t group;
+ 	int ret = -1;
  
- exit_journal:
--	unlock_super(sb);
-+	mutex_unlock(&sbi->s_resize_lock);
- 	if ((err2 = ext4_journal_stop(handle)) && !err)
- 		err = err2;
- 	if (!err) {
-@@ -986,7 +987,7 @@ int ext4_group_extend(struct super_block *sb, struct ext4_super_block *es,
++	smp_rmb();		/* after reading s_groups_count first */
+ 	freei = percpu_counter_read_positive(&EXT4_SB(sb)->s_freeinodes_counter);
+ 	avefreei = freei / ngroups;
  
- 	/* We don't need to worry about locking wrt other resizers just
- 	 * yet: we're going to revalidate es->s_blocks_count after
--	 * taking lock_super() below. */
-+	 * taking the s_resize_lock below. */
- 	o_blocks_count = ext4_blocks_count(es);
- 	o_groups_count = EXT4_SB(sb)->s_groups_count;
+@@ -362,7 +363,8 @@ static int find_group_flex(struct super_block *sb, struct inode *parent,
+ 	ext4_group_t n_fbg_groups;
+ 	ext4_group_t i;
  
-@@ -1056,11 +1057,11 @@ int ext4_group_extend(struct super_block *sb, struct ext4_super_block *es,
- 		goto exit_put;
+-	n_fbg_groups = (sbi->s_groups_count + flex_size - 1) >>
++	smp_rmb();		/* after reading s_groups_count first */
++	n_fbg_groups = (ngroups + flex_size - 1) >>
+ 		sbi->s_log_groups_per_flex;
+ 
+ find_close_to_parent:
+@@ -478,18 +480,18 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
+ {
+ 	ext4_group_t parent_group = EXT4_I(parent)->i_block_group;
+ 	struct ext4_sb_info *sbi = EXT4_SB(sb);
+-	ext4_group_t ngroups = sbi->s_groups_count;
+ 	int inodes_per_group = EXT4_INODES_PER_GROUP(sb);
+ 	unsigned int freei, avefreei;
+ 	ext4_fsblk_t freeb, avefreeb;
+ 	unsigned int ndirs;
+ 	int max_dirs, min_inodes;
+ 	ext4_grpblk_t min_blocks;
+-	ext4_group_t i, grp, g;
++	ext4_group_t i, grp, g, ngroups = sbi->s_groups_count;;
+ 	struct ext4_group_desc *desc;
+ 	struct orlov_stats stats;
+ 	int flex_size = ext4_flex_bg_size(sbi);
+ 
++	smp_rmb();		/* after reading s_groups_count first */
+ 	if (flex_size > 1) {
+ 		ngroups = (ngroups + flex_size - 1) >>
+ 			sbi->s_log_groups_per_flex;
+@@ -585,6 +587,7 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
+ fallback:
+ 	ngroups = sbi->s_groups_count;
+ 	avefreei = freei / ngroups;
++	smp_rmb();
+ fallback_retry:
+ 	parent_group = EXT4_I(parent)->i_block_group;
+ 	for (i = 0; i < ngroups; i++) {
+@@ -613,11 +616,11 @@ static int find_group_other(struct super_block *sb, struct inode *parent,
+ 			    ext4_group_t *group, int mode)
+ {
+ 	ext4_group_t parent_group = EXT4_I(parent)->i_block_group;
+-	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
++	ext4_group_t i, last, ngroups = EXT4_SB(sb)->s_groups_count;
+ 	struct ext4_group_desc *desc;
+-	ext4_group_t i, last;
+ 	int flex_size = ext4_flex_bg_size(EXT4_SB(sb));
+ 
++	smp_rmb();		/* after reading s_groups_count first */
+ 	/*
+ 	 * Try to place the inode is the same flex group as its
+ 	 * parent.  If we can't find space, use the Orlov algorithm to
+@@ -799,7 +802,7 @@ struct inode *ext4_new_inode(handle_t *handle, struct inode *dir, int mode)
+ 	struct super_block *sb;
+ 	struct buffer_head *inode_bitmap_bh = NULL;
+ 	struct buffer_head *group_desc_bh;
+-	ext4_group_t group = 0;
++	ext4_group_t ngroups, group = 0;
+ 	unsigned long ino = 0;
+ 	struct inode *inode;
+ 	struct ext4_group_desc *gdp = NULL;
+@@ -851,12 +854,14 @@ struct inode *ext4_new_inode(handle_t *handle, struct inode *dir, int mode)
+ 		ret2 = find_group_other(sb, dir, &group, mode);
+ 
+ got_group:
++	ngroups = sbi->s_groups_count;
++	smp_rmb();
+ 	EXT4_I(dir)->i_last_alloc_group = group;
+ 	err = -ENOSPC;
+ 	if (ret2 == -1)
+ 		goto out;
+ 
+-	for (i = 0; i < sbi->s_groups_count; i++) {
++	for (i = 0; i < ngroups; i++) {
+ 		err = -EIO;
+ 
+ 		gdp = ext4_get_group_desc(sb, group, &group_desc_bh);
+@@ -917,7 +922,7 @@ repeat_in_this_group:
+ 		 * group descriptor metadata has not yet been updated.
+ 		 * So we just go onto the next blockgroup.
+ 		 */
+-		if (++group == sbi->s_groups_count)
++		if (++group == ngroups)
+ 			group = 0;
+ 	}
+ 	err = -ENOSPC;
+@@ -1158,17 +1163,18 @@ unsigned long ext4_count_free_inodes(struct super_block *sb)
+ {
+ 	unsigned long desc_count;
+ 	struct ext4_group_desc *gdp;
+-	ext4_group_t i;
++	ext4_group_t i, ngroups = EXT4_SB(sb)->s_groups_count;
+ #ifdef EXT4FS_DEBUG
+ 	struct ext4_super_block *es;
+ 	unsigned long bitmap_count, x;
+ 	struct buffer_head *bitmap_bh = NULL;
+ 
++	smp_rmb();		/* after reading s_groups_count first */
+ 	es = EXT4_SB(sb)->s_es;
+ 	desc_count = 0;
+ 	bitmap_count = 0;
+ 	gdp = NULL;
+-	for (i = 0; i < EXT4_SB(sb)->s_groups_count; i++) {
++	for (i = 0; i < ngroups; i++) {
+ 		gdp = ext4_get_group_desc(sb, i, NULL);
+ 		if (!gdp)
+ 			continue;
+@@ -1189,8 +1195,9 @@ unsigned long ext4_count_free_inodes(struct super_block *sb)
+ 	       le32_to_cpu(es->s_free_inodes_count), desc_count, bitmap_count);
+ 	return desc_count;
+ #else
++	smp_rmb();		/* after reading s_groups_count first */
+ 	desc_count = 0;
+-	for (i = 0; i < EXT4_SB(sb)->s_groups_count; i++) {
++	for (i = 0; i < ngroups; i++) {
+ 		gdp = ext4_get_group_desc(sb, i, NULL);
+ 		if (!gdp)
+ 			continue;
+@@ -1205,9 +1212,10 @@ unsigned long ext4_count_free_inodes(struct super_block *sb)
+ unsigned long ext4_count_dirs(struct super_block * sb)
+ {
+ 	unsigned long count = 0;
+-	ext4_group_t i;
++	ext4_group_t i, ngroups = EXT4_SB(sb)->s_groups_count;
+ 
+-	for (i = 0; i < EXT4_SB(sb)->s_groups_count; i++) {
++	smp_rmb();		/* after reading s_groups_count first */
++	for (i = 0; i < ngroups; i++) {
+ 		struct ext4_group_desc *gdp = ext4_get_group_desc(sb, i, NULL);
+ 		if (!gdp)
+ 			continue;
+diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
+index f871677..ecc2d49 100644
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -739,6 +739,7 @@ static void ext4_mb_generate_buddy(struct super_block *sb,
+ 
+ static int ext4_mb_init_cache(struct page *page, char *incore)
+ {
++	ext4_group_t ngroups;
+ 	int blocksize;
+ 	int blocks_per_page;
+ 	int groups_per_page;
+@@ -757,6 +758,8 @@ static int ext4_mb_init_cache(struct page *page, char *incore)
+ 
+ 	inode = page->mapping->host;
+ 	sb = inode->i_sb;
++	ngroups = EXT4_SB(sb)->s_groups_count;
++	smp_rmb();
+ 	blocksize = 1 << inode->i_blkbits;
+ 	blocks_per_page = PAGE_CACHE_SIZE / blocksize;
+ 
+@@ -780,7 +783,7 @@ static int ext4_mb_init_cache(struct page *page, char *incore)
+ 	for (i = 0; i < groups_per_page; i++) {
+ 		struct ext4_group_desc *desc;
+ 
+-		if (first_group + i >= EXT4_SB(sb)->s_groups_count)
++		if (first_group + i >= ngroups)
+ 			break;
+ 
+ 		err = -EIO;
+@@ -852,7 +855,7 @@ static int ext4_mb_init_cache(struct page *page, char *incore)
+ 		struct ext4_group_info *grinfo;
+ 
+ 		group = (first_block + i) >> 1;
+-		if (group >= EXT4_SB(sb)->s_groups_count)
++		if (group >= ngroups)
+ 			break;
+ 
+ 		/*
+@@ -1788,9 +1791,11 @@ int ext4_mb_get_buddy_cache_lock(struct super_block *sb, ext4_group_t group)
+ 	int block, pnum;
+ 	int blocks_per_page;
+ 	int groups_per_page;
++	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
+ 	ext4_group_t first_group;
+ 	struct ext4_group_info *grp;
+ 
++	smp_rmb();		/* after reading s_groups_count first */
+ 	blocks_per_page = PAGE_CACHE_SIZE / sb->s_blocksize;
+ 	/*
+ 	 * the buddy cache inode stores the block bitmap
+@@ -1807,7 +1812,7 @@ int ext4_mb_get_buddy_cache_lock(struct super_block *sb, ext4_group_t group)
+ 	/* read all groups the page covers into the cache */
+ 	for (i = 0; i < groups_per_page; i++) {
+ 
+-		if ((first_group + i) >= EXT4_SB(sb)->s_groups_count)
++		if ((first_group + i) >= ngroups)
+ 			break;
+ 		grp = ext4_get_group_info(sb, first_group + i);
+ 		/* take all groups write allocation
+@@ -1945,8 +1950,7 @@ err:
+ static noinline_for_stack int
+ ext4_mb_regular_allocator(struct ext4_allocation_context *ac)
+ {
+-	ext4_group_t group;
+-	ext4_group_t i;
++	ext4_group_t ngroups, group, i;
+ 	int cr;
+ 	int err = 0;
+ 	int bsbits;
+@@ -1957,6 +1961,8 @@ ext4_mb_regular_allocator(struct ext4_allocation_context *ac)
+ 
+ 	sb = ac->ac_sb;
+ 	sbi = EXT4_SB(sb);
++	ngroups = EXT4_SB(sb)->s_groups_count;
++	smp_rmb();
+ 	BUG_ON(ac->ac_status == AC_STATUS_FOUND);
+ 
+ 	/* first, try the goal */
+@@ -2017,11 +2023,11 @@ repeat:
+ 		 */
+ 		group = ac->ac_g_ex.fe_group;
+ 
+-		for (i = 0; i < EXT4_SB(sb)->s_groups_count; group++, i++) {
++		for (i = 0; i < ngroups; group++, i++) {
+ 			struct ext4_group_info *grp;
+ 			struct ext4_group_desc *desc;
+ 
+-			if (group == EXT4_SB(sb)->s_groups_count)
++			if (group == ngroups)
+ 				group = 0;
+ 
+ 			/* quick check to skip empty groups */
+@@ -2320,7 +2326,7 @@ static void *ext4_mb_seq_groups_start(struct seq_file *seq, loff_t *pos)
+ 
+ 	if (*pos < 0 || *pos >= sbi->s_groups_count)
+ 		return NULL;
+-
++	smp_rmb();
+ 	group = *pos + 1;
+ 	return (void *) ((unsigned long) group);
+ }
+@@ -2334,6 +2340,7 @@ static void *ext4_mb_seq_groups_next(struct seq_file *seq, void *v, loff_t *pos)
+ 	++*pos;
+ 	if (*pos < 0 || *pos >= sbi->s_groups_count)
+ 		return NULL;
++	smp_rmb();
+ 	group = *pos + 1;
+ 	return (void *) ((unsigned long) group);
+ }
+@@ -2587,6 +2594,7 @@ void ext4_mb_update_group_info(struct ext4_group_info *grp, ext4_grpblk_t add)
+ 
+ static int ext4_mb_init_backend(struct super_block *sb)
+ {
++	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
+ 	ext4_group_t i;
+ 	int metalen;
+ 	struct ext4_sb_info *sbi = EXT4_SB(sb);
+@@ -2597,8 +2605,10 @@ static int ext4_mb_init_backend(struct super_block *sb)
+ 	struct ext4_group_info **meta_group_info;
+ 	struct ext4_group_desc *desc;
+ 
++	smp_rmb();		/* after reading s_groups_count first */
++
+ 	/* This is the number of blocks used by GDT */
+-	num_meta_group_infos = (sbi->s_groups_count + EXT4_DESC_PER_BLOCK(sb) -
++	num_meta_group_infos = (ngroups + EXT4_DESC_PER_BLOCK(sb) -
+ 				1) >> EXT4_DESC_PER_BLOCK_BITS(sb);
+ 
+ 	/*
+@@ -2644,7 +2654,7 @@ static int ext4_mb_init_backend(struct super_block *sb)
+ 	for (i = 0; i < num_meta_group_infos; i++) {
+ 		if ((i + 1) == num_meta_group_infos)
+ 			metalen = sizeof(*meta_group_info) *
+-				(sbi->s_groups_count -
++				(ngroups -
+ 					(i << EXT4_DESC_PER_BLOCK_BITS(sb)));
+ 		meta_group_info = kmalloc(metalen, GFP_KERNEL);
+ 		if (meta_group_info == NULL) {
+@@ -2655,7 +2665,7 @@ static int ext4_mb_init_backend(struct super_block *sb)
+ 		sbi->s_group_info[i] = meta_group_info;
  	}
  
--	lock_super(sb);
-+	mutex_lock(&EXT4_SB(sb)->s_resize_lock);
- 	if (o_blocks_count != ext4_blocks_count(es)) {
- 		ext4_warning(sb, __func__,
- 			     "multiple resizers run on filesystem!");
--		unlock_super(sb);
-+		mutex_unlock(&EXT4_SB(sb)->s_resize_lock);
- 		ext4_journal_stop(handle);
- 		err = -EBUSY;
- 		goto exit_put;
-@@ -1070,14 +1071,14 @@ int ext4_group_extend(struct super_block *sb, struct ext4_super_block *es,
- 						 EXT4_SB(sb)->s_sbh))) {
- 		ext4_warning(sb, __func__,
- 			     "error %d on journal write access", err);
--		unlock_super(sb);
-+		mutex_unlock(&EXT4_SB(sb)->s_resize_lock);
- 		ext4_journal_stop(handle);
- 		goto exit_put;
- 	}
- 	ext4_blocks_count_set(es, o_blocks_count + add);
- 	ext4_handle_dirty_metadata(handle, NULL, EXT4_SB(sb)->s_sbh);
- 	sb->s_dirt = 1;
--	unlock_super(sb);
-+	mutex_unlock(&EXT4_SB(sb)->s_resize_lock);
- 	ext4_debug("freeing blocks %llu through %llu\n", o_blocks_count,
- 		   o_blocks_count + add);
- 	/* We add the blocks to the bitmap and set the group need init bit */
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index c23e82c..b4735e4 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -2624,6 +2624,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
- #endif
- 	INIT_LIST_HEAD(&sbi->s_orphan); /* unlinked but open files */
- 	mutex_init(&sbi->s_orphan_lock);
-+	mutex_init(&sbi->s_resize_lock);
+-	for (i = 0; i < sbi->s_groups_count; i++) {
++	for (i = 0; i < ngroups; i++) {
+ 		desc = ext4_get_group_desc(sb, i, NULL);
+ 		if (desc == NULL) {
+ 			printk(KERN_ERR
+@@ -2781,13 +2791,15 @@ static void ext4_mb_cleanup_pa(struct ext4_group_info *grp)
  
- 	sb->s_root = NULL;
+ int ext4_mb_release(struct super_block *sb)
+ {
++	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
+ 	ext4_group_t i;
+ 	int num_meta_group_infos;
+ 	struct ext4_group_info *grinfo;
+ 	struct ext4_sb_info *sbi = EXT4_SB(sb);
  
++	smp_rmb();		/* after reading s_groups_count first */
+ 	if (sbi->s_group_info) {
+-		for (i = 0; i < sbi->s_groups_count; i++) {
++		for (i = 0; i < ngroups; i++) {
+ 			grinfo = ext4_get_group_info(sb, i);
+ #ifdef DOUBLE_CHECK
+ 			kfree(grinfo->bb_bitmap);
+@@ -2797,7 +2809,7 @@ int ext4_mb_release(struct super_block *sb)
+ 			ext4_unlock_group(sb, i);
+ 			kfree(grinfo);
+ 		}
+-		num_meta_group_infos = (sbi->s_groups_count +
++		num_meta_group_infos = (ngroups +
+ 				EXT4_DESC_PER_BLOCK(sb) - 1) >>
+ 			EXT4_DESC_PER_BLOCK_BITS(sb);
+ 		for (i = 0; i < num_meta_group_infos; i++)
+@@ -4121,7 +4133,7 @@ static void ext4_mb_return_to_preallocation(struct inode *inode,
+ static void ext4_mb_show_ac(struct ext4_allocation_context *ac)
+ {
+ 	struct super_block *sb = ac->ac_sb;
+-	ext4_group_t i;
++	ext4_group_t ngroups, i;
+ 
+ 	printk(KERN_ERR "EXT4-fs: Can't allocate:"
+ 			" Allocation context details:\n");
+@@ -4145,7 +4157,9 @@ static void ext4_mb_show_ac(struct ext4_allocation_context *ac)
+ 	printk(KERN_ERR "EXT4-fs: %lu scanned, %d found\n", ac->ac_ex_scanned,
+ 		ac->ac_found);
+ 	printk(KERN_ERR "EXT4-fs: groups: \n");
+-	for (i = 0; i < EXT4_SB(sb)->s_groups_count; i++) {
++	ngroups = EXT4_SB(ac->ac_sb)->s_groups_count;
++	smp_rmb();
++	for (i = 0; i < EXT4_SB(sb)->ngroups; i++) {
+ 		struct ext4_group_info *grp = ext4_get_group_info(sb, i);
+ 		struct ext4_prealloc_space *pa;
+ 		ext4_grpblk_t start;
+@@ -4469,13 +4483,14 @@ static int ext4_mb_release_context(struct ext4_allocation_context *ac)
+ 
+ static int ext4_mb_discard_preallocations(struct super_block *sb, int needed)
+ {
+-	ext4_group_t i;
++	ext4_group_t i, ngroups = EXT4_SB(sb)->s_groups_count;
+ 	int ret;
+ 	int freed = 0;
+ 
++	smp_rmb();		/* after reading s_groups_count first */
+ 	trace_mark(ext4_mb_discard_preallocations, "dev %s needed %d",
+ 		   sb->s_id, needed);
+-	for (i = 0; i < EXT4_SB(sb)->s_groups_count && needed > 0; i++) {
++	for (i = 0; i < ngroups && needed > 0; i++) {
+ 		ret = ext4_mb_discard_group_preallocations(sb, i, needed);
+ 		freed += ret;
+ 		needed -= ret;
 -- 
 1.5.6.3
 
