@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756451AbZDZTxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbZDZTzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756451AbZDZTxk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 15:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbZDZTx2
+	id S1755690AbZDZTzp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 15:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZDZTzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 15:53:28 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:51519 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753585AbZDZTx1 (ORCPT
+	Sun, 26 Apr 2009 15:55:36 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:9646 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753585AbZDZTzg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 15:53:27 -0400
-Date: Sun, 26 Apr 2009 20:52:49 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: David VomLehn <dvomlehn@cisco.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>,
-       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Wait for console to become available, v3.2
-Message-ID: <20090426195249.GC10627@shareable.org>
-References: <20090425014152.GD23106@shareable.org> <Pine.LNX.4.44L0.0904242309300.3926-100000@netrider.rowland.org>
+	Sun, 26 Apr 2009 15:55:36 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=UhhJRgltBYGadKZe9Fhgn27GKVczSWG6jZ45iQ1gEs8mTIiqguBoQpojvr9druTDc
+	VOcTmAuZFmyZ5KPa9gr7A==
+Date: Sun, 26 Apr 2009 12:55:28 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Zeno Davatz <zdavatz@gmail.com>
+cc: linux-kernel@vger.kernel.org, Hannes Wyss <hwyss@ywesee.com>
+Subject: Re: Kernel 2.6.29 runs out of memory and hangs.
+In-Reply-To: <40a4ed590904250132o63e715cbvaccf5aac82265cd@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0904261252010.18988@chino.kir.corp.google.com>
+References: <40a4ed590904240309o66753264lf58f2910726f7efc@mail.gmail.com> <alpine.DEB.2.00.0904241011280.24151@chino.kir.corp.google.com> <40a4ed590904241113p4949a020y46e0641e77f6f4e3@mail.gmail.com> <alpine.DEB.2.00.0904241155550.26080@chino.kir.corp.google.com>
+ <40a4ed590904241216u655300ddvaa4660e11ad2cffc@mail.gmail.com> <alpine.DEB.2.00.0904241224001.28589@chino.kir.corp.google.com> <40a4ed590904250132o63e715cbvaccf5aac82265cd@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0904242309300.3926-100000@netrider.rowland.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> On Sat, 25 Apr 2009, Jamie Lokier wrote:
+On Sat, 25 Apr 2009, Zeno Davatz wrote:
+
+> Couldn't you start killing processes at an earlier stage? It seems to
+> me that the stage when processes are being killed by oom_killer is a
+> bit late in the game, when the machine is anyway very close to the
+> freezing point. I mean we had these messages of oom_kill several times
+> in our /var/log/kernel/current over a distributed amount of time.
 > 
-> > I'm thinking this broader use:
-> > 
-> >     - My boot _script_ is waiting for a disk which identifies as
-> >       UUID=392852908752345749857 to appear before it can mount it on
-> >       /data.  If there's no such disk, it proceeds without it.  It's a
-> >       USB disk, behind a USB hub.
-> > 
-> >     - My boot script is looking to see if I'm holding down 'z' on the
-> >       keyboard, to do something different.  But how does it know if
-> >       there's a USB keyboard plugged in (behind two USB hubs) that
-> >       hasn't finished being detected?
-> > 
-> > It just seemed to fit comfortably into what's being discussed.
-> 
-> Are you suggesting this new interface be exported to userspace somehow?
 
-Not directly.  Only in the same way that open("/dev/console") delays
-until there's a console, so reading the keyboard can delay until we
-know if we had a keyboard plugged in at boot, and looking for a disk
-called UUID=392852908752345749857 can wait until we know if there was
-one plugged in at boot time.
+The oom killer serves a very well-defined purpose: to kill a 
+memory-hogging task when your system (or cpuset, memory controller) is out 
+of memory.  When it kills a task, it also allows access to memory reserves 
+that allow it to allocate beyond each allowable zone's min watermark.  
+This is intended to allow the task to quickly exit.
 
-The latter issue with UUID is done in userspace now by reading all
-disks, but I'm under the impression changes are planned in that
-department because reading every disk from userspace to locate
-specific ones is too slow on big systems.
-
--- Jamie
+There is work being done on a per-cgroup lowmem notifier which would allow 
+userspace to poll() on a device file and be notified of low memory 
+situations so that it can react on its own (like killing a low priority 
+task, expanding a cpuset, increasing a memcontroller limit, etc.)
