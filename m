@@ -1,45 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbZDZMAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZDZMIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753940AbZDZMAv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 08:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbZDZMAk
+	id S1754737AbZDZMIf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 08:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750710AbZDZMI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 08:00:40 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59855 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752305AbZDZMAk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 08:00:40 -0400
-Date: Sun, 26 Apr 2009 13:00:37 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] regulator: add userspace-consumer driver
-Message-ID: <20090426120036.GA10900@opensource.wolfsonmicro.com>
-References: <cover.1240736991.git.mike@compulab.co.il> <f9c42ab0212ead9b7edac2d39f7848c46ad527d5.1240736991.git.mike@compulab.co.il> <20090426100211.GC9009@opensource.wolfsonmicro.com> <49F449B8.2010707@compulab.co.il>
+	Sun, 26 Apr 2009 08:08:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43672 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753038AbZDZMIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 08:08:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [Bug #13111] Linux 2.6.30-rc1 tg3 endian issues with MAC addresses on BCM5701
+Date: Sun, 26 Apr 2009 14:07:39 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-rjw; KDE/4.2.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       benli@broadcom.com, mcarlson@broadcom.com, mchan@broadcom.com,
+       holt@sgi.com
+References: <47KgT3nlbjD.A.lnB.jc48JB@chimera> <Fg2zLW93smL.A.ScE.fd48JB@chimera> <20090425.181006.246584933.davem@davemloft.net>
+In-Reply-To: <20090425.181006.246584933.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49F449B8.2010707@compulab.co.il>
-X-Cookie: You will wish you hadn't.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200904261407.40590.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 26, 2009 at 02:47:04PM +0300, Mike Rapoport wrote:
-> Mark Brown wrote:
+On Sunday 26 April 2009, David Miller wrote:
+> From: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Date: Sat, 25 Apr 2009 21:31:45 +0200 (CEST)
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13111
+> > Subject		: Linux 2.6.30-rc1 tg3 endian issues with MAC addresses on BCM5701
+> > Submitter	: Robin Holt <holt@sgi.com>
+> > Date		: 2009-04-08 7:12 (18 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e4f341103e4a2b35f56a0f89802f1b1448e8d04b
+> > References	: http://marc.info/?l=linux-kernel&m=123917477312823&w=4
+> > 		  http://lkml.org/lkml/2009/4/16/471
+> > Handled-By	: Matt Carlson <mcarlson@broadcom.com>
+> 
+> Fixed by:
+> 
+> commit 62cedd11f63c99efd2962fb69763a09e2778f6e6
+> Author: Matt Carlson <mcarlson@broadcom.com>
+> Date:   Mon Apr 20 14:52:29 2009 -0700
+> 
+>     tg3: Fix SEEPROM accesses
+>     
+>     The recent NVRAM patches sanitized how the driver deals with NVRAM
+>     data, but they failed to bring the SEEPROM interfaces inline with
+>     the new strategy.  This patch brings the SEEPROM interfaces up to date.
+>     This patch also reverts commit 0d489ffb76de0fe804cf06a9d4d11fa7342d74b9
+>     ("tg3: fix big endian MAC address collection failure").
+>     
+>     Signed-off-by: Matt Carlson <mcarlson@broadcom.com>
+>     Signed-off-by: Michael Chan <mchan@broadcom.com>
+>     Tested-by: Robin Holt <holt@sgi.com>
+>     Tested-by: James Bottomley <james.bottomley@HansenPartnership.com>
+>     Signed-off-by: David S. Miller <davem@davemloft.net>
 
-> > Why are you using a regulator_consumer_supply here?  All that's being
-> > used here is the name and I can't see why you'd want the device.
+Thanks, closed.
 
-> For upwards compatibility :)
-> Well, seriously, I think using 'struct regulator_consumer_supply *supplies'
-> rather than 'char *supplies' makes the platform code that registers the
-> userspace-consumer device clearer.
-
-On the other hand it merges the consumer and machine APIs, which we
-really want to keep separate, and I can't see having the struct device
-in there doing anything except confuse people.  If you're going to pick
-an existing structure to use I'd be more inclined to use the bulk
-consumer structure (which the driver needs to allocate anyway).
+Rafael
