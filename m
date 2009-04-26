@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbZDZTzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbZDZT5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755690AbZDZTzp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 15:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZDZTzg
+	id S1756204AbZDZT5S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 15:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZDZT5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 15:55:36 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:9646 "EHLO
+	Sun, 26 Apr 2009 15:57:04 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:9708 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753585AbZDZTzg (ORCPT
+	with ESMTP id S1754864AbZDZT5B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 15:55:36 -0400
+	Sun, 26 Apr 2009 15:57:01 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=UhhJRgltBYGadKZe9Fhgn27GKVczSWG6jZ45iQ1gEs8mTIiqguBoQpojvr9druTDc
-	VOcTmAuZFmyZ5KPa9gr7A==
-Date: Sun, 26 Apr 2009 12:55:28 -0700 (PDT)
+	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
+	mime-version:content-type:x-system-of-record;
+	b=S0000UPPK7irRg1WeXC937/tXJ7Nt8PZ08XnVLN22FttEnv6T1qEAvvpmvSTJztvj
+	Al8cj6AIqzmBNZOGkbO8Q==
+Date: Sun, 26 Apr 2009 12:56:31 -0700 (PDT)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Zeno Davatz <zdavatz@gmail.com>
-cc: linux-kernel@vger.kernel.org, Hannes Wyss <hwyss@ywesee.com>
-Subject: Re: Kernel 2.6.29 runs out of memory and hangs.
-In-Reply-To: <40a4ed590904250132o63e715cbvaccf5aac82265cd@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0904261252010.18988@chino.kir.corp.google.com>
-References: <40a4ed590904240309o66753264lf58f2910726f7efc@mail.gmail.com> <alpine.DEB.2.00.0904241011280.24151@chino.kir.corp.google.com> <40a4ed590904241113p4949a020y46e0641e77f6f4e3@mail.gmail.com> <alpine.DEB.2.00.0904241155550.26080@chino.kir.corp.google.com>
- <40a4ed590904241216u655300ddvaa4660e11ad2cffc@mail.gmail.com> <alpine.DEB.2.00.0904241224001.28589@chino.kir.corp.google.com> <40a4ed590904250132o63e715cbvaccf5aac82265cd@mail.gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
+Subject: [patch] slqb: enforce MAX_ORDER
+Message-ID: <alpine.DEB.2.00.0904261255520.18988@chino.kir.corp.google.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -33,22 +30,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 Apr 2009, Zeno Davatz wrote:
+Slabs may not be allocated at MAX_ORDER or higher.
 
-> Couldn't you start killing processes at an earlier stage? It seems to
-> me that the stage when processes are being killed by oom_killer is a
-> bit late in the game, when the machine is anyway very close to the
-> freezing point. I mean we had these messages of oom_kill several times
-> in our /var/log/kernel/current over a distributed amount of time.
-> 
+Cc: Nick Piggin <npiggin@suse.de>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ mm/slqb.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-The oom killer serves a very well-defined purpose: to kill a 
-memory-hogging task when your system (or cpuset, memory controller) is out 
-of memory.  When it kills a task, it also allows access to memory reserves 
-that allow it to allocate beyond each allowable zone's min watermark.  
-This is intended to allow the task to quickly exit.
-
-There is work being done on a per-cgroup lowmem notifier which would allow 
-userspace to poll() on a device file and be notified of low memory 
-situations so that it can react on its own (like killing a low priority 
-task, expanding a cpuset, increasing a memcontroller limit, etc.)
+diff --git a/mm/slqb.c b/mm/slqb.c
+--- a/mm/slqb.c
++++ b/mm/slqb.c
+@@ -872,6 +872,7 @@ __setup("slqb_debug", setup_slqb_debug);
+ static int __init setup_slqb_min_order(char *str)
+ {
+ 	get_option(&str, &slqb_min_order);
++	slqb_min_order = min(slqb_min_order, MAX_ORDER - 1);
+ 
+ 	return 1;
+ }
+@@ -1840,8 +1841,8 @@ static int calculate_order(int size)
+ 	 * This size cannot fit in order-1. Allow bigger orders, but
+ 	 * forget about trying to save space.
+ 	 */
+-	order = slab_order(size, MAX_ORDER, 0);
+-	if (order <= MAX_ORDER)
++	order = slab_order(size, MAX_ORDER - 1, 0);
++	if (order < MAX_ORDER)
+ 		return order;
+ 
+ 	return -ENOSYS;
