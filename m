@@ -1,40 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753557AbZDZAJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbZDZA1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753557AbZDZAJd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 20:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbZDZAJY
+	id S1754042AbZDZA1P (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 20:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZDZA07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 20:09:24 -0400
-Received: from elasmtp-dupuy.atl.sa.earthlink.net ([209.86.89.62]:42241 "EHLO
-	elasmtp-dupuy.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752242AbZDZAJX (ORCPT
+	Sat, 25 Apr 2009 20:26:59 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:55410 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752242AbZDZA06 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 20:09:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=earthlink.net;
-  b=cqfpJsclmuZqs8RvCEDfmJ5UQrvmp9S8YWAYpM1JbLunRpK288JE61cattWxpWxP;
-  h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <49F3A632.1090302@earthlink.net>
-Date: Sat, 25 Apr 2009 20:09:22 -0400
-From: Stephen Clark <sclark46@earthlink.net>
-Reply-To: sclark46@earthlink.net
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sat, 25 Apr 2009 20:26:58 -0400
+Message-ID: <49F3AA4D.1090204@gawab.com>
+Date: Sat, 25 Apr 2009 17:26:53 -0700
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: secure_tcp_sequence_number
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>
+Subject: Re: [Bug #13188] horizontal strips of the screen frozen
+References: <47KgT3nlbjD.A.lnB.jc48JB@chimera> <Fg2zLW93smL.A.VuB.nc48JB@chimera>
+In-Reply-To: <Fg2zLW93smL.A.VuB.nc48JB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: a437fbc6971e80f61aa676d7e74259b7b3291a7d08dfec79a224bbfe0ea01905f1c8fb8e070793c9350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 208.118.36.249
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13188
+> Subject		: horizontal strips of the screen frozen
+> Submitter	: Justin Madru <jdm64@gawab.com>
+> Date		: 2009-04-24 20:59 (2 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=280b713b5b0fd84cf2469098aee88acbb5de859c
+> References	: http://marc.info/?l=linux-kernel&m=124060685315937&w=4
+>
+>
+>
+>   
+Please mark bug #13187 as a dup of this bug.
+I sent two separate emails because nobody replied to the first one.
+Sorry for the duplication.
 
-What should a module use since secure_tcp_sequence_number is no longer exported.
-Would secure_tcpv6_sequence_number work Ok?
-
-Thanks,
-Steve
+Justin Madru
 
