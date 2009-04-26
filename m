@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbZDZOpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbZDZOrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756078AbZDZOpj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 10:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbZDZOp3
+	id S1756249AbZDZOrU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 10:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbZDZOrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 10:45:29 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58263 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753425AbZDZOp2 (ORCPT
+	Sun, 26 Apr 2009 10:47:08 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:46490 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754633AbZDZOrG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 10:45:28 -0400
-Date: Sun, 26 Apr 2009 16:49:18 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Jeff Garzik <jeff@garzik.org>,
-       torvalds@osdl.org
-Subject: Re: [Bug #13185] New x86 warning
-Message-ID: <20090426144918.GU13896@one.firstfloor.org>
-References: <47KgT3nlbjD.A.lnB.jc48JB@chimera> <Fg2zLW93smL.A.07B.qc48JB@chimera> <20090426093103.GA19267@elte.hu>
-Mime-Version: 1.0
+	Sun, 26 Apr 2009 10:47:06 -0400
+X-Sasl-enc: ApQyNseLnyqQoLcxzTwUnkmF1Z80u40r0AqiUHphdk1P 1240757225
+Date: Sun, 26 Apr 2009 11:47:02 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       gregkh@suse.de, stable@kernel.org, cpufreq@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, rjw@sisk.pl,
+       Ben Slusky <sluskyb@paranoiacs.org>, Dave Jones <davej@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpufreq fix timer teardown in conservative governor
+	(2.6.30-rc2)
+Message-ID: <20090426144701.GD19338@khazad-dum.debian.net>
+References: <20090423140002.GA12852@Krystal> <20090423164638.3b5769c6.akpm@linux-foundation.org> <20090424043546.GB8091@Krystal> <alpine.LFD.2.00.0904240217390.15843@localhost.localdomain> <20090424161217.GA25650@Krystal>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090426093103.GA19267@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090424161217.GA25650@Krystal>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Handled-By	: Andi Kleen <andi@firstfloor.org>
-> > Patch		: http://patchwork.kernel.org/patch/19330/
-> > 		  http://patchwork.kernel.org/patch/19406/
+On Fri, 24 Apr 2009, Mathieu Desnoyers wrote:
+> * Len Brown (lenb@kernel.org) wrote:
+> > Somebody please remind me why we are spending effort to 
+> > maintain the conservative governor instead of deleting it.
 > 
-> This patch regresses on older GCC versions 
+> Documentation/cpu-freq/governors.txt
+> 
+> "The CPUfreq governor "conservative", much like the "ondemand"
+> governor, sets the CPU depending on the current usage.  It differs in
+> behaviour in that it gracefully increases and decreases the CPU speed
+> rather than jumping to max speed the moment there is any load on the
+> CPU.  This behaviour more suitable in a battery powered environment."
+> 
+> So better battery usage seems to be the reason why conservative lives.
 
-I don't think that's correct. There's been a demonstration that some gcc
-versions don't inline as many memcpy as without the patch, but
-that's not necessarily a pessimization. In fact 64bit used 
-the same gcc based memcpy forever and there's no indication that
-the 64bit kernel runs slower than the 32bit kernel because 
-of this (in fact I have some indications that the 64bit kernel
-runs faster)
+Yeah, but the question is: is it really better in practice? race-to-idle
+works better with ondemand.  Note: that needs to be answered not just for
+the current crop of mobile processors, but also for at least stuff as old as
+the Pentium M and Pentium 4 M.
 
-Also the general trend in the kernel is to inline less
-things because it has been demonstrated many times that
-the function call overhead isn't that great, so I don't
-see why memcpy should be different from all other
-functions in this regard.
+What it _does_ help, is in broken !@#$ hardware that makes a lot of noise
+due to "singing capacitors" if you use ondemand (because conservative will
+make less noise as it causes more smooth transitions).  NOHZ helped a great
+deal there, too.
 
-What Linus asked for was a demonstration that there's
-no catastrophic regression (as in no trivial cases inlined anymore)
-and I think that was demonstrated by the numbers.
-
-Also the patch definitely shrunk the kernel and at least the
-standard wisdom is that for micro optimizations icache optimizations
-are the most useful one. In this sense the patch was a improvement.
-
-> and doesnt really address 
-> the GCC false positive warning either, it just removes the inline 
-> function that triggers the warning.
-
-Interesting sophistry.
-
-Yes of course the patch doesn't fix gcc -- the goal is to remove the warning 
-message (and also quite some ugly obsolete code) from the kernel build, not 
-fix gcc.
-
--Andi
+I don't know if there are battery environments where a harsher work profile
+by the CPU are a bad idea.  If there are any, conservative will also help
+there.
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
