@@ -1,49 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbZDZXI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbZDZXMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754097AbZDZXI7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 19:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbZDZXIw
+	id S1754929AbZDZXMo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 19:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZDZXMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 19:08:52 -0400
-Received: from jade.aracnet.com ([216.99.193.136]:38840 "EHLO jade.aracnet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751663AbZDZXIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 19:08:51 -0400
-X-Greylist: delayed 4585 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Apr 2009 19:08:51 EDT
-Date: Sun, 26 Apr 2009 14:45:09 -0700
-Message-Id: <200904262145.n3QLj9o2026979@sapphire.spiritone.com>
-From: "AON WEBMAIL" <help-desk@aon.at>
-To: help-desk@aon.at
-Reply-To: updat-conf@live.com
-Subject: AON Ihre E-Mail-Konto Expires in 2 Tagen 
+	Sun, 26 Apr 2009 19:12:38 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:43981 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752239AbZDZXMh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 19:12:37 -0400
+Date: Mon, 27 Apr 2009 00:12:09 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, David VomLehn <dvomlehn@cisco.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Wait for console to become available, v3.2
+Message-ID: <20090426231208.GA17240@shareable.org>
+References: <20090426195249.GC10627@shareable.org> <Pine.LNX.4.44L0.0904261715250.26439-100000@netrider.rowland.org> <20090426213746.GH10627@shareable.org> <ac3eb2510904261536t7a37f970tfafba71d1e67cfb6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac3eb2510904261536t7a37f970tfafba71d1e67cfb6@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-AON Ihre E-Mail-Konto Expires in 2 Tagen 
-AON Webmail Liebe User, 
+Kay Sievers wrote:
+> > _If_ the system doesn't wait for all block devices present at boot to
+> > be enumerated before the boot script, then when the script looks in
+> > that directory for a specific UUID, it would be good to wait until
+> > "has everything present at boot been enumerated?" says yes.
+> 
+> That's what distros do with initramfs today.
 
-Diese Information wird von AON Helpdesk Programm, 
-in regelmäßigen Abständen überprüft die Größe der E-Mail-Raum, in dem neue Nachrichten 
-erhalten. Das Programm wird wöchentlich, um sicherzustellen, niemand Posteingang wächst zu 
-groß. Wenn Sie Ihren Posteingang zu groß wird, werden Sie nicht in der Lage zu erhalten 
-neue E-Mail. Kurz bevor diese Nachricht gesendet wurde, Sie hatten 18 Megabyte (MB) 
-oder mehrere Nachrichten in Ihrem Posteingang auf AON Webmail. Um uns zu helfen 
-ändern Sie Ihren Raum in unserer Datenbank vor, um unsere INBOX, müssen Sie 
-Antwort auf diese E-Mail und geben Sie Ihre User-Namen (___________ 
-) Und Passwort (_____________). 
+I don't see how that's possible.  Haven't we been discussing how the
+USB driver does not have any support (yet) for saying when it's found
+every device present at boot time, and that it can probably be added?
 
-Es wäre eine Nachricht Alert in regelmäßigen Abständen, ob Ihr 
-Posteingang Größe nach wie vor zwischen 18 und 20 MB. Wenn Sie Ihren Posteingang Größe 
-wächst 
-bis 20 MB, dann ein Programm auf AON Webmail wird Ihre E-Mail ältesten 
-in einen Ordner in Ihrem Home-Verzeichnis, um sicherzustellen, dass Sie weiter 
-eingehenden E-Mails zu erhalten. Sie werden per E-Mail benachrichtigt, dass dies 
-stattgefunden. Wenn Sie Ihren Posteingang wächst auf 25 MB, werden Sie nicht in der Lage zu erhalten 
+I have a boot script which does this:
 
-neue E-Mail wird an den Absender zurückgeschickt. All dies wird 
-Programmiert auf Ihre E-Mail auf, füllen die Räume vor. 
+    1. *If* USB disk plugged in, mount it on /mnt/usb, do some stuff.
+    2. If not, do something else.
 
-Vielen Dank für Ihre Mitarbeit. 
-Support Desk (Help Desk) 
+If I'm not mistaken, the only way to do that right now is pick an
+arbitrary time, wait, and proceed with 2 if you didn't see the disk.
 
+The desired USB console behaviour is very similar.  Use it if it's
+plugged in at boot, use something else otherwise, and no arbitrary
+delays.
+
+Did I miss something?
+> > Since this is all about making boot faster, it would be quite nice not
+> > to wait for all block devices before starting the boot script, or at
+> > least the initramfs module-loading script :-)
+> 
+> You wait in initramfs until the device show up. Usually dynamic udev
+> rules created from the root= string of the kernel commandline create a
+> rule which matches on the UUID, and creates a /dev/root symlink when
+> the device shows up. As soon as this link shows up,  init mounts it
+> and goes ahead.
+
+That's fine when you're waiting for a device to appear that you know
+will appear.
+
+The USB console excitement, and my mention of USB disks and such, is
+how to decide when the device _isn't_ going to appear, without an
+arbitrary timeout.
+
+-- Jamie
