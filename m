@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754342AbZDZEMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753055AbZDZExq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754342AbZDZEMB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 00:12:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbZDZELv
+	id S1753055AbZDZExq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 00:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbZDZExh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 00:11:51 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:35729 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750957AbZDZELv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 00:11:51 -0400
-Message-ID: <49F3DF02.5030909@garzik.org>
-Date: Sun, 26 Apr 2009 00:11:46 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 26 Apr 2009 00:53:37 -0400
+Received: from utopia.booyaka.com ([72.9.107.138]:55955 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750831AbZDZExg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 00:53:36 -0400
+Date: Sat, 25 Apr 2009 22:53:35 -0600 (MDT)
+From: Paul Walmsley <paul@pwsan.com>
+To: linux-omap@vger.kernel.org
+cc: lrg@slimlogic.co.uk, broonie@opensource.wolfsonmicro.com,
+       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net
+Subject: Re: [PATCH] regulator core: fix double-free in regulator_register()
+ error path
+In-Reply-To: <alpine.DEB.2.00.0904250526210.28378@utopia.booyaka.com>
+Message-ID: <alpine.DEB.2.00.0904252250230.4291@utopia.booyaka.com>
+References: <alpine.DEB.2.00.0904250526210.28378@utopia.booyaka.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       unsik Kim <donari75@gmail.com>, linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH 2/3] mg_disk: fix dependency on libata
-References: <200904251509.11912.bzolnier@gmail.com> <49F3D994.7020304@kernel.org> <49F3DCD5.2070909@garzik.org> <49F3DE55.8070302@kernel.org>
-In-Reply-To: <49F3DE55.8070302@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Jeff Garzik wrote:
->> Actually...  NVMHCI[1] uses the same style of id string extraction, even
->> though its command set is wholly new and unrelated to ATA.  I copied
->> into drivers/block/nvmhci.c[2] id_string, id_c_string and another
->> useful, generic routine: ata_wait_register.
->>
->> So, once nvmhci goes upstream, that will be a third copy...  nvmhci
->> still has rough edges, but it's mainly waiting on hardware "it works"
->> verification at this point.
+On Sat, 25 Apr 2009, Paul Walmsley wrote:
+
+> During regulator registration, any error after device_register() will 
+> cause a double-free on the struct regulator_dev 'rdev'.  The bug is in 
+> drivers/regulator/core.c:regulator_register():
+>
+> ...
 > 
-> For two copies, copying seems to be the right way to go.  For many
-> more copies, making a library function is.  Three is a difficult
-> number.  Maybe just make these inline functions for now?
+> device_unregister() calls regulator_dev_release() which frees rdev.  The 
+> subsequent kfree corrupts memory and causes some OMAP3 systems to oops on 
+> boot in regulator_get().
 
-<shrug>  I'm just adding some data, I don't have a good suggestion :)
+For the 3430SDP users out there, this patch also fixes the boot hang after 
+"regulator_init_complete: incomplete constraints, leaving VAUX3 on"
+on that device.
 
-The functions do not change very often, so three copies is not 
-necessarily the end of the world.
-
-	Jeff
-
-
-
+- Paul
