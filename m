@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754988AbZDZIUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbZDZIWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754988AbZDZIUz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 04:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbZDZIUh
+	id S1755002AbZDZIWn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 04:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZDZIWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 04:20:37 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:61700 "EHLO
+	Sun, 26 Apr 2009 04:22:16 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:47168 "EHLO
 	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753570AbZDZIU2 (ORCPT
+	with ESMTP id S1753525AbZDZIWF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 04:20:28 -0400
+	Sun, 26 Apr 2009 04:22:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:user-agent:mime-version
          :content-type;
-        b=rzPKrwGzLJ6DX20mJqefy6e2e5KAA847zNmL9LmdA2hpPDIJG+/Vc96dEXEqIQjF76
-         tSWBASC7oOSfmz5gSDosyDghFyaJMbrU5fpR/t53XA1vjcAoURYJVqz7HjKd2xSgJwgF
-         B7nnDzXaUFXxb+N5Db4/pfT/M81jsc29pcTJk=
-Date: Sun, 26 Apr 2009 10:20:54 +0200 (CEST)
+        b=PAucjBnbWikbLtQWJ4c0IEF44V6fo2UGsK18qmp7M7osUfKpR5dGcAECIltTC8P654
+         gBD6vAQUyOS4+Z7dXek27lrPwzS54nPHMXJbbkNYirBeXjqX9lXzg01h+E1NIfAdbbOo
+         mltz2tD6Fb0XCHi6vV8YXgDY6gX/E+HyBYudw=
+Date: Sun, 26 Apr 2009 10:22:29 +0200 (CEST)
 From: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
 To: Greg Kroah-Hartman <gregkh@suse.de>
 cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2.6.29-rc8] drivers/staging/otus/ioctl.c: Fix Coding Style
-Message-ID: <alpine.DEB.2.00.0904261019200.9155@Sentinel>
+Subject: [PATCH 2.6.29-rc8] drivers/staging/otus/80211core/cagg.c: Fix Coding
+ Style
+Message-ID: <alpine.DEB.2.00.0904261021170.9155@Sentinel>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -32,5172 +33,6436 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
 
---- drivers/staging/otus/ioctl.c	2009-03-16 23:10:02.000000000 +0100
-+++ drivers/staging/otus/ioctl_new.c	2009-03-25 00:19:47.000000000 +0100
-@@ -25,7 +25,7 @@
- /************************************************************************/
- #include <linux/module.h>
- #include <linux/if_arp.h>
--#include <asm/uaccess.h>
-+#include <linux/uaccess.h>
+--- drivers/staging/otus/80211core/cagg.c	2009-03-10 01:01:36.000000000 +0100
++++ drivers/staging/otus/80211core/cagg_cs_fix.c	2009-03-25 00:17:30.000000000 +0100
+@@ -27,105 +27,98 @@
+ #include "cprecomp.h"
  
- #include "usbdrv.h"
+ extern u8_t zcUpToAc[8];
+-const u8_t pri[] = {3,3,2,3,2,1,3,2,1,0};
++const u8_t pri[] = {3, 3, 2, 3, 2, 1, 3, 2, 1, 0};
  
-@@ -34,7 +34,7 @@
- #define ZD_IOCTL_GETWPAIE		    (SIOCDEVPRIVATE + 3)
- #ifdef ZM_ENABLE_CENC
- #define ZM_IOCTL_CENC               (SIOCDEVPRIVATE + 4)
--#endif //ZM_ENABLE_CENC
-+#endif  /* ZM_ENABLE_CENC */
- #define ZD_PARAM_ROAMING		    0x0001
- #define ZD_PARAM_PRIVACY		    0x0002
- #define ZD_PARAM_WPA			    0x0003
-@@ -45,7 +45,7 @@
  
- #ifdef ZM_ENABLE_CENC
- #define P80211_PACKET_CENCFLAG		0x0001
--#endif //ZM_ENABLE_CENC
-+#endif  /* ZM_ENABLE_CENC */
- #define P80211_PACKET_SETKEY     	0x0003
+ u16_t aggr_count;
+ u32_t success_mpdu;
+ u32_t total_mpdu;
  
- #define ZD_CMD_SET_ENCRYPT_KEY		0x0001
-@@ -62,204 +62,190 @@
- #include <net/iw_handler.h>
+-void zfAggInit(zdev_t* dev)
++void zfAggInit(zdev_t *dev)
+ {
+-    u16_t i,j;
++	u16_t i, j;
+ 
+-    zmw_get_wlan_dev(dev);
++	zmw_get_wlan_dev(dev);
+ 
+-    zmw_declare_for_critical_section();
+-    /*
+-     * reset sta information
+-     */
+-
+-    zmw_enter_critical_section(dev);
+-    wd->aggInitiated = 0;
+-    wd->addbaComplete = 0;
+-    wd->addbaCount = 0;
+-    wd->reorder = 1;
+-    for (i=0; i<ZM_MAX_STA_SUPPORT; i++)
+-    {
+-        for (j=0; j<ZM_AC; j++)
+-        {
+-            //wd->aggSta[i].aggQNumber[j] = ZM_AGG_POOL_SIZE;
+-            wd->aggSta[i].aggFlag[j] = wd->aggSta[i].count[j] = 0;
+-            wd->aggSta[i].tid_tx[j] = NULL;
+-            wd->aggSta[i].tid_tx[j+1] = NULL;
+-
+-        }
+-    }
+-
+-    /*
+-     * reset Tx/Rx aggregation queue information
+-     */
+-    wd->aggState = 0;
+-    for (i=0; i<ZM_AGG_POOL_SIZE; i++)
+-    {
+-        /*
+-         * reset tx aggregation queue
+-         */
+-        wd->aggQPool[i] = zfwMemAllocate(dev, sizeof(struct aggQueue));
+-        if(!wd->aggQPool[i])
+-        {
+-            zmw_leave_critical_section(dev);
+-            return;
+-        }
+-        wd->aggQPool[i]->aggHead = wd->aggQPool[i]->aggTail =
+-        wd->aggQPool[i]->aggQEnabled = wd->aggQPool[i]->aggReady =
+-        wd->aggQPool[i]->clearFlag = wd->aggQPool[i]->deleteFlag = 0;
+-        //wd->aggQPool[i]->aggSize = 16;
+-
+-        /*
+-         * reset rx aggregation queue
+-         */
+-        wd->tid_rx[i] = zfwMemAllocate(dev, sizeof(struct agg_tid_rx));
+-        if (!wd->tid_rx[i])
+-        {
+-            zmw_leave_critical_section(dev);
+-            return;
+-        }
+-        wd->tid_rx[i]->aid = ZM_MAX_STA_SUPPORT;
+-        wd->tid_rx[i]->seq_start = wd->tid_rx[i]->baw_head = \
+-        wd->tid_rx[i]->baw_tail = 0;
+-        wd->tid_rx[i]->sq_exceed_count = wd->tid_rx[i]->sq_behind_count = 0;
+-        for (j=0; j<=ZM_AGG_BAW_SIZE; j++)
+-            wd->tid_rx[i]->frame[j].buf = 0;
+-        /*
+-         * reset ADDBA exchange status code
+-         * 0: NULL
+-         * 1: ADDBA Request sent/received
+-         * 2: ACK for ADDBA Request sent/received
+-         * 3: ADDBA Response sent/received
+-         * 4: ACK for ADDBA Response sent/received
+-         */
+-        wd->tid_rx[i]->addBaExchangeStatusCode = 0;
+-
+-    }
+-    zmw_leave_critical_section(dev);
+-    zfAggTallyReset(dev);
+-    DESTQ.init = zfAggDestInit;
+-    DESTQ.init(dev);
+-    wd->aggInitiated = 1;
+-    aggr_count = 0;
+-    success_mpdu = 0;
+-    total_mpdu = 0;
++	zmw_declare_for_critical_section();
++	/*
++	* reset sta information
++	*/
++
++	zmw_enter_critical_section(dev);
++	wd->aggInitiated = 0;
++	wd->addbaComplete = 0;
++	wd->addbaCount = 0;
++	wd->reorder = 1;
++	for (i = 0; i < ZM_MAX_STA_SUPPORT; i++) {
++		for (j = 0; j < ZM_AC; j++) {
++			/* wd->aggSta[i].aggQNumber[j] = ZM_AGG_POOL_SIZE; */
++			wd->aggSta[i].aggFlag[j] = wd->aggSta[i].count[j] = 0;
++			wd->aggSta[i].tid_tx[j] = NULL;
++			wd->aggSta[i].tid_tx[j+1] = NULL;
++		}
++	}
++
++	/*
++	* reset Tx/Rx aggregation queue information
++	*/
++	wd->aggState = 0;
++	for (i = 0; i < ZM_AGG_POOL_SIZE; i++) {
++		/*
++		* reset tx aggregation queue
++		*/
++		wd->aggQPool[i] = zfwMemAllocate(dev, sizeof(struct aggQueue));
++		if (!wd->aggQPool[i]) {
++			zmw_leave_critical_section(dev);
++			return;
++		}
++		wd->aggQPool[i]->aggHead = wd->aggQPool[i]->aggTail =
++		wd->aggQPool[i]->aggQEnabled = wd->aggQPool[i]->aggReady =
++		wd->aggQPool[i]->clearFlag = wd->aggQPool[i]->deleteFlag = 0;
++		/* wd->aggQPool[i]->aggSize = 16; */
++
++		/*
++		* reset rx aggregation queue
++		*/
++		wd->tid_rx[i] = zfwMemAllocate(dev, sizeof(struct agg_tid_rx));
++		if (!wd->tid_rx[i]) {
++			zmw_leave_critical_section(dev);
++			return;
++		}
++		wd->tid_rx[i]->aid = ZM_MAX_STA_SUPPORT;
++		wd->tid_rx[i]->seq_start = wd->tid_rx[i]->baw_head = \
++		wd->tid_rx[i]->baw_tail = 0;
++		wd->tid_rx[i]->sq_exceed_count =
++					wd->tid_rx[i]->sq_behind_count = 0;
++		for (j = 0; j <= ZM_AGG_BAW_SIZE; j++)
++			wd->tid_rx[i]->frame[j].buf = 0;
++		/*
++		* reset ADDBA exchange status code
++		* 0: NULL
++		* 1: ADDBA Request sent/received
++		* 2: ACK for ADDBA Request sent/received
++		* 3: ADDBA Response sent/received
++		* 4: ACK for ADDBA Response sent/received
++		*/
++		wd->tid_rx[i]->addBaExchangeStatusCode = 0;
++	}
++
++	zmw_leave_critical_section(dev);
++	zfAggTallyReset(dev);
++	DESTQ.init = zfAggDestInit;
++	DESTQ.init(dev);
++	wd->aggInitiated = 1;
++	aggr_count = 0;
++	success_mpdu = 0;
++	total_mpdu = 0;
+ #ifdef ZM_ENABLE_AGGREGATION
+-#ifndef ZM_ENABLE_FW_BA_RETRANSMISSION //disable BAW
+-    BAW = zfwMemAllocate(dev, sizeof(struct baw_enabler));
+-    if(!BAW)
+-    {
+-        return;
+-    }
+-    BAW->init = zfBawInit;
+-    BAW->init(dev);
+-#endif //disable BAW
++#ifndef ZM_ENABLE_FW_BA_RETRANSMISSION /* disable BAW */
++	BAW = zfwMemAllocate(dev, sizeof(struct baw_enabler));
++	if (!BAW)
++		return;
++	BAW->init = zfBawInit;
++	BAW->init(dev);
++#endif /* disable BAW */
+ #endif
+ }
+ 
+@@ -150,34 +143,32 @@ void zfAggInit(zdev_t* dev)
+ 
+ 
+ 
+-u16_t zfAggGetSta(zdev_t* dev, zbuf_t* buf)
++u16_t zfAggGetSta(zdev_t *dev, zbuf_t *buf)
+ {
+-    u16_t id;
+-    u16_t dst[3];
++	u16_t id;
++	u16_t dst[3];
+ 
+-    zmw_get_wlan_dev(dev);
++	zmw_get_wlan_dev(dev);
+ 
+-    zmw_declare_for_critical_section();
++	zmw_declare_for_critical_section();
+ 
+-    dst[0] = zmw_rx_buf_readh(dev, buf, 0);
+-    dst[1] = zmw_rx_buf_readh(dev, buf, 2);
+-    dst[2] = zmw_rx_buf_readh(dev, buf, 4);
++	dst[0] = zmw_rx_buf_readh(dev, buf, 0);
++	dst[1] = zmw_rx_buf_readh(dev, buf, 2);
++	dst[2] = zmw_rx_buf_readh(dev, buf, 4);
+ 
+-    zmw_enter_critical_section(dev);
++	zmw_enter_critical_section(dev);
+ 
+-    if(wd->wlanMode == ZM_MODE_AP) {
+-        id = zfApFindSta(dev, dst);
+-    }
+-    else {
+-        id = 0;
+-    }
+-    zmw_leave_critical_section(dev);
++	if (wd->wlanMode == ZM_MODE_AP)
++		id = zfApFindSta(dev, dst);
++	else
++		id = 0;
++	zmw_leave_critical_section(dev);
+ 
+ #if ZM_AGG_FPGA_DEBUG
+-    id = 0;
++		id = 0;
  #endif
  
--extern u16_t zfLnxGetVapId(zdev_t* dev);
-+extern u16_t zfLnxGetVapId(zdev_t *dev);
- 
- static const u32_t channel_frequency_11A[] =
- {
--//Even element for Channel Number, Odd for Frequency
--    36,5180,
--    40,5200,
--    44,5220,
--    48,5240,
--    52,5260,
--    56,5280,
--    60,5300,
--    64,5320,
--    100,5500,
--    104,5520,
--    108,5540,
--    112,5560,
--    116,5580,
--    120,5600,
--    124,5620,
--    128,5640,
--    132,5660,
--    136,5680,
--    140,5700,
--//
--    184,4920,
--    188,4940,
--    192,4960,
--    196,4980,
--    8,5040,
--    12,5060,
--    16,5080,
--    34,5170,
--    38,5190,
--    42,5210,
--    46,5230,
--//
--    149,5745,
--    153,5765,
--    157,5785,
--    161,5805,
--    165,5825
--//
-+	/* Even element for Channel Number, Odd for Frequency */
-+	36, 5180,
-+	40, 5200,
-+	44, 5220,
-+	48, 5240,
-+	52, 5260,
-+	56, 5280,
-+	60, 5300,
-+	64, 5320,
-+	100, 5500,
-+	104, 5520,
-+	108, 5540,
-+	112, 5560,
-+	116, 5580,
-+	120, 5600,
-+	124, 5620,
-+	128, 5640,
-+	132, 5660,
-+	136, 5680,
-+	140, 5700,
-+	/**/
-+	184, 4920,
-+	188, 4940,
-+	192, 4960,
-+	196, 4980,
-+	8, 5040,
-+	12, 5060,
-+	16, 5080,
-+	34, 5170,
-+	38, 5190,
-+	42, 5210,
-+	46, 5230,
-+	/**/
-+	149, 5745,
-+	153, 5765,
-+	157, 5785,
-+	161, 5805,
-+	165, 5825
-+	/**/
- };
- 
- int usbdrv_freq2chan(u32_t freq)
- {
--    /* 2.4G Hz */
--    if (freq > 2400 && freq < 3000)
--    {
--        return ((freq-2412)/5) + 1;
--    }
--    else
--    {
--        u16_t ii;
--        u16_t num_chan = sizeof(channel_frequency_11A)/sizeof(u32_t);
--
--        for(ii = 1; ii < num_chan; ii += 2)
--        {
--            if (channel_frequency_11A[ii] == freq)
--                return channel_frequency_11A[ii-1];
--        }
--    }
-+	/* 2.4G Hz */
-+	if (freq > 2400 && freq < 3000) {
-+		return ((freq-2412)/5) + 1;
-+	} else {
-+		u16_t ii;
-+		u16_t num_chan = sizeof(channel_frequency_11A)/sizeof(u32_t);
-+
-+		for (ii = 1; ii < num_chan; ii += 2) {
-+			if (channel_frequency_11A[ii] == freq)
-+				return channel_frequency_11A[ii-1];
-+		}
-+	}
- 
--    return 0;
-+	return 0;
+-    return id;
++	return id;
  }
  
- int usbdrv_chan2freq(int chan)
+ 
+@@ -199,30 +190,31 @@ u16_t zfAggGetSta(zdev_t* dev, zbuf_t* b
+ /*      Honda               ZyDAS Technology Corporation    2006.11     */
+ /*                                                                      */
+ /************************************************************************/
+-TID_TX zfAggTxGetQueue(zdev_t* dev, u16_t aid, u16_t tid)
++TID_TX zfAggTxGetQueue(zdev_t *dev, u16_t aid, u16_t tid)
  {
--    int freq;
-+	int freq;
-+
-+	/* If channel number is out of range */
-+	if (chan > 165 || chan <= 0)
-+		return -1;
-+
-+	/* 2.4G band */
-+	if (chan >= 1 && chan <= 13) {
-+		freq = (2412 + (chan - 1) * 5);
-+			return freq;
-+	} else if (chan >= 36 && chan <= 165) {
-+		u16_t ii;
-+		u16_t num_chan = sizeof(channel_frequency_11A)/sizeof(u32_t);
-+
-+		for (ii = 0; ii < num_chan; ii += 2) {
-+			if (channel_frequency_11A[ii] == chan)
-+				return channel_frequency_11A[ii+1];
-+		}
+-    //u16_t   i;
+-    TID_TX  tid_tx;
+-    zmw_get_wlan_dev(dev);
++	/* u16_t   i; */
++	TID_TX  tid_tx;
++	zmw_get_wlan_dev(dev);
  
--    /* If channel number is out of range */
--    if (chan > 165 || chan <= 0)
--        return -1;
--
--    /* 2.4G band */
--    if (chan >= 1 && chan <= 13)
--    {
--        freq = (2412 + (chan - 1) * 5);
--        return freq;
--    }
--    else if (chan >= 36 && chan <= 165)
--    {
--        u16_t ii;
--        u16_t num_chan = sizeof(channel_frequency_11A)/sizeof(u32_t);
--
--        for(ii = 0; ii < num_chan; ii += 2)
--        {
--            if (channel_frequency_11A[ii] == chan)
--                return channel_frequency_11A[ii+1];
--        }
--
--        /* Can't find desired frequency */
--        if (ii == num_chan)
--           return -1;
--    }
-+	/* Can't find desired frequency */
-+	if (ii == num_chan)
-+		return -1;
-+	}
+-    //zmw_declare_for_critical_section();
++	/* zmw_declare_for_critical_section(); */
  
--    /* Can't find deisred frequency */
--    return -1;
-+	/* Can't find deisred frequency */
-+	return -1;
- }
- 
- int usbdrv_ioctl_setessid(struct net_device *dev, struct iw_point *erq)
- {
--#ifdef ZM_HOSTAPD_SUPPORT
--    //struct usbdrv_private *macp = dev->ml_priv;
--    char essidbuf[IW_ESSID_MAX_SIZE+1];
--    int i;
-+	#ifdef ZM_HOSTAPD_SUPPORT
-+	/* struct usbdrv_private *macp = dev->ml_priv; */
-+	char essidbuf[IW_ESSID_MAX_SIZE+1];
-+	int i;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    memset(essidbuf, 0, sizeof(essidbuf));
-+	memset(essidbuf, 0, sizeof(essidbuf));
- 
--    printk(KERN_ERR "usbdrv_ioctl_setessid\n");
-+	printk(KERN_ERR "usbdrv_ioctl_setessid\n");
- 
--    //printk("ssidlen=%d\n", erq->length); //for any, it is 1.
--    if (erq->flags) {
--        if (erq->length > (IW_ESSID_MAX_SIZE+1))
--            return -E2BIG;
-+	/* printk("ssidlen=%d\n", erq->length); //for any, it is 1. */
-+	if (erq->flags) {
-+		if (erq->length > (IW_ESSID_MAX_SIZE+1))
-+			return -E2BIG;
- 
--        if (copy_from_user(essidbuf, erq->pointer, erq->length))
--            return -EFAULT;
--    }
-+		if (copy_from_user(essidbuf, erq->pointer, erq->length))
-+			return -EFAULT;
-+	}
- 
--    //zd_DisasocAll(2);
--    //wait_ms(100);
-+	/* zd_DisasocAll(2); */
-+	/* wait_ms(100); */
- 
--    printk(KERN_ERR "essidbuf: ");
-+	printk(KERN_ERR "essidbuf: ");
- 
--    for(i = 0; i < erq->length; i++)
--    {
--        printk(KERN_ERR "%02x ", essidbuf[i]);
--    }
-+	for (i = 0; i < erq->length; i++)
-+		printk(KERN_ERR "%02x ", essidbuf[i]);
- 
--    printk(KERN_ERR "\n");
-+	printk(KERN_ERR "\n");
- 
--    essidbuf[erq->length] = '\0';
--    //memcpy(macp->wd.ws.ssid, essidbuf, erq->length);
--    //macp->wd.ws.ssidLen = strlen(essidbuf)+2;
--    //macp->wd.ws.ssid[1] = strlen(essidbuf); // Update ssid length
-+	essidbuf[erq->length] = '\0';
-+	/* memcpy(macp->wd.ws.ssid, essidbuf, erq->length); */
-+	/* macp->wd.ws.ssidLen = strlen(essidbuf)+2; */
-+	/* macp->wd.ws.ssid[1] = strlen(essidbuf); Update ssid length */
- 
--    zfiWlanSetSSID(dev, essidbuf, erq->length);
--#if 0
--    printk(KERN_ERR "macp->wd.ws.ssid: ");
-+	zfiWlanSetSSID(dev, essidbuf, erq->length);
-+	#if 0
-+		printk(KERN_ERR "macp->wd.ws.ssid: ");
- 
--    for(i = 0; i < macp->wd.ws.ssidLen; i++)
--    {
--        printk(KERN_ERR "%02x ", macp->wd.ws.ssid[i]);
--    }
-+		for (i = 0; i < macp->wd.ws.ssidLen; i++)
-+			printk(KERN_ERR "%02x ", macp->wd.ws.ssid[i]);
- 
--    printk(KERN_ERR "\n");
--#endif
--    zfiWlanDisable(dev, 0);
--    zfiWlanEnable(dev);
-+		printk(KERN_ERR "\n");
-+	#endif
- 
--#endif
-+	zfiWlanDisable(dev, 0);
-+	zfiWlanEnable(dev);
-+
-+	#endif
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrv_ioctl_getessid(struct net_device *dev, struct iw_point *erq)
- {
--     //struct usbdrv_private *macp = dev->ml_priv;
--     u8_t essidbuf[IW_ESSID_MAX_SIZE+1];
--     u8_t len;
--     u8_t i;
-+	/* struct usbdrv_private *macp = dev->ml_priv; */
-+	u8_t essidbuf[IW_ESSID_MAX_SIZE+1];
-+	u8_t len;
-+	u8_t i;
- 
- 
--     //len = macp->wd.ws.ssidLen;
--     //memcpy(essidbuf, macp->wd.ws.ssid, macp->wd.ws.ssidLen);
--     zfiWlanQuerySSID(dev, essidbuf, &len);
-+	/* len = macp->wd.ws.ssidLen; */
-+	/* memcpy(essidbuf, macp->wd.ws.ssid, macp->wd.ws.ssidLen); */
-+	zfiWlanQuerySSID(dev, essidbuf, &len);
- 
--     essidbuf[len] = 0;
-+	essidbuf[len] = 0;
- 
--     printk(KERN_ERR "ESSID: ");
-+	printk(KERN_ERR "ESSID: ");
- 
--     for(i = 0; i < len; i++)
--     {
--         printk(KERN_ERR "%c", essidbuf[i]);
--     }
-+	for (i = 0; i < len; i++)
-+		printk(KERN_ERR "%c", essidbuf[i]);
- 
--     printk(KERN_ERR "\n");
-+	printk(KERN_ERR "\n");
- 
--     erq->flags= 1;
--     erq->length = strlen(essidbuf) + 1;
-+	erq->flags = 1;
-+	erq->length = strlen(essidbuf) + 1;
- 
--     if (erq->pointer)
--         if (copy_to_user(erq->pointer, essidbuf, erq->length))
--             return -EFAULT;
-+	if (erq->pointer) {
-+		if (copy_to_user(erq->pointer, essidbuf, erq->length))
-+			return -EFAULT;
-+	}
- 
--     return 0;
-+	return 0;
- }
- 
--
- int usbdrv_ioctl_setrts(struct net_device *dev, struct iw_param *rrq)
- {
--
--    return 0;
-+	return 0;
- }
- 
- #if WIRELESS_EXT > 14
-@@ -267,462 +253,418 @@ int usbdrv_ioctl_setrts(struct net_devic
-  * Encode a WPA or RSN information element as a custom
-  * element using the hostap format.
-  */
--u32 encode_ie(void *buf, u32 bufsize, const u8 *ie, u32 ielen, const u8 *leader, u32 leader_len)
-+u32 encode_ie(void *buf, u32 bufsize, const u8 *ie, u32 ielen,
-+		const u8 *leader, u32 leader_len)
- {
--    u8 *p;
--    u32 i;
-+	u8 *p;
-+	u32 i;
- 
--    if (bufsize < leader_len)
--        return 0;
--    p = buf;
--    memcpy(p, leader, leader_len);
--    bufsize -= leader_len;
--    p += leader_len;
--    for (i = 0; i < ielen && bufsize > 2; i++)
--        p += sprintf(p, "%02x", ie[i]);
--    return (i == ielen ? p - (u8 *)buf : 0);
-+	if (bufsize < leader_len)
-+		return 0;
-+	p = buf;
-+	memcpy(p, leader, leader_len);
-+	bufsize -= leader_len;
-+	p += leader_len;
-+	for (i = 0; i < ielen && bufsize > 2; i++)
-+		p += sprintf(p, "%02x", ie[i]);
-+	return (i == ielen ? p - (u8 *)buf:0);
- }
--#endif                                            /* WIRELESS_EXT > 14 */
-+#endif  /* WIRELESS_EXT > 14 */
- 
--/*------------------------------------------------------------------*/
- /*
-  * Translate scan data returned from the card to a card independent
-  * format that the Wireless Tools will understand
-  */
- char *usbdrv_translate_scan(struct net_device *dev,
- 	struct iw_request_info *info, char *current_ev,
--        char *end_buf, struct zsBssInfo *list)
-+	char *end_buf, struct zsBssInfo *list)
- {
--    struct iw_event iwe;                          /* Temporary buffer */
--    u16_t capabilities;
--    char *current_val;                            /* For rates */
--    char *last_ev;
--    int i;
--#if WIRELESS_EXT > 14
--    char    buf[64*2 + 30];
--#endif
-+	struct iw_event iwe;   /* Temporary buffer */
-+	u16_t capabilities;
-+	char *current_val;     /* For rates */
-+	char *last_ev;
-+	int i;
-+	#if WIRELESS_EXT > 14
-+		char    buf[64*2 + 30];
-+	#endif
-+
-+	last_ev = current_ev;
-+
-+	/* First entry *MUST* be the AP MAC address */
-+	iwe.cmd = SIOCGIWAP;
-+	iwe.u.ap_addr.sa_family = ARPHRD_ETHER;
-+	memcpy(iwe.u.ap_addr.sa_data, list->bssid, ETH_ALEN);
-+	current_ev = iwe_stream_add_event(info,	current_ev,
-+					end_buf, &iwe, IW_EV_ADDR_LEN);
-+
-+	/* Ran out of buffer */
-+	if (last_ev == current_ev)
-+		return end_buf;
-+
-+	last_ev = current_ev;
-+
-+	/* Other entries will be displayed in the order we give them */
-+
-+	/* Add the ESSID */
-+	iwe.u.data.length = list->ssid[1];
-+	if (iwe.u.data.length > 32)
-+		iwe.u.data.length = 32;
-+	iwe.cmd = SIOCGIWESSID;
-+	iwe.u.data.flags = 1;
-+	current_ev = iwe_stream_add_point(info,	current_ev,
-+					end_buf, &iwe, &list->ssid[2]);
-+
-+	/* Ran out of buffer */
-+	if (last_ev == current_ev)
-+		return end_buf;
-+
-+	last_ev = current_ev;
-+
-+	/* Add mode */
-+	iwe.cmd = SIOCGIWMODE;
-+	capabilities = (list->capability[1] << 8) + list->capability[0];
-+	if (capabilities & (0x01 | 0x02)) {
-+		if (capabilities & 0x01)
-+			iwe.u.mode = IW_MODE_MASTER;
-+		else
-+			iwe.u.mode = IW_MODE_ADHOC;
-+			current_ev = iwe_stream_add_event(info,	current_ev,
-+						end_buf, &iwe, IW_EV_UINT_LEN);
-+	}
- 
--    last_ev = current_ev;
-+	/* Ran out of buffer */
-+	if (last_ev == current_ev)
-+		return end_buf;
-+
-+	last_ev = current_ev;
-+
-+	/* Add frequency */
-+	iwe.cmd = SIOCGIWFREQ;
-+	iwe.u.freq.m = list->channel;
-+	/* Channel frequency in KHz */
-+	if (iwe.u.freq.m > 14) {
-+		if ((184 <= iwe.u.freq.m) && (iwe.u.freq.m <= 196))
-+			iwe.u.freq.m = 4000 + iwe.u.freq.m * 5;
-+		else
-+			iwe.u.freq.m = 5000 + iwe.u.freq.m * 5;
-+	} else {
-+		if (iwe.u.freq.m == 14)
-+			iwe.u.freq.m = 2484;
-+		else
-+			iwe.u.freq.m = 2412 + (iwe.u.freq.m - 1) * 5;
-+	}
-+	iwe.u.freq.e = 6;
-+	current_ev = iwe_stream_add_event(info, current_ev,
-+					end_buf, &iwe, IW_EV_FREQ_LEN);
-+
-+	/* Ran out of buffer */
-+	if (last_ev == current_ev)
-+		return end_buf;
-+
-+	last_ev = current_ev;
-+
-+	/* Add quality statistics */
-+	iwe.cmd = IWEVQUAL;
-+	#if WIRELESS_EXT > 18
-+	iwe.u.qual.updated = IW_QUAL_QUAL_UPDATED | IW_QUAL_LEVEL_UPDATED
-+				| IW_QUAL_NOISE_UPDATED;
-+	#endif
-+	iwe.u.qual.level = list->signalStrength;
-+	iwe.u.qual.noise = 0;
-+	iwe.u.qual.qual = list->signalQuality;
-+	current_ev = iwe_stream_add_event(info,	current_ev,
-+					end_buf, &iwe, IW_EV_QUAL_LEN);
-+
-+	/* Ran out of buffer */
-+	if (last_ev == current_ev)
-+		return end_buf;
-+
-+	last_ev = current_ev;
-+
-+	/* Add encryption capability */
-+
-+	iwe.cmd = SIOCGIWENCODE;
-+	if (capabilities & 0x10)
-+		iwe.u.data.flags = IW_ENCODE_ENABLED | IW_ENCODE_NOKEY;
-+	else
-+		iwe.u.data.flags = IW_ENCODE_DISABLED;
-+
-+	iwe.u.data.length = 0;
-+	current_ev = iwe_stream_add_point(info,	current_ev,
-+					end_buf, &iwe, list->ssid);
-+
-+	/* Ran out of buffer */
-+	if (last_ev == current_ev)
-+		return end_buf;
-+
-+	last_ev = current_ev;
-+
-+	/* Rate : stuffing multiple values in a single event require a bit
-+	* more of magic
+-    /*
+-     * not a STA aid
+-     */
+-    if (0xffff == aid)
+-        return NULL;
++	/*
++	* not a STA aid
 +	*/
-+	current_val = current_ev + IW_EV_LCP_LEN;
-+
-+	iwe.cmd = SIOCGIWRATE;
-+	/* Those two flags are ignored... */
-+	iwe.u.bitrate.fixed = iwe.u.bitrate.disabled = 0;
-+
-+	for (i = 0 ; i < list->supportedRates[1] ; i++) {
-+		/* Bit rate given in 500 kb/s units (+ 0x80) */
-+		iwe.u.bitrate.value = ((list->supportedRates[i+2] & 0x7f)
-+					* 500000);
-+		/* Add new value to event */
-+		current_val = iwe_stream_add_value(info, current_ev,
-+				current_val, end_buf, &iwe, IW_EV_PARAM_LEN);
-+
-+		/* Ran out of buffer */
-+		if (last_ev == current_val)
-+			return end_buf;
++	if (0xffff == aid)
++		return NULL;
  
--/* First entry *MUST* be the AP MAC address */
--    iwe.cmd = SIOCGIWAP;
--    iwe.u.ap_addr.sa_family = ARPHRD_ETHER;
--    memcpy(iwe.u.ap_addr.sa_data, list->bssid, ETH_ALEN);
--    current_ev = iwe_stream_add_event(
--	info,
--	current_ev,
--	end_buf, &iwe, IW_EV_ADDR_LEN);
+-    //zmw_enter_critical_section(dev);
++	/* zmw_enter_critical_section(dev); */
+ 
+-    tid_tx = wd->aggSta[aid].tid_tx[tid];
+-    if (!tid_tx) return NULL;
+-    if (0 == tid_tx->aggQEnabled)
+-        return NULL;
++	tid_tx = wd->aggSta[aid].tid_tx[tid];
++	if (!tid_tx)
++		return NULL;
++	if (0 == tid_tx->aggQEnabled)
++		return NULL;
+ 
+-    //zmw_leave_critical_section(dev);
++	/* zmw_leave_critical_section(dev); */
+ 
+-    return tid_tx;
++	return tid_tx;
+ }
+ 
+ /************************************************************************/
+@@ -242,54 +234,50 @@ TID_TX zfAggTxGetQueue(zdev_t* dev, u16_
+ /*      Honda               ZyDAS Technology Corporation    2006.12     */
+ /*                                                                      */
+ /************************************************************************/
+-TID_TX zfAggTxNewQueue(zdev_t* dev, u16_t aid, u16_t tid, zbuf_t* buf)
++TID_TX zfAggTxNewQueue(zdev_t *dev, u16_t aid, u16_t tid, zbuf_t *buf)
+ {
+-    u16_t   i;
+-    TID_TX  tid_tx=NULL;
+-    u16_t   ac = zcUpToAc[tid&0x7] & 0x3;
+-    zmw_get_wlan_dev(dev);
 -
--    /* Ran out of buffer */
--    if (last_ev == current_ev)
+-    zmw_declare_for_critical_section();
+-
+-    /*
+-     * not a STA aid
+-     */
+-    if (0xffff == aid)
+-        return NULL;
+-
+-    zmw_enter_critical_section(dev);
+-
+-    /*
+-     * find one new queue for sta
+-     */
+-    for (i=0; i<ZM_AGG_POOL_SIZE; i++)
 -    {
--        return end_buf;
--    }
--
--    last_ev = current_ev;
--
--/* Other entries will be displayed in the order we give them */
--
--/* Add the ESSID */
--    iwe.u.data.length = list->ssid[1];
--    if(iwe.u.data.length > 32)
--        iwe.u.data.length = 32;
--    iwe.cmd = SIOCGIWESSID;
--    iwe.u.data.flags = 1;
--    current_ev = iwe_stream_add_point(
--	info,
--	current_ev, end_buf, &iwe, &list->ssid[2]);
--
--    /* Ran out of buffer */
--    if (last_ev == current_ev)
--    {
--        return end_buf;
--    }
--
--    last_ev = current_ev;
--
--/* Add mode */
--    iwe.cmd = SIOCGIWMODE;
--    capabilities = (list->capability[1] << 8) + list->capability[0];
--    if(capabilities & (0x01 | 0x02))
--    {
--        if(capabilities & 0x01)
--            iwe.u.mode = IW_MODE_MASTER;
--        else
--            iwe.u.mode = IW_MODE_ADHOC;
--        current_ev = iwe_stream_add_event(
--		info,
--		current_ev, end_buf, &iwe, IW_EV_UINT_LEN);
--    }
--
--    /* Ran out of buffer */
--    if (last_ev == current_ev)
--    {
--        return end_buf;
--    }
--
--    last_ev = current_ev;
--
--/* Add frequency */
--    iwe.cmd = SIOCGIWFREQ;
--    iwe.u.freq.m = list->channel;
--/* Channel frequency in KHz */
--    if (iwe.u.freq.m > 14)
--    {
--        if ((184 <= iwe.u.freq.m) && (iwe.u.freq.m<=196))
--              iwe.u.freq.m = 4000 + iwe.u.freq.m * 5;
--        else
--              iwe.u.freq.m = 5000 + iwe.u.freq.m * 5;
--    }
--    else
--    {
--        if (iwe.u.freq.m == 14)
--              iwe.u.freq.m = 2484;
--        else
--              iwe.u.freq.m = 2412 + (iwe.u.freq.m - 1) * 5;
--    }
--    iwe.u.freq.e = 6;
--    current_ev = iwe_stream_add_event(
--	info,
--    	current_ev, end_buf, &iwe, IW_EV_FREQ_LEN);
--
--    /* Ran out of buffer */
--    if (last_ev == current_ev)
--    {
--        return end_buf;
--    }
--
--    last_ev = current_ev;
--
--/* Add quality statistics */
--    iwe.cmd = IWEVQUAL;
--#if WIRELESS_EXT > 18
--    iwe.u.qual.updated = IW_QUAL_QUAL_UPDATED | IW_QUAL_LEVEL_UPDATED
--                        |IW_QUAL_NOISE_UPDATED;
--#endif
--    iwe.u.qual.level = list->signalStrength;
--    iwe.u.qual.noise = 0;
--    iwe.u.qual.qual = list->signalQuality;
--    current_ev = iwe_stream_add_event(
--	info,
--	current_ev, end_buf, &iwe, IW_EV_QUAL_LEN);
--
--    /* Ran out of buffer */
--    if (last_ev == current_ev)
--    {
--        return end_buf;
--    }
--
--    last_ev = current_ev;
--
--/* Add encryption capability */
--
--    iwe.cmd = SIOCGIWENCODE;
--    if(capabilities & 0x10)
--        iwe.u.data.flags = IW_ENCODE_ENABLED | IW_ENCODE_NOKEY;
--    else
--        iwe.u.data.flags = IW_ENCODE_DISABLED;
--
--    iwe.u.data.length = 0;
--    current_ev = iwe_stream_add_point(
--	info,
--	current_ev, end_buf, &iwe, list->ssid);
--
--    /* Ran out of buffer */
--    if (last_ev == current_ev)
--    {
--        return end_buf;
--    }
--
--    last_ev = current_ev;
--
--/* Rate : stuffing multiple values in a single event require a bit
-- * more of magic */
--    current_val = current_ev + IW_EV_LCP_LEN;
--
--    iwe.cmd = SIOCGIWRATE;
--/* Those two flags are ignored... */
--    iwe.u.bitrate.fixed = iwe.u.bitrate.disabled = 0;
--
--    for(i = 0 ; i < list->supportedRates[1] ; i++)
--    {
--/* Bit rate given in 500 kb/s units (+ 0x80) */
--        iwe.u.bitrate.value = ((list->supportedRates[i+2] & 0x7f) * 500000);
--/* Add new value to event */
--        current_val = iwe_stream_add_value(
--		info,
--		current_ev, current_val, end_buf, &iwe, IW_EV_PARAM_LEN);
--
--        /* Ran out of buffer */
--        if (last_ev == current_val)
+-        if (wd->aggQPool[i]->aggQEnabled)
 -        {
--            return end_buf;
+-                /*
+-                 * this q is enabled
+-                 */
 -        }
--
--        last_ev = current_val;
--    }
--
--    for (i = 0 ; i < list->extSupportedRates[1] ; i++)
--    {
--/* Bit rate given in 500 kb/s units (+ 0x80) */
--        iwe.u.bitrate.value = ((list->extSupportedRates[i+2] & 0x7f) * 500000);
--/* Add new value to event */
--        current_val = iwe_stream_add_value(
--		info,
--		current_ev, current_val, end_buf, &iwe, IW_EV_PARAM_LEN);
--
--        /* Ran out of buffer */
--        if (last_ev == current_val)
--        {
--            return end_buf;
--        }
--
--        last_ev = current_ev;
--    }
--
--/* Check if we added any event */
--    if((current_val - current_ev) > IW_EV_LCP_LEN)
--        current_ev = current_val;
--#if WIRELESS_EXT > 14
--#define IEEE80211_ELEMID_RSN 0x30
--    memset(&iwe, 0, sizeof(iwe));
--    iwe.cmd = IWEVCUSTOM;
--    snprintf(buf, sizeof(buf), "bcn_int=%d", (list->beaconInterval[1] << 8) + list->beaconInterval[0]);
--    iwe.u.data.length = strlen(buf);
--    current_ev = iwe_stream_add_point(
--		info,
--		current_ev, end_buf, &iwe, buf);
--
--    /* Ran out of buffer */
--    if (last_ev == current_ev)
--    {
--        return end_buf;
--    }
--
--    last_ev = current_ev;
--
--    if (list->wpaIe[1] != 0)
--    {
--        static const char rsn_leader[] = "rsn_ie=";
--        static const char wpa_leader[] = "wpa_ie=";
--
--        memset(&iwe, 0, sizeof(iwe));
--        iwe.cmd = IWEVCUSTOM;
--        if (list->wpaIe[0] == IEEE80211_ELEMID_RSN)
--            iwe.u.data.length = encode_ie(buf, sizeof(buf),
--                list->wpaIe, list->wpaIe[1]+2,
--                rsn_leader, sizeof(rsn_leader)-1);
 -        else
--            iwe.u.data.length = encode_ie(buf, sizeof(buf),
--                list->wpaIe, list->wpaIe[1]+2,
--                wpa_leader, sizeof(wpa_leader)-1);
--
--        if (iwe.u.data.length != 0)
--            current_ev = iwe_stream_add_point(
--		info,
--		current_ev, end_buf, &iwe, buf);
--
--        /* Ran out of buffer */
--        if (last_ev == current_ev)
 -        {
--            return end_buf;
--        }
--
--        last_ev = current_ev;
--    }
--    if (list->rsnIe[1] != 0)
--    {
--        static const char rsn_leader[] = "rsn_ie=";
--        memset(&iwe, 0, sizeof(iwe));
--        iwe.cmd = IWEVCUSTOM;
--
--        if (list->rsnIe[0] == IEEE80211_ELEMID_RSN)
--        {
--            iwe.u.data.length = encode_ie(buf, sizeof(buf),
--                list->rsnIe, list->rsnIe[1]+2,
--                rsn_leader, sizeof(rsn_leader)-1);
--            if (iwe.u.data.length != 0)
--                current_ev = iwe_stream_add_point(
--			info,
--			current_ev, end_buf,  &iwe, buf);
--
--            /* Ran out of buffer */
--            if (last_ev == current_ev)
--            {
--                return end_buf;
--            }
--
--            last_ev = current_ev;
+-            tid_tx = wd->aggQPool[i];
+-            tid_tx->aggQEnabled = 1;
+-            tid_tx->aggQSTA = aid;
+-            tid_tx->ac = ac;
+-            tid_tx->tid = tid;
+-            tid_tx->aggHead = tid_tx->aggTail = tid_tx->size = 0;
+-            tid_tx->aggReady = 0;
+-            wd->aggSta[aid].tid_tx[tid] = tid_tx;
+-            tid_tx->dst[0] = zmw_rx_buf_readh(dev, buf, 0);
+-            tid_tx->dst[1] = zmw_rx_buf_readh(dev, buf, 2);
+-            tid_tx->dst[2] = zmw_rx_buf_readh(dev, buf, 4);
+-            break;
 -        }
 -    }
--#endif
--/* The other data in the scan result are not really
-- * interesting, so for now drop it */
--    return current_ev;
-+		last_ev = current_val;
-+	}
++	u16_t i;
++	TID_TX  tid_tx = NULL;
++	u16_t   ac = zcUpToAc[tid&0x7] & 0x3;
++	zmw_get_wlan_dev(dev);
 +
-+	for (i = 0 ; i < list->extSupportedRates[1] ; i++) {
-+		/* Bit rate given in 500 kb/s units (+ 0x80) */
-+		iwe.u.bitrate.value = ((list->extSupportedRates[i+2] & 0x7f)
-+					* 500000);
-+		/* Add new value to event */
-+		current_val = iwe_stream_add_value(info, current_ev,
-+				current_val, end_buf, &iwe, IW_EV_PARAM_LEN);
++	zmw_declare_for_critical_section();
 +
-+		/* Ran out of buffer */
-+		if (last_ev == current_val)
-+			return end_buf;
-+
-+		last_ev = current_ev;
-+	}
-+
-+	/* Check if we added any event */
-+	if ((current_val - current_ev) > IW_EV_LCP_LEN)
-+		current_ev = current_val;
-+	#if WIRELESS_EXT > 14
-+		#define IEEE80211_ELEMID_RSN 0x30
-+	memset(&iwe, 0, sizeof(iwe));
-+	iwe.cmd = IWEVCUSTOM;
-+	snprintf(buf, sizeof(buf), "bcn_int=%d", (list->beaconInterval[1] << 8)
-+						+ list->beaconInterval[0]);
-+	iwe.u.data.length = strlen(buf);
-+	current_ev = iwe_stream_add_point(info, current_ev,
-+						end_buf, &iwe, buf);
-+
-+	/* Ran out of buffer */
-+	if (last_ev == current_ev)
-+		return end_buf;
-+
-+	last_ev = current_ev;
-+
-+	if (list->wpaIe[1] != 0) {
-+		static const char rsn_leader[] = "rsn_ie=";
-+		static const char wpa_leader[] = "wpa_ie=";
-+
-+		memset(&iwe, 0, sizeof(iwe));
-+		iwe.cmd = IWEVCUSTOM;
-+		if (list->wpaIe[0] == IEEE80211_ELEMID_RSN)
-+			iwe.u.data.length = encode_ie(buf, sizeof(buf),
-+					list->wpaIe, list->wpaIe[1]+2,
-+					rsn_leader, sizeof(rsn_leader)-1);
-+		else
-+			iwe.u.data.length = encode_ie(buf, sizeof(buf),
-+					list->wpaIe, list->wpaIe[1]+2,
-+					wpa_leader, sizeof(wpa_leader)-1);
-+
-+		if (iwe.u.data.length != 0)
-+			current_ev = iwe_stream_add_point(info, current_ev,
-+							end_buf, &iwe, buf);
-+
-+		/* Ran out of buffer */
-+		if (last_ev == current_ev)
-+			return end_buf;
-+
-+		last_ev = current_ev;
-+	}
-+
-+	if (list->rsnIe[1] != 0) {
-+		static const char rsn_leader[] = "rsn_ie=";
-+		memset(&iwe, 0, sizeof(iwe));
-+		iwe.cmd = IWEVCUSTOM;
-+
-+		if (list->rsnIe[0] == IEEE80211_ELEMID_RSN) {
-+			iwe.u.data.length = encode_ie(buf, sizeof(buf),
-+			list->rsnIe, list->rsnIe[1]+2,
-+			rsn_leader, sizeof(rsn_leader)-1);
-+			if (iwe.u.data.length != 0)
-+				current_ev = iwe_stream_add_point(info,
-+					current_ev, end_buf,  &iwe, buf);
-+
-+			/* Ran out of buffer */
-+			if (last_ev == current_ev)
-+				return end_buf;
-+
-+			last_ev = current_ev;
-+		}
-+	}
-+	#endif
-+	/* The other data in the scan result are not really
-+	* interesting, so for now drop it
++	/*
++	* not a STA aid
 +	*/
-+	return current_ev;
- }
- 
- int usbdrvwext_giwname(struct net_device *dev,
--            struct iw_request_info *info,
--            union iwreq_data *wrq, char *extra)
-+		struct iw_request_info *info,
-+		union iwreq_data *wrq, char *extra)
- {
--    //struct usbdrv_private *macp = dev->ml_priv;
-+	/* struct usbdrv_private *macp = dev->ml_priv; */
- 
--    strcpy(wrq->name, "IEEE 802.11-MIMO");
-+	strcpy(wrq->name, "IEEE 802.11-MIMO");
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_siwfreq(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_freq *freq, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_freq *freq, char *extra)
- {
--    u32_t FreqKHz;
--    struct usbdrv_private *macp = dev->ml_priv;
-+	u32_t FreqKHz;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    if (freq->e > 1)
--        return -EINVAL;
--
--    if (freq->e == 1)
--    {
--        FreqKHz = (freq->m / 100000);
--
--        if (FreqKHz > 4000000)
--        {
--            if (FreqKHz > 5825000)
--                FreqKHz = 5825000;
--            else if (FreqKHz < 4920000)
--                FreqKHz = 4920000;
--            else if (FreqKHz < 5000000)
--                FreqKHz = (((FreqKHz - 4000000) / 5000) * 5000) + 4000000;
--            else
--                FreqKHz = (((FreqKHz - 5000000) / 5000) * 5000) + 5000000;
--        }
--        else
--        {
--            if (FreqKHz > 2484000)
--                FreqKHz = 2484000;
--            else if (FreqKHz < 2412000)
--                FreqKHz = 2412000;
--            else
--                FreqKHz = (((FreqKHz - 2412000) / 5000) * 5000) + 2412000;
--        }
--
--    }
--    else
--    {
--        FreqKHz = usbdrv_chan2freq(freq->m);
--
--        if (FreqKHz != -1)
--            FreqKHz *= 1000;
--        else
--            FreqKHz = 2412000;
--    }
--
--    //printk("freq->m: %d, freq->e: %d\n", freq->m, freq->e);
--    //printk("FreqKHz: %d\n", FreqKHz);
--
--    if (macp->DeviceOpened == 1)
--    {
--        zfiWlanSetFrequency(dev, FreqKHz, 0); // Immediate
--        //u8_t wpaieLen,wpaie[50];
--        //zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen);
--        zfiWlanDisable(dev, 0);
--        zfiWlanEnable(dev);
--        //if (wpaieLen > 2)
--        //    zfiWlanSetWpaIe(dev, wpaie, wpaieLen);
--    }
-+	if (freq->e > 1)
-+		return -EINVAL;
- 
--    return 0;
-+	if (freq->e == 1) {
-+		FreqKHz = (freq->m / 100000);
++	if (0xffff == aid)
++		return NULL;
 +
-+		if (FreqKHz > 4000000) {
-+			if (FreqKHz > 5825000)
-+				FreqKHz = 5825000;
-+			else if (FreqKHz < 4920000)
-+				FreqKHz = 4920000;
-+			else if (FreqKHz < 5000000)
-+				FreqKHz = (((FreqKHz - 4000000) / 5000) * 5000)
-+						+ 4000000;
-+			else
-+				FreqKHz = (((FreqKHz - 5000000) / 5000) * 5000)
-+						+ 5000000;
++	zmw_enter_critical_section(dev);
++
++	/*
++	* find one new queue for sta
++	*/
++	for (i = 0; i < ZM_AGG_POOL_SIZE; i++) {
++		if (wd->aggQPool[i]->aggQEnabled) {
++			/*
++			* this q is enabled
++			*/
 +		} else {
-+			if (FreqKHz > 2484000)
-+				FreqKHz = 2484000;
-+			else if (FreqKHz < 2412000)
-+				FreqKHz = 2412000;
-+			else
-+				FreqKHz = (((FreqKHz - 2412000) / 5000) * 5000)
-+						+ 2412000;
-+		}
-+	} else {
-+		FreqKHz = usbdrv_chan2freq(freq->m);
-+
-+		if (FreqKHz != -1)
-+			FreqKHz *= 1000;
-+		else
-+			FreqKHz = 2412000;
-+	}
-+
-+	/* printk("freq->m: %d, freq->e: %d\n", freq->m, freq->e); */
-+	/* printk("FreqKHz: %d\n", FreqKHz); */
-+
-+	if (macp->DeviceOpened == 1) {
-+		zfiWlanSetFrequency(dev, FreqKHz, 0); /* Immediate */
-+		/* u8_t wpaieLen,wpaie[50]; */
-+		/* zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen); */
-+		zfiWlanDisable(dev, 0);
-+		zfiWlanEnable(dev);
-+		/* if (wpaieLen > 2) */
-+		/* zfiWlanSetWpaIe(dev, wpaie, wpaieLen); */
-+	}
-+
-+	return 0;
- }
- 
- int usbdrvwext_giwfreq(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_freq *freq, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_freq *freq, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    freq->m = zfiWlanQueryFrequency(dev);
--    freq->e = 3;
-+	freq->m = zfiWlanQueryFrequency(dev);
-+	freq->e = 3;
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_siwmode(struct net_device *dev,
--            struct iw_request_info *info,
--            union iwreq_data *wrq, char *extra)
-+		struct iw_request_info *info,
-+		union iwreq_data *wrq, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    u8_t WlanMode;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u8_t WlanMode;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (!netif_running(dev))
-+		return -EINVAL;
-+
-+	if (macp->DeviceOpened != 1)
-+		return 0;
-+
-+	switch (wrq->mode) {
-+	case IW_MODE_MASTER:
-+		WlanMode = ZM_MODE_AP;
-+		break;
-+	case IW_MODE_INFRA:
-+		WlanMode = ZM_MODE_INFRASTRUCTURE;
-+		break;
-+	case IW_MODE_ADHOC:
-+		WlanMode = ZM_MODE_IBSS;
-+		break;
-+	default:
-+		WlanMode = ZM_MODE_IBSS;
-+		break;
-+	}
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
--
--    switch(wrq->mode)
--    {
--        case IW_MODE_MASTER:
--            WlanMode = ZM_MODE_AP;
--            break;
--        case IW_MODE_INFRA:
--            WlanMode = ZM_MODE_INFRASTRUCTURE;
--            break;
--        case IW_MODE_ADHOC:
--            WlanMode = ZM_MODE_IBSS;
--            break;
--        default:
--            WlanMode = ZM_MODE_IBSS;
--            break;
--    }
--
--    zfiWlanSetWlanMode(dev,WlanMode);
--    zfiWlanDisable(dev, 1);
--    zfiWlanEnable(dev);
-+	zfiWlanSetWlanMode(dev, WlanMode);
-+	zfiWlanDisable(dev, 1);
-+	zfiWlanEnable(dev);
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwmode(struct net_device *dev,
--            struct iw_request_info *info,
--            __u32 *mode, char *extra)
-+	struct iw_request_info *info,
-+	__u32 *mode, char *extra)
- {
--    unsigned long irqFlag;
--    struct usbdrv_private *macp = dev->ml_priv;
-+	unsigned long irqFlag;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
--
--    spin_lock_irqsave(&macp->cs_lock, irqFlag);
--
--    switch(zfiWlanQueryWlanMode(dev))
--    {
--        case ZM_MODE_AP:
--            *mode = IW_MODE_MASTER;
--            break;
--        case ZM_MODE_INFRASTRUCTURE:
--            *mode = IW_MODE_INFRA;
--            break;
--        case ZM_MODE_IBSS:
--            *mode = IW_MODE_ADHOC;
--            break;
--        default:
--            *mode = IW_MODE_ADHOC;
--            break;
--    }
-+	spin_lock_irqsave(&macp->cs_lock, irqFlag);
-+
-+	switch (zfiWlanQueryWlanMode(dev)) {
-+	case ZM_MODE_AP:
-+		*mode = IW_MODE_MASTER;
-+		break;
-+	case ZM_MODE_INFRASTRUCTURE:
-+		*mode = IW_MODE_INFRA;
-+		break;
-+	case ZM_MODE_IBSS:
-+		*mode = IW_MODE_ADHOC;
-+		break;
-+	default:
-+		*mode = IW_MODE_ADHOC;
-+		break;
-+	}
- 
--    spin_unlock_irqrestore(&macp->cs_lock, irqFlag);
-+	spin_unlock_irqrestore(&macp->cs_lock, irqFlag);
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_siwsens(struct net_device *dev,
-@@ -743,338 +685,341 @@ int usbdrvwext_giwsens(struct net_device
- }
- 
- int usbdrvwext_giwrange(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_point *data, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_point *data, char *extra)
- {
--    struct iw_range *range = (struct iw_range *) extra;
--    int i, val;
--    //int num_band_a;
--    u16_t channels[60];
--    u16_t channel_num;
--
--    if(!netif_running(dev))
--        return -EINVAL;
--
--#if WIRELESS_EXT > 9
--    range->txpower_capa = IW_TXPOW_DBM;
--// XXX what about min/max_pmp, min/max_pmt, etc.
--#endif
-+	struct iw_range *range = (struct iw_range *) extra;
-+	int i, val;
-+	/* int num_band_a; */
-+	u16_t channels[60];
-+	u16_t channel_num;
-+
-+	if (!netif_running(dev))
-+		return -EINVAL;
-+
-+	#if WIRELESS_EXT > 9
-+	range->txpower_capa = IW_TXPOW_DBM;
-+	/* XXX what about min/max_pmp, min/max_pmt, etc. */
-+	#endif
-+
-+	#if WIRELESS_EXT > 10
-+	range->we_version_compiled = WIRELESS_EXT;
-+	range->we_version_source = 13;
-+
-+	range->retry_capa = IW_RETRY_LIMIT;
-+	range->retry_flags = IW_RETRY_LIMIT;
-+	range->min_retry = 0;
-+	range->max_retry = 255;
-+	#endif  /* WIRELESS_EXT > 10 */
-+
-+	channel_num = zfiWlanQueryAllowChannels(dev, channels);
-+
-+	/* Gurantee reported channel numbers is less
-+	* or equal to IW_MAX_FREQUENCIES
-+	*/
-+	if (channel_num > IW_MAX_FREQUENCIES)
-+		channel_num = IW_MAX_FREQUENCIES;
-+
-+	val = 0;
-+
-+	for (i = 0; i < channel_num; i++) {
-+		range->freq[val].i = usbdrv_freq2chan(channels[i]);
-+		range->freq[val].m = channels[i];
-+		range->freq[val].e = 6;
-+		val++;
-+	}
- 
--#if WIRELESS_EXT > 10
--    range->we_version_compiled = WIRELESS_EXT;
--    range->we_version_source = 13;
--
--    range->retry_capa = IW_RETRY_LIMIT;
--    range->retry_flags = IW_RETRY_LIMIT;
--    range->min_retry = 0;
--    range->max_retry = 255;
--#endif                                        /* WIRELESS_EXT > 10 */
--
--    channel_num = zfiWlanQueryAllowChannels(dev, channels);
--
--    /* Gurantee reported channel numbers is less or equal to IW_MAX_FREQUENCIES */
--    if (channel_num > IW_MAX_FREQUENCIES)
--        channel_num = IW_MAX_FREQUENCIES;
--
--    val = 0;
--
--    for (i = 0; i < channel_num; i++)
--    {
--        range->freq[val].i = usbdrv_freq2chan(channels[i]);
--        range->freq[val].m = channels[i];
--        range->freq[val].e = 6;
--        val++;
--    }
--
--    range->num_channels = channel_num;
--    range->num_frequency = channel_num;
--
--#if 0
--    range->num_channels = 14; // Only 2.4G
--
--/* XXX need to filter against the regulatory domain &| active set */
--    val = 0;
--    for (i = 1; i <= 14; i++) // B,G Bands
--    {
--        range->freq[val].i = i;
--        if (i == 14)
--              range->freq[val].m = 2484000;
--        else
--              range->freq[val].m = (2412+(i-1)*5)*1000;
--        range->freq[val].e = 3;
--        val++;
--    }
--
--    num_band_a = (IW_MAX_FREQUENCIES - val);
--
--    for (i = 0; i < num_band_a; i++) // A Bands
--    {
--        range->freq[val].i = channel_frequency_11A[2 * i];
--        range->freq[val].m = channel_frequency_11A[2 * i + 1] * 1000;
--        range->freq[val].e = 3;
--        val++;
--    }
--    // MIMO Rate Not Defined Now
--    //For 802.11a, there are too more frequency. We can't return them all
--    range->num_frequency = val;
--#endif
-+	range->num_channels = channel_num;
-+	range->num_frequency = channel_num;
- 
--/* Max of /proc/net/wireless */
--    range->max_qual.qual = 100; //??                  //92;
--    range->max_qual.level = 154; //??
--    range->max_qual.noise = 154; //??
--    range->sensitivity = 3; //??
--
--// XXX these need to be nsd-specific!
--    range->min_rts = 0;
--    range->max_rts = 2347;
--    range->min_frag = 256;
--    range->max_frag = 2346;
--    range->max_encoding_tokens = 4/*NUM_WEPKEYS*/; //??
--    range->num_encoding_sizes = 2; //??
--
--    range->encoding_size[0] = 5; //??               //WEP Key Encoding Size
--    range->encoding_size[1] = 13;//??
--
--// XXX what about num_bitrates/throughput?
--    range->num_bitrates = 0; //??
-+	#if 0
-+	range->num_channels = 14; /* Only 2.4G */
- 
--/* estimated max throughput */
--// XXX need to cap it if we're running at ~2Mbps..
-+	/* XXX need to filter against the regulatory domain &| active set */
-+	val = 0;
-+	/* B,G Bands */
-+	for (i = 1; i <= 14; i++) {
-+		range->freq[val].i = i;
-+		if (i == 14)
-+			range->freq[val].m = 2484000;
-+		else
-+			range->freq[val].m = (2412+(i-1)*5)*1000;
-+		range->freq[val].e = 3;
-+		val++;
-+	}
- 
--    range->throughput = 300000000;
-+	num_band_a = (IW_MAX_FREQUENCIES - val);
-+	/* A Bands */
-+	for (i = 0; i < num_band_a; i++) {
-+		range->freq[val].i = channel_frequency_11A[2 * i];
-+		range->freq[val].m = channel_frequency_11A[2 * i + 1] * 1000;
-+		range->freq[val].e = 3;
-+		val++;
-+	}
-+	/* MIMO Rate Not Defined Now
-+	* For 802.11a, there are too more frequency.
-+	* We can't return them all.
-+	*/
-+	range->num_frequency = val;
-+	#endif
-+
-+	/* Max of /proc/net/wireless */
-+	range->max_qual.qual = 100;  /* ??  92; */
-+	range->max_qual.level = 154; /* ?? */
-+	range->max_qual.noise = 154; /* ?? */
-+	range->sensitivity = 3;      /* ?? */
-+
-+	/* XXX these need to be nsd-specific! */
-+	range->min_rts = 0;
-+	range->max_rts = 2347;
-+	range->min_frag = 256;
-+	range->max_frag = 2346;
-+	range->max_encoding_tokens = 4 /* NUM_WEPKEYS ?? */;
-+	range->num_encoding_sizes = 2; /* ?? */
-+
-+	range->encoding_size[0] = 5; /* ?? WEP Key Encoding Size */
-+	range->encoding_size[1] = 13; /* ?? */
-+
-+	/* XXX what about num_bitrates/throughput? */
-+	range->num_bitrates = 0; /* ?? */
-+
-+	/* estimated max throughput
-+	* XXX need to cap it if we're running at ~2Mbps..
-+	*/
- 
--    return 0;
-+	range->throughput = 300000000;
-+
-+	return 0;
- }
- 
- int usbdrvwext_siwap(struct net_device *dev, struct iw_request_info *info,
--        struct sockaddr *MacAddr, char *extra)
-+		struct sockaddr *MacAddr, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) {
-+		/* AP Mode */
-+		zfiWlanSetMacAddress(dev, (u16_t *)&MacAddr->sa_data[0]);
-+	} else {
-+		/* STA Mode */
-+		zfiWlanSetBssid(dev, &MacAddr->sa_data[0]);
-+	}
- 
--    if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) // AP Mode
--        zfiWlanSetMacAddress(dev,(u16_t *)&MacAddr->sa_data[0]);
--    else                                 //STA Mode
--        zfiWlanSetBssid(dev,&MacAddr->sa_data[0]);
--
--    if (macp->DeviceOpened == 1)
--    {
--        //u8_t wpaieLen,wpaie[80];
--        //zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen);
--        zfiWlanDisable(dev, 0);
--        zfiWlanEnable(dev);
--        //if (wpaieLen > 2)
--        //    zfiWlanSetWpaIe(dev, wpaie, wpaieLen);
--    }
-+	if (macp->DeviceOpened == 1) {
-+		/* u8_t wpaieLen,wpaie[80]; */
-+		/* zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen); */
-+		zfiWlanDisable(dev, 0);
-+		zfiWlanEnable(dev);
-+		/* if (wpaieLen > 2) */
-+		/* zfiWlanSetWpaIe(dev, wpaie, wpaieLen); */
-+	}
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwap(struct net_device *dev,
--            struct iw_request_info *info,
--            struct sockaddr *MacAddr, char *extra)
-+		struct iw_request_info *info,
-+		struct sockaddr *MacAddr, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) // AP Mode
--        zfiWlanQueryMacAddress(dev, &MacAddr->sa_data[0]);
--    else                                 //STA Mode
--    {
--        if (macp->adapterState == ZM_STATUS_MEDIA_CONNECT)
--        {
--            zfiWlanQueryBssid(dev, &MacAddr->sa_data[0]);
--        }
--        else
--        {
--            u8_t zero_addr[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
--            memcpy(&MacAddr->sa_data[0], zero_addr, sizeof(zero_addr));
--        }
--    }
-+	if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) {
-+		/* AP Mode */
-+		zfiWlanQueryMacAddress(dev, &MacAddr->sa_data[0]);
-+	} else {
-+		/* STA Mode */
-+		if (macp->adapterState == ZM_STATUS_MEDIA_CONNECT) {
-+			zfiWlanQueryBssid(dev, &MacAddr->sa_data[0]);
-+		} else {
-+			u8_t zero_addr[6] = { 0x00, 0x00, 0x00, 0x00,
-+								0x00, 0x00 };
-+			memcpy(&MacAddr->sa_data[0], zero_addr,
-+							sizeof(zero_addr));
-+		}
-+	}
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_iwaplist(struct net_device *dev,
- 			struct iw_request_info *info,
- 			struct iw_point *data, char *extra)
- {
--    //Don't know how to do yet--CWYang(+)
--    return 0;
-+	/* Don't know how to do yet--CWYang(+) */
-+	return 0;
- 
- }
- 
- int usbdrvwext_siwscan(struct net_device *dev, struct iw_request_info *info,
--        struct iw_point *data, char *extra)
-+	struct iw_point *data, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    printk("CWY - usbdrvwext_siwscan\n");
-+	printk(DEFAULT_MESSAGE_LOGLEVEL "CWY - usbdrvwext_siwscan\n");
- 
--    zfiWlanScan(dev);
-+	zfiWlanScan(dev);
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwscan(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_point *data, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_point *data, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    //struct zsWlanDev* wd = (struct zsWlanDev*) zmw_wlan_dev(dev);
--    char *current_ev = extra;
--    char *end_buf;
--    int i;
--    //struct zsBssList BssList;
--    struct zsBssListV1 *pBssList = kmalloc(sizeof(struct zsBssListV1), GFP_KERNEL);
--    //BssList = wd->sta.pBssList;
--    //zmw_get_wlan_dev(dev);
--
--    if (macp->DeviceOpened != 1)
--        return 0;
--
--    if (data->length == 0)
--    {
--       end_buf = extra + IW_SCAN_MAX_DATA;
--    }
--    else
--    {
--        end_buf = extra + data->length;
--    }
--
--    printk("giwscan - Report Scan Results\n");
--    //printk("giwscan - BssList Sreucture Len : %d\n", sizeof(BssList));
--    //printk("giwscan - BssList Count : %d\n", wd->sta.pBssList->bssCount);
--    //printk("giwscan - UpdateBssList Count : %d\n", wd->sta.pUpdateBssList->bssCount);
--    zfiWlanQueryBssListV1(dev, pBssList);
--    //zfiWlanQueryBssList(dev, &BssList);
--
--/* Read and parse all entries */
--    printk("giwscan - pBssList->bssCount : %d\n", pBssList->bssCount);
--    //printk("giwscan - BssList.bssCount : %d\n", BssList.bssCount);
--
--    for (i = 0; i < pBssList->bssCount; i++)
--    {
--/* Translate to WE format this entry */
--        //current_ev = usbdrv_translate_scan(dev, info, current_ev,
--        //    extra + IW_SCAN_MAX_DATA, &pBssList->bssInfo[i]);
--        current_ev = usbdrv_translate_scan(dev, info, current_ev,
--            end_buf, &pBssList->bssInfo[i]);
--
--#if WIRELESS_EXT > 16
--        if (current_ev == end_buf)
--        {
--            kfree(pBssList);
--            data->length = current_ev - extra;
--            return -E2BIG;
--        }
--#endif
--    }
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	/* struct zsWlanDev* wd = (struct zsWlanDev*) zmw_wlan_dev(dev); */
-+	char *current_ev = extra;
-+	char *end_buf;
-+	int i;
-+	/* struct zsBssList BssList; */
-+	struct zsBssListV1 *pBssList = kmalloc(sizeof(struct zsBssListV1),
-+								GFP_KERNEL);
-+	/* BssList = wd->sta.pBssList; */
-+	/* zmw_get_wlan_dev(dev); */
-+
-+	if (macp->DeviceOpened != 1)
-+		return 0;
-+
-+	if (data->length == 0)
-+		end_buf = extra + IW_SCAN_MAX_DATA;
-+	else
-+		end_buf = extra + data->length;
-+
-+	printk(DEFAULT_MESSAGE_LOGLEVEL "giwscan - Report Scan Results\n");
-+	/* printk("giwscan - BssList Sreucture Len : %d\n", sizeof(BssList));
-+	* printk("giwscan - BssList Count : %d\n",
-+	* wd->sta.pBssList->bssCount);
-+	* printk("giwscan - UpdateBssList Count : %d\n",
-+	* wd->sta.pUpdateBssList->bssCount);
-+	*/
-+	zfiWlanQueryBssListV1(dev, pBssList);
-+	/* zfiWlanQueryBssList(dev, &BssList); */
-+
-+	/* Read and parse all entries */
-+	printk(DEFAULT_MESSAGE_LOGLEVEL "giwscan - pBssList->bssCount : %d\n",
-+						pBssList->bssCount);
-+	/* printk("giwscan - BssList.bssCount : %d\n", BssList.bssCount); */
-+
-+	for (i = 0; i < pBssList->bssCount; i++) {
-+		/* Translate to WE format this entry
-+		* current_ev = usbdrv_translate_scan(dev, info, current_ev,
-+		* extra + IW_SCAN_MAX_DATA, &pBssList->bssInfo[i]);
-+		*/
-+		current_ev = usbdrv_translate_scan(dev, info, current_ev,
-+					end_buf, &pBssList->bssInfo[i]);
-+
-+		#if WIRELESS_EXT > 16
-+		if (current_ev == end_buf) {
-+			kfree(pBssList);
-+			data->length = current_ev - extra;
-+			return -E2BIG;
-+		}
-+		#endif
-+	}
- 
--/* Length of data */
--    data->length = (current_ev - extra);
--    data->flags = 0;                              /* todo */
-+	/* Length of data */
-+	data->length = (current_ev - extra);
-+	data->flags = 0;   /* todo */
- 
--    kfree(pBssList);
-+	kfree(pBssList);
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_siwessid(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_point *essid, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_point *essid, char *extra)
- {
--    char EssidBuf[IW_ESSID_MAX_SIZE+1];
--    struct usbdrv_private *macp = dev->ml_priv;
-+	char EssidBuf[IW_ESSID_MAX_SIZE + 1];
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    if (essid->flags == 1)
--    {
--        if (essid->length > (IW_ESSID_MAX_SIZE+1))
--            return -E2BIG;
--
--        if (copy_from_user(&EssidBuf, essid->pointer, essid->length))
--            return -EFAULT;
--
--        EssidBuf[essid->length] = '\0';
--        //printk("siwessid - Set Essid : %s\n",EssidBuf);
--        //printk("siwessid - Essid Len : %d\n",essid->length);
--        //printk("siwessid - Essid Flag : %x\n",essid->flags);
--        if (macp->DeviceOpened == 1)
--        {
--            zfiWlanSetSSID(dev, EssidBuf, strlen(EssidBuf));
--            zfiWlanSetFrequency(dev, zfiWlanQueryFrequency(dev), FALSE);
--            zfiWlanSetEncryMode(dev, zfiWlanQueryEncryMode(dev));
--            //u8_t wpaieLen,wpaie[50];
--            //zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen);
--            zfiWlanDisable(dev, 0);
--            zfiWlanEnable(dev);
--            //if (wpaieLen > 2)
--            //    zfiWlanSetWpaIe(dev, wpaie, wpaieLen);
--        }
--    }
-+	if (essid->flags == 1) {
-+		if (essid->length > (IW_ESSID_MAX_SIZE + 1))
-+			return -E2BIG;
-+
-+		if (copy_from_user(&EssidBuf, essid->pointer, essid->length))
-+			return -EFAULT;
-+
-+		EssidBuf[essid->length] = '\0';
-+		/* printk("siwessid - Set Essid : %s\n",EssidBuf); */
-+		/* printk("siwessid - Essid Len : %d\n",essid->length); */
-+		/* printk("siwessid - Essid Flag : %x\n",essid->flags); */
-+		if (macp->DeviceOpened == 1) {
-+			zfiWlanSetSSID(dev, EssidBuf, strlen(EssidBuf));
-+			zfiWlanSetFrequency(dev, zfiWlanQueryFrequency(dev),
-+						FALSE);
-+			zfiWlanSetEncryMode(dev, zfiWlanQueryEncryMode(dev));
-+			/* u8_t wpaieLen,wpaie[50]; */
-+			/* zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen); */
-+			zfiWlanDisable(dev, 0);
-+			zfiWlanEnable(dev);
-+			/* if (wpaieLen > 2) */
-+			/* zfiWlanSetWpaIe(dev, wpaie, wpaieLen); */
-+		}
-+	}
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwessid(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_point *essid, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_point *essid, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    u8_t EssidLen;
--    char EssidBuf[IW_ESSID_MAX_SIZE+1];
--    int ssid_len;
--
--    if(!netif_running(dev))
--        return -EINVAL;
--
--    if (macp->DeviceOpened != 1)
--        return 0;
--
--    zfiWlanQuerySSID(dev, &EssidBuf[0], &EssidLen);
--
--    /* Convert type from unsigned char to char */
--    ssid_len = (int)EssidLen;
--
--    /* Make sure the essid length is not greater than IW_ESSID_MAX_SIZE */
--    if (ssid_len > IW_ESSID_MAX_SIZE)
--        ssid_len = IW_ESSID_MAX_SIZE;
--
--    EssidBuf[ssid_len] = '\0';
--
--    essid->flags = 1;
--    essid->length = strlen(EssidBuf);
--
--    memcpy(extra, EssidBuf, essid->length);
--    // wireless.c in Kernel would handle copy_to_user -- line 679
--    /*if (essid->pointer)
--    {
--        if ( copy_to_user(essid->pointer, EssidBuf, essid->length) )
--        {
--            printk("giwessid - copy_to_user Fail\n");
--            return -EFAULT;
--        }
--    }*/
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u8_t EssidLen;
-+	char EssidBuf[IW_ESSID_MAX_SIZE + 1];
-+	int ssid_len;
-+
-+	if (!netif_running(dev))
-+		return -EINVAL;
-+
-+	if (macp->DeviceOpened != 1)
-+		return 0;
-+
-+	zfiWlanQuerySSID(dev, &EssidBuf[0], &EssidLen);
-+
-+	/* Convert type from unsigned char to char */
-+	ssid_len = (int)EssidLen;
-+
-+	/* Make sure the essid length is not greater than IW_ESSID_MAX_SIZE */
-+	if (ssid_len > IW_ESSID_MAX_SIZE)
-+		ssid_len = IW_ESSID_MAX_SIZE;
-+
-+	EssidBuf[ssid_len] = '\0';
-+
-+	essid->flags = 1;
-+	essid->length = strlen(EssidBuf);
-+
-+	memcpy(extra, EssidBuf, essid->length);
-+	/* wireless.c in Kernel would handle copy_to_user -- line 679 */
-+	/* if (essid->pointer) {
-+	* if (copy_to_user(essid->pointer, EssidBuf, essid->length)) {
-+	* printk("giwessid - copy_to_user Fail\n");
-+	* return -EFAULT;
-+	* }
-+	* }
-+	*/
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_siwnickn(struct net_device *dev,
- 			struct iw_request_info *info,
- 			struct iw_point *data, char *nickname)
- {
--    //Exist but junk--CWYang(+)
-+	/* Exist but junk--CWYang(+) */
- 	return 0;
- }
- 
-@@ -1082,182 +1027,180 @@ int usbdrvwext_giwnickn(struct net_devic
- 			struct iw_request_info *info,
- 			struct iw_point *data, char *nickname)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    u8_t EssidLen;
--    char EssidBuf[IW_ESSID_MAX_SIZE+1];
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u8_t EssidLen;
-+	char EssidBuf[IW_ESSID_MAX_SIZE + 1];
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    zfiWlanQuerySSID(dev, &EssidBuf[0], &EssidLen);
--    EssidBuf[EssidLen] = 0;
-+	zfiWlanQuerySSID(dev, &EssidBuf[0], &EssidLen);
-+	EssidBuf[EssidLen] = 0;
- 
--    data->flags = 1;
--    data->length = strlen(EssidBuf);
-+	data->flags = 1;
-+	data->length = strlen(EssidBuf);
- 
--    memcpy(nickname, EssidBuf, data->length);
-+	memcpy(nickname, EssidBuf, data->length);
- 
- 	return 0;
- }
- 
- int usbdrvwext_siwrate(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *frq, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *frq, char *extra)
- {
- 	struct usbdrv_private *macp = dev->ml_priv;
--    //Array to Define Rate Number that Send to Driver
--    u16_t zcIndextoRateBG[16] = {1000, 2000, 5500, 11000, 0, 0, 0, 0, 48000,
--                               24000, 12000, 6000, 54000, 36000, 18000, 9000};
--    u16_t zcRateToMCS[] = {0xff, 0, 1, 2, 3, 0xb, 0xf, 0xa, 0xe, 0x9, 0xd,
--                           0x8, 0xc};
--    u8_t i,RateIndex = 4;
--    u16_t RateKbps;
--
--    //printk("frq->disabled : 0x%x\n",frq->disabled);
--    //printk("frq->value : 0x%x\n",frq->value);
--
--    RateKbps = frq->value / 1000;
--    //printk("RateKbps : %d\n", RateKbps);
--    for (i = 0; i < 16; i++)
--    {
--        if (RateKbps == zcIndextoRateBG[i])
--            RateIndex = i;
--    }
--    if (zcIndextoRateBG[RateIndex] == 0)
--        RateIndex = 0xff;
--    //printk("RateIndex : %x\n", RateIndex);
--    for (i = 0; i < 13; i++)
--        if (RateIndex == zcRateToMCS[i])
--            break;
--    //printk("Index : %x\n", i);
--    if (RateKbps == 65000)
--    {
--        RateIndex = 20;
--        printk("RateIndex : %d\n", RateIndex);
--    }
--    if (macp->DeviceOpened == 1)
--    {
--        zfiWlanSetTxRate(dev, i);
--        //zfiWlanDisable(dev);
--        //zfiWlanEnable(dev);
--    }
-+	/* Array to Define Rate Number that Send to Driver */
-+	u16_t zcIndextoRateBG[16] = {1000, 2000, 5500, 11000, 0, 0, 0, 0,
-+			48000, 24000, 12000, 6000, 54000, 36000, 18000, 9000};
-+	u16_t zcRateToMCS[] = {0xff, 0, 1, 2, 3, 0xb, 0xf, 0xa, 0xe, 0x9, 0xd,
-+				0x8, 0xc};
-+	u8_t i, RateIndex = 4;
-+	u16_t RateKbps;
-+
-+	/* printk("frq->disabled : 0x%x\n",frq->disabled); */
-+	/* printk("frq->value : 0x%x\n",frq->value); */
-+
-+	RateKbps = frq->value / 1000;
-+	/* printk("RateKbps : %d\n", RateKbps); */
-+	for (i = 0; i < 16; i++) {
-+		if (RateKbps == zcIndextoRateBG[i])
-+			RateIndex = i;
-+	}
-+
-+	if (zcIndextoRateBG[RateIndex] == 0)
-+		RateIndex = 0xff;
-+	/* printk("RateIndex : %x\n", RateIndex); */
-+	for (i = 0; i < 13; i++)
-+		if (RateIndex == zcRateToMCS[i])
++			tid_tx = wd->aggQPool[i];
++			tid_tx->aggQEnabled = 1;
++			tid_tx->aggQSTA = aid;
++			tid_tx->ac = ac;
++			tid_tx->tid = tid;
++			tid_tx->aggHead = tid_tx->aggTail = tid_tx->size = 0;
++			tid_tx->aggReady = 0;
++			wd->aggSta[aid].tid_tx[tid] = tid_tx;
++			tid_tx->dst[0] = zmw_rx_buf_readh(dev, buf, 0);
++			tid_tx->dst[1] = zmw_rx_buf_readh(dev, buf, 2);
++			tid_tx->dst[2] = zmw_rx_buf_readh(dev, buf, 4);
 +			break;
-+	/* printk("Index : %x\n", i); */
-+	if (RateKbps == 65000) {
-+		RateIndex = 20;
-+		printk(DEFAULT_MESSAGE_LOGLEVEL "RateIndex : %d\n", RateIndex);
++		}
 +	}
  
--    return 0;
-+	if (macp->DeviceOpened == 1) {
-+		zfiWlanSetTxRate(dev, i);
-+		/* zfiWlanDisable(dev); */
-+		/* zfiWlanEnable(dev); */
-+	}
-+
-+	return 0;
+-    zmw_leave_critical_section(dev);
++	zmw_leave_critical_section(dev);
+ 
+-    return tid_tx;
++	return tid_tx;
  }
  
- int usbdrvwext_giwrate(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *frq, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *frq, char *extra)
+ 
+@@ -314,543 +302,546 @@ TID_TX zfAggTxNewQueue(zdev_t* dev, u16_
+ /*      Honda               Atheros Communications, INC.    2006.12     */
+ /*                                                                      */
+ /************************************************************************/
+-u16_t zfAggTxEnqueue(zdev_t* dev, zbuf_t* buf, u16_t aid, TID_TX tid_tx)
++u16_t zfAggTxEnqueue(zdev_t *dev, zbuf_t *buf, u16_t aid, TID_TX tid_tx)
  {
--    struct usbdrv_private *macp = dev->ml_priv;
-+	struct usbdrv_private *macp = dev->ml_priv;
+-    //u16_t   qlen, frameLen;
+-    u32_t   time;
++	/* u16_t   qlen, frameLen; */
++	u32_t time;
  
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (!netif_running(dev))
-+		return -EINVAL;
+-    zmw_get_wlan_dev(dev);
++	zmw_get_wlan_dev(dev);
  
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
+-    zmw_declare_for_critical_section();
++	zmw_declare_for_critical_section();
  
--    frq->fixed = 0;
--    frq->disabled = 0;
--    frq->value = zfiWlanQueryRxRate(dev) * 1000;
-+	frq->fixed = 0;
-+	frq->disabled = 0;
-+	frq->value = zfiWlanQueryRxRate(dev) * 1000;
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_siwrts(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *rts, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *rts, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    int val = rts->value;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	int val = rts->value;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    if (rts->disabled)
--        val = 2347;
-+	if (rts->disabled)
-+		val = 2347;
- 
--    if ((val < 0) || (val > 2347))
--        return -EINVAL;
-+	if ((val < 0) || (val > 2347))
-+		return -EINVAL;
- 
--    zfiWlanSetRtsThreshold(dev,val);
-+	zfiWlanSetRtsThreshold(dev, val);
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwrts(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *rts, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *rts, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
+-    zmw_enter_critical_section(dev);
 -
--    if(!netif_running(dev))
--        return -EINVAL;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    rts->value = zfiWlanQueryRtsThreshold(dev);
--    rts->disabled = (rts->value >= 2347);
--    rts->fixed = 1;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    return 0;
-+	rts->value = zfiWlanQueryRtsThreshold(dev);
-+	rts->disabled = (rts->value >= 2347);
-+	rts->fixed = 1;
- 
-+	return 0;
- }
- 
- int usbdrvwext_siwfrag(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *frag, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *frag, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    u16_t fragThreshold;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u16_t fragThreshold;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    if (frag->disabled)
--        fragThreshold = 0;
--    else
--        fragThreshold = frag->value;
-+	if (frag->disabled)
-+		fragThreshold = 0;
-+	else
-+		fragThreshold = frag->value;
- 
--    zfiWlanSetFragThreshold(dev,fragThreshold);
-+	zfiWlanSetFragThreshold(dev, fragThreshold);
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwfrag(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *frag, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *frag, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    u16 val;
--    unsigned long irqFlag;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u16 val;
-+	unsigned long irqFlag;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    spin_lock_irqsave(&macp->cs_lock, irqFlag);
-+	spin_lock_irqsave(&macp->cs_lock, irqFlag);
- 
--    val = zfiWlanQueryFragThreshold(dev);
-+	val = zfiWlanQueryFragThreshold(dev);
- 
--    frag->value = val;
-+	frag->value = val;
- 
--    frag->disabled = (val >= 2346);
--    frag->fixed = 1;
-+	frag->disabled = (val >= 2346);
-+	frag->fixed = 1;
- 
--    spin_unlock_irqrestore(&macp->cs_lock, irqFlag);
-+	spin_unlock_irqrestore(&macp->cs_lock, irqFlag);
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_siwtxpow(struct net_device *dev,
- 			struct iw_request_info *info,
- 			struct iw_param *rrq, char *extra)
- {
--    //Not support yet--CWYng(+)
-+	/* Not support yet--CWYng(+) */
- 	return 0;
- }
- 
-@@ -1265,7 +1208,7 @@ int usbdrvwext_giwtxpow(struct net_devic
- 			struct iw_request_info *info,
- 			struct iw_param *rrq, char *extra)
- {
--    //Not support yet--CWYng(+)
-+	/* Not support yet--CWYng(+) */
- 	return 0;
- }
- 
-@@ -1273,7 +1216,7 @@ int usbdrvwext_siwretry(struct net_devic
- 			struct iw_request_info *info,
- 			struct iw_param *rrq, char *extra)
- {
--    //Do nothing--CWYang(+)
-+	/* Do nothing--CWYang(+) */
- 	return 0;
- }
- 
-@@ -1281,665 +1224,662 @@ int usbdrvwext_giwretry(struct net_devic
- 			struct iw_request_info *info,
- 			struct iw_param *rrq, char *extra)
- {
--    //Do nothing--CWYang(+)
-+	/* Do nothing--CWYang(+) */
- 	return 0;
- }
- 
- int usbdrvwext_siwencode(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_point *erq, char *key)
-+		struct iw_request_info *info,
-+		struct iw_point *erq, char *key)
- {
--    struct zsKeyInfo keyInfo;
--    int i, WepState = ZM_ENCRYPTION_WEP_DISABLED;
--    struct usbdrv_private *macp = dev->ml_priv;
+-    tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
 -
--    if(!netif_running(dev))
--        return -EINVAL;
--
--    if ((erq->flags & IW_ENCODE_DISABLED) == 0)
+-    if (tid_tx->size < (ZM_AGGQ_SIZE - 2))
 -    {
--        keyInfo.key = key;
--        keyInfo.keyLength = erq->length;
--        keyInfo.keyIndex = (erq->flags & IW_ENCODE_INDEX) - 1;
--        if (keyInfo.keyIndex >= 4)
--            keyInfo.keyIndex = 0;
--        keyInfo.flag = ZM_KEY_FLAG_DEFAULT_KEY;
+-        /* Queue not full */
 -
--        zfiWlanSetKey(dev, keyInfo);
--        WepState = ZM_ENCRYPTION_WEP_ENABLED;
+-
+-        /*
+-         * buffer copy
+-         * in zfwBufFree will return a ndismsendcomplete
+-         * to resolve the synchronize problem in aggregate
+-         */
+-
+-        u8_t    sendComplete = 0;
+-
+-        tid_tx->aggvtxq[tid_tx->aggHead].buf = buf;
+-        time = zm_agg_GetTime();
+-        tid_tx->aggvtxq[tid_tx->aggHead].arrivalTime = time;
+-        tid_tx->aggvtxq[tid_tx->aggHead].baw_retransmit = 0;
+-
+-        tid_tx->aggHead = ((tid_tx->aggHead + 1) & ZM_AGGQ_SIZE_MASK);
+-        tid_tx->lastArrival = time;
+-        tid_tx->size++;
+-        tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
+-        if (buf && (tid_tx->size < (ZM_AGGQ_SIZE - 10))) {
+-            tid_tx->complete = tid_tx->aggHead;
+-            sendComplete = 1;
+-        }
+-        zmw_leave_critical_section(dev);
+-
+-        if (!DESTQ.exist(dev, 0, tid_tx->ac, tid_tx, NULL)) {
+-            DESTQ.insert(dev, 0, tid_tx->ac, tid_tx, NULL);
+-        }
+-
+-        zm_msg1_agg(ZM_LV_0, "tid_tx->size=", tid_tx->size);
+-        //zm_debug_msg1("tid_tx->size=", tid_tx->size);
+-
+-        if (buf && sendComplete && wd->zfcbSendCompleteIndication) {
+-            //zmw_leave_critical_section(dev);
+-            wd->zfcbSendCompleteIndication(dev, buf);
+-        }
+-
+-        /*if (tid_tx->size >= 16 && zfHpGetFreeTxdCount(dev) > 20)
+-            zfAggTxSend(dev, zfHpGetFreeTxdCount(dev), tid_tx);
+-        */
+-        return ZM_SUCCESS;
 -    }
 -    else
 -    {
--        for (i = 1; i < 4; i++)
--            zfiWlanRemoveKey(dev, 0, i);
--        WepState = ZM_ENCRYPTION_WEP_DISABLED;
--        //zfiWlanSetEncryMode(dev, ZM_NO_WEP);
+-        zm_msg1_agg(ZM_LV_0, "can't enqueue, tid_tx->size=", tid_tx->size);
+-        /*
+-         * Queue Full
+-         */
+-
+-        /*
+-         * zm_msg1_agg(ZM_LV_0, "Queue full, qnum = ", qnum);
+-         * wd->commTally.txQosDropCount[ac]++;
+-         * zfwBufFree(dev, buf, ZM_SUCCESS);
+-         * zm_msg1_agg(ZM_LV_1, "Packet discarded, VTXQ full, ac=", ac);
+-         *
+-         * return ZM_ERR_EXCEED_PRIORITY_THRESHOLD;
+-         */
 -    }
 -
--    if (macp->DeviceOpened == 1)
--    {
--        zfiWlanSetWepStatus(dev, WepState);
--        zfiWlanSetFrequency(dev, zfiWlanQueryFrequency(dev), FALSE);
--        //zfiWlanSetEncryMode(dev, zfiWlanQueryEncryMode(dev));
--        //u8_t wpaieLen,wpaie[50];
--        //zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen);
--        zfiWlanDisable(dev, 0);
--        zfiWlanEnable(dev);
--        //if (wpaieLen > 2)
--        //    zfiWlanSetWpaIe(dev, wpaie, wpaieLen);
--    }
-+	struct zsKeyInfo keyInfo;
-+	int i;
-+	int WepState = ZM_ENCRYPTION_WEP_DISABLED;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+
-+	if (!netif_running(dev))
-+		return -EINVAL;
-+
-+	if ((erq->flags & IW_ENCODE_DISABLED) == 0) {
-+		keyInfo.key = key;
-+		keyInfo.keyLength = erq->length;
-+		keyInfo.keyIndex = (erq->flags & IW_ENCODE_INDEX) - 1;
-+		if (keyInfo.keyIndex >= 4)
-+			keyInfo.keyIndex = 0;
-+		keyInfo.flag = ZM_KEY_FLAG_DEFAULT_KEY;
-+
-+		zfiWlanSetKey(dev, keyInfo);
-+		WepState = ZM_ENCRYPTION_WEP_ENABLED;
-+	} else {
-+		for (i = 1; i < 4; i++)
-+			zfiWlanRemoveKey(dev, 0, i);
-+		WepState = ZM_ENCRYPTION_WEP_DISABLED;
-+		/* zfiWlanSetEncryMode(dev, ZM_NO_WEP); */
-+	}
-+
-+	if (macp->DeviceOpened == 1) {
-+		zfiWlanSetWepStatus(dev, WepState);
-+		zfiWlanSetFrequency(dev, zfiWlanQueryFrequency(dev), FALSE);
-+		/* zfiWlanSetEncryMode(dev, zfiWlanQueryEncryMode(dev)); */
-+		/* u8_t wpaieLen,wpaie[50]; */
-+		/* zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen); */
-+		zfiWlanDisable(dev, 0);
-+		zfiWlanEnable(dev);
-+		/* if (wpaieLen > 2) */
-+		/* zfiWlanSetWpaIe(dev, wpaie, wpaieLen); */
-+	}
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwencode(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_point *erq, char *key)
-+		struct iw_request_info *info,
-+		struct iw_point *erq, char *key)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    u8_t EncryptionMode;
--    u8_t keyLen = 0;
+-    zmw_leave_critical_section(dev);
 -
--    if (macp->DeviceOpened != 1)
--        return 0;
--
--    EncryptionMode = zfiWlanQueryEncryMode(dev);
--
--    if (EncryptionMode)
--    {
--        erq->flags = IW_ENCODE_ENABLED;
--    }
--    else
--    {
--        erq->flags = IW_ENCODE_DISABLED;
+-    if (!DESTQ.exist(dev, 0, tid_tx->ac, tid_tx, NULL)) {
+-            DESTQ.insert(dev, 0, tid_tx->ac, tid_tx, NULL);
 -    }
 -
--/* We can't return the key, so set the proper flag and return zero */
--    erq->flags |= IW_ENCODE_NOKEY;
--    memset(key, 0, 16);
--
--/* Copy the key to the user buffer */
--    switch(EncryptionMode)
--    {
--        case ZM_WEP64:
--            keyLen = 5;
--            break;
--        case ZM_WEP128:
--            keyLen = 13;
--            break;
--        case ZM_WEP256:
--            keyLen = 29;
--            break;
--        case ZM_AES:
--            keyLen = 16;
--            break;
--        case ZM_TKIP:
--            keyLen = 32;
--            break;
--#ifdef ZM_ENABLE_CENC
--        case ZM_CENC:
--            keyLen = 32;
--            break;
--#endif //ZM_ENABLE_CENC
--        case ZM_NO_WEP:
--            keyLen = 0;
--            break;
--        default :
--            keyLen = 0;
--            printk("Unknown EncryMode\n");
--            break;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u8_t EncryptionMode;
-+	u8_t keyLen = 0;
- 
--    }
--    erq->length = keyLen;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    return 0;
-+	EncryptionMode = zfiWlanQueryEncryMode(dev);
-+
-+	if (EncryptionMode)
-+		erq->flags = IW_ENCODE_ENABLED;
-+	else
-+		erq->flags = IW_ENCODE_DISABLED;
-+
-+	/* We can't return the key, so set the proper flag and return zero */
-+	erq->flags |= IW_ENCODE_NOKEY;
-+	memset(key, 0, 16);
-+
-+	/* Copy the key to the user buffer */
-+	switch (EncryptionMode) {
-+	case ZM_WEP64:
-+		keyLen = 5;
-+		break;
-+	case ZM_WEP128:
-+		keyLen = 13;
-+		break;
-+	case ZM_WEP256:
-+		keyLen = 29;
-+		break;
-+	case ZM_AES:
-+		keyLen = 16;
-+		break;
-+	case ZM_TKIP:
-+		keyLen = 32;
-+		break;
-+	#ifdef ZM_ENABLE_CENC
-+	case ZM_CENC:
-+		/* ZM_ENABLE_CENC */
-+		keyLen = 32;
-+		break;
-+	#endif
-+	case ZM_NO_WEP:
-+		keyLen = 0;
-+		break;
-+	default:
-+		keyLen = 0;
-+		printk(KERN_ERR "Unknown EncryMode\n");
-+		break;
-+	}
-+	erq->length = keyLen;
-+
-+	return 0;
- }
- 
- int usbdrvwext_siwpower(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *frq, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *frq, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    u8_t PSMode;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u8_t PSMode;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    if (frq->disabled)
--        PSMode = ZM_STA_PS_NONE;
--    else
--        PSMode = ZM_STA_PS_MAX;
-+	if (frq->disabled)
-+		PSMode = ZM_STA_PS_NONE;
-+	else
-+		PSMode = ZM_STA_PS_MAX;
- 
--    zfiWlanSetPowerSaveMode(dev,PSMode);
-+	zfiWlanSetPowerSaveMode(dev, PSMode);
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwpower(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *frq, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *frq, char *extra)
- {
--    unsigned long irqFlag;
--    struct usbdrv_private *macp = dev->ml_priv;
-+	unsigned long irqFlag;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    spin_lock_irqsave(&macp->cs_lock, irqFlag);
--
--    if (zfiWlanQueryPowerSaveMode(dev) == ZM_STA_PS_NONE)
--        frq->disabled = 1;
--    else
--        frq->disabled = 0;
--
--    spin_unlock_irqrestore(&macp->cs_lock, irqFlag);
--
--    return 0;
+-    return ZM_ERR_EXCEED_PRIORITY_THRESHOLD;
 -}
 -
--//int usbdrvwext_setparam(struct net_device *dev, struct iw_request_info *info,
--//		   	 void *w, char *extra)
--//{
--//	struct ieee80211vap *vap = dev->ml_priv;
--//	struct ieee80211com *ic = vap->iv_ic;
--//	struct ieee80211_rsnparms *rsn = &vap->iv_bss->ni_rsn;
--//	int *i = (int *) extra;
--//	int param = i[0];		/* parameter id is 1st */
--//	int value = i[1];		/* NB: most values are TYPE_INT */
--//	int retv = 0;
--//	int j, caps;
--//	const struct ieee80211_authenticator *auth;
--//	const struct ieee80211_aclator *acl;
--//
--//	switch (param) {
--//	case IEEE80211_PARAM_AUTHMODE:
--//		switch (value) {
--//		case IEEE80211_AUTH_WPA:	/* WPA */
--//		case IEEE80211_AUTH_8021X:	/* 802.1x */
--//		case IEEE80211_AUTH_OPEN:	/* open */
--//		case IEEE80211_AUTH_SHARED:	/* shared-key */
--//		case IEEE80211_AUTH_AUTO:	/* auto */
--//			auth = ieee80211_authenticator_get(value);
--//			if (auth == NULL)
--//				return -EINVAL;
--//			break;
--//		default:
--//			return -EINVAL;
--//		}
--//		switch (value) {
--//		case IEEE80211_AUTH_WPA:	/* WPA w/ 802.1x */
--//			vap->iv_flags |= IEEE80211_F_PRIVACY;
--//			value = IEEE80211_AUTH_8021X;
--//			break;
--//		case IEEE80211_AUTH_OPEN:	/* open */
--//			vap->iv_flags &= ~(IEEE80211_F_WPA|IEEE80211_F_PRIVACY);
--//			break;
--//		case IEEE80211_AUTH_SHARED:	/* shared-key */
--//		case IEEE80211_AUTH_AUTO:	/* auto */
--//		case IEEE80211_AUTH_8021X:	/* 802.1x */
--//			vap->iv_flags &= ~IEEE80211_F_WPA;
--//			/* both require a key so mark the PRIVACY capability */
--//			vap->iv_flags |= IEEE80211_F_PRIVACY;
--//			break;
--//		}
--//		/* NB: authenticator attach/detach happens on state change */
--//		vap->iv_bss->ni_authmode = value;
--//		/* XXX mixed/mode/usage? */
--//		vap->iv_auth = auth;
--//		retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_PROTMODE:
--//		if (value > IEEE80211_PROT_RTSCTS)
--//			return -EINVAL;
--//		ic->ic_protmode = value;
--//		/* NB: if not operating in 11g this can wait */
--//		if (ic->ic_bsschan != IEEE80211_CHAN_ANYC &&
--//		    IEEE80211_IS_CHAN_ANYG(ic->ic_bsschan))
--//			retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_MCASTCIPHER:
--//		if ((vap->iv_caps & cipher2cap(value)) == 0 &&
--//		    !ieee80211_crypto_available(value))
--//			return -EINVAL;
--//		rsn->rsn_mcastcipher = value;
--//		if (vap->iv_flags & IEEE80211_F_WPA)
--//			retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_MCASTKEYLEN:
--//		if (!(0 < value && value < IEEE80211_KEYBUF_SIZE))
--//			return -EINVAL;
--//		/* XXX no way to verify driver capability */
--//		rsn->rsn_mcastkeylen = value;
--//		if (vap->iv_flags & IEEE80211_F_WPA)
--//			retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_UCASTCIPHERS:
--//		/*
--//		 * Convert cipher set to equivalent capabilities.
--//		 * NB: this logic intentionally ignores unknown and
--//		 * unsupported ciphers so folks can specify 0xff or
--//		 * similar and get all available ciphers.
--//		 */
--//		caps = 0;
--//		for (j = 1; j < 32; j++)	/* NB: skip WEP */
--//			if ((value & (1<<j)) &&
--//			    ((vap->iv_caps & cipher2cap(j)) ||
--//			     ieee80211_crypto_available(j)))
--//				caps |= 1<<j;
--//		if (caps == 0)			/* nothing available */
--//			return -EINVAL;
--//		/* XXX verify ciphers ok for unicast use? */
--//		/* XXX disallow if running as it'll have no effect */
--//		rsn->rsn_ucastcipherset = caps;
--//		if (vap->iv_flags & IEEE80211_F_WPA)
--//			retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_UCASTCIPHER:
--//		if ((rsn->rsn_ucastcipherset & cipher2cap(value)) == 0)
--//			return -EINVAL;
--//		rsn->rsn_ucastcipher = value;
--//		break;
--//	case IEEE80211_PARAM_UCASTKEYLEN:
--//		if (!(0 < value && value < IEEE80211_KEYBUF_SIZE))
--//			return -EINVAL;
--//		/* XXX no way to verify driver capability */
--//		rsn->rsn_ucastkeylen = value;
--//		break;
--//	case IEEE80211_PARAM_KEYMGTALGS:
--//		/* XXX check */
--//		rsn->rsn_keymgmtset = value;
--//		if (vap->iv_flags & IEEE80211_F_WPA)
--//			retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_RSNCAPS:
--//		/* XXX check */
--//		rsn->rsn_caps = value;
--//		if (vap->iv_flags & IEEE80211_F_WPA)
--//			retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_WPA:
--//		if (value > 3)
--//			return -EINVAL;
--//		/* XXX verify ciphers available */
--//		vap->iv_flags &= ~IEEE80211_F_WPA;
--//		switch (value) {
--//		case 1:
--//			vap->iv_flags |= IEEE80211_F_WPA1;
--//			break;
--//		case 2:
--//			vap->iv_flags |= IEEE80211_F_WPA2;
--//			break;
--//		case 3:
--//			vap->iv_flags |= IEEE80211_F_WPA1 | IEEE80211_F_WPA2;
--//			break;
--//		}
--//		retv = ENETRESET;		/* XXX? */
--//		break;
--//	case IEEE80211_PARAM_ROAMING:
--//		if (!(IEEE80211_ROAMING_DEVICE <= value &&
--//		    value <= IEEE80211_ROAMING_MANUAL))
--//			return -EINVAL;
--//		ic->ic_roaming = value;
--//		break;
--//	case IEEE80211_PARAM_PRIVACY:
--//		if (value) {
--//			/* XXX check for key state? */
--//			vap->iv_flags |= IEEE80211_F_PRIVACY;
--//		} else
--//			vap->iv_flags &= ~IEEE80211_F_PRIVACY;
--//		break;
--//	case IEEE80211_PARAM_DROPUNENCRYPTED:
--//		if (value)
--//			vap->iv_flags |= IEEE80211_F_DROPUNENC;
--//		else
--//			vap->iv_flags &= ~IEEE80211_F_DROPUNENC;
--//		break;
--//	case IEEE80211_PARAM_COUNTERMEASURES:
--//		if (value) {
--//			if ((vap->iv_flags & IEEE80211_F_WPA) == 0)
--//				return -EINVAL;
--//			vap->iv_flags |= IEEE80211_F_COUNTERM;
--//		} else
--//			vap->iv_flags &= ~IEEE80211_F_COUNTERM;
--//		break;
--//	case IEEE80211_PARAM_DRIVER_CAPS:
--//		vap->iv_caps = value;		/* NB: for testing */
--//		break;
--//	case IEEE80211_PARAM_MACCMD:
--//		acl = vap->iv_acl;
--//		switch (value) {
--//		case IEEE80211_MACCMD_POLICY_OPEN:
--//		case IEEE80211_MACCMD_POLICY_ALLOW:
--//		case IEEE80211_MACCMD_POLICY_DENY:
--//			if (acl == NULL) {
--//				acl = ieee80211_aclator_get("mac");
--//				if (acl == NULL || !acl->iac_attach(vap))
--//					return -EINVAL;
--//				vap->iv_acl = acl;
--//			}
--//			acl->iac_setpolicy(vap, value);
--//			break;
--//		case IEEE80211_MACCMD_FLUSH:
--//			if (acl != NULL)
--//				acl->iac_flush(vap);
--//			/* NB: silently ignore when not in use */
--//			break;
--//		case IEEE80211_MACCMD_DETACH:
--//			if (acl != NULL) {
--//				vap->iv_acl = NULL;
--//				acl->iac_detach(vap);
--//			}
--//			break;
--//		}
--//		break;
--//	case IEEE80211_PARAM_WMM:
--//		if (ic->ic_caps & IEEE80211_C_WME){
--//			if (value) {
--//				vap->iv_flags |= IEEE80211_F_WME;
--//				vap->iv_ic->ic_flags |= IEEE80211_F_WME; /* XXX needed by ic_reset */
--//			}
--//			else {
--//				vap->iv_flags &= ~IEEE80211_F_WME;
--//				vap->iv_ic->ic_flags &= ~IEEE80211_F_WME; /* XXX needed by ic_reset */
--//			}
--//			retv = ENETRESET;	/* Renegotiate for capabilities */
--//		}
--//		break;
--//	case IEEE80211_PARAM_HIDESSID:
--//		if (value)
--//			vap->iv_flags |= IEEE80211_F_HIDESSID;
--//		else
--//			vap->iv_flags &= ~IEEE80211_F_HIDESSID;
--//		retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_APBRIDGE:
--//		if (value == 0)
--//			vap->iv_flags |= IEEE80211_F_NOBRIDGE;
--//		else
--//			vap->iv_flags &= ~IEEE80211_F_NOBRIDGE;
--//		break;
--//	case IEEE80211_PARAM_INACT:
--//		vap->iv_inact_run = value / IEEE80211_INACT_WAIT;
--//		break;
--//	case IEEE80211_PARAM_INACT_AUTH:
--//		vap->iv_inact_auth = value / IEEE80211_INACT_WAIT;
--//		break;
--//	case IEEE80211_PARAM_INACT_INIT:
--//		vap->iv_inact_init = value / IEEE80211_INACT_WAIT;
--//		break;
--//	case IEEE80211_PARAM_ABOLT:
--//		caps = 0;
--//		/*
--//		 * Map abolt settings to capability bits;
--//		 * this also strips unknown/unwanted bits.
--//		 */
--//		if (value & IEEE80211_ABOLT_TURBO_PRIME)
--//			caps |= IEEE80211_ATHC_TURBOP;
--//		if (value & IEEE80211_ABOLT_COMPRESSION)
--//			caps |= IEEE80211_ATHC_COMP;
--//		if (value & IEEE80211_ABOLT_FAST_FRAME)
--//			caps |= IEEE80211_ATHC_FF;
--//		if (value & IEEE80211_ABOLT_XR)
--//			caps |= IEEE80211_ATHC_XR;
--//		if (value & IEEE80211_ABOLT_AR)
--//			caps |= IEEE80211_ATHC_AR;
--//		if (value & IEEE80211_ABOLT_BURST)
--//			caps |= IEEE80211_ATHC_BURST;
--//        if (value & IEEE80211_ABOLT_WME_ELE)
--//            caps |= IEEE80211_ATHC_WME;
--//		/* verify requested capabilities are supported */
--//		if ((caps & ic->ic_ath_cap) != caps)
--//			return -EINVAL;
--//		if (vap->iv_ath_cap != caps) {
--//			if ((vap->iv_ath_cap ^ caps) & IEEE80211_ATHC_TURBOP) {
--//				if (ieee80211_set_turbo(dev,  caps & IEEE80211_ATHC_TURBOP))
--//					return -EINVAL;
--//				ieee80211_scan_flush(ic);
--//			}
--//			vap->iv_ath_cap = caps;
--//			ic->ic_athcapsetup(vap->iv_ic, vap->iv_ath_cap);
--//			retv = ENETRESET;
--//		}
--//		break;
--//	case IEEE80211_PARAM_DTIM_PERIOD:
--//		if (vap->iv_opmode != IEEE80211_M_HOSTAP &&
--//		    vap->iv_opmode != IEEE80211_M_IBSS)
--//			return -EINVAL;
--//		if (IEEE80211_DTIM_MIN <= value &&
--//		    value <= IEEE80211_DTIM_MAX) {
--//			vap->iv_dtim_period = value;
--//			retv = ENETRESET;		/* requires restart */
--//		} else
--//			retv = EINVAL;
--//		break;
--//	case IEEE80211_PARAM_BEACON_INTERVAL:
--//		if (vap->iv_opmode != IEEE80211_M_HOSTAP &&
--//		    vap->iv_opmode != IEEE80211_M_IBSS)
--//			return -EINVAL;
--//		if (IEEE80211_BINTVAL_MIN <= value &&
--//		    value <= IEEE80211_BINTVAL_MAX) {
--//			ic->ic_lintval = value;		/* XXX multi-bss */
--//			retv = ENETRESET;		/* requires restart */
--//		} else
--//			retv = EINVAL;
--//		break;
--//	case IEEE80211_PARAM_DOTH:
--//		if (value) {
--//			ic->ic_flags |= IEEE80211_F_DOTH;
--//		}
--//		else
--//			ic->ic_flags &= ~IEEE80211_F_DOTH;
--//		retv = ENETRESET;	/* XXX: need something this drastic? */
--//		break;
--//	case IEEE80211_PARAM_PWRTARGET:
--//		ic->ic_curchanmaxpwr = value;
--//		break;
--//	case IEEE80211_PARAM_GENREASSOC:
--//		IEEE80211_SEND_MGMT(vap->iv_bss, IEEE80211_FC0_SUBTYPE_REASSOC_REQ, 0);
--//		break;
--//	case IEEE80211_PARAM_COMPRESSION:
--//		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_COMP, value);
--//		break;
--//    case IEEE80211_PARAM_WMM_AGGRMODE:
--//        retv = ieee80211_setathcap(vap, IEEE80211_ATHC_WME, value);
--//        break;
--//	case IEEE80211_PARAM_FF:
--//		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_FF, value);
--//		break;
--//	case IEEE80211_PARAM_TURBO:
--//		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_TURBOP, value);
--//		if (retv == ENETRESET) {
--//			if(ieee80211_set_turbo(dev,value))
--//					return -EINVAL;
--//			ieee80211_scan_flush(ic);
--//		}
--//		break;
--//	case IEEE80211_PARAM_XR:
--//		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_XR, value);
--//		break;
--//	case IEEE80211_PARAM_BURST:
--//		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_BURST, value);
--//		break;
--//	case IEEE80211_PARAM_AR:
--//		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_AR, value);
--//		break;
--//	case IEEE80211_PARAM_PUREG:
--//		if (value)
--//			vap->iv_flags |= IEEE80211_F_PUREG;
--//		else
--//			vap->iv_flags &= ~IEEE80211_F_PUREG;
--//		/* NB: reset only if we're operating on an 11g channel */
--//		if (ic->ic_bsschan != IEEE80211_CHAN_ANYC &&
--//		    IEEE80211_IS_CHAN_ANYG(ic->ic_bsschan))
--//			retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_WDS:
--//		if (value)
--//			vap->iv_flags_ext |= IEEE80211_FEXT_WDS;
--//		else
--//			vap->iv_flags_ext &= ~IEEE80211_FEXT_WDS;
--//		break;
--//	case IEEE80211_PARAM_BGSCAN:
--//		if (value) {
--//			if ((vap->iv_caps & IEEE80211_C_BGSCAN) == 0)
--//				return -EINVAL;
--//			vap->iv_flags |= IEEE80211_F_BGSCAN;
--//		} else {
--//			/* XXX racey? */
--//			vap->iv_flags &= ~IEEE80211_F_BGSCAN;
--//			ieee80211_cancel_scan(vap);	/* anything current */
--//		}
--//		break;
--//	case IEEE80211_PARAM_BGSCAN_IDLE:
--//		if (value >= IEEE80211_BGSCAN_IDLE_MIN)
--//			vap->iv_bgscanidle = value*HZ/1000;
--//		else
--//			retv = EINVAL;
--//		break;
--//	case IEEE80211_PARAM_BGSCAN_INTERVAL:
--//		if (value >= IEEE80211_BGSCAN_INTVAL_MIN)
--//			vap->iv_bgscanintvl = value*HZ;
--//		else
--//			retv = EINVAL;
--//		break;
--//	case IEEE80211_PARAM_MCAST_RATE:
--//		/* units are in KILObits per second */
--//		if (value >= 256 && value <= 54000)
--//			vap->iv_mcast_rate = value;
--//		else
--//			retv = EINVAL;
--//		break;
--//	case IEEE80211_PARAM_COVERAGE_CLASS:
--//		if (value >= 0 && value <= IEEE80211_COVERAGE_CLASS_MAX) {
--//			ic->ic_coverageclass = value;
--//			if (IS_UP_AUTO(vap))
--//				ieee80211_new_state(vap, IEEE80211_S_SCAN, 0);
--//			retv = 0;
--//		}
--//		else
--//			retv = EINVAL;
--//		break;
--//	case IEEE80211_PARAM_COUNTRY_IE:
--//		if (value)
--//			ic->ic_flags_ext |= IEEE80211_FEXT_COUNTRYIE;
--//		else
--//			ic->ic_flags_ext &= ~IEEE80211_FEXT_COUNTRYIE;
--//		retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_REGCLASS:
--//		if (value)
--//			ic->ic_flags_ext |= IEEE80211_FEXT_REGCLASS;
--//		else
--//			ic->ic_flags_ext &= ~IEEE80211_FEXT_REGCLASS;
--//		retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_SCANVALID:
--//		vap->iv_scanvalid = value*HZ;
--//		break;
--//	case IEEE80211_PARAM_ROAM_RSSI_11A:
--//		vap->iv_roam.rssi11a = value;
--//		break;
--//	case IEEE80211_PARAM_ROAM_RSSI_11B:
--//		vap->iv_roam.rssi11bOnly = value;
--//		break;
--//	case IEEE80211_PARAM_ROAM_RSSI_11G:
--//		vap->iv_roam.rssi11b = value;
--//		break;
--//	case IEEE80211_PARAM_ROAM_RATE_11A:
--//		vap->iv_roam.rate11a = value;
--//		break;
--//	case IEEE80211_PARAM_ROAM_RATE_11B:
--//		vap->iv_roam.rate11bOnly = value;
--//		break;
--//	case IEEE80211_PARAM_ROAM_RATE_11G:
--//		vap->iv_roam.rate11b = value;
--//		break;
--//	case IEEE80211_PARAM_UAPSDINFO:
--//		if (vap->iv_opmode == IEEE80211_M_HOSTAP) {
--//			if (ic->ic_caps & IEEE80211_C_UAPSD) {
--//				if (value)
--//					IEEE80211_VAP_UAPSD_ENABLE(vap);
--//				else
--//					IEEE80211_VAP_UAPSD_DISABLE(vap);
--//				retv = ENETRESET;
--//			}
--//		}
--//		else if (vap->iv_opmode == IEEE80211_M_STA) {
--//			vap->iv_uapsdinfo = value;
--//			IEEE80211_VAP_UAPSD_ENABLE(vap);
--//			retv = ENETRESET;
--//		}
--//		break;
--//	case IEEE80211_PARAM_SLEEP:
--//		/* XXX: Forced sleep for testing. Does not actually place the
--//		 *      HW in sleep mode yet. this only makes sense for STAs.
--//		 */
--//		if (value) {
--//			/* goto sleep */
--//			IEEE80211_VAP_GOTOSLEEP(vap);
--//		}
--//		else {
--//			/* wakeup */
--//			IEEE80211_VAP_WAKEUP(vap);
--//		}
--//		ieee80211_send_nulldata(ieee80211_ref_node(vap->iv_bss));
--//		break;
--//	case IEEE80211_PARAM_QOSNULL:
--//		/* Force a QoS Null for testing. */
--//		ieee80211_send_qosnulldata(vap->iv_bss, value);
--//		break;
--//	case IEEE80211_PARAM_PSPOLL:
--//		/* Force a PS-POLL for testing. */
--//		ieee80211_send_pspoll(vap->iv_bss);
--//		break;
--//	case IEEE80211_PARAM_EOSPDROP:
--//		if (vap->iv_opmode == IEEE80211_M_HOSTAP) {
--//			if (value) IEEE80211_VAP_EOSPDROP_ENABLE(vap);
--//			else IEEE80211_VAP_EOSPDROP_DISABLE(vap);
--//		}
--//		break;
--//	case IEEE80211_PARAM_MARKDFS:
--//		if (value)
--//			ic->ic_flags_ext |= IEEE80211_FEXT_MARKDFS;
--//		else
--//			ic->ic_flags_ext &= ~IEEE80211_FEXT_MARKDFS;
--//		break;
--//	case IEEE80211_PARAM_CHANBW:
--//		switch (value) {
--//			case 0:
--//				ic->ic_chanbwflag = 0;
--//				break;
--//			case 1:
--//				ic->ic_chanbwflag = IEEE80211_CHAN_HALF;
--//				break;
--//			case 2:
--//				ic->ic_chanbwflag = IEEE80211_CHAN_QUARTER;
--//				break;
--//			default:
--//				retv = EINVAL;
--//				break;
--//		}
--//		break;
--//	case IEEE80211_PARAM_SHORTPREAMBLE:
--//		if (value) {
--//			ic->ic_caps |= IEEE80211_C_SHPREAMBLE;
--//		} else {
--//			ic->ic_caps &= ~IEEE80211_C_SHPREAMBLE;
--//		}
--//		retv = ENETRESET;
--//		break;
--//	default:
--//		retv = EOPNOTSUPP;
--//		break;
--//	}
--//	/* XXX should any of these cause a rescan? */
--//	if (retv == ENETRESET)
--//		retv = IS_UP_AUTO(vap) ? ieee80211_open(vap->iv_dev) : 0;
--//	return -retv;
--//}
-+	spin_lock_irqsave(&macp->cs_lock, irqFlag);
-+
-+	if (zfiWlanQueryPowerSaveMode(dev) == ZM_STA_PS_NONE)
-+		frq->disabled = 1;
-+	else
-+		frq->disabled = 0;
-+
-+	spin_unlock_irqrestore(&macp->cs_lock, irqFlag);
-+
-+	return 0;
-+}
-+
-+/*int usbdrvwext_setparam(struct net_device *dev, struct iw_request_info *info,
-+*		   	 void *w, char *extra)
-+*{
-+*	struct ieee80211vap *vap = dev->ml_priv;
-+*	struct ieee80211com *ic = vap->iv_ic;
-+*	struct ieee80211_rsnparms *rsn = &vap->iv_bss->ni_rsn;
-+*	int *i = (int *) extra;
-+*	int param = i[0];		// parameter id is 1st
-+*	int value = i[1];		// NB: most values are TYPE_INT
-+*	int retv = 0;
-+*	int j, caps;
-+*	const struct ieee80211_authenticator *auth;
-+*	const struct ieee80211_aclator *acl;
-+*
-+*	switch (param) {
-+*	case IEEE80211_PARAM_AUTHMODE:
-+*		switch (value) {
-+*		case IEEE80211_AUTH_WPA:	// WPA
-+*		case IEEE80211_AUTH_8021X:	// 802.1x
-+*		case IEEE80211_AUTH_OPEN:	// open
-+*		case IEEE80211_AUTH_SHARED:	// shared-key
-+*		case IEEE80211_AUTH_AUTO:	// auto
-+*			auth = ieee80211_authenticator_get(value);
-+*			if (auth == NULL)
-+*				return -EINVAL;
-+*			break;
-+*		default:
-+*			return -EINVAL;
-+*		}
-+*		switch (value) {
-+*		case IEEE80211_AUTH_WPA:	// WPA w/ 802.1x
-+*			vap->iv_flags |= IEEE80211_F_PRIVACY;
-+*			value = IEEE80211_AUTH_8021X;
-+*			break;
-+*		case IEEE80211_AUTH_OPEN:	// open
-+*		vap->iv_flags &= ~(IEEE80211_F_WPA | IEEE80211_F_PRIVACY);
-+*			break;
-+*		case IEEE80211_AUTH_SHARED:	// shared-key
-+*		case IEEE80211_AUTH_AUTO:	// auto
-+*		case IEEE80211_AUTH_8021X:	// 802.1x
-+*			vap->iv_flags &= ~IEEE80211_F_WPA;
-+*			// both require a key so mark the PRIVACY capability
-+*			vap->iv_flags |= IEEE80211_F_PRIVACY;
-+*			break;
-+*		}
-+*		// NB: authenticator attach/detach happens on state change
-+*		vap->iv_bss->ni_authmode = value;
-+*		// XXX mixed/mode/usage?
-+*		vap->iv_auth = auth;
-+*		retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_PROTMODE:
-+*		if (value > IEEE80211_PROT_RTSCTS)
-+*			return -EINVAL;
-+*		ic->ic_protmode = value;
-+*		// NB: if not operating in 11g this can wait
-+*		if (ic->ic_bsschan != IEEE80211_CHAN_ANYC &&
-+*		    IEEE80211_IS_CHAN_ANYG(ic->ic_bsschan))
-+*			retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_MCASTCIPHER:
-+*		if ((vap->iv_caps & cipher2cap(value)) == 0 &&
-+*		    !ieee80211_crypto_available(value))
-+*			return -EINVAL;
-+*		rsn->rsn_mcastcipher = value;
-+*		if (vap->iv_flags & IEEE80211_F_WPA)
-+*			retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_MCASTKEYLEN:
-+*		if (!(0 < value && value < IEEE80211_KEYBUF_SIZE))
-+*			return -EINVAL;
-+*		// XXX no way to verify driver capability
-+*		rsn->rsn_mcastkeylen = value;
-+*		if (vap->iv_flags & IEEE80211_F_WPA)
-+*			retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_UCASTCIPHERS:
-+*
-+*		 // Convert cipher set to equivalent capabilities.
-+*		 // NB: this logic intentionally ignores unknown and
-+*		 // unsupported ciphers so folks can specify 0xff or
-+*		 // similar and get all available ciphers.
-+*
-+*		caps = 0;
-+*		for (j = 1; j < 32; j++)	// NB: skip WEP
-+*			if ((value & (1<<j)) &&
-+*			    ((vap->iv_caps & cipher2cap(j)) ||
-+*			     ieee80211_crypto_available(j)))
-+*				caps |= 1<<j;
-+*		if (caps == 0)			// nothing available
-+*			return -EINVAL;
-+*		// XXX verify ciphers ok for unicast use?
-+*		// XXX disallow if running as it'll have no effect
-+*		rsn->rsn_ucastcipherset = caps;
-+*		if (vap->iv_flags & IEEE80211_F_WPA)
-+*			retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_UCASTCIPHER:
-+*		if ((rsn->rsn_ucastcipherset & cipher2cap(value)) == 0)
-+*			return -EINVAL;
-+*		rsn->rsn_ucastcipher = value;
-+*		break;
-+*	case IEEE80211_PARAM_UCASTKEYLEN:
-+*		if (!(0 < value && value < IEEE80211_KEYBUF_SIZE))
-+*			return -EINVAL;
-+*		// XXX no way to verify driver capability
-+*		rsn->rsn_ucastkeylen = value;
-+*		break;
-+*	case IEEE80211_PARAM_KEYMGTALGS:
-+*		// XXX check
-+*		rsn->rsn_keymgmtset = value;
-+*		if (vap->iv_flags & IEEE80211_F_WPA)
-+*			retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_RSNCAPS:
-+*		// XXX check
-+*		rsn->rsn_caps = value;
-+*		if (vap->iv_flags & IEEE80211_F_WPA)
-+*			retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_WPA:
-+*		if (value > 3)
-+*			return -EINVAL;
-+*		// XXX verify ciphers available
-+*		vap->iv_flags &= ~IEEE80211_F_WPA;
-+*		switch (value) {
-+*		case 1:
-+*			vap->iv_flags |= IEEE80211_F_WPA1;
-+*			break;
-+*		case 2:
-+*			vap->iv_flags |= IEEE80211_F_WPA2;
-+*			break;
-+*		case 3:
-+*			vap->iv_flags |= IEEE80211_F_WPA1 | IEEE80211_F_WPA2;
-+*			break;
-+*		}
-+*		retv = ENETRESET;		// XXX?
-+*		break;
-+*	case IEEE80211_PARAM_ROAMING:
-+*		if (!(IEEE80211_ROAMING_DEVICE <= value &&
-+*		    value <= IEEE80211_ROAMING_MANUAL))
-+*			return -EINVAL;
-+*		ic->ic_roaming = value;
-+*		break;
-+*	case IEEE80211_PARAM_PRIVACY:
-+*		if (value) {
-+*			// XXX check for key state?
-+*			vap->iv_flags |= IEEE80211_F_PRIVACY;
-+*		} else
-+*			vap->iv_flags &= ~IEEE80211_F_PRIVACY;
-+*		break;
-+*	case IEEE80211_PARAM_DROPUNENCRYPTED:
-+*		if (value)
-+*			vap->iv_flags |= IEEE80211_F_DROPUNENC;
-+*		else
-+*			vap->iv_flags &= ~IEEE80211_F_DROPUNENC;
-+*		break;
-+*	case IEEE80211_PARAM_COUNTERMEASURES:
-+*		if (value) {
-+*			if ((vap->iv_flags & IEEE80211_F_WPA) == 0)
-+*				return -EINVAL;
-+*			vap->iv_flags |= IEEE80211_F_COUNTERM;
-+*		} else
-+*			vap->iv_flags &= ~IEEE80211_F_COUNTERM;
-+*		break;
-+*	case IEEE80211_PARAM_DRIVER_CAPS:
-+*		vap->iv_caps = value;		// NB: for testing
-+*		break;
-+*	case IEEE80211_PARAM_MACCMD:
-+*		acl = vap->iv_acl;
-+*		switch (value) {
-+*		case IEEE80211_MACCMD_POLICY_OPEN:
-+*		case IEEE80211_MACCMD_POLICY_ALLOW:
-+*		case IEEE80211_MACCMD_POLICY_DENY:
-+*			if (acl == NULL) {
-+*				acl = ieee80211_aclator_get("mac");
-+*				if (acl == NULL || !acl->iac_attach(vap))
-+*					return -EINVAL;
-+*				vap->iv_acl = acl;
-+*			}
-+*			acl->iac_setpolicy(vap, value);
-+*			break;
-+*		case IEEE80211_MACCMD_FLUSH:
-+*			if (acl != NULL)
-+*				acl->iac_flush(vap);
-+*			// NB: silently ignore when not in use
-+*			break;
-+*		case IEEE80211_MACCMD_DETACH:
-+*			if (acl != NULL) {
-+*				vap->iv_acl = NULL;
-+*				acl->iac_detach(vap);
-+*			}
-+*			break;
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_WMM:
-+*		if (ic->ic_caps & IEEE80211_C_WME){
-+*			if (value) {
-+*				vap->iv_flags |= IEEE80211_F_WME;
-+*				 *//* XXX needed by ic_reset *//*
-+*				vap->iv_ic->ic_flags |= IEEE80211_F_WME;
-+*			}
-+*			else {
-+*				*//* XXX needed by ic_reset *//*
-+*				vap->iv_flags &= ~IEEE80211_F_WME;
-+*				vap->iv_ic->ic_flags &= ~IEEE80211_F_WME;
-+*			}
-+*			retv = ENETRESET;	// Renegotiate for capabilities
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_HIDESSID:
-+*		if (value)
-+*			vap->iv_flags |= IEEE80211_F_HIDESSID;
-+*		else
-+*			vap->iv_flags &= ~IEEE80211_F_HIDESSID;
-+*		retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_APBRIDGE:
-+*		if (value == 0)
-+*			vap->iv_flags |= IEEE80211_F_NOBRIDGE;
-+*		else
-+*			vap->iv_flags &= ~IEEE80211_F_NOBRIDGE;
-+*		break;
-+*	case IEEE80211_PARAM_INACT:
-+*		vap->iv_inact_run = value / IEEE80211_INACT_WAIT;
-+*		break;
-+*	case IEEE80211_PARAM_INACT_AUTH:
-+*		vap->iv_inact_auth = value / IEEE80211_INACT_WAIT;
-+*		break;
-+*	case IEEE80211_PARAM_INACT_INIT:
-+*		vap->iv_inact_init = value / IEEE80211_INACT_WAIT;
-+*		break;
-+*	case IEEE80211_PARAM_ABOLT:
-+*		caps = 0;
-+*
-+*		 // Map abolt settings to capability bits;
-+*		 // this also strips unknown/unwanted bits.
-+*
-+*		if (value & IEEE80211_ABOLT_TURBO_PRIME)
-+*			caps |= IEEE80211_ATHC_TURBOP;
-+*		if (value & IEEE80211_ABOLT_COMPRESSION)
-+*			caps |= IEEE80211_ATHC_COMP;
-+*		if (value & IEEE80211_ABOLT_FAST_FRAME)
-+*			caps |= IEEE80211_ATHC_FF;
-+*		if (value & IEEE80211_ABOLT_XR)
-+*			caps |= IEEE80211_ATHC_XR;
-+*		if (value & IEEE80211_ABOLT_AR)
-+*			caps |= IEEE80211_ATHC_AR;
-+*		if (value & IEEE80211_ABOLT_BURST)
-+*			caps |= IEEE80211_ATHC_BURST;
-+*        if (value & IEEE80211_ABOLT_WME_ELE)
-+*            caps |= IEEE80211_ATHC_WME;
-+*		// verify requested capabilities are supported
-+*		if ((caps & ic->ic_ath_cap) != caps)
-+*			return -EINVAL;
-+*		if (vap->iv_ath_cap != caps) {
-+*			if ((vap->iv_ath_cap ^ caps) & IEEE80211_ATHC_TURBOP) {
-+*				if (ieee80211_set_turbo(dev,
-+*						caps & IEEE80211_ATHC_TURBOP))
-+*					return -EINVAL;
-+*				ieee80211_scan_flush(ic);
-+*			}
-+*			vap->iv_ath_cap = caps;
-+*			ic->ic_athcapsetup(vap->iv_ic, vap->iv_ath_cap);
-+*			retv = ENETRESET;
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_DTIM_PERIOD:
-+*		if (vap->iv_opmode != IEEE80211_M_HOSTAP &&
-+*		    vap->iv_opmode != IEEE80211_M_IBSS)
-+*			return -EINVAL;
-+*		if (IEEE80211_DTIM_MIN <= value &&
-+*		    value <= IEEE80211_DTIM_MAX) {
-+*			vap->iv_dtim_period = value;
-+*			retv = ENETRESET;		// requires restart
-+*		} else
-+*			retv = EINVAL;
-+*		break;
-+*	case IEEE80211_PARAM_BEACON_INTERVAL:
-+*		if (vap->iv_opmode != IEEE80211_M_HOSTAP &&
-+*		    vap->iv_opmode != IEEE80211_M_IBSS)
-+*			return -EINVAL;
-+*		if (IEEE80211_BINTVAL_MIN <= value &&
-+*		    value <= IEEE80211_BINTVAL_MAX) {
-+*			ic->ic_lintval = value;		// XXX multi-bss
-+*			retv = ENETRESET;		// requires restart
-+*		} else
-+*			retv = EINVAL;
-+*		break;
-+*	case IEEE80211_PARAM_DOTH:
-+*		if (value) {
-+*			ic->ic_flags |= IEEE80211_F_DOTH;
-+*		}
-+*		else
-+*			ic->ic_flags &= ~IEEE80211_F_DOTH;
-+*		retv = ENETRESET;	// XXX: need something this drastic?
-+*		break;
-+*	case IEEE80211_PARAM_PWRTARGET:
-+*		ic->ic_curchanmaxpwr = value;
-+*		break;
-+*	case IEEE80211_PARAM_GENREASSOC:
-+*		IEEE80211_SEND_MGMT(vap->iv_bss,
-+*					IEEE80211_FC0_SUBTYPE_REASSOC_REQ, 0);
-+*		break;
-+*	case IEEE80211_PARAM_COMPRESSION:
-+*		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_COMP, value);
-+*		break;
-+*    case IEEE80211_PARAM_WMM_AGGRMODE:
-+*        retv = ieee80211_setathcap(vap, IEEE80211_ATHC_WME, value);
-+*        break;
-+*	case IEEE80211_PARAM_FF:
-+*		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_FF, value);
-+*		break;
-+*	case IEEE80211_PARAM_TURBO:
-+*		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_TURBOP, value);
-+*		if (retv == ENETRESET) {
-+*			if(ieee80211_set_turbo(dev,value))
-+*					return -EINVAL;
-+*			ieee80211_scan_flush(ic);
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_XR:
-+*		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_XR, value);
-+*		break;
-+*	case IEEE80211_PARAM_BURST:
-+*		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_BURST, value);
-+*		break;
-+*	case IEEE80211_PARAM_AR:
-+*		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_AR, value);
-+*		break;
-+*	case IEEE80211_PARAM_PUREG:
-+*		if (value)
-+*			vap->iv_flags |= IEEE80211_F_PUREG;
-+*		else
-+*			vap->iv_flags &= ~IEEE80211_F_PUREG;
-+*		// NB: reset only if we're operating on an 11g channel
-+*		if (ic->ic_bsschan != IEEE80211_CHAN_ANYC &&
-+*		    IEEE80211_IS_CHAN_ANYG(ic->ic_bsschan))
-+*			retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_WDS:
-+*		if (value)
-+*			vap->iv_flags_ext |= IEEE80211_FEXT_WDS;
-+*		else
-+*			vap->iv_flags_ext &= ~IEEE80211_FEXT_WDS;
-+*		break;
-+*	case IEEE80211_PARAM_BGSCAN:
-+*		if (value) {
-+*			if ((vap->iv_caps & IEEE80211_C_BGSCAN) == 0)
-+*				return -EINVAL;
-+*			vap->iv_flags |= IEEE80211_F_BGSCAN;
-+*		} else {
-+*			// XXX racey?
-+*			vap->iv_flags &= ~IEEE80211_F_BGSCAN;
-+*			ieee80211_cancel_scan(vap);	// anything current
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_BGSCAN_IDLE:
-+*		if (value >= IEEE80211_BGSCAN_IDLE_MIN)
-+*			vap->iv_bgscanidle = value*HZ/1000;
-+*		else
-+*			retv = EINVAL;
-+*		break;
-+*	case IEEE80211_PARAM_BGSCAN_INTERVAL:
-+*		if (value >= IEEE80211_BGSCAN_INTVAL_MIN)
-+*			vap->iv_bgscanintvl = value*HZ;
-+*		else
-+*			retv = EINVAL;
-+*		break;
-+*	case IEEE80211_PARAM_MCAST_RATE:
-+*		// units are in KILObits per second
-+*		if (value >= 256 && value <= 54000)
-+*			vap->iv_mcast_rate = value;
-+*		else
-+*			retv = EINVAL;
-+*		break;
-+*	case IEEE80211_PARAM_COVERAGE_CLASS:
-+*		if (value >= 0 && value <= IEEE80211_COVERAGE_CLASS_MAX) {
-+*			ic->ic_coverageclass = value;
-+*			if (IS_UP_AUTO(vap))
-+*				ieee80211_new_state(vap, IEEE80211_S_SCAN, 0);
-+*			retv = 0;
-+*		}
-+*		else
-+*			retv = EINVAL;
-+*		break;
-+*	case IEEE80211_PARAM_COUNTRY_IE:
-+*		if (value)
-+*			ic->ic_flags_ext |= IEEE80211_FEXT_COUNTRYIE;
-+*		else
-+*			ic->ic_flags_ext &= ~IEEE80211_FEXT_COUNTRYIE;
-+*		retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_REGCLASS:
-+*		if (value)
-+*			ic->ic_flags_ext |= IEEE80211_FEXT_REGCLASS;
-+*		else
-+*			ic->ic_flags_ext &= ~IEEE80211_FEXT_REGCLASS;
-+*		retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_SCANVALID:
-+*		vap->iv_scanvalid = value*HZ;
-+*		break;
-+*	case IEEE80211_PARAM_ROAM_RSSI_11A:
-+*		vap->iv_roam.rssi11a = value;
-+*		break;
-+*	case IEEE80211_PARAM_ROAM_RSSI_11B:
-+*		vap->iv_roam.rssi11bOnly = value;
-+*		break;
-+*	case IEEE80211_PARAM_ROAM_RSSI_11G:
-+*		vap->iv_roam.rssi11b = value;
-+*		break;
-+*	case IEEE80211_PARAM_ROAM_RATE_11A:
-+*		vap->iv_roam.rate11a = value;
-+*		break;
-+*	case IEEE80211_PARAM_ROAM_RATE_11B:
-+*		vap->iv_roam.rate11bOnly = value;
-+*		break;
-+*	case IEEE80211_PARAM_ROAM_RATE_11G:
-+*		vap->iv_roam.rate11b = value;
-+*		break;
-+*	case IEEE80211_PARAM_UAPSDINFO:
-+*		if (vap->iv_opmode == IEEE80211_M_HOSTAP) {
-+*			if (ic->ic_caps & IEEE80211_C_UAPSD) {
-+*				if (value)
-+*					IEEE80211_VAP_UAPSD_ENABLE(vap);
-+*				else
-+*					IEEE80211_VAP_UAPSD_DISABLE(vap);
-+*				retv = ENETRESET;
-+*			}
-+*		}
-+*		else if (vap->iv_opmode == IEEE80211_M_STA) {
-+*			vap->iv_uapsdinfo = value;
-+*			IEEE80211_VAP_UAPSD_ENABLE(vap);
-+*			retv = ENETRESET;
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_SLEEP:
-+*		// XXX: Forced sleep for testing. Does not actually place the
-+*		//      HW in sleep mode yet. this only makes sense for STAs.
-+*
-+*		if (value) {
-+*			// goto sleep
-+*			IEEE80211_VAP_GOTOSLEEP(vap);
-+*		}
-+*		else {
-+*			// wakeup
-+*			IEEE80211_VAP_WAKEUP(vap);
-+*		}
-+*		ieee80211_send_nulldata(ieee80211_ref_node(vap->iv_bss));
-+*		break;
-+*	case IEEE80211_PARAM_QOSNULL:
-+*		// Force a QoS Null for testing.
-+*		ieee80211_send_qosnulldata(vap->iv_bss, value);
-+*		break;
-+*	case IEEE80211_PARAM_PSPOLL:
-+*		// Force a PS-POLL for testing.
-+*		ieee80211_send_pspoll(vap->iv_bss);
-+*		break;
-+*	case IEEE80211_PARAM_EOSPDROP:
-+*		if (vap->iv_opmode == IEEE80211_M_HOSTAP) {
-+*			if (value) IEEE80211_VAP_EOSPDROP_ENABLE(vap);
-+*			else IEEE80211_VAP_EOSPDROP_DISABLE(vap);
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_MARKDFS:
-+*		if (value)
-+*			ic->ic_flags_ext |= IEEE80211_FEXT_MARKDFS;
-+*		else
-+*			ic->ic_flags_ext &= ~IEEE80211_FEXT_MARKDFS;
-+*		break;
-+*	case IEEE80211_PARAM_CHANBW:
-+*		switch (value) {
-+*			case 0:
-+*				ic->ic_chanbwflag = 0;
-+*				break;
-+*			case 1:
-+*				ic->ic_chanbwflag = IEEE80211_CHAN_HALF;
-+*				break;
-+*			case 2:
-+*				ic->ic_chanbwflag = IEEE80211_CHAN_QUARTER;
-+*				break;
-+*			default:
-+*				retv = EINVAL;
-+*				break;
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_SHORTPREAMBLE:
-+*		if (value) {
-+*			ic->ic_caps |= IEEE80211_C_SHPREAMBLE;
-+*		} else {
-+*			ic->ic_caps &= ~IEEE80211_C_SHPREAMBLE;
-+*		}
-+*		retv = ENETRESET;
-+*		break;
-+*	default:
-+*		retv = EOPNOTSUPP;
-+*		break;
-+*	}
-+*	// XXX should any of these cause a rescan?
-+*	if (retv == ENETRESET)
-+*		retv = IS_UP_AUTO(vap) ? ieee80211_open(vap->iv_dev) : 0;
-+*	return -retv;
-+*}
-+*/
- 
- int usbdrvwext_setmode(struct net_device *dev, struct iw_request_info *info,
--		   	 void *w, char *extra)
-+			void *w, char *extra)
- {
- 	return 0;
- }
-@@ -1947,158 +1887,139 @@ int usbdrvwext_setmode(struct net_device
- int usbdrvwext_getmode(struct net_device *dev, struct iw_request_info *info,
- 			void *w, char *extra)
- {
--	//struct usbdrv_private *macp = dev->ml_priv;
-+	/* struct usbdrv_private *macp = dev->ml_priv; */
- 	struct iw_point *wri = (struct iw_point *)extra;
- 	char mode[8];
- 
--    strcpy(mode,"11g");
--	return (copy_to_user(wri->pointer, mode, 6) ? -EFAULT : 0);
-+	strcpy(mode, "11g");
-+	return copy_to_user(wri->pointer, mode, 6) ? -EFAULT : 0;
- }
- 
- int zfLnxPrivateIoctl(struct net_device *dev, struct zdap_ioctl* zdreq)
- {
--	//void* regp = macp->regp;
-+	/* void* regp = macp->regp; */
- 	u16_t cmd;
--	//u32_t temp;
--	u32_t* p;
-+	/* u32_t temp; */
-+	u32_t *p;
- 	u32_t i;
- 
- 	cmd = zdreq->cmd;
--	switch(cmd)
--	{
-+	switch (cmd) {
- 	case ZM_IOCTL_REG_READ:
- 		zfiDbgReadReg(dev, zdreq->addr);
- 		break;
+-u16_t    zfAggDestExist(zdev_t* dev, u16_t Qtype, u16_t ac, TID_TX tid_tx, void* vtxq) {
+-    struct dest* dest;
+-    u16_t   exist = 0;
+-    zmw_get_wlan_dev(dev);
 -
- 	case ZM_IOCTL_REG_WRITE:
- 		zfiDbgWriteReg(dev, zdreq->addr, zdreq->value);
- 		break;
+-    zmw_declare_for_critical_section();
 -
- 	case ZM_IOCTL_MEM_READ:
- 		p = (u32_t *) bus_to_virt(zdreq->addr);
--		printk(KERN_DEBUG "usbdrv: read memory addr: 0x%08x value: 0x%08x\n", zdreq->addr, *p);
-+		printk(DEFAULT_MESSAGE_LOGLEVEL
-+				"usbdrv: read memory addr: 0x%08x value:
-+				" 0x%08x\n", zdreq->addr, *p);
- 		break;
--
- 	case ZM_IOCTL_MEM_WRITE:
- 		p = (u32_t *) bus_to_virt(zdreq->addr);
- 		*p = zdreq->value;
--		printk(KERN_DEBUG "usbdrv: write value: 0x%08x to memory addr: 0x%08x\n", zdreq->value, zdreq->addr);
-+		printk(DEFAULT_MESSAGE_LOGLEVEL
-+				"usbdrv : write value : 0x%08x to memory addr :
-+				" 0x%08x\n", zdreq->value, zdreq->addr);
- 		break;
--
--	case ZM_IOCTL_TALLY :
-+	case ZM_IOCTL_TALLY:
- 		zfiWlanShowTally(dev);
- 		if (zdreq->addr)
- 			zfiWlanResetTally(dev);
- 		break;
-+	case ZM_IOCTL_TEST:
-+		printk(DEFAULT_MESSAGE_LOGLEVEL
-+				"ZM_IOCTL_TEST:len=%d\n", zdreq->addr);
-+		/* zfiWlanReadReg(dev, 0x10f400); */
-+		/* zfiWlanReadReg(dev, 0x10f404); */
-+		printk(DEFAULT_MESSAGE_LOGLEVEL "IOCTL TEST\n");
-+		#if 1
-+		/* print packet */
-+		for (i = 0; i < zdreq->addr; i++) {
-+			if ((i&0x7) == 0)
-+				printk(DEFAULT_MESSAGE_LOGLEVEL "\n");
-+			printk(DEFAULT_MESSAGE_LOGLEVEL "%02X ",
-+					(unsigned char)zdreq->data[i]);
-+		}
-+		printk(DEFAULT_MESSAGE_LOGLEVEL "\n");
-+		#endif
- 
--	case ZM_IOCTL_TEST :
--            printk(KERN_DEBUG "ZM_IOCTL_TEST:len=%d\n", zdreq->addr);
--            //zfiWlanReadReg(dev, 0x10f400);
--            //zfiWlanReadReg(dev, 0x10f404);
--            printk("IOCTL TEST\n");
--            #if 1
--            //print packet
--            for (i=0; i<zdreq->addr; i++)
--            {
--                if ((i&0x7) == 0)
--                {
--                    printk("\n");
--                }
--                printk("%02X ", (unsigned char)zdreq->data[i]);
--            }
--            printk("\n");
--            #endif
--
--
--            #if 0 //For Test?? 1 to 0 by CWYang(-)
--            {
--            struct sk_buff* s;
--
--            /* Allocate a skb */
--            s = alloc_skb(2000, GFP_ATOMIC);
--
--            /* Copy data to skb */
--            for (i=0; i<zdreq->addr; i++)
--            {
--                s->data[i] = zdreq->data[i];
--            }
--            s->len = zdreq->addr;
--
--            /* Call zfIdlRecv() */
--            zfiRecv80211(dev, s, NULL);
--            }
--            #endif
--
--            break;
--
--
--/****************************** ZDCONFIG ******************************/
--        case ZM_IOCTL_FRAG :
--            zfiWlanSetFragThreshold(dev, zdreq->addr);
--            break;
--
--        case ZM_IOCTL_RTS :
--            zfiWlanSetRtsThreshold(dev, zdreq->addr);
--            break;
--
--        case ZM_IOCTL_SCAN :
--            zfiWlanScan(dev);
--            break;
--
--        case ZM_IOCTL_KEY :
--            {
--                u8_t key[29];
--                struct zsKeyInfo keyInfo;
--                u32_t i;
--
--                for (i=0; i<29; i++)
--                {
--                    key[i] = 0;
--                }
--
--                for (i=0; i<zdreq->addr; i++)
--                {
--                    key[i] = zdreq->data[i];
--                }
--
--                printk("key len=%d, key=%02x%02x%02x%02x%02x...\n",
--                        zdreq->addr, key[0], key[1], key[2], key[3], key[4]);
--
--                keyInfo.keyLength = zdreq->addr;
--                keyInfo.keyIndex = 0;
--                keyInfo.flag = 0;
--                keyInfo.key = key;
--                zfiWlanSetKey(dev, keyInfo);
--            }
--            break;
--
--        case ZM_IOCTL_RATE :
--            zfiWlanSetTxRate(dev, zdreq->addr);
--            break;
--
--        case ZM_IOCTL_ENCRYPTION_MODE :
--            zfiWlanSetEncryMode(dev, zdreq->addr);
--
--            zfiWlanDisable(dev, 0);
--            zfiWlanEnable(dev);
--            break;
--        //CWYang(+)
--        case ZM_IOCTL_SIGNAL_STRENGTH :
--            {
--                u8_t buffer[2];
--                zfiWlanQuerySignalInfo(dev, &buffer[0]);
--                printk("Current Signal Strength : %02d\n", buffer[0]);
--            }
--            break;
--        //CWYang(+)
--        case ZM_IOCTL_SIGNAL_QUALITY :
--            {
--                u8_t buffer[2];
--                zfiWlanQuerySignalInfo(dev, &buffer[0]);
--                printk("Current Signal Quality : %02d\n", buffer[1]);
--            }
--            break;
-+		/* For Test?? 1 to 0 by CWYang(-) */
-+		#if 0 {
-+			struct sk_buff *s;
-+
-+			/* Allocate a skb */
-+			s = alloc_skb(2000, GFP_ATOMIC);
-+
-+			/* Copy data to skb */
-+			for (i = 0; i < zdreq->addr; i++)
-+				s->data[i] = zdreq->data[i];
-+			s->len = zdreq->addr;
-+
-+			/* Call zfIdlRecv() */
-+			zfiRecv80211(dev, s, NULL);
-+		}
-+		#endif
-+		break;
-+	/************************* ZDCONFIG ***************************/
-+	case ZM_IOCTL_FRAG:
-+		zfiWlanSetFragThreshold(dev, zdreq->addr);
-+		break;
-+	case ZM_IOCTL_RTS:
-+		zfiWlanSetRtsThreshold(dev, zdreq->addr);
-+		break;
-+	case ZM_IOCTL_SCAN:
-+		zfiWlanScan(dev);
-+		break;
-+	case ZM_IOCTL_KEY: {
-+		u8_t key[29];
-+		struct zsKeyInfo keyInfo;
-+		u32_t i;
-+
-+		for (i = 0; i < 29; i++)
-+			key[i] = 0;
-+
-+		for (i = 0; i < zdreq->addr; i++)
-+			key[i] = zdreq->data[i];
-+
-+		printk(DEFAULT_MESSAGE_LOGLEVEL
-+			"key len=%d, key=%02x%02x%02x%02x%02x...\n",
-+			zdreq->addr, key[0], key[1], key[2], key[3], key[4]);
-+
-+		keyInfo.keyLength = zdreq->addr;
-+		keyInfo.keyIndex = 0;
-+		keyInfo.flag = 0;
-+		keyInfo.key = key;
-+		zfiWlanSetKey(dev, keyInfo);
-+	}
-+		break;
-+	case ZM_IOCTL_RATE:
-+		zfiWlanSetTxRate(dev, zdreq->addr);
-+		break;
-+	case ZM_IOCTL_ENCRYPTION_MODE:
-+		zfiWlanSetEncryMode(dev, zdreq->addr);
- 
-+		zfiWlanDisable(dev, 0);
-+		zfiWlanEnable(dev);
-+		break;
-+		/* CWYang(+) */
-+	case ZM_IOCTL_SIGNAL_STRENGTH: {
-+		u8_t buffer[2];
-+		zfiWlanQuerySignalInfo(dev, &buffer[0]);
-+		printk(DEFAULT_MESSAGE_LOGLEVEL
-+			"Current Signal Strength : %02d\n", buffer[0]);
-+	}
-+		break;
-+		/* CWYang(+) */
-+	case ZM_IOCTL_SIGNAL_QUALITY: {
-+		u8_t buffer[2];
-+		zfiWlanQuerySignalInfo(dev, &buffer[0]);
-+		printk(DEFAULT_MESSAGE_LOGLEVEL
-+			"Current Signal Quality : %02d\n", buffer[1]);
-+	}
-+		break;
- 	case ZM_IOCTL_SET_PIBSS_MODE:
- 		if (zdreq->addr == 1)
- 			zfiWlanSetWlanMode(dev, ZM_MODE_PSEUDO);
-@@ -2107,11 +2028,9 @@ int zfLnxPrivateIoctl(struct net_device 
- 
- 		zfiWlanDisable(dev, 0);
- 		zfiWlanEnable(dev);
--
- 		break;
--/****************************** ZDCONFIG ******************************/
--
--	default :
-+	/********************* ZDCONFIG ***********************/
-+	default:
- 		printk(KERN_ERR "usbdrv: error command = %x\n", cmd);
- 		break;
- 	}
-@@ -2121,793 +2040,736 @@ int zfLnxPrivateIoctl(struct net_device 
- 
- int usbdrv_wpa_ioctl(struct net_device *dev, struct athr_wlan_param *zdparm)
- {
--    int ret = 0;
--    u8_t bc_addr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
--    u8_t mac_addr[80];
--    struct zsKeyInfo keyInfo;
--    struct usbdrv_private *macp = dev->ml_priv;
--    u16_t vapId = 0;
--
--    //zmw_get_wlan_dev(dev);
--
--    switch(zdparm->cmd)
--    {
--        case ZD_CMD_SET_ENCRYPT_KEY:
--
--            /* Set up key information */
--            keyInfo.keyLength = zdparm->u.crypt.key_len;
--            keyInfo.keyIndex = zdparm->u.crypt.idx;
--            if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) // AP Mode
--                keyInfo.flag = ZM_KEY_FLAG_AUTHENTICATOR;
--            else
--                keyInfo.flag = 0;
--            keyInfo.key = zdparm->u.crypt.key;
--            keyInfo.initIv = zdparm->u.crypt.seq;
--            keyInfo.macAddr = (u16_t *)zdparm->sta_addr;
--
--            /* Identify the MAC address information */
--            if (memcmp(zdparm->sta_addr, bc_addr, sizeof(bc_addr)) == 0)
--            {
--                keyInfo.flag |= ZM_KEY_FLAG_GK;
--            }
--            else
--            {
--                keyInfo.flag |= ZM_KEY_FLAG_PK;
--            }
--
--            if (!strcmp(zdparm->u.crypt.alg, "NONE"))
--            {
--                //u8_t zero_mac[]={0,0,0,0,0,0};
--
--                /* Set key length to zero */
--                keyInfo.keyLength = 0;
--
--                if (zdparm->sta_addr[0] & 1)//del group key
--                {
--                    //if (macp->cardSetting.WPAIeLen==0)
--                    //{//802.1x dynamic WEP
--                    //    mDynKeyMode = 0;
--                    //    mKeyFormat[0] = 0;
--                    //    mPrivacyInvoked[0]=FALSE;
--                    //    mCap[0] &= ~CAP_PRIVACY;
--                    //    macp->cardSetting.EncryOnOff[0]=0;
--                    //}
--                    //mWpaBcKeyLen = mGkInstalled = 0;
--                }
--                else
--                {
--                    //if (memcmp(zero_mac,zdparm->sta_addr, 6)==0)
--                    //{
--                    //    mDynKeyMode=0;
--                    //    mKeyFormat[0]=0;
--                    //    pSetting->DynKeyMode=0;
--                    //    pSetting->EncryMode[0]=0;
--                    //    mDynKeyMode=0;
--                    //}
--                }
--
--                printk(KERN_ERR "Set Encryption Type NONE\n");
--                return ret;
--            }
--            else if (!strcmp(zdparm->u.crypt.alg, "TKIP"))
--            {
--                zfiWlanSetEncryMode(dev, ZM_TKIP);
--                //Linux Supplicant will inverse Tx/Rx key
--                //So we inverse it back //CWYang(+)
--                //zfMemoryCopy(&temp[0], &keyInfo.key[16], 8);
--                //zfMemoryCopy(&keyInfo.key[16], keyInfo.key[24], 8);
--                //zfMemoryCopy(&keyInfo.key[24], &temp[0], 8);
--                //u8_t temp;
--                //int k;
--                //for (k = 0; k < 8; k++)
--                //{
--                //    temp = keyInfo.key[16 + k];
--                //    keyInfo.key[16 + k] = keyInfo.key[24 + k];
--                //    keyInfo.key[24 + k] = temp;
--                //}
--                //CamEncryType = ZM_TKIP;
--                ////if (idx == 0)
--                //{// Pairwise key
--                //    mKeyFormat[0] = CamEncryType;
--                //    mDynKeyMode = pSetting->DynKeyMode = DYN_KEY_TKIP;
--                //}
--            }
--            else if (!strcmp(zdparm->u.crypt.alg, "CCMP"))
--            {
--                zfiWlanSetEncryMode(dev, ZM_AES);
--                //CamEncryType = ZM_AES;
--                ////if (idx == 0)
--                //{// Pairwise key
--                //    mKeyFormat[0] = CamEncryType;
--                //    mDynKeyMode = pSetting->DynKeyMode = DYN_KEY_AES;
--                //}
--            }
--            else if (!strcmp(zdparm->u.crypt.alg, "WEP"))
--            {
--                if (keyInfo.keyLength == 5)
--                { // WEP 64
--                    zfiWlanSetEncryMode(dev, ZM_WEP64);
--                //    CamEncryType = ZM_WEP64;
--                //    tmpDynKeyMode=DYN_KEY_WEP64;
--                }
--                else if (keyInfo.keyLength == 13)
--                {//keylen=13, WEP 128
--                    zfiWlanSetEncryMode(dev, ZM_WEP128);
--                //    CamEncryType = ZM_WEP128;
--                //    tmpDynKeyMode=DYN_KEY_WEP128;
--                }
--                else
--                {
--                    zfiWlanSetEncryMode(dev, ZM_WEP256);
--                }
--
--                // For Dynamic WEP key (Non-WPA Radius), the key ID range: 0-3
--                // In WPA/RSN mode, the key ID range: 1-3, usually, a broadcast key.
--                // For WEP key setting: we set mDynKeyMode and mKeyFormat in following case:
--                //   1. For 802.1x dynamically generated WEP key method.
--                //   2. For WPA/RSN mode, but key id == 0. (But this is an impossible case)
--                // So, only check case 1.
--                //if (macp->cardSetting.WPAIeLen==0)
--                //{
--                //    mKeyFormat[0] = CamEncryType;
--                //    mDynKeyMode = pSetting->DynKeyMode = tmpDynKeyMode;
--                //    mPrivacyInvoked[0]=TRUE;
--                //    mCap[0] |= CAP_PRIVACY;
--                //    macp->cardSetting.EncryOnOff[0]=1;
--                //}
--            }
--
--            /* DUMP key context */
--//#ifdef WPA_DEBUG
--            if (keyInfo.keyLength > 0)
--            {
--                int ii;
--                printk("Otus: Key Context:\n");
--                for(ii = 0; ii < keyInfo.keyLength;)
--                {
--                    printk("0x%02x ", keyInfo.key[ii]);
--                    if((++ii % 16) == 0)
--                        printk("\n");
--                }
--                printk("\n");
--            }
--//#endif
--
--            /* Set encrypt mode */
--            //zfiWlanSetEncryMode(dev, CamEncryType);
--            vapId = zfLnxGetVapId(dev);
--            if (vapId == 0xffff)
--                keyInfo.vapId = 0;
--            else
--                keyInfo.vapId = vapId + 1;
--            keyInfo.vapAddr[0] = keyInfo.macAddr[0];
--            keyInfo.vapAddr[1] = keyInfo.macAddr[1];
--            keyInfo.vapAddr[2] = keyInfo.macAddr[2];
--
--            zfiWlanSetKey(dev, keyInfo);
--
--            //zfiWlanDisable(dev);
--            //zfiWlanEnable(dev);
--            break;
--
--        case ZD_CMD_SET_MLME:
--            printk(KERN_ERR "usbdrv_wpa_ioctl: ZD_CMD_SET_MLME\n");
--
--            /* Translate STA's address */
--            sprintf(mac_addr, "%02x:%02x:%02x:%02x:%02x:%02x", zdparm->sta_addr[0], zdparm->sta_addr[1],
--                zdparm->sta_addr[2], zdparm->sta_addr[3], zdparm->sta_addr[4], zdparm->sta_addr[5]);
--
--            switch(zdparm->u.mlme.cmd)
--            {
--                case MLME_STA_DEAUTH:
--                    printk(" -------Call zfiWlanDeauth, reason:%d\n",zdparm->u.mlme.reason_code);
--                    if(zfiWlanDeauth(dev, (u16_t*) zdparm->sta_addr, zdparm->u.mlme.reason_code) != 0)
--                        printk(KERN_ERR "Can't deauthencate STA: %s\n", mac_addr);
--                    else
--                        printk(KERN_ERR "Deauthenticate STA: %s with reason code: %d\n", mac_addr, zdparm->u.mlme.reason_code);
+-    zmw_enter_critical_section(dev);
+-    if (!DESTQ.Head[ac]) {
+-        exist = 0;
+-    }
+-    else {
+-        dest = DESTQ.Head[ac];
+-        if (dest->tid_tx == tid_tx) {
+-            exist = 1;
+-        }
+-        else {
+-            while (dest->next != DESTQ.Head[ac]) {
+-                dest = dest->next;
+-                if (dest->tid_tx == tid_tx){
+-                    exist = 1;
 -                    break;
--
--                case MLME_STA_DISASSOC:
--                    printk(" -------Call zfiWlanDeauth, reason:%d\n",zdparm->u.mlme.reason_code);
--                    if(zfiWlanDeauth(dev, (u16_t*) zdparm->sta_addr, zdparm->u.mlme.reason_code) != 0)
--                        printk(KERN_ERR "Can't disassociate STA: %s\n", mac_addr);
--                    else
--                        printk(KERN_ERR "Disassociate STA: %s with reason code: %d\n", mac_addr, zdparm->u.mlme.reason_code);
--                    break;
--
--                default:
--                    printk(KERN_ERR "MLME command: 0x%04x not support\n", zdparm->u.mlme.cmd);
--                    break;
--            }
--
--            break;
--
--        case ZD_CMD_SCAN_REQ:
--            printk(KERN_ERR "usbdrv_wpa_ioctl: ZD_CMD_SCAN_REQ\n");
--            break;
--
--        case ZD_CMD_SET_GENERIC_ELEMENT:
--            printk(KERN_ERR "usbdrv_wpa_ioctl: ZD_CMD_SET_GENERIC_ELEMENT\n");
--
--            /* Copy the WPA IE */
--            //zm_msg1_mm(ZM_LV_0, "CWY - wpaie Length : ", zdparm->u.generic_elem.len);
--            printk(KERN_ERR "wpaie Length : %d\n", zdparm->u.generic_elem.len);
--            if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) // AP Mode
--            {
--                zfiWlanSetWpaIe(dev, zdparm->u.generic_elem.data, zdparm->u.generic_elem.len);
--            }
--            else
--            {
--                macp->supLen = zdparm->u.generic_elem.len;
--                memcpy(macp->supIe, zdparm->u.generic_elem.data, zdparm->u.generic_elem.len);
--            }
--            zfiWlanSetWpaSupport(dev, 1);
--            //zfiWlanSetWpaIe(dev, zdparm->u.generic_elem.data, zdparm->u.generic_elem.len);
--            {
--                int ii;
--                u8_t len = zdparm->u.generic_elem.len;
--                u8_t *wpaie = (u8_t *)zdparm->u.generic_elem.data;
--
--                printk(KERN_ERR "wd->ap.wpaLen: %d\n", len);
--
--                /* DUMP WPA IE */
--                for(ii = 0; ii < len;)
--                {
--                    printk(KERN_ERR "0x%02x ", wpaie[ii]);
--
--                    if((++ii % 16) == 0)
--                        printk(KERN_ERR "\n");
 -                }
--                printk(KERN_ERR "\n");
 -            }
--
--//            #ifdef ZM_HOSTAPD_SUPPORT
--            //if (wd->wlanMode == ZM_MODE_AP)
--            //{// Update Beacon FIFO in the next TBTT.
--            //    memcpy(&mWPAIe, pSetting->WPAIe, pSetting->WPAIeLen);
--            //    printk(KERN_ERR "Copy WPA IE into mWPAIe\n");
--            //}
--//            #endif
--            break;
--
--//        #ifdef ZM_HOSTAPD_SUPPORT
--        case ZD_CMD_GET_TSC:
--            printk(KERN_ERR "usbdrv_wpa_ioctl: ZD_CMD_GET_TSC\n");
--            break;
--//        #endif
--
--        default:
--            printk(KERN_ERR "usbdrv_wpa_ioctl default: 0x%04x\n", zdparm->cmd);
--            ret = -EINVAL;
--            break;
--    }
-+	int ret = 0;
-+	u8_t bc_addr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-+	u8_t mac_addr[80];
-+	struct zsKeyInfo keyInfo;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u16_t vapId = 0;
-+
-+	/* zmw_get_wlan_dev(dev); */
-+
-+	switch (zdparm->cmd) {
-+	case ZD_CMD_SET_ENCRYPT_KEY:
-+		/* Set up key information */
-+		keyInfo.keyLength = zdparm->u.crypt.key_len;
-+		keyInfo.keyIndex = zdparm->u.crypt.idx;
-+		if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) {
-+			/* AP Mode */
-+			keyInfo.flag = ZM_KEY_FLAG_AUTHENTICATOR;
-+		} else
-+			keyInfo.flag = 0;
-+		keyInfo.key = zdparm->u.crypt.key;
-+		keyInfo.initIv = zdparm->u.crypt.seq;
-+		keyInfo.macAddr = (u16_t *)zdparm->sta_addr;
-+
-+		/* Identify the MAC address information */
-+		if (memcmp(zdparm->sta_addr, bc_addr, sizeof(bc_addr)) == 0)
-+			keyInfo.flag |= ZM_KEY_FLAG_GK;
-+		else
-+			keyInfo.flag |= ZM_KEY_FLAG_PK;
-+
-+		if (!strcmp(zdparm->u.crypt.alg, "NONE")) {
-+			/* u8_t zero_mac[]={0,0,0,0,0,0}; */
-+
-+			/* Set key length to zero */
-+			keyInfo.keyLength = 0;
-+
-+			/* del group key */
-+			if (zdparm->sta_addr[0] & 1) {
-+				/* if (macp->cardSetting.WPAIeLen==0)
-+				* { 802.1x dynamic WEP
-+				*    mDynKeyMode = 0;
-+				*    mKeyFormat[0] = 0;
-+				*    mPrivacyInvoked[0]=FALSE;
-+				*    mCap[0] &= ~CAP_PRIVACY;
-+				*    macp->cardSetting.EncryOnOff[0]=0;
-+				* }
-+				* mWpaBcKeyLen = mGkInstalled = 0;
-+				*/
-+			} else {
-+				/* if (memcmp(zero_mac,zdparm->sta_addr, 6)==0)
-+				* {
-+				*     mDynKeyMode=0;
-+				*    mKeyFormat[0]=0;
-+				*    pSetting->DynKeyMode=0;
-+				*    pSetting->EncryMode[0]=0;
-+				*    mDynKeyMode=0;
-+				* }
-+				*/
-+			}
-+
-+			printk(KERN_ERR "Set Encryption Type NONE\n");
-+			return ret;
-+		} else if (!strcmp(zdparm->u.crypt.alg, "TKIP")) {
-+			zfiWlanSetEncryMode(dev, ZM_TKIP);
-+			/* //Linux Supplicant will inverse Tx/Rx key
-+			* //So we inverse it back, CWYang(+)
-+			* zfMemoryCopy(&temp[0], &keyInfo.key[16], 8);
-+			* zfMemoryCopy(&keyInfo.key[16], keyInfo.key[24], 8);
-+			* zfMemoryCopy(&keyInfo.key[24], &temp[0], 8);
-+			* u8_t temp;
-+			* int k;
-+			* for (k = 0; k < 8; k++)
-+			* {
-+			*     temp = keyInfo.key[16 + k];
-+			*     keyInfo.key[16 + k] = keyInfo.key[24 + k];
-+			*     keyInfo.key[24 + k] = temp;
-+			* }
-+			* CamEncryType = ZM_TKIP;
-+			* if (idx == 0)
-+			* {   // Pairwise key
-+			*     mKeyFormat[0] = CamEncryType;
-+			*     mDynKeyMode = pSetting->DynKeyMode = DYN_KEY_TKIP;
-+			* }
-+			*/
-+		} else if (!strcmp(zdparm->u.crypt.alg, "CCMP")) {
-+			zfiWlanSetEncryMode(dev, ZM_AES);
-+			/* CamEncryType = ZM_AES;
-+			* if (idx == 0)
-+			* {  // Pairwise key
-+			*    mKeyFormat[0] = CamEncryType;
-+			*    mDynKeyMode = pSetting->DynKeyMode = DYN_KEY_AES;
-+			* }
-+			*/
-+		} else if (!strcmp(zdparm->u.crypt.alg, "WEP")) {
-+			if (keyInfo.keyLength == 5) {
-+				/* WEP 64 */
-+				zfiWlanSetEncryMode(dev, ZM_WEP64);
-+				/* CamEncryType = ZM_WEP64; */
-+				/* tmpDynKeyMode=DYN_KEY_WEP64; */
-+			} else if (keyInfo.keyLength == 13) {
-+				/* keylen=13, WEP 128 */
-+				zfiWlanSetEncryMode(dev, ZM_WEP128);
-+				/* CamEncryType = ZM_WEP128; */
-+				/* tmpDynKeyMode=DYN_KEY_WEP128; */
-+			} else {
-+				zfiWlanSetEncryMode(dev, ZM_WEP256);
-+			}
-+
-+	/* For Dynamic WEP key (Non-WPA Radius), the key ID range: 0-3
-+	* In WPA/RSN mode, the key ID range: 1-3, usually, a broadcast key.
-+	* For WEP key setting: we set mDynKeyMode and mKeyFormat in following
-+	* case:
-+	*   1. For 802.1x dynamically generated WEP key method.
-+	*   2. For WPA/RSN mode, but key id == 0.
-+	*	(But this is an impossible case)
-+	* So, only check case 1.
-+	* if (macp->cardSetting.WPAIeLen==0)
-+	* {
-+	*    mKeyFormat[0] = CamEncryType;
-+	*    mDynKeyMode = pSetting->DynKeyMode = tmpDynKeyMode;
-+	*    mPrivacyInvoked[0]=TRUE;
-+	*    mCap[0] |= CAP_PRIVACY;
-+	*    macp->cardSetting.EncryOnOff[0]=1;
-+	* }
-+	*/
-+		}
-+
-+		/* DUMP key context */
-+		/* #ifdef WPA_DEBUG */
-+		if (keyInfo.keyLength > 0) {
-+			int ii;
-+			printk(DEFAULT_MESSAGE_LOGLEVEL
-+						"Otus: Key Context:\n");
-+			for (ii = 0; ii < keyInfo.keyLength; ) {
-+				printk(DEFAULT_MESSAGE_LOGLEVEL
-+						"0x%02x ", keyInfo.key[ii]);
-+				if ((++ii % 16) == 0)
-+					printk(DEFAULT_MESSAGE_LOGLEVEL "\n");
-+			}
-+			printk(DEFAULT_MESSAGE_LOGLEVEL "\n");
-+		}
-+		/* #endif */
-+
-+		/* Set encrypt mode */
-+		/* zfiWlanSetEncryMode(dev, CamEncryType); */
-+		vapId = zfLnxGetVapId(dev);
-+		if (vapId == 0xffff)
-+			keyInfo.vapId = 0;
-+		else
-+			keyInfo.vapId = vapId + 1;
-+		keyInfo.vapAddr[0] = keyInfo.macAddr[0];
-+		keyInfo.vapAddr[1] = keyInfo.macAddr[1];
-+		keyInfo.vapAddr[2] = keyInfo.macAddr[2];
- 
--    return ret;
-+		zfiWlanSetKey(dev, keyInfo);
-+
-+		/* zfiWlanDisable(dev); */
-+		/* zfiWlanEnable(dev); */
-+		break;
-+	case ZD_CMD_SET_MLME:
-+		printk(KERN_ERR "usbdrv_wpa_ioctl: ZD_CMD_SET_MLME\n");
-+
-+		/* Translate STA's address */
-+		sprintf(mac_addr, "%02x:%02x:%02x:%02x:%02x:%02x",
-+			zdparm->sta_addr[0], zdparm->sta_addr[1],
-+			zdparm->sta_addr[2], zdparm->sta_addr[3],
-+			zdparm->sta_addr[4], zdparm->sta_addr[5]);
-+
-+		switch (zdparm->u.mlme.cmd) {
-+		case MLME_STA_DEAUTH:
-+			printk(DEFAULT_MESSAGE_LOGLEVEL
-+				" -------Call zfiWlanDeauth, reason:%d\n",
-+				zdparm->u.mlme.reason_code);
-+			if (zfiWlanDeauth(dev, (u16_t *) zdparm->sta_addr,
-+				zdparm->u.mlme.reason_code) != 0)
-+				printk(KERN_ERR "Can't deauthencate STA: %s\n",
-+					mac_addr);
-+			else
-+				printk(KERN_ERR "Deauthenticate STA: %s"
-+					"with reason code: %d\n",
-+					mac_addr, zdparm->u.mlme.reason_code);
-+			break;
-+		case MLME_STA_DISASSOC:
-+			printk(DEFAULT_MESSAGE_LOGLEVEL
-+				" -------Call zfiWlanDeauth, reason:%d\n",
-+				zdparm->u.mlme.reason_code);
-+			if (zfiWlanDeauth(dev, (u16_t *) zdparm->sta_addr,
-+				zdparm->u.mlme.reason_code) != 0)
-+				printk(KERN_ERR "Can't disassociate STA: %s\n",
-+					mac_addr);
-+			else
-+				printk(KERN_ERR "Disassociate STA: %s"
-+					"with reason code: %d\n",
-+					mac_addr, zdparm->u.mlme.reason_code);
-+			break;
-+		default:
-+			printk(KERN_ERR "MLME command: 0x%04x not support\n",
-+				zdparm->u.mlme.cmd);
-+			break;
-+		}
-+
-+		break;
-+	case ZD_CMD_SCAN_REQ:
-+		printk(KERN_ERR "usbdrv_wpa_ioctl: ZD_CMD_SCAN_REQ\n");
-+		break;
-+	case ZD_CMD_SET_GENERIC_ELEMENT:
-+		printk(KERN_ERR "usbdrv_wpa_ioctl:
-+					" ZD_CMD_SET_GENERIC_ELEMENT\n");
-+
-+		/* Copy the WPA IE
-+		* zm_msg1_mm(ZM_LV_0, "CWY - wpaie Length : ",
-+		* zdparm->u.generic_elem.len);
-+		*/
-+		printk(KERN_ERR "wpaie Length : % d\n",
-+						zdparm->u.generic_elem.len);
-+		if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) {
-+			/* AP Mode */
-+			zfiWlanSetWpaIe(dev, zdparm->u.generic_elem.data,
-+					zdparm->u.generic_elem.len);
-+		} else {
-+			macp->supLen = zdparm->u.generic_elem.len;
-+			memcpy(macp->supIe, zdparm->u.generic_elem.data,
-+				zdparm->u.generic_elem.len);
-+		}
-+		zfiWlanSetWpaSupport(dev, 1);
-+		/* zfiWlanSetWpaIe(dev, zdparm->u.generic_elem.data,
-+		* zdparm->u.generic_elem.len);
-+		*/
-+		int ii;
-+		u8_t len = zdparm->u.generic_elem.len;
-+		u8_t *wpaie = (u8_t *)zdparm->u.generic_elem.data;
-+
-+		printk(KERN_ERR "wd->ap.wpaLen : % d\n", len);
-+
-+		/* DUMP WPA IE */
-+		for(ii = 0; ii < len;) {
-+			printk(KERN_ERR "0x%02x ", wpaie[ii]);
-+
-+			if((++ii % 16) == 0)
-+				printk(KERN_ERR "\n");
-+		}
-+		printk(KERN_ERR "\n");
-+
-+		/* #ifdef ZM_HOSTAPD_SUPPORT
-+		* if (wd->wlanMode == ZM_MODE_AP)
-+		* {// Update Beacon FIFO in the next TBTT.
-+		*     memcpy(&mWPAIe, pSetting->WPAIe, pSetting->WPAIeLen);
-+		*     printk(KERN_ERR "Copy WPA IE into mWPAIe\n");
-+		* }
-+		* #endif
-+		*/
-+		break;
-+
-+	/* #ifdef ZM_HOSTAPD_SUPPORT */
-+	case ZD_CMD_GET_TSC:
-+		printk(KERN_ERR "usbdrv_wpa_ioctl : ZD_CMD_GET_TSC\n");
-+		break;
-+	/* #endif */
-+
-+	default:
-+		printk(KERN_ERR "usbdrv_wpa_ioctl default : 0x%04x\n",
-+			zdparm->cmd);
-+		ret = -EINVAL;
-+		break;
-+	}
-+
-+	return ret;
- }
- 
- #ifdef ZM_ENABLE_CENC
- int usbdrv_cenc_ioctl(struct net_device *dev, struct zydas_cenc_param *zdparm)
- {
--    //struct usbdrv_private *macp = dev->ml_priv;
--    struct zsKeyInfo keyInfo;
--    u16_t apId;
--    u8_t bc_addr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
--    int ret = 0;
--    int ii;
--
--    /* Get the AP Id */
--    apId = zfLnxGetVapId(dev);
--
--    if (apId == 0xffff)
--    {
--        apId = 0;
--    }
--    else
--    {
--        apId = apId+1;
+-        }
 -    }
 -
--    switch (zdparm->cmd)
--    {
--        case ZM_CMD_CENC_SETCENC:
--            printk(KERN_ERR "ZM_CMD_CENC_SETCENC\n");
--            printk(KERN_ERR "length: %d\n", zdparm->len);
--            printk(KERN_ERR "policy: %d\n", zdparm->u.info.cenc_policy);
--            break;
--        case ZM_CMD_CENC_SETKEY:
--            //ret = wai_ioctl_setkey(vap, ioctl_msg);
--            printk(KERN_ERR "ZM_CMD_CENC_SETKEY\n");
+-    zmw_leave_critical_section(dev);
 -
--            printk(KERN_ERR "MAC address= ");
--            for(ii = 0; ii < 6; ii++)
--            {
--                printk(KERN_ERR "0x%02x ", zdparm->u.crypt.sta_addr[ii]);
--            }
--            printk(KERN_ERR "\n");
--
--            printk(KERN_ERR "Key Index: %d\n", zdparm->u.crypt.keyid);
--            printk(KERN_ERR "Encryption key= ");
--            for(ii = 0; ii < 16; ii++)
--            {
--                printk(KERN_ERR "0x%02x ", zdparm->u.crypt.key[ii]);
--            }
--            printk(KERN_ERR "\n");
--
--            printk(KERN_ERR "MIC key= ");
--            for(ii = 16; ii < ZM_CENC_KEY_SIZE; ii++)
--            {
--                printk(KERN_ERR "0x%02x ", zdparm->u.crypt.key[ii]);
--            }
--            printk(KERN_ERR "\n");
--
--            /* Set up key information */
--            keyInfo.keyLength = ZM_CENC_KEY_SIZE;
--            keyInfo.keyIndex = zdparm->u.crypt.keyid;
--            keyInfo.flag = ZM_KEY_FLAG_AUTHENTICATOR | ZM_KEY_FLAG_CENC;
--            keyInfo.key = zdparm->u.crypt.key;
--            keyInfo.macAddr = (u16_t *)zdparm->u.crypt.sta_addr;
--
--            /* Identify the MAC address information */
--            if (memcmp(zdparm->u.crypt.sta_addr, bc_addr, sizeof(bc_addr)) == 0)
--            {
--                keyInfo.flag |= ZM_KEY_FLAG_GK;
--                keyInfo.vapId = apId;
--                memcpy(keyInfo.vapAddr, dev->dev_addr, ETH_ALEN);
--            }
--            else
--            {
--                keyInfo.flag |= ZM_KEY_FLAG_PK;
--            }
--
--            zfiWlanSetKey(dev, keyInfo);
--
--            break;
--        case ZM_CMD_CENC_REKEY:
--            //ret = wai_ioctl_rekey(vap, ioctl_msg);
--            printk(KERN_ERR "ZM_CMD_CENC_REKEY\n");
--            break;
--        default:
--            ret = -EOPNOTSUPP;
--            break;
--
--    }
--
--    //if (retv == ENETRESET)
--    //    retv = IS_UP_AUTO(vap) ? ieee80211_open(vap->iv_dev) : 0;
-+	/* struct usbdrv_private *macp = dev->ml_priv; */
-+	struct zsKeyInfo keyInfo;
-+	u16_t apId;
-+	u8_t bc_addr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-+	int ret = 0;
-+	int ii;
-+
-+	/* Get the AP Id */
-+	apId = zfLnxGetVapId(dev);
-+
-+	if (apId == 0xffff) {
-+		apId = 0;
-+	} else {
-+		apId = apId + 1;
-+	}
- 
--    return ret;
+-    return exist;
 -}
--#endif //ZM_ENABLE_CENC
--/////////////////////////////////////////
--int usbdrv_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+-
+-void    zfAggDestInsert(zdev_t* dev, u16_t Qtype, u16_t ac, TID_TX tid_tx, void* vtxq)
 -{
--//    struct usbdrv_private *macp;
--//    void *regp;
--    struct zdap_ioctl zdreq;
--    struct iwreq *wrq = (struct iwreq *)ifr;
--    struct athr_wlan_param zdparm;
--    struct usbdrv_private *macp = dev->ml_priv;
-+	switch (zdparm->cmd) {
-+	case ZM_CMD_CENC_SETCENC:
-+		printk(KERN_ERR "ZM_CMD_CENC_SETCENC\n");
-+		printk(KERN_ERR "length : % d\n", zdparm->len);
-+		printk(KERN_ERR "policy : % d\n", zdparm->u.info.cenc_policy);
-+		break;
-+	case ZM_CMD_CENC_SETKEY:
-+		/* ret = wai_ioctl_setkey(vap, ioctl_msg); */
-+		printk(KERN_ERR "ZM_CMD_CENC_SETKEY\n");
-+
-+		printk(KERN_ERR "MAC address = ");
-+		for (ii = 0; ii < 6; ii++) {
-+			printk(KERN_ERR "0x%02x ",
-+				zdparm->u.crypt.sta_addr[ii]);
-+		}
-+		printk(KERN_ERR "\n");
- 
--    int err = 0;
--    int changed = 0;
-+		printk(KERN_ERR "Key Index : % d\n", zdparm->u.crypt.keyid);
-+		printk(KERN_ERR "Encryption key = ");
-+		for (ii = 0; ii < 16; ii++) {
-+			printk(KERN_ERR "0x%02x ", zdparm->u.crypt.key[ii]);
-+		}
-+		printk(KERN_ERR "\n");
- 
--//    regp = macp->regp;
-+		printk(KERN_ERR "MIC key = ");
-+		for(ii = 16; ii < ZM_CENC_KEY_SIZE; ii++) {
-+			printk(KERN_ERR "0x%02x ", zdparm->u.crypt.key[ii]);
-+		}
-+		printk(KERN_ERR "\n");
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+		/* Set up key information */
-+		keyInfo.keyLength = ZM_CENC_KEY_SIZE;
-+		keyInfo.keyIndex = zdparm->u.crypt.keyid;
-+		keyInfo.flag = ZM_KEY_FLAG_AUTHENTICATOR | ZM_KEY_FLAG_CENC;
-+		keyInfo.key = zdparm->u.crypt.key;
-+		keyInfo.macAddr = (u16_t *)zdparm->u.crypt.sta_addr;
-+
-+		/* Identify the MAC address information */
-+		if (memcmp(zdparm->u.crypt.sta_addr, bc_addr,
-+				sizeof(bc_addr)) == 0) {
-+			keyInfo.flag |= ZM_KEY_FLAG_GK;
-+			keyInfo.vapId = apId;
-+			memcpy(keyInfo.vapAddr, dev->dev_addr, ETH_ALEN);
-+		} else {
-+			keyInfo.flag |= ZM_KEY_FLAG_PK;
-+		}
- 
--    switch (cmd)
+-    struct dest* new_dest;
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    new_dest = zfwMemAllocate(dev, sizeof(struct dest));
+-    if(!new_dest)
 -    {
--            case SIOCGIWNAME:
--            strcpy(wrq->u.name, "IEEE 802.11-DS");
--            break;
-+		zfiWlanSetKey(dev, keyInfo);
- 
--        case SIOCGIWAP:
--            err = usbdrvwext_giwap(dev, NULL, &wrq->u.ap_addr, NULL);
--            break;
-+		break;
-+	case ZM_CMD_CENC_REKEY:
-+		/* ret = wai_ioctl_rekey(vap, ioctl_msg); */
-+		printk(KERN_ERR "ZM_CMD_CENC_REKEY\n");
-+		break;
-+	default:
-+		ret = -EOPNOTSUPP;
-+		break;
+-        return;
+-    }
+-    new_dest->Qtype = Qtype;
+-    new_dest->tid_tx = tid_tx;
+-    if (0 == Qtype)
+-        new_dest->tid_tx = tid_tx;
+-    else
+-        new_dest->vtxq = vtxq;
+-    if (!DESTQ.Head[ac]) {
+-
+-        zmw_enter_critical_section(dev);
+-        new_dest->next = new_dest;
+-        DESTQ.Head[ac] = DESTQ.dest[ac] = new_dest;
+-        zmw_leave_critical_section(dev);
+-    }
+-    else {
+-
+-        zmw_enter_critical_section(dev);
+-        new_dest->next = DESTQ.dest[ac]->next;
+-        DESTQ.dest[ac]->next = new_dest;
+-        zmw_leave_critical_section(dev);
+-    }
+-
+-
+-    //DESTQ.size[ac]++;
+-    return;
+-}
+-
+-void    zfAggDestDelete(zdev_t* dev, u16_t Qtype, TID_TX tid_tx, void* vtxq)
+-{
+-    struct dest* dest, *temp;
+-    u16_t   i;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    zmw_enter_critical_section(dev);
+-    if (wd->destLock) {
+-        zmw_leave_critical_section(dev);
+-        return;
+-    }
+-
+-
+-    //zmw_declare_for_critical_section();
+-    for (i=0; i<4; i++) {
+-        if (!DESTQ.Head[i]) continue;
+-        dest = DESTQ.Head[i];
+-        if (!dest) continue;
+-
+-
+-        while (dest && (dest->next != DESTQ.Head[i])) {
+-            if (Qtype == 0 && dest->next->tid_tx == tid_tx){
+-                break;
+-            }
+-            if (Qtype == 1 && dest->next->vtxq == vtxq) {
+-                break;
+-            }
+-            dest = dest->next;
+-        }
+-
+-        if ((Qtype == 0 && dest->next->tid_tx == tid_tx) || (Qtype == 1 && dest->next->vtxq == vtxq)) {
+-
+-            tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
+-            if (tid_tx->size) {
+-                zmw_leave_critical_section(dev);
+-                return;
+-            }
+-            if (!DESTQ.Head[i]) {
+-                temp = NULL;
+-            }
+-            else {
+-                temp = dest->next;
+-                if (temp == dest) {
+-                    DESTQ.Head[i] = DESTQ.dest[i] = NULL;
+-                    //DESTQ.size[i] = 0;
+-                }
+-                else {
+-                    dest->next = dest->next->next;
+-                }
+-            }
+-
+-            if (temp == NULL)
+-                {/* do nothing */} //zfwMemFree(dev, temp, sizeof(struct dest));
+-            else
+-                zfwMemFree(dev, temp, sizeof(struct dest));
+-
+-            /*zmw_enter_critical_section(dev);
+-            if (DESTQ.size[i] > 0)
+-                DESTQ.size[i]--;
+-            zmw_leave_critical_section(dev);
+-            */
+-        }
+-
+-    }
+-    zmw_leave_critical_section(dev);
+-    return;
+-}
+-
+-void    zfAggDestInit(zdev_t* dev)
+-{
+-    u16_t i;
+-    zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-
+-    for (i=0; i<4; i++) {
+-        //wd->destQ.Head[i].next = wd->destQ.Head[i];
+-        //wd->destQ.dest[i] = wd->destQ.Head[i];
+-        //DESTQ.size[i] = 0;
+-        DESTQ.Head[i] = NULL;
+-    }
+-    DESTQ.insert  = zfAggDestInsert;
+-    DESTQ.delete  = zfAggDestDelete;
+-    DESTQ.init    = zfAggDestInit;
+-    DESTQ.getNext = zfAggDestGetNext;
+-    DESTQ.exist   = zfAggDestExist;
+-    DESTQ.ppri = 0;
+-    return;
+-}
+-
+-struct dest* zfAggDestGetNext(zdev_t* dev, u16_t ac)
+-{
+-    struct dest *dest = NULL;
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    zmw_enter_critical_section(dev);
+-    if (DESTQ.dest[ac]) {
+-        dest = DESTQ.dest[ac];
+-        DESTQ.dest[ac] = DESTQ.dest[ac]->next;
+-    }
+-    else {
+-        dest = NULL;
+-    }
+-    zmw_leave_critical_section(dev);
++	zmw_enter_critical_section(dev);
++
++	tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
++
++	if (tid_tx->size < (ZM_AGGQ_SIZE - 2)) {
++		/* Queue not full */
++
++
++		/*
++		* buffer copy
++		* in zfwBufFree will return a ndismsendcomplete
++		* to resolve the synchronize problem in aggregate
++		*/
++
++		u8_t    sendComplete = 0;
++
++		tid_tx->aggvtxq[tid_tx->aggHead].buf = buf;
++		time = zm_agg_GetTime();
++		tid_tx->aggvtxq[tid_tx->aggHead].arrivalTime = time;
++		tid_tx->aggvtxq[tid_tx->aggHead].baw_retransmit = 0;
++
++		tid_tx->aggHead = ((tid_tx->aggHead + 1) & ZM_AGGQ_SIZE_MASK);
++		tid_tx->lastArrival = time;
++		tid_tx->size++;
++		tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead,
++							tid_tx->aggTail);
++		if (buf && (tid_tx->size < (ZM_AGGQ_SIZE - 10))) {
++			tid_tx->complete = tid_tx->aggHead;
++			sendComplete = 1;
++		}
++		zmw_leave_critical_section(dev);
++
++		if (!DESTQ.exist(dev, 0, tid_tx->ac, tid_tx, NULL))
++			DESTQ.insert(dev, 0, tid_tx->ac, tid_tx, NULL);
++
++		zm_msg1_agg(ZM_LV_0, "tid_tx->size=", tid_tx->size);
++		/* zm_debug_msg1("tid_tx->size=", tid_tx->size); */
++
++		if (buf && sendComplete && wd->zfcbSendCompleteIndication) {
++			/* zmw_leave_critical_section(dev); */
++			wd->zfcbSendCompleteIndication(dev, buf);
++		}
++
++		/*if (tid_tx->size >= 16 && zfHpGetFreeTxdCount(dev) > 20)
++		* zfAggTxSend(dev, zfHpGetFreeTxdCount(dev), tid_tx);
++		*/
++		return ZM_SUCCESS;
++	} else {
++		zm_msg1_agg(ZM_LV_0, "can't enqueue, tid_tx->size=",
++								tid_tx->size);
++		/*
++		* Queue Full
++		*/
++
++		/*
++		* zm_msg1_agg(ZM_LV_0, "Queue full, qnum = ", qnum);
++		* wd->commTally.txQosDropCount[ac]++;
++		* zfwBufFree(dev, buf, ZM_SUCCESS);
++		* zm_msg1_agg(ZM_LV_1, "Packet discarded, VTXQ full, ac=", ac);
++		*
++		* return ZM_ERR_EXCEED_PRIORITY_THRESHOLD;
++		*/
 +	}
- 
-+	/* if (retv == ENETRESET) */
-+	/* retv = IS_UP_AUTO(vap) ? ieee80211_open(vap->iv_dev) : 0; */
- 
--        case SIOCSIWAP:
--            err = usbdrvwext_siwap(dev, NULL, &wrq->u.ap_addr, NULL);
--            break;
-+	return ret;
++
++	zmw_leave_critical_section(dev);
++
++	if (!DESTQ.exist(dev, 0, tid_tx->ac, tid_tx, NULL))
++		DESTQ.insert(dev, 0, tid_tx->ac, tid_tx, NULL);
++
++	return ZM_ERR_EXCEED_PRIORITY_THRESHOLD;
 +}
-+#endif /* ZM_ENABLE_CENC */
- 
-+int usbdrv_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
++
++u16_t zfAggDestExist(zdev_t *dev, u16_t Qtype, u16_t ac, TID_TX tid_tx,
++			void *vtxq)
 +{
-+	/* struct usbdrv_private *macp; */
-+	/* void *regp; */
-+	struct zdap_ioctl zdreq;
-+	struct iwreq *wrq = (struct iwreq *)ifr;
-+	struct athr_wlan_param zdparm;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--        case SIOCGIWMODE:
--            err = usbdrvwext_giwmode(dev, NULL, &wrq->u.mode, NULL);
--            break;
-+	int err = 0;
-+	int changed = 0;
- 
-+	/* regp = macp->regp; */
- 
--        case SIOCSIWESSID:
--            printk(KERN_ERR "CWY - usbdrvwext_siwessid\n");
--            //err = usbdrv_ioctl_setessid(dev, &wrq->u.essid);
--            err = usbdrvwext_siwessid(dev, NULL, &wrq->u.essid, NULL);
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--            if (! err)
--                changed = 1;
--            break;
-+	switch (cmd) {
-+	case SIOCGIWNAME:
-+		strcpy(wrq->u.name, "IEEE 802.11-DS");
-+		break;
-+	case SIOCGIWAP:
-+		err = usbdrvwext_giwap(dev, NULL, &wrq->u.ap_addr, NULL);
-+		break;
-+	case SIOCSIWAP:
-+		err = usbdrvwext_siwap(dev, NULL, &wrq->u.ap_addr, NULL);
-+		break;
-+	case SIOCGIWMODE:
-+		err = usbdrvwext_giwmode(dev, NULL, &wrq->u.mode, NULL);
-+		break;
-+	case SIOCSIWESSID:
-+		printk(KERN_ERR "CWY - usbdrvwext_siwessid\n");
-+		/* err = usbdrv_ioctl_setessid(dev, &wrq->u.essid); */
-+		err = usbdrvwext_siwessid(dev, NULL, &wrq->u.essid, NULL);
- 
-+		if (!err)
-+			changed = 1;
-+		break;
-+	case SIOCGIWESSID:
-+		err = usbdrvwext_giwessid(dev, NULL, &wrq->u.essid, NULL);
-+		break;
-+	case SIOCSIWRTS:
-+		err = usbdrv_ioctl_setrts(dev, &wrq->u.rts);
-+		if (! err)
-+			changed = 1;
-+		break;
-+	/* set_auth */
-+	case SIOCIWFIRSTPRIV + 0x2: {
-+		/* printk("CWY - SIOCIWFIRSTPRIV + 0x2(set_auth)\n"); */
-+		if (!capable(CAP_NET_ADMIN)) {
-+			err = -EPERM;
-+			break;
-+		}
-+		int val = *((int *) wrq->u.name);
-+		if ((val < 0) || (val > 2)) {
-+			err = -EINVAL;
-+			break;
++	struct dest *dest;
++	u16_t   exist = 0;
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	zmw_enter_critical_section(dev);
++	if (!DESTQ.Head[ac]) {
++		exist = 0;
++	} else {
++		dest = DESTQ.Head[ac];
++		if (dest->tid_tx == tid_tx) {
++			exist = 1;
 +		} else {
-+			zfiWlanSetAuthenticationMode(dev, val);
- 
--        case SIOCGIWESSID:
--            err = usbdrvwext_giwessid(dev, NULL, &wrq->u.essid, NULL);
--            break;
-+			if (macp->DeviceOpened == 1) {
-+				zfiWlanDisable(dev, 0);
-+				zfiWlanEnable(dev);
-+			}
- 
-+			err = 0;
-+			changed = 1;
-+		}
-+	}
-+		break;
-+	/* get_auth */
-+	case SIOCIWFIRSTPRIV + 0x3: {
-+		int AuthMode = ZM_AUTH_MODE_OPEN;
- 
--        case SIOCSIWRTS:
-+		/* printk("CWY - SIOCIWFIRSTPRIV + 0x3(get_auth)\n"); */
- 
--            err = usbdrv_ioctl_setrts(dev, &wrq->u.rts);
--            if (! err)
--                changed = 1;
--            break;
-+		if (wrq->u.data.pointer) {
-+			wrq->u.data.flags = 1;
- 
-+			AuthMode = zfiWlanQueryAuthenticationMode(dev, 0);
-+			if (AuthMode == ZM_AUTH_MODE_OPEN) {
-+				wrq->u.data.length = 12;
- 
--		case SIOCIWFIRSTPRIV + 0x2: /* set_auth */
--		{
--			//printk("CWY - SIOCIWFIRSTPRIV + 0x2 (set_auth)\n");
--			if (! capable(CAP_NET_ADMIN))
--			{
--				err = -EPERM;
--				break;
--			}
--			{
--				int val = *( (int *) wrq->u.name );
--				if ((val < 0) || (val > 2))
--				{
--					err = -EINVAL;
--					break;
-+				if (copy_to_user(wrq->u.data.pointer,
-+					"open system", 12)) {
-+						return -EFAULT;
- 				}
--				else
--				{
--					zfiWlanSetAuthenticationMode(dev, val);
-+			} else if (AuthMode == ZM_AUTH_MODE_SHARED_KEY)	{
-+				wrq->u.data.length = 11;
- 
--                    if (macp->DeviceOpened == 1)
--                    {
--                        zfiWlanDisable(dev, 0);
--                        zfiWlanEnable(dev);
--                    }
-+				if (copy_to_user(wrq->u.data.pointer,
-+					"shared key", 11)) {
-+							return -EFAULT;
++			while (dest->next != DESTQ.Head[ac]) {
++				dest = dest->next;
++				if (dest->tid_tx == tid_tx) {
++					exist = 1;
++					break;
 +				}
-+			} else if (AuthMode == ZM_AUTH_MODE_AUTO) {
-+				wrq->u.data.length = 10;
- 
--					err = 0;
--					changed = 1;
-+				if (copy_to_user(wrq->u.data.pointer,
-+					"auto mode", 10)) {
-+							return -EFAULT;
- 				}
-+			} else {
-+				return -EFAULT;
- 			}
- 		}
--			break;
++			}
++		}
 +	}
-+		break;
-+	/* debug command */
-+	case ZDAPIOCTL:
-+		if (copy_from_user(&zdreq, ifr->ifr_data, sizeof(zdreq))) {
-+			printk(KERN_ERR "usbdrv : copy_from_user error\n");
-+			return -EFAULT;
-+		}
- 
--		case SIOCIWFIRSTPRIV + 0x3: /* get_auth */
--		{
--		    int AuthMode = ZM_AUTH_MODE_OPEN;
--
--			//printk("CWY - SIOCIWFIRSTPRIV + 0x3 (get_auth)\n");
--
--			if (wrq->u.data.pointer)
--			{
--				wrq->u.data.flags = 1;
-+		/* printk(DEFAULT_MESSAGE_LOGLEVEL
-+		* "usbdrv : cmd = % 2x, reg = 0x%04lx,
-+		*value = 0x%08lx\n",
-+		* zdreq.cmd, zdreq.addr, zdreq.value);
-+		*/
-+		zfLnxPrivateIoctl(dev, &zdreq);
- 
--				AuthMode = zfiWlanQueryAuthenticationMode(dev, 0);
--				if (AuthMode == ZM_AUTH_MODE_OPEN)
--				{
--					wrq->u.data.length = 12;
-+		err = 0;
-+		break;
-+	case ZD_IOCTL_WPA:
-+		if (copy_from_user(&zdparm, ifr->ifr_data,
-+			sizeof(struct athr_wlan_param))) {
-+			printk(KERN_ERR "usbdrv : copy_from_user error\n");
-+			return -EFAULT;
-+		}
- 
--					if (copy_to_user(wrq->u.data.pointer, "open system", 12))
--					{
--						return -EFAULT;
--					}
--				}
--				else if (AuthMode == ZM_AUTH_MODE_SHARED_KEY)
--				{
--					wrq->u.data.length = 11;
-+		usbdrv_wpa_ioctl(dev, &zdparm);
-+		err = 0;
-+		break;
-+	case ZD_IOCTL_PARAM: {
-+		int *p;
-+		int op;
-+		int arg;
 +
-+		/* Point to the name field and retrieve the
-+		* op and arg elements.
-+		*/
-+		p = (int *)wrq->u.name;
-+		op = *p++;
-+		arg = *p;
++	zmw_leave_critical_section(dev);
 +
-+		if (op == ZD_PARAM_ROAMING) {
-+			printk(KERN_ERR
-+			"*************ZD_PARAM_ROAMING : % d\n", arg);
-+			/* macp->cardSetting.ap_scan=(U8)arg; */
++	return exist;
++}
++
++void zfAggDestInsert(zdev_t *dev, u16_t Qtype, u16_t ac, TID_TX tid_tx,
++			void *vtxq)
++{
++	struct dest *new_dest;
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	new_dest = zfwMemAllocate(dev, sizeof(struct dest));
++	if (!new_dest)
++		return;
++
++	new_dest->Qtype = Qtype;
++	new_dest->tid_tx = tid_tx;
++	if (0 == Qtype)
++		new_dest->tid_tx = tid_tx;
++	else
++		new_dest->vtxq = vtxq;
++
++	if (!DESTQ.Head[ac]) {
++		zmw_enter_critical_section(dev);
++		new_dest->next = new_dest;
++		DESTQ.Head[ac] = DESTQ.dest[ac] = new_dest;
++		zmw_leave_critical_section(dev);
++	} else {
++		zmw_enter_critical_section(dev);
++		new_dest->next = DESTQ.dest[ac]->next;
++		DESTQ.dest[ac]->next = new_dest;
++		zmw_leave_critical_section(dev);
++	}
++
++
++	/* DESTQ.size[ac]++; */
++	return;
++}
++
++void zfAggDestDelete(zdev_t *dev, u16_t Qtype, TID_TX tid_tx, void *vtxq)
++{
++	struct dest *dest, *temp;
++	u16_t i;
++
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	zmw_enter_critical_section(dev);
++	if (wd->destLock) {
++		zmw_leave_critical_section(dev);
++		return;
++	}
++
++
++	/* zmw_declare_for_critical_section(); */
++	for (i = 0; i < 4; i++) {
++		if (!DESTQ.Head[i])
++			continue;
++		dest = DESTQ.Head[i];
++		if (!dest)
++			continue;
++
++		while (dest && (dest->next != DESTQ.Head[i])) {
++			if (Qtype == 0 && dest->next->tid_tx == tid_tx)
++				break;
++			if (Qtype == 1 && dest->next->vtxq == vtxq)
++				break;
++			dest = dest->next;
 +		}
-+		if (op == ZD_PARAM_PRIVACY) {
-+			printk(KERN_ERR "ZD_IOCTL_PRIVACY : ");
- 
--					if (copy_to_user(wrq->u.data.pointer, "shared key", 11))
--					{
--						return -EFAULT;
--					}
--				}
--				else if (AuthMode == ZM_AUTH_MODE_AUTO)
--				{
--					wrq->u.data.length = 10;
-+			/* Turn on the privacy invoke flag */
-+			if (arg) {
-+				/* mCap[0] |= CAP_PRIVACY; */
-+				/* macp->cardSetting.EncryOnOff[0] = 1; */
-+				printk(KERN_ERR "enable\n");
 +
-+			} else {
-+				/* mCap[0] &= ~CAP_PRIVACY; */
-+				/* macp->cardSetting.EncryOnOff[0] = 0; */
-+				printk(KERN_ERR "disable\n");
++		if ((Qtype == 0 && dest->next->tid_tx == tid_tx) ||
++			(Qtype == 1 && dest->next->vtxq == vtxq)) {
++
++			tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead,
++							tid_tx->aggTail);
++			if (tid_tx->size) {
++				zmw_leave_critical_section(dev);
++				return;
 +			}
-+			/* changed=1; */
-+		}
-+		if (op == ZD_PARAM_WPA) {
-+
-+		printk(KERN_ERR "ZD_PARAM_WPA : ");
- 
--					if (copy_to_user(wrq->u.data.pointer, "auto mode", 10))
-+		if (arg) {
-+			printk(KERN_ERR "enable\n");
-+
-+			if (zfiWlanQueryWlanMode(dev) != ZM_MODE_AP) {
-+				printk(KERN_ERR "Station Mode\n");
-+				/* zfiWlanQueryWpaIe(dev, (u8_t *)
-+					&wpaIe, &wpalen); */
-+				/* printk("wpaIe : % 2x, % 2x, % 2x\n",
-+					wpaIe[21], wpaIe[22], wpaIe[23]); */
-+				/* printk("rsnIe : % 2x, % 2x, % 2x\n",
-+					wpaIe[17], wpaIe[18], wpaIe[19]); */
-+				if ((macp->supIe[21] == 0x50) &&
-+					(macp->supIe[22] == 0xf2) &&
-+					(macp->supIe[23] == 0x2)) {
-+					printk(KERN_ERR
-+				"wd->sta.authMode = ZM_AUTH_MODE_WPAPSK\n");
-+				/* wd->sta.authMode = ZM_AUTH_MODE_WPAPSK; */
-+				/* wd->ws.authMode = ZM_AUTH_MODE_WPAPSK; */
-+				zfiWlanSetAuthenticationMode(dev,
-+							ZM_AUTH_MODE_WPAPSK);
-+				} else if ((macp->supIe[21] == 0x50) &&
-+					(macp->supIe[22] == 0xf2) &&
-+					(macp->supIe[23] == 0x1)) {
-+					printk(KERN_ERR
-+				"wd->sta.authMode = ZM_AUTH_MODE_WPA\n");
-+				/* wd->sta.authMode = ZM_AUTH_MODE_WPA; */
-+				/* wd->ws.authMode = ZM_AUTH_MODE_WPA; */
-+				zfiWlanSetAuthenticationMode(dev,
-+							ZM_AUTH_MODE_WPA);
-+					} else if ((macp->supIe[17] == 0xf) &&
-+						(macp->supIe[18] == 0xac) &&
-+						(macp->supIe[19] == 0x2))
- 					{
--						return -EFAULT;
--					}
--				}
--				else
-+						printk(KERN_ERR
-+				"wd->sta.authMode = ZM_AUTH_MODE_WPA2PSK\n");
-+				/* wd->sta.authMode = ZM_AUTH_MODE_WPA2PSK; */
-+				/* wd->ws.authMode = ZM_AUTH_MODE_WPA2PSK; */
-+				zfiWlanSetAuthenticationMode(dev,
-+				ZM_AUTH_MODE_WPA2PSK);
-+			} else if ((macp->supIe[17] == 0xf) &&
-+				(macp->supIe[18] == 0xac) &&
-+				(macp->supIe[19] == 0x1))
- 				{
--					return -EFAULT;
-+					printk(KERN_ERR
-+				"wd->sta.authMode = ZM_AUTH_MODE_WPA2\n");
-+				/* wd->sta.authMode = ZM_AUTH_MODE_WPA2; */
-+				/* wd->ws.authMode = ZM_AUTH_MODE_WPA2; */
-+				zfiWlanSetAuthenticationMode(dev,
-+							ZM_AUTH_MODE_WPA2);
-+			}
-+			/* WPA or WPAPSK */
-+			if ((macp->supIe[21] == 0x50) ||
-+				(macp->supIe[22] == 0xf2)) {
-+				if (macp->supIe[11] == 0x2) {
-+					printk(KERN_ERR
-+				"wd->sta.wepStatus = ZM_ENCRYPTION_TKIP\n");
-+				/* wd->sta.wepStatus = ZM_ENCRYPTION_TKIP; */
-+				/* wd->ws.wepStatus = ZM_ENCRYPTION_TKIP; */
-+				zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_TKIP);
++			if (!DESTQ.Head[i]) {
++				temp = NULL;
 +			} else {
-+				printk(KERN_ERR
-+				"wd->sta.wepStatus = ZM_ENCRYPTION_AES\n");
-+				/* wd->sta.wepStatus = ZM_ENCRYPTION_AES; */
-+				/* wd->ws.wepStatus = ZM_ENCRYPTION_AES; */
-+				zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_AES);
- 				}
- 			}
-+			//WPA2 or WPA2PSK
-+			if ((macp->supIe[17] == 0xf) ||
-+				(macp->supIe[18] == 0xac)) {
-+				if (macp->supIe[13] == 0x2) {
-+					printk(KERN_ERR
-+				"wd->sta.wepStatus = ZM_ENCRYPTION_TKIP\n");
-+				/* wd->sta.wepStatus = ZM_ENCRYPTION_TKIP; */
-+				/* wd->ws.wepStatus = ZM_ENCRYPTION_TKIP; */
-+				zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_TKIP);
++				temp = dest->next;
++				if (temp == dest) {
++					DESTQ.Head[i] = DESTQ.dest[i] = NULL;
++					/* DESTQ.size[i] = 0; */
 +				} else {
-+					printk(KERN_ERR
-+				"wd->sta.wepStatus = ZM_ENCRYPTION_AES\n");
-+				/* wd->sta.wepStatus = ZM_ENCRYPTION_AES; */
-+				/* wd->ws.wepStatus = ZM_ENCRYPTION_AES; */
-+				zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_AES);
-+					}
++					dest->next = dest->next->next;
 +				}
 +			}
-+			zfiWlanSetWpaSupport(dev, 1);
-+		} else {
-+			/* Reset the WPA related variables */
-+			printk(KERN_ERR "disable\n");
 +
-+			zfiWlanSetWpaSupport(dev, 0);
-+			zfiWlanSetAuthenticationMode(dev, ZM_AUTH_MODE_OPEN);
-+			zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_WEP_DISABLED);
++			if (temp == NULL) {
++				/* do nothing
++				* zfwMemFree(dev, temp,
++				* sizeof(struct dest));
++				*/
++			} else
++				zfwMemFree(dev, temp, sizeof(struct dest));
 +
-+			/* Now we only set the length in the WPA IE
-+			* field to zero.
-+			*macp->cardSetting.WPAIe[1] = 0;
++			/*zmw_enter_critical_section(dev);
++			* if (DESTQ.size[i] > 0)
++			* 	DESTQ.size[i]--;
++			* zmw_leave_critical_section(dev);
 +			*/
-+			}
 +		}
 +
-+		if (op == ZD_PARAM_COUNTERMEASURES) {
-+			printk(KERN_ERR
-+				"****************ZD_PARAM_COUNTERMEASURES : ");
-+
-+			if(arg) {
-+				/*    mCounterMeasureState=1; */
-+				printk(KERN_ERR "enable\n");
-+			} else {
-+				/*    mCounterMeasureState=0; */
-+				printk(KERN_ERR "disable\n");
-+			}
-+		}
-+		if (op == ZD_PARAM_DROPUNENCRYPTED) {
-+			printk(KERN_ERR "ZD_PARAM_DROPUNENCRYPTED : ");
-+
-+			if(arg) {
-+				printk(KERN_ERR "enable\n");
-+			} else {
-+				printk(KERN_ERR "disable\n");
-+			}
- 		}
-+		if (op == ZD_PARAM_AUTH_ALGS) {
-+			printk(KERN_ERR "ZD_PARAM_AUTH_ALGS : ");
-+
-+			if (arg == 0) {
-+				printk(KERN_ERR "OPEN_SYSTEM\n");
-+			} else {
-+				printk(KERN_ERR "SHARED_KEY\n");
-+			}
-+		}
-+		if (op == ZD_PARAM_WPS_FILTER) {
-+			printk(KERN_ERR "ZD_PARAM_WPS_FILTER : ");
-+
-+			if (arg) {
-+				/*    mCounterMeasureState=1; */
-+				macp->forwardMgmt = 1;
-+				printk(KERN_ERR "enable\n");
-+			} else {
-+				/*    mCounterMeasureState=0; */
-+				macp->forwardMgmt = 0;
-+				printk(KERN_ERR "disable\n");
-+			}
-+		}
 +	}
-+		err = 0;
-+		break;
-+	case ZD_IOCTL_GETWPAIE: {
-+		struct ieee80211req_wpaie req_wpaie;
-+		u16_t apId, i, j;
++	zmw_leave_critical_section(dev);
++	return;
++}
 +
-+		/* Get the AP Id */
-+		apId = zfLnxGetVapId(dev);
++void zfAggDestInit(zdev_t *dev)
++{
++	u16_t i;
++	zmw_get_wlan_dev(dev);
 +
-+		if (apId == 0xffff) {
-+			apId = 0;
-+		} else {
-+			apId = apId + 1;
-+		}
++	/* zmw_declare_for_critical_section(); */
 +
-+		if (copy_from_user(&req_wpaie, ifr->ifr_data,
-+					sizeof(struct ieee80211req_wpaie))) {
-+			printk(KERN_ERR "usbdrv : copy_from_user error\n");
-+			return -EFAULT;
-+		}
++	for (i = 0; i < 4; i++) {
++		/* wd->destQ.Head[i].next = wd->destQ.Head[i]; */
++		/* wd->destQ.dest[i] = wd->destQ.Head[i]; */
++		/* DESTQ.size[i] = 0; */
++		DESTQ.Head[i] = NULL;
++	}
++	DESTQ.insert  = zfAggDestInsert;
++	DESTQ.delete  = zfAggDestDelete;
++	DESTQ.init    = zfAggDestInit;
++	DESTQ.getNext = zfAggDestGetNext;
++	DESTQ.exist   = zfAggDestExist;
++	DESTQ.ppri = 0;
++	return;
++}
 +
-+		for (i = 0; i < ZM_OAL_MAX_STA_SUPPORT; i++) {
-+			for (j = 0; j < IEEE80211_ADDR_LEN; j++) {
-+				if (macp->stawpaie[i].wpa_macaddr[j] !=
-+						req_wpaie.wpa_macaddr[j])
++struct dest *zfAggDestGetNext(zdev_t *dev, u16_t ac)
++{
++	struct dest *dest = NULL;
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	zmw_enter_critical_section(dev);
++	if (DESTQ.dest[ac]) {
++		dest = DESTQ.dest[ac];
++		DESTQ.dest[ac] = DESTQ.dest[ac]->next;
++	} else
++		dest = NULL;
+ 
+-    return dest;
++	zmw_leave_critical_section(dev);
++
++	return dest;
+ }
+ 
+ #ifdef ZM_ENABLE_AGGREGATION
+-#ifndef ZM_ENABLE_FW_BA_RETRANSMISSION //disable BAW
+-u16_t   zfAggTidTxInsertHead(zdev_t* dev, struct bufInfo *buf_info,TID_TX tid_tx)
++#ifndef ZM_ENABLE_FW_BA_RETRANSMISSION /* disable BAW */
++u16_t zfAggTidTxInsertHead(zdev_t *dev, struct bufInfo *buf_info, TID_TX tid_tx)
++{
++	zbuf_t *buf;
++	u32_t time;
++	struct baw_header *baw_header;
++
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	buf = buf_info->buf;
++
++	zmw_enter_critical_section(dev);
++	tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
++	zmw_leave_critical_section(dev);
++
++	if (tid_tx->size >= (ZM_AGGQ_SIZE - 2)) {
++		zfwBufFree(dev, buf, ZM_SUCCESS);
++		return 0;
++	}
++
++	zmw_enter_critical_section(dev);
++	tid_tx->aggTail = (tid_tx->aggTail == 0) ? ZM_AGGQ_SIZE_MASK :
++							tid_tx->aggTail - 1;
++	tid_tx->aggvtxq[tid_tx->aggTail].buf = buf;
++	/* time = zm_agg_GetTime(); */
++	tid_tx->aggvtxq[tid_tx->aggTail].arrivalTime = buf_info->timestamp;
++	tid_tx->aggvtxq[tid_tx->aggTail].baw_retransmit =
++						buf_info->baw_retransmit;
++
++	baw_header = &tid_tx->aggvtxq[tid_tx->aggTail].baw_header;
++	baw_header->headerLen   = buf_info->baw_header->headerLen;
++	baw_header->micLen      = buf_info->baw_header->micLen;
++	baw_header->snapLen     = buf_info->baw_header->snapLen;
++	baw_header->removeLen   = buf_info->baw_header->removeLen;
++	baw_header->keyIdx      = buf_info->baw_header->keyIdx;
++	zfwMemoryCopy((u8_t *)baw_header->header,
++				(u8_t *)buf_info->baw_header->header, 58);
++	zfwMemoryCopy((u8_t *)baw_header->mic,
++				(u8_t *)buf_info->baw_header->mic   , 8);
++	zfwMemoryCopy((u8_t *)baw_header->snap,
++				(u8_t *)buf_info->baw_header->snap  , 8);
++
++	tid_tx->size++;
++	tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
++	zmw_leave_critical_section(dev);
++
++	/* tid_tx->lastArrival = time; */
++	if (1 == tid_tx->size)
++		DESTQ.insert(dev, 0, tid_tx->ac, tid_tx, NULL);
++
++	zm_msg1_agg(ZM_LV_0, "0xC2:insertHead, tid_tx->size=", tid_tx->size);
++
++	return TRUE;
++}
++#endif /* disable BAW */
++#endif
++
++void zfiTxComplete(zdev_t *dev)
+ {
+-    zbuf_t* buf;
+-    u32_t time;
+-    struct baw_header *baw_header;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-
+-    buf = buf_info->buf;
+-
+-    zmw_enter_critical_section(dev);
+-    tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
+-    zmw_leave_critical_section(dev);
+-
+-    if (tid_tx->size >= (ZM_AGGQ_SIZE - 2)) {
+-        zfwBufFree(dev, buf, ZM_SUCCESS);
+-        return 0;
+-    }
+-
+-    zmw_enter_critical_section(dev);
+-    tid_tx->aggTail = (tid_tx->aggTail == 0)? ZM_AGGQ_SIZE_MASK: tid_tx->aggTail - 1;
+-    tid_tx->aggvtxq[tid_tx->aggTail].buf = buf;
+-    //time = zm_agg_GetTime();
+-    tid_tx->aggvtxq[tid_tx->aggTail].arrivalTime = buf_info->timestamp;
+-    tid_tx->aggvtxq[tid_tx->aggTail].baw_retransmit = buf_info->baw_retransmit;
+-
+-    baw_header = &tid_tx->aggvtxq[tid_tx->aggTail].baw_header;
+-    baw_header->headerLen   = buf_info->baw_header->headerLen;
+-    baw_header->micLen      = buf_info->baw_header->micLen;
+-    baw_header->snapLen     = buf_info->baw_header->snapLen;
+-    baw_header->removeLen   = buf_info->baw_header->removeLen;
+-    baw_header->keyIdx      = buf_info->baw_header->keyIdx;
+-    zfwMemoryCopy((u8_t *)baw_header->header, (u8_t *)buf_info->baw_header->header, 58);
+-    zfwMemoryCopy((u8_t *)baw_header->mic   , (u8_t *)buf_info->baw_header->mic   , 8);
+-    zfwMemoryCopy((u8_t *)baw_header->snap  , (u8_t *)buf_info->baw_header->snap  , 8);
+-
+-    tid_tx->size++;
+-    tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
+-    zmw_leave_critical_section(dev);
+-
+-    //tid_tx->lastArrival = time;
+-    if (1 == tid_tx->size) {
+-        DESTQ.insert(dev, 0, tid_tx->ac, tid_tx, NULL);
+-    }
+-
+-
+-    zm_msg1_agg(ZM_LV_0, "0xC2:insertHead, tid_tx->size=", tid_tx->size);
+-
+-    return TRUE;
+-}
+-#endif //disable BAW
+-#endif
+-
+-void    zfiTxComplete(zdev_t* dev)
+-{
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-
+-    if( (wd->wlanMode == ZM_MODE_AP) ||
+-        (wd->wlanMode == ZM_MODE_INFRASTRUCTURE && wd->sta.EnableHT) ||
+-        (wd->wlanMode == ZM_MODE_PSEUDO) ) {
+-        zfAggTxScheduler(dev, 0);
+-    }
+-
+-    return;
+-}
+-
+-TID_TX  zfAggTxReady(zdev_t* dev) {
+-    //struct dest* dest;
+-    u16_t   i;
+-    TID_TX  tid_tx = NULL;
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    zmw_enter_critical_section(dev);
+-    for (i=0; i<ZM_AGG_POOL_SIZE; i++)
+-    {
+-        if (wd->aggQPool[i]->aggQEnabled)
+-        {
+-            if (wd->aggQPool[i]->size >= 16) {
+-                tid_tx = wd->aggQPool[i];
+-                break;
+-            }
+-        }
+-        else {
+-        }
+-    }
+-    zmw_leave_critical_section(dev);
+-    return tid_tx;
+-}
+-
+-u16_t   zfAggValidTidTx(zdev_t* dev, TID_TX tid_tx) {
+-    u16_t   i, valid = 0;
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    zmw_enter_critical_section(dev);
+-    for (i=0; i<ZM_AGG_POOL_SIZE; i++)
+-    {
+-        if (wd->aggQPool[i] == tid_tx)
+-        {
+-            valid = 1;
+-            break;
+-        }
+-        else {
+-        }
+-    }
+-    zmw_leave_critical_section(dev);
+-
+-    return valid;
+-}
+-
+-void    zfAggTxScheduler(zdev_t* dev, u8_t ScanAndClear)
+-{
+-    TID_TX  tid_tx = NULL;
+-    void*   vtxq;
+-    struct dest* dest;
+-    zbuf_t*  buf;
+-    u32_t txql, min_txql;
+-    //u16_t aggr_size = 1;
+-    u16_t txq_threshold;
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    if (!wd->aggInitiated)
+-    {
+-        return;
+-    }
+-
+-    /* debug */
+-    txql = TXQL;
+-    min_txql = AGG_MIN_TXQL;
+-
+-    if(wd->txq_threshold)
+-        txq_threshold = wd->txq_threshold;
+-    else
+-        txq_threshold = AGG_MIN_TXQL;
+-
+-    tid_tx = zfAggTxReady(dev);
+-    if (tid_tx) ScanAndClear = 0;
+-    while (zfHpGetFreeTxdCount(dev) > 20 && (TXQL < txq_threshold || tid_tx)) {
+-    //while (zfHpGetFreeTxdCount(dev) > 20 && (ScanAndClear || tid_tx)) {
+-    //while (TXQL < txq_threshold) {
+-        u16_t i;
+-        u8_t ac;
+-        s8_t destQ_count = 0;
+-    //while ((zfHpGetFreeTxdCount(dev)) > 32) {
+-
+-        //DbgPrint("zfAggTxScheduler: in while loop");
+-        for (i=0; i<4; i++) {
+-            if (DESTQ.Head[i]) destQ_count++;
+-        }
+-        if (0 >= destQ_count) break;
+-
+-        zmw_enter_critical_section(dev);
+-        ac = pri[DESTQ.ppri]; DESTQ.ppri = (DESTQ.ppri + 1) % 10;
+-        zmw_leave_critical_section(dev);
+-
+-        for (i=0; i<10; i++){
+-            if(DESTQ.Head[ac]) break;
+-
+-            zmw_enter_critical_section(dev);
+-            ac = pri[DESTQ.ppri]; DESTQ.ppri = (DESTQ.ppri + 1) % 10;
+-            zmw_leave_critical_section(dev);
+-        }
+-        if (i == 10) break;
+-        //DbgPrint("zfAggTxScheduler: have dest Q");
+-        zmw_enter_critical_section(dev);
+-        wd->destLock = 1;
+-        zmw_leave_critical_section(dev);
+-
+-        dest = DESTQ.getNext(dev, ac);
+-        if (!dest) {
+-            zmw_enter_critical_section(dev);
+-            wd->destLock = 0;
+-            zmw_leave_critical_section(dev);
+-
+-            DbgPrint("bug report! DESTQ.getNext got nothing!");
+-            break;
+-        }
+-        if (dest->Qtype == 0) {
+-            tid_tx = dest->tid_tx;
+-
+-            //DbgPrint("zfAggTxScheduler: have tid_tx Q");
+-
+-            if(tid_tx && zfAggValidTidTx(dev, tid_tx))
+-                tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
+-            else {
+-                zmw_enter_critical_section(dev);
+-                wd->destLock = 0;
+-                zmw_leave_critical_section(dev);
+-
+-                tid_tx = zfAggTxReady(dev);
+-                continue;
+-            }
+-
+-            zmw_enter_critical_section(dev);
+-            wd->destLock = 0;
+-            zmw_leave_critical_section(dev);
+-            //zmw_enter_critical_section(dev);
+-            if (tid_tx && !tid_tx->size) {
+-
+-                //zmw_leave_critical_section(dev);
+-                //DESTQ.delete(dev, 0, tid_tx, NULL);
+-            }
+-            else if(wd->aggState == 0){
+-                //wd->aggState = 1;
+-                //zmw_leave_critical_section(dev);
+-                zfAggTxSend(dev, zfHpGetFreeTxdCount(dev), tid_tx);
+-                //wd->aggState = 0;
+-            }
+-            else {
+-                //zmw_leave_critical_section(dev);
+-                break;
+-            }
+-        }
+-        else {
+-            vtxq = dest->vtxq;
+-            buf = zfGetVtxq(dev, ac);
+-            zm_assert( buf != 0 );
+-
+-            zfTxSendEth(dev, buf, 0, ZM_EXTERNAL_ALLOC_BUF, 0);
+-
+-        }
+-        /*flush all but < 16 frames in tid_tx to TXQ*/
+-        tid_tx = zfAggTxReady(dev);
+-    }
+-
+-    /*while ((zfHpGetFreeTxdCount(dev)) > 32) {
+-    //while ((zfHpGetFreeTxdCount(dev)) > 32) {
+-
+-        destQ_count = 0;
+-        for (i=0; i<4; i++) destQ_count += wd->destQ.size[i];
+-        if (0 >= destQ_count) break;
+-
+-        ac = pri[wd->destQ.ppri]; wd->destQ.ppri = (wd->destQ.ppri + 1) % 10;
+-        for (i=0; i<10; i++){
+-            if(wd->destQ.size[ac]!=0) break;
+-            ac = pri[wd->destQ.ppri]; wd->destQ.ppri = (wd->destQ.ppri + 1) % 10;
+-        }
+-        if (i == 10) break;
+-        dest = wd->destQ.getNext(dev, ac);
+-        if (dest->Qtype == 0) {
+-            tid_tx = dest->tid_tx;
+-            tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
+-            if (!tid_tx->size) {
+-                wd->destQ.delete(dev, 0, tid_tx, NULL);
+-                break;
+-            }
+-            else if((wd->aggState == 0) && (tid_tx->size >= 16)){
+-                zfAggTxSend(dev, zfHpGetFreeTxdCount(dev), tid_tx);
+-            }
+-            else {
+-                break;
+-            }
+-        }
+-
+-    }
+-    */
+-    return;
++	zmw_get_wlan_dev(dev);
++
++	/* zmw_declare_for_critical_section(); */
++
++	if ((wd->wlanMode == ZM_MODE_AP) ||
++		(wd->wlanMode == ZM_MODE_INFRASTRUCTURE && wd->sta.EnableHT) ||
++		(wd->wlanMode == ZM_MODE_PSEUDO))
++		zfAggTxScheduler(dev, 0);
++
++	return;
++}
++
++TID_TX zfAggTxReady(zdev_t *dev)
++{
++	/* struct dest* dest; */
++	u16_t   i;
++	TID_TX  tid_tx = NULL;
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	zmw_enter_critical_section(dev);
++	for (i = 0; i < ZM_AGG_POOL_SIZE; i++) {
++		if (wd->aggQPool[i]->aggQEnabled) {
++			if (wd->aggQPool[i]->size >= 16) {
++				tid_tx = wd->aggQPool[i];
 +				break;
 +			}
-+			if (j == 6)
- 			break;
++		} else {
 +		}
- 
-+		if (i < ZM_OAL_MAX_STA_SUPPORT) {
-+		/* printk("ZD_IOCTL_GETWPAIE - sta index = % d\n", i); */
-+		memcpy(req_wpaie.wpa_ie, macp->stawpaie[i].wpa_ie,
-+							IEEE80211_MAX_IE_SIZE);
++	}
++
++	zmw_leave_critical_section(dev);
++	return tid_tx;
++}
++
++u16_t zfAggValidTidTx(zdev_t *dev, TID_TX tid_tx)
++{
++	u16_t i, valid = 0;
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	zmw_enter_critical_section(dev);
++
++	for (i = 0; i < ZM_AGG_POOL_SIZE; i++) {
++		if (wd->aggQPool[i] == tid_tx) {
++			valid = 1;
++			break;
++		} else {
 +		}
++	}
++
++	zmw_leave_critical_section(dev);
++
++	return valid;
++}
++
++void zfAggTxScheduler(zdev_t *dev, u8_t ScanAndClear)
++{
++	TID_TX  tid_tx = NULL;
++	void *vtxq;
++	struct dest *dest;
++	zbuf_t *buf;
++	u32_t txql, min_txql;
++	/* u16_t aggr_size = 1; */
++	u16_t txq_threshold;
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	if (!wd->aggInitiated)
++		return;
++
++	/* debug */
++	txql = TXQL;
++	min_txql = AGG_MIN_TXQL;
++
++	if (wd->txq_threshold)
++		txq_threshold = wd->txq_threshold;
++	else
++		txq_threshold = AGG_MIN_TXQL;
++
++	tid_tx = zfAggTxReady(dev);
++	if (tid_tx)
++		ScanAndClear = 0;
++	while (zfHpGetFreeTxdCount(dev) > 20 &&
++					(TXQL < txq_threshold || tid_tx)) {
++		/* while (zfHpGetFreeTxdCount(dev) > 20
++		*		&& (ScanAndClear || tid_tx)) {
++		* while (TXQL < txq_threshold) {
++		*/
++		u16_t i;
++		u8_t ac;
++		s8_t destQ_count = 0;
++		/* while ((zfHpGetFreeTxdCount(dev)) > 32) { */
++
++		/* DbgPrint("zfAggTxScheduler: in while loop"); */
++		for (i = 0; i < 4; i++) {
++			if (DESTQ.Head[i])
++				destQ_count++;
++		}
++		if (0 >= destQ_count)
++			break;
++
++		zmw_enter_critical_section(dev);
++		ac = pri[DESTQ.ppri];
++		DESTQ.ppri = (DESTQ.ppri + 1) % 10;
++		zmw_leave_critical_section(dev);
++
++		for (i = 0; i < 10; i++) {
++			if (DESTQ.Head[ac])
++				break;
++
++			zmw_enter_critical_section(dev);
++			ac = pri[DESTQ.ppri];
++			DESTQ.ppri = (DESTQ.ppri + 1) % 10;
++			zmw_leave_critical_section(dev);
++		}
++		if (i == 10)
++			break;
++		/* DbgPrint("zfAggTxScheduler: have dest Q"); */
++		zmw_enter_critical_section(dev);
++		wd->destLock = 1;
++		zmw_leave_critical_section(dev);
++
++		dest = DESTQ.getNext(dev, ac);
++		if (!dest) {
++			zmw_enter_critical_section(dev);
++			wd->destLock = 0;
++			zmw_leave_critical_section(dev);
++
++			DbgPrint("bug report! DESTQ.getNext got nothing!");
++			break;
++		}
++		if (dest->Qtype == 0) {
++			tid_tx = dest->tid_tx;
++
++			/* DbgPrint("zfAggTxScheduler: have tid_tx Q"); */
++
++			if (tid_tx && zfAggValidTidTx(dev, tid_tx))
++				tid_tx->size = zm_agg_qlen(dev,
++					tid_tx->aggHead, tid_tx->aggTail);
++			else {
++				zmw_enter_critical_section(dev);
++				wd->destLock = 0;
++				zmw_leave_critical_section(dev);
++
++				tid_tx = zfAggTxReady(dev);
++				continue;
++			}
++
++			zmw_enter_critical_section(dev);
++			wd->destLock = 0;
++			zmw_leave_critical_section(dev);
++			/* zmw_enter_critical_section(dev); */
++			if (tid_tx && !tid_tx->size) {
++				/* zmw_leave_critical_section(dev); */
++				/* DESTQ.delete(dev, 0, tid_tx, NULL); */
++			} else if (wd->aggState == 0) {
++				/* wd->aggState = 1; */
++				/* zmw_leave_critical_section(dev); */
++				zfAggTxSend(dev,
++				zfHpGetFreeTxdCount(dev), tid_tx);
++				/* wd->aggState = 0; */
++			} else {
++				/* zmw_leave_critical_section(dev); */
++				break;
++			}
++		} else {
++			vtxq = dest->vtxq;
++			buf = zfGetVtxq(dev, ac);
++			zm_assert(buf != 0);
++
++			zfTxSendEth(dev, buf, 0, ZM_EXTERNAL_ALLOC_BUF, 0);
++
++		}
++		/* flush all but < 16 frames in tid_tx to TXQ */
++		tid_tx = zfAggTxReady(dev);
++	}
++
++	/* while ((zfHpGetFreeTxdCount(dev)) > 32) {
++	while ((zfHpGetFreeTxdCount(dev)) > 32) {
++
++	destQ_count = 0;
++	for (i=0; i<4; i++) destQ_count += wd->destQ.size[i];
++	if (0 >= destQ_count) break;
++
++	ac = pri[wd->destQ.ppri]; wd->destQ.ppri = (wd->destQ.ppri + 1) % 10;
++	for (i=0; i<10; i++){
++		if(wd->destQ.size[ac]!=0) break;
++		ac = pri[wd->destQ.ppri]; wd->destQ.ppri = (wd->destQ.ppri + 1)
++									% 10;
++	}
++	if (i == 10) break;
++	dest = wd->destQ.getNext(dev, ac);
++	if (dest->Qtype == 0) {
++		tid_tx = dest->tid_tx;
++		tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead,
++							tid_tx->aggTail);
++		if (!tid_tx->size) {
++			wd->destQ.delete(dev, 0, tid_tx, NULL);
++			break;
++		}
++		else if((wd->aggState == 0) && (tid_tx->size >= 16)){
++		zfAggTxSend(dev, zfHpGetFreeTxdCount(dev), tid_tx);
++		}
++		else {
++		break;
++		}
++	}
++
++	}
++	*/
++	return;
+ }
  
--        case ZDAPIOCTL:    //debug command
--            if (copy_from_user(&zdreq, ifr->ifr_data, sizeof (zdreq)))
--            {
--                printk(KERN_ERR "usbdrv: copy_from_user error\n");
--                return -EFAULT;
--            }
--
--            //printk(KERN_DEBUG "usbdrv: cmd=%2x, reg=0x%04lx, value=0x%08lx\n",
--            //        zdreq.cmd, zdreq.addr, zdreq.value);
--
--			zfLnxPrivateIoctl(dev, &zdreq);
--
--            err = 0;
--            break;
--
--        case ZD_IOCTL_WPA:
--            if (copy_from_user(&zdparm, ifr->ifr_data, sizeof(struct athr_wlan_param)))
--            {
--                printk(KERN_ERR "usbdrv: copy_from_user error\n");
--                return -EFAULT;
--            }
--
--            usbdrv_wpa_ioctl(dev, &zdparm);
--            err = 0;
--            break;
--
--        case ZD_IOCTL_PARAM:
+ /************************************************************************/
+@@ -875,137 +866,127 @@ void    zfAggTxScheduler(zdev_t* dev, u8
+ /*      Honda               Atheros Communications, INC.    2006.12     */
+ /*                                                                      */
+ /************************************************************************/
+-u16_t zfAggTx(zdev_t* dev, zbuf_t* buf, u16_t tid)
++u16_t zfAggTx(zdev_t *dev, zbuf_t *buf, u16_t tid)
+ {
+-    u16_t aid;
+-    //u16_t qnum;
+-    //u16_t aggflag = 0;
+-    //u16_t arrivalrate = 0;
+-    TID_TX tid_tx;
++	u16_t aid;
++	/* u16_t qnum; */
++	/* u16_t aggflag = 0; */
++	/* u16_t arrivalrate = 0; */
++	TID_TX tid_tx;
+ 
+-    zmw_get_wlan_dev(dev);
++	zmw_get_wlan_dev(dev);
+ 
+-    zmw_declare_for_critical_section();
++	zmw_declare_for_critical_section();
+ 
+-    if(!wd->aggInitiated)
+-    {
+-        return ZM_ERR_TX_BUFFER_UNAVAILABLE;
+-    }
++	if (!wd->aggInitiated)
++		return ZM_ERR_TX_BUFFER_UNAVAILABLE;
+ 
+-    aid = zfAggGetSta(dev, buf);
++	aid = zfAggGetSta(dev, buf);
+ 
+-    //arrivalrate = zfAggTxArrivalRate(dev, aid, tid);
++	/* arrivalrate = zfAggTxArrivalRate(dev, aid, tid); */
+ 
+-    if (0xffff == aid)
+-    {
+-        /*
+-         * STA not associated, this is a BC/MC or STA->AP packet
+-         */
++	if (0xffff == aid) {
++		/*
++		* STA not associated, this is a BC/MC or STA->AP packet
++		*/
+ 
+-        return ZM_ERR_TX_BUFFER_UNAVAILABLE;
+-    }
++		return ZM_ERR_TX_BUFFER_UNAVAILABLE;
++	}
+ 
+-    /*
+-     * STA associated, a unicast packet
+-     */
++	/*
++	* STA associated, a unicast packet
++	*/
+ 
+-    tid_tx = zfAggTxGetQueue(dev, aid, tid);
++	tid_tx = zfAggTxGetQueue(dev, aid, tid);
+ 
+-    /*tid_q.tid_tx = tid_tx;
+-    wd->destQ.insert = zfAggDestInsert;
+-    wd->destQ.insert(dev, 0, tid_q);
+-    */
+-    if (tid_tx != NULL)
+-    {
+-        /*
+-         * this (aid, ac) is aggregated
+-         */
++	/*tid_q.tid_tx = tid_tx;
++	wd->destQ.insert = zfAggDestInsert;
++	wd->destQ.insert(dev, 0, tid_q);
++	*/
++	if (tid_tx != NULL) {
++		/*
++		* this (aid, ac) is aggregated
++		*/
+ 
+-        //if (arrivalrate < ZM_AGG_LOW_THRESHOLD)
+-        if (0)
 -        {
--            int *p;
--            int op;
--            int arg;
--
--            /* Point to the name field and retrieve the
--             * op and arg elements.          */
--            p = (int *)wrq->u.name;
--            op = *p++;
--            arg = *p;
--
--            if(op == ZD_PARAM_ROAMING)
--            {
--                printk(KERN_ERR "************* ZD_PARAM_ROAMING: %d\n", arg);
--                //macp->cardSetting.ap_scan=(U8)arg;
--            }
--            if(op == ZD_PARAM_PRIVACY)
--            {
--                printk(KERN_ERR "ZD_IOCTL_PRIVACY: ");
--
--                /* Turn on the privacy invoke flag */
--                if(arg)
--                {
--                //    mCap[0] |= CAP_PRIVACY;
--                //    macp->cardSetting.EncryOnOff[0] = 1;
--                    printk(KERN_ERR "enable\n");
--
--                }
--                else
--                {
--                //    mCap[0] &= ~CAP_PRIVACY;
--                //    macp->cardSetting.EncryOnOff[0] = 0;
--                    printk(KERN_ERR "disable\n");
--                }
--                                //changed=1;
--            }
--            if(op == ZD_PARAM_WPA)
--            {
--                printk(KERN_ERR "ZD_PARAM_WPA: ");
--
--                if(arg)
--                {
--                    printk(KERN_ERR "enable\n");
--
--                    if (zfiWlanQueryWlanMode(dev) != ZM_MODE_AP)
--                    {
--                        printk(KERN_ERR "Station Mode\n");
--                        //zfiWlanQueryWpaIe(dev, (u8_t *)&wpaIe, &wpalen);
--                        //printk("wpaIe : %2x,%2x,%2x\n", wpaIe[21], wpaIe[22], wpaIe[23]);
--                        //printk("rsnIe : %2x,%2x,%2x\n", wpaIe[17], wpaIe[18], wpaIe[19]);
--                        if ((macp->supIe[21] == 0x50) &&
--                            (macp->supIe[22] == 0xf2) &&
--                            (macp->supIe[23] == 0x2))
--                        {
--                            printk(KERN_ERR "wd->sta.authMode = ZM_AUTH_MODE_WPAPSK\n");
--                            //wd->sta.authMode = ZM_AUTH_MODE_WPAPSK;
--                            //wd->ws.authMode = ZM_AUTH_MODE_WPAPSK;
--                            zfiWlanSetAuthenticationMode(dev, ZM_AUTH_MODE_WPAPSK);
--                        }
--                        else if ((macp->supIe[21] == 0x50) &&
--                                 (macp->supIe[22] == 0xf2) &&
--                                 (macp->supIe[23] == 0x1))
--                        {
--                            printk(KERN_ERR "wd->sta.authMode = ZM_AUTH_MODE_WPA\n");
--                            //wd->sta.authMode = ZM_AUTH_MODE_WPA;
--                            //wd->ws.authMode = ZM_AUTH_MODE_WPA;
--                            zfiWlanSetAuthenticationMode(dev, ZM_AUTH_MODE_WPA);
--                        }
--                        else if ((macp->supIe[17] == 0xf) &&
--                                 (macp->supIe[18] == 0xac) &&
--                                 (macp->supIe[19] == 0x2))
--                        {
--                            printk(KERN_ERR "wd->sta.authMode = ZM_AUTH_MODE_WPA2PSK\n");
--                            //wd->sta.authMode = ZM_AUTH_MODE_WPA2PSK;
--                            //wd->ws.authMode = ZM_AUTH_MODE_WPA2PSK;
--                            zfiWlanSetAuthenticationMode(dev, ZM_AUTH_MODE_WPA2PSK);
--                        }
--                        else if ((macp->supIe[17] == 0xf) &&
--                                 (macp->supIe[18] == 0xac) &&
--                                 (macp->supIe[19] == 0x1))
--                        {
--                            printk(KERN_ERR "wd->sta.authMode = ZM_AUTH_MODE_WPA2\n");
--                            //wd->sta.authMode = ZM_AUTH_MODE_WPA2;
--                            //wd->ws.authMode = ZM_AUTH_MODE_WPA2;
--                            zfiWlanSetAuthenticationMode(dev, ZM_AUTH_MODE_WPA2);
--                        }
--                        if ((macp->supIe[21] == 0x50) || (macp->supIe[22] == 0xf2))//WPA or WPAPSK
--                        {
--                            if (macp->supIe[11] == 0x2)
--                            {
--                                printk(KERN_ERR "wd->sta.wepStatus = ZM_ENCRYPTION_TKIP\n");
--                                //wd->sta.wepStatus = ZM_ENCRYPTION_TKIP;
--                                //wd->ws.wepStatus = ZM_ENCRYPTION_TKIP;
--                                zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_TKIP);
--                            }
--                            else
--                            {
--                                printk(KERN_ERR "wd->sta.wepStatus = ZM_ENCRYPTION_AES\n");
--                                //wd->sta.wepStatus = ZM_ENCRYPTION_AES;
--                                //wd->ws.wepStatus = ZM_ENCRYPTION_AES;
--                                zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_AES);
--                            }
--                        }
--                        if ((macp->supIe[17] == 0xf) || (macp->supIe[18] == 0xac)) //WPA2 or WPA2PSK
--                        {
--                            if (macp->supIe[13] == 0x2)
--                            {
--                                printk(KERN_ERR "wd->sta.wepStatus = ZM_ENCRYPTION_TKIP\n");
--                                //wd->sta.wepStatus = ZM_ENCRYPTION_TKIP;
--                                //wd->ws.wepStatus = ZM_ENCRYPTION_TKIP;
--                                zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_TKIP);
--                            }
--                            else
--                            {
--                                printk(KERN_ERR "wd->sta.wepStatus = ZM_ENCRYPTION_AES\n");
--                                //wd->sta.wepStatus = ZM_ENCRYPTION_AES;
--                                //wd->ws.wepStatus = ZM_ENCRYPTION_AES;
--                                zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_AES);
--                            }
--                        }
--                    }
--                    zfiWlanSetWpaSupport(dev, 1);
--                }
--                else
--                {
--                    /* Reset the WPA related variables */
--                    printk(KERN_ERR "disable\n");
--
--                    zfiWlanSetWpaSupport(dev, 0);
--                    zfiWlanSetAuthenticationMode(dev, ZM_AUTH_MODE_OPEN);
--                    zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_WEP_DISABLED);
--
--                    /* Now we only set the length in the WPA IE
--                     * field to zero.                         */
--                    //macp->cardSetting.WPAIe[1] = 0;
--                }
--            }
--            if(op == ZD_PARAM_COUNTERMEASURES)
--            {
--                printk(KERN_ERR "================ZD_PARAM_COUNTERMEASURES: ");
--
--                if(arg)
--                {
--                //    mCounterMeasureState=1;
--                    printk(KERN_ERR "enable\n");
--                }
--                else
--                {
--                //    mCounterMeasureState=0;
--                    printk(KERN_ERR "disable\n");
--                }
--            }
--            if(op == ZD_PARAM_DROPUNENCRYPTED)
--            {
--                printk(KERN_ERR "ZD_PARAM_DROPUNENCRYPTED: ");
--
--                if(arg)
--                {
--                    printk(KERN_ERR "enable\n");
--                }
--                else
--                {
--                    printk(KERN_ERR "disable\n");
--                }
--            }
--            if(op == ZD_PARAM_AUTH_ALGS)
--            {
--                printk(KERN_ERR "ZD_PARAM_AUTH_ALGS: ");
--
--                if(arg == 0)
--                {
--                    printk(KERN_ERR "OPEN_SYSTEM\n");
--                }
--                else
--                {
--                    printk(KERN_ERR "SHARED_KEY\n");
--                }
--            }
--            if(op == ZD_PARAM_WPS_FILTER)
--            {
--                printk(KERN_ERR "ZD_PARAM_WPS_FILTER: ");
--
--                if(arg)
--                {
--                //    mCounterMeasureState=1;
--                    macp->forwardMgmt = 1;
--                    printk(KERN_ERR "enable\n");
--                }
--                else
--                {
--                //    mCounterMeasureState=0;
--                    macp->forwardMgmt = 0;
--                    printk(KERN_ERR "disable\n");
--                }
--            }
+-            /*
+-             * arrival rate too low
+-             * delete this aggregate queue
+-             */
++		/* if (arrivalrate < ZM_AGG_LOW_THRESHOLD) */
++		if (0) {
++			/*
++			* arrival rate too low
++			* delete this aggregate queue
++			*/
+ 
+-            zmw_enter_critical_section(dev);
++			zmw_enter_critical_section(dev);
+ 
+-            //wd->aggQPool[qnum]->clearFlag = wd->aggQPool[qnum]->deleteFlag =1;
++			/* wd->aggQPool[qnum]->clearFlag =
++			*  wd->aggQPool[qnum]->deleteFlag =1;
++			*/
++			zmw_leave_critical_section(dev);
+ 
+-            zmw_leave_critical_section(dev);
++		}
+ 
 -        }
--            err = 0;
--            break;
--
--        case ZD_IOCTL_GETWPAIE:
++		return zfAggTxEnqueue(dev, buf, aid, tid_tx);
+ 
+-        return zfAggTxEnqueue(dev, buf, aid, tid_tx);
++	} else {
++		/*
++		* this (aid, ac) not yet aggregated
++		* queue not found
++		*/
+ 
+-    }
+-    else
+-    {
+-        /*
+-         * this (aid, ac) not yet aggregated
+-         * queue not found
+-         */
++		/* if (arrivalrate > ZM_AGG_HIGH_THRESHOLD) */
++		if (1) {
++			/*
++			* arrivalrate high enough to get a new agg queue
++			*/
+ 
+-        //if (arrivalrate > ZM_AGG_HIGH_THRESHOLD)
+-        if (1)
 -        {
--            struct ieee80211req_wpaie req_wpaie;
--            u16_t apId, i, j;
--
--            /* Get the AP Id */
--            apId = zfLnxGetVapId(dev);
--
--            if (apId == 0xffff)
+-            /*
+-             * arrivalrate high enough to get a new agg queue
+-             */
++			tid_tx = zfAggTxNewQueue(dev, aid, tid, buf);
+ 
+-            tid_tx = zfAggTxNewQueue(dev, aid, tid, buf);
++			/* zm_msg1_agg(ZM_LV_0, "get new AggQueue qnum = ",
++			*  tid_tx->);
++			*/
+ 
+-            //zm_msg1_agg(ZM_LV_0, "get new AggQueue qnum = ", tid_tx->);
++			if (tid_tx) {
++				/*
++				 * got a new aggregate queue
++				 */
+ 
+-            if (tid_tx)
 -            {
--                apId = 0;
+-                /*
+-                 * got a new aggregate queue
+-                 */
++				/* zmw_enter_critical_section(dev);
+ 
+-                //zmw_enter_critical_section(dev);
++				wd->aggSta[aid].aggFlag[ac] = 1;
+ 
+-                //wd->aggSta[aid].aggFlag[ac] = 1;
++				zmw_leave_critical_section(dev);
+ 
+-                //zmw_leave_critical_section(dev);
+ 
+-                /*
+-                 * add ADDBA functions here
+-                 * return ZM_ERR_TX_BUFFER_UNAVAILABLE;
+-                 */
++				//add ADDBA functions here
++				return ZM_ERR_TX_BUFFER_UNAVAILABLE;
+ 
+ 
+-                //zfAggSendAddbaRequest(dev, tid_tx->dst, tid_tx->ac, tid_tx->tid);
+-                //zmw_enter_critical_section(dev);
+ 
+-                //wd->aggSta[aid].aggFlag[ac] = 0;
++				zfAggSendAddbaRequest(dev, tid_tx->dst,
++						tid_tx->ac, tid_tx->tid);
++				zmw_enter_critical_section(dev);
+ 
+-                //zmw_leave_critical_section(dev);
++				wd->aggSta[aid].aggFlag[ac] = 0;
+ 
+-                return zfAggTxEnqueue(dev, buf, aid, tid_tx);
++				zmw_leave_critical_section(dev);
++				*/
++				return zfAggTxEnqueue(dev, buf, aid, tid_tx);
+ 
 -            }
 -            else
 -            {
--                apId = apId+1;
--            }
+-                /*
+-                 * just can't get a new aggregate queue
+-                 */
 -
--            if (copy_from_user(&req_wpaie, ifr->ifr_data, sizeof(struct ieee80211req_wpaie))){
--                printk(KERN_ERR "usbdrv: copy_from_user error\n");
--                return -EFAULT;
--            }
--
--            for(i = 0; i < ZM_OAL_MAX_STA_SUPPORT; i++)
--            {
--                for(j = 0; j < IEEE80211_ADDR_LEN; j++)
--                {
--                    if (macp->stawpaie[i].wpa_macaddr[j] != req_wpaie.wpa_macaddr[j])
--                        break;
--                }
--                if (j == 6)
--                    break;
--            }
--            if (i < ZM_OAL_MAX_STA_SUPPORT)
--            {
--                //printk("ZD_IOCTL_GETWPAIE - sta index = %d\n", i);
--                memcpy(req_wpaie.wpa_ie, macp->stawpaie[i].wpa_ie, IEEE80211_MAX_IE_SIZE);
--            }
--
--            if (copy_to_user(wrq->u.data.pointer, &req_wpaie, sizeof(struct ieee80211req_wpaie)))
--            {
--                    return -EFAULT;
+-                return ZM_ERR_TX_BUFFER_UNAVAILABLE;
 -            }
 -        }
-+		if (copy_to_user(wrq->u.data.pointer, &req_wpaie,
-+				sizeof(struct ieee80211req_wpaie))) {
-+			return -EFAULT;
+-        else
+-        {
+-            /*
+-             * arrival rate is not high enough to get a new agg queue
+-             */
+-
+-            return ZM_ERR_TX_BUFFER_UNAVAILABLE;
+-        }
+-    }
++			} else {
++				/*
++				 * just can't get a new aggregate queue
++				 */
+ 
++				return ZM_ERR_TX_BUFFER_UNAVAILABLE;
++			}
++		} else {
++			/*
++			* arrival rate is not high enough to get
++			* a new agg queue
++			*/
+ 
++			return ZM_ERR_TX_BUFFER_UNAVAILABLE;
 +		}
 +	}
  
--            err = 0;
--            break;
--#ifdef ZM_ENABLE_CENC
--        case ZM_IOCTL_CENC:
--            if (copy_from_user(&macp->zd_wpa_req, ifr->ifr_data, sizeof(struct athr_wlan_param)))
+ }
+ 
+@@ -1028,27 +1009,27 @@ u16_t zfAggTx(zdev_t* dev, zbuf_t* buf, 
+ /*      Honda               Atheros Communications, INC.    2006.12     */
+ /*                                                                      */
+ /************************************************************************/
+-u16_t zfAggTxReadyCount(zdev_t* dev, u16_t ac)
++u16_t zfAggTxReadyCount(zdev_t *dev, u16_t ac)
+ {
+-    u16_t i;
+-    u16_t readycount = 0;
++	u16_t i;
++	u16_t readycount = 0;
+ 
+-    zmw_get_wlan_dev(dev);
++	zmw_get_wlan_dev(dev);
+ 
+-    zmw_declare_for_critical_section();
++	zmw_declare_for_critical_section();
+ 
+-    zmw_enter_critical_section(dev);
++	zmw_enter_critical_section(dev);
+ 
+-    for (i=0 ; i<ZM_AGG_POOL_SIZE; i++)
+-    {
+-        if (wd->aggQPool[i]->aggQEnabled && (wd->aggQPool[i]->aggReady || \
+-                wd->aggQPool[i]->clearFlag) && ac == wd->aggQPool[i]->ac)
+-            readycount++;
+-    }
++	for (i = 0 ; i < ZM_AGG_POOL_SIZE; i++) {
++		if (wd->aggQPool[i]->aggQEnabled &&
++			(wd->aggQPool[i]->aggReady || \
++		wd->aggQPool[i]->clearFlag) && ac == wd->aggQPool[i]->ac)
++			readycount++;
++	}
+ 
+-    zmw_leave_critical_section(dev);
++	zmw_leave_critical_section(dev);
+ 
+-    return readycount;
++	return readycount;
+ }
+ 
+ /************************************************************************/
+@@ -1071,35 +1052,32 @@ u16_t zfAggTxReadyCount(zdev_t* dev, u16
+ /*      Honda               Atheros Communications, INC.    2006.12     */
+ /*                                                                      */
+ /************************************************************************/
+-u16_t zfAggTxPartial(zdev_t* dev, u16_t ac, u16_t readycount)
++u16_t zfAggTxPartial(zdev_t *dev, u16_t ac, u16_t readycount)
+ {
+-    u16_t qlen;
+-    u16_t partial;
++	u16_t qlen;
++	u16_t partial;
+ 
+-    zmw_get_wlan_dev(dev);
++	zmw_get_wlan_dev(dev);
+ 
+-    zmw_declare_for_critical_section();
++	zmw_declare_for_critical_section();
+ 
+-    zmw_enter_critical_section(dev);
++	zmw_enter_critical_section(dev);
+ 
+-    qlen = zm_agg_qlen(dev, wd->vtxqHead[ac], wd->vtxqTail[ac]);
++	qlen = zm_agg_qlen(dev, wd->vtxqHead[ac], wd->vtxqTail[ac]);
+ 
+-    if ((qlen + readycount) > 0)
+-    {
+-        partial = (u16_t)( zm_agg_weight(ac) * ((u16_t)qlen/(qlen + \
+-                        readycount)) );
+-    }
+-    else
+-    {
+-        partial = 0;
+-    }
++	if ((qlen + readycount) > 0) {
++		partial = (u16_t)(zm_agg_weight(ac) *
++					((u16_t)qlen/(qlen + readycount)));
++	} else {
++		partial = 0;
++	}
+ 
+-    zmw_leave_critical_section(dev);
++	zmw_leave_critical_section(dev);
+ 
+-    if (partial > qlen)
+-        partial = qlen;
++	if (partial > qlen)
++		partial = qlen;
+ 
+-    return partial;
++	return partial;
+ }
+ 
+ 
+@@ -1122,144 +1100,140 @@ u16_t zfAggTxPartial(zdev_t* dev, u16_t 
+ /*      Honda               Atheros Communications, INC.    2006.12     */
+ /*                                                                      */
+ /************************************************************************/
+-u16_t zfAggTxSend(zdev_t* dev, u32_t freeTxd, TID_TX tid_tx)
++u16_t zfAggTxSend(zdev_t *dev, u32_t freeTxd, TID_TX tid_tx)
+ {
+-    //u16_t   qnum;
+-    //u16_t   qlen;
+-    u16_t   j;
+-    //u16_t   sentcount = 0;
+-    zbuf_t* buf;
+-    struct  aggControl aggControl;
+-    u16_t   aggLen;
+-    //zbuf_t*  newBuf;
+-    //u16_t   bufLen;
+-    //TID_BAW tid_baw = NULL;
+-    //struct bufInfo *buf_info;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    //while (tid_tx->size > 0)
+-
+-    zmw_enter_critical_section(dev);
+-    tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
+-    aggLen = zm_agg_min(16, zm_agg_min(tid_tx->size, (u16_t)(freeTxd - 2)));
+-    zmw_leave_critical_section(dev);
+-
+-            /*
+-             * why there have to be 2 free Txd?
+-             */
+-    if (aggLen <=0 )
+-        return 0;
+-
+-
+-    if (aggLen == 1) {
+-        buf = zfAggTxGetVtxq(dev, tid_tx);
+-        if (buf)
+-            zfTxSendEth(dev, buf, 0, ZM_EXTERNAL_ALLOC_BUF, 0);
+-        if (tid_tx->size == 0) {
+-            //DESTQ.delete(dev, 0, tid_tx, NULL);
+-        }
+-
+-        return 1;
+-    }
+-                /*
+-                 * Free Txd queue is big enough to put aggregation
+-                 */
+-    zmw_enter_critical_section(dev);
+-    if (wd->aggState == 1) {
+-        zmw_leave_critical_section(dev);
+-        return 0;
+-    }
+-    wd->aggState = 1;
+-    zmw_leave_critical_section(dev);
+-
+-
+-    zm_msg1_agg(ZM_LV_0, "aggLen=", aggLen);
+-    tid_tx->aggFrameSize = 0;
+-    for (j=0; j < aggLen; j++) {
+-        buf = zfAggTxGetVtxq(dev, tid_tx);
+-
+-        zmw_enter_critical_section(dev);
+-        tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
+-        zmw_leave_critical_section(dev);
+-
+-        if ( buf ) {
+-            //struct aggTally *agg_tal;
+-            u16_t completeIndex;
+-
+-            if (0 == j) {
+-                aggControl.ampduIndication = ZM_AGG_FIRST_MPDU;
+-
+-            }
+-            else if ((j == (aggLen - 1)) || tid_tx->size == 0)
 -            {
--                printk(KERN_ERR "usbdrv: copy_from_user error\n");
--                return -EFAULT;
+-                aggControl.ampduIndication = ZM_AGG_LAST_MPDU;
+-                //wd->aggState = 0;
+-
+-            }
+-            else
+-            {
+-                aggControl.ampduIndication = ZM_AGG_MIDDLE_MPDU;
+-                /* the packet is delayed more than 500 ms, drop it */
+-
+-            }
+-            tid_tx->aggFrameSize += zfwBufGetSize(dev, buf);
+-            aggControl.addbaIndication = 0;
+-            aggControl.aggEnabled = 1;
++	/* u16_t   qnum; */
++	/* u16_t   qlen; */
++	u16_t   j;
++	/* u16_t   sentcount = 0; */
++	zbuf_t *buf;
++	struct  aggControl aggControl;
++	u16_t   aggLen;
++	/* zbuf_t*  newBuf; */
++	/* u16_t   bufLen; */
++	/* TID_BAW tid_baw = NULL; */
++	/* struct bufInfo *buf_info; */
++
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	/* while (tid_tx->size > 0) */
++
++	zmw_enter_critical_section(dev);
++	tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
++	aggLen = zm_agg_min(16, zm_agg_min(tid_tx->size, (u16_t)(freeTxd - 2)));
++	zmw_leave_critical_section(dev);
++
++	/*
++	* why there have to be 2 free Txd?
++	*/
++	if (aggLen <= 0)
++		return 0;
++
++
++	if (aggLen == 1) {
++		buf = zfAggTxGetVtxq(dev, tid_tx);
++		if (buf)
++			zfTxSendEth(dev, buf, 0, ZM_EXTERNAL_ALLOC_BUF, 0);
++		if (tid_tx->size == 0)
++			/* DESTQ.delete(dev, 0, tid_tx, NULL); */
++
++		return 1;
++	}
++	/*
++	* Free Txd queue is big enough to put aggregation
++	*/
++	zmw_enter_critical_section(dev);
++	if (wd->aggState == 1) {
++		zmw_leave_critical_section(dev);
++		return 0;
++	}
++	wd->aggState = 1;
++	zmw_leave_critical_section(dev);
++
++
++	zm_msg1_agg(ZM_LV_0, "aggLen=", aggLen);
++	tid_tx->aggFrameSize = 0;
++	for (j = 0; j < aggLen; j++) {
++		buf = zfAggTxGetVtxq(dev, tid_tx);
++
++		zmw_enter_critical_section(dev);
++		tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead,
++							tid_tx->aggTail);
++		zmw_leave_critical_section(dev);
++
++		if (buf) {
++			/* struct aggTally *agg_tal; */
++			u16_t completeIndex;
++
++			if (0 == j) {
++				aggControl.ampduIndication = ZM_AGG_FIRST_MPDU;
++
++			} else if ((j == (aggLen - 1)) || tid_tx->size == 0) {
++				aggControl.ampduIndication = ZM_AGG_LAST_MPDU;
++				/* wd->aggState = 0; */
++			} else {
++				aggControl.ampduIndication = ZM_AGG_MIDDLE_MPDU;
++				/* the packet is delayed more than
++				*  500 ms, drop it */
++			}
++			tid_tx->aggFrameSize += zfwBufGetSize(dev, buf);
++			aggControl.addbaIndication = 0;
++			aggControl.aggEnabled = 1;
+ 
+ #ifdef ZM_AGG_TALLY
+-            agg_tal = &wd->agg_tal;
+-            agg_tal->sent_packets_sum++;
++			agg_tal = &wd->agg_tal;
++			agg_tal->sent_packets_sum++;
+ 
+ #endif
+ 
+-            zfAggTxSendEth(dev, buf, 0, ZM_EXTERNAL_ALLOC_BUF, 0, &aggControl, tid_tx);
+-
+-            zmw_enter_critical_section(dev);
+-            completeIndex = tid_tx->complete;
+-            if(zm_agg_inQ(tid_tx, tid_tx->complete))
+-                zm_agg_plus(tid_tx->complete);
+-            zmw_leave_critical_section(dev);
+-
+-            if(zm_agg_inQ(tid_tx, completeIndex) && wd->zfcbSendCompleteIndication
+-                    && tid_tx->aggvtxq[completeIndex].buf) {
+-                wd->zfcbSendCompleteIndication(dev, tid_tx->aggvtxq[completeIndex].buf);
+-                zm_debug_msg0("in queue complete worked!");
 -            }
 -
--            usbdrv_cenc_ioctl(dev, (struct zydas_cenc_param *)&macp->zd_wpa_req);
--            err = 0;
+-        }
+-        else {
+-            /*
+-             * this aggregation queue is empty
+-             */
+-            zm_msg1_agg(ZM_LV_0, "aggLen not reached, but no more frame, j=", j);
+-
 -            break;
--#endif //ZM_ENABLE_CENC
--        default:
--            err = -EOPNOTSUPP;
--            break;
+-        }
 -    }
-+		err = 0;
-+		break;
-+	#ifdef ZM_ENABLE_CENC
-+	case ZM_IOCTL_CENC:
-+		if (copy_from_user(&macp->zd_wpa_req, ifr->ifr_data,
-+			sizeof(struct athr_wlan_param))) {
-+			printk(KERN_ERR "usbdrv : copy_from_user error\n");
-+			return -EFAULT;
-+		}
+-    zmw_enter_critical_section(dev);
+-    wd->aggState = 0;
+-    zmw_leave_critical_section(dev);
+-
+-    //zm_acquire_agg_spin_lock(Adapter);
+-    tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
+-    //zm_release_agg_spin_lock(Adapter);
+-
+-    if (tid_tx->size == 0) {
+-        //DESTQ.delete(dev, 0, tid_tx, NULL);
+-    }
++			zfAggTxSendEth(dev, buf, 0, ZM_EXTERNAL_ALLOC_BUF, 0,
++							&aggControl, tid_tx);
  
-+		usbdrv_cenc_ioctl(dev,
-+				(struct zydas_cenc_param *)&macp->zd_wpa_req);
-+		err = 0;
-+		break;
-+	#endif /* ZM_ENABLE_CENC */
-+	default:
-+		err = -EOPNOTSUPP;
-+		break;
+-
+-
+-    //zfAggInvokeBar(dev, tid_tx);
+-    if(j>0) {
+-        aggr_count++;
+-        zm_msg1_agg(ZM_LV_0, "0xC2:sent 1 aggr, aggr_count=", aggr_count);
+-        zm_msg1_agg(ZM_LV_0, "0xC2:sent 1 aggr, aggr_size=", j);
+-    }
+-    return j;
++			zmw_enter_critical_section(dev);
++			completeIndex = tid_tx->complete;
++			if (zm_agg_inQ(tid_tx, tid_tx->complete))
++				zm_agg_plus(tid_tx->complete);
++			zmw_leave_critical_section(dev);
++
++			if (zm_agg_inQ(tid_tx, completeIndex) &&
++				wd->zfcbSendCompleteIndication
++				&& tid_tx->aggvtxq[completeIndex].buf) {
++				wd->zfcbSendCompleteIndication(dev,
++					tid_tx->aggvtxq[completeIndex].buf);
++				zm_debug_msg0("in queue complete worked!");
++			}
++
++		} else {
++			/*
++			* this aggregation queue is empty
++			*/
++			zm_msg1_agg(ZM_LV_0, "aggLen not reached, but no more "
++						"frame, j=", j);
++
++			break;
++		}
++	}
++	zmw_enter_critical_section(dev);
++	wd->aggState = 0;
++	zmw_leave_critical_section(dev);
++
++	/* zm_acquire_agg_spin_lock(Adapter); */
++	tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
++	/* zm_release_agg_spin_lock(Adapter); */
++
++	if (tid_tx->size == 0)
++		/* DESTQ.delete(dev, 0, tid_tx, NULL); */
++
++	/* zfAggInvokeBar(dev, tid_tx); */
++	if (j > 0) {
++		aggr_count++;
++		zm_msg1_agg(ZM_LV_0, "0xC2:sent 1 aggr, aggr_count=",
++								aggr_count);
++		zm_msg1_agg(ZM_LV_0, "0xC2:sent 1 aggr, aggr_size=", j);
++	}
++	return j;
+ }
+ 
+ 
+@@ -1282,36 +1256,35 @@ u16_t zfAggTxSend(zdev_t* dev, u32_t fre
+ /*      Honda               Atheros Communications, INC.    2006.12     */
+ /*                                                                      */
+ /************************************************************************/
+-TID_TX zfAggTxGetReadyQueue(zdev_t* dev, u16_t ac)
++TID_TX zfAggTxGetReadyQueue(zdev_t *dev, u16_t ac)
+ {
+-    //u16_t       qnum = ZM_AGG_POOL_SIZE;
+-    u16_t       i;
+-    u32_t       time = 0;
+-    TID_TX      tid_tx = NULL;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    zmw_enter_critical_section(dev);
+-
+-    for (i=0 ;i<ZM_AGG_POOL_SIZE; i++)
+-    {
+-        if (1 == wd->aggQPool[i]->aggQEnabled && ac == wd->aggQPool[i]->ac &&
+-                (wd->aggQPool[i]->size > 0))
+-        {
+-            if (0 == time || time > wd->aggQPool[i]->aggvtxq[ \
+-                            wd->aggQPool[i]->aggHead ].arrivalTime)
+-            {
+-                tid_tx = wd->aggQPool[i];
+-                time = tid_tx->aggvtxq[ tid_tx->aggHead ].arrivalTime;
+-            }
+-        }
+-    }
++	/* u16_t       qnum = ZM_AGG_POOL_SIZE; */
++	u16_t i;
++	u32_t time = 0;
++	TID_TX tid_tx = NULL;
++
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	zmw_enter_critical_section(dev);
++
++	for (i = 0; i < ZM_AGG_POOL_SIZE; i++) {
++		if (1 == wd->aggQPool[i]->aggQEnabled &&
++			ac == wd->aggQPool[i]->ac &&
++			(wd->aggQPool[i]->size > 0)) {
++			if (0 == time || time > wd->aggQPool[i]->aggvtxq[\
++				wd->aggQPool[i]->aggHead].arrivalTime) {
++				tid_tx = wd->aggQPool[i];
++				time =
++				tid_tx->aggvtxq[tid_tx->aggHead].arrivalTime;
++			}
++		}
 +	}
  
--    return err;
-+	return err;
+-    zmw_leave_critical_section(dev);
++	zmw_leave_critical_section(dev);
+ 
+-    return tid_tx;
++	return tid_tx;
+ }
+ 
+ 
+@@ -1333,40 +1306,43 @@ TID_TX zfAggTxGetReadyQueue(zdev_t* dev,
+ /*      Honda               Atheros Communications, INC.    2006.12     */
+ /*                                                                      */
+ /************************************************************************/
+-zbuf_t* zfAggTxGetVtxq(zdev_t* dev, TID_TX tid_tx)
++zbuf_t *zfAggTxGetVtxq(zdev_t *dev, TID_TX tid_tx)
+ {
+-    zbuf_t* buf = NULL;
++	zbuf_t *buf = NULL;
++
++	zmw_declare_for_critical_section();
+ 
+-    zmw_declare_for_critical_section();
++	if (tid_tx->aggHead != tid_tx->aggTail) {
++		buf = tid_tx->aggvtxq[tid_tx->aggTail].buf;
+ 
+-    if (tid_tx->aggHead != tid_tx->aggTail)
+-    {
+-        buf = tid_tx->aggvtxq[ tid_tx->aggTail ].buf;
+-
+-        tid_tx->aggvtxq[tid_tx->aggTail].buf = NULL;
+-
+-        zmw_enter_critical_section(dev);
+-        tid_tx->aggTail = ((tid_tx->aggTail + 1) & ZM_AGGQ_SIZE_MASK);
+-        if(tid_tx->size > 0) tid_tx->size--;
+-        tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail);
+-        if (NULL == buf) {
+-            //tid_tx->aggTail = tid_tx->aggHead = tid_tx->size = 0;
+-            //zm_msg1_agg(ZM_LV_0, "GetVtxq buf == NULL, tid_tx->size=", tid_tx->size);
+-        }
+-        zmw_leave_critical_section(dev);
+-    }
+-    else
+-    {
+-        /*
+-         * queue is empty
+-         */
+-        zm_msg1_agg(ZM_LV_0, "tid_tx->aggHead == tid_tx->aggTail, tid_tx->size=", tid_tx->size);
+-
+-    }
+-
+-    if (zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail) != tid_tx->size)
+-        zm_msg1_agg(ZM_LV_0, "qlen!=tid_tx->size! tid_tx->size=", tid_tx->size);
+-    return buf;
++		tid_tx->aggvtxq[tid_tx->aggTail].buf = NULL;
++
++		zmw_enter_critical_section(dev);
++		tid_tx->aggTail = ((tid_tx->aggTail + 1) & ZM_AGGQ_SIZE_MASK);
++		if (tid_tx->size > 0)
++			tid_tx->size--;
++		tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead,
++							tid_tx->aggTail);
++		if (NULL == buf) {
++			/*tid_tx->aggTail = tid_tx->aggHead = tid_tx->size = 0;
++			* zm_msg1_agg(ZM_LV_0, "GetVtxq buf == NULL,
++			* tid_tx->size=", tid_tx->size);
++			*/
++		}
++		zmw_leave_critical_section(dev);
++	} else {
++		/*
++		* queue is empty
++		*/
++		zm_msg1_agg(ZM_LV_0, "tid_tx->aggHead == tid_tx->aggTail, "
++						"tid_tx->size=", tid_tx->size);
++
++	}
++
++	if (zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail) != tid_tx->size)
++		zm_msg1_agg(ZM_LV_0, "qlen!=tid_tx->size! tid_tx->size=",
++								tid_tx->size);
++	return buf;
+ }
+ 
+ 
+@@ -1388,267 +1364,287 @@ zbuf_t* zfAggTxGetVtxq(zdev_t* dev, TID_
+ /*      Honda               Atheros Communications, INC.    2006.12     */
+ /*                                                                      */
+ /************************************************************************/
+-u16_t zfAggTxDeleteQueue(zdev_t* dev, u16_t qnum)
++u16_t zfAggTxDeleteQueue(zdev_t *dev, u16_t qnum)
+ {
+-    u16_t ac, tid;
+-    struct aggQueue *tx_tid;
+-    struct aggSta   *agg_sta;
++	u16_t ac, tid;
++	struct aggQueue *tx_tid;
++	struct aggSta *agg_sta;
+ 
+-    zmw_get_wlan_dev(dev);
++	zmw_get_wlan_dev(dev);
+ 
+-    zmw_declare_for_critical_section();
++	zmw_declare_for_critical_section();
+ 
+-    tx_tid = wd->aggQPool[qnum];
+-    agg_sta = &wd->aggSta[tx_tid->aggQSTA];
+-    ac = tx_tid->ac;
+-    tid = tx_tid->tid;
++	tx_tid = wd->aggQPool[qnum];
++	agg_sta = &wd->aggSta[tx_tid->aggQSTA];
++	ac = tx_tid->ac;
++	tid = tx_tid->tid;
+ 
+-    zmw_enter_critical_section(dev);
++	zmw_enter_critical_section(dev);
+ 
+-    tx_tid->aggQEnabled = 0;
+-    tx_tid->aggHead = tx_tid->aggTail = 0;
+-    tx_tid->aggReady = 0;
+-    tx_tid->clearFlag = tx_tid->deleteFlag = 0;
+-    tx_tid->size = 0;
+-    agg_sta->count[ac] = 0;
++	tx_tid->aggQEnabled = 0;
++	tx_tid->aggHead = tx_tid->aggTail = 0;
++	tx_tid->aggReady = 0;
++	tx_tid->clearFlag = tx_tid->deleteFlag = 0;
++	tx_tid->size = 0;
++	agg_sta->count[ac] = 0;
+ 
+-    agg_sta->tid_tx[tid] = NULL;
+-    agg_sta->aggFlag[ac] = 0;
++	agg_sta->tid_tx[tid] = NULL;
++	agg_sta->aggFlag[ac] = 0;
+ 
+-    zmw_leave_critical_section(dev);
++	zmw_leave_critical_section(dev);
+ 
+-    zm_msg1_agg(ZM_LV_0, "queue deleted! qnum=", qnum);
++	zm_msg1_agg(ZM_LV_0, "queue deleted! qnum=", qnum);
+ 
+-    return ZM_SUCCESS;
++	return ZM_SUCCESS;
+ }
+ 
+ #ifdef ZM_ENABLE_AGGREGATION
+-#ifndef ZM_ENABLE_FW_BA_RETRANSMISSION //disable BAW
+-void zfBawCore(zdev_t* dev, u16_t baw_seq, u32_t bitmap, u16_t aggLen) {
+-    TID_BAW tid_baw;
+-    s16_t i;
+-    zbuf_t* buf;
+-    struct bufInfo *buf_info;
+-
+-    zmw_get_wlan_dev(dev);
+-    //zmw_declare_for_critical_section();
+-    tid_baw = BAW->getQ(dev, baw_seq);
+-    //tid_baw = NULL;
+-    if (NULL == tid_baw)
+-        return;
+-
+-    total_mpdu += aggLen;
+-    for (i = aggLen - 1; i>=0; i--) {
+-        if (((bitmap >> i) & 0x1) == 0) {
+-            buf_info = BAW->pop(dev, i, tid_baw);
+-            buf = buf_info->buf;
+-            if (buf) {
+-                //wd->zfcbSetBawQ(dev, buf, 0);
+-                zfAggTidTxInsertHead(dev, buf_info, tid_baw->tid_tx);
+-            }
+-        }
+-        else {
+-            success_mpdu++;
+-        }
+-    }
+-    BAW->disable(dev, tid_baw);
+-    zfAggTxScheduler(dev);
+-    zm_debug_msg1("success_mpdu = ", success_mpdu);
+-    zm_debug_msg1("  total_mpdu = ", total_mpdu);
+-}
+-
+-void    zfBawInit(zdev_t* dev) {
+-    TID_BAW tid_baw;
+-    u16_t i,j;
+-    zmw_get_wlan_dev(dev);
+-    //zmw_declare_for_critical_section();
+-
+-    for (i=0; i<ZM_BAW_POOL_SIZE; i++){
+-        tid_baw = &BAW->tid_baw[i];
+-        for (j=0; j<ZM_VTXQ_SIZE; j++) {
+-            tid_baw->frame[j].buf = NULL;
+-        }
+-        tid_baw->enabled = tid_baw->head = tid_baw->tail = tid_baw->size = 0;
+-        tid_baw->start_seq = 0;
+-    }
+-    BAW->delPoint = 0;
+-    BAW->core = zfBawCore;
+-    BAW->getNewQ = zfBawGetNewQ;
+-    BAW->insert = zfBawInsert;
+-    BAW->pop = zfBawPop;
+-    BAW->enable = zfBawEnable;
+-    BAW->disable = zfBawDisable;
+-    BAW->getQ = zfBawGetQ;
+-}
+-
+-
+-
+-TID_BAW zfBawGetNewQ(zdev_t* dev, u16_t start_seq, TID_TX tid_tx) {
+-    TID_BAW tid_baw=NULL;
+-    TID_BAW next_baw=NULL;
+-    u16_t i;
+-    zmw_get_wlan_dev(dev);
+-    //zmw_declare_for_critical_section();
+-
+-    /*
+-    for (i=0; i<ZM_BAW_POOL_SIZE; i++){
+-        tid_baw = &BAW->tid_baw[i];
+-        if (FALSE == tid_baw->enabled)
+-            break;
+-    }
+-    */
+-
+-    tid_baw = &BAW->tid_baw[BAW->delPoint];
+-    i = BAW->delPoint;
+-    //if (ZM_BAW_POOL_SIZE == i) {
+-        //return NULL;
+-    //    u8_t temp = BAW->delPoint;
+-    //    tid_baw = &BAW->tid_baw[BAW->delPoint];
+-    //    BAW->disable(dev, tid_baw);
+-    //    BAW->delPoint = (BAW->delPoint < (ZM_BAW_POOL_SIZE - 1))? (BAW->delPoint + 1): 0;
+-    //    temp = BAW->delPoint;
+-    //}
+-
+-    zm_msg1_agg(ZM_LV_0, "get new tid_baw, index=", i);
+-    BAW->delPoint = (i < (ZM_BAW_POOL_SIZE -1))? (i + 1): 0;
+-    next_baw = &BAW->tid_baw[BAW->delPoint];
+-    if (1 == next_baw->enabled) BAW->disable(dev, next_baw);
+-
+-    BAW->enable(dev, tid_baw, start_seq);
+-    tid_baw->tid_tx = tid_tx;
+-
+-    return tid_baw;
+-}
+-
+-u16_t   zfBawInsert(zdev_t* dev, zbuf_t* buf, u16_t baw_seq, TID_BAW tid_baw, u8_t baw_retransmit, struct baw_header_r *header_r) {
+-    //TID_BAW tid_baw;
+-    //u16_t   bufLen;
+-
+-    //zmw_get_wlan_dev(dev);
+-    //zmw_declare_for_critical_section();
+-
+-    if(tid_baw->size < (ZM_VTXQ_SIZE - 1)) {
+-        struct baw_header *baw_header = &tid_baw->frame[tid_baw->head].baw_header;
+-
+-        baw_header->headerLen   = header_r->headerLen;
+-        baw_header->micLen      = header_r->micLen;
+-        baw_header->snapLen     = header_r->snapLen;
+-        baw_header->removeLen   = header_r->removeLen;
+-        baw_header->keyIdx      = header_r->keyIdx;
+-        zfwMemoryCopy((u8_t *)baw_header->header, (u8_t *)header_r->header, 58);
+-        zfwMemoryCopy((u8_t *)baw_header->mic   , (u8_t *)header_r->mic   , 8);
+-        zfwMemoryCopy((u8_t *)baw_header->snap  , (u8_t *)header_r->snap  , 8);
+-        //wd->zfcbSetBawQ(dev, buf, 1);
+-        tid_baw->frame[tid_baw->head].buf = buf;
+-        tid_baw->frame[tid_baw->head].baw_seq = baw_seq;
+-        tid_baw->frame[tid_baw->head].baw_retransmit = baw_retransmit + 1;
+-
+-        //tid_baw->frame[tid_baw->head].data = pBuf->data;
+-        tid_baw->head++;
+-        tid_baw->size++;
+-    }
+-    else {
+-        //wd->zfcbSetBawQ(dev, buf, 0);
+-        zfwBufFree(dev, buf, ZM_SUCCESS);
+-        return FALSE;
+-    }
+-    return TRUE;
+-}
+-
+-struct bufInfo* zfBawPop(zdev_t* dev, u16_t index, TID_BAW tid_baw) {
+-    //TID_BAW tid_baw;
+-    //zbuf_t* buf;
+-    struct bufInfo *buf_info;
+-    zmw_get_wlan_dev(dev);
+-
+-    buf_info = &wd->buf_info;
+-    buf_info->baw_header = NULL;
+-
+-    if (NULL == (buf_info->buf = tid_baw->frame[index].buf))
+-        return buf_info;
+-
+-    buf_info->baw_retransmit = tid_baw->frame[index].baw_retransmit;
+-    buf_info->baw_header = &tid_baw->frame[index].baw_header;
+-    buf_info->timestamp = tid_baw->frame[index].timestamp;
+-    //pBuf->data = pBuf->buffer;
+-    //wd->zfcbRestoreBufData(dev, buf);
+-    tid_baw->frame[index].buf = NULL;
+-
+-    return buf_info;
+-}
+-
+-void    zfBawEnable(zdev_t* dev, TID_BAW tid_baw, u16_t start_seq) {
+-    //TID_BAW tid_baw;
+-
+-    //zmw_get_wlan_dev(dev);
+-    //zmw_declare_for_critical_section();
+-
+-    tid_baw->enabled = TRUE;
+-    tid_baw->head = tid_baw->tail = tid_baw->size = 0;
+-    tid_baw->start_seq = start_seq;
+-}
+-
+-void    zfBawDisable(zdev_t* dev, TID_BAW tid_baw) {
+-    //TID_BAW tid_baw;
+-    u16_t i;
+-
+-    //zmw_get_wlan_dev(dev);
+-    //zmw_declare_for_critical_section();
+-    for (i=0; i<ZM_VTXQ_SIZE; i++) {
+-        if (tid_baw->frame[i].buf) {
+-
+-            //wd->zfcbSetBawQ(dev, tid_baw->frame[i].buf, 0);
+-            zfwBufFree(dev, tid_baw->frame[i].buf, ZM_SUCCESS);
+-            tid_baw->frame[i].buf = NULL;
+-        }
+-    }
+-
+-    tid_baw->enabled = FALSE;
+-}
+-
+-TID_BAW zfBawGetQ(zdev_t* dev, u16_t baw_seq) {
+-    TID_BAW tid_baw=NULL;
+-    u16_t i;
+-
+-    zmw_get_wlan_dev(dev);
+-    //zmw_declare_for_critical_section();
+-    for (i=0; i<ZM_BAW_POOL_SIZE; i++){
+-        tid_baw = &BAW->tid_baw[i];
+-        if (TRUE == tid_baw->enabled)
+-        {
+-            zm_msg1_agg(ZM_LV_0, "get an old tid_baw, baw_seq=", baw_seq);
+-            zm_msg1_agg(ZM_LV_0, "check a  tid_baw->start_seq=", tid_baw->start_seq);
+-            if(baw_seq == tid_baw->start_seq)
+-                break;
+-        }
+-
+-    }
+-    if (ZM_BAW_POOL_SIZE == i)
+-        return NULL;
+-    return tid_baw;
+-}
+-#endif //disable BAW
+-#endif
+-
+-u16_t zfAggTallyReset(zdev_t* dev)
+-{
+-    struct aggTally* agg_tal;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-
+-    agg_tal = &wd->agg_tal;
+-    agg_tal->got_packets_sum = 0;
+-    agg_tal->got_bytes_sum = 0;
+-    agg_tal->sent_bytes_sum = 0;
+-    agg_tal->sent_packets_sum = 0;
+-    agg_tal->avg_got_packets = 0;
+-    agg_tal->avg_got_bytes = 0;
+-    agg_tal->avg_sent_packets = 0;
+-    agg_tal->avg_sent_bytes = 0;
+-    agg_tal->time = 0;
+-    return 0;
++#ifndef ZM_ENABLE_FW_BA_RETRANSMISSION /* disable BAW */
++void zfBawCore(zdev_t *dev, u16_t baw_seq, u32_t bitmap, u16_t aggLen)
++{
++	TID_BAW tid_baw;
++	s16_t i;
++	zbuf_t *buf;
++	struct bufInfo *buf_info;
++
++	zmw_get_wlan_dev(dev);
++	/* zmw_declare_for_critical_section(); */
++	tid_baw = BAW->getQ(dev, baw_seq);
++	/* tid_baw = NULL; */
++	if (NULL == tid_baw)
++		return;
++
++	total_mpdu += aggLen;
++	for (i = aggLen - 1; i >= 0; i--) {
++		if (((bitmap >> i) & 0x1) == 0) {
++			buf_info = BAW->pop(dev, i, tid_baw);
++			buf = buf_info->buf;
++			if (buf) {
++				/* wd->zfcbSetBawQ(dev, buf, 0); */
++				zfAggTidTxInsertHead(dev, buf_info,
++							tid_baw->tid_tx);
++			}
++		} else {
++			success_mpdu++;
++		}
++	}
++
++	BAW->disable(dev, tid_baw);
++	zfAggTxScheduler(dev);
++	zm_debug_msg1("success_mpdu = ", success_mpdu);
++	zm_debug_msg1("  total_mpdu = ", total_mpdu);
++}
++
++void zfBawInit(zdev_t *dev)
++{
++	TID_BAW tid_baw;
++	u16_t i, j;
++	zmw_get_wlan_dev(dev);
++	/* zmw_declare_for_critical_section(); */
++
++	for (i = 0; i < ZM_BAW_POOL_SIZE; i++) {
++		tid_baw = &BAW->tid_baw[i];
++		for (j = 0; j < ZM_VTXQ_SIZE; j++)
++			tid_baw->frame[j].buf = NULL;
++		tid_baw->enabled = tid_baw->head = tid_baw->tail =
++							tid_baw->size = 0;
++		tid_baw->start_seq = 0;
++	}
++
++	BAW->delPoint = 0;
++	BAW->core = zfBawCore;
++	BAW->getNewQ = zfBawGetNewQ;
++	BAW->insert = zfBawInsert;
++	BAW->pop = zfBawPop;
++	BAW->enable = zfBawEnable;
++	BAW->disable = zfBawDisable;
++	BAW->getQ = zfBawGetQ;
++}
++
++TID_BAW zfBawGetNewQ(zdev_t *dev, u16_t start_seq, TID_TX tid_tx)
++{
++	TID_BAW tid_baw = NULL;
++	TID_BAW next_baw = NULL;
++	u16_t i;
++	zmw_get_wlan_dev(dev);
++	/* zmw_declare_for_critical_section(); */
++
++	/*
++	for (i=0; i<ZM_BAW_POOL_SIZE; i++){
++	tid_baw = &BAW->tid_baw[i];
++	if (FALSE == tid_baw->enabled)
++		break;
++	}
++	*/
++
++	tid_baw = &BAW->tid_baw[BAW->delPoint];
++	i = BAW->delPoint;
++	/* if (ZM_BAW_POOL_SIZE == i) {
++		return NULL;
++	u8_t temp = BAW->delPoint;
++	tid_baw = &BAW->tid_baw[BAW->delPoint];
++	BAW->disable(dev, tid_baw);
++	BAW->delPoint = (BAW->delPoint < (ZM_BAW_POOL_SIZE - 1))?
++							(BAW->delPoint + 1): 0;
++	temp = BAW->delPoint;
++	}
++	*/
++
++	zm_msg1_agg(ZM_LV_0, "get new tid_baw, index=", i);
++	BAW->delPoint = (i < (ZM_BAW_POOL_SIZE - 1)) ? (i + 1) : 0;
++	next_baw = &BAW->tid_baw[BAW->delPoint];
++	if (1 == next_baw->enabled)
++		BAW->disable(dev, next_baw);
++
++	BAW->enable(dev, tid_baw, start_seq);
++	tid_baw->tid_tx = tid_tx;
++
++	return tid_baw;
++}
++
++u16_t zfBawInsert(zdev_t *dev, zbuf_t *buf, u16_t baw_seq, TID_BAW tid_baw,
++			u8_t baw_retransmit, struct baw_header_r *header_r)
++{
++	/* TID_BAW tid_baw; */
++	/* u16_t   bufLen; */
++
++	/* zmw_get_wlan_dev(dev); */
++	/* zmw_declare_for_critical_section(); */
++
++	if (tid_baw->size < (ZM_VTXQ_SIZE - 1)) {
++		struct baw_header *baw_header =
++				&tid_baw->frame[tid_baw->head].baw_header;
++
++		baw_header->headerLen   = header_r->headerLen;
++		baw_header->micLen      = header_r->micLen;
++		baw_header->snapLen     = header_r->snapLen;
++		baw_header->removeLen   = header_r->removeLen;
++		baw_header->keyIdx      = header_r->keyIdx;
++		zfwMemoryCopy((u8_t *)baw_header->header,
++						(u8_t *)header_r->header, 58);
++		zfwMemoryCopy((u8_t *)baw_header->mic   ,
++						(u8_t *)header_r->mic   , 8);
++		zfwMemoryCopy((u8_t *)baw_header->snap  ,
++						(u8_t *)header_r->snap  , 8);
++		/* wd->zfcbSetBawQ(dev, buf, 1); */
++		tid_baw->frame[tid_baw->head].buf = buf;
++		tid_baw->frame[tid_baw->head].baw_seq = baw_seq;
++		tid_baw->frame[tid_baw->head].baw_retransmit =
++							baw_retransmit + 1;
++
++		/* tid_baw->frame[tid_baw->head].data = pBuf->data; */
++		tid_baw->head++;
++		tid_baw->size++;
++	} else {
++		/* wd->zfcbSetBawQ(dev, buf, 0); */
++		zfwBufFree(dev, buf, ZM_SUCCESS);
++		return FALSE;
++	}
++	return TRUE;
++}
++
++struct bufInfo *zfBawPop(zdev_t *dev, u16_t index, TID_BAW tid_baw)
++{
++	/* TID_BAW tid_baw; */
++	/* zbuf_t* buf; */
++	struct bufInfo *buf_info;
++	zmw_get_wlan_dev(dev);
++
++	buf_info = &wd->buf_info;
++	buf_info->baw_header = NULL;
++
++	buf_info->buf = tid_baw->frame[index].buf;
++	if (NULL == buf_info->buf)
++		return buf_info;
++
++	buf_info->baw_retransmit = tid_baw->frame[index].baw_retransmit;
++	buf_info->baw_header = &tid_baw->frame[index].baw_header;
++	buf_info->timestamp = tid_baw->frame[index].timestamp;
++	/* pBuf->data = pBuf->buffer; */
++	/* wd->zfcbRestoreBufData(dev, buf); */
++	tid_baw->frame[index].buf = NULL;
++
++	return buf_info;
++}
++
++void zfBawEnable(zdev_t *dev, TID_BAW tid_baw, u16_t start_seq)
++{
++	/* TID_BAW tid_baw; */
++
++	/* zmw_get_wlan_dev(dev); */
++	/* zmw_declare_for_critical_section(); */
++
++	tid_baw->enabled = TRUE;
++	tid_baw->head = tid_baw->tail = tid_baw->size = 0;
++	tid_baw->start_seq = start_seq;
++}
++
++void zfBawDisable(zdev_t *dev, TID_BAW tid_baw)
++{
++	/* TID_BAW tid_baw; */
++	u16_t i;
++
++	/* zmw_get_wlan_dev(dev); */
++	/* zmw_declare_for_critical_section(); */
++	for (i = 0; i < ZM_VTXQ_SIZE; i++) {
++		if (tid_baw->frame[i].buf) {
++
++			/* wd->zfcbSetBawQ(dev, tid_baw->frame[i].buf, 0); */
++			zfwBufFree(dev, tid_baw->frame[i].buf, ZM_SUCCESS);
++			tid_baw->frame[i].buf = NULL;
++		}
++	}
++
++	tid_baw->enabled = FALSE;
++}
++
++TID_BAW zfBawGetQ(zdev_t *dev, u16_t baw_seq)
++{
++	TID_BAW tid_baw = NULL;
++	u16_t i;
++
++	zmw_get_wlan_dev(dev);
++	/* zmw_declare_for_critical_section(); */
++	for (i = 0; i < ZM_BAW_POOL_SIZE; i++) {
++		tid_baw = &BAW->tid_baw[i];
++		if (TRUE == tid_baw->enabled) {
++			zm_msg1_agg(ZM_LV_0, "get an old tid_baw, baw_seq=",
++								 baw_seq);
++			zm_msg1_agg(ZM_LV_0, "check a  tid_baw->start_seq=",
++							tid_baw->start_seq);
++			if (baw_seq == tid_baw->start_seq)
++				break;
++		}
++
++	}
++	if (ZM_BAW_POOL_SIZE == i)
++		return NULL;
++
++	return tid_baw;
++}
++#endif /* disable BAW */
++#endif
++
++u16_t zfAggTallyReset(zdev_t *dev)
++{
++	struct aggTally *agg_tal;
++
++	zmw_get_wlan_dev(dev);
++
++	/* zmw_declare_for_critical_section(); */
++
++	agg_tal = &wd->agg_tal;
++	agg_tal->got_packets_sum = 0;
++	agg_tal->got_bytes_sum = 0;
++	agg_tal->sent_bytes_sum = 0;
++	agg_tal->sent_packets_sum = 0;
++	agg_tal->avg_got_packets = 0;
++	agg_tal->avg_got_bytes = 0;
++	agg_tal->avg_sent_packets = 0;
++	agg_tal->avg_sent_bytes = 0;
++	agg_tal->time = 0;
++
++	return 0;
+ }
+ 
+ 
+@@ -1669,642 +1665,651 @@ u16_t zfAggTallyReset(zdev_t* dev)
+ /*      Honda               Atheros Communications, INC.    2006.12     */
+ /*                                                                      */
+ /************************************************************************/
+-u16_t   zfAggScanAndClear(zdev_t* dev, u32_t time)
++u16_t zfAggScanAndClear(zdev_t *dev, u32_t time)
+ {
+-    u16_t i;
+-    u16_t head;
+-    u16_t tail;
+-    u32_t tick;
+-    u32_t arrivalTime;
+-    //u16_t aid, ac;
+-    TID_TX tid_tx;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    if(!(wd->state == ZM_WLAN_STATE_ENABLED)) return 0;
+-    zfAggTxScheduler(dev, 1);
+-    tick = zm_agg_GetTime();
+-    for (i=0; i<ZM_AGG_POOL_SIZE; i++)
+-    {
+-        if (!wd->aggQPool[i]) return 0;
+-        if (1 == wd->aggQPool[i]->aggQEnabled)
+-        {
+-            tid_tx = wd->aggQPool[i];
+-            zmw_enter_critical_section(dev);
+-
+-            head = tid_tx->aggHead;
+-            tail = tid_tx->aggTail;
+-
+-            arrivalTime = (u32_t)tid_tx->aggvtxq[tid_tx->aggTail].arrivalTime;
+-
+-
+-            if((tick - arrivalTime) <= ZM_AGG_CLEAR_TIME)
+-            {
+-
+-            }
+-            else if((tid_tx->size = zm_agg_qlen(dev, tid_tx->aggHead, tid_tx->aggTail)) > 0)
+-            {
+-
+-                tid_tx->clearFlag = 1;
+-
+-                //zm_msg1_agg(ZM_LV_0, "clear queue    tick =", tick);
+-                //zm_msg1_agg(ZM_LV_0, "clear queue arrival =", arrivalTime);
+-
++	u16_t i;
++	u16_t head;
++	u16_t tail;
++	u32_t tick;
++	u32_t arrivalTime;
++	/* u16_t aid, ac; */
++	TID_TX tid_tx;
++
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	if (!(wd->state == ZM_WLAN_STATE_ENABLED))
++		return 0;
++
++	zfAggTxScheduler(dev, 1);
++	tick = zm_agg_GetTime();
++
++	for (i = 0; i < ZM_AGG_POOL_SIZE; i++) {
++		if (!wd->aggQPool[i])
++			return 0;
++		if (1 == wd->aggQPool[i]->aggQEnabled) {
++			tid_tx = wd->aggQPool[i];
++			zmw_enter_critical_section(dev);
++
++			head = tid_tx->aggHead;
++			tail = tid_tx->aggTail;
++
++			arrivalTime =
++			(u32_t)tid_tx->aggvtxq[tid_tx->aggTail].arrivalTime;
++
++			tid_tx->size = zm_agg_qlen(dev,
++					tid_tx->aggHead, tid_tx->aggTail);
++
++			if ((tick - arrivalTime) <= ZM_AGG_CLEAR_TIME) {
++				/* do nothing */
++			} else if (tid_tx->size > 0) {
++
++					tid_tx->clearFlag = 1;
++
++					/*zm_msg1_agg(ZM_LV_0, "clear queue
++						tick =", tick);
++					zm_msg1_agg(ZM_LV_0, "clear queue
++						arrival =", arrivalTime);
++
++					zmw_leave_critical_section(dev);
++					zfAggTxScheduler(dev);
++					zmw_enter_critical_section(dev);
++					*/
++
++				}
++
++			if (tid_tx->size == 0) {
++				/*
++				* queue empty
++				*/
++				if (tick - tid_tx->lastArrival >
++							ZM_AGG_DELETE_TIME) {
++					zm_msg1_agg(ZM_LV_0, "delete queue, "
++						"idle for n sec. n = ", \
++						ZM_AGG_DELETE_TIME/10);
++
++					zmw_leave_critical_section(dev);
++					zfAggTxDeleteQueue(dev, i);
++					zmw_enter_critical_section(dev);
++				}
++			}
++
++			zmw_leave_critical_section(dev);
++		}
++	}
+ 
+-                //zmw_leave_critical_section(dev);
+-                //zfAggTxScheduler(dev);
+-                //zmw_enter_critical_section(dev);
++	zfAggRxClear(dev, time);
+ 
+-            }
+-
+-            if (tid_tx->size == 0)
+-            {
+-                /*
+-                 * queue empty
+-                 */
+-                if (tick - tid_tx->lastArrival > ZM_AGG_DELETE_TIME)
+-                {
+-                    zm_msg1_agg(ZM_LV_0, "delete queue, idle for n sec. n = ", \
+-                            ZM_AGG_DELETE_TIME/10);
++#ifdef ZM_AGG_TALLY
++	if ((wd->tick % 100) == 0)
++		zfAggPrintTally(dev);
++#endif
+ 
+-                    zmw_leave_critical_section(dev);
+-                    zfAggTxDeleteQueue(dev, i);
+-                    zmw_enter_critical_section(dev);
+-                }
+-            }
++	return ZM_SUCCESS;
++}
+ 
+-            zmw_leave_critical_section(dev);
+-        }
+-    }
++u16_t zfAggPrintTally(zdev_t *dev)
++{
++	struct aggTally *agg_tal;
+ 
+-        zfAggRxClear(dev, time);
++	zmw_get_wlan_dev(dev);
+ 
+-#ifdef ZM_AGG_TALLY
+-    if((wd->tick % 100) == 0) {
+-        zfAggPrintTally(dev);
+-    }
+-#endif
+-
+-    return ZM_SUCCESS;
+-}
+-
+-u16_t   zfAggPrintTally(zdev_t* dev)
+-{
+-    struct aggTally* agg_tal;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-
+-    agg_tal = &wd->agg_tal;
+-
+-    if(agg_tal->got_packets_sum < 10)
+-    {
+-        zfAggTallyReset(dev);
+-        return 0;
+-    }
+-
+-    agg_tal->time++;
+-    agg_tal->avg_got_packets = (agg_tal->avg_got_packets * (agg_tal->time - 1) +
+-            agg_tal->got_packets_sum) / agg_tal->time;
+-    agg_tal->avg_got_bytes = (agg_tal->avg_got_bytes * (agg_tal->time - 1) +
+-            agg_tal->got_bytes_sum) / agg_tal->time;
+-    agg_tal->avg_sent_packets = (agg_tal->avg_sent_packets * (agg_tal->time - 1)
+-            + agg_tal->sent_packets_sum) / agg_tal->time;
+-    agg_tal->avg_sent_bytes = (agg_tal->avg_sent_bytes * (agg_tal->time - 1) +
+-            agg_tal->sent_bytes_sum) / agg_tal->time;
+-    zm_msg1_agg(ZM_LV_0, "got_packets_sum =", agg_tal->got_packets_sum);
+-    zm_msg1_agg(ZM_LV_0, "  got_bytes_sum =", agg_tal->got_bytes_sum);
+-    zm_msg1_agg(ZM_LV_0, "sent_packets_sum=", agg_tal->sent_packets_sum);
+-    zm_msg1_agg(ZM_LV_0, " sent_bytes_sum =", agg_tal->sent_bytes_sum);
+-    agg_tal->got_packets_sum = agg_tal->got_bytes_sum =agg_tal->sent_packets_sum
+-                = agg_tal->sent_bytes_sum = 0;
+-    zm_msg1_agg(ZM_LV_0, "avg_got_packets =", agg_tal->avg_got_packets);
+-    zm_msg1_agg(ZM_LV_0, "  avg_got_bytes =", agg_tal->avg_got_bytes);
+-    zm_msg1_agg(ZM_LV_0, "avg_sent_packets=", agg_tal->avg_sent_packets);
+-    zm_msg1_agg(ZM_LV_0, " avg_sent_bytes =", agg_tal->avg_sent_bytes);
+-    if ((wd->commTally.BA_Fail == 0) || (wd->commTally.Hw_Tx_MPDU == 0))
+-    {
+-        zm_msg1_agg(ZM_LV_0, "Hardware Tx MPDU=", wd->commTally.Hw_Tx_MPDU);
+-        zm_msg1_agg(ZM_LV_0, "  BA Fail number=", wd->commTally.BA_Fail);
+-    }
+-    else
+-        zm_msg1_agg(ZM_LV_0, "1/(BA fail rate)=", wd->commTally.Hw_Tx_MPDU/wd->commTally.BA_Fail);
+-
+-    return 0;
+-}
+-
+-u16_t zfAggRxClear(zdev_t* dev, u32_t time)
+-{
+-    u16_t   i;
+-    struct agg_tid_rx *tid_rx;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    for (i=0; i<ZM_AGG_POOL_SIZE; i++)
+-    {
+-        zmw_enter_critical_section(dev);
+-        tid_rx = wd->tid_rx[i];
+-        if (tid_rx->baw_head != tid_rx->baw_tail)
+-        {
+-            u16_t j = tid_rx->baw_tail;
+-            while ((j != tid_rx->baw_head) && !tid_rx->frame[j].buf) {
+-            	j = (j + 1) & ZM_AGG_BAW_MASK;
+-            }
+-            if ((j != tid_rx->baw_head) && (time - tid_rx->frame[j].arrivalTime) >
+-                    (ZM_AGG_CLEAR_TIME - 5))
+-            {
+-                zmw_leave_critical_section(dev);
+-                zm_msg0_agg(ZM_LV_1, "queue RxFlush by RxClear");
+-                zfAggRxFlush(dev, 0, tid_rx);
+-                zmw_enter_critical_section(dev);
+-            }
+-        }
+-        zmw_leave_critical_section(dev);
+-    }
+-
+-    return ZM_SUCCESS;
+-}
+-
+-struct agg_tid_rx* zfAggRxEnabled(zdev_t* dev, zbuf_t* buf)
+-{
+-    u16_t   dst0, src[3], ac, aid, fragOff;
+-    u8_t    up;
+-    u16_t   offset = 0;
+-    u16_t   seq_no;
+-    u16_t frameType;
+-    u16_t frameCtrl;
+-    u16_t frameSubtype;
+-    u32_t tcp_seq;
+-    //struct aggSta *agg_sta;
++	/* zmw_declare_for_critical_section(); */
++
++	agg_tal = &wd->agg_tal;
++
++	if (agg_tal->got_packets_sum < 10) {
++		zfAggTallyReset(dev);
++		return 0;
++	}
++
++	agg_tal->time++;
++	agg_tal->avg_got_packets = (agg_tal->avg_got_packets *
++		(agg_tal->time - 1) + agg_tal->got_packets_sum) / agg_tal->time;
++	agg_tal->avg_got_bytes = (agg_tal->avg_got_bytes * (agg_tal->time - 1) +
++		agg_tal->got_bytes_sum) / agg_tal->time;
++	agg_tal->avg_sent_packets = (agg_tal->avg_sent_packets *
++		(agg_tal->time - 1)
++		+ agg_tal->sent_packets_sum) / agg_tal->time;
++	agg_tal->avg_sent_bytes = (agg_tal->avg_sent_bytes *
++				(agg_tal->time - 1) +
++				agg_tal->sent_bytes_sum) / agg_tal->time;
++	zm_msg1_agg(ZM_LV_0, "got_packets_sum =", agg_tal->got_packets_sum);
++	zm_msg1_agg(ZM_LV_0, "  got_bytes_sum =", agg_tal->got_bytes_sum);
++	zm_msg1_agg(ZM_LV_0, "sent_packets_sum=", agg_tal->sent_packets_sum);
++	zm_msg1_agg(ZM_LV_0, " sent_bytes_sum =", agg_tal->sent_bytes_sum);
++	agg_tal->got_packets_sum = agg_tal->got_bytes_sum =
++		agg_tal->sent_packets_sum = agg_tal->sent_bytes_sum = 0;
++	zm_msg1_agg(ZM_LV_0, "avg_got_packets =", agg_tal->avg_got_packets);
++	zm_msg1_agg(ZM_LV_0, "  avg_got_bytes =", agg_tal->avg_got_bytes);
++	zm_msg1_agg(ZM_LV_0, "avg_sent_packets=", agg_tal->avg_sent_packets);
++	zm_msg1_agg(ZM_LV_0, " avg_sent_bytes =", agg_tal->avg_sent_bytes);
++
++	if ((wd->commTally.BA_Fail == 0) || (wd->commTally.Hw_Tx_MPDU == 0)) {
++		zm_msg1_agg(ZM_LV_0, "Hardware Tx MPDU=",
++						wd->commTally.Hw_Tx_MPDU);
++		zm_msg1_agg(ZM_LV_0, "  BA Fail number=",
++						wd->commTally.BA_Fail);
++	} else
++		zm_msg1_agg(ZM_LV_0, "1/(BA fail rate)=",
++			wd->commTally.Hw_Tx_MPDU/wd->commTally.BA_Fail);
++
++	return 0;
++}
++
++u16_t zfAggRxClear(zdev_t *dev, u32_t time)
++{
++	u16_t i;
++	struct agg_tid_rx *tid_rx;
++
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	for (i = 0; i < ZM_AGG_POOL_SIZE; i++) {
++		zmw_enter_critical_section(dev);
++		tid_rx = wd->tid_rx[i];
++		if (tid_rx->baw_head != tid_rx->baw_tail) {
++			u16_t j = tid_rx->baw_tail;
++			while ((j != tid_rx->baw_head) &&
++						!tid_rx->frame[j].buf) {
++				j = (j + 1) & ZM_AGG_BAW_MASK;
++			}
++			if ((j != tid_rx->baw_head) &&
++					(time - tid_rx->frame[j].arrivalTime) >
++					(ZM_AGG_CLEAR_TIME - 5)) {
++				zmw_leave_critical_section(dev);
++				zm_msg0_agg(ZM_LV_1,
++						"queue RxFlush by RxClear");
++				zfAggRxFlush(dev, 0, tid_rx);
++				zmw_enter_critical_section(dev);
++			}
++		}
++		zmw_leave_critical_section(dev);
++	}
++
++	return ZM_SUCCESS;
++}
++
++struct agg_tid_rx *zfAggRxEnabled(zdev_t *dev, zbuf_t *buf)
++{
++	u16_t dst0, src[3], ac, aid, fragOff;
++	u8_t up;
++	u16_t offset = 0;
++	u16_t seq_no;
++	u16_t frameType;
++	u16_t frameCtrl;
++	u16_t frameSubtype;
++	u32_t tcp_seq;
++	/* struct aggSta *agg_sta; */
+ #if ZM_AGG_FPGA_REORDERING
+-    struct agg_tid_rx *tid_rx;
++	struct agg_tid_rx *tid_rx;
+ #endif
+-    zmw_get_wlan_dev(dev);
++	zmw_get_wlan_dev(dev);
++
++	/* zmw_declare_for_critical_section(); */
++	seq_no = zmw_rx_buf_readh(dev, buf, 22) >> 4;
++	/* DbgPrint("Rx seq=%d\n", seq_no); */
++
++	if (wd->sta.EnableHT == 0)
++		return NULL;
++
++	frameCtrl = zmw_rx_buf_readb(dev, buf, 0);
++	frameType = frameCtrl & 0xf;
++	frameSubtype = frameCtrl & 0xf0;
++
++	/* non-Qos Data? (frameSubtype&0x80) */
++	if (frameType != ZM_WLAN_DATA_FRAME)
++		return NULL;
+ 
+-    //zmw_declare_for_critical_section();
+-    seq_no = zmw_rx_buf_readh(dev, buf, 22) >> 4;
+-    //DbgPrint("Rx seq=%d\n", seq_no);
+-    if (wd->sta.EnableHT == 0)
+-    {
+-        return NULL;
+-    }
+-
+-    frameCtrl = zmw_rx_buf_readb(dev, buf, 0);
+-    frameType = frameCtrl & 0xf;
+-    frameSubtype = frameCtrl & 0xf0;
+-
+-
+-    if (frameType != ZM_WLAN_DATA_FRAME) //non-Qos Data? (frameSubtype&0x80)
+-    {
+-        return NULL;
+-    }
+ #ifdef ZM_ENABLE_PERFORMANCE_EVALUATION
+-    tcp_seq = zmw_rx_buf_readb(dev, buf, 22+36) << 24;
+-    tcp_seq += zmw_rx_buf_readb(dev, buf, 22+37) << 16;
+-    tcp_seq += zmw_rx_buf_readb(dev, buf, 22+38) << 8;
+-    tcp_seq += zmw_rx_buf_readb(dev, buf, 22+39);
++	tcp_seq = zmw_rx_buf_readb(dev, buf, 22+36) << 24;
++	tcp_seq += zmw_rx_buf_readb(dev, buf, 22+37) << 16;
++	tcp_seq += zmw_rx_buf_readb(dev, buf, 22+38) << 8;
++	tcp_seq += zmw_rx_buf_readb(dev, buf, 22+39);
+ #endif
+ 
+-    ZM_SEQ_DEBUG("In                   %5d, %12u\n", seq_no, tcp_seq);
+-    dst0 = zmw_rx_buf_readh(dev, buf, offset+4);
+-
+-    src[0] = zmw_rx_buf_readh(dev, buf, offset+10);
+-    src[1] = zmw_rx_buf_readh(dev, buf, offset+12);
+-    src[2] = zmw_rx_buf_readh(dev, buf, offset+14);
++	ZM_SEQ_DEBUG("In                   %5d, %12u\n", seq_no, tcp_seq);
++	dst0 = zmw_rx_buf_readh(dev, buf, offset+4);
++
++	src[0] = zmw_rx_buf_readh(dev, buf, offset+10);
++	src[1] = zmw_rx_buf_readh(dev, buf, offset+12);
++	src[2] = zmw_rx_buf_readh(dev, buf, offset+14);
+ 
+ #if ZM_AGG_FPGA_DEBUG
+-    aid = 0;
++	aid = 0;
+ #else
+-    aid = zfApFindSta(dev, src);
++	aid = zfApFindSta(dev, src);
+ #endif
+ 
+-    //agg_sta = &wd->aggSta[aid];
+-    //zfTxGetIpTosAndFrag(dev, buf, &up, &fragOff);
+-    //ac = zcUpToAc[up&0x7] & 0x3;
+-
+-    /*
+-     * Filter unicast frame only, aid == 0 is for debug only
+-     */
+-    if ((dst0 & 0x1) == 0 && aid == 0)
+-    {
++	/* agg_sta = &wd->aggSta[aid]; */
++	/* zfTxGetIpTosAndFrag(dev, buf, &up, &fragOff); */
++	/* ac = zcUpToAc[up&0x7] & 0x3; */
++
++	/*
++	* Filter unicast frame only, aid == 0 is for debug only
++	*/
++	if ((dst0 & 0x1) == 0 && aid == 0) {
+ #if ZM_AGG_FPGA_REORDERING
+-        tid_rx = zfAggRxGetQueue(dev, buf) ;
+-        if(!tid_rx)
+-            return NULL;
+-        else
+-        {
+-            //if (tid_rx->addBaExchangeStatusCode == ZM_AGG_ADDBA_RESPONSE)
+-            return tid_rx;
+-        }
++		tid_rx = zfAggRxGetQueue(dev, buf) ;
++		if (!tid_rx)
++			return NULL;
++		else {
++			/*if (tid_rx->addBaExchangeStatusCode ==
++			ZM_AGG_ADDBA_RESPONSE)
++			*/
++			return tid_rx;
++		}
+ #else
+-        return NULL;
++		return NULL;
+ #endif
+-    }
++	}
+ 
+-    return NULL;
++	return NULL;
+ }
+ 
+-u16_t zfAggRx(zdev_t* dev, zbuf_t* buf, struct zsAdditionInfo *addInfo, struct agg_tid_rx *tid_rx)
++u16_t zfAggRx(zdev_t *dev, zbuf_t *buf, struct zsAdditionInfo *addInfo,
++						struct agg_tid_rx *tid_rx)
+ {
+-    u16_t   seq_no;
+-    s16_t   index;
+-    u16_t   offset = 0;
+-    zbuf_t* pbuf;
+-    u8_t    frameSubType;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    ZM_BUFFER_TRACE(dev, buf)
+-
+-    ZM_PERFORMANCE_RX_REORDER(dev);
+-
+-    seq_no = zmw_rx_buf_readh(dev, buf, offset+22) >> 4;
+-
+-    index = seq_no - tid_rx->seq_start;
+-    /*
+-     * for debug
+-     */
+-
+-    /* zm_msg2_agg(ZM_LV_0, "queue seq = ", seq_no);
+-     * DbgPrint("%s:%s%lxh %s%lxh\n", __func__, "queue seq=", seq_no,
+-     *   "; seq_start=", tid_rx->seq_start);
+-     */
+-
+-    //DbgPrint("seq_no=%d, seq_start=%d\n", seq_no, tid_rx->seq_start);
+-
+-    /* In some APs, we found that it might transmit NULL data whose sequence number
+-       is out or order. In order to avoid this problem, we ignore these NULL data.
+-     */
+-
+-    frameSubType = (zmw_rx_buf_readh(dev, buf, 0) & 0xF0) >> 4;
+-
+-    /* If this is a NULL data instead of Qos NULL data */
+-    if ((frameSubType & 0x0C) == 0x04)
+-    {
+-        s16_t seq_diff;
+-
+-        seq_diff = (seq_no > tid_rx->seq_start) ?
+-                       seq_no - tid_rx->seq_start : tid_rx->seq_start - seq_no;
+-
+-        if (seq_diff > ZM_AGG_BAW_SIZE)
+-        {
+-            zm_debug_msg0("Free Rx NULL data in zfAggRx");
+-
+-            /* Free Rx buffer */
+-            zfwBufFree(dev, buf, 0);
+-            return ZM_ERR_OUT_OF_ORDER_NULL_DATA;
+-        }
+-    }
+-
+-    /*
+-     * sequence number wrap at 4k
+-     */
+-    if (tid_rx->seq_start > seq_no)
+-    {
+-        //index += 4096;
+-
+-        zmw_enter_critical_section(dev);
+-        if (tid_rx->seq_start >= 4096) {
+-            tid_rx->seq_start = 0;
+-        }
+-        zmw_leave_critical_section(dev);
+-
+-    }
+-
+-    if (tid_rx->seq_start == seq_no) {
+-    	zmw_enter_critical_section(dev);
+-    	if (((tid_rx->baw_head - tid_rx->baw_tail) & ZM_AGG_BAW_MASK) > 0) {
+-    	    //DbgPrint("head=%d, tail=%d", tid_rx->baw_head, tid_rx->baw_tail);
+-            tid_rx->baw_tail = (tid_rx->baw_tail + 1) & ZM_AGG_BAW_MASK;
+-        }
+-        tid_rx->seq_start = (tid_rx->seq_start + 1) & (4096 - 1);
+-    	zmw_leave_critical_section(dev);
+-
+-        ZM_PERFORMANCE_RX_SEQ(dev, buf);
+-
+-    	if (wd->zfcbRecv80211 != NULL) {
+-            //seq_no = zmw_rx_buf_readh(dev, buf, offset+22) >> 4;
+-            //DbgPrint("Recv indicate seq=%d\n", seq_no);
+-            //DbgPrint("1. seq=%d\n", seq_no);
+-
+-            wd->zfcbRecv80211(dev, buf, addInfo);
+-        }
+-        else {
+-            zfiRecv80211(dev, buf, addInfo);
+-        }
+-    }
+-    else if (!zfAggRxEnqueue(dev, buf, tid_rx, addInfo))
+-    {
+-        /*
+-         * duplicated packet
+-         */
+-        return 1;
+-    }
+-
+-    while (tid_rx->baw_head != tid_rx->baw_tail) {// && tid_rx->frame[tid_rx->baw_tail].buf)
+-        u16_t tailIndex;
+-
+-        zmw_enter_critical_section(dev);
+-
+-        tailIndex = tid_rx->baw_tail;
+-        pbuf = tid_rx->frame[tailIndex].buf;
+-        tid_rx->frame[tailIndex].buf = 0;
+-        if (!pbuf)
+-        {
+-            zmw_leave_critical_section(dev);
+-            break;
+-        }
+-
+-        tid_rx->baw_tail = (tid_rx->baw_tail + 1) & ZM_AGG_BAW_MASK;
+-        tid_rx->seq_start = (tid_rx->seq_start + 1) & (4096 - 1);
+-
+-
+-        //if(pbuf && tid_rx->baw_size > 0)
+-        //    tid_rx->baw_size--;
+-
+-        zmw_leave_critical_section(dev);
+-
+-        ZM_PERFORMANCE_RX_SEQ(dev, pbuf);
+-
+-        if (wd->zfcbRecv80211 != NULL)
+-        {
+-            //seq_no = zmw_rx_buf_readh(dev, pbuf, offset+22) >> 4;
+-            //DbgPrint("Recv indicate seq=%d\n", seq_no);
+-            //DbgPrint("1. seq=%d\n", seq_no);
+-            wd->zfcbRecv80211(dev, pbuf, addInfo);
+-        }
+-        else
+-        {
+-            //seq_no = zmw_rx_buf_readh(dev, pbuf, offset+22) >> 4;
+-            //DbgPrint("Recv indicate seq=%d\n", seq_no);
+-            zfiRecv80211(dev, pbuf, addInfo);
+-        }
+-    }
+-
+-    return 1;
+-}
+-
+-struct agg_tid_rx *zfAggRxGetQueue(zdev_t* dev, zbuf_t* buf)
+-{
+-    u16_t   src[3];
+-    u16_t   aid, ac, i;
+-    u16_t   offset = 0;
+-    struct agg_tid_rx *tid_rx = NULL;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-
+-    src[0] = zmw_rx_buf_readh(dev, buf, offset+10);
+-    src[1] = zmw_rx_buf_readh(dev, buf, offset+12);
+-    src[2] = zmw_rx_buf_readh(dev, buf, offset+14);
+-    aid = zfApFindSta(dev, src);
+-
+-    ac = (zmw_rx_buf_readh(dev, buf, 24) & 0xF);
+-
+-    // mark by spin lock debug
+-    //zmw_enter_critical_section(dev);
+-
+-    for (i=0; i<ZM_AGG_POOL_SIZE ; i++)
+-    {
+-        if((wd->tid_rx[i]->aid == aid) && (wd->tid_rx[i]->ac == ac))
+-        {
+-            tid_rx = wd->tid_rx[i];
+-            break;
+-        }
+-    }
+-
+-    // mark by spin lock debug
+-    //zmw_leave_critical_section(dev);
+-    return tid_rx;
+-}
+-
+-
+-u16_t   zfAggRxEnqueue(zdev_t* dev, zbuf_t* buf, struct agg_tid_rx *tid_rx, struct zsAdditionInfo *addInfo)
+-{
+-    u16_t seq_no, offset = 0;
+-    u16_t q_index;
+-    s16_t index;
+-    u8_t  bdropframe = 0;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    ZM_BUFFER_TRACE(dev, buf)
+-
+-    seq_no = zmw_rx_buf_readh(dev, buf, offset+22) >> 4;
+-    index  = seq_no - tid_rx->seq_start;
+-
+-    /*
+-     * sequence number wrap at 4k
+-     * -1000: check for duplicate past packet
+-     */
+-    bdropframe = 0;
+-    if (tid_rx->seq_start > seq_no) {
+-        if ((tid_rx->seq_start > 3967) && (seq_no < 128)) {
+-            index += 4096;
+-        } else if (tid_rx->seq_start - seq_no > 70) {
+-            zmw_enter_critical_section(dev);
+-            tid_rx->sq_behind_count++;
+-            if (tid_rx->sq_behind_count > 3) {
+-                tid_rx->sq_behind_count = 0;
+-            } else {
+-                bdropframe = 1;
+-            }
+-            zmw_leave_critical_section(dev);
+-        } else {
+-            bdropframe = 1;
+-        }
+-    } else {
+-        if (seq_no - tid_rx->seq_start > 70) {
+-            zmw_enter_critical_section(dev);
+-            tid_rx->sq_exceed_count++;
+-            if (tid_rx->sq_exceed_count > 3) {
+-                tid_rx->sq_exceed_count = 0;
+-            } else {
+-                bdropframe = 1;
+-            }
+-            zmw_leave_critical_section(dev);
+-        }
+-    }
+-
+-    if (bdropframe == 1) {
+-        /*if (wd->zfcbRecv80211 != NULL) {
+-            wd->zfcbRecv80211(dev, buf, addInfo);
+-        }
+-        else {
+-            zfiRecv80211(dev, buf, addInfo);
+-        }*/
+-
+-        ZM_PERFORMANCE_FREE(dev, buf);
+-
+-        zfwBufFree(dev, buf, 0);
+-        /*zfAggRxFlush(dev, seq_no, tid_rx);
+-        tid_rx->seq_start = seq_no;
+-        index = seq_no - tid_rx->seq_start;
+-        */
+-
+-        //DbgPrint("Free an old packet, seq_start=%d, seq_no=%d\n", tid_rx->seq_start, seq_no);
+-
+-        /*
+-         * duplicate past packet
+-         * happens only in simulated aggregation environment
+-         */
+-        return 0;
+-    } else {
+-        zmw_enter_critical_section(dev);
+-        if (tid_rx->sq_exceed_count > 0){
+-            tid_rx->sq_exceed_count--;
+-        }
+-
+-        if (tid_rx->sq_behind_count > 0) {
+-            tid_rx->sq_behind_count--;
+-        }
+-        zmw_leave_critical_section(dev);
+-    }
+-
+-    if (index < 0) {
+-        zfAggRxFlush(dev, seq_no, tid_rx);
+-        tid_rx->seq_start = seq_no;
+-        index = 0;
+-    }
+-
+-    //if (index >= (ZM_AGG_BAW_SIZE - 1))
+-    if (index >= (ZM_AGG_BAW_MASK))
+-    {
+-        /*
+-         * queue full
+-         */
+-        //DbgPrint("index >= 64, seq_start=%d, seq_no=%d\n", tid_rx->seq_start, seq_no);
+-        zfAggRxFlush(dev, seq_no, tid_rx);
+-        //tid_rx->seq_start = seq_no;
+-        index = seq_no - tid_rx->seq_start;
+-        if ((tid_rx->seq_start > seq_no) && (tid_rx->seq_start > 1000) && (tid_rx->seq_start - 1000) > seq_no)
+-        {
+-        //index = seq_no - tid_rx->seq_start;
+-            index += 4096;
+-        }
+-        //index = seq_no - tid_rx->seq_start;
+-        while (index >= (ZM_AGG_BAW_MASK)) {
+-            //DbgPrint("index >= 64, seq_start=%d, seq_no=%d\n", tid_rx->seq_start, seq_no);
+-            tid_rx->seq_start = (tid_rx->seq_start + ZM_AGG_BAW_MASK) & (4096 - 1);
+-            index = seq_no - tid_rx->seq_start;
+-            if ((tid_rx->seq_start > seq_no) && (tid_rx->seq_start > 1000) && (tid_rx->seq_start - 1000) > seq_no)
+-            {
+-                index += 4096;
+-            }
+-        }
+-    }
+-
+-
+-    q_index = (tid_rx->baw_tail + index) & ZM_AGG_BAW_MASK;
+-    if (tid_rx->frame[q_index].buf && (((tid_rx->baw_head - tid_rx->baw_tail) & ZM_AGG_BAW_MASK) >
+-                (((q_index) - tid_rx->baw_tail) & ZM_AGG_BAW_MASK)))
+-    {
+-
+-        ZM_PERFORMANCE_DUP(dev, tid_rx->frame[q_index].buf, buf);
+-        zfwBufFree(dev, buf, 0);
+-        //DbgPrint("Free a duplicate packet, seq_start=%d, seq_no=%d\n", tid_rx->seq_start, seq_no);
+-        //DbgPrint("head=%d, tail=%d", tid_rx->baw_head, tid_rx->baw_tail);
+-        /*
+-         * duplicate packet
+-         */
+-        return 0;
+-    }
+-
+-    zmw_enter_critical_section(dev);
+-    if(tid_rx->frame[q_index].buf) {
+-        zfwBufFree(dev, tid_rx->frame[q_index].buf, 0);
+-        tid_rx->frame[q_index].buf = 0;
+-    }
+-
+-    tid_rx->frame[q_index].buf = buf;
+-    tid_rx->frame[q_index].arrivalTime = zm_agg_GetTime();
+-    zfwMemoryCopy((void*)&tid_rx->frame[q_index].addInfo, (void*)addInfo, sizeof(struct zsAdditionInfo));
+-
+-    /*
+-     * for debug simulated aggregation only,
+-     * should be done in rx of ADDBA Request
+-     */
+-    //tid_rx->addInfo = addInfo;
+-
+-
+-    if (((tid_rx->baw_head - tid_rx->baw_tail) & ZM_AGG_BAW_MASK) <= index)
+-    {
+-        //tid_rx->baw_size = index + 1;
+-        if (((tid_rx->baw_head - tid_rx->baw_tail) & ZM_AGG_BAW_MASK) <=
+-                //((q_index + 1) & ZM_AGG_BAW_MASK))
+-                (((q_index) - tid_rx->baw_tail) & ZM_AGG_BAW_MASK))//tid_rx->baw_size )
+-            tid_rx->baw_head = (q_index + 1) & ZM_AGG_BAW_MASK;
+-    }
+-    zmw_leave_critical_section(dev);
+-
+-    /*
+-     * success
+-     */
+-    //DbgPrint("head=%d, tail=%d, start=%d", tid_rx->baw_head, tid_rx->baw_tail, tid_rx->seq_start);
+-    return 1;
+-}
+-
+-u16_t zfAggRxFlush(zdev_t* dev, u16_t seq_no, struct agg_tid_rx *tid_rx)
+-{
+-    zbuf_t* pbuf;
+-    u16_t   seq;
+-    struct zsAdditionInfo addInfo;
+-    zmw_get_wlan_dev(dev);
+-    zmw_declare_for_critical_section();
+-
+-    ZM_PERFORMANCE_RX_FLUSH(dev);
+-
+-    while (1)
+-    {
+-        zmw_enter_critical_section(dev);
+-        if (tid_rx->baw_tail == tid_rx->baw_head) {
+-            zmw_leave_critical_section(dev);
+-            break;
+-        }
+-
+-        pbuf = tid_rx->frame[tid_rx->baw_tail].buf;
+-        zfwMemoryCopy((void*)&addInfo, (void*)&tid_rx->frame[tid_rx->baw_tail].addInfo, sizeof(struct zsAdditionInfo));
+-        tid_rx->frame[tid_rx->baw_tail].buf = 0;
+-        //if(pbuf && tid_rx->baw_size > 0) tid_rx->baw_size--;
+-        tid_rx->baw_tail = (tid_rx->baw_tail + 1) & ZM_AGG_BAW_MASK;
+-        tid_rx->seq_start = (tid_rx->seq_start + 1) & (4096 - 1);
+-	    zmw_leave_critical_section(dev);
+-
+-        if (pbuf)
+-        {
+-
+-            ZM_PERFORMANCE_RX_SEQ(dev, pbuf);
+-
+-            if (wd->zfcbRecv80211 != NULL)
+-            {
+-                seq = zmw_rx_buf_readh(dev, pbuf, 22) >> 4;
+-                //DbgPrint("Recv indicate seq=%d\n", seq);
+-                //DbgPrint("2. seq=%d\n", seq);
+-                wd->zfcbRecv80211(dev, pbuf, &addInfo);
+-            }
+-            else
+-            {
+-                seq = zmw_rx_buf_readh(dev, pbuf, 22) >> 4;
+-                //DbgPrint("Recv indicate seq=%d\n", seq);
+-                zfiRecv80211(dev, pbuf, &addInfo);
+-            }
+-        }
+-    }
+-
+-    zmw_enter_critical_section(dev);
+-    tid_rx->baw_head = tid_rx->baw_tail = 0;
+-    zmw_leave_critical_section(dev);
+-    return 1;
++	u16_t   seq_no;
++	s16_t   index;
++	u16_t   offset = 0;
++	zbuf_t *pbuf;
++	u8_t    frameSubType;
++
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	ZM_BUFFER_TRACE(dev, buf)
++
++	ZM_PERFORMANCE_RX_REORDER(dev);
++
++	seq_no = zmw_rx_buf_readh(dev, buf, offset+22) >> 4;
++
++	index = seq_no - tid_rx->seq_start;
++	/*
++	* for debug
++	*/
++
++	/* zm_msg2_agg(ZM_LV_0, "queue seq = ", seq_no);
++	* DbgPrint("%s:%s%lxh %s%lxh\n", __func__, "queue seq=", seq_no,
++	*   "; seq_start=", tid_rx->seq_start);
++	*/
++
++	/* DbgPrint("seq_no=%d, seq_start=%d\n", seq_no, tid_rx->seq_start); */
++
++	/* In some APs, we found that it might transmit NULL data whose
++	sequence number is out or order. In order to avoid this problem,
++	we ignore these NULL data.
++	*/
++
++	frameSubType = (zmw_rx_buf_readh(dev, buf, 0) & 0xF0) >> 4;
++
++	/* If this is a NULL data instead of Qos NULL data */
++	if ((frameSubType & 0x0C) == 0x04) {
++		s16_t seq_diff;
++
++		seq_diff = (seq_no > tid_rx->seq_start) ?
++			seq_no - tid_rx->seq_start : tid_rx->seq_start - seq_no;
++
++		if (seq_diff > ZM_AGG_BAW_SIZE) {
++			zm_debug_msg0("Free Rx NULL data in zfAggRx");
++
++			/* Free Rx buffer */
++			zfwBufFree(dev, buf, 0);
++			return ZM_ERR_OUT_OF_ORDER_NULL_DATA;
++		}
++	}
++
++	/*
++	* sequence number wrap at 4k
++	*/
++	if (tid_rx->seq_start > seq_no) {
++		/* index += 4096; */
++
++		zmw_enter_critical_section(dev);
++		if (tid_rx->seq_start >= 4096)
++			tid_rx->seq_start = 0;
++		zmw_leave_critical_section(dev);
++
++	}
++
++	if (tid_rx->seq_start == seq_no) {
++		zmw_enter_critical_section(dev);
++		if (((tid_rx->baw_head - tid_rx->baw_tail) &
++						ZM_AGG_BAW_MASK) > 0) {
++			/* DbgPrint("head=%d, tail=%d", tid_rx->baw_head,
++			tid_rx->baw_tail);
++			*/
++			tid_rx->baw_tail = (tid_rx->baw_tail + 1) &
++							ZM_AGG_BAW_MASK;
++		}
++		tid_rx->seq_start = (tid_rx->seq_start + 1) & (4096 - 1);
++		zmw_leave_critical_section(dev);
++
++		ZM_PERFORMANCE_RX_SEQ(dev, buf);
++
++		if (wd->zfcbRecv80211 != NULL) {
++			/*seq_no = zmw_rx_buf_readh(dev, buf, offset+22) >> 4;
++			DbgPrint("Recv indicate seq=%d\n", seq_no);
++			DbgPrint("1. seq=%d\n", seq_no);
++			*/
++
++			wd->zfcbRecv80211(dev, buf, addInfo);
++		} else {
++			zfiRecv80211(dev, buf, addInfo);
++		}
++	} else if (!zfAggRxEnqueue(dev, buf, tid_rx, addInfo)) {
++		/*
++		* duplicated packet
++		*/
++		return 1;
++	}
++
++	while (tid_rx->baw_head != tid_rx->baw_tail) {
++		/* && tid_rx->frame[tid_rx->baw_tail].buf) */
++		u16_t tailIndex;
++
++		zmw_enter_critical_section(dev);
++
++		tailIndex = tid_rx->baw_tail;
++		pbuf = tid_rx->frame[tailIndex].buf;
++		tid_rx->frame[tailIndex].buf = 0;
++		if (!pbuf) {
++			zmw_leave_critical_section(dev);
++			break;
++		}
++
++		tid_rx->baw_tail = (tid_rx->baw_tail + 1) & ZM_AGG_BAW_MASK;
++		tid_rx->seq_start = (tid_rx->seq_start + 1) & (4096 - 1);
++
++
++		/*if(pbuf && tid_rx->baw_size > 0)
++			tid_rx->baw_size--;
++		*/
++
++		zmw_leave_critical_section(dev);
++
++		ZM_PERFORMANCE_RX_SEQ(dev, pbuf);
++
++		if (wd->zfcbRecv80211 != NULL) {
++			/*seq_no = zmw_rx_buf_readh(dev, pbuf, offset+22) >> 4;
++			DbgPrint("Recv indicate seq=%d\n", seq_no);
++			DbgPrint("1. seq=%d\n", seq_no);
++			*/
++			wd->zfcbRecv80211(dev, pbuf, addInfo);
++		} else {
++			/*seq_no = zmw_rx_buf_readh(dev, pbuf, offset+22) >> 4;
++			DbgPrint("Recv indicate seq=%d\n", seq_no);
++			*/
++			zfiRecv80211(dev, pbuf, addInfo);
++		}
++	}
++
++	return 1;
++}
++
++struct agg_tid_rx *zfAggRxGetQueue(zdev_t *dev, zbuf_t *buf)
++{
++	u16_t src[3];
++	u16_t aid, ac, i;
++	u16_t offset = 0;
++	struct agg_tid_rx *tid_rx = NULL;
++
++	zmw_get_wlan_dev(dev);
++
++	/* zmw_declare_for_critical_section(); */
++
++	src[0] = zmw_rx_buf_readh(dev, buf, offset+10);
++	src[1] = zmw_rx_buf_readh(dev, buf, offset+12);
++	src[2] = zmw_rx_buf_readh(dev, buf, offset+14);
++	aid = zfApFindSta(dev, src);
++
++	ac = (zmw_rx_buf_readh(dev, buf, 24) & 0xF);
++
++	/* mark by spin lock debug */
++	/* zmw_enter_critical_section(dev); */
++
++	for (i = 0; i < ZM_AGG_POOL_SIZE ; i++) {
++		if ((wd->tid_rx[i]->aid == aid) && (wd->tid_rx[i]->ac == ac)) {
++			tid_rx = wd->tid_rx[i];
++			break;
++		}
++	}
++
++	/* mark by spin lock debug */
++	/* zmw_leave_critical_section(dev); */
++	return tid_rx;
++}
++
++
++u16_t zfAggRxEnqueue(zdev_t *dev, zbuf_t *buf, struct agg_tid_rx *tid_rx,
++						struct zsAdditionInfo *addInfo)
++{
++	u16_t seq_no, offset = 0;
++	u16_t q_index;
++	s16_t index;
++	u8_t bdropframe = 0;
++
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	ZM_BUFFER_TRACE(dev, buf)
++
++	seq_no = zmw_rx_buf_readh(dev, buf, offset+22) >> 4;
++	index  = seq_no - tid_rx->seq_start;
++
++	/*
++	* sequence number wrap at 4k
++	* -1000: check for duplicate past packet
++	*/
++	bdropframe = 0;
++	if (tid_rx->seq_start > seq_no) {
++		if ((tid_rx->seq_start > 3967) && (seq_no < 128)) {
++			index += 4096;
++		} else if (tid_rx->seq_start - seq_no > 70) {
++			zmw_enter_critical_section(dev);
++			tid_rx->sq_behind_count++;
++			if (tid_rx->sq_behind_count > 3)
++				tid_rx->sq_behind_count = 0;
++			else
++				bdropframe = 1;
++			zmw_leave_critical_section(dev);
++		} else {
++			bdropframe = 1;
++		}
++	} else {
++		if (seq_no - tid_rx->seq_start > 70) {
++			zmw_enter_critical_section(dev);
++			tid_rx->sq_exceed_count++;
++			if (tid_rx->sq_exceed_count > 3)
++				tid_rx->sq_exceed_count = 0;
++			else
++				bdropframe = 1;
++			zmw_leave_critical_section(dev);
++		}
++	}
++
++	if (bdropframe == 1) {
++		/*if (wd->zfcbRecv80211 != NULL) {
++			wd->zfcbRecv80211(dev, buf, addInfo);
++		}
++			else {
++		zfiRecv80211(dev, buf, addInfo);
++		}*/
++
++		ZM_PERFORMANCE_FREE(dev, buf);
++
++		zfwBufFree(dev, buf, 0);
++		/*zfAggRxFlush(dev, seq_no, tid_rx);
++		tid_rx->seq_start = seq_no;
++		index = seq_no - tid_rx->seq_start;
++		*/
++
++		/* DbgPrint("Free an old packet, seq_start=%d, seq_no=%d\n",
++				tid_rx->seq_start, seq_no);
++		*/
++
++		/*
++		* duplicate past packet
++		* happens only in simulated aggregation environment
++		*/
++		return 0;
++	} else {
++		zmw_enter_critical_section(dev);
++		if (tid_rx->sq_exceed_count > 0)
++			tid_rx->sq_exceed_count--;
++
++		if (tid_rx->sq_behind_count > 0)
++			tid_rx->sq_behind_count--;
++		zmw_leave_critical_section(dev);
++	}
++
++	if (index < 0) {
++		zfAggRxFlush(dev, seq_no, tid_rx);
++		tid_rx->seq_start = seq_no;
++		index = 0;
++	}
++
++	/* if (index >= (ZM_AGG_BAW_SIZE - 1)) */
++	if (index >= (ZM_AGG_BAW_MASK)) {
++		/*
++		* queue full
++		*/
++		/*DbgPrint("index >= 64, seq_start=%d, seq_no=%d\n",
++		tid_rx->seq_start, seq_no);
++		*/
++		zfAggRxFlush(dev, seq_no, tid_rx);
++		/* tid_rx->seq_start = seq_no; */
++		index = seq_no - tid_rx->seq_start;
++		if ((tid_rx->seq_start > seq_no) && (tid_rx->seq_start > 1000)
++				&& (tid_rx->seq_start - 1000) > seq_no) {
++			/* index = seq_no - tid_rx->seq_start; */
++			index += 4096;
++		}
++		/* index = seq_no - tid_rx->seq_start; */
++		while (index >= (ZM_AGG_BAW_MASK)) {
++			/*DbgPrint("index >= 64, seq_start=%d, seq_no=%d\n",
++			tid_rx->seq_start, seq_no);
++			*/
++			tid_rx->seq_start = (tid_rx->seq_start +
++						ZM_AGG_BAW_MASK) & (4096 - 1);
++			index = seq_no - tid_rx->seq_start;
++			if ((tid_rx->seq_start > seq_no) &&
++						(tid_rx->seq_start > 1000) &&
++					(tid_rx->seq_start - 1000) > seq_no) {
++				index += 4096;
++			}
++		}
++	}
++
++
++	q_index = (tid_rx->baw_tail + index) & ZM_AGG_BAW_MASK;
++	if (tid_rx->frame[q_index].buf &&
++		(((tid_rx->baw_head - tid_rx->baw_tail) & ZM_AGG_BAW_MASK) >
++		(((q_index) - tid_rx->baw_tail) & ZM_AGG_BAW_MASK))) {
++
++		ZM_PERFORMANCE_DUP(dev, tid_rx->frame[q_index].buf, buf);
++		zfwBufFree(dev, buf, 0);
++		/* DbgPrint("Free a duplicate packet, seq_start=%d,
++		*  seq_no=%d\n", tid_rx->seq_start, seq_no);
++		*  DbgPrint("head=%d, tail=%d", tid_rx->baw_head,
++		*  tid_rx->baw_tail);
++		*
++		*  duplicate packet
++		*/
++		return 0;
++	}
++
++	zmw_enter_critical_section(dev);
++	if (tid_rx->frame[q_index].buf) {
++		zfwBufFree(dev, tid_rx->frame[q_index].buf, 0);
++		tid_rx->frame[q_index].buf = 0;
++	}
++
++	tid_rx->frame[q_index].buf = buf;
++	tid_rx->frame[q_index].arrivalTime = zm_agg_GetTime();
++	zfwMemoryCopy((void *)&tid_rx->frame[q_index].addInfo, (void *)addInfo,
++						sizeof(struct zsAdditionInfo));
++
++	/*
++	* for debug simulated aggregation only,
++	* should be done in rx of ADDBA Request
++	*/
++	/* tid_rx->addInfo = addInfo; */
++
++
++	if (((tid_rx->baw_head - tid_rx->baw_tail) & ZM_AGG_BAW_MASK) <=
++								index) {
++		/* tid_rx->baw_size = index + 1; */
++		if (((tid_rx->baw_head - tid_rx->baw_tail) &
++		ZM_AGG_BAW_MASK) <= /* ((q_index + 1) & ZM_AGG_BAW_MASK)) */
++			(((q_index) - tid_rx->baw_tail) & ZM_AGG_BAW_MASK))
++			/* tid_rx->baw_size ) */
++			tid_rx->baw_head = (q_index + 1) & ZM_AGG_BAW_MASK;
++	}
++	zmw_leave_critical_section(dev);
++
++	/*
++	* success
++	*/
++	/*DbgPrint("head=%d, tail=%d, start=%d", tid_rx->baw_head,
++	tid_rx->baw_tail, tid_rx->seq_start);
++	*/
++	return 1;
++}
++
++u16_t zfAggRxFlush(zdev_t *dev, u16_t seq_no, struct agg_tid_rx *tid_rx)
++{
++	zbuf_t *pbuf;
++	u16_t   seq;
++	struct zsAdditionInfo addInfo;
++	zmw_get_wlan_dev(dev);
++	zmw_declare_for_critical_section();
++
++	ZM_PERFORMANCE_RX_FLUSH(dev);
++
++	while (1) {
++		zmw_enter_critical_section(dev);
++		if (tid_rx->baw_tail == tid_rx->baw_head) {
++			zmw_leave_critical_section(dev);
++			break;
++		}
++
++		pbuf = tid_rx->frame[tid_rx->baw_tail].buf;
++		zfwMemoryCopy((void *)&addInfo,
++		(void *)&tid_rx->frame[tid_rx->baw_tail].addInfo,
++					sizeof(struct zsAdditionInfo));
++		tid_rx->frame[tid_rx->baw_tail].buf = 0;
++		/* if(pbuf && tid_rx->baw_size > 0) tid_rx->baw_size--; */
++		tid_rx->baw_tail = (tid_rx->baw_tail + 1) & ZM_AGG_BAW_MASK;
++		tid_rx->seq_start = (tid_rx->seq_start + 1) & (4096 - 1);
++		zmw_leave_critical_section(dev);
++
++		if (pbuf) {
++
++			ZM_PERFORMANCE_RX_SEQ(dev, pbuf);
++
++			if (wd->zfcbRecv80211 != NULL) {
++				seq = zmw_rx_buf_readh(dev, pbuf, 22) >> 4;
++				/* DbgPrint("Recv indicate seq=%d\n", seq); */
++				/* DbgPrint("2. seq=%d\n", seq); */
++				wd->zfcbRecv80211(dev, pbuf, &addInfo);
++			} else {
++				seq = zmw_rx_buf_readh(dev, pbuf, 22) >> 4;
++				/* DbgPrint("Recv indicate seq=%d\n", seq); */
++				zfiRecv80211(dev, pbuf, &addInfo);
++			}
++		}
++	}
++
++	zmw_enter_critical_section(dev);
++	tid_rx->baw_head = tid_rx->baw_tail = 0;
++	zmw_leave_critical_section(dev);
++	return 1;
+ }
+ 
+ 
+@@ -2325,188 +2330,196 @@ u16_t zfAggRxFlush(zdev_t* dev, u16_t se
+ /*      Honda               Atheros Communications, INC.    2006.12     */
+ /*                                                                      */
+ /************************************************************************/
+-u16_t   zfAggRxFreeBuf(zdev_t* dev, u16_t destroy)
++u16_t zfAggRxFreeBuf(zdev_t *dev, u16_t destroy)
+ {
+-    u16_t   i;
+-    zbuf_t* buf;
+-    struct agg_tid_rx *tid_rx;
+-
+-    TID_TX  tid_tx;
+-    //struct bufInfo *buf_info;
+-
+-    zmw_get_wlan_dev(dev);
+-    zmw_declare_for_critical_section();
+-
+-    for (i=0; i<ZM_AGG_POOL_SIZE; i++)
+-    {
+-        u16_t j;
+-
+-        tid_rx = wd->tid_rx[i];
+-
+-        for(j=0; j <= ZM_AGG_BAW_SIZE; j++)
+-        {
+-            zmw_enter_critical_section(dev);
+-            buf = tid_rx->frame[j].buf;
+-            tid_rx->frame[j].buf = 0;
+-            zmw_leave_critical_section(dev);
+-
+-            if (buf)
+-            {
+-                zfwBufFree(dev, buf, 0);
+-            }
+-        }
+-
+-        #if 0
+-        if ( tid_rx->baw_head != tid_rx->baw_tail )
+-        {
+-            while (tid_rx->baw_head != tid_rx->baw_tail)
+-            {
+-                buf = tid_rx->frame[tid_rx->baw_tail].buf;
+-                tid_rx->frame[tid_rx->baw_tail].buf = 0;
+-                if (buf)
+-                {
+-                    zfwBufFree(dev, buf, 0);
+-
+-                    zmw_enter_critical_section(dev);
+-                    tid_rx->frame[tid_rx->baw_tail].buf = 0;
+-                    zmw_leave_critical_section(dev);
+-                }
+-                zmw_enter_critical_section(dev);
+-                //if (tid_rx->baw_size > 0)tid_rx->baw_size--;
+-                tid_rx->baw_tail = (tid_rx->baw_tail + 1) & ZM_AGG_BAW_MASK;
+-                tid_rx->seq_start++;
+-                zmw_leave_critical_section(dev);
+-            }
+-        }
+-        #endif
+-
+-        zmw_enter_critical_section(dev);
+-        tid_rx->seq_start = 0;
+-        tid_rx->baw_head = tid_rx->baw_tail = 0;
+-        tid_rx->aid = ZM_MAX_STA_SUPPORT;
+-        zmw_leave_critical_section(dev);
+-
+-        #ifdef ZM_ENABLE_AGGREGATION
+-        #ifndef ZM_ENABLE_FW_BA_RETRANSMISSION //disable BAW
+-        if (tid_baw->enabled) {
+-            zm_msg1_agg(ZM_LV_0, "Device down, clear BAW queue:", i);
+-            BAW->disable(dev, tid_baw);
+-        }
+-        #endif
+-        #endif
+-        if (1 == wd->aggQPool[i]->aggQEnabled) {
+-            tid_tx = wd->aggQPool[i];
+-            buf = zfAggTxGetVtxq(dev, tid_tx);
+-            while (buf) {
+-                zfwBufFree(dev, buf, 0);
+-                buf = zfAggTxGetVtxq(dev, tid_tx);
+-            }
+-        }
+-
+-        if(destroy) {
+-            zfwMemFree(dev, wd->aggQPool[i], sizeof(struct aggQueue));
+-            zfwMemFree(dev, wd->tid_rx[i], sizeof(struct agg_tid_rx));
+-        }
+-    }
+-    #ifdef ZM_ENABLE_AGGREGATION
+-    #ifndef ZM_ENABLE_FW_BA_RETRANSMISSION //disable BAW
+-    if(destroy) zfwMemFree(dev, BAW, sizeof(struct baw_enabler));
+-    #endif
+-    #endif
+-    return ZM_SUCCESS;
+-}
+-
+-
+-void zfAggRecvBAR(zdev_t* dev, zbuf_t *buf) {
+-    u16_t start_seq, len;
+-    u8_t i, bitmap[8];
+-    len = zfwBufGetSize(dev, buf);
+-    start_seq = zmw_rx_buf_readh(dev, buf, len-2);
+-    DbgPrint("Received a BAR Control frame, start_seq=%d", start_seq>>4);
+-    /* todo: set the bitmap by reordering buffer! */
+-    for (i=0; i<8; i++) bitmap[i]=0;
+-    zfSendBA(dev, start_seq, bitmap);
++	u16_t   i;
++	zbuf_t *buf;
++	struct agg_tid_rx *tid_rx;
++
++	TID_TX  tid_tx;
++	/* struct bufInfo *buf_info; */
++
++	zmw_get_wlan_dev(dev);
++	zmw_declare_for_critical_section();
++
++	for (i = 0; i < ZM_AGG_POOL_SIZE; i++) {
++		u16_t j;
++
++		tid_rx = wd->tid_rx[i];
++
++		for (j = 0; j <= ZM_AGG_BAW_SIZE; j++) {
++			zmw_enter_critical_section(dev);
++			buf = tid_rx->frame[j].buf;
++			tid_rx->frame[j].buf = 0;
++			zmw_leave_critical_section(dev);
++
++			if (buf)
++				zfwBufFree(dev, buf, 0);
++		}
++
++#if 0
++		if (tid_rx->baw_head != tid_rx->baw_tail) {
++			while (tid_rx->baw_head != tid_rx->baw_tail) {
++				buf = tid_rx->frame[tid_rx->baw_tail].buf;
++				tid_rx->frame[tid_rx->baw_tail].buf = 0;
++				if (buf) {
++					zfwBufFree(dev, buf, 0);
++
++					zmw_enter_critical_section(dev);
++					tid_rx->frame[tid_rx->baw_tail].buf = 0;
++					zmw_leave_critical_section(dev);
++				}
++			zmw_enter_critical_section(dev);
++			/* if (tid_rx->baw_size > 0)tid_rx->baw_size--; */
++			tid_rx->baw_tail = (tid_rx->baw_tail + 1) &
++							ZM_AGG_BAW_MASK;
++			tid_rx->seq_start++;
++			zmw_leave_critical_section(dev);
++			}
++		}
++#endif
++
++		zmw_enter_critical_section(dev);
++		tid_rx->seq_start = 0;
++		tid_rx->baw_head = tid_rx->baw_tail = 0;
++		tid_rx->aid = ZM_MAX_STA_SUPPORT;
++		zmw_leave_critical_section(dev);
++
++#ifdef ZM_ENABLE_AGGREGATION
++#ifndef ZM_ENABLE_FW_BA_RETRANSMISSION /* disable BAW */
++		if (tid_baw->enabled) {
++			zm_msg1_agg(ZM_LV_0,
++					"Device down, clear BAW queue:", i);
++			BAW->disable(dev, tid_baw);
++		}
++#endif
++#endif
++		if (1 == wd->aggQPool[i]->aggQEnabled) {
++			tid_tx = wd->aggQPool[i];
++			buf = zfAggTxGetVtxq(dev, tid_tx);
++			while (buf) {
++				zfwBufFree(dev, buf, 0);
++				buf = zfAggTxGetVtxq(dev, tid_tx);
++			}
++		}
++
++		if (destroy) {
++			zfwMemFree(dev, wd->aggQPool[i],
++						sizeof(struct aggQueue));
++			zfwMemFree(dev, wd->tid_rx[i],
++						sizeof(struct agg_tid_rx));
++		}
++	}
++#ifdef ZM_ENABLE_AGGREGATION
++#ifndef ZM_ENABLE_FW_BA_RETRANSMISSION /* disable BAW */
++	if (destroy)
++		zfwMemFree(dev, BAW, sizeof(struct baw_enabler));
++#endif
++#endif
++	return ZM_SUCCESS;
++}
++
++
++void zfAggRecvBAR(zdev_t *dev, zbuf_t *buf)
++{
++	u16_t start_seq, len;
++	u8_t i, bitmap[8];
++	len = zfwBufGetSize(dev, buf);
++	start_seq = zmw_rx_buf_readh(dev, buf, len-2);
++	DbgPrint("Received a BAR Control frame, start_seq=%d", start_seq>>4);
++	/* todo: set the bitmap by reordering buffer! */
++	for (i = 0; i < 8; i++)
++		bitmap[i] = 0;
++	zfSendBA(dev, start_seq, bitmap);
+ }
+ 
+ #ifdef ZM_ENABLE_AGGREGATION
+-#ifndef ZM_ENABLE_FW_BA_RETRANSMISSION //disable BAW
+-void zfAggTxRetransmit(zdev_t* dev, struct bufInfo *buf_info, struct aggControl *aggControl, TID_TX tid_tx) {
+-    u16_t removeLen;
+-    u16_t err;
+-
+-    zmw_get_wlan_dev(dev);
+-    if (aggControl && (ZM_AGG_FIRST_MPDU == aggControl->ampduIndication) ) {
+-        tid_tx->bar_ssn = buf_info->baw_header->header[15];
+-        aggControl->tid_baw->start_seq = tid_tx->bar_ssn >> 4;
+-        zm_msg1_agg(ZM_LV_0, "start seq=", tid_tx->bar_ssn >> 4);
+-    }
+-    buf_info->baw_header->header[4] |= (1 << 11);
+-    if (aggControl && aggControl->aggEnabled) {
+-        //if (wd->enableAggregation==0 && !(buf_info->baw_header->header[6]&0x1))
+-        //{
+-            //if (((buf_info->baw_header->header[2] & 0x3) == 2))
+-            //{
+-                /* Enable aggregation */
+-                buf_info->baw_header->header[1] |= 0x20;
+-                if (ZM_AGG_LAST_MPDU == aggControl->ampduIndication) {
+-                    buf_info->baw_header->header[1] |= 0x4000;
+-                }
+-                else {
+-                    buf_info->baw_header->header[1] &= ~0x4000;
+-                    //zm_debug_msg0("ZM_AGG_LAST_MPDU");
+-                }
+-            //}
+-            //else {
+-            //    zm_debug_msg1("no aggr, header[2]&0x3 = ",buf_info->baw_header->header[2] & 0x3)
+-            //    aggControl->aggEnabled = 0;
+-            //}
+-        //}
+-        //else {
+-        //    zm_debug_msg1("no aggr, wd->enableAggregation = ", wd->enableAggregation);
+-        //    zm_debug_msg1("no aggr, !header[6]&0x1 = ",!(buf_info->baw_header->header[6]&0x1));
+-        //    aggControl->aggEnabled = 0;
+-        //}
+-    }
+-
+-    /*if (aggControl->tid_baw) {
+-        struct baw_header_r header_r;
+-
+-        header_r.header      = buf_info->baw_header->header;
+-        header_r.mic         = buf_info->baw_header->mic;
+-        header_r.snap        = buf_info->baw_header->snap;
+-        header_r.headerLen   = buf_info->baw_header->headerLen;
+-        header_r.micLen      = buf_info->baw_header->micLen;
+-        header_r.snapLen     = buf_info->baw_header->snapLen;
+-        header_r.removeLen   = buf_info->baw_header->removeLen;
+-        header_r.keyIdx      = buf_info->baw_header->keyIdx;
+-
+-        BAW->insert(dev, buf_info->buf, tid_tx->bar_ssn >> 4, aggControl->tid_baw, buf_info->baw_retransmit, &header_r);
+-    }*/
+-
+-    if ((err = zfHpSend(dev,
+-                    buf_info->baw_header->header,
+-                    buf_info->baw_header->headerLen,
+-                    buf_info->baw_header->snap,
+-                    buf_info->baw_header->snapLen,
+-                    buf_info->baw_header->mic,
+-                    buf_info->baw_header->micLen,
+-                    buf_info->buf,
+-                    buf_info->baw_header->removeLen,
+-                    ZM_EXTERNAL_ALLOC_BUF,
+-                    (u8_t)tid_tx->ac,
+-                    buf_info->baw_header->keyIdx)) != ZM_SUCCESS)
+-    {
+-        goto zlError;
+-    }
++#ifndef ZM_ENABLE_FW_BA_RETRANSMISSION /* disable BAW */
++void zfAggTxRetransmit(zdev_t *dev, struct bufInfo *buf_info,
++			struct aggControl *aggControl, TID_TX tid_tx)
++{
++	u16_t removeLen;
++	u16_t err;
++
++	zmw_get_wlan_dev(dev);
++	if (aggControl && (ZM_AGG_FIRST_MPDU == aggControl->ampduIndication)) {
++		tid_tx->bar_ssn = buf_info->baw_header->header[15];
++		aggControl->tid_baw->start_seq = tid_tx->bar_ssn >> 4;
++		zm_msg1_agg(ZM_LV_0, "start seq=", tid_tx->bar_ssn >> 4);
++	}
++	buf_info->baw_header->header[4] |= (1 << 11);
++	if (aggControl && aggControl->aggEnabled) {
++		/*if (wd->enableAggregation==0 &&
++				!(buf_info->baw_header->header[6]&0x1))
++		{
++			if (((buf_info->baw_header->header[2] & 0x3) == 2))
++			{
++		*/
++		/* Enable aggregation */
++		buf_info->baw_header->header[1] |= 0x20;
++		if (ZM_AGG_LAST_MPDU == aggControl->ampduIndication) {
++			buf_info->baw_header->header[1] |= 0x4000;
++		} else {
++			buf_info->baw_header->header[1] &= ~0x4000;
++			/* zm_debug_msg0("ZM_AGG_LAST_MPDU"); */
++		}
++		/*}
++		else {
++		    zm_debug_msg1("no aggr, header[2]&0x3 = ",
++				buf_info->baw_header->header[2] & 0x3)
++		    aggControl->aggEnabled = 0;
++		}
++		}
++		else {
++		    zm_debug_msg1("no aggr, wd->enableAggregation = ",
++				wd->enableAggregation);
++		    zm_debug_msg1("no aggr, !header[6]&0x1 = ",
++				!(buf_info->baw_header->header[6]&0x1));
++		    aggControl->aggEnabled = 0;
++		}
++		*/
++	}
++
++	/*if (aggControl->tid_baw) {
++		struct baw_header_r header_r;
++
++		header_r.header      = buf_info->baw_header->header;
++		header_r.mic         = buf_info->baw_header->mic;
++		header_r.snap        = buf_info->baw_header->snap;
++		header_r.headerLen   = buf_info->baw_header->headerLen;
++		header_r.micLen      = buf_info->baw_header->micLen;
++		header_r.snapLen     = buf_info->baw_header->snapLen;
++		header_r.removeLen   = buf_info->baw_header->removeLen;
++		header_r.keyIdx      = buf_info->baw_header->keyIdx;
++
++		BAW->insert(dev, buf_info->buf, tid_tx->bar_ssn >> 4,
++		aggControl->tid_baw, buf_info->baw_retransmit, &header_r);
++	}*/
++
++	err = zfHpSend(dev,
++		buf_info->baw_header->header,
++		buf_info->baw_header->headerLen,
++		buf_info->baw_header->snap,
++		buf_info->baw_header->snapLen,
++		buf_info->baw_header->mic,
++		buf_info->baw_header->micLen,
++		buf_info->buf,
++		buf_info->baw_header->removeLen,
++		ZM_EXTERNAL_ALLOC_BUF,
++		(u8_t)tid_tx->ac,
++		buf_info->baw_header->keyIdx);
+ 
+-    return;
++	if (err != ZM_SUCCESS)
++		goto zlError;
++
++	return;
+ 
+ zlError:
+-    zfwBufFree(dev, buf_info->buf, 0);
+-    return;
++	zfwBufFree(dev, buf_info->buf, 0);
++	return;
+ 
+ }
+-#endif //disable BAW
++#endif /* disable BAW */
+ #endif
+ /************************************************************************/
+ /*                                                                      */
+@@ -2525,1087 +2538,1038 @@ zlError:
+ /*      Stephen, Honda      Atheros Communications, Inc.    2006.12     */
+ /*                                                                      */
+ /************************************************************************/
+-u16_t zfAggTxSendEth(zdev_t* dev, zbuf_t* buf, u16_t port, u16_t bufType, u8_t flag, struct aggControl *aggControl, TID_TX tid_tx)
++u16_t zfAggTxSendEth(zdev_t *dev, zbuf_t *buf, u16_t port, u16_t bufType,
++		u8_t flag, struct aggControl *aggControl, TID_TX tid_tx)
+ {
+-    u16_t err;
+-    //u16_t addrTblSize;
+-    //struct zsAddrTbl addrTbl;
+-    u16_t removeLen;
+-    u16_t header[(8+30+2+18)/2];    /* ctr+(4+a1+a2+a3+2+a4)+qos+iv */
+-    u16_t headerLen;
+-    u16_t mic[8/2];
+-    u16_t micLen;
+-    u16_t snap[8/2];
+-    u16_t snapLen;
+-    u16_t fragLen;
+-    u16_t frameLen;
+-    u16_t fragNum;
+-    struct zsFrag frag;
+-    u16_t i, id;
+-    u16_t da[3];
+-    u16_t sa[3];
+-    u8_t up;
+-    u8_t qosType, keyIdx = 0;
+-    u16_t fragOff;
++	u16_t err;
++	/* u16_t addrTblSize; */
++	/* struct zsAddrTbl addrTbl; */
++	u16_t removeLen;
++	u16_t header[(8+30+2+18)/2];    /* ctr+(4+a1+a2+a3+2+a4)+qos+iv */
++	u16_t headerLen;
++	u16_t mic[8/2];
++	u16_t micLen;
++	u16_t snap[8/2];
++	u16_t snapLen;
++	u16_t fragLen;
++	u16_t frameLen;
++	u16_t fragNum;
++	struct zsFrag frag;
++	u16_t i, id;
++	u16_t da[3];
++	u16_t sa[3];
++	u8_t up;
++	u8_t qosType, keyIdx = 0;
++	u16_t fragOff;
+ 
+-    zmw_get_wlan_dev(dev);
++	zmw_get_wlan_dev(dev);
+ 
+-    zmw_declare_for_critical_section();
++	zmw_declare_for_critical_section();
+ 
+-    zm_msg1_tx(ZM_LV_2, "zfTxSendEth(), port=", port);
++	zm_msg1_tx(ZM_LV_2, "zfTxSendEth(), port=", port);
+ 
+-    /* Get IP TOS for QoS AC and IP frag offset */
+-    zfTxGetIpTosAndFrag(dev, buf, &up, &fragOff);
++	/* Get IP TOS for QoS AC and IP frag offset */
++	zfTxGetIpTosAndFrag(dev, buf, &up, &fragOff);
+ 
+ #ifdef ZM_ENABLE_NATIVE_WIFI
+-    if ( wd->wlanMode == ZM_MODE_INFRASTRUCTURE )
+-    {
+-        /* DA */
+-        da[0] = zmw_tx_buf_readh(dev, buf, 16);
+-        da[1] = zmw_tx_buf_readh(dev, buf, 18);
+-        da[2] = zmw_tx_buf_readh(dev, buf, 20);
+-        /* SA */
+-        sa[0] = zmw_tx_buf_readh(dev, buf, 10);
+-        sa[1] = zmw_tx_buf_readh(dev, buf, 12);
+-        sa[2] = zmw_tx_buf_readh(dev, buf, 14);
+-    }
+-    else if ( wd->wlanMode == ZM_MODE_IBSS )
+-    {
+-        /* DA */
+-        da[0] = zmw_tx_buf_readh(dev, buf, 4);
+-        da[1] = zmw_tx_buf_readh(dev, buf, 6);
+-        da[2] = zmw_tx_buf_readh(dev, buf, 8);
+-        /* SA */
+-        sa[0] = zmw_tx_buf_readh(dev, buf, 10);
+-        sa[1] = zmw_tx_buf_readh(dev, buf, 12);
+-        sa[2] = zmw_tx_buf_readh(dev, buf, 14);
+-    }
+-    else if ( wd->wlanMode == ZM_MODE_AP )
+-    {
+-        /* DA */
+-        da[0] = zmw_tx_buf_readh(dev, buf, 4);
+-        da[1] = zmw_tx_buf_readh(dev, buf, 6);
+-        da[2] = zmw_tx_buf_readh(dev, buf, 8);
+-        /* SA */
+-        sa[0] = zmw_tx_buf_readh(dev, buf, 16);
+-        sa[1] = zmw_tx_buf_readh(dev, buf, 18);
+-        sa[2] = zmw_tx_buf_readh(dev, buf, 20);
+-    }
+-    else
+-    {
+-        //
+-    }
++	if (wd->wlanMode == ZM_MODE_INFRASTRUCTURE) {
++		/* DA */
++		da[0] = zmw_tx_buf_readh(dev, buf, 16);
++		da[1] = zmw_tx_buf_readh(dev, buf, 18);
++		da[2] = zmw_tx_buf_readh(dev, buf, 20);
++		/* SA */
++		sa[0] = zmw_tx_buf_readh(dev, buf, 10);
++		sa[1] = zmw_tx_buf_readh(dev, buf, 12);
++		sa[2] = zmw_tx_buf_readh(dev, buf, 14);
++	} else if (wd->wlanMode == ZM_MODE_IBSS) {
++		/* DA */
++		da[0] = zmw_tx_buf_readh(dev, buf, 4);
++		da[1] = zmw_tx_buf_readh(dev, buf, 6);
++		da[2] = zmw_tx_buf_readh(dev, buf, 8);
++		/* SA */
++		sa[0] = zmw_tx_buf_readh(dev, buf, 10);
++		sa[1] = zmw_tx_buf_readh(dev, buf, 12);
++		sa[2] = zmw_tx_buf_readh(dev, buf, 14);
++	} else if (wd->wlanMode == ZM_MODE_AP) {
++		/* DA */
++		da[0] = zmw_tx_buf_readh(dev, buf, 4);
++		da[1] = zmw_tx_buf_readh(dev, buf, 6);
++		da[2] = zmw_tx_buf_readh(dev, buf, 8);
++		/* SA */
++		sa[0] = zmw_tx_buf_readh(dev, buf, 16);
++		sa[1] = zmw_tx_buf_readh(dev, buf, 18);
++		sa[2] = zmw_tx_buf_readh(dev, buf, 20);
++	} else {
++		/**/
++	}
+ #else
+-    /* DA */
+-    da[0] = zmw_tx_buf_readh(dev, buf, 0);
+-    da[1] = zmw_tx_buf_readh(dev, buf, 2);
+-    da[2] = zmw_tx_buf_readh(dev, buf, 4);
+-    /* SA */
+-    sa[0] = zmw_tx_buf_readh(dev, buf, 6);
+-    sa[1] = zmw_tx_buf_readh(dev, buf, 8);
+-    sa[2] = zmw_tx_buf_readh(dev, buf, 10);
+-#endif
+-    //Decide Key Index in ATOM, No meaning in OTUS--CWYang(m)
+-    if (wd->wlanMode == ZM_MODE_AP)
+-    {
+-        keyIdx = wd->ap.bcHalKeyIdx[port];
+-        id = zfApFindSta(dev, da);
+-        if (id != 0xffff)
+-        {
+-            switch (wd->ap.staTable[id].encryMode)
+-            {
+-            case ZM_AES:
+-            case ZM_TKIP:
++	/* DA */
++	da[0] = zmw_tx_buf_readh(dev, buf, 0);
++	da[1] = zmw_tx_buf_readh(dev, buf, 2);
++	da[2] = zmw_tx_buf_readh(dev, buf, 4);
++	/* SA */
++	sa[0] = zmw_tx_buf_readh(dev, buf, 6);
++	sa[1] = zmw_tx_buf_readh(dev, buf, 8);
++	sa[2] = zmw_tx_buf_readh(dev, buf, 10);
++#endif
++	/* Decide Key Index in ATOM, No meaning in OTUS--CWYang(m) */
++	if (wd->wlanMode == ZM_MODE_AP) {
++		keyIdx = wd->ap.bcHalKeyIdx[port];
++		id = zfApFindSta(dev, da);
++		if (id != 0xffff) {
++			switch (wd->ap.staTable[id].encryMode) {
++			case ZM_AES:
++			case ZM_TKIP:
+ #ifdef ZM_ENABLE_CENC
+-            case ZM_CENC:
+-#endif //ZM_ENABLE_CENC
+-                keyIdx = wd->ap.staTable[id].keyIdx;
+-                break;
+-            }
+-        }
+-    }
+-    else
+-    {
+-        switch (wd->sta.encryMode)
+-        {
+-        case ZM_WEP64:
+-        case ZM_WEP128:
+-        case ZM_WEP256:
+-            keyIdx = wd->sta.keyId;
+-            break;
+-        case ZM_AES:
+-        case ZM_TKIP:
+-            if ((da[0]& 0x1))
+-                keyIdx = 5;
+-            else
+-                keyIdx = 4;
+-            break;
++			case ZM_CENC:
++#endif /* ZM_ENABLE_CENC */
++				keyIdx = wd->ap.staTable[id].keyIdx;
++				break;
++			}
++		}
++	} else {
++		switch (wd->sta.encryMode) {
++		case ZM_WEP64:
++		case ZM_WEP128:
++		case ZM_WEP256:
++			keyIdx = wd->sta.keyId;
++			break;
++		case ZM_AES:
++		case ZM_TKIP:
++			if ((da[0] & 0x1))
++				keyIdx = 5;
++			else
++				keyIdx = 4;
++			break;
+ #ifdef ZM_ENABLE_CENC
+-        case ZM_CENC:
+-            keyIdx = wd->sta.cencKeyId;
+-            break;
+-#endif //ZM_ENABLE_CENC
+-        }
+-    }
+-
+-    /* Create SNAP */
+-    removeLen = zfTxGenWlanSnap(dev, buf, snap, &snapLen);
+-    //zm_msg1_tx(ZM_LV_0, "fragOff=", fragOff);
+-
+-    fragLen = wd->fragThreshold;
+-    frameLen = zfwBufGetSize(dev, buf);
+-    frameLen -= removeLen;
++		case ZM_CENC:
++			keyIdx = wd->sta.cencKeyId;
++			break;
++#endif /* ZM_ENABLE_CENC */
++		}
++	}
++
++	/* Create SNAP */
++	removeLen = zfTxGenWlanSnap(dev, buf, snap, &snapLen);
++	/* zm_msg1_tx(ZM_LV_0, "fragOff=", fragOff); */
++
++	fragLen = wd->fragThreshold;
++	frameLen = zfwBufGetSize(dev, buf);
++	frameLen -= removeLen;
+ 
+ #if 0
+-    /* Create MIC */
+-    if ( (wd->wlanMode == ZM_MODE_INFRASTRUCTURE)&&
+-         (wd->sta.encryMode == ZM_TKIP) )
+-    {
+-        if ( frameLen > fragLen )
+-        {
+-            micLen = zfTxGenWlanTail(dev, buf, snap, snapLen, mic);
+-        }
+-        else
+-        {
+-            /* append MIC by HMAC */
+-            micLen = 8;
+-        }
+-    }
+-    else
+-    {
+-        micLen = 0;
+-    }
++	/* Create MIC */
++	if ((wd->wlanMode == ZM_MODE_INFRASTRUCTURE) &&
++		(wd->sta.encryMode == ZM_TKIP)) {
++		if (frameLen > fragLen) {
++			micLen = zfTxGenWlanTail(dev, buf, snap, snapLen, mic);
++		} else {
++			/* append MIC by HMAC */
++			micLen = 8;
++		}
++	} else {
++		micLen = 0;
++	}
+ #else
+-    if ( frameLen > fragLen )
+-    {
+-        micLen = zfTxGenWlanTail(dev, buf, snap, snapLen, mic);
+-    }
+-    else
+-    {
+-        /* append MIC by HMAC */
+-        micLen = 0;
+-    }
+-#endif
+-
+-    /* Access Category */
+-    if (wd->wlanMode == ZM_MODE_AP)
+-    {
+-        zfApGetStaQosType(dev, da, &qosType);
+-        if (qosType == 0)
+-        {
+-            up = 0;
+-        }
+-    }
+-    else if (wd->wlanMode == ZM_MODE_INFRASTRUCTURE)
+-    {
+-        if (wd->sta.wmeConnected == 0)
+-        {
+-            up = 0;
+-        }
+-    }
+-    else
+-    {
+-        /* TODO : STA QoS control field */
+-        up = 0;
+-    }
+-
+-    /* Assign sequence number */
+-    zmw_enter_critical_section(dev);
+-    frag.seq[0] = ((wd->seq[zcUpToAc[up&0x7]]++) << 4);
+-    if (aggControl && (ZM_AGG_FIRST_MPDU == aggControl->ampduIndication) ) {
+-        tid_tx->bar_ssn = frag.seq[0];
+-
+-        zm_msg1_agg(ZM_LV_0, "start seq=", tid_tx->bar_ssn >> 4);
+-    }
+-    //tid_tx->baw_buf[tid_tx->baw_head-1].baw_seq=frag.seq[0];
+-    zmw_leave_critical_section(dev);
+-
+-
+-        frag.buf[0] = buf;
+-        frag.bufType[0] = bufType;
+-        frag.flag[0] = flag;
+-        fragNum = 1;
+-
+-    for (i=0; i<fragNum; i++)
+-    {
+-        /* Create WLAN header(Control Setting + 802.11 header + IV) */
+-        if (up !=0 ) zm_debug_msg1("up not 0, up=",up);
+-        headerLen = zfTxGenWlanHeader(dev, frag.buf[i], header, frag.seq[i],
+-                                      frag.flag[i], snapLen+micLen, removeLen,
+-                                      port, da, sa, up, &micLen, snap, snapLen,
+-                                      aggControl);
+-
+-        /* Get buffer DMA address */
+-        //if ((addrTblSize = zfwBufMapDma(dev, frag.buf[i], &addrTbl)) == 0)
+-        //if ((addrTblSize = zfwMapTxDma(dev, frag.buf[i], &addrTbl)) == 0)
+-        //{
+-        //    err = ZM_ERR_BUFFER_DMA_ADDR;
+-        //    goto zlError;
+-        //}
++	if (frameLen > fragLen) {
++		micLen = zfTxGenWlanTail(dev, buf, snap, snapLen, mic);
++	} else {
++		/* append MIC by HMAC */
++		micLen = 0;
++	}
++#endif
+ 
+-        /* Flush buffer on cache */
+-        //zfwBufFlush(dev, frag.buf[i]);
++	/* Access Category */
++	if (wd->wlanMode == ZM_MODE_AP) {
++		zfApGetStaQosType(dev, da, &qosType);
++		if (qosType == 0)
++			up = 0;
++	} else if (wd->wlanMode == ZM_MODE_INFRASTRUCTURE) {
++		if (wd->sta.wmeConnected == 0)
++			up = 0;
++	} else {
++		/* TODO : STA QoS control field */
++		up = 0;
++	}
++
++	/* Assign sequence number */
++	zmw_enter_critical_section(dev);
++	frag.seq[0] = ((wd->seq[zcUpToAc[up&0x7]]++) << 4);
++	if (aggControl && (ZM_AGG_FIRST_MPDU == aggControl->ampduIndication)) {
++		tid_tx->bar_ssn = frag.seq[0];
++		zm_msg1_agg(ZM_LV_0, "start seq=", tid_tx->bar_ssn >> 4);
++	}
++	/* tid_tx->baw_buf[tid_tx->baw_head-1].baw_seq=frag.seq[0]; */
++	zmw_leave_critical_section(dev);
++
++	frag.buf[0] = buf;
++	frag.bufType[0] = bufType;
++	frag.flag[0] = flag;
++	fragNum = 1;
++
++	for (i = 0; i < fragNum; i++) {
++		/* Create WLAN header(Control Setting + 802.11 header + IV) */
++		if (up != 0)
++			zm_debug_msg1("up not 0, up=", up);
++		headerLen = zfTxGenWlanHeader(dev, frag.buf[i], header,
++				frag.seq[i], frag.flag[i], snapLen+micLen,
++				removeLen, port, da, sa, up, &micLen, snap,
++				snapLen, aggControl);
++
++		/* Get buffer DMA address */
++		/*if ((addrTblSize = zfwBufMapDma(dev, frag.buf[i],
++							&addrTbl)) == 0)
++		if ((addrTblSize = zfwMapTxDma(dev, frag.buf[i],
++							&addrTbl)) == 0)
++		{
++		    err = ZM_ERR_BUFFER_DMA_ADDR;
++		    goto zlError;
++		}
++		*/
++
++		/* Flush buffer on cache */
++		/* zfwBufFlush(dev, frag.buf[i]); */
+ 
+ #if 0
+-        zm_msg1_tx(ZM_LV_0, "headerLen=", headerLen);
+-        zm_msg1_tx(ZM_LV_0, "snapLen=", snapLen);
+-        zm_msg1_tx(ZM_LV_0, "micLen=", micLen);
+-        zm_msg1_tx(ZM_LV_0, "removeLen=", removeLen);
+-        zm_msg1_tx(ZM_LV_0, "addrTblSize=", addrTblSize);
+-        zm_msg1_tx(ZM_LV_0, "frag.bufType[0]=", frag.bufType[0]);
+-#endif
+-
+-        fragLen = zfwBufGetSize(dev, frag.buf[i]);
+-        if ((da[0]&0x1) == 0)
+-        {
+-            wd->commTally.txUnicastFrm++;
+-            wd->commTally.txUnicastOctets += (fragLen+snapLen);
+-        }
+-        else if ((da[0]& 0x1))
+-        {
+-            wd->commTally.txBroadcastFrm++;
+-            wd->commTally.txBroadcastOctets += (fragLen+snapLen);
+-        }
+-        else
+-        {
+-            wd->commTally.txMulticastFrm++;
+-            wd->commTally.txMulticastOctets += (fragLen+snapLen);
+-        }
+-        wd->ledStruct.txTraffic++;
+-
+-#if 0 //Who care this?
+-        if ( (i)&&(i == (fragNum-1)) )
+-        {
+-            wd->trafTally.txDataByteCount -= micLen;
+-        }
+-#endif
+-
+-        /*if (aggControl->tid_baw && aggControl->aggEnabled) {
+-            struct baw_header_r header_r;
+-
+-            header_r.header      = header;
+-            header_r.mic         = mic;
+-            header_r.snap        = snap;
+-            header_r.headerLen   = headerLen;
+-            header_r.micLen      = micLen;
+-            header_r.snapLen     = snapLen;
+-            header_r.removeLen   = removeLen;
+-            header_r.keyIdx      = keyIdx;
+-
+-            BAW->insert(dev, buf, tid_tx->bar_ssn >> 4, aggControl->tid_baw, 0, &header_r);
+-        }*/
+-
+-        if ((err = zfHpSend(dev, header, headerLen, snap, snapLen,
+-                             mic, micLen, frag.buf[i], removeLen,
+-                             frag.bufType[i], zcUpToAc[up&0x7], keyIdx)) != ZM_SUCCESS)
+-        {
+-            goto zlError;
+-        }
++		zm_msg1_tx(ZM_LV_0, "headerLen=", headerLen);
++		zm_msg1_tx(ZM_LV_0, "snapLen=", snapLen);
++		zm_msg1_tx(ZM_LV_0, "micLen=", micLen);
++		zm_msg1_tx(ZM_LV_0, "removeLen=", removeLen);
++		zm_msg1_tx(ZM_LV_0, "addrTblSize=", addrTblSize);
++		zm_msg1_tx(ZM_LV_0, "frag.bufType[0]=", frag.bufType[0]);
++#endif
+ 
++		fragLen = zfwBufGetSize(dev, frag.buf[i]);
++		if ((da[0]&0x1) == 0) {
++			wd->commTally.txUnicastFrm++;
++			wd->commTally.txUnicastOctets += (fragLen+snapLen);
++		} else if ((da[0] & 0x1)) {
++			wd->commTally.txBroadcastFrm++;
++			wd->commTally.txBroadcastOctets += (fragLen+snapLen);
++		} else {
++			wd->commTally.txMulticastFrm++;
++			wd->commTally.txMulticastOctets += (fragLen+snapLen);
++		}
++		wd->ledStruct.txTraffic++;
++
++#if 0		/* Who care this? */
++		if ((i) && (i == (fragNum-1)))
++			wd->trafTally.txDataByteCount -= micLen;
++#endif
++
++		/*if (aggControl->tid_baw && aggControl->aggEnabled) {
++		struct baw_header_r header_r;
++
++		header_r.header      = header;
++		header_r.mic         = mic;
++		header_r.snap        = snap;
++		header_r.headerLen   = headerLen;
++		header_r.micLen      = micLen;
++		header_r.snapLen     = snapLen;
++		header_r.removeLen   = removeLen;
++		header_r.keyIdx      = keyIdx;
++
++		BAW->insert(dev, buf, tid_tx->bar_ssn >> 4,
++					aggControl->tid_baw, 0, &header_r);
++		}
++		*/
++
++		err = zfHpSend(dev, header, headerLen, snap, snapLen,
++				mic, micLen, frag.buf[i], removeLen,
++				frag.bufType[i], zcUpToAc[up&0x7],
++				keyIdx);
+ 
+-        continue;
++		if (err != ZM_SUCCESS)
++			goto zlError;
++
++		continue;
+ 
+ zlError:
+-        if (frag.bufType[i] == ZM_EXTERNAL_ALLOC_BUF)
+-        {
+-            zfwBufFree(dev, frag.buf[i], err);
+-        }
+-        else if (frag.bufType[i] == ZM_INTERNAL_ALLOC_BUF)
+-        {
+-            zfwBufFree(dev, frag.buf[i], 0);
+-        }
+-        else
+-        {
+-            zm_assert(0);
+-        }
+-    } /* for (i=0; i<fragNum; i++) */
++		if (frag.bufType[i] == ZM_EXTERNAL_ALLOC_BUF)
++			zfwBufFree(dev, frag.buf[i], err);
++		else if (frag.bufType[i] == ZM_INTERNAL_ALLOC_BUF)
++			zfwBufFree(dev, frag.buf[i], 0);
++		else
++			zm_assert(0);
++	} /* for (i=0; i<fragNum; i++) */
+ 
+-    return ZM_SUCCESS;
++	return ZM_SUCCESS;
+ }
+ 
+ /*
+  * zfAggSendADDBA() refers zfSendMmFrame() in cmm.c
+  */
+-u16_t   zfAggSendAddbaRequest(zdev_t* dev, u16_t *dst, u16_t ac, u16_t up)
++u16_t zfAggSendAddbaRequest(zdev_t *dev, u16_t *dst, u16_t ac, u16_t up)
+ {
+-    zbuf_t* buf;
+-    //u16_t addrTblSize;
+-    //struct zsAddrTbl addrTbl;
+-    //u16_t err;
+-    u16_t offset = 0;
+-    u16_t hlen = 32;
+-    u16_t header[(24+25+1)/2];
+-    u16_t vap = 0;
+-    u16_t i;
+-    u8_t encrypt = 0;
+-
+-    //zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-
+-
+-    /*
+-     * TBD : Maximum size of managment frame
+-     */
+-    if ((buf = zfwBufAllocate(dev, 1024)) == NULL)
+-    {
+-        zm_msg0_mm(ZM_LV_0, "Alloc mm buf Fail!");
+-        return ZM_SUCCESS;
+-    }
+-
+-    /*
+-     * Reserve room for wlan header
+-     */
+-    offset = hlen;
+-
+-    /*
+-     * add addba frame body
+-     */
+-    offset = zfAggSetAddbaFrameBody(dev, buf, offset, ac, up);
+-
+-
+-    zfwBufSetSize(dev, buf, offset);
+-
+-    /*
+-     * Copy wlan header
+-     */
+-    zfAggGenAddbaHeader(dev, dst, header, offset-hlen, buf, vap, encrypt);
+-    for (i=0; i<(hlen>>1); i++)
+-    {
+-        zmw_tx_buf_writeh(dev, buf, i*2, header[i]);
+-    }
+-
+-    /* Get buffer DMA address */
+-    //if ((addrTblSize = zfwBufMapDma(dev, buf, &addrTbl)) == 0)
+-    //if ((addrTblSize = zfwMapTxDma(dev, buf, &addrTbl)) == 0)
+-    //{
+-    //    goto zlError;
+-    //}
+-
+-    //zm_msg2_mm(ZM_LV_2, "offset=", offset);
+-    //zm_msg2_mm(ZM_LV_2, "hlen=", hlen);
+-    //zm_msg2_mm(ZM_LV_2, "addrTblSize=", addrTblSize);
+-    //zm_msg2_mm(ZM_LV_2, "addrTbl.len[0]=", addrTbl.len[0]);
+-    //zm_msg2_mm(ZM_LV_2, "addrTbl.physAddrl[0]=", addrTbl.physAddrl[0]);
+-    //zm_msg2_mm(ZM_LV_2, "buf->data=", buf->data);
+-
+-    #if 0
+-    if ((err = zfHpSend(dev, NULL, 0, NULL, 0, NULL, 0, buf, 0,
+-            ZM_INTERNAL_ALLOC_BUF, 0, 0xff)) != ZM_SUCCESS)
+-    {
+-        goto zlError;
+-    }
+-    #else
+-    zfPutVmmq(dev, buf);
+-    zfPushVtxq(dev);
+-    #endif
+-
+-    return ZM_SUCCESS;
+-
+-}
+-
+-u16_t   zfAggSetAddbaFrameBody(zdev_t* dev, zbuf_t* buf, u16_t offset, u16_t ac, u16_t up)
+-{
+-    u16_t ba_parameter, start_seq;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-    /*
+-     * ADDBA Request frame body
+-     */
+-
+-    /*
+-     * Category
+-     */
+-    zmw_tx_buf_writeb(dev, buf, offset++, 3);
+-    /*
+-     * Action details = 0
+-     */
+-    zmw_tx_buf_writeb(dev, buf, offset++, ZM_WLAN_ADDBA_REQUEST_FRAME);
+-    /*
+-     * Dialog Token = nonzero
+-     * TBD: define how to get dialog token?
+-     */
+-    zmw_tx_buf_writeb(dev, buf, offset++, 2);
+-    /*
+-     * Block Ack parameter set
+-     * BA policy = 1 for immediate BA, 0 for delayed BA
+-     * TID(4bits) & buffer size(4bits) (TID=up & buffer size=0x80)
+-     * TBD: how to get buffer size?
+-     * ?z?w?w?w?w?w?w?w?w?w?w?s?w?w?w?w?w?w?w?w?w?w?w?s?w?w?w?w?w?w?w?w?s?w?w?w?w?w?w?w?w?w?w?w?w?w?{
+-     * ?x    B0    ?x    B1     ?x B2  B5 ?x B6      B15 ?x
+-     * ?u?w?w?w?w?w?w?w?w?w?w?q?w?w?w?w?w?w?w?w?w?w?w?q?w?w?w?w?w?w?w?w?q?w?w?w?w?w?w?w?w?w?w?w?w?w?t
+-     * ?x Reserved ?x BA policy ?x  TID   ?x Buffer size ?x
+-     * ?|?w?w?w?w?w?w?w?w?w?w?r?w?w?w?w?w?w?w?w?w?w?w?r?w?w?w?w?w?w?w?w?r?w?w?w?w?w?w?w?w?w?w?w?w?w?}
+-     */
+-    ba_parameter = 1 << 12;     // buffer size = 0x40(64)
+-    ba_parameter |= up << 2;    // tid = up
+-    ba_parameter |= 2;          // ba policy = 1
+-    zmw_tx_buf_writeh(dev, buf, offset, ba_parameter);
+-    offset+=2;
+-    /*
+-     * BA timeout value
+-     */
+-    zmw_tx_buf_writeh(dev, buf, offset, 0);
+-    offset+=2;
+-    /*
+-     * BA starting sequence number
+-     * ?z?w?w?w?w?w?w?w?w?w?w?w?w?w?s?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?{
+-     * ?x B0       B3 ?x B4              B15 ?x
+-     * ?u?w?w?w?w?w?w?w?w?w?w?w?w?w?q?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?t
+-     * ?x Frag num(0) ?x BA starting seq num ?x
+-     * ?|?w?w?w?w?w?w?w?w?w?w?w?w?w?r?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?}
+-     */
+-    start_seq = ((wd->seq[ac]) << 4) & 0xFFF0;
+-    zmw_tx_buf_writeh(dev, buf, offset, start_seq);
+-    offset+=2;
+-
+-    return offset;
+-}
+-
+-u16_t zfAggGenAddbaHeader(zdev_t* dev, u16_t* dst,
+-        u16_t* header, u16_t len, zbuf_t* buf, u16_t vap, u8_t encrypt)
+-{
+-    u8_t  hlen = 32;        // MAC ctrl + PHY ctrl + 802.11 MM header
+-    //u8_t frameType = ZM_WLAN_FRAME_TYPE_ACTION;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    /*
+-     * Generate control setting
+-     */
+-    //bodyLen = zfwBufGetSize(dev, buf);
+-    header[0] = 24+len+4;   //Length
+-    header[1] = 0x8;        //MAC control, backoff + (ack)
++	zbuf_t *buf;
++	/* u16_t addrTblSize; */
++	/* struct zsAddrTbl addrTbl; */
++	/* u16_t err; */
++	u16_t offset = 0;
++	u16_t hlen = 32;
++	u16_t header[(24+25+1)/2];
++	u16_t vap = 0;
++	u16_t i;
++	u8_t encrypt = 0;
++
++	/* zmw_get_wlan_dev(dev); */
++
++	/* zmw_declare_for_critical_section(); */
++
++	/*
++	* TBD : Maximum size of managment frame
++	*/
++	buf = zfwBufAllocate(dev, 1024);
++
++	if (buf == NULL) {
++		zm_msg0_mm(ZM_LV_0, "Alloc mm buf Fail!");
++		return ZM_SUCCESS;
++	}
++
++	/*
++	* Reserve room for wlan header
++	*/
++	offset = hlen;
++
++	/*
++	* add addba frame body
++	*/
++	offset = zfAggSetAddbaFrameBody(dev, buf, offset, ac, up);
++
++
++	zfwBufSetSize(dev, buf, offset);
++
++	/*
++	* Copy wlan header
++	*/
++	zfAggGenAddbaHeader(dev, dst, header, offset-hlen, buf, vap, encrypt);
++	for (i = 0; i < (hlen>>1); i++)
++		zmw_tx_buf_writeh(dev, buf, i*2, header[i]);
++
++	/* Get buffer DMA address */
++	/*if ((addrTblSize = zfwBufMapDma(dev, buf, &addrTbl)) == 0)
++	if ((addrTblSize = zfwMapTxDma(dev, buf, &addrTbl)) == 0)
++	{
++	    goto zlError;
++	}
++
++	zm_msg2_mm(ZM_LV_2, "offset=", offset);
++	zm_msg2_mm(ZM_LV_2, "hlen=", hlen);
++	zm_msg2_mm(ZM_LV_2, "addrTblSize=", addrTblSize);
++	zm_msg2_mm(ZM_LV_2, "addrTbl.len[0]=", addrTbl.len[0]);
++	zm_msg2_mm(ZM_LV_2, "addrTbl.physAddrl[0]=", addrTbl.physAddrl[0]);
++	zm_msg2_mm(ZM_LV_2, "buf->data=", buf->data);
++	*/
+ 
+ #if 0
+-    /* CCK 1M */
+-    header[2] = 0x0f00;          //PHY control L
+-    header[3] = 0x0000;          //PHY control H
++	err = zfHpSend(dev, NULL, 0, NULL, 0, NULL, 0, buf, 0,
++		ZM_INTERNAL_ALLOC_BUF, 0, 0xff);
++
++	if (err != ZM_SUCCESS)
++		goto zlError;
++
+ #else
+-    /* OFDM 6M */
+-    header[2] = 0x0f01;          //PHY control L
+-    header[3] = 0x000B;          //PHY control H
+-#endif
+-
+-    /*
+-     * Generate WLAN header
+-     * Frame control frame type and subtype
+-     */
+-    header[4+0] = ZM_WLAN_FRAME_TYPE_ACTION;
+-    /*
+-     * Duration
+-     */
+-    header[4+1] = 0;
+-
+-    if (wd->wlanMode == ZM_MODE_INFRASTRUCTURE)
+-    {
+-        header[4+8] = wd->sta.bssid[0];
+-        header[4+9] = wd->sta.bssid[1];
+-        header[4+10] = wd->sta.bssid[2];
+-    }
+-    else if (wd->wlanMode == ZM_MODE_PSEUDO)
+-    {
+-        /* Address 3 = 00:00:00:00:00:00 */
+-        header[4+8] = 0;
+-        header[4+9] = 0;
+-        header[4+10] = 0;
+-    }
+-    else if (wd->wlanMode == ZM_MODE_IBSS)
+-    {
+-        header[4+8] = wd->sta.bssid[0];
+-        header[4+9] = wd->sta.bssid[1];
+-        header[4+10] = wd->sta.bssid[2];
+-    }
+-    else if (wd->wlanMode == ZM_MODE_AP)
+-    {
+-        /* Address 3 = BSSID */
+-        header[4+8] = wd->macAddr[0];
+-        header[4+9] = wd->macAddr[1];
+-        header[4+10] = wd->macAddr[2] + (vap<<8);
+-    }
+-
+-    /* Address 1 = DA */
+-    header[4+2] = dst[0];
+-    header[4+3] = dst[1];
+-    header[4+4] = dst[2];
+-
+-    /* Address 2 = SA */
+-    header[4+5] = wd->macAddr[0];
+-    header[4+6] = wd->macAddr[1];
+-    if (wd->wlanMode == ZM_MODE_AP)
+-    {
+-        header[4+7] = wd->macAddr[2] + (vap<<8);
+-    }
+-    else
+-    {
+-        header[4+7] = wd->macAddr[2];
+-    }
+-
+-    /* Sequence Control */
+-    zmw_enter_critical_section(dev);
+-    header[4+11] = ((wd->mmseq++)<<4);
+-    zmw_leave_critical_section(dev);
+-
+-
+-    return hlen;
+-}
+-
+-
+-u16_t   zfAggProcessAction(zdev_t* dev, zbuf_t* buf)
+-{
+-    u16_t category;
+-
+-    //zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-
+-    category = zmw_rx_buf_readb(dev, buf, 24);
+-
+-    switch (category)
+-    {
+-    case ZM_WLAN_BLOCK_ACK_ACTION_FRAME:
+-        zfAggBlockAckActionFrame(dev, buf);
+-        break;
+-
+-    }
+-
+-    return ZM_SUCCESS;
+-}
+-
+-
+-u16_t   zfAggBlockAckActionFrame(zdev_t* dev, zbuf_t* buf)
++	zfPutVmmq(dev, buf);
++	zfPushVtxq(dev);
++#endif
++
++	return ZM_SUCCESS;
++
++}
++
++u16_t zfAggSetAddbaFrameBody(zdev_t *dev, zbuf_t *buf,
++			u16_t offset, u16_t ac, u16_t up)
++{
++	u16_t ba_parameter, start_seq;
++
++	zmw_get_wlan_dev(dev);
++
++	/* zmw_declare_for_critical_section(); */
++	/*
++	* ADDBA Request frame body
++	*/
++
++	/*
++	* Category
++	*/
++	zmw_tx_buf_writeb(dev, buf, offset++, 3);
++	/*
++	* Action details = 0
++	*/
++	zmw_tx_buf_writeb(dev, buf, offset++, ZM_WLAN_ADDBA_REQUEST_FRAME);
++	/*
++	* Dialog Token = nonzero
++	* TBD: define how to get dialog token?
++	*/
++	zmw_tx_buf_writeb(dev, buf, offset++, 2);
++	/*
++	* Block Ack parameter set
++	* BA policy = 1 for immediate BA, 0 for delayed BA
++	* TID(4bits) & buffer size(4bits) (TID=up & buffer size=0x80)
++	* TBD: how to get buffer size?
++	* *****************************************************************{
++	* x    B0    x    B1     x B2  B5 x B6      B15 x
++	* *****************************************************************
++	* x Reserved x BA policy x  TID   x Buffer size x
++	* *****************************************************************}
++	*/
++	ba_parameter = 1 << 12;     /* buffer size = 0x40(64) */
++	ba_parameter |= up << 2;    /* tid = up */
++	ba_parameter |= 2;          /* ba policy = 1 */
++	zmw_tx_buf_writeh(dev, buf, offset, ba_parameter);
++	offset += 2;
++	/*
++	* BA timeout value
++	*/
++	zmw_tx_buf_writeh(dev, buf, offset, 0);
++	offset += 2;
++	/*
++	* BA starting sequence number
++	* ***************************************************************{
++	* x B0       B3 x B4              B15 x
++	* ***************************************************************
++	* x Frag num(0) x BA starting seq num x
++	* ***************************************************************}
++	*/
++	start_seq = ((wd->seq[ac]) << 4) & 0xFFF0;
++	zmw_tx_buf_writeh(dev, buf, offset, start_seq);
++	offset += 2;
++
++	return offset;
++}
++
++u16_t zfAggGenAddbaHeader(zdev_t *dev, u16_t *dst,
++	u16_t *header, u16_t len, zbuf_t *buf, u16_t vap, u8_t encrypt)
++{
++	u8_t  hlen = 32;        /* MAC ctrl + PHY ctrl + 802.11 MM header */
++	/* u8_t frameType = ZM_WLAN_FRAME_TYPE_ACTION; */
++
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	/*
++	* Generate control setting
++	*/
++	/* bodyLen = zfwBufGetSize(dev, buf); */
++	header[0] = 24+len+4;   /* Length */
++	header[1] = 0x8;        /* MAC control, backoff + (ack) */
++
++#if 0
++	/* CCK 1M */
++	header[2] = 0x0f00;          /* PHY control L */
++	header[3] = 0x0000;          /* PHY control H */
++#else
++	/* OFDM 6M */
++	header[2] = 0x0f01;          /* PHY control L */
++	header[3] = 0x000B;          /* PHY control H */
++#endif
++
++	/*
++	* Generate WLAN header
++	* Frame control frame type and subtype
++	*/
++	header[4 + 0] = ZM_WLAN_FRAME_TYPE_ACTION;
++	/*
++	* Duration
++	*/
++	header[4 + 1] = 0;
++
++	if (wd->wlanMode == ZM_MODE_INFRASTRUCTURE) {
++		header[4 + 8] = wd->sta.bssid[0];
++		header[4 + 9] = wd->sta.bssid[1];
++		header[4 + 10] = wd->sta.bssid[2];
++	} else if (wd->wlanMode == ZM_MODE_PSEUDO) {
++		/* Address 3 = 00:00:00:00:00:00 */
++		header[4 + 8] = 0;
++		header[4 + 9] = 0;
++		header[4 + 10] = 0;
++	} else if (wd->wlanMode == ZM_MODE_IBSS) {
++		header[4 + 8] = wd->sta.bssid[0];
++		header[4 + 9] = wd->sta.bssid[1];
++		header[4 + 10] = wd->sta.bssid[2];
++	} else if (wd->wlanMode == ZM_MODE_AP) {
++		/* Address 3 = BSSID */
++		header[4 + 8] = wd->macAddr[0];
++		header[4 + 9] = wd->macAddr[1];
++		header[4 + 10] = wd->macAddr[2] + (vap<<8);
++	}
++
++	/* Address 1 = DA */
++	header[4 + 2] = dst[0];
++	header[4 + 3] = dst[1];
++	header[4 + 4] = dst[2];
++
++	/* Address 2 = SA */
++	header[4 + 5] = wd->macAddr[0];
++	header[4 + 6] = wd->macAddr[1];
++	if (wd->wlanMode == ZM_MODE_AP)
++		header[4 + 7] = wd->macAddr[2] + (vap<<8);
++	else
++		header[4 + 7] = wd->macAddr[2];
++
++	/* Sequence Control */
++	zmw_enter_critical_section(dev);
++	header[4 + 11] = ((wd->mmseq++)<<4);
++	zmw_leave_critical_section(dev);
++
++	return hlen;
++}
++
++
++u16_t zfAggProcessAction(zdev_t *dev, zbuf_t *buf)
++{
++	u16_t category;
++
++	/* zmw_get_wlan_dev(dev); */
++
++	/* zmw_declare_for_critical_section(); */
++
++	category = zmw_rx_buf_readb(dev, buf, 24);
++
++	switch (category) {
++	case ZM_WLAN_BLOCK_ACK_ACTION_FRAME:
++		zfAggBlockAckActionFrame(dev, buf);
++		break;
++
++	}
++
++	return ZM_SUCCESS;
++}
++
++
++u16_t zfAggBlockAckActionFrame(zdev_t *dev, zbuf_t *buf)
+ {
+-    u8_t action;
++	u8_t action;
+ 
+-    //zmw_get_wlan_dev(dev);
++	/* zmw_get_wlan_dev(dev); */
+ 
+-    //zmw_declare_for_critical_section();
++	/* zmw_declare_for_critical_section(); */
+ 
+-    action = zmw_rx_buf_readb(dev, buf, 25);
++	action = zmw_rx_buf_readb(dev, buf, 25);
+ #ifdef ZM_ENABLE_AGGREGATION
+-    switch (action)
+-    {
+-    case ZM_WLAN_ADDBA_REQUEST_FRAME:
+-        zm_msg0_agg(ZM_LV_0, "Received BA Action frame is ADDBA request");
+-        zfAggRecvAddbaRequest(dev, buf);
+-        break;
+-    case ZM_WLAN_ADDBA_RESPONSE_FRAME:
+-        zm_msg0_agg(ZM_LV_0, "Received BA Action frame is ADDBA response");
+-        zfAggRecvAddbaResponse(dev, buf);
+-        break;
+-    case ZM_WLAN_DELBA_FRAME:
+-        zfAggRecvDelba(dev, buf);
+-        break;
+-    }
+-#endif
+-    return ZM_SUCCESS;
+-}
+-
+-u16_t   zfAggRecvAddbaRequest(zdev_t* dev, zbuf_t* buf)
+-{
+-    //u16_t dialog;
+-    struct aggBaFrameParameter bf;
+-    u16_t i;
+-    //zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-
+-    bf.buf = buf;
+-    bf.dialog = zmw_rx_buf_readb(dev, buf, 26);
+-    /*
+-     * ba parameter set
+-     */
+-    bf.ba_parameter = zmw_rx_buf_readh(dev, buf, 27);
+-    bf.ba_policy   = (bf.ba_parameter >> 1) & 1;
+-    bf.tid         = (bf.ba_parameter >> 2) & 0xF;
+-    bf.buffer_size = (bf.ba_parameter >> 6);
+-    /*
+-     * BA timeout value
+-     */
+-    bf.ba_timeout = zmw_rx_buf_readh(dev, buf, 29);
+-    /*
+-     * BA starting sequence number
+-     */
+-    bf.ba_start_seq = zmw_rx_buf_readh(dev, buf, 31) >> 4;
+-
+-    i=26;
+-    while(i < 32) {
+-        zm_debug_msg2("Recv ADDBA Req:", zmw_rx_buf_readb(dev,buf,i));
+-        i++;
+-    }
+-
+-    zfAggSendAddbaResponse(dev, &bf);
+-
+-    zfAggAddbaSetTidRx(dev, buf, &bf);
+-
+-    return ZM_SUCCESS;
+-}
+-
+-u16_t   zfAggAddbaSetTidRx(zdev_t* dev, zbuf_t* buf, struct aggBaFrameParameter *bf)
+-{
+-    u16_t i, ac, aid, fragOff;
+-    u16_t src[3];
+-    u16_t offset = 0;
+-    u8_t  up;
+-    struct agg_tid_rx *tid_rx = NULL;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    src[0] = zmw_rx_buf_readh(dev, buf, offset+10);
+-    src[1] = zmw_rx_buf_readh(dev, buf, offset+12);
+-    src[2] = zmw_rx_buf_readh(dev, buf, offset+14);
+-    aid = zfApFindSta(dev, src);
+-
+-    zfTxGetIpTosAndFrag(dev, buf, &up, &fragOff);
+-    ac = zcUpToAc[up&0x7] & 0x3;
+-
+-    ac = bf->tid;
+-
+-    for (i=0; i<ZM_AGG_POOL_SIZE ; i++)
+-    {
+-        if((wd->tid_rx[i]->aid == aid) && (wd->tid_rx[i]->ac == ac))
+-        {
+-            tid_rx = wd->tid_rx[i];
+-            break;
+-        }
+-    }
+-
+-    if (!tid_rx)
+-    {
+-        for (i=0; i<ZM_AGG_POOL_SIZE; i++)
+-        {
+-            if (wd->tid_rx[i]->aid == ZM_MAX_STA_SUPPORT)
+-            {
+-                tid_rx = wd->tid_rx[i];
+-                break;
+-            }
+-        }
+-        if (!tid_rx)
+-            return 0;
+-    }
+-
+-    zmw_enter_critical_section(dev);
+-
+-    tid_rx->aid = aid;
+-    tid_rx->ac = ac;
+-    tid_rx->addBaExchangeStatusCode = ZM_AGG_ADDBA_RESPONSE;
+-    tid_rx->seq_start = bf->ba_start_seq;
+-    tid_rx->baw_head = tid_rx->baw_tail = 0;
+-    tid_rx->sq_exceed_count = tid_rx->sq_behind_count = 0;
+-    zmw_leave_critical_section(dev);
+-
+-    return 0;
+-}
+-
+-u16_t   zfAggRecvAddbaResponse(zdev_t* dev, zbuf_t* buf)
+-{
+-    u16_t i,ac, aid=0;
+-    u16_t src[3];
+-    struct aggBaFrameParameter bf;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-
+-    src[0] = zmw_rx_buf_readh(dev, buf, 10);
+-    src[1] = zmw_rx_buf_readh(dev, buf, 12);
+-    src[2] = zmw_rx_buf_readh(dev, buf, 14);
+-
+-    if (wd->wlanMode == ZM_MODE_AP)
+-        aid = zfApFindSta(dev, src);
+-
+-
+-    bf.buf = buf;
+-    bf.dialog = zmw_rx_buf_readb(dev, buf, 26);
+-    bf.status_code = zmw_rx_buf_readh(dev, buf, 27);
+-    if (!bf.status_code)
+-    {
+-        wd->addbaComplete=1;
+-    }
+-
+-    /*
+-     * ba parameter set
+-     */
+-    bf.ba_parameter = zmw_rx_buf_readh(dev, buf, 29);
+-    bf.ba_policy   = (bf.ba_parameter >> 1) & 1;
+-    bf.tid         = (bf.ba_parameter >> 2) & 0xF;
+-    bf.buffer_size = (bf.ba_parameter >> 6);
+-    /*
+-     * BA timeout value
+-     */
+-    bf.ba_timeout = zmw_rx_buf_readh(dev, buf, 31);
+-
+-    i=26;
+-    while(i < 32) {
+-        zm_debug_msg2("Recv ADDBA Rsp:", zmw_rx_buf_readb(dev,buf,i));
+-        i++;
+-    }
+-
+-    ac = zcUpToAc[bf.tid&0x7] & 0x3;
+-
+-    //zmw_enter_critical_section(dev);
+-
+-    //wd->aggSta[aid].aggFlag[ac] = 0;
+-
+-    //zmw_leave_critical_section(dev);
+-
+-    return ZM_SUCCESS;
+-}
+-
+-u16_t   zfAggRecvDelba(zdev_t* dev, zbuf_t* buf)
+-{
+-    //zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-    return ZM_SUCCESS;
+-}
+-
+-u16_t   zfAggSendAddbaResponse(zdev_t* dev, struct aggBaFrameParameter *bf)
+-{
+-    zbuf_t* buf;
+-    //u16_t addrTblSize;
+-    //struct zsAddrTbl addrTbl;
+-    //u16_t err;
+-    u16_t offset = 0;
+-    u16_t hlen = 32;
+-    u16_t header[(24+25+1)/2];
+-    u16_t vap = 0;
+-    u16_t i;
+-    u8_t encrypt = 0;
+-    u16_t dst[3];
+-
+-    //zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-
+-
+-    /*
+-     * TBD : Maximum size of managment frame
+-     */
+-    if ((buf = zfwBufAllocate(dev, 1024)) == NULL)
+-    {
+-        zm_msg0_mm(ZM_LV_0, "Alloc mm buf Fail!");
+-        return ZM_SUCCESS;
+-    }
+-
+-    /*
+-     * Reserve room for wlan header
+-     */
+-    offset = hlen;
+-
+-    /*
+-     * add addba frame body
+-     */
+-    offset = zfAggSetAddbaResponseFrameBody(dev, buf, bf, offset);
+-
+-
+-    zfwBufSetSize(dev, buf, offset);
+-
+-    /*
+-     * Copy wlan header
+-     */
+-
+-    dst[0] = zmw_rx_buf_readh(dev, bf->buf, 10);
+-    dst[1] = zmw_rx_buf_readh(dev, bf->buf, 12);
+-    dst[2] = zmw_rx_buf_readh(dev, bf->buf, 14);
+-    zfAggGenAddbaHeader(dev, dst, header, offset-hlen, buf, vap, encrypt);
+-    for (i=0; i<(hlen>>1); i++)
+-    {
+-        zmw_tx_buf_writeh(dev, buf, i*2, header[i]);
+-    }
+-
+-    /* Get buffer DMA address */
+-    //if ((addrTblSize = zfwBufMapDma(dev, buf, &addrTbl)) == 0)
+-    //if ((addrTblSize = zfwMapTxDma(dev, buf, &addrTbl)) == 0)
+-    //{
+-    //    goto zlError;
+-    //}
+-
+-    //zm_msg2_mm(ZM_LV_2, "offset=", offset);
+-    //zm_msg2_mm(ZM_LV_2, "hlen=", hlen);
+-    //zm_msg2_mm(ZM_LV_2, "addrTblSize=", addrTblSize);
+-    //zm_msg2_mm(ZM_LV_2, "addrTbl.len[0]=", addrTbl.len[0]);
+-    //zm_msg2_mm(ZM_LV_2, "addrTbl.physAddrl[0]=", addrTbl.physAddrl[0]);
+-    //zm_msg2_mm(ZM_LV_2, "buf->data=", buf->data);
+-
+-    #if 0
+-    if ((err = zfHpSend(dev, NULL, 0, NULL, 0, NULL, 0, buf, 0,
+-            ZM_INTERNAL_ALLOC_BUF, 0, 0xff)) != ZM_SUCCESS)
+-    {
+-        goto zlError;
+-    }
+-    #else
+-    zfPutVmmq(dev, buf);
+-    zfPushVtxq(dev);
+-    #endif
+-
+-    //zfAggSendAddbaRequest(dev, dst, zcUpToAc[bf->tid&0x7] & 0x3, bf->tid);
+-    return ZM_SUCCESS;
+-
+-}
+-
+-u16_t   zfAggSetAddbaResponseFrameBody(zdev_t* dev, zbuf_t* buf,
+-                struct aggBaFrameParameter *bf, u16_t offset)
+-{
+-
+-    //zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-    /*
+-     * ADDBA Request frame body
+-     */
+-
+-    /*
+-     * Category
+-     */
+-    zmw_tx_buf_writeb(dev, buf, offset++, 3);
+-    /*
+-     * Action details = 0
+-     */
+-    zmw_tx_buf_writeb(dev, buf, offset++, ZM_WLAN_ADDBA_RESPONSE_FRAME);
+-    /*
+-     * Dialog Token = nonzero
+-     */
+-    zmw_tx_buf_writeb(dev, buf, offset++, bf->dialog);
+-    /*
+-     * Status code
+-     */
+-    zmw_tx_buf_writeh(dev, buf, offset, 0);
+-    offset+=2;
+-    /*
+-     * Block Ack parameter set
+-     * BA policy = 1 for immediate BA, 0 for delayed BA
+-     * TID(4bits) & buffer size(4bits) (TID=0x1 & buffer size=0x80)
+-     * TBD: how to get TID number and buffer size?
+-     * ?z?w?w?w?w?w?w?w?w?w?w?s?w?w?w?w?w?w?w?w?w?w?w?s?w?w?w?w?w?w?w?w?s?w?w?w?w?w?w?w?w?w?w?w?w?w?{
+-     * ?x    B0    ?x    B1     ?x B2  B5 ?x B6      B15 ?x
+-     * ?u?w?w?w?w?w?w?w?w?w?w?q?w?w?w?w?w?w?w?w?w?w?w?q?w?w?w?w?w?w?w?w?q?w?w?w?w?w?w?w?w?w?w?w?w?w?t
+-     * ?x Reserved ?x BA policy ?x  TID   ?x Buffer size ?x
+-     * ?|?w?w?w?w?w?w?w?w?w?w?r?w?w?w?w?w?w?w?w?w?w?w?r?w?w?w?w?w?w?w?w?r?w?w?w?w?w?w?w?w?w?w?w?w?w?}
+-     */
+-    zmw_tx_buf_writeh(dev, buf, offset, bf->ba_parameter);
+-    offset+=2;
+-    /*
+-     * BA timeout value
+-     */
+-    zmw_tx_buf_writeh(dev, buf, offset, bf->ba_timeout);
+-    offset+=2;
+-
+-    return offset;
+-}
+-
+-void   zfAggInvokeBar(zdev_t* dev, TID_TX tid_tx)
+-{
+-    struct aggBarControl aggBarControl;
+-    //zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-    //bar_control = aggBarControl->tid_info << 12 | aggBarControl->compressed_bitmap << 2
+-    //        | aggBarControl->multi_tid << 1 | aggBarControl->bar_ack_policy;
+-    aggBarControl.bar_ack_policy = 0;
+-    aggBarControl.multi_tid = 0;
+-    aggBarControl.compressed_bitmap = 0;
+-    aggBarControl.tid_info = tid_tx->tid;
+-    zfAggSendBar(dev, tid_tx, &aggBarControl);
++	switch (action) {
++	case ZM_WLAN_ADDBA_REQUEST_FRAME:
++		zm_msg0_agg(ZM_LV_0, "Received BA Action frame is "
++							"ADDBA request");
++		zfAggRecvAddbaRequest(dev, buf);
++		break;
++	case ZM_WLAN_ADDBA_RESPONSE_FRAME:
++		zm_msg0_agg(ZM_LV_0, "Received BA Action frame is "
++							"ADDBA response");
++		zfAggRecvAddbaResponse(dev, buf);
++		break;
++	case ZM_WLAN_DELBA_FRAME:
++		zfAggRecvDelba(dev, buf);
++		break;
++	}
++#endif
++	return ZM_SUCCESS;
++}
++
++u16_t zfAggRecvAddbaRequest(zdev_t *dev, zbuf_t *buf)
++{
++	/* u16_t dialog; */
++	struct aggBaFrameParameter bf;
++	u16_t i;
++	/* zmw_get_wlan_dev(dev); */
++
++	/* zmw_declare_for_critical_section(); */
+ 
+-    return;
++	bf.buf = buf;
++	bf.dialog = zmw_rx_buf_readb(dev, buf, 26);
++	/*
++	* ba parameter set
++	*/
++	bf.ba_parameter = zmw_rx_buf_readh(dev, buf, 27);
++	bf.ba_policy   = (bf.ba_parameter >> 1) & 1;
++	bf.tid         = (bf.ba_parameter >> 2) & 0xF;
++	bf.buffer_size = (bf.ba_parameter >> 6);
++	/*
++	* BA timeout value
++	*/
++	bf.ba_timeout = zmw_rx_buf_readh(dev, buf, 29);
++	/*
++	* BA starting sequence number
++	*/
++	bf.ba_start_seq = zmw_rx_buf_readh(dev, buf, 31) >> 4;
++
++	i = 26;
++	while (i < 32) {
++		zm_debug_msg2("Recv ADDBA Req:", zmw_rx_buf_readb(dev, buf, i));
++		i++;
++	}
++
++	zfAggSendAddbaResponse(dev, &bf);
++
++	zfAggAddbaSetTidRx(dev, buf, &bf);
++
++	return ZM_SUCCESS;
++}
++
++u16_t zfAggAddbaSetTidRx(zdev_t *dev, zbuf_t *buf,
++					struct aggBaFrameParameter *bf)
++{
++	u16_t i, ac, aid, fragOff;
++	u16_t src[3];
++	u16_t offset = 0;
++	u8_t up;
++	struct agg_tid_rx *tid_rx = NULL;
++
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	src[0] = zmw_rx_buf_readh(dev, buf, offset+10);
++	src[1] = zmw_rx_buf_readh(dev, buf, offset+12);
++	src[2] = zmw_rx_buf_readh(dev, buf, offset+14);
++	aid = zfApFindSta(dev, src);
++
++	zfTxGetIpTosAndFrag(dev, buf, &up, &fragOff);
++	ac = zcUpToAc[up&0x7] & 0x3;
++
++	ac = bf->tid;
++
++	for (i = 0; i < ZM_AGG_POOL_SIZE ; i++) {
++		if ((wd->tid_rx[i]->aid == aid) && (wd->tid_rx[i]->ac == ac)) {
++			tid_rx = wd->tid_rx[i];
++			break;
++		}
++	}
++
++	if (!tid_rx) {
++		for (i = 0; i < ZM_AGG_POOL_SIZE; i++) {
++			if (wd->tid_rx[i]->aid == ZM_MAX_STA_SUPPORT) {
++				tid_rx = wd->tid_rx[i];
++				break;
++			}
++		}
++		if (!tid_rx)
++			return 0;
++	}
++
++	zmw_enter_critical_section(dev);
++
++	tid_rx->aid = aid;
++	tid_rx->ac = ac;
++	tid_rx->addBaExchangeStatusCode = ZM_AGG_ADDBA_RESPONSE;
++	tid_rx->seq_start = bf->ba_start_seq;
++	tid_rx->baw_head = tid_rx->baw_tail = 0;
++	tid_rx->sq_exceed_count = tid_rx->sq_behind_count = 0;
++	zmw_leave_critical_section(dev);
++
++	return 0;
++}
++
++u16_t zfAggRecvAddbaResponse(zdev_t *dev, zbuf_t *buf)
++{
++	u16_t i, ac, aid = 0;
++	u16_t src[3];
++	struct aggBaFrameParameter bf;
++
++	zmw_get_wlan_dev(dev);
++
++	/* zmw_declare_for_critical_section(); */
++
++	src[0] = zmw_rx_buf_readh(dev, buf, 10);
++	src[1] = zmw_rx_buf_readh(dev, buf, 12);
++	src[2] = zmw_rx_buf_readh(dev, buf, 14);
++
++	if (wd->wlanMode == ZM_MODE_AP)
++		aid = zfApFindSta(dev, src);
++
++	bf.buf = buf;
++	bf.dialog = zmw_rx_buf_readb(dev, buf, 26);
++	bf.status_code = zmw_rx_buf_readh(dev, buf, 27);
++	if (!bf.status_code)
++		wd->addbaComplete = 1;
++
++	/*
++	* ba parameter set
++	*/
++	bf.ba_parameter = zmw_rx_buf_readh(dev, buf, 29);
++	bf.ba_policy   = (bf.ba_parameter >> 1) & 1;
++	bf.tid         = (bf.ba_parameter >> 2) & 0xF;
++	bf.buffer_size = (bf.ba_parameter >> 6);
++	/*
++	* BA timeout value
++	*/
++	bf.ba_timeout = zmw_rx_buf_readh(dev, buf, 31);
++
++	i = 26;
++	while (i < 32) {
++		zm_debug_msg2("Recv ADDBA Rsp:", zmw_rx_buf_readb(dev, buf, i));
++		i++;
++	}
++
++	ac = zcUpToAc[bf.tid&0x7] & 0x3;
++
++	/* zmw_enter_critical_section(dev); */
++
++	/* wd->aggSta[aid].aggFlag[ac] = 0; */
++
++	/* zmw_leave_critical_section(dev); */
++
++	return ZM_SUCCESS;
++}
++
++u16_t zfAggRecvDelba(zdev_t *dev, zbuf_t *buf)
++{
++	/* zmw_get_wlan_dev(dev); */
++
++	/* zmw_declare_for_critical_section(); */
++	return ZM_SUCCESS;
++}
++
++u16_t zfAggSendAddbaResponse(zdev_t *dev, struct aggBaFrameParameter *bf)
++{
++	zbuf_t *buf;
++	/* u16_t addrTblSize; */
++	/* struct zsAddrTbl addrTbl; */
++	/* u16_t err; */
++	u16_t offset = 0;
++	u16_t hlen = 32;
++	u16_t header[(24 + 25 + 1) / 2];
++	u16_t vap = 0;
++	u16_t i;
++	u8_t encrypt = 0;
++	u16_t dst[3];
++
++	/* zmw_get_wlan_dev(dev); */
++
++	/* zmw_declare_for_critical_section(); */
++
++
++	/*
++	* TBD : Maximum size of managment frame
++	*/
++	buf = zfwBufAllocate(dev, 1024);
++
++	if (buf == NULL) {
++		zm_msg0_mm(ZM_LV_0, "Alloc mm buf Fail!");
++		return ZM_SUCCESS;
++	}
++
++	/*
++	* Reserve room for wlan header
++	*/
++	offset = hlen;
++
++	/*
++	* add addba frame body
++	*/
++	offset = zfAggSetAddbaResponseFrameBody(dev, buf, bf, offset);
++
++
++	zfwBufSetSize(dev, buf, offset);
++
++	/*
++	* Copy wlan header
++	*/
++
++	dst[0] = zmw_rx_buf_readh(dev, bf->buf, 10);
++	dst[1] = zmw_rx_buf_readh(dev, bf->buf, 12);
++	dst[2] = zmw_rx_buf_readh(dev, bf->buf, 14);
++	zfAggGenAddbaHeader(dev, dst, header, offset-hlen, buf, vap, encrypt);
++	for (i = 0; i < (hlen>>1); i++)
++		zmw_tx_buf_writeh(dev, buf, i*2, header[i]);
++
++	/* Get buffer DMA address */
++	/*if ((addrTblSize = zfwBufMapDma(dev, buf, &addrTbl)) == 0)
++	if ((addrTblSize = zfwMapTxDma(dev, buf, &addrTbl)) == 0)
++	{
++	    goto zlError;
++	}
++
++	zm_msg2_mm(ZM_LV_2, "offset=", offset);
++	zm_msg2_mm(ZM_LV_2, "hlen=", hlen);
++	zm_msg2_mm(ZM_LV_2, "addrTblSize=", addrTblSize);
++	zm_msg2_mm(ZM_LV_2, "addrTbl.len[0]=", addrTbl.len[0]);
++	zm_msg2_mm(ZM_LV_2, "addrTbl.physAddrl[0]=", addrTbl.physAddrl[0]);
++	zm_msg2_mm(ZM_LV_2, "buf->data=", buf->data);
++	*/
++#if 0
++	err = zfHpSend(dev, NULL, 0, NULL, 0, NULL, 0, buf, 0,
++		ZM_INTERNAL_ALLOC_BUF, 0, 0xff);
++
++	if (err != ZM_SUCCESS)
++		goto zlError;
++
++#else
++	zfPutVmmq(dev, buf);
++	zfPushVtxq(dev);
++#endif
++
++	/* zfAggSendAddbaRequest(dev, dst,
++			zcUpToAc[bf->tid&0x7] & 0x3, bf->tid);
++	*/
++	return ZM_SUCCESS;
++
++}
++
++u16_t zfAggSetAddbaResponseFrameBody(zdev_t *dev, zbuf_t *buf,
++		struct aggBaFrameParameter *bf, u16_t offset)
++{
++
++	/* zmw_get_wlan_dev(dev); */
++
++	/* zmw_declare_for_critical_section(); */
++	/*
++	* ADDBA Request frame body
++	*/
++
++	/*
++	* Category
++	*/
++	zmw_tx_buf_writeb(dev, buf, offset++, 3);
++	/*
++	* Action details = 0
++	*/
++	zmw_tx_buf_writeb(dev, buf, offset++, ZM_WLAN_ADDBA_RESPONSE_FRAME);
++	/*
++	* Dialog Token = nonzero
++	*/
++	zmw_tx_buf_writeb(dev, buf, offset++, bf->dialog);
++	/*
++	* Status code
++	*/
++	zmw_tx_buf_writeh(dev, buf, offset, 0);
++	offset += 2;
++	/*
++	* Block Ack parameter set
++	* BA policy = 1 for immediate BA, 0 for delayed BA
++	* TID(4bits) & buffer size(4bits) (TID=0x1 & buffer size=0x80)
++	* TBD: how to get TID number and buffer size?
++	* *****************************************************************{
++	* x    B0    x    B1     x B2  B5 x B6      B15 x
++	* *****************************************************************
++	* x Reserved x BA policy x  TID   x Buffer size x
++	* *****************************************************************}
++	*/
++	zmw_tx_buf_writeh(dev, buf, offset, bf->ba_parameter);
++	offset += 2;
++	/*
++	* BA timeout value
++	*/
++	zmw_tx_buf_writeh(dev, buf, offset, bf->ba_timeout);
++	offset += 2;
++
++	return offset;
++}
++
++void zfAggInvokeBar(zdev_t *dev, TID_TX tid_tx)
++{
++	struct aggBarControl aggBarControl;
++	/* zmw_get_wlan_dev(dev); */
++
++	/*zmw_declare_for_critical_section();
++	bar_control = aggBarControl->tid_info << 12 |
++		aggBarControl->compressed_bitmap << 2
++		| aggBarControl->multi_tid << 1 |
++		aggBarControl->bar_ack_policy;
++	*/
++	aggBarControl.bar_ack_policy = 0;
++	aggBarControl.multi_tid = 0;
++	aggBarControl.compressed_bitmap = 0;
++	aggBarControl.tid_info = tid_tx->tid;
++	zfAggSendBar(dev, tid_tx, &aggBarControl);
++
++	return;
+ 
+ }
+ /*
+  * zfAggSendBar() refers zfAggSendAddbaRequest()
+  */
+-u16_t   zfAggSendBar(zdev_t* dev, TID_TX tid_tx, struct aggBarControl *aggBarControl)
++u16_t zfAggSendBar(zdev_t *dev, TID_TX tid_tx,
++			struct aggBarControl *aggBarControl)
+ {
+-    zbuf_t* buf;
+-    //u16_t addrTblSize;
+-    //struct zsAddrTbl addrTbl;
+-    //u16_t err;
+-    u16_t offset = 0;
+-    u16_t hlen = 16+8;  /* mac header + control headers*/
+-    u16_t header[(8+24+1)/2];
+-    u16_t vap = 0;
+-    u16_t i;
+-    u8_t encrypt = 0;
+-
+-    //zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-
+-
+-    /*
+-     * TBD : Maximum size of managment frame
+-     */
+-    if ((buf = zfwBufAllocate(dev, 1024)) == NULL)
+-    {
+-        zm_msg0_mm(ZM_LV_0, "Alloc mm buf Fail!");
+-        return ZM_SUCCESS;
+-    }
+-
+-    /*
+-     * Reserve room for wlan header
+-     */
+-    offset = hlen;
+-
+-    /*
+-     * add addba frame body
+-     */
+-    offset = zfAggSetBarBody(dev, buf, offset, tid_tx, aggBarControl);
+-
+-
+-    zfwBufSetSize(dev, buf, offset);
+-
+-    /*
+-     * Copy wlan header
+-     */
+-    zfAggGenBarHeader(dev, tid_tx->dst, header, offset-hlen, buf, vap, encrypt);
+-    for (i=0; i<(hlen>>1); i++)
+-    {
+-        zmw_tx_buf_writeh(dev, buf, i*2, header[i]);
+-    }
+-
+-    /* Get buffer DMA address */
+-    //if ((addrTblSize = zfwBufMapDma(dev, buf, &addrTbl)) == 0)
+-    //if ((addrTblSize = zfwMapTxDma(dev, buf, &addrTbl)) == 0)
+-    //{
+-    //    goto zlError;
+-    //}
+-
+-    //zm_msg2_mm(ZM_LV_2, "offset=", offset);
+-    //zm_msg2_mm(ZM_LV_2, "hlen=", hlen);
+-    //zm_msg2_mm(ZM_LV_2, "addrTblSize=", addrTblSize);
+-    //zm_msg2_mm(ZM_LV_2, "addrTbl.len[0]=", addrTbl.len[0]);
+-    //zm_msg2_mm(ZM_LV_2, "addrTbl.physAddrl[0]=", addrTbl.physAddrl[0]);
+-    //zm_msg2_mm(ZM_LV_2, "buf->data=", buf->data);
+-
+-    #if 0
+-    if ((err = zfHpSend(dev, NULL, 0, NULL, 0, NULL, 0, buf, 0,
+-            ZM_INTERNAL_ALLOC_BUF, 0, 0xff)) != ZM_SUCCESS)
+-    {
+-        goto zlError;
+-    }
+-    #else
+-    zfPutVmmq(dev, buf);
+-    zfPushVtxq(dev);
+-    #endif
+-
+-    return ZM_SUCCESS;
+-
+-}
+-
+-u16_t   zfAggSetBarBody(zdev_t* dev, zbuf_t* buf, u16_t offset, TID_TX tid_tx, struct aggBarControl *aggBarControl)
+-{
+-    u16_t bar_control, start_seq;
+-
+-    //zmw_get_wlan_dev(dev);
+-
+-    //zmw_declare_for_critical_section();
+-    /*
+-     * BAR Control frame body
+-     */
+-
+-    /*
+-     * BAR Control Field
+-     * ?z?w?w?w?w?w?w?w?w?w?s?w?w?w?w?w?w?w?w?w?w?w?s?w?w?w?w?w?w?w?w?w?w?w?w?s?w?w?w?w?w?w?w?w?w?w?s?w?w?w?w?w?w?w?w?w?w?{
+-     * ?x    B0   ?x    B1     ?x     B2     ?x B3   B11 ?x B12  B15 ?x
+-     * ?u?w?w?w?w?w?w?w?w?w?q?w?w?w?w?w?w?w?w?w?w?w?q?w?w?w?w?w?w?w?w?w?w?w?w?q?w?w?w?w?w?w?w?w?w?w?q?w?w?w?w?w?w?w?w?w?w?t
+-     * ?x BAR Ack ?x Multi-TID ?x Compressed ?x Reserved ?x TID_INFO ?x
+-     * ?x  Policy ?x           ?x   Bitmap   ?x          ?x          ?x
+-     * ?|?w?w?w?w?w?w?w?w?w?r?w?w?w?w?w?w?w?w?w?w?w?r?w?w?w?w?w?w?w?w?w?w?w?w?r?w?w?w?w?w?w?w?w?w?w?r?w?w?w?w?w?w?w?w?w?w?}
+-     */
+-    bar_control = aggBarControl->tid_info << 12 | aggBarControl->compressed_bitmap << 2
+-            | aggBarControl->multi_tid << 1 | aggBarControl->bar_ack_policy;
+-
+-    zmw_tx_buf_writeh(dev, buf, offset, bar_control);
+-    offset+=2;
+-    if (0 == aggBarControl->multi_tid) {
+-        /*
+-         * BA starting sequence number
+-         * ?z?w?w?w?w?w?w?w?w?w?w?w?w?w?s?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?{
+-         * ?x B0       B3 ?x B4              B15 ?x
+-         * ?u?w?w?w?w?w?w?w?w?w?w?w?w?w?q?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?t
+-         * ?x Frag num(0) ?x BA starting seq num ?x
+-         * ?|?w?w?w?w?w?w?w?w?w?w?w?w?w?r?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?w?}
+-         */
+-        start_seq = (tid_tx->bar_ssn << 4) & 0xFFF0;
+-        zmw_tx_buf_writeh(dev, buf, offset, start_seq);
+-        offset+=2;
+-    }
+-    if (1 == aggBarControl->multi_tid && 1 == aggBarControl->compressed_bitmap) {
+-        /* multi-tid BlockAckReq variant, not implemented*/
+-    }
+-
+-    return offset;
+-}
+-
+-u16_t zfAggGenBarHeader(zdev_t* dev, u16_t* dst,
+-        u16_t* header, u16_t len, zbuf_t* buf, u16_t vap, u8_t encrypt)
+-{
+-    u8_t  hlen = 16+8;        // MAC ctrl + PHY ctrl + 802.11 MM header
+-    //u8_t frameType = ZM_WLAN_FRAME_TYPE_ACTION;
+-
+-    zmw_get_wlan_dev(dev);
+-
+-    zmw_declare_for_critical_section();
+-
+-    /*
+-     * Generate control setting
+-     */
+-    //bodyLen = zfwBufGetSize(dev, buf);
+-    header[0] = 16+len+4;   //Length
+-    header[1] = 0x8;        //MAC control, backoff + (ack)
++	zbuf_t *buf;
++	/* u16_t addrTblSize; */
++	/* struct zsAddrTbl addrTbl; */
++	/* u16_t err; */
++	u16_t offset = 0;
++	u16_t hlen = 16 + 8;  /* mac header + control headers*/
++	u16_t header[(8 + 24 + 1) / 2];
++	u16_t vap = 0;
++	u16_t i;
++	u8_t encrypt = 0;
++
++	/* zmw_get_wlan_dev(dev); */
++
++	/* zmw_declare_for_critical_section(); */
++
++
++	/*
++	* TBD : Maximum size of managment frame
++	*/
++	buf = zfwBufAllocate(dev, 1024);
++
++	if (buf == NULL) {
++		zm_msg0_mm(ZM_LV_0, "Alloc mm buf Fail!");
++		return ZM_SUCCESS;
++	}
++
++	/*
++	* Reserve room for wlan header
++	*/
++	offset = hlen;
++
++	/*
++	* add addba frame body
++	*/
++	offset = zfAggSetBarBody(dev, buf, offset, tid_tx, aggBarControl);
++
++
++	zfwBufSetSize(dev, buf, offset);
++
++	/*
++	* Copy wlan header
++	*/
++	zfAggGenBarHeader(dev, tid_tx->dst, header, offset-hlen,
++							buf, vap, encrypt);
++	for (i = 0; i < (hlen>>1); i++)
++		zmw_tx_buf_writeh(dev, buf, i*2, header[i]);
++
++	/* Get buffer DMA address */
++	/*if ((addrTblSize = zfwBufMapDma(dev, buf, &addrTbl)) == 0)
++	if ((addrTblSize = zfwMapTxDma(dev, buf, &addrTbl)) == 0)
++	{
++	    goto zlError;
++	}
++
++	zm_msg2_mm(ZM_LV_2, "offset=", offset);
++	zm_msg2_mm(ZM_LV_2, "hlen=", hlen);
++	zm_msg2_mm(ZM_LV_2, "addrTblSize=", addrTblSize);
++	zm_msg2_mm(ZM_LV_2, "addrTbl.len[0]=", addrTbl.len[0]);
++	zm_msg2_mm(ZM_LV_2, "addrTbl.physAddrl[0]=", addrTbl.physAddrl[0]);
++	zm_msg2_mm(ZM_LV_2, "buf->data=", buf->data);
++	*/
++
++#if 0
++	err = zfHpSend(dev, NULL, 0, NULL, 0, NULL, 0, buf, 0,
++		ZM_INTERNAL_ALLOC_BUF, 0, 0xff);
++
++	if (err != ZM_SUCCESS)
++		goto zlError;
++
++#else
++	zfPutVmmq(dev, buf);
++	zfPushVtxq(dev);
++#endif
++
++	return ZM_SUCCESS;
++
++}
++
++u16_t zfAggSetBarBody(zdev_t *dev, zbuf_t *buf, u16_t offset, TID_TX tid_tx,
++					struct aggBarControl *aggBarControl)
++{
++	u16_t bar_control, start_seq;
++
++	/* zmw_get_wlan_dev(dev); */
++
++	/* zmw_declare_for_critical_section(); */
++	/*
++	* BAR Control frame body
++	*/
++
++	/*
++	* BAR Control Field
++	* ******************************************************************{
++	* x    B0   x    B1     x     B2     x B3   B11 x B12  B15 x
++	* ******************************************************************
++	* x BAR Ack x Multi-TID x Compressed x Reserved x TID_INFO x
++	* x  Policy x           x   Bitmap   x          x          x
++	* ******************************************************************}
++	*/
++	bar_control = aggBarControl->tid_info << 12 |
++		aggBarControl->compressed_bitmap << 2 |
++		aggBarControl->multi_tid << 1 | aggBarControl->bar_ack_policy;
++
++	zmw_tx_buf_writeh(dev, buf, offset, bar_control);
++	offset += 2;
++
++	if (0 == aggBarControl->multi_tid) {
++		/*
++		* BA starting sequence number
++		* ***********************************************************{
++		* x B0       B3 x B4              B15 x
++		* ***********************************************************
++		* x Frag num(0) x BA starting seq num x
++		* ***********************************************************}
++		*/
++		start_seq = (tid_tx->bar_ssn << 4) & 0xFFF0;
++		zmw_tx_buf_writeh(dev, buf, offset, start_seq);
++		offset += 2;
++	}
++
++	if (1 == aggBarControl->multi_tid &&
++				1 == aggBarControl->compressed_bitmap) {
++		/* multi-tid BlockAckReq variant, not implemented*/
++	}
++
++	return offset;
++}
++
++u16_t zfAggGenBarHeader(zdev_t *dev, u16_t *dst,
++	u16_t *header, u16_t len, zbuf_t *buf, u16_t vap, u8_t encrypt)
++{
++	u8_t  hlen = 16+8;        /* MAC ctrl + PHY ctrl + 802.11 MM header */
++	/* u8_t frameType = ZM_WLAN_FRAME_TYPE_ACTION; */
++
++	zmw_get_wlan_dev(dev);
++
++	zmw_declare_for_critical_section();
++
++	/*
++	* Generate control setting
++	*/
++	/* bodyLen = zfwBufGetSize(dev, buf); */
++	header[0] = 16+len+4;   /* Length */
++	header[1] = 0x8;        /* MAC control, backoff + (ack) */
+ 
+ #if 1
+-    /* CCK 1M */
+-    header[2] = 0x0f00;          //PHY control L
+-    header[3] = 0x0000;          //PHY control H
++	/* CCK 1M */
++	header[2] = 0x0f00;          /* PHY control L */
++	header[3] = 0x0000;          /* PHY control H */
+ #else
+-    /* CCK 6M */
+-    header[2] = 0x0f01;          //PHY control L
+-    header[3] = 0x000B;          //PHY control H
+-
+-#endif
+-    /*
+-     * Generate WLAN header
+-     * Frame control frame type and subtype
+-     */
+-    header[4+0] = ZM_WLAN_FRAME_TYPE_BAR;
+-    /*
+-     * Duration
+-     */
+-    header[4+1] = 0;
+-
+-    /* Address 1 = DA */
+-    header[4+2] = dst[0];
+-    header[4+3] = dst[1];
+-    header[4+4] = dst[2];
+-
+-    /* Address 2 = SA */
+-    header[4+5] = wd->macAddr[0];
+-    header[4+6] = wd->macAddr[1];
+-    if (wd->wlanMode == ZM_MODE_AP)
+-    {
++	/* CCK 6M */
++	header[2] = 0x0f01;          /* PHY control L */
++	header[3] = 0x000B;          /* PHY control H */
++
++#endif
++	/*
++	* Generate WLAN header
++	* Frame control frame type and subtype
++	*/
++	header[4 + 0] = ZM_WLAN_FRAME_TYPE_BAR;
++	/*
++	* Duration
++	*/
++	header[4 + 1] = 0;
++
++	/* Address 1 = DA */
++	header[4 + 2] = dst[0];
++	header[4 + 3] = dst[1];
++	header[4 + 4] = dst[2];
++
++	/* Address 2 = SA */
++	header[4 + 5] = wd->macAddr[0];
++	header[4 + 6] = wd->macAddr[1];
++	if (wd->wlanMode == ZM_MODE_AP) {
+ #ifdef ZM_VAPMODE_MULTILE_SSID
+-        header[4+7] = wd->macAddr[2]; //Multiple SSID
++		header[4 + 7] = wd->macAddr[2]; /* Multiple SSID */
+ #else
+-        header[4+7] = wd->macAddr[2] + (vap<<8); //VAP
++		header[4 + 7] = wd->macAddr[2] + (vap<<8); /* VAP */
+ #endif
+-    }
+-    else
+-    {
+-        header[4+7] = wd->macAddr[2];
+-    }
+-
+-    /* Sequence Control */
+-    zmw_enter_critical_section(dev);
+-    header[4+11] = ((wd->mmseq++)<<4);
+-    zmw_leave_critical_section(dev);
+-
++	} else {
++		header[4 + 7] = wd->macAddr[2];
++	}
++
++	/* Sequence Control */
++	zmw_enter_critical_section(dev);
++	header[4 + 11] = ((wd->mmseq++)<<4);
++	zmw_leave_critical_section(dev);
+ 
+-    return hlen;
++	return hlen;
  }
