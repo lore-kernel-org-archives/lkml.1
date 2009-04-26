@@ -1,144 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbZDZXGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbZDZXI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754691AbZDZXGy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 19:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZDZXGr
+	id S1754097AbZDZXI7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 19:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbZDZXIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 19:06:47 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:23313 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbZDZXGq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 19:06:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=oyVUpzljBIrQ7LV3GHBd5SFKt2WVaV8jJacsl3Ivj3Uxne7UEOpSDWWJK5loSp/eaK
-         SU6hP6fenSeNqROnuDG0njNiZaVUInaAEdsmvNEMrU7hjpmhBFu6xnu97eiM//HuLCpt
-         ugrb7zEKd/cngx+Ejmwn0gOptnbKI70vyOdvg=
-MIME-Version: 1.0
-In-Reply-To: <m3y6tnaxh8.fsf@intrepid.localdomain>
-References: <m3y6tnaxh8.fsf@intrepid.localdomain>
-Date: Sun, 26 Apr 2009 19:06:45 -0400
-Message-ID: <f7910e810904261606g6f946f87wb45e3c356cf7999d@mail.gmail.com>
-Subject: Re: IXP42x rev. A0 support for network devices
-From: John Woods <johnrw@gmail.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Benoit LIETAER <blietaer@free.fr>, lkml <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 26 Apr 2009 19:08:52 -0400
+Received: from jade.aracnet.com ([216.99.193.136]:38840 "EHLO jade.aracnet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751663AbZDZXIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 19:08:51 -0400
+X-Greylist: delayed 4585 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Apr 2009 19:08:51 EDT
+Date: Sun, 26 Apr 2009 14:45:09 -0700
+Message-Id: <200904262145.n3QLj9o2026979@sapphire.spiritone.com>
+From: "AON WEBMAIL" <help-desk@aon.at>
+To: help-desk@aon.at
+Reply-To: updat-conf@live.com
+Subject: AON Ihre E-Mail-Konto Expires in 2 Tagen 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 26, 2009 at 5:58 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> Hi,
->
-> well, I finally found that old prototype board with IXP425 rev A0 and
-> I was even able to implant some modern RedBoot to it, so I gave it
-> a try.
->
-> It seems that a list of rev. A0 bugs (or "bugs") isn't that long after
-> all (those affecting Ethernet at least). Basically the QMgr IRQ status
-> is unreliable, and the undocumented "feature" register is write-only.
->
-> This patch is a bit of handcraft but it applies to 2.6.29 and
-> probably to older kernels.
-> Benoit, John, please let me know if it works or not. Thanks.
-> --
-> Krzysztof Halasa
->
-> --- a/arch/arm/mach-ixp4xx/include/mach/cpu.h
-> +++ b/arch/arm/mach-ixp4xx/include/mach/cpu.h
-> @@ -26,6 +26,8 @@
->  #define IXP46X_PROCESSOR_ID_VALUE      0x69054200
->  #define IXP46X_PROCESSOR_ID_MASK       0xfffffff0
->
-> +#define cpu_is_ixp42x_rev_a0() ((read_cpuid_id() & (IXP4XX_PROCESSOR_ID_MASK | 0xF)) == \
-> +                               IXP42X_PROCESSOR_ID_VALUE)
->  #define cpu_is_ixp42x()        ((read_cpuid_id() & IXP4XX_PROCESSOR_ID_MASK) == \
->                         IXP42X_PROCESSOR_ID_VALUE)
->  #define cpu_is_ixp43x()        ((read_cpuid_id() & IXP43X_PROCESSOR_ID_MASK) == \
-> @@ -35,6 +35,9 @@
->  {
->        unsigned int val = ~*IXP4XX_EXP_CFG2;
->        val &= ~IXP4XX_FEATURE_RESERVED;
-> +       if (cpu_is_ixp42x_rev_a0())
-> +               return ~IXP4XX_FEATURE_IXP46X_ONLY & ~(IXP4XX_FEATURE_RCOMP |
-> +                                                      IXP4XX_FEATURE_AES);
->        if (!cpu_is_ixp46x())
->                val &= ~IXP4XX_FEATURE_IXP46X_ONLY;
->
-> --- a/arch/arm/mach-ixp4xx/ixp4xx_npe.c
-> +++ b/arch/arm/mach-ixp4xx/ixp4xx_npe.c
-> @@ -386,15 +386,6 @@ static int npe_reset(struct npe *npe)
->        /* reset the NPE */
->        ixp4xx_write_feature_bits(val &
->                                  ~(IXP4XX_FEATURE_RESET_NPEA << npe->id));
-> -       for (i = 0; i < MAX_RETRIES; i++) {
-> -               if (!(ixp4xx_read_feature_bits() &
-> -                     (IXP4XX_FEATURE_RESET_NPEA << npe->id)))
-> -                       break;  /* reset completed */
-> -               udelay(1);
-> -       }
-> -       if (i == MAX_RETRIES)
-> -               return -ETIMEDOUT;
-> -
->        /* deassert reset */
->        ixp4xx_write_feature_bits(val |
->                                  (IXP4XX_FEATURE_RESET_NPEA << npe->id));
-> --- a/arch/arm/mach-ixp4xx/ixp4xx_qmgr.c
-> +++ b/arch/arm/mach-ixp4xx/ixp4xx_qmgr.c
-> @@ -41,6 +41,31 @@ void qmgr_set_irq(unsigned int queue, int src,
->  }
->
->
-> +static irqreturn_t qmgr_irq1_a0(int irq, void *pdev)
-> +{
-> +       int i, ret = 0;
-> +
-> +       /* ACK - it may also clear newly requested irqs so don't rely on it */
-> +       __raw_writel(__raw_readl(&qmgr_regs->irqstat[0]),
-> +                    &qmgr_regs->irqstat[0]);
-> +
-> +       for (i = 0; i < HALF_QUEUES; i++) {
-> +               u32 src, stat;
-> +               if (!(qmgr_regs->irqen[0] & BIT(i)))
-> +                       continue;
-> +               src = qmgr_regs->irqsrc[i >> 3];
-> +               stat = qmgr_regs->stat1[i >> 3];
-> +               if (src & 4) /* the IRQ condition is inverted */
-> +                       stat = ~stat;
-> +               if (stat & BIT(src & 3)) {
-> +                       irq_handlers[i](irq_pdevs[i]);
-> +                       ret = IRQ_HANDLED;
-> +               }
-> +       }
-> +       return ret;
-> +}
-> +
-> +
->  static irqreturn_t qmgr_irq1(int irq, void *pdev)
->  {
->        int i;
-> @@ -250,8 +275,8 @@ static int qmgr_init(void)
->        for (i = 0; i < QUEUES; i++)
->                __raw_writel(0, &qmgr_regs->sram[i]);
->
-> -       err = request_irq(IRQ_IXP4XX_QM1, qmgr_irq1, 0,
-> -                         "IXP4xx Queue Manager", NULL);
-> +       err = request_irq(IRQ_IXP4XX_QM1, cpu_is_ixp42x_rev_a0() ? qmgr_irq1_a0
-> +                         : qmgr_irq1, 0, "IXP4xx Queue Manager", NULL);
->        if (err) {
->                printk(KERN_ERR "qmgr: failed to request IRQ%i\n",
->                       IRQ_IXP4XX_QM1);
->
+AON Ihre E-Mail-Konto Expires in 2 Tagen 
+AON Webmail Liebe User, 
 
-Hi Krzysztof,
+Diese Information wird von AON Helpdesk Programm, 
+in regelmäßigen Abständen überprüft die Größe der E-Mail-Raum, in dem neue Nachrichten 
+erhalten. Das Programm wird wöchentlich, um sicherzustellen, niemand Posteingang wächst zu 
+groß. Wenn Sie Ihren Posteingang zu groß wird, werden Sie nicht in der Lage zu erhalten 
+neue E-Mail. Kurz bevor diese Nachricht gesendet wurde, Sie hatten 18 Megabyte (MB) 
+oder mehrere Nachrichten in Ihrem Posteingang auf AON Webmail. Um uns zu helfen 
+ändern Sie Ihren Raum in unserer Datenbank vor, um unsere INBOX, müssen Sie 
+Antwort auf diese E-Mail und geben Sie Ihre User-Namen (___________ 
+) Und Passwort (_____________). 
 
-I should be able to test it, in a day.
-Thank You!
+Es wäre eine Nachricht Alert in regelmäßigen Abständen, ob Ihr 
+Posteingang Größe nach wie vor zwischen 18 und 20 MB. Wenn Sie Ihren Posteingang Größe 
+wächst 
+bis 20 MB, dann ein Programm auf AON Webmail wird Ihre E-Mail ältesten 
+in einen Ordner in Ihrem Home-Verzeichnis, um sicherzustellen, dass Sie weiter 
+eingehenden E-Mails zu erhalten. Sie werden per E-Mail benachrichtigt, dass dies 
+stattgefunden. Wenn Sie Ihren Posteingang wächst auf 25 MB, werden Sie nicht in der Lage zu erhalten 
 
-John Woods
+neue E-Mail wird an den Absender zurückgeschickt. All dies wird 
+Programmiert auf Ihre E-Mail auf, füllen die Räume vor. 
+
+Vielen Dank für Ihre Mitarbeit. 
+Support Desk (Help Desk) 
+
