@@ -1,70 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbZDZOrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbZDZO4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756249AbZDZOrU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 10:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbZDZOrI
+	id S1755674AbZDZO4d (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 10:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754935AbZDZO4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 10:47:08 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:46490 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754633AbZDZOrG (ORCPT
+	Sun, 26 Apr 2009 10:56:24 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:18886 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754905AbZDZO4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 10:47:06 -0400
-X-Sasl-enc: ApQyNseLnyqQoLcxzTwUnkmF1Z80u40r0AqiUHphdk1P 1240757225
-Date: Sun, 26 Apr 2009 11:47:02 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       gregkh@suse.de, stable@kernel.org, cpufreq@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, rjw@sisk.pl,
-       Ben Slusky <sluskyb@paranoiacs.org>, Dave Jones <davej@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpufreq fix timer teardown in conservative governor
-	(2.6.30-rc2)
-Message-ID: <20090426144701.GD19338@khazad-dum.debian.net>
-References: <20090423140002.GA12852@Krystal> <20090423164638.3b5769c6.akpm@linux-foundation.org> <20090424043546.GB8091@Krystal> <alpine.LFD.2.00.0904240217390.15843@localhost.localdomain> <20090424161217.GA25650@Krystal>
+	Sun, 26 Apr 2009 10:56:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=eiHlTk8WbQSaSlEumzBgkcGaA9ComdpF0vDDFObyzRgb7X3qRRd0J/53LE778IDKoz
+         jQ2trXpd9BMfBihG1QUJRT5IPg3zTcBnndSkfvb/OKLb+/hp/AWFwpabrmFTOwHFqbQB
+         RLt7e13SIoxPTDcCBc/oomQNdaaupEUvspnzA=
+Message-ID: <49F47616.8040102@gmail.com>
+Date: Sun, 26 Apr 2009 16:56:22 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090424161217.GA25650@Krystal>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Greg KH <gregkh@suse.de>
+CC: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] staging: scalar tests on pointers
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Apr 2009, Mathieu Desnoyers wrote:
-> * Len Brown (lenb@kernel.org) wrote:
-> > Somebody please remind me why we are spending effort to 
-> > maintain the conservative governor instead of deleting it.
-> 
-> Documentation/cpu-freq/governors.txt
-> 
-> "The CPUfreq governor "conservative", much like the "ondemand"
-> governor, sets the CPU depending on the current usage.  It differs in
-> behaviour in that it gracefully increases and decreases the CPU speed
-> rather than jumping to max speed the moment there is any load on the
-> CPU.  This behaviour more suitable in a battery powered environment."
-> 
-> So better battery usage seems to be the reason why conservative lives.
+RTUSBCmdThr_pid, TimerQThr_pid and MLMEThr_pid are pointers.
 
-Yeah, but the question is: is it really better in practice? race-to-idle
-works better with ondemand.  Note: that needs to be answered not just for
-the current crop of mobile processors, but also for at least stuff as old as
-the Pentium M and Pentium 4 M.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+I think this is correct, right?
 
-What it _does_ help, is in broken !@#$ hardware that makes a lot of noise
-due to "singing capacitors" if you use ondemand (because conservative will
-make less noise as it causes more smooth transitions).  NOHZ helped a great
-deal there, too.
-
-I don't know if there are battery environments where a harsher work profile
-by the CPU are a bad idea.  If there are any, conservative will also help
-there.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+diff --git a/drivers/staging/rt3070/2870_main_dev.c b/drivers/staging/rt3070/2870_main_dev.c
+index 401ddb0..6f405f9 100644
+--- a/drivers/staging/rt3070/2870_main_dev.c
++++ b/drivers/staging/rt3070/2870_main_dev.c
+@@ -976,7 +976,7 @@ VOID RT28xxThreadTerminate(
+ 		}
+ 	}
+ 
+-	if (pObj->RTUSBCmdThr_pid >= 0)
++	if (pid_nr(pObj->RTUSBCmdThr_pid) >= 0)
+ 	{
+ 		printk("Terminate the RTUSBCmdThr_pid=%d!\n", pid_nr(pObj->RTUSBCmdThr_pid));
+ 		mb();
+@@ -998,7 +998,7 @@ VOID RT28xxThreadTerminate(
+ 			pObj->RTUSBCmdThr_pid = NULL;
+ 		}
+ 	}
+-	if (pObj->TimerQThr_pid >= 0)
++	if (pid_nr(pObj->TimerQThr_pid) >= 0)
+ 	{
+ 		POS_COOKIE pObj = (POS_COOKIE)pAd->OS_Cookie;
+ 
+diff --git a/drivers/staging/rt3070/common/rtusb_io.c b/drivers/staging/rt3070/common/rtusb_io.c
+index a6a52e3..aa6eecc 100644
+--- a/drivers/staging/rt3070/common/rtusb_io.c
++++ b/drivers/staging/rt3070/common/rtusb_io.c
+@@ -873,7 +873,7 @@ NDIS_STATUS	RTUSBEnqueueCmdFromNdis(
+ 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;
+ 
+ 
+-	if (pObj->RTUSBCmdThr_pid < 0)
++	if (pid_nr(pObj->RTUSBCmdThr_pid) < 0)
+ 		return (NDIS_STATUS_RESOURCES);
+ 
+ 	status = RTMPAllocateMemory((PVOID *)&cmdqelmt, sizeof(CmdQElmt));
+diff --git a/drivers/staging/rt3070/rt2870.h b/drivers/staging/rt3070/rt2870.h
+index d32a2bf..193bff4 100644
+--- a/drivers/staging/rt3070/rt2870.h
++++ b/drivers/staging/rt3070/rt2870.h
+@@ -567,18 +567,18 @@ VOID RTUSBBulkOutPsPollComplete(purbb_t pUrb, struct pt_regs *pt_regs);
+ VOID RTUSBBulkRxComplete(purbb_t pUrb, struct pt_regs *pt_regs);
+ 
+ 
+-#define RTUSBMlmeUp(pAd)	        \
+-{								    \
++#define RTUSBMlmeUp(pAd)				\
++{							\
+ 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;	\
+-	if(pObj->MLMEThr_pid>0)		    \
+-        up(&(pAd->mlme_semaphore)); \
++	if (pid_nr(pObj->MLMEThr_pid) > 0)		\
++		up(&(pAd->mlme_semaphore));		\
+ }
+ 
+-#define RTUSBCMDUp(pAd)	                \
+-{									    \
++#define RTUSBCMDUp(pAd)					\
++{							\
+ 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;	\
+-	if(pObj->RTUSBCmdThr_pid>0)		    \
+-	    up(&(pAd->RTUSBCmd_semaphore)); \
++	if (pid_nr(pObj->RTUSBCmdThr_pid) > 0)		\
++		up(&(pAd->RTUSBCmd_semaphore));		\
+ }
+ 
+ 
