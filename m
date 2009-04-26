@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754334AbZDZDgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbZDZDo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754334AbZDZDgh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 23:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbZDZDg3
+	id S1753425AbZDZDo3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 23:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbZDZDoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 23:36:29 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:53142 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751212AbZDZDg3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 23:36:29 -0400
-Date: Sat, 25 Apr 2009 23:35:11 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: cleanup:  lot of folks redefining min() and max()
-Message-ID: <alpine.LFD.2.00.0904252333320.8508@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 25 Apr 2009 23:44:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53630 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751212AbZDZDoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Apr 2009 23:44:19 -0400
+Message-ID: <49F3D8CD.20007@kernel.org>
+Date: Sun, 26 Apr 2009 12:45:17 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: unsik Kim <donari75@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] mg_disk: fix CONFIG_LBD=y warning
+References: <200904251503.23211.bzolnier@gmail.com>
+In-Reply-To: <200904251503.23211.bzolnier@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 26 Apr 2009 03:44:18 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bartlomiej Zolnierkiewicz wrote:
+> drivers/block/mg_disk.c: In function ‘mg_dump_status’:
+> drivers/block/mg_disk.c:265: warning: format ‘%ld’ expects type ‘long int’, but
+> argument 2 has type ‘sector_t’
+> 
+> Cc: unsik Kim <donari75@gmail.com>
+> Cc: Tejun Heo <tj@kernel.org>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-  pretty sure we don't need to keep doing that since it's done in
-include/linux/kernel.h.
+FWIW-Acked-by: Tejun Heo <tj@kernel.org>
 
-drivers/scsi/ips.h:92:      #define min(x,y) ((x) < (y) ? x : y)
-drivers/media/dvb/siano/smscoreapi.h:46:#define min(a, b) (((a) < (b)) ? (a) : (b))
-drivers/net/tehuti.h:79:#define MIN(x, y)  ((x) < (y) ? (x) : (y))
-drivers/staging/comedi/drivers/pcmda12.c:58:#define MIN(a,b) ( ((a) < (b)) ? (a) : (b) )
-drivers/staging/comedi/drivers/pcmmio.c:79:#define MIN(a,b) ( ((a) < (b)) ? (a) : (b) )
-drivers/staging/comedi/drivers/pcmuio.c:82:#define MIN(a,b) ( ((a) < (b)) ? (a) : (b) )
-drivers/staging/sxg/sxg.h:430:#define MIN(a, b) ((u32)(a) < (u32)(b) ? (a) : (b))
-drivers/staging/sxg/sxg.h:431:#define MAX(a, b) ((u32)(a) > (u32)(b) ? (a) : (b))
-drivers/staging/rt2870/rtmp.h:715:#define min(_a, _b)     (((_a) < (_b)) ? (_a) : (_b))
-drivers/staging/rt2870/rtmp.h:719:#define max(_a, _b)     (((_a) > (_b)) ? (_a) : (_b))
-drivers/staging/rt2860/rtmp.h:785:#define min(_a, _b)     (((_a) < (_b)) ? (_a) : (_b))
-drivers/staging/rt2860/rtmp.h:789:#define max(_a, _b)     (((_a) > (_b)) ? (_a) : (_b))
-drivers/staging/rt3070/rtmp.h:762:#define min(_a, _b)     (((_a) < (_b)) ? (_a) : (_b))
-drivers/staging/rt3070/rtmp.h:766:#define max(_a, _b)     (((_a) > (_b)) ? (_a) : (_b))
-drivers/staging/epl/EplDllkCal.c:94:#define min(a,b)            (((a) < (b)) ? (a) : (b))
+I think this should go through Jens' tree.  Care to cc Jens?
 
-rday
---
+Thanks.
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+-- 
+tejun
