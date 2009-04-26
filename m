@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbZDZJS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbZDZJSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbZDZJS0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 05:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbZDZJSP
+	id S1754644AbZDZJSl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 05:18:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZDZJSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 05:18:15 -0400
-Received: from cathcart.site5.com ([74.54.107.137]:46399 "EHLO
+	Sun, 26 Apr 2009 05:18:16 -0400
+Received: from cathcart.site5.com ([74.54.107.137]:46397 "EHLO
 	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751850AbZDZJSO (ORCPT
+	with ESMTP id S1750900AbZDZJSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 26 Apr 2009 05:18:14 -0400
 From: Mike Rapoport <mike@compulab.co.il>
 To: broonie@opensource.wolfsonmicro.com
 Cc: lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org,
        Mike Rapoport <mike@compulab.co.il>
-Subject: [PATCH 1/2] regulator: move regulator_consumer_supply from machine.h to consumer.h
-Date: Sun, 26 Apr 2009 12:17:22 +0300
-Message-Id: <d8276bd68d4bd06f1566e832b84c02528332048c.1240736991.git.mike@compulab.co.il>
+Subject: [PATCH 2/2] regulator: add userspace-consumer driver
+Date: Sun, 26 Apr 2009 12:17:23 +0300
+Message-Id: <f9c42ab0212ead9b7edac2d39f7848c46ad527d5.1240736991.git.mike@compulab.co.il>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <cover.1240736991.git.mike@compulab.co.il>
 References: <cover.1240736991.git.mike@compulab.co.il>
@@ -32,68 +32,304 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The userspace-consumer driver allows control of voltage and current
+regulator state from userspace. This is required for fine-grained power
+management of devices that are completely controller by userspace
+applications, e.g. a GPS transciever connected to a serial port.
+
 Signed-off-by: Mike Rapoport <mike@compulab.co.il>
 ---
- include/linux/regulator/consumer.h |   13 +++++++++++++
- include/linux/regulator/machine.h  |   14 +-------------
- 2 files changed, 14 insertions(+), 13 deletions(-)
+ drivers/regulator/Kconfig                    |   10 ++
+ drivers/regulator/Makefile                   |    1 +
+ drivers/regulator/userspace-consumer.c       |  213 ++++++++++++++++++++++++++
+ include/linux/regulator/userspace-consumer.h |   25 +++
+ 4 files changed, 249 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/regulator/userspace-consumer.c
+ create mode 100644 include/linux/regulator/userspace-consumer.h
 
-diff --git a/include/linux/regulator/consumer.h b/include/linux/regulator/consumer.h
-index 277f4b9..3c7acb7 100644
---- a/include/linux/regulator/consumer.h
-+++ b/include/linux/regulator/consumer.h
-@@ -120,6 +120,19 @@ struct regulator_bulk_data {
- 	struct regulator *consumer;
- };
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index e58c0ce..d736e61 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -47,6 +47,16 @@ config REGULATOR_VIRTUAL_CONSUMER
  
-+/**
-+ * struct regulator_consumer_supply - supply -> device mapping
+           If unsure, say no.
+ 
++config REGULATOR_USERSPACE_CONSUMER
++	tristate "Userspace regulator consumer support"
++	default n
++	help
++	  There are some classes of devices that are controlled entirely
++	  from user space. Usersapce consumer driver provides ability to
++	  control power supplies for such devices.
++
++          If unsure, say no.
++
+ config REGULATOR_BQ24022
+ 	tristate "TI bq24022 Dual Input 1-Cell Li-Ion Charger IC"
+ 	default n
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index bac133a..b8d4290 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -6,6 +6,7 @@
+ obj-$(CONFIG_REGULATOR) += core.o
+ obj-$(CONFIG_REGULATOR_FIXED_VOLTAGE) += fixed.o
+ obj-$(CONFIG_REGULATOR_VIRTUAL_CONSUMER) += virtual.o
++obj-$(CONFIG_REGULATOR_USERSPACE_CONSUMER) += userspace-consumer.o
+ 
+ obj-$(CONFIG_REGULATOR_BQ24022) += bq24022.o
+ obj-$(CONFIG_REGULATOR_TWL4030) += twl4030-regulator.o
+diff --git a/drivers/regulator/userspace-consumer.c b/drivers/regulator/userspace-consumer.c
+new file mode 100644
+index 0000000..69115e6
+--- /dev/null
++++ b/drivers/regulator/userspace-consumer.c
+@@ -0,0 +1,213 @@
++/*
++ * line-consumer.c
 + *
-+ * This maps a supply name to a device.
++ * Copyright 2009 CompuLab, Ltd..
 + *
-+ * @dev: Device structure for the consumer.
-+ * @supply: Name for the supply.
++ * Author: Mike Rapoport <mike@compulab.co.il>
++ *
++ * Based of virtual consumer driver:
++ *   Copyright 2008 Wolfson Microelectronics PLC.
++ *   Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of the
++ * License, or (at your option) any later version.
++ *
 + */
-+struct regulator_consumer_supply {
-+	struct device *dev;	/* consumer */
-+	const char *supply;	/* consumer supply - e.g. "vcc" */
++
++#include <linux/err.h>
++#include <linux/mutex.h>
++#include <linux/platform_device.h>
++#include <linux/regulator/consumer.h>
++#include <linux/regulator/userspace-consumer.h>
++
++struct userspace_consumer_data {
++	const char *name;
++
++	struct mutex lock;
++	bool enabled;
++
++	int num_supplies;
++	struct regulator_bulk_data *supplies;
 +};
 +
- #if defined(CONFIG_REGULATOR)
- 
- /* regulator get and put */
-diff --git a/include/linux/regulator/machine.h b/include/linux/regulator/machine.h
-index bac64fa..c64c833 100644
---- a/include/linux/regulator/machine.h
-+++ b/include/linux/regulator/machine.h
-@@ -19,6 +19,7 @@
- #include <linux/suspend.h>
- 
- struct regulator;
++static ssize_t show_name(struct device *dev,
++			  struct device_attribute *attr, char *buf)
++{
++	struct userspace_consumer_data *data = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%s\n", data->name);
++}
++
++static ssize_t show_state(struct device *dev,
++			  struct device_attribute *attr, char *buf)
++{
++	struct userspace_consumer_data *data = dev_get_drvdata(dev);
++
++	if (data->enabled)
++		return sprintf(buf, "enabled\n");
++
++	return sprintf(buf, "disabled\n");
++}
++
++static ssize_t set_state(struct device *dev, struct device_attribute *attr,
++			 const char *buf, size_t count)
++{
++	struct userspace_consumer_data *data = dev_get_drvdata(dev);
++	bool enabled;
++	int ret;
++
++	/*
++	 * sysfs_streq() doesn't need the \n's, but we add them so the strings
++	 * will be shared with show_state(), above.
++	 */
++	if (sysfs_streq(buf, "enabled\n") || sysfs_streq(buf, "1"))
++		enabled = true;
++	else if (sysfs_streq(buf, "disabled\n") || sysfs_streq(buf, "0"))
++		enabled = false;
++	else {
++		dev_err(dev, "Configuring invalid mode\n");
++		return count;
++	}
++
++	mutex_lock(&data->lock);
++	if (enabled != data->enabled) {
++		if (enabled)
++			ret = regulator_bulk_enable(data->num_supplies,
++						    data->supplies);
++		else
++			ret = regulator_bulk_disable(data->num_supplies,
++						     data->supplies);
++
++		if (ret == 0)
++			data->enabled = enabled;
++		else
++			dev_err(dev, "Failed to configure state: %d\n", ret);
++	}
++	mutex_unlock(&data->lock);
++
++	return count;
++}
++
++static DEVICE_ATTR(name, 0444, show_name, NULL);
++static DEVICE_ATTR(state, 0644, show_state, set_state);
++
++static struct device_attribute *attributes[] = {
++	&dev_attr_name,
++	&dev_attr_state,
++};
++
++static int regulator_userspace_consumer_probe(struct platform_device *pdev)
++{
++	struct regulator_userspace_consumer_data *pdata;
++	struct userspace_consumer_data *drvdata;
++	int ret, i;
++
++	pdata = pdev->dev.platform_data;
++	if (!pdata)
++		return -EINVAL;
++
++	drvdata = kzalloc(sizeof(struct userspace_consumer_data), GFP_KERNEL);
++	if (drvdata == NULL)
++		return -ENOMEM;
++
++	drvdata->name = pdata->name;
++	drvdata->num_supplies = pdata->num_supplies;
++
++	drvdata->supplies = kzalloc(sizeof(struct regulator_bulk_data) *
++				    drvdata->num_supplies,
++				    GFP_KERNEL);
++	if (drvdata->supplies == NULL) {
++		ret = -ENOMEM;
++		goto err_alloc_supplies;
++	}
++
++	mutex_init(&drvdata->lock);
++
++	for (i = 0; i < drvdata->num_supplies; i++)
++		drvdata->supplies[i].supply = pdata->supplies[i].supply;
++
++	ret = regulator_bulk_get(&pdev->dev, drvdata->num_supplies,
++				 drvdata->supplies);
++	if (ret) {
++		dev_err(&pdev->dev, "Failed to get supplies: %d\n", ret);
++		goto err_alloc_supplies;
++	}
++
++	for (i = 0; i < ARRAY_SIZE(attributes); i++) {
++		ret = device_create_file(&pdev->dev, attributes[i]);
++		if (ret != 0)
++			goto err_create_attrs;
++	}
++
++	if (pdata->init_on)
++		ret = regulator_bulk_enable(drvdata->num_supplies,
++					    drvdata->supplies);
++
++	drvdata->enabled = pdata->init_on;
++
++	if (ret) {
++		dev_err(&pdev->dev, "Failed to set initial state: %d\n", ret);
++		goto err_create_attrs;
++	}
++
++	platform_set_drvdata(pdev, drvdata);
++
++	return 0;
++
++err_create_attrs:
++	for (i = 0; i < ARRAY_SIZE(attributes); i++)
++		device_remove_file(&pdev->dev, attributes[i]);
++
++	regulator_bulk_free(drvdata->num_supplies, drvdata->supplies);
++
++	kfree(drvdata->supplies);
++
++err_alloc_supplies:
++	kfree(drvdata);
++	return ret;
++}
++
++static int regulator_userspace_consumer_remove(struct platform_device *pdev)
++{
++	struct userspace_consumer_data *data = platform_get_drvdata(pdev);
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(attributes); i++)
++		device_remove_file(&pdev->dev, attributes[i]);
++
++	if (data->enabled)
++		regulator_bulk_disable(data->num_supplies, data->supplies);
++
++	regulator_bulk_free(data->num_supplies, data->supplies);
++	kfree(data->supplies);
++	kfree(data);
++
++	return 0;
++}
++
++static struct platform_driver regulator_userspace_consumer_driver = {
++	.probe		= regulator_userspace_consumer_probe,
++	.remove		= regulator_userspace_consumer_remove,
++	.driver		= {
++		.name		= "reg-userspace-consumer",
++	},
++};
++
++
++static int __init regulator_userspace_consumer_init(void)
++{
++	return platform_driver_register(&regulator_userspace_consumer_driver);
++}
++module_init(regulator_userspace_consumer_init);
++
++static void __exit regulator_userspace_consumer_exit(void)
++{
++	platform_driver_unregister(&regulator_userspace_consumer_driver);
++}
++module_exit(regulator_userspace_consumer_exit);
++
++MODULE_AUTHOR("Mike Rapoport <mike@compulab.co.il>");
++MODULE_DESCRIPTION("Line consumer for voltage and current regulators");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/regulator/userspace-consumer.h b/include/linux/regulator/userspace-consumer.h
+new file mode 100644
+index 0000000..b1c2c4e
+--- /dev/null
++++ b/include/linux/regulator/userspace-consumer.h
+@@ -0,0 +1,25 @@
++#ifndef __REGULATOR_PLATFORM_CONSUMER_H_
++#define __REGULATOR_PLATFORM_CONSUMER_H_
++
 +struct regulator_consumer_supply;
- 
- /*
-  * Regulator operation constraint flags. These flags are used to enable
-@@ -124,19 +125,6 @@ struct regulation_constraints {
- };
- 
- /**
-- * struct regulator_consumer_supply - supply -> device mapping
-- *
-- * This maps a supply name to a device.
-- *
-- * @dev: Device structure for the consumer.
-- * @supply: Name for the supply.
-- */
--struct regulator_consumer_supply {
--	struct device *dev;	/* consumer */
--	const char *supply;	/* consumer supply - e.g. "vcc" */
--};
--
--/**
-  * struct regulator_init_data - regulator platform initialisation data.
-  *
-  * Initialisation constraints, our supply and consumers supplies.
++
++/**
++ * struct regulator_userspace_consumer_data - line consumer
++ * initialisation data.
++ *
++ * @name: Name for the consumer line
++ * @num_supplies: Number of supplies feeding the line
++ * @supplies: Supplies configuration.
++ * @init_on: Set if the regulators supplying the line should be
++ *           enabled during initialisation
++ */
++struct regulator_userspace_consumer_data {
++	const char *name;
++
++	int num_supplies;
++	struct regulator_consumer_supply *supplies;
++
++	bool init_on;
++};
++
++#endif /* __REGULATOR_PLATFORM_CONSUMER_H_ */
 -- 
 1.5.6.4
 
