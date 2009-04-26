@@ -1,105 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbZDZROS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbZDZRQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754997AbZDZROS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 13:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZDZROE
+	id S1755097AbZDZRQz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 13:16:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbZDZRQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 13:14:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49836 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753116AbZDZROC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 13:14:02 -0400
-Date: Sun, 26 Apr 2009 19:13:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] irq fixes
-Message-ID: <20090426171340.GA19477@elte.hu>
+	Sun, 26 Apr 2009 13:16:44 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:37942 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753596AbZDZRQm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 13:16:42 -0400
+Date: Sun, 26 Apr 2009 18:16:40 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Corentin Chary <corentin.chary@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Len Brown <lenb@kernel.org>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+Subject: Re: [PATCH] eee-laptop: Register as a pci-hotplug device
+Message-ID: <20090426171640.GA9633@srcf.ucam.org>
+References: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain> <gemini.ket9w800w44dc0hvg.linux@youmustbejoking.demon.co.uk> <20090209234911.GB862@elte.hu> <5030E21460%linux@youmustbejoking.demon.co.uk> <20090210150431.GA26798@srcf.ucam.org> <5030E7CFF4%linux@youmustbejoking.demon.co.uk> <20090419015614.GA6926@srcf.ucam.org> <71cd59b00904190020x7d946c29w736d89fc27d39594@mail.gmail.com> <20090419151306.GA15048@srcf.ucam.org> <71cd59b00904250712k332bfc14nb181aaabd7c605e5@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <71cd59b00904250712k332bfc14nb181aaabd7c605e5@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Hm. I /think/ that version leaks notification handlers on the failure 
+path. Does this look ok? I don't have an eee to hand right now, so can't 
+test this at the moment.
 
-Please pull the latest irq-fixes-for-linus git tree from:
-
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git irq-fixes-for-linus
-
- Thanks,
-
-	Ingo
-
------------------->
-Pallipadi, Venkatesh (1):
-      x86, irq: Remove IRQ_DISABLED check in process context IRQ move
-
-Yinghai Lu (1):
-      x86/irq: mark NUMA_MIGRATE_IRQ_DESC broken
-
-
- arch/x86/Kconfig               |    1 +
- arch/x86/kernel/apic/io_apic.c |    2 ++
- kernel/irq/manage.c            |    5 ++---
- 3 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index bc25b9f..b1d2be7 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -277,6 +277,7 @@ config SPARSE_IRQ
- config NUMA_MIGRATE_IRQ_DESC
- 	bool "Move irq desc when changing irq smp_affinity"
- 	depends on SPARSE_IRQ && NUMA
-+	depends on BROKEN
- 	default n
+diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+index 284ebac..afbe441 100644
+--- a/drivers/platform/x86/Kconfig
++++ b/drivers/platform/x86/Kconfig
+@@ -341,6 +341,7 @@ config EEEPC_LAPTOP
+ 	select BACKLIGHT_CLASS_DEVICE
+ 	select HWMON
+ 	select RFKILL
++	select HOTPLUG_PCI
  	---help---
- 	  This enables moving irq_desc to cpu/node that irq will use handled.
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index a2789e4..30da617 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3670,12 +3670,14 @@ int arch_setup_hpet_msi(unsigned int irq)
+ 	  This driver supports the Fn-Fx keys on Eee PC laptops.
+ 	  It also adds the ability to switch camera/wlan on/off.
+diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
+index 7aaf587..deaf3c3 100644
+--- a/drivers/platform/x86/eeepc-laptop.c
++++ b/drivers/platform/x86/eeepc-laptop.c
+@@ -31,6 +31,7 @@
+ #include <linux/input.h>
+ #include <linux/rfkill.h>
+ #include <linux/pci.h>
++#include <linux/pci_hotplug.h>
+ 
+ #define EEEPC_LAPTOP_VERSION	"0.1"
+ 
+@@ -132,6 +133,7 @@ struct eeepc_hotk {
+ 	u16 *keycode_map;
+ 	struct rfkill *eeepc_wlan_rfkill;
+ 	struct rfkill *eeepc_bluetooth_rfkill;
++	struct hotplug_slot *hotplug_slot;
+ };
+ 
+ /* The actual device the driver binds to */
+@@ -197,6 +199,15 @@ static struct acpi_driver eeepc_hotk_driver = {
+ 	},
+ };
+ 
++/* PCI hotplug ops */
++static int eeepc_get_adapter_status(struct hotplug_slot *slot, u8 *value);
++
++static struct hotplug_slot_ops eeepc_hotplug_slot_ops = {
++	.owner = THIS_MODULE,
++	.get_adapter_status = eeepc_get_adapter_status,
++	.get_power_status = eeepc_get_adapter_status,
++};
++
+ /* The backlight device /sys/class/backlight */
+ static struct backlight_device *eeepc_backlight_device;
+ 
+@@ -529,6 +540,19 @@ static int notify_brn(void)
+ 	return -1;
+ }
+ 
++static int eeepc_get_adapter_status(struct hotplug_slot *hotplug_slot,
++				    u8 *value)
++{
++	int val = get_acpi(CM_ASL_WLAN);
++
++	if (val == 1 || val == 0)
++		*value = val;
++	else
++		return -EINVAL;
++
++	return 0;
++}
++
+ static void eeepc_rfkill_notify(acpi_handle handle, u32 event, void *data)
  {
- 	int ret;
- 	struct msi_msg msg;
-+	struct irq_desc *desc = irq_to_desc(irq);
- 
- 	ret = msi_compose_msg(NULL, irq, &msg);
- 	if (ret < 0)
- 		return ret;
- 
- 	hpet_msi_write(irq, &msg);
-+	desc->status |= IRQ_MOVE_PCNTXT;
- 	set_irq_chip_and_handler_name(irq, &hpet_msi_type, handle_edge_irq,
- 		"edge");
- 
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 7e2e7dd..2734eca 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -109,10 +109,9 @@ int irq_set_affinity(unsigned int irq, const struct cpumask *cpumask)
- 	spin_lock_irqsave(&desc->lock, flags);
- 
- #ifdef CONFIG_GENERIC_PENDING_IRQ
--	if (desc->status & IRQ_MOVE_PCNTXT || desc->status & IRQ_DISABLED) {
--		cpumask_copy(desc->affinity, cpumask);
-+	if (desc->status & IRQ_MOVE_PCNTXT)
- 		desc->chip->set_affinity(irq, cpumask);
--	} else {
-+	else {
- 		desc->status |= IRQ_MOVE_PENDING;
- 		cpumask_copy(desc->pending_mask, cpumask);
+ 	enum rfkill_state state;
+@@ -655,6 +679,54 @@ static void eeepc_unregister_rfkill_notifier(char *node)
  	}
+ }
+ 
++static void eeepc_cleanup_pci_hotplug(struct hotplug_slot *hotplug_slot)
++{
++	kfree(hotplug_slot->info);
++	kfree(hotplug_slot);
++}
++
++static int eeepc_setup_pci_hotplug(void)
++{
++	int ret = -ENOMEM;
++	struct pci_bus *bus = pci_find_bus(0, 1);
++
++	if (!bus) {
++		printk(EEEPC_ERR "Unable to find wifi PCI bus\n");
++		return -ENODEV;
++	}
++
++	ehotk->hotplug_slot = kzalloc(sizeof(struct hotplug_slot), GFP_KERNEL);
++	if (!ehotk->hotplug_slot)
++		goto error_slot;
++
++	ehotk->hotplug_slot->info = kzalloc(sizeof(struct hotplug_slot_info),
++					    GFP_KERNEL);
++	if (!ehotk->hotplug_slot->info)
++		goto error_info;
++
++	ehotk->hotplug_slot->private = ehotk;
++	ehotk->hotplug_slot->release = &eeepc_cleanup_pci_hotplug;
++	ehotk->hotplug_slot->ops = &eeepc_hotplug_slot_ops;
++	eeepc_get_adapter_status(ehotk->hotplug_slot,
++				 &ehotk->hotplug_slot->info->adapter_status);
++
++	ret = pci_hp_register(ehotk->hotplug_slot, bus, 0, "eeepc-wifi");
++	if (ret) {
++		printk(EEEPC_ERR "Unable to register hotplug slot - %d\n", ret);
++		goto error_register;
++	}
++
++	return 0;
++
++error_register:
++	kfree(ehotk->hotplug_slot->info);
++error_info:
++	kfree(ehotk->hotplug_slot);
++	ehotk->hotplug_slot = NULL;
++error_slot:
++	return ret;
++}
++
+ static int eeepc_hotk_add(struct acpi_device *device)
+ {
+ 	acpi_status status = AE_OK;
+@@ -738,8 +810,21 @@ static int eeepc_hotk_add(struct acpi_device *device)
+ 			goto bluetooth_fail;
+ 	}
+ 
++	result = eeepc_setup_pci_hotplug();
++	/*
++	 * If we get -EBUSY then something else is handling the PCI hotplug -
++	 * don't fail in this case
++	 */
++	if (result == -EBUSY)
++		return 0;
++	else if (result)
++		goto pci_fail;
++
+ 	return 0;
+ 
++ pci_fail:
++	if (ehotk->eeepc_bluetooth_rfkill)
++		rfkill_unregister(ehotk->eeepc_bluetooth_rfkill);
+  bluetooth_fail:
+ 	if (ehotk->eeepc_bluetooth_rfkill)
+ 		rfkill_free(ehotk->eeepc_bluetooth_rfkill);
+@@ -748,6 +833,10 @@ static int eeepc_hotk_add(struct acpi_device *device)
+  wlan_fail:
+ 	if (ehotk->eeepc_wlan_rfkill)
+ 		rfkill_free(ehotk->eeepc_wlan_rfkill);
++	eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
++	eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
++	acpi_remove_notify_handler(ehotk->handle, ACPI_SYSTEM_NOTIFY,
++				   eeepc_hotk_notify);
+  ehotk_fail:
+ 	kfree(ehotk);
+ 	ehotk = NULL;
+@@ -768,6 +857,8 @@ static int eeepc_hotk_remove(struct acpi_device *device, int type)
+ 
+ 	eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
+ 	eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
++	if (ehotk->hotplug_slot)
++		pci_hp_deregister(ehotk->hotplug_slot);
+ 
+ 	kfree(ehotk);
+ 	return 0;
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
