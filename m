@@ -1,36 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbZDZLyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbZDZMAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754713AbZDZLyZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 07:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbZDZLyO
+	id S1753940AbZDZMAv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 08:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbZDZMAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 07:54:14 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48756 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752654AbZDZLyN (ORCPT
+	Sun, 26 Apr 2009 08:00:40 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59855 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752305AbZDZMAk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 07:54:13 -0400
-Date: Sun, 26 Apr 2009 07:54:10 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: [PATCH 0/4] Fix sys_sync() and cleanup code (version 3)
-Message-ID: <20090426115410.GA4725@infradead.org>
-References: <1240522536-2994-1-git-send-email-jack@suse.cz>
+	Sun, 26 Apr 2009 08:00:40 -0400
+Date: Sun, 26 Apr 2009 13:00:37 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] regulator: add userspace-consumer driver
+Message-ID: <20090426120036.GA10900@opensource.wolfsonmicro.com>
+References: <cover.1240736991.git.mike@compulab.co.il> <f9c42ab0212ead9b7edac2d39f7848c46ad527d5.1240736991.git.mike@compulab.co.il> <20090426100211.GC9009@opensource.wolfsonmicro.com> <49F449B8.2010707@compulab.co.il>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1240522536-2994-1-git-send-email-jack@suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <49F449B8.2010707@compulab.co.il>
+X-Cookie: You will wish you hadn't.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Any chance you could move sync_filesystems to fs/sync.c?  It fits in
-there much better.  Same is probably true for (__)fsync_super, which
-could also use a better name..
+On Sun, Apr 26, 2009 at 02:47:04PM +0300, Mike Rapoport wrote:
+> Mark Brown wrote:
+
+> > Why are you using a regulator_consumer_supply here?  All that's being
+> > used here is the name and I can't see why you'd want the device.
+
+> For upwards compatibility :)
+> Well, seriously, I think using 'struct regulator_consumer_supply *supplies'
+> rather than 'char *supplies' makes the platform code that registers the
+> userspace-consumer device clearer.
+
+On the other hand it merges the consumer and machine APIs, which we
+really want to keep separate, and I can't see having the struct device
+in there doing anything except confuse people.  If you're going to pick
+an existing structure to use I'd be more inclined to use the bulk
+consumer structure (which the driver needs to allocate anyway).
