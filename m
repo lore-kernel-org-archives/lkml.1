@@ -1,49 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbZDZKCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752305AbZDZKaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753380AbZDZKCU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 06:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbZDZKCN
+	id S1752305AbZDZKaJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 06:30:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZDZK34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 06:02:13 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:43206 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751461AbZDZKCM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 06:02:12 -0400
-Date: Sun, 26 Apr 2009 11:02:11 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] regulator: add userspace-consumer driver
-Message-ID: <20090426100211.GC9009@opensource.wolfsonmicro.com>
-References: <cover.1240736991.git.mike@compulab.co.il> <f9c42ab0212ead9b7edac2d39f7848c46ad527d5.1240736991.git.mike@compulab.co.il>
+	Sun, 26 Apr 2009 06:29:56 -0400
+Received: from bar.sig21.net ([80.81.252.164]:55070 "EHLO bar.sig21.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751455AbZDZK3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 06:29:55 -0400
+X-Greylist: delayed 2311 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Apr 2009 06:29:55 EDT
+Date: Sun, 26 Apr 2009 11:51:21 +0200
+From: Martin Mueller <mm@sig21.net>
+To: linux-kernel@vger.kernel.org
+Subject: Kernel locks up when idle on VIA-nano U2300 with VIA VX800 on
+	Jetway JNF76-N1GL-LF mainboard
+Message-ID: <20090426095121.GS26701@catull.sig21.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <f9c42ab0212ead9b7edac2d39f7848c46ad527d5.1240736991.git.mike@compulab.co.il>
-X-Cookie: Beware of Bigfoot!
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-21-Score: -1.5 (-)
+X-Spam-21-Report: No, score=-1.5 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.287,BAYES_50=0.001 autolearn=no
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 26, 2009 at 12:17:23PM +0300, Mike Rapoport wrote:
+Hi all,
 
-> +/*
-> + * line-consumer.c
+last Thursday my mini-ITX board in my home-server died and I had to
+get a replacement board. I got an fanless Jetway JNF76-N1GL-LF from a
+local Dealer. The board uses a 1GHz U2300 VIA-nano CPU[1] and an VIA
+VX800 chipset. After replacing the board, the adventure actually
+started:
 
-Bitrot.
+Booting my installed debian with kernel 2.6.29-1-686 (debian kernel) failed.
+The system just hang when detecting the harddisks during the boot
+process, no oops, no messages, just no reaction any more. 
 
-> +	for (i = 0; i < drvdata->num_supplies; i++)
-> +		drvdata->supplies[i].supply = pdata->supplies[i].supply;
+Fortunatelly I had an old 2.6.23-1-686 (debian kernel) still hanging around
+in the grub menu. This kernel works flawlessly on the board (aside
+from not recognizing the VIA HD-audio, which doesn't bother me at the
+moment).
 
-...
+Next, I downloaded linux-2.6.30-rc3, compiled a minimal version with
+just initrd. I left out PCI-support, ACPI and almost everything else
+menuconfig allowed me to unselect except the VGA text console. This
+kernel locked up after giving me the initial prompt from busybox in
+the initrd.
 
-> +struct regulator_userspace_consumer_data {
-> +	const char *name;
-> +
-> +	int num_supplies;
-> +	struct regulator_consumer_supply *supplies;
+When adding the following lines in the script executed by the kernel
+after booting in the initrd, the system actually works:
 
-Why are you using a regulator_consumer_supply here?  All that's being
-used here is the name and I can't see why you'd want the device.
+  while true; do true; done &
+  /bin/sh
+
+As soon as I kill the shell loop, the system freezes again.
+
+So my conclusion is: the kernel locks up the first time the CPU
+is idle.
+
+Any hints on how to proceed from here?
+
+Thanks.
+
+bye 
+  MM
+
+
+[1] cato:~# cat /proc/cpuinfo 
+processor       : 0
+vendor_id       : CentaurHauls
+cpu family      : 6
+model           : 15
+model name      : VIA Nano processor U2300@1000MHz
+stepping        : 2
+cpu MHz         : 997.535
+cache size      : 1024 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 10
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat clflush acpi mmx fxsr sse sse2 ss tm syscall nx fxsr_opt rdtscp lm up pni monitor vmx est tm2 ssse3 cx16 xtpr rng rng_en ace ace_en ace2 phe phe_en lahf_lm
+bogomips        : 1996.78
+clflush size    : 64
+ 
