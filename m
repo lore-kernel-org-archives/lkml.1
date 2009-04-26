@@ -1,352 +1,455 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbZDZKhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZDZKhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755075AbZDZKhc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 06:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbZDZKgc
+	id S1755423AbZDZKhv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 06:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbZDZKge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 06:36:32 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38452 "EHLO mx2.suse.de"
+	Sun, 26 Apr 2009 06:36:34 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38457 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751940AbZDZKgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 06:36:25 -0400
-Message-Id: <20090426102953.788377292@suse.de>
+	id S1751868AbZDZKg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 06:36:26 -0400
+Message-Id: <20090426102953.289285368@suse.de>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Sun, 26 Apr 2009 20:25:57 +1000
+Date: Sun, 26 Apr 2009 20:25:54 +1000
 From: npiggin@suse.de
 To: Al Viro <viro@ZenIV.linux.org.uk>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [patch 5/5] fs: cleanup files_lock
+       Dave Hansen <haveblue@us.ibm.com>
+Subject: [patch 2/5] fs: mnt_want_write speedup
 References: <20090426102552.947523845@suse.de>
-Content-Disposition: inline; filename=fs-files_list-improve.patch
+Content-Disposition: inline; filename=mnt-want-write-speedup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lock tty_files with a new spinlock, tty_files_lock; provide helpers to
-manipulate the per-sb files list; unexport the files_lock spinlock.
+This patch speeds up lmbench lat_mmap test by about 8%. lat_mmap is set up
+basically to mmap a 64MB file on tmpfs, fault in its pages, then unmap it.
+A microbenchmark yes, but it exercises some important paths in the mm.
 
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Before:
+ avg = 501.9
+ std = 14.7773
+
+After:
+ avg = 462.286
+ std = 5.46106
+
+(50 runs of each, stddev gives a reasonable confidence, but there is quite
+a bit of variation there still)
+
+It does this by removing the complex per-cpu locking and counter-cache and
+replaces it with a percpu counter in struct vfsmount. This makes the code
+much simpler, and avoids spinlocks (although the msync is still pretty
+costly, unfortunately). It results in about 900 bytes smaller code too. It
+does increase the size of a vfsmount, however.
+
+It should also give a speedup on large systems if CPUs are frequently operating
+on different mounts (because the existing scheme has to operate on an atomic in
+the struct vfsmount when switching between mounts). But I'm most interested in
+the single threaded path performance for the moment.
+
+Cc: Dave Hansen <haveblue@us.ibm.com>
 Signed-off-by: Nick Piggin <npiggin@suse.de>
 ---
- drivers/char/pty.c       |    6 +++++-
- drivers/char/tty_io.c    |   26 ++++++++++++++++++--------
- fs/file_table.c          |   44 +++++++++++++++++++-------------------------
- fs/open.c                |    4 ++--
- include/linux/fs.h       |    8 +++-----
- include/linux/tty.h      |    1 +
- security/selinux/hooks.c |    4 ++--
- 7 files changed, 50 insertions(+), 43 deletions(-)
+ fs/namespace.c        |  263 ++++++++++++++++----------------------------------
+ include/linux/mount.h |   21 ++-
+ 2 files changed, 103 insertions(+), 181 deletions(-)
 
-Index: linux-2.6/drivers/char/pty.c
+Index: linux-2.6/fs/namespace.c
 ===================================================================
---- linux-2.6.orig/drivers/char/pty.c
-+++ linux-2.6/drivers/char/pty.c
-@@ -662,7 +662,11 @@ static int __ptmx_open(struct inode *ino
- 
- 	set_bit(TTY_PTY_LOCK, &tty->flags); /* LOCK THE SLAVE */
- 	filp->private_data = tty;
--	file_move(filp, &tty->tty_files);
-+
-+	file_sb_list_del(filp); /* __dentry_open has put it on the sb list */
-+	spin_lock(&tty_files_lock);
-+	list_add(&filp->f_u.fu_list, &tty->tty_files);
-+	spin_unlock(&tty_files_lock);
- 
- 	retval = devpts_pty_new(inode, tty->link);
- 	if (retval)
-Index: linux-2.6/drivers/char/tty_io.c
-===================================================================
---- linux-2.6.orig/drivers/char/tty_io.c
-+++ linux-2.6/drivers/char/tty_io.c
-@@ -136,6 +136,9 @@ LIST_HEAD(tty_drivers);			/* linked list
- DEFINE_MUTEX(tty_mutex);
- EXPORT_SYMBOL(tty_mutex);
- 
-+/* Spinlock to protect the tty->tty_files list */
-+DEFINE_SPINLOCK(tty_files_lock);
-+
- static ssize_t tty_read(struct file *, char __user *, size_t, loff_t *);
- static ssize_t tty_write(struct file *, const char __user *, size_t, loff_t *);
- ssize_t redirected_tty_write(struct file *, const char __user *,
-@@ -235,11 +238,11 @@ static int check_tty_count(struct tty_st
- 	struct list_head *p;
- 	int count = 0;
- 
--	file_list_lock();
-+	spin_lock(&tty_files_lock);
- 	list_for_each(p, &tty->tty_files) {
- 		count++;
+--- linux-2.6.orig/fs/namespace.c
++++ linux-2.6/fs/namespace.c
+@@ -131,10 +131,20 @@ struct vfsmount *alloc_vfsmnt(const char
+ 		INIT_LIST_HEAD(&mnt->mnt_share);
+ 		INIT_LIST_HEAD(&mnt->mnt_slave_list);
+ 		INIT_LIST_HEAD(&mnt->mnt_slave);
+-		atomic_set(&mnt->__mnt_writers, 0);
++#ifdef CONFIG_SMP
++		mnt->mnt_writers = alloc_percpu(int);
++		if (!mnt->mnt_writers)
++			goto out_free_devname;
++#else
++		mnt->mnt_writers = 0;
++#endif
  	}
--	file_list_unlock();
-+	spin_unlock(&tty_files_lock);
- 	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
- 	    tty->driver->subtype == PTY_TYPE_SLAVE &&
- 	    tty->link && tty->link->count)
-@@ -554,7 +557,7 @@ static void do_tty_hangup(struct work_st
- 	spin_unlock(&redirect_lock);
+ 	return mnt;
  
- 	check_tty_count(tty, "do_tty_hangup");
--	file_list_lock();
-+	spin_lock(&tty_files_lock);
- 	/* This breaks for file handles being sent over AF_UNIX sockets ? */
- 	list_for_each_entry(filp, &tty->tty_files, f_u.fu_list) {
- 		if (filp->f_op->write == redirected_tty_write)
-@@ -565,7 +568,7 @@ static void do_tty_hangup(struct work_st
- 		tty_fasync(-1, filp, 0);	/* can't block */
- 		filp->f_op = &hung_up_tty_fops;
- 	}
--	file_list_unlock();
-+	spin_unlock(&tty_files_lock);
- 	/*
- 	 * FIXME! What are the locking issues here? This may me overdoing
- 	 * things... This question is especially important now that we've
-@@ -1467,9 +1470,9 @@ static void release_one_tty(struct kref
- 	tty_driver_kref_put(driver);
- 	module_put(driver->owner);
- 
--	file_list_lock();
-+	spin_lock(&tty_files_lock);
- 	list_del_init(&tty->tty_files);
--	file_list_unlock();
-+	spin_unlock(&tty_files_lock);
- 
- 	free_tty_struct(tty);
++#ifdef CONFIG_SMP
++out_free_devname:
++	kfree(mnt->mnt_devname);
++#endif
+ out_free_id:
+ 	mnt_free_id(mnt);
+ out_free_cache:
+@@ -171,65 +181,38 @@ int __mnt_is_readonly(struct vfsmount *m
  }
-@@ -1678,7 +1681,10 @@ void tty_release_dev(struct file *filp)
- 	 *  - do_tty_hangup no longer sees this file descriptor as
- 	 *    something that needs to be handled for hangups.
- 	 */
--	file_kill(filp);
-+	spin_lock(&tty_files_lock);
-+	BUG_ON(list_empty(&filp->f_u.fu_list));
-+	list_del_init(&filp->f_u.fu_list);
-+	spin_unlock(&tty_files_lock);
- 	filp->private_data = NULL;
+ EXPORT_SYMBOL_GPL(__mnt_is_readonly);
  
- 	/*
-@@ -1836,7 +1842,11 @@ got_driver:
- 		return PTR_ERR(tty);
+-struct mnt_writer {
+-	/*
+-	 * If holding multiple instances of this lock, they
+-	 * must be ordered by cpu number.
+-	 */
+-	spinlock_t lock;
+-	struct lock_class_key lock_class; /* compiles out with !lockdep */
+-	unsigned long count;
+-	struct vfsmount *mnt;
+-} ____cacheline_aligned_in_smp;
+-static DEFINE_PER_CPU(struct mnt_writer, mnt_writers);
++static inline void inc_mnt_writers(struct vfsmount *mnt)
++{
++#ifdef CONFIG_SMP
++	(*per_cpu_ptr(mnt->mnt_writers, smp_processor_id()))++;
++#else
++	mnt->mnt_writers++;
++#endif
++}
  
- 	filp->private_data = tty;
--	file_move(filp, &tty->tty_files);
-+	BUG_ON(list_empty(&filp->f_u.fu_list));
-+	file_sb_list_del(filp); /* __dentry_open has put it on the sb list */
-+	spin_lock(&tty_files_lock);
-+	list_add(&filp->f_u.fu_list, &tty->tty_files);
-+	spin_unlock(&tty_files_lock);
- 	check_tty_count(tty, "tty_open");
- 	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
- 	    tty->driver->subtype == PTY_TYPE_MASTER)
-Index: linux-2.6/fs/file_table.c
-===================================================================
---- linux-2.6.orig/fs/file_table.c
-+++ linux-2.6/fs/file_table.c
-@@ -30,8 +30,7 @@ struct files_stat_struct files_stat = {
- 	.max_files = NR_FILE
- };
- 
--/* public. Not pretty! */
--__cacheline_aligned_in_smp DEFINE_SPINLOCK(files_lock);
-+static __cacheline_aligned_in_smp DEFINE_SPINLOCK(files_lock);
- 
- /* SLAB cache for file structures */
- static struct kmem_cache *filp_cachep __read_mostly;
-@@ -285,7 +284,7 @@ void __fput(struct file *file)
- 		cdev_put(inode->i_cdev);
- 	fops_put(file->f_op);
- 	put_pid(file->f_owner.pid);
--	file_kill(file);
-+	file_sb_list_del(file);
- 	if (file->f_mode & FMODE_WRITE)
- 		drop_file_write_access(file);
- 	file->f_path.dentry = NULL;
-@@ -347,31 +346,29 @@ struct file *fget_light(unsigned int fd,
- 	return file;
- }
- 
--
- void put_filp(struct file *file)
+-static int __init init_mnt_writers(void)
++static inline void dec_mnt_writers(struct vfsmount *mnt)
  {
- 	if (atomic_long_dec_and_test(&file->f_count)) {
- 		security_file_free(file);
--		file_kill(file);
-+		file_sb_list_del(file);
- 		file_free(file);
- 	}
+-	int cpu;
+-	for_each_possible_cpu(cpu) {
+-		struct mnt_writer *writer = &per_cpu(mnt_writers, cpu);
+-		spin_lock_init(&writer->lock);
+-		lockdep_set_class(&writer->lock, &writer->lock_class);
+-		writer->count = 0;
+-	}
+-	return 0;
++#ifdef CONFIG_SMP
++	(*per_cpu_ptr(mnt->mnt_writers, smp_processor_id()))--;
++#else
++	mnt->mnt_writers--;
++#endif
  }
+-fs_initcall(init_mnt_writers);
  
--void file_move(struct file *file, struct list_head *list)
-+void file_sb_list_add(struct file *file, struct super_block *sb)
+-static void unlock_mnt_writers(void)
++static unsigned int count_mnt_writers(struct vfsmount *mnt)
  {
--	if (!list)
++#ifdef CONFIG_SMP
++	unsigned int count = 0;
+ 	int cpu;
+-	struct mnt_writer *cpu_writer;
+ 
+ 	for_each_possible_cpu(cpu) {
+-		cpu_writer = &per_cpu(mnt_writers, cpu);
+-		spin_unlock(&cpu_writer->lock);
++		count += *per_cpu_ptr(mnt->mnt_writers, cpu);
+ 	}
+-}
+ 
+-static inline void __clear_mnt_count(struct mnt_writer *cpu_writer)
+-{
+-	if (!cpu_writer->mnt)
 -		return;
--	file_list_lock();
--	list_move(&file->f_u.fu_list, list);
--	file_list_unlock();
-+	spin_lock(&files_lock);
-+	BUG_ON(!list_empty(&file->f_u.fu_list));
-+	list_add(&file->f_u.fu_list, &sb->s_files);
-+	spin_unlock(&files_lock);
+-	/*
+-	 * This is in case anyone ever leaves an invalid,
+-	 * old ->mnt and a count of 0.
+-	 */
+-	if (!cpu_writer->count)
+-		return;
+-	atomic_add(cpu_writer->count, &cpu_writer->mnt->__mnt_writers);
+-	cpu_writer->count = 0;
+-}
+- /*
+- * must hold cpu_writer->lock
+- */
+-static inline void use_cpu_writer_for_mount(struct mnt_writer *cpu_writer,
+-					  struct vfsmount *mnt)
+-{
+-	if (cpu_writer->mnt == mnt)
+-		return;
+-	__clear_mnt_count(cpu_writer);
+-	cpu_writer->mnt = mnt;
++	return count;
++#else
++	return mnt->mnt_writers;
++#endif
  }
  
--void file_kill(struct file *file)
-+void file_sb_list_del(struct file *file)
+ /*
+@@ -253,75 +236,34 @@ static inline void use_cpu_writer_for_mo
+ int mnt_want_write(struct vfsmount *mnt)
  {
- 	if (!list_empty(&file->f_u.fu_list)) {
--		file_list_lock();
-+		spin_lock(&files_lock);
- 		list_del_init(&file->f_u.fu_list);
--		file_list_unlock();
-+		spin_unlock(&files_lock);
+ 	int ret = 0;
+-	struct mnt_writer *cpu_writer;
+ 
+-	cpu_writer = &get_cpu_var(mnt_writers);
+-	spin_lock(&cpu_writer->lock);
++	preempt_disable();
++	inc_mnt_writers(mnt);
++	/*
++	 * The store to inc_mnt_writers must be visible before we pass
++	 * MNT_WRITE_HOLD loop below, so that the slowpath can see our
++	 * incremented count after it has set MNT_WRITE_HOLD.
++	 */
++	smp_mb();
++	while (mnt->mnt_flags & MNT_WRITE_HOLD)
++		cpu_relax();
++	/*
++	 * After the slowpath clears MNT_WRITE_HOLD, mnt_is_readonly will
++	 * be set to match its requirements. So we must not load that until
++	 * MNT_WRITE_HOLD is cleared.
++	 */
++	smp_rmb();
+ 	if (__mnt_is_readonly(mnt)) {
++		dec_mnt_writers(mnt);
+ 		ret = -EROFS;
+ 		goto out;
  	}
+-	use_cpu_writer_for_mount(cpu_writer, mnt);
+-	cpu_writer->count++;
+ out:
+-	spin_unlock(&cpu_writer->lock);
+-	put_cpu_var(mnt_writers);
++	preempt_enable();
+ 	return ret;
  }
+ EXPORT_SYMBOL_GPL(mnt_want_write);
  
-@@ -380,7 +377,7 @@ int fs_may_remount_ro(struct super_block
- 	struct file *file;
- 
- 	/* Check that no files are currently opened for writing. */
--	file_list_lock();
-+	spin_lock(&files_lock);
- 	list_for_each_entry(file, &sb->s_files, f_u.fu_list) {
- 		struct inode *inode = file->f_path.dentry->d_inode;
- 
-@@ -392,10 +389,10 @@ int fs_may_remount_ro(struct super_block
- 		if (S_ISREG(inode->i_mode) && (file->f_mode & FMODE_WRITE))
- 			goto too_bad;
- 	}
--	file_list_unlock();
-+	spin_unlock(&files_lock);
- 	return 1; /* Tis' cool bro. */
- too_bad:
--	file_list_unlock();
-+	spin_unlock(&files_lock);
- 	return 0;
- }
- 
-@@ -406,12 +403,12 @@ too_bad:
-  *	All files are marked read-only.  We don't care about pending
-  *	delete files so this should be used in 'force' mode only.
+-static void lock_mnt_writers(void)
+-{
+-	int cpu;
+-	struct mnt_writer *cpu_writer;
+-
+-	for_each_possible_cpu(cpu) {
+-		cpu_writer = &per_cpu(mnt_writers, cpu);
+-		spin_lock(&cpu_writer->lock);
+-		__clear_mnt_count(cpu_writer);
+-		cpu_writer->mnt = NULL;
+-	}
+-}
+-
+-/*
+- * These per-cpu write counts are not guaranteed to have
+- * matched increments and decrements on any given cpu.
+- * A file open()ed for write on one cpu and close()d on
+- * another cpu will imbalance this count.  Make sure it
+- * does not get too far out of whack.
+- */
+-static void handle_write_count_underflow(struct vfsmount *mnt)
+-{
+-	if (atomic_read(&mnt->__mnt_writers) >=
+-	    MNT_WRITER_UNDERFLOW_LIMIT)
+-		return;
+-	/*
+-	 * It isn't necessary to hold all of the locks
+-	 * at the same time, but doing it this way makes
+-	 * us share a lot more code.
+-	 */
+-	lock_mnt_writers();
+-	/*
+-	 * vfsmount_lock is for mnt_flags.
+-	 */
+-	spin_lock(&vfsmount_lock);
+-	/*
+-	 * If coalescing the per-cpu writer counts did not
+-	 * get us back to a positive writer count, we have
+-	 * a bug.
+-	 */
+-	if ((atomic_read(&mnt->__mnt_writers) < 0) &&
+-	    !(mnt->mnt_flags & MNT_IMBALANCED_WRITE_COUNT)) {
+-		WARN(1, KERN_DEBUG "leak detected on mount(%p) writers "
+-				"count: %d\n",
+-			mnt, atomic_read(&mnt->__mnt_writers));
+-		/* use the flag to keep the dmesg spam down */
+-		mnt->mnt_flags |= MNT_IMBALANCED_WRITE_COUNT;
+-	}
+-	spin_unlock(&vfsmount_lock);
+-	unlock_mnt_writers();
+-}
+-
+ /**
+  * mnt_drop_write - give up write access to a mount
+  * @mnt: the mount on which to give up write access
+@@ -332,37 +274,9 @@ static void handle_write_count_underflow
   */
--static void mark_files_ro(struct super_block *sb)
-+void mark_files_ro(struct super_block *sb)
+ void mnt_drop_write(struct vfsmount *mnt)
  {
- 	struct file *f;
+-	int must_check_underflow = 0;
+-	struct mnt_writer *cpu_writer;
+-
+-	cpu_writer = &get_cpu_var(mnt_writers);
+-	spin_lock(&cpu_writer->lock);
+-
+-	use_cpu_writer_for_mount(cpu_writer, mnt);
+-	if (cpu_writer->count > 0) {
+-		cpu_writer->count--;
+-	} else {
+-		must_check_underflow = 1;
+-		atomic_dec(&mnt->__mnt_writers);
+-	}
+-
+-	spin_unlock(&cpu_writer->lock);
+-	/*
+-	 * Logically, we could call this each time,
+-	 * but the __mnt_writers cacheline tends to
+-	 * be cold, and makes this expensive.
+-	 */
+-	if (must_check_underflow)
+-		handle_write_count_underflow(mnt);
+-	/*
+-	 * This could be done right after the spinlock
+-	 * is taken because the spinlock keeps us on
+-	 * the cpu, and disables preemption.  However,
+-	 * putting it here bounds the amount that
+-	 * __mnt_writers can underflow.  Without it,
+-	 * we could theoretically wrap __mnt_writers.
+-	 */
+-	put_cpu_var(mnt_writers);
++	preempt_disable();
++	dec_mnt_writers(mnt);
++	preempt_enable();
+ }
+ EXPORT_SYMBOL_GPL(mnt_drop_write);
  
- retry:
--	file_list_lock();
-+	spin_lock(&files_lock);
- 	list_for_each_entry(f, &sb->s_files, f_u.fu_list) {
- 		struct vfsmount *mnt;
- 		if (!S_ISREG(f->f_path.dentry->d_inode->i_mode))
-@@ -425,16 +422,13 @@ retry:
- 			continue;
- 		file_release_write(f);
- 		mnt = mntget(f->f_path.mnt);
--		file_list_unlock();
+@@ -370,24 +284,44 @@ static int mnt_make_readonly(struct vfsm
+ {
+ 	int ret = 0;
+ 
+-	lock_mnt_writers();
++	spin_lock(&vfsmount_lock);
++	mnt->mnt_flags |= MNT_WRITE_HOLD;
++	/*
++	 * After storing MNT_WRITE_HOLD, we'll read the counters. This store
++	 * should be visible before we do.
++	 */
++	smp_mb();
++
+ 	/*
+-	 * With all the locks held, this value is stable
++	 * With writers on hold, if this value is zero, then there are
++	 * definitely no active writers (although held writers may subsequently
++	 * increment the count, they'll have to wait, and decrement it after
++	 * seeing MNT_READONLY).
++	 *
++	 * It is OK to have counter incremented on one CPU and decremented on
++	 * another: the sum will add up correctly. The danger would be when we
++	 * sum up each counter, if we read a counter before it is incremented,
++	 * but then read another CPU's count which it has been subsequently
++	 * decremented from -- we would see more decrements than we should.
++	 * MNT_WRITE_HOLD protects against this scenario, because
++	 * mnt_want_write first increments count, then smp_mb, then spins on
++	 * MNT_WRITE_HOLD, so it can't be decremented by another CPU while
++	 * we're counting up here.
+ 	 */
+-	if (atomic_read(&mnt->__mnt_writers) > 0) {
++	if (count_mnt_writers(mnt) > 0) {
+ 		ret = -EBUSY;
+ 		goto out;
+ 	}
+-	/*
+-	 * nobody can do a successful mnt_want_write() with all
+-	 * of the counts in MNT_DENIED_WRITE and the locks held.
+-	 */
+-	spin_lock(&vfsmount_lock);
+ 	if (!ret)
+ 		mnt->mnt_flags |= MNT_READONLY;
+-	spin_unlock(&vfsmount_lock);
+ out:
+-	unlock_mnt_writers();
++	/*
++	 * MNT_READONLY must become visible before ~MNT_WRITE_HOLD, so writers
++	 * that become unheld will see MNT_READONLY.
++	 */
++	smp_wmb();
++	mnt->mnt_flags &= ~MNT_WRITE_HOLD;
++	spin_unlock(&vfsmount_lock);
+ 	return ret;
+ }
+ 
+@@ -410,6 +344,9 @@ void free_vfsmnt(struct vfsmount *mnt)
+ {
+ 	kfree(mnt->mnt_devname);
+ 	mnt_free_id(mnt);
++#ifdef CONFIG_SMP
++	free_percpu(mnt->mnt_writers);
++#endif
+ 	kmem_cache_free(mnt_cache, mnt);
+ }
+ 
+@@ -604,38 +541,14 @@ static struct vfsmount *clone_mnt(struct
+ 
+ static inline void __mntput(struct vfsmount *mnt)
+ {
+-	int cpu;
+ 	struct super_block *sb = mnt->mnt_sb;
+ 	/*
+-	 * We don't have to hold all of the locks at the
+-	 * same time here because we know that we're the
+-	 * last reference to mnt and that no new writers
+-	 * can come in.
+-	 */
+-	for_each_possible_cpu(cpu) {
+-		struct mnt_writer *cpu_writer = &per_cpu(mnt_writers, cpu);
+-		spin_lock(&cpu_writer->lock);
+-		if (cpu_writer->mnt != mnt) {
+-			spin_unlock(&cpu_writer->lock);
+-			continue;
+-		}
+-		atomic_add(cpu_writer->count, &mnt->__mnt_writers);
+-		cpu_writer->count = 0;
 -		/*
--		 * This can sleep, so we can't hold
--		 * the file_list_lock() spinlock.
+-		 * Might as well do this so that no one
+-		 * ever sees the pointer and expects
+-		 * it to be valid.
 -		 */
-+		/* This can sleep, so we can't hold the spinlock. */
-+		spin_unlock(&files_lock);
- 		mnt_drop_write(mnt);
- 		mntput(mnt);
- 		goto retry;
- 	}
--	file_list_unlock();
-+	spin_unlock(&files_lock);
- }
- 
- void __init files_init(unsigned long mempages)
-Index: linux-2.6/fs/open.c
+-		cpu_writer->mnt = NULL;
+-		spin_unlock(&cpu_writer->lock);
+-	}
+-	/*
+ 	 * This probably indicates that somebody messed
+ 	 * up a mnt_want/drop_write() pair.  If this
+ 	 * happens, the filesystem was probably unable
+ 	 * to make r/w->r/o transitions.
+ 	 */
+-	WARN_ON(atomic_read(&mnt->__mnt_writers));
++	WARN_ON(count_mnt_writers(mnt));
+ 	dput(mnt->mnt_root);
+ 	free_vfsmnt(mnt);
+ 	deactivate_super(sb);
+Index: linux-2.6/include/linux/mount.h
 ===================================================================
---- linux-2.6.orig/fs/open.c
-+++ linux-2.6/fs/open.c
-@@ -828,7 +828,7 @@ static struct file *__dentry_open(struct
- 	f->f_path.mnt = mnt;
- 	f->f_pos = 0;
- 	f->f_op = fops_get(inode->i_fop);
--	file_move(f, &inode->i_sb->s_files);
-+	file_sb_list_add(f, inode->i_sb);
+--- linux-2.6.orig/include/linux/mount.h
++++ linux-2.6/include/linux/mount.h
+@@ -30,7 +30,7 @@ struct mnt_namespace;
+ #define MNT_STRICTATIME 0x80
  
- 	error = security_dentry_open(f, cred);
- 	if (error)
-@@ -873,7 +873,7 @@ cleanup_all:
- 			mnt_drop_write(mnt);
- 		}
- 	}
--	file_kill(f);
-+	file_sb_list_del(f);
- 	f->f_path.dentry = NULL;
- 	f->f_path.mnt = NULL;
- cleanup_file:
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h
-+++ linux-2.6/include/linux/fs.h
-@@ -934,9 +934,6 @@ struct file {
- 	unsigned long f_mnt_write_state;
- #endif
+ #define MNT_SHRINKABLE	0x100
+-#define MNT_IMBALANCED_WRITE_COUNT	0x200 /* just for debugging */
++#define MNT_WRITE_HOLD	0x200
+ 
+ #define MNT_SHARED	0x1000	/* if the vfsmount is a shared mount */
+ #define MNT_UNBINDABLE	0x2000	/* if the vfsmount is a unbindable mount */
+@@ -65,13 +65,22 @@ struct vfsmount {
+ 	int mnt_expiry_mark;		/* true if marked for expiry */
+ 	int mnt_pinned;
+ 	int mnt_ghosts;
+-	/*
+-	 * This value is not stable unless all of the mnt_writers[] spinlocks
+-	 * are held, and all mnt_writer[]s on this mount have 0 as their ->count
+-	 */
+-	atomic_t __mnt_writers;
++#ifdef CONFIG_SMP
++	int *mnt_writers;
++#else
++	int mnt_writers;
++#endif
  };
--extern spinlock_t files_lock;
--#define file_list_lock() spin_lock(&files_lock);
--#define file_list_unlock() spin_unlock(&files_lock);
  
- #define get_file(x)	atomic_long_inc(&(x)->f_count)
- #define file_count(x)	atomic_long_read(&(x)->f_count)
-@@ -2021,6 +2018,7 @@ extern const struct file_operations read
- extern const struct file_operations write_pipefifo_fops;
- extern const struct file_operations rdwr_pipefifo_fops;
- 
-+extern void mark_files_ro(struct super_block *sb);
- extern int fs_may_remount_ro(struct super_block *);
- 
- #ifdef CONFIG_BLOCK
-@@ -2172,8 +2170,8 @@ static inline void insert_inode_hash(str
- }
- 
- extern struct file * get_empty_filp(void);
--extern void file_move(struct file *f, struct list_head *list);
--extern void file_kill(struct file *f);
-+extern void file_sb_list_add(struct file *f, struct super_block *sb);
-+extern void file_sb_list_del(struct file *f);
- #ifdef CONFIG_BLOCK
- struct bio;
- extern void submit_bio(int, struct bio *);
-Index: linux-2.6/security/selinux/hooks.c
-===================================================================
---- linux-2.6.orig/security/selinux/hooks.c
-+++ linux-2.6/security/selinux/hooks.c
-@@ -2244,7 +2244,7 @@ static inline void flush_unauthorized_fi
- 
- 	tty = get_current_tty();
- 	if (tty) {
--		file_list_lock();
-+		spin_lock(&tty_files_lock);
- 		if (!list_empty(&tty->tty_files)) {
- 			struct inode *inode;
- 
-@@ -2260,7 +2260,7 @@ static inline void flush_unauthorized_fi
- 				drop_tty = 1;
- 			}
- 		}
--		file_list_unlock();
-+		spin_unlock(&tty_files_lock);
- 		tty_kref_put(tty);
- 	}
- 	/* Reset controlling tty. */
-Index: linux-2.6/include/linux/tty.h
-===================================================================
---- linux-2.6.orig/include/linux/tty.h
-+++ linux-2.6/include/linux/tty.h
-@@ -426,6 +426,7 @@ extern void tty_release_dev(struct file
- extern int tty_init_termios(struct tty_struct *tty);
- 
- extern struct mutex tty_mutex;
-+extern spinlock_t tty_files_lock;
- 
- extern void tty_write_unlock(struct tty_struct *tty);
- extern int tty_write_lock(struct tty_struct *tty, int ndelay);
++static inline int *get_mnt_writers_ptr(struct vfsmount *mnt)
++{
++#ifdef CONFIG_SMP
++	return mnt->mnt_writers;
++#else
++	return &mnt->mnt_writers;
++#endif
++}
++
+ static inline struct vfsmount *mntget(struct vfsmount *mnt)
+ {
+ 	if (mnt)
 
 
