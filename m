@@ -1,88 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756404AbZDZPPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbZDZPVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756404AbZDZPPZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 11:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbZDZPOv
+	id S1756165AbZDZPVc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 11:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZDZPVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 11:14:51 -0400
-Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:36652 "EHLO
-	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752548AbZDZPOu (ORCPT
+	Sun, 26 Apr 2009 11:21:22 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:34371 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752566AbZDZPVW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 11:14:50 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Apr 2009 11:14:50 EDT
-From: Frank Mori Hess <fmhess@speakeasy.net>
-Reply-To: fmhess@users.sourceforge.net
-To: Greg KH <greg@kroah.com>
-Subject: Re: RFC about Comedi on a patch that remove a lot fo code
-Date: Sun, 26 Apr 2009 11:08:06 -0400
-User-Agent: KMail/1.9.9
-Cc: Alessio Igor Bogani <abogani@texware.it>, Ian Abbott <abbotti@mev.co.uk>,
-       David Schleef <ds@schleef.org>, LKML <linux-kernel@vger.kernel.org>,
-       Comedi-ml <comedi_list@googlegroups.com>
-References: <63a49ef40904240228g6a28ba8dsf63d2e0bdc6b57d9@mail.gmail.com> <20090424225122.GB3343@kroah.com>
-In-Reply-To: <20090424225122.GB3343@kroah.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2135799.RMmGHzKQqV";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Sun, 26 Apr 2009 11:21:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=BpX4U6H4CMYdn5EYiHGHwYAVdOo4VgHxo76f0zJrPvkIgLx/bp2vzc1T8XWa6vlrZt
+         dlL6f8K+/vlnPjs6n4BnwVG94QdbzKD+IBuUCEDldFHkjtxUV2HVJlE7LfkHdaEEylMC
+         0EIpT2YTgIMq0qkMUBuWfvTjTQyAL19scC9dY=
+Subject: Re: SDHCI driver runnining in aspire one, allows to write to R/O
+ SD cards
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: sdhci-devel@lists.ossman.eu, pierre@ossman.eu,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1240524632.20871.0.camel@maxim-laptop>
+References: <1240219764.13640.5.camel@maxim-laptop>
+	 <49ED0865.9030603@gmail.com>  <1240524632.20871.0.camel@maxim-laptop>
+Content-Type: text/plain
+Date: Sun, 26 Apr 2009 18:21:16 +0300
+Message-Id: <1240759276.10972.0.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200904261108.09527.fmhess@speakeasy.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2135799.RMmGHzKQqV
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On Friday 24 April 2009, Greg KH wrote:
-> On Fri, Apr 24, 2009 at 11:28:28AM +0200, Alessio Igor Bogani wrote:
-> > Dear Comedi developers,
-> >
-> > Sorry for my bad english.
-> >
-> > I would be happy to receive your considerations about that patch:
-> >
-> > http://marc.info/?l=linux-next&m=123792129500760&w=2
-> >
-> > I know that some users use Comedi on dual kernel approach systems.
-> > Obviously I don't have any against this but i think that Linux git
-> > tree isn't the right place to support those software (RTAI, Xenomai,
-> > RTLinux and others). Those projects already released patches against
-> > Linux source code so it very easy for them add also patch for Comedi
-> > drivers in the same tarball.
-> >
-> > At the already listed 8 reasons  in that email I want added a ninth
-> > one: 9) Give more chance for interested developers to fix it against
-> > RT_PREEMPT http://marc.info/?l=linux-rt-users&m=124049407712792&w=2
->
-> I am siding with you, and agree all of the RT stuff should be deleted
-> from the in-kernel comedi code, as there is on in-kernel users of it.
->
-> Also, the recent Linux RT changes will not need any of these
-> driver-specific changes at all from what I can tell, so they are now
-> obsolete.
->
-> Frank, unless you have any major objections, I'd like to remove this
-> code.
-
-I'm okay with it.
+On Fri, 2009-04-24 at 01:10 +0300, Maxim Levitsky wrote:
+> On Mon, 2009-04-20 at 17:42 -0600, Robert Hancock wrote:
+> > Maxim Levitsky wrote:
+> > > Hi,
+> > > 
+> > > I am an owner of aspire one, and it has a card reader.
+> > > when I take a sd card, and pull down the protection tab, it still allows
+> > > to write to the card (I tested with my main notebook that indeed, it did
+> > > write there).
+> > > 
+> > > My main notebook, acer aspire 5720, doesn't have this problem.
+> > > Kernel version in use is 2.6.28 vanilla, but this did happen in former
+> > > version as well.
+> > > 
+> > > 
+> > > Attached lspci, on acer one.
+> > 
+> > Do you know if it worked in any kernel version or OS? It's known that 
+> > some SD card readers are too cheap to actually implement the 
+> > write-protect detection.
+> 
+> I'll test in windows, but in linux it never did work.
+> 
+> Best regards,
+> 	Maxim Levitsky
+> 
+Yep, works fine in windows.
+Tested with and without lock tab.
 
 
---nextPart2135799.RMmGHzKQqV
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Best regards,
+	Maxim Levitsky
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBJ9HjX5vihyNWuA4URArS/AKDqq3kD4C0hb4TIUVqZajemJV9IBgCgoeJe
-fLCcywb3VLKaX9BWTAKNZXI=
-=/l+0
------END PGP SIGNATURE-----
-
---nextPart2135799.RMmGHzKQqV--
