@@ -1,106 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396AbZDZRzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbZDZR4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755396AbZDZRzn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 13:55:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZDZRzb
+	id S1756204AbZDZR4P (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 13:56:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755167AbZDZR4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 13:55:31 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:49159 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753277AbZDZRza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 13:55:30 -0400
-Subject: Re: NFS BUG_ON in nfs_do_writepage
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, Rince <rincebrain@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-In-Reply-To: <20090426151324.GB5588@wotan.suse.de>
-References: <alpine.LFD.2.00.0904130145050.4396@centaur.acm.jhu.edu>
-	 <20090412235010.c8e3475b.akpm@linux-foundation.org>
-	 <1239650202.16771.15.camel@heimdal.trondhjem.org>
-	 <5da0588e0904131506k5c58e8ddob9bf38f61da6302a@mail.gmail.com>
-	 <5da0588e0904131644g131dc816r61884e83bc4cd006@mail.gmail.com>
-	 <5da0588e0904240226j3454941y5f58c17a32a9a23d@mail.gmail.com>
-	 <1240671428.6112.1.camel@heimdal.trondhjem.org>
-	 <20090426064026.GD28555@wotan.suse.de>
-	 <1240755509.5055.34.camel@heimdal.trondhjem.org>
-	 <20090426151324.GB5588@wotan.suse.de>
-Content-Type: text/plain
-Date: Sun, 26 Apr 2009 13:55:22 -0400
-Message-Id: <1240768522.10548.33.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 10 sum msgs/h 1 total rcpts 61 max rcpts/h 10 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=_BLID_, uiouri=_URIID_)
-X-UiO-Scanned: EDC61E9F46C4E9ADE6B32EDEBB638E989D696943
-X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 202 max/h 5 blacklist 0 greylist 0 ratelimit 0
+	Sun, 26 Apr 2009 13:56:00 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:35940 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754670AbZDZRz6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 13:55:58 -0400
+X-IronPort-AV: E=Sophos;i="4.40,249,1238976000"; 
+   d="scan'208";a="293201053"
+Date: Sun, 26 Apr 2009 10:55:37 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Wait for console to become available, v3.2
+Message-ID: <20090426175537.GB18594@cuplxvomd02.corp.sa.net>
+References: <20090424003555.GA31173@cuplxvomd02.corp.sa.net> <Pine.LNX.4.44L0.0904241502440.4531-100000@iolanthe.rowland.org> <20090424213238.GA5973@cuplxvomd02.corp.sa.net> <20090424221951.GC18260@shareable.org> <20090424231013.GA18340@cuplxvomd02.corp.sa.net> <20090425014152.GD23106@shareable.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090425014152.GD23106@shareable.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-4; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-04-26 at 17:13 +0200, Nick Piggin wrote:
-> On Sun, Apr 26, 2009 at 10:18:29AM -0400, Trond Myklebust wrote:
-> > On Sun, 2009-04-26 at 08:40 +0200, Nick Piggin wrote:
-> > > On Sat, Apr 25, 2009 at 10:57:08AM -0400, Trond Myklebust wrote:
-> > > > On Fri, 2009-04-24 at 05:26 -0400, Rince wrote:
-> > > > > Applied try 3 of Nick Piggin's patch to 2.6.30-rc3 (cleanly, no less!)
-> > > > > 
-> > > > > Doesn't appear to have helped at all - I received my favorite BUG ON
-> > > > > write.c:252 just like always, within 24 hours of booting the kernel,
-> > > > > even.
-> > > > 
-> > > > Can you apply the following incremental patch on top of Nick's. This
-> > > > appears to suffice to close the race on my setup.
-> > > 
-> > > Thanks, yes that looks good. Note: I deliberately didn't try to
-> > > convert filesystems because it needs much better understanding
-> > > of each one. So any fs maintainers using page_mkwrite I hope have
-> > > looked at these patches and considered whether they need to
-> > > do anything differently (ditto for the page_mkwrite return value
-> > > fixup patch).
-> > 
-> > Note that after applying this, I put a WARN_ON(!PageDirty()) in the NFS
-> > set_page_dirty() method, and ran some mmap stress tests.
-> > 
-> > As far as I can tell, the WARN_ON is never triggering. I take this to
-> > mean that the remaining cases where the VM is calling set_page_dirty()
-> > are basically all cases where we've already seen a page fault and set
-> > the page dirty flag, but haven't yet written it out (i.e. we haven't yet
-> > called clear_page_dirty_for_io() and so the pte is still marked as
-> > dirty).
-> > That again implies that set_page_dirty() is now fully redundant for
-> > filesystems that define page_mkwrite(), provided that the filesystem
-> > takes charge of marking the page as dirty.
-> > 
-> > This suggests an alternative fix for the stable kernels in the form of
-> > the following patch.
-> > Comments?
+On Sat, Apr 25, 2009 at 02:41:52AM +0100, Jamie Lokier wrote:
+> David VomLehn wrote:
+> > I think this is over-engineered. This focused on boot devices, so you really
+> > don't care about things like buses, and I don't perceive a broader use. What
+> > really matters is particular boot device types, wherever they came from.
 > 
-> This doesn't seem to fix the race, though... on kernels with the
-> race still there, it will just open a window where you can have
-> a dirty pte but the page not written out.
+> I'm thinking this broader use:
 > 
-> I don't understand.
+>     - My boot _script_ is waiting for a disk which identifies as
+>       UUID=392852908752345749857 to appear before it can mount it on
+>       /data.  If there's no such disk, it proceeds without it.  It's a
+>       USB disk, behind a USB hub.
+> 
+>     - My boot script is looking to see if I'm holding down 'z' on the
+>       keyboard, to do something different.  But how does it know if
+>       there's a USB keyboard plugged in (behind two USB hubs) that
+>       hasn't finished being detected?
+> 
+> It just seemed to fit comfortably into what's being discussed.
+> 
+> (I do have these a system with these requirements, by the way.  It's
+> solved at the moment by waiting 5 seconds after booting, and by using
+> an older kernel which doesn't have boot parallelisation yet...)
 
-I'm just pointing out that the NFS client already calls
-__set_page_dirty_nobuffers() while holding the page lock inside the
-nfs_vm_page_mkwrite() call, so having the VM do it too in the call to
-set_page_dirty_balance() is actually redundant. IOW: as far as the NFS
-code is concerned, we can get rid of the ->set_page_dirty() callback in
-that situation.
+If the keyboard is being used for the console, this should fix your problem.
+If not, I think you can fix it by using a hotplug script.
 
-I couldn't find any other places in the VM code where we can have a
-dirty pte without also having called page_mkwrite() (and hence
-__set_page_dirty_nobuffers). As I said, adding a WARN_ON(!PageDirty())
-in ->set_page_dirty() didn't ever trigger any cases where the
-set_page_dirty() was actually setting the dirty bit (except in the case
-where we race with page writeout in do_wp_page() and __do_fault()).
+> Only one problem I see: what happens when there's an attempt to open
+> /dev/console before you increment the pending count?  It seems to me
+> you have to wait for all buses to have been detected, which is why I
+> mentioned buses, as some buses are _themselves_ slow devices to detect.
 
-That's why I believe disabling ->set_page_dirty() is safe here, and will
-in fact suffice to fix the page writeout race.
+A valid point. I just sent an updated patch to address this.
 
-Cheers
-  Trond
+> > The key question is, are there cases where there is enough time between steps
+> > 1 and 2, and steps 2 and 3, to add this complexity? If not, let's skip it.
+> 
+> The time between enumerating that a USB device exists and what it's
+> class is (could be a console?), and actually initialising the device
+> to find out if it's then usable, including loading firmware, can be a
+> little while.
+> 
+> I don't know if the times are long enough to matter.
 
+Me neither, but I went ahead and added bus_bootdev_type_found. It's a trivial
+piece of code and will allow this case to be handled cleanly.
+
+> Possibly related to all this: it would be really nice if the ATA
+> rather slow probe time didn't have to delay boot scripts until they
+> depend on the not-yet-probed disks, as sometimes they might not.
+
+Related to boot time, yes, but it sounds like it's not related to the
+boot device issue. By the time you get to boot scripts, you've initialized
+all the boot devices you're going to.
+
+> -- Jamie
+
+David VomLehn
