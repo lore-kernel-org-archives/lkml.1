@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbZDZRKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbZDZROS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754365AbZDZRKt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 13:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbZDZRKk
+	id S1754997AbZDZROS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 13:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZDZROE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 13:10:40 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41384 "EHLO mx2.mail.elte.hu"
+	Sun, 26 Apr 2009 13:14:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49836 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752881AbZDZRKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 13:10:39 -0400
-Date: Sun, 26 Apr 2009 19:10:26 +0200
+	id S1753116AbZDZROC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 13:14:02 -0400
+Date: Sun, 26 Apr 2009 19:13:40 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] core fixes
-Message-ID: <20090426171026.GA18520@elte.hu>
+Subject: [GIT PULL] irq fixes
+Message-ID: <20090426171340.GA19477@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,100 +34,72 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest core-fixes-for-linus git tree from:
+Please pull the latest irq-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git irq-fixes-for-linus
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Ingo Molnar (1):
-      locking: clarify kernel-taint warning message
+Pallipadi, Venkatesh (1):
+      x86, irq: Remove IRQ_DISABLED check in process context IRQ move
 
-Peter Zijlstra (1):
-      lockdep: more robust lockdep_map init sequence
-
-Steven Rostedt (1):
-      lockdep, x86: account for irqs enabled in paranoid_exit
+Yinghai Lu (1):
+      x86/irq: mark NUMA_MIGRATE_IRQ_DESC broken
 
 
- arch/x86/kernel/entry_64.S |    3 +++
- kernel/lockdep.c           |   22 ++++++++++++++--------
- kernel/panic.c             |    2 +-
- 3 files changed, 18 insertions(+), 9 deletions(-)
+ arch/x86/Kconfig               |    1 +
+ arch/x86/kernel/apic/io_apic.c |    2 ++
+ kernel/irq/manage.c            |    5 ++---
+ 3 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
-index a331ec3..38946c6 100644
---- a/arch/x86/kernel/entry_64.S
-+++ b/arch/x86/kernel/entry_64.S
-@@ -1410,7 +1410,10 @@ ENTRY(paranoid_exit)
- paranoid_swapgs:
- 	TRACE_IRQS_IRETQ 0
- 	SWAPGS_UNSAFE_STACK
-+	RESTORE_ALL 8
-+	jmp irq_return
- paranoid_restore:
-+	TRACE_IRQS_IRETQ 0
- 	RESTORE_ALL 8
- 	jmp irq_return
- paranoid_userspace:
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index b0f0118..accb40c 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -2490,13 +2490,20 @@ static int mark_lock(struct task_struct *curr, struct held_lock *this,
- void lockdep_init_map(struct lockdep_map *lock, const char *name,
- 		      struct lock_class_key *key, int subclass)
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index bc25b9f..b1d2be7 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -277,6 +277,7 @@ config SPARSE_IRQ
+ config NUMA_MIGRATE_IRQ_DESC
+ 	bool "Move irq desc when changing irq smp_affinity"
+ 	depends on SPARSE_IRQ && NUMA
++	depends on BROKEN
+ 	default n
+ 	---help---
+ 	  This enables moving irq_desc to cpu/node that irq will use handled.
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index a2789e4..30da617 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3670,12 +3670,14 @@ int arch_setup_hpet_msi(unsigned int irq)
  {
--	if (unlikely(!debug_locks))
-+	lock->class_cache = NULL;
-+#ifdef CONFIG_LOCK_STAT
-+	lock->cpu = raw_smp_processor_id();
-+#endif
-+
-+	if (DEBUG_LOCKS_WARN_ON(!name)) {
-+		lock->name = "NULL";
- 		return;
-+	}
-+
-+	lock->name = name;
+ 	int ret;
+ 	struct msi_msg msg;
++	struct irq_desc *desc = irq_to_desc(irq);
  
- 	if (DEBUG_LOCKS_WARN_ON(!key))
- 		return;
--	if (DEBUG_LOCKS_WARN_ON(!name))
--		return;
- 	/*
- 	 * Sanity check, the lock-class key must be persistent:
- 	 */
-@@ -2505,12 +2512,11 @@ void lockdep_init_map(struct lockdep_map *lock, const char *name,
- 		DEBUG_LOCKS_WARN_ON(1);
- 		return;
+ 	ret = msi_compose_msg(NULL, irq, &msg);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	hpet_msi_write(irq, &msg);
++	desc->status |= IRQ_MOVE_PCNTXT;
+ 	set_irq_chip_and_handler_name(irq, &hpet_msi_type, handle_edge_irq,
+ 		"edge");
+ 
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 7e2e7dd..2734eca 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -109,10 +109,9 @@ int irq_set_affinity(unsigned int irq, const struct cpumask *cpumask)
+ 	spin_lock_irqsave(&desc->lock, flags);
+ 
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+-	if (desc->status & IRQ_MOVE_PCNTXT || desc->status & IRQ_DISABLED) {
+-		cpumask_copy(desc->affinity, cpumask);
++	if (desc->status & IRQ_MOVE_PCNTXT)
+ 		desc->chip->set_affinity(irq, cpumask);
+-	} else {
++	else {
+ 		desc->status |= IRQ_MOVE_PENDING;
+ 		cpumask_copy(desc->pending_mask, cpumask);
  	}
--	lock->name = name;
- 	lock->key = key;
--	lock->class_cache = NULL;
--#ifdef CONFIG_LOCK_STAT
--	lock->cpu = raw_smp_processor_id();
--#endif
-+
-+	if (unlikely(!debug_locks))
-+		return;
-+
- 	if (subclass)
- 		register_lock_class(lock, subclass, 1);
- }
-diff --git a/kernel/panic.c b/kernel/panic.c
-index 934fb37..3dcaa16 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -221,7 +221,7 @@ void add_taint(unsigned flag)
- 	 * post-warning case.
- 	 */
- 	if (flag != TAINT_CRAP && flag != TAINT_WARN && __debug_locks_off())
--		printk(KERN_WARNING "Disabling lockdep due to kernel taint\n");
-+		printk(KERN_WARNING "Disabling lock debugging due to kernel taint\n");
- 
- 	set_bit(flag, &tainted_mask);
- }
