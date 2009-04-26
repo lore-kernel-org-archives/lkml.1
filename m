@@ -1,119 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbZDZPNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755695AbZDZPPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754453AbZDZPNm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 11:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbZDZPNa
+	id S1755695AbZDZPPA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 11:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbZDZPOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 11:13:30 -0400
-Received: from cantor.suse.de ([195.135.220.2]:50422 "EHLO mx1.suse.de"
+	Sun, 26 Apr 2009 11:14:50 -0400
+Received: from pearlgates.net ([82.92.180.13]:44113 "EHLO mail.pearlgates.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751879AbZDZPN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 11:13:29 -0400
-Date: Sun, 26 Apr 2009 17:13:24 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: linux-fsdevel@vger.kernel.org, Rince <rincebrain@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Subject: Re: NFS BUG_ON in nfs_do_writepage
-Message-ID: <20090426151324.GB5588@wotan.suse.de>
-References: <alpine.LFD.2.00.0904130145050.4396@centaur.acm.jhu.edu> <20090412235010.c8e3475b.akpm@linux-foundation.org> <1239650202.16771.15.camel@heimdal.trondhjem.org> <5da0588e0904131506k5c58e8ddob9bf38f61da6302a@mail.gmail.com> <5da0588e0904131644g131dc816r61884e83bc4cd006@mail.gmail.com> <5da0588e0904240226j3454941y5f58c17a32a9a23d@mail.gmail.com> <1240671428.6112.1.camel@heimdal.trondhjem.org> <20090426064026.GD28555@wotan.suse.de> <1240755509.5055.34.camel@heimdal.trondhjem.org>
+	id S1752122AbZDZPOt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 11:14:49 -0400
+X-Greylist: delayed 438 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Apr 2009 11:14:49 EDT
+Date: Sun, 26 Apr 2009 17:07:29 +0200
+From: Angel <angel@pearlgates.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "DRI" <dri-devel@lists.sourceforge.net>,
+       "Jos van der Ende" <seraph@xs4all.nl>
+Subject: Re: [Bug #12947] r128: system hangs when X is started with DRI
+ enabled
+Message-Id: <20090426170729.3489b482.angel@pearlgates.net>
+In-Reply-To: <egHshlwQQFE.A.ITD.zpE9JB@chimera>
+References: <tur5OtdUm3E.A.r2B.7oE9JB@chimera>
+	<egHshlwQQFE.A.ITD.zpE9JB@chimera>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.14.7; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240755509.5055.34.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 26, 2009 at 10:18:29AM -0400, Trond Myklebust wrote:
-> On Sun, 2009-04-26 at 08:40 +0200, Nick Piggin wrote:
-> > On Sat, Apr 25, 2009 at 10:57:08AM -0400, Trond Myklebust wrote:
-> > > On Fri, 2009-04-24 at 05:26 -0400, Rince wrote:
-> > > > Applied try 3 of Nick Piggin's patch to 2.6.30-rc3 (cleanly, no less!)
-> > > > 
-> > > > Doesn't appear to have helped at all - I received my favorite BUG ON
-> > > > write.c:252 just like always, within 24 hours of booting the kernel,
-> > > > even.
-> > > 
-> > > Can you apply the following incremental patch on top of Nick's. This
-> > > appears to suffice to close the race on my setup.
-> > 
-> > Thanks, yes that looks good. Note: I deliberately didn't try to
-> > convert filesystems because it needs much better understanding
-> > of each one. So any fs maintainers using page_mkwrite I hope have
-> > looked at these patches and considered whether they need to
-> > do anything differently (ditto for the page_mkwrite return value
-> > fixup patch).
-> 
-> Note that after applying this, I put a WARN_ON(!PageDirty()) in the NFS
-> set_page_dirty() method, and ran some mmap stress tests.
-> 
-> As far as I can tell, the WARN_ON is never triggering. I take this to
-> mean that the remaining cases where the VM is calling set_page_dirty()
-> are basically all cases where we've already seen a page fault and set
-> the page dirty flag, but haven't yet written it out (i.e. we haven't yet
-> called clear_page_dirty_for_io() and so the pte is still marked as
-> dirty).
-> That again implies that set_page_dirty() is now fully redundant for
-> filesystems that define page_mkwrite(), provided that the filesystem
-> takes charge of marking the page as dirty.
-> 
-> This suggests an alternative fix for the stable kernels in the form of
-> the following patch.
-> Comments?
+On Sun, 26 Apr 2009 11:46:26 +0200 (CEST)
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-This doesn't seem to fix the race, though... on kernels with the
-race still there, it will just open a window where you can have
-a dirty pte but the page not written out.
-
-I don't understand.
-
-> Cheers
->   Trond
-> ------------------------------------------------------------------
-> commit 684049bf73059aa9be35f9cdf07acda29ebb0340
-> Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-> Date:   Sun Apr 26 10:14:34 2009 -0400
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.28 and 2.6.29.
 > 
->     NFS: Fix page dirtying races in NFS
->     
->     If a filesystem defines a page_mkwrite() callback that also marks the page
->     as being dirty, then we don't need to define a set_page_dirty() callback.
->     
->     The following patch fixes http://bugzilla.kernel.org/show_bug.cgi?id=12913
->     by eliminating a race in do_wp_page() and __do_fault(). The latter two
->     mark the page as dirty after the call to page_mkwrite(). Since
->     nfs_vm_page_mkwrite() has already marked the page as dirty, this means that
->     there is a race whereby the filesystem may actually have cleaned the
->     page by the time it is marked as dirty (again) by the VM.
->     
->     Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> ---
-> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-> index 5a97bcf..21bffaf 100644
-> --- a/fs/nfs/file.c
-> +++ b/fs/nfs/file.c
-> @@ -465,10 +465,19 @@ static int nfs_launder_page(struct page *page)
->  	return nfs_wb_page(inode, page);
->  }
->  
-> +static int nfs_set_page_dirty(struct page *page)
-> +{
-> +	/* We don't need to have the VM mark the page as dirty, since
-> +	 * nfs_updatepage() will do it. This eliminates the race
-> +	 * that caused http://bugzilla.kernel.org/show_bug.cgi?id=12913
-> +	 */
-> +	return 0;
-> +}
-> +
->  const struct address_space_operations nfs_file_aops = {
->  	.readpage = nfs_readpage,
->  	.readpages = nfs_readpages,
-> -	.set_page_dirty = __set_page_dirty_nobuffers,
-> +	.set_page_dirty = nfs_set_page_dirty,
->  	.writepage = nfs_writepage,
->  	.writepages = nfs_writepages,
->  	.write_begin = nfs_write_begin,
-> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
+> be listed and let me know (either way).
+
+I've tested with kernel 2.6.29.1. The problem still persists. While everything works fine with 2.6.28 or lower, starting X (both 1.3 and 1.5) with DRI enabled on a 2.6.29 kernel results in a garbled screen and unresponsive keyboard.
+
+
+-- 
+Angel <angel@pearlgates.net>
