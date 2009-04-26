@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbZDZCSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbZDZCUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753549AbZDZCSk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 22:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbZDZCR7
+	id S1755524AbZDZCUN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 22:20:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbZDZCT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 22:17:59 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54204 "EHLO
+	Sat, 25 Apr 2009 22:19:58 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54398 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753137AbZDZCR6 (ORCPT
+	by vger.kernel.org with ESMTP id S1750741AbZDZCT6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 22:17:58 -0400
+	Sat, 25 Apr 2009 22:19:58 -0400
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -27,98 +27,64 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Paul Mundt <lethal@linux-sh.org>,
        =?utf-8?q?Am=C3=A9rico=20Wang?= <xiyou.wangcong@gmail.com>,
        Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
-       David Howells <dhowells@redhat.com>, Tim Abbott <tabbott@MIT.EDU>
-Subject: [PATCH 01/15] Add new HEAD_TEXT_SECTION macro.
-Date: Sat, 25 Apr 2009 22:10:56 -0400
-Message-Id: <1240711870-30505-1-git-send-email-tabbott@mit.edu>
+       David Howells <dhowells@redhat.com>, Tim Abbott <tabbott@MIT.EDU>,
+       Tony Luck <tony.luck@intel.com>
+Subject: [PATCH 06/15] ia64: convert to use __HEAD and HEAD_TEXT macros.
+Date: Sat, 25 Apr 2009 22:11:01 -0400
+Message-Id: <1240711870-30505-6-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <alpine.DEB.1.10.0904251304120.7631@vinegar-pot.mit.edu>
+In-Reply-To: <1240711870-30505-5-git-send-email-tabbott@mit.edu>
 References: <alpine.DEB.1.10.0904251304120.7631@vinegar-pot.mit.edu>
+ <1240711870-30505-1-git-send-email-tabbott@mit.edu>
+ <1240711870-30505-2-git-send-email-tabbott@mit.edu>
+ <1240711870-30505-3-git-send-email-tabbott@mit.edu>
+ <1240711870-30505-4-git-send-email-tabbott@mit.edu>
+ <1240711870-30505-5-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is preparation for replacing all uses of ".head.text" or
-".text.head" in the kernel with macros, so that the section name can
-later be changed without having to touch a lot of the kernel.
-
-Since some linker scripts do more complex things than referencing
-HEAD_TEXT, we add a HEAD_TEXT_SECTION macro that just contains the
-actual name.
-
-I've defined HEAD_TEXT_SECTION in a new header,
-include/linux/section-names.h, so that this section name only needs to
-appear in one place.  I anticipate creating similar macro structures
-for a number of other section names.
-
-The long-term goal here is to be able to change the kernel's magic
-section names to those that are compatible with -ffunction-sections
--fdata-sections.  This requires renaming all magic sections with names
-of the form ".text.foo".
+This has the consequence of changing the section name use for head
+code from ".text.head" to ".head.text".  Since this commit changes all
+users in the architecture, this change should be harmless.
 
 Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Cc: Tony Luck <tony.luck@intel.com>
 ---
- include/asm-generic/vmlinux.lds.h |    4 +++-
- include/linux/init.h              |    4 +++-
- include/linux/section-names.h     |    6 ++++++
- 3 files changed, 12 insertions(+), 2 deletions(-)
- create mode 100644 include/linux/section-names.h
+ arch/ia64/kernel/head.S        |    2 +-
+ arch/ia64/kernel/vmlinux.lds.S |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 7fa660f..eaa06ef 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -1,3 +1,5 @@
-+#include <linux/section-names.h>
-+
- #ifndef LOAD_OFFSET
- #define LOAD_OFFSET 0
- #endif
-@@ -331,7 +333,7 @@
- #endif
+diff --git a/arch/ia64/kernel/head.S b/arch/ia64/kernel/head.S
+index 23f846d..a572160 100644
+--- a/arch/ia64/kernel/head.S
++++ b/arch/ia64/kernel/head.S
+@@ -181,7 +181,7 @@ swapper_pg_dir:
+ halt_msg:
+ 	stringz "Halting kernel\n"
  
- /* Section used for early init (in .S files) */
--#define HEAD_TEXT  *(.head.text)
-+#define HEAD_TEXT  *(HEAD_TEXT_SECTION)
+-	.section .text.head,"ax"
++	__HEAD
  
- /* init and exit section handling */
- #define INIT_DATA							\
-diff --git a/include/linux/init.h b/include/linux/init.h
-index f121a7a..20a1334 100644
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -2,6 +2,8 @@
- #define _LINUX_INIT_H
+ 	.global start_ap
  
- #include <linux/compiler.h>
-+#include <linux/section-names.h>
-+#include <linux/stringify.h>
- 
- /* These macros are used to mark some functions or 
-  * initialized data (doesn't apply to uninitialized data)
-@@ -107,7 +109,7 @@
- #define __memexitconst   __section(.memexit.rodata)
- 
- /* For assembly routines */
--#define __HEAD		.section	".head.text","ax"
-+#define __HEAD		.section	__stringify(HEAD_TEXT_SECTION),"ax"
- #define __INIT		.section	".init.text","ax"
- #define __FINIT		.previous
- 
-diff --git a/include/linux/section-names.h b/include/linux/section-names.h
-new file mode 100644
-index 0000000..c956f4e
---- /dev/null
-+++ b/include/linux/section-names.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_SECTION_NAMES_H
-+#define __LINUX_SECTION_NAMES_H
-+
-+#define HEAD_TEXT_SECTION .head.text
-+
-+#endif /* !__LINUX_SECTION_NAMES_H */
+diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
+index 4a95e86..a8b879e 100644
+--- a/arch/ia64/kernel/vmlinux.lds.S
++++ b/arch/ia64/kernel/vmlinux.lds.S
+@@ -51,8 +51,8 @@ SECTIONS
+ 	KPROBES_TEXT
+ 	*(.gnu.linkonce.t*)
+     }
+-  .text.head : AT(ADDR(.text.head) - LOAD_OFFSET)
+-	{ *(.text.head) }
++  HEAD_TEXT_SECTION : AT(ADDR(HEAD_TEXT_SECTION) - LOAD_OFFSET)
++	{ HEAD_TEXT }
+   .text2 : AT(ADDR(.text2) - LOAD_OFFSET)
+ 	{ *(.text2) }
+ #ifdef CONFIG_SMP
 -- 
 1.6.2.1
 
