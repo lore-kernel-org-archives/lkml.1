@@ -1,40 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbZDZO7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbZDZPNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756219AbZDZO7e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 10:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbZDZO7Z
+	id S1754453AbZDZPNm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 11:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbZDZPNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 10:59:25 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:39717 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754793AbZDZO7Y convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 10:59:24 -0400
-Message-ID: <440758024.12507@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: ylmao@mail.ustc.edu.cn
-From: "Mao Yilu" <ylmao@mail.ustc.edu.cn>
-To: <linux-kernel@vger.kernel.org>
-Subject: TSC unstable on Intel Pentium M processor 750
-Date: Sun, 26 Apr 2009 22:59:13 +0800
-Message-ID: <9E8AFFF282BE4091BA53C5D4F911F6F0@xiaomao>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Microsoft Office Outlook 11
-thread-index: AcnGe4SH2KXZ7QL4QG2xYqctInFiTA==
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+	Sun, 26 Apr 2009 11:13:30 -0400
+Received: from cantor.suse.de ([195.135.220.2]:50422 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751879AbZDZPN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 11:13:29 -0400
+Date: Sun, 26 Apr 2009 17:13:24 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: linux-fsdevel@vger.kernel.org, Rince <rincebrain@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Subject: Re: NFS BUG_ON in nfs_do_writepage
+Message-ID: <20090426151324.GB5588@wotan.suse.de>
+References: <alpine.LFD.2.00.0904130145050.4396@centaur.acm.jhu.edu> <20090412235010.c8e3475b.akpm@linux-foundation.org> <1239650202.16771.15.camel@heimdal.trondhjem.org> <5da0588e0904131506k5c58e8ddob9bf38f61da6302a@mail.gmail.com> <5da0588e0904131644g131dc816r61884e83bc4cd006@mail.gmail.com> <5da0588e0904240226j3454941y5f58c17a32a9a23d@mail.gmail.com> <1240671428.6112.1.camel@heimdal.trondhjem.org> <20090426064026.GD28555@wotan.suse.de> <1240755509.5055.34.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240755509.5055.34.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Apr 26, 2009 at 10:18:29AM -0400, Trond Myklebust wrote:
+> On Sun, 2009-04-26 at 08:40 +0200, Nick Piggin wrote:
+> > On Sat, Apr 25, 2009 at 10:57:08AM -0400, Trond Myklebust wrote:
+> > > On Fri, 2009-04-24 at 05:26 -0400, Rince wrote:
+> > > > Applied try 3 of Nick Piggin's patch to 2.6.30-rc3 (cleanly, no less!)
+> > > > 
+> > > > Doesn't appear to have helped at all - I received my favorite BUG ON
+> > > > write.c:252 just like always, within 24 hours of booting the kernel,
+> > > > even.
+> > > 
+> > > Can you apply the following incremental patch on top of Nick's. This
+> > > appears to suffice to close the race on my setup.
+> > 
+> > Thanks, yes that looks good. Note: I deliberately didn't try to
+> > convert filesystems because it needs much better understanding
+> > of each one. So any fs maintainers using page_mkwrite I hope have
+> > looked at these patches and considered whether they need to
+> > do anything differently (ditto for the page_mkwrite return value
+> > fixup patch).
+> 
+> Note that after applying this, I put a WARN_ON(!PageDirty()) in the NFS
+> set_page_dirty() method, and ran some mmap stress tests.
+> 
+> As far as I can tell, the WARN_ON is never triggering. I take this to
+> mean that the remaining cases where the VM is calling set_page_dirty()
+> are basically all cases where we've already seen a page fault and set
+> the page dirty flag, but haven't yet written it out (i.e. we haven't yet
+> called clear_page_dirty_for_io() and so the pte is still marked as
+> dirty).
+> That again implies that set_page_dirty() is now fully redundant for
+> filesystems that define page_mkwrite(), provided that the filesystem
+> takes charge of marking the page as dirty.
+> 
+> This suggests an alternative fix for the stable kernels in the form of
+> the following patch.
+> Comments?
 
-I masked all the interrupts except keyboard interrupt before the instruction “hlt”, So the CPU ran nothing until I click the keyboard button. And I used “rdtscll” and “do_gettimeofday” to get the halt time. But the result of “do_gettimeofday” was longer than the one of “rdtscll” about 3s per minute. I don’t know why.
-I timed some math job using the same way in contrary to the “hlt” instruction. The TSC was not correct either. In 3 minutes, the result of “do_gettimeofday” was longer than the one of “rdtscll” about 5s.
-The processor is Intel Pentium M processor 750. From the software developer’s manual of Intel, the processor clock of Pentium M processors is impacted by Intel SpeedStep technology, while some other processors is not. Maybe this is another feature Pentium M processors own.
-Pentium M processors support 5 C-states. I am sure the TSC doesn’t stop in C0 and C1 states. But I am not sure about other states. Maybe other states will stop the clock, and “hlt” instruction will make the CPU into deeper state.
-These are my guess. I wanna the truth. Thank you.
+This doesn't seem to fix the race, though... on kernels with the
+race still there, it will just open a window where you can have
+a dirty pte but the page not written out.
 
-Mao Yilu
+I don't understand.
 
+> Cheers
+>   Trond
+> ------------------------------------------------------------------
+> commit 684049bf73059aa9be35f9cdf07acda29ebb0340
+> Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+> Date:   Sun Apr 26 10:14:34 2009 -0400
+> 
+>     NFS: Fix page dirtying races in NFS
+>     
+>     If a filesystem defines a page_mkwrite() callback that also marks the page
+>     as being dirty, then we don't need to define a set_page_dirty() callback.
+>     
+>     The following patch fixes http://bugzilla.kernel.org/show_bug.cgi?id=12913
+>     by eliminating a race in do_wp_page() and __do_fault(). The latter two
+>     mark the page as dirty after the call to page_mkwrite(). Since
+>     nfs_vm_page_mkwrite() has already marked the page as dirty, this means that
+>     there is a race whereby the filesystem may actually have cleaned the
+>     page by the time it is marked as dirty (again) by the VM.
+>     
+>     Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> ---
+> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+> index 5a97bcf..21bffaf 100644
+> --- a/fs/nfs/file.c
+> +++ b/fs/nfs/file.c
+> @@ -465,10 +465,19 @@ static int nfs_launder_page(struct page *page)
+>  	return nfs_wb_page(inode, page);
+>  }
+>  
+> +static int nfs_set_page_dirty(struct page *page)
+> +{
+> +	/* We don't need to have the VM mark the page as dirty, since
+> +	 * nfs_updatepage() will do it. This eliminates the race
+> +	 * that caused http://bugzilla.kernel.org/show_bug.cgi?id=12913
+> +	 */
+> +	return 0;
+> +}
+> +
+>  const struct address_space_operations nfs_file_aops = {
+>  	.readpage = nfs_readpage,
+>  	.readpages = nfs_readpages,
+> -	.set_page_dirty = __set_page_dirty_nobuffers,
+> +	.set_page_dirty = nfs_set_page_dirty,
+>  	.writepage = nfs_writepage,
+>  	.writepages = nfs_writepages,
+>  	.write_begin = nfs_write_begin,
+> 
