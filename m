@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbZDZQjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbZDZQjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753913AbZDZQjT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 12:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZDZQjH
+	id S1754899AbZDZQjt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 12:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbZDZQjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 12:39:07 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56652 "EHLO mx3.mail.elte.hu"
+	Sun, 26 Apr 2009 12:39:39 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57774 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752682AbZDZQjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 12:39:04 -0400
-Date: Sun, 26 Apr 2009 18:38:41 +0200
+	id S1752781AbZDZQjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 12:39:39 -0400
+Date: Sun, 26 Apr 2009 18:39:24 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Alessio Igor Bogani <abogani@texware.it>,
-       Neil Brown <neilb@cse.unsw.edu.au>
+To: Alessio Igor Bogani <abogani@texware.it>
 Cc: Jonathan Corbet <corbet@lwn.net>,
        =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] md: Avoid to call flush_scheduled_work() with BKL
-	held
-Message-ID: <20090426163841.GC6236@elte.hu>
-References: <1240492313-6560-1-git-send-email-abogani@texware.it>
+Subject: Re: [PATCH -tip] remove the BKL: remove "BKL auto-drop" assumption
+	from ext3_remount()
+Message-ID: <20090426163924.GD6236@elte.hu>
+References: <1240492586-6654-1-git-send-email-abogani@texware.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1240492313-6560-1-git-send-email-abogani@texware.it>
+In-Reply-To: <1240492586-6654-1-git-send-email-abogani@texware.it>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,86 +40,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Alessio Igor Bogani <abogani@texware.it> wrote:
 
-> [    1.479872] ------------[ cut here ]------------
-> [    1.483391] WARNING: at kernel/workqueue.c:408 flush_workqueue+0x7b/0x11f()
-> [    1.489948] Hardware name:
-> [    1.491779] Modules linked in:
-> [    1.493306] Pid: 1, comm: swapper Not tainted 2.6.30-rc1 #67
-> [    1.495767] Call Trace:
-> [    1.496974]  [<ffffffff810451a4>] warn_slowpath+0xd8/0x10c
-> [    1.503432]  [<ffffffff810176d1>] ? save_stack_trace+0x2f/0x4d
-> [    1.509724]  [<ffffffff8106983d>] ? mark_lock+0x22/0x22c
-> [    1.515412]  [<ffffffff8106b364>] ? __lock_acquire+0xc36/0xc45
-> [    1.521448]  [<ffffffff81069e9b>] ? debug_check_no_locks_freed+0x120/0x12f
-> [    1.525189]  [<ffffffff8106874c>] ? get_lock_stats+0x19/0x4c
-> [    1.527172]  [<ffffffff810687a7>] ? put_lock_stats+0x28/0x33
-> [    1.533316]  [<ffffffff81056d7f>] flush_workqueue+0x7b/0x11f
-> [    1.539224]  [<ffffffff8139ffe8>] ? mddev_find+0xe2/0x2e5
-> [    1.544826]  [<ffffffff81056e38>] flush_scheduled_work+0x15/0x17
-> [    1.551262]  [<ffffffff813a0239>] md_alloc+0x4e/0x2b0
-> [    1.556505]  [<ffffffff813a04ab>] md_probe+0x10/0x14
-> [    1.561939]  [<ffffffff812c6a90>] kobj_lookup+0x150/0x194
-> [    1.566607]  [<ffffffff813a049b>] ? md_probe+0x0/0x14
-> [    1.570519]  [<ffffffff811f6f3c>] get_gendisk+0x30/0xc1
-> [    1.573948]  [<ffffffff81105821>] __blkdev_get+0x3a/0x338
-> [    1.577537]  [<ffffffff81105b31>] ? blkdev_open+0x0/0xab
-> [    1.581293]  [<ffffffff81105b2f>] blkdev_get+0x10/0x12
-> [    1.584922]  [<ffffffff81105ba7>] blkdev_open+0x76/0xab
-> [    1.588661]  [<ffffffff810dd7fa>] __dentry_open+0x194/0x2b9
-> [    1.592615]  [<ffffffff810dd9f6>] nameidata_to_filp+0x46/0x57
-> [    1.596730]  [<ffffffff810e9f8f>] do_filp_open+0x417/0x83e
-> [    1.600651]  [<ffffffff8106874c>] ? get_lock_stats+0x19/0x4c
-> [    1.604597]  [<ffffffff810f3fe7>] ? alloc_fd+0x122/0x133
-> [    1.608424]  [<ffffffff810dd59a>] do_sys_open+0x58/0xd8
-> [    1.612233]  [<ffffffff810dd64d>] sys_open+0x20/0x22
-> [    1.615671]  [<ffffffff818a94f1>] md_run_setup+0x64/0x8e
-> [    1.619496]  [<ffffffff818a8251>] prepare_namespace+0x3a/0x19d
-> [    1.623239]  [<ffffffff818a765e>] kernel_init+0x16e/0x17e
-> [    1.626923]  [<ffffffff8100cf3a>] child_rip+0xa/0x20
-> [    1.629504]  [<ffffffff8103ba79>] ? finish_task_switch+0x40/0xe8
-> [    1.642356]  [<ffffffff8100c900>] ? restore_args+0x0/0x30
-> [    1.643802]  [<ffffffff818a74f0>] ? kernel_init+0x0/0x17e
-> [    1.645276]  [<ffffffff8100cf30>] ? child_rip+0x0/0x20
-> [    1.648839] ---[ end trace 6fa921fb3766f01d ]---
+> Fix ext3_remount()'s "schedule() drops the BKL automatically" assumption,
+> when ext3_mark_recovery_complete(), which can sleep, does not do that it can
+> lock up.
 > 
 > Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
 > ---
->  drivers/md/md.c |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
+>  fs/ext3/super.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
 > 
-> diff --git a/drivers/md/md.c b/drivers/md/md.c
-> index ed5727c..e6c039c 100644
-> --- a/drivers/md/md.c
-> +++ b/drivers/md/md.c
-> @@ -45,6 +45,7 @@
->  #include <linux/reboot.h>
->  #include <linux/file.h>
->  #include <linux/delay.h>
-> +#include <linux/smp_lock.h>
->  #include <linux/raid/md_p.h>
->  #include <linux/raid/md_u.h>
->  #include "md.h"
-> @@ -3830,6 +3831,7 @@ static int md_alloc(dev_t dev, char *name)
->  	int shift;
->  	int unit;
->  	int error;
-> +	int bkl = kernel_locked();
->  
->  	if (!mddev)
->  		return -ENODEV;
-> @@ -3841,7 +3843,11 @@ static int md_alloc(dev_t dev, char *name)
->  	/* wait for any previous instance if this device
->  	 * to be completed removed (mddev_delayed_delete).
->  	 */
-> +	if (bkl)
-> +		unlock_kernel();
->  	flush_scheduled_work();
-> +	if (bkl)
-> +		lock_kernel();
+> diff --git a/fs/ext3/super.c b/fs/ext3/super.c
+> index dc905f9..3fa457a 100644
+> --- a/fs/ext3/super.c
+> +++ b/fs/ext3/super.c
+> @@ -2561,9 +2561,11 @@ static int ext3_remount (struct super_block * sb, int * flags, char * data)
+>  			 * We have to unlock super so that we can wait for
+>  			 * transactions.
+>  			 */
+> +			unlock_kernel();
+>  			unlock_super(sb);
+>  			ext3_mark_recovery_complete(sb, es);
+>  			lock_super(sb);
+> +			lock_kernel();
 
-Hm, couldnt we switch the ioctl in drivers/md/md.c from 
-->locked_ioctl to ->unlocked_ioctl?
-
-Neil, what do you think?
+Shouldnt this be a conditional-unlock, so that if the remount moves 
+away from under the BKL we dont break in this place?
 
 	Ingo
