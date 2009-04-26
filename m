@@ -1,173 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752170AbZDZVkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752785AbZDZVpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752170AbZDZVkU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 17:40:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbZDZVj7
+	id S1752785AbZDZVpJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 17:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbZDZVov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 17:39:59 -0400
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:45911 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751090AbZDZVj6 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 17:39:58 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqEFAINu9ElMQW1W/2dsb2JhbACBUMh+g3QF
-Date: Sun, 26 Apr 2009 17:39:54 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Stephen Hemminger <shemminger@vyatta.com>,
-       David Miller <davem@davemloft.net>, Jarek Poplawski <jarkao2@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+	Sun, 26 Apr 2009 17:44:51 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:44890 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751019AbZDZVou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 17:44:50 -0400
+Date: Sun, 26 Apr 2009 14:44:51 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
+       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
        benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-CPU recursive lock {XV}
-Message-ID: <20090426213954.GA825@Krystal>
-References: <20090421143927.52d7d89d@nehalam> <alpine.LFD.2.00.0904220821240.3101@localhost.localdomain> <20090423210938.1501507b@nehalam> <49F146FF.5050200@cosmosbay.com> <20090424091839.6e13ebec@nehalam> <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam> <49F4A6E3.7080102@cosmosbay.com> <20090426193135.GA30851@Krystal> <49F4CA55.8020705@cosmosbay.com>
+Subject: Re: [PATCH RFC] v2 expedited "big hammer" RCU grace periods
+Message-ID: <20090426214451.GC6945@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090426052340.GA24931@linux.vnet.ibm.com> <20090426112717.GE10391@elte.hu> <20090426191343.GC29238@Krystal> <20090426202255.GA5365@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <49F4CA55.8020705@cosmosbay.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:27:50 up 57 days, 17:54,  2 users,  load average: 0.38, 0.39,
-	0.35
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090426202255.GA5365@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eric Dumazet (dada1@cosmosbay.com) wrote:
-> Mathieu Desnoyers a écrit :
-> > * Eric Dumazet (dada1@cosmosbay.com) wrote:
-> >> From: Stephen Hemminger <shemminger@vyatta.com>
-> >>
-> >>> Epilogue due to master Jarek. Lockdep carest not about the locking
-> >>> doth bestowed. Therefore no keys are needed.
-> >>>
-> >>> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> >> So far, so good, should be ready for inclusion now, nobody complained :)
-> >>
-> >> I include the final patch, merge of your last two patches.
-> >>
-> >> David, could you please review it once again and apply it if it's OK ?
-> >>
-> > [...]
-> >> +/*
-> >> + * Per-CPU read/write lock associated with per-cpu table entries.
-> >> + * This is not a general solution but makes reader locking fast since
-> >> + * there is no shared variable to cause cache ping-pong; but adds an
-> >> + * additional write-side penalty since update must lock all
-> >> + * possible CPU's.
-> >> + *
-> >> + * Read lock is used by ip/arp/ip6 tables rule processing which runs per-cpu.
-> >> + * It needs to ensure that the rules are not being changed while packet
-> >> + * is being processed. In some cases, the read lock will be acquired
-> >> + * twice on the same CPU; this is okay because read locks handle nesting.
-> >> + *
-> >> + * Write lock is used in two cases:
-> >> + *    1. reading counter values
-> >> + *       all readers need to be stopped and the per-CPU values are summed.
-> >> + *
-> >> + *    2. replacing tables
-> >> + *       any readers that are using the old tables have to complete
-> >> + *       before freeing the old table. This is handled by reading
-> >> + *	  as a side effect of reading counters
-> >> + */
-> >> +DECLARE_PER_CPU(rwlock_t, xt_info_locks);
-> >> +
-> >> +static inline void xt_info_rdlock_bh(void)
-> >> +{
-> >> +	/*
-> >> +	 * Note: can not use read_lock_bh(&__get_cpu_var(xt_info_locks))
-> >> +	 * because need to ensure that preemption is disable before
-> >> +	 * acquiring per-cpu-variable, so do it as a two step process
-> >> +	 */
-> >> +	local_bh_disable();
+On Sun, Apr 26, 2009 at 10:22:55PM +0200, Ingo Molnar wrote:
+> 
+> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > * Ingo Molnar (mingo@elte.hu) wrote:
+> > > 
+> > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > Second cut of "big hammer" expedited RCU grace periods, but only 
+> > > > for rcu_bh.  This creates another softirq vector, so that entering 
+> > > > this softirq vector will have forced an rcu_bh quiescent state (as 
+> > > > noted by Dave Miller).  Use smp_call_function() to invoke 
+> > > > raise_softirq() on all CPUs in order to cause this to happen.  
+> > > > Track the CPUs that have passed through a quiescent state (or gone 
+> > > > offline) with a cpumask.
+> > > 
+> > > hm, i'm still asking whether doing this would be simpler via a 
+> > > reschedule vector - which not only is an existing facility but also 
+> > > forces all RCU domains through a quiescent state - not just bh-RCU 
+> > > participants.
+> > > 
+> > > Triggering a new softirq is in no way simpler that doing an SMP 
+> > > cross-call - in fact softirqs are a finite resource so using some 
+> > > other facility would be preferred.
+> > > 
+> > > Am i missing something?
+> > > 
 > > 
-> > Why do you need to disable bottom halves on the read-side ? You could
-> > probably just disable preemption, given this lock is nestable on the
-> > read-side anyway. Or I'm missing something obvious ?
+> > I think the reason for this whole thread is that waiting for rcu 
+> > quiescent state, when called many times e.g. in multiple iptables 
+> > invokations, takes too longs (5 seconds to load the netfilter 
+> > rules at boot). [...]
 > 
-> It may not be obvious, but subject already raised on this list, so I'll
-> try to be as precise as possible (But may be wrong on some points, I'll
-> let Patrick correct me if necessary)
+> I'm aware of the problem space.
 > 
-> ipt_do_table() is not a readonly function returning a verdict.
+> I was suggesting that to trigger the quiescent state and to wait for 
+> it to propagate it would be enough to reuse the reschedule 
+> mechanism.
 > 
-> 1) It handles a stack (check how is used next->comefrom) that seems to
-> be stored on rules themselves. (This is how I understand this code)
-> This is safe as each cpu has its own copy of rules/counters, and BH protected.
-> 
-> 2) It also updates two 64 bit counters (bytes/packets) on each matched rule.
-> 
-> 3) Some netfilter matches/targets probably rely on the fact their handlers
-> are run with BH disabled by their caller (ipt_do_table()/arp/ip6...)
-> 
-> These must be BH protected (and preempt disabled too), or else :
-> 
-> 1) A softirq could interrupt a process in the middle of ipt_do_table()
-> and corrupt its "stack".
-> 
-> 2) A softirq could interrupt a process in ipt_do_table() in the middle
->  of the ADD_COUNTER(). Some counters could be corrupted.
-> 
-> 3) Some netfiler extensions would break.
-> 
-> Previous linux versions already used a read_lock_bh() here, on a single
-> and shared rwlock, there is nothing new on this BH locking AFAIK.
-> 
-> Thank you
+> It would be relatively straightforward: first a send-reschedule then 
+> do a wait_task_context_switch() on rq->curr - both are existing 
+> primitives. (a task reference has to be taken but that's pretty much 
+> all)
 
-Thanks for the explanation. It might help to document the role of bh
-disabling for the reader in a supplementary code comment, otherwise one
-might think it's been put there to match the bottom half disabling used
-on the write-side, which has the supplementary role of making sure bh
-will not deadlock (and this precise behavior is not needed usually on
-the read-side).
+Well, one reason I didn't take this approach was that I didn't happen
+to think of it.  ;-)
 
-One more point :
+Also that I hadn't heard of wait_task_context_switch().
 
- *    1. reading counter values
- *       all readers need to be stopped and the per-CPU values are summed.
+Hmmm...  Looking for wait_task_context_switch().  OK, found it.
 
-Maybe it's just me, but this sentence does not seem to clearly indicate
-that we have :
+It looks to me that this primitive won't return until the scheduler
+actually decides to run something else.  We instead need to have
+something that stops waiting once the CPU enters the scheduler, hence
+the previous thought of making rcu_qsctr_inc() do a bit of extra work.
 
-for_each_cpu()
-  write lock()
-  read data
-  write unlock()
+This would be a way of making an expedited RCU-sched across all
+RCU implementations.  As noted in the earlier email, it would not
+handle RCU or RCU-bh in a -rt kernel.
 
-One might interpret it as :
+> By the time wait_task_context_switch() returns from the last CPU we 
+> know that the quiescent state has passed.
 
-for_each_cpu()
-  write lock()
+We would want to wait for all of the CPUs in parallel, though, wouldn't
+we?  Seems that we would not want to wait for the last CPU to do another
+trip through the scheduler if it had already passed through the scheduler
+while we were waiting on the earlier CPUs.
 
-read data
+So it seems like we would still want a two-pass approach -- one pass to
+capture the current state, the second pass to wait for the state to
+change.
 
-for_each_cpu()
-  write unlock()
-
-Or maybe it's just my understanding of English that's not perfect.
-Anyhow, rewording this sentence might not hurt. Something along the
-lines of :
-
-"reading counter values
- all readers are iteratively stopped to have their per-CPU values
- summed"
-
-This is an important difference, as this behaves more like a RCU-based
-mechanism than a global per-cpu read/write lock where all the write
-locks would be taken at once.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+							Thanx, Paul
