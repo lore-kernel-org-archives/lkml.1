@@ -1,78 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753658AbZDZWha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755016AbZDZWhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753658AbZDZWha (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 18:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbZDZWhH
+	id S1755016AbZDZWhs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 18:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZDZWhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 18:37:07 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:29866 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751897AbZDZWhF convert rfc822-to-8bit (ORCPT
+	Sun, 26 Apr 2009 18:37:20 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:55783 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753505AbZDZWhQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 18:37:05 -0400
-MIME-Version: 1.0
-In-Reply-To: <20090426213746.GH10627@shareable.org>
-References: <20090426195249.GC10627@shareable.org> <Pine.LNX.4.44L0.0904261715250.26439-100000@netrider.rowland.org> 
-	<20090426213746.GH10627@shareable.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Mon, 27 Apr 2009 00:36:48 +0200
-Message-ID: <ac3eb2510904261536t7a37f970tfafba71d1e67cfb6@mail.gmail.com>
-Subject: Re: Wait for console to become available, v3.2
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, David VomLehn <dvomlehn@cisco.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Sun, 26 Apr 2009 18:37:16 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqEFAIh59ElMQW1W/2dsb2JhbACBUMhzg3QF
+Date: Sun, 26 Apr 2009 18:32:11 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>,
-       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
+       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] netfilter: use per-CPU recursive lock {XV}
+Message-ID: <20090426223211.GB825@Krystal>
+References: <20090421143927.52d7d89d@nehalam> <alpine.LFD.2.00.0904220821240.3101@localhost.localdomain> <20090423210938.1501507b@nehalam> <49F146FF.5050200@cosmosbay.com> <20090424091839.6e13ebec@nehalam> <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam> <49F4A6E3.7080102@cosmosbay.com> <20090426185646.GB29238@Krystal> <20090426145746.1184aeba@nehalam>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090426145746.1184aeba@nehalam>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:08:03 up 57 days, 18:34,  2 users,  load average: 0.16, 0.22,
+	0.20
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 26, 2009 at 23:37, Jamie Lokier <jamie@shareable.org> wrote:
-> Alan Stern wrote:
->> As for searching for a particular UUID, I believe recent changes to
->> sysfs/udev should improve the situation.  There will be a "by_UUID"
->> directory somewhere, containing a bunch of symbolic links whose names
->> are the UUID values of all the registered drives.  Programs won't have
->> to read every disk; they'll only have to search through this directory.
->
-> That will be great.
+* Stephen Hemminger (shemminger@vyatta.com) wrote:
+> On Sun, 26 Apr 2009 14:56:46 -0400
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > * Eric Dumazet (dada1@cosmosbay.com) wrote:
+> > > From: Stephen Hemminger <shemminger@vyatta.com>
+> > > 
+> > > > Epilogue due to master Jarek. Lockdep carest not about the locking
+> > > > doth bestowed. Therefore no keys are needed.
+> > > > 
+> > > > Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> > > 
+> > > So far, so good, should be ready for inclusion now, nobody complained :)
+> > > 
+> > > I include the final patch, merge of your last two patches.
+> > > 
+> > > David, could you please review it once again and apply it if it's OK ?
+> > 
+> > > Thanks to all for your help and patience
+> > > 
+> > > [PATCH] netfilter: use per-CPU recursive lock {XV}
+> > 
+> > Hi Eric, 
+> > 
+> > Suitable name would probably be :
+> > 
 
-It is like that for years now, and it is completely in userspace at
-/dev/disk/by-uuid/. I don't know of any plans to add filesystem/raid
-signature uuid probing support to the kernel. And I think that will be
-almost impossible to get right in the kernel.
+Hi Stephen,
 
-Yes, you need to look at all the disks from userspace, if you request
-to mount them by filesystem metadata like label/UUID. It works fine
-even on boxes with thousands of disks.
+[I see that you have cutted my name proposal from the original email,
+which might make it difficult for others to follow. I will assume you
+did it by mistake.]
 
-> _If_ the system doesn't wait for all block devices present at boot to
-> be enumerated before the boot script, then when the script looks in
-> that directory for a specific UUID, it would be good to wait until
-> "has everything present at boot been enumerated?" says yes.
+(re-added)
+[PATCH] netfilter: use bh disabling with per-cpu read-write lock
 
-That's what distros do with initramfs today.
+> 
+> But Linus is trying to delude himself.
+> 
+> This usage is recursive even if he doesn't like the terminology.
+> The same CPU has to be able to reacquire the read lock without deadlocking.
+> If reader/writer locks were implemented in a pure writer gets priority
+> method, then this code would break!  So yes read locks can be used recursively
+> now in Linux, but if the were implemented differently then this code
+> would break.  For example, the -rt kernel turns all read/write locks into
+> mutexs, so the -rt kernel developers will have to address this.
 
-> Otherwise you have hacks like my boot script which waits 5 seconds for
-> a disk to show up on USB, and then continues if not.  It sounds
-> awfully like waiting X seconds for a USB console to show up :-)
->
-> Since this is all about making boot faster, it would be quite nice not
-> to wait for all block devices before starting the boot script, or at
-> least the initramfs module-loading script :-)
+Reading Documentation/spinlocks.txt, which states the lock usage
+guidelines :
 
-You wait in initramfs until the device show up. Usually dynamic udev
-rules created from the root= string of the kernel commandline create a
-rule which matches on the UUID, and creates a /dev/root symlink when
-the device shows up. As soon as this link shows up,  init mounts it
-and goes ahead.
+"Note that you can be clever with read-write locks and interrupts. For
+example, if you know that the interrupt only ever gets a read-lock, then
+you can use a non-irq version of read locks everywhere - because they
+don't block on each other (and thus there is no dead-lock wrt interrupts.
+But when you do the write-lock, you have to use the irq-safe version."
 
-Thanks,
-Kay
+So it's assumed in the kernel-wide read lock usage that nested read
+locks are OK. I'm adding Thomas and Steven in CC, but I'm quite sure
+they must have dealt with nested read-lock transformation into mutexes
+by detecting nesting in some way in -rt. But I'll let them confirm this.
+
+So I don't see why you are dreaming about a different semantic than the
+one of the primitives you are using. I guess I'll leave the semantics to
+you. I just find it astonishing that you persist saying that everbody is
+wrong on a topic like semantic, which is in the end a mean to
+communicate ideas clearly within the overall community you disagree
+with.
+
+Good luck !
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
