@@ -1,93 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbZDZQg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbZDZQjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753679AbZDZQg6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 12:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZDZQgs
+	id S1753913AbZDZQjT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 12:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZDZQjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 12:36:48 -0400
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:36183 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752682AbZDZQgr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 12:36:47 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ai8FADIo9ElMQW1W/2dsb2JhbACBUMhpg3QF
-Date: Sun, 26 Apr 2009 12:31:39 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       gregkh@suse.de, stable@kernel.org, cpufreq@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, rjw@sisk.pl,
-       Ben Slusky <sluskyb@paranoiacs.org>, Dave Jones <davej@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpufreq fix timer teardown in conservative governor
-	(2.6.30-rc2)
-Message-ID: <20090426163139.GA26154@Krystal>
-References: <20090423140002.GA12852@Krystal> <20090423164638.3b5769c6.akpm@linux-foundation.org> <20090424043546.GB8091@Krystal> <alpine.LFD.2.00.0904240217390.15843@localhost.localdomain> <20090424161217.GA25650@Krystal> <20090426144701.GD19338@khazad-dum.debian.net>
-Mime-Version: 1.0
+	Sun, 26 Apr 2009 12:39:07 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56652 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752682AbZDZQjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 12:39:04 -0400
+Date: Sun, 26 Apr 2009 18:38:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alessio Igor Bogani <abogani@texware.it>,
+       Neil Brown <neilb@cse.unsw.edu.au>
+Cc: Jonathan Corbet <corbet@lwn.net>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] md: Avoid to call flush_scheduled_work() with BKL
+	held
+Message-ID: <20090426163841.GC6236@elte.hu>
+References: <1240492313-6560-1-git-send-email-abogani@texware.it>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090426144701.GD19338@khazad-dum.debian.net>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:28:51 up 57 days, 12:55,  2 users,  load average: 1.18, 0.79,
-	0.54
+In-Reply-To: <1240492313-6560-1-git-send-email-abogani@texware.it>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Henrique de Moraes Holschuh (hmh@hmh.eng.br) wrote:
-> On Fri, 24 Apr 2009, Mathieu Desnoyers wrote:
-> > * Len Brown (lenb@kernel.org) wrote:
-> > > Somebody please remind me why we are spending effort to 
-> > > maintain the conservative governor instead of deleting it.
-> > 
-> > Documentation/cpu-freq/governors.txt
-> > 
-> > "The CPUfreq governor "conservative", much like the "ondemand"
-> > governor, sets the CPU depending on the current usage.  It differs in
-> > behaviour in that it gracefully increases and decreases the CPU speed
-> > rather than jumping to max speed the moment there is any load on the
-> > CPU.  This behaviour more suitable in a battery powered environment."
-> > 
-> > So better battery usage seems to be the reason why conservative lives.
+
+* Alessio Igor Bogani <abogani@texware.it> wrote:
+
+> [    1.479872] ------------[ cut here ]------------
+> [    1.483391] WARNING: at kernel/workqueue.c:408 flush_workqueue+0x7b/0x11f()
+> [    1.489948] Hardware name:
+> [    1.491779] Modules linked in:
+> [    1.493306] Pid: 1, comm: swapper Not tainted 2.6.30-rc1 #67
+> [    1.495767] Call Trace:
+> [    1.496974]  [<ffffffff810451a4>] warn_slowpath+0xd8/0x10c
+> [    1.503432]  [<ffffffff810176d1>] ? save_stack_trace+0x2f/0x4d
+> [    1.509724]  [<ffffffff8106983d>] ? mark_lock+0x22/0x22c
+> [    1.515412]  [<ffffffff8106b364>] ? __lock_acquire+0xc36/0xc45
+> [    1.521448]  [<ffffffff81069e9b>] ? debug_check_no_locks_freed+0x120/0x12f
+> [    1.525189]  [<ffffffff8106874c>] ? get_lock_stats+0x19/0x4c
+> [    1.527172]  [<ffffffff810687a7>] ? put_lock_stats+0x28/0x33
+> [    1.533316]  [<ffffffff81056d7f>] flush_workqueue+0x7b/0x11f
+> [    1.539224]  [<ffffffff8139ffe8>] ? mddev_find+0xe2/0x2e5
+> [    1.544826]  [<ffffffff81056e38>] flush_scheduled_work+0x15/0x17
+> [    1.551262]  [<ffffffff813a0239>] md_alloc+0x4e/0x2b0
+> [    1.556505]  [<ffffffff813a04ab>] md_probe+0x10/0x14
+> [    1.561939]  [<ffffffff812c6a90>] kobj_lookup+0x150/0x194
+> [    1.566607]  [<ffffffff813a049b>] ? md_probe+0x0/0x14
+> [    1.570519]  [<ffffffff811f6f3c>] get_gendisk+0x30/0xc1
+> [    1.573948]  [<ffffffff81105821>] __blkdev_get+0x3a/0x338
+> [    1.577537]  [<ffffffff81105b31>] ? blkdev_open+0x0/0xab
+> [    1.581293]  [<ffffffff81105b2f>] blkdev_get+0x10/0x12
+> [    1.584922]  [<ffffffff81105ba7>] blkdev_open+0x76/0xab
+> [    1.588661]  [<ffffffff810dd7fa>] __dentry_open+0x194/0x2b9
+> [    1.592615]  [<ffffffff810dd9f6>] nameidata_to_filp+0x46/0x57
+> [    1.596730]  [<ffffffff810e9f8f>] do_filp_open+0x417/0x83e
+> [    1.600651]  [<ffffffff8106874c>] ? get_lock_stats+0x19/0x4c
+> [    1.604597]  [<ffffffff810f3fe7>] ? alloc_fd+0x122/0x133
+> [    1.608424]  [<ffffffff810dd59a>] do_sys_open+0x58/0xd8
+> [    1.612233]  [<ffffffff810dd64d>] sys_open+0x20/0x22
+> [    1.615671]  [<ffffffff818a94f1>] md_run_setup+0x64/0x8e
+> [    1.619496]  [<ffffffff818a8251>] prepare_namespace+0x3a/0x19d
+> [    1.623239]  [<ffffffff818a765e>] kernel_init+0x16e/0x17e
+> [    1.626923]  [<ffffffff8100cf3a>] child_rip+0xa/0x20
+> [    1.629504]  [<ffffffff8103ba79>] ? finish_task_switch+0x40/0xe8
+> [    1.642356]  [<ffffffff8100c900>] ? restore_args+0x0/0x30
+> [    1.643802]  [<ffffffff818a74f0>] ? kernel_init+0x0/0x17e
+> [    1.645276]  [<ffffffff8100cf30>] ? child_rip+0x0/0x20
+> [    1.648839] ---[ end trace 6fa921fb3766f01d ]---
 > 
-> Yeah, but the question is: is it really better in practice? race-to-idle
-> works better with ondemand.  Note: that needs to be answered not just for
-> the current crop of mobile processors, but also for at least stuff as old as
-> the Pentium M and Pentium 4 M.
+> Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
+> ---
+>  drivers/md/md.c |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
 > 
-> What it _does_ help, is in broken !@#$ hardware that makes a lot of noise
-> due to "singing capacitors" if you use ondemand (because conservative will
-> make less noise as it causes more smooth transitions).  NOHZ helped a great
-> deal there, too.
-> 
+> diff --git a/drivers/md/md.c b/drivers/md/md.c
+> index ed5727c..e6c039c 100644
+> --- a/drivers/md/md.c
+> +++ b/drivers/md/md.c
+> @@ -45,6 +45,7 @@
+>  #include <linux/reboot.h>
+>  #include <linux/file.h>
+>  #include <linux/delay.h>
+> +#include <linux/smp_lock.h>
+>  #include <linux/raid/md_p.h>
+>  #include <linux/raid/md_u.h>
+>  #include "md.h"
+> @@ -3830,6 +3831,7 @@ static int md_alloc(dev_t dev, char *name)
+>  	int shift;
+>  	int unit;
+>  	int error;
+> +	int bkl = kernel_locked();
+>  
+>  	if (!mddev)
+>  		return -ENODEV;
+> @@ -3841,7 +3843,11 @@ static int md_alloc(dev_t dev, char *name)
+>  	/* wait for any previous instance if this device
+>  	 * to be completed removed (mddev_delayed_delete).
+>  	 */
+> +	if (bkl)
+> +		unlock_kernel();
+>  	flush_scheduled_work();
+> +	if (bkl)
+> +		lock_kernel();
 
-I effectively have such singing capacitors on my laptop, and I still
-have good ears.
+Hm, couldnt we switch the ioctl in drivers/md/md.c from 
+->locked_ioctl to ->unlocked_ioctl?
 
-> I don't know if there are battery environments where a harsher work profile
-> by the CPU are a bad idea.  If there are any, conservative will also help
-> there.
-> 
+Neil, what do you think?
 
-Good question. We might also consider that anyway code duplication
-between ondemand and conservative is a bad thing. Those look so similar
-that part of them should probably be merged, with a sysfs flag and
-kernel parameter to select the behavior.
-
-Mathieu
-
-
-> -- 
->   "One disk to rule them all, One disk to find them. One disk to bring
->   them all and in the darkness grind them. In the Land of Redmond
->   where the shadows lie." -- The Silicon Valley Tarot
->   Henrique Holschuh
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	Ingo
