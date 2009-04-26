@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243AbZDZSnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbZDZS66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754243AbZDZSnI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 14:43:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbZDZSmz
+	id S1755848AbZDZS66 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 14:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbZDZS6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 14:42:55 -0400
-Received: from kroah.org ([198.145.64.141]:58781 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752538AbZDZSmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 14:42:55 -0400
-Date: Sun, 26 Apr 2009 11:39:54 -0700
-From: Greg KH <greg@kroah.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [git patches] Staging: rtxxx0: cleanup and "dumb" merge
-Message-ID: <20090426183954.GA18449@kroah.com>
-References: <200904261759.20923.bzolnier@gmail.com>
+	Sun, 26 Apr 2009 14:58:49 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:45003 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751565AbZDZS6s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 14:58:48 -0400
+Date: Sun, 26 Apr 2009 14:58:48 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [Bug #13114] USB storage (usbstick) automount woes
+In-Reply-To: <Fg2zLW93smL.A.CQE.cd48JB@chimera>
+Message-ID: <Pine.LNX.4.44L0.0904261457540.24895-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904261759.20923.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 26, 2009 at 05:59:20PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-> This patchset cleans up rt{286,287,307}0 drivers (66 KLOC removed) and then
-> "dumb" (i.e. rt3070 shares code with rt2870 by including rt2870's .c files
-> and depends on ifdefs to get the correct end result) merges them (142 KLOC
-> removed).  All in all 208 KLOC are gone and we now use the common code for
-> all three Ralink drivers.
+On Sat, 25 Apr 2009, Rafael J. Wysocki wrote:
 
-Wonderful!
-
-Were you able to test that this still works afterward?
-
-> "dumb" merge is of course not the ideal solution but allows relatively easy
-> verification, makes the eventual real merge much easier and in the meantime
-> allows us to work with the common code for all drivers (since the initial
-> merge these drivers already became slightly out-of-sync with each other).
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> [ I know about rt2x00 project (http://rt2x00.serialmonkey.com/) and I praise
->   their efforts.  However I still wanted to skim through the original code,
->   mainly because I heard a lot of "interesting" things about it. ;)  Then I
->   started to clean it to make reading easier and before I knew it I ended up
->   with this monster patchset... ]
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me know
+> (either way).
 > 
 > 
-> All changes are available in the following git tree (which is based on top
-> of next-20090424):
-> 
-> git://git.kernel.org:/pub/scm/linux/kernel/git/bart/misc.git rtsta-for-next
-> 
-> [ I'm not sending individual patches to LKML (they are too big and there
->   is too many of them) but if somebody prefers to get them by mail instead
->   of grabbing them from git tree please just ping me. ]
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13114
+> Subject		: USB storage (usbstick) automount woes
+> Submitter	: Mike Galbraith <efault@gmx.de>
+> Date		: 2009-04-09 9:26 (17 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e6e244b6cb1f70e7109381626293cd40a8334ed3
+> References	: http://marc.info/?l=linux-kernel&m=123926928907568&w=4
+> Handled-By	: Alan Stern <stern@rowland.harvard.edu>
 
-I'll suck them in from the git tree, that's fine with me.
+This has been fixed by commit dfc15e8955338fedf5c5d15622c4042c1e4ee332.
 
-thanks again for doing this work, it is much appreciated.
+Alan Stern
 
-greg k-h
