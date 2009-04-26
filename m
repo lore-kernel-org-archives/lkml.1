@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZDZQ55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbZDZRGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754839AbZDZQ55 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 12:57:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbZDZQ5r
+	id S1753689AbZDZRGT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 13:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbZDZRGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 12:57:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35878 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751650AbZDZQ5q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 12:57:46 -0400
-Date: Sun, 26 Apr 2009 09:40:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Tim Abbott <tabbott@MIT.EDU>
-cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>, "Theodore Ts'o" <tytso@MIT.EDU>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
-       David Howells <dhowells@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH 14/15] x86: convert to use __HEAD and HEAD_TEXT macros.
-In-Reply-To: <1240711870-30505-14-git-send-email-tabbott@mit.edu>
-Message-ID: <alpine.LFD.2.00.0904260934570.3101@localhost.localdomain>
-References: <alpine.DEB.1.10.0904251304120.7631@vinegar-pot.mit.edu> <1240711870-30505-1-git-send-email-tabbott@mit.edu> <1240711870-30505-2-git-send-email-tabbott@mit.edu> <1240711870-30505-3-git-send-email-tabbott@mit.edu> <1240711870-30505-4-git-send-email-tabbott@mit.edu>
- <1240711870-30505-5-git-send-email-tabbott@mit.edu> <1240711870-30505-6-git-send-email-tabbott@mit.edu> <1240711870-30505-7-git-send-email-tabbott@mit.edu> <1240711870-30505-8-git-send-email-tabbott@mit.edu> <1240711870-30505-9-git-send-email-tabbott@mit.edu>
- <1240711870-30505-10-git-send-email-tabbott@mit.edu> <1240711870-30505-11-git-send-email-tabbott@mit.edu> <1240711870-30505-12-git-send-email-tabbott@mit.edu> <1240711870-30505-13-git-send-email-tabbott@mit.edu>
- <1240711870-30505-14-git-send-email-tabbott@mit.edu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 26 Apr 2009 13:06:09 -0400
+Received: from bar.sig21.net ([80.81.252.164]:37947 "EHLO bar.sig21.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752881AbZDZRGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 13:06:08 -0400
+Date: Sun, 26 Apr 2009 19:06:02 +0200
+From: Martin Mueller <mm@sig21.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Kernel locks up when idle on VIA-nano U2300 with VIA VX800 on
+	Jetway JNF76-N1GL-LF mainboard
+Message-ID: <20090426170602.GA26009@catull.sig21.net>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <20090426095121.GS26701@catull.sig21.net> <gt1jsf$hb8$1@ger.gmane.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <gt1jsf$hb8$1@ger.gmane.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-21-Score: -2.1 (--)
+X-Spam-21-Report: No, score=-2.1 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=-0.129,BAYES_40=-0.185 autolearn=no
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Jeffrey,
 
+On Sun, Apr 26, 2009 at 12:25:51PM +0000, Jeffrey Cao wrote:
+> On 2009-04-26, Martin Mueller <mm@sig21.net> wrote:
 
-On Sat, 25 Apr 2009, Tim Abbott wrote:
->
-> This has the consequence of changing the section name use for head
-> code from ".text.head" to ".head.text".  Since this commit changes all
-> users in the architecture, this change should be harmless.
+> > Next, I downloaded linux-2.6.30-rc3, compiled a minimal version with
+> > just initrd. I left out PCI-support, ACPI and almost everything else
+> > menuconfig allowed me to unselect except the VGA text console. This
+> > kernel locked up after giving me the initial prompt from busybox in
+> > the initrd.
+> >
+> > When adding the following lines in the script executed by the kernel
+> > after booting in the initrd, the system actually works:
+> >
+> >   while true; do true; done &
+> >   /bin/sh
+> >
+> > As soon as I kill the shell loop, the system freezes again.
+> >
+> > So my conclusion is: the kernel locks up the first time the CPU
+> > is idle.
 
-Btw, this one really needs to unify the two lds files first. Look at 
+> This seems something to do with the board and the hard disk drive.
 
-	diff -u arch/x86/boot/compressed/vmlinux_*.lds
+Thanks for your suggestion, but it has nothing to do with the hardisk.
+As I wrote above, the problem is reproducible with only an initrd, vga
+text console, keyboard and no other driver loaded or compiled in.
 
-output and realize that they're basially exctly the same except for 
-trivial naming differences, and the fact that the64-bit version hs a 
-"pgtable" thing.
+The kernel freezes as soon as it get's idle the first time.
 
-So this really needs to be done by first unifying the thing so that there 
-is _one_ arch/x86/boot/compressed/vmlinux.lds.S file with a preprocessor 
-that takes care of the trivial differences, and then after that, the 
-".text.init" games should just be removed.
-
-Notice the _removed_. 
-
-I don't think the compressed stuff has any actual "init" code. It is just 
-a blob loader that loads the compressed kernel. There should be no need 
-for the init sections being special, so the vmlinux.lds.S file should just 
-have a ".text*" section.
-
-Hmm?
-
-		Linus
+bye
+  MM
