@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756016AbZDZD5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752781AbZDZECs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756016AbZDZD5q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 23:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbZDZD5g
+	id S1752781AbZDZECs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 00:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750871AbZDZECi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 23:57:36 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:48289 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751825AbZDZD5f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 23:57:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=oV970Hh0iny/D52TmWrVT6yRIQc0uM75Y9o9f7jVAzSCmuy6Qjj8KTWwnlFx3SB3Zg
-         YE+Q67YtJd4G9PJCEGrO6aUeKmmcvoyb0ug9OqSSumb+q7s5cUOHfAiuXJrvHN/ysJd4
-         XM2QTAxrR8MhMMsLzjIPwRaZSBmyjg1XooQxk=
-Message-ID: <49F3DBE7.4030905@gmail.com>
-Date: Sun, 26 Apr 2009 12:58:31 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sun, 26 Apr 2009 00:02:38 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50359 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750776AbZDZECh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 00:02:37 -0400
+Message-ID: <49F3DCD5.2070909@garzik.org>
+Date: Sun, 26 Apr 2009 00:02:29 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: petkovbb@gmail.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MAINTAINERS: update IDE entry
-References: <200904232248.31735.bzolnier@gmail.com> <200904241154.04860.bzolnier@gmail.com> <9ea470500904240941s53f41b2dq1c4e5bc85b6244d7@mail.gmail.com> <200904242121.16910.bzolnier@gmail.com> <20090425092816.GA6212@liondog.tnic>
-In-Reply-To: <20090425092816.GA6212@liondog.tnic>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: Tejun Heo <tj@kernel.org>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       unsik Kim <donari75@gmail.com>, linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: [PATCH 2/3] mg_disk: fix dependency on libata
+References: <200904251509.11912.bzolnier@gmail.com> <49F3D994.7020304@kernel.org>
+In-Reply-To: <49F3D994.7020304@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov wrote:
-> On Fri, Apr 24, 2009 at 09:21:16PM +0200, Bartlomiej Zolnierkiewicz wrote:
->> Moreover, I would prefer getting patches which don't need updating. ;-)
+Tejun Heo wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+>> Add local copies of ata_id_string() and ata_id_c_string() to mg_disk
+>> so there is no need for the driver to depend on ATA and SCSI.
+>>
+>> Cc: unsik Kim <donari75@gmail.com>
+>> Cc: Tejun Heo <tj@kernel.org>
+>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 > 
-> Sounds like a good idea, let's do that! :0)
+> Ah.. right, that's a rather large dependency to pull in just for the
+> string functions.  Yeah, I think it would be better to keep local
+> copy at elast for now.
 > 
+> Acked-by: Tejun Heo <tj@kernel.org>
 
-Great.  :-)
+Actually...  NVMHCI[1] uses the same style of id string extraction, even 
+though its command set is wholly new and unrelated to ATA.  I copied 
+into drivers/block/nvmhci.c[2] id_string, id_c_string and another 
+useful, generic routine: ata_wait_register.
 
-To rebase or not seems to be an issue people have different opinions
-about.  Some trees get rebased regularly while others seldomly or
-never.  Not being a maintainer, I prefer trees which don't get rebased
-but being able to provide cross-tree sync points is one of the biggest
-benefits and as long as they can be established when necessary, I
-guess to-each-his/her-own.
+So, once nvmhci goes upstream, that will be a third copy...  nvmhci 
+still has rough edges, but it's mainly waiting on hardware "it works" 
+verification at this point.
 
-Thanks.
+	Jeff
 
--- 
-tejun
+
+
+[1] http://download.intel.com/standards/nvmhci/spec.pdf
+
+[2] 'nvmhci' branch of 
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
+
