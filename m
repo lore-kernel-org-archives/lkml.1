@@ -1,122 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZDZTby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbZDZTup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbZDZTby (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 15:31:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZDZTbk
+	id S1755753AbZDZTup (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 15:50:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZDZTug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 15:31:40 -0400
-Received: from bc.sympatico.ca ([209.226.175.184]:39253 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753281AbZDZTbj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 15:31:39 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqEFAFhP9ElMQW1W/2dsb2JhbACBUMkog3QF
-Date: Sun, 26 Apr 2009 15:31:35 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Stephen Hemminger <shemminger@vyatta.com>,
-       David Miller <davem@davemloft.net>, Jarek Poplawski <jarkao2@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-CPU recursive lock {XV}
-Message-ID: <20090426193135.GA30851@Krystal>
-References: <20090421111541.228e977a@nehalam> <20090421193924.GA24404@elte.hu> <20090421143927.52d7d89d@nehalam> <alpine.LFD.2.00.0904220821240.3101@localhost.localdomain> <20090423210938.1501507b@nehalam> <49F146FF.5050200@cosmosbay.com> <20090424091839.6e13ebec@nehalam> <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam> <49F4A6E3.7080102@cosmosbay.com>
+	Sun, 26 Apr 2009 15:50:36 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:54566 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753585AbZDZTuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 15:50:35 -0400
+Date: Sun, 26 Apr 2009 21:50:30 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: cliffcai.sh@gmail.com
+Cc: linux-kernel@vger.kernel.org, cliff.cai@analog.com,
+       Cliff Cai <cliffcai.sh@gmail.com>
+Subject: Re: [PATCH][RESEND][mmc/host]:Blackfin SD Host Controller Driver
+Message-ID: <20090426215030.582a6fbb@mjolnir.ossman.eu>
+In-Reply-To: <1239903641-14342-1-git-send-email-cliffcai.sh@gmail.com>
+References: <1239903641-14342-1-git-send-email-cliffcai.sh@gmail.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <49F4A6E3.7080102@cosmosbay.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:28:25 up 57 days, 15:54,  1 user,  load average: 0.48, 0.34,
-	0.32
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-17147-1240775431-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eric Dumazet (dada1@cosmosbay.com) wrote:
-> From: Stephen Hemminger <shemminger@vyatta.com>
-> 
-> > Epilogue due to master Jarek. Lockdep carest not about the locking
-> > doth bestowed. Therefore no keys are needed.
-> > 
-> > Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> 
-> So far, so good, should be ready for inclusion now, nobody complained :)
-> 
-> I include the final patch, merge of your last two patches.
-> 
-> David, could you please review it once again and apply it if it's OK ?
-> 
-[...]
-> +/*
-> + * Per-CPU read/write lock associated with per-cpu table entries.
-> + * This is not a general solution but makes reader locking fast since
-> + * there is no shared variable to cause cache ping-pong; but adds an
-> + * additional write-side penalty since update must lock all
-> + * possible CPU's.
-> + *
-> + * Read lock is used by ip/arp/ip6 tables rule processing which runs per-cpu.
-> + * It needs to ensure that the rules are not being changed while packet
-> + * is being processed. In some cases, the read lock will be acquired
-> + * twice on the same CPU; this is okay because read locks handle nesting.
-> + *
-> + * Write lock is used in two cases:
-> + *    1. reading counter values
-> + *       all readers need to be stopped and the per-CPU values are summed.
-> + *
-> + *    2. replacing tables
-> + *       any readers that are using the old tables have to complete
-> + *       before freeing the old table. This is handled by reading
-> + *	  as a side effect of reading counters
-> + */
-> +DECLARE_PER_CPU(rwlock_t, xt_info_locks);
-> +
-> +static inline void xt_info_rdlock_bh(void)
-> +{
-> +	/*
-> +	 * Note: can not use read_lock_bh(&__get_cpu_var(xt_info_locks))
-> +	 * because need to ensure that preemption is disable before
-> +	 * acquiring per-cpu-variable, so do it as a two step process
-> +	 */
-> +	local_bh_disable();
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Why do you need to disable bottom halves on the read-side ? You could
-probably just disable preemption, given this lock is nestable on the
-read-side anyway. Or I'm missing something obvious ?
+--=_freyr.ossman.eu-17147-1240775431-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> +	read_lock(&__get_cpu_var(xt_info_locks));
-> +}
-> +
-> +static inline void xt_info_rdunlock_bh(void)
-> +{
-> +	read_unlock_bh(&__get_cpu_var(xt_info_locks));
-> +}
-> +
-> +static inline void xt_info_wrlock(unsigned int cpu)
-> +{
-> +	write_lock(&per_cpu(xt_info_locks, cpu));
-> +}
-> +
-> +static inline void xt_info_wrunlock(unsigned int cpu)
-> +{
-> +
-> +	write_unlock(&per_cpu(xt_info_locks, cpu));
-> +}
->  
+On Fri, 17 Apr 2009 01:40:41 +0800
+cliffcai.sh@gmail.com wrote:
 
-[...]
+> From: Cliff Cai <cliffcai.sh@gmail.com>
+>=20
+> Signed-off-by: Cliff Cai <cliffcai.sh@gmail.com>
+> ---
+>  drivers/mmc/host/Kconfig    |   19 ++
+>  drivers/mmc/host/Makefile   |    1 +
+>  drivers/mmc/host/bfin_sdh.c |  648 +++++++++++++++++++++++++++++++++++++=
+++++++
+>  3 files changed, 668 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/mmc/host/bfin_sdh.c
+>=20
 
-Mathieu
+I'd also like a MAINTAINERS entry for the driver.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> +config SDH_BFIN
+> +	tristate "Blackfin Secure Digital Host support"
+> +	depends on MMC && ((BF54x && !BF544) || (BF51x && !BF512))
+
+You don't need "depends on MMC" as the entire block is conditioned on
+MMC already.
+
+> +/* In term of ADSP_BF5xx_Blackfin_Processor_Peripheral_Hardware_Referenc=
+e,
+> + * the SDH allows software to detect a card when it is inserted into its=
+ slot.
+> + * The SD_DATA3 pin powers up low due to a special pull-down resistor. W=
+hen an
+> + * SD Card is inserted in its slot, the resistance increases and a risin=
+g edge
+> + * is detected by the SDH module.
+> + * But this doesn't work sometimes. When a MMC/SD card is inserted, the =
+voltage
+> + * doesn't rise on SD_DATA3. In term of The MultiMediaCard System Specif=
+ication,
+> + * SD_DATA3 is used as CS pin in SPI mode. The MultiMediaCard wakes up i=
+n the
+> + * MultiMediaCard mode. During the scan procedure, host will send CMD0 t=
+o reset
+> + * MMC card, if CS pin is low, MMC card will enter SPI mode. Of course S=
+ecure
+> + * Digital Host controller is not a SPI controller. So the Card detect f=
+unction
+> + * has to be disabled. After card is inserted run "echo 0 > /proc/driver=
+/sdh"
+> + * to trigger card scanning */
+
+If the controller can only do DAT3-detection, then I think it's best if
+we put it into polling mode.
+
+> +	BUG_ON(data->blksz & (data->blksz -1));
+
+Not a bug so you need to deal with this. Most likely fail the request
+with EINVAL.
+
+> +#if defined(CONFIG_BF54x)
+> +	dma_cfg |=3D DMAFLOW_ARRAY | NDSIZE_5 | RESTART | WDSIZE_32 | DMAEN;
+> +	for (i =3D 0; i < host->dma_len; i++) {
+> +		host->sg_cpu[i].start_addr =3D sg_dma_address(&data->sg[i]);
+
+You cannot index sg lists directly anymore. You have to iterate over
+them using the iteration helpers.
+
+> +	if (!data->error)
+> +		data->bytes_xfered =3D data->blocks * data->blksz;
+> +	else
+> +		data->bytes_xfered =3D data->blocks * data->blksz - \
+> +				     bfin_read_SDH_DATA_CNT();
+
+This is probably wrong. You need to set bytes_xfered to the number of
+bytes acked by the card, not the number of bytes sent over the wire
+(for writes that is). If your hardware can provide that then fine,
+otherwise set bytes_xfered to 0 on failure.
+
+> +	mmc->ops =3D &sdh_ops;
+> +	mmc->max_phys_segs =3D NR_SG;
+> +	mmc->max_seg_size =3D 1 << 16;
+> +	mmc->max_blk_size =3D 2 << 11;
+> +	mmc->max_blk_count =3D 2 << 16;
+
+You forgot max_req_size.
+
+> +out3:
+> +	free_dma(host->dma_ch);
+
+You need a mmc_remove_host() here.
+
+Also check Mike's comments.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-17147-1240775431-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkn0uwgACgkQ7b8eESbyJLilAACgimO69ZC1nv3uT1OxMmsk9CGH
+odkAn2Xtw3JHjoCdAqyxcCBBhYUXv+zM
+=DvAp
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-17147-1240775431-0001-2--
