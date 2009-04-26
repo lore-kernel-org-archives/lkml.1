@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750871AbZDZEzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbZDZE4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750871AbZDZEzn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 00:55:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZDZEzc
+	id S1753235AbZDZE4h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 00:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbZDZE40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 00:55:32 -0400
-Received: from mail00d.mail.t-online.hu ([84.2.42.5]:49794 "EHLO
+	Sun, 26 Apr 2009 00:56:26 -0400
+Received: from mail00d.mail.t-online.hu ([84.2.42.5]:55534 "EHLO
 	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750957AbZDZEzb (ORCPT
+	with ESMTP id S1751230AbZDZE4Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 00:55:31 -0400
-Message-ID: <49F3E917.70604@freemail.hu>
-Date: Sun, 26 Apr 2009 06:54:47 +0200
+	Sun, 26 Apr 2009 00:56:25 -0400
+Message-ID: <49F3E951.30607@freemail.hu>
+Date: Sun, 26 Apr 2009 06:55:45 +0200
 From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
@@ -19,8 +19,8 @@ To: Trent Piepho <xyzzy@speakeasy.org>
 CC: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] v4l2: fill the unused fields with zeros in case of VIDIOC_S_FMT
-References: <49F2C59A.9010703@freemail.hu> <Pine.LNX.4.58.0904251045070.3753@shell2.speakeasy.net>
-In-Reply-To: <Pine.LNX.4.58.0904251045070.3753@shell2.speakeasy.net>
+References: <49F2C59A.9010703@freemail.hu> <Pine.LNX.4.58.0904251045070.3753@shell2.speakeasy.net> <49F3E917.70604@freemail.hu>
+In-Reply-To: <49F3E917.70604@freemail.hu>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-DCC-mail.t-online.hu-Metrics: mail00d.mail.t-online.hu 32720; Body=4 Fuz1=4
@@ -29,56 +29,86 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trent Piepho wrote:
-> On Sat, 25 Apr 2009, [UTF-8] Németh Márton wrote:
->> The VIDIOC_S_FMT is a write-read ioctl: it sets the format and returns
->> the current format in case of success. The parameter of VIDIOC_S_FMT
->> ioctl is a pointer to struct v4l2_format. [1] This structure contains some
->> fields which are not used depending on the .type value. These unused
->> fields are filled with zeros with this patch.
-> 
-> It's a union, so it's not really the case the the fields are unused.  If
-> it's a non-private format, the structure will have some empty padding space
-> at the end of the structure after the last field for the format's type.
+The VIDIOC_S_FMT is a write-read ioctl: it sets the format and returns
+the current format in case of success. The parameter of VIDIOC_S_FMT
+ioctl is a pointer to struct v4l2_format. [1] This structure contains
+a fmt union so there are some padding bytes which are not used depending
+on the .type value. These unused bytes are filled with zeros with this patch.
 
-Maybe I used the wrong word: my intention was to clear the unused padding bytes
-at the end of the fmt union.
+The patch was tested with v4l-test 0.12 [2] with vivi and with
+gspca_sunplus driver together with Trust 610 LCD POWERC@M ZOOM.
 
-> Since it's just padding space and there are no fields defined, I don't
-> think we have to clear it.
+References:
+[1] V4L2 API specification, revision 0.24
+    http://v4l2spec.bytesex.org/spec/r10944.htm
 
-Think about a case when in a future kernel version one additional field
-is defined for example for struct v4l2_pix_format. Then an application is
-built with this extended structure. When the application runs on an older
-kernel then this new field will be not touched by the older kernel in other
-words the last field(s) of struct v4l2_pix_format will be uninitialized.
+[2] v4l-test: Test environment for Video For Linux Two API
+    http://v4l-test.sourceforge.net/
 
-The other reason why I think is useful to fill the padding bytes with zero
-is that this prevents doing dirty tricks between the application and the
-driver, for example communicating through padding bytes in case of a
-non-private format.
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+--- linux/drivers/media/video/v4l2-ioctl.c.orig	2009-04-22 05:07:00.000000000 +0200
++++ linux/drivers/media/video/v4l2-ioctl.c	2009-04-26 06:29:20.000000000 +0200
+@@ -777,44 +777,61 @@ static long __video_do_ioctl(struct file
+ 	{
+ 		struct v4l2_format *f = (struct v4l2_format *)arg;
 
->>  		struct v4l2_format *f = (struct v4l2_format *)arg;
->>
->> +#define CLEAR_UNUSED_FIELDS(data, last_member) \
->> +	memset(((u8 *)f)+ \
->> +		offsetof(struct v4l2_format, fmt)+ \
->> +		sizeof(struct v4l2_ ## last_member), \
->> +		0, \
->> +		sizeof(*f)- \
->> +		offsetof(struct v4l2_format, fmt)+ \
->> +		sizeof(struct v4l2_ ## last_member))
->> +
-> 
-> What is "data" used for?  The length in your memset is wrong.  You didn't
-> run this through "make patch" did you?  Because there are spacing/formatting
-> errors that that would have caught.
++#define CLEAR_UNUSED_FIELDS(data, last_member) \
++	memset(((u8 *)data)+ \
++		offsetof(struct v4l2_format, fmt)+ \
++		sizeof(struct v4l2_ ## last_member), \
++		0, \
++		sizeof(*(data))- \
++		(offsetof(struct v4l2_format, fmt)+ \
++		sizeof(struct v4l2_ ## last_member)))
++
+ 		/* FIXME: Should be one dump per type */
+ 		dbgarg(cmd, "type=%s\n", prt_names(f->type, v4l2_type_names));
 
-Thank you for pointing out these problems. I'll send an update soon.
+ 		switch (f->type) {
+ 		case V4L2_BUF_TYPE_VIDEO_CAPTURE:
++			CLEAR_UNUSED_FIELDS(f, pix_format);
+ 			v4l_print_pix_fmt(vfd, &f->fmt.pix);
+ 			if (ops->vidioc_s_fmt_vid_cap)
+ 				ret = ops->vidioc_s_fmt_vid_cap(file, fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_VIDEO_OVERLAY:
++			CLEAR_UNUSED_FIELDS(f, window);
+ 			if (ops->vidioc_s_fmt_vid_overlay)
+ 				ret = ops->vidioc_s_fmt_vid_overlay(file,
+ 								    fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_VIDEO_OUTPUT:
++			CLEAR_UNUSED_FIELDS(f, pix_format);
+ 			v4l_print_pix_fmt(vfd, &f->fmt.pix);
+ 			if (ops->vidioc_s_fmt_vid_out)
+ 				ret = ops->vidioc_s_fmt_vid_out(file, fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_VIDEO_OUTPUT_OVERLAY:
++			CLEAR_UNUSED_FIELDS(f, window);
+ 			if (ops->vidioc_s_fmt_vid_out_overlay)
+ 				ret = ops->vidioc_s_fmt_vid_out_overlay(file,
+ 					fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_VBI_CAPTURE:
++			CLEAR_UNUSED_FIELDS(f, vbi_format);
+ 			if (ops->vidioc_s_fmt_vbi_cap)
+ 				ret = ops->vidioc_s_fmt_vbi_cap(file, fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_VBI_OUTPUT:
++			CLEAR_UNUSED_FIELDS(f, vbi_format);
+ 			if (ops->vidioc_s_fmt_vbi_out)
+ 				ret = ops->vidioc_s_fmt_vbi_out(file, fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_SLICED_VBI_CAPTURE:
++			CLEAR_UNUSED_FIELDS(f, sliced_vbi_format);
+ 			if (ops->vidioc_s_fmt_sliced_vbi_cap)
+ 				ret = ops->vidioc_s_fmt_sliced_vbi_cap(file,
+ 									fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_SLICED_VBI_OUTPUT:
++			CLEAR_UNUSED_FIELDS(f, sliced_vbi_format);
+ 			if (ops->vidioc_s_fmt_sliced_vbi_out)
+ 				ret = ops->vidioc_s_fmt_sliced_vbi_out(file,
+ 									fh, f);
 
-I don't know anything about "make patch", but I have run the
-linux/scripts/checkpatch.pl against my patch and it found the patch OK.
-
-Regards,
-
-	Márton Németh
