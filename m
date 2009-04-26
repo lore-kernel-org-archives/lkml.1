@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbZDZCUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbZDZCUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755524AbZDZCUN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 22:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbZDZCT6
+	id S1756049AbZDZCUi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 22:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbZDZCUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 22:19:58 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54398 "EHLO
+	Sat, 25 Apr 2009 22:20:05 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54408 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750741AbZDZCT6 (ORCPT
+	by vger.kernel.org with ESMTP id S1753505AbZDZCUE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 22:19:58 -0400
+	Sat, 25 Apr 2009 22:20:04 -0400
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -28,18 +28,15 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        =?utf-8?q?Am=C3=A9rico=20Wang?= <xiyou.wangcong@gmail.com>,
        Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
        David Howells <dhowells@redhat.com>, Tim Abbott <tabbott@MIT.EDU>,
-       Tony Luck <tony.luck@intel.com>
-Subject: [PATCH 06/15] ia64: convert to use __HEAD and HEAD_TEXT macros.
-Date: Sat, 25 Apr 2009 22:11:01 -0400
-Message-Id: <1240711870-30505-6-git-send-email-tabbott@mit.edu>
+       Richard Henderson <rth@twiddle.net>
+Subject: [PATCH 03/15] alpha: convert to use __HEAD and HEAD_TEXT macros.
+Date: Sat, 25 Apr 2009 22:10:58 -0400
+Message-Id: <1240711870-30505-3-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1240711870-30505-5-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1240711870-30505-2-git-send-email-tabbott@mit.edu>
 References: <alpine.DEB.1.10.0904251304120.7631@vinegar-pot.mit.edu>
  <1240711870-30505-1-git-send-email-tabbott@mit.edu>
  <1240711870-30505-2-git-send-email-tabbott@mit.edu>
- <1240711870-30505-3-git-send-email-tabbott@mit.edu>
- <1240711870-30505-4-git-send-email-tabbott@mit.edu>
- <1240711870-30505-5-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
@@ -51,40 +48,42 @@ code from ".text.head" to ".head.text".  Since this commit changes all
 users in the architecture, this change should be harmless.
 
 Signed-off-by: Tim Abbott <tabbott@mit.edu>
-Cc: Tony Luck <tony.luck@intel.com>
+Cc: Richard Henderson <rth@twiddle.net>
 ---
- arch/ia64/kernel/head.S        |    2 +-
- arch/ia64/kernel/vmlinux.lds.S |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/alpha/kernel/head.S        |    3 ++-
+ arch/alpha/kernel/vmlinux.lds.S |    2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/ia64/kernel/head.S b/arch/ia64/kernel/head.S
-index 23f846d..a572160 100644
---- a/arch/ia64/kernel/head.S
-+++ b/arch/ia64/kernel/head.S
-@@ -181,7 +181,7 @@ swapper_pg_dir:
- halt_msg:
- 	stringz "Halting kernel\n"
+diff --git a/arch/alpha/kernel/head.S b/arch/alpha/kernel/head.S
+index 7ac1f13..4bdd1d2 100644
+--- a/arch/alpha/kernel/head.S
++++ b/arch/alpha/kernel/head.S
+@@ -7,10 +7,11 @@
+  * the kernel global pointer and jump to the kernel entry-point.
+  */
  
--	.section .text.head,"ax"
-+	__HEAD
++#include <linux/init.h>
+ #include <asm/system.h>
+ #include <asm/asm-offsets.h>
  
- 	.global start_ap
+-.section .text.head, "ax"
++__HEAD
+ .globl swapper_pg_dir
+ .globl _stext
+ swapper_pg_dir=SWAPPER_PGD
+diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
+index ef37fc1..b9d6568 100644
+--- a/arch/alpha/kernel/vmlinux.lds.S
++++ b/arch/alpha/kernel/vmlinux.lds.S
+@@ -16,7 +16,7 @@ SECTIONS
  
-diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
-index 4a95e86..a8b879e 100644
---- a/arch/ia64/kernel/vmlinux.lds.S
-+++ b/arch/ia64/kernel/vmlinux.lds.S
-@@ -51,8 +51,8 @@ SECTIONS
- 	KPROBES_TEXT
- 	*(.gnu.linkonce.t*)
-     }
--  .text.head : AT(ADDR(.text.head) - LOAD_OFFSET)
--	{ *(.text.head) }
-+  HEAD_TEXT_SECTION : AT(ADDR(HEAD_TEXT_SECTION) - LOAD_OFFSET)
-+	{ HEAD_TEXT }
-   .text2 : AT(ADDR(.text2) - LOAD_OFFSET)
- 	{ *(.text2) }
- #ifdef CONFIG_SMP
+ 	_text = .;	/* Text and read-only data */
+ 	.text : {
+-	*(.text.head)
++		HEAD_TEXT
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+ 		LOCK_TEXT
 -- 
 1.6.2.1
 
