@@ -1,80 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756377AbZDZUQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756700AbZDZUTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756377AbZDZUQg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 16:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755293AbZDZUQ0
+	id S1756700AbZDZUTr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 16:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbZDZUTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 16:16:26 -0400
-Received: from mx3.schottelius.org ([77.109.138.221]:36796 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754425AbZDZUQZ (ORCPT
+	Sun, 26 Apr 2009 16:19:37 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:10674 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754425AbZDZUTg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 16:16:25 -0400
-Date: Sun, 26 Apr 2009 22:15:54 +0200
-From: Nico Schottelius <nico-linux-20090213@schottelius.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Sun, 26 Apr 2009 16:19:36 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=M1wNnJ9poH8OtVL1QbqVDOW+K2iRAzMG+1bzrWOC16D7qqxmlQFfZysq49kxrpak5
+	F/t/KKHv/o7FWUxRwqQ3g==
+Date: Sun, 26 Apr 2009 13:19:31 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Bart <mmx@riz.pl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, Eric Anholt <eric@anholt.net>,
-       Matthew Garrett <mjg@redhat.com>,
-       Nico Schottelius <nico-linux-20090213@schottelius.org>
-Subject: Re: [Bug #12705] X200: Brightness broken since
-	2.6.29-rc4-58-g4c098bc
-Message-ID: <20090426201554.GC22487@ikn.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-20090213@schottelius.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Dave Airlie <airlied@linux.ie>, Eric Anholt <eric@anholt.net>,
-	Matthew Garrett <mjg@redhat.com>
-References: <tur5OtdUm3E.A.r2B.7oE9JB@chimera> <egHshlwQQFE.A.EJE.WrE9JB@chimera>
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #13112] Oops in drain_array
+In-Reply-To: <egHshlwQQFE.A.KjC.JpE9JB@chimera>
+Message-ID: <alpine.DEB.2.00.0904261314430.18988@chino.kir.corp.google.com>
+References: <tur5OtdUm3E.A.r2B.7oE9JB@chimera> <egHshlwQQFE.A.KjC.JpE9JB@chimera>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ncSAzJYg3Aa9+CRW"
-Content-Disposition: inline
-In-Reply-To: <egHshlwQQFE.A.EJE.WrE9JB@chimera>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.30-rc2-next-20090420 x86_64)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 26 Apr 2009, Rafael J. Wysocki wrote:
 
---ncSAzJYg3Aa9+CRW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Rafael J. Wysocki [Sun, Apr 26, 2009 at 11:46:25AM +0200]:
 > This message has been generated automatically as a part of a report
 > of regressions introduced between 2.6.28 and 2.6.29.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
+> be listed and let me know (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13112
+> Subject		: Oops in drain_array
+> Submitter	: Bart <mmx@riz.pl>
+> Date		: 2009-04-14 10:21 (13 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123970493224628&w=4
+> 
 
-Sure, still broken. For some version it works, for most newer not,
-as reported.
-
-Can we stop that nag-service and spent time in fixing it better?
-
-Nico
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---ncSAzJYg3Aa9+CRW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkn0wPoACgkQuL75KpiFGIwRvQCdH9JDhLrjR4p4PNMtr6Tpqglb
-6t8An3dwhUUvCGZkp8fgXP7OdwTdFiOt
-=7wWO
------END PGP SIGNATURE-----
-
---ncSAzJYg3Aa9+CRW--
+Bart, is it possible to try with CONFIG_DEBUG_SLAB enabled?
