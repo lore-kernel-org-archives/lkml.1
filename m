@@ -1,35 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbZDZIOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbZDZIS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753408AbZDZIOq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 04:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbZDZIO0
+	id S1754314AbZDZIS6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 04:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbZDZISg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 04:14:26 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:42459 "EHLO
+	Sun, 26 Apr 2009 04:18:36 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:39577 "EHLO
 	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751864AbZDZIOU (ORCPT
+	with ESMTP id S1751832AbZDZISa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 04:14:20 -0400
+	Sun, 26 Apr 2009 04:18:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:user-agent:mime-version
          :content-type;
-        b=TaW+d25Umd1+ZhJvTtQRMBhDnfKQdgpFC8AkE8bnDyL5Tj7IiZYSPsj4PPSkebg0zJ
-         ymYLYeIiavt0wVq7Tx83fulrdOsuY/c5eByVxxLM9yecIbHtjHU99hcCw4Z8LjD9YgJt
-         vTTj5VYpwPb1pCjz7/xOLxu14I9urhw9qBMhw=
-Date: Sun, 26 Apr 2009 10:14:35 +0200 (CEST)
+        b=pPcLSESaLQEJi+pUxLFy9ffbfzYrWVNZXDCenCZ39jfhx83VUIKoNsIvck/Wp7qiL2
+         IsYQk3wwlbkhxkjE0ZK6JqHtQisAQjFNcy0/i6tZ0QUxNRBrcZQYqQzW4K7/ixii982A
+         II9+WeR6j/XRwL9ALEJ/1u7m4qo8ensN8A4oU=
+Date: Sun, 26 Apr 2009 10:19:02 +0200 (CEST)
 From: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
 To: Greg Kroah-Hartman <gregkh@suse.de>
 cc: LKML <linux-kernel@vger.kernel.org>
 Subject: [PATCH 2.6.29-rc8] drivers/staging/otus/80211core/ccmd.c: Fix Coding
  Style
-Message-ID: <alpine.DEB.2.00.0904261006400.9155@Sentinel>
+Message-ID: <alpine.DEB.2.00.0904261017450.9155@Sentinel>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+Signed-off-by: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
 
 --- drivers/staging/otus/80211core/ccmd.c	2009-03-10 01:01:36.000000000 +0100
 +++ drivers/staging/otus/80211core/ccmd_cs_fix.c	2009-03-25 00:18:39.000000000 +0100
