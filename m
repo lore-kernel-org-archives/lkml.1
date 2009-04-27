@@ -1,91 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbZD0R4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750923AbZD0R5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758197AbZD0R4f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 13:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbZD0R4X
+	id S1750923AbZD0R5N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 13:57:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756175AbZD0R44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 13:56:23 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:36281 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751257AbZD0R4W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 13:56:22 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][patch] filesystem: Vmufat filesystem, version 4
-Date: Mon, 27 Apr 2009 13:56:20 -0400
-User-Agent: KMail/1.11.2 (Linux/2.6.29.1; KDE/4.2.2; x86_64; ; )
-Cc: Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-       "linux-fsdevel" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-sh" <linux-sh@vger.kernel.org>
-References: <1239654768.6542.10.camel@localhost.localdomain> <20090424221455.GB5342@elf.ucw.cz>
-In-Reply-To: <20090424221455.GB5342@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2305589.77ey5eX2D7";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200904271356.21684.vapier@gentoo.org>
+	Mon, 27 Apr 2009 13:56:56 -0400
+Received: from outbound-mail-119.bluehost.com ([69.89.22.19]:36010 "HELO
+	outbound-mail-119.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751257AbZD0R4z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 13:56:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:X-Identified-User;
+	b=Lkmo/F5mGFN4J5cpal53huBjoage6Wpc45mlb19T+zf2jve/WaJ8a5PNkbOowJt2JpN0q+DIvJQvwe1U9+BD/IKOGIvs1Fpg7CfGloXLpiQckUK7aQ3Q65nhs7DXqEYt;
+Date: Mon, 27 Apr 2009 09:46:51 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Dave Airlie" <airlied@redhat.com>,
+       "DRI" <dri-devel@lists.sourceforge.net>,
+       "Michel =?UTF-8?B?RMOkbnplcg==?=" <michel@daenzer.net>,
+       "Sitsofe Wheeler" <sitsofe@yahoo.com>
+Subject: Re: [Bug #12765] i915 VT switch with AIGLX causes X lock up
+Message-ID: <20090427094651.7cc09227@hobbes>
+In-Reply-To: <egHshlwQQFE.A.X4D.-qE9JB@chimera>
+References: <tur5OtdUm3E.A.r2B.7oE9JB@chimera>
+	<egHshlwQQFE.A.X4D.-qE9JB@chimera>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="MP_/NIRqWWW2G6ffVXmLhTLhGww"
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2305589.77ey5eX2D7
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+--MP_/NIRqWWW2G6ffVXmLhTLhGww
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-On Friday 24 April 2009 18:14:55 Pavel Machek wrote:
-> On Mon 2009-04-13 21:32:48, Adrian McMenamin wrote:
-> > --- /dev/null
-> > +++ b/fs/vmufat/Kconfig
-> > @@ -0,0 +1,14 @@
-> > +config VMUFAT_FS
-> > +	tristate "Dreamcast VMU FAT filesystem"
-> > +	depends on BLOCK
-> > +	help
-> > +	  This implements the simple FAT type filesystem found on SEGA
-> > +	  Dreamcast visual memory units.
-> > +
-> > +	  Dreamcast users who want to mount their VMUs to view the native
-> > +	  filesystem will say 'Y' here. The filesystem is hardware independent
-> > +	  but is not recommended for any serious use in other circumstances, =
-so
-> > +	  just about everyone else should say 'N'.
-> > +
-> > +	  To compile this as a module say 'M' here. The module will be called
-> > +	  vmufat
->
-> "vmufat.ko." ?
+On Sun, 26 Apr 2009 11:46:26 +0200 (CEST)
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-no, the standard is to name it without extension.  there should be a period=
-=20
-there though as it's the end of the sentence ...
-=2Dmike
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.28 and 2.6.29.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.28 and 2.6.29.  Please verify if it still
+> should be listed and let me know (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12765
+> Subject		: i915 VT switch with AIGLX causes X lock up
+> Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
+> Date		: 2009-02-21 15:38 (65 days old)
+> First-Bad-Commit:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=14d200c5e5bd19219d930bbb9a5a22758c8f5bec
+> References	:
+> http://marc.info/?l=linux-kernel&m=123523074304955&w=4
 
---nextPart2305589.77ey5eX2D7
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+I think we had a workaround for this (attached), but it sounds like
+Robert has tracked down the root cause (search for "Broken vblanks on
+Intel" on dri-devel@lists.sourceforge.net).  Will try to get the fix
+into the Intel driver soon.  Fortunately this doesn't seem to be biting
+a lot of people (at least not that I've heard); I certainly have a hard
+time reproducing it.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
+-- 
+Jesse Barnes, Intel Open Source Technology Center
 
-iQIcBAABAgAGBQJJ9fHFAAoJEEFjO5/oN/WBQPoQALWFu3NwPebakare1Sc/9Yvs
-89SQrKXYtdFGgTiUj4iukaYg46XNzBHR8mN+oIQbJFnkA9GoyWZmpmEuFSsKVepD
-sEIuP0035ncHfIo+oCzQ7zFnJoGh5vqNXQ5eJsUjV4RGVuOYs4l74P8FeAGPQZUu
-wjzQqkACg/kiG8GzK1pgbp8W8uhacBIbWo7U3cX+TpXTT5g6DMw2TKfBxhIJ44CO
-9G5L4ylVv3/wbV/1TFYoIG6/fhZSwIrCe/1afC46NzDlgLX9BHTLmXR1gqNnswGk
-CxTpJhsHlmqFvxxowuv2XhRWLDBK9JX19q0wgIgNj7ZZUgnFgNG77OEGxhVIfXci
-2cjq582f+gBYHIM6hy2ONLUo3Mm695fISiM927UXc+Fq9jGIIEFaiPKaTsFMAUoK
-wmXWU10LjS55JoWSiXrfX2BARgxBGCr7vziLCw69VGSelMerIfmGmVbUkhKN2TTb
-lH0l5ui8mLGIGyAxk6212KKGI/PoQWpJ6E78xK7ctbPwPcPgcrpdOc9HfNGs/C21
-U+GWIbePMRLeDJzLPuQ+e/MjRstStnENJCuTLnUiOCXGbC5kmxEhU+uVb5zK+w10
-XFjh/3YHnwX8gFNCnKMr2hPqdZKQASs2lJgvvAuuKE+XOBHp277O+uqX1OMkAmLA
-Tf3K3TGyryPFKfdiNXxC
-=j2r7
------END PGP SIGNATURE-----
+--MP_/NIRqWWW2G6ffVXmLhTLhGww
+Content-Type: text/x-patch
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=drm-vblank-wait-fix.patch
 
---nextPart2305589.77ey5eX2D7--
+diff --git a/drivers/gpu/drm/drm_irq.c b/drivers/gpu/drm/drm_irq.c
+index 69aa0ab..c41cba4 100644
+--- a/drivers/gpu/drm/drm_irq.c
++++ b/drivers/gpu/drm/drm_irq.c
+@@ -341,7 +341,7 @@ int drm_control(struct drm_device *dev, void *data,
+  * vblank events since the system was booted, including lost events due to
+  * modesetting activity.
+  */
+-u32 drm_vblank_count(struct drm_device *dev, int crtc)
++unsigned int drm_vblank_count(struct drm_device *dev, int crtc)
+ {
+ 	return atomic_read(&dev->_vblank_count[crtc]);
+ }
+@@ -522,6 +522,11 @@ out:
+ 	return ret;
+ }
+ 
++#define frame_after_eq(a,b)	       \
++	(typecheck(unsigned int, a) && \
++	 typecheck(unsigned int, b) && \
++	 ((int)(a) - (int)(b) >= 0))
++
+ /**
+  * Wait for VBLANK.
+  *
+@@ -589,10 +594,12 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
+ 	DRM_DEBUG("waiting on vblank count %d, crtc %d\n",
+ 		  vblwait->request.sequence, crtc);
+ 	dev->last_vblank_wait[crtc] = vblwait->request.sequence;
++
++	/* Wait for the sequence number to pass or IRQs to get disabled */
+ 	DRM_WAIT_ON(ret, dev->vbl_queue[crtc], 3 * DRM_HZ,
+-		    (((drm_vblank_count(dev, crtc) -
+-		       vblwait->request.sequence) <= (1 << 23)) ||
+-		     !dev->irq_enabled));
++		    frame_after_eq(drm_vblank_count(dev, crtc),
++				   vblwait->request.sequence) ||
++		    !dev->irq_enabled);
+ 
+ 	if (ret != -EINTR) {
+ 		struct timeval now;
+
+--MP_/NIRqWWW2G6ffVXmLhTLhGww--
