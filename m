@@ -1,89 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761304AbZD0Uut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbZD0UyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761304AbZD0Uut (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 16:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757912AbZD0Uuh
+	id S1758130AbZD0UyU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 16:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755167AbZD0UyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 16:50:37 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:22237 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755111AbZD0Uug (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 16:50:36 -0400
-Message-ID: <49F61A99.1000209@billgatliff.com>
-Date: Mon, 27 Apr 2009 15:50:33 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 27 Apr 2009 16:54:09 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:38613 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754636AbZD0UyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 16:54:08 -0400
+Date: Mon, 27 Apr 2009 21:54:00 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: David Rientjes <rientjes@google.com>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] Replace the watermark-related union in struct zone with
+	a watermark[] array
+Message-ID: <20090427205400.GA23510@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-19-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.0904221251350.14558@chino.kir.corp.google.com> <20090427170054.GE912@csn.ul.ie> <alpine.DEB.2.00.0904271340320.11972@chino.kir.corp.google.com>
 MIME-Version: 1.0
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: usb 1-1: reset full speed USB device using ep93xx-ohci and address
- 2
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0904271340320.11972@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guys:
+On Mon, Apr 27, 2009 at 01:48:47PM -0700, David Rientjes wrote:
+> On Mon, 27 Apr 2009, Mel Gorman wrote:
+> 
+> > diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> > index c1fa208..1ff59fd 100644
+> > --- a/include/linux/mmzone.h
+> > +++ b/include/linux/mmzone.h
+> > @@ -163,6 +163,13 @@ static inline int is_unevictable_lru(enum lru_list l)
+> >  #endif
+> >  }
+> >  
+> > +enum zone_watermarks {
+> > +	WMARK_MIN,
+> > +	WMARK_LOW,
+> > +	WMARK_HIGH,
+> > +	NR_WMARK
+> > +};
+> > +
+> >  struct per_cpu_pages {
+> >  	int count;		/* number of pages in the list */
+> >  	int high;		/* high watermark, emptying needed */
+> > @@ -275,12 +282,9 @@ struct zone_reclaim_stat {
+> >  
+> >  struct zone {
+> >  	/* Fields commonly accessed by the page allocator */
+> > -	union {
+> > -		struct {
+> > -			unsigned long	pages_min, pages_low, pages_high;
+> > -		};
+> > -		unsigned long pages_mark[3];
+> > -	};
+> > +
+> > +	/* zone watermarks, indexed with WMARK_LOW, WMARK_MIN and WMARK_HIGH */
+> > +	unsigned long watermark[NR_WMARK];
+> >  
+> >  	/*
+> >  	 * We don't know if the memory that we're going to allocate will be freeable
+> 
+> I thought the suggestion was for something like
+> 
+> 	#define zone_wmark_min(z)	(z->pages_mark[WMARK_MIN])
+> 	...
 
+Was it the only suggestion? I thought just replacing the union with an
+array would be an option as well.
 
-I'm getting this problem all the time on an ep93xx platform (ARM, 
-ts-7260) when I use a USB flash device as the root filesystem.  The 
-kernel is a slightly-modified 2.6.27:
+The #define approach also requires setter versions like
 
-...
-INIT: version 2.86 booting
-usb 1-1: reset full speed USB device using ep93xx-ohci and address 2
-usb 1-1: reset full speed USB device using ep93xx-ohci and address 2
-usb 1-1: device descriptor read/64, error -110
-usb 1-1: device descriptor read/64, error -110
-...
+static inline set_zone_wmark_min(struct zone *z, unsigned long val)
+{
+	z->pages_mark[WMARK_MIN] = val;
+}
 
-Google tells me that this problem has come and gone for quite a while, 
-but it's currently present for me nearly 100% of the time.
+and you need one of those for each watermark if you are to avoid weirdness like
 
-One thing that I find interesting is that the very same device that 
-produced the above messages works absolutely fine on the very same 
-hardware and kernel when it isn't being used as a root filesystem 
-device.  In fact, I've been abusing the device for a couple of days now 
-with no problems, where when used as a normal rootfs it dies almost 
-immediately after sysvinit starts up.
+zone_wmark_min(z) = val;
 
-What's equally troubling is the fact that a few weeks ago, this same 
-device with the very same hardware worked without problems, then seemed 
-to progressively get worse until now it's virtually unusable due to the 
-high number of USB reset events.  But I don't think in this case it's a 
-hardware degradation problem; rather, I'm suspicious that system use has 
-changed something in the access patterns to the device (timing or 
-otherwise) that expose a latent problem.
+which looks all wrong. I felt this approach would look neater and be closer
+in appearance to the code that is already there and therefore less surprising.
 
-The filesystem is ext3, and it's a 1GB USB 2.0 flash device  I've tried 
-mounting it with noatime, that doesn't seem to help--- while in use as a 
-rootfs I get the same pattern of reset messages as described above, and 
-when not used as a rootfs operation is still error-free.  My "other" 
-rootfs is NFS, populated from the contents of the USB device itself.
-
-I'm stumped, and I'm hoping this machine will help provide someone with 
-information needed to lick this problem as it's preventing me from 
-deploying some important functionality.
-
-I rarely see problems before the "INIT: version 2.86 booting" message 
-above.  Is it possible that there's something related to the fact that 
-the device is read-only prior to that?
-
-My test script used when the USB device isn't the rootfs looks like this:
-
-    while true; do rm -f /mnt/randomfile*; dd if=/dev/urandom
-        of=/mnt/randomfile bs=1024 count=20480;
-        tar cf /mnt/randomfile.tar /mnt/randomfile; date; done
-
-
-Hoping someone can help me shed some light on this,
-
-
-b.g.
+Would people prefer a getter/setter version?
 
 -- 
-Bill Gatliff
-bgat@billgatliff.com
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
