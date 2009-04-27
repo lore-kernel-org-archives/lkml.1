@@ -1,46 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759582AbZD0WtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759833AbZD0Wvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759582AbZD0WtT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 18:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbZD0WtN
+	id S1759833AbZD0Wvr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 18:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636AbZD0Wvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 18:49:13 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:42429 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753932AbZD0WtM (ORCPT
+	Mon, 27 Apr 2009 18:51:39 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:24988 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753932AbZD0Wvi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 18:49:12 -0400
-Date: Tue, 28 Apr 2009 07:43:55 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Russell King <rmk@arm.linux.org.uk>, Christoph Hellwig <hch@lst.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 12/17] arm: user_regset: iWMMXt in core dumps
-Message-ID: <20090427224355.GD5033@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Roland McGrath <roland@redhat.com>,
-	Russell King <rmk@arm.linux.org.uk>, Christoph Hellwig <hch@lst.de>,
-	linux-kernel@vger.kernel.org
-References: <20090425000634.313E4FC3C8@magilla.sf.frob.com> <20090425001259.CDC92FC3C8@magilla.sf.frob.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090425001259.CDC92FC3C8@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 27 Apr 2009 18:51:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:to:content-type:content-transfer-encoding:x-mailer
+         :mime-version:subject:date:cc;
+        b=dOJYxYXygAYAAyRYEQssxM6LNWJxczR7djvvSfQ+2JkKPaThGbgg/r8yHAwIIojJ72
+         d+8NkjFD0O3L9EXj5qIZBxiEYaJ+1ZZOuc31ogeKkT83dE41ms3+YhLXjHB0LPaQjeHz
+         fKkygNxZjR45OWW651ELNOhTZSqgvYBejWxTg=
+Message-Id: <266E0723-B689-4472-8A2F-D93FC6819E04@gmail.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Henrik Rydberg <rydberg@euromail.se>
+Content-Type: text/plain;
+	charset=us-ascii;
+	format=flowed;
+	delsp=yes
+Content-Transfer-Encoding: 7bit
+X-Mailer: iPhone Mail (5H11)
+Mime-Version: 1.0 (iPhone Mail 5H11)
+Subject: Re: [PATCH 6/6] input: Add a detailed multi-touch finger data report protocol (rev2)
+Date: Mon, 27 Apr 2009 18:50:49 -0400
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 05:12:59PM -0700, Roland McGrath wrote:
-> This enables dumping the iWMMXt state in ELF core dumps if it was used.
-> It gets its own note of the new type NT_ARM_WMMX.
-> 
-> Signed-off-by: Roland McGrath <roland@redhat.com>
+Hi Henrik,
 
-Are these note definitions centrally defined anywhere? I looked at the
-include/elf/common.h in gdb, but it seemed fairly similar to linux/elf.h.
+On Wed, Jan 28, 2009 at 11:23:49AM +0100, Henrik Rydberg wrote:
+> +
+> +#define ABS_MT_TOUCH        0x30    /* Diameter of touching circle */
+> +#define ABS_MT_TOUCH_MAJOR    0x30    /* Major axis of touching  
+> ellipse */
 
-Both sh and mips would benefit from a note type for DSP registers. Would
-something like an NT_PRDSPREG be accetable for this? Also, the note
-definitions seem to have hopped from 4 to 6, is there a definition for 5,
-or can that be used for a DSP register note type?
+It looks like we are overriding the same event code to trasnmit 2
+slightly different kinds of data. I Am concerned that people would get
+confused, maybe we should get rid of ABS_MT_TOUCH and either require
+drvices always transmit ABS_MT_TOUCH_MAJOR and ABS_MT_TOUCH_MINOR or
+document that for curcular objects ABS_MT_TOUCH_MINOR may be omitted.
+
+> +#define ABS_MT_TOUCH_MINOR    0x31    /* Minor axis of touching  
+> ellipse */
+> +#define ABS_MT_WIDTH        0x32    /* Diameter of approaching  
+> circle */
+> +#define ABS_MT_WIDTH_MAJOR    0x32    /* Major axis of approaching  
+> ellipse */
+> +#define ABS_MT_WIDTH_MINOR    0x33    /* Minor axis of approaching  
+> ellipse */
+
+Same here...
+
+> +#define ABS_MT_ORIENTATION    0x34    /* Ellipse orientation */
+> +#define ABS_MT_POSITION_X    0x35    /* Center X ellipse position */
+> +#define ABS_MT_POSITION_Y    0x36    /* Center Y ellipse position */
+> +#define ABS_MT_TOOL_TYPE    0x37    /* Type of touching device */
+> +#define ABS_MT_BLOB_ID        0x38    /* Group a set of packets as  
+> a blob */
+> +
+> #define ABS_MAX            0x3f
+> #define ABS_CNT            (ABS_MAX+1)
+>
+> @@ -744,6 +758,14 @@ struct input_absinfo {
+> #define BUS_ATARI        0x1B
+>
+> /*
+> + * MT_TOOL types
+> + */
+> +#define MT_TOOL_FINGER        0
+> +#define MT_TOOL_PEN        1
+> +#define MT_TOOL_MAX        9
+> +#define MT_TOOL_CNT        (MT_TOOL_MAX + 1)
+
+MT_TOOL_FINGER/MT_TOOL_PEN are documented values of ABS_MT_TOOL_TYPE, so
+I don't understand why we need MT_TOOL_MAX/MT_TOOL_CNT definitions.
+
+Thanks.
+
+-- 
+Dmitry
