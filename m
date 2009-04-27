@@ -1,102 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759477AbZD0Whj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758904AbZD0WkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759477AbZD0Whj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 18:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756804AbZD0Wh0
+	id S1758904AbZD0WkF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 18:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756953AbZD0Wjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 18:37:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54587 "EHLO
+	Mon, 27 Apr 2009 18:39:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33277 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750806AbZD0WhZ (ORCPT
+	by vger.kernel.org with ESMTP id S1756405AbZD0Wjv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 18:37:25 -0400
-Date: Mon, 27 Apr 2009 15:24:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Stephen Hemminger <shemminger@vyatta.com>
-cc: Evgeniy Polyakov <zbr@ioremap.net>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       Jarek Poplawski <jarkao2@gmail.com>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, kaber@trash.net, jeff.chua.linux@gmail.com,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
-In-Reply-To: <20090427144054.1fb9b7a6@nehalam>
-Message-ID: <alpine.LFD.2.00.0904271506530.22156@localhost.localdomain>
-References: <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam> <49F4A6E3.7080102@cosmosbay.com> <20090426185646.GB29238@Krystal> <20090426145746.1184aeba@nehalam> <1240854297.7620.65.camel@twins> <20090427113010.5e3f1700@nehalam> <20090427185423.GC23862@elte.hu>
- <20090427120658.35a858bb@nehalam> <alpine.LFD.2.00.0904271219570.22156@localhost.localdomain> <20090427203616.GB3836@ioremap.net> <alpine.LFD.2.00.0904271340400.22156@localhost.localdomain> <20090427144054.1fb9b7a6@nehalam>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 27 Apr 2009 18:39:51 -0400
+Date: Mon, 27 Apr 2009 15:34:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Izik Eidus <ieidus@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+       avi@redhat.com, aarcange@redhat.com, chrisw@redhat.com,
+       mtosatti@redhat.com, hugh@veritas.com, ieidus@redhat.com
+Subject: Re: [PATCH 5/5] add ksm kernel shared memory driver.
+Message-Id: <20090427153421.2682291f.akpm@linux-foundation.org>
+In-Reply-To: <1240191366-10029-6-git-send-email-ieidus@redhat.com>
+References: <1240191366-10029-1-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-2-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-3-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-4-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-5-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-6-git-send-email-ieidus@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 20 Apr 2009 04:36:06 +0300
+Izik Eidus <ieidus@redhat.com> wrote:
 
+> Ksm is driver that allow merging identical pages between one or more
+> applications in way unvisible to the application that use it.
+> Pages that are merged are marked as readonly and are COWed when any
+> application try to change them.
 
-On Mon, 27 Apr 2009, Stephen Hemminger wrote:
->
-> The part that concerns me is that the reader lock used in a nested manner on
-> same cpu may still be broken on -rt.
+Breaks sparc64 and probably lots of other architectures:
 
-I think that's a valid concern, and I don't actually object to not using a 
-rwlock, but using the "explicit counting + spinlock" that we had at one 
-point. It _might_ even be faster, since a spinlock can be faster than a 
-rwlock, and the (rare) case where you recurse you can then avoid the 
-atomic entirely.
+mm/ksm.c: In function `try_to_merge_two_pages_alloc':
+mm/ksm.c:697: error: `_PAGE_RW' undeclared (first use in this function)
 
-But EVEN IF YOU DO THAT, it's still wrong to call it a "recursive lock". 
-Because it still wouldn't be one.
+there should be an official arch-independent way of manipulating
+vma->vm_page_prot, but I'm not immediately finding it.
 
-That's kind of my point, and always has been. It was why I objected to the 
-original patch description by Dumazet. It wasn't a recursive lock back 
-then _either_. For all the reasons I tried to explain to you, and you seem 
-to not care about.
+An alternative (and quite inferior) "fix" would be to disable ksm on
+architectures which don't implement _PAGE_RW.  That's most of them.
 
-Btw, if you do use the "explicit count" case, then please please please 
-make sure it's documented and bug-free. And dammit, correct documentation 
-in this case very much talks about how it is _not_ a "recursive lock", but 
-a spinlock that then has an explicit counter that avoids taking the lock 
-entirely in one very specific path (that happens to be recursive).
-
-The thing is, using a rwlock kind of implicitly documents all of that, 
-because you can tell somebody who doesn't even read the code that it's a 
-"per-cpu rwlock", and they then know what the semantics are (given that 
-they know the kernel semantics for locking in the first place).
-
-But once you start doing your own locking rules, you really have to 
-explain why it works, and what it does. And you do have to be very 
-careful, because it's so easy to get locking wrong.
-
-> I don't care. I don't care. Don't you get the point yet.
-
-If you don't care about the naming, then use the right one. 
-
-And if you don't care about the naming, why do you then say I'm deluding 
-myself, when I'm _correct_, and I _do_ happen to care about correct 
-naming.
-
-Locking really is important.  Code that gets locking wrong breaks in
-really subtle and nasty ways.  And it sadly tends to "work" in testing,
-since the breakage cases require just the right timing.  So locking
-should be robust and as "obviously correct" as possible.
-
-And naming really is important.  Misnaming things makes people make
-assumptions that aren't true.  If you talk about recursive locks, it
-should be reasonable that people who know how recursive locks work would
-then make assumptions about them.  If the code then doesn't actually
-match those rules, that's bad. 
-
-It's like having a comment in front of a piece of code that says something 
-totally different than what the code actually does. It's _bad_. That's why 
-naming matters so much - because naming is commentary.  If you mis-name 
-things on purpose, it's simply a bug.
-
-Do _you_ get the point?
-
-You _do_ care about bugs, don't you?
-
-			Linus
