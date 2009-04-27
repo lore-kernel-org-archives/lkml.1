@@ -1,81 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758908AbZD0WT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759370AbZD0WWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758908AbZD0WT7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 18:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756188AbZD0WTu
+	id S1759370AbZD0WWg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 18:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbZD0WW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 18:19:50 -0400
-Received: from outbound-mail-26.bluehost.com ([69.89.17.191]:43400 "HELO
-	outbound-mail-26.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754899AbZD0WTt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 18:19:49 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Apr 2009 18:19:49 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=damore.org;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=Hu/DycfpJRcFmv+FkS/vS08IGkG61gJ0vSATUvLtGKbdks63ikbGhBLDH82Al/ygpFfAD74kxQyGSam43cbFWPgtbYFDMMaCIeWtzc9ed3rWxpY2ARx5UNgyNztga186;
-Message-ID: <49F62DF4.5070709@damore.org>
-Date: Mon, 27 Apr 2009 15:13:08 -0700
-From: "Garrett D'Amore" <garrett@damore.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081201)
-MIME-Version: 1.0
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-CC: Robert Hancock <hancockrwd@gmail.com>, pierre@ossman.eu,
-       sdhci-devel@lists.ossman.eu,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Sdhci-devel] SDHCI driver runnining in aspire one, allows to
- write to R/O SD cards
-References: <1240219764.13640.5.camel@maxim-laptop>	 <49ED0865.9030603@gmail.com>  <1240524632.20871.0.camel@maxim-laptop>	 <1240759276.10972.0.camel@maxim-laptop>  <49F5F57D.3010700@damore.org> <1240859254.11237.8.camel@maxim-laptop>
-In-Reply-To: <1240859254.11237.8.camel@maxim-laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {2225:box374.bluehost.com:damoreor:damore.org} {sentby:smtp auth 192.18.43.225 authed with garrett+damore.org}
+	Mon, 27 Apr 2009 18:22:27 -0400
+Received: from cmpxchg.org ([85.214.51.133]:32981 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751278AbZD0WW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 18:22:27 -0400
+Date: Tue, 28 Apr 2009 00:20:35 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Jiri Kosina <trivial@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: how to properly post/disseminate kernel cleanup/janitorial possibilities?
+Message-ID: <20090427222035.GA2700@cmpxchg.org>
+References: <alpine.LFD.2.00.0904271637470.4906@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904271637470.4906@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maxim Levitsky wrote:
-> On Mon, 2009-04-27 at 11:12 -0700, Garrett D'Amore wrote:
->   
->> As an extra data point, my sdhost driver in OpenSolaris works fine on 
->> the AA1.. it does see that the cards are locked, and refuses to allow 
->> them to be mounted read/write.
->>
->> This leads me to believe that the original linux problem is one of two 
->> things:
->>
->> * either a bug in the linux code, or
->> * busted circuit/hardware on a specific unit (i.e. a damaged unit)
->>
->> I believe that if the Linux code was buggy here, the problem would be 
->> reproducible on all platforms, not just the AA1.  So my inclination, 
->> barring independent confirmation, is that most likely there are one ore 
->> more defective units out there.
->>
->> Note that the AA1 also has buggy BIOS -- OpenSolaris can't "see" the 
->> cards (registers aren't properly initialized) unless they are present 
->> when the unit first powers up.
->>     
->
-> But, why it works in windows?
->   
+[added Jiri on CC]
 
-The Microsoft PCI code base probably is more willing to "work around" 
-BIOSes that don't properly configure PCI configuration registers... this 
-is an outstanding RFE for Solaris.
+On Mon, Apr 27, 2009 at 04:46:46PM -0400, Robert P. J. Day wrote:
+> 
+>   since i, on an occasional basis, run a set of scanning scripts i
+> wrote and promptly annoy the crap out of everyone with the results,
+> i'm open to the proper way to do this scanning and get the results out
+> there to people who might be interested while not bugging those folks
+> who aren't.
+> 
+>   a while back, a few people suggested a wiki page, while others
+> disagreed, suggesting that no one will follow a link to a wiki page
+> and will only read what's directly on the list.  grapple, grapple.
+> 
+>   in the end (as i'm sure you're aware by now), i post the results
+> here:
+> 
+>   http://www.crashcourse.ca/wiki/index.php/Kernel_cleanup
+> 
+> i'm convinced that there's value in the links i've promoted lately --
+> scanning Kconfig files for unused or "bad" CONFIG variables, not just
+> to clean historical cruft out of those files but because, on occasion,
+> the scanning really does track down typoes and errors.
+> 
+>   not quite so critical is a "style" script i wrote, which looks for
+> places to simplify code by using some of the macros/functions defined
+> in include/linux/kernel.h.  i ran that script again earlier today, and
+> posted only *some* of the results here:
+> 
+>   http://www.crashcourse.ca/wiki/index.php/The_style_script
+> 
+> long story short, i have a *pile* of scripts and sub-scripts i'm happy
+> to run and post the results of since it takes practically zero time on
+> my part, i'm just open to what folks think is the most productive way
+> to do that, and also for any other scanning i can add since, by now,
+> any other patterns to scan for would just represent adding a line or
+> two to a script.
+> 
+>  thoughts?
 
-The Windows code base also has some other unrelated quirks in it -- it 
-uses DAT3 for card presence detection instead of the card detect bit in 
-the sdhci controller, for example.   (It also doesn't support MMC, which 
-is to blame for some of the bastardized controller hacks that mfgrs like 
-Ricoh have done to separate their MMC and SDcard handling into separate 
-PCI functions.  Yes, that's a hardware workaround for a software bug!  
-Go figure -- its what happens when one software company has a virtual 
-monopoly...)
+Yes.  I wonder why you take the time to generate the output and email
+it but then stop there instead of just sending patches?
 
-    -- Garrett
-> Regards,
-> 	Maxim Levitsky
->
->   
+grep -A5 TRIVIAL MAINTAINERS
 
+Perhaps Jiri can pick up some of the patches that remove stale config
+symbols, correct typos etc.
+
+Yes, these corrections take care of cruft.  But I think installing
+output of scripts on wiki pages and asking for other people to fix
+them up is more than these things deserve.  It's a bit like writing a
+list containing
+
+	- wash up mug
+	- grind beans
+	- boil water
+	- put grinded beans in mug
+	- put filter in mug
+	- put hot water in mug
+
+instead of just making coffee already.
+
+	Hannes
