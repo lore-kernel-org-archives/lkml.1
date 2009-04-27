@@ -1,52 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757333AbZD0SUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758756AbZD0SWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757333AbZD0SUA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 14:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbZD0STu
+	id S1758756AbZD0SWa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 14:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZD0SWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 14:19:50 -0400
-Received: from pearlgates.net ([82.92.180.13]:40779 "EHLO mail.pearlgates.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752854AbZD0STt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 14:19:49 -0400
-X-Greylist: delayed 438 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Apr 2009 14:19:49 EDT
-Date: Mon, 27 Apr 2009 20:12:29 +0200
-From: Jos van der Ende <seraph@xs4all.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "DRI" <dri-devel@lists.sourceforge.net>,
-       "Jos van der Ende" <seraph@xs4all.nl>
-Subject: Re: [Bug #12947] r128: system hangs when X is started with DRI
- enabled
-Message-Id: <20090427201229.3491928a.seraph@xs4all.nl>
-In-Reply-To: <200904261943.45126.rjw@sisk.pl>
-References: <tur5OtdUm3E.A.r2B.7oE9JB@chimera>
-	<egHshlwQQFE.A.ITD.zpE9JB@chimera>
-	<20090426170729.3489b482.angel@pearlgates.net>
-	<200904261943.45126.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.14.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Apr 2009 14:22:22 -0400
+Received: from outbound-mail-320.bluehost.com ([67.222.54.252]:33327 "HELO
+	outbound-mail-320.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751527AbZD0SWV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 14:22:21 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Apr 2009 14:22:21 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=damore.org;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=J0pOYLaD1NqnAi6aLIddP8T/SgKyI5hv5mnX2fz3AZnnlx3+CdMHtEx8KJ8T1AUBNW24DMdf0iAowYaq5Lnf/j04b4eRqAUfJdpPYw6quSa9EiL2f/hm1lE03qG+IQ8L;
+Message-ID: <49F5F57D.3010700@damore.org>
+Date: Mon, 27 Apr 2009 11:12:13 -0700
+From: "Garrett D'Amore" <garrett@damore.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081201)
+MIME-Version: 1.0
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+CC: Robert Hancock <hancockrwd@gmail.com>, pierre@ossman.eu,
+       sdhci-devel@lists.ossman.eu,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Sdhci-devel] SDHCI driver runnining in aspire one, allows to
+ write to R/O SD cards
+References: <1240219764.13640.5.camel@maxim-laptop>	<49ED0865.9030603@gmail.com>  <1240524632.20871.0.camel@maxim-laptop> <1240759276.10972.0.camel@maxim-laptop>
+In-Reply-To: <1240759276.10972.0.camel@maxim-laptop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {2225:box374.bluehost.com:damoreor:damore.org} {sentby:smtp auth 192.18.43.225 authed with garrett+damore.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 26 Apr 2009 19:43:44 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+As an extra data point, my sdhost driver in OpenSolaris works fine on 
+the AA1.. it does see that the cards are locked, and refuses to allow 
+them to be mounted read/write.
 
-> On Sunday 26 April 2009, Angel wrote:
-> > On Sun, 26 Apr 2009 11:46:26 +0200 (CEST)
-> > 
-> > I've tested with kernel 2.6.29.1. The problem still persists. While everything works fine with 2.6.28 or lower, starting X (both 1.3 and 1.5) with DRI enabled on a 2.6.29 kernel results in a garbled screen and unresponsive keyboard.
-> 
-> Thanks for the update.
-> 
-> Can you also test 2.6.30-rc3, please?
+This leads me to believe that the original linux problem is one of two 
+things:
 
-Sure. Still broken in exactly the same way. (Garbled screen, non-working keyboard. System can still be ssh-ed into.)
+* either a bug in the linux code, or
+* busted circuit/hardware on a specific unit (i.e. a damaged unit)
 
+I believe that if the Linux code was buggy here, the problem would be 
+reproducible on all platforms, not just the AA1.  So my inclination, 
+barring independent confirmation, is that most likely there are one ore 
+more defective units out there.
 
--- 
-Jos van der Ende <seraph@xs4all.nl>
+Note that the AA1 also has buggy BIOS -- OpenSolaris can't "see" the 
+cards (registers aren't properly initialized) unless they are present 
+when the unit first powers up.
+
+    -- Garrett
+
+Maxim Levitsky wrote:
+> On Fri, 2009-04-24 at 01:10 +0300, Maxim Levitsky wrote:
+>   
+>> On Mon, 2009-04-20 at 17:42 -0600, Robert Hancock wrote:
+>>     
+>>> Maxim Levitsky wrote:
+>>>       
+>>>> Hi,
+>>>>
+>>>> I am an owner of aspire one, and it has a card reader.
+>>>> when I take a sd card, and pull down the protection tab, it still allows
+>>>> to write to the card (I tested with my main notebook that indeed, it did
+>>>> write there).
+>>>>
+>>>> My main notebook, acer aspire 5720, doesn't have this problem.
+>>>> Kernel version in use is 2.6.28 vanilla, but this did happen in former
+>>>> version as well.
+>>>>
+>>>>
+>>>> Attached lspci, on acer one.
+>>>>         
+>>> Do you know if it worked in any kernel version or OS? It's known that 
+>>> some SD card readers are too cheap to actually implement the 
+>>> write-protect detection.
+>>>       
+>> I'll test in windows, but in linux it never did work.
+>>
+>> Best regards,
+>> 	Maxim Levitsky
+>>
+>>     
+> Yep, works fine in windows.
+> Tested with and without lock tab.
+>
+>
+> Best regards,
+> 	Maxim Levitsky
+>
+> _______________________________________________
+> sdhci-devel mailing list
+> sdhci-devel@lists.ossman.eu
+> http://list.drzeus.cx/mailman/listinfo/sdhci-devel
+>   
+
