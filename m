@@ -1,63 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbZD0OhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbZD0Oi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756653AbZD0OhN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 10:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZD0Og6
+	id S1756875AbZD0Oi7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 10:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZD0Oiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 10:36:58 -0400
-Received: from mga05.intel.com ([192.55.52.89]:30573 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752952AbZD0Og6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 10:36:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,254,1239001200"; 
-   d="scan'208";a="685308687"
-Message-ID: <49F5C305.60807@linux.intel.com>
-Date: Mon, 27 Apr 2009 16:36:53 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 27 Apr 2009 10:38:50 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:49601 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751688AbZD0Oit (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 10:38:49 -0400
+Date: Mon, 27 Apr 2009 15:38:46 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 00/22] Cleanup and optimise the page allocator V7
+Message-ID: <20090427143845.GC912@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240819119.2567.884.camel@ymzhang>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Huang Ying <ying.huang@intel.com>, Robert Richter <robert.richter@amd.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Patenting kernel patches was Re: Re-implement MCE log ring buffer
- as per-CPU ring buffer
-References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com>  <20090422092259.GC18226@elte.hu> <20090422101600.GL3226@erda.amd.com>  <1240553210.6842.871.camel@yhuang-dev.sh.intel.com>  <20090424100943.GJ27264@erda.amd.com>  <alpine.DEB.2.00.0904240935140.24293@gandalf.stny.rr.com> <1240818596.6842.1001.camel@yhuang-dev.sh.intel.com> <alpine.DEB.2.00.0904271026140.24293@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0904271026140.24293@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1240819119.2567.884.camel@ymzhang>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
->>> I've put in for a patent application on the algorithm so I must wait till 
->>> it is processed before I can release the code.
->> When will it be merged by mainline kernel? Do you have a plan?
->>
->> We do have some scalability issues of current mcelog implementation, and
->> hopes that can be solved as soon as possible, perhaps for 2.6.31?
+On Mon, Apr 27, 2009 at 03:58:39PM +0800, Zhang, Yanmin wrote:
+> On Wed, 2009-04-22 at 14:53 +0100, Mel Gorman wrote:
+> > Here is V7 of the cleanup and optimisation of the page allocator and
+> > it should be ready for wider testing. Please consider a possibility for
+> > merging as a Pass 1 at making the page allocator faster. Other passes will
+> > occur later when this one has had a bit of exercise. This patchset is based
+> > on mmotm-2009-04-17 and I've tested it successfully on a small number of
+> > machines.
+> We ran some performance benchmarks against V7 patch on top of 2.6.30-rc3.
+> It seems some counters in kernel are incorrect after we run some ffsb (disk I/O benchmark)
+> and swap-cp (a simple swap memory testing by cp on tmpfs). Free memory is bigger than
+> total memory.
 > 
-> Yes, I plan on being able to post it before the 31 merge window opens. 
-> I'll ping the lawyer to expedite the process.
 
-Sorry, but this is quite ridiculous. Are you serious?
+oops. Can you try this patch please?
 
-Why would we want such a patented algorithm in the kernel? Normally the standard
-policy is to avoid patented algorithms (unless there's really no alternative like
-with RCU which is clearly not the case here) and I'm not aware of this policy haven't
-changed.
+==== CUT HERE ====
 
-And also holding up perfectly good uncontaminated patches for something
-patented seems especially wrong.
+Properly account for freed pages in free_pages_bulk() and when allocating high-order pages in buffered_rmqueue()
 
-I think we should move forward with a standard non patented ring
-buffer Ying was working on for this and avoid the patent mess as
-far as possible.
+free_pages_bulk() updates the number of free pages in the zone but it is
+assuming that the pages being freed are order-0. While this is currently
+always true, it's wrong to assume the order is 0. This patch fixes the
+problem.
 
--Andi (who wonders if he isn't in bizarro land now)
+buffered_rmqueue() is not updating NR_FREE_PAGES when allocating pages with
+__rmqueue(). This means that any high-order allocation will appear to increase
+the number of free pages leading to the situation where free pages appears to
+exceed available RAM. This patch accounts for those allocated pages properly.
 
+This is a candidate fix to the patch
+page-allocator-update-nr_free_pages-only-as-necessary.patch. It has yet to be
+verified as fixing a problem where the free pages count is getting corrupted.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ mm/page_alloc.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 3db5f57..dd69593 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -545,7 +545,7 @@ static void free_pages_bulk(struct zone *zone, int count,
+ 	zone_clear_flag(zone, ZONE_ALL_UNRECLAIMABLE);
+ 	zone->pages_scanned = 0;
+ 
+-	__mod_zone_page_state(zone, NR_FREE_PAGES, count);
++	__mod_zone_page_state(zone, NR_FREE_PAGES, count << order);
+ 	while (count--) {
+ 		struct page *page;
+ 
+@@ -1151,6 +1151,7 @@ again:
+ 	} else {
+ 		spin_lock_irqsave(&zone->lock, flags);
+ 		page = __rmqueue(zone, order, migratetype);
++		__mod_zone_page_state(zone, NR_FREE_PAGES, -(i << order));
+ 		spin_unlock(&zone->lock);
+ 		if (!page)
+ 			goto failed;
