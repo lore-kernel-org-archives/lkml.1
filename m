@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbZD0Mqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZD0MsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756711AbZD0Mqm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 08:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbZD0Mqd
+	id S1756227AbZD0MsT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 08:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbZD0MsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 08:46:33 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:47094 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755090AbZD0Mqc (ORCPT
+	Mon, 27 Apr 2009 08:48:04 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:63603 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751781AbZD0MsC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 08:46:32 -0400
-Date: Mon, 27 Apr 2009 14:48:39 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: monstr@monstr.eu, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org, john.williams@petalogix.com
+	Mon, 27 Apr 2009 08:48:02 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
 Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
-Message-ID: <20090427124839.GA9668@uranus.ravnborg.org>
-References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <200904271357.01681.arnd@arndb.de> <20090427121556.GA9469@uranus.ravnborg.org> <200904271437.09273.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Mon, 27 Apr 2009 14:47:40 +0200
+User-Agent: KMail/1.9.9
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       john.williams@petalogix.com
+References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <200904271442.24870.arnd@arndb.de> <49F5A8AB.4040707@monstr.eu>
+In-Reply-To: <49F5A8AB.4040707@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200904271437.09273.arnd@arndb.de>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200904271447.40984.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18S1a2vMyAq1Nv4MgXJbpDbbOWsxriEmD6dEo3
+ CR1pLp8b+AlzfXFxpKCh4OnLAQF0VBTA4nX6JRJhq5unU6eMY0
+ X4W4J0rnxMAFjhjrc/18A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 02:37:08PM +0200, Arnd Bergmann wrote:
-> On Monday 27 April 2009, Sam Ravnborg wrote:
-> > Why not use __u64/__u32 (and s32/s64 where appropriate)?
-> > Historical baggage or a techncal reason?
+On Monday 27 April 2009, Michal Simek wrote:
+> > st_size represents an off_t in user space, which is signed.
+> > Just over half the existing architectures use signed types
+> > for st_size, but for this (like Sam's suggestion for __u64),
+> > I don't think it matters either way.
 > 
-> Yes, purely historical reasons: all architectures currently
-> use the simple C types rather than __u32 in stat.h.
-> 
-> I don't think it makes a difference either way, so I'd
-> leave it like this unless you find a good reason for
-> changing.
+> OK. Is it mean that your structure is perfect? If yes,
+> I'll recompile toolchain and do some more tests. 
 
-The reason I had was:
-1) consistency. We say that we should use the width specific types in our interfaces
-2) readability. We expect to see the kernel types used - so we know then and does not
-                start to wonder why we did not use them here.
-3) documentation. The __{u,s}{32,64} documents the size better than "unsigned int" / long long" etc.
+Please wait for my full patches, which I am about to
+post. I hope to get to the stage where literally none
+of the ABI is defined in your own header files but
+it all gets into the generic parts. I hope to get this
+out within a few hours.
 
-But no technical atrong arguments.
-
-	Sam
+	Arnd <><
