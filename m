@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759023AbZD0Ow3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbZD0OwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759023AbZD0Ow3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 10:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758756AbZD0Oty
+	id S932234AbZD0OwA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 10:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758516AbZD0Os3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 10:49:54 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:38438 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757688AbZD0Otx (ORCPT
+	Mon, 27 Apr 2009 10:48:29 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:53367 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932148AbZD0Os1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 10:49:53 -0400
-Date: Mon, 27 Apr 2009 10:49:51 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andi Kleen <ak@linux.intel.com>
-cc: Huang Ying <ying.huang@intel.com>, Robert Richter <robert.richter@amd.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: Patenting kernel patches was Re: Re-implement MCE log ring buffer
- as per-CPU ring buffer
-In-Reply-To: <49F5C305.60807@linux.intel.com>
-Message-ID: <alpine.DEB.2.00.0904271047360.24293@gandalf.stny.rr.com>
-References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com>  <20090422092259.GC18226@elte.hu> <20090422101600.GL3226@erda.amd.com>  <1240553210.6842.871.camel@yhuang-dev.sh.intel.com>  <20090424100943.GJ27264@erda.amd.com> 
- <alpine.DEB.2.00.0904240935140.24293@gandalf.stny.rr.com> <1240818596.6842.1001.camel@yhuang-dev.sh.intel.com> <alpine.DEB.2.00.0904271026140.24293@gandalf.stny.rr.com> <49F5C305.60807@linux.intel.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 27 Apr 2009 10:48:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=CO3LpJGBOUl70/rxqi7dTXTR8QApi9D0SkbO6o9e6W60U1AEx1tmxm3cJyYzU+2HLU
+         56VODnkdEbCF/aoAou/8zy+a+QkaUL47w5h49vl6qYzQfvuVCA0K4ChgugOHpPH+yGTH
+         CGsm6vLa/YLQYaX8wvykvrMzmG7W70dfCs0rY=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <407d949e0904270635p7f87e3c3jcb1db0e61d4ed11e@mail.gmail.com>
+References: <40a4ed590904240309o66753264lf58f2910726f7efc@mail.gmail.com>
+	 <alpine.DEB.2.00.0904241011280.24151@chino.kir.corp.google.com>
+	 <40a4ed590904241113p4949a020y46e0641e77f6f4e3@mail.gmail.com>
+	 <alpine.DEB.2.00.0904241155550.26080@chino.kir.corp.google.com>
+	 <40a4ed590904241216u655300ddvaa4660e11ad2cffc@mail.gmail.com>
+	 <alpine.DEB.2.00.0904241224001.28589@chino.kir.corp.google.com>
+	 <40a4ed590904250132o63e715cbvaccf5aac82265cd@mail.gmail.com>
+	 <alpine.DEB.2.00.0904261252010.18988@chino.kir.corp.google.com>
+	 <407d949e0904270635p7f87e3c3jcb1db0e61d4ed11e@mail.gmail.com>
+Date: Mon, 27 Apr 2009 16:48:25 +0200
+Message-ID: <40a4ed590904270748x7630ce79rd1e1c82b8fabb38e@mail.gmail.com>
+Subject: Re: Kernel 2.6.29 runs out of memory and hangs.
+From: Zeno Davatz <zdavatz@gmail.com>
+To: Greg Stark <gsstark@mit.edu>
+Cc: David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
+       Hannes Wyss <hwyss@ywesee.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 27, 2009 at 3:35 PM, Greg Stark <gsstark@mit.edu> wrote:
+> On Sun, Apr 26, 2009 at 8:55 PM, David Rientjes <rientjes@google.com> wrote:
+>> There is work being done on a per-cgroup lowmem notifier which would allow
+>> userspace to poll() on a device file and be notified of low memory
+>> situations so that it can react on its own (like killing a low priority
+>> task, expanding a cpuset, increasing a memcontroller limit, etc.)
+>
+> Surely anything that important ought to be running with overcommit
+> disabled anyways.
 
-On Mon, 27 Apr 2009, Andi Kleen wrote:
-> > Yes, I plan on being able to post it before the 31 merge window opens. I'll
-> > ping the lawyer to expedite the process.
-> 
-> Sorry, but this is quite ridiculous. Are you serious?
+Ok, I tried this suggestion as well. I done:
 
-Yes.
+echo 2 > /proc/sys/vm/overcommit_memory
 
-> 
-> Why would we want such a patented algorithm in the kernel? Normally the
-> standard
-> policy is to avoid patented algorithms (unless there's really no alternative
-> like
-> with RCU which is clearly not the case here) and I'm not aware of this policy
-> haven't
-> changed.
-> 
-> And also holding up perfectly good uncontaminated patches for something
-> patented seems especially wrong.
-> 
-> I think we should move forward with a standard non patented ring
-> buffer Ying was working on for this and avoid the patent mess as
-> far as possible.
+echo 0 > /proc/sys/vm/overcommit_ratio (Note: our system does not have
+any swap, just 32 GB of memory).
 
-In the world where patents can destroy Open Source/Free Software, one of 
-the protections that Free Software can do is to file their own patents. 
-Thus fight fire with fire.
+Then I tried to run "htop" and got
 
-> 
-> -Andi (who wonders if he isn't in bizarro land now)
+bash: fork: Cannot allocate memory
 
-Welcome to bizarro land!
+I also tried it with
 
--- Steve
+echo 1 > /proc/sys/vm/overcommit_ratio
 
+Same result.
+
+Best
+Zeno
