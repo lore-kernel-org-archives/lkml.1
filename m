@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760536AbZD0WDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbZD0WHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760536AbZD0WDG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 18:03:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759063AbZD0WCu
+	id S1757322AbZD0WHZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 18:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbZD0WHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 18:02:50 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:33515 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760575AbZD0WCt convert rfc822-to-8bit (ORCPT
+	Mon, 27 Apr 2009 18:07:09 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:51132 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751288AbZD0WHH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 18:02:49 -0400
+	Mon, 27 Apr 2009 18:07:07 -0400
+Date: Mon, 27 Apr 2009 23:07:02 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Airlie <airlied@redhat.com>, DRI <dri-devel@lists.sourceforge.net>,
+       Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: [Bug #12765] i915 VT switch with AIGLX causes X lock up
+Message-ID: <20090427220702.GA31679@sucs.org>
+References: <tur5OtdUm3E.A.r2B.7oE9JB@chimera> <egHshlwQQFE.A.X4D.-qE9JB@chimera> <20090427094651.7cc09227@hobbes>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.44L0.0904271752090.18696-100000@netrider.rowland.org>
-References: <ac3eb2510904271407l7a480744s36d60025948aebd8@mail.gmail.com> 
-	<Pine.LNX.4.44L0.0904271752090.18696-100000@netrider.rowland.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Tue, 28 Apr 2009 00:02:32 +0200
-Message-ID: <ac3eb2510904271502k1c25ed6co31bcb3c22a28fa7c@mail.gmail.com>
-Subject: Re: usbutils 0.81 release
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>, USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090427094651.7cc09227@hobbes>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 23:54, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Mon, 27 Apr 2009, Kay Sievers wrote:
+On Mon, Apr 27, 2009 at 09:46:51AM -0700, Jesse Barnes wrote:
+> On Sun, 26 Apr 2009 11:46:26 +0200 (CEST)
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.28 and 2.6.29.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.28 and 2.6.29.  Please verify if it still
+> > should be listed and let me know (either way).
 
->> There is in most cases no point in keeping outdated spec files or
->> debian directories in upstream source packages. The best when updating
->> a package, is to start with the one that is in the source rpm of the
->> distro one uses.
->
-> But what if the distro doesn't ship that package at all?  Then it's
-> good to at least have a starting point that you can adapt to your own
-> needs.  (Although I don't know of any major distributions that doesn't
-> include usbutils...)
+The problem is still here in 2.6.29-rc3.
 
-Maybe add a link to a distro spec file in the README? So this gets
-updated automatically by the people who do the packaging? Like this:
-  http://cvs.fedora.redhat.com/viewvc/devel/usbutils/usbutils.spec?revision=HEAD
+> I think we had a workaround for this (attached), but it sounds like
+> Robert has tracked down the root cause (search for "Broken vblanks on
+> Intel" on dri-devel@lists.sourceforge.net).  Will try to get the fix
 
-Kay
+http://www.mail-archive.com/dri-devel@lists.sourceforge.net/msg39370.html
+seems to be it.
+
+> into the Intel driver soon.  Fortunately this doesn't seem to be biting
+> a lot of people (at least not that I've heard); I certainly have a hard
+> time reproducing it.
+
+The patch that was attached to Jesse's mail seems to resolve the
+problem...
+
+-- 
+Sitsofe | http://sucs.org/~sits/
