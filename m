@@ -1,80 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbZD0SzH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760046AbZD0Sze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759688AbZD0SzH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 14:55:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757667AbZD0Syx
+	id S1760046AbZD0Sze (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 14:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759675AbZD0SzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 14:54:53 -0400
-Received: from outbound-mail-25.bluehost.com ([69.89.21.20]:55362 "HELO
-	outbound-mail-25.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751638AbZD0Syw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 14:54:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Subject:Message-ID:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=hQtuVFMBJMOBYbaYuHCAOG7bgGF8xkPsOAgxex+DkPVKhavEpuMa6j982ojvUPP+2D0MoHkkRxKlr/FYFXTv6YQCMPXLGL0suRrNP2v8LdA8yoWDVploHXf9o9m54ReE;
-Date: Mon, 27 Apr 2009 11:54:47 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [git pull] PCI fixes
-Message-ID: <20090427115447.027b5a80@hobbes>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Mon, 27 Apr 2009 14:55:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41571 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759954AbZD0SzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 14:55:05 -0400
+Date: Mon, 27 Apr 2009 20:54:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
+       Evgeniy Polyakov <zbr@ioremap.net>, kaber@trash.net,
+       jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com, jengelh@medozas.de,
+       r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
+Message-ID: <20090427185423.GC23862@elte.hu>
+References: <20090423210938.1501507b@nehalam> <49F146FF.5050200@cosmosbay.com> <20090424091839.6e13ebec@nehalam> <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam> <49F4A6E3.7080102@cosmosbay.com> <20090426185646.GB29238@Krystal> <20090426145746.1184aeba@nehalam> <1240854297.7620.65.camel@twins> <20090427113010.5e3f1700@nehalam>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090427113010.5e3f1700@nehalam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit
-091069740304c979f957ceacec39c461d0192158: Linus Torvalds (1):
-        Linux 2.6.30-rc3
 
-are available in the git repository at:
+* Stephen Hemminger <shemminger@vyatta.com> wrote:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 for-linus
+> > non of the linux kernel locking primitives have this -- with the 
+> > possible exception of the cpu-hotplug lock.
+> > 
+> > What rwlock_t has, is reader bias to the point where you can 
+> > utterly starve writers, with the side effect that you can obtain 
+> > multiple read ownerships without causing a deadlock.
+> 
+> But what happens when this side effect disappears?
 
-Nothing major here; a few fixes from Yinghai (with attendant cleanups,
-hope that's ok; rather than rolling them into the original patch they
-came in piecemeal), and one suspend/resume fix from Yu (which hasn't
-actually bitten anyone afaik).
+Then well written code works, badly written code breaks.
 
-Thanks,
-Jesse
+> > [...]
+> >
+> > This is all common and well understood terminology, not 
+> > something Linus invented just to harras you with.
+> 
+> In Documentation/ ?  online ?  Where is the definition? The only 
+> reference I se is indirectly in DocBook/kernel-locking.tmpl.
 
-Matthew Wilcox (1):
-      x86/PCI: Move set_pci_bus_resources_arch_default into arch/x86
+Sure, see:
 
-Randy Dunlap (1):
-      docbooks: add/fix PCI kernel-doc
+    http://tinyurl.com/c6fakc
 
-Thomas Renninger (1):
-      PCI quirk: disable MSI on VIA VT3364 chipsets
+> > Generally speaking we do not condone recursive locking 
+> > strategies -- and afaik reiserfs (as per the BKL) and the 
+> > network code (as per abusing rwlock_t unfairness) are the only 
+> > offenders.
+> > 
+> > Like Linus stated, recursive locking is generally poor taste and 
+> > indicates you basically gave up on trying to find a proper 
+> > locking scheme. We should very much work towards getting rid of 
+> > these abberations instead of adding new ones.
+> 
+> The people complaining about naming never seem to be the ones 
+> providing workable suggestions or patches.
 
-Yinghai Lu (4):
-      x86/PCI: don't call e820_all_mapped with -1 in the mmconfig case
-      x86/PCI: set_pci_bus_resources_arch_default cleanups
-      PCI: cleanup debug output resources
-      x86/PCI: don't bother with root quirks if _CRS is used
+The thing is, while you now have named your locking primitive 
+correctly, you are still abusing it by using it recursively.
 
-Yu Zhao (1):
-      PCI: only save/restore existent registers in the PCIe capability
+So it's not 'just about naming'. You should not use read-locks as 
+recursive locks. It's poor code.
 
- Documentation/DocBook/kernel-api.tmpl |    6 ++-
- arch/x86/include/asm/topology.h       |    2 +-
- arch/x86/pci/amd_bus.c                |    6 ++-
- arch/x86/pci/common.c                 |    5 ++-
- arch/x86/pci/i386.c                   |    4 ++
- arch/x86/pci/mmconfig-shared.c        |    6 +-
- drivers/pci/access.c                  |    4 +-
- drivers/pci/htirq.c                   |    1 +
- drivers/pci/pci-sysfs.c               |   12 ++++--
- drivers/pci/pci.c                     |   70 ++++++++++++++++++++++++++-------
- drivers/pci/probe.c                   |    6 ---
- drivers/pci/quirks.c                  |    1 +
- drivers/pci/setup-bus.c               |    6 ++-
- drivers/pci/slot.c                    |    4 +-
- include/linux/pci_regs.h              |    1 +
- 15 files changed, 97 insertions(+), 37 deletions(-)
+	Ingo
