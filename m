@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbZD0Olw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757306AbZD0OmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757207AbZD0Olw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 10:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757168AbZD0OlS
+	id S1757306AbZD0OmS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 10:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757195AbZD0OlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 10:41:18 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:62929 "EHLO
+	Mon, 27 Apr 2009 10:41:20 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:63706 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757078AbZD0OlR (ORCPT
+	with ESMTP id S1756657AbZD0OlR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 27 Apr 2009 10:41:17 -0400
-Message-Id: <20090427143737.584097988@arndb.de>
+Message-Id: <20090427143737.921923754@arndb.de>
 From: <arnd@arndb.de>
 To: unlisted-recipients:; (no To-header on input)
 Date: Mon, 27 Apr 2009 10:41:17 -0400
@@ -21,7 +21,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 >From arnd@arndb.de Mon Apr 27 16:28:40 2009
 References: <20090427142010.587518220@arndb.de>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Apr 2009 16:20:16 +0200
+Date: Mon, 27 Apr 2009 16:20:18 +0200
 From: arnd@arndb.de
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com,
@@ -31,177 +31,264 @@ Cc: john.williams@petalogix.com,
  liqin.chen@sunplusct.com,
  Sam Ravnborg <sam@ravnborg.org>,
  Remis Lima Baima <remis.developer@googlemail.com>
-Subject: [RFC 06/17] asm-generic: add a complete signal.h
-Content-Disposition: inline; filename=add-generic-signal-h.patch
-X-Provags-ID: V01U2FsdGVkX1+9fyV5xiB/uv57e+JOHz1p/SO7dXImpty2qjk
- qJlT1Ill8RsfbwF39tmrVDe2R5QILPHgAXX1/8KQ3m3F7IAuZ2
- mpIv26Pn+3mqK9UXgjM9g==
+Subject: [RFC 08/17] asm-generic: provide generic sysv ipc headers
+Content-Disposition: inline; filename=0004-asm-generic-provide-generic-sysv-ipc-headers.patch
+X-Provags-ID: V01U2FsdGVkX1+Kl7DmXJTbtEAT0uuCsHRVKXdMrzvwlp5SVB1
+ HvmO/3P/3uaWUtFuWtB7Nr//7R5Fpt2irDSbCcvoDNO8/QZbcz
+ 6kBqKp8zAhX/4qGIsHSzA==
 
-There used to be an asm-generic/signal.h, but not one that
-could be used out of the box. This renames the existing file
-to asm-generic/signal-defs.h and adds a new asm-generic/signal.h
-with common definitions for sigaction and sigaltstack, but
-not for the old-style signal handlers.
+The ipc64 data structures were originally meant to
+be architecture specific so that each architecture
+could add their own optimizations for padding.
 
-New architectures should only implement rt-signals and use this
-generic header.
+In the end, most of them just copied the x86 version,
+and most got that wrong. UClibc expects the x86 anyway,
+so we might just declare that the default and get
+rid of the extra copies.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Remis Lima Baima <remis.developer@googlemail.com>
 ---
----
- include/asm-generic/Kbuild   |    1 	1 +	0 -	0 !
- include/asm-generic/signal.h |  131 	131 +	0 -	0 !
- 2 files changed, 132 insertions(+)
+ include/asm-generic/Kbuild     |    5 	5 +	0 -	0 !
+ include/asm-generic/ipcbuf.h   |   33 	33 +	0 -	0 !
+ include/asm-generic/msgbuf.h   |   47 	47 +	0 -	0 !
+ include/asm-generic/sembuf.h   |   38 	38 +	0 -	0 !
+ include/asm-generic/shmbuf.h   |   59 	59 +	0 -	0 !
+ include/asm-generic/shmparam.h |    6 	6 +	0 -	0 !
+ 6 files changed, 188 insertions(+)
+ create mode 100644 include/asm-generic/ipcbuf.h
+ create mode 100644 include/asm-generic/msgbuf.h
+ create mode 100644 include/asm-generic/sembuf.h
+ create mode 100644 include/asm-generic/shmbuf.h
+ create mode 100644 include/asm-generic/shmparam.h
 
-Index: linux-2.6/include/asm-generic/signal.h
-===================================================================
---- /dev/null
-+++ linux-2.6/include/asm-generic/signal.h
-@@ -0,0 +1,131 @@
-+#ifndef __ASM_GENERIC_SIGNAL_H
-+#define __ASM_GENERIC_SIGNAL_H
-+
-+#include <linux/types.h>
-+
-+#define _NSIG		64
-+#define _NSIG_BPW	__BITS_PER_LONG
-+#define _NSIG_WORDS	(_NSIG / _NSIG_BPW)
-+
-+#define SIGHUP		 1
-+#define SIGINT		 2
-+#define SIGQUIT		 3
-+#define SIGILL		 4
-+#define SIGTRAP		 5
-+#define SIGABRT		 6
-+#define SIGIOT		 6
-+#define SIGBUS		 7
-+#define SIGFPE		 8
-+#define SIGKILL		 9
-+#define SIGUSR1		10
-+#define SIGSEGV		11
-+#define SIGUSR2		12
-+#define SIGPIPE		13
-+#define SIGALRM		14
-+#define SIGTERM		15
-+#define SIGSTKFLT	16
-+#define SIGCHLD		17
-+#define SIGCONT		18
-+#define SIGSTOP		19
-+#define SIGTSTP		20
-+#define SIGTTIN		21
-+#define SIGTTOU		22
-+#define SIGURG		23
-+#define SIGXCPU		24
-+#define SIGXFSZ		25
-+#define SIGVTALRM	26
-+#define SIGPROF		27
-+#define SIGWINCH	28
-+#define SIGIO		29
-+#define SIGPOLL		SIGIO
-+/*
-+#define SIGLOST		29
-+*/
-+#define SIGPWR		30
-+#define SIGSYS		31
-+#define	SIGUNUSED	31
-+
-+/* These should not be considered constants from userland.  */
-+#define SIGRTMIN	32
-+#ifndef SIGRTMAX
-+#define SIGRTMAX	_NSIG
-+#endif
-+
-+/*
-+ * SA_FLAGS values:
-+ *
-+ * SA_ONSTACK indicates that a registered stack_t will be used.
-+ * SA_RESTART flag to get restarting signals (which were the default long ago)
-+ * SA_NOCLDSTOP flag to turn off SIGCHLD when children stop.
-+ * SA_RESETHAND clears the handler when the signal is delivered.
-+ * SA_NOCLDWAIT flag on SIGCHLD to inhibit zombies.
-+ * SA_NODEFER prevents the current signal from being masked in the handler.
-+ *
-+ * SA_ONESHOT and SA_NOMASK are the historical Linux names for the Single
-+ * Unix names RESETHAND and NODEFER respectively.
-+ */
-+#define SA_NOCLDSTOP	0x00000001
-+#define SA_NOCLDWAIT	0x00000002
-+#define SA_SIGINFO	0x00000004
-+#define SA_ONSTACK	0x08000000
-+#define SA_RESTART	0x10000000
-+#define SA_NODEFER	0x40000000
-+#define SA_RESETHAND	0x80000000
-+
-+#define SA_NOMASK	SA_NODEFER
-+#define SA_ONESHOT	SA_RESETHAND
-+
-+/*
-+ * New architectures should not define the obsolete
-+ *	SA_RESTORER	0x04000000
-+ */
-+
-+/*
-+ * sigaltstack controls
-+ */
-+#define SS_ONSTACK	1
-+#define SS_DISABLE	2
-+
-+#define MINSIGSTKSZ	2048
-+#define SIGSTKSZ	8192
-+
-+#ifndef __ASSEMBLY__
-+typedef struct {
-+	unsigned long sig[_NSIG_WORDS];
-+} sigset_t;
-+
-+/* not actually used, but required for linux/syscalls.h */
-+typedef unsigned long old_sigset_t;
-+
-+#include <asm-generic/signal-defs.h>
-+
-+struct sigaction {
-+	__sighandler_t sa_handler;
-+	unsigned long sa_flags;
-+#ifdef SA_RESTORER
-+	__sigrestore_t sa_restorer;
-+#endif
-+	sigset_t sa_mask;		/* mask last for extensibility */
-+};
-+
-+struct k_sigaction {
-+	struct sigaction sa;
-+};
-+
-+typedef struct sigaltstack {
-+	void __user *ss_sp;
-+	int ss_flags;
-+	size_t ss_size;
-+} stack_t;
-+
-+#ifdef __KERNEL__
-+
-+#include <asm/sigcontext.h>
-+#undef __HAVE_ARCH_SIG_BITOPS
-+
-+#define ptrace_signal_deliver(regs, cookie) do { } while (0)
-+
-+#endif /* __KERNEL__ */
-+#endif /* __ASSEMBLY__ */
-+
-+#endif /* _ASM_GENERIC_SIGNAL_H */
 Index: linux-2.6/include/asm-generic/Kbuild
 ===================================================================
 --- linux-2.6.orig/include/asm-generic/Kbuild
 +++ linux-2.6/include/asm-generic/Kbuild
-@@ -5,6 +5,7 @@ header-y += ioctl.h
+@@ -2,9 +2,14 @@ header-y += errno-base.h
+ header-y += errno.h
+ header-y += fcntl.h
+ header-y += ioctl.h
++header-y += ipcbuf.h
  header-y += mman-common.h
+ header-y += mman.h
++header-y += msgbuf.h
  header-y += poll.h
++header-y += sembuf.h
++header-y += shmbuf.h
++header-y += shmparam.h
  header-y += signal-defs.h
-+header-y += signal.h
+ header-y += signal.h
  header-y += statfs.h
- header-y += termios.h
- 
+Index: linux-2.6/include/asm-generic/ipcbuf.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/asm-generic/ipcbuf.h
+@@ -0,0 +1,33 @@
++#ifndef __ASM_GENERIC_IPCBUF_H
++#define __ASM_GENERIC_IPCBUF_H
++
++/*
++ * The generic ipc64_perm structure:
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
++ *
++ * ipc64_perm was originally meant to be architecture specific, but
++ * everyone just ended up making identical copies without specific
++ * optimizations, so we may just as well all use the same one.
++ *
++ * Pad space is left for:
++ * - 32-bit mode_t on architectures that only had 16 bit
++ * - 32-bit seq
++ * - 2 miscellaneous 32-bit values
++ */
++
++struct ipc64_perm {
++	__kernel_key_t		key;
++	__kernel_uid32_t	uid;
++	__kernel_gid32_t	gid;
++	__kernel_uid32_t	cuid;
++	__kernel_gid32_t	cgid;
++	__kernel_mode_t		mode;
++	unsigned short		__pad1;
++	unsigned short		seq;
++	unsigned short		__pad2;
++	unsigned long		__unused1;
++	unsigned long		__unused2;
++};
++
++#endif /* __ASM_GENERIC_IPCBUF_H */
+Index: linux-2.6/include/asm-generic/msgbuf.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/asm-generic/msgbuf.h
+@@ -0,0 +1,47 @@
++#ifndef __ASM_GENERIC_MSGBUF_H
++#define __ASM_GENERIC_MSGBUF_H
++
++#include <asm/bitsperlong.h>
++/*
++ * generic msqid64_ds structure.
++ *
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
++ *
++ * msqid64_ds was originally meant to be architecture specific, but
++ * everyone just ended up making identical copies without specific
++ * optimizations, so we may just as well all use the same one.
++ *
++ * 64 bit architectures typically define a 64 bit __kernel_time_t,
++ * so they do not need the first three padding words.
++ * On big-endian systems, the padding is in the wrong place.
++ *
++ * Pad space is left for:
++ * - 64-bit time_t to solve y2038 problem
++ * - 2 miscellaneous 32-bit values
++ */
++
++struct msqid64_ds {
++	struct ipc64_perm msg_perm;
++	__kernel_time_t msg_stime;	/* last msgsnd time */
++#if __BITS_PER_LONG != 64
++	unsigned long	__unused1;
++#endif
++	__kernel_time_t msg_rtime;	/* last msgrcv time */
++#if __BITS_PER_LONG != 64
++	unsigned long	__unused2;
++#endif
++	__kernel_time_t msg_ctime;	/* last change time */
++#if __BITS_PER_LONG != 64
++	unsigned long	__unused3;
++#endif
++	unsigned long  msg_cbytes;	/* current number of bytes on queue */
++	unsigned long  msg_qnum;	/* number of messages in queue */
++	unsigned long  msg_qbytes;	/* max number of bytes on queue */
++	__kernel_pid_t msg_lspid;	/* pid of last msgsnd */
++	__kernel_pid_t msg_lrpid;	/* last receive pid */
++	unsigned long  __unused4;
++	unsigned long  __unused5;
++};
++
++#endif /* __ASM_GENERIC_MSGBUF_H */
+Index: linux-2.6/include/asm-generic/sembuf.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/asm-generic/sembuf.h
+@@ -0,0 +1,38 @@
++#ifndef __ASM_GENERIC_SEMBUF_H
++#define __ASM_GENERIC_SEMBUF_H
++
++#include <asm/bitsperlong.h>
++
++/*
++ * The semid64_ds structure for x86 architecture.
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
++ *
++ * semid64_ds was originally meant to be architecture specific, but
++ * everyone just ended up making identical copies without specific
++ * optimizations, so we may just as well all use the same one.
++ *
++ * 64 bit architectures typically define a 64 bit __kernel_time_t,
++ * so they do not need the first two padding words.
++ * On big-endian systems, the padding is in the wrong place.
++ *
++ * Pad space is left for:
++ * - 64-bit time_t to solve y2038 problem
++ * - 2 miscellaneous 32-bit values
++ */
++struct semid64_ds {
++	struct ipc64_perm sem_perm;	/* permissions .. see ipc.h */
++	__kernel_time_t	sem_otime;	/* last semop time */
++#if __BITS_PER_LONG != 64
++	unsigned long	__unused1;
++#endif
++	__kernel_time_t	sem_ctime;	/* last change time */
++#if __BITS_PER_LONG != 64
++	unsigned long	__unused2;
++#endif
++	unsigned long	sem_nsems;	/* no. of semaphores in array */
++	unsigned long	__unused3;
++	unsigned long	__unused4;
++};
++
++#endif /* __ASM_GENERIC_SEMBUF_H */
+Index: linux-2.6/include/asm-generic/shmbuf.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/asm-generic/shmbuf.h
+@@ -0,0 +1,59 @@
++#ifndef __ASM_GENERIC_SHMBUF_H
++#define __ASM_GENERIC_SHMBUF_H
++
++#include <asm/bitsperlong.h>
++
++/*
++ * The shmid64_ds structure for x86 architecture.
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
++ *
++ * shmid64_ds was originally meant to be architecture specific, but
++ * everyone just ended up making identical copies without specific
++ * optimizations, so we may just as well all use the same one.
++ *
++ * 64 bit architectures typically define a 64 bit __kernel_time_t,
++ * so they do not need the first two padding words.
++ * On big-endian systems, the padding is in the wrong place.
++ *
++ *
++ * Pad space is left for:
++ * - 64-bit time_t to solve y2038 problem
++ * - 2 miscellaneous 32-bit values
++ */
++
++struct shmid64_ds {
++	struct ipc64_perm	shm_perm;	/* operation perms */
++	size_t			shm_segsz;	/* size of segment (bytes) */
++	__kernel_time_t		shm_atime;	/* last attach time */
++#if __BITS_PER_LONG != 64
++	unsigned long		__unused1;
++#endif
++	__kernel_time_t		shm_dtime;	/* last detach time */
++#if __BITS_PER_LONG != 64
++	unsigned long		__unused2;
++#endif
++	__kernel_time_t		shm_ctime;	/* last change time */
++#if __BITS_PER_LONG != 64
++	unsigned long		__unused3;
++#endif
++	__kernel_pid_t		shm_cpid;	/* pid of creator */
++	__kernel_pid_t		shm_lpid;	/* pid of last operator */
++	unsigned long		shm_nattch;	/* no. of current attaches */
++	unsigned long		__unused4;
++	unsigned long		__unused5;
++};
++
++struct shminfo64 {
++	unsigned long	shmmax;
++	unsigned long	shmmin;
++	unsigned long	shmmni;
++	unsigned long	shmseg;
++	unsigned long	shmall;
++	unsigned long	__unused1;
++	unsigned long	__unused2;
++	unsigned long	__unused3;
++	unsigned long	__unused4;
++};
++
++#endif /* __ASM_GENERIC_SHMBUF_H */
+Index: linux-2.6/include/asm-generic/shmparam.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/asm-generic/shmparam.h
+@@ -0,0 +1,6 @@
++#ifndef __ASM_GENERIC_SHMPARAM_H
++#define __ASM_GENERIC_SHMPARAM_H
++
++#define SHMLBA PAGE_SIZE	 /* attach addr a multiple of this */
++
++#endif /* _ASM_GENERIC_SHMPARAM_H */
 
 -- 
 
