@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760566AbZD0V46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759756AbZD0V4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760566AbZD0V46 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 17:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbZD0Vys
+	id S1759756AbZD0V4l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 17:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758223AbZD0Vyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 17:54:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41441 "EHLO mx2.redhat.com"
+	Mon, 27 Apr 2009 17:54:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41440 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758171AbZD0Vyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 17:54:46 -0400
+	id S1758013AbZD0Vyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 17:54:43 -0400
 From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH 07/12] fsnotify: include pathnames with entries when possible
+Subject: [PATCH 05/12] dnotify: reimplement dnotify using fsnotify
 To: linux-kernel@vger.kernel.org
 Cc: viro@zeniv.linux.org.uk, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
        sfr@canb.auug.org.au, john@johnmccutchan.com, rlove@rlove.org,
        akpm@linux-foundation.org
-Date: Mon, 27 Apr 2009 17:53:39 -0400
-Message-ID: <20090427215339.14161.63269.stgit@paris.rdu.redhat.com>
+Date: Mon, 27 Apr 2009 17:53:28 -0400
+Message-ID: <20090427215328.14161.85505.stgit@paris.rdu.redhat.com>
 In-Reply-To: <20090427215305.14161.33354.stgit@paris.rdu.redhat.com>
 References: <20090427215305.14161.33354.stgit@paris.rdu.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -27,272 +27,810 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When inotify wants to send events to a directory about a child it includes
-the name of the original file.  This patch collects that filename and makes
-it available for notification.
+Reimplement dnotify using fsnotify.
 
 Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
 
- fs/notify/fsnotify.c             |    7 ++++---
- fs/notify/notification.c         |   16 ++++++++++++++-
- include/linux/fsnotify.h         |   40 +++++++++++++++++++++++++-------------
- include/linux/fsnotify_backend.h |   11 ++++++++--
- 4 files changed, 53 insertions(+), 21 deletions(-)
+ MAINTAINERS                      |    2 
+ fs/notify/dnotify/Kconfig        |    1 
+ fs/notify/dnotify/dnotify.c      |  469 +++++++++++++++++++++++++++++---------
+ include/linux/dnotify.h          |   29 +-
+ include/linux/fs.h               |    5 
+ include/linux/fsnotify.h         |   68 ++----
+ include/linux/fsnotify_backend.h |    3 
+ 7 files changed, 397 insertions(+), 180 deletions(-)
 
-diff --git a/fs/notify/fsnotify.c b/fs/notify/fsnotify.c
-index 2dbab3c..d73f9de 100644
---- a/fs/notify/fsnotify.c
-+++ b/fs/notify/fsnotify.c
-@@ -114,7 +114,8 @@ void __fsnotify_parent(struct dentry *dentry, __u32 mask)
- 		 * specifies these are events which came from a child. */
- 		mask |= FS_EVENT_ON_CHILD;
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 9def331..bba539d 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1792,6 +1792,8 @@ F:	drivers/char/digi*
+ DIRECTORY NOTIFICATION (DNOTIFY)
+ P:	Stephen Rothwell
+ M:	sfr@canb.auug.org.au
++P:	Eric Paris
++M:	eparis@parisplace.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
+ F:	Documentation/filesystems/dnotify.txt
+diff --git a/fs/notify/dnotify/Kconfig b/fs/notify/dnotify/Kconfig
+index 26adf5d..904ff8d 100644
+--- a/fs/notify/dnotify/Kconfig
++++ b/fs/notify/dnotify/Kconfig
+@@ -1,5 +1,6 @@
+ config DNOTIFY
+ 	bool "Dnotify support"
++	depends on FSNOTIFY
+ 	default y
+ 	help
+ 	  Dnotify is a directory-based per-fd file change notification system
+diff --git a/fs/notify/dnotify/dnotify.c b/fs/notify/dnotify/dnotify.c
+index b0aa2cd..d9d80f5 100644
+--- a/fs/notify/dnotify/dnotify.c
++++ b/fs/notify/dnotify/dnotify.c
+@@ -3,6 +3,9 @@
+  *
+  * Copyright (C) 2000,2001,2002 Stephen Rothwell
+  *
++ * Copyright (C) 2009 Eric Paris <Red Hat Inc>
++ * dnotify was largly rewritten to use the new fsnotify infrastructure
++ *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms of the GNU General Public License as published by the
+  * Free Software Foundation; either version 2, or (at your option) any
+@@ -21,24 +24,178 @@
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
+ #include <linux/fdtable.h>
++#include <linux/fsnotify_backend.h>
  
--		fsnotify(p_inode, mask, dentry->d_inode, FSNOTIFY_EVENT_INODE);
-+		fsnotify(p_inode, mask, dentry->d_inode, FSNOTIFY_EVENT_INODE,
-+			 dentry->d_name.name);
- 		dput(parent);
- 	}
+ int dir_notify_enable __read_mostly = 1;
  
-@@ -131,7 +132,7 @@ EXPORT_SYMBOL_GPL(__fsnotify_parent);
-  * out to all of the registered fsnotify_group.  Those groups can then use the
-  * notification event in whatever means they feel necessary.
-  */
--void fsnotify(struct inode *to_tell, __u32 mask, void *data, int data_is)
-+void fsnotify(struct inode *to_tell, __u32 mask, void *data, int data_is, const char *file_name)
- {
- 	struct fsnotify_group *group;
- 	struct fsnotify_event *event = NULL;
-@@ -156,7 +157,7 @@ void fsnotify(struct inode *to_tell, __u32 mask, void *data, int data_is)
- 			if (!group->ops->should_send_event(group, to_tell, mask))
- 				continue;
- 			if (!event) {
--				event = fsnotify_create_event(to_tell, mask, data, data_is);
-+				event = fsnotify_create_event(to_tell, mask, data, data_is, file_name);
- 				/* shit, we OOM'd and now we can't tell, maybe
- 				 * someday someone else will want to do something
- 				 * here */
-diff --git a/fs/notify/notification.c b/fs/notify/notification.c
-index dddecc7..c69b18b 100644
---- a/fs/notify/notification.c
-+++ b/fs/notify/notification.c
-@@ -78,6 +78,7 @@ void fsnotify_put_event(struct fsnotify_event *event)
- 		if (event->data_type == FSNOTIFY_EVENT_PATH)
- 			path_put(&event->path);
- 
-+		kfree(event->file_name);
- 		kmem_cache_free(fsnotify_event_cachep, event);
- 	}
- }
-@@ -262,6 +263,9 @@ static void initialize_event(struct fsnotify_event *event)
- 	event->data_type = FSNOTIFY_EVENT_NONE;
- 
- 	event->to_tell = NULL;
+-static struct kmem_cache *dn_cache __read_mostly;
++static struct kmem_cache *dnotify_struct_cache __read_mostly;
++static struct kmem_cache *dnotify_mark_entry_cache __read_mostly;
++static struct fsnotify_group *dnotify_group __read_mostly;
++static DEFINE_MUTEX(dnotify_mark_mutex);
 +
-+	event->file_name = NULL;
-+	event->name_len = 0;
++/*
++ * dnotify will attach one of these to each inode (i_fsnotify_mark_entries) which
++ * is being watched by dnotify.  If multiple userspace applications are watching
++ * the same directory with dnotify their information is chained in dn
++ */
++struct dnotify_mark_entry {
++	struct fsnotify_mark_entry fsn_entry;
++	struct dnotify_struct *dn;
++};
+ 
+-static void redo_inode_mask(struct inode *inode)
++/*
++ * When a process starts or stops watching an inode the set of events which
++ * dnotify cares about for that inode may change.  This function runs the
++ * list of everything receiving dnotify events about this directory and calculates
++ * the set of all those events.  After it updates what dnotify is interested in
++ * it calls the fsnotify function so it can update the set of all events relevant
++ * to this inode.
++ */
++static void dnotify_recalc_inode_mask(struct fsnotify_mark_entry *entry)
+ {
+-	unsigned long new_mask;
++	__u32 new_mask, old_mask;
+ 	struct dnotify_struct *dn;
++	struct dnotify_mark_entry *dnentry  = container_of(entry,
++							   struct dnotify_mark_entry,
++							   fsn_entry);
++
++	assert_spin_locked(&entry->lock);
+ 
++	old_mask = entry->mask;
+ 	new_mask = 0;
+-	for (dn = inode->i_dnotify; dn != NULL; dn = dn->dn_next)
+-		new_mask |= dn->dn_mask & ~DN_MULTISHOT;
+-	inode->i_dnotify_mask = new_mask;
++	for (dn = dnentry->dn; dn != NULL; dn = dn->dn_next)
++		new_mask |= (dn->dn_mask & ~FS_DN_MULTISHOT);
++	entry->mask = new_mask;
++
++	if (old_mask == new_mask)
++		return;
++
++	if (entry->inode)
++		fsnotify_recalc_inode_mask(entry->inode);
  }
  
- /*
-@@ -274,9 +278,10 @@ static void initialize_event(struct fsnotify_event *event)
-  * @mask what actually happened.
-  * @data pointer to the object which was actually affected
-  * @data_type flag indication if the data is a file, path, inode, nothing...
-+ * @name the filename, if available
-  */
- struct fsnotify_event *fsnotify_create_event(struct inode *to_tell, __u32 mask,
--					     void *data, int data_type)
-+					     void *data, int data_type, const char *name)
- {
- 	struct fsnotify_event *event;
- 
-@@ -285,6 +290,15 @@ struct fsnotify_event *fsnotify_create_event(struct inode *to_tell, __u32 mask,
- 		return NULL;
- 
- 	initialize_event(event);
++/*
++ * Mains fsnotify call where events are delivered to dnotify.
++ * Find the dnotify mark on the relevant inode, run the list of dnotify structs
++ * on that mark and determine which of them has expressed interest in receiving
++ * events of this type.  When found send the correct process and signal and
++ * destroy the dnotify struct if it was not registered to receive multiple
++ * events.
++ */
++static int dnotify_handle_event(struct fsnotify_group *group,
++				struct fsnotify_event *event)
++{
++	struct fsnotify_mark_entry *entry = NULL;
++	struct dnotify_mark_entry *dnentry;
++	struct inode *to_tell;
++	struct dnotify_struct *dn;
++	struct dnotify_struct **prev;
++	struct fown_struct *fown;
 +
-+	if (name) {
-+		event->file_name = kstrdup(name, GFP_KERNEL);
-+		if (!event->file_name) {
-+			kmem_cache_free(fsnotify_event_cachep, event);
-+			return NULL;
++	to_tell = event->to_tell;
++
++	spin_lock(&to_tell->i_lock);
++	entry = fsnotify_find_mark_entry(group, to_tell);
++	spin_unlock(&to_tell->i_lock);
++
++	/* unlikely since we alreay passed dnotify_should_send_event() */
++	if (unlikely(!entry))
++		return 0;
++	dnentry = container_of(entry, struct dnotify_mark_entry, fsn_entry);
++
++	spin_lock(&entry->lock);
++	prev = &dnentry->dn;
++	while ((dn = *prev) != NULL) {
++		if ((dn->dn_mask & event->mask) == 0) {
++			prev = &dn->dn_next;
++			continue;
 +		}
-+		event->name_len = strlen(event->file_name);
++		fown = &dn->dn_filp->f_owner;
++		send_sigio(fown, dn->dn_fd, POLL_MSG);
++		if (dn->dn_mask & FS_DN_MULTISHOT)
++			prev = &dn->dn_next;
++		else {
++			*prev = dn->dn_next;
++			kmem_cache_free(dnotify_struct_cache, dn);
++			dnotify_recalc_inode_mask(entry);
++		}
 +	}
- 	event->to_tell = to_tell;
- 
- 	switch (data_type) {
-diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
-index 3ecd033..883ead4 100644
---- a/include/linux/fsnotify.h
-+++ b/include/linux/fsnotify.h
-@@ -58,7 +58,19 @@ static inline void fsnotify_link_count(struct inode *inode)
- {
- 	inotify_inode_queue_event(inode, IN_ATTRIB, 0, NULL, NULL);
- 
--	fsnotify(inode, FS_ATTRIB, inode, FSNOTIFY_EVENT_INODE);
-+	fsnotify(inode, FS_ATTRIB, inode, FSNOTIFY_EVENT_INODE, NULL);
++
++	spin_unlock(&entry->lock);
++	fsnotify_put_mark(entry);
++
++	return 0;
 +}
 +
 +/*
-+ * fsnotify_inode_remove - an inode is going away
++ * Given an inode and mask determine if dnotify would be interested in sending
++ * userspace notification for that pair.
 + */
-+static inline void fsnotify_inode_remove(struct inode *inode)
++static bool dnotify_should_send_event(struct fsnotify_group *group,
++				      struct inode *inode, __u32 mask)
 +{
-+	inotify_inode_queue_event(inode, IN_DELETE_SELF, 0, NULL, NULL);
-+	inotify_inode_is_dead(inode);
++	struct fsnotify_mark_entry *entry;
++	bool send;
 +
-+	fsnotify(inode, FS_DELETE_SELF, inode, FSNOTIFY_EVENT_INODE, NULL);
-+	__fsnotify_inode_delete(inode);
- }
- 
- /*
-@@ -91,8 +103,8 @@ static inline void fsnotify_move(struct inode *old_dir, struct inode *new_dir,
- 	inotify_inode_queue_event(new_dir, IN_MOVED_TO|isdir, cookie, new_name,
- 				  source);
- 
--	fsnotify(old_dir, old_dir_mask, old_dir, FSNOTIFY_EVENT_INODE);
--	fsnotify(new_dir, new_dir_mask, new_dir, FSNOTIFY_EVENT_INODE);
-+	fsnotify(old_dir, old_dir_mask, old_dir, FSNOTIFY_EVENT_INODE, old_name);
-+	fsnotify(new_dir, new_dir_mask, new_dir, FSNOTIFY_EVENT_INODE, new_name);
- 
- 	if (target) {
- 		inotify_inode_queue_event(target, IN_DELETE_SELF, 0, NULL, NULL);
-@@ -104,7 +116,7 @@ static inline void fsnotify_move(struct inode *old_dir, struct inode *new_dir,
- 
- 	if (source) {
- 		inotify_inode_queue_event(source, IN_MOVE_SELF, 0, NULL, NULL);
--		fsnotify(source, FS_MOVE_SELF, moved->d_inode, FSNOTIFY_EVENT_INODE);
-+		fsnotify(source, FS_MOVE_SELF, moved->d_inode, FSNOTIFY_EVENT_INODE, NULL);
++	/* !dir_notify_enable should never get here, don't waste time checking
++	if (!dir_notify_enable)
++		return 0; */
++
++	/* not a dir, dnotify doesn't care */
++	if (!S_ISDIR(inode->i_mode))
++		return false;
++
++	spin_lock(&inode->i_lock);
++	entry = fsnotify_find_mark_entry(group, inode);
++	spin_unlock(&inode->i_lock);
++
++	/* no mark means no dnotify watch */
++	if (!entry)
++		return false;
++
++	spin_lock(&entry->lock);
++	send = (mask & entry->mask) ? true : false;
++	spin_unlock(&entry->lock);
++	fsnotify_put_mark(entry); /* matches fsnotify_find_mark_entry */
++
++	return send;
++}
++
++static void dnotify_freeing_mark(struct fsnotify_mark_entry *entry,
++				 struct fsnotify_group *group)
++{
++	/* dnotify doesn't care than an inode is on the way out */
++}
++
++static void dnotify_free_mark(struct fsnotify_mark_entry *entry)
++{
++	struct dnotify_mark_entry *dnentry = container_of(entry,
++							  struct dnotify_mark_entry,
++							  fsn_entry);
++
++	BUG_ON(dnentry->dn);
++
++	kmem_cache_free(dnotify_mark_entry_cache, dnentry);
++}
++
++static struct fsnotify_ops dnotify_fsnotify_ops = {
++	.handle_event = dnotify_handle_event,
++	.should_send_event = dnotify_should_send_event,
++	.free_group_priv = NULL,
++	.freeing_mark = dnotify_freeing_mark,
++};
++
++/*
++ * Called every time a file is closed.  Looks first for a dnotify mark on the
++ * inode.  If one is found run all of the ->dn entries attached to that
++ * mark for one relevant to this process closing the file and remove that
++ * dnotify_struct.  If that was the last dnotify_struct also remove the
++ * fsnotify_mark_entry.
++ */
+ void dnotify_flush(struct file *filp, fl_owner_t id)
+ {
++	struct fsnotify_mark_entry *entry;
++	struct dnotify_mark_entry *dnentry;
+ 	struct dnotify_struct *dn;
+ 	struct dnotify_struct **prev;
+ 	struct inode *inode;
+@@ -46,145 +203,243 @@ void dnotify_flush(struct file *filp, fl_owner_t id)
+ 	inode = filp->f_path.dentry->d_inode;
+ 	if (!S_ISDIR(inode->i_mode))
+ 		return;
++
+ 	spin_lock(&inode->i_lock);
+-	prev = &inode->i_dnotify;
++	entry = fsnotify_find_mark_entry(dnotify_group, inode);
++	spin_unlock(&inode->i_lock);
++	if (!entry)
++		return;
++	dnentry = container_of(entry, struct dnotify_mark_entry, fsn_entry);
++
++	mutex_lock(&dnotify_mark_mutex);
++
++	spin_lock(&entry->lock);
++	prev = &dnentry->dn;
+ 	while ((dn = *prev) != NULL) {
+ 		if ((dn->dn_owner == id) && (dn->dn_filp == filp)) {
+ 			*prev = dn->dn_next;
+-			redo_inode_mask(inode);
+-			kmem_cache_free(dn_cache, dn);
++			kmem_cache_free(dnotify_struct_cache, dn);
++			dnotify_recalc_inode_mask(entry);
+ 			break;
+ 		}
+ 		prev = &dn->dn_next;
  	}
- 	audit_inode_child(new_name, moved, new_dir);
+-	spin_unlock(&inode->i_lock);
++
++	spin_unlock(&entry->lock);
++
++	/* nothing else could have found us thanks to the dnotify_mark_mutex */
++	if (dnentry->dn == NULL)
++		fsnotify_destroy_mark_by_entry(entry);
++
++	fsnotify_recalc_group_mask(dnotify_group);
++
++	mutex_unlock(&dnotify_mark_mutex);
++
++	fsnotify_put_mark(entry);
++}
++
++/* this conversion is done only at watch creation */
++static __u32 convert_arg(unsigned long arg)
++{
++	__u32 new_mask = FS_EVENT_ON_CHILD;
++
++	if (arg & DN_MULTISHOT)
++		new_mask |= FS_DN_MULTISHOT;
++	if (arg & DN_DELETE)
++		new_mask |= (FS_DELETE | FS_MOVED_FROM);
++	if (arg & DN_MODIFY)
++		new_mask |= FS_MODIFY;
++	if (arg & DN_ACCESS)
++		new_mask |= FS_ACCESS;
++	if (arg & DN_ATTRIB)
++		new_mask |= FS_ATTRIB;
++	if (arg & DN_RENAME)
++		new_mask |= FS_DN_RENAME;
++	if (arg & DN_CREATE)
++		new_mask |= (FS_CREATE | FS_MOVED_TO);
++
++	return new_mask;
  }
-@@ -138,7 +150,7 @@ static inline void fsnotify_inoderemove(struct inode *inode)
- 	inotify_inode_queue_event(inode, IN_DELETE_SELF, 0, NULL, NULL);
- 	inotify_inode_is_dead(inode);
  
--	fsnotify(inode, FS_DELETE_SELF, inode, FSNOTIFY_EVENT_INODE);
-+	fsnotify(inode, FS_DELETE_SELF, inode, FSNOTIFY_EVENT_INODE, NULL);
++/*
++ * If multiple processes watch the same inode with dnotify there is only one
++ * dnotify mark in inode->i_fsnotify_mark_entries but we chain a dnotify_struct
++ * onto that mark.  This function either attaches the new dnotify_struct onto
++ * that list, or it |= the mask onto an existing dnofiy_struct.
++ */
++static int attach_dn(struct dnotify_struct *dn, struct dnotify_mark_entry *dnentry,
++		     fl_owner_t id, int fd, struct file *filp, __u32 mask)
++{
++	struct dnotify_struct *odn;
++
++	odn = dnentry->dn;
++	while (odn != NULL) {
++		/* adding more events to existing dnofiy_struct? */
++		if ((odn->dn_owner == id) && (odn->dn_filp == filp)) {
++			odn->dn_fd = fd;
++			odn->dn_mask |= mask;
++			return -EEXIST;
++		}
++		odn = odn->dn_next;
++	}
++
++	dn->dn_mask = mask;
++	dn->dn_fd = fd;
++	dn->dn_filp = filp;
++	dn->dn_owner = id;
++	dn->dn_next = dnentry->dn;
++	dnentry->dn = dn;
++
++	return 0;
++}
++
++/*
++ * When a process calls fcntl to attach a dnotify watch to a directory it ends
++ * up here.  Allocate both a mark for fsnotify to add and a dnotify_struct to be
++ * attached to the fsnotify_mark.
++ */
+ int fcntl_dirnotify(int fd, struct file *filp, unsigned long arg)
+ {
++	struct dnotify_mark_entry *new_dnentry, *dnentry;
++	struct fsnotify_mark_entry *new_entry, *entry;
+ 	struct dnotify_struct *dn;
+-	struct dnotify_struct *odn;
+-	struct dnotify_struct **prev;
+ 	struct inode *inode;
+ 	fl_owner_t id = current->files;
+ 	struct file *f;
+-	int error = 0;
++	int destroy = 0, error = 0;
++	__u32 mask;
++
++	/* we use these to tell if we need to kfree */
++	new_entry = NULL;
++	dn = NULL;
+ 
++	if (!dir_notify_enable) {
++		error = -EINVAL;
++		goto out_err;
++	}
++
++	/* a 0 mask means we are explicitly removing the watch */
+ 	if ((arg & ~DN_MULTISHOT) == 0) {
+ 		dnotify_flush(filp, id);
+-		return 0;
++		error = 0;
++		goto out_err;
+ 	}
+-	if (!dir_notify_enable)
+-		return -EINVAL;
++
++	/* dnotify only works on directories */
+ 	inode = filp->f_path.dentry->d_inode;
+-	if (!S_ISDIR(inode->i_mode))
+-		return -ENOTDIR;
+-	dn = kmem_cache_alloc(dn_cache, GFP_KERNEL);
+-	if (dn == NULL)
+-		return -ENOMEM;
+-	spin_lock(&inode->i_lock);
+-	prev = &inode->i_dnotify;
+-	while ((odn = *prev) != NULL) {
+-		if ((odn->dn_owner == id) && (odn->dn_filp == filp)) {
+-			odn->dn_fd = fd;
+-			odn->dn_mask |= arg;
+-			inode->i_dnotify_mask |= arg & ~DN_MULTISHOT;
+-			goto out_free;
+-		}
+-		prev = &odn->dn_next;
++	if (!S_ISDIR(inode->i_mode)) {
++		error = -ENOTDIR;
++		goto out_err;
+ 	}
+ 
+-	rcu_read_lock();
+-	f = fcheck(fd);
+-	rcu_read_unlock();
+-	/* we'd lost the race with close(), sod off silently */
+-	/* note that inode->i_lock prevents reordering problems
+-	 * between accesses to descriptor table and ->i_dnotify */
+-	if (f != filp)
+-		goto out_free;
++	/* expect most fcntl to add new rather than augment old */
++	dn = kmem_cache_alloc(dnotify_struct_cache, GFP_KERNEL);
++	if (!dn) {
++		error = -ENOMEM;
++		goto out_err;
++	}
+ 
+-	error = __f_setown(filp, task_pid(current), PIDTYPE_PID, 0);
+-	if (error)
+-		goto out_free;
++	/* new fsnotify mark, we expect most fcntl calls to add a new mark */
++	new_dnentry = kmem_cache_alloc(dnotify_mark_entry_cache, GFP_KERNEL);
++	if (!new_dnentry) {
++		error = -ENOMEM;
++		goto out_err;
++	}
+ 
+-	dn->dn_mask = arg;
+-	dn->dn_fd = fd;
+-	dn->dn_filp = filp;
+-	dn->dn_owner = id;
+-	inode->i_dnotify_mask |= arg & ~DN_MULTISHOT;
+-	dn->dn_next = inode->i_dnotify;
+-	inode->i_dnotify = dn;
+-	spin_unlock(&inode->i_lock);
+-	return 0;
++	/* convert the userspace DN_* "arg" to the internal FS_* defines in fsnotify */
++	mask = convert_arg(arg);
+ 
+-out_free:
+-	spin_unlock(&inode->i_lock);
+-	kmem_cache_free(dn_cache, dn);
+-	return error;
+-}
++	/* set up the new_entry and new_dnentry */
++	new_entry = &new_dnentry->fsn_entry;
++	fsnotify_init_mark(new_entry, dnotify_free_mark);
++	new_entry->mask = mask;
++	new_dnentry->dn = NULL;
+ 
+-void __inode_dir_notify(struct inode *inode, unsigned long event)
+-{
+-	struct dnotify_struct *	dn;
+-	struct dnotify_struct **prev;
+-	struct fown_struct *	fown;
+-	int			changed = 0;
++	/* this is needed to prevent the fcntl/close race described below */
++	mutex_lock(&dnotify_mark_mutex);
+ 
++	/* add the new_entry or find an old one. */
+ 	spin_lock(&inode->i_lock);
+-	prev = &inode->i_dnotify;
+-	while ((dn = *prev) != NULL) {
+-		if ((dn->dn_mask & event) == 0) {
+-			prev = &dn->dn_next;
+-			continue;
+-		}
+-		fown = &dn->dn_filp->f_owner;
+-		send_sigio(fown, dn->dn_fd, POLL_MSG);
+-		if (dn->dn_mask & DN_MULTISHOT)
+-			prev = &dn->dn_next;
+-		else {
+-			*prev = dn->dn_next;
+-			changed = 1;
+-			kmem_cache_free(dn_cache, dn);
+-		}
+-	}
+-	if (changed)
+-		redo_inode_mask(inode);
++	entry = fsnotify_find_mark_entry(dnotify_group, inode);
+ 	spin_unlock(&inode->i_lock);
+-}
+-
+-EXPORT_SYMBOL(__inode_dir_notify);
++	if (entry) {
++		dnentry = container_of(entry, struct dnotify_mark_entry, fsn_entry);
++		spin_lock(&entry->lock);
++	} else {
++		fsnotify_add_mark(new_entry, dnotify_group, inode);
++		spin_lock(&new_entry->lock);
++		entry = new_entry;
++		dnentry = new_dnentry;
++		/* we used new_entry, so don't free it */
++		new_entry = NULL;
++	}
+ 
+-/*
+- * This is hopelessly wrong, but unfixable without API changes.  At
+- * least it doesn't oops the kernel...
+- *
+- * To safely access ->d_parent we need to keep d_move away from it.  Use the
+- * dentry's d_lock for this.
+- */
+-void dnotify_parent(struct dentry *dentry, unsigned long event)
+-{
+-	struct dentry *parent;
++	rcu_read_lock();
++	f = fcheck(fd);
++	rcu_read_unlock();
+ 
+-	if (!dir_notify_enable)
+-		return;
++	/* if (f != filp) means that we lost a race and another task/thread
++	 * actually closed the fd we are still playing with before we grabbed
++	 * the dnotify_mark_mutex and entry->lock.  Since closing the fd is the
++	 * only time we clean up the mark entries we need to get our mark off
++	 * the list. */
++	if (f != filp) {
++		/* if we added ourselves, shoot ourselves, it's possible that
++		 * the flush actually did shoot this entry.  That's fine too
++		 * since multiple calls to destroy_mark is perfectly safe, if
++		 * we found a dnentry already attached to the inode, just sod
++		 * off silently as the flush at close time dealt with it.
++		 */
++		if (dnentry == new_dnentry)
++			destroy = 1;
++		goto out;
++	}
+ 
+-	spin_lock(&dentry->d_lock);
+-	parent = dentry->d_parent;
+-	if (parent->d_inode->i_dnotify_mask & event) {
+-		dget(parent);
+-		spin_unlock(&dentry->d_lock);
+-		__inode_dir_notify(parent->d_inode, event);
+-		dput(parent);
+-	} else {
+-		spin_unlock(&dentry->d_lock);
++	error = __f_setown(filp, task_pid(current), PIDTYPE_PID, 0);
++	if (error) {
++		/* if we added, we must shoot */
++		if (dnentry == new_dnentry)
++			destroy = 1;
++		goto out;
+ 	}
++
++	error = attach_dn(dn, dnentry, id, fd, filp, mask);
++	/* !error means that we attached the dn to the dnentry, so don't free it */
++	if (!error)
++		dn = NULL;
++	/* -EEXIST means that we didn't add this new dn and used an old one.
++	 * that isn't an error (and the unused dn should be freed) */
++	else if (error == -EEXIST)
++		error = 0;
++
++	dnotify_recalc_inode_mask(entry);
++out:
++	spin_unlock(&entry->lock);
++
++	if (destroy)
++		fsnotify_destroy_mark_by_entry(entry);
++
++	fsnotify_recalc_group_mask(dnotify_group);
++
++	mutex_unlock(&dnotify_mark_mutex);
++	fsnotify_put_mark(entry);
++out_err:
++	if (new_entry)
++		fsnotify_put_mark(new_entry);
++	if (dn)
++		kmem_cache_free(dnotify_struct_cache, dn);
++	return error;
+ }
+-EXPORT_SYMBOL_GPL(dnotify_parent);
+ 
+ static int __init dnotify_init(void)
+ {
+-	dn_cache = kmem_cache_create("dnotify_cache",
+-		sizeof(struct dnotify_struct), 0, SLAB_PANIC, NULL);
++	dnotify_struct_cache = KMEM_CACHE(dnotify_struct, SLAB_PANIC);
++	dnotify_mark_entry_cache = KMEM_CACHE(dnotify_mark_entry, SLAB_PANIC);
++
++	dnotify_group = fsnotify_obtain_group(DNOTIFY_GROUP_NUM,
++					      0, &dnotify_fsnotify_ops);
++	if (IS_ERR(dnotify_group))
++		panic("unable to allocate fsnotify group for dnotify\n");
+ 	return 0;
  }
  
- /*
-@@ -150,7 +162,7 @@ static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
+diff --git a/include/linux/dnotify.h b/include/linux/dnotify.h
+index 102a902..ecc0628 100644
+--- a/include/linux/dnotify.h
++++ b/include/linux/dnotify.h
+@@ -10,7 +10,7 @@
+ 
+ struct dnotify_struct {
+ 	struct dnotify_struct *	dn_next;
+-	unsigned long		dn_mask;
++	__u32			dn_mask;
+ 	int			dn_fd;
+ 	struct file *		dn_filp;
+ 	fl_owner_t		dn_owner;
+@@ -21,23 +21,18 @@ struct dnotify_struct {
+ 
+ #ifdef CONFIG_DNOTIFY
+ 
+-extern void __inode_dir_notify(struct inode *, unsigned long);
++#define DNOTIFY_ALL_EVENTS (FS_DELETE | FS_DELETE_CHILD |\
++			    FS_MODIFY | FS_MODIFY_CHILD |\
++			    FS_ACCESS | FS_ACCESS_CHILD |\
++			    FS_ATTRIB | FS_ATTRIB_CHILD |\
++			    FS_CREATE | FS_DN_RENAME |\
++			    FS_MOVED_FROM | FS_MOVED_TO)
++
+ extern void dnotify_flush(struct file *, fl_owner_t);
+ extern int fcntl_dirnotify(int, struct file *, unsigned long);
+-extern void dnotify_parent(struct dentry *, unsigned long);
+-
+-static inline void inode_dir_notify(struct inode *inode, unsigned long event)
+-{
+-	if (inode->i_dnotify_mask & (event))
+-		__inode_dir_notify(inode, event);
+-}
+ 
+ #else
+ 
+-static inline void __inode_dir_notify(struct inode *inode, unsigned long event)
+-{
+-}
+-
+ static inline void dnotify_flush(struct file *filp, fl_owner_t id)
+ {
+ }
+@@ -47,14 +42,6 @@ static inline int fcntl_dirnotify(int fd, struct file *filp, unsigned long arg)
+ 	return -EINVAL;
+ }
+ 
+-static inline void dnotify_parent(struct dentry *dentry, unsigned long event)
+-{
+-}
+-
+-static inline void inode_dir_notify(struct inode *inode, unsigned long event)
+-{
+-}
+-
+ #endif /* CONFIG_DNOTIFY */
+ 
+ #endif /* __KERNEL __ */
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 76249a4..2789323 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -760,11 +760,6 @@ struct inode {
+ 	struct hlist_head	i_fsnotify_mark_entries; /* fsnotify mark entries */
+ #endif
+ 
+-#ifdef CONFIG_DNOTIFY
+-	unsigned long		i_dnotify_mask; /* Directory notify events */
+-	struct dnotify_struct	*i_dnotify; /* for directory notifications */
+-#endif
+-
+ #ifdef CONFIG_INOTIFY
+ 	struct list_head	inotify_watches; /* watches on this inode */
+ 	struct mutex		inotify_mutex;	/* protects the watches list */
+diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
+index fa51966..3ecd033 100644
+--- a/include/linux/fsnotify.h
++++ b/include/linux/fsnotify.h
+@@ -74,13 +74,7 @@ static inline void fsnotify_move(struct inode *old_dir, struct inode *new_dir,
+ 	__u32 new_dir_mask = 0;
+ 
+ 	if (old_dir == new_dir) {
+-		inode_dir_notify(old_dir, DN_RENAME);
+ 		old_dir_mask = FS_DN_RENAME;
+-	} else {
+-		inode_dir_notify(old_dir, DN_DELETE);
+-		old_dir_mask = FS_DELETE;
+-		inode_dir_notify(new_dir, DN_CREATE);
+-		new_dir_mask = FS_CREATE;
+ 	}
+ 
+ 	if (isdir) {
+@@ -132,7 +126,6 @@ static inline void fsnotify_nameremove(struct dentry *dentry, int isdir)
+ 
+ 	if (isdir)
+ 		mask |= FS_IN_ISDIR;
+-	dnotify_parent(dentry, DN_DELETE);
+ 
+ 	fsnotify_parent(dentry, mask);
+ }
+@@ -153,7 +146,6 @@ static inline void fsnotify_inoderemove(struct inode *inode)
+  */
+ static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
+ {
+-	inode_dir_notify(inode, DN_CREATE);
+ 	inotify_inode_queue_event(inode, IN_CREATE, 0, dentry->d_name.name,
  				  dentry->d_inode);
  	audit_inode_child(dentry->d_name.name, dentry, inode);
- 
--	fsnotify(inode, FS_CREATE, dentry->d_inode, FSNOTIFY_EVENT_INODE);
-+	fsnotify(inode, FS_CREATE, dentry->d_inode, FSNOTIFY_EVENT_INODE, dentry->d_name.name);
- }
- 
- /*
-@@ -165,7 +177,7 @@ static inline void fsnotify_link(struct inode *dir, struct inode *inode, struct
+@@ -168,7 +160,6 @@ static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
+  */
+ static inline void fsnotify_link(struct inode *dir, struct inode *inode, struct dentry *new_dentry)
+ {
+-	inode_dir_notify(dir, DN_CREATE);
+ 	inotify_inode_queue_event(dir, IN_CREATE, 0, new_dentry->d_name.name,
+ 				  inode);
  	fsnotify_link_count(inode);
- 	audit_inode_child(new_dentry->d_name.name, new_dentry, dir);
+@@ -185,7 +176,6 @@ static inline void fsnotify_mkdir(struct inode *inode, struct dentry *dentry)
+ 	__u32 mask = (FS_CREATE | FS_IN_ISDIR);
+ 	struct inode *d_inode = dentry->d_inode;
  
--	fsnotify(dir, FS_CREATE, inode, FSNOTIFY_EVENT_INODE);
-+	fsnotify(dir, FS_CREATE, inode, FSNOTIFY_EVENT_INODE, new_dentry->d_name.name);
- }
- 
- /*
-@@ -179,7 +191,7 @@ static inline void fsnotify_mkdir(struct inode *inode, struct dentry *dentry)
+-	inode_dir_notify(inode, DN_CREATE);
  	inotify_inode_queue_event(inode, mask, 0, dentry->d_name.name, d_inode);
  	audit_inode_child(dentry->d_name.name, dentry, inode);
  
--	fsnotify(inode, mask, d_inode, FSNOTIFY_EVENT_INODE);
-+	fsnotify(inode, mask, d_inode, FSNOTIFY_EVENT_INODE, dentry->d_name.name);
- }
+@@ -203,7 +193,6 @@ static inline void fsnotify_access(struct dentry *dentry)
+ 	if (S_ISDIR(inode->i_mode))
+ 		mask |= FS_IN_ISDIR;
  
- /*
-@@ -196,7 +208,7 @@ static inline void fsnotify_access(struct dentry *dentry)
+-	dnotify_parent(dentry, DN_ACCESS);
  	inotify_inode_queue_event(inode, mask, 0, NULL, NULL);
  
  	fsnotify_parent(dentry, mask);
--	fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE);
-+	fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE, NULL);
- }
+@@ -221,7 +210,6 @@ static inline void fsnotify_modify(struct dentry *dentry)
+ 	if (S_ISDIR(inode->i_mode))
+ 		mask |= FS_IN_ISDIR;
  
- /*
-@@ -213,7 +225,7 @@ static inline void fsnotify_modify(struct dentry *dentry)
+-	dnotify_parent(dentry, DN_MODIFY);
  	inotify_inode_queue_event(inode, mask, 0, NULL, NULL);
  
  	fsnotify_parent(dentry, mask);
--	fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE);
-+	fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE, NULL);
- }
+@@ -288,47 +276,33 @@ static inline void fsnotify_xattr(struct dentry *dentry)
+ static inline void fsnotify_change(struct dentry *dentry, unsigned int ia_valid)
+ {
+ 	struct inode *inode = dentry->d_inode;
+-	int dn_mask = 0;
+-	__u32 in_mask = 0;
++	__u32 mask = 0;
++
++	if (ia_valid & ATTR_UID)
++		mask |= FS_ATTRIB;
++	if (ia_valid & ATTR_GID)
++		mask |= FS_ATTRIB;
++	if (ia_valid & ATTR_SIZE)
++		mask |= FS_MODIFY;
  
- /*
-@@ -230,7 +242,7 @@ static inline void fsnotify_open(struct dentry *dentry)
- 	inotify_inode_queue_event(inode, mask, 0, NULL, NULL);
+-	if (ia_valid & ATTR_UID) {
+-		in_mask |= FS_ATTRIB;
+-		dn_mask |= DN_ATTRIB;
+-	}
+-	if (ia_valid & ATTR_GID) {
+-		in_mask |= FS_ATTRIB;
+-		dn_mask |= DN_ATTRIB;
+-	}
+-	if (ia_valid & ATTR_SIZE) {
+-		in_mask |= FS_MODIFY;
+-		dn_mask |= DN_MODIFY;
+-	}
+ 	/* both times implies a utime(s) call */
+ 	if ((ia_valid & (ATTR_ATIME | ATTR_MTIME)) == (ATTR_ATIME | ATTR_MTIME))
+-	{
+-		in_mask |= FS_ATTRIB;
+-		dn_mask |= DN_ATTRIB;
+-	} else if (ia_valid & ATTR_ATIME) {
+-		in_mask |= FS_ACCESS;
+-		dn_mask |= DN_ACCESS;
+-	} else if (ia_valid & ATTR_MTIME) {
+-		in_mask |= FS_MODIFY;
+-		dn_mask |= DN_MODIFY;
+-	}
+-	if (ia_valid & ATTR_MODE) {
+-		in_mask |= FS_ATTRIB;
+-		dn_mask |= DN_ATTRIB;
+-	}
++		mask |= FS_ATTRIB;
++	else if (ia_valid & ATTR_ATIME)
++		mask |= FS_ACCESS;
++	else if (ia_valid & ATTR_MTIME)
++		mask |= FS_MODIFY;
++
++	if (ia_valid & ATTR_MODE)
++		mask |= FS_ATTRIB;
  
- 	fsnotify_parent(dentry, mask);
--	fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE);
-+	fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE, NULL);
- }
+-	if (dn_mask)
+-		dnotify_parent(dentry, dn_mask);
+-	if (in_mask) {
++	if (mask) {
+ 		if (S_ISDIR(inode->i_mode))
+-			in_mask |= FS_IN_ISDIR;
+-		inotify_inode_queue_event(inode, in_mask, 0, NULL, NULL);
++			mask |= FS_IN_ISDIR;
++		inotify_inode_queue_event(inode, mask, 0, NULL, NULL);
  
- /*
-@@ -249,7 +261,7 @@ static inline void fsnotify_close(struct file *file)
- 	inotify_inode_queue_event(inode, mask, 0, NULL, NULL);
- 
- 	fsnotify_parent(dentry, mask);
--	fsnotify(inode, mask, file, FSNOTIFY_EVENT_FILE);
-+	fsnotify(inode, mask, file, FSNOTIFY_EVENT_FILE, NULL);
- }
- 
- /*
-@@ -266,7 +278,7 @@ static inline void fsnotify_xattr(struct dentry *dentry)
- 	inotify_inode_queue_event(inode, mask, 0, NULL, NULL);
- 
- 	fsnotify_parent(dentry, mask);
--	fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE);
-+	fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE, NULL);
- }
- 
- /*
-@@ -302,7 +314,7 @@ static inline void fsnotify_change(struct dentry *dentry, unsigned int ia_valid)
- 		inotify_inode_queue_event(inode, mask, 0, NULL, NULL);
- 
- 		fsnotify_parent(dentry, mask);
--		fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE);
-+		fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE, NULL);
+-		fsnotify_parent(dentry, in_mask);
+-		fsnotify(inode, in_mask, inode, FSNOTIFY_EVENT_INODE);
++		fsnotify_parent(dentry, mask);
++		fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE);
  	}
  }
  
 diff --git a/include/linux/fsnotify_backend.h b/include/linux/fsnotify_backend.h
-index 15f8f82..52692f4 100644
+index 13d2dd5..9ea800e 100644
 --- a/include/linux/fsnotify_backend.h
 +++ b/include/linux/fsnotify_backend.h
-@@ -192,6 +192,9 @@ struct fsnotify_event {
- 	int data_type;		/* which of the above union we have */
- 	atomic_t refcnt;	/* how many groups still are using/need to send this event */
- 	__u32 mask;		/* the type of access, bitwise OR for FS_* event types */
+@@ -57,6 +57,9 @@
+ 				   FS_MOVED_FROM | FS_MOVED_TO | FS_CREATE |\
+ 				   FS_DELETE)
+ 
++/* listeners that hard code group numbers near the top */
++#define DNOTIFY_GROUP_NUM	UINT_MAX
 +
-+	char *file_name;
-+	size_t name_len;
- };
- 
- /*
-@@ -224,7 +227,7 @@ struct fsnotify_mark_entry {
- /* called from the vfs helpers */
- 
- /* main fsnotify call to send events */
--extern void fsnotify(struct inode *to_tell, __u32 mask, void *data, int data_is);
-+extern void fsnotify(struct inode *to_tell, __u32 mask, void *data, int data_is, const char *name);
- extern void __fsnotify_parent(struct dentry *dentry, __u32 mask);
- extern void __fsnotify_inode_delete(struct inode *inode);
- 
-@@ -319,10 +322,12 @@ extern void fsnotify_put_mark(struct fsnotify_mark_entry *entry);
- 
- /* put here because inotify does some weird stuff when destroying watches */
- extern struct fsnotify_event *fsnotify_create_event(struct inode *to_tell, __u32 mask,
--						    void *data, int data_is);
-+						    void *data, int data_is, const char *name);
-+
- #else
- 
--static inline void fsnotify(struct inode *to_tell, __u32 mask, void *data, int data_is)
-+static inline void fsnotify(struct inode *to_tell, __u32 mask, void *data, int data_is,
-+			    const char *name);
- {}
- 
- static inline void __fsnotify_parent(struct dentry *dentry, __u32 mask)
+ struct fsnotify_group;
+ struct fsnotify_event;
+ struct fsnotify_mark_entry;
 
