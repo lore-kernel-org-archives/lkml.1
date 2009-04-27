@@ -1,169 +1,579 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbZD0Esq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752736AbZD0E4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752744AbZD0Esq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 00:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZD0Esg
+	id S1752736AbZD0E4Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 00:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZD0Ez6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 00:48:36 -0400
-Received: from mga03.intel.com ([143.182.124.21]:15588 "EHLO mga03.intel.com"
+	Mon, 27 Apr 2009 00:55:58 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51480 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751343AbZD0Esf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 00:48:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,252,1239001200"; 
-   d="scan'208";a="136177571"
-Date: Mon, 27 Apr 2009 12:48:14 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org, Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH 3/3] readahead: introduce context readahead algorithm
-Message-ID: <20090427044814.GA9975@localhost>
-References: <20090412071950.166891982@intel.com> <20090412072052.686760755@intel.com> <x49k55mintn.fsf@segfault.boston.devel.redhat.com> <20090415044301.GB9948@localhost> <x49r5ztg5sr.fsf@segfault.boston.devel.redhat.com>
+	id S1751465AbZD0Ez4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 00:55:56 -0400
+Date: Mon, 27 Apr 2009 04:54:38 GMT
+From: tip-bot for Sam Ravnborg <sam@ravnborg.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, sam@ravnborg.org, tabbott@MIT.EDU,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org, torvalds@linux-foundation.org, tabbott@MIT.EDU,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090426210742.GA3464@uranus.ravnborg.org>
+References: <20090426210742.GA3464@uranus.ravnborg.org>
+Subject: [tip:x86/kbuild] x86: beautify vmlinux_64.lds.S
+Message-ID: <tip-0a3ec21fcd311b26ab0f249d62960e127bc20ca8@git.kernel.org>
+Git-Commit-ID: 0a3ec21fcd311b26ab0f249d62960e127bc20ca8
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <x49r5ztg5sr.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 27 Apr 2009 04:54:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeff,
+Commit-ID:  0a3ec21fcd311b26ab0f249d62960e127bc20ca8
+Gitweb:     http://git.kernel.org/tip/0a3ec21fcd311b26ab0f249d62960e127bc20ca8
+Author:     Sam Ravnborg <sam@ravnborg.org>
+AuthorDate: Sun, 26 Apr 2009 23:07:42 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 27 Apr 2009 06:30:58 +0200
 
-I did some more NFS readahead tests. Judging from your and mine tests, I can
-say that the context readahead is safe for trivial NFS workloads :-) It is
-behaving in the expected way, and the overheads, if any, are close enough
-to the fluctuating margin.
+x86: beautify vmlinux_64.lds.S
 
-On Thu, Apr 16, 2009 at 01:55:48AM +0800, Jeff Moyer wrote:
-> Hi, Fengguang,
->
-> Wu Fengguang <fengguang.wu@intel.com> writes:
->
-> >> I tested out your patches.  Below are some basic iozone numbers for a
-> >> single NFS client reading a file.  The iozone command line is:
-> >>
-> >>   iozone -s 2000000 -r 64 -f /mnt/test/testfile -i 1 -w
-> >
-> > Jeff, thank you very much for the testing out!
-> >
-> >> The file system is unmounted after each run to flush the cache.  The
-> >> numbers below reflect only a single run each.  The file system was also
-> >> unmounted on the NFS client after each run.
-> >>
-> >> KEY
-> >> ---
-> >> vanilla:	   2.6.30-rc1
-> >> readahead:	   2.6.30-rc1 + your 10 readahead patches
-> >> context readahead: 2.6.30-rc1 + your 10 readahead patches + the 3
-> >> 		   context readahead patches.
-> >> nfsd's:		   number of NFSD threads on the server
-> >
-> > I guess you are applying the readahead patches to the server side?
->
-> That's right.
->
-> > What's the NFS mount options and client/server side readahead size?
-> > The context readahead is pretty sensible to these parameters.
->
-> Default options everywhere.
+Beautify vmlinux_64.lds.S:
 
-The default options observed in my test platforms:
-        - client: CFQ, kernel 2.6.30-rc3 + linux-2.6-block.git for linus
-        - server: CFQ, kernel 2.6.30-rc2-next-20090417
-is
-        - rsize=256k
-        - NFS readahead size=3840k (= 256k * 15)
-        - sda readahead size=128k
+ - Use tabs for indent
+ - Located curly braces like in C code
+ - Rearranged a few comments
 
-> >> I'll note that the cfq in 2.6.30-rc1 is crippled, and that Jens has a
-> >> patch posted that makes the numbers look at least a little better, but
-> >> that's immaterial to this discussion, I think.
-[snip]
-> > Let me transform them into relative numbers:
-> >
-> >              A     B     C      A..B      A..C
-> > cfq-1      43127 42471 42827    -1.5%     -0.7%
-> > cfq-2      22354 21913 21882    -2.0%     -2.1%
-> > cfq-4      20858 21252 20678    +1.9%     -0.9%
-> > cfq-8      21179 20979 21508    -0.9%     +1.6%
-> >
-> > deadline-1 43732 42801 43040    -2.1%     -1.6%
-> > deadline-2 68059 70158 71173    +3.1%     +4.6%
-> > deadline-4 76659 82068 82407    +7.1%     +7.5%
-> > deadline-8 83231 82406 86583    -1.0%     +4.0%
-> >
-> > Summaries:
-> > 1) the overall numbers are slightly negative for CFQ and looks better
-> >    with deadline.
->
-> The variance is probably 1-2%.  I'll try to quantify that for you.
+There is no functional changes in this patch
 
-I tried to measure the overheads, here is the approach:
-- random read(4K) syscalls on a huge sparse file over NFS
-- server side readahead size=1M, otherwise all default options
+The beautification is done to prepare a unification
+of the _32 and the _64 variants of the linker scripts.
 
-The -0.1%, +0.5% differences in time are close enough to the variance.
+[ Impact: cleanup ]
 
-                  vanilla    +max_sane_readahead()      +mmap readahead
-        run-1     77.01s      77.18                     77.96s
-        run-2     77.18s      77.53                     77.76s
-        run-3     77.93s      77.57                     77.84s
-        run-4     77.76s                                78.16s
-        run-5     77.55s                                77.76s
-        run-6                                           77.90s
-        avg       77.486      77.427                    77.897
-        diff%                 -0.1%                     +0.5%
-
-> > Anyway we have the io context problem for CFQ.  And I'm planning to
-> > dive into the CFQ code and your patch on that :-)
->
-> Jens already reworked the patch and included it in his for-linus branch
-> of the block tree.  So, you can start there.  ;-)
-
-Good news. I'm running with it :-)
-
-> > 2) the single thread case performance consistently dropped by 1-2%.
->
-> > It seems not related to the behavior changes introduced by the mmap
-> > readahead patches and context readahead patches. And looks more like
-> > some overheads created by the code reorganization and the patch
-> > "readahead: apply max_sane_readahead() limit in ondemand_readahead()"
-> > which adds a bit overhead with the call max_sane_readahead().
-> >
-> > I'll try to root cause it.
-
-Then I go on to test sequential reads on real files over NFS.
-
-Again the differences are small enough.
-
-        vanilla        +mmap&context readahead   diff%
-nfsd=1  28.875s        28.770s                   -0.4%
-nfsd=8  42.533s        42.255s                   -0.7%
-
-For the single nfsd case, the readahead sequence is perfect and exactly the
-same before/after the context readahead patch:
-
-[   60.542986] readahead-initial0(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=0+64, ra=0+128-64, async=0) = 128
-[   60.573652] readahead-subsequent(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=64+32, ra=128+256-256, async=1) = 2
-56
-[   60.590312] readahead-subsequent(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=128+32, ra=384+256-256, async=1) =
-256
-[   60.652863] readahead-subsequent(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=384+32, ra=640+256-256, async=1) =
-256
-[   60.713916] readahead-subsequent(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=640+32, ra=896+256-256, async=1) =
-256
-[   60.776168] readahead-subsequent(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=896+32, ra=1152+256-256, async=1) =
- 256
-[   60.837423] readahead-subsequent(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=1152+32, ra=1408+256-256, async=1)
-= 256
-[   60.899360] readahead-subsequent(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=1408+32, ra=1664+256-256, async=1)
-= 256
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Tim Abbott <tabbott@MIT.EDU>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+LKML-Reference: <20090426210742.GA3464@uranus.ravnborg.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-Thanks,
-Fengguang
+---
+ arch/x86/kernel/vmlinux_64.lds.S |  448 +++++++++++++++++++++-----------------
+ 1 files changed, 243 insertions(+), 205 deletions(-)
+
+diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
+index c874250..6d5a5b0 100644
+--- a/arch/x86/kernel/vmlinux_64.lds.S
++++ b/arch/x86/kernel/vmlinux_64.lds.S
+@@ -15,69 +15,79 @@ OUTPUT_ARCH(i386:x86-64)
+ ENTRY(phys_startup_64)
+ jiffies_64 = jiffies;
+ PHDRS {
+-	text PT_LOAD FLAGS(5);	/* R_E */
+-	data PT_LOAD FLAGS(7);	/* RWE */
+-	user PT_LOAD FLAGS(7);	/* RWE */
++	text PT_LOAD FLAGS(5);		/* R_E */
++	data PT_LOAD FLAGS(7);		/* RWE */
++	user PT_LOAD FLAGS(7);		/* RWE */
+ 	data.init PT_LOAD FLAGS(7);	/* RWE */
+ #ifdef CONFIG_SMP
+ 	percpu PT_LOAD FLAGS(7);	/* RWE */
+ #endif
+ 	data.init2 PT_LOAD FLAGS(7);	/* RWE */
+-	note PT_NOTE FLAGS(0);	/* ___ */
++	note PT_NOTE FLAGS(0);		/* ___ */
+ }
+ SECTIONS
+ {
+-  . = __START_KERNEL;
+-  phys_startup_64 = startup_64 - LOAD_OFFSET;
+-  .text :  AT(ADDR(.text) - LOAD_OFFSET) {
+-	_text = .;			/* Text and read-only data */
+-	/* First the code that has to be first for bootstrapping */
+-	*(.text.head)
+-	_stext = .;
+-	/* Then the rest */
+-	TEXT_TEXT
+-	SCHED_TEXT
+-	LOCK_TEXT
+-	KPROBES_TEXT
+-	IRQENTRY_TEXT
+-	*(.fixup)
+-	*(.gnu.warning)
+-	_etext = .;		/* End of text section */
+-  } :text = 0x9090
+-
+-  NOTES :text :note
+-
+-  . = ALIGN(16);		/* Exception table */
+-  __ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
+-  	__start___ex_table = .;
+-	 *(__ex_table)
+-  	__stop___ex_table = .;
+-  } :text = 0x9090
+-
+-  RODATA
+-
+-  . = ALIGN(PAGE_SIZE);		/* Align data segment to page size boundary */
+-				/* Data */
+-  .data : AT(ADDR(.data) - LOAD_OFFSET) {
+-	DATA_DATA
+-	CONSTRUCTORS
+-	_edata = .;			/* End of data section */
+-	} :data
++	. = __START_KERNEL;
++	phys_startup_64 = startup_64 - LOAD_OFFSET;
++
++	/* Text and read-only data */
++	.text :  AT(ADDR(.text) - LOAD_OFFSET) {
++		_text = .;
++		/* First the code that has to be first for bootstrapping */
++		*(.text.head)
++		_stext = .;
++		/* Then the rest */
++		TEXT_TEXT
++		SCHED_TEXT
++		LOCK_TEXT
++		KPROBES_TEXT
++		IRQENTRY_TEXT
++		*(.fixup)
++		*(.gnu.warning)
++		/* End of text section */
++		_etext = .;
++	} :text = 0x9090
++
++	NOTES :text :note
++
++	/* Exception table */
++	. = ALIGN(16);
++	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
++		__start___ex_table = .;
++		 *(__ex_table)
++		__stop___ex_table = .;
++	} :text = 0x9090
+ 
++	RODATA
+ 
+-  .data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
++	/* Align data segment to page size boundary */
+ 	. = ALIGN(PAGE_SIZE);
+-	. = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
+-	*(.data.cacheline_aligned)
+-  }
+-  . = ALIGN(CONFIG_X86_INTERNODE_CACHE_BYTES);
+-  .data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
+-  	*(.data.read_mostly)
+-  }
++	/* Data */
++	.data : AT(ADDR(.data) - LOAD_OFFSET) {
++		DATA_DATA
++		CONSTRUCTORS
++		/* End of data section */
++		_edata = .;
++	} :data
++
++
++	.data.cacheline_aligned :
++		AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
++		. = ALIGN(PAGE_SIZE);
++		. = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
++		*(.data.cacheline_aligned)
++	}
++
++	. = ALIGN(CONFIG_X86_INTERNODE_CACHE_BYTES);
++	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
++		*(.data.read_mostly)
++	}
+ 
+ #define VSYSCALL_ADDR (-10*1024*1024)
+-#define VSYSCALL_PHYS_ADDR ((LOADADDR(.data.read_mostly) + SIZEOF(.data.read_mostly) + 4095) & ~(4095))
+-#define VSYSCALL_VIRT_ADDR ((ADDR(.data.read_mostly) + SIZEOF(.data.read_mostly) + 4095) & ~(4095))
++#define VSYSCALL_PHYS_ADDR ((LOADADDR(.data.read_mostly) + \
++                            SIZEOF(.data.read_mostly) + 4095) & ~(4095))
++#define VSYSCALL_VIRT_ADDR ((ADDR(.data.read_mostly) + \
++                            SIZEOF(.data.read_mostly) + 4095) & ~(4095))
+ 
+ #define VLOAD_OFFSET (VSYSCALL_ADDR - VSYSCALL_PHYS_ADDR)
+ #define VLOAD(x) (ADDR(x) - VLOAD_OFFSET)
+@@ -85,37 +95,53 @@ SECTIONS
+ #define VVIRT_OFFSET (VSYSCALL_ADDR - VSYSCALL_VIRT_ADDR)
+ #define VVIRT(x) (ADDR(x) - VVIRT_OFFSET)
+ 
+-  . = VSYSCALL_ADDR;
+-  .vsyscall_0 :	 AT(VSYSCALL_PHYS_ADDR) { *(.vsyscall_0) } :user
+-  __vsyscall_0 = VSYSCALL_VIRT_ADDR;
++	. = VSYSCALL_ADDR;
++	.vsyscall_0 : AT(VSYSCALL_PHYS_ADDR) {
++		*(.vsyscall_0)
++	} :user
++
++	__vsyscall_0 = VSYSCALL_VIRT_ADDR;
++
++	. = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
++	.vsyscall_fn : AT(VLOAD(.vsyscall_fn)) {
++		*(.vsyscall_fn)
++	}
++
++	. = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
++	.vsyscall_gtod_data : AT(VLOAD(.vsyscall_gtod_data)) {
++		*(.vsyscall_gtod_data)
++	}
+ 
+-  . = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
+-  .vsyscall_fn : AT(VLOAD(.vsyscall_fn)) { *(.vsyscall_fn) }
+-  . = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
+-  .vsyscall_gtod_data : AT(VLOAD(.vsyscall_gtod_data))
+-		{ *(.vsyscall_gtod_data) }
+-  vsyscall_gtod_data = VVIRT(.vsyscall_gtod_data);
+-  .vsyscall_clock : AT(VLOAD(.vsyscall_clock))
+-		{ *(.vsyscall_clock) }
+-  vsyscall_clock = VVIRT(.vsyscall_clock);
++	vsyscall_gtod_data = VVIRT(.vsyscall_gtod_data);
++	.vsyscall_clock : AT(VLOAD(.vsyscall_clock)) {
++		*(.vsyscall_clock)
++	}
++	vsyscall_clock = VVIRT(.vsyscall_clock);
+ 
+ 
+-  .vsyscall_1 ADDR(.vsyscall_0) + 1024: AT(VLOAD(.vsyscall_1))
+-		{ *(.vsyscall_1) }
+-  .vsyscall_2 ADDR(.vsyscall_0) + 2048: AT(VLOAD(.vsyscall_2))
+-		{ *(.vsyscall_2) }
++	.vsyscall_1 ADDR(.vsyscall_0) + 1024: AT(VLOAD(.vsyscall_1)) {
++		*(.vsyscall_1)
++	}
++	.vsyscall_2 ADDR(.vsyscall_0) + 2048: AT(VLOAD(.vsyscall_2)) {
++		*(.vsyscall_2)
++	}
+ 
+-  .vgetcpu_mode : AT(VLOAD(.vgetcpu_mode)) { *(.vgetcpu_mode) }
+-  vgetcpu_mode = VVIRT(.vgetcpu_mode);
++	.vgetcpu_mode : AT(VLOAD(.vgetcpu_mode)) {
++		*(.vgetcpu_mode)
++	}
++	vgetcpu_mode = VVIRT(.vgetcpu_mode);
+ 
+-  . = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
+-  .jiffies : AT(VLOAD(.jiffies)) { *(.jiffies) }
+-  jiffies = VVIRT(.jiffies);
++	. = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
++	.jiffies : AT(VLOAD(.jiffies)) {
++		*(.jiffies)
++	}
++	jiffies = VVIRT(.jiffies);
+ 
+-  .vsyscall_3 ADDR(.vsyscall_0) + 3072: AT(VLOAD(.vsyscall_3))
+-		{ *(.vsyscall_3) }
++	.vsyscall_3 ADDR(.vsyscall_0) + 3072: AT(VLOAD(.vsyscall_3)) {
++		*(.vsyscall_3)
++	}
+ 
+-  . = VSYSCALL_VIRT_ADDR + PAGE_SIZE;
++	. = VSYSCALL_VIRT_ADDR + PAGE_SIZE;
+ 
+ #undef VSYSCALL_ADDR
+ #undef VSYSCALL_PHYS_ADDR
+@@ -125,156 +151,168 @@ SECTIONS
+ #undef VVIRT_OFFSET
+ #undef VVIRT
+ 
+-  .data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
+-	. = ALIGN(THREAD_SIZE);	/* init_task */
+-	*(.data.init_task)
+-  }:data.init
++	/* init_task */
++	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
++		. = ALIGN(THREAD_SIZE);
++		*(.data.init_task)
++	} :data.init
+ 
+-  .data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
+-	. = ALIGN(PAGE_SIZE);
+-	*(.data.page_aligned)
+-  }
++	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
++		. = ALIGN(PAGE_SIZE);
++		*(.data.page_aligned)
++	}
+ 
+-  .smp_locks : AT(ADDR(.smp_locks) - LOAD_OFFSET) {
+-	/* might get freed after init */
+-	. = ALIGN(PAGE_SIZE);
+-	__smp_alt_begin = .;
+-	__smp_locks = .;
+-	*(.smp_locks)
+-	__smp_locks_end = .;
++	.smp_locks : AT(ADDR(.smp_locks) - LOAD_OFFSET) {
++		/* might get freed after init */
++		. = ALIGN(PAGE_SIZE);
++		__smp_alt_begin = .;
++		__smp_locks = .;
++		*(.smp_locks)
++		__smp_locks_end = .;
++		. = ALIGN(PAGE_SIZE);
++		__smp_alt_end = .;
++	}
++
++	/* Init code and data */
+ 	. = ALIGN(PAGE_SIZE);
+-	__smp_alt_end = .;
+-  }
+-
+-  . = ALIGN(PAGE_SIZE);		/* Init code and data */
+-  __init_begin = .;	/* paired with __init_end */
+-  .init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
+-	_sinittext = .;
+-	INIT_TEXT
+-	_einittext = .;
+-  }
+-  .init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {
+-	__initdata_begin = .;
+-	INIT_DATA
+-	__initdata_end = .;
+-   }
+-
+-  .init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
+-	. = ALIGN(16);
+-	__setup_start = .;
+-	*(.init.setup)
+-	__setup_end = .;
+-  }
+-  .initcall.init : AT(ADDR(.initcall.init) - LOAD_OFFSET) {
+-	__initcall_start = .;
+-	INITCALLS
+-	__initcall_end = .;
+-  }
+-  .con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
+-	__con_initcall_start = .;
+-	*(.con_initcall.init)
+-	__con_initcall_end = .;
+-  }
+-  .x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
+-	__x86_cpu_dev_start = .;
+-	*(.x86_cpu_dev.init)
+-	__x86_cpu_dev_end = .;
+-  }
+-  SECURITY_INIT
+-
+-  . = ALIGN(8);
+-  .parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
+-	__parainstructions = .;
+-       *(.parainstructions)
+-	__parainstructions_end = .;
+-  }
+-
+-  .altinstructions : AT(ADDR(.altinstructions) - LOAD_OFFSET) {
++	__init_begin = .;	/* paired with __init_end */
++	.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
++		_sinittext = .;
++		INIT_TEXT
++		_einittext = .;
++	}
++
++	.init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {
++		__initdata_begin = .;
++		INIT_DATA
++		__initdata_end = .;
++	}
++
++	.init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
++		. = ALIGN(16);
++		__setup_start = .;
++		*(.init.setup)
++		__setup_end = .;
++	}
++
++	.initcall.init : AT(ADDR(.initcall.init) - LOAD_OFFSET) {
++		__initcall_start = .;
++		INITCALLS
++		__initcall_end = .;
++	}
++
++	.con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
++		__con_initcall_start = .;
++		*(.con_initcall.init)
++		__con_initcall_end = .;
++	}
++
++	.x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
++		__x86_cpu_dev_start = .;
++		*(.x86_cpu_dev.init)
++		__x86_cpu_dev_end = .;
++	}
++
++	SECURITY_INIT
++
+ 	. = ALIGN(8);
+-	__alt_instructions = .;
+-	*(.altinstructions)
+-	__alt_instructions_end = .;
+-  }
+-  .altinstr_replacement : AT(ADDR(.altinstr_replacement) - LOAD_OFFSET) {
+-	*(.altinstr_replacement)
+-  }
+-  /* .exit.text is discard at runtime, not link time, to deal with references
+-     from .altinstructions and .eh_frame */
+-  .exit.text : AT(ADDR(.exit.text) - LOAD_OFFSET) {
+-	EXIT_TEXT
+-  }
+-  .exit.data : AT(ADDR(.exit.data) - LOAD_OFFSET) {
+-	EXIT_DATA
+-  }
++	.parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
++		__parainstructions = .;
++		*(.parainstructions)
++		__parainstructions_end = .;
++	}
++
++	.altinstructions : AT(ADDR(.altinstructions) - LOAD_OFFSET) {
++		. = ALIGN(8);
++		__alt_instructions = .;
++		*(.altinstructions)
++		__alt_instructions_end = .;
++	}
++
++	.altinstr_replacement : AT(ADDR(.altinstr_replacement) - LOAD_OFFSET) {
++		*(.altinstr_replacement)
++	}
++
++	/*
++	 * .exit.text is discard at runtime, not link time, to deal with
++	 *  references from .altinstructions and .eh_frame
++	 */
++	.exit.text : AT(ADDR(.exit.text) - LOAD_OFFSET) {
++		EXIT_TEXT
++	}
++
++	.exit.data : AT(ADDR(.exit.data) - LOAD_OFFSET) {
++		EXIT_DATA
++	}
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+-  . = ALIGN(PAGE_SIZE);
+-  .init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
+-	__initramfs_start = .;
+-	*(.init.ramfs)
+-	__initramfs_end = .;
+-  }
++	. = ALIGN(PAGE_SIZE);
++	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
++		__initramfs_start = .;
++		*(.init.ramfs)
++		__initramfs_end = .;
++	}
+ #endif
+ 
+ #ifdef CONFIG_SMP
+-  /*
+-   * percpu offsets are zero-based on SMP.  PERCPU_VADDR() changes the
+-   * output PHDR, so the next output section - __data_nosave - should
+-   * start another section data.init2.  Also, pda should be at the head of
+-   * percpu area.  Preallocate it and define the percpu offset symbol
+-   * so that it can be accessed as a percpu variable.
+-   */
+-  . = ALIGN(PAGE_SIZE);
+-  PERCPU_VADDR(0, :percpu)
++	/*
++	 * percpu offsets are zero-based on SMP.  PERCPU_VADDR() changes the
++	 * output PHDR, so the next output section - __data_nosave - should
++	 * start another section data.init2.  Also, pda should be at the head of
++	 * percpu area.  Preallocate it and define the percpu offset symbol
++	 * so that it can be accessed as a percpu variable.
++	 */
++	. = ALIGN(PAGE_SIZE);
++	PERCPU_VADDR(0, :percpu)
+ #else
+-  PERCPU(PAGE_SIZE)
++	PERCPU(PAGE_SIZE)
+ #endif
+ 
+-  . = ALIGN(PAGE_SIZE);
+-  __init_end = .;
+-
+-  .data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
+-	. = ALIGN(PAGE_SIZE);
+-	__nosave_begin = .;
+-	*(.data.nosave)
+-	. = ALIGN(PAGE_SIZE);
+-	__nosave_end = .;
+-  } :data.init2 /* use another section data.init2, see PERCPU_VADDR() above */
+-
+-  .bss : AT(ADDR(.bss) - LOAD_OFFSET) {
+ 	. = ALIGN(PAGE_SIZE);
+-	__bss_start = .;		/* BSS */
+-	*(.bss.page_aligned)
+-	*(.bss)
+-	__bss_stop = .;
+-  }
++	__init_end = .;
++
++	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
++		. = ALIGN(PAGE_SIZE);
++		__nosave_begin = .;
++		*(.data.nosave)
++		. = ALIGN(PAGE_SIZE);
++		__nosave_end = .;
++	} :data.init2
++	/* use another section data.init2, see PERCPU_VADDR() above */
++
++	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {
++		. = ALIGN(PAGE_SIZE);
++		__bss_start = .;		/* BSS */
++		*(.bss.page_aligned)
++		*(.bss)
++		__bss_stop = .;
++	}
+ 
+-  .brk : AT(ADDR(.brk) - LOAD_OFFSET) {
+-	. = ALIGN(PAGE_SIZE);
+-	__brk_base = . ;
+- 	. += 64 * 1024 ;	/* 64k alignment slop space */
+-	*(.brk_reservation)	/* areas brk users have reserved */
+-	__brk_limit = . ;
+-  }
+-
+-  _end = . ;
+-
+-  /* Sections to be discarded */
+-  /DISCARD/ : {
+-	*(.exitcall.exit)
+-	*(.eh_frame)
+-	*(.discard)
++	.brk : AT(ADDR(.brk) - LOAD_OFFSET) {
++		. = ALIGN(PAGE_SIZE);
++		__brk_base = .;
++		. += 64 * 1024;		/* 64k alignment slop space */
++		*(.brk_reservation)	/* areas brk users have reserved */
++		__brk_limit = .;
+ 	}
+ 
+-  STABS_DEBUG
++	_end = . ;
+ 
+-  DWARF_DEBUG
++	/* Sections to be discarded */
++	/DISCARD/ : {
++		*(.exitcall.exit)
++		*(.eh_frame)
++		*(.discard)
++	}
++
++	STABS_DEBUG
++	DWARF_DEBUG
+ }
+ 
+- /*
+-  * Per-cpu symbols which need to be offset from __per_cpu_load
+-  * for the boot processor.
+-  */
++/*
++ * Per-cpu symbols which need to be offset from __per_cpu_load
++ * for the boot processor.
++ */
+ #define INIT_PER_CPU(x) init_per_cpu__##x = per_cpu__##x + __per_cpu_load
+ INIT_PER_CPU(gdt_page);
+ INIT_PER_CPU(irq_stack_union);
