@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760672AbZD0Ur5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761543AbZD0UsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760672AbZD0Ur5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 16:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435AbZD0Urr
+	id S1761543AbZD0UsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 16:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760216AbZD0Ury
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 16:47:47 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:34624 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755073AbZD0Urq (ORCPT
+	Mon, 27 Apr 2009 16:47:54 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:49044 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759738AbZD0Ury (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 16:47:46 -0400
-Date: Mon, 27 Apr 2009 16:46:46 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: how to properly post/disseminate kernel cleanup/janitorial
- possibilities?
-Message-ID: <alpine.LFD.2.00.0904271637470.4906@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Mon, 27 Apr 2009 16:47:54 -0400
+Date: Mon, 27 Apr 2009 15:47:52 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: David Hawkins <dwh@ovro.caltech.edu>, linuxppc-dev@ozlabs.org,
+       Dan Williams <dan.j.williams@intel.com>,
+       Liu Dave-R63238 <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+       Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
+Message-ID: <20090427204752.GA22406@ld0162-tx32.am.freescale.net>
+References: <20090424183517.GB23140@ovro.caltech.edu> <D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net> <ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com> <49F608B7.9080409@ovro.caltech.edu> <49F60A3A.4060402@freescale.com> <49F60BF8.8040404@ovro.caltech.edu> <49F60FE1.90707@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49F60FE1.90707@freescale.com>
+User-Agent: Mutt/1.4.1i
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 27, 2009 at 03:04:49PM -0500, Timur Tabi wrote:
+> David Hawkins wrote:
+> 
+> > Can you give me an example of non-PCI memory that would be
+> > non-prefetchable that you'd like us to try? We can see if our
+> > host CPUs have an area like that ... we just need to know
+> > what device to look for first :)
+> 
+> Hmmmm.... I was going to say any SOC device in the IMMR, but I don't see
+> anything there that would constitute a memory buffer.
+> 
+> I test this change on an 8610 and DMA to a register I/O, where this bit
+> isn't even defined, and it made no difference.  So I guess this change
+> is okay.
 
-  since i, on an occasional basis, run a set of scanning scripts i
-wrote and promptly annoy the crap out of everyone with the results,
-i'm open to the proper way to do this scanning and get the results out
-there to people who might be interested while not bugging those folks
-who aren't.
+I thought the driver only used the bit if the device tree indicated it
+was an 83xx-era DMA controller?
 
-  a while back, a few people suggested a wiki page, while others
-disagreed, suggesting that no one will follow a link to a wiki page
-and will only read what's directly on the list.  grapple, grapple.
+That said, the bits are documented as specifically for PCI, so it would
+be surprising if it had any effect elsewhere.
 
-  in the end (as i'm sure you're aware by now), i post the results
-here:
-
-  http://www.crashcourse.ca/wiki/index.php/Kernel_cleanup
-
-i'm convinced that there's value in the links i've promoted lately --
-scanning Kconfig files for unused or "bad" CONFIG variables, not just
-to clean historical cruft out of those files but because, on occasion,
-the scanning really does track down typoes and errors.
-
-  not quite so critical is a "style" script i wrote, which looks for
-places to simplify code by using some of the macros/functions defined
-in include/linux/kernel.h.  i ran that script again earlier today, and
-posted only *some* of the results here:
-
-  http://www.crashcourse.ca/wiki/index.php/The_style_script
-
-long story short, i have a *pile* of scripts and sub-scripts i'm happy
-to run and post the results of since it takes practically zero time on
-my part, i'm just open to what folks think is the most productive way
-to do that, and also for any other scanning i can add since, by now,
-any other patterns to scan for would just represent adding a line or
-two to a script.
-
- thoughts?
-
-rday
---
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+-Scott
