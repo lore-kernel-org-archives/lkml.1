@@ -1,158 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757908AbZD0Pc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbZD0Pdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757908AbZD0Pc3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 11:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757117AbZD0PcS
+	id S1758131AbZD0Pdc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 11:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbZD0PdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 11:32:18 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:37823 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756223AbZD0PcR convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 11:32:17 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AskHAN9r9UlMQW1W/2dsb2JhbACBUIEwy0iDdAU
-Date: Mon, 27 Apr 2009 11:32:14 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: mingo@elte.hu, fweisbec@gmail.com, rostedt@goodmis.org,
-       zhaolei@cn.fujitsu.com, laijs@cn.fujitsu.com,
-       Li Zefan <lizf@cn.fujitsu.com>, tzanussi@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] ftrace: add a tracepoint for
-	__raise_softirq_irqoff()
-Message-ID: <20090427153214.GC26343@Krystal>
-References: <49F548D0.9030500@cn.fujitsu.com> <20090427060137.GA13182@Krystal> <49F54F05.4030108@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <49F54F05.4030108@cn.fujitsu.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:27:59 up 58 days, 11:54,  1 user,  load average: 0.06, 0.24,
-	0.27
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 27 Apr 2009 11:33:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34426 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756664AbZD0PdV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 11:33:21 -0400
+Date: Mon, 27 Apr 2009 16:33:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Huang Ying <ying.huang@intel.com>,
+       Robert Richter <robert.richter@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: Re: Patenting kernel patches was Re: Re-implement MCE log ring
+ buffer as per-CPU ring buffer
+Message-ID: <20090427163353.3fe1f59e@lxorguk.ukuu.org.uk>
+In-Reply-To: <49F5C305.60807@linux.intel.com>
+References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com>
+	<20090422092259.GC18226@elte.hu>
+	<20090422101600.GL3226@erda.amd.com>
+	<1240553210.6842.871.camel@yhuang-dev.sh.intel.com>
+	<20090424100943.GJ27264@erda.amd.com>
+	<alpine.DEB.2.00.0904240935140.24293@gandalf.stny.rr.com>
+	<1240818596.6842.1001.camel@yhuang-dev.sh.intel.com>
+	<alpine.DEB.2.00.0904271026140.24293@gandalf.stny.rr.com>
+	<49F5C305.60807@linux.intel.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Xiao Guangrong (xiaoguangrong@cn.fujitsu.com) wrote:
+> And also holding up perfectly good uncontaminated patches for something
+> patented seems especially wrong.
 > 
-> 
-> Mathieu Desnoyers 写道:
-> > * Xiao Guangrong (xiaoguangrong@cn.fujitsu.com) wrote:
-> >> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> >>
-> >> This patch is modified from Mathieu Desnoyers' patch. The original patch
-> >> can be found here: 
-> >> 	http://marc.info/?l=linux-kernel&m=123791201816245&w=2
-> >> This tracepoint can trace the time stamp when softirq action is raised. 
-> >>
-> >> Change log for v1 -> v2: 
-> >> 1: Use TRACE_EVENT instead of DEFINE_TRACE
-> >> 2: Move the tracepoint from raise_softirq_irqoff() to __raise_softirq_irqoff()
-> >>
-> > 
-> > Hi Xiao,
-> > 
-> >> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> >> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> >>
-> >> ---
-> >>  include/linux/interrupt.h  |    9 ++++++++-
-> >>  include/trace/events/irq.h |   18 ++++++++++++++++++
-> >>  2 files changed, 26 insertions(+), 1 deletions(-)
-> >>
-> >> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-> >> index 912c52c..86bae89 100644
-> >> --- a/include/linux/interrupt.h
-> >> +++ b/include/linux/interrupt.h
-> >> @@ -361,7 +361,14 @@ asmlinkage void do_softirq(void);
-> >>  asmlinkage void __do_softirq(void);
-> >>  extern void open_softirq(int nr, void (*action)(struct softirq_action *));
-> >>  extern void softirq_init(void);
-> >> -#define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
-> >> +
-> >> +#include <trace/events/irq.h>
-> > 
-> > Includes are usually at the beginning of the files.
-> > 
-> > Besides that, the patch looks good.
-> > 
-> Hi Mathieu: 
-> I attempted to include <trace/events/irq.h> as your suggestion, but this results
-> in a cross references: 
-> struct softirq_action have been used in tarce/event/irq.h. 
-> so I move “include <trace/events/irq.h>” in the front of __raise_softirq_irqoff. 
+> I think we should move forward with a standard non patented ring
+> buffer Ying was working on for this and avoid the patent mess as
+> far as possible.
 
-Steven : so, what's the current deal with
+Agreed. If the future patches to be presented are useful and the
+licensing usable etc then they can still be merged in the future (or far
+future depending how much look folks have speeding up lawyers ;))
 
-- #include <trace/irq.h> vs #include <trace/events/irq.h> ?
-
-- Having header dependency in the ftrace-specific parts of the
-  TRACE_EVENT macros ?
-
-Mathieu
-
-> 
-> > Which tree is it for ? mainline 2.6.30-rc or Ingo's tip tree ?
-> > 
-> > Working with Ingo on -tip is probably better so the work can be
-> > synchronized with Steven's work more easily.
-> > 
-> This patch is work with Ingo on -tip tree
-> 
-> Thank you!
-> Xiao Guangrong
-> > Thanks a lot !
-> > 
-> > Mathieu
-> > 
-> >> +static inline void __raise_softirq_irqoff(unsigned int nr)
-> >> +{
-> >> +	trace_irq_softirq_raise(nr);
-> >> +	or_softirq_pending(1UL << nr);
-> >> +}
-> >> +
-> >>  extern void raise_softirq_irqoff(unsigned int nr);
-> >>  extern void raise_softirq(unsigned int nr);
-> >>  extern void wakeup_softirqd(void);
-> >> diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
-> >> index 7686864..2628e08 100644
-> >> --- a/include/trace/events/irq.h
-> >> +++ b/include/trace/events/irq.h
-> >> @@ -90,6 +90,24 @@ TRACE_EVENT(softirq_exit,
-> >>  	TP_printk("softirq=%d action=%s", __entry->vec, __get_str(name))
-> >>  );
-> >>  
-> >> +TRACE_EVENT(irq_softirq_raise,
-> >> +
-> >> +	TP_PROTO(unsigned int nr),
-> >> +
-> >> +	TP_ARGS(nr),
-> >> +
-> >> +	TP_STRUCT__entry(
-> >> +		__field(	unsigned int,	nr	)
-> >> +	),
-> >> +
-> >> +	TP_fast_assign(
-> >> +		__entry->nr	= nr;
-> >> +	),
-> >> +
-> >> +	TP_printk("softirq=%d action=%s is raised",
-> >> +		__entry->nr, softirq_to_name[__entry->nr])
-> >> +);
-> >> +
-> >>  #endif /*  _TRACE_IRQ_H */
-> >>  
-> >>  /* This part must be outside protection */
-> >> -- 
-> >> 1.6.1.2
-> >>
-> > 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Alan
