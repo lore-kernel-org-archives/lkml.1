@@ -1,153 +1,433 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757893AbZD0QQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758367AbZD0QRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757893AbZD0QQt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 12:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755740AbZD0QQf
+	id S1758367AbZD0QRe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 12:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758069AbZD0QRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 12:16:35 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:46072 "EHLO e2.ny.us.ibm.com"
+	Mon, 27 Apr 2009 12:17:01 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57467 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752654AbZD0QQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 12:16:33 -0400
-Date: Mon, 27 Apr 2009 09:16:29 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, benh@kernel.crashing.org
-Subject: Re: [PATCH RFC] v2 expedited "big hammer" RCU grace periods
-Message-ID: <20090427161629.GC7226@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090426052340.GA24931@linux.vnet.ibm.com> <20090426112717.GE10391@elte.hu> <20090426191343.GC29238@Krystal> <20090426202255.GA5365@elte.hu> <20090426214451.GC6945@linux.vnet.ibm.com> <20090427032639.GA10087@elte.hu> <20090427132153.GI6945@linux.vnet.ibm.com> <20090427155424.GA27041@Krystal>
+	id S1757979AbZD0QQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 12:16:58 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 1/4] FRV: utrace: Remove in-kernel strace code
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, hch@lst.de, roland@redhat.com,
+       linux-kernel@vger.kernel.org
+Date: Mon, 27 Apr 2009 17:15:40 +0100
+Message-ID: <20090427161540.16200.23710.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090427155424.GA27041@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 11:54:24AM -0400, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Mon, Apr 27, 2009 at 05:26:39AM +0200, Ingo Molnar wrote:
-> > > 
-> > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > On Sun, Apr 26, 2009 at 10:22:55PM +0200, Ingo Molnar wrote:
-> > > > > 
-> > > > > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > > > > 
-> > > > > > * Ingo Molnar (mingo@elte.hu) wrote:
-> > > > > > > 
-> > > > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > > > 
-> > > > > > > > Second cut of "big hammer" expedited RCU grace periods, but only 
-> > > > > > > > for rcu_bh.  This creates another softirq vector, so that entering 
-> > > > > > > > this softirq vector will have forced an rcu_bh quiescent state (as 
-> > > > > > > > noted by Dave Miller).  Use smp_call_function() to invoke 
-> > > > > > > > raise_softirq() on all CPUs in order to cause this to happen.  
-> > > > > > > > Track the CPUs that have passed through a quiescent state (or gone 
-> > > > > > > > offline) with a cpumask.
-> > > > > > > 
-> > > > > > > hm, i'm still asking whether doing this would be simpler via a 
-> > > > > > > reschedule vector - which not only is an existing facility but also 
-> > > > > > > forces all RCU domains through a quiescent state - not just bh-RCU 
-> > > > > > > participants.
-> > > > > > > 
-> > > > > > > Triggering a new softirq is in no way simpler that doing an SMP 
-> > > > > > > cross-call - in fact softirqs are a finite resource so using some 
-> > > > > > > other facility would be preferred.
-> > > > > > > 
-> > > > > > > Am i missing something?
-> > > > > > > 
-> > > > > > 
-> > > > > > I think the reason for this whole thread is that waiting for rcu 
-> > > > > > quiescent state, when called many times e.g. in multiple iptables 
-> > > > > > invokations, takes too longs (5 seconds to load the netfilter 
-> > > > > > rules at boot). [...]
-> > > > > 
-> > > > > I'm aware of the problem space.
-> > > > > 
-> > > > > I was suggesting that to trigger the quiescent state and to wait for 
-> > > > > it to propagate it would be enough to reuse the reschedule 
-> > > > > mechanism.
-> > > > > 
-> > > > > It would be relatively straightforward: first a send-reschedule then 
-> > > > > do a wait_task_context_switch() on rq->curr - both are existing 
-> > > > > primitives. (a task reference has to be taken but that's pretty much 
-> > > > > all)
-> > > > 
-> > > > Well, one reason I didn't take this approach was that I didn't 
-> > > > happen to think of it.  ;-)
-> > > > 
-> > > > Also that I hadn't heard of wait_task_context_switch().
-> > > > 
-> > > > Hmmm...  Looking for wait_task_context_switch().  OK, found it.
-> > > > 
-> > > > It looks to me that this primitive won't return until the 
-> > > > scheduler actually decides to run something else.  We instead need 
-> > > > to have something that stops waiting once the CPU enters the 
-> > > > scheduler, hence the previous thought of making rcu_qsctr_inc() do 
-> > > > a bit of extra work.
-> > > > 
-> > > > This would be a way of making an expedited RCU-sched across all 
-> > > > RCU implementations.  As noted in the earlier email, it would not 
-> > > > handle RCU or RCU-bh in a -rt kernel.
-> > > > 
-> > > > > By the time wait_task_context_switch() returns from the last CPU 
-> > > > > we know that the quiescent state has passed.
-> > > > 
-> > > > We would want to wait for all of the CPUs in parallel, though, 
-> > > > wouldn't we?  Seems that we would not want to wait for the last 
-> > > > CPU to do another trip through the scheduler if it had already 
-> > > > passed through the scheduler while we were waiting on the earlier 
-> > > > CPUs.
-> > > > 
-> > > > So it seems like we would still want a two-pass approach -- one 
-> > > > pass to capture the current state, the second pass to wait for the 
-> > > > state to change.
-> > > 
-> > > I think waiting in parallel is still possible (first kick all tasks, 
-> > > then make sure all tasks have left the CPU at least once).
-> > > 
-> > > The busy-waiting in wait_task_context_switch() is indeed a problem - 
-> > > but perhaps that could be refactored to be a migration-thread driven 
-> > > wait_for_completion() + complete() cycle? It could be driven by 
-> > > preempt notifiers perhaps - and become zero-cost.
-> > 
-> > Hmmm...  It would need to be informed of the quiescent state even if
-> > that quiescent state did not result in a preemption.
-> > 
-> > But you are right -- I do need to expedite RCU, not just RCU-bh,
-> > especially given that the boot-speed guys are starting to see grace
-> > periods as a measureable fraction of the boot time.  I will take another
-> > pass at this.
-> 
-> It might sound a bit simplistic, but... scheduling a high-priority
-> workqueue on every CPUs would give you the guarantees you seem to need
-> here. Or is the delay of letting the scheduler schedule a high-priority
-> task a delay you are trying to avoid ?
-> 
-> Some kind of priority boosting done by synchronize_rcu() could probably
-> work, and you could support rcu callbacks priority boosting by assigning
-> a priority to each callback registered (same priority as the thread
-> which invoked call_rcu). The rcu callbacks could then be sorted by
-> priority in a RB tree, and only the callbacks associated with priority
-> >= than the next priority task would be executed.
+Remove in-kernel strace code from the FRV arch as it's not really needed any
+more.
 
-I did something similar for the implementation of synchronize_sched()
-in preemptable RCU.  The interactions with CPU hotplug are a bit ugly.
-It will be easier to hook into rcu_qsctr_inc().  ;-)
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-But this discussion has been quite useful -- my thoughts for the design
-of the long-term solution were a bit lacking, as they would have allowed
-a heavy callback load to delay an expedited grace period.  So this will
-be a bit of a hack until I get all the RCU implementations converged,
-but there is a nice long-term solution to be had by integrating the
-expediting into the hierarchical-RCU data structures.
+ arch/frv/kernel/ptrace.c |  379 ----------------------------------------------
+ 1 files changed, 0 insertions(+), 379 deletions(-)
 
-							Thanx, Paul
+
+diff --git a/arch/frv/kernel/ptrace.c b/arch/frv/kernel/ptrace.c
+index 5e7d401..6b15e5d 100644
+--- a/arch/frv/kernel/ptrace.c
++++ b/arch/frv/kernel/ptrace.c
+@@ -306,387 +306,8 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 	return ret;
+ }
+ 
+-int __nongprelbss kstrace;
+-
+-static const struct {
+-	const char	*name;
+-	unsigned	argmask;
+-} __syscall_name_table[NR_syscalls] = {
+-	[0]	= { "restart_syscall"			},
+-	[1]	= { "exit",		0x000001	},
+-	[2]	= { "fork",		0xffffff	},
+-	[3]	= { "read",		0x000141	},
+-	[4]	= { "write",		0x000141	},
+-	[5]	= { "open",		0x000235	},
+-	[6]	= { "close",		0x000001	},
+-	[7]	= { "waitpid",		0x000141	},
+-	[8]	= { "creat",		0x000025	},
+-	[9]	= { "link",		0x000055	},
+-	[10]	= { "unlink",		0x000005	},
+-	[11]	= { "execve",		0x000445	},
+-	[12]	= { "chdir",		0x000005	},
+-	[13]	= { "time",		0x000004	},
+-	[14]	= { "mknod",		0x000325	},
+-	[15]	= { "chmod",		0x000025	},
+-	[16]	= { "lchown",		0x000025	},
+-	[17]	= { "break" },
+-	[18]	= { "oldstat",		0x000045	},
+-	[19]	= { "lseek",		0x000131	},
+-	[20]	= { "getpid",		0xffffff	},
+-	[21]	= { "mount",		0x043555	},
+-	[22]	= { "umount",		0x000005	},
+-	[23]	= { "setuid",		0x000001	},
+-	[24]	= { "getuid",		0xffffff	},
+-	[25]	= { "stime",		0x000004	},
+-	[26]	= { "ptrace",		0x004413	},
+-	[27]	= { "alarm",		0x000001	},
+-	[28]	= { "oldfstat",		0x000041	},
+-	[29]	= { "pause",		0xffffff	},
+-	[30]	= { "utime",		0x000045	},
+-	[31]	= { "stty" },
+-	[32]	= { "gtty" },
+-	[33]	= { "access",		0x000025	},
+-	[34]	= { "nice",		0x000001	},
+-	[35]	= { "ftime" },
+-	[36]	= { "sync",		0xffffff	},
+-	[37]	= { "kill",		0x000011	},
+-	[38]	= { "rename",		0x000055	},
+-	[39]	= { "mkdir",		0x000025	},
+-	[40]	= { "rmdir",		0x000005	},
+-	[41]	= { "dup",		0x000001	},
+-	[42]	= { "pipe",		0x000004	},
+-	[43]	= { "times",		0x000004	},
+-	[44]	= { "prof" },
+-	[45]	= { "brk",		0x000004	},
+-	[46]	= { "setgid",		0x000001	},
+-	[47]	= { "getgid",		0xffffff	},
+-	[48]	= { "signal",		0x000041	},
+-	[49]	= { "geteuid",		0xffffff	},
+-	[50]	= { "getegid",		0xffffff	},
+-	[51]	= { "acct",		0x000005	},
+-	[52]	= { "umount2",		0x000035	},
+-	[53]	= { "lock" },
+-	[54]	= { "ioctl",		0x000331	},
+-	[55]	= { "fcntl",		0x000331	},
+-	[56]	= { "mpx" },
+-	[57]	= { "setpgid",		0x000011	},
+-	[58]	= { "ulimit" },
+-	[60]	= { "umask",		0x000002	},
+-	[61]	= { "chroot",		0x000005	},
+-	[62]	= { "ustat",		0x000043	},
+-	[63]	= { "dup2",		0x000011	},
+-	[64]	= { "getppid",		0xffffff	},
+-	[65]	= { "getpgrp",		0xffffff	},
+-	[66]	= { "setsid",		0xffffff	},
+-	[67]	= { "sigaction" },
+-	[68]	= { "sgetmask" },
+-	[69]	= { "ssetmask" },
+-	[70]	= { "setreuid" },
+-	[71]	= { "setregid" },
+-	[72]	= { "sigsuspend" },
+-	[73]	= { "sigpending" },
+-	[74]	= { "sethostname" },
+-	[75]	= { "setrlimit" },
+-	[76]	= { "getrlimit" },
+-	[77]	= { "getrusage" },
+-	[78]	= { "gettimeofday" },
+-	[79]	= { "settimeofday" },
+-	[80]	= { "getgroups" },
+-	[81]	= { "setgroups" },
+-	[82]	= { "select" },
+-	[83]	= { "symlink" },
+-	[84]	= { "oldlstat" },
+-	[85]	= { "readlink" },
+-	[86]	= { "uselib" },
+-	[87]	= { "swapon" },
+-	[88]	= { "reboot" },
+-	[89]	= { "readdir" },
+-	[91]	= { "munmap",		0x000034	},
+-	[92]	= { "truncate" },
+-	[93]	= { "ftruncate" },
+-	[94]	= { "fchmod" },
+-	[95]	= { "fchown" },
+-	[96]	= { "getpriority" },
+-	[97]	= { "setpriority" },
+-	[99]	= { "statfs" },
+-	[100]	= { "fstatfs" },
+-	[102]	= { "socketcall" },
+-	[103]	= { "syslog" },
+-	[104]	= { "setitimer" },
+-	[105]	= { "getitimer" },
+-	[106]	= { "stat" },
+-	[107]	= { "lstat" },
+-	[108]	= { "fstat" },
+-	[111]	= { "vhangup" },
+-	[114]	= { "wait4" },
+-	[115]	= { "swapoff" },
+-	[116]	= { "sysinfo" },
+-	[117]	= { "ipc" },
+-	[118]	= { "fsync" },
+-	[119]	= { "sigreturn" },
+-	[120]	= { "clone" },
+-	[121]	= { "setdomainname" },
+-	[122]	= { "uname" },
+-	[123]	= { "modify_ldt" },
+-	[123]	= { "cacheflush" },
+-	[124]	= { "adjtimex" },
+-	[125]	= { "mprotect" },
+-	[126]	= { "sigprocmask" },
+-	[127]	= { "create_module" },
+-	[128]	= { "init_module" },
+-	[129]	= { "delete_module" },
+-	[130]	= { "get_kernel_syms" },
+-	[131]	= { "quotactl" },
+-	[132]	= { "getpgid" },
+-	[133]	= { "fchdir" },
+-	[134]	= { "bdflush" },
+-	[135]	= { "sysfs" },
+-	[136]	= { "personality" },
+-	[137]	= { "afs_syscall" },
+-	[138]	= { "setfsuid" },
+-	[139]	= { "setfsgid" },
+-	[140]	= { "_llseek",			0x014331	},
+-	[141]	= { "getdents" },
+-	[142]	= { "_newselect",		0x000141	},
+-	[143]	= { "flock" },
+-	[144]	= { "msync" },
+-	[145]	= { "readv" },
+-	[146]	= { "writev" },
+-	[147]	= { "getsid",			0x000001	},
+-	[148]	= { "fdatasync",		0x000001	},
+-	[149]	= { "_sysctl",			0x000004	},
+-	[150]	= { "mlock" },
+-	[151]	= { "munlock" },
+-	[152]	= { "mlockall" },
+-	[153]	= { "munlockall" },
+-	[154]	= { "sched_setparam" },
+-	[155]	= { "sched_getparam" },
+-	[156]	= { "sched_setscheduler" },
+-	[157]	= { "sched_getscheduler" },
+-	[158]	= { "sched_yield" },
+-	[159]	= { "sched_get_priority_max" },
+-	[160]	= { "sched_get_priority_min" },
+-	[161]	= { "sched_rr_get_interval" },
+-	[162]	= { "nanosleep",		0x000044	},
+-	[163]	= { "mremap" },
+-	[164]	= { "setresuid" },
+-	[165]	= { "getresuid" },
+-	[166]	= { "vm86" },
+-	[167]	= { "query_module" },
+-	[168]	= { "poll" },
+-	[169]	= { "nfsservctl" },
+-	[170]	= { "setresgid" },
+-	[171]	= { "getresgid" },
+-	[172]	= { "prctl",			0x333331	},
+-	[173]	= { "rt_sigreturn",		0xffffff	},
+-	[174]	= { "rt_sigaction",		0x001441	},
+-	[175]	= { "rt_sigprocmask",		0x001441	},
+-	[176]	= { "rt_sigpending",		0x000014	},
+-	[177]	= { "rt_sigtimedwait",		0x001444	},
+-	[178]	= { "rt_sigqueueinfo",		0x000411	},
+-	[179]	= { "rt_sigsuspend",		0x000014	},
+-	[180]	= { "pread",			0x003341	},
+-	[181]	= { "pwrite",			0x003341	},
+-	[182]	= { "chown",			0x000115	},
+-	[183]	= { "getcwd" },
+-	[184]	= { "capget" },
+-	[185]	= { "capset" },
+-	[186]	= { "sigaltstack" },
+-	[187]	= { "sendfile" },
+-	[188]	= { "getpmsg" },
+-	[189]	= { "putpmsg" },
+-	[190]	= { "vfork",			0xffffff	},
+-	[191]	= { "ugetrlimit" },
+-	[192]	= { "mmap2",			0x313314	},
+-	[193]	= { "truncate64" },
+-	[194]	= { "ftruncate64" },
+-	[195]	= { "stat64",			0x000045	},
+-	[196]	= { "lstat64",			0x000045	},
+-	[197]	= { "fstat64",			0x000041	},
+-	[198]	= { "lchown32" },
+-	[199]	= { "getuid32",			0xffffff	},
+-	[200]	= { "getgid32",			0xffffff	},
+-	[201]	= { "geteuid32",		0xffffff	},
+-	[202]	= { "getegid32",		0xffffff	},
+-	[203]	= { "setreuid32" },
+-	[204]	= { "setregid32" },
+-	[205]	= { "getgroups32" },
+-	[206]	= { "setgroups32" },
+-	[207]	= { "fchown32" },
+-	[208]	= { "setresuid32" },
+-	[209]	= { "getresuid32" },
+-	[210]	= { "setresgid32" },
+-	[211]	= { "getresgid32" },
+-	[212]	= { "chown32" },
+-	[213]	= { "setuid32" },
+-	[214]	= { "setgid32" },
+-	[215]	= { "setfsuid32" },
+-	[216]	= { "setfsgid32" },
+-	[217]	= { "pivot_root" },
+-	[218]	= { "mincore" },
+-	[219]	= { "madvise" },
+-	[220]	= { "getdents64" },
+-	[221]	= { "fcntl64" },
+-	[223]	= { "security" },
+-	[224]	= { "gettid" },
+-	[225]	= { "readahead" },
+-	[226]	= { "setxattr" },
+-	[227]	= { "lsetxattr" },
+-	[228]	= { "fsetxattr" },
+-	[229]	= { "getxattr" },
+-	[230]	= { "lgetxattr" },
+-	[231]	= { "fgetxattr" },
+-	[232]	= { "listxattr" },
+-	[233]	= { "llistxattr" },
+-	[234]	= { "flistxattr" },
+-	[235]	= { "removexattr" },
+-	[236]	= { "lremovexattr" },
+-	[237]	= { "fremovexattr" },
+-	[238]	= { "tkill" },
+-	[239]	= { "sendfile64" },
+-	[240]	= { "futex" },
+-	[241]	= { "sched_setaffinity" },
+-	[242]	= { "sched_getaffinity" },
+-	[243]	= { "set_thread_area" },
+-	[244]	= { "get_thread_area" },
+-	[245]	= { "io_setup" },
+-	[246]	= { "io_destroy" },
+-	[247]	= { "io_getevents" },
+-	[248]	= { "io_submit" },
+-	[249]	= { "io_cancel" },
+-	[250]	= { "fadvise64" },
+-	[252]	= { "exit_group",		0x000001	},
+-	[253]	= { "lookup_dcookie" },
+-	[254]	= { "epoll_create" },
+-	[255]	= { "epoll_ctl" },
+-	[256]	= { "epoll_wait" },
+-	[257]	= { "remap_file_pages" },
+-	[258]	= { "set_tid_address" },
+-	[259]	= { "timer_create" },
+-	[260]	= { "timer_settime" },
+-	[261]	= { "timer_gettime" },
+-	[262]	= { "timer_getoverrun" },
+-	[263]	= { "timer_delete" },
+-	[264]	= { "clock_settime" },
+-	[265]	= { "clock_gettime" },
+-	[266]	= { "clock_getres" },
+-	[267]	= { "clock_nanosleep" },
+-	[268]	= { "statfs64" },
+-	[269]	= { "fstatfs64" },
+-	[270]	= { "tgkill" },
+-	[271]	= { "utimes" },
+-	[272]	= { "fadvise64_64" },
+-	[273]	= { "vserver" },
+-	[274]	= { "mbind" },
+-	[275]	= { "get_mempolicy" },
+-	[276]	= { "set_mempolicy" },
+-	[277]	= { "mq_open" },
+-	[278]	= { "mq_unlink" },
+-	[279]	= { "mq_timedsend" },
+-	[280]	= { "mq_timedreceive" },
+-	[281]	= { "mq_notify" },
+-	[282]	= { "mq_getsetattr" },
+-	[283]	= { "sys_kexec_load" },
+-};
+-
+ asmlinkage void do_syscall_trace(int leaving)
+ {
+-#if 0
+-	unsigned long *argp;
+-	const char *name;
+-	unsigned argmask;
+-	char buffer[16];
+-
+-	if (!kstrace)
+-		return;
+-
+-	if (!current->mm)
+-		return;
+-
+-	if (__frame->gr7 == __NR_close)
+-		return;
+-
+-#if 0
+-	if (__frame->gr7 != __NR_mmap2 &&
+-	    __frame->gr7 != __NR_vfork &&
+-	    __frame->gr7 != __NR_execve &&
+-	    __frame->gr7 != __NR_exit)
+-		return;
+-#endif
+-
+-	argmask = 0;
+-	name = NULL;
+-	if (__frame->gr7 < NR_syscalls) {
+-		name = __syscall_name_table[__frame->gr7].name;
+-		argmask = __syscall_name_table[__frame->gr7].argmask;
+-	}
+-	if (!name) {
+-		sprintf(buffer, "sys_%lx", __frame->gr7);
+-		name = buffer;
+-	}
+-
+-	if (!leaving) {
+-		if (!argmask) {
+-			printk(KERN_CRIT "[%d] %s(%lx,%lx,%lx,%lx,%lx,%lx)\n",
+-			       current->pid,
+-			       name,
+-			       __frame->gr8,
+-			       __frame->gr9,
+-			       __frame->gr10,
+-			       __frame->gr11,
+-			       __frame->gr12,
+-			       __frame->gr13);
+-		}
+-		else if (argmask == 0xffffff) {
+-			printk(KERN_CRIT "[%d] %s()\n",
+-			       current->pid,
+-			       name);
+-		}
+-		else {
+-			printk(KERN_CRIT "[%d] %s(",
+-			       current->pid,
+-			       name);
+-
+-			argp = &__frame->gr8;
+-
+-			do {
+-				switch (argmask & 0xf) {
+-				case 1:
+-					printk("%ld", (long) *argp);
+-					break;
+-				case 2:
+-					printk("%lo", *argp);
+-					break;
+-				case 3:
+-					printk("%lx", *argp);
+-					break;
+-				case 4:
+-					printk("%p", (void *) *argp);
+-					break;
+-				case 5:
+-					printk("\"%s\"", (char *) *argp);
+-					break;
+-				}
+-
+-				argp++;
+-				argmask >>= 4;
+-				if (argmask)
+-					printk(",");
+-
+-			} while (argmask);
+-
+-			printk(")\n");
+-		}
+-	}
+-	else {
+-		if ((int)__frame->gr8 > -4096 && (int)__frame->gr8 < 4096)
+-			printk(KERN_CRIT "[%d] %s() = %ld\n", current->pid, name, __frame->gr8);
+-		else
+-			printk(KERN_CRIT "[%d] %s() = %lx\n", current->pid, name, __frame->gr8);
+-	}
+-	return;
+-#endif
+-
+ 	if (!test_thread_flag(TIF_SYSCALL_TRACE))
+ 		return;
+ 
+
