@@ -1,150 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbZD0Gjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbZD0Gk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756914AbZD0Gjh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 02:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756780AbZD0GjL
+	id S1756985AbZD0Gk3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 02:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756233AbZD0GkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 02:39:11 -0400
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:57237 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756777AbZD0GjI (ORCPT
+	Mon, 27 Apr 2009 02:40:12 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:45329 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754520AbZD0GkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 02:39:08 -0400
-Date: Mon, 27 Apr 2009 12:09:03 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+	Mon, 27 Apr 2009 02:40:10 -0400
+Date: Mon, 27 Apr 2009 08:42:16 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Tim Abbott <tabbott@MIT.EDU>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, "Theodore Ts'o" <tytso@MIT.EDU>,
+       Nikanth Karthikesan <knikanth@suse.de>,
        Arjan van de Ven <arjan@infradead.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v1 0/3] Saving power by cpu evacuation using
-	sched_mc=n
-Message-ID: <20090427063903.GC6440@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20090426204029.17495.46609.stgit@drishya.in.ibm.com> <20090427035216.GD10087@elte.hu> <20090427054325.GB6440@dirshya.in.ibm.com> <20090427055347.GA20739@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+       Paul Mundt <lethal@linux-sh.org>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       David Howells <dhowells@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH 14/15] x86: convert to use __HEAD and HEAD_TEXT macros.
+Message-ID: <20090427064216.GA6918@uranus.ravnborg.org>
+References: <1240711870-30505-11-git-send-email-tabbott@mit.edu> <1240711870-30505-12-git-send-email-tabbott@mit.edu> <1240711870-30505-13-git-send-email-tabbott@mit.edu> <1240711870-30505-14-git-send-email-tabbott@mit.edu> <alpine.LFD.2.00.0904260934570.3101@localhost.localdomain> <alpine.LFD.2.00.0904260958190.3101@localhost.localdomain> <20090426183401.GA1622@uranus.ravnborg.org> <alpine.LFD.2.00.0904261146570.7331@localhost.localdomain> <20090426192317.GA2637@uranus.ravnborg.org> <20090427045910.GA11868@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090427055347.GA20739@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090427045910.GA11868@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2009-04-27 07:53:47]:
-
+On Mon, Apr 27, 2009 at 06:59:10AM +0200, Ingo Molnar wrote:
 > 
-> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+> * Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
-> > > > --------------------------------------------------------
-> > > > sched_mc	No Cores	Performance	AvgPower	
-> > > > 		used		Records/sec	(Watts)
-> > > > --------------------------------------------------------
-> > > > 0		8		1.00x		1.00y
-> > > > 1		8		1.02x		1.01y
-> > > > 2		8		0.83x		1.01y
-> > > > 3		7		0.86x		0.97y
-> > > > 4		6		0.76x		0.92y
-> > > > 5		4		0.72x		0.82y
-> > > > --------------------------------------------------------
-> > > 
-> > > Looks like we want the kernel default to be sched_mc=1 ?
+> > > As mentioned, though, the much more interesting case would be 
+> > > the _real_ kernel vmlinux.lds.S file, which is a lot more 
+> > > complex and where the differences between 32-bit and 64-bit 
+> > > cases aren't totally trivial.
 > > 
-> > Hi Ingo,
+> > Agreed.
 > > 
-> > Yes, sched_mc wins for a simple cpu bound workload like this.  But 
-> > the challenge is that the best settings depends on the workload 
-> > and the system configuration.  This leads me to think that the 
-> > default setting should be left with the distros where we can 
-> > factor in various parameters and choose the right default from 
-> > user space.
-> > 
-> > 
-> > > Regarding the values for 2...5 - is the AvgPower column time 
-> > > normalized or workload normalized?
-> > 
-> > The AvgPower is time normalised, just the power value divided by 
-> > the baseline at sched_mc=0.
-> >  
-> > > If it's time normalized then it appears there's no power win 
-> > > here at all: we'd be better off by throttling the workload 
-> > > directly (by injecting sleeps or something like that), right?
-> > 
-> > Yes, there is no power win when comparing with peak benchmark 
-> > throughput in this case.  However more complex workload setup may 
-> > not show similar characteristics because they are not dependent 
-> > only on CPU bandwidth for their peak performance.
-> > 
-> > * Reduction in cpu bandwidth may not directly translate to performance
-> >   reduction on complex workloads
-> > * Even if there is degradation, the system may still meet the design
-> >   objectives.  20-30% increase in response time over a 1 second
-> >   nominal value may be acceptable in most cases
+> > But I expect someone else to do so.
+> > When I am in unification mode I try to spend time on
+> > architectures with less people involved.
 > 
-> But ... we could probably get a _better_ (near linear) slowdown by 
-> injecting wait cycles into the workload.
+> thanks for reconsidering - and i've applied your patch - thanks Sam.
+> 
+> Architectures with lots of people involved (hm, what a strange way 
+> to say 'x86' ;-) tend to be logistically more complex and there's an 
+> (understandably) stronger pushback against regressions - but that is 
+> also where unification is actually needed the most and where the 
+> ongoing costs of splintered code is the highest.
+Well - the effort done for sparc and m68k lately was also needed.
 
-We have advantages when complete cpu packages are not used as opposed
-to just injecting idle time in all cores. 
- 
-> I.e. we should only touch balancing if there's a _genuine_ power 
-> saving: i.e. less power is used for the same throughput.
+> Your kbuild patches 
+> are making quite a bit of difference so please dont hold back :)
+The good patches are the ones that benefits all architectures.
 
-Load balancer knows the cpu package topology and in essence knows the
-most power efficient combinations of cores to use.  If we have to
-schedule on 4 cores in a 8 core system, the load balancer can pick the
-right combination.
+Well - I can give the vmlinux_*.ds files a try.
+Did you apply the patch to an append only branch or may I recreate
+the patch?
+I noticed a few minor things that can be 'fixed' to bring the inital
+differences between 32 bit and 64 bit down.
 
-> The numbers in the table show a plain slowdown: doing fewer 
-> transactions means less power used. But that is trivial to achieve 
-> for a CPU-bound workload: throttle the workload. I.e. inject less 
-> work, save power.
+But I can do these in a follow-up patch too.
 
-Agreed, this example does not show the best use case for this
-feature, however we can easily experimentally verify that targeted
-evacuation of cores can provide better performance-per-watt as
-compared to plain throttling to reduce utilisation.
-
-> And if we want to throttle 'transparently', from the kernel, we 
-> should do it not via an artificial open-ended scale of 
-> sched_mc=2,3,4,5... - we should do it via a _percentage_ value.
-
-Yes we want to transparently throttle from the kernel at a core level
-granularity.
-
-Having a percentage value that can take discrete steps based on the
-number of cores in the system is a good idea.  I will switch the
-parameter to percentage in the next iteration.
- 
-> I.e. a system setting that says "at most utilize the system 80% of 
-> its peak capacity". That can be implemented by the kernel injecting 
-> small delays or by intentionally not scheduling on certain CPUs (but 
-> not delaying tasks - forcing them to other cpus in essence).
-
-Advances in hardware power management like very low power deep sleep
-states and further package level power savings when all cores are idle
-changes the above assumption.
-
-Uniformly adding delays on all CPUs provide far less power savings as
-compared to not using one core or one complete package.  Evacuating
-core/package essentially shuts them off as compared to very short
-bursts of idle times.
-
-If we can accumulate all such idle times to a single core, with little
-effect on fairness, we get better power savings for the same amount of
-idle time or utilisation.
-
-Agreed that this is a coarse granularity compared to injecting delay,
-but this will become practical as the core density increase in the
-enterprise processor design.
-
---Vaidy
-
+	Sam
