@@ -1,85 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbZD0Tge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755596AbZD0TlL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758103AbZD0Tge (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 15:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbZD0Tg0
+	id S1755596AbZD0TlL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 15:41:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbZD0Tk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 15:36:26 -0400
-Received: from gate.crashing.org ([63.228.1.57]:51865 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750963AbZD0TgZ convert rfc822-to-8bit (ORCPT
+	Mon, 27 Apr 2009 15:40:57 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:37577 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751536AbZD0Tk4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 15:36:25 -0400
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Message-Id: <2CE2BC61-1C6B-4D01-870B-BC460730AD79@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
-In-Reply-To: <20090424223355.GB7858@ime.usp.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
-Content-Transfer-Encoding: 8BIT
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] powerpc: minimizing the configuration of linkstation_defconfig
-Date: Mon, 27 Apr 2009 14:29:52 -0500
-References: <20090424065816.GA15525@ime.usp.br> <Pine.LNX.4.64.0904242158210.8309@axis700.grange> <20090424223355.GB7858@ime.usp.br>
-X-Mailer: Apple Mail (2.930.3)
+	Mon, 27 Apr 2009 15:40:56 -0400
+Message-ID: <49F60A3A.4060402@freescale.com>
+Date: Mon, 27 Apr 2009 14:40:42 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090327 SeaMonkey/2.0a3
+MIME-Version: 1.0
+To: David Hawkins <dwh@ovro.caltech.edu>
+CC: Liu Dave-R63238 <DaveLiu@freescale.com>, Ira Snyder <iws@ovro.caltech.edu>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
+References: <20090424183517.GB23140@ovro.caltech.edu>	<D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net> <ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com> <49F608B7.9080409@ovro.caltech.edu>
+In-Reply-To: <49F608B7.9080409@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Hawkins wrote:
 
-On Apr 24, 2009, at 5:33 PM, Rogério Brito wrote:
+> Would you like some sort of summary of this info for a commit
+> message?
 
-> This patch addresses the following issues:
->
->
-> 01. makes CFQ the default scheduler, to be in line with the rest of  
-> the kernel.
->
-> 02. since linkstations are meant to store files, enable large blk  
-> devices.
->
-> 03. disable CONFIG_MIGRATION in in such low memory devices.
->
-> 04. disable CONFIG_BLK_DEV_RAM.
+That's probably overkill.  I just want a sentence or two that tells
+someone looking at the code casually that the behavior of reading PCI
+memory might be different than what they expect.
 
-do we not allow booting a ramdisk?
+> Would you like us to check any other transaction/register combos?
 
-> 05. disable CONFIG_SCSI_LOWLEVEL, as no device under that tree is  
-> used.
->
-> 06. idem for CONFIG_NETDEV_10000.
->
-> 07. idem for CONFIG_WIRELESS.
->
-> 08. idem for CONFIG_HWMON.
->
-> 09. idem for CONFIG_CRYPTO_HW.
->
-> 10. disable CONFIG_VIDEO_OUTPUT_CONTROL.
->
-> 11. keep consistency and disable extended attributes in CIFS, ext3,  
-> and NFS.
->
-> 12. enable CONFIG_PRINTK_TIME.
->
-> Signed-off-by: Rogério Brito <rbrito@ime.usp.br>
->
-> ---
->
-> Dear Kumar, please, apply this one.
->
-> I have another patch regarding one regression regarding MTD &
-> PHYSMAP_COMPAT that I plan to send on top of this one.
->
-> Thanks.
+Yes, could you try this on non-PCI memory?
 
-Ok, can we look at just specifying such info in the linkstation device  
-tree.
-
-Also, can you break this defconfig update into two patches.  1. that  
-just updates to 2.6.30-rc3 (or latest) and 2. that makes the various  
-changes you've listed above.
-
-- k
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
