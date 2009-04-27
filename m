@@ -1,127 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754922AbZD0D1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbZD0D2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754922AbZD0D1h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 23:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZD0D11
+	id S1755666AbZD0D2a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 23:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbZD0D2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 23:27:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39749 "EHLO mx2.mail.elte.hu"
+	Sun, 26 Apr 2009 23:28:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51235 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751790AbZD0D10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 23:27:26 -0400
-Date: Mon, 27 Apr 2009 05:26:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
-       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH RFC] v2 expedited "big hammer" RCU grace periods
-Message-ID: <20090427032639.GA10087@elte.hu>
-References: <20090426052340.GA24931@linux.vnet.ibm.com> <20090426112717.GE10391@elte.hu> <20090426191343.GC29238@Krystal> <20090426202255.GA5365@elte.hu> <20090426214451.GC6945@linux.vnet.ibm.com>
+	id S1752420AbZD0D2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 23:28:19 -0400
+Message-ID: <49F525E0.9070501@kernel.org>
+Date: Sun, 26 Apr 2009 20:26:24 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090426214451.GC6945@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 8/9] x86/irq: make MSI irq_desc numa aware -v2
+References: <49E68C41.4020801@kernel.org> <20090416090315.GF9813@elte.hu> <49E802CE.5030406@kernel.org> <49E804AD.9020702@kernel.org>
+In-Reply-To: <49E804AD.9020702@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+try to get irq_desc on the node in create_irq_nr
 
-> On Sun, Apr 26, 2009 at 10:22:55PM +0200, Ingo Molnar wrote:
-> > 
-> > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > 
-> > > * Ingo Molnar (mingo@elte.hu) wrote:
-> > > > 
-> > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > Second cut of "big hammer" expedited RCU grace periods, but only 
-> > > > > for rcu_bh.  This creates another softirq vector, so that entering 
-> > > > > this softirq vector will have forced an rcu_bh quiescent state (as 
-> > > > > noted by Dave Miller).  Use smp_call_function() to invoke 
-> > > > > raise_softirq() on all CPUs in order to cause this to happen.  
-> > > > > Track the CPUs that have passed through a quiescent state (or gone 
-> > > > > offline) with a cpumask.
-> > > > 
-> > > > hm, i'm still asking whether doing this would be simpler via a 
-> > > > reschedule vector - which not only is an existing facility but also 
-> > > > forces all RCU domains through a quiescent state - not just bh-RCU 
-> > > > participants.
-> > > > 
-> > > > Triggering a new softirq is in no way simpler that doing an SMP 
-> > > > cross-call - in fact softirqs are a finite resource so using some 
-> > > > other facility would be preferred.
-> > > > 
-> > > > Am i missing something?
-> > > > 
-> > > 
-> > > I think the reason for this whole thread is that waiting for rcu 
-> > > quiescent state, when called many times e.g. in multiple iptables 
-> > > invokations, takes too longs (5 seconds to load the netfilter 
-> > > rules at boot). [...]
-> > 
-> > I'm aware of the problem space.
-> > 
-> > I was suggesting that to trigger the quiescent state and to wait for 
-> > it to propagate it would be enough to reuse the reschedule 
-> > mechanism.
-> > 
-> > It would be relatively straightforward: first a send-reschedule then 
-> > do a wait_task_context_switch() on rq->curr - both are existing 
-> > primitives. (a task reference has to be taken but that's pretty much 
-> > all)
-> 
-> Well, one reason I didn't take this approach was that I didn't 
-> happen to think of it.  ;-)
-> 
-> Also that I hadn't heard of wait_task_context_switch().
-> 
-> Hmmm...  Looking for wait_task_context_switch().  OK, found it.
-> 
-> It looks to me that this primitive won't return until the 
-> scheduler actually decides to run something else.  We instead need 
-> to have something that stops waiting once the CPU enters the 
-> scheduler, hence the previous thought of making rcu_qsctr_inc() do 
-> a bit of extra work.
-> 
-> This would be a way of making an expedited RCU-sched across all 
-> RCU implementations.  As noted in the earlier email, it would not 
-> handle RCU or RCU-bh in a -rt kernel.
-> 
-> > By the time wait_task_context_switch() returns from the last CPU 
-> > we know that the quiescent state has passed.
-> 
-> We would want to wait for all of the CPUs in parallel, though, 
-> wouldn't we?  Seems that we would not want to wait for the last 
-> CPU to do another trip through the scheduler if it had already 
-> passed through the scheduler while we were waiting on the earlier 
-> CPUs.
-> 
-> So it seems like we would still want a two-pass approach -- one 
-> pass to capture the current state, the second pass to wait for the 
-> state to change.
+v2: don't check if we can move it when sparse_irq is not used
+[ Impact: use irq_desc_alloc_node ]
 
-I think waiting in parallel is still possible (first kick all tasks, 
-then make sure all tasks have left the CPU at least once).
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+---
+ arch/x86/kernel/apic/io_apic.c |   17 +++++++++++++----
+ include/linux/irq.h            |    2 +-
+ 2 files changed, 14 insertions(+), 5 deletions(-)
 
-The busy-waiting in wait_task_context_switch() is indeed a problem - 
-but perhaps that could be refactored to be a migration-thread driven 
-wait_for_completion() + complete() cycle? It could be driven by 
-preempt notifiers perhaps - and become zero-cost.
-
-	Ingo
+Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-2.6/arch/x86/kernel/apic/io_apic.c
+@@ -3027,14 +3027,13 @@ static int nr_irqs_gsi = NR_IRQS_LEGACY;
+ /*
+  * Dynamic irq allocate and deallocation
+  */
+-unsigned int create_irq_nr(unsigned int irq_want)
++unsigned int create_irq_nr(unsigned int irq_want, int node)
+ {
+ 	/* Allocate an unused irq */
+ 	unsigned int irq;
+ 	unsigned int new;
+ 	unsigned long flags;
+ 	struct irq_cfg *cfg_new = NULL;
+-	int node = cpu_to_node(boot_cpu_id);
+ 	struct irq_desc *desc_new = NULL;
+ 
+ 	irq = 0;
+@@ -3052,6 +3051,13 @@ unsigned int create_irq_nr(unsigned int
+ 
+ 		if (cfg_new->vector != 0)
+ 			continue;
++
++#ifdef CONFIG_SPARSE_IRQ
++		/* different node ?*/
++		if (desc_new->node != node)
++			continue;
++#endif
++
+ 		if (__assign_irq_vector(new, cfg_new, apic->target_cpus()) == 0)
+ 			irq = new;
+ 		break;
+@@ -3069,11 +3075,12 @@ unsigned int create_irq_nr(unsigned int
+ 
+ int create_irq(void)
+ {
++	int node = cpu_to_node(boot_cpu_id);
+ 	unsigned int irq_want;
+ 	int irq;
+ 
+ 	irq_want = nr_irqs_gsi;
+-	irq = create_irq_nr(irq_want);
++	irq = create_irq_nr(irq_want, node);
+ 
+ 	if (irq == 0)
+ 		irq = -1;
+@@ -3331,15 +3338,17 @@ int arch_setup_msi_irqs(struct pci_dev *
+ 	unsigned int irq_want;
+ 	struct intel_iommu *iommu = NULL;
+ 	int index = 0;
++	int node;
+ 
+ 	/* x86 doesn't support multiple MSI yet */
+ 	if (type == PCI_CAP_ID_MSI && nvec > 1)
+ 		return 1;
+ 
++	node = dev_to_node(&dev->dev);
+ 	irq_want = nr_irqs_gsi;
+ 	sub_handle = 0;
+ 	list_for_each_entry(msidesc, &dev->msi_list, list) {
+-		irq = create_irq_nr(irq_want);
++		irq = create_irq_nr(irq_want, node);
+ 		if (irq == 0)
+ 			return -1;
+ 		irq_want = irq + 1;
+Index: linux-2.6/include/linux/irq.h
+===================================================================
+--- linux-2.6.orig/include/linux/irq.h
++++ linux-2.6/include/linux/irq.h
+@@ -374,7 +374,7 @@ extern void set_irq_noprobe(unsigned int
+ extern void set_irq_probe(unsigned int irq);
+ 
+ /* Handle dynamic irq creation and destruction */
+-extern unsigned int create_irq_nr(unsigned int irq_want);
++extern unsigned int create_irq_nr(unsigned int irq_want, int node);
+ extern int create_irq(void);
+ extern void destroy_irq(unsigned int irq);
+ 
