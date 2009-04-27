@@ -1,54 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758508AbZD0OsH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932087AbZD0Osd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758508AbZD0OsH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 10:48:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757823AbZD0On7
+	id S932087AbZD0Osd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 10:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757764AbZD0OoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 10:43:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37598 "EHLO mx2.suse.de"
+	Mon, 27 Apr 2009 10:44:00 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37602 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757802AbZD0On5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757797AbZD0On5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 27 Apr 2009 10:43:57 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-fsdevel@vger.kernel.org,
        Christoph Hellwig <hch@infradead.org>,
        Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>
-Subject: [PATCH 2/8] vfs: Call ->sync_fs() even if s_dirt is 0 (version 4)
-Date: Mon, 27 Apr 2009 16:43:49 +0200
-Message-Id: <1240843435-1786-3-git-send-email-jack@suse.cz>
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/8] Sync fixes and cleanups (version 4)
+Date: Mon, 27 Apr 2009 16:43:47 +0200
+Message-Id: <1240843435-1786-1-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1240843435-1786-1-git-send-email-jack@suse.cz>
-References: <1240843435-1786-1-git-send-email-jack@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sync_filesystems() has a condition that if wait == 0 and s_dirt == 0, then
-->sync_fs() isn't called. This does not really make much sence since s_dirt is
-generally used by a filesystem to mean that ->write_super() needs to be called.
-But ->sync_fs() does different things. I even suspect that some filesystems
-(btrfs?) sets s_dirt just to fool this logic.
+  Hi,
 
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/super.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+  here comes the next version of sync fixes and cleanups. This version also
+includes some moving of code from super.c to sync.c and quota sync cleanup and
+slight speedup. If noone has any objections anymore, who's going to merge it?
+Al?
 
-diff --git a/fs/super.c b/fs/super.c
-index 4826540..d9759e0 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -490,7 +490,7 @@ restart:
- 		spin_unlock(&sb_lock);
- 		down_read(&sb->s_umount);
- 		async_synchronize_full_domain(&sb->s_async_list);
--		if (sb->s_root && (wait || sb->s_dirt))
-+		if (sb->s_root)
- 			sb->s_op->sync_fs(sb, wait);
- 		up_read(&sb->s_umount);
- 		/* restart only when sb is no longer on the list */
--- 
-1.6.0.2
-
+								Bye
+									Honza
