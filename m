@@ -1,117 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbZD0Kpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbZD0Ksh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754618AbZD0Kpp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 06:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbZD0Kpg
+	id S1754997AbZD0Ksh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 06:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZD0Ks0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 06:45:36 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:57587 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752647AbZD0Kpf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 06:45:35 -0400
-Date: Mon, 27 Apr 2009 19:45:33 +0900 (JST)
-Message-Id: <20090427.194533.183037823.ryov@valinux.co.jp>
-To: righi.andrea@gmail.com
-Cc: lizf@cn.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
-       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
-       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
-       dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       taka@valinux.co.jp, matt@bluehost.com, dradford@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/9] io-throttle documentation
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090420150052.GC13307@linux>
-References: <20090417102539.GA16838@linux>
-	<20090420.183815.226804723.ryov@valinux.co.jp>
-	<20090420150052.GC13307@linux>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 27 Apr 2009 06:48:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43552 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751775AbZD0KsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 06:48:25 -0400
+Message-ID: <49F58D75.7040304@redhat.com>
+Date: Mon, 27 Apr 2009 13:48:21 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Gregory Haskins <ghaskins@novell.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, davidel@xmailserver.org
+Subject: Re: [KVM PATCH v2 2/2] kvm: add support for irqfd via	eventfd-notification
+ interface
+References: <20090424042142.1796.60756.stgit@dev.haskins.net> <20090424042518.1796.65593.stgit@dev.haskins.net> <49F572EF.4010909@redhat.com> <49F58A8C.7090808@novell.com>
+In-Reply-To: <49F58A8C.7090808@novell.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrea,
+Gregory Haskins wrote:
+>>> This allows an eventfd to be registered as an irq source with a
+>>> guest.  Any
+>>> signaling operation on the eventfd (via userspace or kernel) will inject
+>>> the registered GSI at the next available window.
+>>>
+>>>  
+>>> +struct kvm_irqfd {
+>>> +    __u32 fd;
+>>> +    __u32 gsi;
+>>> +};
+>>> +
+>>>   
+>>>       
+>> I think it's better to have ioctl create and return the fd.  This way
+>> we aren't tied to eventfd (though it makes a lot of sense to use it).
+>>     
+>
+> I dont mind either way, but I am not sure it buys us much as the one
+> driving the fd would need to understand if the interface is
+> eventfd-esque or something else anyway.  Let me know if you still want
+> to see this changed.
+>   
 
-From: Andrea Righi <righi.andrea@gmail.com>
-Subject: Re: [PATCH 1/9] io-throttle documentation
-Date: Mon, 20 Apr 2009 17:00:53 +0200
+Sure, the interface remains the same (write 8 bytes), but the 
+implementation can change.  For example, we can implement it to work 
+from interrupt context, once we hack the locking appropriately.
 
-> On Mon, Apr 20, 2009 at 06:38:15PM +0900, Ryo Tsuruta wrote:
-> > Hi Andrea, 
-> > 
-> > > Implementing bio-cgroup functionality as pure infrastructure framework
-> > > instead of a cgroup subsystem would remove all this oddity and
-> > > complexity.
-> > > 
-> > > For example, the actual functionality that I need for the io-throttle
-> > > controller is just an interface to set and get the cgroup owner of a
-> > > page. I think it should be the same also for other potential users of
-> > > bio-cgroup.
-> > > 
-> > > So, what about implementing the bio-cgroup functionality as cgroup "page
-> > > tracking" infrastructure and provide the following interfaces:
-> > > 
-> > > /*
-> > >  * Encode the cgrp->css.id in page_group->flags
-> > >  */
-> > > void set_cgroup_page_owner(struct page *page, struct cgroup *cgrp);
-> > > 
-> > > /*
-> > >  * Returns the cgroup owner of a page, decoding the cgroup id from
-> > >  * page_cgroup->flags.
-> > >  */
-> > > struct cgroup *get_cgroup_page_owner(struct page *page);
-> > > 
-> > > This also wouldn't increase the size of page_cgroup because we can
-> > > encode the cgroup id in the unused bits of page_cgroup->flags, as
-> > > originally suggested by Kame.
-> > > 
-> > > And I think it could be used also by dm-ioband, even if it's not a
-> > > cgroup-based subsystem... but I may be wrong. Ryo what's your opinion?
 
-I've come up with an idea to coexist blkio-cgroup and io-throttle.
-blkio-cgroup provides a function to get a cgroup with the specified ID.
+>>> +static void
+>>> +irqfd_inject(struct work_struct *work)
+>>> +{
+>>> +    struct _irqfd *irqfd = container_of(work, struct _irqfd, work);
+>>> +    struct kvm *kvm = irqfd->kvm;
+>>> +
+>>> +    mutex_lock(&kvm->lock);
+>>> +    kvm_set_irq(kvm, kvm->irqfd.src, irqfd->gsi, 1);
+>>>   
+>>>       
+>> Need to lower the irq too (though irqfd only supports edge triggered
+>> interrupts).
+>>
+>>     
+> Should I just do back-to-back 1+0 inside the same lock?
+>
+>   
 
-/* Should be called under rcu_read_lock() */
-struct cgroup *blkio_cgroup_lookup(int id)
-{
-	struct cgroup *cgrp;
-	struct cgroup_subsys_state *css;
-	
-	if (blkio_cgroup_disabled())
-		return NULL;
+Yes.  Might be nice to add a kvm_toggle_irq(), but let's leave that 
+until later.
 
-	css = css_lookup(&blkio_cgroup_subsys, id);
-	if (!css)
-		return NULL;
-	cgrp = css->cgroup;
-	return cgrp;
-}
+  
 
-Then io-throttle can get a struct iothrottle which belongs to the
-cgroup by using the above function.
+>> One day we'll have lockless injection and we'll want to drop this.  I
+>> guess if we create the fd ourselves we can make it work, but I don't
+>> see how we can do this with eventfd.
+>>
+>>     
+>
+> Hmm...this is a good point.  There probably is no way to use eventfd
+> "off the shelf" in a way that doesn't cause this callback to be in a
+> critical section.  Should we just worry about switching away from
+> eventfd when this occurs, or should I implement a custom anon-fd now?
+>   
 
-static struct iothrottle *iothrottle_lookup(int id)
-{
-	struct cgroup *grp;
-	struct iothrottle *iot;
+I'd just go with eventfd, and switch when it becomes relevant.  As long 
+as the kernel allocates the fd, we're free to do as we like.
 
-	...
-	grp = blkio_cgroup_lookup(id);
-	if (!grp)
-		return NULL
-	iot = cgroup_to_iothrottle(grp);
-	...
-}
+-- 
+error compiling committee.c: too many arguments to function
 
-What do you think about this way?
-
-Thanks,
-Ryo Tsuruta
