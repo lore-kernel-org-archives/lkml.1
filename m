@@ -1,323 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932258AbZD0Seg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932298AbZD0Sfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932258AbZD0Seg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 14:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932109AbZD0Sdt
+	id S932298AbZD0Sfl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 14:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759332AbZD0Sfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 14:33:49 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:52637 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757810AbZD0Sdo (ORCPT
+	Mon, 27 Apr 2009 14:35:30 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:46697 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757810AbZD0Sf3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 14:33:44 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH v3 2/2] kvm: add support for irqfd via
-	eventfd-notification interface
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com, davidel@xmailserver.org
-Date: Mon, 27 Apr 2009 14:33:34 -0400
-Message-ID: <20090427183334.6646.90800.stgit@dev.haskins.net>
-In-Reply-To: <20090427182540.6646.96740.stgit@dev.haskins.net>
-References: <20090427182540.6646.96740.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Apr 2009 14:35:29 -0400
+Date: Mon, 27 Apr 2009 20:37:38 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tim Abbott <tabbott@MIT.EDU>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 2/8] frv: Use __INIT macro instead of .text.init.
+Message-ID: <20090427183737.GB12056@uranus.ravnborg.org>
+References: <1240855347-19316-1-git-send-email-tabbott@mit.edu> <1240855347-19316-2-git-send-email-tabbott@mit.edu> <1240855347-19316-3-git-send-email-tabbott@mit.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240855347-19316-3-git-send-email-tabbott@mit.edu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This allows an eventfd to be registered as an irq source with a guest.  Any
-signaling operation on the eventfd (via userspace or kernel) will inject
-the registered GSI at the next available window.
+On Mon, Apr 27, 2009 at 02:02:21PM -0400, Tim Abbott wrote:
+> frv is placing some code in the .text.init section but does not
+> reference that section in its linker scripts.
+> 
+> This change moves this code from the .text.init section to the
+> .init.text section, which is presumably where it belongs.
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+I checked a few of the assembler entries - they where all
+called from __HEAD section.
+So this change looks good.
 
- arch/x86/kvm/Makefile    |    2 -
- arch/x86/kvm/x86.c       |    1 
- include/linux/kvm.h      |    7 ++
- include/linux/kvm_host.h |    4 +
- virt/kvm/irqfd.c         |  158 ++++++++++++++++++++++++++++++++++++++++++++++
- virt/kvm/kvm_main.c      |   11 +++
- 6 files changed, 182 insertions(+), 1 deletions(-)
- create mode 100644 virt/kvm/irqfd.c
+> 
+> Signed-off-by: Tim Abbott <tabbott@mit.edu>
+> Cc: David Howells <dhowells@redhat.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
-index b43c4ef..d5fff51 100644
---- a/arch/x86/kvm/Makefile
-+++ b/arch/x86/kvm/Makefile
-@@ -3,7 +3,7 @@
- #
- 
- common-objs = $(addprefix ../../../virt/kvm/, kvm_main.o ioapic.o \
--                coalesced_mmio.o irq_comm.o)
-+                coalesced_mmio.o irq_comm.o irqfd.o)
- ifeq ($(CONFIG_KVM_TRACE),y)
- common-objs += $(addprefix ../../../virt/kvm/, kvm_trace.o)
- endif
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index ab1fdac..0773433 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -1027,6 +1027,7 @@ int kvm_dev_ioctl_check_extension(long ext)
- 	case KVM_CAP_REINJECT_CONTROL:
- 	case KVM_CAP_IRQ_INJECT_STATUS:
- 	case KVM_CAP_ASSIGN_DEV_IRQ:
-+	case KVM_CAP_IRQFD:
- 		r = 1;
- 		break;
- 	case KVM_CAP_COALESCED_MMIO:
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 3db5d8d..0e594f2 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -415,6 +415,7 @@ struct kvm_trace_rec {
- #define KVM_CAP_ASSIGN_DEV_IRQ 29
- /* Another bug in KVM_SET_USER_MEMORY_REGION fixed: */
- #define KVM_CAP_JOIN_MEMORY_REGIONS_WORKS 30
-+#define KVM_CAP_IRQFD 31
- 
- #ifdef KVM_CAP_IRQ_ROUTING
- 
-@@ -454,6 +455,11 @@ struct kvm_irq_routing {
- 
- #endif
- 
-+struct kvm_irqfd {
-+	__u32 gsi;
-+	__u32 flags;
-+};
-+
- /*
-  * ioctls for VM fds
-  */
-@@ -498,6 +504,7 @@ struct kvm_irq_routing {
- #define KVM_ASSIGN_SET_MSIX_ENTRY \
- 			_IOW(KVMIO, 0x74, struct kvm_assigned_msix_entry)
- #define KVM_DEASSIGN_DEV_IRQ       _IOW(KVMIO, 0x75, struct kvm_assigned_irq)
-+#define KVM_IRQFD               _IOW(KVMIO, 0x76, struct kvm_irqfd)
- 
- /*
-  * ioctls for vcpu fds
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 095ebb6..6a8d1c1 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -134,6 +134,7 @@ struct kvm {
- 	struct list_head vm_list;
- 	struct kvm_io_bus mmio_bus;
- 	struct kvm_io_bus pio_bus;
-+	struct list_head irqfds;
- 	struct kvm_vm_stat stat;
- 	struct kvm_arch arch;
- 	atomic_t users_count;
-@@ -524,4 +525,7 @@ static inline void kvm_free_irq_routing(struct kvm *kvm) {}
- 
- #endif
- 
-+int kvm_irqfd(struct kvm *kvm, int gsi, int flags);
-+void kvm_irqfd_release(struct kvm *kvm);
-+
- #endif
-diff --git a/virt/kvm/irqfd.c b/virt/kvm/irqfd.c
-new file mode 100644
-index 0000000..4fd2bea
---- /dev/null
-+++ b/virt/kvm/irqfd.c
-@@ -0,0 +1,158 @@
-+/*
-+ * irqfd: Allows an eventfd to be used to inject an interrupt to the guest
-+ *
-+ * Credit goes to Avi Kivity for the original idea.
-+ *
-+ * Copyright 2009 Novell.  All Rights Reserved.
-+ *
-+ * Author:
-+ *	Gregory Haskins <ghaskins@novell.com>
-+ *
-+ * This file is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-+ */
-+
-+#include <linux/kvm_host.h>
-+#include <linux/eventfd.h>
-+#include <linux/workqueue.h>
-+#include <linux/syscalls.h>
-+#include <linux/wait.h>
-+#include <linux/poll.h>
-+#include <linux/file.h>
-+#include <linux/list.h>
-+
-+struct _irqfd {
-+	struct kvm               *kvm;
-+	int                       gsi;
-+	struct file              *file;
-+	struct list_head          list;
-+	poll_table                pt;
-+	wait_queue_head_t        *wqh;
-+	wait_queue_t              wait;
-+	struct work_struct        work;
-+};
-+
-+static void
-+irqfd_inject(struct work_struct *work)
-+{
-+	struct _irqfd *irqfd = container_of(work, struct _irqfd, work);
-+	struct kvm *kvm = irqfd->kvm;
-+
-+	mutex_lock(&kvm->lock);
-+	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
-+	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
-+	mutex_unlock(&kvm->lock);
-+}
-+
-+static int
-+irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
-+{
-+	struct _irqfd *irqfd = container_of(wait, struct _irqfd, wait);
-+
-+	/*
-+	 * The eventfd calls its wake_up with interrupts disabled, and
-+	 * eventfd_signal() may be called from interrupt context. Therefore
-+	 * we need to defer the IRQ injection until later since we need to
-+	 * acquire the kvm->lock to do so.
-+	 */
-+	schedule_work(&irqfd->work);
-+
-+	return 0;
-+}
-+
-+static void
-+irqfd_ptable_queue_proc(struct file *file, wait_queue_head_t *wqh,
-+			poll_table *pt)
-+{
-+	struct _irqfd *irqfd = container_of(pt, struct _irqfd, pt);
-+
-+	irqfd->wqh = wqh;
-+	add_wait_queue(wqh, &irqfd->wait);
-+}
-+
-+int
-+kvm_irqfd(struct kvm *kvm, int gsi, int flags)
-+{
-+	struct _irqfd *irqfd;
-+	struct file *file = NULL;
-+	int fd = -1;
-+	int ret;
-+
-+	irqfd = kzalloc(sizeof(*irqfd), GFP_KERNEL);
-+	if (!irqfd)
-+		return -ENOMEM;
-+
-+	irqfd->kvm = kvm;
-+	irqfd->gsi = gsi;
-+	INIT_LIST_HEAD(&irqfd->list);
-+	INIT_WORK(&irqfd->work, irqfd_inject);
-+
-+	/* We re-use eventfd for irqfd */
-+	fd = sys_eventfd2(0, 0);
-+	if (fd < 0) {
-+		ret = fd;
-+		goto fail;
-+	}
-+
-+	/* We maintain a reference to eventfd for the irqfd lifetime */
-+	file = eventfd_fget(fd);
-+	if (IS_ERR(file)) {
-+		ret = PTR_ERR(file);
-+		goto fail;
-+	}
-+
-+	irqfd->file = file;
-+
-+	/*
-+	 * Install our own custom wake-up handling so we are notified via
-+	 * a callback whenever someone signals the underlying eventfd
-+	 */
-+	init_waitqueue_func_entry(&irqfd->wait, irqfd_wakeup);
-+	init_poll_funcptr(&irqfd->pt, irqfd_ptable_queue_proc);
-+
-+	ret = file->f_op->poll(file, &irqfd->pt);
-+	if (ret < 0)
-+		goto fail;
-+
-+	mutex_lock(&kvm->lock);
-+	list_add_tail(&irqfd->list, &kvm->irqfds);
-+	mutex_unlock(&kvm->lock);
-+
-+	return fd;
-+
-+fail:
-+	if (fd > 0)
-+		sys_close(fd);
-+
-+	if (file && !IS_ERR(file))
-+		fput(file);
-+
-+	kfree(irqfd);
-+	return ret;
-+}
-+
-+void
-+kvm_irqfd_release(struct kvm *kvm)
-+{
-+	struct _irqfd *irqfd, *tmp;
-+
-+	list_for_each_entry_safe(irqfd, tmp, &kvm->irqfds, list) {
-+		remove_wait_queue(irqfd->wqh, &irqfd->wait);
-+
-+		flush_work(&irqfd->work);
-+		fput(irqfd->file);
-+
-+		list_del(&irqfd->list);
-+		kfree(irqfd);
-+	}
-+}
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 3265566..21211ee 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -972,6 +972,7 @@ static struct kvm *kvm_create_vm(void)
- 	atomic_inc(&kvm->mm->mm_count);
- 	spin_lock_init(&kvm->mmu_lock);
- 	kvm_io_bus_init(&kvm->pio_bus);
-+	INIT_LIST_HEAD(&kvm->irqfds);
- 	mutex_init(&kvm->lock);
- 	kvm_io_bus_init(&kvm->mmio_bus);
- 	init_rwsem(&kvm->slots_lock);
-@@ -1023,6 +1024,7 @@ static void kvm_destroy_vm(struct kvm *kvm)
- 	spin_lock(&kvm_lock);
- 	list_del(&kvm->vm_list);
- 	spin_unlock(&kvm_lock);
-+	kvm_irqfd_release(kvm);
- 	kvm_free_irq_routing(kvm);
- 	kvm_io_bus_destroy(&kvm->pio_bus);
- 	kvm_io_bus_destroy(&kvm->mmio_bus);
-@@ -2197,6 +2199,15 @@ static long kvm_vm_ioctl(struct file *filp,
- 	}
- #endif
- #endif /* KVM_CAP_IRQ_ROUTING */
-+	case KVM_IRQFD: {
-+		struct kvm_irqfd data;
-+
-+		r = -EFAULT;
-+		if (copy_from_user(&data, argp, sizeof data))
-+			goto out;
-+		r = kvm_irqfd(kvm, data.gsi, data.flags);
-+		break;
-+	}
- 	default:
- 		r = kvm_arch_vm_ioctl(filp, ioctl, arg);
- 	}
-
+> ---
+>  arch/frv/kernel/head-mmu-fr451.S |    3 ++-
+>  arch/frv/kernel/head-uc-fr401.S  |    3 ++-
+>  arch/frv/kernel/head-uc-fr451.S  |    3 ++-
+>  arch/frv/kernel/head-uc-fr555.S  |    3 ++-
+>  4 files changed, 8 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/frv/kernel/head-mmu-fr451.S b/arch/frv/kernel/head-mmu-fr451.S
+> index c8f210d..98f87d5 100644
+> --- a/arch/frv/kernel/head-mmu-fr451.S
+> +++ b/arch/frv/kernel/head-mmu-fr451.S
+> @@ -9,6 +9,7 @@
+>   * 2 of the License, or (at your option) any later version.
+>   */
+>  
+> +#include <linux/init.h>
+>  #include <linux/threads.h>
+>  #include <linux/linkage.h>
+>  #include <asm/ptrace.h>
+> @@ -31,7 +32,7 @@
+>  #define __400_LCR	0xfe000100
+>  #define __400_LSBR	0xfe000c00
+>  
+> -	.section	.text.init,"ax"
+> +	__INIT
+>  	.balign		4
+>  
+>  ###############################################################################
+> diff --git a/arch/frv/kernel/head-uc-fr401.S b/arch/frv/kernel/head-uc-fr401.S
+> index ee282be..438643c 100644
+> --- a/arch/frv/kernel/head-uc-fr401.S
+> +++ b/arch/frv/kernel/head-uc-fr401.S
+> @@ -9,6 +9,7 @@
+>   * 2 of the License, or (at your option) any later version.
+>   */
+>  
+> +#include <linux/init.h>
+>  #include <linux/threads.h>
+>  #include <linux/linkage.h>
+>  #include <asm/ptrace.h>
+> @@ -30,7 +31,7 @@
+>  #define __400_LCR	0xfe000100
+>  #define __400_LSBR	0xfe000c00
+>  
+> -	.section	.text.init,"ax"
+> +	__INIT
+>  	.balign		4
+>  
+>  ###############################################################################
+> diff --git a/arch/frv/kernel/head-uc-fr451.S b/arch/frv/kernel/head-uc-fr451.S
+> index b10d9c8..b2a76c4 100644
+> --- a/arch/frv/kernel/head-uc-fr451.S
+> +++ b/arch/frv/kernel/head-uc-fr451.S
+> @@ -9,6 +9,7 @@
+>   * 2 of the License, or (at your option) any later version.
+>   */
+>  
+> +#include <linux/init.h>
+>  #include <linux/threads.h>
+>  #include <linux/linkage.h>
+>  #include <asm/ptrace.h>
+> @@ -30,7 +31,7 @@
+>  #define __400_LCR	0xfe000100
+>  #define __400_LSBR	0xfe000c00
+>  
+> -	.section	.text.init,"ax"
+> +	__INIT
+>  	.balign		4
+>  
+>  ###############################################################################
+> diff --git a/arch/frv/kernel/head-uc-fr555.S b/arch/frv/kernel/head-uc-fr555.S
+> index 39937c1..5497aaf 100644
+> --- a/arch/frv/kernel/head-uc-fr555.S
+> +++ b/arch/frv/kernel/head-uc-fr555.S
+> @@ -9,6 +9,7 @@
+>   * 2 of the License, or (at your option) any later version.
+>   */
+>  
+> +#include <linux/init.h>
+>  #include <linux/threads.h>
+>  #include <linux/linkage.h>
+>  #include <asm/ptrace.h>
+> @@ -29,7 +30,7 @@
+>  #define __551_LCR	0xfeff1100
+>  #define __551_LSBR	0xfeff1c00
+>  
+> -	.section	.text.init,"ax"
+> +	__INIT
+>  	.balign		4
+>  
+>  ###############################################################################
+> -- 
+> 1.6.2.1
+> 
