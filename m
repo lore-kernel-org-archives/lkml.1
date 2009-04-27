@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761593AbZD0UtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932263AbZD0Uts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761593AbZD0UtO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 16:49:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760651AbZD0Us4
+	id S932263AbZD0Uts (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 16:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760414AbZD0Uti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 16:48:56 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:11409 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760734AbZD0Us4 (ORCPT
+	Mon, 27 Apr 2009 16:49:38 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:34610 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756364AbZD0Uth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 16:48:56 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=rQDoLygjhDXMVxAJbca70RSULKiYKJKVDBRnWkN2OJGLhKj4HfOMVrMqLSuVGYWZ6
-	7sHK2UeCTUl56pphmYCuw==
-Date: Mon, 27 Apr 2009 13:48:47 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] Replace the watermark-related union in struct zone with
- a watermark[] array
-In-Reply-To: <20090427170054.GE912@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0904271340320.11972@chino.kir.corp.google.com>
-References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-19-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.0904221251350.14558@chino.kir.corp.google.com> <20090427170054.GE912@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 27 Apr 2009 16:49:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=xlk0cleWMJSnDrTnowuyjKRKkE7DXOz5tgNRWScoplhfkzdE3YU9bcpOvE7XL7np24
+         0RZ41ntUGfCtbe+NP4cJxLQKajQlFU5iBrmh8pecN2X6Bin1DJV2nJMdgYidKFLCtPvC
+         HG/bkk4X+qx18ji8qxKYrbqfg/eX2t1Wv9eso=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+In-Reply-To: <49F619C4.20100@freescale.com>
+References: <20090424183517.GB23140@ovro.caltech.edu>
+	 <D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net>
+	 <ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com>
+	 <49F608B7.9080409@ovro.caltech.edu> <49F60A3A.4060402@freescale.com>
+	 <49F61416.8040501@ovro.caltech.edu> <49F614FC.70000@freescale.com>
+	 <20090427204213.GA4960@ovro.caltech.edu>
+	 <49F619C4.20100@freescale.com>
+Date: Mon, 27 Apr 2009 13:49:36 -0700
+X-Google-Sender-Auth: 7af431ba8325126c
+Message-ID: <e9c3a7c20904271349m134ff7f2s9d7901015454cf3d@mail.gmail.com>
+Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
+From: Dan Williams <dan.j.williams@intel.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: Ira Snyder <iws@ovro.caltech.edu>, David Hawkins <dwh@ovro.caltech.edu>,
+       Liu Dave-R63238 <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Apr 2009, Mel Gorman wrote:
+On Mon, Apr 27, 2009 at 1:47 PM, Timur Tabi <timur@freescale.com> wrote:
+> Adding Kumar to the CC: list, since he might pick up the patch.
+>
 
-> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-> index c1fa208..1ff59fd 100644
-> --- a/include/linux/mmzone.h
-> +++ b/include/linux/mmzone.h
-> @@ -163,6 +163,13 @@ static inline int is_unevictable_lru(enum lru_list l)
->  #endif
->  }
->  
-> +enum zone_watermarks {
-> +	WMARK_MIN,
-> +	WMARK_LOW,
-> +	WMARK_HIGH,
-> +	NR_WMARK
-> +};
-> +
->  struct per_cpu_pages {
->  	int count;		/* number of pages in the list */
->  	int high;		/* high watermark, emptying needed */
-> @@ -275,12 +282,9 @@ struct zone_reclaim_stat {
->  
->  struct zone {
->  	/* Fields commonly accessed by the page allocator */
-> -	union {
-> -		struct {
-> -			unsigned long	pages_min, pages_low, pages_high;
-> -		};
-> -		unsigned long pages_mark[3];
-> -	};
-> +
-> +	/* zone watermarks, indexed with WMARK_LOW, WMARK_MIN and WMARK_HIGH */
-> +	unsigned long watermark[NR_WMARK];
->  
->  	/*
->  	 * We don't know if the memory that we're going to allocate will be freeable
+Acked-by: Dan Williams <dan.j.williams@intel.com>
 
-I thought the suggestion was for something like
-
-	#define zone_wmark_min(z)	(z->pages_mark[WMARK_MIN])
-	...
+I agree with taking this through Kumar's tree.
