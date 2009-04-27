@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbZD0J4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbZD0J4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757512AbZD0J4b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 05:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbZD0Jsy
+	id S1754235AbZD0J4w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 05:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbZD0Js6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 05:48:54 -0400
+	Mon, 27 Apr 2009 05:48:58 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:60685 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755143AbZD0Jsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 05:48:53 -0400
+	id S1754922AbZD0Jsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 05:48:55 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 14/30] microblaze_mmu_v1: Update process creation for MMU
-Date: Mon, 27 Apr 2009 10:32:03 +0200
-Message-Id: <1240821139-7247-15-git-send-email-monstr@monstr.eu>
+Subject: [PATCH 20/30] microblaze_mmu_v1: uaccess MMU update
+Date: Mon, 27 Apr 2009 10:32:09 +0200
+Message-Id: <1240821139-7247-21-git-send-email-monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1240821139-7247-14-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1240821139-7247-20-git-send-email-monstr@monstr.eu>
 References: <1240821139-7247-1-git-send-email-monstr@monstr.eu>
  <1240821139-7247-2-git-send-email-monstr@monstr.eu>
  <1240821139-7247-3-git-send-email-monstr@monstr.eu>
@@ -31,6 +31,12 @@ References: <1240821139-7247-1-git-send-email-monstr@monstr.eu>
  <1240821139-7247-12-git-send-email-monstr@monstr.eu>
  <1240821139-7247-13-git-send-email-monstr@monstr.eu>
  <1240821139-7247-14-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-15-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-16-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-17-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-18-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-19-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-20-git-send-email-monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -39,289 +45,492 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/processor.h |   97 +++++++++++++++++++++++++++++-
- arch/microblaze/include/asm/registers.h |   21 ++++++-
- arch/microblaze/include/asm/segment.h   |   10 +++-
- arch/microblaze/kernel/process.c        |   58 ++++++++++++++++++
- 4 files changed, 178 insertions(+), 8 deletions(-)
+ arch/microblaze/include/asm/uaccess.h |  298 +++++++++++++++++++++++++++------
+ arch/microblaze/lib/uaccess_old.S     |  135 +++++++++++++++
+ 2 files changed, 381 insertions(+), 52 deletions(-)
+ create mode 100644 arch/microblaze/lib/uaccess_old.S
 
-diff --git a/arch/microblaze/include/asm/processor.h b/arch/microblaze/include/asm/processor.h
-index 9329029..f206fc1 100644
---- a/arch/microblaze/include/asm/processor.h
-+++ b/arch/microblaze/include/asm/processor.h
-@@ -1,6 +1,6 @@
+diff --git a/arch/microblaze/include/asm/uaccess.h b/arch/microblaze/include/asm/uaccess.h
+index 5a3ffc3..78e8246 100644
+--- a/arch/microblaze/include/asm/uaccess.h
++++ b/arch/microblaze/include/asm/uaccess.h
+@@ -1,4 +1,6 @@
  /*
-- * Copyright (C) 2008 Michal Simek
-- * Copyright (C) 2008 PetaLogix
 + * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
 + * Copyright (C) 2008-2009 PetaLogix
   * Copyright (C) 2006 Atmark Techno, Inc.
   *
   * This file is subject to the terms and conditions of the GNU General Public
-@@ -26,14 +26,15 @@ extern const struct seq_operations cpuinfo_op;
- # define cpu_sleep()		do {} while (0)
- # define prepare_to_copy(tsk)	do {} while (0)
+@@ -26,6 +28,10 @@
+ #define VERIFY_READ	0
+ #define VERIFY_WRITE	1
  
--# endif /* __ASSEMBLY__ */
--
- #define task_pt_regs(tsk) \
- 		(((struct pt_regs *)(THREAD_SIZE + task_stack_page(tsk))) - 1)
- 
- /* Do necessary setup to start up a newly executed thread. */
- void start_thread(struct pt_regs *regs, unsigned long pc, unsigned long usp);
- 
-+# endif /* __ASSEMBLY__ */
++#define __clear_user(addr, n)	(memset((void *)(addr), 0, (n)), 0)
 +
-+# ifndef CONFIG_MMU
- /*
-  * User space process size: memory size
-  *
-@@ -85,4 +86,92 @@ extern int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
- # define KSTK_EIP(tsk)	(0)
- # define KSTK_ESP(tsk)	(0)
- 
-+# else /* CONFIG_MMU */
-+
-+/*
-+ * This is used to define STACK_TOP, and with MMU it must be below
-+ * kernel base to select the correct PGD when handling MMU exceptions.
-+ */
-+# define TASK_SIZE	(CONFIG_KERNEL_START)
-+
-+/*
-+ * This decides where the kernel will search for a free chunk of vm
-+ * space during mmap's.
-+ */
-+# define TASK_UNMAPPED_BASE	(TASK_SIZE / 8 * 3)
-+
-+# define THREAD_KSP	0
-+
-+#  ifndef __ASSEMBLY__
-+
-+/*
-+ * Default implementation of macro that returns current
-+ * instruction pointer ("program counter").
-+ */
-+#  define current_text_addr()	({ __label__ _l; _l: &&_l; })
-+
-+/* If you change this, you must change the associated assembly-languages
-+ * constants defined below, THREAD_*.
-+ */
-+struct thread_struct {
-+	/* kernel stack pointer (must be first field in structure) */
-+	unsigned long	ksp;
-+	unsigned long	ksp_limit;	/* if ksp <= ksp_limit stack overflow */
-+	mm_segment_t	fs;		/* for get_fs() validation */
-+	void		*pgdir;		/* root of page-table tree */
-+	struct pt_regs	*regs;		/* Pointer to saved register state */
-+};
-+
-+#  define INIT_THREAD { \
-+	.ksp   = sizeof init_stack + (unsigned long)init_stack, \
-+	.fs    = KERNEL_DS, \
-+	.pgdir = swapper_pg_dir, \
-+}
-+
-+/* Do necessary setup to start up a newly executed thread.  */
-+void start_thread(struct pt_regs *regs,
-+		unsigned long pc, unsigned long usp);
-+
-+/* Free all resources held by a thread. */
-+extern inline void release_thread(struct task_struct *dead_task)
-+{
-+}
-+
-+extern int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
-+
-+/* Free current thread data structures etc.  */
-+static inline void exit_thread(void)
-+{
-+}
-+
-+/* Return saved (kernel) PC of a blocked thread.  */
-+#  define thread_saved_pc(tsk)	\
-+	((tsk)->thread.regs ? (tsk)->thread.regs->r15 : 0)
-+
-+unsigned long get_wchan(struct task_struct *p);
-+
-+/* The size allocated for kernel stacks. This _must_ be a power of two! */
-+# define KERNEL_STACK_SIZE	0x2000
-+
-+/* Return some info about the user process TASK.  */
-+#  define task_tos(task)	((unsigned long)(task) + KERNEL_STACK_SIZE)
-+#  define task_regs(task) ((struct pt_regs *)task_tos(task) - 1)
-+
-+#  define task_pt_regs_plus_args(tsk) \
-+	(((void *)task_pt_regs(tsk)) - STATE_SAVE_ARG_SPACE)
-+
-+#  define task_sp(task)	(task_regs(task)->r1)
-+#  define task_pc(task)	(task_regs(task)->pc)
-+/* Grotty old names for some.  */
-+#  define KSTK_EIP(task)	(task_pc(task))
-+#  define KSTK_ESP(task)	(task_sp(task))
-+
-+/* FIXME */
-+#  define deactivate_mm(tsk, mm)	do { } while (0)
-+
-+#  define STACK_TOP	TASK_SIZE
-+#  define STACK_TOP_MAX	STACK_TOP
-+
-+#  endif /* __ASSEMBLY__ */
-+# endif /* CONFIG_MMU */
- #endif /* _ASM_MICROBLAZE_PROCESSOR_H */
-diff --git a/arch/microblaze/include/asm/registers.h b/arch/microblaze/include/asm/registers.h
-index 834142d..68c3afb 100644
---- a/arch/microblaze/include/asm/registers.h
-+++ b/arch/microblaze/include/asm/registers.h
-@@ -1,6 +1,6 @@
- /*
-- * Copyright (C) 2008 Michal Simek
-- * Copyright (C) 2008 PetaLogix
-+ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2008-2009 PetaLogix
-  * Copyright (C) 2006 Atmark Techno, Inc.
-  *
-  * This file is subject to the terms and conditions of the GNU General Public
-@@ -30,4 +30,21 @@
- #define FSR_UF		(1<<1) /* Underflow */
- #define FSR_DO		(1<<0) /* Denormalized operand error */
- 
-+# ifdef CONFIG_MMU
-+/* Machine State Register (MSR) Fields */
-+# define MSR_UM		(1<<11) /* User Mode */
-+# define MSR_UMS	(1<<12) /* User Mode Save */
-+# define MSR_VM		(1<<13) /* Virtual Mode */
-+# define MSR_VMS	(1<<14) /* Virtual Mode Save */
-+
-+# define MSR_KERNEL	(MSR_EE | MSR_VM)
-+/* # define MSR_USER	(MSR_KERNEL | MSR_UM | MSR_IE) */
-+# define MSR_KERNEL_VMS	(MSR_EE | MSR_VMS)
-+/* # define MSR_USER_VMS	(MSR_KERNEL_VMS | MSR_UMS | MSR_IE) */
-+
-+/* Exception State Register (ESR) Fields */
-+# define	  ESR_DIZ	(1<<11) /* Zone Protection */
-+# define	  ESR_S		(1<<10) /* Store instruction */
-+
-+# endif /* CONFIG_MMU */
- #endif /* _ASM_MICROBLAZE_REGISTERS_H */
-diff --git a/arch/microblaze/include/asm/segment.h b/arch/microblaze/include/asm/segment.h
-index 7f5dcc5..18d1c4b 100644
---- a/arch/microblaze/include/asm/segment.h
-+++ b/arch/microblaze/include/asm/segment.h
-@@ -1,6 +1,6 @@
- /*
-- * Copyright (C) 2008 Michal Simek
-- * Copyright (C) 2008 PetaLogix
-+ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2008-2009 PetaLogix
-  * Copyright (C) 2006 Atmark Techno, Inc.
-  *
-  * This file is subject to the terms and conditions of the GNU General Public
-@@ -29,8 +29,14 @@ typedef struct {
-  *
-  * For non-MMU arch like Microblaze, KERNEL_DS and USER_DS is equal.
-  */
-+
-+#  ifndef CONFIG_MMU
- #  define KERNEL_DS	((mm_segment_t){0})
- #  define USER_DS	KERNEL_DS
-+#  else
-+#  define KERNEL_DS	((mm_segment_t){0xFFFFF000})
-+#  define USER_DS	((mm_segment_t){0xC0000000})
-+#  endif
- 
- # define get_ds()	(KERNEL_DS)
- # define get_fs()	(current_thread_info()->addr_limit)
-diff --git a/arch/microblaze/kernel/process.c b/arch/microblaze/kernel/process.c
-index 07d4fa3..f289ff3 100644
---- a/arch/microblaze/kernel/process.c
-+++ b/arch/microblaze/kernel/process.c
-@@ -126,9 +126,54 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
- 	else
- 		childregs->r1 = ((unsigned long) ti) + THREAD_SIZE;
- 
 +#ifndef CONFIG_MMU
- 	memset(&ti->cpu_context, 0, sizeof(struct cpu_context));
- 	ti->cpu_context.r1 = (unsigned long)childregs;
- 	ti->cpu_context.msr = (unsigned long)childregs->msr;
-+#else
 +
-+	/* if creating a kernel thread then update the current reg (we don't
-+	 * want to use the parent's value when restoring by POP_STATE) */
-+	if (kernel_mode(regs))
-+		/* save new current on stack to use POP_STATE */
-+		childregs->CURRENT_TASK = (unsigned long)p;
-+	/* if returning to user then use the parent's value of this register */
-+
-+	/* if we're creating a new kernel thread then just zeroing all
-+	 * the registers. That's OK for a brand new thread.*/
-+	/* Pls. note that some of them will be restored in POP_STATE */
-+	if (kernel_mode(regs))
-+		memset(&ti->cpu_context, 0, sizeof(struct cpu_context));
-+	/* if this thread is created for fork/vfork/clone, then we want to
-+	 * restore all the parent's context */
-+	/* in addition to the registers which will be restored by POP_STATE */
-+	else {
-+		ti->cpu_context = *(struct cpu_context *)regs;
-+		childregs->msr |= MSR_UMS;
-+	}
-+
-+	/* FIXME STATE_SAVE_PT_OFFSET; */
-+	ti->cpu_context.r1  = (unsigned long)childregs - STATE_SAVE_ARG_SPACE;
-+	/* we should consider the fact that childregs is a copy of the parent
-+	 * regs which were saved immediately after entering the kernel state
-+	 * before enabling VM. This MSR will be restored in switch_to and
-+	 * RETURN() and we want to have the right machine state there
-+	 * specifically this state must have INTs disabled before and enabled
-+	 * after performing rtbd
-+	 * compose the right MSR for RETURN(). It will work for switch_to also
-+	 * excepting for VM and UMS
-+	 * don't touch UMS , CARRY and cache bits
-+	 * right now MSR is a copy of parent one */
-+	childregs->msr |= MSR_BIP;
-+	childregs->msr &= ~MSR_EIP;
-+	childregs->msr |= MSR_IE;
-+	childregs->msr &= ~MSR_VM;
-+	childregs->msr |= MSR_VMS;
-+	childregs->msr |= MSR_EE; /* exceptions will be enabled*/
-+
-+	ti->cpu_context.msr = (childregs->msr|MSR_VM);
-+	ti->cpu_context.msr &= ~MSR_UMS; /* switch_to to kernel mode */
-+#endif
- 	ti->cpu_context.r15 = (unsigned long)ret_from_fork - 8;
+ extern int ___range_ok(unsigned long addr, unsigned long size);
  
- 	if (clone_flags & CLONE_SETTLS)
-@@ -137,6 +182,7 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
+ #define __range_ok(addr, size) \
+@@ -39,63 +45,64 @@ extern inline int bad_user_access_length(void)
  	return 0;
  }
+ /* FIXME this is function for optimalization -> memcpy */
+-#define __get_user(var, ptr)					\
+-	({							\
+-		int __gu_err = 0;				\
+-		switch (sizeof(*(ptr))) {			\
+-		case 1:						\
+-		case 2:						\
+-		case 4:						\
+-			(var) = *(ptr);				\
+-			break;					\
+-		case 8:						\
+-			memcpy((void *) &(var), (ptr), 8);	\
+-			break;					\
+-		default:					\
+-			(var) = 0;				\
+-			__gu_err = __get_user_bad();		\
+-			break;					\
+-		}						\
+-		__gu_err;					\
+-	})
++#define __get_user(var, ptr)				\
++({							\
++	int __gu_err = 0;				\
++	switch (sizeof(*(ptr))) {			\
++	case 1:						\
++	case 2:						\
++	case 4:						\
++		(var) = *(ptr);				\
++		break;					\
++	case 8:						\
++		memcpy((void *) &(var), (ptr), 8);	\
++		break;					\
++	default:					\
++		(var) = 0;				\
++		__gu_err = __get_user_bad();		\
++		break;					\
++	}						\
++	__gu_err;					\
++})
  
-+#ifndef CONFIG_MMU
- /*
-  * Return saved PC of a blocked thread.
-  */
-@@ -151,6 +197,7 @@ unsigned long thread_saved_pc(struct task_struct *tsk)
- 	else
- 		return ctx->r14;
- }
-+#endif
+ #define __get_user_bad()	(bad_user_access_length(), (-EFAULT))
  
- static void kernel_thread_helper(int (*fn)(void *), void *arg)
++/* FIXME is not there defined __pu_val */
+ #define __put_user(var, ptr)					\
+-	({							\
+-		int __pu_err = 0;				\
+-		switch (sizeof(*(ptr))) {			\
+-		case 1:						\
+-		case 2:						\
+-		case 4:						\
+-			*(ptr) = (var);				\
+-			break;					\
+-		case 8: {					\
+-			typeof(*(ptr)) __pu_val = var;		\
+-			memcpy(ptr, &__pu_val, sizeof(__pu_val));\
+-			}					\
+-			break;					\
+-		default:					\
+-			__pu_err = __put_user_bad();		\
+-			break;					\
+-		}							\
+-		__pu_err;						\
+-	})
++({								\
++	int __pu_err = 0;					\
++	switch (sizeof(*(ptr))) {				\
++	case 1:							\
++	case 2:							\
++	case 4:							\
++		*(ptr) = (var);					\
++		break;						\
++	case 8: {						\
++		typeof(*(ptr)) __pu_val = (var);		\
++		memcpy(ptr, &__pu_val, sizeof(__pu_val));	\
++		}						\
++		break;						\
++	default:						\
++		__pu_err = __put_user_bad();			\
++		break;						\
++	}							\
++	__pu_err;						\
++})
+ 
+ #define __put_user_bad()	(bad_user_access_length(), (-EFAULT))
+ 
+-#define put_user(x, ptr)	__put_user(x, ptr)
+-#define get_user(x, ptr)	__get_user(x, ptr)
+-
+-#define copy_to_user(to, from, n)		(memcpy(to, from, n), 0)
+-#define copy_from_user(to, from, n)		(memcpy(to, from, n), 0)
++#define put_user(x, ptr)	__put_user((x), (ptr))
++#define get_user(x, ptr)	__get_user((x), (ptr))
+ 
+-#define __copy_to_user(to, from, n)		(copy_to_user(to, from, n))
+-#define __copy_from_user(to, from, n)		(copy_from_user(to, from, n))
+-#define __copy_to_user_inatomic(to, from, n)	(__copy_to_user(to, from, n))
+-#define __copy_from_user_inatomic(to, from, n)	(__copy_from_user(to, from, n))
++#define copy_to_user(to, from, n)	(memcpy((to), (from), (n)), 0)
++#define copy_from_user(to, from, n)	(memcpy((to), (from), (n)), 0)
+ 
+-#define __clear_user(addr, n)	(memset((void *)addr, 0, n), 0)
++#define __copy_to_user(to, from, n)	(copy_to_user((to), (from), (n)))
++#define __copy_from_user(to, from, n)	(copy_from_user((to), (from), (n)))
++#define __copy_to_user_inatomic(to, from, n) \
++			(__copy_to_user((to), (from), (n)))
++#define __copy_from_user_inatomic(to, from, n) \
++			(__copy_from_user((to), (from), (n)))
+ 
+ static inline unsigned long clear_user(void *addr, unsigned long size)
  {
-@@ -188,3 +235,14 @@ void start_thread(struct pt_regs *regs, unsigned long pc, unsigned long usp)
- 	regs->r1 = usp;
- 	regs->pt_mode = 0;
+@@ -104,13 +111,200 @@ static inline unsigned long clear_user(void *addr, unsigned long size)
+ 	return size;
  }
+ 
+-/* Returns 0 if exception not found and fixup otherwise. */
++/* Returns 0 if exception not found and fixup otherwise.  */
+ extern unsigned long search_exception_table(unsigned long);
+ 
++extern long strncpy_from_user(char *dst, const char *src, long count);
++extern long strnlen_user(const char *src, long count);
 +
-+#ifdef CONFIG_MMU
-+#include <linux/elfcore.h>
++#else /* CONFIG_MMU */
++
 +/*
-+ * Set up a thread for executing a new program
++ * Address is valid if:
++ *  - "addr", "addr + size" and "size" are all below the limit
 + */
-+int dump_fpu(struct pt_regs *regs, elf_fpregset_t *fpregs)
++#define access_ok(type, addr, size) \
++	(get_fs().seg > (((unsigned long)(addr)) | \
++		(size) | ((unsigned long)(addr) + (size))))
++
++/* || printk("access_ok failed for %s at 0x%08lx (size %d), seg 0x%08x\n",
++ type?"WRITE":"READ",addr,size,get_fs().seg)) */
++
++/*
++ * All the __XXX versions macros/functions below do not perform
++ * access checking. It is assumed that the necessary checks have been
++ * already performed before the finction (macro) is called.
++ */
++
++#define get_user(x, ptr)						\
++({									\
++	access_ok(VERIFY_READ, (ptr), sizeof(*(ptr)))			\
++		? __get_user((x), (ptr)) : -EFAULT;			\
++})
++
++#define put_user(x, ptr)						\
++({									\
++	access_ok(VERIFY_WRITE, (ptr), sizeof(*(ptr)))			\
++		? __put_user((x), (ptr)) : -EFAULT;			\
++})
++
++#define __get_user(x, ptr)						\
++({									\
++	unsigned long __gu_val;						\
++	/*unsigned long __gu_ptr = (unsigned long)(ptr);*/		\
++	long __gu_err;							\
++	switch (sizeof(*(ptr))) {					\
++	case 1:								\
++		__get_user_asm("lbu", (ptr), __gu_val, __gu_err);	\
++		break;							\
++	case 2:								\
++		__get_user_asm("lhu", (ptr), __gu_val, __gu_err);	\
++		break;							\
++	case 4:								\
++		__get_user_asm("lw", (ptr), __gu_val, __gu_err);	\
++		break;							\
++	default:							\
++		__gu_val = 0; __gu_err = -EINVAL;			\
++	}								\
++	x = (__typeof__(*(ptr))) __gu_val;				\
++	__gu_err;							\
++})
++
++#define __get_user_asm(insn, __gu_ptr, __gu_val, __gu_err)		\
++({									\
++	__asm__ __volatile__ (						\
++			"1:"	insn	" %1, %2, r0;			\
++				addk	%0, r0, r0;			\
++			2:						\
++			.section .fixup,\"ax\";				\
++			3:	brid	2b;				\
++				addik	%0, r0, %3;			\
++			.previous;					\
++			.section __ex_table,\"a\";			\
++			.word	1b,3b;					\
++			.previous;"					\
++		: "=r"(__gu_err), "=r"(__gu_val)			\
++		: "r"(__gu_ptr), "i"(-EFAULT)				\
++	);								\
++})
++
++#define __put_user(x, ptr)						\
++({									\
++	__typeof__(*(ptr)) __gu_val = x;				\
++	long __gu_err = 0;						\
++	switch (sizeof(__gu_val)) {					\
++	case 1:								\
++		__put_user_asm("sb", (ptr), __gu_val, __gu_err);	\
++		break;							\
++	case 2: 							\
++		__put_user_asm("sh", (ptr), __gu_val, __gu_err);	\
++		break;							\
++	case 4:								\
++		__put_user_asm("sw", (ptr), __gu_val, __gu_err);	\
++		break;							\
++	case 8:								\
++		__put_user_asm_8((ptr), __gu_val, __gu_err);		\
++		break;							\
++	default:							\
++		__gu_err = -EINVAL;					\
++	}								\
++	__gu_err;							\
++})
++
++#define __put_user_asm_8(__gu_ptr, __gu_val, __gu_err)	\
++({							\
++__asm__ __volatile__ ("	lwi	%0, %1, 0;		\
++		1:	swi	%0, %2, 0;		\
++			lwi	%0, %1, 4;		\
++		2:	swi	%0, %2, 4;		\
++			addk	%0,r0,r0;		\
++		3:					\
++		.section .fixup,\"ax\";			\
++		4:	brid	3b;			\
++			addik	%0, r0, %3;		\
++		.previous;				\
++		.section __ex_table,\"a\";		\
++		.word	1b,4b,2b,4b;			\
++		.previous;"				\
++	: "=&r"(__gu_err)				\
++	: "r"(&__gu_val),				\
++	"r"(__gu_ptr), "i"(-EFAULT)			\
++	);						\
++})
++
++#define __put_user_asm(insn, __gu_ptr, __gu_val, __gu_err)	\
++({								\
++	__asm__ __volatile__ (					\
++			"1:"	insn	" %1, %2, r0;		\
++				addk	%0, r0, r0;		\
++			2:					\
++			.section .fixup,\"ax\";			\
++			3:	brid	2b;			\
++				addik	%0, r0, %3;		\
++			.previous;				\
++			.section __ex_table,\"a\";		\
++			.word	1b,3b;				\
++			.previous;"				\
++		: "=r"(__gu_err)				\
++		: "r"(__gu_val), "r"(__gu_ptr), "i"(-EFAULT)	\
++	);							\
++})
++
++/*
++ * Return: number of not copied bytes, i.e. 0 if OK or non-zero if fail.
++ */
++static inline int clear_user(char *to, int size)
 +{
-+	return 0; /* MicroBlaze has no separate FPU registers */
++	if (size && access_ok(VERIFY_WRITE, to, size)) {
++		__asm__ __volatile__ ("				\
++				1:				\
++					sb	r0, %2, r0;	\
++					addik	%0, %0, -1;	\
++					bneid	%0, 1b;		\
++					addik	%2, %2, 1;	\
++				2:				\
++				.section __ex_table,\"a\";	\
++				.word	1b,2b;			\
++				.section .text;"		\
++			: "=r"(size)				\
++			: "0"(size), "r"(to)
++		);
++	}
++	return size;
 +}
++
++extern unsigned long __copy_tofrom_user(void __user *to,
++		const void __user *from, unsigned long size);
++
++#define copy_to_user(to, from, n)					\
++	(access_ok(VERIFY_WRITE, (to), (n)) ?				\
++		__copy_tofrom_user((void __user *)(to),			\
++			(__force const void __user *)(from), (n))	\
++		: -EFAULT)
++
++#define __copy_to_user(to, from, n)	copy_to_user((to), (from), (n))
++#define __copy_to_user_inatomic(to, from, n)	copy_to_user((to), (from), (n))
++
++#define copy_from_user(to, from, n)					\
++	(access_ok(VERIFY_READ, (from), (n)) ?				\
++		__copy_tofrom_user((__force void __user *)(to),		\
++			(void __user *)(from), (n))			\
++		: -EFAULT)
++
++#define __copy_from_user(to, from, n)	copy_from_user((to), (from), (n))
++#define __copy_from_user_inatomic(to, from, n) \
++		copy_from_user((to), (from), (n))
++
++extern int __strncpy_user(char *to, const char __user *from, int len);
++extern int __strnlen_user(const char __user *sstr, int len);
++
++#define strncpy_from_user(to, from, len)	\
++		(access_ok(VERIFY_READ, from, 1) ?	\
++			__strncpy_user(to, from, len) : -EFAULT)
++#define strnlen_user(str, len)	\
++		(access_ok(VERIFY_READ, str, 1) ? __strnlen_user(str, len) : 0)
+ 
+-extern long strncpy_from_user(char *dst, const char __user *src, long count);
+-extern long strnlen_user(const char __user *src, long count);
+-extern long __strncpy_from_user(char *dst, const char __user *src, long count);
 +#endif /* CONFIG_MMU */
+ 
+ /*
+  * The exception table consists of pairs of addresses: the first is the
+diff --git a/arch/microblaze/lib/uaccess_old.S b/arch/microblaze/lib/uaccess_old.S
+new file mode 100644
+index 0000000..88b1fa7
+--- /dev/null
++++ b/arch/microblaze/lib/uaccess_old.S
+@@ -0,0 +1,135 @@
++/*
++ * Copyright (C) 2009 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2009 PetaLogix
++ * Copyright (C) 2007 LynuxWorks, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/errno.h>
++#include <linux/linkage.h>
++
++/*
++ * int __strncpy_user(char *to, char *from, int len);
++ *
++ * Returns:
++ *  -EFAULT  for an exception
++ *  len      if we hit the buffer limit
++ *  bytes copied
++ */
++
++	.text
++.globl __strncpy_user;
++.align 4;
++__strncpy_user:
++
++	/*
++	 * r5 - to
++	 * r6 - from
++	 * r7 - len
++	 * r3 - temp count
++	 * r4 - temp val
++	 */
++	addik	r3,r7,0		/* temp_count = len */
++	beqi	r3,3f
++1:
++	lbu	r4,r6,r0
++	sb	r4,r5,r0
++
++	addik	r3,r3,-1
++	beqi	r3,2f		/* break on len */
++
++	addik	r5,r5,1
++	bneid	r4,1b
++	addik	r6,r6,1		/* delay slot */
++	addik	r3,r3,1		/* undo "temp_count--" */
++2:
++	rsubk	r3,r3,r7	/* temp_count = len - temp_count */
++3:
++	rtsd	r15,8
++	nop
++
++
++	.section	.fixup, "ax"
++	.align	2
++4:
++	brid	3b
++	addik	r3,r0, -EFAULT
++
++	.section	__ex_table, "a"
++	.word	1b,4b
++
++/*
++ * int __strnlen_user(char __user *str, int maxlen);
++ *
++ * Returns:
++ *  0 on error
++ *  maxlen + 1  if no NUL byte found within maxlen bytes
++ *  size of the string (including NUL byte)
++ */
++
++	.text
++.globl __strnlen_user;
++.align 4;
++__strnlen_user:
++	addik	r3,r6,0
++	beqi	r3,3f
++1:
++	lbu	r4,r5,r0
++	beqid	r4,2f		/* break on NUL */
++	addik	r3,r3,-1	/* delay slot */
++
++	bneid	r3,1b
++	addik	r5,r5,1		/* delay slot */
++
++	addik	r3,r3,-1	/* for break on len */
++2:
++	rsubk	r3,r3,r6
++3:
++	rtsd	r15,8
++	nop
++
++
++	.section	.fixup,"ax"
++4:
++	brid	3b
++	addk	r3,r0,r0
++
++	.section	__ex_table,"a"
++	.word	1b,4b
++
++/*
++ * int __copy_user(char *to, char *from, int len)
++ * Return:
++ *   0 on success
++ *   number of not copied bytes on error
++ */
++	.text
++.globl __copy_tofrom_user;
++.align 4;
++__copy_tofrom_user:
++	/*
++	 * r5 - to
++	 * r6 - from
++	 * r7, r3 - count
++	 * r4 - tempval
++	 */
++	addik	r3,r7,0
++	beqi	r3,3f
++1:
++	lbu	r4,r6,r0
++	addik	r6,r6,1
++2:
++	sb	r4,r5,r0
++	addik	r3,r3,-1
++	bneid	r3,1b
++	addik	r5,r5,1		/* delay slot */
++3:
++	rtsd	r15,8
++	nop
++
++
++	.section	__ex_table,"a"
++	.word	1b,3b,2b,3b
 -- 
 1.5.5.1
 
