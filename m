@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760273AbZD0UXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760405AbZD0UX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760273AbZD0UXA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 16:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759804AbZD0UWu
+	id S1760405AbZD0UX0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 16:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760107AbZD0UXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 16:22:50 -0400
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:47116 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759714AbZD0UWt (ORCPT
+	Mon, 27 Apr 2009 16:23:09 -0400
+Received: from outbound-mail-147.bluehost.com ([67.222.38.37]:41693 "HELO
+	outbound-mail-147.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759710AbZD0UXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 16:22:49 -0400
-Message-ID: <49F61416.8040501@ovro.caltech.edu>
-Date: Mon, 27 Apr 2009 13:22:46 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-CC: Liu Dave-R63238 <DaveLiu@freescale.com>, Ira Snyder <iws@ovro.caltech.edu>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
-References: <20090424183517.GB23140@ovro.caltech.edu>	<D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net> <ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com> <49F608B7.9080409@ovro.caltech.edu> <49F60A3A.4060402@freescale.com>
-In-Reply-To: <49F60A3A.4060402@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 27 Apr 2009 16:23:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=TvaepnevjVE+C3WmxEwgRgqprYNtPt4dxvpJ9cBPijI+MHNT4g/IIYeazzmKcGkKXT3IZIc51Pi6OZcjbaWQ9688RcNErmEWWnidznlm2Gv+/TX4+2zdaBI7MUrSobea;
+Date: Mon, 27 Apr 2009 13:18:07 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Niel Lambrechts <niel.lambrechts@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>, eric@anholt.net
+Subject: Re: [Bug #13180] 2.6.30-rc2: WARNING at i915_gem.c for
+ i915_gem_idle
+Message-ID: <20090427131807.1999058c@hobbes>
+In-Reply-To: <49F61143.9030501@gmail.com>
+References: <47KgT3nlbjD.A.lnB.jc48JB@chimera>
+	<Fg2zLW93smL.A.hKC.tc48JB@chimera>
+	<20090427093847.778dcd81@hobbes>
+	<49F61143.9030501@gmail.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Mon, 27 Apr 2009 13:22:49 -0700 (PDT)
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Timur,
-
->> Would you like some sort of summary of this info for a commit
->> message?
+On Mon, 27 Apr 2009 22:10:43 +0200
+Niel Lambrechts <niel.lambrechts@gmail.com> wrote:
+> Hi Jesse,
 > 
-> That's probably overkill.  I just want a sentence or two that tells
-> someone looking at the code casually that the behavior of reading PCI
-> memory might be different than what they expect.
+> Sure thing - and to be complete I retried with the latest git kernel,
+> along with the latest Xorg updates from the OPENSUSE 11.1 Xorg
+> repository.
+> 
+> On my system the default displaymanager configuration contains
+> DISPLAYMANAGER_RANDR_MODE_auto="1024x768_60 64.11 1024 1080 1184 1344
+> 768 769 772 795 -HSync +Vsync"
+> 
+> With this setting running in KMS+UXA, kdm starts up with a garbled
+> screen, and I soon get a soft lock-up after trying to blindly
+> entering a username/password. With any other setting, I got the mouse
+> cursor but soon followed by a black screen and soft lock-up (No
+> activity from caps-lock, but Alt-SysRq still worked). These settings
+> work fine without KMS when just using EXA.
 
-Could you help us with the wording you'd like to see in the code.
-Did you want to see something in the header comments, or something
-near the register settings?
+Ooh that sounds bad.  Can you check out
+http://intellinuxgraphics.org/how_to_report_bug.html and file a bug at
+freedesktop.org for this?  That way we won't lose it, and we'll have
+all the info in one place.
 
-How about something like this in place of the existing PCI_RM
-comment:
+Eric, do you know of any changes recently that might affect the
+gem_idle warning Niel sees here?  Seems like in any UMS config the GEM
+lists should be clear at VT switch time...
 
-PRC_RM - PCI read multiple
-   The default PCI read command used by the DMA controller is
-   PCI Read (PCI command 6h). When the burst length is 32-bytes
-   or longer, PCI Read Line (PCI command Eh) is used (undocumented
-   feature of the controller). Using PCI read multiple
-   (PCI command Ch) results in high-performance across PCI
-   bridges. DMA transfers to non-prefetchable PCI registers
-   should not result in prefetched reads, even when using
-   the PCI read multiple command.
-
-
-Cheers,
-Dave
-
-
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
