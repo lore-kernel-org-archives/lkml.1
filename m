@@ -1,79 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbZD0IJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756506AbZD0INU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756546AbZD0IJx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 04:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755519AbZD0IJR
+	id S1756506AbZD0INU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 04:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbZD0INF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 04:09:17 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:44201 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755190AbZD0IJP (ORCPT
+	Mon, 27 Apr 2009 04:13:05 -0400
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:45411 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752440AbZD0INE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 04:09:15 -0400
-X-Sasl-enc: DOEeSsEgtpoZ52EQzMONde1rn7KICrjH6bnkQJy0fWam 1240819753
-Message-ID: <49F5682F.20300@ladisch.de>
-Date: Mon, 27 Apr 2009 10:09:19 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 27 Apr 2009 04:13:04 -0400
+Date: Mon, 27 Apr 2009 13:42:06 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "hugh@veritas.com" <hugh@veritas.com>
+Subject: Re: [RFC][PATCH] fix swap entries is not reclaimed in proper way
+	for memg v3.
+Message-ID: <20090427081206.GI4454@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090421162121.1a1d15fe.kamezawa.hiroyu@jp.fujitsu.com> <20090422143833.2e11e10b.nishimura@mxp.nes.nec.co.jp> <20090424133306.0d9fb2ce.kamezawa.hiroyu@jp.fujitsu.com> <20090424152103.a5ee8d13.nishimura@mxp.nes.nec.co.jp> <20090424162840.2ad06d8a.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: NLS: utf8 conversions
-References: <Pine.LNX.4.44L0.0904241534110.4531-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0904241534110.4531-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090424162840.2ad06d8a.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> Although nobody seems to have made a big deal about it, the conversions
-> between utf8 and utf16 done by fs/nls/nls_base.c are wrong in a couple
-> of important respects:
-> 
-> 	They don't handle Unicode code points larger than U+FFFF.
-> 
-> 	They don't detect invalid values, in particular, surrogate
-> 	code points.
-> 
-> The problems stem from the fact the characters at issue can't be
-> represented by a single 16-bit wchar_t.  But that's no excuse for
-> performing an incorrect conversion to or from utf16.
-> 
-> Are there any definite thoughts on how this should be handled?  I don't 
-> see any way for the single-character conversion routines (utf8_mbtowc 
-> and utf8_wctomb) to come to grips with these issues, except perhaps for 
-> returning an error when a character would be invalid or too big to fit 
-> in 16 bits.
-> 
-> The string-oriented routines (utf8_mbstowcs and utf8_wcstombs) could be 
-> adapted to deal with these issues properly.
-> 
-> Any comments or suggestions for other approaches?
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-24 16:28:40]:
 
-The single-character utf8_* routines in nls_base.c are just special
-cases of the NLS API for the UTF-8 encoding; the string-oriented
-routines, as far as I can see, are actually only used to do conversions
-between UTF-8 and UTF-16, not wchar_t, so they probably should be
-renamed.
+> This is new one. (using new logic.) Maybe enough light-weight and caches all cases.
 
-As for the NLS API itself: If we want to be able to handle code points
-larger than U+FFFF, the obvious answer is to make wchar_t a 32-bit type.
-This should not be too large a problem because the FS NLS API is
-designed so that wchar_t is only used for temporary values, i.e.,
-characters are converted from some on-disk encoding to wchar_t, then
-from wchar_t to some I/O encoding (usually UTF-8); and the conversions
-are done one code point at a time.
-
-The file systems that use some form of UTF-16 (VFAT, NTFS, CIFS, UDF,
-etc.) use the NLS API in a different way: they treat the individual
-UTF-16 values as wchar_t values and do only the conversion from wchar_t
-to the I/O encoding.  Here we'd need to introduce an additional
-conversion step between UTF-16 and wchar_t, i.e., treat UTF-16 like any
-other multibyte encoding.
+You sure mean catches above :)
 
 
-Best regards,
-Clemens
+> 
+> Thanks,
+> -Kame
+> ==
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Because free_swap_and_cache() function is called under spinlocks,
+> it can't sleep and use trylock_page() instead of lock_page().
+> By this, swp_entry which is not used after zap_xx can exists as
+> SwapCache, which will be never used.
+> This kind of SwapCache is reclaimed by global LRU when it's found
+> at LRU rotation.
+> 
+> When memory cgroup is used,  the global LRU will not be kicked and
+> stale Swap Caches will not be reclaimed. This is problematic because
+> memcg's swap entry accounting is leaked and memcg can't know it.
+> To catch this stale SwapCache, we have to chase it and check the
+> swap is alive or not again.
+> 
+> This patch adds a function to chase stale swap cache and reclaim it
+> in modelate way. When zap_xxx fails to remove swap ent, it will be
+> recoreded into buffer and memcg's "work" will reclaim it later.
+> No sleep, no memory allocation under free_swap_and_cache().
+> 
+> This patch also adds stale-swap-cache-congestion logic and try to avoid having
+> too much stale swap caches at the same time.
+> 
+> Implementation is naive but maybe the cost meets trade-off.
+> 
+> How to test:
+>   1. set limit of memory to very small (1-2M?). 
+>   2. run some amount of program and run page reclaim/swap-in.
+>   3. kill programs by SIGKILL etc....then, Stale Swap Cache will
+>      be increased. After this patch, stale swap caches are reclaimed
+>      and mem+swap controller will not go to OOM.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+Quick comment on the design
+
+1. I like the marking of swap cache entries as stale
+2. Can't we reclaim stale entries during memcg LRU reclaim? Why write
+a GC for it?
+
+-- 
+	Balbir
