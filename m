@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbZD0Jy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbZD0Jzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756535AbZD0Jy4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 05:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbZD0Jss
+	id S1757436AbZD0Jzm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 05:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755106AbZD0Jsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 05:48:48 -0400
+	Mon, 27 Apr 2009 05:48:51 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:60685 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754474AbZD0Jsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 05:48:46 -0400
+	id S1754927AbZD0Jsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 05:48:50 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 07/30] microblaze_mmu_v1: MMU initialization
-Date: Mon, 27 Apr 2009 10:31:56 +0200
-Message-Id: <1240821139-7247-8-git-send-email-monstr@monstr.eu>
+Subject: [PATCH 10/30] microblaze_mmu_v1: Context handling - mmu_context.c/h
+Date: Mon, 27 Apr 2009 10:31:59 +0200
+Message-Id: <1240821139-7247-11-git-send-email-monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1240821139-7247-7-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1240821139-7247-10-git-send-email-monstr@monstr.eu>
 References: <1240821139-7247-1-git-send-email-monstr@monstr.eu>
  <1240821139-7247-2-git-send-email-monstr@monstr.eu>
  <1240821139-7247-3-git-send-email-monstr@monstr.eu>
@@ -24,6 +24,9 @@ References: <1240821139-7247-1-git-send-email-monstr@monstr.eu>
  <1240821139-7247-5-git-send-email-monstr@monstr.eu>
  <1240821139-7247-6-git-send-email-monstr@monstr.eu>
  <1240821139-7247-7-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-8-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-9-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-10-git-send-email-monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -32,233 +35,242 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/mm/init.c |  168 ++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 167 insertions(+), 1 deletions(-)
+ arch/microblaze/include/asm/mmu_context.h |  134 +++++++++++++++++++++++++++++
+ arch/microblaze/mm/mmu_context.c          |   70 +++++++++++++++
+ 2 files changed, 204 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/mm/mmu_context.c
 
-diff --git a/arch/microblaze/mm/init.c b/arch/microblaze/mm/init.c
-index b0c8213..32a54cb 100644
---- a/arch/microblaze/mm/init.c
-+++ b/arch/microblaze/mm/init.c
-@@ -23,9 +23,17 @@
- #include <asm/sections.h>
- #include <asm/tlb.h>
- 
-+#ifndef CONFIG_MMU
- unsigned int __page_offset;
- /* EXPORT_SYMBOL(__page_offset); */
- 
-+#else
-+DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
-+
-+int mem_init_done;
-+static int init_bootmem_done;
-+#endif /* CONFIG_MMU */
-+
- char *klimit = _end;
- 
+diff --git a/arch/microblaze/include/asm/mmu_context.h b/arch/microblaze/include/asm/mmu_context.h
+index 150ca01..2f49649 100644
+--- a/arch/microblaze/include/asm/mmu_context.h
++++ b/arch/microblaze/include/asm/mmu_context.h
+@@ -1,4 +1,6 @@
  /*
-@@ -61,6 +69,7 @@ void __init setup_memory(void)
- {
- 	int i;
- 	unsigned long map_size;
-+#ifndef CONFIG_MMU
- 	u32 kernel_align_start, kernel_align_size;
++ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2008-2009 PetaLogix
+  * Copyright (C) 2006 Atmark Techno, Inc.
+  *
+  * This file is subject to the terms and conditions of the GNU General Public
+@@ -9,6 +11,7 @@
+ #ifndef _ASM_MICROBLAZE_MMU_CONTEXT_H
+ #define _ASM_MICROBLAZE_MMU_CONTEXT_H
  
- 	/* Find main memory where is the kernel */
-@@ -93,6 +102,7 @@ void __init setup_memory(void)
- 		__func__, kernel_align_start, kernel_align_start
- 			+ kernel_align_size, kernel_align_size);
++# ifndef CONFIG_MMU
+ # define init_new_context(tsk, mm)		({ 0; })
  
-+#endif
- 	/*
- 	 * Kernel:
- 	 * start: base phys address of kernel - page align
-@@ -121,9 +131,13 @@ void __init setup_memory(void)
- 	 * for 4GB of memory, using 4kB pages), plus 1 page
- 	 * (in case the address isn't page-aligned).
- 	 */
-+#ifndef CONFIG_MMU
- 	map_size = init_bootmem_node(NODE_DATA(0), PFN_UP(TOPHYS((u32)_end)),
- 					min_low_pfn, max_low_pfn);
--
-+#else
-+	map_size = init_bootmem_node(&contig_page_data,
-+		PFN_UP(TOPHYS((u32)_end)), min_low_pfn, max_low_pfn);
-+#endif
- 	lmb_reserve(PFN_UP(TOPHYS((u32)_end)) << PAGE_SHIFT, map_size);
+ # define enter_lazy_tlb(mm, tsk)		do {} while (0)
+@@ -18,4 +21,135 @@
+ # define switch_mm(prev, next, tsk)		do {} while (0)
+ # define activate_mm(prev, next)		do {} while (0)
  
- 	/* free bootmem is whole main memory */
-@@ -137,6 +151,9 @@ void __init setup_memory(void)
- 		reserve_bootmem(lmb.reserved.region[i].base,
- 			lmb_size_bytes(&lmb.reserved, i) - 1, BOOTMEM_DEFAULT);
- 	}
-+#ifdef CONFIG_MMU
-+	init_bootmem_done = 1;
-+#endif
- 	paging_init();
- }
- 
-@@ -191,11 +208,160 @@ void __init mem_init(void)
- 	printk(KERN_INFO "Memory: %luk/%luk available\n",
- 	       (unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
- 	       num_physpages << (PAGE_SHIFT-10));
-+#ifdef CONFIG_MMU
-+	mem_init_done = 1;
-+#endif
- }
- 
-+#ifndef CONFIG_MMU
- /* Check against bounds of physical memory */
- int ___range_ok(unsigned long addr, unsigned long size)
- {
- 	return ((addr < memory_start) ||
- 		((addr + size) > memory_end));
- }
++# else /* CONFIG_MMU */
 +
-+#else
-+int page_is_ram(unsigned long pfn)
-+{
-+	return pfn < max_low_pfn;
-+}
++# include <asm/atomic.h>
++# include <asm/bitops.h>
++# include <asm/mmu.h>
++# include <asm-generic/mm_hooks.h>
++
++#  ifdef __KERNEL__
++/*
++ * This function defines the mapping from contexts to VSIDs (virtual
++ * segment IDs).  We use a skew on both the context and the high 4 bits
++ * of the 32-bit virtual address (the "effective segment ID") in order
++ * to spread out the entries in the MMU hash table.  Note, if this
++ * function is changed then arch/ppc/mm/hashtable.S will have to be
++ * changed to correspond.
++ */
++#  define CTX_TO_VSID(ctx, va)	(((ctx) * (897 * 16) + ((va) >> 28) * 0x111) \
++				 & 0xffffff)
 +
 +/*
-+ * Check for command-line options that affect what MMU_init will do.
++   MicroBlaze has 256 contexts, so we can just rotate through these
++   as a way of "switching" contexts.  If the TID of the TLB is zero,
++   the PID/TID comparison is disabled, so we can use a TID of zero
++   to represent all kernel pages as shared among all contexts.
 + */
-+static void MMU_setup(void)
++
++static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
 +{
-+#if 0
-+	/* Check for nobats option (used in mapin_ram). */
-+	if (strstr(cmd_line, "nobats"))
-+		__map_without_bats = 1;
++}
 +
-+	/* Look for mem= option on command line */
-+	if (strstr(cmd_line, "mem=")) {
-+		char *p, *q;
-+		unsigned long maxmem = 0;
++#  define NO_CONTEXT	256
++#  define LAST_CONTEXT	255
++#  define FIRST_CONTEXT	1
 +
-+		for (q = cmd_line; (p = strstr(q, "mem=")) != 0; ) {
-+			q = p + 4;
-+			if (p > cmd_line && p[-1] != ' ')
-+				continue;
-+			maxmem = strict_strtoul(q, &q, NULL);
-+			if (*q == 'k' || *q == 'K') {
-+				maxmem <<= 10;
-+				++q;
-+			} else if (*q == 'm' || *q == 'M') {
-+				maxmem <<= 20;
-+				++q;
-+			}
-+		}
-+		__max_memory = maxmem;
++/*
++ * Set the current MMU context.
++ * This is done byloading up the segment registers for the user part of the
++ * address space.
++ *
++ * Since the PGD is immediately available, it is much faster to simply
++ * pass this along as a second parameter, which is required for 8xx and
++ * can be used for debugging on all processors (if you happen to have
++ * an Abatron).
++ */
++extern void set_context(mm_context_t context, pgd_t *pgd);
++
++/*
++ * Bitmap of contexts in use.
++ * The size of this bitmap is LAST_CONTEXT + 1 bits.
++ */
++extern unsigned long context_map[];
++
++/*
++ * This caches the next context number that we expect to be free.
++ * Its use is an optimization only, we can't rely on this context
++ * number to be free, but it usually will be.
++ */
++extern mm_context_t next_mmu_context;
++
++/*
++ * Since we don't have sufficient contexts to give one to every task
++ * that could be in the system, we need to be able to steal contexts.
++ * These variables support that.
++ */
++extern atomic_t nr_free_contexts;
++extern struct mm_struct *context_mm[LAST_CONTEXT+1];
++extern void steal_context(void);
++
++/*
++ * Get a new mmu context for the address space described by `mm'.
++ */
++static inline void get_mmu_context(struct mm_struct *mm)
++{
++	mm_context_t ctx;
++
++	if (mm->context != NO_CONTEXT)
++		return;
++	while (atomic_dec_if_positive(&nr_free_contexts) < 0)
++		steal_context();
++	ctx = next_mmu_context;
++	while (test_and_set_bit(ctx, context_map)) {
++		ctx = find_next_zero_bit(context_map, LAST_CONTEXT+1, ctx);
++		if (ctx > LAST_CONTEXT)
++			ctx = 0;
 +	}
-+
-+/*	if (__max_memory && memory_size > __max_memory)
-+		memory_size = __max_memory; */
-+
-+#endif
++	next_mmu_context = (ctx + 1) & LAST_CONTEXT;
++	mm->context = ctx;
++	context_mm[ctx] = mm;
 +}
 +
 +/*
-+ * MMU_init_hw does the chip-specific initialization of the MMU hardware.
++ * Set up the context for a new address space.
 + */
-+static void __init MMU_init_hw(void)
++#  define init_new_context(tsk, mm)	(((mm)->context = NO_CONTEXT), 0)
++
++/*
++ * We're finished using the context for an address space.
++ */
++static inline void destroy_context(struct mm_struct *mm)
++{
++	if (mm->context != NO_CONTEXT) {
++		clear_bit(mm->context, context_map);
++		mm->context = NO_CONTEXT;
++		atomic_inc(&nr_free_contexts);
++	}
++}
++
++static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
++			     struct task_struct *tsk)
++{
++	tsk->thread.pgdir = next->pgd;
++	get_mmu_context(next);
++	set_context(next->context, next->pgd);
++}
++
++/*
++ * After we have set current->mm to a new value, this activates
++ * the context for the new mm so we see the new mappings.
++ */
++static inline void activate_mm(struct mm_struct *active_mm,
++			struct mm_struct *mm)
++{
++	current->thread.pgdir = mm->pgd;
++	get_mmu_context(mm);
++	set_context(mm->context, mm->pgd);
++}
++
++extern void mmu_context_init(void);
++
++#  endif /* __KERNEL__ */
++# endif /* CONFIG_MMU */
+ #endif /* _ASM_MICROBLAZE_MMU_CONTEXT_H */
+diff --git a/arch/microblaze/mm/mmu_context.c b/arch/microblaze/mm/mmu_context.c
+new file mode 100644
+index 0000000..26ff82f
+--- /dev/null
++++ b/arch/microblaze/mm/mmu_context.c
+@@ -0,0 +1,70 @@
++/*
++ * This file contains the routines for handling the MMU.
++ *
++ *    Copyright (C) 2007 Xilinx, Inc.  All rights reserved.
++ *
++ *  Derived from arch/ppc/mm/4xx_mmu.c:
++ *  -- paulus
++ *
++ *  Derived from arch/ppc/mm/init.c:
++ *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
++ *
++ *  Modifications by Paul Mackerras (PowerMac) (paulus@cs.anu.edu.au)
++ *  and Cort Dougan (PReP) (cort@cs.nmt.edu)
++ *    Copyright (C) 1996 Paul Mackerras
++ *  Amiga/APUS changes by Jesper Skov (jskov@cygnus.co.uk).
++ *
++ *  Derived from "arch/i386/mm/init.c"
++ *    Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ *
++ */
++
++#include <linux/mm.h>
++#include <linux/init.h>
++
++#include <asm/tlbflush.h>
++#include <asm/mmu_context.h>
++
++mm_context_t next_mmu_context;
++unsigned long context_map[LAST_CONTEXT / BITS_PER_LONG + 1];
++atomic_t nr_free_contexts;
++struct mm_struct *context_mm[LAST_CONTEXT+1];
++
++/*
++ * Initialize the context management stuff.
++ */
++void __init mmu_context_init(void)
 +{
 +	/*
-+	 * The Zone Protection Register (ZPR) defines how protection will
-+	 * be applied to every page which is a member of a given zone. At
-+	 * present, we utilize only two of the zones.
-+	 * The zone index bits (of ZSEL) in the PTE are used for software
-+	 * indicators, except the LSB.  For user access, zone 1 is used,
-+	 * for kernel access, zone 0 is used.  We set all but zone 1
-+	 * to zero, allowing only kernel access as indicated in the PTE.
-+	 * For zone 1, we set a 01 binary (a value of 10 will not work)
-+	 * to allow user access as indicated in the PTE.  This also allows
-+	 * kernel access as indicated in the PTE.
++	 * The use of context zero is reserved for the kernel.
++	 * This code assumes FIRST_CONTEXT < 32.
 +	 */
-+	__asm__ __volatile__ ("ori r11, r0, 0x10000000;" \
-+			"mts rzpr, r11;"
-+			: : : "r11");
++	context_map[0] = (1 << FIRST_CONTEXT) - 1;
++	next_mmu_context = FIRST_CONTEXT;
++	atomic_set(&nr_free_contexts, LAST_CONTEXT - FIRST_CONTEXT + 1);
 +}
 +
 +/*
-+ * MMU_init sets up the basic memory mappings for the kernel,
-+ * including both RAM and possibly some I/O regions,
-+ * and sets up the page tables and the MMU hardware ready to go.
++ * Steal a context from a task that has one at the moment.
++ *
++ * This isn't an LRU system, it just frees up each context in
++ * turn (sort-of pseudo-random replacement :).  This would be the
++ * place to implement an LRU scheme if anyone were motivated to do it.
 + */
-+
-+/* called from head.S */
-+asmlinkage void __init MMU_init(void)
++void steal_context(void)
 +{
-+	unsigned int kstart, ksize;
++	struct mm_struct *mm;
 +
-+	if (!lmb.reserved.cnt) {
-+		printk(KERN_EMERG "Error memory count\n");
-+		machine_restart(NULL);
-+	}
-+
-+	if ((u32) lmb.memory.region[0].size < 0x1000000) {
-+		printk(KERN_EMERG "Memory must be greater than 16MB\n");
-+		machine_restart(NULL);
-+	}
-+	/* Find main memory where the kernel is */
-+	memory_start = (u32) lmb.memory.region[0].base;
-+	memory_end = (u32) lmb.memory.region[0].base +
-+				(u32) lmb.memory.region[0].size;
-+	memory_size = memory_end - memory_start;
-+
-+	MMU_setup(); /* FIXME parse args from command line - not used */
-+
-+	/*
-+	 * Map out the kernel text/data/bss from the available physical
-+	 * memory.
-+	 */
-+	kstart = __pa(CONFIG_KERNEL_START); /* kernel start */
-+	/* kernel size */
-+	ksize = PAGE_ALIGN(((u32)_end - (u32)CONFIG_KERNEL_START));
-+	lmb_reserve(kstart, ksize);
-+
-+#if defined(CONFIG_BLK_DEV_INITRD)
-+	/* Remove the init RAM disk from the available memory. */
-+/*	if (initrd_start) {
-+		mem_pieces_remove(&phys_avail, __pa(initrd_start),
-+				  initrd_end - initrd_start, 1);
-+	}*/
-+#endif /* CONFIG_BLK_DEV_INITRD */
-+
-+	/* Initialize the MMU hardware */
-+	MMU_init_hw();
-+
-+	/* Map in all of RAM starting at CONFIG_KERNEL_START */
-+	mapin_ram();
-+
-+#ifdef HIGHMEM_START_BOOL
-+	ioremap_base = HIGHMEM_START;
-+#else
-+	ioremap_base = 0xfe000000UL;	/* for now, could be 0xfffff000 */
-+#endif /* CONFIG_HIGHMEM */
-+	ioremap_bot = ioremap_base;
-+
-+	/* Initialize the context management stuff */
-+	mmu_context_init();
++	/* free up context `next_mmu_context' */
++	/* if we shouldn't free context 0, don't... */
++	if (next_mmu_context < FIRST_CONTEXT)
++		next_mmu_context = FIRST_CONTEXT;
++	mm = context_mm[next_mmu_context];
++	flush_tlb_mm(mm);
++	destroy_context(mm);
 +}
-+
-+/* This is only called until mem_init is done. */
-+void __init *early_get_page(void)
-+{
-+	void *p;
-+	if (init_bootmem_done) {
-+		p = alloc_bootmem_pages(PAGE_SIZE);
-+	} else {
-+		/*
-+		 * Mem start + 32MB -> here is limit
-+		 * because of mem mapping from head.S
-+		 */
-+		p = __va(lmb_alloc_base(PAGE_SIZE, PAGE_SIZE,
-+					memory_start + 0x2000000));
-+	}
-+	return p;
-+}
-+#endif /* CONFIG_MMU */
 -- 
 1.5.5.1
 
