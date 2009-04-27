@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755150AbZD0Kxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbZD0KyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755150AbZD0Kxz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 06:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbZD0Kxq
+	id S1755433AbZD0KyY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 06:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbZD0KyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 06:53:46 -0400
-Received: from viefep18-int.chello.at ([62.179.121.38]:64671 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752136AbZD0Kxp (ORCPT
+	Mon, 27 Apr 2009 06:54:16 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:37670 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754019AbZD0KyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 06:53:45 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [rfc 2/2] x86, bts: use physically non-contiguous trace buffer
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Markus Metzger <markus.t.metzger@intel.com>, markus.t.metzger@gmail.com,
-       roland@redhat.com, eranian@googlemail.com, oleg@redhat.com,
-       juan.villacis@intel.com, ak@linux.jf.intel.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com
-In-Reply-To: <20090424083128.GI24912@elte.hu>
-References: <20090424100055.A30408@sedona.ch.intel.com>
-	 <20090424011328.b5e949ce.akpm@linux-foundation.org>
-	 <20090424083128.GI24912@elte.hu>
-Content-Type: text/plain
-Date: Mon, 27 Apr 2009 12:53:36 +0200
-Message-Id: <1240829616.7620.7.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 27 Apr 2009 06:54:15 -0400
+Message-ID: <49F58ED3.20207@monstr.eu>
+Date: Mon, 27 Apr 2009 12:54:11 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: linux-kernel@vger.kernel.org, john.williams@petalogix.com
+Subject: Re: [PATCH 01/30] microblaze_mmu_v1: Makefiles
+References: <1240821139-7247-1-git-send-email-monstr@monstr.eu> <1240821139-7247-2-git-send-email-monstr@monstr.eu> <200904271250.26725.arnd@arndb.de>
+In-Reply-To: <200904271250.26725.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-24 at 10:31 +0200, Ingo Molnar wrote:
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
+Arnd Bergmann wrote:
+> On Monday 27 April 2009, monstr@monstr.eu wrote:
+>> From: Michal Simek <monstr@monstr.eu>
+>>
+>> Signed-off-by: Michal Simek <monstr@monstr.eu>
+>> ---
+>>  arch/microblaze/Makefile        |    4 ++++
+>>  arch/microblaze/boot/Makefile   |    2 ++
+>>  arch/microblaze/kernel/Makefile |    1 +
+>>  arch/microblaze/lib/Makefile    |    3 ++-
+>>  arch/microblaze/mm/Makefile     |    2 ++
+>>  5 files changed, 11 insertions(+), 1 deletions(-)
 > 
+> It would be nice to keep the Makefile and Kconfig changes together with
+> the files they are referring to, otherwise you risk getting an
+> unbuildable source tree in the middle of a git-bisect.
 
-> > The patch looks like a regression to me.  vmalloc memory is slower 
-> > to allocate, slower to free, slower to access and can exhaust or 
-> > fragment the vmalloc arena.  Confused.
+make sense to me too -> I'll move Makefile to the end of set (in next version).
+
+Thanks,
+Michal
 > 
-> Performance does not matter here (this is really a slowpath), but 
-> fragmentation does matter, especially on 32-bit systems.
-> 
-> I'd not uglify the code via vmap() - and vmap has the same 
-> fundamental address space limitations on 32-bit as vmalloc().
-> 
-> The existing kmalloc() is fine. We do larger than PAGE_SIZE 
-> allocations elsewhere too (the kernel stack for example), and this 
-> is a debug facility, so failing the allocation is not a big problem 
-> even if it happens.
-
-Nobody has yet told what the typical size of these allocations are. If
-they're large enough to account in pages, one should arguable use the
-page allocator not kmalloc. Also, any >3 order allocation (>32kb) are
-very likely to fail. Having this ptrace interface work in the (unloaded)
-development environment but not in a (loaded) production environment
-will render it basically useless IMHO.
-
-Having a regular high order allocation with vmalloc/vmap fallback is
-quite normal, esp. if one wants to promote the use of this facility as
-usable.
-
-So, no, I very strongly disagree that the existing kmalloc is fine.
+> 	Arnd <><
 
 
-PS. I get shitloads of order-4 alloc failures from GEM after a few days
-of uptime on my laptop.
-
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
