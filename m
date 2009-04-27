@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756682AbZD0Mos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbZD0Mqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756682AbZD0Mos (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 08:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbZD0Moc
+	id S1756711AbZD0Mqm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 08:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbZD0Mqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 08:44:32 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:47943 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756596AbZD0Mob (ORCPT
+	Mon, 27 Apr 2009 08:46:33 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:47094 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755090AbZD0Mqc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 08:44:31 -0400
-Message-ID: <49F5A8AB.4040707@monstr.eu>
-Date: Mon, 27 Apr 2009 14:44:27 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
-MIME-Version: 1.0
+	Mon, 27 Apr 2009 08:46:32 -0400
+Date: Mon, 27 Apr 2009 14:48:39 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Arnd Bergmann <arnd@arndb.de>
-CC: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       john.williams@petalogix.com
+Cc: monstr@monstr.eu, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org, john.williams@petalogix.com
 Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
-References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <200904271357.01681.arnd@arndb.de> <49F5A5B2.7000307@monstr.eu> <200904271442.24870.arnd@arndb.de>
-In-Reply-To: <200904271442.24870.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Message-ID: <20090427124839.GA9668@uranus.ravnborg.org>
+References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <200904271357.01681.arnd@arndb.de> <20090427121556.GA9469@uranus.ravnborg.org> <200904271437.09273.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904271437.09273.arnd@arndb.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Monday 27 April 2009, Michal Simek wrote:
->>>       long            st_size;        /* Size of file, in bytes.  */
->> Maybe unsigned? Make more sense to me that file size is not minus.
->> And for some types below.
+On Mon, Apr 27, 2009 at 02:37:08PM +0200, Arnd Bergmann wrote:
+> On Monday 27 April 2009, Sam Ravnborg wrote:
+> > Why not use __u64/__u32 (and s32/s64 where appropriate)?
+> > Historical baggage or a techncal reason?
 > 
-> st_size represents an off_t in user space, which is signed.
-> Just over half the existing architectures use signed types
-> for st_size, but for this (like Sam's suggestion for __u64),
-> I don't think it matters either way.
-
-OK. Is it mean that your structure is perfect? If yes, I'll recompile toolchain and do some more tests.
-
-Michal
-
+> Yes, purely historical reasons: all architectures currently
+> use the simple C types rather than __u32 in stat.h.
 > 
-> 	Arnd <><
+> I don't think it makes a difference either way, so I'd
+> leave it like this unless you find a good reason for
+> changing.
 
+The reason I had was:
+1) consistency. We say that we should use the width specific types in our interfaces
+2) readability. We expect to see the kernel types used - so we know then and does not
+                start to wonder why we did not use them here.
+3) documentation. The __{u,s}{32,64} documents the size better than "unsigned int" / long long" etc.
 
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+But no technical atrong arguments.
+
+	Sam
