@@ -1,103 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754423AbZD0IEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbZD0IJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754423AbZD0IEN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 04:04:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZD0ID6
+	id S1755094AbZD0IJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 04:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbZD0IJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 04:03:58 -0400
-Received: from cmpxchg.org ([85.214.51.133]:45119 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752079AbZD0ID6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 04:03:58 -0400
-Date: Mon, 27 Apr 2009 10:02:13 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>
-Subject: Re: [patch 2/3][rfc] swap: try to reuse freed slots in the allocation area
-Message-ID: <20090427080213.GB2244@cmpxchg.org>
-References: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org> <1240259085-25872-2-git-send-email-hannes@cmpxchg.org> <Pine.LNX.4.64.0904222020140.18587@blonde.anvils>
-Mime-Version: 1.0
+	Mon, 27 Apr 2009 04:09:13 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:58065 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753682AbZD0IJL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 04:09:11 -0400
+Date: Mon, 27 Apr 2009 17:03:55 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-sh <linux-sh@vger.kernel.org>
+Subject: Re: [PATCH] maple: input: fix up maple mouse driver - v2
+Message-ID: <20090427080354.GA26020@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Adrian McMenamin <adrian@newgolddream.info>,
+	lkml <linux-kernel@vger.kernel.org>,
+	linux-sh <linux-sh@vger.kernel.org>
+References: <1240685216.4808.13.camel@localhost.localdomain> <1240692198.4808.21.camel@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0904222020140.18587@blonde.anvils>
+In-Reply-To: <1240692198.4808.21.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 08:59:06PM +0100, Hugh Dickins wrote:
-> On Mon, 20 Apr 2009, Johannes Weiner wrote:
+On Sat, Apr 25, 2009 at 09:43:18PM +0100, Adrian McMenamin wrote:
+> On Sat, 2009-04-25 at 19:46 +0100, Adrian McMenamin wrote:
+> > The maple mouse driver currently in mainline is broken:
 > 
-> > A swap slot for an anonymous memory page might get freed again just
-> > after allocating it when further steps in the eviction process fail.
-> > 
-> > But the clustered slot allocation will go ahead allocating after this
-> > now unused slot, leaving a hole at this position.  Holes waste space
-> > and act as a boundary for optimistic swap-in.
-> > 
-> > To avoid this, check if the next page to be swapped out can sensibly
-> > be placed at this just freed position.  And if so, point the next
-> > cluster offset to it.
-> > 
-> > The acceptable 'look-back' distance is the number of slots swap-in
-> > clustering uses as well so that the latter continues to get related
-> > context when reading surrounding swap slots optimistically.
-> > 
-> > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> > Cc: Hugh Dickins <hugh@veritas.com>
-> > Cc: Rik van Riel <riel@redhat.com>
+> Here is a better fix for this, keeping an open and close, so reducing
+> the load on the system when the mouse is not in use, and also properly
+> referencing the maple device buffer following the recent update.
 > 
-> I'm glad you're looking into this area, thank you.
-> I've a feeling that you're going to come up with something good
-> here, but that neither of these patches (2/3 and 3/3) is yet it.
+> drivers/input/mouse/maplemouse.c |   44
+> +++++++++++++++++++------------------
+>  1 files changed, 23 insertions(+), 21 deletions(-)
 > 
-> This patch looks plausible, but I'm not persuaded by it.
-> 
-> I wonder what contribution it made to the impressive figures in
-> your testing - I suspect none, that it barely exercised this path.
-> 
-> I worry that by jumping back to use the slot in this way, you're
-> actually propagating the glitch: by which I mean, if the pages are
-> all as nicely linear as you're supposing, then now one of them
-> will get placed out of sequence, unlike with the existing code.
-> 
-> And note that swapin's page_cluster is used in a strictly aligned
-> way (unlike swap allocation's SWAPFILE_CLUSTER): if you're going
-> to use page_cluster to bound this, then perhaps you should be
-> aligning too.  Perhaps, perhaps not.
+> Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
 
-Thank you, will think about that.
-
-> If this patch is worthwhile, then don't you want also to be
-> removing the " && vm_swap_full()" test from vmscan.c, where
-> shrink_page_list() activate_locked does try_to_free_swap(page)?
-
-I fear this swap releasing there can fail quite easily anyway.  At
-least that is what my testing patches suggest - we hit quite a lot of
-already swap cached pages in shrink_page_list() and I think that is
-where they come from.  It's a different issue, though.
-
-> But bigger And/Or: you remark that "holes act as a boundary for
-> optimistic swap-in".  Maybe that's more worth attacking?  I think
-> that behaviour is dictated purely by the convenience of a simple
-> offset:length interface between swapfile.c's valid_swaphandles()
-> and swap_state.c's swapin_readahead().
-> 
-> If swapin readahead is a good thing (I tend to be pessimistic about
-> it: think it's worth reading several pages while the disk head is
-> there, but hold no great hopes that the other pages will be useful -
-> though when I've experimented with removing, it's certainly proved
-> to be of some value), then I think you'd do better to restructure
-> that interface, so as not to stop at the holes.
-
-Hm, let's try that.  I am thinking of extending valid_swap_handles()
-to return exactly those through a bitmap that can represent holes.
-
-I think the read-in makes sense but not when the system is already
-thrashing.  Then it will just use memory for data we are not sure of
-being needed at all.  Perhaps it should be throttled or disabled at
-some point.
-
-Hugh, thanks a lot for your great feedback.
-
-	Hannes
+Applied, thanks.
