@@ -1,25 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757758AbZD0J5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbZD0J4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757758AbZD0J5k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 05:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbZD0JtE
+	id S1757512AbZD0J4b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 05:56:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbZD0Jsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 05:49:04 -0400
+	Mon, 27 Apr 2009 05:48:54 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:60685 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754920AbZD0JtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 05:49:00 -0400
+	id S1755143AbZD0Jsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 05:48:53 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 03/30] microblaze_mmu_v1: Add mmu_defconfig
-Date: Mon, 27 Apr 2009 10:31:52 +0200
-Message-Id: <1240821139-7247-4-git-send-email-monstr@monstr.eu>
+Subject: [PATCH 14/30] microblaze_mmu_v1: Update process creation for MMU
+Date: Mon, 27 Apr 2009 10:32:03 +0200
+Message-Id: <1240821139-7247-15-git-send-email-monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1240821139-7247-3-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1240821139-7247-14-git-send-email-monstr@monstr.eu>
 References: <1240821139-7247-1-git-send-email-monstr@monstr.eu>
  <1240821139-7247-2-git-send-email-monstr@monstr.eu>
  <1240821139-7247-3-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-4-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-5-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-6-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-7-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-8-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-9-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-10-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-11-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-12-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-13-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-14-git-send-email-monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -28,811 +39,289 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/configs/mmu_defconfig |  795 +++++++++++++++++++++++++++++++++
- 1 files changed, 795 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/configs/mmu_defconfig
+ arch/microblaze/include/asm/processor.h |   97 +++++++++++++++++++++++++++++-
+ arch/microblaze/include/asm/registers.h |   21 ++++++-
+ arch/microblaze/include/asm/segment.h   |   10 +++-
+ arch/microblaze/kernel/process.c        |   58 ++++++++++++++++++
+ 4 files changed, 178 insertions(+), 8 deletions(-)
 
-diff --git a/arch/microblaze/configs/mmu_defconfig b/arch/microblaze/configs/mmu_defconfig
-new file mode 100644
-index 0000000..7351fa4
---- /dev/null
-+++ b/arch/microblaze/configs/mmu_defconfig
-@@ -0,0 +1,795 @@
-+#
-+# Automatically generated make config: don't edit
-+# Linux kernel version: 2.6.30-rc2
-+# Thu Apr 23 11:17:38 2009
-+#
-+CONFIG_MICROBLAZE=y
-+# CONFIG_SWAP is not set
-+CONFIG_RWSEM_GENERIC_SPINLOCK=y
-+# CONFIG_ARCH_HAS_ILOG2_U32 is not set
-+# CONFIG_ARCH_HAS_ILOG2_U64 is not set
-+CONFIG_GENERIC_FIND_NEXT_BIT=y
-+CONFIG_GENERIC_HWEIGHT=y
-+CONFIG_GENERIC_HARDIRQS=y
-+CONFIG_GENERIC_IRQ_PROBE=y
-+CONFIG_GENERIC_CALIBRATE_DELAY=y
-+CONFIG_GENERIC_TIME=y
-+# CONFIG_GENERIC_TIME_VSYSCALL is not set
-+CONFIG_GENERIC_CLOCKEVENTS=y
-+CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
-+CONFIG_HAVE_LATENCYTOP_SUPPORT=y
-+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+diff --git a/arch/microblaze/include/asm/processor.h b/arch/microblaze/include/asm/processor.h
+index 9329029..f206fc1 100644
+--- a/arch/microblaze/include/asm/processor.h
++++ b/arch/microblaze/include/asm/processor.h
+@@ -1,6 +1,6 @@
+ /*
+- * Copyright (C) 2008 Michal Simek
+- * Copyright (C) 2008 PetaLogix
++ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2008-2009 PetaLogix
+  * Copyright (C) 2006 Atmark Techno, Inc.
+  *
+  * This file is subject to the terms and conditions of the GNU General Public
+@@ -26,14 +26,15 @@ extern const struct seq_operations cpuinfo_op;
+ # define cpu_sleep()		do {} while (0)
+ # define prepare_to_copy(tsk)	do {} while (0)
+ 
+-# endif /* __ASSEMBLY__ */
+-
+ #define task_pt_regs(tsk) \
+ 		(((struct pt_regs *)(THREAD_SIZE + task_stack_page(tsk))) - 1)
+ 
+ /* Do necessary setup to start up a newly executed thread. */
+ void start_thread(struct pt_regs *regs, unsigned long pc, unsigned long usp);
+ 
++# endif /* __ASSEMBLY__ */
 +
-+#
-+# General setup
-+#
-+CONFIG_EXPERIMENTAL=y
-+CONFIG_BROKEN_ON_SMP=y
-+CONFIG_INIT_ENV_ARG_LIMIT=32
-+CONFIG_LOCALVERSION=""
-+CONFIG_LOCALVERSION_AUTO=y
-+CONFIG_SYSVIPC=y
-+CONFIG_SYSVIPC_SYSCTL=y
-+# CONFIG_POSIX_MQUEUE is not set
-+# CONFIG_BSD_PROCESS_ACCT is not set
-+# CONFIG_TASKSTATS is not set
-+# CONFIG_AUDIT is not set
++# ifndef CONFIG_MMU
+ /*
+  * User space process size: memory size
+  *
+@@ -85,4 +86,92 @@ extern int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
+ # define KSTK_EIP(tsk)	(0)
+ # define KSTK_ESP(tsk)	(0)
+ 
++# else /* CONFIG_MMU */
 +
-+#
-+# RCU Subsystem
-+#
-+CONFIG_CLASSIC_RCU=y
-+# CONFIG_TREE_RCU is not set
-+# CONFIG_PREEMPT_RCU is not set
-+# CONFIG_TREE_RCU_TRACE is not set
-+# CONFIG_PREEMPT_RCU_TRACE is not set
-+CONFIG_IKCONFIG=y
-+CONFIG_IKCONFIG_PROC=y
-+CONFIG_LOG_BUF_SHIFT=17
-+# CONFIG_GROUP_SCHED is not set
-+# CONFIG_CGROUPS is not set
-+CONFIG_SYSFS_DEPRECATED=y
-+CONFIG_SYSFS_DEPRECATED_V2=y
-+# CONFIG_RELAY is not set
-+# CONFIG_NAMESPACES is not set
-+CONFIG_BLK_DEV_INITRD=y
-+CONFIG_INITRAMFS_SOURCE="rootfs.cpio"
-+CONFIG_INITRAMFS_ROOT_UID=0
-+CONFIG_INITRAMFS_ROOT_GID=0
-+CONFIG_RD_GZIP=y
-+# CONFIG_RD_BZIP2 is not set
-+# CONFIG_RD_LZMA is not set
-+CONFIG_INITRAMFS_COMPRESSION_NONE=y
-+# CONFIG_INITRAMFS_COMPRESSION_GZIP is not set
-+# CONFIG_INITRAMFS_COMPRESSION_BZIP2 is not set
-+# CONFIG_INITRAMFS_COMPRESSION_LZMA is not set
-+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-+CONFIG_SYSCTL=y
-+CONFIG_ANON_INODES=y
-+CONFIG_EMBEDDED=y
-+CONFIG_SYSCTL_SYSCALL=y
-+CONFIG_KALLSYMS=y
-+CONFIG_KALLSYMS_ALL=y
-+CONFIG_KALLSYMS_EXTRA_PASS=y
-+# CONFIG_STRIP_ASM_SYMS is not set
-+# CONFIG_HOTPLUG is not set
-+CONFIG_PRINTK=y
-+CONFIG_BUG=y
-+CONFIG_ELF_CORE=y
-+# CONFIG_BASE_FULL is not set
-+# CONFIG_FUTEX is not set
-+# CONFIG_EPOLL is not set
-+# CONFIG_SIGNALFD is not set
-+CONFIG_TIMERFD=y
-+CONFIG_EVENTFD=y
-+# CONFIG_SHMEM is not set
-+CONFIG_AIO=y
-+CONFIG_VM_EVENT_COUNTERS=y
-+CONFIG_COMPAT_BRK=y
-+CONFIG_SLAB=y
-+# CONFIG_SLUB is not set
-+# CONFIG_SLOB is not set
-+# CONFIG_PROFILING is not set
-+# CONFIG_MARKERS is not set
-+# CONFIG_SLOW_WORK is not set
-+# CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
-+CONFIG_SLABINFO=y
-+CONFIG_BASE_SMALL=1
-+CONFIG_MODULES=y
-+# CONFIG_MODULE_FORCE_LOAD is not set
-+CONFIG_MODULE_UNLOAD=y
-+# CONFIG_MODULE_FORCE_UNLOAD is not set
-+# CONFIG_MODVERSIONS is not set
-+# CONFIG_MODULE_SRCVERSION_ALL is not set
-+CONFIG_BLOCK=y
-+# CONFIG_LBD is not set
-+# CONFIG_BLK_DEV_BSG is not set
-+# CONFIG_BLK_DEV_INTEGRITY is not set
++/*
++ * This is used to define STACK_TOP, and with MMU it must be below
++ * kernel base to select the correct PGD when handling MMU exceptions.
++ */
++# define TASK_SIZE	(CONFIG_KERNEL_START)
 +
-+#
-+# IO Schedulers
-+#
-+CONFIG_IOSCHED_NOOP=y
-+CONFIG_IOSCHED_AS=y
-+CONFIG_IOSCHED_DEADLINE=y
-+CONFIG_IOSCHED_CFQ=y
-+# CONFIG_DEFAULT_AS is not set
-+# CONFIG_DEFAULT_DEADLINE is not set
-+CONFIG_DEFAULT_CFQ=y
-+# CONFIG_DEFAULT_NOOP is not set
-+CONFIG_DEFAULT_IOSCHED="cfq"
-+# CONFIG_FREEZER is not set
++/*
++ * This decides where the kernel will search for a free chunk of vm
++ * space during mmap's.
++ */
++# define TASK_UNMAPPED_BASE	(TASK_SIZE / 8 * 3)
 +
-+#
-+# Platform options
-+#
-+CONFIG_PLATFORM_GENERIC=y
-+CONFIG_OPT_LIB_FUNCTION=y
-+CONFIG_OPT_LIB_ASM=y
-+CONFIG_ALLOW_EDIT_AUTO=y
++# define THREAD_KSP	0
 +
-+#
-+# Automatic platform settings from Kconfig.auto
-+#
++#  ifndef __ASSEMBLY__
 +
-+#
-+# Definitions for MICROBLAZE0
-+#
-+CONFIG_KERNEL_BASE_ADDR=0x90000000
-+CONFIG_XILINX_MICROBLAZE0_FAMILY="virtex5"
-+CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR=1
-+CONFIG_XILINX_MICROBLAZE0_USE_PCMP_INSTR=1
-+CONFIG_XILINX_MICROBLAZE0_USE_BARREL=1
-+CONFIG_XILINX_MICROBLAZE0_USE_DIV=1
-+CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL=2
-+CONFIG_XILINX_MICROBLAZE0_USE_FPU=2
-+CONFIG_XILINX_MICROBLAZE0_HW_VER="7.10.d"
++/*
++ * Default implementation of macro that returns current
++ * instruction pointer ("program counter").
++ */
++#  define current_text_addr()	({ __label__ _l; _l: &&_l; })
 +
-+#
-+# Processor type and features
-+#
-+# CONFIG_NO_HZ is not set
-+# CONFIG_HIGH_RES_TIMERS is not set
-+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-+CONFIG_PREEMPT_NONE=y
-+# CONFIG_PREEMPT_VOLUNTARY is not set
-+# CONFIG_PREEMPT is not set
-+CONFIG_HZ_100=y
-+# CONFIG_HZ_250 is not set
-+# CONFIG_HZ_300 is not set
-+# CONFIG_HZ_1000 is not set
-+CONFIG_HZ=100
-+# CONFIG_SCHED_HRTICK is not set
-+CONFIG_MMU=y
++/* If you change this, you must change the associated assembly-languages
++ * constants defined below, THREAD_*.
++ */
++struct thread_struct {
++	/* kernel stack pointer (must be first field in structure) */
++	unsigned long	ksp;
++	unsigned long	ksp_limit;	/* if ksp <= ksp_limit stack overflow */
++	mm_segment_t	fs;		/* for get_fs() validation */
++	void		*pgdir;		/* root of page-table tree */
++	struct pt_regs	*regs;		/* Pointer to saved register state */
++};
 +
-+#
-+# Boot options
-+#
-+CONFIG_CMDLINE_BOOL=y
-+CONFIG_CMDLINE="console=ttyUL0,115200"
-+CONFIG_CMDLINE_FORCE=y
-+CONFIG_OF=y
-+CONFIG_OF_DEVICE=y
-+CONFIG_PROC_DEVICETREE=y
++#  define INIT_THREAD { \
++	.ksp   = sizeof init_stack + (unsigned long)init_stack, \
++	.fs    = KERNEL_DS, \
++	.pgdir = swapper_pg_dir, \
++}
 +
-+#
-+# Advanced setup
-+#
-+# CONFIG_ADVANCED_OPTIONS is not set
++/* Do necessary setup to start up a newly executed thread.  */
++void start_thread(struct pt_regs *regs,
++		unsigned long pc, unsigned long usp);
 +
-+#
-+# Default settings for advanced configuration options are used
-+#
-+CONFIG_HIGHMEM_START=0xfe000000
-+CONFIG_LOWMEM_SIZE=0x30000000
-+CONFIG_KERNEL_START=0xc0000000
-+CONFIG_TASK_SIZE=0x80000000
-+CONFIG_SELECT_MEMORY_MODEL=y
-+CONFIG_FLATMEM_MANUAL=y
-+# CONFIG_DISCONTIGMEM_MANUAL is not set
-+# CONFIG_SPARSEMEM_MANUAL is not set
-+CONFIG_FLATMEM=y
-+CONFIG_FLAT_NODE_MEM_MAP=y
-+CONFIG_PAGEFLAGS_EXTENDED=y
-+CONFIG_SPLIT_PTLOCK_CPUS=4
-+# CONFIG_PHYS_ADDR_T_64BIT is not set
-+CONFIG_ZONE_DMA_FLAG=0
-+CONFIG_VIRT_TO_BUS=y
-+CONFIG_UNEVICTABLE_LRU=y
-+CONFIG_HAVE_MLOCK=y
-+CONFIG_HAVE_MLOCKED_PAGE_BIT=y
++/* Free all resources held by a thread. */
++extern inline void release_thread(struct task_struct *dead_task)
++{
++}
 +
-+#
-+# Exectuable file formats
-+#
-+CONFIG_BINFMT_ELF=y
-+# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
-+# CONFIG_HAVE_AOUT is not set
-+# CONFIG_BINFMT_MISC is not set
-+CONFIG_NET=y
++extern int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
 +
-+#
-+# Networking options
-+#
-+CONFIG_PACKET=y
-+# CONFIG_PACKET_MMAP is not set
-+CONFIG_UNIX=y
-+CONFIG_XFRM=y
-+# CONFIG_XFRM_USER is not set
-+# CONFIG_XFRM_SUB_POLICY is not set
-+# CONFIG_XFRM_MIGRATE is not set
-+# CONFIG_XFRM_STATISTICS is not set
-+# CONFIG_NET_KEY is not set
-+CONFIG_INET=y
-+# CONFIG_IP_MULTICAST is not set
-+# CONFIG_IP_ADVANCED_ROUTER is not set
-+CONFIG_IP_FIB_HASH=y
-+# CONFIG_IP_PNP is not set
-+# CONFIG_NET_IPIP is not set
-+# CONFIG_NET_IPGRE is not set
-+# CONFIG_ARPD is not set
-+# CONFIG_SYN_COOKIES is not set
-+# CONFIG_INET_AH is not set
-+# CONFIG_INET_ESP is not set
-+# CONFIG_INET_IPCOMP is not set
-+# CONFIG_INET_XFRM_TUNNEL is not set
-+# CONFIG_INET_TUNNEL is not set
-+CONFIG_INET_XFRM_MODE_TRANSPORT=y
-+CONFIG_INET_XFRM_MODE_TUNNEL=y
-+CONFIG_INET_XFRM_MODE_BEET=y
-+# CONFIG_INET_LRO is not set
-+CONFIG_INET_DIAG=y
-+CONFIG_INET_TCP_DIAG=y
-+# CONFIG_TCP_CONG_ADVANCED is not set
-+CONFIG_TCP_CONG_CUBIC=y
-+CONFIG_DEFAULT_TCP_CONG="cubic"
-+# CONFIG_TCP_MD5SIG is not set
-+# CONFIG_IPV6 is not set
-+# CONFIG_NETWORK_SECMARK is not set
-+# CONFIG_NETFILTER is not set
-+# CONFIG_IP_DCCP is not set
-+# CONFIG_IP_SCTP is not set
-+# CONFIG_TIPC is not set
-+# CONFIG_ATM is not set
-+# CONFIG_BRIDGE is not set
-+# CONFIG_NET_DSA is not set
-+# CONFIG_VLAN_8021Q is not set
-+# CONFIG_DECNET is not set
-+# CONFIG_LLC2 is not set
-+# CONFIG_IPX is not set
-+# CONFIG_ATALK is not set
-+# CONFIG_X25 is not set
-+# CONFIG_LAPB is not set
-+# CONFIG_ECONET is not set
-+# CONFIG_WAN_ROUTER is not set
-+# CONFIG_PHONET is not set
-+# CONFIG_NET_SCHED is not set
-+# CONFIG_DCB is not set
++/* Free current thread data structures etc.  */
++static inline void exit_thread(void)
++{
++}
 +
-+#
-+# Network testing
-+#
-+# CONFIG_NET_PKTGEN is not set
-+# CONFIG_HAMRADIO is not set
-+# CONFIG_CAN is not set
-+# CONFIG_IRDA is not set
-+# CONFIG_BT is not set
-+# CONFIG_AF_RXRPC is not set
-+# CONFIG_WIRELESS is not set
-+# CONFIG_WIMAX is not set
-+# CONFIG_RFKILL is not set
-+# CONFIG_NET_9P is not set
++/* Return saved (kernel) PC of a blocked thread.  */
++#  define thread_saved_pc(tsk)	\
++	((tsk)->thread.regs ? (tsk)->thread.regs->r15 : 0)
 +
-+#
-+# Device Drivers
-+#
++unsigned long get_wchan(struct task_struct *p);
 +
-+#
-+# Generic Driver Options
-+#
-+CONFIG_STANDALONE=y
-+CONFIG_PREVENT_FIRMWARE_BUILD=y
-+# CONFIG_DEBUG_DRIVER is not set
-+# CONFIG_DEBUG_DEVRES is not set
-+# CONFIG_SYS_HYPERVISOR is not set
-+# CONFIG_CONNECTOR is not set
-+# CONFIG_MTD is not set
-+# CONFIG_PARPORT is not set
-+CONFIG_BLK_DEV=y
-+# CONFIG_BLK_DEV_COW_COMMON is not set
-+# CONFIG_BLK_DEV_LOOP is not set
-+# CONFIG_BLK_DEV_NBD is not set
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_COUNT=16
-+CONFIG_BLK_DEV_RAM_SIZE=8192
-+# CONFIG_BLK_DEV_XIP is not set
-+# CONFIG_CDROM_PKTCDVD is not set
-+# CONFIG_ATA_OVER_ETH is not set
-+CONFIG_MISC_DEVICES=y
-+# CONFIG_ENCLOSURE_SERVICES is not set
-+# CONFIG_C2PORT is not set
++/* The size allocated for kernel stacks. This _must_ be a power of two! */
++# define KERNEL_STACK_SIZE	0x2000
 +
-+#
-+# EEPROM support
-+#
-+# CONFIG_EEPROM_93CX6 is not set
++/* Return some info about the user process TASK.  */
++#  define task_tos(task)	((unsigned long)(task) + KERNEL_STACK_SIZE)
++#  define task_regs(task) ((struct pt_regs *)task_tos(task) - 1)
 +
-+#
-+# SCSI device support
-+#
-+# CONFIG_RAID_ATTRS is not set
-+# CONFIG_SCSI is not set
-+# CONFIG_SCSI_DMA is not set
-+# CONFIG_SCSI_NETLINK is not set
-+# CONFIG_ATA is not set
-+# CONFIG_MD is not set
-+CONFIG_NETDEVICES=y
-+CONFIG_COMPAT_NET_DEV_OPS=y
-+# CONFIG_DUMMY is not set
-+# CONFIG_BONDING is not set
-+# CONFIG_MACVLAN is not set
-+# CONFIG_EQUALIZER is not set
-+# CONFIG_TUN is not set
-+# CONFIG_VETH is not set
-+# CONFIG_PHYLIB is not set
-+CONFIG_NET_ETHERNET=y
-+# CONFIG_MII is not set
-+# CONFIG_ETHOC is not set
-+# CONFIG_DNET is not set
-+# CONFIG_IBM_NEW_EMAC_ZMII is not set
-+# CONFIG_IBM_NEW_EMAC_RGMII is not set
-+# CONFIG_IBM_NEW_EMAC_TAH is not set
-+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
-+# CONFIG_IBM_NEW_EMAC_NO_FLOW_CTRL is not set
-+# CONFIG_IBM_NEW_EMAC_MAL_CLR_ICINTSTAT is not set
-+# CONFIG_IBM_NEW_EMAC_MAL_COMMON_ERR is not set
-+# CONFIG_B44 is not set
-+CONFIG_NETDEV_1000=y
-+CONFIG_NETDEV_10000=y
++#  define task_pt_regs_plus_args(tsk) \
++	(((void *)task_pt_regs(tsk)) - STATE_SAVE_ARG_SPACE)
 +
-+#
-+# Wireless LAN
-+#
-+# CONFIG_WLAN_PRE80211 is not set
-+# CONFIG_WLAN_80211 is not set
++#  define task_sp(task)	(task_regs(task)->r1)
++#  define task_pc(task)	(task_regs(task)->pc)
++/* Grotty old names for some.  */
++#  define KSTK_EIP(task)	(task_pc(task))
++#  define KSTK_ESP(task)	(task_sp(task))
 +
-+#
-+# Enable WiMAX (Networking options) to see the WiMAX drivers
-+#
-+# CONFIG_WAN is not set
-+# CONFIG_PPP is not set
-+# CONFIG_SLIP is not set
-+# CONFIG_NETCONSOLE is not set
-+# CONFIG_NETPOLL is not set
-+# CONFIG_NET_POLL_CONTROLLER is not set
-+# CONFIG_ISDN is not set
-+# CONFIG_PHONE is not set
++/* FIXME */
++#  define deactivate_mm(tsk, mm)	do { } while (0)
 +
-+#
-+# Input device support
-+#
-+# CONFIG_INPUT is not set
++#  define STACK_TOP	TASK_SIZE
++#  define STACK_TOP_MAX	STACK_TOP
 +
-+#
-+# Hardware I/O ports
-+#
-+# CONFIG_SERIO is not set
-+# CONFIG_GAMEPORT is not set
++#  endif /* __ASSEMBLY__ */
++# endif /* CONFIG_MMU */
+ #endif /* _ASM_MICROBLAZE_PROCESSOR_H */
+diff --git a/arch/microblaze/include/asm/registers.h b/arch/microblaze/include/asm/registers.h
+index 834142d..68c3afb 100644
+--- a/arch/microblaze/include/asm/registers.h
++++ b/arch/microblaze/include/asm/registers.h
+@@ -1,6 +1,6 @@
+ /*
+- * Copyright (C) 2008 Michal Simek
+- * Copyright (C) 2008 PetaLogix
++ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2008-2009 PetaLogix
+  * Copyright (C) 2006 Atmark Techno, Inc.
+  *
+  * This file is subject to the terms and conditions of the GNU General Public
+@@ -30,4 +30,21 @@
+ #define FSR_UF		(1<<1) /* Underflow */
+ #define FSR_DO		(1<<0) /* Denormalized operand error */
+ 
++# ifdef CONFIG_MMU
++/* Machine State Register (MSR) Fields */
++# define MSR_UM		(1<<11) /* User Mode */
++# define MSR_UMS	(1<<12) /* User Mode Save */
++# define MSR_VM		(1<<13) /* Virtual Mode */
++# define MSR_VMS	(1<<14) /* Virtual Mode Save */
 +
-+#
-+# Character devices
-+#
-+# CONFIG_VT is not set
-+CONFIG_DEVKMEM=y
-+# CONFIG_SERIAL_NONSTANDARD is not set
++# define MSR_KERNEL	(MSR_EE | MSR_VM)
++/* # define MSR_USER	(MSR_KERNEL | MSR_UM | MSR_IE) */
++# define MSR_KERNEL_VMS	(MSR_EE | MSR_VMS)
++/* # define MSR_USER_VMS	(MSR_KERNEL_VMS | MSR_UMS | MSR_IE) */
 +
-+#
-+# Serial drivers
-+#
-+# CONFIG_SERIAL_8250 is not set
++/* Exception State Register (ESR) Fields */
++# define	  ESR_DIZ	(1<<11) /* Zone Protection */
++# define	  ESR_S		(1<<10) /* Store instruction */
 +
-+#
-+# Non-8250 serial port support
-+#
-+CONFIG_SERIAL_UARTLITE=y
-+CONFIG_SERIAL_UARTLITE_CONSOLE=y
-+CONFIG_SERIAL_CORE=y
-+CONFIG_SERIAL_CORE_CONSOLE=y
-+CONFIG_UNIX98_PTYS=y
-+# CONFIG_DEVPTS_MULTIPLE_INSTANCES is not set
-+CONFIG_LEGACY_PTYS=y
-+CONFIG_LEGACY_PTY_COUNT=256
-+# CONFIG_IPMI_HANDLER is not set
-+# CONFIG_HW_RANDOM is not set
-+# CONFIG_RTC is not set
-+# CONFIG_GEN_RTC is not set
-+# CONFIG_R3964 is not set
-+# CONFIG_RAW_DRIVER is not set
-+# CONFIG_TCG_TPM is not set
-+# CONFIG_I2C is not set
-+# CONFIG_SPI is not set
-+# CONFIG_W1 is not set
-+# CONFIG_POWER_SUPPLY is not set
-+# CONFIG_HWMON is not set
-+# CONFIG_THERMAL is not set
-+# CONFIG_THERMAL_HWMON is not set
-+# CONFIG_WATCHDOG is not set
-+CONFIG_SSB_POSSIBLE=y
++# endif /* CONFIG_MMU */
+ #endif /* _ASM_MICROBLAZE_REGISTERS_H */
+diff --git a/arch/microblaze/include/asm/segment.h b/arch/microblaze/include/asm/segment.h
+index 7f5dcc5..18d1c4b 100644
+--- a/arch/microblaze/include/asm/segment.h
++++ b/arch/microblaze/include/asm/segment.h
+@@ -1,6 +1,6 @@
+ /*
+- * Copyright (C) 2008 Michal Simek
+- * Copyright (C) 2008 PetaLogix
++ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2008-2009 PetaLogix
+  * Copyright (C) 2006 Atmark Techno, Inc.
+  *
+  * This file is subject to the terms and conditions of the GNU General Public
+@@ -29,8 +29,14 @@ typedef struct {
+  *
+  * For non-MMU arch like Microblaze, KERNEL_DS and USER_DS is equal.
+  */
 +
-+#
-+# Sonics Silicon Backplane
-+#
-+# CONFIG_SSB is not set
++#  ifndef CONFIG_MMU
+ #  define KERNEL_DS	((mm_segment_t){0})
+ #  define USER_DS	KERNEL_DS
++#  else
++#  define KERNEL_DS	((mm_segment_t){0xFFFFF000})
++#  define USER_DS	((mm_segment_t){0xC0000000})
++#  endif
+ 
+ # define get_ds()	(KERNEL_DS)
+ # define get_fs()	(current_thread_info()->addr_limit)
+diff --git a/arch/microblaze/kernel/process.c b/arch/microblaze/kernel/process.c
+index 07d4fa3..f289ff3 100644
+--- a/arch/microblaze/kernel/process.c
++++ b/arch/microblaze/kernel/process.c
+@@ -126,9 +126,54 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
+ 	else
+ 		childregs->r1 = ((unsigned long) ti) + THREAD_SIZE;
+ 
++#ifndef CONFIG_MMU
+ 	memset(&ti->cpu_context, 0, sizeof(struct cpu_context));
+ 	ti->cpu_context.r1 = (unsigned long)childregs;
+ 	ti->cpu_context.msr = (unsigned long)childregs->msr;
++#else
 +
-+#
-+# Multifunction device drivers
-+#
-+# CONFIG_MFD_CORE is not set
-+# CONFIG_MFD_SM501 is not set
-+# CONFIG_HTC_PASIC3 is not set
-+# CONFIG_MFD_TMIO is not set
-+# CONFIG_REGULATOR is not set
++	/* if creating a kernel thread then update the current reg (we don't
++	 * want to use the parent's value when restoring by POP_STATE) */
++	if (kernel_mode(regs))
++		/* save new current on stack to use POP_STATE */
++		childregs->CURRENT_TASK = (unsigned long)p;
++	/* if returning to user then use the parent's value of this register */
 +
-+#
-+# Multimedia devices
-+#
++	/* if we're creating a new kernel thread then just zeroing all
++	 * the registers. That's OK for a brand new thread.*/
++	/* Pls. note that some of them will be restored in POP_STATE */
++	if (kernel_mode(regs))
++		memset(&ti->cpu_context, 0, sizeof(struct cpu_context));
++	/* if this thread is created for fork/vfork/clone, then we want to
++	 * restore all the parent's context */
++	/* in addition to the registers which will be restored by POP_STATE */
++	else {
++		ti->cpu_context = *(struct cpu_context *)regs;
++		childregs->msr |= MSR_UMS;
++	}
 +
-+#
-+# Multimedia core support
-+#
-+# CONFIG_VIDEO_DEV is not set
-+# CONFIG_DVB_CORE is not set
-+# CONFIG_VIDEO_MEDIA is not set
++	/* FIXME STATE_SAVE_PT_OFFSET; */
++	ti->cpu_context.r1  = (unsigned long)childregs - STATE_SAVE_ARG_SPACE;
++	/* we should consider the fact that childregs is a copy of the parent
++	 * regs which were saved immediately after entering the kernel state
++	 * before enabling VM. This MSR will be restored in switch_to and
++	 * RETURN() and we want to have the right machine state there
++	 * specifically this state must have INTs disabled before and enabled
++	 * after performing rtbd
++	 * compose the right MSR for RETURN(). It will work for switch_to also
++	 * excepting for VM and UMS
++	 * don't touch UMS , CARRY and cache bits
++	 * right now MSR is a copy of parent one */
++	childregs->msr |= MSR_BIP;
++	childregs->msr &= ~MSR_EIP;
++	childregs->msr |= MSR_IE;
++	childregs->msr &= ~MSR_VM;
++	childregs->msr |= MSR_VMS;
++	childregs->msr |= MSR_EE; /* exceptions will be enabled*/
 +
-+#
-+# Multimedia drivers
-+#
-+# CONFIG_DAB is not set
++	ti->cpu_context.msr = (childregs->msr|MSR_VM);
++	ti->cpu_context.msr &= ~MSR_UMS; /* switch_to to kernel mode */
++#endif
+ 	ti->cpu_context.r15 = (unsigned long)ret_from_fork - 8;
+ 
+ 	if (clone_flags & CLONE_SETTLS)
+@@ -137,6 +182,7 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
+ 	return 0;
+ }
+ 
++#ifndef CONFIG_MMU
+ /*
+  * Return saved PC of a blocked thread.
+  */
+@@ -151,6 +197,7 @@ unsigned long thread_saved_pc(struct task_struct *tsk)
+ 	else
+ 		return ctx->r14;
+ }
++#endif
+ 
+ static void kernel_thread_helper(int (*fn)(void *), void *arg)
+ {
+@@ -188,3 +235,14 @@ void start_thread(struct pt_regs *regs, unsigned long pc, unsigned long usp)
+ 	regs->r1 = usp;
+ 	regs->pt_mode = 0;
+ }
 +
-+#
-+# Graphics support
-+#
-+# CONFIG_VGASTATE is not set
-+# CONFIG_VIDEO_OUTPUT_CONTROL is not set
-+# CONFIG_FB is not set
-+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-+
-+#
-+# Display device support
-+#
-+# CONFIG_DISPLAY_SUPPORT is not set
-+# CONFIG_SOUND is not set
-+# CONFIG_USB_SUPPORT is not set
-+# CONFIG_MMC is not set
-+# CONFIG_MEMSTICK is not set
-+# CONFIG_NEW_LEDS is not set
-+# CONFIG_ACCESSIBILITY is not set
-+# CONFIG_RTC_CLASS is not set
-+# CONFIG_DMADEVICES is not set
-+# CONFIG_AUXDISPLAY is not set
-+# CONFIG_UIO is not set
-+# CONFIG_STAGING is not set
-+
-+#
-+# File systems
-+#
-+CONFIG_EXT2_FS=y
-+# CONFIG_EXT2_FS_XATTR is not set
-+# CONFIG_EXT2_FS_XIP is not set
-+# CONFIG_EXT3_FS is not set
-+# CONFIG_EXT4_FS is not set
-+# CONFIG_REISERFS_FS is not set
-+# CONFIG_JFS_FS is not set
-+# CONFIG_FS_POSIX_ACL is not set
-+CONFIG_FILE_LOCKING=y
-+# CONFIG_XFS_FS is not set
-+# CONFIG_OCFS2_FS is not set
-+# CONFIG_BTRFS_FS is not set
-+# CONFIG_DNOTIFY is not set
-+# CONFIG_INOTIFY is not set
-+# CONFIG_QUOTA is not set
-+# CONFIG_AUTOFS_FS is not set
-+# CONFIG_AUTOFS4_FS is not set
-+# CONFIG_FUSE_FS is not set
-+
-+#
-+# Caches
-+#
-+# CONFIG_FSCACHE is not set
-+
-+#
-+# CD-ROM/DVD Filesystems
-+#
-+# CONFIG_ISO9660_FS is not set
-+# CONFIG_UDF_FS is not set
-+
-+#
-+# DOS/FAT/NT Filesystems
-+#
-+# CONFIG_MSDOS_FS is not set
-+# CONFIG_VFAT_FS is not set
-+# CONFIG_NTFS_FS is not set
-+
-+#
-+# Pseudo filesystems
-+#
-+CONFIG_PROC_FS=y
-+# CONFIG_PROC_KCORE is not set
-+CONFIG_PROC_SYSCTL=y
-+CONFIG_PROC_PAGE_MONITOR=y
-+CONFIG_SYSFS=y
-+CONFIG_TMPFS=y
-+# CONFIG_TMPFS_POSIX_ACL is not set
-+# CONFIG_HUGETLB_PAGE is not set
-+# CONFIG_CONFIGFS_FS is not set
-+CONFIG_MISC_FILESYSTEMS=y
-+# CONFIG_ADFS_FS is not set
-+# CONFIG_AFFS_FS is not set
-+# CONFIG_HFS_FS is not set
-+# CONFIG_HFSPLUS_FS is not set
-+# CONFIG_BEFS_FS is not set
-+# CONFIG_BFS_FS is not set
-+# CONFIG_EFS_FS is not set
-+# CONFIG_CRAMFS is not set
-+# CONFIG_SQUASHFS is not set
-+# CONFIG_VXFS_FS is not set
-+# CONFIG_MINIX_FS is not set
-+# CONFIG_OMFS_FS is not set
-+# CONFIG_HPFS_FS is not set
-+# CONFIG_QNX4FS_FS is not set
-+# CONFIG_ROMFS_FS is not set
-+# CONFIG_SYSV_FS is not set
-+# CONFIG_UFS_FS is not set
-+# CONFIG_NILFS2_FS is not set
-+CONFIG_NETWORK_FILESYSTEMS=y
-+CONFIG_NFS_FS=y
-+CONFIG_NFS_V3=y
-+# CONFIG_NFS_V3_ACL is not set
-+# CONFIG_NFS_V4 is not set
-+# CONFIG_NFSD is not set
-+CONFIG_LOCKD=y
-+CONFIG_LOCKD_V4=y
-+CONFIG_NFS_COMMON=y
-+CONFIG_SUNRPC=y
-+# CONFIG_RPCSEC_GSS_KRB5 is not set
-+# CONFIG_RPCSEC_GSS_SPKM3 is not set
-+# CONFIG_SMB_FS is not set
-+CONFIG_CIFS=y
-+CONFIG_CIFS_STATS=y
-+CONFIG_CIFS_STATS2=y
-+# CONFIG_CIFS_WEAK_PW_HASH is not set
-+# CONFIG_CIFS_XATTR is not set
-+# CONFIG_CIFS_DEBUG2 is not set
-+# CONFIG_CIFS_EXPERIMENTAL is not set
-+# CONFIG_NCP_FS is not set
-+# CONFIG_CODA_FS is not set
-+# CONFIG_AFS_FS is not set
-+
-+#
-+# Partition Types
-+#
-+CONFIG_PARTITION_ADVANCED=y
-+# CONFIG_ACORN_PARTITION is not set
-+# CONFIG_OSF_PARTITION is not set
-+# CONFIG_AMIGA_PARTITION is not set
-+# CONFIG_ATARI_PARTITION is not set
-+# CONFIG_MAC_PARTITION is not set
-+CONFIG_MSDOS_PARTITION=y
-+# CONFIG_BSD_DISKLABEL is not set
-+# CONFIG_MINIX_SUBPARTITION is not set
-+# CONFIG_SOLARIS_X86_PARTITION is not set
-+# CONFIG_UNIXWARE_DISKLABEL is not set
-+# CONFIG_LDM_PARTITION is not set
-+# CONFIG_SGI_PARTITION is not set
-+# CONFIG_ULTRIX_PARTITION is not set
-+# CONFIG_SUN_PARTITION is not set
-+# CONFIG_KARMA_PARTITION is not set
-+# CONFIG_EFI_PARTITION is not set
-+# CONFIG_SYSV68_PARTITION is not set
-+CONFIG_NLS=y
-+CONFIG_NLS_DEFAULT="iso8859-1"
-+# CONFIG_NLS_CODEPAGE_437 is not set
-+# CONFIG_NLS_CODEPAGE_737 is not set
-+# CONFIG_NLS_CODEPAGE_775 is not set
-+# CONFIG_NLS_CODEPAGE_850 is not set
-+# CONFIG_NLS_CODEPAGE_852 is not set
-+# CONFIG_NLS_CODEPAGE_855 is not set
-+# CONFIG_NLS_CODEPAGE_857 is not set
-+# CONFIG_NLS_CODEPAGE_860 is not set
-+# CONFIG_NLS_CODEPAGE_861 is not set
-+# CONFIG_NLS_CODEPAGE_862 is not set
-+# CONFIG_NLS_CODEPAGE_863 is not set
-+# CONFIG_NLS_CODEPAGE_864 is not set
-+# CONFIG_NLS_CODEPAGE_865 is not set
-+# CONFIG_NLS_CODEPAGE_866 is not set
-+# CONFIG_NLS_CODEPAGE_869 is not set
-+# CONFIG_NLS_CODEPAGE_936 is not set
-+# CONFIG_NLS_CODEPAGE_950 is not set
-+# CONFIG_NLS_CODEPAGE_932 is not set
-+# CONFIG_NLS_CODEPAGE_949 is not set
-+# CONFIG_NLS_CODEPAGE_874 is not set
-+# CONFIG_NLS_ISO8859_8 is not set
-+# CONFIG_NLS_CODEPAGE_1250 is not set
-+# CONFIG_NLS_CODEPAGE_1251 is not set
-+# CONFIG_NLS_ASCII is not set
-+# CONFIG_NLS_ISO8859_1 is not set
-+# CONFIG_NLS_ISO8859_2 is not set
-+# CONFIG_NLS_ISO8859_3 is not set
-+# CONFIG_NLS_ISO8859_4 is not set
-+# CONFIG_NLS_ISO8859_5 is not set
-+# CONFIG_NLS_ISO8859_6 is not set
-+# CONFIG_NLS_ISO8859_7 is not set
-+# CONFIG_NLS_ISO8859_9 is not set
-+# CONFIG_NLS_ISO8859_13 is not set
-+# CONFIG_NLS_ISO8859_14 is not set
-+# CONFIG_NLS_ISO8859_15 is not set
-+# CONFIG_NLS_KOI8_R is not set
-+# CONFIG_NLS_KOI8_U is not set
-+# CONFIG_NLS_UTF8 is not set
-+# CONFIG_DLM is not set
-+
-+#
-+# Kernel hacking
-+#
-+# CONFIG_PRINTK_TIME is not set
-+CONFIG_ENABLE_WARN_DEPRECATED=y
-+CONFIG_ENABLE_MUST_CHECK=y
-+CONFIG_FRAME_WARN=1024
-+# CONFIG_MAGIC_SYSRQ is not set
-+# CONFIG_UNUSED_SYMBOLS is not set
-+# CONFIG_DEBUG_FS is not set
-+# CONFIG_HEADERS_CHECK is not set
-+CONFIG_DEBUG_KERNEL=y
-+# CONFIG_DEBUG_SHIRQ is not set
-+CONFIG_DETECT_SOFTLOCKUP=y
-+# CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC is not set
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
-+CONFIG_DETECT_HUNG_TASK=y
-+# CONFIG_BOOTPARAM_HUNG_TASK_PANIC is not set
-+CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE=0
-+CONFIG_SCHED_DEBUG=y
-+# CONFIG_SCHEDSTATS is not set
-+# CONFIG_TIMER_STATS is not set
-+# CONFIG_DEBUG_OBJECTS is not set
-+CONFIG_DEBUG_SLAB=y
-+# CONFIG_DEBUG_SLAB_LEAK is not set
-+CONFIG_DEBUG_SPINLOCK=y
-+# CONFIG_DEBUG_MUTEXES is not set
-+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
-+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-+# CONFIG_DEBUG_KOBJECT is not set
-+CONFIG_DEBUG_INFO=y
-+# CONFIG_DEBUG_VM is not set
-+# CONFIG_DEBUG_WRITECOUNT is not set
-+# CONFIG_DEBUG_MEMORY_INIT is not set
-+# CONFIG_DEBUG_LIST is not set
-+# CONFIG_DEBUG_SG is not set
-+# CONFIG_DEBUG_NOTIFIERS is not set
-+# CONFIG_BOOT_PRINTK_DELAY is not set
-+# CONFIG_RCU_TORTURE_TEST is not set
-+# CONFIG_RCU_CPU_STALL_DETECTOR is not set
-+# CONFIG_BACKTRACE_SELF_TEST is not set
-+# CONFIG_DEBUG_BLOCK_EXT_DEVT is not set
-+# CONFIG_FAULT_INJECTION is not set
-+# CONFIG_LATENCYTOP is not set
-+# CONFIG_SYSCTL_SYSCALL_CHECK is not set
-+# CONFIG_PAGE_POISONING is not set
-+# CONFIG_SAMPLES is not set
-+CONFIG_EARLY_PRINTK=y
-+CONFIG_HEART_BEAT=y
-+CONFIG_DEBUG_BOOTMEM=y
-+
-+#
-+# Security options
-+#
-+# CONFIG_KEYS is not set
-+# CONFIG_SECURITY is not set
-+# CONFIG_SECURITYFS is not set
-+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
-+CONFIG_CRYPTO=y
-+
-+#
-+# Crypto core or helper
-+#
-+# CONFIG_CRYPTO_FIPS is not set
-+# CONFIG_CRYPTO_MANAGER is not set
-+# CONFIG_CRYPTO_MANAGER2 is not set
-+# CONFIG_CRYPTO_GF128MUL is not set
-+# CONFIG_CRYPTO_NULL is not set
-+# CONFIG_CRYPTO_CRYPTD is not set
-+# CONFIG_CRYPTO_AUTHENC is not set
-+# CONFIG_CRYPTO_TEST is not set
-+
-+#
-+# Authenticated Encryption with Associated Data
-+#
-+# CONFIG_CRYPTO_CCM is not set
-+# CONFIG_CRYPTO_GCM is not set
-+# CONFIG_CRYPTO_SEQIV is not set
-+
-+#
-+# Block modes
-+#
-+# CONFIG_CRYPTO_CBC is not set
-+# CONFIG_CRYPTO_CTR is not set
-+# CONFIG_CRYPTO_CTS is not set
-+# CONFIG_CRYPTO_ECB is not set
-+# CONFIG_CRYPTO_LRW is not set
-+# CONFIG_CRYPTO_PCBC is not set
-+# CONFIG_CRYPTO_XTS is not set
-+
-+#
-+# Hash modes
-+#
-+# CONFIG_CRYPTO_HMAC is not set
-+# CONFIG_CRYPTO_XCBC is not set
-+
-+#
-+# Digest
-+#
-+# CONFIG_CRYPTO_CRC32C is not set
-+# CONFIG_CRYPTO_MD4 is not set
-+# CONFIG_CRYPTO_MD5 is not set
-+# CONFIG_CRYPTO_MICHAEL_MIC is not set
-+# CONFIG_CRYPTO_RMD128 is not set
-+# CONFIG_CRYPTO_RMD160 is not set
-+# CONFIG_CRYPTO_RMD256 is not set
-+# CONFIG_CRYPTO_RMD320 is not set
-+# CONFIG_CRYPTO_SHA1 is not set
-+# CONFIG_CRYPTO_SHA256 is not set
-+# CONFIG_CRYPTO_SHA512 is not set
-+# CONFIG_CRYPTO_TGR192 is not set
-+# CONFIG_CRYPTO_WP512 is not set
-+
-+#
-+# Ciphers
-+#
-+# CONFIG_CRYPTO_AES is not set
-+# CONFIG_CRYPTO_ANUBIS is not set
-+# CONFIG_CRYPTO_ARC4 is not set
-+# CONFIG_CRYPTO_BLOWFISH is not set
-+# CONFIG_CRYPTO_CAMELLIA is not set
-+# CONFIG_CRYPTO_CAST5 is not set
-+# CONFIG_CRYPTO_CAST6 is not set
-+# CONFIG_CRYPTO_DES is not set
-+# CONFIG_CRYPTO_FCRYPT is not set
-+# CONFIG_CRYPTO_KHAZAD is not set
-+# CONFIG_CRYPTO_SALSA20 is not set
-+# CONFIG_CRYPTO_SEED is not set
-+# CONFIG_CRYPTO_SERPENT is not set
-+# CONFIG_CRYPTO_TEA is not set
-+# CONFIG_CRYPTO_TWOFISH is not set
-+
-+#
-+# Compression
-+#
-+# CONFIG_CRYPTO_DEFLATE is not set
-+# CONFIG_CRYPTO_ZLIB is not set
-+# CONFIG_CRYPTO_LZO is not set
-+
-+#
-+# Random Number Generation
-+#
-+# CONFIG_CRYPTO_ANSI_CPRNG is not set
-+CONFIG_CRYPTO_HW=y
-+# CONFIG_BINARY_PRINTF is not set
-+
-+#
-+# Library routines
-+#
-+CONFIG_BITREVERSE=y
-+CONFIG_GENERIC_FIND_LAST_BIT=y
-+# CONFIG_CRC_CCITT is not set
-+# CONFIG_CRC16 is not set
-+# CONFIG_CRC_T10DIF is not set
-+# CONFIG_CRC_ITU_T is not set
-+CONFIG_CRC32=y
-+# CONFIG_CRC7 is not set
-+# CONFIG_LIBCRC32C is not set
-+CONFIG_ZLIB_INFLATE=y
-+CONFIG_DECOMPRESS_GZIP=y
-+CONFIG_HAS_IOMEM=y
-+CONFIG_HAS_IOPORT=y
-+CONFIG_HAS_DMA=y
-+CONFIG_HAVE_LMB=y
-+CONFIG_NLATTR=y
++#ifdef CONFIG_MMU
++#include <linux/elfcore.h>
++/*
++ * Set up a thread for executing a new program
++ */
++int dump_fpu(struct pt_regs *regs, elf_fpregset_t *fpregs)
++{
++	return 0; /* MicroBlaze has no separate FPU registers */
++}
++#endif /* CONFIG_MMU */
 -- 
 1.5.5.1
 
