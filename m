@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757319AbZD0XaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758956AbZD0Xae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757319AbZD0XaK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 19:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbZD0X35
+	id S1758956AbZD0Xae (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 19:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbZD0XaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 19:29:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51055 "EHLO mx2.redhat.com"
+	Mon, 27 Apr 2009 19:30:06 -0400
+Received: from main.gmane.org ([80.91.229.2]:50169 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753851AbZD0X34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 19:29:56 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FRV: utrace: Miscellaneous fixes
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, hch@lst.de, roland@redhat.com,
-       linux-kernel@vger.kernel.org
-Date: Tue, 28 Apr 2009 00:28:33 +0100
-Message-ID: <20090427232833.491.25088.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090427161556.16200.41214.stgit@warthog.procyon.org.uk>
-References: <20090427161556.16200.41214.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	id S1756158AbZD0XaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 19:30:04 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: 2.6.30-rc2 + xorg-intel-2.7.0 + DRM_I915_KMS = corruption
+Date: Mon, 27 Apr 2009 23:49:47 +0200
+Message-ID: <20090427234947.394f774f@schatten>
+References: <b2cdc9f30904182327w12a3ec32t90c7c6c34980577b@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: f053212151.adsl.alicedsl.de
+X-Newsreader: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-pc-linux-gnu)
+Cc: xorg@freedesktop.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes for the FRV utrace/tracehook code:
+On Sun, 19 Apr 2009 07:27:35 +0100
+Alex Bennee <kernel-hacker@bennee.com> wrote:
 
- (1) Macro task_pt_regs()'s argument should be bracketed when used.
+> Heading the warnings in the menuconfig I did try and ensure I have all
+> the up to date parts of user-space. With KMS enabled GDM starts up but
+> then corrupts the display with vertical lines. Disabling the kernel
+> config and everything starts up fine, UXA acceleration seems OK and
+> the speed of compiz is finally back up to ~60fps thanks to the A17
+> fix.
+> 
+> Am I missing another bit of user space for KMS to work properly?
+> 
+> I am seeing a:
+> 
+> [    6.751092] BUG: using smp_processor_id() in preemptible [00000000]
+> code: modprobe/3078
+> [    6.751100] caller is smp_call_function_many+0x29/0x1bd
+> [    6.751103] Pid: 3078, comm: modprobe Not tainted 2.6.30-rc2-ajb
+> #56
+> 
+> But I think it's unrelated to any X woes. Shall detail in another
+> message.
+> 
 
- (2) The dest data pointer for user_regset_copyin() should point to the place
-     at which the data at position start_pos begins.
+hm, are you using the xf86-video-intel git-branch "2.7"? if i use that,
+i need a kernel fix queued in eanholts for-linus git-tree or else i
+also get unusable X. 
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+i assumed that this was because of some not-yet-released fixes
+on the 2.7-branch which will get released as soon as erics queue is
+merged? but i didn't double check ...  maybe the released version is
+also broken in this regard for me....
 
- arch/frv/include/asm/ptrace.h |    2 +-
- arch/frv/kernel/ptrace.c      |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-
-diff --git a/arch/frv/include/asm/ptrace.h b/arch/frv/include/asm/ptrace.h
-index 5f8b5e4..a54b535 100644
---- a/arch/frv/include/asm/ptrace.h
-+++ b/arch/frv/include/asm/ptrace.h
-@@ -81,7 +81,7 @@ extern unsigned long user_stack(const struct pt_regs *);
- extern void show_regs(struct pt_regs *);
- #define profile_pc(regs) ((regs)->pc)
- 
--#define task_pt_regs(task) (task->thread.frame0)
-+#define task_pt_regs(task) ((task)->thread.frame0)
- 
- #define arch_has_single_step()	(1)
- extern void user_enable_single_step(struct task_struct *);
-diff --git a/arch/frv/kernel/ptrace.c b/arch/frv/kernel/ptrace.c
-index e847945..60eeed3 100644
---- a/arch/frv/kernel/ptrace.c
-+++ b/arch/frv/kernel/ptrace.c
-@@ -92,7 +92,7 @@ static int genregs_set(struct task_struct *target,
- 
- 	/* set the general regs */
- 	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
--				 iregs, offs_gr1, sizeof(*iregs));
-+				 &iregs->gr[1], offs_gr1, sizeof(*iregs));
- 	if (ret < 0)
- 		return ret;
- 
 
