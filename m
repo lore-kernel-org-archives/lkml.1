@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbZD0Rai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757875AbZD0Rej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758068AbZD0Rai (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 13:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757026AbZD0RaX
+	id S1757875AbZD0Rej (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 13:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZD0Rea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 13:30:23 -0400
-Received: from ausc60pc101.us.dell.com ([143.166.85.206]:46825 "EHLO
-	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753026AbZD0RaV (ORCPT
+	Mon, 27 Apr 2009 13:34:30 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:47915 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752932AbZD0Rea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 13:30:21 -0400
-X-Loopcount0: from 143.166.82.43
-Date: Mon, 27 Apr 2009 12:30:21 -0500
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Michael E Brown <Michael_E_Brown@dell.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: Class device namespaces
-Message-ID: <20090427173021.GA7078@auslistsprd01.us.dell.com>
-References: <20090329174836.6de797d6@hyperion.delvare> <ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com> <20090330104952.26f03c13@hyperion.delvare> <ac3eb2510903300424s2604d027h653a3f77163e0242@mail.gmail.com> <20090426085401.3788fc9c@hyperion.delvare> <20090426124443.GA12455@auslistsprd01.us.dell.com> <20090426130122.GB12455@auslistsprd01.us.dell.com> <20090427173005.3ff1100b@hyperion.delvare>
-Mime-Version: 1.0
+	Mon, 27 Apr 2009 13:34:30 -0400
+Date: Mon, 27 Apr 2009 18:34:20 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Christoph Lameter <cl@linux.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [rfc] built-in native compiler for Linux?
+Message-ID: <20090427173420.GD8633@ZenIV.linux.org.uk>
+References: <20090422085828.GA16917@elte.hu> <alpine.DEB.1.10.0904241429450.19686@qirst.com> <20090424.222952.83381016.davem@davemloft.net> <m163gtxle9.fsf@fess.ebiederm.org> <alpine.DEB.1.10.0904270950580.16119@qirst.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090427173005.3ff1100b@hyperion.delvare>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <alpine.DEB.1.10.0904270950580.16119@qirst.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 05:30:05PM +0200, Jean Delvare wrote:
-> On Sun, 26 Apr 2009 08:01:22 -0500, Matt Domsch wrote:
-> > I'll note there is a second implementation that uses dell_rbu, and
-> > that is included in each and every "Dell Update Package" (aka DUP)
-> > BIOS update posted on support.dell.com for every Dell PowerEdge server
-> > for the past several years.  Because the updater and they BIOS payload
-> > are packaged in the same package, a change which would require
-> > changing that updater will result in requiring Dell to spin and
-> > re-release hundreds of DUPs, which would not go over well...  Thank
-> > you for being careful not to change the interface capriciously - it
-> > could have a huge impact on us.
+On Mon, Apr 27, 2009 at 09:52:46AM -0400, Christoph Lameter wrote:
+> On Sat, 25 Apr 2009, Eric W. Biederman wrote:
 > 
-> I'll be careful, but you have to admit that duplicating utility code
-> like this is poor engineering from Dell :( I don't want to think of the
-> mess it will be if you ever have to fix a critical bug in that code.
+> > If this was about teaching sparse to run lockdep at compile time, or
+> > generally about making the kernel compilation much faster and able to
+> > catch many more bugs there might be a point where the effort is worth
+> > the investment.
+> 
+> The preprocessor and its interaction with regular C code is quite
+> nasty. If sparse could get rid of the complexities and idiosyncrasies at
+> that level then it may be useful as a "pre" compiler.
 
-Yes, this is well-understood, and steps are in process to address this
-model.  http://linux.dell.com/firmware-tools is the preferred model,
-with split inventory/execution components from firmware payloads.
+Explain, please.  BTW, at the risk of being called an elitist bastard, could
+I ask the participants of that thread to read C99 standard?  It's not hard
+to find (http://www.open-std.org/jtc1/sc22/WG14/www/docs/n1256.pdf, for one
+thing - that's C99 + errata) and at least chapter 5 and 6.10 are really
+must-read if we are talking about that stuff.
 
-Thanks,
-Matt
+In particular, C preprocessor does *NOT* work on text-to-text level and
+hasn't since way back.  It works on token stream.
 
--- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+That's actually one of the areas where C99 is a huge improvement over
+earlier language - instead of more or less nasty kludges still trying
+to pretend that preprocessor was a filter with text output piped into
+compiler, it gives reasonably clear semantics approximating what the
+earlier variants had in common.
+
+I'd done fairly complete rewrite of macro expansion (and a bunch of other
+places in preprocessor) in sparse, and places where it used to deviate from
+standard were by far the worst in terms of convoluted logics and corner
+cases.  Switching to what C99 asked had simplified the things a *lot*;
+it's surprisingly well thought through in that area (unlike e.g. the unholy
+mess around 'restrict' qualifier semantics).
