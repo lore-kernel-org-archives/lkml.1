@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbZD0Kzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbZD0K4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755934AbZD0Kzr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 06:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482AbZD0Kzh
+	id S1755273AbZD0K4X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 06:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbZD0K4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 06:55:37 -0400
-Received: from tundra.namei.org ([65.99.196.166]:36907 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755131AbZD0Kzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 06:55:36 -0400
-Date: Mon, 27 Apr 2009 20:52:30 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>, stable@kernel.org,
-       David Howells <dhowells@redhat.com>
-Subject: [GIT] ptrace: ptrace_attach: fix the usage of ->cred_exec_mutex
-In-Reply-To: <2414.1240822042@redhat.com>
-Message-ID: <alpine.LRH.2.00.0904272051240.18933@tundra.namei.org>
-References: <20090426234134.GA13391@redhat.com> <20090425172524.GA3432@redhat.com> <20090424163949.GA12035@redhat.com> <20090423212250.GA22537@redhat.com> <20090423232717.975ABFC3C7@magilla.sf.frob.com> <31842.1240656853@redhat.com> <394.1240686417@redhat.com>
- <2414.1240822042@redhat.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Mon, 27 Apr 2009 06:56:13 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:46477 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754899AbZD0K4M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 06:56:12 -0400
+Message-ID: <49F58F49.3010001@monstr.eu>
+Date: Mon, 27 Apr 2009 12:56:09 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: John Williams <john.williams@petalogix.com>
+CC: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 30/30] microblaze_mmu_v1: fcntl.h MMU update
+References: <1240821139-7247-22-git-send-email-monstr@monstr.eu>	 <1240821139-7247-24-git-send-email-monstr@monstr.eu>	 <1240821139-7247-25-git-send-email-monstr@monstr.eu>	 <1240821139-7247-26-git-send-email-monstr@monstr.eu>	 <1240821139-7247-27-git-send-email-monstr@monstr.eu>	 <1240821139-7247-28-git-send-email-monstr@monstr.eu>	 <1240821139-7247-29-git-send-email-monstr@monstr.eu>	 <1240821139-7247-30-git-send-email-monstr@monstr.eu>	 <1240821139-7247-31-git-send-email-monstr@monstr.eu>	 <20090427095946.GB12323@infradead.org> <1d3f23370904270305x3a1f518br63fc77ba940841f1@mail.gmail.com>
+In-Reply-To: <1d3f23370904270305x3a1f518br63fc77ba940841f1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's the patch ready to pull for 2.6.30.
+John Williams wrote:
+> Michal,
+> 
+> On Mon, Apr 27, 2009 at 7:59 PM, Christoph Hellwig <hch@infradead.org> wrote:
+>> On Mon, Apr 27, 2009 at 10:32:19AM +0200, monstr@monstr.eu wrote:
+>>> From: Michal Simek <monstr@monstr.eu>
+>>>
+>>> Signed-off-by: Michal Simek <monstr@monstr.eu>
+>>> ---
+>>>  arch/microblaze/include/asm/fcntl.h |   14 ++++++++++++++
+>>>  1 files changed, 14 insertions(+), 0 deletions(-)
+>>>
+>>> diff --git a/arch/microblaze/include/asm/fcntl.h b/arch/microblaze/include/asm/fcntl.h
+>>> index 46ab12d..b4d27f6 100644
+>>> --- a/arch/microblaze/include/asm/fcntl.h
+>>> +++ b/arch/microblaze/include/asm/fcntl.h
+>>> @@ -1 +1,15 @@
+>>> +#ifndef _ASM_MICROBLAZE_FCNTL_H
+>>> +#define _ASM_MICROBLAZE_FCNTL_H
+>>> +
+>>> +#ifndef __uClinux__
+>>> +
+>>> +#define O_DIRECTORY  040000 /* must be a directory */
+>>> +#define O_NOFOLLOW   0100000 /* don't follow links */
+>>> +#define O_LARGEFILE  0200000
+>>> +#define O_DIRECT     0400000 /* direct disk access hint */
+>>> +
+>>> +#endif /* __uClinux__ */
+>>> +
+>>>  #include <asm-generic/fcntl.h>
+>> Again, ABIs should always be the same for MMU vs noMMU.
+> 
+> Is there a reason you need these custom fcntls?  What if you rebuild
+> glibc against the newer kernel headers (without __uClinux__)?
 
-The following changes since commit ce8a7424d23a36f043d0de8484f888971c831119:
-  Tim Abbott (1):
-        sparc: convert to use __HEAD and HEAD_TEXT macros.
+here is situation a little bit cleaner than stat64 issue. This should be definitely
+removed for merging.I need more time for test.
 
-are available in the git repository at:
+Thanks,
+Michal
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6 for-linus
-
-Oleg Nesterov (1):
-      ptrace: ptrace_attach: fix the usage of ->cred_exec_mutex
-
- kernel/ptrace.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> John
 
 
 -- 
-James Morris
-<jmorris@namei.org>
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
