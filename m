@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759548AbZD0XP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757319AbZD0XaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759548AbZD0XP1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 19:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754695AbZD0XPL
+	id S1757319AbZD0XaK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 19:30:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbZD0X35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 19:15:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44028 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753187AbZD0XPJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 19:15:09 -0400
-Date: Mon, 27 Apr 2009 16:03:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Stephen Hemminger <shemminger@vyatta.com>
-cc: Evgeniy Polyakov <zbr@ioremap.net>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       Jarek Poplawski <jarkao2@gmail.com>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, kaber@trash.net, jeff.chua.linux@gmail.com,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
-In-Reply-To: <alpine.LFD.2.00.0904271525120.22156@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904271602390.22156@localhost.localdomain>
-References: <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam> <49F4A6E3.7080102@cosmosbay.com> <20090426185646.GB29238@Krystal> <20090426145746.1184aeba@nehalam> <1240854297.7620.65.camel@twins> <20090427113010.5e3f1700@nehalam> <20090427185423.GC23862@elte.hu>
- <20090427120658.35a858bb@nehalam> <alpine.LFD.2.00.0904271219570.22156@localhost.localdomain> <20090427203616.GB3836@ioremap.net> <alpine.LFD.2.00.0904271340400.22156@localhost.localdomain> <20090427144054.1fb9b7a6@nehalam> <alpine.LFD.2.00.0904271506530.22156@localhost.localdomain>
- <alpine.LFD.2.00.0904271525120.22156@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 27 Apr 2009 19:29:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51055 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753851AbZD0X34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 19:29:56 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] FRV: utrace: Miscellaneous fixes
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, hch@lst.de, roland@redhat.com,
+       linux-kernel@vger.kernel.org
+Date: Tue, 28 Apr 2009 00:28:33 +0100
+Message-ID: <20090427232833.491.25088.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090427161556.16200.41214.stgit@warthog.procyon.org.uk>
+References: <20090427161556.16200.41214.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fixes for the FRV utrace/tracehook code:
+
+ (1) Macro task_pt_regs()'s argument should be bracketed when used.
+
+ (2) The dest data pointer for user_regset_copyin() should point to the place
+     at which the data at position start_pos begins.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ arch/frv/include/asm/ptrace.h |    2 +-
+ arch/frv/kernel/ptrace.c      |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 
-On Mon, 27 Apr 2009, Linus Torvalds wrote:
-> 
-> BTW: THIS IS TOTALLY UNTESTED.
+diff --git a/arch/frv/include/asm/ptrace.h b/arch/frv/include/asm/ptrace.h
+index 5f8b5e4..a54b535 100644
+--- a/arch/frv/include/asm/ptrace.h
++++ b/arch/frv/include/asm/ptrace.h
+@@ -81,7 +81,7 @@ extern unsigned long user_stack(const struct pt_regs *);
+ extern void show_regs(struct pt_regs *);
+ #define profile_pc(regs) ((regs)->pc)
+ 
+-#define task_pt_regs(task) (task->thread.frame0)
++#define task_pt_regs(task) ((task)->thread.frame0)
+ 
+ #define arch_has_single_step()	(1)
+ extern void user_enable_single_step(struct task_struct *);
+diff --git a/arch/frv/kernel/ptrace.c b/arch/frv/kernel/ptrace.c
+index e847945..60eeed3 100644
+--- a/arch/frv/kernel/ptrace.c
++++ b/arch/frv/kernel/ptrace.c
+@@ -92,7 +92,7 @@ static int genregs_set(struct task_struct *target,
+ 
+ 	/* set the general regs */
+ 	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+-				 iregs, offs_gr1, sizeof(*iregs));
++				 &iregs->gr[1], offs_gr1, sizeof(*iregs));
+ 	if (ret < 0)
+ 		return ret;
+ 
 
-Gaah. I should have read through it one more time before sending.
-
-> static inline void xt_info_rdunlock_bh(void)
-> {
-> 	struct xt_info_lock *lock;
-> 
-> 	lock = &__get_cpu_var(xt_info_locks);
-> 	if (!--lock->readers)
-> 		spin_unlock(&lock->lock);
-> }
-
-This one was missing the "local_bh_enable()" at the end.
-
-There may be other bugs, but that's the one I noticed immediately when 
-reading what I sent out. Oops.
-
-			Linus
