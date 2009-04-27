@@ -1,77 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756991AbZD0QPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757893AbZD0QQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756991AbZD0QPg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 12:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbZD0QPZ
+	id S1757893AbZD0QQt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 12:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755740AbZD0QQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 12:15:25 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:54322 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752906AbZD0QPY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 12:15:24 -0400
-Subject: Re: [PATCH] Display 0 in meminfo for Committed_AS when value
-	underflows
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Eric B Munson <ebmunson@us.ibm.com>
-Cc: akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, mel@csn.ul.ie,
-       cl@linux-foundation.org
-In-Reply-To: <1240848620-16751-1-git-send-email-ebmunson@us.ibm.com>
-References: <1240848620-16751-1-git-send-email-ebmunson@us.ibm.com>
-Content-Type: text/plain
-Date: Mon, 27 Apr 2009 09:15:14 -0700
-Message-Id: <1240848914.29485.52.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Apr 2009 12:16:35 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:46072 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752654AbZD0QQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 12:16:33 -0400
+Date: Mon, 27 Apr 2009 09:16:29 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
+       jeff.chua.linux@gmail.com, paulus@samba.org, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, benh@kernel.crashing.org
+Subject: Re: [PATCH RFC] v2 expedited "big hammer" RCU grace periods
+Message-ID: <20090427161629.GC7226@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090426052340.GA24931@linux.vnet.ibm.com> <20090426112717.GE10391@elte.hu> <20090426191343.GC29238@Krystal> <20090426202255.GA5365@elte.hu> <20090426214451.GC6945@linux.vnet.ibm.com> <20090427032639.GA10087@elte.hu> <20090427132153.GI6945@linux.vnet.ibm.com> <20090427155424.GA27041@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090427155424.GA27041@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-27 at 17:10 +0100, Eric B Munson wrote:
-> Splitting this patch from the chunk that addresses the cause of the underflow
-> because the solution still requires some discussion.
+On Mon, Apr 27, 2009 at 11:54:24AM -0400, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Mon, Apr 27, 2009 at 05:26:39AM +0200, Ingo Molnar wrote:
+> > > 
+> > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > On Sun, Apr 26, 2009 at 10:22:55PM +0200, Ingo Molnar wrote:
+> > > > > 
+> > > > > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > > > > 
+> > > > > > * Ingo Molnar (mingo@elte.hu) wrote:
+> > > > > > > 
+> > > > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > > > 
+> > > > > > > > Second cut of "big hammer" expedited RCU grace periods, but only 
+> > > > > > > > for rcu_bh.  This creates another softirq vector, so that entering 
+> > > > > > > > this softirq vector will have forced an rcu_bh quiescent state (as 
+> > > > > > > > noted by Dave Miller).  Use smp_call_function() to invoke 
+> > > > > > > > raise_softirq() on all CPUs in order to cause this to happen.  
+> > > > > > > > Track the CPUs that have passed through a quiescent state (or gone 
+> > > > > > > > offline) with a cpumask.
+> > > > > > > 
+> > > > > > > hm, i'm still asking whether doing this would be simpler via a 
+> > > > > > > reschedule vector - which not only is an existing facility but also 
+> > > > > > > forces all RCU domains through a quiescent state - not just bh-RCU 
+> > > > > > > participants.
+> > > > > > > 
+> > > > > > > Triggering a new softirq is in no way simpler that doing an SMP 
+> > > > > > > cross-call - in fact softirqs are a finite resource so using some 
+> > > > > > > other facility would be preferred.
+> > > > > > > 
+> > > > > > > Am i missing something?
+> > > > > > > 
+> > > > > > 
+> > > > > > I think the reason for this whole thread is that waiting for rcu 
+> > > > > > quiescent state, when called many times e.g. in multiple iptables 
+> > > > > > invokations, takes too longs (5 seconds to load the netfilter 
+> > > > > > rules at boot). [...]
+> > > > > 
+> > > > > I'm aware of the problem space.
+> > > > > 
+> > > > > I was suggesting that to trigger the quiescent state and to wait for 
+> > > > > it to propagate it would be enough to reuse the reschedule 
+> > > > > mechanism.
+> > > > > 
+> > > > > It would be relatively straightforward: first a send-reschedule then 
+> > > > > do a wait_task_context_switch() on rq->curr - both are existing 
+> > > > > primitives. (a task reference has to be taken but that's pretty much 
+> > > > > all)
+> > > > 
+> > > > Well, one reason I didn't take this approach was that I didn't 
+> > > > happen to think of it.  ;-)
+> > > > 
+> > > > Also that I hadn't heard of wait_task_context_switch().
+> > > > 
+> > > > Hmmm...  Looking for wait_task_context_switch().  OK, found it.
+> > > > 
+> > > > It looks to me that this primitive won't return until the 
+> > > > scheduler actually decides to run something else.  We instead need 
+> > > > to have something that stops waiting once the CPU enters the 
+> > > > scheduler, hence the previous thought of making rcu_qsctr_inc() do 
+> > > > a bit of extra work.
+> > > > 
+> > > > This would be a way of making an expedited RCU-sched across all 
+> > > > RCU implementations.  As noted in the earlier email, it would not 
+> > > > handle RCU or RCU-bh in a -rt kernel.
+> > > > 
+> > > > > By the time wait_task_context_switch() returns from the last CPU 
+> > > > > we know that the quiescent state has passed.
+> > > > 
+> > > > We would want to wait for all of the CPUs in parallel, though, 
+> > > > wouldn't we?  Seems that we would not want to wait for the last 
+> > > > CPU to do another trip through the scheduler if it had already 
+> > > > passed through the scheduler while we were waiting on the earlier 
+> > > > CPUs.
+> > > > 
+> > > > So it seems like we would still want a two-pass approach -- one 
+> > > > pass to capture the current state, the second pass to wait for the 
+> > > > state to change.
+> > > 
+> > > I think waiting in parallel is still possible (first kick all tasks, 
+> > > then make sure all tasks have left the CPU at least once).
+> > > 
+> > > The busy-waiting in wait_task_context_switch() is indeed a problem - 
+> > > but perhaps that could be refactored to be a migration-thread driven 
+> > > wait_for_completion() + complete() cycle? It could be driven by 
+> > > preempt notifiers perhaps - and become zero-cost.
+> > 
+> > Hmmm...  It would need to be informed of the quiescent state even if
+> > that quiescent state did not result in a preemption.
+> > 
+> > But you are right -- I do need to expedite RCU, not just RCU-bh,
+> > especially given that the boot-speed guys are starting to see grace
+> > periods as a measureable fraction of the boot time.  I will take another
+> > pass at this.
 > 
-> Dave Hansen reported that under certain cirumstances the Committed_AS value
-> can underflow which causes extremely large numbers to be displayed in
-> meminfo.  This patch adds an underflow check to meminfo_proc_show() for the
-> Committed_AS value.  Most fields in /proc/meminfo already have an underflow
-> check, this brings Committed_AS into line.
-
-Yeah, this is the right fix for now until we can iron out the base
-issues.  Eric, I think this may also be a candidate for -stable.
-
-Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
-
-> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
-> ---
->  fs/proc/meminfo.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
+> It might sound a bit simplistic, but... scheduling a high-priority
+> workqueue on every CPUs would give you the guarantees you seem to need
+> here. Or is the delay of letting the scheduler schedule a high-priority
+> task a delay you are trying to avoid ?
 > 
-> diff --git a/fs/proc/meminfo.c b/fs/proc/meminfo.c
-> index 74ea974..facb9fb 100644
-> --- a/fs/proc/meminfo.c
-> +++ b/fs/proc/meminfo.c
-> @@ -22,7 +22,7 @@ void __attribute__((weak)) arch_report_meminfo(struct seq_file *m)
->  static int meminfo_proc_show(struct seq_file *m, void *v)
->  {
->  	struct sysinfo i;
-> -	unsigned long committed;
-> +	long committed;
->  	unsigned long allowed;
->  	struct vmalloc_info vmi;
->  	long cached;
-> @@ -36,6 +36,8 @@ static int meminfo_proc_show(struct seq_file *m, void *v)
->  	si_meminfo(&i);
->  	si_swapinfo(&i);
->  	committed = atomic_long_read(&vm_committed_space);
-> +	if (committed < 0)
-> +		committed = 0;
->  	allowed = ((totalram_pages - hugetlb_total_pages())
->  		* sysctl_overcommit_ratio / 100) + total_swap_pages;
-> 
--- Dave
+> Some kind of priority boosting done by synchronize_rcu() could probably
+> work, and you could support rcu callbacks priority boosting by assigning
+> a priority to each callback registered (same priority as the thread
+> which invoked call_rcu). The rcu callbacks could then be sorted by
+> priority in a RB tree, and only the callbacks associated with priority
+> >= than the next priority task would be executed.
 
+I did something similar for the implementation of synchronize_sched()
+in preemptable RCU.  The interactions with CPU hotplug are a bit ugly.
+It will be easier to hook into rcu_qsctr_inc().  ;-)
+
+But this discussion has been quite useful -- my thoughts for the design
+of the long-term solution were a bit lacking, as they would have allowed
+a heavy callback load to delay an expedited grace period.  So this will
+be a bit of a hack until I get all the RCU implementations converged,
+but there is a nice long-term solution to be had by integrating the
+expediting into the hierarchical-RCU data structures.
+
+							Thanx, Paul
