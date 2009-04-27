@@ -1,77 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbZD0IyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbZD0Iza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754706AbZD0IyN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 04:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbZD0Ixx
+	id S1755045AbZD0Iza (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 04:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbZD0IzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 04:53:53 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:50931 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752849AbZD0Ixw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 04:53:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=QIKRc4UBUhmXXlzFFExUHzn8pZKLH6R/SkciNPwoaiJ7/fFkUJhRm3767oxm/Lv9AK
-         Z5P8vgFt6dj4Lvg1ssKnglhvGp4k3D8iaspQy/PXdvSef+19ZhZBOtOOKBko6d5y7adU
-         eQD/+khDMh6ZkfLdUM4xinPZGX0uLxC211SiA=
+	Mon, 27 Apr 2009 04:55:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35601 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753478AbZD0IzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 04:55:14 -0400
+Message-ID: <49F572EF.4010909@redhat.com>
+Date: Mon, 27 Apr 2009 11:55:11 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0904270129350.26825@chino.kir.corp.google.com>
-References: <40a4ed590904240309o66753264lf58f2910726f7efc@mail.gmail.com>
-	 <alpine.DEB.2.00.0904241011280.24151@chino.kir.corp.google.com>
-	 <40a4ed590904241113p4949a020y46e0641e77f6f4e3@mail.gmail.com>
-	 <alpine.DEB.2.00.0904241155550.26080@chino.kir.corp.google.com>
-	 <40a4ed590904241216u655300ddvaa4660e11ad2cffc@mail.gmail.com>
-	 <alpine.DEB.2.00.0904241224001.28589@chino.kir.corp.google.com>
-	 <40a4ed590904250132o63e715cbvaccf5aac82265cd@mail.gmail.com>
-	 <alpine.DEB.2.00.0904261252010.18988@chino.kir.corp.google.com>
-	 <40a4ed590904262333k13dd3630t8d241eb30782bbab@mail.gmail.com>
-	 <alpine.DEB.2.00.0904270129350.26825@chino.kir.corp.google.com>
-Date: Mon, 27 Apr 2009 10:53:51 +0200
-Message-ID: <40a4ed590904270153q306e80f2v62499434c64d92a6@mail.gmail.com>
-Subject: Re: Kernel 2.6.29 runs out of memory and hangs.
-From: Zeno Davatz <zdavatz@gmail.com>
-To: David Rientjes <rientjes@google.com>
-Cc: linux-kernel@vger.kernel.org, Hannes Wyss <hwyss@ywesee.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Gregory Haskins <ghaskins@novell.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, davidel@xmailserver.org
+Subject: Re: [KVM PATCH v2 2/2] kvm: add support for irqfd via	eventfd-notification
+ interface
+References: <20090424042142.1796.60756.stgit@dev.haskins.net> <20090424042518.1796.65593.stgit@dev.haskins.net>
+In-Reply-To: <20090424042518.1796.65593.stgit@dev.haskins.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear David
+Gregory Haskins wrote:
+> This allows an eventfd to be registered as an irq source with a guest.  Any
+> signaling operation on the eventfd (via userspace or kernel) will inject
+> the registered GSI at the next available window.
+>
+>  
+> +struct kvm_irqfd {
+> +	__u32 fd;
+> +	__u32 gsi;
+> +};
+> +
+>   
 
-On Mon, Apr 27, 2009 at 10:32 AM, David Rientjes <rientjes@google.com> wrote:
+I think it's better to have ioctl create and return the fd.  This way we 
+aren't tied to eventfd (though it makes a lot of sense to use it).
 
-> All allowable zones have minimum watermarks that define how much memory
-> an oom killed task may use so that it can quickly exit.  This is the
-> purpose of the TIF_MEMDIE flag in the kernel.
+Also, please add a flags field and some padding so we can extend it later.
 
-Thanks for the info.
+> +
+> +#include <linux/kvm_host.h>
+> +#include <linux/eventfd.h>
+> +#include <linux/workqueue.h>
+> +#include <linux/wait.h>
+> +#include <linux/poll.h>
+> +#include <linux/file.h>
+> +#include <linux/list.h>
+> +
+> +struct _irqfd {
+> +	struct kvm               *kvm;
+> +	int                       gsi;
+> +	struct file              *file;
+> +	struct list_head          list;
+> +	poll_table                pt;
+> +	wait_queue_head_t        *wqh;
+> +	wait_queue_t              wait;
+> +	struct work_struct        work;
+> +};
+> +
+> +static void
+> +irqfd_inject(struct work_struct *work)
+> +{
+> +	struct _irqfd *irqfd = container_of(work, struct _irqfd, work);
+> +	struct kvm *kvm = irqfd->kvm;
+> +
+> +	mutex_lock(&kvm->lock);
+> +	kvm_set_irq(kvm, kvm->irqfd.src, irqfd->gsi, 1);
+>   
 
-> The policy is better defined in userspace to determine what memory-hogging
-> task should be killed in low memory situations.  Users can already tune
-> the /proc/pid/oom_adj score of any task so that the oom killer can prefer
-> it over other tasks (see Documentation/filesystems/proc.txt).  For low
-> memory situations, however, userspace can act in any number of ways to
-> prevent reaching an oom condition.
+Need to lower the irq too (though irqfd only supports edge triggered 
+interrupts).
 
-This may be off-Topic, but: Can I assign a PID to a process at
-startup? Say Apache always should have PID 2755, or Ruby should always
-have PID 1003. Otherwise how would I set the score for a PID at
-Kernel-Boop-Up?
+> +	mutex_unlock(&kvm->lock);
+> +}
+> +
+> +static int
+> +irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
+> +{
+> +	struct _irqfd *irqfd = container_of(wait, struct _irqfd, wait);
+> +
+> +	/*
+> +	 * The eventfd calls its wake_up with interrupts disabled,
+> +	 * so we need to defer the IRQ injection until later since we need
+> +	 * to acquire the kvm->lock to do so.
+> +	 */
+> +	schedule_work(&irqfd->work);
+> +
+> +	return 0;
+> +}
+>   
 
-> Once the oom condition has been reached, however, the oom killer must act
-> to free some memory, otherwise the kernel usually livelocks.
+One day we'll have lockless injection and we'll want to drop this.  I 
+guess if we create the fd ourselves we can make it work, but I don't see 
+how we can do this with eventfd.
 
-Interesting. In our case we did not have a score for Apache in
+> +int
+> +kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
+> +{
+> +	struct _irqfd *irqfd;
+> +	struct file *file;
+> +	int ret;
+> +
+> +	irqfd = kzalloc(sizeof(*irqfd), GFP_KERNEL);
+> +	if (!irqfd)
+> +		return -ENOMEM;
+> +
+> +	irqfd->kvm = kvm;
+> +	irqfd->gsi = gsi;
+> +	INIT_LIST_HEAD(&irqfd->list);
+> +	init_waitqueue_func_entry(&irqfd->wait, irqfd_wakeup);
+> +	init_poll_funcptr(&irqfd->pt, irqfd_ptable_queue_proc);
+> +	INIT_WORK(&irqfd->work, irqfd_inject);
+> +
+> +	file = eventfd_fget(fd);
+> +	if (IS_ERR(file)) {
+> +		ret = PTR_ERR(file);
+> +		goto fail;
+> +	}
+> +
+> +	ret = file->f_op->poll(file, &irqfd->pt);
+> +	/* do we need to look for errors in ret? */
+>   
 
-/proc/pid/oom_adj
+Do we?
 
-that must have caused the livelock because oom_kill could not kill the
-biggest task (Apache) in full.
+> +
+> +	irqfd->file = file;
+> +
+> +	mutex_lock(&kvm->lock);
+> +	if (kvm->irqfd.src == -1) {
+> +		ret = kvm_request_irq_source_id(kvm);
+> +		BUG_ON(ret < 0);
+>   
 
-Best
-Zeno
+I think you can reuse the userspace irq source (since it's just another 
+way for userspace to inject an interrupt).  It isn't really needed since 
+the irq source stuff is only needed to support level triggered interrupts.
+
+-- 
+error compiling committee.c: too many arguments to function
+
