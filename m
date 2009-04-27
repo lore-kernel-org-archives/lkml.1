@@ -1,164 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759266AbZD0Sax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932088AbZD0Sah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759266AbZD0Sax (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 14:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932093AbZD0SaY
+	id S932088AbZD0Sah (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 14:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759022AbZD0SaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 14:30:24 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:33493 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759241AbZD0SaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 14:30:20 -0400
-Date: Mon, 27 Apr 2009 11:30:10 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       Jarek Poplawski <jarkao2@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
-Message-ID: <20090427113010.5e3f1700@nehalam>
-In-Reply-To: <1240854297.7620.65.camel@twins>
-References: <20090421111541.228e977a@nehalam>
-	<20090421193924.GA24404@elte.hu>
-	<20090421143927.52d7d89d@nehalam>
-	<alpine.LFD.2.00.0904220821240.3101@localhost.localdomain>
-	<20090423210938.1501507b@nehalam>
-	<49F146FF.5050200@cosmosbay.com>
-	<20090424091839.6e13ebec@nehalam>
-	<49F22465.80305@gmail.com>
-	<20090425133052.4cb711f5@nehalam>
-	<49F4A6E3.7080102@cosmosbay.com>
-	<20090426185646.GB29238@Krystal>
-	<20090426145746.1184aeba@nehalam>
-	<1240854297.7620.65.camel@twins>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+	Mon, 27 Apr 2009 14:30:16 -0400
+Received: from mail-qy0-f180.google.com ([209.85.221.180]:53814 "EHLO
+	mail-qy0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757919AbZD0SaN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 14:30:13 -0400
+X-Greylist: delayed 1395 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Apr 2009 14:30:12 EDT
+Subject: 2.6.30-rc3-rt
+From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-rt-users <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="=-h35Yp+ow+plTqApcRGbQ"
+Date: Mon, 27 Apr 2009 10:59:56 -0700
+Message-Id: <1240855196.20540.8.camel@quadrophenia.thebigcorporation.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Apr 2009 19:44:57 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
 
-> On Sun, 2009-04-26 at 14:57 -0700, Stephen Hemminger wrote:
-> > On Sun, 26 Apr 2009 14:56:46 -0400
-> > Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > 
-> > > * Eric Dumazet (dada1@cosmosbay.com) wrote:
-> > > > From: Stephen Hemminger <shemminger@vyatta.com>
-> > > > 
-> > > > > Epilogue due to master Jarek. Lockdep carest not about the locking
-> > > > > doth bestowed. Therefore no keys are needed.
-> > > > > 
-> > > > > Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> > > > 
-> > > > So far, so good, should be ready for inclusion now, nobody complained :)
-> > > > 
-> > > > I include the final patch, merge of your last two patches.
-> > > > 
-> > > > David, could you please review it once again and apply it if it's OK ?
-> > > 
-> > > > Thanks to all for your help and patience
-> > > > 
-> > > > [PATCH] netfilter: use per-CPU recursive lock {XV}
-> > > 
-> > > Hi Eric, 
-> > > 
-> > > Suitable name would probably be :
-> > > 
-> > 
-> > But Linus is trying to delude himself.
-> > 
-> > This usage is recursive even if he doesn't like the terminology.
-> > The same CPU has to be able to reacquire the read lock without deadlocking.
-> > If reader/writer locks were implemented in a pure writer gets priority
-> > method, then this code would break!  So yes read locks can be used recursively
-> > now in Linux, but if the were implemented differently then this code
-> > would break.  For example, the -rt kernel turns all read/write locks into
-> > mutexs, so the -rt kernel developers will have to address this.
-> 
-> A recursive lock has the property:
-> 
-> lock()
-> {
->   if (lock->owner == current) {
->     lock->depth++;
->     return;
->   }
-> 
->   /* regular lock stuff */
-> }
-> 
-> unlock()
-> {
->   if (!--lock->depth)
->     /* regular unlock */
-> }
+--=-h35Yp+ow+plTqApcRGbQ
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Only on Linux, and only because you look at locking from
-the point of view of the magic variable "current" process
-point of view.
 
-> non of the linux kernel locking primitives have this -- with the
-> possible exception of the cpu-hotplug lock.
-> 
-> What rwlock_t has, is reader bias to the point where you can utterly
-> starve writers, with the side effect that you can obtain multiple read
-> ownerships without causing a deadlock.
+Hi Folks,
 
-But what happens when this side effect disappears?
- 
-> This is not what is called a recursive lock. A recursive lock would have
-> each owner only once, this rwlock_t thing is simply so unfair that it
-> can have unlimited owners, including multiple copies of the same one.
-> 
-> rwsem has fifo fairness, and therefore can deadlock in this scenario,
-> suppose thread A does a read, thread B tries a write and blocks, then
-> thread A recurses and tries to obtain another read ownership --
-> deadlock, as the FIFO fairness will demand the second read ownership
-> will wait on the pending writer, which will wait on the outstanding read
-> owner.
-> 
-> Now if rwsem were a fifo-fair recursive lock, the above would not
-> deadlock, since it would detect that the task already had (read)
-> ownership and simply increment the depth, instead of trying to acquire a
-> second ownership.
-> 
-> This is all common and well understood terminology, not something Linus
-> invented just to harras you with.
+I took a cut at forward-porting 2.6.29.1-rt9 to the 2.6.30 RC3-ish.
 
-In Documentation/ ?  online ?  Where is the definition? The only reference
-I se is indirectly in DocBook/kernel-locking.tmpl.
+The port seems fairly stable, having survived a weekend  of stress
+testing. A cyclictest plot of 50M cycles @500us intervals is attached.
 
-> Generally speaking we do not condone recursive locking strategies -- and
-> afaik reiserfs (as per the BKL) and the network code (as per abusing
-> rwlock_t unfairness) are the only offenders.
-> 
-> Like Linus stated, recursive locking is generally poor taste and
-> indicates you basically gave up on trying to find a proper locking
-> scheme. We should very much work towards getting rid of these
-> abberations instead of adding new ones.
+It went fairly easily, I have a couple more things to look at in regards
+to the SOFTLOCKUP and HUNG_TASKS changes today.
 
-The people complaining about naming never seem to be the ones providing
-workable suggestions or patches.
+There is also a compile fix for the bnx2x driver for IPv6, that I think
+needs to go to mainline, I will check and mail separately if still
+valid.
 
-> Linus is very much right on what he said, and you calling him delusional
-> only high-lights your ignorance on the issue.
-> 
-> [ PS. -rt implements rwlock_t as a proper recursive lock (either a mutex
->   or a full multi-owner reader-writer lock with PI fairness) so if
->   anybody abuses rwlock_t unfairness in a way that is not strict owner
->   recursive we have a problem. ]
 
-Name it "dog's breath locking" for all I care. I am not bothering
-with arguments over names; there is real work to do elsewhere.
+The (broken-out) patches are here:
+
+http://www.thebigcorporation.com/Sven/patch-2.6.30-rt/
+
+These patches will apply to commit ce8a7424d23a36f043d0de8484f888971c831119 on Linus's tree as of yesterday.
+
+I just wanted to give a heads up, in hopes it might be helpful as reference.
+
+
+Regards,
+
+Sven
+
+--=-h35Yp+ow+plTqApcRGbQ
+Content-Disposition: attachment; filename="colfax-2.6.30-rc3-rt0.8-rt-50M.png"
+Content-Type: image/png; name="colfax-2.6.30-rc3-rt0.8-rt-50M.png"
+Content-Transfer-Encoding: base64
+
+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
+YII=
+
+
+--=-h35Yp+ow+plTqApcRGbQ--
+
