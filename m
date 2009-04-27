@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760672AbZD0TN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbZD0TNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760672AbZD0TN1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 15:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759740AbZD0TKl
+	id S932619AbZD0TNm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 15:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932429AbZD0TLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 15:10:41 -0400
-Received: from vms173017pub.verizon.net ([206.46.173.17]:59522 "EHLO
+	Mon, 27 Apr 2009 15:11:08 -0400
+Received: from vms173017pub.verizon.net ([206.46.173.17]:59957 "EHLO
 	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932386AbZD0TKk convert rfc822-to-8bit (ORCPT
+	with ESMTP id S932444AbZD0TLG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 15:10:40 -0400
+	Mon, 27 Apr 2009 15:11:06 -0400
 From: Gene Heskett <gene.heskett@verizon.net>
 Organization: Organization? Not detectable
-Date: Mon, 27 Apr 2009 15:10:11 -0400
+Date: Mon, 27 Apr 2009 15:10:48 -0400
 User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3; KDE/4.2.2; i686; ; )
 MIME-version: 1.0
 Subject: Fwd:
@@ -20,7 +20,7 @@ To: linux-kernel@vger.kernel.org
 Content-Type: Text/Plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
 Content-disposition: inline
-Message-id: <200904271510.11162.gene.heskett@verizon.net>
+Message-id: <200904271510.48774.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,7 +36,7 @@ To: "no To-header on input" <unlisted-recipients:; @gmail-pop.l.google.com>
 >From arnd@arndb.de Mon Apr 27 16:28:40 2009
 References: <20090427142010.587518220@arndb.de>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Apr 2009 16:20:22 +0200
+Date: Mon, 27 Apr 2009 16:20:24 +0200
 From: arnd@arndb.de
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com,
@@ -44,63 +44,35 @@ Cc: john.williams@petalogix.com,
  linux-api@vger.kernel.org,
  linux-arch@vger.kernel.org,
  liqin.chen@sunplusct.com,
- Sam Ravnborg <sam@ravnborg.org>,
- Harvey Harrison <harvey.harrison@gmail.com>,
- Remis Lima Baima <remis.developer@googlemail.com>
-Subject: [RFC 12/17] asm-generic: add generic unaligned.h
-Content-Disposition: inline; filename=0009-asm-generic-add-generic-
-unaligned.h.patch
-X-Provags-ID: V01U2FsdGVkX180uRkKPtTR6NE5qs40yQi4ziqxITkI8KKYXbv
- ceZfZA4rNxQHTjaGg5pO05a3RFhyObTUvhsERRtOhJTrzruub3
- 3XgHSsqqDkZJnfLEIfR2g==
+ Sam Ravnborg <sam@ravnborg.org>
+Subject: [RFC 14/17] syscalls.h add the missing sys_pipe2 declaration
+Content-Disposition: inline; filename=0034-Add-the-missing-sys_pipe2-
+declaration.patch
+X-Provags-ID: V01U2FsdGVkX18BNhYLkO16wJIO7fZdR0d6C1KKxWKU4X9yTw1
+ kHYWFxFh/i+KLpzMQTnyQq6hXXodV+gYI/28GueZLh1YDCU7wt
+ Ve65kcnRHOC2kZYsfpLWg==
 
-This implementation can be used by any architecture as a generic
-way to provide the unaligned helpers. Many architectures can
-override this by using linux/unaligned/access_ok.h.
+In order to build the generic syscall table, we need a declaration
+for every system call. sys_pipe2 was added without a proper declaration,
+so add this to syscalls.h now.
 
-Cc: Harvey Harrison <harvey.harrison@gmail.com>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Remis Lima Baima <remis.developer@googlemail.com>
 ---
- include/asm-generic/unaligned.h |   30 	30 +	0 -	0 !
- 1 file changed, 30 insertions(+)
- create mode 100644 include/asm-generic/unaligned.h
+ include/linux/syscalls.h |    1 	1 +	0 -	0 !
+ 1 file changed, 1 insertion(+)
 
-Index: linux-2.6/include/asm-generic/unaligned.h
+Index: linux-2.6/include/linux/syscalls.h
 ===================================================================
---- /dev/null
-+++ linux-2.6/include/asm-generic/unaligned.h
-@@ -0,0 +1,30 @@
-+#ifndef __ASM_GENERIC_UNALIGNED_H
-+#define __ASM_GENERIC_UNALIGNED_H
-+
-+/*
-+ * This is the most generic implementation of unaligned accesses
-+ * and should work almost anywhere.
-+ *
-+ * If an architecture can handle unaligned accesses in hardware,
-+ * it may want to use the linux/unaligned/access_ok.h implementation
-+ * instead.
-+ */
-+#include <asm/byteorder.h>
-+
-+#if defined(__LITTLE_ENDIAN)
-+# include <linux/unaligned/le_struct.h>
-+# include <linux/unaligned/be_byteshift.h>
-+# include <linux/unaligned/generic.h>
-+# define get_unaligned	__get_unaligned_le
-+# define put_unaligned	__put_unaligned_le
-+#elif defined(__BIG_ENDIAN)
-+# include <linux/unaligned/be_struct.h>
-+# include <linux/unaligned/le_byteshift.h>
-+# include <linux/unaligned/generic.h>
-+# define get_unaligned	__get_unaligned_be
-+# define put_unaligned	__put_unaligned_be
-+#else
-+# error need to define endianess
-+#endif
-+
-+#endif /* __ASM_GENERIC_UNALIGNED_H */
+--- linux-2.6.orig/include/linux/syscalls.h
++++ linux-2.6/include/linux/syscalls.h
+@@ -433,6 +433,7 @@ asmlinkage long sys_fcntl(unsigned int f
+ asmlinkage long sys_fcntl64(unsigned int fd,
+ 				unsigned int cmd, unsigned long arg);
+ #endif
++asmlinkage long sys_pipe2(int __user *fildes, int flags);
+ asmlinkage long sys_dup(unsigned int fildes);
+ asmlinkage long sys_dup2(unsigned int oldfd, unsigned int newfd);
+ asmlinkage long sys_dup3(unsigned int oldfd, unsigned int newfd, int flags);
 
 -- 
 
