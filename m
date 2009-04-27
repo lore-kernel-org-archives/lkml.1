@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757708AbZD0ToW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758741AbZD0TsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757708AbZD0ToW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 15:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756684AbZD0ToM
+	id S1758741AbZD0TsV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 15:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZD0TsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 15:44:12 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:19145 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754899AbZD0ToL convert rfc822-to-8bit (ORCPT
+	Mon, 27 Apr 2009 15:48:11 -0400
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:52987 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750963AbZD0TsL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 15:44:11 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] x86/pci: do assign root bus res if _CRS is used
-Date: Mon, 27 Apr 2009 13:44:01 -0600
-User-Agent: KMail/1.9.10
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, Gary Hade <garyhade@us.ibm.com>,
-       Alex Chiang <achiang@hp.com>, linux-acpi@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>
-References: <49ED22EC.2040204@kernel.org>
-In-Reply-To: <49ED22EC.2040204@kernel.org>
+	Mon, 27 Apr 2009 15:48:11 -0400
+Message-ID: <49F60BF8.8040404@ovro.caltech.edu>
+Date: Mon, 27 Apr 2009 12:48:08 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Content-Disposition: inline
-Message-Id: <200904271344.04099.bjorn.helgaas@hp.com>
+To: Timur Tabi <timur@freescale.com>
+CC: linuxppc-dev@ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
+       Liu Dave-R63238 <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+       Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
+References: <20090424183517.GB23140@ovro.caltech.edu>	<D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net>	<ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com>	<49F608B7.9080409@ovro.caltech.edu> <49F60A3A.4060402@freescale.com>
+In-Reply-To: <49F60A3A.4060402@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Mon, 27 Apr 2009 12:48:10 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 20 April 2009 07:35:40 pm Yinghai Lu wrote:
-> it wil be overwriten later if _CRS is used, so don't bother to set it.
-> 
-> [ Impact: cleanup ]
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  arch/x86/pci/amd_bus.c |    4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> Index: linux-2.6/arch/x86/pci/amd_bus.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/pci/amd_bus.c
-> +++ linux-2.6/arch/x86/pci/amd_bus.c
-> @@ -100,6 +100,10 @@ void x86_pci_root_bus_res_quirks(struct
->  	int j;
->  	struct pci_root_info *info;
->  
-> +	/* don't go for it if _CRS is used */
-> +	if (pci_probe & PCI_USE__CRS)
-> +		return;
-> +
->  	/* if only one root bus, don't need to anything */
->  	if (pci_root_num < 2)
->  		return;
 
-This isn't a comment on this patch per se.
 
-I am concerned about the fact that "pci=use_crs" is not the default.
->From the changelog of 62f420f8282, it sounds like you have to boot an
-IBM x3850 with "pci=use_crs" to make hot-plug work, even though ACPI
-tells us everything we need to know.  That's backwards.
+>> Would you like some sort of summary of this info for a commit
+>> message?
+> 
+> That's probably overkill.  I just want a sentence or two that tells
+> someone looking at the code casually that the behavior of reading PCI
+> memory might be different than what they expect.
 
-We shouldn't need an option to tell Linux that the firmware is
-trustworthy.  We should have an option to *ignore* it for the times
-when we trip over something broken and haven't figured out a way to
-work around it yet.
+Ok, will-do.
 
-Bjorn
+>> Would you like us to check any other transaction/register combos?
+> 
+> Yes, could you try this on non-PCI memory?
+
+We've been using it to DMA between the x86 host main memory and
+the MPC8349EA boards (PCI targets). The reason we changed to
+Read Multiple was that it had a dramatic improvement in
+efficiency through bridges. However, the x86 host memory
+is prefetchable, so is consistent with the use of Read Multiple.
+
+Can you give me an example of non-PCI memory that would be
+non-prefetchable that you'd like us to try? We can see if our
+host CPUs have an area like that ... we just need to know
+what device to look for first :)
+
+Cheers,
+Dave
+
+
+
