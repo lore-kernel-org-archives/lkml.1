@@ -1,41 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbZD0LoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbZD0Lqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbZD0LoU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 07:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbZD0LoB
+	id S1755773AbZD0Lqn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 07:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbZD0Lqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 07:44:01 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:49100 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755054AbZD0Ln7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 07:43:59 -0400
-Date: Mon, 27 Apr 2009 12:43:57 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] regulator: add userspace-consumer driver
-Message-ID: <20090427114357.GA7908@rakim.wolfsonmicro.main>
-References: <20090426120036.GA10900@opensource.wolfsonmicro.com> <1240753779-28189-1-git-send-email-mike@compulab.co.il>
+	Mon, 27 Apr 2009 07:46:34 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:47780 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753305AbZD0Lqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 07:46:34 -0400
+Date: Mon, 27 Apr 2009 13:46:33 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Cleanup: Remove unused __REQ_NR_BITS from enum
+	rq_flag_bits
+Message-ID: <20090427114633.GA4593@kernel.dk>
+References: <200904271705.30550.knikanth@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1240753779-28189-1-git-send-email-mike@compulab.co.il>
-X-Cookie: But it does move!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200904271705.30550.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 26, 2009 at 04:49:39PM +0300, Mike Rapoport wrote:
-> The userspace-consumer driver allows control of voltage and current
-> regulator state from userspace. This is required for fine-grained
-> power management of devices that are completely controller by userspace
-> applications, e.g. a GPS transciever connected to a serial port.
+On Mon, Apr 27 2009, Nikanth Karthikesan wrote:
+> The __REQ_NR_BITS  was being used by blk_dump_rq_flags() long back, while 
+> printing the individual request flag bits as strings to limit to the used 
+> bits. But it does not use it now. Remove unused enum.
+> 
+> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> 
+> ---
+> 
+> diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+> index ba54c83..f41abbb 100644
+> --- a/include/linux/blkdev.h
+> +++ b/include/linux/blkdev.h
+> @@ -118,7 +118,6 @@ enum rq_flag_bits {
+>  	__REQ_COPY_USER,	/* contains copies of user pages */
+>  	__REQ_INTEGRITY,	/* integrity metadata has been remapped */
+>  	__REQ_NOIDLE,		/* Don't anticipate more IO after this one */
+> -	__REQ_NR_BITS,		/* stops here */
+>  };
+>  
+>  #define REQ_RW		(1 << __REQ_RW)
 
-> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+Lets turn it into something useful instead. It's meant to catch someone
+adding too many flags, how about something like this:
 
-Looks good, though the probe() and remove() could have __devinit and
-__devexit annotations.
+Untested ;-)
 
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+diff --git a/block/blk-core.c b/block/blk-core.c
+index d73eb76..e62ef94 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -2159,6 +2159,8 @@ EXPORT_SYMBOL(kblockd_schedule_work);
+ 
+ int __init blk_dev_init(void)
+ {
++	BUILD_BUG_ON(__REQ_NR_BITS > 8 * sizeof(int));
++
+ 	kblockd_workqueue = create_workqueue("kblockd");
+ 	if (!kblockd_workqueue)
+ 		panic("Failed to create kblockd\n");
+
+-- 
+Jens Axboe
+
