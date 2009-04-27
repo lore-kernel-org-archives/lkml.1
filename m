@@ -1,58 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761502AbZD0Ulu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758439AbZD0Ujy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761502AbZD0Ulu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 16:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757818AbZD0Ulj
+	id S1758439AbZD0Ujy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 16:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761028AbZD0Ujm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 16:41:39 -0400
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:53683 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755285AbZD0Ulj (ORCPT
+	Mon, 27 Apr 2009 16:39:42 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:31138 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759721AbZD0Ujk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 16:41:39 -0400
-Message-ID: <49F6187F.8020703@ovro.caltech.edu>
-Date: Mon, 27 Apr 2009 13:41:35 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 27 Apr 2009 16:39:40 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] x86/pci: do assign root bus res if _CRS is used
+Date: Mon, 27 Apr 2009 14:39:36 -0600
+User-Agent: KMail/1.9.10
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Gary Hade <garyhade@us.ibm.com>,
+       Alex Chiang <achiang@hp.com>, linux-acpi@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>
+References: <49ED22EC.2040204@kernel.org> <200904271344.04099.bjorn.helgaas@hp.com> <49F61265.10201@kernel.org>
+In-Reply-To: <49F61265.10201@kernel.org>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-CC: Liu Dave-R63238 <DaveLiu@freescale.com>, Ira Snyder <iws@ovro.caltech.edu>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
-References: <20090424183517.GB23140@ovro.caltech.edu>	<D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net> <ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com> <49F608B7.9080409@ovro.caltech.edu> <49F60A3A.4060402@freescale.com> <49F61416.8040501@ovro.caltech.edu> <49F614FC.70000@freescale.com>
-In-Reply-To: <49F614FC.70000@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Mon, 27 Apr 2009 13:41:38 -0700 (PDT)
+Content-Disposition: inline
+Message-Id: <200904271439.37396.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Timur,
-
->> PRC_RM - PCI read multiple
->>    The default PCI read command used by the DMA controller is
->>    PCI Read (PCI command 6h). When the burst length is 32-bytes
->>    or longer, PCI Read Line (PCI command Eh) is used (undocumented
->>    feature of the controller). Using PCI read multiple
->>    (PCI command Ch) results in high-performance across PCI
->>    bridges. DMA transfers to non-prefetchable PCI registers
->>    should not result in prefetched reads, even when using
->>    the PCI read multiple command.
+On Monday 27 April 2009 02:15:33 pm Yinghai Lu wrote:
+> Bjorn Helgaas wrote:
+> > On Monday 20 April 2009 07:35:40 pm Yinghai Lu wrote:
+> >> it wil be overwriten later if _CRS is used, so don't bother to set it.
+> >>
+> >> [ Impact: cleanup ]
+> >>
+> >> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> >>
+> >> ---
+> >>  arch/x86/pci/amd_bus.c |    4 ++++
+> >>  1 file changed, 4 insertions(+)
+> >>
+> >> Index: linux-2.6/arch/x86/pci/amd_bus.c
+> >> ===================================================================
+> >> --- linux-2.6.orig/arch/x86/pci/amd_bus.c
+> >> +++ linux-2.6/arch/x86/pci/amd_bus.c
+> >> @@ -100,6 +100,10 @@ void x86_pci_root_bus_res_quirks(struct
+> >>  	int j;
+> >>  	struct pci_root_info *info;
+> >>  
+> >> +	/* don't go for it if _CRS is used */
+> >> +	if (pci_probe & PCI_USE__CRS)
+> >> +		return;
+> >> +
+> >>  	/* if only one root bus, don't need to anything */
+> >>  	if (pci_root_num < 2)
+> >>  		return;
+> > 
+> > This isn't a comment on this patch per se.
+> > 
+> > I am concerned about the fact that "pci=use_crs" is not the default.
+> > From the changelog of 62f420f8282, it sounds like you have to boot an
+> > IBM x3850 with "pci=use_crs" to make hot-plug work, even though ACPI
+> > tells us everything we need to know.  That's backwards.
+> > 
+> > We shouldn't need an option to tell Linux that the firmware is
+> > trustworthy.  We should have an option to *ignore* it for the times
+> > when we trip over something broken and haven't figured out a way to
+> > work around it yet.
 > 
-> I was thinking more along the lines of:
-> 
-> "This driver tells the DMA controller to use the PCI Read Multiple
-> command, instead of the PCI Read Line command, for PCI read operations.
->  Please be aware that this setting may result in read pre-fetching on
-> some platforms."
+> other system may have broken _CRS.
 
-Ok, thanks.
+Do you have examples of problems here, or are you just worried that
+there *may* be problems?
 
-Ira will add your comment to the body of the code near
-the PRC_RM command and submit a new patch.
+> maybe we could try to use DMI whitelist them?
 
-Cheers,
-Dave
+I don't like a whitelist because it requires ongoing maintenance
+for correctly-working machines.  A blacklist is nicer because it
+only requires maintenance for *broken* machines.  A date-based
+solution would be better from that point of view.
 
+Bjorn
