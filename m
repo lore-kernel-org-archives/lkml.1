@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbZD0Hso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbZD0HuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756704AbZD0Hso (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 03:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbZD0HsY
+	id S1756717AbZD0HuS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 03:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbZD0HuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 03:48:24 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:41978 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756376AbZD0HsX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 03:48:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=f6i5fGQCp8x5tMI9qHlJeNEdw90a7n9LZhrCiw9Ec438HOsorvfXKvZD0tvM9yHz3s
-         sWTT7wFGu9VWJGTnx2+Nki5mufhSrUe8vVZb0j98/wy2ESsz+lUMCSlnvx+5No0bc1Nn
-         YR+UNCFmUjZ/RIZbFfsQMGNKNdgMql02Lx7yA=
-MIME-Version: 1.0
-In-Reply-To: <20090424183517.GB23140@ovro.caltech.edu>
-References: <20090424183517.GB23140@ovro.caltech.edu>
-Date: Mon, 27 Apr 2009 15:48:21 +0800
-X-Google-Sender-Auth: d0f7d8123b4c6827
-Message-ID: <2a27d3730904270048g1e247797s6a25f9e28d664214@mail.gmail.com>
-Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
-From: Li Yang <leoli@freescale.com>
-To: Ira Snyder <iws@ovro.caltech.edu>
-Cc: linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
-       linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Apr 2009 03:50:03 -0400
+Received: from mga02.intel.com ([134.134.136.20]:31477 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751748AbZD0HuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 03:50:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,253,1239001200"; 
+   d="asc'?scan'208";a="407155203"
+Subject: Re: Re-implement MCE log ring buffer as per-CPU ring buffer
+From: Huang Ying <ying.huang@intel.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Robert Richter <robert.richter@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.0904240935140.24293@gandalf.stny.rr.com>
+References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com>
+	 <20090422092259.GC18226@elte.hu> <20090422101600.GL3226@erda.amd.com>
+	 <1240553210.6842.871.camel@yhuang-dev.sh.intel.com>
+	 <20090424100943.GJ27264@erda.amd.com>
+	 <alpine.DEB.2.00.0904240935140.24293@gandalf.stny.rr.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-1D1640od/stqvm9nDI4V"
+Date: Mon, 27 Apr 2009 15:49:56 +0800
+Message-Id: <1240818596.6842.1001.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 25, 2009 at 2:35 AM, Ira Snyder <iws@ovro.caltech.edu> wrote:
-> By default, the Freescale 83xx DMA controller uses the PCI Read Line
-> command when reading data over the PCI bus. Setting the controller to use
-> the PCI Read Multiple command instead allows the controller to read much
-> larger bursts of data, which provides a drastic speed increase.
->
-> The slowdown due to using PCI Read Line was only observed when a PCI-to-PCI
-> bridge was between the devices trying to communicate.
->
-> A simple test driver showed an increase from 4MB/sec to 116MB/sec when
-> performing DMA over the PCI bus. Using DMA to transfer between blocks of
-> local SDRAM showed no change in performance with this patch. The dmatest
-> driver was also used to verify the correctness of the transfers, and showed
-> no errors.
->
-> Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
 
-Acked-by: Li Yang <leoli@freescale.com>
+--=-1D1640od/stqvm9nDI4V
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Leo
+On Fri, 2009-04-24 at 21:36 +0800, Steven Rostedt wrote:
+> On Fri, 24 Apr 2009, Robert Richter wrote:
+> > >=20
+> > > It seems that ring_buffer is not NMI-safe, while mcelog buffer will b=
+e
+> > > used in NMI context and interrupt context. When will ring_buffer to b=
+e
+> > > NMI-safe?
+> >=20
+> > You can use it in nmi context with separate read and write
+> > buffers. See this patch description:
+> > 6dad828b76c7224a22ddc9ce7aa495d994f03b31
+> >=20
+> > Not sure if somebody will make the ring_buffer non-locking.
+>=20
+> It already is ;-)
+>=20
+> I've put in for a patent application on the algorithm so I must wait till=
+=20
+> it is processed before I can release the code.
+
+When will it be merged by mainline kernel? Do you have a plan?
+
+We do have some scalability issues of current mcelog implementation, and
+hopes that can be solved as soon as possible, perhaps for 2.6.31?
+
+Best Regards,
+Huang Ying
+
+
+--=-1D1640od/stqvm9nDI4V
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkn1Y48ACgkQKhFGF+eHlphJ1gCeJtyqIaAKPEYUSjBPh2rlVh7j
+x1YAnRGTrauR/GMnRdxM8d7G6Dw3XrPl
+=T3cn
+-----END PGP SIGNATURE-----
+
+--=-1D1640od/stqvm9nDI4V--
+
