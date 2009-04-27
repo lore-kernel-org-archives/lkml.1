@@ -1,52 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbZD0GjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbZD0Gjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbZD0GjV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 02:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742AbZD0GjK
+	id S1756914AbZD0Gjh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 02:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756780AbZD0GjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 02:39:10 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44311 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755392AbZD0GjI (ORCPT
+	Mon, 27 Apr 2009 02:39:11 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:57237 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756777AbZD0GjI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 27 Apr 2009 02:39:08 -0400
-Subject: Re: [PATCH] ihex2fw should be ignored by scripts/.gitignore
- because ihex2fw is in scripts directory
-From: David Woodhouse <dwmw2@infradead.org>
-To: Hitoshi Mitake <h.mitake@gmail.com>
-Cc: jaharkes@cs.cmu.edu, linux-kernel@vger.kernel.org
-In-Reply-To: <20090427124333.a7270ddf.h.mitake@gmail.com>
-References: <20090427124333.a7270ddf.h.mitake@gmail.com>
-Content-Type: text/plain
-Date: Mon, 27 Apr 2009 07:39:02 +0100
-Message-Id: <1240814342.30259.41.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Date: Mon, 27 Apr 2009 12:09:03 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v1 0/3] Saving power by cpu evacuation using
+	sched_mc=n
+Message-ID: <20090427063903.GC6440@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20090426204029.17495.46609.stgit@drishya.in.ibm.com> <20090427035216.GD10087@elte.hu> <20090427054325.GB6440@dirshya.in.ibm.com> <20090427055347.GA20739@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090427055347.GA20739@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-27 at 12:43 +0900, Hitoshi Mitake wrote:
-> 
-> I found this message from git-status on not modified clone of Linus's
-> tree,
-> 
-> # Not currently on any branch.
-> # Untracked files:
-> #   (use "git add <file>..." to include in what will be committed)
-> #
-> #       scripts/ihex2fw
-> nothing added to commit but untracked files present (use "git add" to
-> track)
+* Ingo Molnar <mingo@elte.hu> [2009-04-27 07:53:47]:
 
-Actually, ihex2fw should never have been moved from the firmware/
-directory to scripts/. I've already moved it back, so the .gitignore
-files are correct as they are.
+> 
+> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+> 
+> > > > --------------------------------------------------------
+> > > > sched_mc	No Cores	Performance	AvgPower	
+> > > > 		used		Records/sec	(Watts)
+> > > > --------------------------------------------------------
+> > > > 0		8		1.00x		1.00y
+> > > > 1		8		1.02x		1.01y
+> > > > 2		8		0.83x		1.01y
+> > > > 3		7		0.86x		0.97y
+> > > > 4		6		0.76x		0.92y
+> > > > 5		4		0.72x		0.82y
+> > > > --------------------------------------------------------
+> > > 
+> > > Looks like we want the kernel default to be sched_mc=1 ?
+> > 
+> > Hi Ingo,
+> > 
+> > Yes, sched_mc wins for a simple cpu bound workload like this.  But 
+> > the challenge is that the best settings depends on the workload 
+> > and the system configuration.  This leads me to think that the 
+> > default setting should be left with the distros where we can 
+> > factor in various parameters and choose the right default from 
+> > user space.
+> > 
+> > 
+> > > Regarding the values for 2...5 - is the AvgPower column time 
+> > > normalized or workload normalized?
+> > 
+> > The AvgPower is time normalised, just the power value divided by 
+> > the baseline at sched_mc=0.
+> >  
+> > > If it's time normalized then it appears there's no power win 
+> > > here at all: we'd be better off by throttling the workload 
+> > > directly (by injecting sleeps or something like that), right?
+> > 
+> > Yes, there is no power win when comparing with peak benchmark 
+> > throughput in this case.  However more complex workload setup may 
+> > not show similar characteristics because they are not dependent 
+> > only on CPU bandwidth for their peak performance.
+> > 
+> > * Reduction in cpu bandwidth may not directly translate to performance
+> >   reduction on complex workloads
+> > * Even if there is degradation, the system may still meet the design
+> >   objectives.  20-30% increase in response time over a 1 second
+> >   nominal value may be acceptable in most cases
+> 
+> But ... we could probably get a _better_ (near linear) slowdown by 
+> injecting wait cycles into the workload.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+We have advantages when complete cpu packages are not used as opposed
+to just injecting idle time in all cores. 
+ 
+> I.e. we should only touch balancing if there's a _genuine_ power 
+> saving: i.e. less power is used for the same throughput.
+
+Load balancer knows the cpu package topology and in essence knows the
+most power efficient combinations of cores to use.  If we have to
+schedule on 4 cores in a 8 core system, the load balancer can pick the
+right combination.
+
+> The numbers in the table show a plain slowdown: doing fewer 
+> transactions means less power used. But that is trivial to achieve 
+> for a CPU-bound workload: throttle the workload. I.e. inject less 
+> work, save power.
+
+Agreed, this example does not show the best use case for this
+feature, however we can easily experimentally verify that targeted
+evacuation of cores can provide better performance-per-watt as
+compared to plain throttling to reduce utilisation.
+
+> And if we want to throttle 'transparently', from the kernel, we 
+> should do it not via an artificial open-ended scale of 
+> sched_mc=2,3,4,5... - we should do it via a _percentage_ value.
+
+Yes we want to transparently throttle from the kernel at a core level
+granularity.
+
+Having a percentage value that can take discrete steps based on the
+number of cores in the system is a good idea.  I will switch the
+parameter to percentage in the next iteration.
+ 
+> I.e. a system setting that says "at most utilize the system 80% of 
+> its peak capacity". That can be implemented by the kernel injecting 
+> small delays or by intentionally not scheduling on certain CPUs (but 
+> not delaying tasks - forcing them to other cpus in essence).
+
+Advances in hardware power management like very low power deep sleep
+states and further package level power savings when all cores are idle
+changes the above assumption.
+
+Uniformly adding delays on all CPUs provide far less power savings as
+compared to not using one core or one complete package.  Evacuating
+core/package essentially shuts them off as compared to very short
+bursts of idle times.
+
+If we can accumulate all such idle times to a single core, with little
+effect on fairness, we get better power savings for the same amount of
+idle time or utilisation.
+
+Agreed that this is a coarse granularity compared to injecting delay,
+but this will become practical as the core density increase in the
+enterprise processor design.
+
+--Vaidy
 
