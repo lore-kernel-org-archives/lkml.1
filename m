@@ -1,83 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbZD0MPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbZD0MRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755270AbZD0MPo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 08:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZD0MPe
+	id S1754748AbZD0MRe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 08:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbZD0MRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 08:15:34 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:44790 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752169AbZD0MPd (ORCPT
+	Mon, 27 Apr 2009 08:17:25 -0400
+Received: from smtp.flash.net.br ([201.46.240.48]:57487 "EHLO
+	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbZD0MRY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 08:15:33 -0400
-Date: Mon, 27 Apr 2009 21:15:33 +0900 (JST)
-Message-Id: <20090427.211533.115916003.ryov@valinux.co.jp>
-To: righi.andrea@gmail.com
-Cc: randy.dunlap@oracle.com, menage@google.com, chlunde@ping.uio.no,
-       eric.rannaud@gmail.com, balbir@linux.vnet.ibm.com,
-       fernando@oss.ntt.co.jp, dradford@bluehost.com, agk@sourceware.org,
-       subrata@linux.vnet.ibm.com, axboe@kernel.dk, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       dave@linux.vnet.ibm.com, matt@bluehost.com, roberto@unbit.it,
-       ngupta@google.com
-Subject: Re: [PATCH 1/9] io-throttle documentation
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090427.194533.183037823.ryov@valinux.co.jp>
-References: <20090420.183815.226804723.ryov@valinux.co.jp>
-	<20090420150052.GC13307@linux>
-	<20090427.194533.183037823.ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Apr 2009 08:17:24 -0400
+Date: Mon, 27 Apr 2009 09:16:33 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, paulus@samba.org
+Subject: [PATCH] powerpc: convert mace to netdev_ops (was: Re: [2.6.30-rc3]
+	powerpc: compilation error of mace module)
+Message-ID: <20090427121633.GA29608@ime.usp.br>
+References: <20090426155708.GA23159@ime.usp.br> <20090426.230648.254087966.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090426.230648.254087966.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kamezawa-san,
+Hi, Dave.
 
-> I've come up with an idea to coexist blkio-cgroup and io-throttle.
-> blkio-cgroup provides a function to get a cgroup with the specified ID.
-> 
-> /* Should be called under rcu_read_lock() */
-> struct cgroup *blkio_cgroup_lookup(int id)
-> {
-> 	struct cgroup *cgrp;
-> 	struct cgroup_subsys_state *css;
-> 	
-> 	if (blkio_cgroup_disabled())
-> 		return NULL;
-> 
-> 	css = css_lookup(&blkio_cgroup_subsys, id);
-> 	if (!css)
-> 		return NULL;
-> 	cgrp = css->cgroup;
-> 	return cgrp;
-> }
-> 
-> Then io-throttle can get a struct iothrottle which belongs to the
-> cgroup by using the above function.
-> 
-> static struct iothrottle *iothrottle_lookup(int id)
-> {
-> 	struct cgroup *grp;
-> 	struct iothrottle *iot;
-> 
-> 	...
-> 	grp = blkio_cgroup_lookup(id);
-> 	if (!grp)
-> 		return NULL
-> 	iot = cgroup_to_iothrottle(grp);
-> 	...
-> }
-> 
-> What do you think about this way?
+On Apr 26 2009, David Miller wrote:
+> Or, if you're bored, feel free to convert the mace driver over
+> to netdev_ops :-)
 
-I have some questions. 
-- How about using the same numbering scheme as process ID for css_id
-  instead of idr? It prevents the same ID from being resued quickly.
-- Why are css_ids assigned per css? If each cgroup has a unique ID and
-  the subsystems can refer to it, I can make the above code simple.
+Is this anything close to what needs to be done? It's not without
+failures, because the function mace_set_timeout receives a pointer to a
+struct net_device, but is marked inline and is used by mace_tx_timeout,
+which receives an unsigned long (which calls mace_set_timeout).
 
-Thanks,
-Ryo Tsuruta
+Perhaps it would be a case of removing the inline hint to the compiler?
+I guess that BenH or Paul could comment here better...
+
+
+Signed-off-by: Rogério Brito <rbrito@ime.usp.br>
+
+---
+--- a/drivers/net/mace.c	2008-12-29 15:25:15.000000000 -0200
++++ b/drivers/net/mace.c	2009-04-27 08:54:16.000000000 -0300
+@@ -89,6 +89,16 @@ static inline void dbdma_reset(volatile 
+ static inline void mace_clean_rings(struct mace_data *mp);
+ static void __mace_set_address(struct net_device *dev, void *addr);
+ 
++/* Conversion to netdev_ops. */
++static const struct net_device_ops mace_netdev_ops = {
++	.ndo_open		= mace_open,
++	.ndo_stop		= mace_close,
++	.ndo_start_xmit		= mace_xmit_start,
++	.ndo_tx_timeout		= mace_set_timeout,
++	.ndo_set_multicast_list	= mace_set_multicast,
++	.ndo_set_mac_address	= mace_set_address,
++};
++
+ /*
+  * If we can't get a skbuff when we need it, we use this area for DMA.
+  */
+@@ -208,11 +217,7 @@ static int __devinit mace_probe(struct m
+ 		}
+ 	}
+ 
+-	dev->open = mace_open;
+-	dev->stop = mace_close;
+-	dev->hard_start_xmit = mace_xmit_start;
+-	dev->set_multicast_list = mace_set_multicast;
+-	dev->set_mac_address = mace_set_address;
++	dev->netdev_ops = &mace_netdev_ops;
+ 
+ 	/*
+ 	 * Most of what is below could be moved to mace_open()
+
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
