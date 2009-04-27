@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbZD0LST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755058AbZD0LUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754592AbZD0LST (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 07:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZD0LSH
+	id S1755058AbZD0LUo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 07:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbZD0LUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 07:18:07 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:26370 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752136AbZD0LSE convert rfc822-to-8bit (ORCPT
+	Mon, 27 Apr 2009 07:20:35 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:44707 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753402AbZD0LUf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 07:18:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=PTTcs7xCH6+W5TnepgrKx9eJu/AD1HKNqDfn7HAAWDH0acLAGIzTR2I+JifD12RBZT
-         kKNjDf4/L5n3aUM2YgbbXXTSvVmiWYN8BdbNP9yK1CuSxuYh0pRht1Mollh+deeKPyg0
-         UeCvsG0nNvw4IG4xW3gJM+qLEGQVgxxlLcRpo=
-MIME-Version: 1.0
-In-Reply-To: <1240821139-7247-11-git-send-email-monstr@monstr.eu>
-References: <1240821139-7247-1-git-send-email-monstr@monstr.eu>
-	 <1240821139-7247-3-git-send-email-monstr@monstr.eu>
-	 <1240821139-7247-4-git-send-email-monstr@monstr.eu>
-	 <1240821139-7247-5-git-send-email-monstr@monstr.eu>
-	 <1240821139-7247-6-git-send-email-monstr@monstr.eu>
-	 <1240821139-7247-7-git-send-email-monstr@monstr.eu>
-	 <1240821139-7247-8-git-send-email-monstr@monstr.eu>
-	 <1240821139-7247-9-git-send-email-monstr@monstr.eu>
-	 <1240821139-7247-10-git-send-email-monstr@monstr.eu>
-	 <1240821139-7247-11-git-send-email-monstr@monstr.eu>
-Date: Mon, 27 Apr 2009 13:18:03 +0200
-X-Google-Sender-Auth: d75cce907e896025
-Message-ID: <10f740e80904270418l77c499a6te4df4c05a333311e@mail.gmail.com>
-Subject: Re: [PATCH 10/30] microblaze_mmu_v1: Context handling - 
-	mmu_context.c/h
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: monstr@monstr.eu
-Cc: linux-kernel@vger.kernel.org, john.williams@petalogix.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 27 Apr 2009 07:20:35 -0400
+Subject: Re: [PATCH 12/14] kmemleak: Enable the building of the memory leak
+	detector
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: David Rientjes <rientjes@google.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0904241600400.8194@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0904241600400.8194@chino.kir.corp.google.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 27 Apr 2009 12:19:43 +0100
+Message-Id: <1240831184.7027.74.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Apr 2009 11:20:30.0484 (UTC) FILETIME=[2C6FAD40:01C9C72A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 10:31,  <monstr@monstr.eu> wrote:
-> --- a/arch/microblaze/include/asm/mmu_context.h
-> +++ b/arch/microblaze/include/asm/mmu_context.h
+On Sat, 2009-04-25 at 00:02 +0100, David Rientjes wrote:
+> On Fri, 24 Apr 2009, Catalin Marinas wrote:
+> 
+> > This patch adds the Kconfig.debug and Makefile entries needed for
+> > building kmemleak into the kernel.
+> >
+> > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> > ---
+> >  lib/Kconfig.debug |   22 ++++++++++++++++++++++
+> >  mm/Makefile       |    1 +
+> >  2 files changed, 23 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> > index c6e854f..6c9d21f 100644
+> > --- a/lib/Kconfig.debug
+> > +++ b/lib/Kconfig.debug
+> > @@ -336,6 +336,28 @@ config SLUB_STATS
+> >         out which slabs are relevant to a particular load.
+> >         Try running: slabinfo -DA
+> > 
+> > +config DEBUG_KMEMLEAK
+> > +     bool "Kernel memory leak detector"
+> > +     default n
+> > +     depends on EXPERIMENTAL && (X86 || ARM) && !MEMORY_HOTPLUG
+> 
+> This should include DEBUG_KERNEL.
 
-> +/*
-> + * This function defines the mapping from contexts to VSIDs (virtual
-> + * segment IDs).  We use a skew on both the context and the high 4 bits
-> + * of the 32-bit virtual address (the "effective segment ID") in order
-> + * to spread out the entries in the MMU hash table.  Note, if this
-> + * function is changed then arch/ppc/mm/hashtable.S will have to be
-                                    ^^^
+Yes, it makes sense. I'll update the patch.
 
-> + * changed to correspond.
-> + */
+Thanks.
 
-Gr{oetje,eeting}s,
+-- 
+Catalin
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
