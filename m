@@ -1,41 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757067AbZD0Rg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbZD0Rog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757067AbZD0Rg4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 13:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755740AbZD0Rgq
+	id S1757755AbZD0Rog (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 13:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755216AbZD0Ro2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 13:36:46 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:47956 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754543AbZD0Rgp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 13:36:45 -0400
-Date: Mon, 27 Apr 2009 18:36:44 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/8] Sync fixes and cleanups (version 4)
-Message-ID: <20090427173644.GE8633@ZenIV.linux.org.uk>
-References: <1240843435-1786-1-git-send-email-jack@suse.cz>
+	Mon, 27 Apr 2009 13:44:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38738 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754269AbZD0Ro1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 13:44:27 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240843435-1786-1-git-send-email-jack@suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: David Howells <dhowells@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, hch@lst.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] FRV: utrace: Implement TIF_NOTIFY_RESUME
+In-Reply-To: David Howells's message of  Monday, 27 April 2009 17:15:46 +0100 <20090427161545.16200.54250.stgit@warthog.procyon.org.uk>
+References: <20090427161540.16200.23710.stgit@warthog.procyon.org.uk>
+	<20090427161545.16200.54250.stgit@warthog.procyon.org.uk>
+Emacs: a learning curve that you can use as a plumb line.
+Message-Id: <20090427174151.6A284FC3BF@magilla.sf.frob.com>
+Date: Mon, 27 Apr 2009 10:41:51 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 04:43:47PM +0200, Jan Kara wrote:
->   Hi,
-> 
->   here comes the next version of sync fixes and cleanups. This version also
-> includes some moving of code from super.c to sync.c and quota sync cleanup and
-> slight speedup. If noone has any objections anymore, who's going to merge it?
-> Al?
+> +	/* deal with notification on about to resume userspace execution */
+> +	if (thread_info_flags & _TIF_NOTIFY_RESUME) {
+> +		clear_thread_flag(TIF_NOTIFY_RESUME);
+This needs:
+		tracehook_notify_resume(regs);
+> +	}
 
-Yes.  I've got the previous version of patchset in the local queue, BTW,
-but I'm still going through that code.  Woke up to find the update...
+Thanks,
+Roland
