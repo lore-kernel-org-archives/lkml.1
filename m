@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbZD0XoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758780AbZD0XpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758654AbZD0XoX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 19:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbZD0XoP
+	id S1758780AbZD0XpN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 19:45:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757188AbZD0XpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 19:44:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56555 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754954AbZD0XoN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 19:44:13 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1240864388-26315-4-git-send-email-tabbott@mit.edu>
-References: <1240864388-26315-4-git-send-email-tabbott@mit.edu> <1240864388-26315-1-git-send-email-tabbott@mit.edu> <1240864388-26315-2-git-send-email-tabbott@mit.edu> <1240864388-26315-3-git-send-email-tabbott@mit.edu>
-To: Tim Abbott <tabbott@MIT.EDU>
-Cc: dhowells@redhat.com, Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 03/14] mn10300: Use macros for .bss.page_aligned section.
-Date: Tue, 28 Apr 2009 00:43:02 +0100
-Message-ID: <4678.1240875782@redhat.com>
+	Mon, 27 Apr 2009 19:45:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41547 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752373AbZD0Xo7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 19:44:59 -0400
+Date: Mon, 27 Apr 2009 16:32:41 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Stephen Hemminger <shemminger@vyatta.com>
+cc: Evgeniy Polyakov <zbr@ioremap.net>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
+       Jarek Poplawski <jarkao2@gmail.com>, Paul Mackerras <paulus@samba.org>,
+       paulmck@linux.vnet.ibm.com, kaber@trash.net, jeff.chua.linux@gmail.com,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org, benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
+In-Reply-To: <alpine.LFD.2.00.0904271525120.22156@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0904271619240.22156@localhost.localdomain>
+References: <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam> <49F4A6E3.7080102@cosmosbay.com> <20090426185646.GB29238@Krystal> <20090426145746.1184aeba@nehalam> <1240854297.7620.65.camel@twins> <20090427113010.5e3f1700@nehalam> <20090427185423.GC23862@elte.hu>
+ <20090427120658.35a858bb@nehalam> <alpine.LFD.2.00.0904271219570.22156@localhost.localdomain> <20090427203616.GB3836@ioremap.net> <alpine.LFD.2.00.0904271340400.22156@localhost.localdomain> <20090427144054.1fb9b7a6@nehalam> <alpine.LFD.2.00.0904271506530.22156@localhost.localdomain>
+ <alpine.LFD.2.00.0904271525120.22156@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Abbott <tabbott@MIT.EDU> wrote:
 
-> -	*(.bss.page_aligned)
-> +	PAGE_ALIGNED_BSS
 
-/opt/nickc/H-i686-pc-linux-gnulibc2.3/bin/am33_2.0-linux-gnu-ld: cannot find PAGE_ALIGNED_BSS
+On Mon, 27 Apr 2009, Linus Torvalds wrote:
+> 
+> I left the commentary about "readers" and "writers", because in many
+> ways it's correct, and what the code actually does is very much to
+> emulate a reader-writer lock.  I put quotes around the uses in the
+> comments to high-light that it largely _acts_ as a reader-writer lock. 
 
-warthog>grep -r PAGE_ALIGNED_BSS include/linux/
-warthog1>grep -r PAGE_ALIGNED_BSS include/asm-generic/
-warthog1>grep -r PAGE_ALIGNED_BSS arch/frv/
-warthog1>
+Btw, I think it was Paul who pointed out that technically it's probably 
+better to call them "local" and "global" lockers instead of "readers" and 
+"writers".
 
-I take it that wasn't what you meant.
+That also probably clarifies the rules on when you use one over the other 
+(ie reading off all the statistics is a "global" operation, as is 
+obviously replacing the tables).
 
-David
+Of course, "readers" and "writers" is something most Linux lock people are 
+more used to. Or "brlock" for the old-timers, but that involves a heavy 
+dose of bad taste. The new use is much nicer, especially since it never 
+takes the global lock on _all_ cpu's (which was really a killer in so 
+many ways).
+
+			Linus
