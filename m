@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbZD0Mmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756434AbZD0MnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbZD0Mmm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 08:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbZD0Mmd
+	id S1756434AbZD0MnW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 08:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZD0MnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 08:42:33 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:53314 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752849AbZD0Mmc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 08:42:32 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@monstr.eu
-Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
-Date: Mon, 27 Apr 2009 14:42:24 +0200
-User-Agent: KMail/1.9.9
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       john.williams@petalogix.com
-References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <200904271357.01681.arnd@arndb.de> <49F5A5B2.7000307@monstr.eu>
-In-Reply-To: <49F5A5B2.7000307@monstr.eu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 27 Apr 2009 08:43:08 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41760
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752999AbZD0MnF convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 08:43:05 -0400
+Date: Mon, 27 Apr 2009 05:42:58 -0700 (PDT)
+Message-Id: <20090427.054258.16622932.davem@davemloft.net>
+To: rbrito@ime.usp.br
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, paulus@samba.org
+Subject: Re: [PATCH] powerpc: convert mace to netdev_ops
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090427121633.GA29608@ime.usp.br>
+References: <20090426155708.GA23159@ime.usp.br>
+	<20090426.230648.254087966.davem@davemloft.net>
+	<20090427121633.GA29608@ime.usp.br>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200904271442.24870.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/bmKjlT6H+Mxp7gGVQ+/hohT6rTU7Nqr8IRob
- 27kqcW6xUst0tETi/6CN7thm9AofsWAnpBtvCyyt8103Ofz+bu
- Oa2vhPnbbmrV/E0us/9pw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 April 2009, Michal Simek wrote:
-> >       long            st_size;        /* Size of file, in bytes.  */
+From: Rogério Brito <rbrito@ime.usp.br>
+Date: Mon, 27 Apr 2009 09:16:33 -0300
+
+> Is this anything close to what needs to be done? It's not without
+> failures, because the function mace_set_timeout receives a pointer to a
+> struct net_device, but is marked inline and is used by mace_tx_timeout,
+> which receives an unsigned long (which calls mace_set_timeout).
 > 
-> Maybe unsigned? Make more sense to me that file size is not minus.
-> And for some types below.
+> Perhaps it would be a case of removing the inline hint to the compiler?
+> I guess that BenH or Paul could comment here better...
+> 
+> Signed-off-by: Rogério Brito <rbrito@ime.usp.br>
 
-st_size represents an off_t in user space, which is signed.
-Just over half the existing architectures use signed types
-for st_size, but for this (like Sam's suggestion for __u64),
-I don't think it matters either way.
+You can fix the mace_set_timeout() function arguments by having
+a helper function that simply wraps around it and provides the
+second expection of argument types.
 
-	Arnd <><
+Your patch is also wrong, it's missing a lot of netdev_ops
+entries that are implicitly obtained via alloc_etherdev(),
+namely:
+
+	.ndo_change_mtu		= eth_change_mtu,
+	.ndo_set_mac_address 	= eth_mac_addr,
+	.ndo_validate_addr	= eth_validate_addr,
+
