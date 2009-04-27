@@ -1,101 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758756AbZD0SWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083AbZD0SYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758756AbZD0SWa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 14:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZD0SWW
+	id S1754083AbZD0SYr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 14:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbZD0SYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 14:22:22 -0400
-Received: from outbound-mail-320.bluehost.com ([67.222.54.252]:33327 "HELO
-	outbound-mail-320.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751527AbZD0SWV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 14:22:21 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Apr 2009 14:22:21 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=damore.org;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=J0pOYLaD1NqnAi6aLIddP8T/SgKyI5hv5mnX2fz3AZnnlx3+CdMHtEx8KJ8T1AUBNW24DMdf0iAowYaq5Lnf/j04b4eRqAUfJdpPYw6quSa9EiL2f/hm1lE03qG+IQ8L;
-Message-ID: <49F5F57D.3010700@damore.org>
-Date: Mon, 27 Apr 2009 11:12:13 -0700
-From: "Garrett D'Amore" <garrett@damore.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081201)
+	Mon, 27 Apr 2009 14:24:36 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:41558 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751527AbZD0SYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 14:24:35 -0400
+Date: Mon, 27 Apr 2009 20:24:34 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James.Bottomley@HansenPartnership.com, osd-dev@open-osd.org,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 3/3 v3] osdblk: a Linux block device for OSD objects
+Message-ID: <20090427182434.GD4593@kernel.dk>
+References: <20090402015455.GA14087@havoc.gtf.org> <20090407225302.GA14248@havoc.gtf.org> <20090410114821.GA10602@havoc.gtf.org> <20090410114908.GB10602@havoc.gtf.org> <20090410115045.GC10602@havoc.gtf.org> <49F5D66E.2040506@panasas.com>
 MIME-Version: 1.0
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-CC: Robert Hancock <hancockrwd@gmail.com>, pierre@ossman.eu,
-       sdhci-devel@lists.ossman.eu,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Sdhci-devel] SDHCI driver runnining in aspire one, allows to
- write to R/O SD cards
-References: <1240219764.13640.5.camel@maxim-laptop>	<49ED0865.9030603@gmail.com>  <1240524632.20871.0.camel@maxim-laptop> <1240759276.10972.0.camel@maxim-laptop>
-In-Reply-To: <1240759276.10972.0.camel@maxim-laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {2225:box374.bluehost.com:damoreor:damore.org} {sentby:smtp auth 192.18.43.225 authed with garrett+damore.org}
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49F5D66E.2040506@panasas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As an extra data point, my sdhost driver in OpenSolaris works fine on 
-the AA1.. it does see that the cards are locked, and refuses to allow 
-them to be mounted read/write.
+On Mon, Apr 27 2009, Boaz Harrosh wrote:
+> > +static struct bio *bio_chain_clone(struct bio *old_chain, gfp_t gfpmask)
+> > +{
+> > +	struct bio *tmp, *new_chain = NULL, *tail = NULL;
+> > +
+> > +	while (old_chain) {
+> > +		tmp = bio_clone(old_chain, gfpmask);
+> > +		if (!tmp)
+> > +			goto err_out;
+> > +
+> > +		tmp->bi_next = NULL;
+> > +		if (!new_chain)
+> > +			new_chain = tail = tmp;
+> > +		else {
+> > +			tail->bi_next = tmp;
+> > +			tail = tmp;
+> > +		}
+> > +
+> > +		old_chain = old_chain->bi_next;
+> > +	}
+> > +
+> > +	return new_chain;
+> > +
+> > +err_out:
+> > +	bio_chain_put(new_chain);
+> > +	return NULL;
+> > +}
+> > +
+> 
+> NOTE-TO-ME:
+>   blk_bio_clone()
 
-This leads me to believe that the original linux problem is one of two 
-things:
+Note to Boaz - this is illegal, unless gfp_mask is GFP_ATOMIC (in which
+case you should not pass it in). The only way to make this work is to:
 
-* either a bug in the linux code, or
-* busted circuit/hardware on a specific unit (i.e. a damaged unit)
+1) Have a private bio pool, and
+2) Make sure it has enough reserved entries to populate the chain, and
+3) Ensure only a single caller at the time, or entries enough for the N
+   users that are allowed. It has to be controlled either way, whether N
+   is 1 or larger.
 
-I believe that if the Linux code was buggy here, the problem would be 
-reproducible on all platforms, not just the AA1.  So my inclination, 
-barring independent confirmation, is that most likely there are one ore 
-more defective units out there.
+> > +static void osdblk_rq_fn(struct request_queue *q)
+> > +{
+> > +	struct osdblk_device *osdev = q->queuedata;
+> > +	struct request *rq;
+> > +	struct osdblk_request *orq;
+> > +	struct osd_request *or;
+> > +	struct bio *bio;
+> > +	int do_write, do_flush;
+> > +
+> > +	while (1) {
+> > +		/* peek at request from block layer */
+> > +		rq = elv_next_request(q);
+> > +		if (!rq)
+> > +			break;
+> > +
+> > +		/* filter out block requests we don't understand */
+> > +		if (!blk_fs_request(rq) && !blk_barrier_rq(rq)) {
+> > +			end_request(rq, 0);
+> > +			continue;
+> > +		}
+> > +
+> > +		/* deduce our operation (read, write, flush) */
+> > +		/* I wish the block layer simplified cmd_type/cmd_flags/cmd[]
+> > +		 * into a clearly defined set of RPC commands:
+> > +		 * read, write, flush, scsi command, power mgmt req,
+> > +		 * driver-specific, etc.
+> > +		 */
+> > +
+> > +		do_flush = (rq->special == (void *) 0xdeadbeefUL);
+> 
+> That's for real? or it needs a "FIXME" next to it?
+> 
+> > +		do_write = (rq_data_dir(rq) == WRITE);
+> > +
+> > +		/* a bio clone to be passed down to OSD request */
+> > +		bio = bio_chain_clone(rq->bio, GFP_ATOMIC);
+> > +		if (!bio)
+> > +			break;
+> 
+> does blk_barrier_rq() have a rq->bio?
 
-Note that the AA1 also has buggy BIOS -- OpenSolaris can't "see" the 
-cards (registers aren't properly initialized) unless they are present 
-when the unit first powers up.
+It may or may not.
 
-    -- Garrett
-
-Maxim Levitsky wrote:
-> On Fri, 2009-04-24 at 01:10 +0300, Maxim Levitsky wrote:
->   
->> On Mon, 2009-04-20 at 17:42 -0600, Robert Hancock wrote:
->>     
->>> Maxim Levitsky wrote:
->>>       
->>>> Hi,
->>>>
->>>> I am an owner of aspire one, and it has a card reader.
->>>> when I take a sd card, and pull down the protection tab, it still allows
->>>> to write to the card (I tested with my main notebook that indeed, it did
->>>> write there).
->>>>
->>>> My main notebook, acer aspire 5720, doesn't have this problem.
->>>> Kernel version in use is 2.6.28 vanilla, but this did happen in former
->>>> version as well.
->>>>
->>>>
->>>> Attached lspci, on acer one.
->>>>         
->>> Do you know if it worked in any kernel version or OS? It's known that 
->>> some SD card readers are too cheap to actually implement the 
->>> write-protect detection.
->>>       
->> I'll test in windows, but in linux it never did work.
->>
->> Best regards,
->> 	Maxim Levitsky
->>
->>     
-> Yep, works fine in windows.
-> Tested with and without lock tab.
->
->
-> Best regards,
-> 	Maxim Levitsky
->
-> _______________________________________________
-> sdhci-devel mailing list
-> sdhci-devel@lists.ossman.eu
-> http://list.drzeus.cx/mailman/listinfo/sdhci-devel
->   
+-- 
+Jens Axboe
 
