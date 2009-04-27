@@ -1,60 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbZD0XH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbZD0XNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757493AbZD0XH0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 19:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755151AbZD0XHL
+	id S1756754AbZD0XNP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 19:13:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbZD0XNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 19:07:11 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:47760 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756334AbZD0XHK (ORCPT
+	Mon, 27 Apr 2009 19:13:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36044 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752373AbZD0XM7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 19:07:10 -0400
-Subject: Default HZ value for X86
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Mon, 27 Apr 2009 16:07:10 -0700
-Message-Id: <1240873630.14713.25.camel@alok-dev1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Apr 2009 19:12:59 -0400
+Date: Mon, 27 Apr 2009 16:01:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Stephen Hemminger <shemminger@vyatta.com>
+cc: Evgeniy Polyakov <zbr@ioremap.net>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
+       Jarek Poplawski <jarkao2@gmail.com>, Paul Mackerras <paulus@samba.org>,
+       paulmck@linux.vnet.ibm.com, kaber@trash.net, jeff.chua.linux@gmail.com,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org, benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
+In-Reply-To: <alpine.LFD.2.00.0904271506530.22156@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0904271525120.22156@localhost.localdomain>
+References: <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam> <49F4A6E3.7080102@cosmosbay.com> <20090426185646.GB29238@Krystal> <20090426145746.1184aeba@nehalam> <1240854297.7620.65.camel@twins> <20090427113010.5e3f1700@nehalam> <20090427185423.GC23862@elte.hu>
+ <20090427120658.35a858bb@nehalam> <alpine.LFD.2.00.0904271219570.22156@localhost.localdomain> <20090427203616.GB3836@ioremap.net> <alpine.LFD.2.00.0904271340400.22156@localhost.localdomain> <20090427144054.1fb9b7a6@nehalam>
+ <alpine.LFD.2.00.0904271506530.22156@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
 
-I was wondering why do we still have the default HZ value as 1000 for
-the x86 kernels.
+On Mon, 27 Apr 2009, Linus Torvalds wrote:
+> 
+> Btw, if you do use the "explicit count" case, then please please please 
+> make sure it's documented and bug-free. And dammit, correct documentation 
+> in this case very much talks about how it is _not_ a "recursive lock", but 
+> a spinlock that then has an explicit counter that avoids taking the lock 
+> entirely in one very specific path (that happens to be recursive).
 
-arch/x86/configs/i386_defconfig:CONFIG_HZ=1000
-arch/x86/configs/x86_64_defconfig:CONFIG_HZ=1000
+So, just as an example, I would not object to the counter approach, as 
+long as it really talks about the issues, and why it works (and as long 
+that doesn't call the locks "recursive locks").
 
-With the highres timer implementation it was planned to move away from
-relying on high timer interrupt frequency for applications requiring
-precise high resolution timer's. 
+So if you are just nervous about rwlocks, then something like this might
+work (needs testing, and other people to sanity-check it).
 
-This quote in the timer/hrtimers.txt also mentions that we should be
-able to decrease the frequency of the timeout subsystem, which I assume
-would mean reducing HZ value.
+I left the commentary about "readers" and "writers", because in many
+ways it's correct, and what the code actually does is very much to
+emulate a reader-writer lock.  I put quotes around the uses in the
+comments to high-light that it largely _acts_ as a reader-writer lock. 
 
----------------------------------------------------------------------
-"Another potential benefit is that such a separation allows even more
-special-purpose optimization of the existing timer wheel for the low
-resolution and low precision use cases - once the precision-sensitive
-APIs are separated from the timer wheel and are migrated over to
-hrtimers. E.g. we could decrease the frequency of the timeout subsystem
-from 250 Hz to 100 HZ (or even smaller)."
----------------------------------------------------------------------
+Now, it would actually be a really _bad_ reader-writer lock in general, 
+exactly because it's not very "atomic" (ie this would be a truly sucky and 
+broken lock if we didn't have the strict per-cpu usage rules).
 
-So, are there still any concerns that keep us from lowering the default
-HZ value down to 250/100 for mainline ? 
+So it just so happens that the per-cpu'ness of the lock, together with the 
+very limited way in which it is used, make that sucky implementation 
+possible - and indeed possibly faster than the standard (and generic) 
+kernel rwlock implementation.
 
-Thanks,
-Alok
+So it's basically a special-case rwlock that happens to work due to the
+specific rules. 
 
+And exactly because it really wouldn't work in the absense of those
+rules, those rules really do need to have big comments on them so that 
+people don't then later forget about the limitations.
+
+BTW: THIS IS TOTALLY UNTESTED.  I just cut-and-pasted the existing
+rwlock version from one of the later patches, used the counting approach
+from one of the earlier ones, and basically just added what I think
+would be minimal required comments for this special case.  All of it was
+written inside the mail reader, none of it has been compiled or tested
+in any other way. 
+
+Because it's exactly the "lock semantics awareness" that I think is so
+important here (and that's why all the naming and commentary is so
+critical). 
+
+Btw, the "counter" could probably be just a single bit, since apparently
+the nesting level is always supposed to be just one.  I made it
+"unsigned char" just because sometimes spinlocks can be small, and it
+seemed the simplest type.  But perhaps it would be better as an
+"unsigned int", since some architectures potentially could do that
+faster (eg old alphas).
+
+			Linus
+
+---
+/*
+ * Per-CPU spinlock associated with per-cpu table entries, and
+ * with a counter for the "reading" side that allows a recursive
+ * reader to avoid taking the lock and deadlocking.
+ *
+ * "reading" is used by ip/arp/ip6 tables rule processing which runs per-cpu.
+ * It needs to ensure that the rules are not being changed while the packet
+ * is being processed. In some cases, the read lock will be acquired
+ * twice on the same CPU; this is okay because of the count.
+ *
+ * The write lock is used in two cases:
+ *    1. reading counter values
+ *       all rule processing need to be stopped and the per-CPU values are summed.
+ *
+ *    2. replacing tables
+ *       any readers that are using the old tables have to complete
+ *       before freeing the old table. This is handled by reading
+ *       as a side effect of reading counters
+ */
+struct xt_info_lock {
+	spin_lock_t lock;
+	unsigned char readers;
+};
+DECLARE_PER_CPU(struct xt_info_lock, xt_info_locks);
+
+/*
+ * Note: we need to ensure that preemption is disabled before acquiring
+ * the per-cpu-variable, so we do it as a two step process rather than
+ * using "spin_lock_bh()". 
+ *
+ * We _also_ need to disable bottom half processing before updating our
+ * nesting count, to make sure that the only kind of re-entrancy is this
+ * code being called by itself: since the count+lock is not an atomic
+ * operation, we can allow no races. 
+ *
+ * _Only_ that special combination of being per-cpu and never getting
+ * re-entered asynchronously means that the count is safe. 
+ */
+static inline void xt_info_rdlock_bh(void)
+{
+	struct xt_info_lock *lock;
+
+	local_bh_disable();
+	lock = &__get_cpu_var(xt_info_locks);
+	if (!lock->readers++)
+		spin_lock(&lock->lock);
+}
+
+static inline void xt_info_rdunlock_bh(void)
+{
+	struct xt_info_lock *lock;
+
+	lock = &__get_cpu_var(xt_info_locks);
+	if (!--lock->readers)
+		spin_unlock(&lock->lock);
+}
+
+/*
+ * The "writer" side needs to get exclusive access to the lock,
+ * regardless of readers.  This must be called with bottom half
+ * processing (and thus also preemption) disabled. 
+ */
+static inline void xt_info_wrlock(unsigned int cpu)
+{
+	spin_lock(&per_cpu(xt_info_locks, cpu).lock);
+}
+
+static inline void xt_info_wrunlock(unsigned int cpu)
+{
+	spin_unlock(&per_cpu(xt_info_locks, cpu).lock);
+}
