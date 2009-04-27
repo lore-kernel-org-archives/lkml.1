@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751143AbZD0EGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZD0EVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751143AbZD0EGk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 00:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbZD0EGc
+	id S1754130AbZD0EVr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 00:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbZD0EVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 00:06:32 -0400
-Received: from mail-qy0-f112.google.com ([209.85.221.112]:51647 "EHLO
-	mail-qy0-f112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbZD0EGb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 00:06:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type
-         :content-transfer-encoding;
-        b=OBSC7auN422A6KwApKJivkoOrKAkCfz5OpAMcFLpq7tWGXObOraEH6cfmxjOpaE1Ec
-         Nwh1SohO7vKcr+nRfCus2d2JITKbgP3aOf+cMVZ0NmC6XnsDFFNS8uik76q387n32tjW
-         zesYe1i37bymFKq6G6kpF/Bbyq1U37aT/ydb4=
-Date: Mon, 27 Apr 2009 12:43:33 +0900
-From: Hitoshi Mitake <h.mitake@gmail.com>
-To: dwmw2@infradead.org, jaharkes@cs.cmu.edu, linux-kernel@vger.kernel.org
-Subject: [PATCH] ihex2fw should be ignored by scripts/.gitignore because
- ihex2fw is in scripts directory
-Message-Id: <20090427124333.a7270ddf.h.mitake@gmail.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+	Mon, 27 Apr 2009 00:21:39 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:37448 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750717AbZD0EVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 00:21:38 -0400
+Date: Mon, 27 Apr 2009 14:21:24 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for April 24
+Message-Id: <20090427142124.32ddf4b5.sfr@canb.auug.org.au>
+In-Reply-To: <49F45FA4.6020307@panasas.com>
+References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
+	<49F45FA4.6020307@panasas.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__27_Apr_2009_14_21_24_+1000_uUe4fOQLfEGJ292O"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+--Signature=_Mon__27_Apr_2009_14_21_24_+1000_uUe4fOQLfEGJ292O
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I found this message from git-status on not modified clone of Linus's tree,
+Hi Benny,
 
-# Not currently on any branch.
-# Untracked files:
-#   (use "git add <file>..." to include in what will be committed)
-#
-#       scripts/ihex2fw
-nothing added to commit but untracked files present (use "git add" to track)
+On Sun, 26 Apr 2009 16:20:36 +0300 Benny Halevy <bhalevy@panasas.com> wrote:
+>
+> I've already sent this patch directly to Linus (and while at it,
+> correcting its subject)
+> It's committed as a5422a5111811401f7756345e4c237ff06cf6d1e
+> in Linus' tree.
 
-This isn't a something fatal.
-But I think this is not comfortable.
+Thanks.  I have removed it from my fixes tree.
 
-So I wrote the little patch to fix this. Please use.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
+--Signature=_Mon__27_Apr_2009_14_21_24_+1000_uUe4fOQLfEGJ292O
+Content-Type: application/pgp-signature
 
----
- firmware/.gitignore |    2 +-
- scripts/.gitignore  |    1 +
- 2 files changed, 2 insertions(+), 1 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-diff --git a/firmware/.gitignore b/firmware/.gitignore
-index d9c6901..e292d92 100644
---- a/firmware/.gitignore
-+++ b/firmware/.gitignore
-@@ -3,4 +3,4 @@
- *.bin
- *.csp
- *.dsp
--ihex2fw
-+
-diff --git a/scripts/.gitignore b/scripts/.gitignore
-index b939fbd..52cab46 100644
---- a/scripts/.gitignore
-+++ b/scripts/.gitignore
-@@ -7,3 +7,4 @@ pnmtologo
- bin2c
- unifdef
- binoffset
-+ihex2fw
--- 
-1.5.6.5
+iEYEARECAAYFAkn1MsQACgkQjjKRsyhoI8zJ9wCeK4mxIbyclbTX7Yv9ehN1+b8j
+GX4An0vhVeo+j5ylVj3b7VDadrzqWtl3
+=zQxM
+-----END PGP SIGNATURE-----
 
+--Signature=_Mon__27_Apr_2009_14_21_24_+1000_uUe4fOQLfEGJ292O--
