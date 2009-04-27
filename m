@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758698AbZD0SAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756938AbZD0SFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758698AbZD0SAo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 14:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbZD0SAd
+	id S1756938AbZD0SFu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 14:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755151AbZD0SFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 14:00:33 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45778 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751857AbZD0SAc (ORCPT
+	Mon, 27 Apr 2009 14:05:38 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:62266 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754393AbZD0SFi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 14:00:32 -0400
-Date: Mon, 27 Apr 2009 20:03:32 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-sh <linux-sh@vger.kernel.org>
-Subject: Re: [RFC][patch] filesystem: Vmufat filesystem, version 4
-Message-ID: <20090427180332.GA19265@elf.ucw.cz>
-References: <1239654768.6542.10.camel@localhost.localdomain> <20090424221455.GB5342@elf.ucw.cz> <200904271356.21684.vapier@gentoo.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904271356.21684.vapier@gentoo.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 27 Apr 2009 14:05:38 -0400
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
+       Tim Abbott <tabbott@MIT.EDU>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 4/8] powerpc: Use TEXT_TEXT macro in linker script.
+Date: Mon, 27 Apr 2009 14:02:23 -0400
+Message-Id: <1240855347-19316-5-git-send-email-tabbott@mit.edu>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1240855347-19316-4-git-send-email-tabbott@mit.edu>
+References: <1240855347-19316-1-git-send-email-tabbott@mit.edu>
+ <1240855347-19316-2-git-send-email-tabbott@mit.edu>
+ <1240855347-19316-3-git-send-email-tabbott@mit.edu>
+ <1240855347-19316-4-git-send-email-tabbott@mit.edu>
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-04-27 13:56:20, Mike Frysinger wrote:
-> On Friday 24 April 2009 18:14:55 Pavel Machek wrote:
-> > On Mon 2009-04-13 21:32:48, Adrian McMenamin wrote:
-> > > --- /dev/null
-> > > +++ b/fs/vmufat/Kconfig
-> > > @@ -0,0 +1,14 @@
-> > > +config VMUFAT_FS
-> > > +	tristate "Dreamcast VMU FAT filesystem"
-> > > +	depends on BLOCK
-> > > +	help
-> > > +	  This implements the simple FAT type filesystem found on SEGA
-> > > +	  Dreamcast visual memory units.
-> > > +
-> > > +	  Dreamcast users who want to mount their VMUs to view the native
-> > > +	  filesystem will say 'Y' here. The filesystem is hardware independent
-> > > +	  but is not recommended for any serious use in other circumstances, so
-> > > +	  just about everyone else should say 'N'.
-> > > +
-> > > +	  To compile this as a module say 'M' here. The module will be called
-> > > +	  vmufat
-> >
-> > "vmufat.ko." ?
-> 
-> no, the standard is to name it without extension.  there should be a period 
-> there though as it's the end of the sentence ...
+Rather than adding .ref.text to the powerpc linker script so that we
+can use __REF on the powerpc architecture, it seems simpler to switch
+to using the generic TEXT_TEXT macro.
 
-Ok, add that period at end of sentence, I stand corrected.
-								Pavel
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/kernel/vmlinux.lds.S |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index d7425ff..433ae11 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -54,7 +54,8 @@ SECTIONS
+ 		ALIGN_FUNCTION();
+ 		HEAD_TEXT
+ 		_text = .;
+-		*(.text .fixup .text.init.refok .exit.text.refok __ftr_alt_*)
++		TEXT_TEXT
++		*(.fixup __ftr_alt_*)
+ 		SCHED_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.6.2.1
+
