@@ -1,131 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761009AbZD0V67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756419AbZD0WAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761009AbZD0V67 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 17:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760249AbZD0V5A
+	id S1756419AbZD0WAb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 18:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbZD0WAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 17:57:00 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:46975 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760608AbZD0V46 (ORCPT
+	Mon, 27 Apr 2009 18:00:16 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:34490 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756228AbZD0WAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 17:56:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=CrkKJ009zmMW6UUGzQuFaoz3gQ/r1owP1XsH2BZg1Kll70pxs8TLPUraGGoE6e3/RF
-         u8XnU/1mNZ1TNSKUgRnYpaHdPcE9lcWGg0qNDPC3e7B3/IUC5ILFAzeOGayRHx+m2owm
-         8qR7YSFujdUg6ceT1XlFpuudwPqeJzRtKULsI=
-Date: Mon, 27 Apr 2009 23:56:52 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: lizf@cn.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
-       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
-       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
-       dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       taka@valinux.co.jp, matt@bluehost.com, dradford@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/9] io-throttle documentation
-Message-ID: <20090427215650.GB3606@linux>
-References: <20090417102539.GA16838@linux> <20090420.183815.226804723.ryov@valinux.co.jp> <20090420150052.GC13307@linux> <20090427.194533.183037823.ryov@valinux.co.jp>
+	Mon, 27 Apr 2009 18:00:14 -0400
+Date: Tue, 28 Apr 2009 06:54:57 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Tim Abbott <tabbott@MIT.EDU>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>
+Subject: Re: [PATCH 6/8] sh: Use __INIT macro instead of .text.init.
+Message-ID: <20090427215456.GA5033@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Tim Abbott <tabbott@MIT.EDU>, Sam Ravnborg <sam@ravnborg.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+	Anders Kaseorg <andersk@mit.edu>, Waseem Daher <wdaher@mit.edu>,
+	Denys Vlasenko <vda.linux@googlemail.com>,
+	Jeff Arnold <jbarnold@mit.edu>
+References: <1240855347-19316-1-git-send-email-tabbott@mit.edu> <1240855347-19316-2-git-send-email-tabbott@mit.edu> <1240855347-19316-3-git-send-email-tabbott@mit.edu> <1240855347-19316-4-git-send-email-tabbott@mit.edu> <1240855347-19316-5-git-send-email-tabbott@mit.edu> <1240855347-19316-6-git-send-email-tabbott@mit.edu> <1240855347-19316-7-git-send-email-tabbott@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090427.194533.183037823.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1240855347-19316-7-git-send-email-tabbott@mit.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 07:45:33PM +0900, Ryo Tsuruta wrote:
-> Hi Andrea,
+On Mon, Apr 27, 2009 at 02:02:25PM -0400, Tim Abbott wrote:
+> The sh architecture has some code in the .text.init section, but it
+> does not reference that section in its linker scripts.
 > 
-> From: Andrea Righi <righi.andrea@gmail.com>
-> Subject: Re: [PATCH 1/9] io-throttle documentation
-> Date: Mon, 20 Apr 2009 17:00:53 +0200
+> This change moves this code from the .text.init section to the
+> .init.text section, which is presumably where it belongs.
 > 
-> > On Mon, Apr 20, 2009 at 06:38:15PM +0900, Ryo Tsuruta wrote:
-> > > Hi Andrea, 
-> > > 
-> > > > Implementing bio-cgroup functionality as pure infrastructure framework
-> > > > instead of a cgroup subsystem would remove all this oddity and
-> > > > complexity.
-> > > > 
-> > > > For example, the actual functionality that I need for the io-throttle
-> > > > controller is just an interface to set and get the cgroup owner of a
-> > > > page. I think it should be the same also for other potential users of
-> > > > bio-cgroup.
-> > > > 
-> > > > So, what about implementing the bio-cgroup functionality as cgroup "page
-> > > > tracking" infrastructure and provide the following interfaces:
-> > > > 
-> > > > /*
-> > > >  * Encode the cgrp->css.id in page_group->flags
-> > > >  */
-> > > > void set_cgroup_page_owner(struct page *page, struct cgroup *cgrp);
-> > > > 
-> > > > /*
-> > > >  * Returns the cgroup owner of a page, decoding the cgroup id from
-> > > >  * page_cgroup->flags.
-> > > >  */
-> > > > struct cgroup *get_cgroup_page_owner(struct page *page);
-> > > > 
-> > > > This also wouldn't increase the size of page_cgroup because we can
-> > > > encode the cgroup id in the unused bits of page_cgroup->flags, as
-> > > > originally suggested by Kame.
-> > > > 
-> > > > And I think it could be used also by dm-ioband, even if it's not a
-> > > > cgroup-based subsystem... but I may be wrong. Ryo what's your opinion?
-> 
-> I've come up with an idea to coexist blkio-cgroup and io-throttle.
-> blkio-cgroup provides a function to get a cgroup with the specified ID.
-> 
-> /* Should be called under rcu_read_lock() */
-> struct cgroup *blkio_cgroup_lookup(int id)
-> {
-> 	struct cgroup *cgrp;
-> 	struct cgroup_subsys_state *css;
-> 	
-> 	if (blkio_cgroup_disabled())
-> 		return NULL;
-> 
-> 	css = css_lookup(&blkio_cgroup_subsys, id);
-> 	if (!css)
-> 		return NULL;
-> 	cgrp = css->cgroup;
-> 	return cgrp;
-> }
-> 
-> Then io-throttle can get a struct iothrottle which belongs to the
-> cgroup by using the above function.
-> 
-> static struct iothrottle *iothrottle_lookup(int id)
-> {
-> 	struct cgroup *grp;
-> 	struct iothrottle *iot;
-> 
-> 	...
-> 	grp = blkio_cgroup_lookup(id);
-> 	if (!grp)
-> 		return NULL
-> 	iot = cgroup_to_iothrottle(grp);
-> 	...
-> }
-> 
-> What do you think about this way?
+> Signed-off-by: Tim Abbott <tabbott@mit.edu>
+> Cc: Paul Mundt <lethal@linux-sh.org>
 
-Hi Ryo,
-
-this should be ok for io-throttle. But I'd still prefer to see
-blkio-cgroup implemented as an infrastructure, instead of a cgroup. This
-would avoid (at least for io-throttle) the need to mount io-throttle
-together with blkio-cgroup or provide complicate ways to associate
-io-throttle groups with blkio-cgroup groups.
-
-Thanks,
--Andrea
+Acked-by: Paul Mundt <lethal@linux-sh.org>
