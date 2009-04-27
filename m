@@ -1,130 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbZD0Fn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbZD0FvE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754920AbZD0Fn6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 01:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbZD0Fns
+	id S1754948AbZD0FvE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 01:51:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbZD0Fuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 01:43:48 -0400
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:35985 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752575AbZD0Fnr (ORCPT
+	Mon, 27 Apr 2009 01:50:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44938 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752575AbZD0Fuv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 01:43:47 -0400
-Date: Mon, 27 Apr 2009 11:13:25 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+	Mon, 27 Apr 2009 01:50:51 -0400
+Date: Sun, 26 Apr 2009 22:44:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v1 0/3] Saving power by cpu evacuation using
-	sched_mc=n
-Message-ID: <20090427054325.GB6440@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20090426204029.17495.46609.stgit@drishya.in.ibm.com> <20090427035216.GD10087@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090427035216.GD10087@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, zhaolei@cn.fujitsu.com,
+       kosaki.motohiro@jp.fujitsu.com, rostedt@goodmis.org, tzanussi@gmail.com,
+       linux-kernel@vger.kernel.org, oleg@redhat.com
+Subject: Re: [PATCH 0/4] workqueue_tracepoint: Add worklet tracepoints for
+ worklet lifecycle tracing
+Message-Id: <20090426224450.8ea9f724.akpm@linux-foundation.org>
+In-Reply-To: <20090426104747.GA5983@elte.hu>
+References: <20090415141250.AC46.A69D9226@jp.fujitsu.com>
+	<49E8282A.6010004@cn.fujitsu.com>
+	<49E82CA7.2040606@cn.fujitsu.com>
+	<20090417134557.GA23493@elte.hu>
+	<49F1A59B.3080206@cn.fujitsu.com>
+	<20090424130616.a3c217cb.akpm@linux-foundation.org>
+	<20090424225909.GA6658@nowhere>
+	<20090424162056.45907fef.akpm@linux-foundation.org>
+	<20090425003702.GC6658@nowhere>
+	<20090424182821.8263f445.akpm@linux-foundation.org>
+	<20090426104747.GA5983@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2009-04-27 05:52:16]:
+On Sun, 26 Apr 2009 12:47:47 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
 > 
-> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> > Test results for ebizzy 8 threads at various sched_mc settings has 
-> > been summarised with relative values below. The test platform is 
-> > dual socket quad core x86 system (pre-Nehalem).
+> > On Sat, 25 Apr 2009 02:37:03 +0200
+> > Frederic Weisbecker <fweisbec@gmail.com> wrote:
 > > 
-> > --------------------------------------------------------
-> > sched_mc	No Cores	Performance	AvgPower	
-> > 		used		Records/sec	(Watts)
-> > --------------------------------------------------------
-> > 0		8		1.00x		1.00y
-> > 1		8		1.02x		1.01y
-> > 2		8		0.83x		1.01y
-> > 3		7		0.86x		0.97y
-> > 4		6		0.76x		0.92y
-> > 5		4		0.72x		0.82y
-> > --------------------------------------------------------
+> > > I discovered it with this tracer. Then it brought me to
+> > > write this patch:
+> > > 
+> > > http://lkml.org/lkml/2009/1/31/184
+> > > 
+> > > ...
+> > > 
+> > > Still with these same observations, I wrote this another one:
+> > > 
+> > > http://lkml.org/lkml/2009/1/26/363
+> > 
+> > OK, it's great that you're working to improve the workqueue code.  
+> > But does this justify permanently adding debug code to the core 
+> > workqueue code? [...]
 > 
-> Looks like we want the kernel default to be sched_mc=1 ?
+> Andrew - but this is not what you asked originally. Here's the 
+> exchange, not cropped:
+> 
+> > > > So this latest patchset provides all these required 
+> > > > informations on the events tracing level.
+> > >  Well.. required by who?
+> > >
+> > > I don't recall ever seeing any problems of this nature, nor 
+> > > patches to solve any such problems.
+> 
+> And Frederic replied that there's three recent examples of various 
+> patches and problem reports resulting out of the workqueue 
+> tracepoints.
+> 
+> Now you argue 'yes, there might have been an advantage but it's not 
+> permanent' - which appears to be a somewhat shifting position 
+> really. I dont think _our_ position has shifted in any way - please 
+> correct me if i'm wrong ;-)
 
-Hi Ingo,
+My point, as I'm sure you fully understand, is that this feature is
+unlikely to see sufficient use as to warrant its inclusion.
 
-Yes, sched_mc wins for a simple cpu bound workload like this.  But the
-challenge is that the best settings depends on the workload and the
-system configuration.  This leads me to think that the default setting
-should be left with the distros where we can factor in various
-parameters and choose the right default from user space.
+> And i'm, as the original author of the kernel/workqueue.c code 
+> (heck, i even coined the 'workqueue' term - if that matters)
 
+Most workqueue work lately has come from Oleg.  I'm unaware that he has
+expressed an interest in this feature?  Oleg, would it have been useful
+in any of the work you've done?
 
-> Regarding the values for 2...5 - is the AvgPower column time 
-> normalized or workload normalized?
+> And the thing is, the workqueue code has been pretty problematic 
+> lately - with lockups and other regressions. It's a pretty 'opaque' 
+> facility that _hides_ what goes on in it - so more transparency 
+> might be a good answer just on that basis alone.
 
-The AvgPower is time normalised, just the power value divided by the
-baseline at sched_mc=0.
- 
-> If it's time normalized then it appears there's no power win here at 
-> all: we'd be better off by throttling the workload directly (by 
-> injecting sleeps or something like that), right?
+OK, so there's a test case.  How many of the problems which we've
+recently found and fixed in the workqueue would have been more easily
+found and fixed had this feature been available?
 
-Yes, there is no power win when comparing with peak benchmark
-throughput in this case.  However more complex workload setup may not
-show similar characteristics because they are not dependent only on
-CPU bandwidth for their peak performance.
+Zero, methinks.
 
-* Reduction in cpu bandwidth may not directly translate to performance
-  reduction on complex workloads
-* Even if there is degradation, the system may still meet the design
-  objectives.  20-30% increase in response time over a 1 second
-  nominal value may be acceptable in most cases
-* End user can tie application priority to such tunable where we can
-  get power savings from low priority applications  
-* Reducing average power consumption at a given point may save money
-  to datacenter managers based on differential power cost
-* Reducing average power reduces heat and provides greater savings
-  from cooling infrastructure
-* This framework can be used for thermal leveling on larger
-  under-utilised machines to keep the overall temperature low and save
-  leakage power  
+> Secondly, if we discount the (fairly standard) off-site tracepoints, 
+> is not "large amount of debug code" - the tracepoints are completely 
+> off site and are not a worry as long as the tracepoint arguments are 
+> kept intact. The bits in kernel/workqueue.c are on the 26 lines flux 
+> range:
 
-Here, we would like end users and datacenter management software to
-have fine grain steps to trade performance for power savings rather
-than switching off servers and reducing application availability.
-
-Your suggestion of throttling applications to achieve the same goal is
-valid, but has the following limitations:
-
-* The framework will be application dependent and the level of
-  throttling required to evacuate cores is variable
-* We get best power savings when the granularity of control is at
-  a core level first and at a package level next (perhaps node level
-  also)
-* Throttled applications may still not choose the most power efficient
-  combination of cores to run
-* Having a framework to evacuate core in the OS helps in providing the
-  right granularity of control  
-
-The overall objective is to let users pick the right number cores to
-run the job and allow the kernel to choose the most power efficient
-combination of cores to run the job.
-
-sched_mc={1,2} will allow the kernel to pick the most power efficient
-combination of cores to run the workload while sched_mc={3,4,5} lets
-the user control the number of cores to use or evacuate.
-
---Vaidy
-
+Multiplied by gawd-knows-how-many other such subsystems.
