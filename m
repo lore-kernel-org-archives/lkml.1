@@ -1,141 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755620AbZD0McB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755635AbZD0MfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755620AbZD0McB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 08:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbZD0Mbw
+	id S1755635AbZD0MfA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 08:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbZD0Mes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 08:31:52 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:18872 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751781AbZD0Mbw (ORCPT
+	Mon, 27 Apr 2009 08:34:48 -0400
+Received: from web32602.mail.mud.yahoo.com ([68.142.207.229]:38245 "HELO
+	web32602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754194AbZD0Mes (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 08:31:52 -0400
-Message-ID: <49F5A5B2.7000307@monstr.eu>
-Date: Mon, 27 Apr 2009 14:31:46 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Mon, 27 Apr 2009 08:34:48 -0400
+Message-ID: <534721.54493.qm@web32602.mail.mud.yahoo.com>
+X-YMail-OSG: 0CpSxegVM1kzaAnu69zoQEeYItBN1bRsGZiSszP2VCZxQsjT3VhsBHDhBH4.Fj6CwS_9VKzvPKH5Nm9nS_HddsGGKgyqGIB6YcRv6IiUY1ROoJLGQqtKo7UHBAC2KCuYN7Dg8LSStvBP2dsP9o2XXVtLZweDiCKJ9QnMCyBAl4omuR_JrydAfjRaLg0cgqEwsaKMeV8sqVnxG76ioFuRlUx.IsQSZtGRqv_RLZadGr09Mk9e.qVubp.og9QkMLHbCbqF0Y5.TCPPgxN8NncLt.kCI2WaV6yLRshOGjiAVOs6ub5uyQXKifHEckopQtvjPkRKxzOxjQ6bDSeSnrg_tplzzA--
+X-RocketYMMF: knobi.rm
+X-Mailer: YahooMailRC/1277.35 YahooMailWebService/0.7.289.1
+References: <alpine.LFD.2.00.0904212014170.3101@localhost.localdomain> <20090424175238.GA19646@csn.ul.ie>
+Date: Mon, 27 Apr 2009 05:34:47 -0700 (PDT)
+From: Martin Knoblauch <knobi@knobisoft.de>
+Subject: Re: [BUG] 2.6.30-rc3: bnx2 failing to load firmware
+To: Mel Gorman <mel@csn.ul.ie>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michael Chan <mchan@broadcom.com>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20090424175238.GA19646@csn.ul.ie>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       john.williams@petalogix.com
-Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
-References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <20090427113030.GA3681@infradead.org> <49F59A6E.9080900@monstr.eu> <200904271357.01681.arnd@arndb.de>
-In-Reply-To: <200904271357.01681.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Monday 27 April 2009, Michal Simek wrote:
->> Christoph Hellwig wrote:
-> 
->>> Given that microblaze only got merged in the 2.6.30 window I would
->>> suggest fixing up the nommu variant.
->> ok. Let's do it.
->> Here are stats structures from xtensa.
->>
->> Arnd: Is it ok for asm-generic?
-> 
-> I carry a (not cleaned up) tree with changes in my playground
-> (git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git)
-> as branch generic-microblaze, where I try to use generic
-> headers for everything. See below for my version of stat.h.
-> In particular, it uses 64 bit st_size and st_blocks, but 32 bit
-> time fields. It also defines struct stat to be identical to
-> struct stat64 on 64 bit systems. 32 bit systems should only
-> provide the stat64 syscalls, so the shorter types in struct
-> stat do not hurt.
-> 
-> 	Arnd <><
-> 
-> ---
-> #ifndef __ASM_GENERIC_STAT_H
-> #define __ASM_GENERIC_STAT_H
-> 
-> /*
->  * Everybody gets this wrong and has to stick with it for all
->  * eternity. Hopefully, this version gets used by new architectures
->  * so they don't fall into the same traps.
->  *
->  * stat64 is copied from powerpc64, with explicit padding added.
->  * stat is the same structure layout on 64-bit, without the 'long long'
->  * types.
->  *
->  * By convention, 64 bit architectures use the stat interface, while
->  * 32 bit architectures use the stat64 interface. Note that we don't
->  * provide an __old_kernel_stat here, which new architecture should
->  * not have to start with.
->  */
-> 
-> #include <asm/bitsperlong.h>
-> 
-> #define STAT_HAVE_NSEC 1
-> 
-> struct stat {
-> 	unsigned long	st_dev;		/* Device.  */
-> 	unsigned long	st_ino;		/* File serial number.  */
-> 	unsigned int	st_mode;	/* File mode.  */
-> 	unsigned int	st_nlink;	/* Link count.  */
-> 	unsigned int	st_uid;		/* User ID of the file's owner.  */
-> 	unsigned int	st_gid;		/* Group ID of the file's group. */
-> 	unsigned long	st_rdev;	/* Device number, if device.  */
-> 	unsigned long	__pad1;
-> 	long		st_size;	/* Size of file, in bytes.  */
 
-Maybe unsigned? Make more sense to me that file size is not minus.
-And for some types below.
+----- Original Message ----
 
-Michal
-
-
-> 	int		st_blksize;	/* Optimal block size for I/O.  */
-
-
-> 	int		__pad2;
-> 	long		st_blocks;	/* Number 512-byte blocks allocated. */
-
-> 	int		st_atime;	/* Time of last access.  */
-> 	unsigned int	st_atime_nsec;
-> 	int		st_mtime;	/* Time of last modification.  */
-> 	unsigned int	st_mtime_nsec;
-> 	int		st_ctime;	/* Time of last status change.  */
-> 	unsigned int	st_ctime_nsec;
-> 	unsigned int	__unused4;
-> 	unsigned int	__unused5;
-> };
+> From: Mel Gorman <mel@csn.ul.ie>
+> To: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>; Michael Chan <mchan@broadcom.com>; David S. Miller <davem@davemloft.net>
+> Sent: Friday, April 24, 2009 7:52:39 PM
+> Subject: [BUG] 2.6.30-rc3: bnx2 failing to load firmware
 > 
-> #if __BITS_PER_LONG != 64
-> /* This matches struct stat64 in glibc2.1. Only used for 32 bit. */
-> struct stat64 {
-> 	unsigned long long st_dev;	/* Device.  */
-> 	unsigned long long st_ino;	/* File serial number.  */
-> 	unsigned int	st_mode;	/* File mode.  */
-> 	unsigned int	st_nlink;	/* Link count.  */
-> 	unsigned int	st_uid;		/* User ID of the file's owner.  */
-> 	unsigned int	st_gid;		/* Group ID of the file's group. */
-> 	unsigned long long st_rdev;	/* Device number, if device.  */
-> 	unsigned long long __pad1;
-> 	long long	st_size;	/* Size of file, in bytes.  */
-> 	int		st_blksize;	/* Optimal block size for I/O.  */
-> 	int		__pad2;
-> 	long long	st_blocks;	/* Number 512-byte blocks allocated. */
-> 	int		st_atime;	/* Time of last access.  */
-> 	unsigned int	st_atime_nsec;
-> 	int		st_mtime;	/* Time of last modification.  */
-> 	unsigned int	st_mtime_nsec;
-> 	int		st_ctime;	/* Time of last status change.  */
-> 	unsigned int	st_ctime_nsec;
-> 	unsigned int	__unused4;
-> 	unsigned int	__unused5;
-> };
-> #endif
+> On Tue, Apr 21, 2009 at 08:27:57PM -0700, Linus Torvalds wrote:
+> > 
+> > Another week, another -rc.
+> > 
 > 
-> #endif /* __ASM_GENERIC_STAT_H */
+> Getting this when loading the bnx2 driver
+> 
+> bnx2 0000:04:00.0: firmware: requesting bnx2/bnx2-mips-06-4.6.16.fw
+> bnx2: Can't load firmware file "bnx2/bnx2-mips-06-4.6.16.fw"
+> bnx2 0000:04:00.0: PCI INT A disabled
+> bnx2: probe of 0000:04:00.0 failed with error -2
+> bnx2 0000:06:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+> bnx2 0000:06:00.0: firmware: requesting bnx2/bnx2-mips-06-4.6.16.fw
+> bnx2: Can't load firmware file "bnx2/bnx2-mips-06-4.6.16.fw"
+> bnx2 0000:06:00.0: PCI INT A disabled
+> bnx2: probe of 0000:06:00.0 failed with error -2
+> 
+> The firmware-related parts of the .config are
+> 
+> CONFIG_PREVENT_FIRMWARE_BUILD=y
+> CONFIG_FIRMWARE_IN_KERNEL=y
+> CONFIG_EXTRA_FIRMWARE=""
+> CONFIG_FIRMWARE_EDID=y
+> CONFIG_FIRMWARE_MEMMAP=y
+> 
+> Reverting commit 57579f7629a3d46c307405fbd2ea6bdb650d692f "fixes" it no
+> doubt there is a better fix. The patch author (Michael) is cc'd but if
+> nothing else happens, I'll investigate more after the weekend.
+> 
+> dmesg and .config attached.
+> 
 
+ just curious, what userspace are you using? I have, starting with 2.6.29, a similar problem with tg3. My RHEL4.3 userspace broke hotplugging, because as of 2.6.29 there are two "sysfs" lines in /"proc/mounts". I fixed it in "/etc/hotplug/firmware.agent" by just assuming "/sys" as the "sysfs" mountpoint.
 
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+ Maybe of course totally unrelated.
+
+Cheers
+Martin
+
