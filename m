@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbZD0LYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474AbZD0Lal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636AbZD0LYT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 07:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbZD0LYD
+	id S1754474AbZD0Lal (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 07:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbZD0Lab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 07:24:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37144 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753147AbZD0LYC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 07:24:02 -0400
-Message-ID: <49F595C9.3080907@redhat.com>
-Date: Mon, 27 Apr 2009 14:23:53 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 27 Apr 2009 07:30:31 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44019 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbZD0Lab (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 07:30:31 -0400
+Date: Mon, 27 Apr 2009 07:30:30 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Michal Simek <monstr@monstr.eu>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       john.williams@petalogix.com, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
+Message-ID: <20090427113030.GA3681@infradead.org>
+References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <1240821139-7247-24-git-send-email-monstr@monstr.eu> <1240821139-7247-25-git-send-email-monstr@monstr.eu> <1240821139-7247-26-git-send-email-monstr@monstr.eu> <1240821139-7247-27-git-send-email-monstr@monstr.eu> <1240821139-7247-28-git-send-email-monstr@monstr.eu> <1240821139-7247-29-git-send-email-monstr@monstr.eu> <1240821139-7247-30-git-send-email-monstr@monstr.eu> <20090427095815.GA12323@infradead.org> <49F58A87.5020405@monstr.eu>
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, davidel@xmailserver.org
-Subject: Re: [KVM PATCH v2 2/2] kvm: add support for irqfd via	eventfd-notification
- interface
-References: <20090424042142.1796.60756.stgit@dev.haskins.net> <20090424042518.1796.65593.stgit@dev.haskins.net> <49F572EF.4010909@redhat.com> <49F58A8C.7090808@novell.com> <49F58FD6.907@novell.com>
-In-Reply-To: <49F58FD6.907@novell.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49F58A87.5020405@monstr.eu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> Something else to consider:  eventfd supports calling eventfd_signal()
-> from interrupt context, so
-> even if the callback were not invoked from a preempt/irq off CS due to
-> the wqh->lock, the context may still be a CS anyway.  Now, userspace and
-> vbus based injection do not need to worry about this, but I wonder if
-> this is a  desirable attribute for some other source (device-assignment
-> perhaps)?
->   
+On Mon, Apr 27, 2009 at 12:35:51PM +0200, Michal Simek wrote:
+> types and I would like to know about more info.
+> For example
+> If make sense long long	type for st_blocks. IMHO unsigned will be better.
+> And I would like to create new stat64 structure where is not a fault for both noMMU/MMU version.
+> In noMMU implementation is st_blocks unsigned long. Is it OK? or unsigned long long is better?
 
-I'm no networking expert, but device assignment certainly wants to queue 
-an interrupt from an interrupt (basically it forwards the interrupt from 
-host to guest).  Block is also simple enough to trigger the interrupt 
-from the completion context.
+You want unsigned long long for it.  Take a look at e.g. the xtensa
+stat.h and just reuse that one.  We should probaly create an
+asm-generic/stat.h that new architectures can simply use..
 
-For networking, we'd eventually want to do the host->guest copy using a 
-dma engine, and we'd want to inject the interrupt from the dma engine's 
-completion handler.
-
-
-> If so, is there a way to design the lockless-injection code such that
-> its still friendly to irq-context, or is this a mode that we would never
-> want to support anyway?  I think this would be a good thing to have at
-> least to maintain compatibility with the existing eventfd interface,
-> which has its own advantages.
->   
-
-This has RCU painted all over it in a 1200-point font.
-
--- 
-error compiling committee.c: too many arguments to function
-
+Given that microblaze only got merged in the 2.6.30 window I would
+suggest fixing up the nommu variant.
