@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbZD0Lh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbZD0LkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754084AbZD0Lh6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 07:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbZD0Lht
+	id S1754677AbZD0LkW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 07:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZD0LkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 07:37:49 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:59908 "EHLO mx2.suse.de"
+	Mon, 27 Apr 2009 07:40:07 -0400
+Received: from slimlogic.co.uk ([89.16.172.20]:56609 "EHLO slimlogic.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751045AbZD0Lhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 07:37:48 -0400
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH] Cleanup: Remove unused __REQ_NR_BITS from enum rq_flag_bits
-Date: Mon, 27 Apr 2009 17:05:30 +0530
-User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	id S1752625AbZD0LkG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 07:40:06 -0400
+Subject: Re: [PATCH] regulator core: fix double-free in
+ regulator_register() error path
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: broonie@opensource.wolfsonmicro.com, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, dbrownell@users.sourceforge.net
+In-Reply-To: <alpine.DEB.2.00.0904250526210.28378@utopia.booyaka.com>
+References: <alpine.DEB.2.00.0904250526210.28378@utopia.booyaka.com>
+Content-Type: text/plain
+Date: Mon, 27 Apr 2009 12:40:02 +0100
+Message-Id: <1240832402.14165.4.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904271705.30550.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The __REQ_NR_BITS  was being used by blk_dump_rq_flags() long back, while 
-printing the individual request flag bits as strings to limit to the used 
-bits. But it does not use it now. Remove unused enum.
+On Sat, 2009-04-25 at 05:28 -0600, Paul Walmsley wrote:
+> During regulator registration, any error after device_register() will 
+> cause a double-free on the struct regulator_dev 'rdev'.  The bug is in 
+> drivers/regulator/core.c:regulator_register():
+> 
+> ...
+> scrub:
+> 	device_unregister(&rdev->dev);
+> clean:
+> 	kfree(rdev);                           <---
+> 	rdev = ERR_PTR(ret);
+> 	goto out;
+> ...
+> 
+> device_unregister() calls regulator_dev_release() which frees rdev.  The 
+> subsequent kfree corrupts memory and causes some OMAP3 systems to oops on 
+> boot in regulator_get().
+> 
+> Applies against 2.6.30-rc3.
+> 
+> Signed-off-by: Paul Walmsley <paul@pwsan.com>
+> ---
+>  drivers/regulator/core.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+> 
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+Applied.
 
----
+Thanks
 
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index ba54c83..f41abbb 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -118,7 +118,6 @@ enum rq_flag_bits {
- 	__REQ_COPY_USER,	/* contains copies of user pages */
- 	__REQ_INTEGRITY,	/* integrity metadata has been remapped */
- 	__REQ_NOIDLE,		/* Don't anticipate more IO after this one */
--	__REQ_NR_BITS,		/* stops here */
- };
- 
- #define REQ_RW		(1 << __REQ_RW)
+Liam
 
