@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760387AbZD0Xtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760046AbZD0X7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760387AbZD0Xtd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 19:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757095AbZD0XtX
+	id S1760046AbZD0X7h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 19:59:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbZD0X72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 19:49:23 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:65500 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756405AbZD0XtW (ORCPT
+	Mon, 27 Apr 2009 19:59:28 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53034 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752373AbZD0X71 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 19:49:22 -0400
-Date: Mon, 27 Apr 2009 19:48:09 -0400 (EDT)
-From: Tim Abbott <tabbott@MIT.EDU>
-To: David Howells <dhowells@redhat.com>
-cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 03/14] mn10300: Use macros for .bss.page_aligned
- section.
-In-Reply-To: <4678.1240875782@redhat.com>
-Message-ID: <alpine.DEB.1.10.0904271946520.27012@vinegar-pot.mit.edu>
-References: <1240864388-26315-4-git-send-email-tabbott@mit.edu> <1240864388-26315-1-git-send-email-tabbott@mit.edu> <1240864388-26315-2-git-send-email-tabbott@mit.edu> <1240864388-26315-3-git-send-email-tabbott@mit.edu> <4678.1240875782@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Mon, 27 Apr 2009 19:59:27 -0400
+Date: Tue, 28 Apr 2009 08:57:53 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix leak of swap accounting as stale swap cache under 
+ memcg
+Message-Id: <20090428085753.a91b6007.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <661de9470904271217t7ef9e300x1e40bbf0362ca14f@mail.gmail.com>
+References: <20090427181259.6efec90b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090427101323.GK4454@balbir.in.ibm.com>
+	<20090427203535.4e3f970b.d-nishimura@mtf.biglobe.ne.jp>
+	<661de9470904271217t7ef9e300x1e40bbf0362ca14f@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009, David Howells wrote:
+On Tue, 28 Apr 2009 00:47:31 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> Tim Abbott <tabbott@MIT.EDU> wrote:
+> Thanks for the detailed explanation of the possible race conditions. I
+> am beginning to wonder why we don't have any hooks in add_to_swap.*.
+> for charging a page. If the page is already charged and if it is a
+> context issue (charging it to the right cgroup) that is already
+> handled from what I see. Won't that help us solve the !PageCgroupUsed
+> issue?
 > 
-> > -	*(.bss.page_aligned)
-> > +	PAGE_ALIGNED_BSS
-> 
-> /opt/nickc/H-i686-pc-linux-gnulibc2.3/bin/am33_2.0-linux-gnu-ld: cannot find PAGE_ALIGNED_BSS
-> 
-> warthog>grep -r PAGE_ALIGNED_BSS include/linux/
-> warthog1>grep -r PAGE_ALIGNED_BSS include/asm-generic/
-> warthog1>grep -r PAGE_ALIGNED_BSS arch/frv/
-> warthog1>
-> 
-> I take it that wasn't what you meant.
 
-No, it is.  The macro is new in PATCH 1/14 of this series.
+For adding hook to add_to_swap_cache, we need to know which cgroup the swap cache
+should be charged. Then, we have to remove CONFIG_CGROUP_MEM_RES_CTRL_SWAP_EXT
+and enable memsw control always.
 
-	-Tim Abbott
+When using swap_cgroup, we'll know which cgroup the new swap cache should be charged.
+Then, the new page readed in will be charged to recorded cgroup in swap_cgroup.
+One bad thing of this method is a cgroup which swap_cgroup point to is different from
+a cgroup which the task calls do_swap_fault(). This means that a page-fault by a
+task can cause memory-reclaim under another cgroup and moreover, OOM.
+I don't think it's sane behavior. So, current design of swap accounting waits until the
+page is mapped.
+
+Thanks,
+-Kame
+
