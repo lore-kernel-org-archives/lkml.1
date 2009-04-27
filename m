@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760364AbZD0Xse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760387AbZD0Xtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760364AbZD0Xse (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 19:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759300AbZD0XsH
+	id S1760387AbZD0Xtd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 19:49:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757095AbZD0XtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 19:48:07 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:17272 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758262AbZD0XsG (ORCPT
+	Mon, 27 Apr 2009 19:49:23 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:65500 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756405AbZD0XtW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 19:48:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=v6H4HGCpD0hrcbP+pmrkSSw22LCkzVIj7c5NgeYdY/jywyfyT+FU591SKI6rUSYtAe
-         sHYQf6fxfojMZQ/WU+eGMwgU5lzIDCSodOwVKm0jT0yoOaeqegWT9acjTY5zjYIgC/5F
-         BgkcGA/9KrmO+Llw+dVOpqW1oHxwis9/vc4qM=
+	Mon, 27 Apr 2009 19:49:22 -0400
+Date: Mon, 27 Apr 2009 19:48:09 -0400 (EDT)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: David Howells <dhowells@redhat.com>
+cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 03/14] mn10300: Use macros for .bss.page_aligned
+ section.
+In-Reply-To: <4678.1240875782@redhat.com>
+Message-ID: <alpine.DEB.1.10.0904271946520.27012@vinegar-pot.mit.edu>
+References: <1240864388-26315-4-git-send-email-tabbott@mit.edu> <1240864388-26315-1-git-send-email-tabbott@mit.edu> <1240864388-26315-2-git-send-email-tabbott@mit.edu> <1240864388-26315-3-git-send-email-tabbott@mit.edu> <4678.1240875782@redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-In-Reply-To: <20090427194441.10bac23d@tleilax.poochiereds.net>
-References: <20090427205742.GA888@foursquare.net>
-	 <20090427221121.GD3036@sequoia.sous-sol.org>
-	 <20090427194441.10bac23d@tleilax.poochiereds.net>
-Date: Mon, 27 Apr 2009 18:48:06 -0500
-Message-ID: <524f69650904271648h6eb08454u9d9b186a5530ecec@mail.gmail.com>
-Subject: Re: fs/cifs/connect.c fix missing in latest stable
-From: Steve French <smfrench@gmail.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, Chris Frey <cdfrey@foursquare.net>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 6:44 PM, Jeff Layton <jlayton@redhat.com> wrote:
-> On Mon, 27 Apr 2009 15:11:21 -0700
-> Chris Wright <chrisw@sous-sol.org> wrote:
->
->> * Chris Frey (cdfrey@foursquare.net) wrote:
->> > Hi Chris,
->> >
->> > The latest stable release 2.6.29.2 appears to be missing Jeff Layton's
->> > fix in commit f083def68f84b04fe3f97312498911afce79609e (in Linus's tree).
->> >
->> > I'm not the expert... I just noticed that this was mentioned on
->> > full-disclosure: http://marc.info/?l=full-disclosure&m=123936563230145&w=2
->> > (near the end of Andreas's post)
->>
->> Yes, I think cifs developers are still doing cleanups in that area.
->> Jeff?
->>
->
-> Yes, we are but they're pretty close. Some have already gone in and
-> some are still outstanding. Suresh J. has done the bulk of the work,
-> but there are a few additional fixes for other areas too.
->
-> I've been traveling for the last week, and took today off. My plan is
-> to get with Steve French tomorrow and finalize a set of fixes for his
-> tree that he can push to mainline and stable.
+On Tue, 28 Apr 2009, David Howells wrote:
 
-I think Suresh has been out too.  I am only waiting to get some
-minor clarifications before I ack the fixes from Suresh.
+> Tim Abbott <tabbott@MIT.EDU> wrote:
+> 
+> > -	*(.bss.page_aligned)
+> > +	PAGE_ALIGNED_BSS
+> 
+> /opt/nickc/H-i686-pc-linux-gnulibc2.3/bin/am33_2.0-linux-gnu-ld: cannot find PAGE_ALIGNED_BSS
+> 
+> warthog>grep -r PAGE_ALIGNED_BSS include/linux/
+> warthog1>grep -r PAGE_ALIGNED_BSS include/asm-generic/
+> warthog1>grep -r PAGE_ALIGNED_BSS arch/frv/
+> warthog1>
+> 
+> I take it that wasn't what you meant.
 
--- 
-Thanks,
+No, it is.  The macro is new in PATCH 1/14 of this series.
 
-Steve
+	-Tim Abbott
