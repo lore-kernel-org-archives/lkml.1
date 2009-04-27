@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbZD0UcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbZD0Udc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758735AbZD0UcU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 16:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435AbZD0UcJ
+	id S1758170AbZD0Udc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 16:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbZD0UdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 16:32:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47241 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752148AbZD0UcI (ORCPT
+	Mon, 27 Apr 2009 16:33:22 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54972 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755435AbZD0UdV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 16:32:08 -0400
-Date: Mon, 27 Apr 2009 13:27:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: balbir@linux.vnet.ibm.com
-Cc: kosaki.motohiro@jp.fujitsu.com, dave@linux.vnet.ibm.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, ebmunson@us.ibm.com,
-       mel@linux.vnet.ibm.com, cl@linux-foundation.org
-Subject: Re: meminfo Committed_AS underflows
-Message-Id: <20090427132722.926b07f1.akpm@linux-foundation.org>
-In-Reply-To: <20090415084713.GU7082@balbir.in.ibm.com>
-References: <20090415105033.AC29.A69D9226@jp.fujitsu.com>
-	<20090415033455.GS7082@balbir.in.ibm.com>
-	<20090415130042.AC3D.A69D9226@jp.fujitsu.com>
-	<20090415084713.GU7082@balbir.in.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Apr 2009 16:33:21 -0400
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
+       Tim Abbott <tabbott@MIT.EDU>, Chris Zankel <chris@zankel.net>
+Subject: [PATCH 04/14] xtensa: Use macros for .bss.page_aligned section.
+Date: Mon, 27 Apr 2009 16:32:58 -0400
+Message-Id: <1240864388-26315-5-git-send-email-tabbott@mit.edu>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1240864388-26315-4-git-send-email-tabbott@mit.edu>
+References: <1240864388-26315-1-git-send-email-tabbott@mit.edu>
+ <1240864388-26315-2-git-send-email-tabbott@mit.edu>
+ <1240864388-26315-3-git-send-email-tabbott@mit.edu>
+ <1240864388-26315-4-git-send-email-tabbott@mit.edu>
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Apr 2009 14:17:13 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Cc: Chris Zankel <chris@zankel.net>
+---
+ arch/xtensa/kernel/head.S        |    2 +-
+ arch/xtensa/kernel/vmlinux.lds.S |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-04-15 13:10:06]:
-> 
-> > > * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-04-15 11:04:59]:
-> > > 
-> > > >  	committed = atomic_long_read(&vm_committed_space);
-> > > > +	if (committed < 0)
-> > > > +		committed = 0;
-> > > 
-
-Is there a reason why we can't use a boring old percpu_counter for
-vm_committed_space?  That way the meminfo code can just use
-percpu_counter_read_positive().
-
-Or perhaps just percpu_counter_read().  The percpu_counter code does a
-better job of handling large cpu counts than the
-mysteriously-duplicative open-coded stuff we have there.
-
+diff --git a/arch/xtensa/kernel/head.S b/arch/xtensa/kernel/head.S
+index d9ddc1b..d215adc 100644
+--- a/arch/xtensa/kernel/head.S
++++ b/arch/xtensa/kernel/head.S
+@@ -235,7 +235,7 @@ should_never_return:
+  * BSS section
+  */
+ 	
+-.section ".bss.page_aligned", "w"
++__PAGE_ALIGNED_BSS
+ #ifdef CONFIG_MMU
+ ENTRY(swapper_pg_dir)
+ 	.fill	PAGE_SIZE, 1, 0
+diff --git a/arch/xtensa/kernel/vmlinux.lds.S b/arch/xtensa/kernel/vmlinux.lds.S
+index 5accf51..f96f354 100644
+--- a/arch/xtensa/kernel/vmlinux.lds.S
++++ b/arch/xtensa/kernel/vmlinux.lds.S
+@@ -262,7 +262,7 @@ SECTIONS
+ 
+   /* BSS section */
+   _bss_start = .;
+-  .bss : { *(.bss.page_aligned) *(.bss) }
++  .bss : { PAGE_ALIGNED_BSS *(.bss) }
+   _bss_end = .;
+ 
+   _end = .;
+-- 
+1.6.2.1
 
