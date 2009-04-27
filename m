@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756434AbZD0MnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbZD0Moc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756434AbZD0MnW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 08:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZD0MnI
+	id S1756604AbZD0Moc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 08:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbZD0MoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 08:43:08 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41760
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752999AbZD0MnF convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 08:43:05 -0400
-Date: Mon, 27 Apr 2009 05:42:58 -0700 (PDT)
-Message-Id: <20090427.054258.16622932.davem@davemloft.net>
-To: rbrito@ime.usp.br
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, paulus@samba.org
-Subject: Re: [PATCH] powerpc: convert mace to netdev_ops
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090427121633.GA29608@ime.usp.br>
-References: <20090426155708.GA23159@ime.usp.br>
-	<20090426.230648.254087966.davem@davemloft.net>
-	<20090427121633.GA29608@ime.usp.br>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 27 Apr 2009 08:44:23 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:43699 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752999AbZD0MoW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 08:44:22 -0400
+Date: Mon, 27 Apr 2009 21:44:21 +0900 (JST)
+Message-Id: <20090427.214421.48516137.ryov@valinux.co.jp>
+To: agk@redhat.com
+Cc: dm-devel@redhat.com, vgoyal@redhat.com, fernando@oss.ntt.co.jp,
+       linux-kernel@vger.kernel.org, jmoyer@redhat.com, jens.axboe@oracle.com,
+       nauman@google.com, balbir@linux.vnet.ibm.com, snitzer@redhat.com
+Subject: Re: dm-ioband: Test results.
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090427.193006.112614137.ryov@valinux.co.jp>
+References: <20090422.121443.104042516.ryov@valinux.co.jp>
+	<20090422151805.GC32602@redhat.com>
+	<20090427.193006.112614137.ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rogério Brito <rbrito@ime.usp.br>
-Date: Mon, 27 Apr 2009 09:16:33 -0300
+Hi Alasdair,
 
-> Is this anything close to what needs to be done? It's not without
-> failures, because the function mace_set_timeout receives a pointer to a
-> struct net_device, but is marked inline and is used by mace_tx_timeout,
-> which receives an unsigned long (which calls mace_set_timeout).
-> 
-> Perhaps it would be a case of removing the inline hint to the compiler?
-> I guess that BenH or Paul could comment here better...
-> 
-> Signed-off-by: Rogério Brito <rbrito@ime.usp.br>
+From: Mike Snitzer <snitzer@redhat.com>
+Subject: Re: dm-ioband: Test results.
+Date: Wed, 22 Apr 2009 11:18:06 -0400
 
-You can fix the mace_set_timeout() function arguments by having
-a helper function that simply wraps around it and provides the
-second expection of argument types.
+> Why is it that you repeatedly ignore concern/discussion about your
+> determination to continue using a custom grouping mechanism?  It is this
+> type of excess layering that serves no purpose other than to facilitate
+> out-of-tree use-cases.  dm-ioband would take a big step closer to being
+> merged upstream if you took others' feedback and showed more willingness
+> to work through the outstanding issues.
 
-Your patch is also wrong, it's missing a lot of netdev_ops
-entries that are implicitly obtained via alloc_etherdev(),
-namely:
+Could you please let me know your opinion about merging dm-ioband
+upstream? What do I have to do in order to merge dm-ioband?
 
-	.ndo_change_mtu		= eth_change_mtu,
-	.ndo_set_mac_address 	= eth_mac_addr,
-	.ndo_validate_addr	= eth_validate_addr,
-
+Thanks,
+Ryo Tsuruta
