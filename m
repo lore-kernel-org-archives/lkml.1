@@ -1,64 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761212AbZD0Uh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbZD0UiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761212AbZD0Uh3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 16:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761185AbZD0UhA
+	id S1761284AbZD0UiG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 16:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761113AbZD0Uhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 16:37:00 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:10400 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761158AbZD0Ug6 (ORCPT
+	Mon, 27 Apr 2009 16:37:34 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:56641 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761236AbZD0Uhd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 16:36:58 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=fKtUzPoHl4DI3BnXtnsqBR0hquz+vY7llqasWF34R7QGTxQycg5eG4fMeE1yHBKgb
-	/HC9feue/5bU3C2M6QnoA==
-Date: Mon, 27 Apr 2009 13:36:46 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Bart <mmx@riz.pl>
-cc: Christoph Lameter <cl@linux.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [Bug #13112] Oops in drain_array
-In-Reply-To: <Pine.LNX.4.64.0904271849590.2455@galaxy.riz.pl>
-Message-ID: <alpine.DEB.2.00.0904271327140.11650@chino.kir.corp.google.com>
-References: <tur5OtdUm3E.A.r2B.7oE9JB@chimera>  <egHshlwQQFE.A.KjC.JpE9JB@chimera> <alpine.DEB.2.00.0904261314430.18988@chino.kir.corp.google.com> <84144f020904270152o6567e84cj914934120315bf90@mail.gmail.com> <alpine.DEB.1.10.0904271000200.16119@qirst.com>
- <Pine.LNX.4.64.0904271849590.2455@galaxy.riz.pl>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Mon, 27 Apr 2009 16:37:33 -0400
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
+       Tim Abbott <tabbott@MIT.EDU>
+Subject: [PATCH 00/14] clean up page aligned data and bss sections
+Date: Mon, 27 Apr 2009 16:32:54 -0400
+Message-Id: <1240864388-26315-1-git-send-email-tabbott@mit.edu>
+X-Mailer: git-send-email 1.6.2.1
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Apr 2009, Bart wrote:
+Sam,
 
-> After turning the suggested debuging options I've got tons of these when
-> trying to stress the tape device like before:
-> 
-> Apr 27 16:57:30 fs kernel: [   96.446708] slab error in verify_redzone_free():
-> cache `size-128': memory outside object was overwritten
-> Apr 27 16:57:30 fs kernel: [   96.446713] Pid: 0, comm: swapper Not tainted
-> 2.6.29.1-64 #2
-> Apr 27 16:57:30 fs kernel: [   96.446715] Call Trace:
-> Apr 27 16:57:30 fs kernel: [   96.446717]  <IRQ>  [<ffffffff8029adc5>]
-> __slab_error+0x1f/0x25
-> Apr 27 16:57:30 fs kernel: [   96.446728]  [<ffffffff8029b24b>]
-> cache_free_debugcheck+0x108/0x1d6
-> Apr 27 16:57:30 fs kernel: [   96.446731]  [<ffffffff8029b473>]
-> kfree+0x81/0xc2
-> Apr 27 16:57:30 fs kernel: [   96.446735]  [<ffffffff802bd311>]
-> bio_free_map_data+0xc/0x1e
+This patch series add new macros for .data.page_aligned and
+.bss.page_aligned, and converts the various architectures to use them.
+It also eliminates the few remaining uses of .data.idt by replacing
+them with references to .data.page_aligned.
 
-This appears to be kfree(bmd->iovecs) in bio_free_map_data().  It looks 
-like the memcpy size in bio_set_map_data() overrides the kmalloc size; in 
-other words, for a redzone error, bio->bi_vcnt > nr_pages in 
-bio_copy_user_iov().
+This patch series is a bunch of cleanup in preparation for being able
+to change the names of the .data.page_aligned and .bss.page_aligned
+sections to be compatabible with -ffunction-sections -fdata-sections.
+
+The x86 patches are on top of the your commit in the x86/kbuild of
+linux-tip entitled:
+
+    x86: beautify vmlinux_64.lds.S
+
+    -Tim Abbott
+
+--
+
+Tim Abbott (14):
+  Add new macros for page-aligned data and bss sections.
+  sh: Use macros for .bss.page_aligned section.
+  mn10300: Use macros for .bss.page_aligned section.
+  xtensa: Use macros for .bss.page_aligned section.
+  x86: Use macros for .bss.page_aligned section.
+  alpha: Use macros for .data.page_aligned.
+  avr32: Use standard macros for .data.page_aligned section.
+  sh: Use macros for .data.page_aligned section.
+  s390: Use macros for .data.page_aligned.
+  powerpc: Remove unused __page_aligned macro.
+  powerpc: Use macros for .data.page_aligned section.
+  mn10300: Drop unused .data.idt section.
+  x86: Use section .data.page_aligned for the idt_table.
+  x86: Use macros for .data.page_aligned.
+
+ arch/alpha/kernel/vmlinux.lds.S             |    6 +-----
+ arch/avr32/kernel/vmlinux.lds.S             |    3 +--
+ arch/avr32/mm/init.c                        |    4 +---
+ arch/mn10300/kernel/vmlinux.lds.S           |    5 +----
+ arch/powerpc/include/asm/page_64.h          |    8 --------
+ arch/powerpc/kernel/vdso.c                  |    2 +-
+ arch/powerpc/kernel/vdso32/vdso32_wrapper.S |    3 ++-
+ arch/powerpc/kernel/vdso64/vdso64_wrapper.S |    3 ++-
+ arch/powerpc/kernel/vmlinux.lds.S           |    6 +-----
+ arch/s390/kernel/vdso.c                     |    2 +-
+ arch/s390/kernel/vdso32/vdso32_wrapper.S    |    3 ++-
+ arch/s390/kernel/vdso64/vdso64_wrapper.S    |    3 ++-
+ arch/s390/kernel/vmlinux.lds.S              |    6 +-----
+ arch/sh/kernel/irq.c                        |    6 ++----
+ arch/sh/kernel/vmlinux_32.lds.S             |    5 ++---
+ arch/sh/kernel/vmlinux_64.lds.S             |    5 ++---
+ arch/x86/kernel/head_32.S                   |    4 ++--
+ arch/x86/kernel/head_64.S                   |    2 +-
+ arch/x86/kernel/traps.c                     |    6 ++----
+ arch/x86/kernel/vmlinux_32.lds.S            |    9 ++-------
+ arch/x86/kernel/vmlinux_64.lds.S            |    8 ++------
+ arch/xtensa/kernel/head.S                   |    2 +-
+ arch/xtensa/kernel/vmlinux.lds.S            |    2 +-
+ include/asm-generic/vmlinux.lds.h           |    8 ++++++++
+ include/linux/linkage.h                     |    9 +++++++++
+ 25 files changed, 50 insertions(+), 70 deletions(-)
+
