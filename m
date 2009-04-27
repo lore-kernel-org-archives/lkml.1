@@ -1,92 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbZD0A6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbZD0BOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753913AbZD0A6Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 20:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZD0A6R
+	id S1755376AbZD0BOX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 21:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZD0BOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 20:58:17 -0400
-Received: from mga02.intel.com ([134.134.136.20]:53130 "EHLO mga02.intel.com"
+	Sun, 26 Apr 2009 21:14:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47169 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752029AbZD0A6Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 20:58:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,250,1239001200"; 
-   d="asc'?scan'208";a="407076817"
-Subject: Re: Re-implement MCE log ring buffer as per-CPU ring buffer
-From: Huang Ying <ying.huang@intel.com>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+	id S1751748AbZD0BOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 21:14:14 -0400
+Message-ID: <49F50691.7070209@kernel.org>
+Date: Sun, 26 Apr 2009 18:12:49 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <20090424100943.GJ27264@erda.amd.com>
-References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com>
-	 <20090422092259.GC18226@elte.hu> <20090422101600.GL3226@erda.amd.com>
-	 <1240553210.6842.871.camel@yhuang-dev.sh.intel.com>
-	 <20090424100943.GJ27264@erda.amd.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-CwbQV1UOdGAcTdwduwRf"
-Date: Mon, 27 Apr 2009 08:58:12 +0800
-Message-Id: <1240793892.6842.923.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: [PATCH] x86/acpi: calling mp_config_acpi_gsi in mp_register_gsi -v2
+References: <49E68C41.4020801@kernel.org> <20090416090315.GF9813@elte.hu> <49E802CE.5030406@kernel.org> <49E80457.5060403@kernel.org> <alpine.LFD.2.00.0904230039420.21119@localhost.localdomain> <49F4D7CB.4040406@kernel.org> <49F4D84E.4030401@kernel.org>
+In-Reply-To: <49F4D84E.4030401@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+it seems that change about calling mp_config_acpi_gsi in acpi_pci_irq_enable()
+never get into mainline.
 
---=-CwbQV1UOdGAcTdwduwRf
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+actually we could call that in mp_register_gsi with struct device...
+also could make mp_config_acpi_gsi to be static
 
-On Fri, 2009-04-24 at 18:09 +0800, Robert Richter wrote:
-> On 24.04.09 14:06:50, Huang Ying wrote:
-> > On Wed, 2009-04-22 at 18:16 +0800, Robert Richter wrote:
-> > > On 22.04.09 11:22:59, Ingo Molnar wrote:
-> > > >=20
-> > > > * Huang Ying <ying.huang@intel.com> wrote:
-> > > >=20
-> > > > > Re-implement MCE log ring buffer as per-CPU ring buffer for bette=
-r=20
-> > > > > scalability. Basic design is as follow:
-> > > >=20
-> > > > Before changing anything substantial in the MCE code it would be=20
-> > > > necessary to clean up and then unify the 32-bit and 64-bit side of=20
-> > > > the MCE code first. (Which essentially means extending the=20
-> > > > 64-bit-only code to 32-bit)
-> > >=20
-> > > You may also want to consider to use the in-kernel ring_buffer api
-> > > (include/linux/ring_buffer.h).
-> >=20
-> > It seems that ring_buffer is not NMI-safe, while mcelog buffer will be
-> > used in NMI context and interrupt context. When will ring_buffer to be
-> > NMI-safe?
->=20
-> You can use it in nmi context with separate read and write
-> buffers. See this patch description:
-> 6dad828b76c7224a22ddc9ce7aa495d994f03b31
+v2: some calling could have to be pci device, need to check that
 
-You use it as oprofile CPU buffer. There is only one reader and one
-writer for oprofile CPU buffer, so separating read and write buffers is
-sufficient for it to be used there. But there is multiple writer for
-MCELOG buffer (from NMI, IRQ and timer), so I think your method doesn't
-work here.
+[Impact: make update_mptable working]
 
-Best Regards,
-Huang Ying
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
+---
+ arch/x86/include/asm/mpspec.h |    9 -----
+ arch/x86/kernel/acpi/boot.c   |   66 +++++++++++++++++++++++++-----------------
+ 2 files changed, 40 insertions(+), 35 deletions(-)
 
---=-CwbQV1UOdGAcTdwduwRf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkn1Ax4ACgkQKhFGF+eHlpixwwCgnxCnJbiMNwhyd7aK5vv3hQ2X
-o44AoI2MuSzSaxDK9b6QGtFcuuTY8qTq
-=Zg/C
------END PGP SIGNATURE-----
-
---=-CwbQV1UOdGAcTdwduwRf--
-
+Index: linux-2.6/arch/x86/include/asm/mpspec.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/mpspec.h
++++ linux-2.6/arch/x86/include/asm/mpspec.h
+@@ -77,17 +77,8 @@ extern int mp_register_gsi(struct device
+ 				 int active_high_low);
+ extern int acpi_probe_gsi(void);
+ #ifdef CONFIG_X86_IO_APIC
+-extern int mp_config_acpi_gsi(unsigned char number, unsigned int devfn, u8 pin,
+-				u32 gsi, int triggering, int polarity);
+ extern int mp_find_ioapic(int gsi);
+ extern int mp_find_ioapic_pin(int ioapic, int gsi);
+-#else
+-static inline int
+-mp_config_acpi_gsi(unsigned char number, unsigned int devfn, u8 pin,
+-		   u32 gsi, int triggering, int polarity)
+-{
+-	return 0;
+-}
+ #endif
+ #else /* !CONFIG_ACPI: */
+ static inline int acpi_probe_gsi(void)
+Index: linux-2.6/arch/x86/kernel/acpi/boot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
++++ linux-2.6/arch/x86/kernel/acpi/boot.c
+@@ -33,6 +33,7 @@
+ #include <linux/irq.h>
+ #include <linux/bootmem.h>
+ #include <linux/ioport.h>
++#include <linux/pci.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/io_apic.h>
+@@ -1158,6 +1159,44 @@ void __init mp_config_acpi_legacy_irqs(v
+ 	}
+ }
+ 
++static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int triggering,
++			int polarity)
++{
++#ifdef CONFIG_X86_MPPARSE
++	struct mpc_intsrc mp_irq;
++	struct pci_dev *pdev;
++	unsigned char number;
++	unsigned int devfn;
++	int ioapic;
++	u8 pin;
++
++	if (!acpi_ioapic)
++		return 0;
++	if (!dev)
++		return 0;
++	if (dev->bus != &pci_bus_type)
++		return 0;
++
++	pdev = to_pci_dev(dev);
++	number = pdev->bus->number;
++	devfn = pdev->devfn;
++	pin = pdev->pin;
++	/* print the entry should happen on mptable identically */
++	mp_irq.type = MP_INTSRC;
++	mp_irq.irqtype = mp_INT;
++	mp_irq.irqflag = (triggering == ACPI_EDGE_SENSITIVE ? 4 : 0x0c) |
++				(polarity == ACPI_ACTIVE_HIGH ? 1 : 3);
++	mp_irq.srcbus = number;
++	mp_irq.srcbusirq = (((devfn >> 3) & 0x1f) << 2) | ((pin - 1) & 3);
++	ioapic = mp_find_ioapic(gsi);
++	mp_irq.dstapic = mp_ioapic_routing[ioapic].apic_id;
++	mp_irq.dstirq = mp_find_ioapic_pin(ioapic, gsi);
++
++	save_mp_irq(&mp_irq);
++#endif
++	return 0;
++}
++
+ int mp_register_gsi(struct device *dev, u32 gsi, int triggering, int polarity)
+ {
+ 	int ioapic;
+@@ -1189,6 +1228,7 @@ int mp_register_gsi(struct device *dev,
+ 		       ioapic_pin);
+ 		return gsi;
+ 	}
++	mp_config_acpi_gsi(dev, gsi, triggering, polarity);
+ 
+ 	/*
+ 	 * Avoid pin reprogramming.  PRTs typically include entries
+@@ -1208,32 +1248,6 @@ int mp_register_gsi(struct device *dev,
+ 	return gsi;
+ }
+ 
+-int mp_config_acpi_gsi(unsigned char number, unsigned int devfn, u8 pin,
+-			u32 gsi, int triggering, int polarity)
+-{
+-#ifdef CONFIG_X86_MPPARSE
+-	struct mpc_intsrc mp_irq;
+-	int ioapic;
+-
+-	if (!acpi_ioapic)
+-		return 0;
+-
+-	/* print the entry should happen on mptable identically */
+-	mp_irq.type = MP_INTSRC;
+-	mp_irq.irqtype = mp_INT;
+-	mp_irq.irqflag = (triggering == ACPI_EDGE_SENSITIVE ? 4 : 0x0c) |
+-				(polarity == ACPI_ACTIVE_HIGH ? 1 : 3);
+-	mp_irq.srcbus = number;
+-	mp_irq.srcbusirq = (((devfn >> 3) & 0x1f) << 2) | ((pin - 1) & 3);
+-	ioapic = mp_find_ioapic(gsi);
+-	mp_irq.dstapic = mp_ioapic_routing[ioapic].apic_id;
+-	mp_irq.dstirq = mp_find_ioapic_pin(ioapic, gsi);
+-
+-	save_mp_irq(&mp_irq);
+-#endif
+-	return 0;
+-}
+-
+ /*
+  * Parse IOAPIC related entries in MADT
+  * returns 0 on success, < 0 on error
