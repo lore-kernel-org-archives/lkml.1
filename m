@@ -1,109 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbZD0L63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbZD0MDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224AbZD0L63 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 07:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbZD0L6U
+	id S1753763AbZD0MDw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 08:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbZD0MDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 07:58:20 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:47625 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751527AbZD0L6U (ORCPT
+	Mon, 27 Apr 2009 08:03:42 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:38050 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752999AbZD0MDm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 07:58:20 -0400
+	Mon, 27 Apr 2009 08:03:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=OOKesPmz22LCrGW2YOXHS4Sr+c3C57I//5T+AGm70psHqxzN4YAszN8tkEt2E9OUKT
-         F6ln7x5+QvTDj9vu/Yx63YOIzRFeVvnPONX2NhBwQLYhx5VhfGHEDbpC5cA0RHPy4fC+
-         OmZGAg3FZ95ItYQzOn2Et7I+B1OFBhrAa4TsY=
-Message-ID: <49F59DD9.6010903@gmail.com>
-Date: Mon, 27 Apr 2009 13:58:17 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qTtUJsN8+7DbYvbI52J7CFV/OTGGn/LcYvNAFtk0bHkQdtZwua3X1SnWhrVEHJHomI
+         4rvpmBWR7aioRvMp626vIu16nIjYcC5Sf67AWBpn9XRb02HOZaatl4OfHOWkAAcvVOao
+         gTTbbTK31stc864i48xtQeR9/euhFu3u2eoFA=
 MIME-Version: 1.0
-To: Roel Kluin <roel.kluin@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       adaplas@gmail.com
-Subject: Re: [Linux-fbdev-devel] fbcmap: non working tests on unsigned	cmap->start
-References: <49EDD799.8060607@gmail.com> <20090423134110.51ea8df2.akpm@linux-foundation.org> <20090423214738.GF7134@sci.fi> <49F4519F.4090003@gmail.com> <20090426131505.GG7134@sci.fi>
-In-Reply-To: <20090426131505.GG7134@sci.fi>
+In-Reply-To: <40a4ed590904270153q306e80f2v62499434c64d92a6@mail.gmail.com>
+References: <40a4ed590904240309o66753264lf58f2910726f7efc@mail.gmail.com>
+	 <40a4ed590904241113p4949a020y46e0641e77f6f4e3@mail.gmail.com>
+	 <alpine.DEB.2.00.0904241155550.26080@chino.kir.corp.google.com>
+	 <40a4ed590904241216u655300ddvaa4660e11ad2cffc@mail.gmail.com>
+	 <alpine.DEB.2.00.0904241224001.28589@chino.kir.corp.google.com>
+	 <40a4ed590904250132o63e715cbvaccf5aac82265cd@mail.gmail.com>
+	 <alpine.DEB.2.00.0904261252010.18988@chino.kir.corp.google.com>
+	 <40a4ed590904262333k13dd3630t8d241eb30782bbab@mail.gmail.com>
+	 <alpine.DEB.2.00.0904270129350.26825@chino.kir.corp.google.com>
+	 <40a4ed590904270153q306e80f2v62499434c64d92a6@mail.gmail.com>
+Date: Mon, 27 Apr 2009 14:03:39 +0200
+Message-ID: <40a4ed590904270503j5d485d66r53b4dbc63622edbb@mail.gmail.com>
+Subject: Re: Kernel 2.6.29 runs out of memory and hangs.
+From: Zeno Davatz <zdavatz@gmail.com>
+To: David Rientjes <rientjes@google.com>
+Cc: linux-kernel@vger.kernel.org, Hannes Wyss <hwyss@ywesee.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ville Syrjälä wrote:
-> On Sun, Apr 26, 2009 at 02:20:47PM +0200, Roel Kluin wrote:
->> cmap->start is unsigned,
+Dear David
 
->>> On Thu, Apr 23, 2009 at 01:41:10PM -0700, Andrew Morton wrote:
->>>> argh.
->>>>
->>>> - Perhaps userspace can kill the kernel by sending a "negative"
->>>>   `start'.  Removing the test will make it even less likely that we'll
->>>>   fix this bug.
->>> Shouldn't happen. 'start' is used as the starting index for the hardware
->>> palette, 'start+len-1' is the last index. All drivers should already check
->>> the passed values since the maximum index depends on the display mode.
->>> And I suppose the worst thing that could happen if the driver fails to
->>> check the values would be incorrect colors.
+Thanks for all your help and input. It was very helpful ans useful.
 
-> You would rather need something like
-> 'if (start+len > 1 << max(red.len, green.len, blue.len, transp.len))'
+On Mon, Apr 27, 2009 at 10:53 AM, Zeno Davatz <zdavatz@gmail.com> wrote:
+> On Mon, Apr 27, 2009 at 10:32 AM, David Rientjes <rientjes@google.com> wrote:
+>
+>> All allowable zones have minimum watermarks that define how much memory
+>> an oom killed task may use so that it can quickly exit.  This is the
+>> purpose of the TIF_MEMDIE flag in the kernel.
+>
+> Thanks for the info.
+>
+>> The policy is better defined in userspace to determine what memory-hogging
+>> task should be killed in low memory situations.  Users can already tune
+>> the /proc/pid/oom_adj score of any task so that the oom killer can prefer
+>> it over other tasks (see Documentation/filesystems/proc.txt).  For low
+>> memory situations, however, userspace can act in any number of ways to
+>> prevent reaching an oom condition.
+>
+> This may be off-Topic, but: Can I assign a PID to a process at
+> startup? Say Apache always should have PID 2755, or Ruby should always
+> have PID 1003. Otherwise how would I set the score for a PID at
+> Kernel-Boop-Up?
 
-what do you mean with `red.len'? is that `info->var.red.length'?
+Ok, we solved this issue, with the following commit:
 
-> and a check to make sure that start+len doesn't overflow.
-> 
-> Oh and I guess it should also check that the visual is pseudocolor or
-> directcolor.
+http://scm.ywesee.com/?p=oddb.org;a=blobdiff;f=bin/oddbd;h=655b4c235594159d3fe4290696ecc54580188c7c;hp=9cb744b4affe30beee935a495223015d9ce090ce;hb=6d38f6839f746bcf2dc701528e343170af8f47be;hpb=a8b4f8c43200a0035df9f5002a5ea9ec8133e99e
 
-I am fairly new so please review carefully.
-
-Not yet signed off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
-index f53b9f1..b34e74e 100644
---- a/drivers/video/fbcmap.c
-+++ b/drivers/video/fbcmap.c
-@@ -249,6 +249,7 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
- {
- 	int rc, size = cmap->len * sizeof(u16);
- 	struct fb_cmap umap;
-+	__u32 rgba_max = 0;
- 
- 	memset(&umap, 0, sizeof(struct fb_cmap));
- 	rc = fb_alloc_cmap(&umap, cmap->len, cmap->transp != NULL);
-@@ -261,13 +262,27 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
- 		rc = -EFAULT;
- 		goto out;
- 	}
-+
-+	if (cmap->start + cmap->len < cmap->start) {
-+		rc = -EINVAL;
-+		goto out;
-+	}
-+
- 	umap.start = cmap->start;
- 	if (!lock_fb_info(info)) {
- 		rc = -ENODEV;
- 		goto out;
- 	}
--	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
--				!info->fbops->fb_setcmap)) {
-+
-+	rgba_max = max(info->var.red.length, info->var.green.length);
-+	rgba_max = max(rgba_max, info->var.blue.length);
-+	rgba_max = max(rgba_max, info->var.transp.length);
-+
-+	if (cmap->start + cmap->len > 1 << rgba_max ||
-+			!(info->fbops->fb_setcolreg ||
-+				info->fbops->fb_setcmap) ||
-+			!(info->fix.visual == FB_VISUAL_PSEUDOCOLOR ||
-+				info->fix.visual == FB_VISUAL_TRUECOLOR)) {
- 		rc = -EINVAL;
- 		goto out1;
- 	}
+Best
+Zeno
