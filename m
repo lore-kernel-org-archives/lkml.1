@@ -1,82 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbZD0Gk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbZD0Gkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756985AbZD0Gk3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 02:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756233AbZD0GkM
+	id S1757084AbZD0Gkr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 02:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbZD0GkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 02:40:12 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:45329 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754520AbZD0GkK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 02:40:10 -0400
-Date: Mon, 27 Apr 2009 08:42:16 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Tim Abbott <tabbott@MIT.EDU>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>, "Theodore Ts'o" <tytso@MIT.EDU>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
-       David Howells <dhowells@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH 14/15] x86: convert to use __HEAD and HEAD_TEXT macros.
-Message-ID: <20090427064216.GA6918@uranus.ravnborg.org>
-References: <1240711870-30505-11-git-send-email-tabbott@mit.edu> <1240711870-30505-12-git-send-email-tabbott@mit.edu> <1240711870-30505-13-git-send-email-tabbott@mit.edu> <1240711870-30505-14-git-send-email-tabbott@mit.edu> <alpine.LFD.2.00.0904260934570.3101@localhost.localdomain> <alpine.LFD.2.00.0904260958190.3101@localhost.localdomain> <20090426183401.GA1622@uranus.ravnborg.org> <alpine.LFD.2.00.0904261146570.7331@localhost.localdomain> <20090426192317.GA2637@uranus.ravnborg.org> <20090427045910.GA11868@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090427045910.GA11868@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 27 Apr 2009 02:40:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46834 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755918AbZD0GkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 02:40:11 -0400
+Message-ID: <49F5532A.5000802@kernel.org>
+Date: Sun, 26 Apr 2009 23:39:38 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: use dmi check in apic_is_clustered with 64bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 06:59:10AM +0200, Ingo Molnar wrote:
-> 
-> * Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > > As mentioned, though, the much more interesting case would be 
-> > > the _real_ kernel vmlinux.lds.S file, which is a lot more 
-> > > complex and where the differences between 32-bit and 64-bit 
-> > > cases aren't totally trivial.
-> > 
-> > Agreed.
-> > 
-> > But I expect someone else to do so.
-> > When I am in unification mode I try to spend time on
-> > architectures with less people involved.
-> 
-> thanks for reconsidering - and i've applied your patch - thanks Sam.
-> 
-> Architectures with lots of people involved (hm, what a strange way 
-> to say 'x86' ;-) tend to be logistically more complex and there's an 
-> (understandably) stronger pushback against regressions - but that is 
-> also where unification is actually needed the most and where the 
-> ongoing costs of splintered code is the highest.
-Well - the effort done for sparc and m68k lately was also needed.
 
-> Your kbuild patches 
-> are making quite a bit of difference so please dont hold back :)
-The good patches are the ones that benefits all architectures.
+will have system with 2 and more sockets 8cores/2thread.
+do treat them as multi chassis.
 
-Well - I can give the vmlinux_*.ds files a try.
-Did you apply the patch to an append only branch or may I recreate
-the patch?
-I noticed a few minor things that can be 'fixed' to bring the inital
-differences between 32 bit and 64 bit down.
+use dmi check instead.
 
-But I can do these in a follow-up patch too.
+[ Impact: do not make unstable TSC on wrongly ]
 
-	Sam
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/kernel/apic/apic.c |   86 ++++++++++++++++++++++++++++++--------------
+ 1 file changed, 59 insertions(+), 27 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/apic/apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/apic.c
++++ linux-2.6/arch/x86/kernel/apic/apic.c
+@@ -2142,31 +2142,14 @@ static void apic_pm_activate(void) { }
+ #endif	/* CONFIG_PM */
+ 
+ #ifdef CONFIG_X86_64
+-/*
+- * apic_is_clustered_box() -- Check if we can expect good TSC
+- *
+- * Thus far, the major user of this is IBM's Summit2 series:
+- *
+- * Clustered boxes may have unsynced TSC problems if they are
+- * multi-chassis. Use available data to take a good guess.
+- * If in doubt, go HPET.
+- */
+-__cpuinit int apic_is_clustered_box(void)
++
++static int __cpuinit apic_cluster_num(void)
+ {
+ 	int i, clusters, zeros;
+ 	unsigned id;
+ 	u16 *bios_cpu_apicid;
+ 	DECLARE_BITMAP(clustermap, NUM_APIC_CLUSTERS);
+ 
+-	/*
+-	 * there is not this kind of box with AMD CPU yet.
+-	 * Some AMD box with quadcore cpu and 8 sockets apicid
+-	 * will be [4, 0x23] or [8, 0x27] could be thought to
+-	 * vsmp box still need checking...
+-	 */
+-	if ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) && !is_vsmp_box())
+-		return 0;
+-
+ 	bios_cpu_apicid = early_per_cpu_ptr(x86_bios_cpu_apicid);
+ 	bitmap_zero(clustermap, NUM_APIC_CLUSTERS);
+ 
+@@ -2202,18 +2185,67 @@ __cpuinit int apic_is_clustered_box(void
+ 			++zeros;
+ 	}
+ 
+-	/* ScaleMP vSMPowered boxes have one cluster per board and TSCs are
+-	 * not guaranteed to be synced between boards
+-	 */
+-	if (is_vsmp_box() && clusters > 1)
++	return clusters;
++}
++
++static int __cpuinitdata multi_checked;
++static int __cpuinitdata multi;
++
++static int __cpuinit set_multi(const struct dmi_system_id *d)
++{
++	if (multi)
++		return 0;
++	printk(KERN_INFO "APIC: %s detected, Multi Chassis\n", d->ident);
++	multi = 1;
++	return 0;
++}
++
++static const __cpuinitconst struct dmi_system_id multi_dmi_table[] = {
++	{
++		.callback = set_multi,
++		.ident = "IBM System Summit2",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "IBM"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Summit2"),
++		},
++	},
++	{}
++};
++
++static void __cpuinit dmi_check_multi(void)
++{
++	if (multi_checked)
++		return;
++
++	dmi_check_system(multi_dmi_table);
++	multi_checked = 1;
++}
++
++/*
++ * apic_is_clustered_box() -- Check if we can expect good TSC
++ *
++ * Thus far, the major user of this is IBM's Summit2 series:
++ * Clustered boxes may have unsynced TSC problems if they are
++ * multi-chassis.
++ * Use DMI to check them
++ */
++__cpuinit int apic_is_clustered_box(void)
++{
++	dmi_check_multi();
++	if (multi)
+ 		return 1;
+ 
++	if (!is_vsmp_box())
++		return 0;
++
+ 	/*
+-	 * If clusters > 2, then should be multi-chassis.
+-	 * May have to revisit this when multi-core + hyperthreaded CPUs come
+-	 * out, but AFAIK this will work even for them.
++	 * ScaleMP vSMPowered boxes have one cluster per board and TSCs are
++	 * not guaranteed to be synced between boards
+ 	 */
+-	return (clusters > 2);
++	if (apic_cluster_num() > 1)
++		return 1;
++
++	return 0;
+ }
+ #endif
+ 
