@@ -1,57 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbZD0QRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758522AbZD0QSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757402AbZD0QRt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 12:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757061AbZD0QRE
+	id S1758522AbZD0QSL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 12:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758146AbZD0QRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 12:17:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57468 "EHLO mx2.redhat.com"
+	Mon, 27 Apr 2009 12:17:10 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:54601 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758037AbZD0QQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 12:16:59 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 3/4] FRV: Don't turn on TIF_SYSCALL_TRACE unconditionally in
-	syscall prologue
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, hch@lst.de, roland@redhat.com,
-       linux-kernel@vger.kernel.org
-Date: Mon, 27 Apr 2009 17:15:51 +0100
-Message-ID: <20090427161551.16200.58091.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090427161540.16200.23710.stgit@warthog.procyon.org.uk>
-References: <20090427161540.16200.23710.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	id S1758094AbZD0QRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 12:17:07 -0400
+Date: Mon, 27 Apr 2009 09:17:04 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
+       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH RFC] v2 expedited "big hammer" RCU grace periods
+Message-ID: <20090427161704.GD7226@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090426052340.GA24931@linux.vnet.ibm.com> <20090426112717.GE10391@elte.hu> <20090426191343.GC29238@Krystal> <20090426202255.GA5365@elte.hu> <20090426214451.GC6945@linux.vnet.ibm.com> <20090427032639.GA10087@elte.hu> <20090427132153.GI6945@linux.vnet.ibm.com> <20090427134302.GA19137@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090427134302.GA19137@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't turn on TIF_SYSCALL_TRACE unconditionally in syscall prologue in FRV's
-entry.S.  This was originally for debugging stuff and should have been removed
-a long time ago.
+On Mon, Apr 27, 2009 at 03:43:02PM +0200, Ingo Molnar wrote:
+> 
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Mon, Apr 27, 2009 at 05:26:39AM +0200, Ingo Molnar wrote:
+> > > 
+> > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > On Sun, Apr 26, 2009 at 10:22:55PM +0200, Ingo Molnar wrote:
+> > > > > 
+> > > > > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > > > > 
+> > > > > > * Ingo Molnar (mingo@elte.hu) wrote:
+> > > > > > > 
+> > > > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > > > 
+> > > > > > > > Second cut of "big hammer" expedited RCU grace periods, but only 
+> > > > > > > > for rcu_bh.  This creates another softirq vector, so that entering 
+> > > > > > > > this softirq vector will have forced an rcu_bh quiescent state (as 
+> > > > > > > > noted by Dave Miller).  Use smp_call_function() to invoke 
+> > > > > > > > raise_softirq() on all CPUs in order to cause this to happen.  
+> > > > > > > > Track the CPUs that have passed through a quiescent state (or gone 
+> > > > > > > > offline) with a cpumask.
+> > > > > > > 
+> > > > > > > hm, i'm still asking whether doing this would be simpler via a 
+> > > > > > > reschedule vector - which not only is an existing facility but also 
+> > > > > > > forces all RCU domains through a quiescent state - not just bh-RCU 
+> > > > > > > participants.
+> > > > > > > 
+> > > > > > > Triggering a new softirq is in no way simpler that doing an SMP 
+> > > > > > > cross-call - in fact softirqs are a finite resource so using some 
+> > > > > > > other facility would be preferred.
+> > > > > > > 
+> > > > > > > Am i missing something?
+> > > > > > > 
+> > > > > > 
+> > > > > > I think the reason for this whole thread is that waiting for rcu 
+> > > > > > quiescent state, when called many times e.g. in multiple iptables 
+> > > > > > invokations, takes too longs (5 seconds to load the netfilter 
+> > > > > > rules at boot). [...]
+> > > > > 
+> > > > > I'm aware of the problem space.
+> > > > > 
+> > > > > I was suggesting that to trigger the quiescent state and to wait for 
+> > > > > it to propagate it would be enough to reuse the reschedule 
+> > > > > mechanism.
+> > > > > 
+> > > > > It would be relatively straightforward: first a send-reschedule then 
+> > > > > do a wait_task_context_switch() on rq->curr - both are existing 
+> > > > > primitives. (a task reference has to be taken but that's pretty much 
+> > > > > all)
+> > > > 
+> > > > Well, one reason I didn't take this approach was that I didn't 
+> > > > happen to think of it.  ;-)
+> > > > 
+> > > > Also that I hadn't heard of wait_task_context_switch().
+> > > > 
+> > > > Hmmm...  Looking for wait_task_context_switch().  OK, found it.
+> > > > 
+> > > > It looks to me that this primitive won't return until the 
+> > > > scheduler actually decides to run something else.  We instead need 
+> > > > to have something that stops waiting once the CPU enters the 
+> > > > scheduler, hence the previous thought of making rcu_qsctr_inc() do 
+> > > > a bit of extra work.
+> > > > 
+> > > > This would be a way of making an expedited RCU-sched across all 
+> > > > RCU implementations.  As noted in the earlier email, it would not 
+> > > > handle RCU or RCU-bh in a -rt kernel.
+> > > > 
+> > > > > By the time wait_task_context_switch() returns from the last CPU 
+> > > > > we know that the quiescent state has passed.
+> > > > 
+> > > > We would want to wait for all of the CPUs in parallel, though, 
+> > > > wouldn't we?  Seems that we would not want to wait for the last 
+> > > > CPU to do another trip through the scheduler if it had already 
+> > > > passed through the scheduler while we were waiting on the earlier 
+> > > > CPUs.
+> > > > 
+> > > > So it seems like we would still want a two-pass approach -- one 
+> > > > pass to capture the current state, the second pass to wait for the 
+> > > > state to change.
+> > > 
+> > > I think waiting in parallel is still possible (first kick all tasks, 
+> > > then make sure all tasks have left the CPU at least once).
+> > > 
+> > > The busy-waiting in wait_task_context_switch() is indeed a 
+> > > problem - but perhaps that could be refactored to be a 
+> > > migration-thread driven wait_for_completion() + complete() 
+> > > cycle? It could be driven by preempt notifiers perhaps - and 
+> > > become zero-cost.
+> > 
+> > Hmmm...  It would need to be informed of the quiescent state even 
+> > if that quiescent state did not result in a preemption.
+> > 
+> > But you are right -- I do need to expedite RCU, not just RCU-bh, 
+> > especially given that the boot-speed guys are starting to see 
+> > grace periods as a measureable fraction of the boot time.  I will 
+> > take another pass at this.
+> 
+> The precise method of signalling is a detail i suspect - so by all 
+> means use a new softirq if that is the cleanest. I'd also agree that 
+> covering not just bh-rcu would definitely be a good idea.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Fair enough!  ;-)
 
- arch/frv/kernel/entry.S |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-
-diff --git a/arch/frv/kernel/entry.S b/arch/frv/kernel/entry.S
-index 1da523b..268dfbd 100644
---- a/arch/frv/kernel/entry.S
-+++ b/arch/frv/kernel/entry.S
-@@ -886,7 +886,6 @@ system_call:
- 	bnc		icc0,#0,__syscall_badsys
- 
- 	ldi		@(gr15,#TI_FLAGS),gr4
--	ori		gr4,#_TIF_SYSCALL_TRACE,gr4
- 	andicc		gr4,#_TIF_SYSCALL_TRACE,gr0,icc0
- 	bne		icc0,#0,__syscall_trace_entry
- 
-
+							Thanx, Paul
