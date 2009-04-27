@@ -1,50 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757110AbZD0JyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbZD0JzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757110AbZD0JyU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 05:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbZD0Jso
+	id S1757017AbZD0JzV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 05:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbZD0Jst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 05:48:44 -0400
+	Mon, 27 Apr 2009 05:48:49 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:60685 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754525AbZD0Jsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 05:48:43 -0400
+	id S1755009AbZD0Jss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 05:48:48 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 28/30] microblaze_mmu_v1: Elf update
-Date: Mon, 27 Apr 2009 10:32:17 +0200
-Message-Id: <1240821139-7247-29-git-send-email-monstr@monstr.eu>
+Subject: [PATCH 04/30] microblaze_mmu_v1: MMU update for startup code
+Date: Mon, 27 Apr 2009 10:31:53 +0200
+Message-Id: <1240821139-7247-5-git-send-email-monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1240821139-7247-28-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1240821139-7247-4-git-send-email-monstr@monstr.eu>
 References: <1240821139-7247-1-git-send-email-monstr@monstr.eu>
  <1240821139-7247-2-git-send-email-monstr@monstr.eu>
  <1240821139-7247-3-git-send-email-monstr@monstr.eu>
  <1240821139-7247-4-git-send-email-monstr@monstr.eu>
- <1240821139-7247-5-git-send-email-monstr@monstr.eu>
- <1240821139-7247-6-git-send-email-monstr@monstr.eu>
- <1240821139-7247-7-git-send-email-monstr@monstr.eu>
- <1240821139-7247-8-git-send-email-monstr@monstr.eu>
- <1240821139-7247-9-git-send-email-monstr@monstr.eu>
- <1240821139-7247-10-git-send-email-monstr@monstr.eu>
- <1240821139-7247-11-git-send-email-monstr@monstr.eu>
- <1240821139-7247-12-git-send-email-monstr@monstr.eu>
- <1240821139-7247-13-git-send-email-monstr@monstr.eu>
- <1240821139-7247-14-git-send-email-monstr@monstr.eu>
- <1240821139-7247-15-git-send-email-monstr@monstr.eu>
- <1240821139-7247-16-git-send-email-monstr@monstr.eu>
- <1240821139-7247-17-git-send-email-monstr@monstr.eu>
- <1240821139-7247-18-git-send-email-monstr@monstr.eu>
- <1240821139-7247-19-git-send-email-monstr@monstr.eu>
- <1240821139-7247-20-git-send-email-monstr@monstr.eu>
- <1240821139-7247-21-git-send-email-monstr@monstr.eu>
- <1240821139-7247-22-git-send-email-monstr@monstr.eu>
- <1240821139-7247-23-git-send-email-monstr@monstr.eu>
- <1240821139-7247-24-git-send-email-monstr@monstr.eu>
- <1240821139-7247-25-git-send-email-monstr@monstr.eu>
- <1240821139-7247-26-git-send-email-monstr@monstr.eu>
- <1240821139-7247-27-git-send-email-monstr@monstr.eu>
- <1240821139-7247-28-git-send-email-monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -53,117 +29,242 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/elf.h |   94 +++++++++++++++++++++++++++++++++++++
- 1 files changed, 94 insertions(+), 0 deletions(-)
+ arch/microblaze/kernel/head.S |  201 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 201 insertions(+), 0 deletions(-)
 
-diff --git a/arch/microblaze/include/asm/elf.h b/arch/microblaze/include/asm/elf.h
-index 81337f2..896b563 100644
---- a/arch/microblaze/include/asm/elf.h
-+++ b/arch/microblaze/include/asm/elf.h
-@@ -1,4 +1,6 @@
- /*
-+ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2008-2009 PetaLogix
+diff --git a/arch/microblaze/kernel/head.S b/arch/microblaze/kernel/head.S
+index 319dc35..172359f 100644
+--- a/arch/microblaze/kernel/head.S
++++ b/arch/microblaze/kernel/head.S
+@@ -3,6 +3,26 @@
+  * Copyright (C) 2007-2009 PetaLogix
   * Copyright (C) 2006 Atmark Techno, Inc.
   *
++ * MMU code derived from arch/ppc/kernel/head_4xx.S:
++ *    Copyright (c) 1995-1996 Gary Thomas <gdt@linuxppc.org>
++ *      Initial PowerPC version.
++ *    Copyright (c) 1996 Cort Dougan <cort@cs.nmt.edu>
++ *      Rewritten for PReP
++ *    Copyright (c) 1996 Paul Mackerras <paulus@cs.anu.edu.au>
++ *      Low-level exception handers, MMU support, and rewrite.
++ *    Copyright (c) 1997 Dan Malek <dmalek@jlc.net>
++ *      PowerPC 8xx modifications.
++ *    Copyright (c) 1998-1999 TiVo, Inc.
++ *      PowerPC 403GCX modifications.
++ *    Copyright (c) 1999 Grant Erickson <grant@lcse.umn.edu>
++ *      PowerPC 403GCX/405GP modifications.
++ *    Copyright 2000 MontaVista Software Inc.
++ *	PPC405 modifications
++ *      PowerPC 403GCX/405GP modifications.
++ * 	Author: MontaVista Software, Inc.
++ *         	frank_rowand@mvista.com or source@mvista.com
++ * 	   	debbie_chu@mvista.com
++ *
   * This file is subject to the terms and conditions of the GNU General Public
-@@ -27,4 +29,96 @@
-  */
- #define ELF_CLASS	ELFCLASS32
+  * License. See the file "COPYING" in the main directory of this archive
+  * for more details.
+@@ -12,6 +32,22 @@
+ #include <asm/thread_info.h>
+ #include <asm/page.h>
  
-+#ifndef __uClinux__
++#ifdef CONFIG_MMU
++#include <asm/setup.h> /* COMMAND_LINE_SIZE */
++#include <asm/mmu.h>
++#include <asm/processor.h>
 +
++.data
++.global empty_zero_page
++.align 12
++empty_zero_page:
++	.space	4096
++.global swapper_pg_dir
++swapper_pg_dir:
++	.space	4096
++
++#endif /* CONFIG_MMU */
++
+ 	.text
+ ENTRY(_start)
+ 	mfs	r1, rmsr
+@@ -32,6 +68,124 @@ _copy_fdt:
+ 	addik	r3, r3, -4 /* descrement loop */
+ no_fdt_arg:
+ 
++#ifdef CONFIG_MMU
++
++#ifndef CONFIG_CMDLINE_BOOL
 +/*
-+ * ELF register definitions..
++ * handling command line
++ * copy command line to __init_end. There is space for storing command line.
 + */
++	or	r6, r0, r0		/* incremment */
++	ori	r4, r0, __init_end	/* load address of command line */
++	tophys(r4,r4)			/* convert to phys address */
++	ori	r3, r0, COMMAND_LINE_SIZE - 1 /* number of loops */
++_copy_command_line:
++	lbu	r7, r5, r6 /* r7=r5+r6 - r5 contain pointer to command line */
++	sb	r7, r4, r6		/* addr[r4+r6]= r7*/
++	addik	r6, r6, 1		/* increment counting */
++	bgtid	r3, _copy_command_line	/* loop for all entries       */
++	addik	r3, r3, -1		/* descrement loop */
++	addik	r5, r4, 0		/* add new space for command line */
++	tovirt(r5,r5)
++#endif /* CONFIG_CMDLINE_BOOL */
 +
-+#include <asm/ptrace.h>
-+#include <asm/user.h>
-+#include <asm/byteorder.h>
-+
-+#ifndef ELF_GREG_T
-+#define ELF_GREG_T
-+typedef unsigned long elf_greg_t;
++#ifdef NOT_COMPILE
++/* save bram context */
++	or	r6, r0, r0				/* incremment */
++	ori	r4, r0, TOPHYS(_bram_load_start)	/* save bram context */
++	ori	r3, r0, (LMB_SIZE - 4)
++_copy_bram:
++	lw	r7, r0, r6		/* r7 = r0 + r6 */
++	sw	r7, r4, r6		/* addr[r4 + r6] = r7*/
++	addik	r6, r6, 4		/* increment counting */
++	bgtid	r3, _copy_bram		/* loop for all entries */
++	addik	r3, r3, -4		/* descrement loop */
 +#endif
++	/* We have to turn on the MMU right away. */
 +
-+#ifndef ELF_NGREG
-+#define ELF_NGREG (sizeof(struct pt_regs) / sizeof(elf_greg_t))
-+#endif
++	/*
++	 * Set up the initial MMU state so we can do the first level of
++	 * kernel initialization.  This maps the first 16 MBytes of memory 1:1
++	 * virtual to physical.
++	 */
++	nop
++	addik	r3, r0, 63		/* Invalidate all TLB entries */
++_invalidate:
++	mts	rtlbx, r3
++	mts	rtlbhi, r0			/* flush: ensure V is clear   */
++	bgtid	r3, _invalidate		/* loop for all entries       */
++	addik	r3, r3, -1
++	/* sync */
 +
-+#ifndef ELF_GREGSET_T
-+#define ELF_GREGSET_T
-+typedef elf_greg_t elf_gregset_t[ELF_NGREG];
-+#endif
++	/*
++	 * We should still be executing code at physical address area
++	 * RAM_BASEADDR at this point. However, kernel code is at
++	 * a virtual address. So, set up a TLB mapping to cover this once
++	 * translation is enabled.
++	 */
 +
-+#ifndef ELF_FPREGSET_T
-+#define ELF_FPREGSET_T
++	addik	r3,r0, CONFIG_KERNEL_START /* Load the kernel virtual address */
++	tophys(r4,r3)			/* Load the kernel physical address */
 +
-+/* TBD */
-+#define ELF_NFPREG	33	/* includes fsr */
-+typedef unsigned long elf_fpreg_t;
-+typedef elf_fpreg_t elf_fpregset_t[ELF_NFPREG];
++	mts	rpid,r0			/* Load the kernel PID */
++	nop
++	bri	4
 +
-+/* typedef struct user_fpu_struct elf_fpregset_t; */
-+#endif
++	/*
++	 * Configure and load two entries into TLB slots 62 and 63.
++	 * In case we are pinning TLBs, these are reserved in by the
++	 * other TLB functions.  If not reserving, then it doesn't
++	 * matter where they are loaded.
++	 */
++	andi	r4,r4,0xfffffc00	/* Mask off the real page number */
++	ori	r4,r4,(TLB_WR | TLB_EX)	/* Set the write and execute bits */
 +
-+/* This is the location that an ET_DYN program is loaded if exec'ed.  Typical
-+ * use of this is to invoke "./ld.so someprog" to test out a new version of
-+ * the loader.  We need to make sure that it is out of the way of the program
-+ * that it will "exec", and that there is sufficient room for the brk.
-+ */
++	andi	r3,r3,0xfffffc00	/* Mask off the effective page number */
++	ori	r3,r3,(TLB_VALID | TLB_PAGESZ(PAGESZ_16M))
 +
-+#define ELF_ET_DYN_BASE         (0x08000000)
++	ori	r6,r0,62		/* TLB slot 62 */
++	mts     rtlbx,r6
 +
-+#ifdef __LITTLE_ENDIAN__
-+#define ELF_DATA	ELFDATA2LSB
++	mts	rtlblo,r4		/* Load the data portion of the entry */
++	mts	rtlbhi,r3		/* Load the tag portion of the entry */
++
++	addik	r4, r4, 0x01000000	/* Map next 16 M entries */
++	addik	r3, r3, 0x01000000
++
++        addik	r6,r6,1			/* TLB slot 63 */
++	mts     rtlbx,r6
++
++	mts	rtlblo,r4		/* Load the data portion of the entry */
++	mts	rtlbhi,r3		/* Load the tag portion of the entry */
++
++	/*
++	 * Load a TLB entry for LMB, since we need access to
++	 * the exception vectors, using a 4k real==virtual mapping.
++	 */
++	ori	r6,r0,1			/* TLB slot 1 */
++	mts     rtlbx,r6
++
++	ori	r4,r0,(TLB_WR | TLB_EX)
++	ori	r3,r0,(TLB_VALID | TLB_PAGESZ(PAGESZ_4K))
++
++	mts	rtlblo,r4		/* Load the data portion of the entry */
++	mts	rtlbhi,r3		/* Load the tag portion of the entry */
++
++	/*
++	 * We now have the lower 16 Meg of RAM mapped into TLB entries, and the
++	 * caches ready to work.
++	 */
++turn_on_mmu:
++	ori	r15,r0,start_here
++	ori	r4,r0,MSR_KERNEL_VMS
++	mts	rmsr,r4
++	nop
++	rted	r15,0			/* enables MMU */
++	nop
++
++start_here:
++#endif /* CONFIG_MMU */
++
+ 	/* Initialize small data anchors */
+ 	la	r13, r0, _KERNEL_SDA_BASE_
+ 	la	r2, r0, _KERNEL_SDA2_BASE_
+@@ -51,6 +205,53 @@ no_fdt_arg:
+ 	brald	r15, r8
+ 	nop
+ 
++#ifndef CONFIG_MMU
+ 	la	r15, r0, machine_halt
+ 	braid	start_kernel
+ 	nop
 +#else
-+#define ELF_DATA	ELFDATA2MSB
-+#endif
++	/*
++	 * Initialize the MMU.
++	 */
++	bralid	r15,MMU_init
++	nop
 +
-+#define USE_ELF_CORE_DUMP
-+#define ELF_EXEC_PAGESIZE	4096
++	/* Go back to running unmapped so we can load up new values
++	 * and change to using our exception vectors.
++	 * On the MicroBlaze, all we invalidate the used TLB entries to clear
++	 * the old 16M byte TLB mappings.
++	 */
++	ori	r15,r0,TOPHYS(kernel_load_context)
++	ori	r4,r0,MSR_KERNEL
++	mts	rmsr,r4
++	nop
++	bri	4
++	rted	r15,0
++	nop
 +
-+
-+#define ELF_CORE_COPY_REGS(_dest, _regs)			\
-+	memcpy((char *) &_dest, (char *) _regs,		\
-+	sizeof(struct pt_regs));
-+
-+/* This yields a mask that user programs can use to figure out what
-+ * instruction set this CPU supports.  This could be done in user space,
-+ * but it's not easy, and we've already done it here.
-+ */
-+#define ELF_HWCAP	(0)
-+
-+/* This yields a string that ld.so will use to load implementation
-+ * specific libraries for optimization.  This is more specific in
-+ * intent than poking at uname or /proc/cpuinfo.
-+
-+ * For the moment, we have only optimizations for the Intel generations,
-+ * but that could change...
-+ */
-+#define ELF_PLATFORM  (NULL)
-+
-+/* Added _f parameter. Is this definition correct: TBD */
-+#define ELF_PLAT_INIT(_r, _f)				\
-+do {							\
-+	_r->r1 =  _r->r1 =  _r->r2 =  _r->r3 =		\
-+	_r->r4 =  _r->r5 =  _r->r6 =  _r->r7 =		\
-+	_r->r8 =  _r->r9 =  _r->r10 = _r->r11 =		\
-+	_r->r12 = _r->r13 = _r->r14 = _r->r15 =		\
-+	_r->r16 = _r->r17 = _r->r18 = _r->r19 =		\
-+	_r->r20 = _r->r21 = _r->r22 = _r->r23 =		\
-+	_r->r24 = _r->r25 = _r->r26 = _r->r27 =		\
-+	_r->r28 = _r->r29 = _r->r30 = _r->r31 =		\
-+	0;						\
-+} while (0)
-+
-+#ifdef __KERNEL__
-+#define SET_PERSONALITY(ex) set_personality(PER_LINUX_32BIT)
-+#endif
-+
-+#endif /* __uClinux__ */
-+
- #endif /* _ASM_MICROBLAZE_ELF_H */
++	/* Load up the kernel context */
++kernel_load_context:
++	/* clearing kernel context */
++	ori	r5,r0,1		/* TLB slot 1 */
++	mts     rtlbx,r5
++	nop
++	mts	rtlbhi,r0
++	nop
++	ori	r5,r0,62	/* TLB slot 62 */
++	mts     rtlbx,r5
++	nop
++	mts	rtlbhi,r0
++	nop
++	ori	r5,r0,63	/* TLB slot 63 */
++	mts     rtlbx,r5
++	nop
++	mts	rtlbhi,r0
++	nop
++	addi	r15, r0, machine_halt
++	ori	r17, r0, start_kernel
++	ori	r4, r0, MSR_KERNEL_VMS
++	mts	rmsr, r4
++	nop
++	rted	r17, 0		/* enable MMU and jump to start_kernel */
++	nop
++#endif /* CONFIG_MMU */
 -- 
 1.5.5.1
 
