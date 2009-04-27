@@ -1,55 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbZD0MOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbZD0MPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755861AbZD0MOA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 08:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbZD0MNv
+	id S1755270AbZD0MPo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 08:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZD0MPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 08:13:51 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:58104 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752169AbZD0MNv (ORCPT
+	Mon, 27 Apr 2009 08:15:34 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:44790 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752169AbZD0MPd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 08:13:51 -0400
-Date: Mon, 27 Apr 2009 14:15:56 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: monstr@monstr.eu, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org, john.williams@petalogix.com
-Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
-Message-ID: <20090427121556.GA9469@uranus.ravnborg.org>
-References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <20090427113030.GA3681@infradead.org> <49F59A6E.9080900@monstr.eu> <200904271357.01681.arnd@arndb.de>
+	Mon, 27 Apr 2009 08:15:33 -0400
+Date: Mon, 27 Apr 2009 21:15:33 +0900 (JST)
+Message-Id: <20090427.211533.115916003.ryov@valinux.co.jp>
+To: righi.andrea@gmail.com
+Cc: randy.dunlap@oracle.com, menage@google.com, chlunde@ping.uio.no,
+       eric.rannaud@gmail.com, balbir@linux.vnet.ibm.com,
+       fernando@oss.ntt.co.jp, dradford@bluehost.com, agk@sourceware.org,
+       subrata@linux.vnet.ibm.com, axboe@kernel.dk, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, matt@bluehost.com, roberto@unbit.it,
+       ngupta@google.com
+Subject: Re: [PATCH 1/9] io-throttle documentation
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090427.194533.183037823.ryov@valinux.co.jp>
+References: <20090420.183815.226804723.ryov@valinux.co.jp>
+	<20090420150052.GC13307@linux>
+	<20090427.194533.183037823.ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904271357.01681.arnd@arndb.de>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 01:57:00PM +0200, Arnd Bergmann wrote:
-> On Monday 27 April 2009, Michal Simek wrote:
-> > Christoph Hellwig wrote:
-> 
-> > > Given that microblaze only got merged in the 2.6.30 window I would
-> > > suggest fixing up the nommu variant.
-> > 
-> > ok. Let's do it.
-> > Here are stats structures from xtensa.
-> > 
-> > Arnd: Is it ok for asm-generic?
-> 
-> I carry a (not cleaned up) tree with changes in my playground
-> (git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git)
-> as branch generic-microblaze, where I try to use generic
-> headers for everything. See below for my version of stat.h.
-> In particular, it uses 64 bit st_size and st_blocks, but 32 bit
-> time fields. It also defines struct stat to be identical to
-> struct stat64 on 64 bit systems. 32 bit systems should only
-> provide the stat64 syscalls, so the shorter types in struct
-> stat do not hurt.
+Hi Kamezawa-san,
 
-Why not use __u64/__u32 (and s32/s64 where appropriate)?
-Historical baggage or a techncal reason?
+> I've come up with an idea to coexist blkio-cgroup and io-throttle.
+> blkio-cgroup provides a function to get a cgroup with the specified ID.
+> 
+> /* Should be called under rcu_read_lock() */
+> struct cgroup *blkio_cgroup_lookup(int id)
+> {
+> 	struct cgroup *cgrp;
+> 	struct cgroup_subsys_state *css;
+> 	
+> 	if (blkio_cgroup_disabled())
+> 		return NULL;
+> 
+> 	css = css_lookup(&blkio_cgroup_subsys, id);
+> 	if (!css)
+> 		return NULL;
+> 	cgrp = css->cgroup;
+> 	return cgrp;
+> }
+> 
+> Then io-throttle can get a struct iothrottle which belongs to the
+> cgroup by using the above function.
+> 
+> static struct iothrottle *iothrottle_lookup(int id)
+> {
+> 	struct cgroup *grp;
+> 	struct iothrottle *iot;
+> 
+> 	...
+> 	grp = blkio_cgroup_lookup(id);
+> 	if (!grp)
+> 		return NULL
+> 	iot = cgroup_to_iothrottle(grp);
+> 	...
+> }
+> 
+> What do you think about this way?
 
-	Sam
+I have some questions. 
+- How about using the same numbering scheme as process ID for css_id
+  instead of idr? It prevents the same ID from being resued quickly.
+- Why are css_ids assigned per css? If each cgroup has a unique ID and
+  the subsystems can refer to it, I can make the above code simple.
+
+Thanks,
+Ryo Tsuruta
