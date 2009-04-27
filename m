@@ -1,50 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759624AbZD0UFM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759782AbZD0UGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759624AbZD0UFM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 16:05:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbZD0UE5
+	id S1759782AbZD0UGu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 16:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbZD0UGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 16:04:57 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:41159 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758201AbZD0UE5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 16:04:57 -0400
-Message-ID: <49F60FE1.90707@freescale.com>
-Date: Mon, 27 Apr 2009 15:04:49 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090327 SeaMonkey/2.0a3
-MIME-Version: 1.0
-To: David Hawkins <dwh@ovro.caltech.edu>
-CC: linuxppc-dev@ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
-       Liu Dave-R63238 <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
-       Ira Snyder <iws@ovro.caltech.edu>
-Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
-References: <20090424183517.GB23140@ovro.caltech.edu>	<D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net>	<ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com>	<49F608B7.9080409@ovro.caltech.edu> <49F60A3A.4060402@freescale.com> <49F60BF8.8040404@ovro.caltech.edu>
-In-Reply-To: <49F60BF8.8040404@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 27 Apr 2009 16:06:41 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:55397 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752383AbZD0UGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 16:06:40 -0400
+Subject: Re: [PATCH] Display 0 in meminfo for Committed_AS when value
+	underflows
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ebmunson@us.ibm.com, kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, mel@csn.ul.ie, cl@linux-foundation.org
+In-Reply-To: <20090427125208.94730dd8.akpm@linux-foundation.org>
+References: <1240848620-16751-1-git-send-email-ebmunson@us.ibm.com>
+	 <1240848914.29485.52.camel@nimitz>
+	 <20090427125208.94730dd8.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 27 Apr 2009 13:06:35 -0700
+Message-Id: <1240862795.29485.64.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Hawkins wrote:
+On Mon, 2009-04-27 at 12:52 -0700, Andrew Morton wrote:
+> On Mon, 27 Apr 2009 09:15:14 -0700
+> Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+> > On Mon, 2009-04-27 at 17:10 +0100, Eric B Munson wrote:
+> > > Splitting this patch from the chunk that addresses the cause of the underflow
+> > > because the solution still requires some discussion.
+> > > 
+> > > Dave Hansen reported that under certain cirumstances the Committed_AS value
+> > > can underflow which causes extremely large numbers to be displayed in
+> > > meminfo.  This patch adds an underflow check to meminfo_proc_show() for the
+> > > Committed_AS value.  Most fields in /proc/meminfo already have an underflow
+> > > check, this brings Committed_AS into line.
+> > 
+> > Yeah, this is the right fix for now until we can iron out the base
+> > issues.  Eric, I think this may also be a candidate for -stable.
+> > 
+> > Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+> 
+> I cannot find Eric's original patch anywhere.  Did some demented MTA munch it?
 
-> Can you give me an example of non-PCI memory that would be
-> non-prefetchable that you'd like us to try? We can see if our
-> host CPUs have an area like that ... we just need to know
-> what device to look for first :)
+Here's the version that I got.  My guess would be that your copy is
+sitting in some IBM mail server's queue right now.  It might show up in
+a couple of days. :)
 
-Hmmmm.... I was going to say any SOC device in the IMMR, but I don't see
-anything there that would constitute a memory buffer.
+---
 
-I test this change on an 8610 and DMA to a register I/O, where this bit
-isn't even defined, and it made no difference.  So I guess this change
-is okay.
+Andrew,
 
-Acked-by: Timur Tabi <timur@freescale.com>
+Please merge the following patch.
+
+Splitting this patch from the chunk that addresses the cause of the underflow
+because the solution still requires some discussion.
+
+Dave Hansen reported that under certain cirumstances the Committed_AS value
+can underflow which causes extremely large numbers to be displayed in
+meminfo.  This patch adds an underflow check to meminfo_proc_show() for the
+Committed_AS value.  Most fields in /proc/meminfo already have an underflow
+check, this brings Committed_AS into line.
+
+Reported-by: Dave Hansen <dave@linux.vnet.ibm.com>
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
+---
+ fs/proc/meminfo.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/fs/proc/meminfo.c b/fs/proc/meminfo.c
+index 74ea974..facb9fb 100644
+--- a/fs/proc/meminfo.c
++++ b/fs/proc/meminfo.c
+@@ -22,7 +22,7 @@ void __attribute__((weak)) arch_report_meminfo(struct seq_file *m)
+ static int meminfo_proc_show(struct seq_file *m, void *v)
+ {
+ 	struct sysinfo i;
+-	unsigned long committed;
++	long committed;
+ 	unsigned long allowed;
+ 	struct vmalloc_info vmi;
+ 	long cached;
+@@ -36,6 +36,8 @@ static int meminfo_proc_show(struct seq_file *m, void *v)
+ 	si_meminfo(&i);
+ 	si_swapinfo(&i);
+ 	committed = atomic_long_read(&vm_committed_space);
++	if (committed < 0)
++		committed = 0;
+ 	allowed = ((totalram_pages - hugetlb_total_pages())
+ 		* sysctl_overcommit_ratio / 100) + total_swap_pages;
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.6.1.2
+
+
+-- Dave
+
