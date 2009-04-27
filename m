@@ -1,93 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbZD0RVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757649AbZD0RXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757185AbZD0RVa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 13:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbZD0RVU
+	id S1757649AbZD0RXm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 13:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZD0RXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 13:21:20 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:45765 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752802AbZD0RVU (ORCPT
+	Mon, 27 Apr 2009 13:23:33 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:53570 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751902AbZD0RXd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 13:21:20 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] regulator: Move regulator drivers to subsys_initcall()
-Date: Mon, 27 Apr 2009 18:21:18 +0100
-Message-Id: <1240852878-8276-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.2.4
+	Mon, 27 Apr 2009 13:23:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=cCtSNP3nk4F8ovd0R56GnmR7SJNXGx5jb/4UKt6lumIj4gdy9a7CAaBEP5dxvzn1Rn
+         uQpu+1Yr9v784mEHlNToQHKze0PITnzrKI6QP1rLpJcCNz4s1HrO+wxSGFeIS4Eukzhi
+         DRFD/9sIz5OKOVGScQvrWT2z9B4eqs/LuiIgk=
+MIME-Version: 1.0
+In-Reply-To: <20090427172710.5a0c7f48@hyperion.delvare>
+References: <20090329174836.6de797d6@hyperion.delvare>
+	 <ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com>
+	 <20090330104952.26f03c13@hyperion.delvare>
+	 <ac3eb2510903300424s2604d027h653a3f77163e0242@mail.gmail.com>
+	 <20090426085401.3788fc9c@hyperion.delvare>
+	 <20090427132041.GA18391@sc1430.michaels-house.net>
+	 <20090427172710.5a0c7f48@hyperion.delvare>
+Date: Mon, 27 Apr 2009 12:23:30 -0500
+X-Google-Sender-Auth: ac18f4be4a5a5efd
+Message-ID: <437908170904271023k3eefd4c1ma0cacdb78ad7acd7@mail.gmail.com>
+Subject: Re: Class device namespaces
+From: Michael Brown <mebrown@michaels-house.net>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Matt Domsch <Matt_Domsch@dell.com>,
+       Douglas Warzecha <Douglas_Warzecha@dell.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Regulators need to be available early in init in order to allow them
-to be available for consumers when requested. This is generally done
-by registering them at subsys_initcall() time but not all regulator
-drivers have done that. Convert these drivers to do so in order to
-mimimise future support.
+On Mon, Apr 27, 2009 at 10:27 AM, Jean Delvare <khali@linux-fr.org> wrote:
+> The question was: any change to _which_ paths exactly? Sysfs often
+> offers several ways to reach the same object, and it matters to know
+> which need to be preserved and which can change.
+>
+> const char *rbu_v2_fw_data_file = "/sys/class/firmware/dell_rbu/data";
+> const char *rbu_v2_fw_load_file = "/sys/class/firmware/dell_rbu/loading";
+> const char *rbu_v2_img_type_file = "/sys/devices/platform/dell_rbu/image_type";
+> const char *rbu_v2_pkt_size_file = "/sys/devices/platform/dell_rbu/packet_size";
+>
+> I guess that noawadays v2 applies, so the only path which needs to be
+> preserved is "/sys/class/firmware/dell_rbu". Is that correct? Is it the
+> same for srvadmin-hap?
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/regulator/da903x.c             |    2 +-
- drivers/regulator/fixed.c              |    2 +-
- drivers/regulator/pcf50633-regulator.c |    2 +-
- drivers/regulator/wm8400-regulator.c   |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+You are correct WRT libsmbios. For hapi, I've cc'd Doug who can tell
+you about their code. I've done a quick grep of their code, and the
+paths above look like the same ones he is using, but I could be wrong.
 
-diff --git a/drivers/regulator/da903x.c b/drivers/regulator/da903x.c
-index 72b1549..2a491bf 100644
---- a/drivers/regulator/da903x.c
-+++ b/drivers/regulator/da903x.c
-@@ -504,7 +504,7 @@ static int __init da903x_regulator_init(void)
- {
- 	return platform_driver_register(&da903x_regulator_driver);
- }
--module_init(da903x_regulator_init);
-+subsys_initcall(da903x_regulator_init);
- 
- static void __exit da903x_regulator_exit(void)
- {
-diff --git a/drivers/regulator/fixed.c b/drivers/regulator/fixed.c
-index 23d5546..6e0bede 100644
---- a/drivers/regulator/fixed.c
-+++ b/drivers/regulator/fixed.c
-@@ -117,7 +117,7 @@ static int __init regulator_fixed_voltage_init(void)
- {
- 	return platform_driver_register(&regulator_fixed_voltage_driver);
- }
--module_init(regulator_fixed_voltage_init);
-+subsys_initcall(regulator_fixed_voltage_init);
- 
- static void __exit regulator_fixed_voltage_exit(void)
- {
-diff --git a/drivers/regulator/pcf50633-regulator.c b/drivers/regulator/pcf50633-regulator.c
-index cd761d8..8e14900 100644
---- a/drivers/regulator/pcf50633-regulator.c
-+++ b/drivers/regulator/pcf50633-regulator.c
-@@ -316,7 +316,7 @@ static int __init pcf50633_regulator_init(void)
- {
- 	return platform_driver_register(&pcf50633_regulator_driver);
- }
--module_init(pcf50633_regulator_init);
-+subsys_initcall(pcf50633_regulator_init);
- 
- static void __exit pcf50633_regulator_exit(void)
- {
-diff --git a/drivers/regulator/wm8400-regulator.c b/drivers/regulator/wm8400-regulator.c
-index 1574260..01a6c95 100644
---- a/drivers/regulator/wm8400-regulator.c
-+++ b/drivers/regulator/wm8400-regulator.c
-@@ -380,7 +380,7 @@ static int __init wm8400_regulator_init(void)
- {
- 	return platform_driver_register(&wm8400_regulator_driver);
- }
--module_init(wm8400_regulator_init);
-+subsys_initcall(wm8400_regulator_init);
- 
- static void __exit wm8400_regulator_exit(void)
- {
--- 
-1.6.2.4
+hapi/apilibrary/dchbas/linux/umhbaslx.c:#define
+HBAS_RBU_SYSFS_NEW_DATAREAD_PFNAME		"/sys/devices/platform/dell_rbu/data"
+hapi/apilibrary/dchbas/linux/umhbaslx.c:#define
+HBAS_RBU_SYSFS_NEW_IMAGETYPE_PFNAME		"/sys/devices/platform/dell_rbu/image_type"
+hapi/apilibrary/dchbas/linux/umhbaslx.c:#define
+HBAS_RBU_SYSFS_NEW_PKTSIZE_PFNAME		"/sys/devices/platform/dell_rbu/packet_size"
 
+--
+Michael
