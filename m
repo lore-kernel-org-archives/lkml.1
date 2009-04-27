@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757067AbZD0Ojn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbZD0OlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757067AbZD0Ojn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 10:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756710AbZD0Ojc
+	id S1756790AbZD0OlZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 10:41:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755106AbZD0OlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 10:39:32 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:36462 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756446AbZD0Ojb (ORCPT
+	Mon, 27 Apr 2009 10:41:07 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:56357 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755055AbZD0OlF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 10:39:31 -0400
-Date: Mon, 27 Apr 2009 10:39:29 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andi Kleen <ak@linux.intel.com>
-cc: Huang Ying <ying.huang@intel.com>, Robert Richter <robert.richter@amd.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: Re-implement MCE log ring buffer as per-CPU ring buffer
-In-Reply-To: <49F5646F.4000305@linux.intel.com>
-Message-ID: <alpine.DEB.2.00.0904271027580.24293@gandalf.stny.rr.com>
-References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com>  <20090422092259.GC18226@elte.hu> <20090422101600.GL3226@erda.amd.com>  <1240553210.6842.871.camel@yhuang-dev.sh.intel.com>  <20090424100943.GJ27264@erda.amd.com> 
- <alpine.DEB.2.00.0904240935140.24293@gandalf.stny.rr.com> <1240818596.6842.1001.camel@yhuang-dev.sh.intel.com> <49F5646F.4000305@linux.intel.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 27 Apr 2009 10:41:05 -0400
+To: linux-kernel@vger.kernel.org
+Cc: john.williams@petalogix.com, monstr@monstr.eu, linux-api@vger.kernel.org,
+       linux-arch@vger.kernel.org, liqin.chen@sunplusct.com,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Remis Lima Baima <remis.developer@googlemail.com>
+Subject: [RFC 00/17] asm-generic ABI files for microblaze
+From: Arnd Bergmann <arnd@arndb.de>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
+ =?iso-8859-1?q?Y=2Ea=5E3zb?=)
+ =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
+ =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+Date: Mon, 27 Apr 2009 16:40:43 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904271640.44445.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+3d2wNkrzFKYG2rMhUZCU17y1rb0F4FwcmVNg
+ lbDa0PZpTlTi2ontkTkH6jU/cDgR4MbhczYqBaEJ9wN+SCv9RN
+ cyoJh7ACM0U7sN8hDicDg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is my attempt to do a generic system call ABI for
+all new architectures, including a port for microblaze,
+which has recently been merged into 2.6.30. The next
+architecture that is about to get merged will be score,
+so it would be good if they can move to the same ABI.
 
-On Mon, 27 Apr 2009, Andi Kleen wrote:
+Please review the files and (in case of microblaze
+and score maintainers) test them on your architecture.
 
-> Huang Ying wrote:
-> > On Fri, 2009-04-24 at 21:36 +0800, Steven Rostedt wrote:
-> > > On Fri, 24 Apr 2009, Robert Richter wrote:
-> > > > > It seems that ring_buffer is not NMI-safe, while mcelog buffer will be
-> > > > > used in NMI context and interrupt context. When will ring_buffer to be
-> > > > > NMI-safe?
-> > > > You can use it in nmi context with separate read and write
-> > > > buffers. See this patch description:
-> > > > 6dad828b76c7224a22ddc9ce7aa495d994f03b31
-> > > > 
-> > > > Not sure if somebody will make the ring_buffer non-locking.
-> > > It already is ;-)
-> > > 
-> > > I've put in for a patent application on the algorithm so I must wait till
-> > > it is processed before I can release the code.
-> > 
-> > When will it be merged by mainline kernel? Do you have a plan?
-> 
-> Patent applications tend to be measured in years. Also I'm not sure
-> we really want patented algorithms in the kernel anyways if it can
-> be avoided. So the patent probably makes it impractical to use this
-> thing at all.
+The one part I'm not yet completely happy with is signal
+handling, I had to massage the microblaze code quite a
+bit to get the old-style siginfo out of it, which may
+not yet work.
 
-Once it is filed then I can post it, I do not need to wait till it is 
-done.
+Sam also mentioned that it might be good to consistently
+use the __u32 and similar types everywhere in asm-generic
+exported headers, which I might be doing as a next step
+(including the existing files).
 
-And what the hell do you mean about not using patents?? We have several 
-patents in the kernel. Have you ever heard of the Open Invention Network?
+Special thanks to Remis Baima, who has done some significant
+work cleaning up my patches.
 
- http://www.openinventionnetwork.com/
-
-This patent will go under the Open Source patent pool to help 
-protect against patent attacks against Linux, et. al.
-
-Yes, the Open Source community can file their own patents. The more 
-patents owned by the Open Source community, the better.
-
--- Steve
-
+	Arnd <><
