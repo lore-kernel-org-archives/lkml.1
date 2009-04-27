@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbZD0R5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758698AbZD0SAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758612AbZD0R5s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 13:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757132AbZD0R5i
+	id S1758698AbZD0SAo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 14:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbZD0SAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 13:57:38 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:60064 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756175AbZD0R5h (ORCPT
+	Mon, 27 Apr 2009 14:00:33 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45778 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751857AbZD0SAc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 13:57:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=tl/PyUdJ419iiEuARCjnIt3WEPCooJwQUu+YHFXx91r7TqP+/SCp7GXymoEohDSjw2
-         nU+4ehSS4Qne441DSX6JUCl+24pwi29vZf5UU/fJFYLkm1Kl7fYVzNOf5UP3c/uDprR8
-         W/l7BieYhW/yIxqhGA5p99ztkUq2HCDAmRGkQ=
-Subject: acpi 'video' driver, and issues with 'brightness_switch_enabled=0'
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 27 Apr 2009 20:57:32 +0300
-Message-Id: <1240855052.11237.7.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Apr 2009 14:00:32 -0400
+Date: Mon, 27 Apr 2009 20:03:32 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: Adrian McMenamin <adrian@newgolddream.dyndns.info>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-sh <linux-sh@vger.kernel.org>
+Subject: Re: [RFC][patch] filesystem: Vmufat filesystem, version 4
+Message-ID: <20090427180332.GA19265@elf.ucw.cz>
+References: <1239654768.6542.10.camel@localhost.localdomain> <20090424221455.GB5342@elf.ucw.cz> <200904271356.21684.vapier@gentoo.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904271356.21684.vapier@gentoo.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a notebook which handles brightness keys in hardware, but tells
-loudly when it does so.
+On Mon 2009-04-27 13:56:20, Mike Frysinger wrote:
+> On Friday 24 April 2009 18:14:55 Pavel Machek wrote:
+> > On Mon 2009-04-13 21:32:48, Adrian McMenamin wrote:
+> > > --- /dev/null
+> > > +++ b/fs/vmufat/Kconfig
+> > > @@ -0,0 +1,14 @@
+> > > +config VMUFAT_FS
+> > > +	tristate "Dreamcast VMU FAT filesystem"
+> > > +	depends on BLOCK
+> > > +	help
+> > > +	  This implements the simple FAT type filesystem found on SEGA
+> > > +	  Dreamcast visual memory units.
+> > > +
+> > > +	  Dreamcast users who want to mount their VMUs to view the native
+> > > +	  filesystem will say 'Y' here. The filesystem is hardware independent
+> > > +	  but is not recommended for any serious use in other circumstances, so
+> > > +	  just about everyone else should say 'N'.
+> > > +
+> > > +	  To compile this as a module say 'M' here. The module will be called
+> > > +	  vmufat
+> >
+> > "vmufat.ko." ?
+> 
+> no, the standard is to name it without extension.  there should be a period 
+> there though as it's the end of the sentence ...
 
-Currently, acpi 'video' also sets the brightness, which result in double
-setting, and on top of that it emits a key that makes gpm set brightness
-again.
-
-And (yes...) on top of that keyboard emits a brightness up/down even,
-which (you guessed...) sets brightness again.
-
-I found out that it is possible to tell gnome-power-manager not to set
-brightness, but yet in kernel driver still sets it.
-
-I found out even earlier that I can use brightness_switch_enabled=0,
-which supposed to make inkernel driver not touch the brightness.
-But I found out that this driver won't update the brightness, in /sys
-interface when I set this param.
-
-So what you can suggest here?
-
-Regards,
-	Maxim Levitsky
-
+Ok, add that period at end of sentence, I stand corrected.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
