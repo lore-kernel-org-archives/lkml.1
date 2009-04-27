@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbZD0TNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760699AbZD0TPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932619AbZD0TNm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 15:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932429AbZD0TLI
+	id S1760699AbZD0TPK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 15:15:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415AbZD0TOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 15:11:08 -0400
-Received: from vms173017pub.verizon.net ([206.46.173.17]:59957 "EHLO
-	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932444AbZD0TLG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 15:11:06 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-Date: Mon, 27 Apr 2009 15:10:48 -0400
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3; KDE/4.2.2; i686; ; )
-MIME-version: 1.0
-Subject: Fwd:
-To: linux-kernel@vger.kernel.org
-Content-Type: Text/Plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Content-disposition: inline
-Message-id: <200904271510.48774.gene.heskett@verizon.net>
+	Mon, 27 Apr 2009 15:14:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44393 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756348AbZD0TOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 15:14:54 -0400
+Date: Mon, 27 Apr 2009 21:09:53 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, zhaolei@cn.fujitsu.com,
+       kosaki.motohiro@jp.fujitsu.com, rostedt@goodmis.org, tzanussi@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] workqueue_tracepoint: Add worklet tracepoints for
+	worklet lifecycle tracing
+Message-ID: <20090427190953.GA3597@redhat.com>
+References: <49F1A59B.3080206@cn.fujitsu.com> <20090424130616.a3c217cb.akpm@linux-foundation.org> <20090424225909.GA6658@nowhere> <20090424162056.45907fef.akpm@linux-foundation.org> <20090425003702.GC6658@nowhere> <20090424182821.8263f445.akpm@linux-foundation.org> <20090426104747.GA5983@elte.hu> <20090426224450.8ea9f724.akpm@linux-foundation.org> <20090427150241.GA23700@redhat.com> <20090427154327.GA29921@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090427154327.GA29921@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 04/27, Ingo Molnar wrote:
+>
+> * Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> > I must admit, I don't really understand why trace_workqueue.c uses
+> > cwq->thread as a "primary key". I have the feeling we can simplify
+> > this code if we pass "struct workqueue_struct *" instead, but I am
+> > not sure.
+> >
+> > In particular, trace_workqueue_flush(cwq->thread) looks a bit
+> > strange to me. I can't imagine how it can be useful per-thread and
+> > without trace_workqueue_flush_end() or something. I mean, if we
+> > need to trace flushes, then imho it makes much more sense to add
+> > flush_start/flush_end handlers into flush_workqueue().
+>
+> If this is fixed (and no other problem surfaces), would you mind to
+> ack these bits?
 
-----------  Forwarded Message  ----------
+If you think my ack can help, you have it right now ;)
 
-Subject: 
-Date: Monday 27 April 2009
-From: arnd@arndb.de
-To: "no To-header on input" <unlisted-recipients:; @gmail-pop.l.google.com>
+> And if you can think of any way to make it even simpler / less
+> intrusive, please let us know ...
 
->From arnd@arndb.de Mon Apr 27 16:28:40 2009
-References: <20090427142010.587518220@arndb.de>
-User-Agent: quilt/0.46-1
-Date: Mon, 27 Apr 2009 16:20:24 +0200
-From: arnd@arndb.de
-To: linux-kernel@vger.kernel.org
-Cc: john.williams@petalogix.com,
- monstr@monstr.eu,
- linux-api@vger.kernel.org,
- linux-arch@vger.kernel.org,
- liqin.chen@sunplusct.com,
- Sam Ravnborg <sam@ravnborg.org>
-Subject: [RFC 14/17] syscalls.h add the missing sys_pipe2 declaration
-Content-Disposition: inline; filename=0034-Add-the-missing-sys_pipe2-
-declaration.patch
-X-Provags-ID: V01U2FsdGVkX18BNhYLkO16wJIO7fZdR0d6C1KKxWKU4X9yTw1
- kHYWFxFh/i+KLpzMQTnyQq6hXXodV+gYI/28GueZLh1YDCU7wt
- Ve65kcnRHOC2kZYsfpLWg==
+Sure. But currently I only have a gut feeling (probably wrong) and nothing
+more. And just in case, my apologies to all, I can't be very responsive on
+this topic in the near future.
 
-In order to build the generic syscall table, we need a declaration
-for every system call. sys_pipe2 was added without a proper declaration,
-so add this to syscalls.h now.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- include/linux/syscalls.h |    1 	1 +	0 -	0 !
- 1 file changed, 1 insertion(+)
-
-Index: linux-2.6/include/linux/syscalls.h
-===================================================================
---- linux-2.6.orig/include/linux/syscalls.h
-+++ linux-2.6/include/linux/syscalls.h
-@@ -433,6 +433,7 @@ asmlinkage long sys_fcntl(unsigned int f
- asmlinkage long sys_fcntl64(unsigned int fd,
- 				unsigned int cmd, unsigned long arg);
- #endif
-+asmlinkage long sys_pipe2(int __user *fildes, int flags);
- asmlinkage long sys_dup(unsigned int fildes);
- asmlinkage long sys_dup2(unsigned int oldfd, unsigned int newfd);
- asmlinkage long sys_dup3(unsigned int oldfd, unsigned int newfd, int flags);
-
--- 
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
-
--------------------------------------------------------
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Backed up the system lately?
+Oleg.
 
