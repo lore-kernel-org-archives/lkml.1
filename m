@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758722AbZD0Otc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758632AbZD0OtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758722AbZD0Otc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 10:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757843AbZD0OoJ
+	id S1758632AbZD0OtP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 10:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757783AbZD0OoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 10:44:09 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37607 "EHLO mx2.suse.de"
+	Mon, 27 Apr 2009 10:44:06 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37599 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757851AbZD0On5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757791AbZD0On5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 27 Apr 2009 10:43:57 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
@@ -15,9 +15,9 @@ Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-fsdevel@vger.kernel.org,
        Christoph Hellwig <hch@infradead.org>,
        Trond Myklebust <trond.myklebust@fys.uio.no>,
        Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>
-Subject: [PATCH 5/8] vfs: Move syncing code from super.c to sync.c (version 4)
-Date: Mon, 27 Apr 2009 16:43:52 +0200
-Message-Id: <1240843435-1786-6-git-send-email-jack@suse.cz>
+Subject: [PATCH 1/8] vfs: Fix sys_sync() and fsync_super() reliability (version 4)
+Date: Mon, 27 Apr 2009 16:43:48 +0200
+Message-Id: <1240843435-1786-2-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1240843435-1786-1-git-send-email-jack@suse.cz>
 References: <1240843435-1786-1-git-send-email-jack@suse.cz>
@@ -25,229 +25,124 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move sync_filesystems(), __fsync_super(), fsync_super() from
-super.c to sync.c where it fits better.
+So far, do_sync() called:
+  sync_inodes(0);
+  sync_supers();
+  sync_filesystems(0);
+  sync_filesystems(1);
+  sync_inodes(1);
+
+This ordering makes it kind of hard for filesystems as sync_inodes(0) need not
+submit all the IO (for example it skips inodes with I_SYNC set) so e.g. forcing
+transaction to disk in ->sync_fs() is not really enough. Therefore sys_sync has
+not been completely reliable on some filesystems (ext3, ext4, reiserfs, ocfs2
+and others are hit by this) when racing e.g. with background writeback. A
+similar problem hits also other filesystems (e.g. ext2) because of
+write_supers() being called before the sync_inodes(1).
+
+Change the ordering of calls in do_sync() - this requires a new function
+sync_blkdevs() to preserve the property that block devices are always synced
+after write_super() / sync_fs() call.
+
+The same issue is fixed in __fsync_super() function used on umount /
+remount read-only.
 
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/super.c         |   86 ----------------------------------------------------
- fs/sync.c          |   86 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fs.h |    1 -
- 3 files changed, 86 insertions(+), 87 deletions(-)
+ fs/super.c         |   27 ++++++++++++++++++++++++++-
+ fs/sync.c          |    3 ++-
+ include/linux/fs.h |    2 ++
+ 3 files changed, 30 insertions(+), 2 deletions(-)
 
 diff --git a/fs/super.c b/fs/super.c
-index b5d7dfb..c0302a5 100644
+index 786fe7d..4826540 100644
 --- a/fs/super.c
 +++ b/fs/super.c
-@@ -257,42 +257,6 @@ void unlock_super(struct super_block * sb)
- EXPORT_SYMBOL(lock_super);
- EXPORT_SYMBOL(unlock_super);
- 
--/*
-- * Do the filesystem syncing work. For simple filesystems sync_inodes_sb(sb, 0)
-- * just dirties buffers with inodes so we have to submit IO for these buffers
-- * via __sync_blockdev(). This also speeds up the wait == 1 case since in that
-- * case write_inode() functions do sync_dirty_buffer() and thus effectively
-- * write one block at a time.
-- */
--static int __fsync_super(struct super_block *sb, int wait)
--{
--	vfs_dq_sync(sb);
--	sync_inodes_sb(sb, wait);
--	lock_super(sb);
--	if (sb->s_dirt && sb->s_op->write_super)
--		sb->s_op->write_super(sb);
--	unlock_super(sb);
--	if (sb->s_op->sync_fs)
--		sb->s_op->sync_fs(sb, wait);
--	return __sync_blockdev(sb->s_bdev, wait);
--}
--
--/*
-- * Write out and wait upon all dirty data associated with this
-- * superblock.  Filesystem data as well as the underlying block
-- * device.  Takes the superblock lock.
-- */
--int fsync_super(struct super_block *sb)
--{
--	int ret;
--
--	ret = __fsync_super(sb, 0);
--	if (ret < 0)
--		return ret;
--	return __fsync_super(sb, 1);
--}
--EXPORT_SYMBOL_GPL(fsync_super);
--
- /**
-  *	generic_shutdown_super	-	common helper for ->kill_sb()
-  *	@sb: superblock to kill
-@@ -452,56 +416,6 @@ restart:
- 	spin_unlock(&sb_lock);
+@@ -267,6 +267,7 @@ void __fsync_super(struct super_block *sb)
+ {
+ 	sync_inodes_sb(sb, 0);
+ 	vfs_dq_sync(sb);
++	sync_inodes_sb(sb, 1);
+ 	lock_super(sb);
+ 	if (sb->s_dirt && sb->s_op->write_super)
+ 		sb->s_op->write_super(sb);
+@@ -274,7 +275,6 @@ void __fsync_super(struct super_block *sb)
+ 	if (sb->s_op->sync_fs)
+ 		sb->s_op->sync_fs(sb, 1);
+ 	sync_blockdev(sb->s_bdev);
+-	sync_inodes_sb(sb, 1);
  }
  
--/*
-- * Sync all the data for all the filesystems (called by sys_sync() and
-- * emergency sync)
-- *
-- * This operation is careful to avoid the livelock which could easily happen
-- * if two or more filesystems are being continuously dirtied.  s_need_sync
-- * is used only here.  We set it against all filesystems and then clear it as
-- * we sync them.  So redirtied filesystems are skipped.
-- *
-- * But if process A is currently running sync_filesystems and then process B
-- * calls sync_filesystems as well, process B will set all the s_need_sync
-- * flags again, which will cause process A to resync everything.  Fix that with
-- * a local mutex.
-- */
--void sync_filesystems(int wait)
--{
--	struct super_block *sb;
--	static DEFINE_MUTEX(mutex);
--
--	mutex_lock(&mutex);		/* Could be down_interruptible */
--	spin_lock(&sb_lock);
--	list_for_each_entry(sb, &super_blocks, s_list) {
--		if (sb->s_flags & MS_RDONLY)
--			continue;
--		sb->s_need_sync = 1;
--	}
--
--restart:
--	list_for_each_entry(sb, &super_blocks, s_list) {
--		if (!sb->s_need_sync)
--			continue;
--		sb->s_need_sync = 0;
--		if (sb->s_flags & MS_RDONLY)
--			continue;	/* hm.  Was remounted r/o meanwhile */
--		sb->s_count++;
--		spin_unlock(&sb_lock);
--		down_read(&sb->s_umount);
--		async_synchronize_full_domain(&sb->s_async_list);
--		if (sb->s_root)
--			__fsync_super(sb, wait);
--		up_read(&sb->s_umount);
--		/* restart only when sb is no longer on the list */
--		spin_lock(&sb_lock);
--		if (__put_super_and_need_restart(sb))
--			goto restart;
--	}
--	spin_unlock(&sb_lock);
--	mutex_unlock(&mutex);
--}
--
- /**
-  *	get_super - get the superblock of a device
-  *	@bdev: device to get the superblock for
-diff --git a/fs/sync.c b/fs/sync.c
-index 86c6a86..a0a163a 100644
---- a/fs/sync.c
-+++ b/fs/sync.c
-@@ -17,6 +17,92 @@
- #define VALID_FLAGS (SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE| \
- 			SYNC_FILE_RANGE_WAIT_AFTER)
+ /*
+@@ -502,6 +502,31 @@ restart:
+ 	mutex_unlock(&mutex);
+ }
  
 +/*
-+ * Do the filesystem syncing work. For simple filesystems sync_inodes_sb(sb, 0)
-+ * just dirties buffers with inodes so we have to submit IO for these buffers
-+ * via __sync_blockdev(). This also speeds up the wait == 1 case since in that
-+ * case write_inode() functions do sync_dirty_buffer() and thus effectively
-+ * write one block at a time.
++ *  Sync all block devices underlying some superblock
 + */
-+static int __fsync_super(struct super_block *sb, int wait)
-+{
-+	vfs_dq_sync(sb);
-+	sync_inodes_sb(sb, wait);
-+	lock_super(sb);
-+	if (sb->s_dirt && sb->s_op->write_super)
-+		sb->s_op->write_super(sb);
-+	unlock_super(sb);
-+	if (sb->s_op->sync_fs)
-+		sb->s_op->sync_fs(sb, wait);
-+	return __sync_blockdev(sb->s_bdev, wait);
-+}
-+
-+/*
-+ * Write out and wait upon all dirty data associated with this
-+ * superblock.  Filesystem data as well as the underlying block
-+ * device.  Takes the superblock lock.
-+ */
-+int fsync_super(struct super_block *sb)
-+{
-+	int ret;
-+
-+	ret = __fsync_super(sb, 0);
-+	if (ret < 0)
-+		return ret;
-+	return __fsync_super(sb, 1);
-+}
-+EXPORT_SYMBOL_GPL(fsync_super);
-+
-+/*
-+ * Sync all the data for all the filesystems (called by sys_sync() and
-+ * emergency sync)
-+ *
-+ * This operation is careful to avoid the livelock which could easily happen
-+ * if two or more filesystems are being continuously dirtied.  s_need_sync
-+ * is used only here.  We set it against all filesystems and then clear it as
-+ * we sync them.  So redirtied filesystems are skipped.
-+ *
-+ * But if process A is currently running sync_filesystems and then process B
-+ * calls sync_filesystems as well, process B will set all the s_need_sync
-+ * flags again, which will cause process A to resync everything.  Fix that with
-+ * a local mutex.
-+ */
-+static void sync_filesystems(int wait)
++void sync_blockdevs(void)
 +{
 +	struct super_block *sb;
-+	static DEFINE_MUTEX(mutex);
 +
-+	mutex_lock(&mutex);		/* Could be down_interruptible */
 +	spin_lock(&sb_lock);
-+	list_for_each_entry(sb, &super_blocks, s_list) {
-+		if (sb->s_flags & MS_RDONLY)
-+			continue;
-+		sb->s_need_sync = 1;
-+	}
-+
 +restart:
 +	list_for_each_entry(sb, &super_blocks, s_list) {
-+		if (!sb->s_need_sync)
++		if (!sb->s_bdev)
 +			continue;
-+		sb->s_need_sync = 0;
-+		if (sb->s_flags & MS_RDONLY)
-+			continue;	/* hm.  Was remounted r/o meanwhile */
 +		sb->s_count++;
 +		spin_unlock(&sb_lock);
 +		down_read(&sb->s_umount);
-+		async_synchronize_full_domain(&sb->s_async_list);
 +		if (sb->s_root)
-+			__fsync_super(sb, wait);
++			sync_blockdev(sb->s_bdev);
 +		up_read(&sb->s_umount);
-+		/* restart only when sb is no longer on the list */
 +		spin_lock(&sb_lock);
 +		if (__put_super_and_need_restart(sb))
 +			goto restart;
 +	}
 +	spin_unlock(&sb_lock);
-+	mutex_unlock(&mutex);
 +}
 +
- SYSCALL_DEFINE0(sync)
- {
- 	sync_filesystems(0);
+ /**
+  *	get_super - get the superblock of a device
+  *	@bdev: device to get the superblock for
+diff --git a/fs/sync.c b/fs/sync.c
+index 7abc65f..fa14e42 100644
+--- a/fs/sync.c
++++ b/fs/sync.c
+@@ -26,10 +26,11 @@ static void do_sync(unsigned long wait)
+ 	wakeup_pdflush(0);
+ 	sync_inodes(0);		/* All mappings, inodes and their blockdevs */
+ 	vfs_dq_sync(NULL);
++	sync_inodes(wait);	/* Mappings, inodes and blockdevs, again. */
+ 	sync_supers();		/* Write the superblocks */
+ 	sync_filesystems(0);	/* Start syncing the filesystems */
+ 	sync_filesystems(wait);	/* Waitingly sync the filesystems */
+-	sync_inodes(wait);	/* Mappings, inodes and blockdevs, again. */
++	sync_blockdevs();
+ 	if (!wait)
+ 		printk("Emergency Sync complete\n");
+ 	if (unlikely(laptop_mode))
 diff --git a/include/linux/fs.h b/include/linux/fs.h
-index be2be8d..cbef739 100644
+index 5bed436..4bad02e 100644
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -2083,7 +2083,6 @@ extern int filemap_fdatawrite_range(struct address_space *mapping,
+@@ -1942,6 +1942,7 @@ extern void bdput(struct block_device *);
+ extern struct block_device *open_by_devnum(dev_t, fmode_t);
+ extern void invalidate_bdev(struct block_device *);
+ extern int sync_blockdev(struct block_device *bdev);
++extern void sync_blockdevs(void);
+ extern struct super_block *freeze_bdev(struct block_device *);
+ extern void emergency_thaw_all(void);
+ extern int thaw_bdev(struct block_device *bdev, struct super_block *sb);
+@@ -1951,6 +1952,7 @@ extern int fsync_no_super(struct block_device *);
+ #else
+ static inline void bd_forget(struct inode *inode) {}
+ static inline int sync_blockdev(struct block_device *bdev) { return 0; }
++static inline void sync_blockdevs(void) { }
+ static inline void invalidate_bdev(struct block_device *bdev) {}
  
- extern int vfs_fsync(struct file *file, struct dentry *dentry, int datasync);
- extern void sync_supers(void);
--extern void sync_filesystems(int wait);
- extern void emergency_sync(void);
- extern void emergency_remount(void);
- extern int do_remount_sb(struct super_block *sb, int flags,
+ static inline struct super_block *freeze_bdev(struct block_device *sb)
 -- 
 1.6.0.2
 
