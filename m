@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbZD0Moc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756682AbZD0Mos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756604AbZD0Moc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 08:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbZD0MoX
+	id S1756682AbZD0Mos (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 08:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbZD0Moc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 08:44:23 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:43699 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752999AbZD0MoW (ORCPT
+	Mon, 27 Apr 2009 08:44:32 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:47943 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756596AbZD0Mob (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 08:44:22 -0400
-Date: Mon, 27 Apr 2009 21:44:21 +0900 (JST)
-Message-Id: <20090427.214421.48516137.ryov@valinux.co.jp>
-To: agk@redhat.com
-Cc: dm-devel@redhat.com, vgoyal@redhat.com, fernando@oss.ntt.co.jp,
-       linux-kernel@vger.kernel.org, jmoyer@redhat.com, jens.axboe@oracle.com,
-       nauman@google.com, balbir@linux.vnet.ibm.com, snitzer@redhat.com
-Subject: Re: dm-ioband: Test results.
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090427.193006.112614137.ryov@valinux.co.jp>
-References: <20090422.121443.104042516.ryov@valinux.co.jp>
-	<20090422151805.GC32602@redhat.com>
-	<20090427.193006.112614137.ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 27 Apr 2009 08:44:31 -0400
+Message-ID: <49F5A8AB.4040707@monstr.eu>
+Date: Mon, 27 Apr 2009 14:44:27 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       john.williams@petalogix.com
+Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
+References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <200904271357.01681.arnd@arndb.de> <49F5A5B2.7000307@monstr.eu> <200904271442.24870.arnd@arndb.de>
+In-Reply-To: <200904271442.24870.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alasdair,
+Arnd Bergmann wrote:
+> On Monday 27 April 2009, Michal Simek wrote:
+>>>       long            st_size;        /* Size of file, in bytes.  */
+>> Maybe unsigned? Make more sense to me that file size is not minus.
+>> And for some types below.
+> 
+> st_size represents an off_t in user space, which is signed.
+> Just over half the existing architectures use signed types
+> for st_size, but for this (like Sam's suggestion for __u64),
+> I don't think it matters either way.
 
-From: Mike Snitzer <snitzer@redhat.com>
-Subject: Re: dm-ioband: Test results.
-Date: Wed, 22 Apr 2009 11:18:06 -0400
+OK. Is it mean that your structure is perfect? If yes, I'll recompile toolchain and do some more tests.
 
-> Why is it that you repeatedly ignore concern/discussion about your
-> determination to continue using a custom grouping mechanism?  It is this
-> type of excess layering that serves no purpose other than to facilitate
-> out-of-tree use-cases.  dm-ioband would take a big step closer to being
-> merged upstream if you took others' feedback and showed more willingness
-> to work through the outstanding issues.
+Michal
 
-Could you please let me know your opinion about merging dm-ioband
-upstream? What do I have to do in order to merge dm-ioband?
+> 
+> 	Arnd <><
 
-Thanks,
-Ryo Tsuruta
+
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
