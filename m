@@ -1,113 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752065AbZD0EYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbZD0Esq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752065AbZD0EYx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 00:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbZD0EYn
+	id S1752744AbZD0Esq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 00:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZD0Esg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 00:24:43 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:35309 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbZD0EYn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 00:24:43 -0400
+	Mon, 27 Apr 2009 00:48:36 -0400
+Received: from mga03.intel.com ([143.182.124.21]:15588 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751343AbZD0Esf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 00:48:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,252,1239001200"; 
+   d="scan'208";a="136177571"
+Date: Mon, 27 Apr 2009 12:48:14 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-nfs@vger.kernel.org, Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH 3/3] readahead: introduce context readahead algorithm
+Message-ID: <20090427044814.GA9975@localhost>
+References: <20090412071950.166891982@intel.com> <20090412072052.686760755@intel.com> <x49k55mintn.fsf@segfault.boston.devel.redhat.com> <20090415044301.GB9948@localhost> <x49r5ztg5sr.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-Date: Mon, 27 Apr 2009 14:24:42 +1000
-Message-ID: <1d3f23370904262124l444bc30dmf4178930f4a2b82f@mail.gmail.com>
-Subject: microblaze: Statically linking device tree blobs into the kernel
-From: John Williams <john.williams@petalogix.com>
-To: linuxppc-dev@ozlabs.org, Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Linn <John.Linn@xilinx.com>, microblaze-uclinux@itee.uq.edu.au,
-       Michal Simek <michal.simek@petalogix.com>,
-       Grant Likely <grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x49r5ztg5sr.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To MicroBlazers and other interested parties:
+Hi Jeff,
 
-Currently the MicroBlaze kernel boot-time ABI requires r7 to point to
-a valid DTB, whereupon in early kernel setup the DTB is copied to a
-statically allocated 16k memory region inside the kernel. From there
-it is later queried by the platform startup code.
+I did some more NFS readahead tests. Judging from your and mine tests, I can
+say that the context readahead is safe for trivial NFS workloads :-) It is
+behaving in the expected way, and the overheads, if any, are close enough
+to the fluctuating margin.
 
-For simple boot scenarios the ability to statically bind a DTB into
-the kernel image would clearly be useful.  In PPC land, this is
-achieved through the simpleboot bootloader that lives in
-arch/powerpc/boot.  The DTB becomes part of the simpleboot payload,
-and is passed to the kernel through the normal means.
+On Thu, Apr 16, 2009 at 01:55:48AM +0800, Jeff Moyer wrote:
+> Hi, Fengguang,
+>
+> Wu Fengguang <fengguang.wu@intel.com> writes:
+>
+> >> I tested out your patches.  Below are some basic iozone numbers for a
+> >> single NFS client reading a file.  The iozone command line is:
+> >>
+> >>   iozone -s 2000000 -r 64 -f /mnt/test/testfile -i 1 -w
+> >
+> > Jeff, thank you very much for the testing out!
+> >
+> >> The file system is unmounted after each run to flush the cache.  The
+> >> numbers below reflect only a single run each.  The file system was also
+> >> unmounted on the NFS client after each run.
+> >>
+> >> KEY
+> >> ---
+> >> vanilla:	   2.6.30-rc1
+> >> readahead:	   2.6.30-rc1 + your 10 readahead patches
+> >> context readahead: 2.6.30-rc1 + your 10 readahead patches + the 3
+> >> 		   context readahead patches.
+> >> nfsd's:		   number of NFSD threads on the server
+> >
+> > I guess you are applying the readahead patches to the server side?
+>
+> That's right.
+>
+> > What's the NFS mount options and client/server side readahead size?
+> > The context readahead is pretty sensible to these parameters.
+>
+> Default options everywhere.
 
-I'm not convinced duplicating this for MicroBlaze is a good idea, I
-think it would be overkill.  However, the make syntax that PPC uses to
-achieve DTB binding is quite nice:
+The default options observed in my test platforms:
+        - client: CFQ, kernel 2.6.30-rc3 + linux-2.6-block.git for linus
+        - server: CFQ, kernel 2.6.30-rc2-next-20090417
+is
+        - rsize=256k
+        - NFS readahead size=3840k (= 256k * 15)
+        - sda readahead size=128k
 
-$ make simpleImage.<board>
+> >> I'll note that the cfq in 2.6.30-rc1 is crippled, and that Jens has a
+> >> patch posted that makes the numbers look at least a little better, but
+> >> that's immaterial to this discussion, I think.
+[snip]
+> > Let me transform them into relative numbers:
+> >
+> >              A     B     C      A..B      A..C
+> > cfq-1      43127 42471 42827    -1.5%     -0.7%
+> > cfq-2      22354 21913 21882    -2.0%     -2.1%
+> > cfq-4      20858 21252 20678    +1.9%     -0.9%
+> > cfq-8      21179 20979 21508    -0.9%     +1.6%
+> >
+> > deadline-1 43732 42801 43040    -2.1%     -1.6%
+> > deadline-2 68059 70158 71173    +3.1%     +4.6%
+> > deadline-4 76659 82068 82407    +7.1%     +7.5%
+> > deadline-8 83231 82406 86583    -1.0%     +4.0%
+> >
+> > Summaries:
+> > 1) the overall numbers are slightly negative for CFQ and looks better
+> >    with deadline.
+>
+> The variance is probably 1-2%.  I'll try to quantify that for you.
 
-which binds arch/powerpc/boot/dts/<board>.dts into the boot payload.
+I tried to measure the overheads, here is the approach:
+- random read(4K) syscalls on a huge sparse file over NFS
+- server side readahead size=1M, otherwise all default options
 
-My feeling is that we should make use of the fact that the DTB region
-is statically allocated in the MicroBlaze kernel anyway.  From
-arch/microblaze/kernel/vmlinux.lds.S:
+The -0.1%, +0.5% differences in time are close enough to the variance.
 
-        . = ALIGN (4) ;
-       _fdt_start = . ; /* place for fdt blob */
-       . = . + 0x4000;
-       _fdt_end = . ;
+                  vanilla    +max_sane_readahead()      +mmap readahead
+        run-1     77.01s      77.18                     77.96s
+        run-2     77.18s      77.53                     77.76s
+        run-3     77.93s      77.57                     77.84s
+        run-4     77.76s                                78.16s
+        run-5     77.55s                                77.76s
+        run-6                                           77.90s
+        avg       77.486      77.427                    77.897
+        diff%                 -0.1%                     +0.5%
 
-and in head.S, the DTB at r7 is copied into place at _fdt_start
+> > Anyway we have the io context problem for CFQ.  And I'm planning to
+> > dive into the CFQ code and your patch on that :-)
+>
+> Jens already reworked the patch and included it in his for-linus branch
+> of the block tree.  So, you can start there.  ;-)
 
-/* save fdt to kernel location */
-/* r7 stores pointer to fdt blob */
-        beqi    r7, no_fdt_arg
-        or      r11, r0, r0 /* incremment */
-        ori     r4, r0, TOPHYS(_fdt_start) /* save bram context */
-        ori     r3, r0, (0x4000 - 4)
-_copy_fdt:
-       <simple copy loop>
-no_fdt_arg:
+Good news. I'm running with it :-)
 
-Since this memory is already allocated in the kernel image but is
-normally just zeros, to bind a DTB to the kernel we could just store
-it in-situ.  This way, if a non-zero r7 is passed in at boot time,
-head.S will naturally overwrite (and thus override) the "default" DTB
-that was inside the kernel image.
+> > 2) the single thread case performance consistently dropped by 1-2%.
+>
+> > It seems not related to the behavior changes introduced by the mmap
+> > readahead patches and context readahead patches. And looks more like
+> > some overheads created by the code reorganization and the patch
+> > "readahead: apply max_sane_readahead() limit in ondemand_readahead()"
+> > which adds a bit overhead with the call max_sane_readahead().
+> >
+> > I'll try to root cause it.
 
-What I'm not so sure about is how best to achieve this in the kbuild
-sequence.  I see two options:
+Then I go on to test sequential reads on real files over NFS.
 
- (a) use .incbin in a .S file, similar to how the initramfs gets
-linked in in /usr/Makefile etc, or
- (b) use objcopy to manipulate vmlinux after final link, by directly
-inserting the DTB into the appropriate ELF section.
+Again the differences are small enough.
 
-(a) seems nice because it means that our standard make targets, such
-as linux.bin etc, would still work unchanged.  (b) seems to go a bit
-against the grain of kbuild, but maybe I'm wrong there.
+        vanilla        +mmap&context readahead   diff%
+nfsd=1  28.875s        28.770s                   -0.4%
+nfsd=8  42.533s        42.255s                   -0.7%
 
-I've hacked around with (a) a bit, part of the problem is that it
-seems arch/microblaze/Makefile would need something like
+For the single nfsd case, the readahead sequence is perfect and exactly the
+same before/after the context readahead patch:
 
-core-y += arch/microblaze/boot
+[   60.542986] readahead-initial0(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=0+64, ra=0+128-64, async=0) = 128
+[   60.573652] readahead-subsequent(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=64+32, ra=128+256-256, async=1) = 2
+56
+[   60.590312] readahead-subsequent(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=128+32, ra=384+256-256, async=1) =
+256
+[   60.652863] readahead-subsequent(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=384+32, ra=640+256-256, async=1) =
+256
+[   60.713916] readahead-subsequent(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=640+32, ra=896+256-256, async=1) =
+256
+[   60.776168] readahead-subsequent(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=896+32, ra=1152+256-256, async=1) =
+ 256
+[   60.837423] readahead-subsequent(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=1152+32, ra=1408+256-256, async=1)
+= 256
+[   60.899360] readahead-subsequent(pid=3124(nfsd), dev=08:02(sda2), ino=129(vmlinux-2.6.29), req=1408+32, ra=1664+256-256, async=1)
+= 256
 
-because the DTB "object file" must be ready before final vmlinux link.
-
-Instead of how it's done now (and in PPC), which is:
-
-$(BOOT_TARGETS): vmlinux
-        $(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
-
-where vmlinux is a dependency of the whole simpleImage/DTB binding process.
-
-Anyway input on both the approach, and how to achieve it, would be
-greatly appreciated before we go working to deeply on the
-implementation.
 
 Thanks,
-
-John
--- 
-John Williams,
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
+Fengguang
