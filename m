@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759228AbZD0PQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbZD0PPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759228AbZD0PQX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 11:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758069AbZD0PP4
+	id S1759211AbZD0PPq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 11:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932357AbZD0PNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 11:15:56 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:52277 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757737AbZD0PPy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 11:15:54 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [RFC 00/17] asm-generic ABI files for microblaze
-Date: Mon, 27 Apr 2009 17:15:32 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, john.williams@petalogix.com,
-       monstr@monstr.eu, linux-api@vger.kernel.org, linux-arch@vger.kernel.org,
-       liqin.chen@sunplusct.com,
-       Remis Lima Baima <remis.developer@googlemail.com>
-References: <200904271640.44445.arnd@arndb.de> <20090427151241.GA10558@uranus.ravnborg.org>
-In-Reply-To: <20090427151241.GA10558@uranus.ravnborg.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 27 Apr 2009 11:13:36 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:53007 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932293AbZD0PNe (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 11:13:34 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
+Subject: Re: [PATCH 1/3] bitops: Add __ffs64 bitop
+In-Reply-To: Your message of "Thu, 23 Apr 2009 10:16:54 BST."
+             <1240478216-2594-2-git-send-email-swhiteho@redhat.com>
+From: Valdis.Kletnieks@vt.edu
+References: <1240478216-2594-1-git-send-email-swhiteho@redhat.com>
+            <1240478216-2594-2-git-send-email-swhiteho@redhat.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1240839635_3889P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904271715.33676.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+TAMksHJ/w2Uq/4Tq1AhCXeRygg4lTLrgehuU
- P0fszGuaHC0T+sE+0Xx8L6Eds8L4ZXW4LX64hsklWi5p4YLvqS
- 24O9sKCljuG+ELAaRdjWg==
+Date: Mon, 27 Apr 2009 09:40:35 -0400
+Message-ID: <52615.1240839635@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 April 2009, Sam Ravnborg wrote:
-> The submission is seriously broken.
-> - subject is missing
-> - reply-to-all is broken
-> 
-> Can you resend with this fixed, then it makes review easier.
-> 
+--==_Exmh_1240839635_3889P
+Content-Type: text/plain; charset=us-ascii
 
-Sure, I have already done this and identified the problem: I had
-an extra '>' character in the description file I entered in quilt
-mail. For some reason, kmail still showed the patches correctly,
-by they got corrupted on the way out anyway. I'll look into
-using git-send-email in the future.
+On Thu, 23 Apr 2009 10:16:54 BST, Steven Whitehouse said:
+> Finds the first set bit in a 64 bit word. This is required in order
+> to fix a bug in GFS2, but I think it should be a generic function
+> in case of future users.
 
-	Arnd <><
+Seems like a sane idea..
+
+> +static inline unsigned long __ffs64(u64 word)
+> +{
+> +#if BITS_PER_LONG == 32
+> +	if (((u32)word) == 0UL)
+> +		return __ffs((u32)(word >> 32)) + 32;
+> +#elif BITS_PER_LONG != 64
+> +#error BITS_PER_LONG not 32 or 64
+> +#endif
+> +	return __ffs((unsigned long)word);
+> +}
+> +
+
+Does this have endian-ness issues (is that (u32)word the "high" or "low"
+part)?  Or is this intended only for looking at bitmaps and the like, and we
+don't really care?
+
+--==_Exmh_1240839635_3889P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJ9bXTcC3lWbTT17ARAihoAKC6ERc+qjF7uDoBiuSGm8TW0abcQwCg8tzd
+y66eZxEph7uBtFNOqEb8rlU=
+=HEvh
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1240839635_3889P--
