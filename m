@@ -1,24 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759302AbZD0Sd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759278AbZD0SeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759302AbZD0Sd6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 14:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758497AbZD0Sdp
+	id S1759278AbZD0SeU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 14:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759123AbZD0Sdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 14:33:45 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:54882 "EHLO
+	Mon, 27 Apr 2009 14:33:47 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:46187 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758099AbZD0Sdo (ORCPT
+	with ESMTP id S1758387AbZD0Sdo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 27 Apr 2009 14:33:44 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH v3 1/2] eventfd: export fget and signal interfaces for
-	module use
+Subject: [KVM PATCH v3 0/2] irqfd
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, avi@redhat.com, davidel@xmailserver.org
-Date: Mon, 27 Apr 2009 14:33:29 -0400
-Message-ID: <20090427183329.6646.15703.stgit@dev.haskins.net>
-In-Reply-To: <20090427182540.6646.96740.stgit@dev.haskins.net>
-References: <20090427182540.6646.96740.stgit@dev.haskins.net>
+Date: Mon, 27 Apr 2009 14:33:24 -0400
+Message-ID: <20090427182540.6646.96740.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -27,48 +24,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We will use this later in the series
+(Applies to kvm.git 41b76d8d0487c26d6d4d3fe53c1ff59b3236f096)
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+This series implements a mechanism called "irqfd".  It lets you create
+an eventfd based file-desriptor to inject interrupts to a kvm guest.  We
+associate one gsi per fd for fine-grained routing.
+
+[ Changelog:
+
+   v3:
+        *) The kernel now allocates the eventfd (need to export sys_eventfd2)
+        *) Added a flags field for future expansion to kvm_irqfd()
+        *) We properly toggle the irq level 1+0.
+        *) We re-use the USERSPACE_SRC_ID instead of creating our own
+        *) Properly check for failures establishing a poll-table with eventfd
+	*) Fixed fd/file leaks on failure
+	*) Rebased to lateste kvm.git::41b76d8d04
+
+   v2:
+	*) Dropped notifier_chain based callbacks in favor of
+	   wait_queue_t::func and file::poll based callbacks (Thanks to
+	   Davide for the suggestion)
+
+   v1:
+        *) Initial release
+
+--------
+
+We do not have a user of this interface in this series, though note
+future version of virtual-bus (v4 and above) will be based on this.
+
+The first patch will require mainline buy-in, particularly from Davide
+(cc'd).  The last patch is kvm specific.
+
+qemu-kvm.git patch to follow.
+
+-Greg
+
 ---
 
- fs/eventfd.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Gregory Haskins (2):
+      kvm: add support for irqfd via eventfd-notification interface
+      eventfd: export fget and signal interfaces for module use
 
-diff --git a/fs/eventfd.c b/fs/eventfd.c
-index 2a701d5..faf9e60 100644
---- a/fs/eventfd.c
-+++ b/fs/eventfd.c
-@@ -16,6 +16,7 @@
- #include <linux/anon_inodes.h>
- #include <linux/eventfd.h>
- #include <linux/syscalls.h>
-+#include <linux/module.h>
- 
- struct eventfd_ctx {
- 	wait_queue_head_t wqh;
-@@ -56,6 +57,7 @@ int eventfd_signal(struct file *file, int n)
- 
- 	return n;
- }
-+EXPORT_SYMBOL_GPL(eventfd_signal);
- 
- static int eventfd_release(struct inode *inode, struct file *file)
- {
-@@ -197,6 +199,7 @@ struct file *eventfd_fget(int fd)
- 
- 	return file;
- }
-+EXPORT_SYMBOL_GPL(eventfd_fget);
- 
- SYSCALL_DEFINE2(eventfd2, unsigned int, count, int, flags)
- {
-@@ -228,6 +231,7 @@ SYSCALL_DEFINE2(eventfd2, unsigned int, count, int, flags)
- 		kfree(ctx);
- 	return fd;
- }
-+EXPORT_SYMBOL_GPL(sys_eventfd2);
- 
- SYSCALL_DEFINE1(eventfd, unsigned int, count)
- {
 
+ arch/x86/kvm/Makefile    |    2 -
+ arch/x86/kvm/x86.c       |    1 
+ fs/eventfd.c             |    4 +
+ include/linux/kvm.h      |    7 ++
+ include/linux/kvm_host.h |    4 +
+ virt/kvm/irqfd.c         |  158 ++++++++++++++++++++++++++++++++++++++++++++++
+ virt/kvm/kvm_main.c      |   11 +++
+ 7 files changed, 186 insertions(+), 1 deletions(-)
+ create mode 100644 virt/kvm/irqfd.c
+
+-- 
+Signature
