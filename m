@@ -1,59 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755713AbZD0Njz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbZD0NoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755713AbZD0Njz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 09:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZD0Njq
+	id S1755674AbZD0NoU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 09:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbZD0NoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 09:39:46 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:64084 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752759AbZD0Njp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 09:39:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=N4wE/HKbkK2zykwkgor7Dl0ssfUBrMRAlbUTGTqT+ANmi3fxC7JA2FxhNzK0VI+Ti4
-         StZ96CRpngkzFK/HlkXHKUdqRxKcxQC5kUaEr+M7/8iSP0rIBPri31g8f4G0bETOKzOz
-         q411TM0h3CS5RoYgdiIAchEBl6LZfvr2c4+Qw=
+	Mon, 27 Apr 2009 09:44:00 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57842 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752759AbZD0Nn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 09:43:59 -0400
+Date: Mon, 27 Apr 2009 15:43:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
+       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH RFC] v2 expedited "big hammer" RCU grace periods
+Message-ID: <20090427134302.GA19137@elte.hu>
+References: <20090426052340.GA24931@linux.vnet.ibm.com> <20090426112717.GE10391@elte.hu> <20090426191343.GC29238@Krystal> <20090426202255.GA5365@elte.hu> <20090426214451.GC6945@linux.vnet.ibm.com> <20090427032639.GA10087@elte.hu> <20090427132153.GI6945@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <407d949e0904270635p7f87e3c3jcb1db0e61d4ed11e@mail.gmail.com>
-References: <40a4ed590904240309o66753264lf58f2910726f7efc@mail.gmail.com>
-	 <alpine.DEB.2.00.0904241011280.24151@chino.kir.corp.google.com>
-	 <40a4ed590904241113p4949a020y46e0641e77f6f4e3@mail.gmail.com>
-	 <alpine.DEB.2.00.0904241155550.26080@chino.kir.corp.google.com>
-	 <40a4ed590904241216u655300ddvaa4660e11ad2cffc@mail.gmail.com>
-	 <alpine.DEB.2.00.0904241224001.28589@chino.kir.corp.google.com>
-	 <40a4ed590904250132o63e715cbvaccf5aac82265cd@mail.gmail.com>
-	 <alpine.DEB.2.00.0904261252010.18988@chino.kir.corp.google.com>
-	 <407d949e0904270635p7f87e3c3jcb1db0e61d4ed11e@mail.gmail.com>
-Date: Mon, 27 Apr 2009 15:39:43 +0200
-Message-ID: <40a4ed590904270639y2e1d29aaud7d66164d22e4e6b@mail.gmail.com>
-Subject: Re: Kernel 2.6.29 runs out of memory and hangs.
-From: Zeno Davatz <zdavatz@gmail.com>
-To: Greg Stark <gsstark@mit.edu>
-Cc: David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
-       Hannes Wyss <hwyss@ywesee.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090427132153.GI6945@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Greg
 
-On Mon, Apr 27, 2009 at 3:35 PM, Greg Stark <gsstark@mit.edu> wrote:
-> On Sun, Apr 26, 2009 at 8:55 PM, David Rientjes <rientjes@google.com> wrote:
->> There is work being done on a per-cgroup lowmem notifier which would allow
->> userspace to poll() on a device file and be notified of low memory
->> situations so that it can react on its own (like killing a low priority
->> task, expanding a cpuset, increasing a memcontroller limit, etc.)
->
-> Surely anything that important ought to be running with overcommit
-> disabled anyways.
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-Where do I enable or disable overcommit?
+> On Mon, Apr 27, 2009 at 05:26:39AM +0200, Ingo Molnar wrote:
+> > 
+> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > On Sun, Apr 26, 2009 at 10:22:55PM +0200, Ingo Molnar wrote:
+> > > > 
+> > > > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > > > 
+> > > > > * Ingo Molnar (mingo@elte.hu) wrote:
+> > > > > > 
+> > > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > > 
+> > > > > > > Second cut of "big hammer" expedited RCU grace periods, but only 
+> > > > > > > for rcu_bh.  This creates another softirq vector, so that entering 
+> > > > > > > this softirq vector will have forced an rcu_bh quiescent state (as 
+> > > > > > > noted by Dave Miller).  Use smp_call_function() to invoke 
+> > > > > > > raise_softirq() on all CPUs in order to cause this to happen.  
+> > > > > > > Track the CPUs that have passed through a quiescent state (or gone 
+> > > > > > > offline) with a cpumask.
+> > > > > > 
+> > > > > > hm, i'm still asking whether doing this would be simpler via a 
+> > > > > > reschedule vector - which not only is an existing facility but also 
+> > > > > > forces all RCU domains through a quiescent state - not just bh-RCU 
+> > > > > > participants.
+> > > > > > 
+> > > > > > Triggering a new softirq is in no way simpler that doing an SMP 
+> > > > > > cross-call - in fact softirqs are a finite resource so using some 
+> > > > > > other facility would be preferred.
+> > > > > > 
+> > > > > > Am i missing something?
+> > > > > > 
+> > > > > 
+> > > > > I think the reason for this whole thread is that waiting for rcu 
+> > > > > quiescent state, when called many times e.g. in multiple iptables 
+> > > > > invokations, takes too longs (5 seconds to load the netfilter 
+> > > > > rules at boot). [...]
+> > > > 
+> > > > I'm aware of the problem space.
+> > > > 
+> > > > I was suggesting that to trigger the quiescent state and to wait for 
+> > > > it to propagate it would be enough to reuse the reschedule 
+> > > > mechanism.
+> > > > 
+> > > > It would be relatively straightforward: first a send-reschedule then 
+> > > > do a wait_task_context_switch() on rq->curr - both are existing 
+> > > > primitives. (a task reference has to be taken but that's pretty much 
+> > > > all)
+> > > 
+> > > Well, one reason I didn't take this approach was that I didn't 
+> > > happen to think of it.  ;-)
+> > > 
+> > > Also that I hadn't heard of wait_task_context_switch().
+> > > 
+> > > Hmmm...  Looking for wait_task_context_switch().  OK, found it.
+> > > 
+> > > It looks to me that this primitive won't return until the 
+> > > scheduler actually decides to run something else.  We instead need 
+> > > to have something that stops waiting once the CPU enters the 
+> > > scheduler, hence the previous thought of making rcu_qsctr_inc() do 
+> > > a bit of extra work.
+> > > 
+> > > This would be a way of making an expedited RCU-sched across all 
+> > > RCU implementations.  As noted in the earlier email, it would not 
+> > > handle RCU or RCU-bh in a -rt kernel.
+> > > 
+> > > > By the time wait_task_context_switch() returns from the last CPU 
+> > > > we know that the quiescent state has passed.
+> > > 
+> > > We would want to wait for all of the CPUs in parallel, though, 
+> > > wouldn't we?  Seems that we would not want to wait for the last 
+> > > CPU to do another trip through the scheduler if it had already 
+> > > passed through the scheduler while we were waiting on the earlier 
+> > > CPUs.
+> > > 
+> > > So it seems like we would still want a two-pass approach -- one 
+> > > pass to capture the current state, the second pass to wait for the 
+> > > state to change.
+> > 
+> > I think waiting in parallel is still possible (first kick all tasks, 
+> > then make sure all tasks have left the CPU at least once).
+> > 
+> > The busy-waiting in wait_task_context_switch() is indeed a 
+> > problem - but perhaps that could be refactored to be a 
+> > migration-thread driven wait_for_completion() + complete() 
+> > cycle? It could be driven by preempt notifiers perhaps - and 
+> > become zero-cost.
+> 
+> Hmmm...  It would need to be informed of the quiescent state even 
+> if that quiescent state did not result in a preemption.
+> 
+> But you are right -- I do need to expedite RCU, not just RCU-bh, 
+> especially given that the boot-speed guys are starting to see 
+> grace periods as a measureable fraction of the boot time.  I will 
+> take another pass at this.
 
-Best
-Zeno
+The precise method of signalling is a detail i suspect - so by all 
+means use a new softirq if that is the cleanest. I'd also agree that 
+covering not just bh-rcu would definitely be a good idea.
+
+	Ingo
