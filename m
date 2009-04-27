@@ -1,70 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759190AbZD0SaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759266AbZD0Sax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759190AbZD0SaA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 14:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758908AbZD0S3s
+	id S1759266AbZD0Sax (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 14:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932093AbZD0SaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 14:29:48 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:44386 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758909AbZD0S3r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 14:29:47 -0400
-Date: Mon, 27 Apr 2009 20:31:53 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tim Abbott <tabbott@MIT.EDU>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 1/8] frv: Remove unused header asm/init.h.
-Message-ID: <20090427183153.GA12056@uranus.ravnborg.org>
-References: <1240855347-19316-1-git-send-email-tabbott@mit.edu> <1240855347-19316-2-git-send-email-tabbott@mit.edu>
+	Mon, 27 Apr 2009 14:30:24 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:33493 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759241AbZD0SaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 14:30:20 -0400
+Date: Mon, 27 Apr 2009 11:30:10 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
+       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
+Message-ID: <20090427113010.5e3f1700@nehalam>
+In-Reply-To: <1240854297.7620.65.camel@twins>
+References: <20090421111541.228e977a@nehalam>
+	<20090421193924.GA24404@elte.hu>
+	<20090421143927.52d7d89d@nehalam>
+	<alpine.LFD.2.00.0904220821240.3101@localhost.localdomain>
+	<20090423210938.1501507b@nehalam>
+	<49F146FF.5050200@cosmosbay.com>
+	<20090424091839.6e13ebec@nehalam>
+	<49F22465.80305@gmail.com>
+	<20090425133052.4cb711f5@nehalam>
+	<49F4A6E3.7080102@cosmosbay.com>
+	<20090426185646.GB29238@Krystal>
+	<20090426145746.1184aeba@nehalam>
+	<1240854297.7620.65.camel@twins>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240855347-19316-2-git-send-email-tabbott@mit.edu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 02:02:20PM -0400, Tim Abbott wrote:
-> It seems nothing has included the frv asm/init.h header for some time,
-> and its actual contents are out of date with include/linux/init.h.  So
-> just delete it.
+On Mon, 27 Apr 2009 19:44:57 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-git grep 'asm/init.h' agree with you.
+> On Sun, 2009-04-26 at 14:57 -0700, Stephen Hemminger wrote:
+> > On Sun, 26 Apr 2009 14:56:46 -0400
+> > Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > 
+> > > * Eric Dumazet (dada1@cosmosbay.com) wrote:
+> > > > From: Stephen Hemminger <shemminger@vyatta.com>
+> > > > 
+> > > > > Epilogue due to master Jarek. Lockdep carest not about the locking
+> > > > > doth bestowed. Therefore no keys are needed.
+> > > > > 
+> > > > > Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> > > > 
+> > > > So far, so good, should be ready for inclusion now, nobody complained :)
+> > > > 
+> > > > I include the final patch, merge of your last two patches.
+> > > > 
+> > > > David, could you please review it once again and apply it if it's OK ?
+> > > 
+> > > > Thanks to all for your help and patience
+> > > > 
+> > > > [PATCH] netfilter: use per-CPU recursive lock {XV}
+> > > 
+> > > Hi Eric, 
+> > > 
+> > > Suitable name would probably be :
+> > > 
+> > 
+> > But Linus is trying to delude himself.
+> > 
+> > This usage is recursive even if he doesn't like the terminology.
+> > The same CPU has to be able to reacquire the read lock without deadlocking.
+> > If reader/writer locks were implemented in a pure writer gets priority
+> > method, then this code would break!  So yes read locks can be used recursively
+> > now in Linux, but if the were implemented differently then this code
+> > would break.  For example, the -rt kernel turns all read/write locks into
+> > mutexs, so the -rt kernel developers will have to address this.
+> 
+> A recursive lock has the property:
+> 
+> lock()
+> {
+>   if (lock->owner == current) {
+>     lock->depth++;
+>     return;
+>   }
+> 
+>   /* regular lock stuff */
+> }
+> 
+> unlock()
+> {
+>   if (!--lock->depth)
+>     /* regular unlock */
+> }
 
+Only on Linux, and only because you look at locking from
+the point of view of the magic variable "current" process
+point of view.
+
+> non of the linux kernel locking primitives have this -- with the
+> possible exception of the cpu-hotplug lock.
 > 
-> Signed-off-by: Tim Abbott <tabbott@mit.edu>
-> Cc: David Howells <dhowells@redhat.com>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> ---
->  arch/frv/include/asm/init.h |   12 ------------
->  1 files changed, 0 insertions(+), 12 deletions(-)
->  delete mode 100644 arch/frv/include/asm/init.h
+> What rwlock_t has, is reader bias to the point where you can utterly
+> starve writers, with the side effect that you can obtain multiple read
+> ownerships without causing a deadlock.
+
+But what happens when this side effect disappears?
+ 
+> This is not what is called a recursive lock. A recursive lock would have
+> each owner only once, this rwlock_t thing is simply so unfair that it
+> can have unlimited owners, including multiple copies of the same one.
 > 
-> diff --git a/arch/frv/include/asm/init.h b/arch/frv/include/asm/init.h
-> deleted file mode 100644
-> index 8b15838..0000000
-> --- a/arch/frv/include/asm/init.h
-> +++ /dev/null
-> @@ -1,12 +0,0 @@
-> -#ifndef _ASM_INIT_H
-> -#define _ASM_INIT_H
-> -
-> -#define __init __attribute__ ((__section__ (".text.init")))
-> -#define __initdata __attribute__ ((__section__ (".data.init")))
-> -/* For assembly routines */
-> -#define __INIT		.section	".text.init",#alloc,#execinstr
-> -#define __FINIT		.previous
-> -#define __INITDATA	.section	".data.init",#alloc,#write
-> -
-> -#endif
-> -
-> -- 
-> 1.6.2.1
+> rwsem has fifo fairness, and therefore can deadlock in this scenario,
+> suppose thread A does a read, thread B tries a write and blocks, then
+> thread A recurses and tries to obtain another read ownership --
+> deadlock, as the FIFO fairness will demand the second read ownership
+> will wait on the pending writer, which will wait on the outstanding read
+> owner.
 > 
+> Now if rwsem were a fifo-fair recursive lock, the above would not
+> deadlock, since it would detect that the task already had (read)
+> ownership and simply increment the depth, instead of trying to acquire a
+> second ownership.
+> 
+> This is all common and well understood terminology, not something Linus
+> invented just to harras you with.
+
+In Documentation/ ?  online ?  Where is the definition? The only reference
+I se is indirectly in DocBook/kernel-locking.tmpl.
+
+> Generally speaking we do not condone recursive locking strategies -- and
+> afaik reiserfs (as per the BKL) and the network code (as per abusing
+> rwlock_t unfairness) are the only offenders.
+> 
+> Like Linus stated, recursive locking is generally poor taste and
+> indicates you basically gave up on trying to find a proper locking
+> scheme. We should very much work towards getting rid of these
+> abberations instead of adding new ones.
+
+The people complaining about naming never seem to be the ones providing
+workable suggestions or patches.
+
+> Linus is very much right on what he said, and you calling him delusional
+> only high-lights your ignorance on the issue.
+> 
+> [ PS. -rt implements rwlock_t as a proper recursive lock (either a mutex
+>   or a full multi-owner reader-writer lock with PI fairness) so if
+>   anybody abuses rwlock_t unfairness in a way that is not strict owner
+>   recursive we have a problem. ]
+
+Name it "dog's breath locking" for all I care. I am not bothering
+with arguments over names; there is real work to do elsewhere.
