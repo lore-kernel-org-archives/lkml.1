@@ -1,89 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759046AbZD0SH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbZD0SJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759046AbZD0SH4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 14:07:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758956AbZD0SHb
+	id S1758037AbZD0SJA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 14:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbZD0SIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 14:07:31 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:62734 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758991AbZD0SH3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 14:07:29 -0400
-Subject: [GIT PULL] Btrfs updates for 2.6.30-rc
-From: Chris Mason <chris.mason@oracle.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 27 Apr 2009 14:05:55 -0400
-Message-Id: <1240855555.5529.11.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010208.49F5F413.01E7:SCFMA4539814,ss=1,fgs=0
+	Mon, 27 Apr 2009 14:08:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36978 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751257AbZD0SIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 14:08:48 -0400
+Date: Mon, 27 Apr 2009 20:04:55 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: dhowells@redhat.com, yasutake.koichi@jp.panasonic.com,
+       linux-kernel@vger.kernel.org
+Subject: arch/ && tracehook_report_syscall_xxx()
+Message-ID: <20090427180455.GA32509@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+We have a lot of code like arch/alpha/kernel/ptrace.c:syscall_trace()
+in arch/ and I can't see how to convert them to use tracehooks.
 
-The master branch of:
+The first problem, we don't know which hook should be called, there is
+no entry/exit argument.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git
+Still, I think it is better to change this code right now, and call
+ptrace_report_syscall() directly.
 
-Has a few btrfs bug fixes, performance fixes and a few cleanups.  The
-highlights are some code from Josef Bacik to for metadata block group
-preallocation, which will help cut down on the chances of metadata
-enospc.
+But, the second problem, there is no "struct pt_regs *". What do you
+think about the patch below?
 
-Linus found an acl caching bug that made for many many btree searches
-for acls on inodes that didn't have acls, and that is fixed up as well.
+However. I can't imagine how ptrace_report_syscall(regs) can actually
+use "regs". Perhaps we can remove this argument?
 
-Chris Mason (7) commits (+144/-237):
-    Btrfs: look for acls during btrfs_read_locked_inode (+62/-0)
-    Btrfs: fix deadlocks and stalls on dead root removal (+6/-0)
-    Btrfs: fix fallocate deadlock on inode extent lock (+29/-17)
-    Btrfs: remove unused btrfs_bit_radix slab (+0/-8)
-    Btrfs: ratelimit IO error printks (+31/-17)
-    Btrfs: remove #if 0 code (+1/-188)
-    Btrfs: fix acl caching (+15/-7)
+Or what else do you think?
 
-Christoph Hellwig (3) commits (+30/-66):
-    Btrfs: kill btrfs_cache_create (+28/-43)
-    Btrfs: don't export symbols (+0/-6)
-    Btrfs: simplify makefile (+2/-17)
+Hmm... and I can't understand how to change
+arch/mn10300/kernel/ptrace.c:do_syscall_trace(), it does something
+strange with TIF_SINGLESTEP. (maintainers cc'ed).
 
-Joel Becker (2) commits (+41/-24):
-    Btrfs: Fix a trivial warning using max() of u64 vs ULL. (+1/-1)
-    Btrfs: Fix a bunch of printk() warnings. (+40/-23)
+Oleg.
 
-Josef Bacik (1) commits (+42/-2):
-    Btrfs: try to keep a healthy ratio of metadata vs data block groups
-
-Chris Ball (1) commits (+27/-11):
-    Btrfs: When shrinking, only update disk size on success
-
-Total: (14) commits
-
- fs/btrfs/Makefile           |   19 -----
- fs/btrfs/acl.c              |   18 +++--
- fs/btrfs/ctree.h            |    6 +
- fs/btrfs/disk-io.c          |   93 ++++++++------------------
- fs/btrfs/extent-tree.c      |   49 +++++++++++---
- fs/btrfs/extent_io.c        |   81 +----------------------
- fs/btrfs/extent_map.c       |   17 ----
- fs/btrfs/file.c             |   89 +------------------------
- fs/btrfs/free-space-cache.c |   15 ++--
- fs/btrfs/inode-map.c        |    2 
- fs/btrfs/inode.c            |  153 ++++++++++++++++++++++++++++++--------------
- fs/btrfs/ioctl.c            |    9 +-
- fs/btrfs/super.c            |   27 +++++--
- fs/btrfs/transaction.c      |    6 +
- fs/btrfs/tree-log.c         |    2 
- fs/btrfs/volumes.c          |   35 ++++++----
- fs/btrfs/volumes.h          |    3 
- 17 files changed, 284 insertions(+), 340 deletions(-)
-
+--- PTRACE/arch/alpha/kernel/ptrace.c~1_alpha	2009-04-06 00:03:35.000000000 +0200
++++ PTRACE/arch/alpha/kernel/ptrace.c	2009-04-27 19:11:50.000000000 +0200
+@@ -11,6 +11,7 @@
+ #include <linux/smp_lock.h>
+ #include <linux/errno.h>
+ #include <linux/ptrace.h>
++#include <linux/tracehook.h>
+ #include <linux/user.h>
+ #include <linux/slab.h>
+ #include <linux/security.h>
+@@ -354,20 +355,6 @@ syscall_trace(void)
+ {
+ 	if (!test_thread_flag(TIF_SYSCALL_TRACE))
+ 		return;
+-	if (!(current->ptrace & PT_PTRACED))
+-		return;
+-	/* The 0x80 provides a way for the tracing parent to distinguish
+-	   between a syscall stop and SIGTRAP delivery */
+-	ptrace_notify(SIGTRAP | ((current->ptrace & PT_TRACESYSGOOD)
+-				 ? 0x80 : 0));
+ 
+-	/*
+-	 * This isn't the same as continuing with a signal, but it will do
+-	 * for normal use.  strace only continues with a signal if the
+-	 * stopping signal is not SIGTRAP.  -brl
+-	 */
+-	if (current->exit_code) {
+-		send_sig(current->exit_code, current, 1);
+-		current->exit_code = 0;
+-	}
++	ptrace_report_syscall(NULL);
+ }
 
