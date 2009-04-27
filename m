@@ -1,281 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbZD0PJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932240AbZD0PK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932234AbZD0PJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 11:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757067AbZD0PHj
+	id S932240AbZD0PK1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 11:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757142AbZD0PHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 11:07:39 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:65236 "EHLO
+	Mon, 27 Apr 2009 11:07:41 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:60540 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756228AbZD0PHX (ORCPT
+	with ESMTP id S1756489AbZD0PHY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 11:07:23 -0400
-Message-Id: <20090427150317.357983125@arndb.de>
+	Mon, 27 Apr 2009 11:07:24 -0400
+Message-Id: <20090427150319.222669102@arndb.de>
 References: <20090427142010.587518220@arndb.de>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Apr 2009 17:01:15 +0200
+Date: Mon, 27 Apr 2009 17:01:26 +0200
 From: arnd@arndb.de
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, monstr@monstr.eu, linux-api@vger.kernel.org,
        linux-arch@vger.kernel.org, liqin.chen@sunplusct.com,
        Sam Ravnborg <sam@ravnborg.org>,
-       Remis Lima Baima <remis.developer@googlemail.com>
-Subject: [RFC 01/17] asm-generic: rename termios.h to termios-base.h
-Content-Disposition: inline; filename=0001-asm-generic-add-complete-termios.h.patch
-X-Provags-ID: V01U2FsdGVkX18C77cgJQ7UoIe7JeuEUpqUybEjMdiQExX0Kln
- 1qGJFzDvm9ZOTIEfizggGKfu3H5m/1h1xSmHm2eXImVcwNXu8q
- rVwuFdqv95fb4E1D7yp9A==
+       Remis Lima Baima <remis.developer@googlemail.com>,
+       Harvey Harrison <harvey.harrison@gmail.com>
+Subject: [RFC 12/17] asm-generic: add generic unaligned.h
+Content-Disposition: inline; filename=0009-asm-generic-add-generic-unaligned.h.patch
+X-Provags-ID: V01U2FsdGVkX19+gT64vyDUl/bL/XnPQ+9rtId8i5kcPKCGm8U
+ 4UskgGKp9MxHeKJyc/43MCsS2ThVpl990hw0+3iDOyuvLpsgjW
+ jYicdcmggMnzE4nusSjXQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The existing asm-generic/termios.h file only contains a part
-of the required termios.h contents. This renames it to termios-base.h
-and changes all users, so we can add a full termios.h file for
-new archtitectures.
+This implementation can be used by any architecture as a generic
+way to provide the unaligned helpers. Many architectures can
+override this by using linux/unaligned/access_ok.h.
 
+Cc: Harvey Harrison <harvey.harrison@gmail.com>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Remis Lima Baima <remis.developer@googlemail.com>
 ---
- arch/avr32/include/asm/termios.h      |    2 	1 +	1 -	0 !
- arch/frv/include/asm/termios.h        |    2 	1 +	1 -	0 !
- arch/microblaze/include/asm/termios.h |    2 	1 +	1 -	0 !
- arch/powerpc/include/asm/termios.h    |    2 	1 +	1 -	0 !
- arch/s390/include/asm/termios.h       |    2 	1 +	1 -	0 !
- include/asm-generic/termios-base.h    |   77 	77 +	0 -	0 !
- include/asm-generic/termios.h         |   77 	0 +	77 -	0 !
- 7 files changed, 82 insertions(+), 82 deletions(-)
- create mode 100644 include/asm-generic/termios-base.h
+ include/asm-generic/unaligned.h |   30 	30 +	0 -	0 !
+ 1 file changed, 30 insertions(+)
+ create mode 100644 include/asm-generic/unaligned.h
 
-Index: linux-2.6/arch/avr32/include/asm/termios.h
-===================================================================
---- linux-2.6.orig/arch/avr32/include/asm/termios.h
-+++ linux-2.6/arch/avr32/include/asm/termios.h
-@@ -55,7 +55,7 @@ struct termio {
- */
- #define INIT_C_CC "\003\034\177\025\004\0\1\0\021\023\032\0\022\017\027\026\0"
- 
--#include <asm-generic/termios.h>
-+#include <asm-generic/termios-base.h>
- 
- #endif	/* __KERNEL__ */
- 
-Index: linux-2.6/arch/frv/include/asm/termios.h
-===================================================================
---- linux-2.6.orig/arch/frv/include/asm/termios.h
-+++ linux-2.6/arch/frv/include/asm/termios.h
-@@ -52,7 +52,7 @@ struct termio {
- /* ioctl (fd, TIOCSERGETLSR, &result) where result may be as below */
- 
- #ifdef __KERNEL__
--#include <asm-generic/termios.h>
-+#include <asm-generic/termios-base.h>
- #endif
- 
- #endif /* _ASM_TERMIOS_H */
-Index: linux-2.6/arch/powerpc/include/asm/termios.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/termios.h
-+++ linux-2.6/arch/powerpc/include/asm/termios.h
-@@ -78,7 +78,7 @@ struct termio {
- 
- #ifdef __KERNEL__
- 
--#include <asm-generic/termios.h>
-+#include <asm-generic/termios-base.h>
- 
- #endif	/* __KERNEL__ */
- 
-Index: linux-2.6/arch/s390/include/asm/termios.h
-===================================================================
---- linux-2.6.orig/arch/s390/include/asm/termios.h
-+++ linux-2.6/arch/s390/include/asm/termios.h
-@@ -60,7 +60,7 @@ struct termio {
- #define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios2))
- #define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios2))
- 
--#include <asm-generic/termios.h>
-+#include <asm-generic/termios-base.h>
- 
- #endif	/* __KERNEL__ */
- 
-Index: linux-2.6/include/asm-generic/termios-base.h
+Index: linux-2.6/include/asm-generic/unaligned.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/include/asm-generic/termios-base.h
-@@ -0,0 +1,77 @@
-+/* termios.h: generic termios/termio user copying/translation
-+ */
-+
-+#ifndef _ASM_GENERIC_TERMIOS_BASE_H
-+#define _ASM_GENERIC_TERMIOS_BASE_H
-+
-+#include <asm/uaccess.h>
-+
-+#ifndef __ARCH_TERMIO_GETPUT
++++ linux-2.6/include/asm-generic/unaligned.h
+@@ -0,0 +1,30 @@
++#ifndef __ASM_GENERIC_UNALIGNED_H
++#define __ASM_GENERIC_UNALIGNED_H
 +
 +/*
-+ * Translate a "termio" structure into a "termios". Ugh.
++ * This is the most generic implementation of unaligned accesses
++ * and should work almost anywhere.
++ *
++ * If an architecture can handle unaligned accesses in hardware,
++ * it may want to use the linux/unaligned/access_ok.h implementation
++ * instead.
 + */
-+static inline int user_termio_to_kernel_termios(struct ktermios *termios,
-+						struct termio __user *termio)
-+{
-+	unsigned short tmp;
++#include <asm/byteorder.h>
 +
-+	if (get_user(tmp, &termio->c_iflag) < 0)
-+		goto fault;
-+	termios->c_iflag = (0xffff0000 & termios->c_iflag) | tmp;
-+
-+	if (get_user(tmp, &termio->c_oflag) < 0)
-+		goto fault;
-+	termios->c_oflag = (0xffff0000 & termios->c_oflag) | tmp;
-+
-+	if (get_user(tmp, &termio->c_cflag) < 0)
-+		goto fault;
-+	termios->c_cflag = (0xffff0000 & termios->c_cflag) | tmp;
-+
-+	if (get_user(tmp, &termio->c_lflag) < 0)
-+		goto fault;
-+	termios->c_lflag = (0xffff0000 & termios->c_lflag) | tmp;
-+
-+	if (get_user(termios->c_line, &termio->c_line) < 0)
-+		goto fault;
-+
-+	if (copy_from_user(termios->c_cc, termio->c_cc, NCC) != 0)
-+		goto fault;
-+
-+	return 0;
-+
-+ fault:
-+	return -EFAULT;
-+}
-+
-+/*
-+ * Translate a "termios" structure into a "termio". Ugh.
-+ */
-+static inline int kernel_termios_to_user_termio(struct termio __user *termio,
-+						struct ktermios *termios)
-+{
-+	if (put_user(termios->c_iflag, &termio->c_iflag) < 0 ||
-+	    put_user(termios->c_oflag, &termio->c_oflag) < 0 ||
-+	    put_user(termios->c_cflag, &termio->c_cflag) < 0 ||
-+	    put_user(termios->c_lflag, &termio->c_lflag) < 0 ||
-+	    put_user(termios->c_line,  &termio->c_line) < 0 ||
-+	    copy_to_user(termio->c_cc, termios->c_cc, NCC) != 0)
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+#ifndef user_termios_to_kernel_termios
-+#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
++#if defined(__LITTLE_ENDIAN)
++# include <linux/unaligned/le_struct.h>
++# include <linux/unaligned/be_byteshift.h>
++# include <linux/unaligned/generic.h>
++# define get_unaligned	__get_unaligned_le
++# define put_unaligned	__put_unaligned_le
++#elif defined(__BIG_ENDIAN)
++# include <linux/unaligned/be_struct.h>
++# include <linux/unaligned/le_byteshift.h>
++# include <linux/unaligned/generic.h>
++# define get_unaligned	__get_unaligned_be
++# define put_unaligned	__put_unaligned_be
++#else
++# error need to define endianess
 +#endif
 +
-+#ifndef kernel_termios_to_user_termios
-+#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
-+#endif
-+
-+#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
-+#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
-+
-+#endif	/* __ARCH_TERMIO_GETPUT */
-+
-+#endif /* _ASM_GENERIC_TERMIOS_BASE_H */
-Index: linux-2.6/include/asm-generic/termios.h
-===================================================================
---- linux-2.6.orig/include/asm-generic/termios.h
-+++ /dev/null
-@@ -1,77 +0,0 @@
--/* termios.h: generic termios/termio user copying/translation
-- */
--
--#ifndef _ASM_GENERIC_TERMIOS_H
--#define _ASM_GENERIC_TERMIOS_H
--
--#include <asm/uaccess.h>
--
--#ifndef __ARCH_TERMIO_GETPUT
--
--/*
-- * Translate a "termio" structure into a "termios". Ugh.
-- */
--static inline int user_termio_to_kernel_termios(struct ktermios *termios,
--						struct termio __user *termio)
--{
--	unsigned short tmp;
--
--	if (get_user(tmp, &termio->c_iflag) < 0)
--		goto fault;
--	termios->c_iflag = (0xffff0000 & termios->c_iflag) | tmp;
--
--	if (get_user(tmp, &termio->c_oflag) < 0)
--		goto fault;
--	termios->c_oflag = (0xffff0000 & termios->c_oflag) | tmp;
--
--	if (get_user(tmp, &termio->c_cflag) < 0)
--		goto fault;
--	termios->c_cflag = (0xffff0000 & termios->c_cflag) | tmp;
--
--	if (get_user(tmp, &termio->c_lflag) < 0)
--		goto fault;
--	termios->c_lflag = (0xffff0000 & termios->c_lflag) | tmp;
--
--	if (get_user(termios->c_line, &termio->c_line) < 0)
--		goto fault;
--
--	if (copy_from_user(termios->c_cc, termio->c_cc, NCC) != 0)
--		goto fault;
--
--	return 0;
--
-- fault:
--	return -EFAULT;
--}
--
--/*
-- * Translate a "termios" structure into a "termio". Ugh.
-- */
--static inline int kernel_termios_to_user_termio(struct termio __user *termio,
--						struct ktermios *termios)
--{
--	if (put_user(termios->c_iflag, &termio->c_iflag) < 0 ||
--	    put_user(termios->c_oflag, &termio->c_oflag) < 0 ||
--	    put_user(termios->c_cflag, &termio->c_cflag) < 0 ||
--	    put_user(termios->c_lflag, &termio->c_lflag) < 0 ||
--	    put_user(termios->c_line,  &termio->c_line) < 0 ||
--	    copy_to_user(termio->c_cc, termios->c_cc, NCC) != 0)
--		return -EFAULT;
--
--	return 0;
--}
--
--#ifndef user_termios_to_kernel_termios
--#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
--#endif
--
--#ifndef kernel_termios_to_user_termios
--#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
--#endif
--
--#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
--#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
--
--#endif	/* __ARCH_TERMIO_GETPUT */
--
--#endif /* _ASM_GENERIC_TERMIOS_H */
-Index: linux-2.6/arch/microblaze/include/asm/termios.h
-===================================================================
---- linux-2.6.orig/arch/microblaze/include/asm/termios.h
-+++ linux-2.6/arch/microblaze/include/asm/termios.h
-@@ -81,7 +81,7 @@ struct termio {
- 
- #ifdef __KERNEL__
- 
--#include <asm-generic/termios.h>
-+#include <asm-generic/termios-base.h>
- 
- #endif	/* __KERNEL__ */
- 
++#endif /* __ASM_GENERIC_UNALIGNED_H */
 
 -- 
 
