@@ -1,88 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbZD0Flo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbZD0FmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754755AbZD0Flo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 01:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbZD0Flf
+	id S1755904AbZD0FmW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 01:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbZD0FmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 01:41:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35094 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753421AbZD0Flf (ORCPT
+	Mon, 27 Apr 2009 01:42:13 -0400
+Received: from night.yars.free.net ([193.233.48.54]:44293 "EHLO
+	night.yars.free.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753917AbZD0FmM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 01:41:35 -0400
-Date: Sun, 26 Apr 2009 22:37:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] Fix race between callers of read_cache_page_async and
- invalidate_inode_pages.
-Message-Id: <20090426223744.72edc7f4.akpm@linux-foundation.org>
-In-Reply-To: <18933.16534.862316.787808@notabene.brown>
-References: <18933.16534.862316.787808@notabene.brown>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Mon, 27 Apr 2009 01:42:12 -0400
+Date: Mon, 27 Apr 2009 09:41:03 +0400
+From: "Alexander V. Lukyanov" <lav@netis.ru>
+To: linux-kernel@vger.kernel.org, linux-netdev@vger.kernel.org
+Subject: Re: 2.6.29.1: unregister_netdevice problem
+Message-ID: <20090427054103.GA27529@night.netis.ru>
+References: <20090422055735.GA4334@night.netis.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090422055735.GA4334@night.netis.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Apr 2009 15:20:22 +1000 Neil Brown <neilb@suse.de> wrote:
-
+On Wed, Apr 22, 2009 at 09:57:35AM +0400, Alexander V. Lukyanov wrote:
+> unregister_netdevice: waiting for eth0.2 to become free. Usage count = 4
 > 
-> 
-> 
-> Callers of read_cache_page_async typically wait for the page to become
-> unlocked (wait_on_page_locked) and then test PageUptodate to see if
-> the read was successful, or if there was an error.
-> 
-> This is wrong.
-> 
-> invalidate_inode_pages can cause an unlocked page to lose its
-> PageUptodate flag at any time without implying a read error.
+> eth0.2 is a vlan interface, eth0 is 02:00.0 Ethernet controller: Realtek
+> Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet
+> controller (rev 01)
 
-ow.
+Ok, now I did manually 'vconfig rem eth0.2' and I get these repeated messages.
+How do I find out what exactly holds the interface being used?
 
-> As any read error will cause PageError to be set, it is much safer,
-> and more idiomatic to test "PageError" than to test "!PageUptodate".
-> 
-> ...
->
-> diff --git a/fs/cramfs/inode.c b/fs/cramfs/inode.c
-> index dd3634e..573d582 100644
-> --- a/fs/cramfs/inode.c
-> +++ b/fs/cramfs/inode.c
-> @@ -180,7 +180,7 @@ static void *cramfs_read(struct super_block *sb, unsigned int offset, unsigned i
->  		struct page *page = pages[i];
->  		if (page) {
->  			wait_on_page_locked(page);
-> -			if (!PageUptodate(page)) {
-> +			if (PageError(page)) {
->  				/* asynchronous error */
->  				page_cache_release(page);
->  				pages[i] = NULL;
-> diff --git a/mm/filemap.c b/mm/filemap.c
-> index 379ff0b..9ff8093 100644
-> --- a/mm/filemap.c
-> +++ b/mm/filemap.c
-> @@ -1770,7 +1770,7 @@ struct page *read_cache_page(struct address_space *mapping,
->  	if (IS_ERR(page))
->  		goto out;
->  	wait_on_page_locked(page);
-> -	if (!PageUptodate(page)) {
-> +	if (!PageError(page)) {
->  		page_cache_release(page);
->  		page = ERR_PTR(-EIO);
->  	}
+I have killed most of non-kernel processes, eth0.2 is still used. LA=1, but
+the cpu is idle.
 
-hrm.  And where is it written that PageError() will remain inviolable
-after it has been set?
+top - 09:34:26 up 4 days, 23:55,  2 users,  load average: 1.00, 1.12, 3.55
+Tasks:  56 total,   1 running,  55 sleeping,   0 stopped,   0 zombie
+Cpu(s):  0.2%us,  0.2%sy,  0.0%ni, 99.7%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Mem:   3356308k total,  1165044k used,  2191264k free,   443536k buffers
+Swap:  3212920k total,      712k used,  3212208k free,   493568k cached
 
-A safer and more formal (albeit somewhat slower) fix would be to lock
-the page and check its state under the lock.
-
-y:/usr/src/linux-2.6.30-rc3> grep -r ClearPageError . | wc -l
-21
-
-?
+-- 
+   Alexander..
