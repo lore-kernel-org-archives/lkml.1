@@ -1,63 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZD0LbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbZD0LeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218AbZD0LbX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 07:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbZD0LbN
+	id S1755580AbZD0LeX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 07:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbZD0LeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 07:31:13 -0400
-Received: from www.tglx.de ([62.245.132.106]:34059 "EHLO www.tglx.de"
+	Mon, 27 Apr 2009 07:34:10 -0400
+Received: from thunk.org ([69.25.196.29]:54552 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751763AbZD0LbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 07:31:12 -0400
-Date: Mon, 27 Apr 2009 13:30:13 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
-Subject: Re: [BUG] 2.6.29.1 debugobjects warning
-In-Reply-To: <20090424064937.GD21739@elte.hu>
-Message-ID: <alpine.LFD.2.00.0904271328530.4529@localhost.localdomain>
-References: <20090423140002.GA12852@Krystal> <20090423164638.3b5769c6.akpm@linux-foundation.org> <20090424064937.GD21739@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1751056AbZD0LeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 07:34:07 -0400
+Date: Mon, 27 Apr 2009 07:33:56 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Christoph Hellwig <hch@lst.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: get_fs_excl/put_fs_excl/has_fs_excl
+Message-ID: <20090427113356.GC9059@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jens Axboe <jens.axboe@oracle.com>, Christoph Hellwig <hch@lst.de>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org
+References: <20090423191817.GA22521@lst.de> <20090423192123.GL4593@kernel.dk> <20090424184047.GA17001@lst.de> <20090425151656.GH13608@mit.edu> <20090427095339.GW4593@kernel.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090427095339.GW4593@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Apr 2009, Ingo Molnar wrote:
+On Mon, Apr 27, 2009 at 11:53:39AM +0200, Jens Axboe wrote:
+> > I'm kind of curious why you implemented things in this way, though.
+> > Is there a reason why the bosting is happening deep in the guts of the
+> > cfq code, instead of in blk-core.c when the submission of the block
+> > I/O request is processed?
 > 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Thu, 23 Apr 2009 10:00:02 -0400
-> > Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > 
-> > > ODEBUG: init active object type: timer_list
-> 
-> > It seems to be complaining that cpufreq_governor_dbs() is running 
-> > init_timer() against a timer which has already been initialised 
-> > once.
-> 
-> Not just already initialized - but also active. There's these states 
-> for an object:
-> 
->         ODEBUG_STATE_NONE,
->         ODEBUG_STATE_INIT,
->         ODEBUG_STATE_INACTIVE,
->         ODEBUG_STATE_ACTIVE,
->         ODEBUG_STATE_DESTROYED,
-> 
-> So the 'init active object type' warning above suggests that an 
-> init_timer() has been done on an already running timer. If true then 
-> that is a bad bug - can corrupt timer state, etc.
-> 
-> Thomas, do you agree?
+> You would need to implement a lot more logic in the block layer to
+> handle it there, as it stands it's basically a scheduler decision. So
+> the positioning is right imho, the placement of fs hooks is probably
+> mostly crap and could do with some work.
 
-Yes, that kind of bug makes the timer wheel explode later on due to
-list corruption.
+The question is whether you see this in terms of a scheduler decision
+or in terms of an I/O priority issue.  At the moment I agree it's a
+scheduler decision (which to be honest is implemented in somewhat of a
+hacky way --- which I suspect won't bother you since, you yourself
+called it "half-assed" :-) which happens to be implemented in the I/O
+scheduler.
 
-Thanks,
+I tend to think of it more as an I/O priority issue, and specifically,
+as you put it, an priority inversion issue, but much of that is no
+doubt influenced by how I did the patches to reduce the fsync()
+latencies in ext3 and ext4.  And indeed the
+get_fs_excl()/put_fs_excl() paradigm doesn't really work well for
+ext3/ext4 since all of the work which grabs a filesystem-wide
+"exclusive lock" is done in a separate process, kjournald.  Hence with
+the exception of freeze and unfreeze --- and while this might be
+considered irresponsible for a system administrator to freeze a
+filesystem in a ionice'd process, I could imagine a badly written
+backup script which created a snapshot while being ionice'd --- ext3/4
+can't really very profitably use get_fs_excl()/put_fs_excl().
 
-	tglx
+Maybe ext3/ext4 are a special case, but perhaps we should nevertheless
+ask some fundamental design questions about the get/put_fs_excl()
+interface.
 
+*) Most filesystems will go to great lengths to avoid having any kind
+   of fs-wide "exclusive lock", simply because of the disastrous
+   performance impacts.  This is *why* in ext3/ext4, we try to do most
+   of the commit work in the context of another process, and normally
+   usually we let other filesystem operations run in the "current
+   transaction" while we let the "committing transaction" complete.
+   If you have too many programs running fsync() this tends to screw
+   things up, but that's a separate question.  So in practice, there
+   really shouldn't be that many "fs-wide" locks.  
+
+   On the other hand, there can be more subtle forms of I/O priority
+   inversion; suppose a low priority process has grabbed a mutex which
+   protects a directory, and a high (I/O) priority process needs
+   access to the same directory.  Do we care about trying to solve
+   that issue?
+
+*) Do we only want to support instances where the fs-wide resource is
+   held in kernel-space only, or do we want to support things like the
+   FREEZE ioctl, where the filesystem has been frozen --- the very
+   definition of an I/O wide resource?  (I would argue no, for
+   simplicity's sake but document the fact that the well-written
+   program using the FREEZE ioctl should strongly consider bumping up
+   its I/O and possibly CPU priority levels to minimize the impact on
+   the rest of the system.  Since the FREEZE ioctl requires root
+   privileges, it's fair to assume a certain amount of competence by
+   the users of this interface.)  If the answer to this question is
+   no, then we can add warning/debugging code which warns if the
+   filesystem ever tries returning to userspace with an elevated
+   get_fs_excl() count.
+
+*) Do we only care about processes whose I/O priority is below the
+   default?  (i.e., either in the idle class, or in a low-priority
+   best efforts class) What if the concern is a real-time process
+   which is being blocked by a default I/O priority process taking its
+   time while holding some fs-wide resource?
+
+   If the answer to the previous question is no, it becomes more
+   reasonable to consider bump the submission priority of the process
+   in question to the highest priority "best efforts" level.  After
+   all, if this truly is a "filesystem-wide" resource, then no one is
+   going to make forward progress relating to this block device unless
+   and until the filesystem-wide lock is resolved.  Also, if we don't
+   allow this situation to return to userspace, presumably the
+   kernel-code involved will only be writing to the block-device in
+   question.  (This might not be entirely true if in the case of the
+   sendfile(2) syscall, but currently we can only read from
+   filesystems with sendfile, and so presumably a filesystem would
+   never call get_fs_excl why servicing a sendfile request.)
+
+*) Is implementing the bulk of this in the cfq scheduler really the
+   best place to do this?  To explore something completely different,
+   what if the filesystem simply explicitly set I/O priority levels in
+   its block I/O submissions, and provided optional callback functions
+   which could be used by the page writeback routines to determine the
+   appropriate I/O priority level that should be used given a
+   particular filesystem and inode number.  (That actually could be
+   used to provide another cool function --- we could expose to
+   userspace the concept that particular inode should always have its
+   I/O go out with a higher priority, perhaps via chattr flag.)
+
+   Basically, the argument here is that we already have the
+   appropriate mechanism for ordering I/O requests, which is I/O
+   priority mechanism, and the policy really needs to be set by the
+   filesystem --- and it might be far more than just "do we have a
+   filesystem-wide exclusive lock" or not.
+
+What do other filesystem developers think?
+
+						- Ted
