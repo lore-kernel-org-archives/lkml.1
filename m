@@ -1,91 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759833AbZD0Wvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbZD0XH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759833AbZD0Wvr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 18:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636AbZD0Wvj
+	id S1757493AbZD0XH0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 19:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755151AbZD0XHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 18:51:39 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:24988 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753932AbZD0Wvi (ORCPT
+	Mon, 27 Apr 2009 19:07:11 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:47760 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756334AbZD0XHK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 18:51:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:from:to:content-type:content-transfer-encoding:x-mailer
-         :mime-version:subject:date:cc;
-        b=dOJYxYXygAYAAyRYEQssxM6LNWJxczR7djvvSfQ+2JkKPaThGbgg/r8yHAwIIojJ72
-         d+8NkjFD0O3L9EXj5qIZBxiEYaJ+1ZZOuc31ogeKkT83dE41ms3+YhLXjHB0LPaQjeHz
-         fKkygNxZjR45OWW651ELNOhTZSqgvYBejWxTg=
-Message-Id: <266E0723-B689-4472-8A2F-D93FC6819E04@gmail.com>
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Henrik Rydberg <rydberg@euromail.se>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
+	Mon, 27 Apr 2009 19:07:10 -0400
+Subject: Default HZ value for X86
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Mon, 27 Apr 2009 16:07:10 -0700
+Message-Id: <1240873630.14713.25.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
-X-Mailer: iPhone Mail (5H11)
-Mime-Version: 1.0 (iPhone Mail 5H11)
-Subject: Re: [PATCH 6/6] input: Add a detailed multi-touch finger data report protocol (rev2)
-Date: Mon, 27 Apr 2009 18:50:49 -0400
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Henrik,
+Hi, 
 
-On Wed, Jan 28, 2009 at 11:23:49AM +0100, Henrik Rydberg wrote:
-> +
-> +#define ABS_MT_TOUCH        0x30    /* Diameter of touching circle */
-> +#define ABS_MT_TOUCH_MAJOR    0x30    /* Major axis of touching  
-> ellipse */
+I was wondering why do we still have the default HZ value as 1000 for
+the x86 kernels.
 
-It looks like we are overriding the same event code to trasnmit 2
-slightly different kinds of data. I Am concerned that people would get
-confused, maybe we should get rid of ABS_MT_TOUCH and either require
-drvices always transmit ABS_MT_TOUCH_MAJOR and ABS_MT_TOUCH_MINOR or
-document that for curcular objects ABS_MT_TOUCH_MINOR may be omitted.
+arch/x86/configs/i386_defconfig:CONFIG_HZ=1000
+arch/x86/configs/x86_64_defconfig:CONFIG_HZ=1000
 
-> +#define ABS_MT_TOUCH_MINOR    0x31    /* Minor axis of touching  
-> ellipse */
-> +#define ABS_MT_WIDTH        0x32    /* Diameter of approaching  
-> circle */
-> +#define ABS_MT_WIDTH_MAJOR    0x32    /* Major axis of approaching  
-> ellipse */
-> +#define ABS_MT_WIDTH_MINOR    0x33    /* Minor axis of approaching  
-> ellipse */
+With the highres timer implementation it was planned to move away from
+relying on high timer interrupt frequency for applications requiring
+precise high resolution timer's. 
 
-Same here...
+This quote in the timer/hrtimers.txt also mentions that we should be
+able to decrease the frequency of the timeout subsystem, which I assume
+would mean reducing HZ value.
 
-> +#define ABS_MT_ORIENTATION    0x34    /* Ellipse orientation */
-> +#define ABS_MT_POSITION_X    0x35    /* Center X ellipse position */
-> +#define ABS_MT_POSITION_Y    0x36    /* Center Y ellipse position */
-> +#define ABS_MT_TOOL_TYPE    0x37    /* Type of touching device */
-> +#define ABS_MT_BLOB_ID        0x38    /* Group a set of packets as  
-> a blob */
-> +
-> #define ABS_MAX            0x3f
-> #define ABS_CNT            (ABS_MAX+1)
->
-> @@ -744,6 +758,14 @@ struct input_absinfo {
-> #define BUS_ATARI        0x1B
->
-> /*
-> + * MT_TOOL types
-> + */
-> +#define MT_TOOL_FINGER        0
-> +#define MT_TOOL_PEN        1
-> +#define MT_TOOL_MAX        9
-> +#define MT_TOOL_CNT        (MT_TOOL_MAX + 1)
+---------------------------------------------------------------------
+"Another potential benefit is that such a separation allows even more
+special-purpose optimization of the existing timer wheel for the low
+resolution and low precision use cases - once the precision-sensitive
+APIs are separated from the timer wheel and are migrated over to
+hrtimers. E.g. we could decrease the frequency of the timeout subsystem
+from 250 Hz to 100 HZ (or even smaller)."
+---------------------------------------------------------------------
 
-MT_TOOL_FINGER/MT_TOOL_PEN are documented values of ABS_MT_TOOL_TYPE, so
-I don't understand why we need MT_TOOL_MAX/MT_TOOL_CNT definitions.
+So, are there still any concerns that keep us from lowering the default
+HZ value down to 250/100 for mainline ? 
 
-Thanks.
+Thanks,
+Alok
 
--- 
-Dmitry
