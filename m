@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbZD0Pa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757576AbZD0PcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbZD0Pa2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 11:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755022AbZD0PaQ
+	id S1757576AbZD0PcH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 11:32:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbZD0Pbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 11:30:16 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:28170 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754592AbZD0PaO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 11:30:14 -0400
-Date: Mon, 27 Apr 2009 17:30:05 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Matt Domsch <Matt_Domsch@dell.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Michael E Brown <Michael_E_Brown@dell.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: Class device namespaces
-Message-ID: <20090427173005.3ff1100b@hyperion.delvare>
-In-Reply-To: <20090426130122.GB12455@auslistsprd01.us.dell.com>
-References: <20090329174836.6de797d6@hyperion.delvare>
-	<ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com>
-	<20090330104952.26f03c13@hyperion.delvare>
-	<ac3eb2510903300424s2604d027h653a3f77163e0242@mail.gmail.com>
-	<20090426085401.3788fc9c@hyperion.delvare>
-	<20090426124443.GA12455@auslistsprd01.us.dell.com>
-	<20090426130122.GB12455@auslistsprd01.us.dell.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Apr 2009 11:31:53 -0400
+Received: from kroah.org ([198.145.64.141]:36803 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756261AbZD0Pbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 11:31:52 -0400
+Date: Mon, 27 Apr 2009 08:28:19 -0700
+From: Greg KH <greg@kroah.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] usb/storage/usual-tables.c: add MODULE_LICENSE
+Message-ID: <20090427152819.GD23851@kroah.com>
+References: <20090427093301.GC9259@localhost.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090427093301.GC9259@localhost.pp.htv.fi>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 26 Apr 2009 08:01:22 -0500, Matt Domsch wrote:
-> On Sun, Apr 26, 2009 at 07:44:43AM -0500, Matt Domsch wrote:
-> > On Sun, Apr 26, 2009 at 08:54:01AM +0200, Jean Delvare wrote:
-> > > Matt, maybe you can help? Could you please point us to the source code
-> > > of the dell firmware tool which relies on the dell_rbu driver?
-> > 
-> > There's a git tree at:
-> >   http://linux.dell.com/git/?p=libsmbios.git
-> > 
-> > which you can get via rsync at:
-> >   rsync -va rsync://linux.dell.com/git/libsmbios.git/
-> > 
-> > the application is dellBiosUpdate, and the source is at this point in
-> > the tree:
-> > 
-> >   http://linux.dell.com/git/?p=libsmbios.git;a=blob;f=src/bin/dellBiosUpdate.cpp;h=b32e157b7ceb0be0d53eed4a4d171d24fe6456a7;hb=HEAD
+On Mon, Apr 27, 2009 at 12:33:01PM +0300, Adrian Bunk wrote:
+> This patch adds the missing MODULE_LICENSE("GPL").
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 
+> diff --git a/drivers/usb/storage/usual-tables.c b/drivers/usb/storage/usual-tables.c
+> index 468bde7..d62ea8f 100644
+> --- a/drivers/usb/storage/usual-tables.c
+> +++ b/drivers/usb/storage/usual-tables.c
+> @@ -114,3 +114,5 @@ int usb_usual_ignore_device(struct usb_interface *intf)
+>  	return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(usb_usual_ignore_device);
+> +
+> +MODULE_LICENSE("GPL");
 
-OK, thanks for the pointers.
+Why is this needed?  This .c file gets built into either the libusual
+module, or the usb-storage module, both of which have module licenses,
+right?
 
-> I'll note there is a second implementation that uses dell_rbu, and
-> that is included in each and every "Dell Update Package" (aka DUP)
-> BIOS update posted on support.dell.com for every Dell PowerEdge server
-> for the past several years.  Because the updater and they BIOS payload
-> are packaged in the same package, a change which would require
-> changing that updater will result in requiring Dell to spin and
-> re-release hundreds of DUPs, which would not go over well...  Thank
-> you for being careful not to change the interface capriciously - it
-> could have a huge impact on us.
+confused,
 
-I'll be careful, but you have to admit that duplicating utility code
-like this is poor engineering from Dell :( I don't want to think of the
-mess it will be if you ever have to fix a critical bug in that code.
-
--- 
-Jean Delvare
+greg k-h
