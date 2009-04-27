@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758095AbZD0J7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZD0KAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758095AbZD0J7d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 05:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbZD0J4U
+	id S1758174AbZD0KAR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 06:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757766AbZD0J7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 05:56:20 -0400
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:21678 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757513AbZD0J4S (ORCPT
+	Mon, 27 Apr 2009 05:59:48 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54941 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757445AbZD0J7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 05:56:18 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=iQgP8qxtXA4Sdb2oX60QteDmighBdYgOQvWw0uI12v9MloW1WFqZ6NkGD7ynjmej11qi9ezFJIvAyEXfJqb37x7nhcsK9HMlAKNxqnEP9SB6nBpH8/7KADV6jx2AIxFI6kRRdlYA606YTLrLDiqv8CPRf2YgD2uh2TkR7PBSk9k=  ;
-X-YMail-OSG: hrcFoPMVM1ntGa84uXmOIDC8oo5E34kDgoyV5KIzssFifjmq0LF0Q3PzkTKGAJHGABKKVlkC8W7EU.UUrpzyJ82VzqadYvbg53uckBvcTp7OtAGTYGMhEWtFQG0fm00TXvfc.IMmzd4HoqNP0qVQswbjNoJB7NXfnJuvj.aGFP3_2SRGAaqY_JwIsjarhxm8D2VRbtYJ4jESNjERmmfW0bEmSL24MWuyQv0B6GHtz2XDM3AATwHa_F0B4WEuHhdpmXdCuMzPTSCMneXRQqt3HGoLTbXLI143PO2SwDDy9YkTc9bgUs0A
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Grazvydas Ignotas <notasas@gmail.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Card detect IRQ errors
-Date: Mon, 27 Apr 2009 02:56:15 -0700
-User-Agent: KMail/1.9.10
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-References: <6ed0b2680904270213s6ef02ad6i26173245019bca15@mail.gmail.com>
-In-Reply-To: <6ed0b2680904270213s6ef02ad6i26173245019bca15@mail.gmail.com>
+	Mon, 27 Apr 2009 05:59:47 -0400
+Date: Mon, 27 Apr 2009 05:59:46 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: monstr@monstr.eu
+Cc: linux-kernel@vger.kernel.org, john.williams@petalogix.com
+Subject: Re: [PATCH 30/30] microblaze_mmu_v1: fcntl.h MMU update
+Message-ID: <20090427095946.GB12323@infradead.org>
+References: <1240821139-7247-22-git-send-email-monstr@monstr.eu> <1240821139-7247-23-git-send-email-monstr@monstr.eu> <1240821139-7247-24-git-send-email-monstr@monstr.eu> <1240821139-7247-25-git-send-email-monstr@monstr.eu> <1240821139-7247-26-git-send-email-monstr@monstr.eu> <1240821139-7247-27-git-send-email-monstr@monstr.eu> <1240821139-7247-28-git-send-email-monstr@monstr.eu> <1240821139-7247-29-git-send-email-monstr@monstr.eu> <1240821139-7247-30-git-send-email-monstr@monstr.eu> <1240821139-7247-31-git-send-email-monstr@monstr.eu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904270256.15871.david-b@pacbell.net>
+In-Reply-To: <1240821139-7247-31-git-send-email-monstr@monstr.eu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 April 2009, Grazvydas Ignotas wrote:
+On Mon, Apr 27, 2009 at 10:32:19AM +0200, monstr@monstr.eu wrote:
+> From: Michal Simek <monstr@monstr.eu>
 > 
-> With current l-o head when I insert or remove SD card I'm getting this:
+> Signed-off-by: Michal Simek <monstr@monstr.eu>
+> ---
+>  arch/microblaze/include/asm/fcntl.h |   14 ++++++++++++++
+>  1 files changed, 14 insertions(+), 0 deletions(-)
 > 
-> [   20.733489] ------------[ cut here ]------------
-> [   20.738159] WARNING: at kernel/irq/handle.c:366 handle_IRQ_event+0x4c/0x14c()
-> [   20.745330] BUG: IRQ handler called from non-hardirq
-> context!Modules linked in:
-> ...
-> [   20.822753] ---[ end trace 2ca2d8ba630dd6b5 ]---
-> [   20.869415] mmc0: card 8001 removed
-> 
-> Has anyone else seen this?
+> diff --git a/arch/microblaze/include/asm/fcntl.h b/arch/microblaze/include/asm/fcntl.h
+> index 46ab12d..b4d27f6 100644
+> --- a/arch/microblaze/include/asm/fcntl.h
+> +++ b/arch/microblaze/include/asm/fcntl.h
+> @@ -1 +1,15 @@
+> +#ifndef _ASM_MICROBLAZE_FCNTL_H
+> +#define _ASM_MICROBLAZE_FCNTL_H
+> +
+> +#ifndef __uClinux__
+> +
+> +#define O_DIRECTORY	040000 /* must be a directory */
+> +#define O_NOFOLLOW	0100000 /* don't follow links */
+> +#define O_LARGEFILE	0200000
+> +#define O_DIRECT	0400000 /* direct disk access hint */
+> +
+> +#endif /* __uClinux__ */
+> +
+>  #include <asm-generic/fcntl.h>
 
-Regresssion caused by 044d408409cc4e1bc75c886e27ca85c270db104c.
+Again, ABIs should always be the same for MMU vs noMMU.
 
-Notice the message is internally broken, too -- no newline.
-
-Try reverting that, things will still behave just fine.
+Also no new port shall override the asm-generic/fcntl.h constants.
 
