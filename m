@@ -1,116 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbZD0VLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761327AbZD0VMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759941AbZD0VLl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 17:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbZD0VL2
+	id S1761327AbZD0VMW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 17:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757434AbZD0VMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 17:11:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50072 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752729AbZD0VL0 (ORCPT
+	Mon, 27 Apr 2009 17:12:13 -0400
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:39218 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756472AbZD0VML (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 17:11:26 -0400
-Date: Mon, 27 Apr 2009 13:58:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Evgeniy Polyakov <zbr@ioremap.net>
-cc: Stephen Hemminger <shemminger@vyatta.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       Jarek Poplawski <jarkao2@gmail.com>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, kaber@trash.net, jeff.chua.linux@gmail.com,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
-In-Reply-To: <20090427203616.GB3836@ioremap.net>
-Message-ID: <alpine.LFD.2.00.0904271340400.22156@localhost.localdomain>
-References: <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam> <49F4A6E3.7080102@cosmosbay.com> <20090426185646.GB29238@Krystal> <20090426145746.1184aeba@nehalam> <1240854297.7620.65.camel@twins> <20090427113010.5e3f1700@nehalam> <20090427185423.GC23862@elte.hu>
- <20090427120658.35a858bb@nehalam> <alpine.LFD.2.00.0904271219570.22156@localhost.localdomain> <20090427203616.GB3836@ioremap.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 27 Apr 2009 17:12:11 -0400
+From: "Henrik Rydberg" <rydberg@euromail.se>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Henrik Rydberg <rydberg@euromail.se>
+Subject: [PATCH rev2] input: bcm5974: Add support for the Macbook 5 (Unibody)
+Date: Mon, 27 Apr 2009 23:11:51 +0200
+Message-Id: <1240866711-6468-1-git-send-email-rydberg@euromail.se>
+X-Mailer: git-send-email 1.5.6.3
+X-Originating-IP: 83.248.194.102
+X-Scan-Result: No virus found in message 1LyY7M-0008O4-65.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1LyY7M-0008O4-65 6e8d187ed206a75467880f641df571a2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch adds support for the new unibody Macbook, with physically
+integrated button and trackpad. Since the integrated button changes
+the logic for touch-and-click, a device capability bit mask is now
+reported in input_id.version, which can be picked up by user space
+via a EVIOCGID call.
 
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+Tested-by: David M. Lary <dmlary@gmail.com>
+---
+ drivers/input/mouse/bcm5974.c |   45 +++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 43 insertions(+), 2 deletions(-)
 
-On Tue, 28 Apr 2009, Evgeniy Polyakov wrote:
-> 
-> Just ot be sure readers will not lose the discssion topic: do you object
-> against naming or realizaion?
+diff --git a/drivers/input/mouse/bcm5974.c b/drivers/input/mouse/bcm5974.c
+index a170574..7c44199 100644
+--- a/drivers/input/mouse/bcm5974.c
++++ b/drivers/input/mouse/bcm5974.c
+@@ -51,6 +51,10 @@
+ #define USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI	0x0230
+ #define USB_DEVICE_ID_APPLE_WELLSPRING2_ISO	0x0231
+ #define USB_DEVICE_ID_APPLE_WELLSPRING2_JIS	0x0232
++/* Macbook5,1 (unibody), aka wellspring3 */
++#define USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI	0x0236
++#define USB_DEVICE_ID_APPLE_WELLSPRING3_ISO	0x0237
++#define USB_DEVICE_ID_APPLE_WELLSPRING3_JIS	0x0238
+ 
+ #define BCM5974_DEVICE(prod) {					\
+ 	.match_flags = (USB_DEVICE_ID_MATCH_DEVICE |		\
+@@ -72,6 +76,10 @@ static const struct usb_device_id bcm5974_table[] = {
+ 	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI),
+ 	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING2_ISO),
+ 	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING2_JIS),
++	/* Macbook5,1 */
++	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI),
++	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING3_ISO),
++	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING3_JIS),
+ 	/* Terminating entry */
+ 	{}
+ };
+@@ -98,11 +106,19 @@ struct bt_data {
+ 
+ /* trackpad header types */
+ enum tp_type {
+-	TYPE1			/* plain trackpad */
++	TYPE1,			/* plain trackpad */
++	TYPE2			/* button integrated in trackpad */
+ };
+ 
+ /* trackpad finger data offsets */
+ #define FINGER_TYPE1		26
++#define FINGER_TYPE2		30
++
++/* trackpad button data offsets */
++#define BUTTON_TYPE2		15
++
++/* list of device capability bits */
++#define HAS_INTEGRATED_BUTTON	1
+ 
+ /* trackpad finger structure */
+ struct tp_finger {
+@@ -135,6 +151,7 @@ struct bcm5974_param {
+ /* device-specific configuration */
+ struct bcm5974_config {
+ 	int ansi, iso, jis;	/* the product id of this device */
++	int caps;		/* device capability bitmask */
+ 	int bt_ep;		/* the endpoint of the button interface */
+ 	int bt_datalen;		/* data length of the button interface */
+ 	int tp_ep;		/* the endpoint of the trackpad interface */
+@@ -184,6 +201,7 @@ static const struct bcm5974_config bcm5974_config_table[] = {
+ 		USB_DEVICE_ID_APPLE_WELLSPRING_ANSI,
+ 		USB_DEVICE_ID_APPLE_WELLSPRING_ISO,
+ 		USB_DEVICE_ID_APPLE_WELLSPRING_JIS,
++		0,
+ 		0x84, sizeof(struct bt_data),
+ 		0x81, TYPE1, FINGER_TYPE1, FINGER_TYPE1 + SIZEOF_ALL_FINGERS,
+ 		{ DIM_PRESSURE, DIM_PRESSURE / SN_PRESSURE, 0, 256 },
+@@ -195,6 +213,7 @@ static const struct bcm5974_config bcm5974_config_table[] = {
+ 		USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI,
+ 		USB_DEVICE_ID_APPLE_WELLSPRING2_ISO,
+ 		USB_DEVICE_ID_APPLE_WELLSPRING2_JIS,
++		0,
+ 		0x84, sizeof(struct bt_data),
+ 		0x81, TYPE1, FINGER_TYPE1, FINGER_TYPE1 + SIZEOF_ALL_FINGERS,
+ 		{ DIM_PRESSURE, DIM_PRESSURE / SN_PRESSURE, 0, 256 },
+@@ -202,6 +221,18 @@ static const struct bcm5974_config bcm5974_config_table[] = {
+ 		{ DIM_X, DIM_X / SN_COORD, -4824, 4824 },
+ 		{ DIM_Y, DIM_Y / SN_COORD, -172, 4290 }
+ 	},
++	{
++		USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI,
++		USB_DEVICE_ID_APPLE_WELLSPRING3_ISO,
++		USB_DEVICE_ID_APPLE_WELLSPRING3_JIS,
++		HAS_INTEGRATED_BUTTON,
++		0x84, sizeof(struct bt_data),
++		0x81, TYPE2, FINGER_TYPE2, FINGER_TYPE2 + SIZEOF_ALL_FINGERS,
++		{ DIM_PRESSURE, DIM_PRESSURE / SN_PRESSURE, 0, 300 },
++		{ DIM_WIDTH, DIM_WIDTH / SN_WIDTH, 0, 2048 },
++		{ DIM_X, DIM_X / SN_COORD, -4460, 5166 },
++		{ DIM_Y, DIM_Y / SN_COORD, -75, 6700 }
++	},
+ 	{}
+ };
+ 
+@@ -281,7 +312,7 @@ static int report_tp_state(struct bcm5974 *dev, int size)
+ 	const struct tp_finger *f;
+ 	struct input_dev *input = dev->input;
+ 	int raw_p, raw_w, raw_x, raw_y, raw_n;
+-	int ptest = 0, origin = 0, nmin = 0, nmax = 0;
++	int ptest = 0, origin = 0, ibt = 0, nmin = 0, nmax = 0;
+ 	int abs_p = 0, abs_w = 0, abs_x = 0, abs_y = 0;
+ 
+ 	if (size < c->tp_offset || (size - c->tp_offset) % SIZEOF_FINGER != 0)
+@@ -303,6 +334,10 @@ static int report_tp_state(struct bcm5974 *dev, int size)
+ 
+ 		ptest = int2bound(&c->p, raw_p);
+ 		origin = raw2int(f->origin);
++
++		/* set the integrated button if applicable */
++		if (c->tp_type == TYPE2)
++			ibt = raw2int(dev->tp_data[BUTTON_TYPE2]);
+ 	}
+ 
+ 	/* while tracking finger still valid, count all fingers */
+@@ -346,6 +381,10 @@ static int report_tp_state(struct bcm5974 *dev, int size)
+ 
+ 	}
+ 
++	/* type 2 reports button events via ibt only */
++	if (c->tp_type == TYPE2)
++		input_report_key(input, BTN_LEFT, ibt);
++
+ 	input_sync(input);
+ 
+ 	return 0;
+@@ -655,6 +694,8 @@ static int bcm5974_probe(struct usb_interface *iface,
+ 	input_dev->name = "bcm5974";
+ 	input_dev->phys = dev->phys;
+ 	usb_to_input_id(dev->udev, &input_dev->id);
++	/* report driver capabilities via the version field */
++	input_dev->id.version = cfg->caps;
+ 	input_dev->dev.parent = &iface->dev;
+ 
+ 	input_set_drvdata(input_dev, dev);
+-- 
+1.5.6.3
 
-I said _long_ ago that I thought the patch was fine. 
-
-What I object to is people mis-representing the lock, and apparently 
-having a really hard time admitting that having a good grounding in 
-networking doesn't necessarily mean that you know everything about 
-something as basic as locking.
-
-> If its about the former, does 'dog's breath lock' proposed by Stephen 
-> fit?
-
-Is that just an attempt to avoid admitting that they were wrong about lock 
-naming? And then trying to trivialize it by calling things by a 
-_different_ wrong name, but silly enough that they hope people won't call 
-them on it?
-
-Why not just use the correct name? I think it was Mathieu that just 
-suggested:
-
-	[PATCH] netfilter: use bh disabling with per-cpu read-write lock
-
-or just call it "netfilter: use per-CPU read-write lock".
-
-Why are people so against calling things by their correct names? Why do 
-certain network people seem to force a stupid and incorrect description, 
-when they have been told (a) that it's wrong and (b) why it's wrong 
-several times?
-
-What's so hard with just doing the TechnicallyRightThing(tm) and 
-describing it as such?
-
-And btw - don't get me wrong. There are _other_ ways to do that locking 
-too. You don't have to use a rwlock. You can do it with explicit counting, 
-the way Eric's original patch did. But it would be wrong to call that one 
-"recursive lock" too.
-
-Or you _could_ use a recursive lock, but nobody has actually posted such 
-patches. It would work. No question about it. And if it actually _were_ a 
-recursive lock, I wouldn't have objected about the description saying it 
-is (although I would probably have objected to it being unnecessarily 
-complex, when a simpler rwlock or the explicit count thing would be 
-sufficient).
-
-But since the current simple patch is using a rwlock, why not just say 
-that? Why call it something incorrect ("recursive lock") or nonsensical 
-("dog's breath lock").
-
-As I tried to explain with an analogy, networking people would (quite 
-correctly) object to me calling a serial line an "ethernet cable". Why is 
-it so hard for netfilter people to then see why it's wrong to call a 
-rwlock a "recursive lock".
-
-I mean, guys, if you don't want to read up on decades of locking work, 
-just google for it. Google for "recursive lock" (_with_ the quotes). At 
-least for me, the very first hit gives a reasonable explanation for it, 
-and it says:
-
-  "POSIX allows mutexes to be recursive. That means the same thread can 
-   lock the same mutex twice and won't deadlock."
-
-and realize that the "same thread" part is very much a keyword, not juat 
-a random implementation detail (the first answer to the question is 
-better than the question, but even the question at the top really does 
-get at the basics).
-
-And please do realize that neither rwlocks nor the counting locks from 
-Dumazet's original patch do that. Never did. They simply aren't recursive 
-locks.
-
-So just don't call them that. But is "dog's breath" any better? Yes, maybe 
-it's less _misleading_, but it sure as hell isn't any more descriptive.
-
-			Linus
