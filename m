@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757287AbZD0P1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbZD0Pa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757287AbZD0P1h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 11:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZD0P11
+	id S1756911AbZD0Pa2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 11:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755022AbZD0PaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 11:27:27 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:4370 "EHLO
+	Mon, 27 Apr 2009 11:30:16 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:28170 "EHLO
 	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755371AbZD0P11 (ORCPT
+	with ESMTP id S1754592AbZD0PaO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 11:27:27 -0400
-Date: Mon, 27 Apr 2009 17:27:10 +0200
+	Mon, 27 Apr 2009 11:30:14 -0400
+Date: Mon, 27 Apr 2009 17:30:05 +0200
 From: Jean Delvare <khali@linux-fr.org>
-To: Michael E Brown <mebrown@michaels-house.net>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Matt Domsch <Matt_Domsch@Dell.com>
+To: Matt Domsch <Matt_Domsch@dell.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Michael E Brown <Michael_E_Brown@dell.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
 Subject: Re: Class device namespaces
-Message-ID: <20090427172710.5a0c7f48@hyperion.delvare>
-In-Reply-To: <20090427132041.GA18391@sc1430.michaels-house.net>
+Message-ID: <20090427173005.3ff1100b@hyperion.delvare>
+In-Reply-To: <20090426130122.GB12455@auslistsprd01.us.dell.com>
 References: <20090329174836.6de797d6@hyperion.delvare>
 	<ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com>
 	<20090330104952.26f03c13@hyperion.delvare>
 	<ac3eb2510903300424s2604d027h653a3f77163e0242@mail.gmail.com>
 	<20090426085401.3788fc9c@hyperion.delvare>
-	<20090427132041.GA18391@sc1430.michaels-house.net>
+	<20090426124443.GA12455@auslistsprd01.us.dell.com>
+	<20090426130122.GB12455@auslistsprd01.us.dell.com>
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -34,51 +35,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
-
-On Mon, 27 Apr 2009 08:20:43 -0500, Michael E Brown wrote:
-> On Sun, Apr 26, 2009 at 08:54:01AM +0200, Jean Delvare wrote:
-> > Hi Kay,
+On Sun, 26 Apr 2009 08:01:22 -0500, Matt Domsch wrote:
+> On Sun, Apr 26, 2009 at 07:44:43AM -0500, Matt Domsch wrote:
+> > On Sun, Apr 26, 2009 at 08:54:01AM +0200, Jean Delvare wrote:
+> > > Matt, maybe you can help? Could you please point us to the source code
+> > > of the dell firmware tool which relies on the dell_rbu driver?
 > > 
-> > Sorry, completely overlooked your reply... Ah, now I remember, I was
-> > waiting for Michael to show up and comment on this. Michael, ping? As
-> > long as we don't know the exact requirements and constraints of the
-> > dell firmware tool, we're somewhat stuck.
+> > There's a git tree at:
+> >   http://linux.dell.com/git/?p=libsmbios.git
 > > 
-> > Matt, maybe you can help? Could you please point us to the source code
-> > of the dell firmware tool which relies on the dell_rbu driver?
-> 
-> Sorry about that. Skimmed the thread and looks like I missed out...
-> 
-> The problem is that there are two users: 1) libsmbios as Matt has
-> already mentioned, and 2) Dell OpenMange Server Administrator.
-> Specifically srvadmin-hapi has the code to use the dell_rbu code
-> (proprietary, no source available). The srvadmin-hapi code is embedded
-> into all Dell Update Packages (DUPs).
-> 
-> The problem being that any change to the paths breaks all released DUPs.
+> > which you can get via rsync at:
+> >   rsync -va rsync://linux.dell.com/git/libsmbios.git/
+> > 
+> > the application is dellBiosUpdate, and the source is at this point in
+> > the tree:
+> > 
+> >   http://linux.dell.com/git/?p=libsmbios.git;a=blob;f=src/bin/dellBiosUpdate.cpp;h=b32e157b7ceb0be0d53eed4a4d171d24fe6456a7;hb=HEAD
 
-The question was: any change to _which_ paths exactly? Sysfs often
-offers several ways to reach the same object, and it matters to know
-which need to be preserved and which can change.
+OK, thanks for the pointers.
 
-Looking at src/libsmbios_c++/rbu/Rbu_Linux.cpp, I see the following
-paths are used:
+> I'll note there is a second implementation that uses dell_rbu, and
+> that is included in each and every "Dell Update Package" (aka DUP)
+> BIOS update posted on support.dell.com for every Dell PowerEdge server
+> for the past several years.  Because the updater and they BIOS payload
+> are packaged in the same package, a change which would require
+> changing that updater will result in requiring Dell to spin and
+> re-release hundreds of DUPs, which would not go over well...  Thank
+> you for being careful not to change the interface capriciously - it
+> could have a huge impact on us.
 
-const char *rbu_v1_mono_data_file = "/sys/firmware/rbu/rbudata";
-const char *rbu_v1_mono_size_file = "/sys/firmware/rbu/rbudatasize";
-const char *rbu_v1_pkt_data_file = "/sys/firmware/rbu/packetdata";
-const char *rbu_v1_pkt_size_file = "/sys/firmware/rbu/packetdatasize";
+I'll be careful, but you have to admit that duplicating utility code
+like this is poor engineering from Dell :( I don't want to think of the
+mess it will be if you ever have to fix a critical bug in that code.
 
-const char *rbu_v2_fw_data_file = "/sys/class/firmware/dell_rbu/data";
-const char *rbu_v2_fw_load_file = "/sys/class/firmware/dell_rbu/loading";
-const char *rbu_v2_img_type_file = "/sys/devices/platform/dell_rbu/image_type";
-const char *rbu_v2_pkt_size_file = "/sys/devices/platform/dell_rbu/packet_size";
-
-I guess that noawadays v2 applies, so the only path which needs to be
-preserved is "/sys/class/firmware/dell_rbu". Is that correct? Is it the
-same for srvadmin-hap?
-
-Thanks,
 -- 
 Jean Delvare
