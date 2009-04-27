@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474AbZD0Lal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZD0LbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754474AbZD0Lal (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 07:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbZD0Lab
+	id S1755218AbZD0LbX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 07:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbZD0LbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 07:30:31 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44019 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbZD0Lab (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 07:30:31 -0400
-Date: Mon, 27 Apr 2009 07:30:30 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Michal Simek <monstr@monstr.eu>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       john.williams@petalogix.com, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
-Message-ID: <20090427113030.GA3681@infradead.org>
-References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <1240821139-7247-24-git-send-email-monstr@monstr.eu> <1240821139-7247-25-git-send-email-monstr@monstr.eu> <1240821139-7247-26-git-send-email-monstr@monstr.eu> <1240821139-7247-27-git-send-email-monstr@monstr.eu> <1240821139-7247-28-git-send-email-monstr@monstr.eu> <1240821139-7247-29-git-send-email-monstr@monstr.eu> <1240821139-7247-30-git-send-email-monstr@monstr.eu> <20090427095815.GA12323@infradead.org> <49F58A87.5020405@monstr.eu>
+	Mon, 27 Apr 2009 07:31:13 -0400
+Received: from www.tglx.de ([62.245.132.106]:34059 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751763AbZD0LbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 07:31:12 -0400
+Date: Mon, 27 Apr 2009 13:30:13 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Subject: Re: [BUG] 2.6.29.1 debugobjects warning
+In-Reply-To: <20090424064937.GD21739@elte.hu>
+Message-ID: <alpine.LFD.2.00.0904271328530.4529@localhost.localdomain>
+References: <20090423140002.GA12852@Krystal> <20090423164638.3b5769c6.akpm@linux-foundation.org> <20090424064937.GD21739@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49F58A87.5020405@monstr.eu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 12:35:51PM +0200, Michal Simek wrote:
-> types and I would like to know about more info.
-> For example
-> If make sense long long	type for st_blocks. IMHO unsigned will be better.
-> And I would like to create new stat64 structure where is not a fault for both noMMU/MMU version.
-> In noMMU implementation is st_blocks unsigned long. Is it OK? or unsigned long long is better?
+On Fri, 24 Apr 2009, Ingo Molnar wrote:
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Thu, 23 Apr 2009 10:00:02 -0400
+> > Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > 
+> > > ODEBUG: init active object type: timer_list
+> 
+> > It seems to be complaining that cpufreq_governor_dbs() is running 
+> > init_timer() against a timer which has already been initialised 
+> > once.
+> 
+> Not just already initialized - but also active. There's these states 
+> for an object:
+> 
+>         ODEBUG_STATE_NONE,
+>         ODEBUG_STATE_INIT,
+>         ODEBUG_STATE_INACTIVE,
+>         ODEBUG_STATE_ACTIVE,
+>         ODEBUG_STATE_DESTROYED,
+> 
+> So the 'init active object type' warning above suggests that an 
+> init_timer() has been done on an already running timer. If true then 
+> that is a bad bug - can corrupt timer state, etc.
+> 
+> Thomas, do you agree?
 
-You want unsigned long long for it.  Take a look at e.g. the xtensa
-stat.h and just reuse that one.  We should probaly create an
-asm-generic/stat.h that new architectures can simply use..
+Yes, that kind of bug makes the timer wheel explode later on due to
+list corruption.
 
-Given that microblaze only got merged in the 2.6.30 window I would
-suggest fixing up the nommu variant.
+Thanks,
+
+	tglx
+
