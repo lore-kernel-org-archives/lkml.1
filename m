@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758572AbZD0QlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757028AbZD0QtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758572AbZD0QlY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 12:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756544AbZD0QlM
+	id S1757028AbZD0QtE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 12:49:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbZD0Qsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 12:41:12 -0400
-Received: from fifo99.com ([67.223.236.141]:33800 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756175AbZD0QlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 12:41:11 -0400
-X-Greylist: delayed 667 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Apr 2009 12:41:11 EDT
-Subject: Re: [PATCH 0/5] [PATCH][GIT PULL] remove unnecessary (un)likelys
-From: Daniel Walker <dwalker@fifo99.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	Mon, 27 Apr 2009 12:48:53 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:34877 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754352AbZD0Qsw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 12:48:52 -0400
+Date: Mon, 27 Apr 2009 12:46:21 -0400 (EDT)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <20090325051920.406564281@goodmis.org>
-References: <20090325051920.406564281@goodmis.org>
-Content-Type: text/plain
-Date: Mon, 27 Apr 2009 09:30:04 -0700
-Message-Id: <1240849804.7763.45.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+       Jon Masters <jonathan@jonmasters.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, "Theodore Ts'o" <tytso@MIT.EDU>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       David Howells <dhowells@redhat.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Tony Luck <tony.luck@intel.com>
+Subject: Re: [PATCH 05/15] arm: convert to use __HEAD and HEAD_TEXT macros.
+In-Reply-To: <20090426111924.GD28642@uranus.ravnborg.org>
+Message-ID: <alpine.DEB.1.10.0904271121280.1665@vinegar-pot.mit.edu>
+References: <alpine.DEB.1.10.0904251304120.7631@vinegar-pot.mit.edu> <1240711870-30505-1-git-send-email-tabbott@mit.edu> <1240711870-30505-2-git-send-email-tabbott@mit.edu> <1240711870-30505-3-git-send-email-tabbott@mit.edu> <1240711870-30505-4-git-send-email-tabbott@mit.edu>
+ <1240711870-30505-5-git-send-email-tabbott@mit.edu> <20090426111924.GD28642@uranus.ravnborg.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-25 at 01:19 -0400, Steven Rostedt wrote:
-> Ingo,
+On Sun, 26 Apr 2009, Sam Ravnborg wrote:
+
+> > -	.text.head : {
+> > +	HEAD_TEXT_SECTION : {
 > 
-> I guess this can go through you. This is a start of clean ups to
-> get rid of (un)likelys that are at least 50% incorrect. This series
-> has some that are 100% incorrect.
-> 
-> The branch profiler used is from 2.6.29 which does not have the
-> fixed header that is in tip. This branch is also based off of
-> 2.6.29 and not tip.
-> 
-> Perhaps, since some of these cases are 100% wrong they can simply
-> be reversed. I'm choosing to just remove the annotation, and then
-> later I'll be using the full branch profiler to look for candidates
-> for adding (un)likelys.  That way each added annotation can be
-> scrutinized individually.
+> Spell it out direct rather than hiding the .head.text
+> behind a macro name here.
 
-What kind of methodology are you using to determine which to remove? It
-looks like some you review the code, and other you just remove based on
-it being %50 wrong or more.. I found workloads are especially important.
-Where finding one that is %50 or %100 wrong does necessarily mean
-anything..
+Does .head.text actually need its own output section here?  I notice that 
+only the linker scripts for arm, x86, and ia64 have an output section for 
+.head.text; the rest just place it at the start of the .text or .init.text 
+output section.  It would be great if we could eliminate these extra 
+references to .head.text by doing the same thing here.
 
-
-Daniel
-
+	-Tim Abbott
