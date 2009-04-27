@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbZD0NN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbZD0NVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755506AbZD0NN5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 09:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbZD0NNr
+	id S1754251AbZD0NVH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 09:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbZD0NUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 09:13:47 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:55831 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751775AbZD0NNr (ORCPT
+	Mon, 27 Apr 2009 09:20:54 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:48403 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753191AbZD0NUx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 09:13:47 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@monstr.eu
-Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
-Date: Mon, 27 Apr 2009 15:13:33 +0200
-User-Agent: KMail/1.9.9
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       john.williams@petalogix.com
-References: <1240821139-7247-21-git-send-email-monstr@monstr.eu> <200904271453.47038.arnd@arndb.de> <49F5AD3D.1050101@monstr.eu>
-In-Reply-To: <49F5AD3D.1050101@monstr.eu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 27 Apr 2009 09:20:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=gTjGbude2nThWZMjnaeFwmCTIaAX6wP00P36GrqxlSKIoeHUaMorN/jETrkG6HLA8u
+         sW3kTVtUrNA4p5u5cGStYecuxHqnTRgA+wf5HLjYQNPSjMPkQpwfo9H/t10/5IbwrVGO
+         o5jYrErqHKMvvMAUyeEkb/JttZ06vfUhSh1F8=
+Date: Mon, 27 Apr 2009 08:20:43 -0500
+From: Michael E Brown <mebrown@michaels-house.net>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Matt Domsch <Matt_Domsch@Dell.com>
+Subject: Re: Class device namespaces
+Message-ID: <20090427132041.GA18391@sc1430.michaels-house.net>
+References: <20090329174836.6de797d6@hyperion.delvare> <ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com> <20090330104952.26f03c13@hyperion.delvare> <ac3eb2510903300424s2604d027h653a3f77163e0242@mail.gmail.com> <20090426085401.3788fc9c@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="VbJkn9YxBvnuCH5J"
 Content-Disposition: inline
-Message-Id: <200904271513.34269.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/i8cT8dfqBuLN1hNIVtJVg3i3jgj1kNyLhwqn
- 4mma52CuSp8YrexoLNZkrcB/qzXtgRmrxC476B/pzPVtQzmvbQ
- UhAPl/pxxO8nwKk3V4TCw==
+In-Reply-To: <20090426085401.3788fc9c@hyperion.delvare>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 April 2009, Michal Simek wrote:
-> > I still think that there are major changes that should be done to the
-> > Microblaze ABI. I actually did most of the work for this, but then you
-> > beat be by getting it upstream first ;-)
-> 
-> For me is/was good that I could focus on MMU part and no to spend all my time to moving noMMU
-> patches and wait for future changes. Community is sending patches for Microblaze and for me is
-> easier to manage small changes not drag bunch of 50 patches to next version.
 
-Oh, absolutely, and I think it's great that you managed to get it all in, as
-it also makes my job easier. It just means that any ABI change now has to
-be thought through much more.
+--VbJkn9YxBvnuCH5J
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > I suppose it's much too late for 2.6.30 now, but maybe we can do one major
-> > ABI change to microblaze by making the ABI totally generic in the next
-> > merge window. I'll follow up with an RFC for this.
-> 
-> If you propose me changes, I'll try to test it. If the results are OK, I'll add it to next merge
-> open window for Microblaze. As I wrote before I am open to your visions and if microblaze is in
-> mainline I can test it easier than before.
+On Sun, Apr 26, 2009 at 08:54:01AM +0200, Jean Delvare wrote:
+> Hi Kay,
+>=20
+> Sorry, completely overlooked your reply... Ah, now I remember, I was
+> waiting for Michael to show up and comment on this. Michael, ping? As
+> long as we don't know the exact requirements and constraints of the
+> dell firmware tool, we're somewhat stuck.
+>=20
+> Matt, maybe you can help? Could you please point us to the source code
+> of the dell firmware tool which relies on the dell_rbu driver?
 
-ok.
+Sorry about that. Skimmed the thread and looks like I missed out...
 
-	Arnd <><
+The problem is that there are two users: 1) libsmbios as Matt has
+already mentioned, and 2) Dell OpenMange Server Administrator.
+Specifically srvadmin-hapi has the code to use the dell_rbu code
+(proprietary, no source available). The srvadmin-hapi code is embedded
+into all Dell Update Packages (DUPs).
+
+The problem being that any change to the paths breaks all released DUPs.
+--
+Michael
+
+--VbJkn9YxBvnuCH5J
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkn1sSkACgkQcnW8GdAFD+VLgACfaPfvSfNBLC83WcGdz2O54E+h
+72wAoOqth+WGWekw8xz5v4ZTZJrV2jtQ
+=62xH
+-----END PGP SIGNATURE-----
+
+--VbJkn9YxBvnuCH5J--
