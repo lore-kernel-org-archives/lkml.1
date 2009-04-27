@@ -1,70 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbZD0QPH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756991AbZD0QPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756658AbZD0QPH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 12:15:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbZD0QOy
+	id S1756991AbZD0QPg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 12:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbZD0QPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 12:14:54 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:38976 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752906AbZD0QOy (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 12:14:54 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@linux.intel.com>,
-       Huang Ying <ying.huang@intel.com>,
-       Robert Richter <robert.richter@amd.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: Re-implement MCE log ring buffer as per-CPU ring buffer
-In-Reply-To: Your message of "Mon, 27 Apr 2009 07:44:13 PDT."
-             <alpine.DEB.1.10.0904270738470.9296@makko.or.mcafeemobile.com>
-From: Valdis.Kletnieks@vt.edu
-References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com> <20090422092259.GC18226@elte.hu> <20090422101600.GL3226@erda.amd.com> <1240553210.6842.871.camel@yhuang-dev.sh.intel.com> <20090424100943.GJ27264@erda.amd.com> <alpine.DEB.2.00.0904240935140.24293@gandalf.stny.rr.com> <1240818596.6842.1001.camel@yhuang-dev.sh.intel.com> <49F5646F.4000305@linux.intel.com> <alpine.DEB.2.00.0904271027580.24293@gandalf.stny.rr.com>
-            <alpine.DEB.1.10.0904270738470.9296@makko.or.mcafeemobile.com>
+	Mon, 27 Apr 2009 12:15:25 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:54322 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752906AbZD0QPY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 12:15:24 -0400
+Subject: Re: [PATCH] Display 0 in meminfo for Committed_AS when value
+	underflows
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Eric B Munson <ebmunson@us.ibm.com>
+Cc: akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, mel@csn.ul.ie,
+       cl@linux-foundation.org
+In-Reply-To: <1240848620-16751-1-git-send-email-ebmunson@us.ibm.com>
+References: <1240848620-16751-1-git-send-email-ebmunson@us.ibm.com>
+Content-Type: text/plain
+Date: Mon, 27 Apr 2009 09:15:14 -0700
+Message-Id: <1240848914.29485.52.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1240848874_4302P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Date: Mon, 27 Apr 2009 12:14:34 -0400
-Message-ID: <49036.1240848874@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1240848874_4302P
-Content-Type: text/plain; charset=us-ascii
+On Mon, 2009-04-27 at 17:10 +0100, Eric B Munson wrote:
+> Splitting this patch from the chunk that addresses the cause of the underflow
+> because the solution still requires some discussion.
+> 
+> Dave Hansen reported that under certain cirumstances the Committed_AS value
+> can underflow which causes extremely large numbers to be displayed in
+> meminfo.  This patch adds an underflow check to meminfo_proc_show() for the
+> Committed_AS value.  Most fields in /proc/meminfo already have an underflow
+> check, this brings Committed_AS into line.
 
-On Mon, 27 Apr 2009 07:44:13 PDT, Davide Libenzi said:
+Yeah, this is the right fix for now until we can iron out the base
+issues.  Eric, I think this may also be a candidate for -stable.
 
-> IANAL, but what is the point of it? If that's for OSS IP protection 
-> against Evil Corporate claims, isn't the only fact that you posted the 
-> code and algorirthm, constitutes Prior Art, that would automatically 
-> protect your contribution from future claims?
+Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 
-The general idea is that if some Big-Linux-Hating-Company comes to you and says
-"You're infringing our patent #XXZZZY in this module", you want to be able pull
-out a sheet of paper and say "Yes, and you've shipped 45,348,917 copies of
-FooBar Release 7, that infringes on *our* patent #YYXXZ.  You probably owe
-us more money than we owe you.  But we'll let you walk out the door and
-never mention it again."
+> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
+> ---
+>  fs/proc/meminfo.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/proc/meminfo.c b/fs/proc/meminfo.c
+> index 74ea974..facb9fb 100644
+> --- a/fs/proc/meminfo.c
+> +++ b/fs/proc/meminfo.c
+> @@ -22,7 +22,7 @@ void __attribute__((weak)) arch_report_meminfo(struct seq_file *m)
+>  static int meminfo_proc_show(struct seq_file *m, void *v)
+>  {
+>  	struct sysinfo i;
+> -	unsigned long committed;
+> +	long committed;
+>  	unsigned long allowed;
+>  	struct vmalloc_info vmi;
+>  	long cached;
+> @@ -36,6 +36,8 @@ static int meminfo_proc_show(struct seq_file *m, void *v)
+>  	si_meminfo(&i);
+>  	si_swapinfo(&i);
+>  	committed = atomic_long_read(&vm_committed_space);
+> +	if (committed < 0)
+> +		committed = 0;
+>  	allowed = ((totalram_pages - hugetlb_total_pages())
+>  		* sysctl_overcommit_ratio / 100) + total_swap_pages;
+> 
+-- Dave
 
-If you're old enough to remember the Cold War, it was called Mutually
-Assured Destruction back then. ;)
-
-
---==_Exmh_1240848874_4302P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJ9dnqcC3lWbTT17ARApvaAKCw9H5ae7b79AKZzt41SntmqclAzACaA0yA
-GO7jh8AjMyr/B+iWVtu34UM=
-=I5fH
------END PGP SIGNATURE-----
-
---==_Exmh_1240848874_4302P--
