@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbZD0RaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbZD0Rai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755650AbZD0RaU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 13:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZD0RaF
+	id S1758068AbZD0Rai (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 13:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757026AbZD0RaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 13:30:05 -0400
-Received: from mga02.intel.com ([134.134.136.20]:63353 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752090AbZD0RaE convert rfc822-to-8bit (ORCPT
+	Mon, 27 Apr 2009 13:30:23 -0400
+Received: from ausc60pc101.us.dell.com ([143.166.85.206]:46825 "EHLO
+	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753026AbZD0RaV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 13:30:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,255,1239001200"; 
-   d="scan'208";a="407305220"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Tim Abbott <tabbott@MIT.EDU>
-CC: Sam Ravnborg <sam@ravnborg.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>, "Theodore Ts'o" <tytso@MIT.EDU>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       =?iso-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
-       David Howells <dhowells@redhat.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Mon, 27 Apr 2009 10:29:49 -0700
-Subject: RE: [PATCH 05/15] arm: convert to use __HEAD and HEAD_TEXT macros.
-Thread-Topic: [PATCH 05/15] arm: convert to use __HEAD and HEAD_TEXT macros.
-Thread-Index: AcnHXPHRpgEBDetGSXmdF8323HegcQAABtNg
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA39EDA91F9@orsmsx505.amr.corp.intel.com>
-References: <alpine.DEB.1.10.0904251304120.7631@vinegar-pot.mit.edu>
- <1240711870-30505-1-git-send-email-tabbott@mit.edu>
- <1240711870-30505-2-git-send-email-tabbott@mit.edu>
- <1240711870-30505-3-git-send-email-tabbott@mit.edu>
- <1240711870-30505-4-git-send-email-tabbott@mit.edu>
- <1240711870-30505-5-git-send-email-tabbott@mit.edu>
- <20090426111924.GD28642@uranus.ravnborg.org>
- <alpine.DEB.1.10.0904271121280.1665@vinegar-pot.mit.edu>
- <alpine.LFD.2.00.0904270958010.22156@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904270958010.22156@localhost.localdomain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-MIME-Version: 1.0
+	Mon, 27 Apr 2009 13:30:21 -0400
+X-Loopcount0: from 143.166.82.43
+Date: Mon, 27 Apr 2009 12:30:21 -0500
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Michael E Brown <Michael_E_Brown@dell.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: Class device namespaces
+Message-ID: <20090427173021.GA7078@auslistsprd01.us.dell.com>
+References: <20090329174836.6de797d6@hyperion.delvare> <ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com> <20090330104952.26f03c13@hyperion.delvare> <ac3eb2510903300424s2604d027h653a3f77163e0242@mail.gmail.com> <20090426085401.3788fc9c@hyperion.delvare> <20090426124443.GA12455@auslistsprd01.us.dell.com> <20090426130122.GB12455@auslistsprd01.us.dell.com> <20090427173005.3ff1100b@hyperion.delvare>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090427173005.3ff1100b@hyperion.delvare>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Does .head.text actually need its own output section here?
->
-> Probably not. Does the ARM build system massage the end result some way
-> looking for that .text.head section in the end? As you note, nobody else
-> cares, and the proper patch may be more along the lines of something
-> below.
+On Mon, Apr 27, 2009 at 05:30:05PM +0200, Jean Delvare wrote:
+> On Sun, 26 Apr 2009 08:01:22 -0500, Matt Domsch wrote:
+> > I'll note there is a second implementation that uses dell_rbu, and
+> > that is included in each and every "Dell Update Package" (aka DUP)
+> > BIOS update posted on support.dell.com for every Dell PowerEdge server
+> > for the past several years.  Because the updater and they BIOS payload
+> > are packaged in the same package, a change which would require
+> > changing that updater will result in requiring Dell to spin and
+> > re-release hundreds of DUPs, which would not go over well...  Thank
+> > you for being careful not to change the interface capriciously - it
+> > could have a huge impact on us.
+> 
+> I'll be careful, but you have to admit that duplicating utility code
+> like this is poor engineering from Dell :( I don't want to think of the
+> mess it will be if you ever have to fix a critical bug in that code.
 
-ia64 doesn't seem to care ... I changed the one use of .text.head
-to be just .text.  There are a couple of new "section mismatches"
-(start_ap -> start_secondary and start_ap -> start_kernel), but
-it still boots.
+Yes, this is well-understood, and steps are in process to address this
+model.  http://linux.dell.com/firmware-tools is the preferred model,
+with split inventory/execution components from firmware payloads.
 
-> Of course, most other architectures put the "init" section at the end, and
-> leave the HEAD_TEXT in the regular text section, but I suspect the ARM way
-> of laying things out (init text first) is probably better, since it allows
-> you to free that head code too.
+Thanks,
+Matt
 
-The start_ap code is still needed for hotplug cpu on ia64. So .text.init
-won't work for me.
-
--Tony
+-- 
+Matt Domsch
+Linux Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
