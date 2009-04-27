@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbZD0OWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755751AbZD0O2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757042AbZD0OWe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 10:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbZD0OWY
+	id S1755751AbZD0O2E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 10:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbZD0O1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 10:22:24 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:38499 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755100AbZD0OWY (ORCPT
+	Mon, 27 Apr 2009 10:27:52 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:44287 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751763AbZD0O1w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 10:22:24 -0400
-Date: Mon, 27 Apr 2009 10:12:26 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Vivek Kashyap <vivk@us.ibm.com>, Mel Gorman <mel@linux.vnet.ibm.com>,
-       Robert MacFarlan <Robert_MacFarlan@us.ibm.com>,
-       "Fu, Michael" <michael.fu@intel.com>
-Subject: Re: Large Pages - Linux Foundation HPC
-In-Reply-To: <1240728861.29485.41.camel@nimitz>
-Message-ID: <alpine.DEB.1.10.0904271010300.1474@qirst.com>
-References: <1240331533.32731.2.camel@badari-desktop>  <1240333025.32604.392.camel@nimitz>  <20090421182555.GA8977@balbir.in.ibm.com>  <20090425084804.GA517@localhost> <1240728861.29485.41.camel@nimitz>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 27 Apr 2009 10:27:52 -0400
+Date: Mon, 27 Apr 2009 10:27:49 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Huang Ying <ying.huang@intel.com>
+cc: Robert Richter <robert.richter@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: Re: Re-implement MCE log ring buffer as per-CPU ring buffer
+In-Reply-To: <1240818596.6842.1001.camel@yhuang-dev.sh.intel.com>
+Message-ID: <alpine.DEB.2.00.0904271026140.24293@gandalf.stny.rr.com>
+References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com>  <20090422092259.GC18226@elte.hu> <20090422101600.GL3226@erda.amd.com>  <1240553210.6842.871.camel@yhuang-dev.sh.intel.com>  <20090424100943.GJ27264@erda.amd.com> 
+ <alpine.DEB.2.00.0904240935140.24293@gandalf.stny.rr.com> <1240818596.6842.1001.camel@yhuang-dev.sh.intel.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 Apr 2009, Dave Hansen wrote:
 
-> On Sat, 2009-04-25 at 16:48 +0800, Wu Fengguang wrote:
-> > Based on Dave's descriptions that HPC apps typically
-> > - do mlock(), to pre-populate memory and pin them in memory
-> > - run at fresh boot, with loads of high order pages available
->
-> There are definitely some of them that do this, but it certainly isn't
-> all.  It may not even be the norm.
+On Mon, 27 Apr 2009, Huang Ying wrote:
 
-Some of the machine have so much memory available that 2M allocations are
-likely to succeed. If a machine has a couple of terabytes of memory
-available then its highly unlikely that a 2M allocation will not succeed.
+> On Fri, 2009-04-24 at 21:36 +0800, Steven Rostedt wrote:
+> > On Fri, 24 Apr 2009, Robert Richter wrote:
+> > > > 
+> > > > It seems that ring_buffer is not NMI-safe, while mcelog buffer will be
+> > > > used in NMI context and interrupt context. When will ring_buffer to be
+> > > > NMI-safe?
+> > > 
+> > > You can use it in nmi context with separate read and write
+> > > buffers. See this patch description:
+> > > 6dad828b76c7224a22ddc9ce7aa495d994f03b31
+> > > 
+> > > Not sure if somebody will make the ring_buffer non-locking.
+> > 
+> > It already is ;-)
+> > 
+> > I've put in for a patent application on the algorithm so I must wait till 
+> > it is processed before I can release the code.
+> 
+> When will it be merged by mainline kernel? Do you have a plan?
+> 
+> We do have some scalability issues of current mcelog implementation, and
+> hopes that can be solved as soon as possible, perhaps for 2.6.31?
+
+Yes, I plan on being able to post it before the 31 merge window opens. 
+I'll ping the lawyer to expedite the process.
+
+-- Steve
 
