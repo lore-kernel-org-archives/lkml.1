@@ -1,166 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758387AbZD0QBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932110AbZD0QDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758387AbZD0QBE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 12:01:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758311AbZD0QAu
+	id S932110AbZD0QDX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 12:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbZD0QDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 12:00:50 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:29810 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757400AbZD0QAt (ORCPT
+	Mon, 27 Apr 2009 12:03:08 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:11532 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753976AbZD0QDE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 12:00:49 -0400
-Date: Mon, 27 Apr 2009 18:00:36 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Michael E Brown <Michael_E_Brown@dell.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Matt Domsch <Matt_Domsch@dell.com>
-Subject: Re: Class device namespaces
-Message-ID: <20090427180036.269a40b3@hyperion.delvare>
-In-Reply-To: <ac3eb2510904260642s66a15a8eg5811fdc6b339d493@mail.gmail.com>
-References: <20090329174836.6de797d6@hyperion.delvare>
-	<ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com>
-	<20090330104952.26f03c13@hyperion.delvare>
-	<ac3eb2510903300424s2604d027h653a3f77163e0242@mail.gmail.com>
-	<20090426085401.3788fc9c@hyperion.delvare>
-	<ac3eb2510904260642s66a15a8eg5811fdc6b339d493@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Apr 2009 12:03:04 -0400
+Message-ID: <49F5D724.8030802@panasas.com>
+Date: Mon, 27 Apr 2009 19:02:44 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, axboe@kernel.dk,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James.Bottomley@HansenPartnership.com, osd-dev@open-osd.org,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 2/3] osd_initiator: support bio chains
+References: <20090402015455.GA14087@havoc.gtf.org> <20090407225302.GA14248@havoc.gtf.org> <20090410114821.GA10602@havoc.gtf.org> <20090410114908.GB10602@havoc.gtf.org>
+In-Reply-To: <20090410114908.GB10602@havoc.gtf.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Apr 2009 16:02:58.0524 (UTC) FILETIME=[A24159C0:01C9C751]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kay,
-
-On Sun, 26 Apr 2009 15:42:25 +0200, Kay Sievers wrote:
-> On Sun, Apr 26, 2009 at 08:54, Jean Delvare <khali@linux-fr.org> wrote:
-> > But anyway, this isn't going to happen quickly, and I still believe we
-> > should solve the namespace problem I reported.
+On 04/10/2009 02:49 PM, Jeff Garzik wrote:
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> ---
+>  drivers/scsi/osd/osd_initiator.c |   83 +++++++++++++++++++++++++++++++--------
+>  1 file changed, 67 insertions(+), 16 deletions(-)
 > 
-> I think the real namespace problem lives well inside the i2c devices,
-> not in the core. :) Sure, the firmware class is pretty dumb with its
-> naming, but the root case is the way i2c devices are created.
-> 
-> First, i2c stacks class devices, which it should not do, it should use
-> a bus not a class, if it has device <-> children relations between
-> different types.
 
-Could as well be. I didn't invent it, it was that way when I took over
-maintenance of the code. If i2c-adapters shouldn't be class devices,
-let's change that... with all due carefulness for user-space tools that
-may be relying on sysfs paths.
+Some of my comments below will be more clear after reading the 
+comments to the next patch
 
-> Second, it names all the devices from different classes with the
-> _same_ name, then puts them in a hierarchy,
+> diff --git a/drivers/scsi/osd/osd_initiator.c b/drivers/scsi/osd/osd_initiator.c
+> index 2a5f077..2d35d65 100644
+> --- a/drivers/scsi/osd/osd_initiator.c
+> +++ b/drivers/scsi/osd/osd_initiator.c
+> @@ -709,14 +709,36 @@ EXPORT_SYMBOL(osd_req_remove_object);
+>  	struct osd_obj_id *first, struct osd_obj_id_list *list, unsigned nelem);
+>  */
+>  
+> +static unsigned int bio_chain_size(struct bio *bio)
+> +{
+> +	unsigned int chain_size = 0;
+> +
+> +	while (bio) {
+> +		chain_size += bio->bi_size;
+> +		bio = bio->bi_next;
+> +	}
+> +
+> +	return chain_size;
+> +}
+> +
 
-Yes... but that shouldn't be (and isn't, really) a problem. We control
-the hierarchy, and the fact that different class devices have the same
-name doesn't matter at this point.
+This will not be needed see below.
 
-> and the tries to mix-in a
-> third class, the firmware class, which also uses the _same_ name. That
-> just asks for trouble. :)
+>  void osd_req_write(struct osd_request *or,
+>  	const struct osd_obj_id *obj, struct bio *bio, u64 offset)
 
-Yes it is. But you will note that the naming of firmware class devices
-is the root of the problem. It doesn't even allow for two different
-firmware class devices off the same parent. Even the author of the code
-put in a warning in the code saying that this would inevitably lead to
-collisions. This really should have never be accepted in the kernel to
-start with.
+-	const struct osd_obj_id *obj, struct bio *bio, u64 offset)
++	const struct osd_obj_id *obj, struct bio *bio, u64 total_bytes, u64 offset)
 
-> > For firmware, it doesn't seem as legitimate, I can't really think of a
-> > good reason to use the i2c-adapter as the parent for the firmware
-> > device.
-> 
-> Oh, I may miss something, I thought that is what you already do and
-> causes the problem? I though you use the "adapter" to request the
-> firmware? Otherwise I don't see how this can conflict.
+>  {
+> -	_osd_req_encode_common(or, OSD_ACT_WRITE, obj, offset, bio->bi_size);
+> +	unsigned int chain_size = 0;
+> +	struct bio *tmp_bio = bio;
+> +
+> +	while (tmp_bio) {
+> +		chain_size += tmp_bio->bi_size;
+> +		tmp_bio->bi_rw |= (1 << BIO_RW);
+> +
+> +		tmp_bio = tmp_bio->bi_next;
+> +	}
+> +
 
-Err, yes, this is exactly what we do, and also what I said just above.
-Was I not clear maybe?
+Is not needed bio->bi_rw should be taken care of, in bio_clone()
+and chain_size is total_bytes received.
 
-> You have the "adapter" and the "device" stacked, right?
->   /sys/devices/pci0000:00/0000:00:1f.3/i2c-adapter/i2c-0/i2c-0/
-> 
-> Then you use the adapter:
->    /sys/devices/pci0000:00/0000:00:1f.3/i2c-adapter/i2c-0
-> to request the firmware, which will try to create:
->   /sys/devices/pci0000:00/0000:00:1f.3/i2c-adapter/i2c-0/i2c-0/
-> 
-> I thought you could use the "device" and not the "adapter" to request
-> the firmware? Then you would get a "nice" chain of devices with all
-> the same names, like :)
->    /sys/devices/pci0000:00/0000:00:1f.3/i2c-adapter/i2c-0/i2c-0/i2c-0/
+> +	_osd_req_encode_common(or, OSD_ACT_WRITE, obj, offset, chain_size);
+>  	WARN_ON(or->out.bio || or->out.total_bytes);
+> -	bio->bi_rw |= (1 << BIO_RW);
+> +
+>  	or->out.bio = bio;
+> -	or->out.total_bytes = bio->bi_size;
+> +	or->out.total_bytes = chain_size;
+>  }
+>  EXPORT_SYMBOL(osd_req_write);
+>  
+> @@ -747,11 +769,21 @@ EXPORT_SYMBOL(osd_req_flush_object);
+>  void osd_req_read(struct osd_request *or,
+>  	const struct osd_obj_id *obj, struct bio *bio, u64 offset)
 
-Ah, that's what you mean by "use the device". I read it the other way
-around, using the _parent_ (bus) device:
+same here
 
-    /sys/devices/pci0000:00/0000:00:1f.3/firmware/0000:00:1f.3
+>  {
+> -	_osd_req_encode_common(or, OSD_ACT_READ, obj, offset, bio->bi_size);
+> +	unsigned int chain_size = 0;
+> +	struct bio *tmp_bio = bio;
+> +
+> +	while (tmp_bio) {
+> +		chain_size += tmp_bio->bi_size;
+> +		tmp_bio->bi_rw &= ~(1 << BIO_RW);
+> +
+> +		tmp_bio = tmp_bio->bi_next;
+> +	}
+> +
 
-Actually I have already sent a patch doing this change to dvb drivers:
-  http://www.spinics.net/lists/linux-media/msg04926.html
-This still needs testing though.
+and here
 
-What you propose wouldn't work, loading i2c-dev is optional so the
-device may or may not be there. We definitely don't want to make all
-the v4l/dvb stack depend on i2c-dev.
+> +	_osd_req_encode_common(or, OSD_ACT_READ, obj, offset, chain_size);
+>  	WARN_ON(or->in.bio || or->in.total_bytes);
+> -	bio->bi_rw &= ~(1 << BIO_RW);
+> +
+>  	or->in.bio = bio;
+> -	or->in.total_bytes = bio->bi_size;
+> +	or->in.total_bytes = chain_size;
+>  }
+>  EXPORT_SYMBOL(osd_req_read);
+>  
+> @@ -1176,7 +1208,7 @@ static int _osd_req_finalize_data_integrity(struct osd_request *or,
+>  		unsigned pad;
+>  
+>  		or->out_data_integ.data_bytes = cpu_to_be64(
+> -			or->out.bio ? or->out.bio->bi_size : 0);
+> +			or->out.bio ? bio_chain_size(or->out.bio) : 0);
 
-> I see the following options:
->   - the i2c "device", not the "adapter" would request the firmware
+here we have or->out.total_bytes set properly at this stage
+(This will also work well when in the future we will support
+ CDB-CONTINUATION which is yet another segment in out buffer)
 
-See above.
+>  		or->out_data_integ.set_attributes_bytes = cpu_to_be64(
+>  			or->set_attr.total_bytes);
+>  		or->out_data_integ.get_attributes_bytes = cpu_to_be64(
+> @@ -1269,6 +1301,7 @@ int osd_finalize_request(struct osd_request *or,
+>  	struct osd_cdb_head *cdbh = osd_cdb_head(&or->cdb);
+>  	bool has_in, has_out;
+>  	int ret;
+> +	struct bio *bio, *tmp;
+>  
+>  	if (options & OSD_REQ_FUA)
+>  		cdbh->options |= OSD_CDB_FUA;
+> @@ -1292,23 +1325,40 @@ int osd_finalize_request(struct osd_request *or,
+>  	}
+>  
+>  	if (or->out.bio) {
+> -		ret = blk_rq_append_bio(or->request->q, or->out.req,
+> -					or->out.bio);
+> -		if (ret) {
+> -			OSD_DEBUG("blk_rq_append_bio out failed\n");
+> -			return ret;
+> +		bio = or->out.bio;
+> +		while (bio) {
+> +			tmp = bio;
+> +			bio = bio->bi_next;
+> +
+> +			ret = blk_rq_append_bio(or->request->q, or->out.req,
+> +						tmp);
+> +			if (ret) {
+> +				OSD_DEBUG("blk_rq_append_bio out failed\n");
+> +				return ret;
+> +			}
+>  		}
+>  		OSD_DEBUG("out bytes=%llu (bytes_req=%u)\n",
+>  			_LLU(or->out.total_bytes), or->out.req->data_len);
+> +
+> +		or->out.bio = NULL;
+>  	}
+>  	if (or->in.bio) {
+> -		ret = blk_rq_append_bio(or->request->q, or->in.req, or->in.bio);
+> -		if (ret) {
+> -			OSD_DEBUG("blk_rq_append_bio in failed\n");
+> -			return ret;
+> +		bio = or->in.bio;
+> +		while (bio) {
+> +			tmp = bio;
+> +			bio = bio->bi_next;
+> +
+> +			ret = blk_rq_append_bio(or->request->q, or->in.req,
+> +						tmp);
+> +			if (ret) {
+> +				OSD_DEBUG("blk_rq_append_bio in failed\n");
+> +				return ret;
+> +			}
 
->   - the i2c-adapter converts to a bus, and is no longer a class
+OK a loop here is plain hack, but two loops is a blasphemy. Specially over
+"wants to die" API. If at all, then it needs an helper that will be later
+pushed to block-layer.
 
-You apparently think this should be done either way?
+I have an RFC in place that makes use of a new blk_make_request(bio, total_bytes, ...)
+It should be enhanced to properly support chained-bios.
 
->   - i2c "adapters" and "devices" don't get the same duplicated name
+I will send this patch rebased on top of that RFC so it will be ready for
+the osdblk patch.
 
-I consider this a feature. Really, they are the same devices, the
-device nodes are there for user-space access to the adapters.
+>  		}
+>  		OSD_DEBUG("in bytes=%llu (bytes_req=%u)\n",
+>  			_LLU(or->in.total_bytes), or->in.req->data_len);
+> +
+> +		or->in.bio = NULL;
+>  	}
+>  
+>  	or->out.pad_buff = sg_out_pad_buffer;
+> @@ -1618,6 +1668,7 @@ void osd_sec_sign_cdb(struct osd_cdb *ocdb __unused, const u8 *cap_key __unused)
+>  void osd_sec_sign_data(void *data_integ __unused,
+>  		       struct bio *bio __unused, const u8 *cap_key __unused)
+>  {
+> +	/* NOTE: bio is a linked list */
 
->   - if "adapters" can only ever have a single "device", the
->     both could just be merged to a single instance, and maybe compat
->     symlinks created
+Yep, that was the original idea. Please note that even with a single bio submitted at osd_req_read/write
+today, at this point they are already chained with up to 4 additional segments.
 
-As said before, I have been considering this already. This would
-certainly make things a little easier, but also less flexible (i2c-dev
-could only be disabled at build time; if enabled it would always be
-loaded, together with i2c-core). I'll think about it some more, in the
-light of other i2c-core cleanups.
+>  }
+>  
+>  /*
 
-> 
->   - the firmware class adds a firmware-% prefix in the case the
->     requesting device is a class device, and not the common case
->     which is a bus device
 
-That works but adds inconsistency which may in turn cause trouble in
-the future (e.g. converting a bus device to class device or back would
-break user-space compatibility.)
+Thanks Jeff. I now understand what is needed to support chained-bios
+Please let me refresh my RFC to block-layer and add this patch to the patchset.
 
-> 
->   - change the "glue dir" rules, which I would try to avoid, because
->     we don't know who else might stack class devices of different
->     classes, and might get surprised by this
+Then your osdblk patch can apply on top of that. That will also create some
+needed pressure for this work to be done.
 
-I understand your reluctance, but still believe this is something we
-need to fix. Sure there are alternative fixes or workarounds for the
-problem at hand, but there may be other cases in the future.
-
-Paradox of the day, either there are no other stacks of class devices,
-and the change is safe and needless. Or there are other stacks of class
-devices, and the change is needed but potentially risky. Oh well.
-
-> What do you think?
-
-I'd like to give a try to converting i2c-adapter devices to bus devices
-rather than class devices, if you think that's how things should be.
-Can you please explain to me how this would be done?
-
-Thanks,
--- 
-Jean Delvare
+Sincerely yours
+Boaz
