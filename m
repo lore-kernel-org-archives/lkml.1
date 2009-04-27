@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759992AbZD0UWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760273AbZD0UXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759992AbZD0UWq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 16:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757596AbZD0UWh
+	id S1760273AbZD0UXA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 16:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759804AbZD0UWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 16:22:37 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:53009 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756419AbZD0UWg (ORCPT
+	Mon, 27 Apr 2009 16:22:50 -0400
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:47116 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759714AbZD0UWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 16:22:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
-         :references;
-        b=lfQvrZb8SS/b+FkeGuAasTLLGurzLR3fWUMn8ipIgF/m9XbFgZ3gxs3H6ljh8c0Jgn
-         yxK06yQXaE1JAE4BFt6RA4LNbpXh7xzj2OsXRpk+jfsx1eLZDwTQhNgPuGiX4pj7t/zb
-         KDM7yz7vN0/ffbogkWWpk68Lhfonow0ZirfYQ=
-From: Alessio Igor Bogani <abogani@texware.it>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jonathan Corbet <corbet@lwn.net>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alessio Igor Bogani <abogani@texware.it>
-Subject: [PATCH -tip:kill-the-BKL] remove the BKL: remove "BKL auto-drop" assumption from ext3_remount()
-Date: Mon, 27 Apr 2009 22:22:28 +0200
-Message-Id: <1240863748-13225-1-git-send-email-abogani@texware.it>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <20090426163924.GD6236@elte.hu>
-References: <20090426163924.GD6236@elte.hu>
+	Mon, 27 Apr 2009 16:22:49 -0400
+Message-ID: <49F61416.8040501@ovro.caltech.edu>
+Date: Mon, 27 Apr 2009 13:22:46 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Timur Tabi <timur@freescale.com>
+CC: Liu Dave-R63238 <DaveLiu@freescale.com>, Ira Snyder <iws@ovro.caltech.edu>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
+References: <20090424183517.GB23140@ovro.caltech.edu>	<D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net> <ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com> <49F608B7.9080409@ovro.caltech.edu> <49F60A3A.4060402@freescale.com>
+In-Reply-To: <49F60A3A.4060402@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Mon, 27 Apr 2009 13:22:49 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix ext3_remount()'s "schedule() drops the BKL automatically" assumption,
-when ext3_mark_recovery_complete(), which can sleep, does not do that it can
-lock up.
+Hi Timur,
 
-Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
----
- fs/ext3/super.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+>> Would you like some sort of summary of this info for a commit
+>> message?
+> 
+> That's probably overkill.  I just want a sentence or two that tells
+> someone looking at the code casually that the behavior of reading PCI
+> memory might be different than what they expect.
 
-diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-index dc905f9..5d61a7f 100644
---- a/fs/ext3/super.c
-+++ b/fs/ext3/super.c
-@@ -2503,6 +2503,7 @@ static int ext3_remount (struct super_block * sb, int * flags, char * data)
- #ifdef CONFIG_QUOTA
- 	int i;
- #endif
-+	int bkl = kernel_locked();
- 
- 	/* Store the original options */
- 	old_sb_flags = sb->s_flags;
-@@ -2561,9 +2562,13 @@ static int ext3_remount (struct super_block * sb, int * flags, char * data)
- 			 * We have to unlock super so that we can wait for
- 			 * transactions.
- 			 */
-+			if (bkl)
-+				unlock_kernel();
- 			unlock_super(sb);
- 			ext3_mark_recovery_complete(sb, es);
- 			lock_super(sb);
-+			if (bkl)
-+				lock_kernel();
- 		} else {
- 			__le32 ret;
- 			if ((ret = EXT3_HAS_RO_COMPAT_FEATURE(sb,
--- 
-1.6.0.4
+Could you help us with the wording you'd like to see in the code.
+Did you want to see something in the header comments, or something
+near the register settings?
+
+How about something like this in place of the existing PCI_RM
+comment:
+
+PRC_RM - PCI read multiple
+   The default PCI read command used by the DMA controller is
+   PCI Read (PCI command 6h). When the burst length is 32-bytes
+   or longer, PCI Read Line (PCI command Eh) is used (undocumented
+   feature of the controller). Using PCI read multiple
+   (PCI command Ch) results in high-performance across PCI
+   bridges. DMA transfers to non-prefetchable PCI registers
+   should not result in prefetched reads, even when using
+   the PCI read multiple command.
+
+
+Cheers,
+Dave
+
+
 
