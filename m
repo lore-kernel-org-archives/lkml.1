@@ -1,205 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbZD0Kg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbZD0Kpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755057AbZD0Kg1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 06:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbZD0KgJ
+	id S1754618AbZD0Kpp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 06:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbZD0Kpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 06:36:09 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:34244 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753855AbZD0KgH (ORCPT
+	Mon, 27 Apr 2009 06:45:36 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:57587 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752647AbZD0Kpf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 06:36:07 -0400
-Message-ID: <49F58A8C.7090808@novell.com>
-Date: Mon, 27 Apr 2009 06:35:56 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, davidel@xmailserver.org
-Subject: Re: [KVM PATCH v2 2/2] kvm: add support for irqfd via	eventfd-notification
- interface
-References: <20090424042142.1796.60756.stgit@dev.haskins.net> <20090424042518.1796.65593.stgit@dev.haskins.net> <49F572EF.4010909@redhat.com>
-In-Reply-To: <49F572EF.4010909@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigF6D1FAA06BF62E702DDF93A6"
+	Mon, 27 Apr 2009 06:45:35 -0400
+Date: Mon, 27 Apr 2009 19:45:33 +0900 (JST)
+Message-Id: <20090427.194533.183037823.ryov@valinux.co.jp>
+To: righi.andrea@gmail.com
+Cc: lizf@cn.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
+       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
+       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
+       baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
+       dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       taka@valinux.co.jp, matt@bluehost.com, dradford@bluehost.com,
+       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/9] io-throttle documentation
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090420150052.GC13307@linux>
+References: <20090417102539.GA16838@linux>
+	<20090420.183815.226804723.ryov@valinux.co.jp>
+	<20090420150052.GC13307@linux>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigF6D1FAA06BF62E702DDF93A6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hi Andrea,
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->> This allows an eventfd to be registered as an irq source with a
->> guest.  Any
->> signaling operation on the eventfd (via userspace or kernel) will inje=
-ct
->> the registered GSI at the next available window.
->>
->> =20
->> +struct kvm_irqfd {
->> +    __u32 fd;
->> +    __u32 gsi;
->> +};
->> +
->>  =20
->
-> I think it's better to have ioctl create and return the fd.  This way
-> we aren't tied to eventfd (though it makes a lot of sense to use it).
+From: Andrea Righi <righi.andrea@gmail.com>
+Subject: Re: [PATCH 1/9] io-throttle documentation
+Date: Mon, 20 Apr 2009 17:00:53 +0200
 
-I dont mind either way, but I am not sure it buys us much as the one
-driving the fd would need to understand if the interface is
-eventfd-esque or something else anyway.  Let me know if you still want
-to see this changed.
+> On Mon, Apr 20, 2009 at 06:38:15PM +0900, Ryo Tsuruta wrote:
+> > Hi Andrea, 
+> > 
+> > > Implementing bio-cgroup functionality as pure infrastructure framework
+> > > instead of a cgroup subsystem would remove all this oddity and
+> > > complexity.
+> > > 
+> > > For example, the actual functionality that I need for the io-throttle
+> > > controller is just an interface to set and get the cgroup owner of a
+> > > page. I think it should be the same also for other potential users of
+> > > bio-cgroup.
+> > > 
+> > > So, what about implementing the bio-cgroup functionality as cgroup "page
+> > > tracking" infrastructure and provide the following interfaces:
+> > > 
+> > > /*
+> > >  * Encode the cgrp->css.id in page_group->flags
+> > >  */
+> > > void set_cgroup_page_owner(struct page *page, struct cgroup *cgrp);
+> > > 
+> > > /*
+> > >  * Returns the cgroup owner of a page, decoding the cgroup id from
+> > >  * page_cgroup->flags.
+> > >  */
+> > > struct cgroup *get_cgroup_page_owner(struct page *page);
+> > > 
+> > > This also wouldn't increase the size of page_cgroup because we can
+> > > encode the cgroup id in the unused bits of page_cgroup->flags, as
+> > > originally suggested by Kame.
+> > > 
+> > > And I think it could be used also by dm-ioband, even if it's not a
+> > > cgroup-based subsystem... but I may be wrong. Ryo what's your opinion?
 
->
-> Also, please add a flags field and some padding so we can extend it
-> later.
->
+I've come up with an idea to coexist blkio-cgroup and io-throttle.
+blkio-cgroup provides a function to get a cgroup with the specified ID.
 
-Good idea.  Will do.
+/* Should be called under rcu_read_lock() */
+struct cgroup *blkio_cgroup_lookup(int id)
+{
+	struct cgroup *cgrp;
+	struct cgroup_subsys_state *css;
+	
+	if (blkio_cgroup_disabled())
+		return NULL;
 
->> +
->> +#include <linux/kvm_host.h>
->> +#include <linux/eventfd.h>
->> +#include <linux/workqueue.h>
->> +#include <linux/wait.h>
->> +#include <linux/poll.h>
->> +#include <linux/file.h>
->> +#include <linux/list.h>
->> +
->> +struct _irqfd {
->> +    struct kvm               *kvm;
->> +    int                       gsi;
->> +    struct file              *file;
->> +    struct list_head          list;
->> +    poll_table                pt;
->> +    wait_queue_head_t        *wqh;
->> +    wait_queue_t              wait;
->> +    struct work_struct        work;
->> +};
->> +
->> +static void
->> +irqfd_inject(struct work_struct *work)
->> +{
->> +    struct _irqfd *irqfd =3D container_of(work, struct _irqfd, work);=
+	css = css_lookup(&blkio_cgroup_subsys, id);
+	if (!css)
+		return NULL;
+	cgrp = css->cgroup;
+	return cgrp;
+}
 
->> +    struct kvm *kvm =3D irqfd->kvm;
->> +
->> +    mutex_lock(&kvm->lock);
->> +    kvm_set_irq(kvm, kvm->irqfd.src, irqfd->gsi, 1);
->>  =20
->
-> Need to lower the irq too (though irqfd only supports edge triggered
-> interrupts).
->
-Should I just do back-to-back 1+0 inside the same lock?
+Then io-throttle can get a struct iothrottle which belongs to the
+cgroup by using the above function.
 
->> +    mutex_unlock(&kvm->lock);
->> +}
->> +
->> +static int
->> +irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
->> +{
->> +    struct _irqfd *irqfd =3D container_of(wait, struct _irqfd, wait);=
+static struct iothrottle *iothrottle_lookup(int id)
+{
+	struct cgroup *grp;
+	struct iothrottle *iot;
 
->> +
->> +    /*
->> +     * The eventfd calls its wake_up with interrupts disabled,
->> +     * so we need to defer the IRQ injection until later since we nee=
-d
->> +     * to acquire the kvm->lock to do so.
->> +     */
->> +    schedule_work(&irqfd->work);
->> +
->> +    return 0;
->> +}
->>  =20
->
-> One day we'll have lockless injection and we'll want to drop this.  I
-> guess if we create the fd ourselves we can make it work, but I don't
-> see how we can do this with eventfd.
->
+	...
+	grp = blkio_cgroup_lookup(id);
+	if (!grp)
+		return NULL
+	iot = cgroup_to_iothrottle(grp);
+	...
+}
 
-Hmm...this is a good point.  There probably is no way to use eventfd
-"off the shelf" in a way that doesn't cause this callback to be in a
-critical section.  Should we just worry about switching away from
-eventfd when this occurs, or should I implement a custom anon-fd now?
+What do you think about this way?
 
-
->> +int
->> +kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
->> +{
->> +    struct _irqfd *irqfd;
->> +    struct file *file;
->> +    int ret;
->> +
->> +    irqfd =3D kzalloc(sizeof(*irqfd), GFP_KERNEL);
->> +    if (!irqfd)
->> +        return -ENOMEM;
->> +
->> +    irqfd->kvm =3D kvm;
->> +    irqfd->gsi =3D gsi;
->> +    INIT_LIST_HEAD(&irqfd->list);
->> +    init_waitqueue_func_entry(&irqfd->wait, irqfd_wakeup);
->> +    init_poll_funcptr(&irqfd->pt, irqfd_ptable_queue_proc);
->> +    INIT_WORK(&irqfd->work, irqfd_inject);
->> +
->> +    file =3D eventfd_fget(fd);
->> +    if (IS_ERR(file)) {
->> +        ret =3D PTR_ERR(file);
->> +        goto fail;
->> +    }
->> +
->> +    ret =3D file->f_op->poll(file, &irqfd->pt);
->> +    /* do we need to look for errors in ret? */
->>  =20
->
-> Do we?
-
-Probably.  Will fix in v3.
-
->
->> +
->> +    irqfd->file =3D file;
->> +
->> +    mutex_lock(&kvm->lock);
->> +    if (kvm->irqfd.src =3D=3D -1) {
->> +        ret =3D kvm_request_irq_source_id(kvm);
->> +        BUG_ON(ret < 0);
->>  =20
->
-> I think you can reuse the userspace irq source (since it's just
-> another way for userspace to inject an interrupt).  It isn't really
-> needed since the irq source stuff is only needed to support level
-> triggered interrupts.
->
-Ack, will do.
-
-Thanks Avi,
--Greg
-
-
-
-
---------------enigF6D1FAA06BF62E702DDF93A6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkn1iowACgkQlOSOBdgZUxluogCfSLs4Px4Ic+IpEtzzBI+YRWqv
-Y8IAniFnDA3/zgGtT/AqwT7BBHzCMe28
-=QqdD
------END PGP SIGNATURE-----
-
---------------enigF6D1FAA06BF62E702DDF93A6--
+Thanks,
+Ryo Tsuruta
