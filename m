@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbZD0JzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbZD0Jy4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757017AbZD0JzV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 05:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbZD0Jst
+	id S1756535AbZD0Jy4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 05:54:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbZD0Jss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 05:48:49 -0400
+	Mon, 27 Apr 2009 05:48:48 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:60685 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755009AbZD0Jss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 05:48:48 -0400
+	id S1754474AbZD0Jsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 05:48:46 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 04/30] microblaze_mmu_v1: MMU update for startup code
-Date: Mon, 27 Apr 2009 10:31:53 +0200
-Message-Id: <1240821139-7247-5-git-send-email-monstr@monstr.eu>
+Subject: [PATCH 07/30] microblaze_mmu_v1: MMU initialization
+Date: Mon, 27 Apr 2009 10:31:56 +0200
+Message-Id: <1240821139-7247-8-git-send-email-monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1240821139-7247-4-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1240821139-7247-7-git-send-email-monstr@monstr.eu>
 References: <1240821139-7247-1-git-send-email-monstr@monstr.eu>
  <1240821139-7247-2-git-send-email-monstr@monstr.eu>
  <1240821139-7247-3-git-send-email-monstr@monstr.eu>
  <1240821139-7247-4-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-5-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-6-git-send-email-monstr@monstr.eu>
+ <1240821139-7247-7-git-send-email-monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -29,241 +32,232 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/head.S |  201 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 201 insertions(+), 0 deletions(-)
+ arch/microblaze/mm/init.c |  168 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 167 insertions(+), 1 deletions(-)
 
-diff --git a/arch/microblaze/kernel/head.S b/arch/microblaze/kernel/head.S
-index 319dc35..172359f 100644
---- a/arch/microblaze/kernel/head.S
-+++ b/arch/microblaze/kernel/head.S
-@@ -3,6 +3,26 @@
-  * Copyright (C) 2007-2009 PetaLogix
-  * Copyright (C) 2006 Atmark Techno, Inc.
-  *
-+ * MMU code derived from arch/ppc/kernel/head_4xx.S:
-+ *    Copyright (c) 1995-1996 Gary Thomas <gdt@linuxppc.org>
-+ *      Initial PowerPC version.
-+ *    Copyright (c) 1996 Cort Dougan <cort@cs.nmt.edu>
-+ *      Rewritten for PReP
-+ *    Copyright (c) 1996 Paul Mackerras <paulus@cs.anu.edu.au>
-+ *      Low-level exception handers, MMU support, and rewrite.
-+ *    Copyright (c) 1997 Dan Malek <dmalek@jlc.net>
-+ *      PowerPC 8xx modifications.
-+ *    Copyright (c) 1998-1999 TiVo, Inc.
-+ *      PowerPC 403GCX modifications.
-+ *    Copyright (c) 1999 Grant Erickson <grant@lcse.umn.edu>
-+ *      PowerPC 403GCX/405GP modifications.
-+ *    Copyright 2000 MontaVista Software Inc.
-+ *	PPC405 modifications
-+ *      PowerPC 403GCX/405GP modifications.
-+ * 	Author: MontaVista Software, Inc.
-+ *         	frank_rowand@mvista.com or source@mvista.com
-+ * 	   	debbie_chu@mvista.com
-+ *
-  * This file is subject to the terms and conditions of the GNU General Public
-  * License. See the file "COPYING" in the main directory of this archive
-  * for more details.
-@@ -12,6 +32,22 @@
- #include <asm/thread_info.h>
- #include <asm/page.h>
- 
-+#ifdef CONFIG_MMU
-+#include <asm/setup.h> /* COMMAND_LINE_SIZE */
-+#include <asm/mmu.h>
-+#include <asm/processor.h>
-+
-+.data
-+.global empty_zero_page
-+.align 12
-+empty_zero_page:
-+	.space	4096
-+.global swapper_pg_dir
-+swapper_pg_dir:
-+	.space	4096
-+
-+#endif /* CONFIG_MMU */
-+
- 	.text
- ENTRY(_start)
- 	mfs	r1, rmsr
-@@ -32,6 +68,124 @@ _copy_fdt:
- 	addik	r3, r3, -4 /* descrement loop */
- no_fdt_arg:
- 
-+#ifdef CONFIG_MMU
-+
-+#ifndef CONFIG_CMDLINE_BOOL
-+/*
-+ * handling command line
-+ * copy command line to __init_end. There is space for storing command line.
-+ */
-+	or	r6, r0, r0		/* incremment */
-+	ori	r4, r0, __init_end	/* load address of command line */
-+	tophys(r4,r4)			/* convert to phys address */
-+	ori	r3, r0, COMMAND_LINE_SIZE - 1 /* number of loops */
-+_copy_command_line:
-+	lbu	r7, r5, r6 /* r7=r5+r6 - r5 contain pointer to command line */
-+	sb	r7, r4, r6		/* addr[r4+r6]= r7*/
-+	addik	r6, r6, 1		/* increment counting */
-+	bgtid	r3, _copy_command_line	/* loop for all entries       */
-+	addik	r3, r3, -1		/* descrement loop */
-+	addik	r5, r4, 0		/* add new space for command line */
-+	tovirt(r5,r5)
-+#endif /* CONFIG_CMDLINE_BOOL */
-+
-+#ifdef NOT_COMPILE
-+/* save bram context */
-+	or	r6, r0, r0				/* incremment */
-+	ori	r4, r0, TOPHYS(_bram_load_start)	/* save bram context */
-+	ori	r3, r0, (LMB_SIZE - 4)
-+_copy_bram:
-+	lw	r7, r0, r6		/* r7 = r0 + r6 */
-+	sw	r7, r4, r6		/* addr[r4 + r6] = r7*/
-+	addik	r6, r6, 4		/* increment counting */
-+	bgtid	r3, _copy_bram		/* loop for all entries */
-+	addik	r3, r3, -4		/* descrement loop */
-+#endif
-+	/* We have to turn on the MMU right away. */
-+
-+	/*
-+	 * Set up the initial MMU state so we can do the first level of
-+	 * kernel initialization.  This maps the first 16 MBytes of memory 1:1
-+	 * virtual to physical.
-+	 */
-+	nop
-+	addik	r3, r0, 63		/* Invalidate all TLB entries */
-+_invalidate:
-+	mts	rtlbx, r3
-+	mts	rtlbhi, r0			/* flush: ensure V is clear   */
-+	bgtid	r3, _invalidate		/* loop for all entries       */
-+	addik	r3, r3, -1
-+	/* sync */
-+
-+	/*
-+	 * We should still be executing code at physical address area
-+	 * RAM_BASEADDR at this point. However, kernel code is at
-+	 * a virtual address. So, set up a TLB mapping to cover this once
-+	 * translation is enabled.
-+	 */
-+
-+	addik	r3,r0, CONFIG_KERNEL_START /* Load the kernel virtual address */
-+	tophys(r4,r3)			/* Load the kernel physical address */
-+
-+	mts	rpid,r0			/* Load the kernel PID */
-+	nop
-+	bri	4
-+
-+	/*
-+	 * Configure and load two entries into TLB slots 62 and 63.
-+	 * In case we are pinning TLBs, these are reserved in by the
-+	 * other TLB functions.  If not reserving, then it doesn't
-+	 * matter where they are loaded.
-+	 */
-+	andi	r4,r4,0xfffffc00	/* Mask off the real page number */
-+	ori	r4,r4,(TLB_WR | TLB_EX)	/* Set the write and execute bits */
-+
-+	andi	r3,r3,0xfffffc00	/* Mask off the effective page number */
-+	ori	r3,r3,(TLB_VALID | TLB_PAGESZ(PAGESZ_16M))
-+
-+	ori	r6,r0,62		/* TLB slot 62 */
-+	mts     rtlbx,r6
-+
-+	mts	rtlblo,r4		/* Load the data portion of the entry */
-+	mts	rtlbhi,r3		/* Load the tag portion of the entry */
-+
-+	addik	r4, r4, 0x01000000	/* Map next 16 M entries */
-+	addik	r3, r3, 0x01000000
-+
-+        addik	r6,r6,1			/* TLB slot 63 */
-+	mts     rtlbx,r6
-+
-+	mts	rtlblo,r4		/* Load the data portion of the entry */
-+	mts	rtlbhi,r3		/* Load the tag portion of the entry */
-+
-+	/*
-+	 * Load a TLB entry for LMB, since we need access to
-+	 * the exception vectors, using a 4k real==virtual mapping.
-+	 */
-+	ori	r6,r0,1			/* TLB slot 1 */
-+	mts     rtlbx,r6
-+
-+	ori	r4,r0,(TLB_WR | TLB_EX)
-+	ori	r3,r0,(TLB_VALID | TLB_PAGESZ(PAGESZ_4K))
-+
-+	mts	rtlblo,r4		/* Load the data portion of the entry */
-+	mts	rtlbhi,r3		/* Load the tag portion of the entry */
-+
-+	/*
-+	 * We now have the lower 16 Meg of RAM mapped into TLB entries, and the
-+	 * caches ready to work.
-+	 */
-+turn_on_mmu:
-+	ori	r15,r0,start_here
-+	ori	r4,r0,MSR_KERNEL_VMS
-+	mts	rmsr,r4
-+	nop
-+	rted	r15,0			/* enables MMU */
-+	nop
-+
-+start_here:
-+#endif /* CONFIG_MMU */
-+
- 	/* Initialize small data anchors */
- 	la	r13, r0, _KERNEL_SDA_BASE_
- 	la	r2, r0, _KERNEL_SDA2_BASE_
-@@ -51,6 +205,53 @@ no_fdt_arg:
- 	brald	r15, r8
- 	nop
+diff --git a/arch/microblaze/mm/init.c b/arch/microblaze/mm/init.c
+index b0c8213..32a54cb 100644
+--- a/arch/microblaze/mm/init.c
++++ b/arch/microblaze/mm/init.c
+@@ -23,9 +23,17 @@
+ #include <asm/sections.h>
+ #include <asm/tlb.h>
  
 +#ifndef CONFIG_MMU
- 	la	r15, r0, machine_halt
- 	braid	start_kernel
- 	nop
+ unsigned int __page_offset;
+ /* EXPORT_SYMBOL(__page_offset); */
+ 
 +#else
++DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
++
++int mem_init_done;
++static int init_bootmem_done;
++#endif /* CONFIG_MMU */
++
+ char *klimit = _end;
+ 
+ /*
+@@ -61,6 +69,7 @@ void __init setup_memory(void)
+ {
+ 	int i;
+ 	unsigned long map_size;
++#ifndef CONFIG_MMU
+ 	u32 kernel_align_start, kernel_align_size;
+ 
+ 	/* Find main memory where is the kernel */
+@@ -93,6 +102,7 @@ void __init setup_memory(void)
+ 		__func__, kernel_align_start, kernel_align_start
+ 			+ kernel_align_size, kernel_align_size);
+ 
++#endif
+ 	/*
+ 	 * Kernel:
+ 	 * start: base phys address of kernel - page align
+@@ -121,9 +131,13 @@ void __init setup_memory(void)
+ 	 * for 4GB of memory, using 4kB pages), plus 1 page
+ 	 * (in case the address isn't page-aligned).
+ 	 */
++#ifndef CONFIG_MMU
+ 	map_size = init_bootmem_node(NODE_DATA(0), PFN_UP(TOPHYS((u32)_end)),
+ 					min_low_pfn, max_low_pfn);
+-
++#else
++	map_size = init_bootmem_node(&contig_page_data,
++		PFN_UP(TOPHYS((u32)_end)), min_low_pfn, max_low_pfn);
++#endif
+ 	lmb_reserve(PFN_UP(TOPHYS((u32)_end)) << PAGE_SHIFT, map_size);
+ 
+ 	/* free bootmem is whole main memory */
+@@ -137,6 +151,9 @@ void __init setup_memory(void)
+ 		reserve_bootmem(lmb.reserved.region[i].base,
+ 			lmb_size_bytes(&lmb.reserved, i) - 1, BOOTMEM_DEFAULT);
+ 	}
++#ifdef CONFIG_MMU
++	init_bootmem_done = 1;
++#endif
+ 	paging_init();
+ }
+ 
+@@ -191,11 +208,160 @@ void __init mem_init(void)
+ 	printk(KERN_INFO "Memory: %luk/%luk available\n",
+ 	       (unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
+ 	       num_physpages << (PAGE_SHIFT-10));
++#ifdef CONFIG_MMU
++	mem_init_done = 1;
++#endif
+ }
+ 
++#ifndef CONFIG_MMU
+ /* Check against bounds of physical memory */
+ int ___range_ok(unsigned long addr, unsigned long size)
+ {
+ 	return ((addr < memory_start) ||
+ 		((addr + size) > memory_end));
+ }
++
++#else
++int page_is_ram(unsigned long pfn)
++{
++	return pfn < max_low_pfn;
++}
++
++/*
++ * Check for command-line options that affect what MMU_init will do.
++ */
++static void MMU_setup(void)
++{
++#if 0
++	/* Check for nobats option (used in mapin_ram). */
++	if (strstr(cmd_line, "nobats"))
++		__map_without_bats = 1;
++
++	/* Look for mem= option on command line */
++	if (strstr(cmd_line, "mem=")) {
++		char *p, *q;
++		unsigned long maxmem = 0;
++
++		for (q = cmd_line; (p = strstr(q, "mem=")) != 0; ) {
++			q = p + 4;
++			if (p > cmd_line && p[-1] != ' ')
++				continue;
++			maxmem = strict_strtoul(q, &q, NULL);
++			if (*q == 'k' || *q == 'K') {
++				maxmem <<= 10;
++				++q;
++			} else if (*q == 'm' || *q == 'M') {
++				maxmem <<= 20;
++				++q;
++			}
++		}
++		__max_memory = maxmem;
++	}
++
++/*	if (__max_memory && memory_size > __max_memory)
++		memory_size = __max_memory; */
++
++#endif
++}
++
++/*
++ * MMU_init_hw does the chip-specific initialization of the MMU hardware.
++ */
++static void __init MMU_init_hw(void)
++{
 +	/*
-+	 * Initialize the MMU.
++	 * The Zone Protection Register (ZPR) defines how protection will
++	 * be applied to every page which is a member of a given zone. At
++	 * present, we utilize only two of the zones.
++	 * The zone index bits (of ZSEL) in the PTE are used for software
++	 * indicators, except the LSB.  For user access, zone 1 is used,
++	 * for kernel access, zone 0 is used.  We set all but zone 1
++	 * to zero, allowing only kernel access as indicated in the PTE.
++	 * For zone 1, we set a 01 binary (a value of 10 will not work)
++	 * to allow user access as indicated in the PTE.  This also allows
++	 * kernel access as indicated in the PTE.
 +	 */
-+	bralid	r15,MMU_init
-+	nop
++	__asm__ __volatile__ ("ori r11, r0, 0x10000000;" \
++			"mts rzpr, r11;"
++			: : : "r11");
++}
 +
-+	/* Go back to running unmapped so we can load up new values
-+	 * and change to using our exception vectors.
-+	 * On the MicroBlaze, all we invalidate the used TLB entries to clear
-+	 * the old 16M byte TLB mappings.
++/*
++ * MMU_init sets up the basic memory mappings for the kernel,
++ * including both RAM and possibly some I/O regions,
++ * and sets up the page tables and the MMU hardware ready to go.
++ */
++
++/* called from head.S */
++asmlinkage void __init MMU_init(void)
++{
++	unsigned int kstart, ksize;
++
++	if (!lmb.reserved.cnt) {
++		printk(KERN_EMERG "Error memory count\n");
++		machine_restart(NULL);
++	}
++
++	if ((u32) lmb.memory.region[0].size < 0x1000000) {
++		printk(KERN_EMERG "Memory must be greater than 16MB\n");
++		machine_restart(NULL);
++	}
++	/* Find main memory where the kernel is */
++	memory_start = (u32) lmb.memory.region[0].base;
++	memory_end = (u32) lmb.memory.region[0].base +
++				(u32) lmb.memory.region[0].size;
++	memory_size = memory_end - memory_start;
++
++	MMU_setup(); /* FIXME parse args from command line - not used */
++
++	/*
++	 * Map out the kernel text/data/bss from the available physical
++	 * memory.
 +	 */
-+	ori	r15,r0,TOPHYS(kernel_load_context)
-+	ori	r4,r0,MSR_KERNEL
-+	mts	rmsr,r4
-+	nop
-+	bri	4
-+	rted	r15,0
-+	nop
++	kstart = __pa(CONFIG_KERNEL_START); /* kernel start */
++	/* kernel size */
++	ksize = PAGE_ALIGN(((u32)_end - (u32)CONFIG_KERNEL_START));
++	lmb_reserve(kstart, ksize);
 +
-+	/* Load up the kernel context */
-+kernel_load_context:
-+	/* clearing kernel context */
-+	ori	r5,r0,1		/* TLB slot 1 */
-+	mts     rtlbx,r5
-+	nop
-+	mts	rtlbhi,r0
-+	nop
-+	ori	r5,r0,62	/* TLB slot 62 */
-+	mts     rtlbx,r5
-+	nop
-+	mts	rtlbhi,r0
-+	nop
-+	ori	r5,r0,63	/* TLB slot 63 */
-+	mts     rtlbx,r5
-+	nop
-+	mts	rtlbhi,r0
-+	nop
-+	addi	r15, r0, machine_halt
-+	ori	r17, r0, start_kernel
-+	ori	r4, r0, MSR_KERNEL_VMS
-+	mts	rmsr, r4
-+	nop
-+	rted	r17, 0		/* enable MMU and jump to start_kernel */
-+	nop
++#if defined(CONFIG_BLK_DEV_INITRD)
++	/* Remove the init RAM disk from the available memory. */
++/*	if (initrd_start) {
++		mem_pieces_remove(&phys_avail, __pa(initrd_start),
++				  initrd_end - initrd_start, 1);
++	}*/
++#endif /* CONFIG_BLK_DEV_INITRD */
++
++	/* Initialize the MMU hardware */
++	MMU_init_hw();
++
++	/* Map in all of RAM starting at CONFIG_KERNEL_START */
++	mapin_ram();
++
++#ifdef HIGHMEM_START_BOOL
++	ioremap_base = HIGHMEM_START;
++#else
++	ioremap_base = 0xfe000000UL;	/* for now, could be 0xfffff000 */
++#endif /* CONFIG_HIGHMEM */
++	ioremap_bot = ioremap_base;
++
++	/* Initialize the context management stuff */
++	mmu_context_init();
++}
++
++/* This is only called until mem_init is done. */
++void __init *early_get_page(void)
++{
++	void *p;
++	if (init_bootmem_done) {
++		p = alloc_bootmem_pages(PAGE_SIZE);
++	} else {
++		/*
++		 * Mem start + 32MB -> here is limit
++		 * because of mem mapping from head.S
++		 */
++		p = __va(lmb_alloc_base(PAGE_SIZE, PAGE_SIZE,
++					memory_start + 0x2000000));
++	}
++	return p;
++}
 +#endif /* CONFIG_MMU */
 -- 
 1.5.5.1
