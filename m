@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755660AbZD0MLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbZD0MOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755660AbZD0MLj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 08:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753682AbZD0ML3
+	id S1755861AbZD0MOA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 08:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbZD0MNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 08:11:29 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:49468 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753750AbZD0ML3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 08:11:29 -0400
-Date: Mon, 27 Apr 2009 14:11:28 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Cleanup: Remove unused __REQ_NR_BITS from enum
-	rq_flag_bits
-Message-ID: <20090427121128.GB4593@kernel.dk>
-References: <200904271705.30550.knikanth@suse.de> <20090427114633.GA4593@kernel.dk> <200904271735.02007.knikanth@suse.de>
-MIME-Version: 1.0
+	Mon, 27 Apr 2009 08:13:51 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:58104 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbZD0MNv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 08:13:51 -0400
+Date: Mon, 27 Apr 2009 14:15:56 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: monstr@monstr.eu, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org, john.williams@petalogix.com
+Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
+Message-ID: <20090427121556.GA9469@uranus.ravnborg.org>
+References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <20090427113030.GA3681@infradead.org> <49F59A6E.9080900@monstr.eu> <200904271357.01681.arnd@arndb.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200904271735.02007.knikanth@suse.de>
+In-Reply-To: <200904271357.01681.arnd@arndb.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27 2009, Nikanth Karthikesan wrote:
-> On Monday 27 April 2009 17:16:33 Jens Axboe wrote:
-> > On Mon, Apr 27 2009, Nikanth Karthikesan wrote:
-> > > The __REQ_NR_BITS  was being used by blk_dump_rq_flags() long back, while
-> > > printing the individual request flag bits as strings to limit to the used
-> > > bits. But it does not use it now. Remove unused enum.
-> > >
-> > > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-> > >
-> > > ---
-> > >
-> > > diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-> > > index ba54c83..f41abbb 100644
-> > > --- a/include/linux/blkdev.h
-> > > +++ b/include/linux/blkdev.h
-> > > @@ -118,7 +118,6 @@ enum rq_flag_bits {
-> > >  	__REQ_COPY_USER,	/* contains copies of user pages */
-> > >  	__REQ_INTEGRITY,	/* integrity metadata has been remapped */
-> > >  	__REQ_NOIDLE,		/* Don't anticipate more IO after this one */
-> > > -	__REQ_NR_BITS,		/* stops here */
-> > >  };
-> > >
-> > >  #define REQ_RW		(1 << __REQ_RW)
-> >
-> > Lets turn it into something useful instead. It's meant to catch someone
-> > adding too many flags, how about something like this:
-> >
-> > Untested ;-)
-> >
-> > diff --git a/block/blk-core.c b/block/blk-core.c
-> > index d73eb76..e62ef94 100644
-> > --- a/block/blk-core.c
-> > +++ b/block/blk-core.c
-> > @@ -2159,6 +2159,8 @@ EXPORT_SYMBOL(kblockd_schedule_work);
-> >
-> >  int __init blk_dev_init(void)
-> >  {
-> > +	BUILD_BUG_ON(__REQ_NR_BITS > 8 * sizeof(int));
-> > +
-> >  	kblockd_workqueue = create_workqueue("kblockd");
-> >  	if (!kblockd_workqueue)
-> >  		panic("Failed to create kblockd\n");
+On Mon, Apr 27, 2009 at 01:57:00PM +0200, Arnd Bergmann wrote:
+> On Monday 27 April 2009, Michal Simek wrote:
+> > Christoph Hellwig wrote:
 > 
-> Good idea. How about this?
+> > > Given that microblaze only got merged in the 2.6.30 window I would
+> > > suggest fixing up the nommu variant.
+> > 
+> > ok. Let's do it.
+> > Here are stats structures from xtensa.
+> > 
+> > Arnd: Is it ok for asm-generic?
+> 
+> I carry a (not cleaned up) tree with changes in my playground
+> (git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git)
+> as branch generic-microblaze, where I try to use generic
+> headers for everything. See below for my version of stat.h.
+> In particular, it uses 64 bit st_size and st_blocks, but 32 bit
+> time fields. It also defines struct stat to be identical to
+> struct stat64 on 64 bit systems. 32 bit systems should only
+> provide the stat64 syscalls, so the shorter types in struct
+> stat do not hurt.
 
-That's fine, better explains the check. It doesn't matter in practice
-though, since we will be restricted to 32 flags even on 64-bit archs (as
-long as we support 32-bit archs).
+Why not use __u64/__u32 (and s32/s64 where appropriate)?
+Historical baggage or a techncal reason?
 
-I'll add it, thanks.
-
--- 
-Jens Axboe
-
+	Sam
