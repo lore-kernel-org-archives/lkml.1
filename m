@@ -1,64 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbZD0Hfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754988AbZD0HlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754981AbZD0Hfq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 03:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbZD0Hfh
+	id S1754988AbZD0HlX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 03:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbZD0HlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 03:35:37 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:56933 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751776AbZD0Hfg (ORCPT
+	Mon, 27 Apr 2009 03:41:09 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33243 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751962AbZD0HlG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 03:35:36 -0400
-Date: Mon, 27 Apr 2009 09:37:40 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Tim Abbott <tabbott@MIT.EDU>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>, "Theodore Ts'o" <tytso@MIT.EDU>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
-       David Howells <dhowells@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH 14/15] x86: convert to use __HEAD and HEAD_TEXT macros.
-Message-ID: <20090427073740.GA7375@uranus.ravnborg.org>
-References: <1240711870-30505-13-git-send-email-tabbott@mit.edu> <1240711870-30505-14-git-send-email-tabbott@mit.edu> <alpine.LFD.2.00.0904260934570.3101@localhost.localdomain> <alpine.LFD.2.00.0904260958190.3101@localhost.localdomain> <20090426183401.GA1622@uranus.ravnborg.org> <alpine.LFD.2.00.0904261146570.7331@localhost.localdomain> <20090426192317.GA2637@uranus.ravnborg.org> <20090427045910.GA11868@elte.hu> <20090427064216.GA6918@uranus.ravnborg.org> <20090427071902.GA6047@elte.hu>
+	Mon, 27 Apr 2009 03:41:06 -0400
+Date: Mon, 27 Apr 2009 16:39:30 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: nishimura@mxp.nes.nec.co.jp
+Cc: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "hugh@veritas.com" <hugh@veritas.com>
+Subject: Re: [RFC][PATCH] fix swap entries is not reclaimed in proper way
+ for memg v3.
+Message-Id: <20090427163930.50604bf9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090426010658.c0fa3258.d-nishimura@mtf.biglobe.ne.jp>
+References: <20090421162121.1a1d15fe.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090422143833.2e11e10b.nishimura@mxp.nes.nec.co.jp>
+	<20090424133306.0d9fb2ce.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090424152103.a5ee8d13.nishimura@mxp.nes.nec.co.jp>
+	<20090424162840.2ad06d8a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090425215459.5cab7285.d-nishimura@mtf.biglobe.ne.jp>
+	<20090426010658.c0fa3258.d-nishimura@mtf.biglobe.ne.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090427071902.GA6047@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >
-> > The good patches are the ones that benefits all architectures.
+On Sun, 26 Apr 2009 01:06:58 +0900
+Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> wrote:
+
+> A few minor nitpicks :)
 > 
-> The good patches are the ones that increase the quality of the 
-> kernel and benefit people.
+> > > +static void memcg_fixup_stale_swapcache(struct work_struct *work)
+> > > +{
+> > > +	int pos = 0;
+> > > +	swp_entry_t entry;
+> > > +	struct page *page;
+> > > +	int forget, ret;
+> > > +
+> > > +	while (ssc.num) {
+> > > +		spin_lock(&ssc.lock);
+> > > +		pos = find_next_bit(ssc.usemap, STALE_ENTS, pos);
+> > > +		spin_unlock(&ssc.lock);
+> > > +
+> > > +		if (pos >= STALE_ENTS)
+> > > +			break;
+> > > +
+> > > +		entry = ssc.ents[pos];
+> > > +
+> > > +		forget = 1;
+> > > +		page = lookup_swap_cache(entry);
+> I think using find_get_page() would be better.
+> lookup_swap_cache() update swapcache_info.
+> 
 
-Should have read "the good kbuild patches" - it did not address
-patches in general.
+ok, and I have to add put_page() somewhere.
 
-> > I noticed a few minor things that can be 'fixed' to bring the inital
-> > differences between 32 bit and 64 bit down.
+> > > +		if (page) {
+> > > +			lock_page(page);
+> > > +			ret = try_to_free_swap(page);
+> > > +			/* If it's still under I/O, don't forget it */
+> > > +			if (!ret && PageWriteback(page))
+> > > +				forget = 0;
+> > > +			unlock_page(page);
+> > I think we need page_cache_release().
+> > lookup_swap_cache() gets the page.
 > > 
-> > But I can do these in a follow-up patch too.
+> > > +		}
+> > > +		if (forget) {
+> > > +			spin_lock(&ssc.lock);
+> > > +			clear_bit(pos, ssc.usemap);
+> > > +			ssc.num--;
+> > > +			if (ssc.num < STALE_ENTS/2)
+> > > +				ssc.congestion = 0;
+> > > +			spin_unlock(&ssc.lock);
+> > > +		}
+> > > +		pos++;
+> > > +	}
+> > > +	if (ssc.num) /* schedule me again */
+> > > +		schedule_delayed_work(&ssc.gc_work, HZ/10);
+> We can use schedule_ssc_gc() here.
+> (It should be defined before this, of course. And can be inlined.)
 > 
-> Yeah, please do a follow-up patch - unless the first patch is 
-> outright wrong.
-A follow-up patch it will be.
+Sure.
 
-	Sam
+will soon post v2. (removing RFC)
+
+Thanks,
+-Kame
+> > "if (ssc.congestion)" would be better ?
+> > 
+> > > +	return;
+> > > +}
+> > > +
+> > 
+> 
+> Thanks,
+> Daisuke Nishimura.
+> 
+
