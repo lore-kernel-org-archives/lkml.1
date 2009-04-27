@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760053AbZD0VEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761149AbZD0VFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760053AbZD0VEl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 17:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757757AbZD0VE3
+	id S1761149AbZD0VFe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 17:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758183AbZD0VFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 17:04:29 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:48813 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753429AbZD0VE2 (ORCPT
+	Mon, 27 Apr 2009 17:05:23 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:55177 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757771AbZD0VFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 17:04:28 -0400
-X-Greylist: delayed 328 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Apr 2009 17:04:28 EDT
-X-Originating-Ip: 216.16.235.2
-Date: Mon, 27 Apr 2009 16:57:42 -0400
-From: Chris Frey <cdfrey@foursquare.net>
-To: chrisw@sous-sol.org, linux-kernel@vger.kernel.org
-Subject: fs/cifs/connect.c fix missing in latest stable
-Message-ID: <20090427205742.GA888@foursquare.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam (whitelisted),
-	SpamAssassin (not cached, score=-16.8, required 5,
-	autolearn=not spam, ALL_TRUSTED -1.80, BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: cdfrey@foursquare.net
+	Mon, 27 Apr 2009 17:05:23 -0400
+Message-ID: <49F61E10.4030508@billgatliff.com>
+Date: Mon, 27 Apr 2009 16:05:20 -0500
+From: Bill Gatliff <bgat@billgatliff.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: how to properly post/disseminate kernel cleanup/janitorial possibilities?
+References: <alpine.LFD.2.00.0904271637470.4906@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904271637470.4906@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Chris,
+Robert P. J. Day wrote:
+>   since i, on an occasional basis, run a set of scanning scripts i
+> wrote and promptly annoy the crap out of everyone with the results,
+> i'm open to the proper way to do this scanning and get the results out
+> there to people who might be interested while not bugging those folks
+> who aren't.
+>   
 
-The latest stable release 2.6.29.2 appears to be missing Jeff Layton's
-fix in commit f083def68f84b04fe3f97312498911afce79609e (in Linus's tree).
+I love the idea!
 
-I'm not the expert... I just noticed that this was mentioned on
-full-disclosure: http://marc.info/?l=full-disclosure&m=123936563230145&w=2
-(near the end of Andreas's post)
+What about an announcement-only mailing list that interested parties 
+could subscribe to?
 
-Thanks,
-- Chris
+
+b.g.
+
+-- 
+Bill Gatliff
+bgat@billgatliff.com
 
