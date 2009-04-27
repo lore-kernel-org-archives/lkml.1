@@ -1,55 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761034AbZD0Ugl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761308AbZD0Uhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761034AbZD0Ugl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 16:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760877AbZD0Ug1
+	id S1761308AbZD0Uhs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 16:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761207AbZD0UhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 16:36:27 -0400
-Received: from tservice.ru ([195.178.208.66]:42485 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760694AbZD0Ug0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 16:36:26 -0400
-Date: Tue, 28 Apr 2009 00:36:16 +0400
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Stephen Hemminger <shemminger@vyatta.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       Jarek Poplawski <jarkao2@gmail.com>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, kaber@trash.net, jeff.chua.linux@gmail.com,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
-Message-ID: <20090427203616.GB3836@ioremap.net>
-References: <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam> <49F4A6E3.7080102@cosmosbay.com> <20090426185646.GB29238@Krystal> <20090426145746.1184aeba@nehalam> <1240854297.7620.65.camel@twins> <20090427113010.5e3f1700@nehalam> <20090427185423.GC23862@elte.hu> <20090427120658.35a858bb@nehalam> <alpine.LFD.2.00.0904271219570.22156@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904271219570.22156@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 27 Apr 2009 16:37:25 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:56572 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761176AbZD0UhY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 16:37:24 -0400
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
+       Tim Abbott <tabbott@MIT.EDU>, Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 01/14] Add new macros for page-aligned data and bss sections.
+Date: Mon, 27 Apr 2009 16:32:55 -0400
+Message-Id: <1240864388-26315-2-git-send-email-tabbott@mit.edu>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1240864388-26315-1-git-send-email-tabbott@mit.edu>
+References: <1240864388-26315-1-git-send-email-tabbott@mit.edu>
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+This patch is preparation for replacing most uses of
+".bss.page_aligned" and ".data.page_aligned" in the kernel with
+macros, so that the section name can later be changed without having
+to touch a lot of the kernel.
 
-On Mon, Apr 27, 2009 at 12:46:48PM -0700, Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> > All those references support my argument that the lock is being
-> > used recursively in this case.
-> 
-> What's so hard between understanding the difference between "used 
-> recursively" and "recursive lock"?
-> 
-> THEY MEAN TWO TOTALLY DIFFERENT THINGS!
-> 
-> The fact that you don't seem to understand that is one of the things I've 
-> been complaining about all along.
+The long-term goal here is to be able to change the kernel's magic
+section names to those that are compatible with -ffunction-sections
+-fdata-sections.  This requires renaming all magic sections with names
+of the form ".data.foo".
 
-Just ot be sure readers will not lose the discssion topic: do you object
-against naming or realizaion? If its about the former, does 'dog's
-breath lock' proposed by Stephen fit?
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+---
+ include/asm-generic/vmlinux.lds.h |    8 ++++++++
+ include/linux/linkage.h           |    9 +++++++++
+ 2 files changed, 17 insertions(+), 0 deletions(-)
 
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 89853bc..d6ae1bd 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -116,6 +116,14 @@
+ 	FTRACE_EVENTS()							\
+ 	TRACE_SYSCALLS()
+ 
++#define PAGE_ALIGNED_DATA						\
++	. = ALIGN(PAGE_SIZE)						\
++	*(.data.page_aligned)
++
++#define PAGE_ALIGNED_BSS						\
++	. = ALIGN(PAGE_SIZE)						\
++	*(.bss.page_aligned)
++
+ #define RO_DATA(align)							\
+ 	. = ALIGN((align));						\
+ 	.rodata           : AT(ADDR(.rodata) - LOAD_OFFSET) {		\
+diff --git a/include/linux/linkage.h b/include/linux/linkage.h
+index fee9e59..af051fc 100644
+--- a/include/linux/linkage.h
++++ b/include/linux/linkage.h
+@@ -22,6 +22,15 @@
+ #define __page_aligned_bss	__section(.bss.page_aligned) __aligned(PAGE_SIZE)
+ 
+ /*
++ * For assembly routines.
++ *
++ * Note when using these that you must specify the appropriate
++ * alignment directives yourself
++ */
++#define __PAGE_ALIGNED_DATA	.section ".data.page_aligned", "aw", @progbits
++#define __PAGE_ALIGNED_BSS	.section ".bss.page_aligned", "aw", @nobits
++
++/*
+  * This is used by architectures to keep arguments on the stack
+  * untouched by the compiler by keeping them live until the end.
+  * The argument stack may be owned by the assembly-language
 -- 
-	Evgeniy Polyakov
+1.6.2.1
+
