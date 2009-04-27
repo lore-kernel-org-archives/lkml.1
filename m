@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbZD0J4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbZD0J56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754235AbZD0J4w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 05:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbZD0Js6
+	id S1757870AbZD0J56 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 05:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbZD0JtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 05:48:58 -0400
+	Mon, 27 Apr 2009 05:49:10 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:60685 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754922AbZD0Jsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 05:48:55 -0400
+	id S1755143AbZD0JtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 05:49:03 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 20/30] microblaze_mmu_v1: uaccess MMU update
-Date: Mon, 27 Apr 2009 10:32:09 +0200
-Message-Id: <1240821139-7247-21-git-send-email-monstr@monstr.eu>
+Subject: [PATCH 19/30] microblaze_mmu_v1: Update exception handling - MMU exception
+Date: Mon, 27 Apr 2009 10:32:08 +0200
+Message-Id: <1240821139-7247-20-git-send-email-monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1240821139-7247-20-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1240821139-7247-19-git-send-email-monstr@monstr.eu>
 References: <1240821139-7247-1-git-send-email-monstr@monstr.eu>
  <1240821139-7247-2-git-send-email-monstr@monstr.eu>
  <1240821139-7247-3-git-send-email-monstr@monstr.eu>
@@ -36,7 +36,6 @@ References: <1240821139-7247-1-git-send-email-monstr@monstr.eu>
  <1240821139-7247-17-git-send-email-monstr@monstr.eu>
  <1240821139-7247-18-git-send-email-monstr@monstr.eu>
  <1240821139-7247-19-git-send-email-monstr@monstr.eu>
- <1240821139-7247-20-git-send-email-monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -45,492 +44,877 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/uaccess.h |  298 +++++++++++++++++++++++++++------
- arch/microblaze/lib/uaccess_old.S     |  135 +++++++++++++++
- 2 files changed, 381 insertions(+), 52 deletions(-)
- create mode 100644 arch/microblaze/lib/uaccess_old.S
+ arch/microblaze/kernel/hw_exception_handler.S |  749 ++++++++++++++++++++++++-
+ 1 files changed, 742 insertions(+), 7 deletions(-)
 
-diff --git a/arch/microblaze/include/asm/uaccess.h b/arch/microblaze/include/asm/uaccess.h
-index 5a3ffc3..78e8246 100644
---- a/arch/microblaze/include/asm/uaccess.h
-+++ b/arch/microblaze/include/asm/uaccess.h
-@@ -1,4 +1,6 @@
- /*
-+ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2008-2009 PetaLogix
-  * Copyright (C) 2006 Atmark Techno, Inc.
+diff --git a/arch/microblaze/kernel/hw_exception_handler.S b/arch/microblaze/kernel/hw_exception_handler.S
+index cf9486d..617047f 100644
+--- a/arch/microblaze/kernel/hw_exception_handler.S
++++ b/arch/microblaze/kernel/hw_exception_handler.S
+@@ -53,6 +53,12 @@
+  *   - Illegal instruction opcode
+  *   - Divide-by-zero
   *
-  * This file is subject to the terms and conditions of the GNU General Public
-@@ -26,6 +28,10 @@
- #define VERIFY_READ	0
- #define VERIFY_WRITE	1
++ *   - Privileged instruction exception (MMU)
++ *   - Data storage exception (MMU)
++ *   - Instruction storage exception (MMU)
++ *   - Data TLB miss exception (MMU)
++ *   - Instruction TLB miss exception (MMU)
++ *
+  * Note we disable interrupts during exception handling, otherwise we will
+  * possibly get multiple re-entrancy if interrupt handles themselves cause
+  * exceptions. JW
+@@ -71,9 +77,24 @@
+ #include <asm/asm-offsets.h>
  
-+#define __clear_user(addr, n)	(memset((void *)(addr), 0, (n)), 0)
-+
+ /* Helpful Macros */
 +#ifndef CONFIG_MMU
-+
- extern int ___range_ok(unsigned long addr, unsigned long size);
+ #define EX_HANDLER_STACK_SIZ	(4*19)
++#endif
+ #define NUM_TO_REG(num)		r ## num
  
- #define __range_ok(addr, size) \
-@@ -39,63 +45,64 @@ extern inline int bad_user_access_length(void)
- 	return 0;
- }
- /* FIXME this is function for optimalization -> memcpy */
--#define __get_user(var, ptr)					\
--	({							\
--		int __gu_err = 0;				\
--		switch (sizeof(*(ptr))) {			\
--		case 1:						\
--		case 2:						\
--		case 4:						\
--			(var) = *(ptr);				\
--			break;					\
--		case 8:						\
--			memcpy((void *) &(var), (ptr), 8);	\
--			break;					\
--		default:					\
--			(var) = 0;				\
--			__gu_err = __get_user_bad();		\
--			break;					\
--		}						\
--		__gu_err;					\
--	})
-+#define __get_user(var, ptr)				\
-+({							\
-+	int __gu_err = 0;				\
-+	switch (sizeof(*(ptr))) {			\
-+	case 1:						\
-+	case 2:						\
-+	case 4:						\
-+		(var) = *(ptr);				\
-+		break;					\
-+	case 8:						\
-+		memcpy((void *) &(var), (ptr), 8);	\
-+		break;					\
-+	default:					\
-+		(var) = 0;				\
-+		__gu_err = __get_user_bad();		\
-+		break;					\
-+	}						\
-+	__gu_err;					\
-+})
++#ifdef CONFIG_MMU
++/* FIXME you can't change first load of MSR because there is
++ * hardcoded jump bri 4 */
++	#define RESTORE_STATE			\
++		lwi	r3, r1, PT_R3;		\
++		lwi	r4, r1, PT_R4;		\
++		lwi	r5, r1, PT_R5;		\
++		lwi	r6, r1, PT_R6;		\
++		lwi	r11, r1, PT_R11;	\
++		lwi	r31, r1, PT_R31;	\
++		lwi	r1, r0, TOPHYS(r0_ram + 0);
++#endif /* CONFIG_MMU */
++
+ #define LWREG_NOP			\
+ 	bri	ex_handler_unhandled;	\
+ 	nop;
+@@ -106,6 +127,54 @@
+ 	or	r3, r0, NUM_TO_REG (regnum);		\
+ 	bri	ex_sw_tail;
  
- #define __get_user_bad()	(bad_user_access_length(), (-EFAULT))
++#ifdef CONFIG_MMU
++	#define R3_TO_LWREG_VM_V(regnum)		\
++		brid	ex_lw_end_vm;			\
++		swi	r3, r7, 4 * regnum;
++
++	#define R3_TO_LWREG_VM(regnum)			\
++		brid	ex_lw_end_vm;			\
++		or	NUM_TO_REG (regnum), r0, r3;
++
++	#define SWREG_TO_R3_VM_V(regnum)		\
++		brid	ex_sw_tail_vm;			\
++		lwi	r3, r7, 4 * regnum;
++
++	#define SWREG_TO_R3_VM(regnum)			\
++		brid	ex_sw_tail_vm;			\
++		or	r3, r0, NUM_TO_REG (regnum);
++
++	/* Shift right instruction depending on available configuration */
++	#if CONFIG_XILINX_MICROBLAZE0_USE_BARREL > 0
++	#define BSRLI(rD, rA, imm)	\
++		bsrli rD, rA, imm
++	#elif CONFIG_XILINX_MICROBLAZE0_USE_DIV > 0
++	#define BSRLI(rD, rA, imm)	\
++		ori rD, r0, (1 << imm);	\
++		idivu rD, rD, rA
++	#else
++	#define BSRLI(rD, rA, imm) BSRLI ## imm (rD, rA)
++	/* Only the used shift constants defined here - add more if needed */
++	#define BSRLI2(rD, rA)				\
++		srl rD, rA;		/* << 1 */	\
++		srl rD, rD;		/* << 2 */
++	#define BSRLI10(rD, rA)				\
++		srl rD, rA;		/* << 1 */	\
++		srl rD, rD;		/* << 2 */	\
++		srl rD, rD;		/* << 3 */	\
++		srl rD, rD;		/* << 4 */	\
++		srl rD, rD;		/* << 5 */	\
++		srl rD, rD;		/* << 6 */	\
++		srl rD, rD;		/* << 7 */	\
++		srl rD, rD;		/* << 8 */	\
++		srl rD, rD;		/* << 9 */	\
++		srl rD, rD		/* << 10 */
++	#define BSRLI20(rD, rA)		\
++		BSRLI10(rD, rA);	\
++		BSRLI10(rD, rD)
++	#endif
++#endif /* CONFIG_MMU */
++
+ .extern other_exception_handler /* Defined in exception.c */
  
-+/* FIXME is not there defined __pu_val */
- #define __put_user(var, ptr)					\
--	({							\
--		int __pu_err = 0;				\
--		switch (sizeof(*(ptr))) {			\
--		case 1:						\
--		case 2:						\
--		case 4:						\
--			*(ptr) = (var);				\
--			break;					\
--		case 8: {					\
--			typeof(*(ptr)) __pu_val = var;		\
--			memcpy(ptr, &__pu_val, sizeof(__pu_val));\
--			}					\
--			break;					\
--		default:					\
--			__pu_err = __put_user_bad();		\
--			break;					\
--		}							\
--		__pu_err;						\
--	})
-+({								\
-+	int __pu_err = 0;					\
-+	switch (sizeof(*(ptr))) {				\
-+	case 1:							\
-+	case 2:							\
-+	case 4:							\
-+		*(ptr) = (var);					\
-+		break;						\
-+	case 8: {						\
-+		typeof(*(ptr)) __pu_val = (var);		\
-+		memcpy(ptr, &__pu_val, sizeof(__pu_val));	\
-+		}						\
-+		break;						\
-+	default:						\
-+		__pu_err = __put_user_bad();			\
-+		break;						\
-+	}							\
-+	__pu_err;						\
-+})
+ /*
+@@ -163,34 +232,119 @@
  
- #define __put_user_bad()	(bad_user_access_length(), (-EFAULT))
+ /* wrappers to restore state before coming to entry.S */
  
--#define put_user(x, ptr)	__put_user(x, ptr)
--#define get_user(x, ptr)	__get_user(x, ptr)
--
--#define copy_to_user(to, from, n)		(memcpy(to, from, n), 0)
--#define copy_from_user(to, from, n)		(memcpy(to, from, n), 0)
-+#define put_user(x, ptr)	__put_user((x), (ptr))
-+#define get_user(x, ptr)	__get_user((x), (ptr))
++#ifdef CONFIG_MMU
++.section .rodata
++.align 4
++_MB_HW_ExceptionVectorTable:
++/*  0 - Undefined */
++	.long	TOPHYS(ex_handler_unhandled)
++/*  1 - Unaligned data access exception */
++	.long	TOPHYS(handle_unaligned_ex)
++/*  2 - Illegal op-code exception */
++	.long	TOPHYS(full_exception_trapw)
++/*  3 - Instruction bus error exception */
++	.long	TOPHYS(full_exception_trapw)
++/*  4 - Data bus error exception */
++	.long	TOPHYS(full_exception_trapw)
++/*  5 - Divide by zero exception */
++	.long	TOPHYS(full_exception_trapw)
++/*  6 - Floating point unit exception */
++	.long	TOPHYS(full_exception_trapw)
++/*  7 - Privileged instruction exception */
++	.long	TOPHYS(full_exception_trapw)
++/*  8 - 15 - Undefined */
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++/* 16 - Data storage exception */
++	.long	TOPHYS(handle_data_storage_exception)
++/* 17 - Instruction storage exception */
++	.long	TOPHYS(handle_instruction_storage_exception)
++/* 18 - Data TLB miss exception */
++	.long	TOPHYS(handle_data_tlb_miss_exception)
++/* 19 - Instruction TLB miss exception */
++	.long	TOPHYS(handle_instruction_tlb_miss_exception)
++/* 20 - 31 - Undefined */
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++	.long	TOPHYS(ex_handler_unhandled)
++#endif
++
+ .global _hw_exception_handler
+ .section .text
+ .align 4
+ .ent _hw_exception_handler
+ _hw_exception_handler:
++#ifndef CONFIG_MMU
+ 	addik	r1, r1, -(EX_HANDLER_STACK_SIZ); /* Create stack frame */
++#else
++	swi	r1, r0, TOPHYS(r0_ram + 0); /* GET_SP */
++	/* Save date to kernel memory. Here is the problem
++	 * when you came from user space */
++	ori	r1, r0, TOPHYS(r0_ram + 28);
++#endif
+ 	swi	r3, r1, PT_R3
+ 	swi	r4, r1, PT_R4
+ 	swi	r5, r1, PT_R5
+ 	swi	r6, r1, PT_R6
  
--#define __copy_to_user(to, from, n)		(copy_to_user(to, from, n))
--#define __copy_from_user(to, from, n)		(copy_from_user(to, from, n))
--#define __copy_to_user_inatomic(to, from, n)	(__copy_to_user(to, from, n))
--#define __copy_from_user_inatomic(to, from, n)	(__copy_from_user(to, from, n))
-+#define copy_to_user(to, from, n)	(memcpy((to), (from), (n)), 0)
-+#define copy_from_user(to, from, n)	(memcpy((to), (from), (n)), 0)
+-	mfs	r5, rmsr;
+-	nop
+-	swi	r5, r1, 0;
+-	mfs	r4, rbtr	/* Save BTR before jumping to handler */
+-	nop
++#ifdef CONFIG_MMU
++	swi	r11, r1, PT_R11
++	swi	r31, r1, PT_R31
++	lwi	r31, r0, TOPHYS(PER_CPU(CURRENT_SAVE)) /* get saved current */
++#endif
++
+ 	mfs	r3, resr
+ 	nop
++	mfs	r4, rear;
++	nop
  
--#define __clear_user(addr, n)	(memset((void *)addr, 0, n), 0)
-+#define __copy_to_user(to, from, n)	(copy_to_user((to), (from), (n)))
-+#define __copy_from_user(to, from, n)	(copy_from_user((to), (from), (n)))
-+#define __copy_to_user_inatomic(to, from, n) \
-+			(__copy_to_user((to), (from), (n)))
-+#define __copy_from_user_inatomic(to, from, n) \
-+			(__copy_from_user((to), (from), (n)))
++#ifndef CONFIG_MMU
+ 	andi	r5, r3, 0x1000;		/* Check ESR[DS] */
+ 	beqi	r5, not_in_delay_slot;	/* Branch if ESR[DS] not set */
+ 	mfs	r17, rbtr;	/* ESR[DS] set - return address in BTR */
+ 	nop
+ not_in_delay_slot:
+ 	swi	r17, r1, PT_R17
++#endif
  
- static inline unsigned long clear_user(void *addr, unsigned long size)
- {
-@@ -104,13 +111,200 @@ static inline unsigned long clear_user(void *addr, unsigned long size)
- 	return size;
- }
+ 	andi	r5, r3, 0x1F;		/* Extract ESR[EXC] */
  
--/* Returns 0 if exception not found and fixup otherwise. */
-+/* Returns 0 if exception not found and fixup otherwise.  */
- extern unsigned long search_exception_table(unsigned long);
++#ifdef CONFIG_MMU
++	/* Calculate exception vector offset = r5 << 2 */
++	addk	r6, r5, r5; /* << 1 */
++	addk	r6, r6, r6; /* << 2 */
++
++/* counting which exception happen */
++	lwi	r5, r0, 0x200 + TOPHYS(r0_ram)
++	addi	r5, r5, 1
++	swi	r5, r0, 0x200 + TOPHYS(r0_ram)
++	lwi	r5, r6, 0x200 + TOPHYS(r0_ram)
++	addi	r5, r5, 1
++	swi	r5, r6, 0x200 + TOPHYS(r0_ram)
++/* end */
++	/* Load the HW Exception vector */
++	lwi	r6, r6, TOPHYS(_MB_HW_ExceptionVectorTable)
++	bra	r6
++
++full_exception_trapw:
++	RESTORE_STATE
++	bri	full_exception_trap
++#else
+ 	/* Exceptions enabled here. This will allow nested exceptions */
+ 	mfs	r6, rmsr;
+ 	nop
+@@ -254,6 +408,7 @@ handle_other_ex: /* Handle Other exceptions here */
+ 	lwi	r18, r1, PT_R18
  
-+extern long strncpy_from_user(char *dst, const char *src, long count);
-+extern long strnlen_user(const char *src, long count);
-+
-+#else /* CONFIG_MMU */
-+
-+/*
-+ * Address is valid if:
-+ *  - "addr", "addr + size" and "size" are all below the limit
-+ */
-+#define access_ok(type, addr, size) \
-+	(get_fs().seg > (((unsigned long)(addr)) | \
-+		(size) | ((unsigned long)(addr) + (size))))
-+
-+/* || printk("access_ok failed for %s at 0x%08lx (size %d), seg 0x%08x\n",
-+ type?"WRITE":"READ",addr,size,get_fs().seg)) */
-+
-+/*
-+ * All the __XXX versions macros/functions below do not perform
-+ * access checking. It is assumed that the necessary checks have been
-+ * already performed before the finction (macro) is called.
-+ */
-+
-+#define get_user(x, ptr)						\
-+({									\
-+	access_ok(VERIFY_READ, (ptr), sizeof(*(ptr)))			\
-+		? __get_user((x), (ptr)) : -EFAULT;			\
-+})
-+
-+#define put_user(x, ptr)						\
-+({									\
-+	access_ok(VERIFY_WRITE, (ptr), sizeof(*(ptr)))			\
-+		? __put_user((x), (ptr)) : -EFAULT;			\
-+})
-+
-+#define __get_user(x, ptr)						\
-+({									\
-+	unsigned long __gu_val;						\
-+	/*unsigned long __gu_ptr = (unsigned long)(ptr);*/		\
-+	long __gu_err;							\
-+	switch (sizeof(*(ptr))) {					\
-+	case 1:								\
-+		__get_user_asm("lbu", (ptr), __gu_val, __gu_err);	\
-+		break;							\
-+	case 2:								\
-+		__get_user_asm("lhu", (ptr), __gu_val, __gu_err);	\
-+		break;							\
-+	case 4:								\
-+		__get_user_asm("lw", (ptr), __gu_val, __gu_err);	\
-+		break;							\
-+	default:							\
-+		__gu_val = 0; __gu_err = -EINVAL;			\
-+	}								\
-+	x = (__typeof__(*(ptr))) __gu_val;				\
-+	__gu_err;							\
-+})
-+
-+#define __get_user_asm(insn, __gu_ptr, __gu_val, __gu_err)		\
-+({									\
-+	__asm__ __volatile__ (						\
-+			"1:"	insn	" %1, %2, r0;			\
-+				addk	%0, r0, r0;			\
-+			2:						\
-+			.section .fixup,\"ax\";				\
-+			3:	brid	2b;				\
-+				addik	%0, r0, %3;			\
-+			.previous;					\
-+			.section __ex_table,\"a\";			\
-+			.word	1b,3b;					\
-+			.previous;"					\
-+		: "=r"(__gu_err), "=r"(__gu_val)			\
-+		: "r"(__gu_ptr), "i"(-EFAULT)				\
-+	);								\
-+})
-+
-+#define __put_user(x, ptr)						\
-+({									\
-+	__typeof__(*(ptr)) __gu_val = x;				\
-+	long __gu_err = 0;						\
-+	switch (sizeof(__gu_val)) {					\
-+	case 1:								\
-+		__put_user_asm("sb", (ptr), __gu_val, __gu_err);	\
-+		break;							\
-+	case 2: 							\
-+		__put_user_asm("sh", (ptr), __gu_val, __gu_err);	\
-+		break;							\
-+	case 4:								\
-+		__put_user_asm("sw", (ptr), __gu_val, __gu_err);	\
-+		break;							\
-+	case 8:								\
-+		__put_user_asm_8((ptr), __gu_val, __gu_err);		\
-+		break;							\
-+	default:							\
-+		__gu_err = -EINVAL;					\
-+	}								\
-+	__gu_err;							\
-+})
-+
-+#define __put_user_asm_8(__gu_ptr, __gu_val, __gu_err)	\
-+({							\
-+__asm__ __volatile__ ("	lwi	%0, %1, 0;		\
-+		1:	swi	%0, %2, 0;		\
-+			lwi	%0, %1, 4;		\
-+		2:	swi	%0, %2, 4;		\
-+			addk	%0,r0,r0;		\
-+		3:					\
-+		.section .fixup,\"ax\";			\
-+		4:	brid	3b;			\
-+			addik	%0, r0, %3;		\
-+		.previous;				\
-+		.section __ex_table,\"a\";		\
-+		.word	1b,4b,2b,4b;			\
-+		.previous;"				\
-+	: "=&r"(__gu_err)				\
-+	: "r"(&__gu_val),				\
-+	"r"(__gu_ptr), "i"(-EFAULT)			\
-+	);						\
-+})
-+
-+#define __put_user_asm(insn, __gu_ptr, __gu_val, __gu_err)	\
-+({								\
-+	__asm__ __volatile__ (					\
-+			"1:"	insn	" %1, %2, r0;		\
-+				addk	%0, r0, r0;		\
-+			2:					\
-+			.section .fixup,\"ax\";			\
-+			3:	brid	2b;			\
-+				addik	%0, r0, %3;		\
-+			.previous;				\
-+			.section __ex_table,\"a\";		\
-+			.word	1b,3b;				\
-+			.previous;"				\
-+		: "=r"(__gu_err)				\
-+		: "r"(__gu_val), "r"(__gu_ptr), "i"(-EFAULT)	\
-+	);							\
-+})
-+
-+/*
-+ * Return: number of not copied bytes, i.e. 0 if OK or non-zero if fail.
-+ */
-+static inline int clear_user(char *to, int size)
-+{
-+	if (size && access_ok(VERIFY_WRITE, to, size)) {
-+		__asm__ __volatile__ ("				\
-+				1:				\
-+					sb	r0, %2, r0;	\
-+					addik	%0, %0, -1;	\
-+					bneid	%0, 1b;		\
-+					addik	%2, %2, 1;	\
-+				2:				\
-+				.section __ex_table,\"a\";	\
-+				.word	1b,2b;			\
-+				.section .text;"		\
-+			: "=r"(size)				\
-+			: "0"(size), "r"(to)
-+		);
-+	}
-+	return size;
-+}
-+
-+extern unsigned long __copy_tofrom_user(void __user *to,
-+		const void __user *from, unsigned long size);
-+
-+#define copy_to_user(to, from, n)					\
-+	(access_ok(VERIFY_WRITE, (to), (n)) ?				\
-+		__copy_tofrom_user((void __user *)(to),			\
-+			(__force const void __user *)(from), (n))	\
-+		: -EFAULT)
-+
-+#define __copy_to_user(to, from, n)	copy_to_user((to), (from), (n))
-+#define __copy_to_user_inatomic(to, from, n)	copy_to_user((to), (from), (n))
-+
-+#define copy_from_user(to, from, n)					\
-+	(access_ok(VERIFY_READ, (from), (n)) ?				\
-+		__copy_tofrom_user((__force void __user *)(to),		\
-+			(void __user *)(from), (n))			\
-+		: -EFAULT)
-+
-+#define __copy_from_user(to, from, n)	copy_from_user((to), (from), (n))
-+#define __copy_from_user_inatomic(to, from, n) \
-+		copy_from_user((to), (from), (n))
-+
-+extern int __strncpy_user(char *to, const char __user *from, int len);
-+extern int __strnlen_user(const char __user *sstr, int len);
-+
-+#define strncpy_from_user(to, from, len)	\
-+		(access_ok(VERIFY_READ, from, 1) ?	\
-+			__strncpy_user(to, from, len) : -EFAULT)
-+#define strnlen_user(str, len)	\
-+		(access_ok(VERIFY_READ, str, 1) ? __strnlen_user(str, len) : 0)
+ 	bri	ex_handler_done; /* Complete exception handling */
++#endif
  
--extern long strncpy_from_user(char *dst, const char __user *src, long count);
--extern long strnlen_user(const char __user *src, long count);
--extern long __strncpy_from_user(char *dst, const char __user *src, long count);
+ /* 0x01 - Unaligned data access exception
+  * This occurs when a word access is not aligned on a word boundary,
+@@ -265,11 +420,28 @@ handle_other_ex: /* Handle Other exceptions here */
+ handle_unaligned_ex:
+ 	/* Working registers already saved: R3, R4, R5, R6
+ 	 *  R3 = ESR
+-	 *  R4 = BTR
++	 *  R4 = EAR
+ 	 */
+-	mfs	r4, rear;
++#ifdef CONFIG_MMU
++	andi	r6, r3, 0x1000			/* Check ESR[DS] */
++	beqi	r6, _no_delayslot		/* Branch if ESR[DS] not set */
++	mfs	r17, rbtr;	/* ESR[DS] set - return address in BTR */
+ 	nop
++_no_delayslot:
++#endif
++
++#ifdef CONFIG_MMU
++	/* Check if unaligned address is last on a 4k page */
++		andi	r5, r4, 0xffc
++		xori	r5, r5, 0xffc
++		bnei	r5, _unaligned_ex2
++	_unaligned_ex1:
++		RESTORE_STATE;
++/* Another page must be accessed or physical address not in page table */
++		bri	unaligned_data_trap
+ 
++	_unaligned_ex2:
++#endif
+ 	andi	r6, r3, 0x3E0; /* Mask and extract the register operand */
+ 	srl	r6, r6; /* r6 >> 5 */
+ 	srl	r6, r6;
+@@ -278,6 +450,45 @@ handle_unaligned_ex:
+ 	srl	r6, r6;
+ 	/* Store the register operand in a temporary location */
+ 	sbi	r6, r0, TOPHYS(ex_reg_op);
++#ifdef CONFIG_MMU
++	/* Get physical address */
++	/* If we are faulting a kernel address, we have to use the
++	 * kernel page tables.
++	 */
++	ori	r5, r0, CONFIG_KERNEL_START
++	cmpu	r5, r4, r5
++	bgti	r5, _unaligned_ex3
++	ori	r5, r0, swapper_pg_dir
++	bri	_unaligned_ex4
++
++	/* Get the PGD for the current thread. */
++_unaligned_ex3: /* user thread */
++	addi	r5 ,CURRENT_TASK, TOPHYS(0); /* get current task address */
++	lwi	r5, r5, TASK_THREAD + PGDIR
++_unaligned_ex4:
++	tophys(r5,r5)
++	BSRLI(r6,r4,20)			/* Create L1 (pgdir/pmd) address */
++	andi	r6, r6, 0xffc
++/* Assume pgdir aligned on 4K boundary, no need for "andi r5,r5,0xfffff003" */
++	or	r5, r5, r6
++	lwi	r6, r5, 0		/* Get L1 entry */
++	andi	r5, r6, 0xfffff000	/* Extract L2 (pte) base address. */
++	beqi	r5, _unaligned_ex1	/* Bail if no table */
++
++	tophys(r5,r5)
++	BSRLI(r6,r4,10)			/* Compute PTE address */
++	andi	r6, r6, 0xffc
++	andi	r5, r5, 0xfffff003
++	or	r5, r5, r6
++	lwi	r5, r5, 0		/* Get Linux PTE */
++
++	andi	r6, r5, _PAGE_PRESENT
++	beqi	r6, _unaligned_ex1	/* Bail if no page */
++
++	andi	r5, r5, 0xfffff000	/* Extract RPN */
++	andi	r4, r4, 0x00000fff	/* Extract offset */
++	or	r4, r4, r5		/* Create physical address */
 +#endif /* CONFIG_MMU */
  
- /*
-  * The exception table consists of pairs of addresses: the first is the
-diff --git a/arch/microblaze/lib/uaccess_old.S b/arch/microblaze/lib/uaccess_old.S
-new file mode 100644
-index 0000000..88b1fa7
---- /dev/null
-+++ b/arch/microblaze/lib/uaccess_old.S
-@@ -0,0 +1,135 @@
-+/*
-+ * Copyright (C) 2009 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2009 PetaLogix
-+ * Copyright (C) 2007 LynuxWorks, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
+ 	andi	r6, r3, 0x400; /* Extract ESR[S] */
+ 	bnei	r6, ex_sw;
+@@ -355,6 +566,7 @@ ex_shw:
+ ex_sw_end: /* Exception handling of store word, ends. */
+ 
+ ex_handler_done:
++#ifndef CONFIG_MMU
+ 	lwi	r5, r1, 0 /* RMSR */
+ 	mts	rmsr, r5
+ 	nop
+@@ -366,13 +578,458 @@ ex_handler_done:
+ 
+ 	rted	r17, 0
+ 	addik	r1, r1, (EX_HANDLER_STACK_SIZ); /* Restore stack frame */
++#else
++	RESTORE_STATE;
++	rted	r17, 0
++	nop
++#endif
 +
-+#include <linux/errno.h>
-+#include <linux/linkage.h>
++#ifdef CONFIG_MMU
++	/* Exception vector entry code. This code runs with address translation
++	 * turned off (i.e. using physical addresses). */
 +
-+/*
-+ * int __strncpy_user(char *to, char *from, int len);
-+ *
-+ * Returns:
-+ *  -EFAULT  for an exception
-+ *  len      if we hit the buffer limit
-+ *  bytes copied
-+ */
++	/* Exception vectors. */
 +
-+	.text
-+.globl __strncpy_user;
-+.align 4;
-+__strncpy_user:
-+
-+	/*
-+	 * r5 - to
-+	 * r6 - from
-+	 * r7 - len
-+	 * r3 - temp count
-+	 * r4 - temp val
++	/* 0x10 - Data Storage Exception
++	 * This happens for just a few reasons. U0 set (but we don't do that),
++	 * or zone protection fault (user violation, write to protected page).
++	 * If this is just an update of modified status, we do that quickly
++	 * and exit. Otherwise, we call heavyweight functions to do the work.
 +	 */
-+	addik	r3,r7,0		/* temp_count = len */
-+	beqi	r3,3f
-+1:
-+	lbu	r4,r6,r0
-+	sb	r4,r5,r0
++	handle_data_storage_exception:
++		/* Working registers already saved: R3, R4, R5, R6
++		 * R3 = ESR
++		 */
++		mfs	r11, rpid
++		nop
++		bri	4
++		mfs	r3, rear		/* Get faulting address */
++		nop
++		/* If we are faulting a kernel address, we have to use the
++		 * kernel page tables.
++		 */
++		ori	r4, r0, CONFIG_KERNEL_START
++		cmpu	r4, r3, r4
++		bgti	r4, ex3
++		/* First, check if it was a zone fault (which means a user
++		 * tried to access a kernel or read-protected page - always
++		 * a SEGV). All other faults here must be stores, so no
++		 * need to check ESR_S as well. */
++		mfs	r4, resr
++		nop
++		andi	r4, r4, 0x800		/* ESR_Z - zone protection */
++		bnei	r4, ex2
 +
-+	addik	r3,r3,-1
-+	beqi	r3,2f		/* break on len */
++		ori	r4, r0, swapper_pg_dir
++		mts	rpid, r0		/* TLB will have 0 TID */
++		nop
++		bri	ex4
 +
-+	addik	r5,r5,1
-+	bneid	r4,1b
-+	addik	r6,r6,1		/* delay slot */
-+	addik	r3,r3,1		/* undo "temp_count--" */
-+2:
-+	rsubk	r3,r3,r7	/* temp_count = len - temp_count */
-+3:
-+	rtsd	r15,8
-+	nop
++		/* Get the PGD for the current thread. */
++	ex3:
++		/* First, check if it was a zone fault (which means a user
++		 * tried to access a kernel or read-protected page - always
++		 * a SEGV). All other faults here must be stores, so no
++		 * need to check ESR_S as well. */
++		mfs	r4, resr
++		nop
++		andi	r4, r4, 0x800		/* ESR_Z */
++		bnei	r4, ex2
++		/* get current task address */
++		addi	r4 ,CURRENT_TASK, TOPHYS(0);
++		lwi	r4, r4, TASK_THREAD+PGDIR
++	ex4:
++		tophys(r4,r4)
++		BSRLI(r5,r3,20)		/* Create L1 (pgdir/pmd) address */
++		andi	r5, r5, 0xffc
++/* Assume pgdir aligned on 4K boundary, no need for "andi r4,r4,0xfffff003" */
++		or	r4, r4, r5
++		lwi	r4, r4, 0		/* Get L1 entry */
++		andi	r5, r4, 0xfffff000 /* Extract L2 (pte) base address */
++		beqi	r5, ex2			/* Bail if no table */
++
++		tophys(r5,r5)
++		BSRLI(r6,r3,10)			/* Compute PTE address */
++		andi	r6, r6, 0xffc
++		andi	r5, r5, 0xfffff003
++		or	r5, r5, r6
++		lwi	r4, r5, 0		/* Get Linux PTE */
++
++		andi	r6, r4, _PAGE_RW	/* Is it writeable? */
++		beqi	r6, ex2			/* Bail if not */
++
++		/* Update 'changed' */
++		ori	r4, r4, _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE
++		swi	r4, r5, 0		/* Update Linux page table */
++
++		/* Most of the Linux PTE is ready to load into the TLB LO.
++		 * We set ZSEL, where only the LS-bit determines user access.
++		 * We set execute, because we don't have the granularity to
++		 * properly set this at the page level (Linux problem).
++		 * If shared is set, we cause a zero PID->TID load.
++		 * Many of these bits are software only. Bits we don't set
++		 * here we (properly should) assume have the appropriate value.
++		 */
++		andni	r4, r4, 0x0ce2		/* Make sure 20, 21 are zero */
++		ori	r4, r4, _PAGE_HWEXEC	/* make it executable */
++
++		/* find the TLB index that caused the fault. It has to be here*/
++		mts	rtlbsx, r3
++		nop
++		mfs	r5, rtlbx		/* DEBUG: TBD */
++		nop
++		mts	rtlblo, r4		/* Load TLB LO */
++		nop
++						/* Will sync shadow TLBs */
++
++		/* Done...restore registers and get out of here. */
++		mts	rpid, r11
++		nop
++		bri 4
++
++		RESTORE_STATE;
++		rted	r17, 0
++		nop
++	ex2:
++		/* The bailout. Restore registers to pre-exception conditions
++		 * and call the heavyweights to help us out. */
++		mts	rpid, r11
++		nop
++		bri 4
++		RESTORE_STATE;
++		bri	page_fault_data_trap
 +
 +
-+	.section	.fixup, "ax"
-+	.align	2
-+4:
-+	brid	3b
-+	addik	r3,r0, -EFAULT
++	/* 0x11 - Instruction Storage Exception
++	 * This is caused by a fetch from non-execute or guarded pages. */
++	handle_instruction_storage_exception:
++		/* Working registers already saved: R3, R4, R5, R6
++		 * R3 = ESR
++		 */
 +
-+	.section	__ex_table, "a"
-+	.word	1b,4b
++		mfs	r3, rear		/* Get faulting address */
++		nop
++		RESTORE_STATE;
++		bri	page_fault_instr_trap
 +
-+/*
-+ * int __strnlen_user(char __user *str, int maxlen);
-+ *
-+ * Returns:
-+ *  0 on error
-+ *  maxlen + 1  if no NUL byte found within maxlen bytes
-+ *  size of the string (including NUL byte)
-+ */
-+
-+	.text
-+.globl __strnlen_user;
-+.align 4;
-+__strnlen_user:
-+	addik	r3,r6,0
-+	beqi	r3,3f
-+1:
-+	lbu	r4,r5,r0
-+	beqid	r4,2f		/* break on NUL */
-+	addik	r3,r3,-1	/* delay slot */
-+
-+	bneid	r3,1b
-+	addik	r5,r5,1		/* delay slot */
-+
-+	addik	r3,r3,-1	/* for break on len */
-+2:
-+	rsubk	r3,r3,r6
-+3:
-+	rtsd	r15,8
-+	nop
-+
-+
-+	.section	.fixup,"ax"
-+4:
-+	brid	3b
-+	addk	r3,r0,r0
-+
-+	.section	__ex_table,"a"
-+	.word	1b,4b
-+
-+/*
-+ * int __copy_user(char *to, char *from, int len)
-+ * Return:
-+ *   0 on success
-+ *   number of not copied bytes on error
-+ */
-+	.text
-+.globl __copy_tofrom_user;
-+.align 4;
-+__copy_tofrom_user:
-+	/*
-+	 * r5 - to
-+	 * r6 - from
-+	 * r7, r3 - count
-+	 * r4 - tempval
++	/* 0x12 - Data TLB Miss Exception
++	 * As the name implies, translation is not in the MMU, so search the
++	 * page tables and fix it. The only purpose of this function is to
++	 * load TLB entries from the page table if they exist.
 +	 */
-+	addik	r3,r7,0
-+	beqi	r3,3f
-+1:
-+	lbu	r4,r6,r0
-+	addik	r6,r6,1
-+2:
-+	sb	r4,r5,r0
-+	addik	r3,r3,-1
-+	bneid	r3,1b
-+	addik	r5,r5,1		/* delay slot */
-+3:
-+	rtsd	r15,8
-+	nop
++	handle_data_tlb_miss_exception:
++		/* Working registers already saved: R3, R4, R5, R6
++		 * R3 = ESR
++		 */
++		mfs	r11, rpid
++		nop
++		bri	4
++		mfs	r3, rear		/* Get faulting address */
++		nop
 +
++		/* If we are faulting a kernel address, we have to use the
++		 * kernel page tables. */
++		ori	r4, r0, CONFIG_KERNEL_START
++		cmpu	r4, r3, r4
++		bgti	r4, ex5
++		ori	r4, r0, swapper_pg_dir
++		mts	rpid, r0		/* TLB will have 0 TID */
++		nop
++		bri	ex6
+ 
++		/* Get the PGD for the current thread. */
++	ex5:
++		/* get current task address */
++		addi	r4 ,CURRENT_TASK, TOPHYS(0);
++		lwi	r4, r4, TASK_THREAD+PGDIR
++	ex6:
++		tophys(r4,r4)
++		BSRLI(r5,r3,20)		/* Create L1 (pgdir/pmd) address */
++		andi	r5, r5, 0xffc
++/* Assume pgdir aligned on 4K boundary, no need for "andi r4,r4,0xfffff003" */
++		or	r4, r4, r5
++		lwi	r4, r4, 0		/* Get L1 entry */
++		andi	r5, r4, 0xfffff000 /* Extract L2 (pte) base address */
++		beqi	r5, ex7			/* Bail if no table */
 +
-+	.section	__ex_table,"a"
-+	.word	1b,3b,2b,3b
++		tophys(r5,r5)
++		BSRLI(r6,r3,10)			/* Compute PTE address */
++		andi	r6, r6, 0xffc
++		andi	r5, r5, 0xfffff003
++		or	r5, r5, r6
++		lwi	r4, r5, 0		/* Get Linux PTE */
++
++		andi	r6, r4, _PAGE_PRESENT
++		beqi	r6, ex7
++
++		ori	r4, r4, _PAGE_ACCESSED
++		swi	r4, r5, 0
++
++		/* Most of the Linux PTE is ready to load into the TLB LO.
++		 * We set ZSEL, where only the LS-bit determines user access.
++		 * We set execute, because we don't have the granularity to
++		 * properly set this at the page level (Linux problem).
++		 * If shared is set, we cause a zero PID->TID load.
++		 * Many of these bits are software only. Bits we don't set
++		 * here we (properly should) assume have the appropriate value.
++		 */
++		andni	r4, r4, 0x0ce2		/* Make sure 20, 21 are zero */
++
++		bri	finish_tlb_load
++	ex7:
++		/* The bailout. Restore registers to pre-exception conditions
++		 * and call the heavyweights to help us out.
++		 */
++		mts	rpid, r11
++		nop
++		bri	4
++		RESTORE_STATE;
++		bri	page_fault_data_trap
++
++	/* 0x13 - Instruction TLB Miss Exception
++	 * Nearly the same as above, except we get our information from
++	 * different registers and bailout to a different point.
++	 */
++	handle_instruction_tlb_miss_exception:
++		/* Working registers already saved: R3, R4, R5, R6
++		 *  R3 = ESR
++		 */
++		mfs	r11, rpid
++		nop
++		bri	4
++		mfs	r3, rear		/* Get faulting address */
++		nop
++
++		/* If we are faulting a kernel address, we have to use the
++		 * kernel page tables.
++		 */
++		ori	r4, r0, CONFIG_KERNEL_START
++		cmpu	r4, r3, r4
++		bgti	r4, ex8
++		ori	r4, r0, swapper_pg_dir
++		mts	rpid, r0		/* TLB will have 0 TID */
++		nop
++		bri	ex9
++
++		/* Get the PGD for the current thread. */
++	ex8:
++		/* get current task address */
++		addi	r4 ,CURRENT_TASK, TOPHYS(0);
++		lwi	r4, r4, TASK_THREAD+PGDIR
++	ex9:
++		tophys(r4,r4)
++		BSRLI(r5,r3,20)		/* Create L1 (pgdir/pmd) address */
++		andi	r5, r5, 0xffc
++/* Assume pgdir aligned on 4K boundary, no need for "andi r4,r4,0xfffff003" */
++		or	r4, r4, r5
++		lwi	r4, r4, 0		/* Get L1 entry */
++		andi	r5, r4, 0xfffff000 /* Extract L2 (pte) base address */
++		beqi	r5, ex10		/* Bail if no table */
++
++		tophys(r5,r5)
++		BSRLI(r6,r3,10)			/* Compute PTE address */
++		andi	r6, r6, 0xffc
++		andi	r5, r5, 0xfffff003
++		or	r5, r5, r6
++		lwi	r4, r5, 0		/* Get Linux PTE */
++
++		andi	r6, r4, _PAGE_PRESENT
++		beqi	r6, ex7
++
++		ori	r4, r4, _PAGE_ACCESSED
++		swi	r4, r5, 0
++
++		/* Most of the Linux PTE is ready to load into the TLB LO.
++		 * We set ZSEL, where only the LS-bit determines user access.
++		 * We set execute, because we don't have the granularity to
++		 * properly set this at the page level (Linux problem).
++		 * If shared is set, we cause a zero PID->TID load.
++		 * Many of these bits are software only. Bits we don't set
++		 * here we (properly should) assume have the appropriate value.
++		 */
++		andni	r4, r4, 0x0ce2		/* Make sure 20, 21 are zero */
++
++		bri	finish_tlb_load
++	ex10:
++		/* The bailout. Restore registers to pre-exception conditions
++		 * and call the heavyweights to help us out.
++		 */
++		mts	rpid, r11
++		nop
++		bri 4
++		RESTORE_STATE;
++		bri	page_fault_instr_trap
++
++/* Both the instruction and data TLB miss get to this point to load the TLB.
++ *	r3 - EA of fault
++ *	r4 - TLB LO (info from Linux PTE)
++ *	r5, r6 - available to use
++ *	PID - loaded with proper value when we get here
++ *	Upon exit, we reload everything and RFI.
++ * A common place to load the TLB.
++ */
++	tlb_index:
++		.long	0 /* MS: storing last used tlb index */
++	finish_tlb_load:
++		/* MS: load the last used TLB index. */
++		lwi	r5, r0, TOPHYS(tlb_index)
++		addik	r5, r5, 1 /* MS: inc tlb_index -> use next one */
++
++/* MS: FIXME this is potentional fault, because this is mask not count */
++		andi	r5, r5, (MICROBLAZE_TLB_SIZE-1)
++	#if !defined(CONFIG_SERIAL_8250_CONSOLE) && defined(CONFIG_EARLY_PRINTK)
++/* MS: test if the TLB location is 0 - tlb0 store uartlite for early_printk
++ * if is 0 only setup next tlb index. Zero index is never replaced
++ */
++			bnei	r5, sem
++			ori	r5, r0, 1
++	sem:
++	#endif
++		/* MS: save back current TLB index */
++		swi	r5, r0, TOPHYS(tlb_index)
++
++		ori	r4, r4, _PAGE_HWEXEC	/* make it executable */
++		mts	rtlbx, r5		/* MS: save current TLB */
++		nop
++		mts	rtlblo,	r4		/* MS: save to TLB LO */
++		nop
++
++		/* Create EPN. This is the faulting address plus a static
++		 * set of bits. These are size, valid, E, U0, and ensure
++		 * bits 20 and 21 are zero.
++		 */
++		andi	r3, r3, 0xfffff000
++		ori	r3, r3, 0x0c0
++		mts	rtlbhi,	r3		/* Load TLB HI */
++		nop
++
++		/* Done...restore registers and get out of here. */
++	ex12:
++		mts	rpid, r11
++		nop
++		bri 4
++		RESTORE_STATE;
++		rted	r17, 0
++		nop
++
++	/* extern void giveup_fpu(struct task_struct *prev)
++	 *
++	 * The MicroBlaze processor may have an FPU, so this should not just
++	 * return: TBD.
++	 */
++	.globl giveup_fpu;
++	.align 4;
++	giveup_fpu:
++		bralid	r15,0			/* TBD */
++		nop
++
++	/* At present, this routine just hangs. - extern void abort(void) */
++	.globl abort;
++	.align 4;
++	abort:
++		br	r0
++
++	.globl set_context;
++	.align 4;
++	set_context:
++		mts	rpid, r5	/* Shadow TLBs are automatically */
++		nop
++		bri	4		/* flushed by changing PID */
++		rtsd	r15,8
++		nop
++
++#endif
+ .end _hw_exception_handler
+ 
++#ifdef CONFIG_MMU
++/* Unaligned data access exception last on a 4k page for MMU.
++ * When this is called, we are in virtual mode with exceptions enabled
++ * and registers 1-13,15,17,18 saved.
++ *
++ * R3 = ESR
++ * R4 = EAR
++ * R7 = pointer to saved registers (struct pt_regs *regs)
++ *
++ * This handler perform the access, and returns via ret_from_exc.
++ */
++.global _unaligned_data_exception
++.ent _unaligned_data_exception
++_unaligned_data_exception:
++	andi	r8, r3, 0x3E0;	/* Mask and extract the register operand */
++	BSRLI(r8,r8,2);		/* r8 >> 2 = register operand * 8 */
++	andi	r6, r3, 0x400;	/* Extract ESR[S] */
++	bneid	r6, ex_sw_vm;
++	andi	r6, r3, 0x800;	/* Extract ESR[W] - delay slot */
++ex_lw_vm:
++	beqid	r6, ex_lhw_vm;
++	lbui	r5, r4, 0;	/* Exception address in r4 - delay slot */
++/* Load a word, byte-by-byte from destination address and save it in tmp space*/
++	la	r6, r0, ex_tmp_data_loc_0;
++	sbi	r5, r6, 0;
++	lbui	r5, r4, 1;
++	sbi	r5, r6, 1;
++	lbui	r5, r4, 2;
++	sbi	r5, r6, 2;
++	lbui	r5, r4, 3;
++	sbi	r5, r6, 3;
++	brid	ex_lw_tail_vm;
++/* Get the destination register value into r3 - delay slot */
++	lwi	r3, r6, 0;
++ex_lhw_vm:
++	/* Load a half-word, byte-by-byte from destination address and
++	 * save it in tmp space */
++	la	r6, r0, ex_tmp_data_loc_0;
++	sbi	r5, r6, 0;
++	lbui	r5, r4, 1;
++	sbi	r5, r6, 1;
++	lhui	r3, r6, 0;	/* Get the destination register value into r3 */
++ex_lw_tail_vm:
++	/* Form load_word jump table offset (lw_table_vm + (8 * regnum)) */
++	addik	r5, r8, lw_table_vm;
++	bra	r5;
++ex_lw_end_vm:			/* Exception handling of load word, ends */
++	brai	ret_from_exc;
++ex_sw_vm:
++/* Form store_word jump table offset (sw_table_vm + (8 * regnum)) */
++	addik	r5, r8, sw_table_vm;
++	bra	r5;
++ex_sw_tail_vm:
++	la	r5, r0, ex_tmp_data_loc_0;
++	beqid	r6, ex_shw_vm;
++	swi	r3, r5, 0;	/* Get the word - delay slot */
++	/* Store the word, byte-by-byte into destination address */
++	lbui	r3, r5, 0;
++	sbi	r3, r4, 0;
++	lbui	r3, r5, 1;
++	sbi	r3, r4, 1;
++	lbui	r3, r5, 2;
++	sbi	r3, r4, 2;
++	lbui	r3, r5, 3;
++	brid	ret_from_exc;
++	sbi	r3, r4, 3;	/* Delay slot */
++ex_shw_vm:
++	/* Store the lower half-word, byte-by-byte into destination address */
++	lbui	r3, r5, 2;
++	sbi	r3, r4, 0;
++	lbui	r3, r5, 3;
++	brid	ret_from_exc;
++	sbi	r3, r4, 1;	/* Delay slot */
++ex_sw_end_vm:			/* Exception handling of store word, ends. */
++.end _unaligned_data_exception
++#endif /* CONFIG_MMU */
++
+ ex_handler_unhandled:
+ /* FIXME add handle function for unhandled exception - dump register */
+ 	bri 0
+ 
++/*
++ * hw_exception_handler Jump Table
++ * - Contains code snippets for each register that caused the unalign exception
++ * - Hence exception handler is NOT self-modifying
++ * - Separate table for load exceptions and store exceptions.
++ * - Each table is of size: (8 * 32) = 256 bytes
++ */
++
+ .section .text
+ .align 4
+ lw_table:
+@@ -407,7 +1064,11 @@ lw_r27:		R3_TO_LWREG	(27);
+ lw_r28:		R3_TO_LWREG	(28);
+ lw_r29:		R3_TO_LWREG	(29);
+ lw_r30:		R3_TO_LWREG	(30);
++#ifdef CONFIG_MMU
++lw_r31: 	R3_TO_LWREG_V	(31);
++#else
+ lw_r31:		R3_TO_LWREG	(31);
++#endif
+ 
+ sw_table:
+ sw_r0:		SWREG_TO_R3	(0);
+@@ -441,7 +1102,81 @@ sw_r27:		SWREG_TO_R3	(27);
+ sw_r28:		SWREG_TO_R3	(28);
+ sw_r29:		SWREG_TO_R3	(29);
+ sw_r30:		SWREG_TO_R3	(30);
++#ifdef CONFIG_MMU
++sw_r31:		SWREG_TO_R3_V	(31);
++#else
+ sw_r31:		SWREG_TO_R3	(31);
++#endif
++
++#ifdef CONFIG_MMU
++lw_table_vm:
++lw_r0_vm:	R3_TO_LWREG_VM		(0);
++lw_r1_vm:	R3_TO_LWREG_VM_V	(1);
++lw_r2_vm:	R3_TO_LWREG_VM_V	(2);
++lw_r3_vm:	R3_TO_LWREG_VM_V	(3);
++lw_r4_vm:	R3_TO_LWREG_VM_V	(4);
++lw_r5_vm:	R3_TO_LWREG_VM_V	(5);
++lw_r6_vm:	R3_TO_LWREG_VM_V	(6);
++lw_r7_vm:	R3_TO_LWREG_VM_V	(7);
++lw_r8_vm:	R3_TO_LWREG_VM_V	(8);
++lw_r9_vm:	R3_TO_LWREG_VM_V	(9);
++lw_r10_vm:	R3_TO_LWREG_VM_V	(10);
++lw_r11_vm:	R3_TO_LWREG_VM_V	(11);
++lw_r12_vm:	R3_TO_LWREG_VM_V	(12);
++lw_r13_vm:	R3_TO_LWREG_VM_V	(13);
++lw_r14_vm:	R3_TO_LWREG_VM		(14);
++lw_r15_vm:	R3_TO_LWREG_VM_V	(15);
++lw_r16_vm:	R3_TO_LWREG_VM		(16);
++lw_r17_vm:	R3_TO_LWREG_VM_V	(17);
++lw_r18_vm:	R3_TO_LWREG_VM_V	(18);
++lw_r19_vm:	R3_TO_LWREG_VM		(19);
++lw_r20_vm:	R3_TO_LWREG_VM		(20);
++lw_r21_vm:	R3_TO_LWREG_VM		(21);
++lw_r22_vm:	R3_TO_LWREG_VM		(22);
++lw_r23_vm:	R3_TO_LWREG_VM		(23);
++lw_r24_vm:	R3_TO_LWREG_VM		(24);
++lw_r25_vm:	R3_TO_LWREG_VM		(25);
++lw_r26_vm:	R3_TO_LWREG_VM		(26);
++lw_r27_vm:	R3_TO_LWREG_VM		(27);
++lw_r28_vm:	R3_TO_LWREG_VM		(28);
++lw_r29_vm:	R3_TO_LWREG_VM		(29);
++lw_r30_vm:	R3_TO_LWREG_VM		(30);
++lw_r31_vm:	R3_TO_LWREG_VM_V	(31);
++
++sw_table_vm:
++sw_r0_vm:	SWREG_TO_R3_VM		(0);
++sw_r1_vm:	SWREG_TO_R3_VM_V	(1);
++sw_r2_vm:	SWREG_TO_R3_VM_V	(2);
++sw_r3_vm:	SWREG_TO_R3_VM_V	(3);
++sw_r4_vm:	SWREG_TO_R3_VM_V	(4);
++sw_r5_vm:	SWREG_TO_R3_VM_V	(5);
++sw_r6_vm:	SWREG_TO_R3_VM_V	(6);
++sw_r7_vm:	SWREG_TO_R3_VM_V	(7);
++sw_r8_vm:	SWREG_TO_R3_VM_V	(8);
++sw_r9_vm:	SWREG_TO_R3_VM_V	(9);
++sw_r10_vm:	SWREG_TO_R3_VM_V	(10);
++sw_r11_vm:	SWREG_TO_R3_VM_V	(11);
++sw_r12_vm:	SWREG_TO_R3_VM_V	(12);
++sw_r13_vm:	SWREG_TO_R3_VM_V	(13);
++sw_r14_vm:	SWREG_TO_R3_VM		(14);
++sw_r15_vm:	SWREG_TO_R3_VM_V	(15);
++sw_r16_vm:	SWREG_TO_R3_VM		(16);
++sw_r17_vm:	SWREG_TO_R3_VM_V	(17);
++sw_r18_vm:	SWREG_TO_R3_VM_V	(18);
++sw_r19_vm:	SWREG_TO_R3_VM		(19);
++sw_r20_vm:	SWREG_TO_R3_VM		(20);
++sw_r21_vm:	SWREG_TO_R3_VM		(21);
++sw_r22_vm:	SWREG_TO_R3_VM		(22);
++sw_r23_vm:	SWREG_TO_R3_VM		(23);
++sw_r24_vm:	SWREG_TO_R3_VM		(24);
++sw_r25_vm:	SWREG_TO_R3_VM		(25);
++sw_r26_vm:	SWREG_TO_R3_VM		(26);
++sw_r27_vm:	SWREG_TO_R3_VM		(27);
++sw_r28_vm:	SWREG_TO_R3_VM		(28);
++sw_r29_vm:	SWREG_TO_R3_VM		(29);
++sw_r30_vm:	SWREG_TO_R3_VM		(30);
++sw_r31_vm:	SWREG_TO_R3_VM_V	(31);
++#endif /* CONFIG_MMU */
+ 
+ /* Temporary data structures used in the handler */
+ .section .data
 -- 
 1.5.5.1
 
