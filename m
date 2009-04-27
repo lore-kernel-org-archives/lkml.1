@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbZD0Lqn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbZD0LwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755773AbZD0Lqn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 07:46:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbZD0Lqe
+	id S1755092AbZD0LwW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 07:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147AbZD0LwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 07:46:34 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:47780 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753305AbZD0Lqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 07:46:34 -0400
-Date: Mon, 27 Apr 2009 13:46:33 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Cleanup: Remove unused __REQ_NR_BITS from enum
-	rq_flag_bits
-Message-ID: <20090427114633.GA4593@kernel.dk>
-References: <200904271705.30550.knikanth@suse.de>
+	Mon, 27 Apr 2009 07:52:06 -0400
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:3813 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752706AbZD0LwF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 07:52:05 -0400
+Message-ID: <49F59C53.904@imap.cc>
+Date: Mon, 27 Apr 2009 13:51:47 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14 Mnenhy/0.7.6.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904271705.30550.knikanth@suse.de>
+To: David Miller <davem@davemloft.net>
+CC: karsten-keil@t-online.de, linux-kernel@vger.kernel.org,
+       rdunlap@xenotime.net, isdn4linux@listserv.isdn4linux.de,
+       i4ldeveloper@listserv.isdn4linux.de, netdev@vger.kernel.org
+Subject: Re: [PATCH v2 0/3] [ISDN] Documentation patchset
+References: <cover.1240489461.git.keil@b1-systems.de> <20090427.031323.64748515.davem@davemloft.net>
+In-Reply-To: <20090427.031323.64748515.davem@davemloft.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig47AD6EC1B2118BC6CA91F60C"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27 2009, Nikanth Karthikesan wrote:
-> The __REQ_NR_BITS  was being used by blk_dump_rq_flags() long back, while 
-> printing the individual request flag bits as strings to limit to the used 
-> bits. But it does not use it now. Remove unused enum.
-> 
-> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-> 
-> ---
-> 
-> diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-> index ba54c83..f41abbb 100644
-> --- a/include/linux/blkdev.h
-> +++ b/include/linux/blkdev.h
-> @@ -118,7 +118,6 @@ enum rq_flag_bits {
->  	__REQ_COPY_USER,	/* contains copies of user pages */
->  	__REQ_INTEGRITY,	/* integrity metadata has been remapped */
->  	__REQ_NOIDLE,		/* Don't anticipate more IO after this one */
-> -	__REQ_NR_BITS,		/* stops here */
->  };
->  
->  #define REQ_RW		(1 << __REQ_RW)
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig47AD6EC1B2118BC6CA91F60C
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Lets turn it into something useful instead. It's meant to catch someone
-adding too many flags, how about something like this:
+David Miller schrieb:
+> From: Karsten Keil <karsten-keil@t-online.de>
+> Date: Thu, 23 Apr 2009 14:24:21 +0200
+>=20
+>> Fixed one more typo and wrong From: lines.
+>>=20
+>> Add some useful documentation for the ISDN subsystem.
+>> Orignal patches are from Tilman Schmidt.
+>> I fixed some whitespace issues and added the URL for the CAPI 2.0 spec=
+=2E
+>=20
+> This patch set does not apply at all to net-2.6
 
-Untested ;-)
+Strange. It applies fine to the linux-2.6 I pulled this morning.
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index d73eb76..e62ef94 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -2159,6 +2159,8 @@ EXPORT_SYMBOL(kblockd_schedule_work);
- 
- int __init blk_dev_init(void)
- {
-+	BUILD_BUG_ON(__REQ_NR_BITS > 8 * sizeof(int));
-+
- 	kblockd_workqueue = create_workqueue("kblockd");
- 	if (!kblockd_workqueue)
- 		panic("Failed to create kblockd\n");
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
--- 
-Jens Axboe
 
+--------------enig47AD6EC1B2118BC6CA91F60C
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFJ9ZxbQ3+did9BuFsRAv2vAJwOCQ//YSBzlLmRbHayROdFaa7Z9wCfXdoV
+IrxnFMCEgF+20yEFv3/J2LA=
+=c18E
+-----END PGP SIGNATURE-----
+
+--------------enig47AD6EC1B2118BC6CA91F60C--
