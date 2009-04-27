@@ -1,79 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755635AbZD0MfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbZD0Mhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755635AbZD0MfA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 08:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbZD0Mes
+	id S1756205AbZD0Mhz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 08:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbZD0Mhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 08:34:48 -0400
-Received: from web32602.mail.mud.yahoo.com ([68.142.207.229]:38245 "HELO
-	web32602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754194AbZD0Mes (ORCPT
+	Mon, 27 Apr 2009 08:37:45 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:62854 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754194AbZD0Mhp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 08:34:48 -0400
-Message-ID: <534721.54493.qm@web32602.mail.mud.yahoo.com>
-X-YMail-OSG: 0CpSxegVM1kzaAnu69zoQEeYItBN1bRsGZiSszP2VCZxQsjT3VhsBHDhBH4.Fj6CwS_9VKzvPKH5Nm9nS_HddsGGKgyqGIB6YcRv6IiUY1ROoJLGQqtKo7UHBAC2KCuYN7Dg8LSStvBP2dsP9o2XXVtLZweDiCKJ9QnMCyBAl4omuR_JrydAfjRaLg0cgqEwsaKMeV8sqVnxG76ioFuRlUx.IsQSZtGRqv_RLZadGr09Mk9e.qVubp.og9QkMLHbCbqF0Y5.TCPPgxN8NncLt.kCI2WaV6yLRshOGjiAVOs6ub5uyQXKifHEckopQtvjPkRKxzOxjQ6bDSeSnrg_tplzzA--
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1277.35 YahooMailWebService/0.7.289.1
-References: <alpine.LFD.2.00.0904212014170.3101@localhost.localdomain> <20090424175238.GA19646@csn.ul.ie>
-Date: Mon, 27 Apr 2009 05:34:47 -0700 (PDT)
-From: Martin Knoblauch <knobi@knobisoft.de>
-Subject: Re: [BUG] 2.6.30-rc3: bnx2 failing to load firmware
-To: Mel Gorman <mel@csn.ul.ie>, Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michael Chan <mchan@broadcom.com>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <20090424175238.GA19646@csn.ul.ie>
+	Mon, 27 Apr 2009 08:37:45 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
+Date: Mon, 27 Apr 2009 14:37:08 +0200
+User-Agent: KMail/1.9.9
+Cc: monstr@monstr.eu, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org, john.williams@petalogix.com
+References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <200904271357.01681.arnd@arndb.de> <20090427121556.GA9469@uranus.ravnborg.org>
+In-Reply-To: <20090427121556.GA9469@uranus.ravnborg.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904271437.09273.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19Uo7REH1W4nFQl3t2BM8QS9Esl5tApMr9NiSe
+ OS3DfHCxcVjnO7WmUJqUFCnW8/Fgasg/URko0etBRFyauIXJIF
+ +BsUxaHzXR5N7KE0uoXLg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 27 April 2009, Sam Ravnborg wrote:
+> Why not use __u64/__u32 (and s32/s64 where appropriate)?
+> Historical baggage or a techncal reason?
 
------ Original Message ----
+Yes, purely historical reasons: all architectures currently
+use the simple C types rather than __u32 in stat.h.
 
-> From: Mel Gorman <mel@csn.ul.ie>
-> To: Linus Torvalds <torvalds@linux-foundation.org>
-> Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>; Michael Chan <mchan@broadcom.com>; David S. Miller <davem@davemloft.net>
-> Sent: Friday, April 24, 2009 7:52:39 PM
-> Subject: [BUG] 2.6.30-rc3: bnx2 failing to load firmware
-> 
-> On Tue, Apr 21, 2009 at 08:27:57PM -0700, Linus Torvalds wrote:
-> > 
-> > Another week, another -rc.
-> > 
-> 
-> Getting this when loading the bnx2 driver
-> 
-> bnx2 0000:04:00.0: firmware: requesting bnx2/bnx2-mips-06-4.6.16.fw
-> bnx2: Can't load firmware file "bnx2/bnx2-mips-06-4.6.16.fw"
-> bnx2 0000:04:00.0: PCI INT A disabled
-> bnx2: probe of 0000:04:00.0 failed with error -2
-> bnx2 0000:06:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
-> bnx2 0000:06:00.0: firmware: requesting bnx2/bnx2-mips-06-4.6.16.fw
-> bnx2: Can't load firmware file "bnx2/bnx2-mips-06-4.6.16.fw"
-> bnx2 0000:06:00.0: PCI INT A disabled
-> bnx2: probe of 0000:06:00.0 failed with error -2
-> 
-> The firmware-related parts of the .config are
-> 
-> CONFIG_PREVENT_FIRMWARE_BUILD=y
-> CONFIG_FIRMWARE_IN_KERNEL=y
-> CONFIG_EXTRA_FIRMWARE=""
-> CONFIG_FIRMWARE_EDID=y
-> CONFIG_FIRMWARE_MEMMAP=y
-> 
-> Reverting commit 57579f7629a3d46c307405fbd2ea6bdb650d692f "fixes" it no
-> doubt there is a better fix. The patch author (Michael) is cc'd but if
-> nothing else happens, I'll investigate more after the weekend.
-> 
-> dmesg and .config attached.
-> 
+I don't think it makes a difference either way, so I'd
+leave it like this unless you find a good reason for
+changing.
 
- just curious, what userspace are you using? I have, starting with 2.6.29, a similar problem with tg3. My RHEL4.3 userspace broke hotplugging, because as of 2.6.29 there are two "sysfs" lines in /"proc/mounts". I fixed it in "/etc/hotplug/firmware.agent" by just assuming "/sys" as the "sysfs" mountpoint.
-
- Maybe of course totally unrelated.
-
-Cheers
-Martin
-
+	Arnd <><
