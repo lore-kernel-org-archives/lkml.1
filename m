@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbZD0V5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760728AbZD0V6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760652AbZD0V5Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 17:57:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757239AbZD0VzE
+	id S1760728AbZD0V6V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 17:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759166AbZD0VzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 17:55:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41450 "EHLO mx2.redhat.com"
+	Mon, 27 Apr 2009 17:55:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41467 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756990AbZD0Vy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 17:54:59 -0400
+	id S1759124AbZD0VzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 17:55:14 -0400
 From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH 09/12] fsnotify: allow groups to add private data to events
+Subject: [PATCH 11/12] fsnotify: handle filesystem unmounts with fsnotify marks
 To: linux-kernel@vger.kernel.org
 Cc: viro@zeniv.linux.org.uk, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
        sfr@canb.auug.org.au, john@johnmccutchan.com, rlove@rlove.org,
        akpm@linux-foundation.org
-Date: Mon, 27 Apr 2009 17:53:50 -0400
-Message-ID: <20090427215349.14161.52570.stgit@paris.rdu.redhat.com>
+Date: Mon, 27 Apr 2009 17:54:00 -0400
+Message-ID: <20090427215400.14161.3129.stgit@paris.rdu.redhat.com>
 In-Reply-To: <20090427215305.14161.33354.stgit@paris.rdu.redhat.com>
 References: <20090427215305.14161.33354.stgit@paris.rdu.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -27,179 +27,137 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-inotify needs per group information attached to events.  This patch allows
-groups to attach private information and implements a callback so that
-information can be freed when an event is being destroyed.
+When an fs is unmounted with an fsnotify mark entry attached to one of its
+inodes we need to destroy that mark entry and we also (like inotify) send
+an unmount event.
 
 Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
 
- fs/notify/dnotify/dnotify.c      |    1 +
- fs/notify/notification.c         |   37 ++++++++++++++++++++++++++++++++++---
- include/linux/fsnotify_backend.h |   17 ++++++++++++++++-
- 3 files changed, 51 insertions(+), 4 deletions(-)
+ fs/inode.c                       |    1 +
+ fs/notify/inode_mark.c           |   72 ++++++++++++++++++++++++++++++++++++++
+ include/linux/fsnotify_backend.h |    4 ++
+ 3 files changed, 77 insertions(+), 0 deletions(-)
 
-diff --git a/fs/notify/dnotify/dnotify.c b/fs/notify/dnotify/dnotify.c
-index d9d80f5..12f9e6b 100644
---- a/fs/notify/dnotify/dnotify.c
-+++ b/fs/notify/dnotify/dnotify.c
-@@ -183,6 +183,7 @@ static struct fsnotify_ops dnotify_fsnotify_ops = {
- 	.should_send_event = dnotify_should_send_event,
- 	.free_group_priv = NULL,
- 	.freeing_mark = dnotify_freeing_mark,
-+	.free_event_priv = NULL,
- };
+diff --git a/fs/inode.c b/fs/inode.c
+index cdf412c..ac6ecfc 100644
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -408,6 +408,7 @@ int invalidate_inodes(struct super_block * sb)
+ 	mutex_lock(&iprune_mutex);
+ 	spin_lock(&inode_lock);
+ 	inotify_unmount_inodes(&sb->s_inodes);
++	fsnotify_unmount_inodes(&sb->s_inodes);
+ 	busy = invalidate_list(&sb->s_inodes, &throw_away);
+ 	spin_unlock(&inode_lock);
  
- /*
-diff --git a/fs/notify/notification.c b/fs/notify/notification.c
-index 346f6e5..3e6e364 100644
---- a/fs/notify/notification.c
-+++ b/fs/notify/notification.c
-@@ -90,6 +90,8 @@ void fsnotify_put_event(struct fsnotify_event *event)
- 		if (event->data_type == FSNOTIFY_EVENT_PATH)
- 			path_put(&event->path);
+diff --git a/fs/notify/inode_mark.c b/fs/notify/inode_mark.c
+index 282150f..0a499d2 100644
+--- a/fs/notify/inode_mark.c
++++ b/fs/notify/inode_mark.c
+@@ -89,6 +89,7 @@
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
++#include <linux/writeback.h> /* for inode_lock */
  
-+		BUG_ON(!list_empty(&event->private_data_list));
-+
- 		kfree(event->file_name);
- 		kmem_cache_free(fsnotify_event_cachep, event);
- 	}
-@@ -106,7 +108,26 @@ void fsnotify_destroy_event_holder(struct fsnotify_event_holder *holder)
+ #include <asm/atomic.h>
+ 
+@@ -351,3 +352,74 @@ int fsnotify_add_mark(struct fsnotify_mark_entry *entry,
+ 
+ 	return ret;
  }
- 
- /*
-- * check if 2 events contain the same information.
-+ * Find the private data that the group previously attached to this event when
-+ * the group added the event to the notification queue (fsnotify_add_notify_event)
++
++/**
++ * fsnotify_unmount_inodes - an sb is unmounting.  handle any watched inodes.
++ * @list: list of inodes being unmounted (sb->s_inodes)
++ *
++ * Called with inode_lock held, protecting the unmounting super block's list
++ * of inodes, and with iprune_mutex held, keeping shrink_icache_memory() at bay.
++ * We temporarily drop inode_lock, however, and CAN block.
 + */
-+struct fsnotify_event_private_data *fsnotify_get_priv_from_event(struct fsnotify_group *group, struct fsnotify_event *event)
++void fsnotify_unmount_inodes(struct list_head *list)
 +{
-+	struct fsnotify_event_private_data *lpriv;
-+	struct fsnotify_event_private_data *priv = NULL;
++	struct inode *inode, *next_i, *need_iput = NULL;
 +
-+	list_for_each_entry(lpriv, &event->private_data_list, event_list) {
-+		if (lpriv->group == group) {
-+			priv = lpriv;
-+			break;
++	list_for_each_entry_safe(inode, next_i, list, i_sb_list) {
++		struct inode *need_iput_tmp;
++
++		/*
++		 * We cannot __iget() an inode in state I_CLEAR, I_FREEING,
++		 * I_WILL_FREE, or I_NEW which is fine because by that point
++		 * the inode cannot have any associated watches.
++		 */
++		if (inode->i_state & (I_CLEAR|I_FREEING|I_WILL_FREE|I_NEW))
++			continue;
++
++		/*
++		 * If i_count is zero, the inode cannot have any watches and
++		 * doing an __iget/iput with MS_ACTIVE clear would actually
++		 * evict all inodes with zero i_count from icache which is
++		 * unnecessarily violent and may in fact be illegal to do.
++		 */
++		if (!atomic_read(&inode->i_count))
++			continue;
++
++		need_iput_tmp = need_iput;
++		need_iput = NULL;
++
++		/* In case fsnotify_inode_delete() drops a reference. */
++		if (inode != need_iput_tmp)
++			__iget(inode);
++		else
++			need_iput_tmp = NULL;
++
++		/* In case the dropping of a reference would nuke next_i. */
++		if ((&next_i->i_sb_list != list) &&
++		    atomic_read(&next_i->i_count) &&
++		    !(next_i->i_state & (I_CLEAR | I_FREEING | I_WILL_FREE))) {
++			__iget(next_i);
++			need_iput = next_i;
 +		}
++
++		/*
++		 * We can safely drop inode_lock here because we hold
++		 * references on both inode and next_i.  Also no new inodes
++		 * will be added since the umount has begun.  Finally,
++		 * iprune_mutex keeps shrink_icache_memory() away.
++		 */
++		spin_unlock(&inode_lock);
++
++		if (need_iput_tmp)
++			iput(need_iput_tmp);
++
++		/* for each watch, send FS_UNMOUNT and then remove it */
++		fsnotify(inode, FS_UNMOUNT, inode, FSNOTIFY_EVENT_INODE, NULL, 0);
++
++		fsnotify_inode_delete(inode);
++
++		iput(inode);
++
++		spin_lock(&inode_lock);
 +	}
-+	return priv;
 +}
-+
-+/*
-+ * Check if 2 events contain the same information.  We do not compare private data
-+ * but at this moment that isn't a problem for any know fsnotify listeners.
-  */
- static bool event_compare(struct fsnotify_event *old, struct fsnotify_event *new)
- {
-@@ -134,13 +155,17 @@ static bool event_compare(struct fsnotify_event *old, struct fsnotify_event *new
-  * event off the queue to deal with.  If the event is successfully added to the
-  * group's notification queue, a reference is taken on event.
-  */
--int fsnotify_add_notify_event(struct fsnotify_group *group, struct fsnotify_event *event)
-+int fsnotify_add_notify_event(struct fsnotify_group *group, struct fsnotify_event *event,
-+			      struct fsnotify_event_private_data *priv)
- {
- 	struct fsnotify_event_holder *holder = NULL;
- 	struct list_head *list = &group->notification_list;
- 	struct fsnotify_event_holder *last_holder;
- 	struct fsnotify_event *last_event;
- 
-+	/* easy to tell if priv was attached to the event */
-+	INIT_LIST_HEAD(&priv->event_list);
-+
- 	/*
- 	 * There is one fsnotify_event_holder embedded inside each fsnotify_event.
- 	 * Check if we expect to be able to use that holder.  If not alloc a new
-@@ -183,7 +208,7 @@ alloc_holder:
- 			mutex_unlock(&group->notification_mutex);
- 			if (holder != &event->holder)
- 				fsnotify_destroy_event_holder(holder);
--			return 0;
-+			return -EEXIST;
- 		}
- 	}
- 
-@@ -192,6 +217,8 @@ alloc_holder:
- 
- 	fsnotify_get_event(event);
- 	list_add_tail(&holder->event_list, list);
-+	if (priv)
-+		list_add_tail(&priv->event_list, &event->private_data_list);
- 	spin_unlock(&event->lock);
- 	mutex_unlock(&group->notification_mutex);
- 
-@@ -256,6 +283,8 @@ void fsnotify_flush_notify(struct fsnotify_group *group)
- 	mutex_lock(&group->notification_mutex);
- 	while (!fsnotify_notify_queue_is_empty(group)) {
- 		event = fsnotify_remove_notify_event(group);
-+		if (group->ops->free_event_priv)
-+			group->ops->free_event_priv(group, event);
- 		fsnotify_put_event(event); /* matches fsnotify_add_notify_event */
- 	}
- 	mutex_unlock(&group->notification_mutex);
-@@ -274,6 +303,8 @@ static void initialize_event(struct fsnotify_event *event)
- 	event->inode = NULL;
- 	event->data_type = FSNOTIFY_EVENT_NONE;
- 
-+	INIT_LIST_HEAD(&event->private_data_list);
-+
- 	event->to_tell = NULL;
- 
- 	event->file_name = NULL;
 diff --git a/include/linux/fsnotify_backend.h b/include/linux/fsnotify_backend.h
-index b78b557..de5c793 100644
+index de5c793..deb6872 100644
 --- a/include/linux/fsnotify_backend.h
 +++ b/include/linux/fsnotify_backend.h
-@@ -81,6 +81,7 @@ struct fsnotify_ops {
- 	int (*handle_event)(struct fsnotify_group *group, struct fsnotify_event *event);
- 	void (*free_group_priv)(struct fsnotify_group *group);
- 	void (*freeing_mark)(struct fsnotify_mark_entry *entry, struct fsnotify_group *group);
-+	void (*free_event_priv)(struct fsnotify_group *group, struct fsnotify_event *event);
- };
+@@ -337,6 +337,7 @@ extern void fsnotify_destroy_mark_by_entry(struct fsnotify_mark_entry *entry);
+ extern void fsnotify_clear_marks_by_group(struct fsnotify_group *group);
+ extern void fsnotify_get_mark(struct fsnotify_mark_entry *entry);
+ extern void fsnotify_put_mark(struct fsnotify_mark_entry *entry);
++extern void fsnotify_unmount_inodes(struct list_head *list);
  
- /*
-@@ -158,6 +159,15 @@ struct fsnotify_event_holder {
- };
+ /* put here because inotify does some weird stuff when destroying watches */
+ extern struct fsnotify_event *fsnotify_create_event(struct inode *to_tell, __u32 mask,
+@@ -366,6 +367,9 @@ static inline u32 fsnotify_get_cookie(void)
+ 	return 0;
+ }
  
- /*
-+ * Inotify needs to tack data onto an event.  This struct lets us later find the
-+ * correct private data of the correct group.
-+ */
-+struct fsnotify_event_private_data {
-+	struct fsnotify_group *group;
-+	struct list_head event_list;
-+};
++static inline void fsnotify_unmount_inodes(struct list_head *list)
++{}
 +
-+/*
-  * all of the information about the original object we want to now send to
-  * a group.  If you want to carry more info from the accessing task to the
-  * listener this structure is where you need to be adding fields.
-@@ -196,6 +206,8 @@ struct fsnotify_event {
- 	u32 sync_cookie;	/* used to corrolate events, namely inotify mv events */
- 	char *file_name;
- 	size_t name_len;
-+
-+	struct list_head private_data_list;	/* groups can store private data here */
- };
+ #endif	/* CONFIG_FSNOTIFY */
  
- /*
-@@ -299,13 +311,16 @@ extern struct fsnotify_event_private_data *fsnotify_get_priv_from_event(struct f
- 									struct fsnotify_event *event);
- 
- /* attach the event to the group notification queue */
--extern int fsnotify_add_notify_event(struct fsnotify_group *group, struct fsnotify_event *event);
-+extern int fsnotify_add_notify_event(struct fsnotify_group *group, struct fsnotify_event *event,
-+				     struct fsnotify_event_private_data *priv);
- /* true if the group notification queue is empty */
- extern bool fsnotify_notify_queue_is_empty(struct fsnotify_group *group);
- /* return, but do not dequeue the first event on the notification queue */
- extern struct fsnotify_event *fsnotify_peek_notify_event(struct fsnotify_group *group);
- /* reutnr AND dequeue the first event on the notification queue */
- extern struct fsnotify_event *fsnotify_remove_notify_event(struct fsnotify_group *group);
-+extern struct fsnotify_event_private_data *fsnotify_get_priv_from_event(struct fsnotify_group *group,
-+									struct fsnotify_event *event);
- 
- /* functions used to manipulate the marks attached to inodes */
- 
+ #endif	/* __KERNEL __ */
 
