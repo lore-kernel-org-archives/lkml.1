@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760366AbZD0WCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760536AbZD0WDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760366AbZD0WCq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 18:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759063AbZD0WCd
+	id S1760536AbZD0WDG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 18:03:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759063AbZD0WCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 18:02:33 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:45189 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759599AbZD0WCc (ORCPT
+	Mon, 27 Apr 2009 18:02:50 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:33515 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760575AbZD0WCt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 18:02:32 -0400
-Date: Tue, 28 Apr 2009 06:57:15 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Tim Abbott <tabbott@MIT.EDU>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>
-Subject: Re: [PATCH 08/14] sh: Use macros for .data.page_aligned section.
-Message-ID: <20090427215715.GC5033@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Tim Abbott <tabbott@MIT.EDU>, Sam Ravnborg <sam@ravnborg.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-	Anders Kaseorg <andersk@mit.edu>, Waseem Daher <wdaher@mit.edu>,
-	Denys Vlasenko <vda.linux@googlemail.com>,
-	Jeff Arnold <jbarnold@mit.edu>
-References: <1240864388-26315-1-git-send-email-tabbott@mit.edu> <1240864388-26315-2-git-send-email-tabbott@mit.edu> <1240864388-26315-3-git-send-email-tabbott@mit.edu> <1240864388-26315-4-git-send-email-tabbott@mit.edu> <1240864388-26315-5-git-send-email-tabbott@mit.edu> <1240864388-26315-6-git-send-email-tabbott@mit.edu> <1240864388-26315-7-git-send-email-tabbott@mit.edu> <1240864388-26315-8-git-send-email-tabbott@mit.edu> <1240864388-26315-9-git-send-email-tabbott@mit.edu>
+	Mon, 27 Apr 2009 18:02:49 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240864388-26315-9-git-send-email-tabbott@mit.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.44L0.0904271752090.18696-100000@netrider.rowland.org>
+References: <ac3eb2510904271407l7a480744s36d60025948aebd8@mail.gmail.com> 
+	<Pine.LNX.4.44L0.0904271752090.18696-100000@netrider.rowland.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Tue, 28 Apr 2009 00:02:32 +0200
+Message-ID: <ac3eb2510904271502k1c25ed6co31bcb3c22a28fa7c@mail.gmail.com>
+Subject: Re: usbutils 0.81 release
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, USB list <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 04:33:02PM -0400, Tim Abbott wrote:
-> Signed-off-by: Tim Abbott <tabbott@mit.edu>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> ---
->  arch/sh/kernel/vmlinux_32.lds.S |    3 +--
->  arch/sh/kernel/vmlinux_64.lds.S |    3 +--
->  2 files changed, 2 insertions(+), 4 deletions(-)
-> 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+On Mon, Apr 27, 2009 at 23:54, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Mon, 27 Apr 2009, Kay Sievers wrote:
+
+>> There is in most cases no point in keeping outdated spec files or
+>> debian directories in upstream source packages. The best when updating
+>> a package, is to start with the one that is in the source rpm of the
+>> distro one uses.
+>
+> But what if the distro doesn't ship that package at all?  Then it's
+> good to at least have a starting point that you can adapt to your own
+> needs.  (Although I don't know of any major distributions that doesn't
+> include usbutils...)
+
+Maybe add a link to a distro spec file in the README? So this gets
+updated automatically by the people who do the packaging? Like this:
+  http://cvs.fedora.redhat.com/viewvc/devel/usbutils/usbutils.spec?revision=HEAD
+
+Kay
