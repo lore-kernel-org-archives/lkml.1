@@ -1,73 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757649AbZD0RXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbZD0R0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757649AbZD0RXm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 13:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZD0RXd
+	id S1756937AbZD0R0O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 13:26:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbZD0RZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 13:23:33 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:53570 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751902AbZD0RXd (ORCPT
+	Mon, 27 Apr 2009 13:25:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48178 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751739AbZD0RZ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 13:23:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=cCtSNP3nk4F8ovd0R56GnmR7SJNXGx5jb/4UKt6lumIj4gdy9a7CAaBEP5dxvzn1Rn
-         uQpu+1Yr9v784mEHlNToQHKze0PITnzrKI6QP1rLpJcCNz4s1HrO+wxSGFeIS4Eukzhi
-         DRFD/9sIz5OKOVGScQvrWT2z9B4eqs/LuiIgk=
+	Mon, 27 Apr 2009 13:25:57 -0400
+Date: Mon, 27 Apr 2009 10:06:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Tim Abbott <tabbott@MIT.EDU>
+cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, "Theodore Ts'o" <tytso@MIT.EDU>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       David Howells <dhowells@redhat.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Tony Luck <tony.luck@intel.com>
+Subject: Re: [PATCH 05/15] arm: convert to use __HEAD and HEAD_TEXT macros.
+In-Reply-To: <alpine.DEB.1.10.0904271121280.1665@vinegar-pot.mit.edu>
+Message-ID: <alpine.LFD.2.00.0904270958010.22156@localhost.localdomain>
+References: <alpine.DEB.1.10.0904251304120.7631@vinegar-pot.mit.edu> <1240711870-30505-1-git-send-email-tabbott@mit.edu> <1240711870-30505-2-git-send-email-tabbott@mit.edu> <1240711870-30505-3-git-send-email-tabbott@mit.edu> <1240711870-30505-4-git-send-email-tabbott@mit.edu>
+ <1240711870-30505-5-git-send-email-tabbott@mit.edu> <20090426111924.GD28642@uranus.ravnborg.org> <alpine.DEB.1.10.0904271121280.1665@vinegar-pot.mit.edu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20090427172710.5a0c7f48@hyperion.delvare>
-References: <20090329174836.6de797d6@hyperion.delvare>
-	 <ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com>
-	 <20090330104952.26f03c13@hyperion.delvare>
-	 <ac3eb2510903300424s2604d027h653a3f77163e0242@mail.gmail.com>
-	 <20090426085401.3788fc9c@hyperion.delvare>
-	 <20090427132041.GA18391@sc1430.michaels-house.net>
-	 <20090427172710.5a0c7f48@hyperion.delvare>
-Date: Mon, 27 Apr 2009 12:23:30 -0500
-X-Google-Sender-Auth: ac18f4be4a5a5efd
-Message-ID: <437908170904271023k3eefd4c1ma0cacdb78ad7acd7@mail.gmail.com>
-Subject: Re: Class device namespaces
-From: Michael Brown <mebrown@michaels-house.net>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Matt Domsch <Matt_Domsch@dell.com>,
-       Douglas Warzecha <Douglas_Warzecha@dell.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 10:27 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> The question was: any change to _which_ paths exactly? Sysfs often
-> offers several ways to reach the same object, and it matters to know
-> which need to be preserved and which can change.
->
-> const char *rbu_v2_fw_data_file = "/sys/class/firmware/dell_rbu/data";
-> const char *rbu_v2_fw_load_file = "/sys/class/firmware/dell_rbu/loading";
-> const char *rbu_v2_img_type_file = "/sys/devices/platform/dell_rbu/image_type";
-> const char *rbu_v2_pkt_size_file = "/sys/devices/platform/dell_rbu/packet_size";
->
-> I guess that noawadays v2 applies, so the only path which needs to be
-> preserved is "/sys/class/firmware/dell_rbu". Is that correct? Is it the
-> same for srvadmin-hap?
 
-You are correct WRT libsmbios. For hapi, I've cc'd Doug who can tell
-you about their code. I've done a quick grep of their code, and the
-paths above look like the same ones he is using, but I could be wrong.
 
-hapi/apilibrary/dchbas/linux/umhbaslx.c:#define
-HBAS_RBU_SYSFS_NEW_DATAREAD_PFNAME		"/sys/devices/platform/dell_rbu/data"
-hapi/apilibrary/dchbas/linux/umhbaslx.c:#define
-HBAS_RBU_SYSFS_NEW_IMAGETYPE_PFNAME		"/sys/devices/platform/dell_rbu/image_type"
-hapi/apilibrary/dchbas/linux/umhbaslx.c:#define
-HBAS_RBU_SYSFS_NEW_PKTSIZE_PFNAME		"/sys/devices/platform/dell_rbu/packet_size"
+On Mon, 27 Apr 2009, Tim Abbott wrote:
+> 
+> Does .head.text actually need its own output section here?
 
---
-Michael
+Probably not. Does the ARM build system massage the end result some way 
+looking for that .text.head section in the end? As you note, nobody else 
+cares, and the proper patch may be more along the lines of something 
+below.
+
+Of course, most other architectures put the "init" section at the end, and 
+leave the HEAD_TEXT in the regular text section, but I suspect the ARM way 
+of laying things out (init text first) is probably better, since it allows 
+you to free that head code too.
+
+Not that it likely much matters. 
+
+		Linus
+
+---
+ arch/arm/kernel/vmlinux.lds.S |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm/kernel/vmlinux.lds.S b/arch/arm/kernel/vmlinux.lds.S
+index c90f272..15520be 100644
+--- a/arch/arm/kernel/vmlinux.lds.S
++++ b/arch/arm/kernel/vmlinux.lds.S
+@@ -23,13 +23,11 @@ SECTIONS
+ #else
+ 	. = PAGE_OFFSET + TEXT_OFFSET;
+ #endif
+-	.text.head : {
+-		_stext = .;
+-		_sinittext = .;
+-		*(.text.head)
+-	}
+ 
+ 	.init : {			/* Init code and data		*/
++		_stext = .;
++		_sinittext = .;
++			HEAD_TEXT
+ 			INIT_TEXT
+ 		_einittext = .;
+ 		__proc_info_begin = .;
