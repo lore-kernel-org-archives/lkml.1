@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758001AbZD0J7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758095AbZD0J7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758001AbZD0J7N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 05:59:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757077AbZD0Jxl
+	id S1758095AbZD0J7d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 05:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbZD0J4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 05:53:41 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:35706 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757065AbZD0Jxk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 05:53:40 -0400
-Date: Mon, 27 Apr 2009 11:53:39 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Christoph Hellwig <hch@lst.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: get_fs_excl/put_fs_excl/has_fs_excl
-Message-ID: <20090427095339.GW4593@kernel.dk>
-References: <20090423191817.GA22521@lst.de> <20090423192123.GL4593@kernel.dk> <20090424184047.GA17001@lst.de> <20090425151656.GH13608@mit.edu>
+	Mon, 27 Apr 2009 05:56:20 -0400
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:21678 "HELO
+	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757513AbZD0J4S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 05:56:18 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=iQgP8qxtXA4Sdb2oX60QteDmighBdYgOQvWw0uI12v9MloW1WFqZ6NkGD7ynjmej11qi9ezFJIvAyEXfJqb37x7nhcsK9HMlAKNxqnEP9SB6nBpH8/7KADV6jx2AIxFI6kRRdlYA606YTLrLDiqv8CPRf2YgD2uh2TkR7PBSk9k=  ;
+X-YMail-OSG: hrcFoPMVM1ntGa84uXmOIDC8oo5E34kDgoyV5KIzssFifjmq0LF0Q3PzkTKGAJHGABKKVlkC8W7EU.UUrpzyJ82VzqadYvbg53uckBvcTp7OtAGTYGMhEWtFQG0fm00TXvfc.IMmzd4HoqNP0qVQswbjNoJB7NXfnJuvj.aGFP3_2SRGAaqY_JwIsjarhxm8D2VRbtYJ4jESNjERmmfW0bEmSL24MWuyQv0B6GHtz2XDM3AATwHa_F0B4WEuHhdpmXdCuMzPTSCMneXRQqt3HGoLTbXLI143PO2SwDDy9YkTc9bgUs0A
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Grazvydas Ignotas <notasas@gmail.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Card detect IRQ errors
+Date: Mon, 27 Apr 2009 02:56:15 -0700
+User-Agent: KMail/1.9.10
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+References: <6ed0b2680904270213s6ef02ad6i26173245019bca15@mail.gmail.com>
+In-Reply-To: <6ed0b2680904270213s6ef02ad6i26173245019bca15@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <20090425151656.GH13608@mit.edu>
+Message-Id: <200904270256.15871.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 25 2009, Theodore Tso wrote:
-> On Fri, Apr 24, 2009 at 08:40:47PM +0200, Christoph Hellwig wrote:
-> > On Thu, Apr 23, 2009 at 09:21:24PM +0200, Jens Axboe wrote:
-> > > The intent was to add some sort of notification mechanism from the file
-> > > system to inform the IO scheduler (and others?) that this process is how
-> > > holding a file system wide resource. So if you have a low priority
-> > > process getting access to such a resource, you want to boost its
-> > > priority to avoid higher priority apps getting stuck beind it. Sort of a
-> > > poor mans priority inheritance.
-> > > 
-> > > It would be wonderful if you could kick this process more into gear on
-> > > the fs side...
+On Monday 27 April 2009, Grazvydas Ignotas wrote:
 > 
-> I have to agree with Christoph; it would be nice if this were actually
-> documented somewhere.  Filesystem authors can't do something if they
-> don't understand what the semantics are and how it is supposed to be
-> used!
+> With current l-o head when I insert or remove SD card I'm getting this:
+> 
+> [   20.733489] ------------[ cut here ]------------
+> [   20.738159] WARNING: at kernel/irq/handle.c:366 handle_IRQ_event+0x4c/0x14c()
+> [   20.745330] BUG: IRQ handler called from non-hardirq
+> context!Modules linked in:
+> ...
+> [   20.822753] ---[ end trace 2ca2d8ba630dd6b5 ]---
+> [   20.869415] mmc0: card 8001 removed
+> 
+> Has anyone else seen this?
 
-I don't disagree, the project (unfortunately) never really went
-anywhere. THe half-assed implementation was meant to be picked up by fs
-people. I guess that's what is happening now, so it's a belated success
-:-)
+Regresssion caused by 044d408409cc4e1bc75c886e27ca85c270db104c.
 
-> I'm kind of curious why you implemented things in this way, though.
-> Is there a reason why the bosting is happening deep in the guts of the
-> cfq code, instead of in blk-core.c when the submission of the block
-> I/O request is processed?
+Notice the message is internally broken, too -- no newline.
 
-You would need to implement a lot more logic in the block layer to
-handle it there, as it stands it's basically a scheduler decision. So
-the positioning is right imho, the placement of fs hooks is probably
-mostly crap and could do with some work.
-
--- 
-Jens Axboe
+Try reverting that, things will still behave just fine.
 
