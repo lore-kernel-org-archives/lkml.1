@@ -1,98 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbZD0Ksh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbZD0Kup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754997AbZD0Ksh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 06:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZD0Ks0
+	id S1754899AbZD0Kup (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 06:50:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbZD0Kuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 06:48:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43552 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751775AbZD0KsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 06:48:25 -0400
-Message-ID: <49F58D75.7040304@redhat.com>
-Date: Mon, 27 Apr 2009 13:48:21 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 27 Apr 2009 06:50:35 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:64734 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753065AbZD0Kuf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 06:50:35 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
+Subject: Re: [PATCH 01/30] microblaze_mmu_v1: Makefiles
+Date: Mon, 27 Apr 2009 12:50:26 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, john.williams@petalogix.com
+References: <1240821139-7247-1-git-send-email-monstr@monstr.eu> <1240821139-7247-2-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1240821139-7247-2-git-send-email-monstr@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, davidel@xmailserver.org
-Subject: Re: [KVM PATCH v2 2/2] kvm: add support for irqfd via	eventfd-notification
- interface
-References: <20090424042142.1796.60756.stgit@dev.haskins.net> <20090424042518.1796.65593.stgit@dev.haskins.net> <49F572EF.4010909@redhat.com> <49F58A8C.7090808@novell.com>
-In-Reply-To: <49F58A8C.7090808@novell.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904271250.26725.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19ZR13RkiQ5cpTC8P2ii7s8rARxZMnu7Y3IVpH
+ lpncGEM2Fu3XFy+ZIWYU8jLc3sv+FE/FDjlevOxlTuFR4YKELa
+ KCYHX2L5sIczK1kycbftQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
->>> This allows an eventfd to be registered as an irq source with a
->>> guest.  Any
->>> signaling operation on the eventfd (via userspace or kernel) will inject
->>> the registered GSI at the next available window.
->>>
->>>  
->>> +struct kvm_irqfd {
->>> +    __u32 fd;
->>> +    __u32 gsi;
->>> +};
->>> +
->>>   
->>>       
->> I think it's better to have ioctl create and return the fd.  This way
->> we aren't tied to eventfd (though it makes a lot of sense to use it).
->>     
->
-> I dont mind either way, but I am not sure it buys us much as the one
-> driving the fd would need to understand if the interface is
-> eventfd-esque or something else anyway.  Let me know if you still want
-> to see this changed.
->   
+On Monday 27 April 2009, monstr@monstr.eu wrote:
+> From: Michal Simek <monstr@monstr.eu>
+> 
+> Signed-off-by: Michal Simek <monstr@monstr.eu>
+> ---
+>  arch/microblaze/Makefile        |    4 ++++
+>  arch/microblaze/boot/Makefile   |    2 ++
+>  arch/microblaze/kernel/Makefile |    1 +
+>  arch/microblaze/lib/Makefile    |    3 ++-
+>  arch/microblaze/mm/Makefile     |    2 ++
+>  5 files changed, 11 insertions(+), 1 deletions(-)
 
-Sure, the interface remains the same (write 8 bytes), but the 
-implementation can change.  For example, we can implement it to work 
-from interrupt context, once we hack the locking appropriately.
+It would be nice to keep the Makefile and Kconfig changes together with
+the files they are referring to, otherwise you risk getting an
+unbuildable source tree in the middle of a git-bisect.
 
-
->>> +static void
->>> +irqfd_inject(struct work_struct *work)
->>> +{
->>> +    struct _irqfd *irqfd = container_of(work, struct _irqfd, work);
->>> +    struct kvm *kvm = irqfd->kvm;
->>> +
->>> +    mutex_lock(&kvm->lock);
->>> +    kvm_set_irq(kvm, kvm->irqfd.src, irqfd->gsi, 1);
->>>   
->>>       
->> Need to lower the irq too (though irqfd only supports edge triggered
->> interrupts).
->>
->>     
-> Should I just do back-to-back 1+0 inside the same lock?
->
->   
-
-Yes.  Might be nice to add a kvm_toggle_irq(), but let's leave that 
-until later.
-
-  
-
->> One day we'll have lockless injection and we'll want to drop this.  I
->> guess if we create the fd ourselves we can make it work, but I don't
->> see how we can do this with eventfd.
->>
->>     
->
-> Hmm...this is a good point.  There probably is no way to use eventfd
-> "off the shelf" in a way that doesn't cause this callback to be in a
-> critical section.  Should we just worry about switching away from
-> eventfd when this occurs, or should I implement a custom anon-fd now?
->   
-
-I'd just go with eventfd, and switch when it becomes relevant.  As long 
-as the kernel allocates the fd, we're free to do as we like.
-
--- 
-error compiling committee.c: too many arguments to function
-
+	Arnd <><
