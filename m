@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755058AbZD0LUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbZD0LYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755058AbZD0LUo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 07:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbZD0LUf
+	id S1754636AbZD0LYT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 07:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbZD0LYD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 07:20:35 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:44707 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753402AbZD0LUf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 07:20:35 -0400
-Subject: Re: [PATCH 12/14] kmemleak: Enable the building of the memory leak
-	detector
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: David Rientjes <rientjes@google.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.2.00.0904241600400.8194@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0904241600400.8194@chino.kir.corp.google.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Mon, 27 Apr 2009 12:19:43 +0100
-Message-Id: <1240831184.7027.74.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 27 Apr 2009 07:24:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37144 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753147AbZD0LYC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 07:24:02 -0400
+Message-ID: <49F595C9.3080907@redhat.com>
+Date: Mon, 27 Apr 2009 14:23:53 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Gregory Haskins <ghaskins@novell.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, davidel@xmailserver.org
+Subject: Re: [KVM PATCH v2 2/2] kvm: add support for irqfd via	eventfd-notification
+ interface
+References: <20090424042142.1796.60756.stgit@dev.haskins.net> <20090424042518.1796.65593.stgit@dev.haskins.net> <49F572EF.4010909@redhat.com> <49F58A8C.7090808@novell.com> <49F58FD6.907@novell.com>
+In-Reply-To: <49F58FD6.907@novell.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Apr 2009 11:20:30.0484 (UTC) FILETIME=[2C6FAD40:01C9C72A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-04-25 at 00:02 +0100, David Rientjes wrote:
-> On Fri, 24 Apr 2009, Catalin Marinas wrote:
-> 
-> > This patch adds the Kconfig.debug and Makefile entries needed for
-> > building kmemleak into the kernel.
-> >
-> > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> > ---
-> >  lib/Kconfig.debug |   22 ++++++++++++++++++++++
-> >  mm/Makefile       |    1 +
-> >  2 files changed, 23 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> > index c6e854f..6c9d21f 100644
-> > --- a/lib/Kconfig.debug
-> > +++ b/lib/Kconfig.debug
-> > @@ -336,6 +336,28 @@ config SLUB_STATS
-> >         out which slabs are relevant to a particular load.
-> >         Try running: slabinfo -DA
-> > 
-> > +config DEBUG_KMEMLEAK
-> > +     bool "Kernel memory leak detector"
-> > +     default n
-> > +     depends on EXPERIMENTAL && (X86 || ARM) && !MEMORY_HOTPLUG
-> 
-> This should include DEBUG_KERNEL.
+Gregory Haskins wrote:
+> Something else to consider:  eventfd supports calling eventfd_signal()
+> from interrupt context, so
+> even if the callback were not invoked from a preempt/irq off CS due to
+> the wqh->lock, the context may still be a CS anyway.  Now, userspace and
+> vbus based injection do not need to worry about this, but I wonder if
+> this is a  desirable attribute for some other source (device-assignment
+> perhaps)?
+>   
 
-Yes, it makes sense. I'll update the patch.
+I'm no networking expert, but device assignment certainly wants to queue 
+an interrupt from an interrupt (basically it forwards the interrupt from 
+host to guest).  Block is also simple enough to trigger the interrupt 
+from the completion context.
 
-Thanks.
+For networking, we'd eventually want to do the host->guest copy using a 
+dma engine, and we'd want to inject the interrupt from the dma engine's 
+completion handler.
+
+
+> If so, is there a way to design the lockless-injection code such that
+> its still friendly to irq-context, or is this a mode that we would never
+> want to support anyway?  I think this would be a good thing to have at
+> least to maintain compatibility with the existing eventfd interface,
+> which has its own advantages.
+>   
+
+This has RCU painted all over it in a 1200-point font.
 
 -- 
-Catalin
+error compiling committee.c: too many arguments to function
 
