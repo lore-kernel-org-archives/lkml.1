@@ -1,143 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932298AbZD0Sfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757026AbZD0SiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932298AbZD0Sfl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 14:35:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759332AbZD0Sfa
+	id S1757026AbZD0SiX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 14:38:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbZD0SiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 14:35:30 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:46697 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757810AbZD0Sf3 (ORCPT
+	Mon, 27 Apr 2009 14:38:14 -0400
+Received: from mga09.intel.com ([134.134.136.24]:19142 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752675AbZD0SiN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 14:35:29 -0400
-Date: Mon, 27 Apr 2009 20:37:38 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tim Abbott <tabbott@MIT.EDU>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 2/8] frv: Use __INIT macro instead of .text.init.
-Message-ID: <20090427183737.GB12056@uranus.ravnborg.org>
-References: <1240855347-19316-1-git-send-email-tabbott@mit.edu> <1240855347-19316-2-git-send-email-tabbott@mit.edu> <1240855347-19316-3-git-send-email-tabbott@mit.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240855347-19316-3-git-send-email-tabbott@mit.edu>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 27 Apr 2009 14:38:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,255,1239001200"; 
+   d="scan'208";a="407326368"
+From: "Styner, Douglas W" <douglas.w.styner@intel.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "oprofile-list@lists.sf.net" <oprofile-list@lists.sf.net>
+CC: "Ma, Chinang" <chinang.ma@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       "willy@linux.intel.com" <willy@linux.intel.com>
+Date: Mon, 27 Apr 2009 11:38:08 -0700
+Subject: Discrepancies between Oprofile and vmstat
+Thread-Topic: Discrepancies between Oprofile and vmstat
+Thread-Index: AcnHBiuLvZL+M3DATBC2Ehj1YYPa3QAWOqaw
+Message-ID: <D7C42C27E6CB1E4D8CBDF2F81EA92A26034598724F@azsmsx501.amr.corp.intel.com>
+References: <D7C42C27E6CB1E4D8CBDF2F81EA92A260345836A3A@azsmsx501.amr.corp.intel.com>
+ <87ljpmk29b.fsf@basil.nowhere.org>
+In-Reply-To: <87ljpmk29b.fsf@basil.nowhere.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 02:02:21PM -0400, Tim Abbott wrote:
-> frv is placing some code in the .text.init section but does not
-> reference that section in its linker scripts.
-> 
-> This change moves this code from the .text.init section to the
-> .init.text section, which is presumably where it belongs.
+We are using an OLTP-type workload on a fully saturated system and have begun seeing a discrepancy between the output of oprofile and vmstat on upstream kernels that was first seen with the 2.6.27 kernel.
 
-I checked a few of the assembler entries - they where all
-called from __HEAD section.
-So this change looks good.
+Workload:
+OLTP database workload using QLogic FC cards with MSI-X enabled doing ~50,000 IOPS
 
-> 
-> Signed-off-by: Tim Abbott <tabbott@mit.edu>
-> Cc: David Howells <dhowells@redhat.com>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Oprofile (v0.9.3) collection methodology:
+opcontrol --init
+opcontrol --vmlinux=/usr/src/linux-`uname -r`/vmlinux
+opcontrol -e=CPU_CLK_UNHALTED:80000 -e=LLC_MISSES:6000
+opcontrol --start-daemon
+sleep 5
+opcontrol --start
+sleep 60
+opcontrol --stop
+opcontrol --save=$1
+opcontrol --deinit
 
-> ---
->  arch/frv/kernel/head-mmu-fr451.S |    3 ++-
->  arch/frv/kernel/head-uc-fr401.S  |    3 ++-
->  arch/frv/kernel/head-uc-fr451.S  |    3 ++-
->  arch/frv/kernel/head-uc-fr555.S  |    3 ++-
->  4 files changed, 8 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/frv/kernel/head-mmu-fr451.S b/arch/frv/kernel/head-mmu-fr451.S
-> index c8f210d..98f87d5 100644
-> --- a/arch/frv/kernel/head-mmu-fr451.S
-> +++ b/arch/frv/kernel/head-mmu-fr451.S
-> @@ -9,6 +9,7 @@
->   * 2 of the License, or (at your option) any later version.
->   */
->  
-> +#include <linux/init.h>
->  #include <linux/threads.h>
->  #include <linux/linkage.h>
->  #include <asm/ptrace.h>
-> @@ -31,7 +32,7 @@
->  #define __400_LCR	0xfe000100
->  #define __400_LSBR	0xfe000c00
->  
-> -	.section	.text.init,"ax"
-> +	__INIT
->  	.balign		4
->  
->  ###############################################################################
-> diff --git a/arch/frv/kernel/head-uc-fr401.S b/arch/frv/kernel/head-uc-fr401.S
-> index ee282be..438643c 100644
-> --- a/arch/frv/kernel/head-uc-fr401.S
-> +++ b/arch/frv/kernel/head-uc-fr401.S
-> @@ -9,6 +9,7 @@
->   * 2 of the License, or (at your option) any later version.
->   */
->  
-> +#include <linux/init.h>
->  #include <linux/threads.h>
->  #include <linux/linkage.h>
->  #include <asm/ptrace.h>
-> @@ -30,7 +31,7 @@
->  #define __400_LCR	0xfe000100
->  #define __400_LSBR	0xfe000c00
->  
-> -	.section	.text.init,"ax"
-> +	__INIT
->  	.balign		4
->  
->  ###############################################################################
-> diff --git a/arch/frv/kernel/head-uc-fr451.S b/arch/frv/kernel/head-uc-fr451.S
-> index b10d9c8..b2a76c4 100644
-> --- a/arch/frv/kernel/head-uc-fr451.S
-> +++ b/arch/frv/kernel/head-uc-fr451.S
-> @@ -9,6 +9,7 @@
->   * 2 of the License, or (at your option) any later version.
->   */
->  
-> +#include <linux/init.h>
->  #include <linux/threads.h>
->  #include <linux/linkage.h>
->  #include <asm/ptrace.h>
-> @@ -30,7 +31,7 @@
->  #define __400_LCR	0xfe000100
->  #define __400_LSBR	0xfe000c00
->  
-> -	.section	.text.init,"ax"
-> +	__INIT
->  	.balign		4
->  
->  ###############################################################################
-> diff --git a/arch/frv/kernel/head-uc-fr555.S b/arch/frv/kernel/head-uc-fr555.S
-> index 39937c1..5497aaf 100644
-> --- a/arch/frv/kernel/head-uc-fr555.S
-> +++ b/arch/frv/kernel/head-uc-fr555.S
-> @@ -9,6 +9,7 @@
->   * 2 of the License, or (at your option) any later version.
->   */
->  
-> +#include <linux/init.h>
->  #include <linux/threads.h>
->  #include <linux/linkage.h>
->  #include <asm/ptrace.h>
-> @@ -29,7 +30,7 @@
->  #define __551_LCR	0xfeff1100
->  #define __551_LSBR	0xfeff1c00
->  
-> -	.section	.text.init,"ax"
-> +	__INIT
->  	.balign		4
->  
->  ###############################################################################
-> -- 
-> 1.6.2.1
-> 
+Function classification:
+Modules vmlinux and *.ko = kernel, all others = user.
+
+Results (2.6.30-rc3 kernel):
+vmstat reports ~75% user, 25% kernel
+oprofile reports 70.3808% user, 29.6142% kernel 
+
+Using another profiling tool to confirm, we see 74.784% user, 25.174% kernel.
+
+Doug Styner
+douglas.w.styner@intel.com
