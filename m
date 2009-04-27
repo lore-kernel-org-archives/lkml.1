@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932295AbZD0SqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932349AbZD0Sq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932295AbZD0SqL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 14:46:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759005AbZD0Spm
+	id S932349AbZD0Sq3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 14:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759085AbZD0SqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 14:45:42 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:34122 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758707AbZD0Spl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 14:45:41 -0400
-Date: Mon, 27 Apr 2009 20:47:50 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tim Abbott <tabbott@MIT.EDU>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 6/8] sh: Use __INIT macro instead of .text.init.
-Message-ID: <20090427184750.GF12056@uranus.ravnborg.org>
-References: <1240855347-19316-1-git-send-email-tabbott@mit.edu> <1240855347-19316-2-git-send-email-tabbott@mit.edu> <1240855347-19316-3-git-send-email-tabbott@mit.edu> <1240855347-19316-4-git-send-email-tabbott@mit.edu> <1240855347-19316-5-git-send-email-tabbott@mit.edu> <1240855347-19316-6-git-send-email-tabbott@mit.edu> <1240855347-19316-7-git-send-email-tabbott@mit.edu>
+	Mon, 27 Apr 2009 14:46:01 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:57140 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932303AbZD0Sp7 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 14:45:59 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mm-commits@vger.kernel.org
+Subject: Re: mmotm 2009-04-24-18-14 uploaded - NVidia indigestion
+In-Reply-To: Your message of "Sat, 25 Apr 2009 07:24:34 +0200."
+             <20090425052434.GE10088@wotan.suse.de>
+From: Valdis.Kletnieks@vt.edu
+References: <200904250133.n3P1XBJn006790@imap1.linux-foundation.org> <5622.1240628800@turing-police.cc.vt.edu>
+            <20090425052434.GE10088@wotan.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240855347-19316-7-git-send-email-tabbott@mit.edu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: multipart/signed; boundary="==_Exmh_1240857915_4302P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 27 Apr 2009 14:45:15 -0400
+Message-ID: <57773.1240857915@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 02:02:25PM -0400, Tim Abbott wrote:
-> The sh architecture has some code in the .text.init section, but it
-> does not reference that section in its linker scripts.
-> 
-> This change moves this code from the .text.init section to the
-> .init.text section, which is presumably where it belongs.
-> 
-> Signed-off-by: Tim Abbott <tabbott@mit.edu>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+--==_Exmh_1240857915_4302P
+Content-Type: text/plain; charset=us-ascii
 
-> ---
->  arch/sh/kernel/cpu/sh5/entry.S |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/sh/kernel/cpu/sh5/entry.S b/arch/sh/kernel/cpu/sh5/entry.S
-> index e640c63..7e49cb8 100644
-> --- a/arch/sh/kernel/cpu/sh5/entry.S
-> +++ b/arch/sh/kernel/cpu/sh5/entry.S
-> @@ -10,6 +10,7 @@
->   * for more details.
->   */
->  #include <linux/errno.h>
-> +#include <linux/init.h>
->  #include <linux/sys.h>
->  #include <cpu/registers.h>
->  #include <asm/processor.h>
-> @@ -2058,10 +2059,10 @@ asm_uaccess_end:
->  
->  
->  /*
-> - * --- .text.init Section
-> + * --- .init.text Section
->   */
->  
-> -	.section	.text.init, "ax"
-> +	__INIT
->  
->  /*
->   * void trap_init (void)
-> -- 
-> 1.6.2.1
-> 
+On Sat, 25 Apr 2009 07:24:34 +0200, Nick Piggin said:
+
+> >             #include <linux/version.h>
+> >             #include <linux/utsname.h>
+> >             int main() {
+> >               if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)) {
+> >                 return 0;
+> >               } else {
+> >                 return 1;
+> >               }
+
+> Yeah BUILD_BUG_ON does work like that. I can't for the life of me
+> understand why it triggered though. Is anything in your external
+> code calling kmalloc_slab directly?
+
+See above - I didn't think LINUX_VERSION_CODE cared about kmalloc, but
+I could be wrong on this. ;)
+
+> What's the preprocessor output look like?
+
+The problem appears to be that if you only include version.h and utsname.h,
+and *don't* actually reference kmalloc_slab, it doesn't know that the size_t
+is actually a constant, so it whinges.  Most modules end up doing at least
+one kmalloc(), so kmalloc() and kmalloc_slab() get inlined, the constant 'size'
+gets propogated, and life is good.  If you *don't* call kmalloc(), bad things
+happen. ;)
+
+--==_Exmh_1240857915_4302P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJ9f07cC3lWbTT17ARAn4MAJ9X1ad3Gb7eCY28IVfS+z9LZ2ufAwCcCroy
+zDG/uBlIqbCt0rIZF4h+MoE=
+=KgBL
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1240857915_4302P--
