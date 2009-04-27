@@ -1,104 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758942AbZD0PLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759016AbZD0PMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758942AbZD0PLz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 11:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757401AbZD0PHv
+	id S1759016AbZD0PMn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 11:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757362AbZD0PH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 11:07:51 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:63956 "EHLO
+	Mon, 27 Apr 2009 11:07:56 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:55390 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756108AbZD0PHg (ORCPT
+	with ESMTP id S1757101AbZD0PHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 11:07:36 -0400
-Message-Id: <20090427150318.706763353@arndb.de>
+	Mon, 27 Apr 2009 11:07:40 -0400
+Message-Id: <20090427150318.042880292@arndb.de>
 References: <20090427142010.587518220@arndb.de>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Apr 2009 17:01:23 +0200
+Date: Mon, 27 Apr 2009 17:01:19 +0200
 From: arnd@arndb.de
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, monstr@monstr.eu, linux-api@vger.kernel.org,
        linux-arch@vger.kernel.org, liqin.chen@sunplusct.com,
        Sam Ravnborg <sam@ravnborg.org>,
        Remis Lima Baima <remis.developer@googlemail.com>
-Subject: [RFC 09/17] asm-generic: provide a common types.h
-Content-Disposition: inline; filename=0005-asm-generic-provide-a-common-types.h.patch
-X-Provags-ID: V01U2FsdGVkX1979NXj4i4rOq5eDyF0lg7rtKL9l4N0CTxdeMh
- xh9W/vhwGF1EhPTEri1dOSjime0AxJ8mlNy6+CrVs0d8stKka8
- eLrulhQ6tccNbl68b40FA==
+Subject: [RFC 05/17] asm-generic: add complete termios.h
+Content-Disposition: inline; filename=add-generic-termios-h.patch
+X-Provags-ID: V01U2FsdGVkX1+szXHtrzWLPPkIiadXdga4rqUhjg8xbrs0I+w
+ v5J27E4/XR6BU+CGkqZpMUJzPc/jvgCx+DAbmFIiLD8OEdacTV
+ jlFQrPQmVZgfFAVxRJmZg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Practically all 32 bit architectures can use the same definitions in
-asm/types.h, so make that the default.
+On most architectures, asm/termios.h is a straight copy from the x86
+version. This adds a cleaned up copy of that version so that
+everybody can migrate to the common copy.
+
+The existing asm-generic/termios.h was an incomplete file and
+missing some bug fixes that went into a few of the architectures.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Remis Lima Baima <remis.developer@googlemail.com>
 ---
- include/asm-generic/Kbuild  |    1 	1 +	0 -	0 !
- include/asm-generic/types.h |   42 	42 +	0 -	0 !
- 2 files changed, 43 insertions(+)
- create mode 100644 include/asm-generic/types.h
+ include/asm-generic/Kbuild    |    1 	1 +	0 -	0 !
+ include/asm-generic/termios.h |  154 	154 +	0 -	0 !
+ 2 files changed, 155 insertions(+)
+ create mode 100644 include/asm-generic/termios-base.h
 
 Index: linux-2.6/include/asm-generic/Kbuild
 ===================================================================
 --- linux-2.6.orig/include/asm-generic/Kbuild
 +++ linux-2.6/include/asm-generic/Kbuild
-@@ -14,6 +14,7 @@ header-y += signal-defs.h
- header-y += signal.h
+@@ -6,6 +6,7 @@ header-y += mman-common.h
+ header-y += poll.h
+ header-y += signal-defs.h
  header-y += statfs.h
- header-y += termios.h
-+header-y += types.h
++header-y += termios.h
  
  unifdef-y += int-l64.h
  unifdef-y += int-ll64.h
-Index: linux-2.6/include/asm-generic/types.h
+Index: linux-2.6/include/asm-generic/termios.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/include/asm-generic/types.h
-@@ -0,0 +1,42 @@
-+#ifndef _ASM_GENERIC_TYPES_H
-+#define _ASM_GENERIC_TYPES_H
++++ linux-2.6/include/asm-generic/termios.h
+@@ -0,0 +1,154 @@
++#ifndef _ASM_GENERIC_TERMIOS_H
++#define _ASM_GENERIC_TERMIOS_H
 +/*
-+ * int-ll64 is used practically everywhere now,
-+ * so use it as a reasonable default.
++ * Most architectures have straight copies of the x86 code, with
++ * varying levels of bug fixes on top. Usually it's a good idea
++ * to use this generic version instead, but be careful to avoid
++ * ABI changes.
++ * New architectures should not provide their own version.
 + */
-+#include <asm-generic/int-ll64.h>
 +
-+#ifndef __ASSEMBLY__
++#include <asm/termbits.h>
++#include <asm/ioctls.h>
 +
-+typedef unsigned short umode_t;
++struct winsize {
++	unsigned short ws_row;
++	unsigned short ws_col;
++	unsigned short ws_xpixel;
++	unsigned short ws_ypixel;
++};
 +
-+#endif /* __ASSEMBLY__ */
++#define NCC 8
++struct termio {
++	unsigned short c_iflag;		/* input mode flags */
++	unsigned short c_oflag;		/* output mode flags */
++	unsigned short c_cflag;		/* control mode flags */
++	unsigned short c_lflag;		/* local mode flags */
++	unsigned char c_line;		/* line discipline */
++	unsigned char c_cc[NCC];	/* control characters */
++};
 +
-+/*
-+ * These aren't exported outside the kernel to avoid name space clashes
-+ */
++/* modem lines */
++#define TIOCM_LE	0x001
++#define TIOCM_DTR	0x002
++#define TIOCM_RTS	0x004
++#define TIOCM_ST	0x008
++#define TIOCM_SR	0x010
++#define TIOCM_CTS	0x020
++#define TIOCM_CAR	0x040
++#define TIOCM_RNG	0x080
++#define TIOCM_DSR	0x100
++#define TIOCM_CD	TIOCM_CAR
++#define TIOCM_RI	TIOCM_RNG
++#define TIOCM_OUT1	0x2000
++#define TIOCM_OUT2	0x4000
++#define TIOCM_LOOP	0x8000
++
++/* ioctl (fd, TIOCSERGETLSR, &result) where result may be as below */
++
 +#ifdef __KERNEL__
-+#ifndef __ASSEMBLY__
++
++#include <asm/uaccess.h>
++
++/*	intr=^C		quit=^\		erase=del	kill=^U
++	eof=^D		vtime=\0	vmin=\1		sxtc=\0
++	start=^Q	stop=^S		susp=^Z		eol=\0
++	reprint=^R	discard=^U	werase=^W	lnext=^V
++	eol2=\0
++*/
++#define INIT_C_CC "\003\034\177\025\004\0\1\0\021\023\032\0\022\017\027\026\0"
++
 +/*
-+ * DMA addresses may be very different from physical addresses
-+ * and pointers. i386 and powerpc may have 64 bit DMA on 32 bit
-+ * systems, while sparc64 uses 32 bit DMA addresses for 64 bit
-+ * physical addresses.
-+ * This default defines dma_addr_t to have the same size as
-+ * phys_addr_t, which is the most common way.
-+ * Do not define the dma64_addr_t type, which never really
-+ * worked.
++ * Translate a "termio" structure into a "termios". Ugh.
 + */
-+#ifndef dma_addr_t
-+#ifdef CONFIG_PHYS_ADDR_T_64BIT
-+typedef u64 dma_addr_t;
-+#else
-+typedef u32 dma_addr_t;
-+#endif /* CONFIG_PHYS_ADDR_T_64BIT */
-+#endif /* dma_addr_t */
++static inline int user_termio_to_kernel_termios(struct ktermios *termios,
++						struct termio __user *termio)
++{
++	unsigned short tmp;
 +
-+#endif /* __ASSEMBLY__ */
++	if (get_user(tmp, &termio->c_iflag) < 0)
++		goto fault;
++	termios->c_iflag = (0xffff0000 & termios->c_iflag) | tmp;
 +
-+#endif /* __KERNEL__ */
++	if (get_user(tmp, &termio->c_oflag) < 0)
++		goto fault;
++	termios->c_oflag = (0xffff0000 & termios->c_oflag) | tmp;
 +
-+#endif /* _ASM_GENERIC_TYPES_H */
++	if (get_user(tmp, &termio->c_cflag) < 0)
++		goto fault;
++	termios->c_cflag = (0xffff0000 & termios->c_cflag) | tmp;
++
++	if (get_user(tmp, &termio->c_lflag) < 0)
++		goto fault;
++	termios->c_lflag = (0xffff0000 & termios->c_lflag) | tmp;
++
++	if (get_user(termios->c_line, &termio->c_line) < 0)
++		goto fault;
++
++	if (copy_from_user(termios->c_cc, termio->c_cc, NCC) != 0)
++		goto fault;
++
++	return 0;
++
++ fault:
++	return -EFAULT;
++}
++
++/*
++ * Translate a "termios" structure into a "termio". Ugh.
++ */
++static inline int kernel_termios_to_user_termio(struct termio __user *termio,
++						struct ktermios *termios)
++{
++	if (put_user(termios->c_iflag, &termio->c_iflag) < 0 ||
++	    put_user(termios->c_oflag, &termio->c_oflag) < 0 ||
++	    put_user(termios->c_cflag, &termio->c_cflag) < 0 ||
++	    put_user(termios->c_lflag, &termio->c_lflag) < 0 ||
++	    put_user(termios->c_line,  &termio->c_line) < 0 ||
++	    copy_to_user(termio->c_cc, termios->c_cc, NCC) != 0)
++		return -EFAULT;
++
++	return 0;
++}
++
++#ifdef TCGETS2
++static inline int user_termios_to_kernel_termios(struct ktermios *k,
++						 struct termios2 __user *u)
++{
++	return copy_from_user(k, u, sizeof(struct termios2));
++}
++
++static inline int kernel_termios_to_user_termios(struct termios2 __user *u,
++						 struct ktermios *k)
++{
++	return copy_to_user(u, k, sizeof(struct termios2));
++}
++
++static inline int user_termios_to_kernel_termios_1(struct ktermios *k,
++						   struct termios __user *u)
++{
++	return copy_from_user(k, u, sizeof(struct termios));
++}
++
++static inline int kernel_termios_to_user_termios_1(struct termios __user *u,
++						   struct ktermios *k)
++{
++	return copy_to_user(u, k, sizeof(struct termios));
++}
++#else /* TCGETS2 */
++static inline int user_termios_to_kernel_termios(struct ktermios *k,
++						 struct termios __user *u)
++{
++	return copy_from_user(k, u, sizeof(struct termios));
++}
++
++static inline int kernel_termios_to_user_termios(struct termios __user *u,
++						 struct ktermios *k)
++{
++	return copy_to_user(u, k, sizeof(struct termios));
++}
++#endif /* TCGETS2 */
++
++#endif	/* __KERNEL__ */
++
++#endif /* _ASM_GENERIC_TERMIOS_H */
 
 -- 
 
