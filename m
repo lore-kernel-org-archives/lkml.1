@@ -1,172 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761327AbZD0VMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761223AbZD0VNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761327AbZD0VMW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 17:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757434AbZD0VMN
+	id S1761223AbZD0VNN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 17:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbZD0VM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 17:12:13 -0400
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:39218 "EHLO
-	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756472AbZD0VML (ORCPT
+	Mon, 27 Apr 2009 17:12:56 -0400
+Received: from smtpfb2-g21.free.fr ([212.27.42.10]:44677 "EHLO
+	smtpfb2-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755106AbZD0VMz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 17:12:11 -0400
-From: "Henrik Rydberg" <rydberg@euromail.se>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Henrik Rydberg <rydberg@euromail.se>
-Subject: [PATCH rev2] input: bcm5974: Add support for the Macbook 5 (Unibody)
-Date: Mon, 27 Apr 2009 23:11:51 +0200
-Message-Id: <1240866711-6468-1-git-send-email-rydberg@euromail.se>
-X-Mailer: git-send-email 1.5.6.3
-X-Originating-IP: 83.248.194.102
-X-Scan-Result: No virus found in message 1LyY7M-0008O4-65.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1LyY7M-0008O4-65 6e8d187ed206a75467880f641df571a2
+	Mon, 27 Apr 2009 17:12:55 -0400
+To: eric.miao@marvell.com
+Cc: broonie@opensource.wolfsonmicro.com, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: Patch to add mioa701 glue for voltage regulation
+References: <87iqkvp6i3.fsf@free.fr>
+	<1240566136.27410.3291.camel@vega.slimlogic.co.uk>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Date: Mon, 27 Apr 2009 23:11:28 +0200
+In-Reply-To: <1240566136.27410.3291.camel@vega.slimlogic.co.uk> (Liam Girdwood's message of "Fri\, 24 Apr 2009 10\:42\:16 +0100")
+Message-ID: <87d4ax7qf3.fsf@free.fr>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support for the new unibody Macbook, with physically
-integrated button and trackpad. Since the integrated button changes
-the logic for touch-and-click, a device capability bit mask is now
-reported in input_id.version, which can be picked up by user space
-via a EVIOCGID call.
+Liam Girdwood <lrg@slimlogic.co.uk> writes:
 
-Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
-Tested-by: David M. Lary <dmlary@gmail.com>
+> On Thu, 2009-04-23 at 20:30 +0200, Robert Jarzmik wrote:
+>> Hi Mark and Eric,
+>> 
+>> I have that patch which adds voltage regulation definitions to mioa701
+>> board. The trick is, this patch depends on two others :
+>> 
+>>  - one which will be merged through Mark's regulator tree.
+>>    This one is mandatory as a compiling dependency exists through include files.
+>> 
+>>  - one which will be merge through Eric pxa tree.
+>>    This is the cpufreq one, and has a "very weak" dependency, as only the
+>>    "vcc_core" name _is_ the dependency.
+>> 
+>> I think the easiest way to solve the compiling dependency
+>> (include/linux/regulator.max1586.h) is to make that patch go through regulator
+>> tree as well for linux-next, even if it's arm machine specific, don't you ?
+>> 
+>
+> If fine with this going through regulator providing I get an ACK from
+> Eric.
+
+Eric,
+
+Since Liam took the max1586 regulator through his tree, would you state if you
+ack that please ?
+
+Cheers.
+
+--
+Robert
+
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Date: Mon, 20 Apr 2009 16:52:25 +0200
+Subject: [PATCH] mioa701: add Maxim 1586 voltage regulator
+
+On this board, the PXA272 CPU voltage VCC_CORE is provided
+by a Maxim 1586 voltage regulator. Use the regulator
+framework to provide VCC_CORE control. When cpufreq will be
+updated to ask for vcc_core, this will optimize power
+drained by the board.
+
+Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
 ---
- drivers/input/mouse/bcm5974.c |   45 +++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 43 insertions(+), 2 deletions(-)
+ arch/arm/mach-pxa/mioa701.c |   52 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 52 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/input/mouse/bcm5974.c b/drivers/input/mouse/bcm5974.c
-index a170574..7c44199 100644
---- a/drivers/input/mouse/bcm5974.c
-+++ b/drivers/input/mouse/bcm5974.c
-@@ -51,6 +51,10 @@
- #define USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI	0x0230
- #define USB_DEVICE_ID_APPLE_WELLSPRING2_ISO	0x0231
- #define USB_DEVICE_ID_APPLE_WELLSPRING2_JIS	0x0232
-+/* Macbook5,1 (unibody), aka wellspring3 */
-+#define USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI	0x0236
-+#define USB_DEVICE_ID_APPLE_WELLSPRING3_ISO	0x0237
-+#define USB_DEVICE_ID_APPLE_WELLSPRING3_JIS	0x0238
+diff --git a/arch/arm/mach-pxa/mioa701.c b/arch/arm/mach-pxa/mioa701.c
+index 204263d..facff90 100644
+--- a/arch/arm/mach-pxa/mioa701.c
++++ b/arch/arm/mach-pxa/mioa701.c
+@@ -37,6 +37,7 @@
+ #include <linux/wm97xx_batt.h>
+ #include <linux/mtd/physmap.h>
+ #include <linux/usb/gpio_vbus.h>
++#include <linux/regulator/max1586.h>
  
- #define BCM5974_DEVICE(prod) {					\
- 	.match_flags = (USB_DEVICE_ID_MATCH_DEVICE |		\
-@@ -72,6 +76,10 @@ static const struct usb_device_id bcm5974_table[] = {
- 	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI),
- 	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING2_ISO),
- 	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING2_JIS),
-+	/* Macbook5,1 */
-+	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI),
-+	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING3_ISO),
-+	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING3_JIS),
- 	/* Terminating entry */
- 	{}
- };
-@@ -98,11 +106,19 @@ struct bt_data {
- 
- /* trackpad header types */
- enum tp_type {
--	TYPE1			/* plain trackpad */
-+	TYPE1,			/* plain trackpad */
-+	TYPE2			/* button integrated in trackpad */
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+@@ -716,6 +717,48 @@ static struct wm97xx_batt_info mioa701_battery_data = {
  };
  
- /* trackpad finger data offsets */
- #define FINGER_TYPE1		26
-+#define FINGER_TYPE2		30
-+
-+/* trackpad button data offsets */
-+#define BUTTON_TYPE2		15
-+
-+/* list of device capability bits */
-+#define HAS_INTEGRATED_BUTTON	1
- 
- /* trackpad finger structure */
- struct tp_finger {
-@@ -135,6 +151,7 @@ struct bcm5974_param {
- /* device-specific configuration */
- struct bcm5974_config {
- 	int ansi, iso, jis;	/* the product id of this device */
-+	int caps;		/* device capability bitmask */
- 	int bt_ep;		/* the endpoint of the button interface */
- 	int bt_datalen;		/* data length of the button interface */
- 	int tp_ep;		/* the endpoint of the trackpad interface */
-@@ -184,6 +201,7 @@ static const struct bcm5974_config bcm5974_config_table[] = {
- 		USB_DEVICE_ID_APPLE_WELLSPRING_ANSI,
- 		USB_DEVICE_ID_APPLE_WELLSPRING_ISO,
- 		USB_DEVICE_ID_APPLE_WELLSPRING_JIS,
-+		0,
- 		0x84, sizeof(struct bt_data),
- 		0x81, TYPE1, FINGER_TYPE1, FINGER_TYPE1 + SIZEOF_ALL_FINGERS,
- 		{ DIM_PRESSURE, DIM_PRESSURE / SN_PRESSURE, 0, 256 },
-@@ -195,6 +213,7 @@ static const struct bcm5974_config bcm5974_config_table[] = {
- 		USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI,
- 		USB_DEVICE_ID_APPLE_WELLSPRING2_ISO,
- 		USB_DEVICE_ID_APPLE_WELLSPRING2_JIS,
-+		0,
- 		0x84, sizeof(struct bt_data),
- 		0x81, TYPE1, FINGER_TYPE1, FINGER_TYPE1 + SIZEOF_ALL_FINGERS,
- 		{ DIM_PRESSURE, DIM_PRESSURE / SN_PRESSURE, 0, 256 },
-@@ -202,6 +221,18 @@ static const struct bcm5974_config bcm5974_config_table[] = {
- 		{ DIM_X, DIM_X / SN_COORD, -4824, 4824 },
- 		{ DIM_Y, DIM_Y / SN_COORD, -172, 4290 }
- 	},
+ /*
++ * Voltage regulation
++ */
++static struct regulator_consumer_supply max1586_consumers[] = {
 +	{
-+		USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI,
-+		USB_DEVICE_ID_APPLE_WELLSPRING3_ISO,
-+		USB_DEVICE_ID_APPLE_WELLSPRING3_JIS,
-+		HAS_INTEGRATED_BUTTON,
-+		0x84, sizeof(struct bt_data),
-+		0x81, TYPE2, FINGER_TYPE2, FINGER_TYPE2 + SIZEOF_ALL_FINGERS,
-+		{ DIM_PRESSURE, DIM_PRESSURE / SN_PRESSURE, 0, 300 },
-+		{ DIM_WIDTH, DIM_WIDTH / SN_WIDTH, 0, 2048 },
-+		{ DIM_X, DIM_X / SN_COORD, -4460, 5166 },
-+		{ DIM_Y, DIM_Y / SN_COORD, -75, 6700 }
++		.supply = "vcc_core",
++	}
++};
++
++static struct regulator_init_data max1586_v3_info = {
++	.constraints = {
++		.name = "vcc_core range",
++		.min_uV = 1000000,
++		.max_uV = 1705000,
++		.always_on = 1,
++		.valid_ops_mask = REGULATOR_CHANGE_VOLTAGE,
 +	},
- 	{}
++	.num_consumer_supplies = ARRAY_SIZE(max1586_consumers),
++	.consumer_supplies = max1586_consumers,
++};
++
++static struct regulator_init_data max1586_v6_info = {
++	.constraints = {
++		.name = "vcc_usim range",
++		.min_uV = 1,
++		.max_uV = 3000000,
++		.always_on = 1,
++		.valid_ops_mask = REGULATOR_CHANGE_VOLTAGE,
++	},
++	.num_consumer_supplies = 0,
++};
++
++static struct max1586_subdev_data max1586_subdevs[] = {
++	{ .name = "vcc_core", .id = MAX1586_V3,
++	  .platform_data = &max1586_v3_info },
++};
++
++static struct max1586_platform_data max1586_info = {
++	.subdevs = max1586_subdevs,
++	.num_subdevs = ARRAY_SIZE(max1586_subdevs),
++};
++
++/*
+  * Camera interface
+  */
+ struct pxacamera_platform_data mioa701_pxacamera_platform_data = {
+@@ -733,6 +776,13 @@ static struct i2c_board_info __initdata mioa701_i2c_devices[] = {
+ 	},
  };
  
-@@ -281,7 +312,7 @@ static int report_tp_state(struct bcm5974 *dev, int size)
- 	const struct tp_finger *f;
- 	struct input_dev *input = dev->input;
- 	int raw_p, raw_w, raw_x, raw_y, raw_n;
--	int ptest = 0, origin = 0, nmin = 0, nmax = 0;
-+	int ptest = 0, origin = 0, ibt = 0, nmin = 0, nmax = 0;
- 	int abs_p = 0, abs_w = 0, abs_x = 0, abs_y = 0;
- 
- 	if (size < c->tp_offset || (size - c->tp_offset) % SIZEOF_FINGER != 0)
-@@ -303,6 +334,10 @@ static int report_tp_state(struct bcm5974 *dev, int size)
- 
- 		ptest = int2bound(&c->p, raw_p);
- 		origin = raw2int(f->origin);
++static struct i2c_board_info __initdata mioa701_pi2c_devices[] = {
++	{
++		I2C_BOARD_INFO("max1586", 0x14),
++		.platform_data = &max1586_info,
++	},
++};
 +
-+		/* set the integrated button if applicable */
-+		if (c->tp_type == TYPE2)
-+			ibt = raw2int(dev->tp_data[BUTTON_TYPE2]);
- 	}
+ static struct soc_camera_link iclink = {
+ 	.bus_id		= 0, /* Match id in pxa27x_device_camera in device.c */
+ 	.board_info	= &mioa701_i2c_devices[0],
+@@ -827,7 +877,9 @@ static void __init mioa701_machine_init(void)
+ 	platform_add_devices(devices, ARRAY_SIZE(devices));
+ 	gsm_init();
  
- 	/* while tracking finger still valid, count all fingers */
-@@ -346,6 +381,10 @@ static int report_tp_state(struct bcm5974 *dev, int size)
++	i2c_register_board_info(1, ARRAY_AND_SIZE(mioa701_pi2c_devices));
+ 	pxa_set_i2c_info(&i2c_pdata);
++	pxa27x_set_i2c_power_info(NULL);
+ 	pxa_set_camera_info(&mioa701_pxacamera_platform_data);
+ }
  
- 	}
- 
-+	/* type 2 reports button events via ibt only */
-+	if (c->tp_type == TYPE2)
-+		input_report_key(input, BTN_LEFT, ibt);
-+
- 	input_sync(input);
- 
- 	return 0;
-@@ -655,6 +694,8 @@ static int bcm5974_probe(struct usb_interface *iface,
- 	input_dev->name = "bcm5974";
- 	input_dev->phys = dev->phys;
- 	usb_to_input_id(dev->udev, &input_dev->id);
-+	/* report driver capabilities via the version field */
-+	input_dev->id.version = cfg->caps;
- 	input_dev->dev.parent = &iface->dev;
- 
- 	input_set_drvdata(input_dev, dev);
 -- 
-1.5.6.3
-
+1.6.2.1
