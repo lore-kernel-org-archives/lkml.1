@@ -1,89 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757811AbZD0Q3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757714AbZD0Qbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757811AbZD0Q3x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 12:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755714AbZD0Q3l
+	id S1757714AbZD0Qbl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 12:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbZD0Qbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 12:29:41 -0400
-Received: from thunk.org ([69.25.196.29]:54334 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754844AbZD0Q3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 12:29:40 -0400
-Date: Mon, 27 Apr 2009 12:29:20 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Christoph Hellwig <hch@lst.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: get_fs_excl/put_fs_excl/has_fs_excl
-Message-ID: <20090427162920.GA6781@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jamie Lokier <jamie@shareable.org>,
-	Jens Axboe <jens.axboe@oracle.com>, Christoph Hellwig <hch@lst.de>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org
-References: <20090423191817.GA22521@lst.de> <20090423192123.GL4593@kernel.dk> <20090424184047.GA17001@lst.de> <20090425151656.GH13608@mit.edu> <20090427095339.GW4593@kernel.dk> <20090427113356.GC9059@mit.edu> <20090427144742.GC4885@shareable.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090427144742.GC4885@shareable.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Mon, 27 Apr 2009 12:31:32 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:60550 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752563AbZD0Qbc (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 12:31:32 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
+Subject: Re: [PATCH 1/3] bitops: Add __ffs64 bitop
+In-Reply-To: Your message of "Mon, 27 Apr 2009 16:41:06 BST."
+             <1240846866.29604.122.camel@localhost.localdomain>
+From: Valdis.Kletnieks@vt.edu
+References: <1240478216-2594-1-git-send-email-swhiteho@redhat.com> <1240478216-2594-2-git-send-email-swhiteho@redhat.com> <52615.1240839635@turing-police.cc.vt.edu>
+            <1240846866.29604.122.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1240849877_4302P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 27 Apr 2009 12:31:17 -0400
+Message-ID: <49834.1240849877@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 03:47:42PM +0100, Jamie Lokier wrote:
-> Personally, I'm interested in the following:
-> 
->     - A process with RT I/O priority and RT CPU priority is reading
->       a series of files from disk.  It should be very reliable at this.
-> 
->     - Other normal I/O priority and normal CPU priority processes are
->       reading and writing the disk.
-> 
-> I would like the first process to have a guaranteed minimum I/O
-> performance: it should continuously make progress, even when it needs
-> to read some file metadata which overlaps a page affected by the other
-> processes.
+--==_Exmh_1240849877_4302P
+Content-Type: text/plain; charset=us-ascii
 
-That's pretty easy.  The much harder and much more interesting problem
-is if the process with RT I/O and CPU priority is *writing* a series
-of files to disk, and not just reading from disk.
+On Mon, 27 Apr 2009 16:41:06 BST, Steven Whitehouse said:
+> The intent was that it would operate on native endian u64 words so that
+> it shouldn't be affected by the endianess.
 
-> I don't mind all the interference from disk head seeks and
-> so on, but I would like the I/O that the first process depends on to
-> have RT I/O priority - including when it's waiting on I/O initiated by
-> another process and the normal I/O priority queue is full.
-> 
-> So, I'm not exactly sure, but I think what I need for that is:
-> 
->     - I/O priority boosting (re-queuing in the elevator) to fix the
->       inversion when waiting on I/O which was previously queued with
->       normal I/O priority, and
-> 
->     - Task priority boosting when waiting on a filesystem resource
->       which is held by a normal priority task.
+Hmm.. it's passing a 64-bit by value, not by a pointer ref - a subtle
+distinction - if that code had done   *(u32)word instead it would break
+on some archs.  That will teach me to read code when not caffeinated enough.
 
-For the latter, I can't think of a filesystem where we would block a
-read operation for long time just because someone was holding some
-kind of filesytem-wide lock.  A spinlock, maybe, but the only time it
-makes sense to worry about boosting an I/O priority is if we're going
-to be blocing a filesystem for milliseconds or more, and not just a
-few tens of microseconds.  
+(I also admit that often I post comments on the basis of "If I can misread
+this, so can some other poor decaffienated Joe Programmer on a Monday morning" ;)
 
-All of the latency problems people have been complaining about, such
-as the infamous firefox fsync() problem, all involved write
-operations, and specifically fsync(), and maybe a heavy read-workload
-interfered with a write, but I can't think of a situation where a
-real-time read operation would be disrupted by normal priority reads
-and writes.
+>                                            In the GFS2 code where it is
+> used, the byte ordering is converted to native order before this
+> function is applied,
 
-For the former, where a real-time read request gets blocked because
-the read request for that block had already been submitted --- at a
-lower priority --- that's something that should be solvable purely in
-core block layer and in the I/O scheduler layer, I would expect.
+Is that a reasonable expectation when other parts of the kernel start
+using it?  We've seen bugs before when 32-bit code tries to deal with
+a 64-bit or bigger bitfield as a pair or series of 32-bit fields...
 
-						- Ted
+- * @word: The 64 bit word
++ * @word: The 64 bit word - must be in native byte order
+
+probably is enough for those who bother finding the function def/doc. And
+the ones who don't bother, we can't help anyhow. ;)
+
+
+--==_Exmh_1240849877_4302P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJ9d3VcC3lWbTT17ARAh1eAKCTs/hKpXg+1EL3+rloGj5fOWEb1ACdHZwf
+4dERfqM/kBSqwAL7SNsMqx8=
+=V3MT
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1240849877_4302P--
