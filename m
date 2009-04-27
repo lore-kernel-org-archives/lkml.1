@@ -1,163 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760728AbZD0V6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761265AbZD0V71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760728AbZD0V6V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 17:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759166AbZD0VzQ
+	id S1761265AbZD0V71 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 17:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759165AbZD0V56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 17:55:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41467 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759124AbZD0VzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 17:55:14 -0400
-From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH 11/12] fsnotify: handle filesystem unmounts with fsnotify marks
-To: linux-kernel@vger.kernel.org
-Cc: viro@zeniv.linux.org.uk, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
-       sfr@canb.auug.org.au, john@johnmccutchan.com, rlove@rlove.org,
-       akpm@linux-foundation.org
-Date: Mon, 27 Apr 2009 17:54:00 -0400
-Message-ID: <20090427215400.14161.3129.stgit@paris.rdu.redhat.com>
-In-Reply-To: <20090427215305.14161.33354.stgit@paris.rdu.redhat.com>
-References: <20090427215305.14161.33354.stgit@paris.rdu.redhat.com>
-User-Agent: StGIT/0.14.3
+	Mon, 27 Apr 2009 17:57:58 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:34528 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760892AbZD0V54 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 17:57:56 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <20090427180036.269a40b3@hyperion.delvare>
+References: <20090329174836.6de797d6@hyperion.delvare> <ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com> 
+	<20090330104952.26f03c13@hyperion.delvare> <ac3eb2510903300424s2604d027h653a3f77163e0242@mail.gmail.com> 
+	<20090426085401.3788fc9c@hyperion.delvare> <ac3eb2510904260642s66a15a8eg5811fdc6b339d493@mail.gmail.com> 
+	<20090427180036.269a40b3@hyperion.delvare>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Mon, 27 Apr 2009 23:57:40 +0200
+Message-ID: <ac3eb2510904271457w30aac8f5j9ee0d6508f8444c1@mail.gmail.com>
+Subject: Re: Class device namespaces
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Michael E Brown <Michael_E_Brown@dell.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Matt Domsch <Matt_Domsch@dell.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When an fs is unmounted with an fsnotify mark entry attached to one of its
-inodes we need to destroy that mark entry and we also (like inotify) send
-an unmount event.
+On Mon, Apr 27, 2009 at 18:00, Jean Delvare <khali@linux-fr.org> wrote:
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
----
+> I'd like to give a try to converting i2c-adapter devices to bus devices
+> rather than class devices, if you think that's how things should be.
+> Can you please explain to me how this would be done?
 
- fs/inode.c                       |    1 +
- fs/notify/inode_mark.c           |   72 ++++++++++++++++++++++++++++++++++++++
- include/linux/fsnotify_backend.h |    4 ++
- 3 files changed, 77 insertions(+), 0 deletions(-)
+Register a "i2c" bus_type with the core, and instead of assigning
+dev.class = class, you assign dev.bus = bus to the devices you
+register, that should work, if there is nothing more complicated going
+on in the background.
 
-diff --git a/fs/inode.c b/fs/inode.c
-index cdf412c..ac6ecfc 100644
---- a/fs/inode.c
-+++ b/fs/inode.c
-@@ -408,6 +408,7 @@ int invalidate_inodes(struct super_block * sb)
- 	mutex_lock(&iprune_mutex);
- 	spin_lock(&inode_lock);
- 	inotify_unmount_inodes(&sb->s_inodes);
-+	fsnotify_unmount_inodes(&sb->s_inodes);
- 	busy = invalidate_list(&sb->s_inodes, &throw_away);
- 	spin_unlock(&inode_lock);
- 
-diff --git a/fs/notify/inode_mark.c b/fs/notify/inode_mark.c
-index 282150f..0a499d2 100644
---- a/fs/notify/inode_mark.c
-+++ b/fs/notify/inode_mark.c
-@@ -89,6 +89,7 @@
- #include <linux/mutex.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
-+#include <linux/writeback.h> /* for inode_lock */
- 
- #include <asm/atomic.h>
- 
-@@ -351,3 +352,74 @@ int fsnotify_add_mark(struct fsnotify_mark_entry *entry,
- 
- 	return ret;
- }
-+
-+/**
-+ * fsnotify_unmount_inodes - an sb is unmounting.  handle any watched inodes.
-+ * @list: list of inodes being unmounted (sb->s_inodes)
-+ *
-+ * Called with inode_lock held, protecting the unmounting super block's list
-+ * of inodes, and with iprune_mutex held, keeping shrink_icache_memory() at bay.
-+ * We temporarily drop inode_lock, however, and CAN block.
-+ */
-+void fsnotify_unmount_inodes(struct list_head *list)
-+{
-+	struct inode *inode, *next_i, *need_iput = NULL;
-+
-+	list_for_each_entry_safe(inode, next_i, list, i_sb_list) {
-+		struct inode *need_iput_tmp;
-+
-+		/*
-+		 * We cannot __iget() an inode in state I_CLEAR, I_FREEING,
-+		 * I_WILL_FREE, or I_NEW which is fine because by that point
-+		 * the inode cannot have any associated watches.
-+		 */
-+		if (inode->i_state & (I_CLEAR|I_FREEING|I_WILL_FREE|I_NEW))
-+			continue;
-+
-+		/*
-+		 * If i_count is zero, the inode cannot have any watches and
-+		 * doing an __iget/iput with MS_ACTIVE clear would actually
-+		 * evict all inodes with zero i_count from icache which is
-+		 * unnecessarily violent and may in fact be illegal to do.
-+		 */
-+		if (!atomic_read(&inode->i_count))
-+			continue;
-+
-+		need_iput_tmp = need_iput;
-+		need_iput = NULL;
-+
-+		/* In case fsnotify_inode_delete() drops a reference. */
-+		if (inode != need_iput_tmp)
-+			__iget(inode);
-+		else
-+			need_iput_tmp = NULL;
-+
-+		/* In case the dropping of a reference would nuke next_i. */
-+		if ((&next_i->i_sb_list != list) &&
-+		    atomic_read(&next_i->i_count) &&
-+		    !(next_i->i_state & (I_CLEAR | I_FREEING | I_WILL_FREE))) {
-+			__iget(next_i);
-+			need_iput = next_i;
-+		}
-+
-+		/*
-+		 * We can safely drop inode_lock here because we hold
-+		 * references on both inode and next_i.  Also no new inodes
-+		 * will be added since the umount has begun.  Finally,
-+		 * iprune_mutex keeps shrink_icache_memory() away.
-+		 */
-+		spin_unlock(&inode_lock);
-+
-+		if (need_iput_tmp)
-+			iput(need_iput_tmp);
-+
-+		/* for each watch, send FS_UNMOUNT and then remove it */
-+		fsnotify(inode, FS_UNMOUNT, inode, FSNOTIFY_EVENT_INODE, NULL, 0);
-+
-+		fsnotify_inode_delete(inode);
-+
-+		iput(inode);
-+
-+		spin_lock(&inode_lock);
-+	}
-+}
-diff --git a/include/linux/fsnotify_backend.h b/include/linux/fsnotify_backend.h
-index de5c793..deb6872 100644
---- a/include/linux/fsnotify_backend.h
-+++ b/include/linux/fsnotify_backend.h
-@@ -337,6 +337,7 @@ extern void fsnotify_destroy_mark_by_entry(struct fsnotify_mark_entry *entry);
- extern void fsnotify_clear_marks_by_group(struct fsnotify_group *group);
- extern void fsnotify_get_mark(struct fsnotify_mark_entry *entry);
- extern void fsnotify_put_mark(struct fsnotify_mark_entry *entry);
-+extern void fsnotify_unmount_inodes(struct list_head *list);
- 
- /* put here because inotify does some weird stuff when destroying watches */
- extern struct fsnotify_event *fsnotify_create_event(struct inode *to_tell, __u32 mask,
-@@ -366,6 +367,9 @@ static inline u32 fsnotify_get_cookie(void)
- 	return 0;
- }
- 
-+static inline void fsnotify_unmount_inodes(struct list_head *list)
-+{}
-+
- #endif	/* CONFIG_FSNOTIFY */
- 
- #endif	/* __KERNEL __ */
-
+Thanks,
+Kay
