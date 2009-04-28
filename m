@@ -1,39 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbZD1JPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZD1JQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756619AbZD1JPy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 05:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbZD1JPn
+	id S1756302AbZD1JQZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 05:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbZD1JQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 05:15:43 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:38881 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754970AbZD1JPm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 05:15:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=RzrJs8GXaEnAjD+SulI5k3eZapUXxgfTD4QrS7LOX+y1VOtsQ+2m5Fs3fFA1uRmRFW
-         +KRh3fahZF8ifsyvvtqrTnyDUVKSb89L7w/kx8LtX51XUFoqA3zBeL0EMjQdn3OkMD8M
-         /yrOX0OWG/tzFx5m1EGeeo9MMas22QcdyG+eQ=
-MIME-Version: 1.0
-In-Reply-To: <20090428091034.GL27382@one.firstfloor.org>
-References: <20090428010907.912554629@intel.com>
-	 <20090428014920.769723618@intel.com> <20090428065507.GA2024@elte.hu>
-	 <20090428074031.GK27382@one.firstfloor.org>
-	 <1240909484.1982.16.camel@penberg-laptop>
-	 <20090428091034.GL27382@one.firstfloor.org>
-Date: Tue, 28 Apr 2009 12:15:41 +0300
-X-Google-Sender-Auth: 090fadf4074ed73d
-Message-ID: <84144f020904280215k6e2ae34dk8f1a14a51be2e203@mail.gmail.com>
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Wu Fengguang <fengguang.wu@intel.com>,
+	Tue, 28 Apr 2009 05:16:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53219 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755716AbZD1JQC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 05:16:02 -0400
+Date: Tue, 28 Apr 2009 11:15:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
        Steven Rostedt <rostedt@goodmis.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
        Larry Woodman <lwoodman@redhat.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
@@ -42,36 +23,55 @@ Cc: Ingo Molnar <mingo@elte.hu>, Wu Fengguang <fengguang.wu@intel.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Matt Mackall <mpm@selenic.com>, Alexey Dobriyan <adobriyan@gmail.com>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090428091508.GA21085@elte.hu>
+References: <20090428010907.912554629@intel.com> <20090428014920.769723618@intel.com> <20090428065507.GA2024@elte.hu> <20090428074031.GK27382@one.firstfloor.org> <1240909484.1982.16.camel@penberg-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240909484.1982.16.camel@penberg-laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
 
-On Tue, Apr 28, 2009 at 12:10 PM, Andi Kleen <andi@firstfloor.org> wrote:
->> Yes, zero overhead is important for certain things (like
->> CONFIG_SLUB_STATS, for example). However, putting slab allocator
->> specific checks in fs/proc looks pretty fragile to me. It would be nice
->
-> Ok, perhaps that could be put into a inline into slab.h. Would
-> that address your concerns?
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-Yeah, I'm fine with that. Putting them in the individual
-slub_def.h/slob_def.h headers might be even better.
+> Hi Andi,
+> 
+> On Tue, 2009-04-28 at 09:40 +0200, Andi Kleen wrote:
+> > > I think i have to NAK this kind of ad-hoc instrumentation of kernel 
+> > > internals and statistics until we clear up why such instrumentation 
+> > 
+> > I think because it has zero fast path overhead and can be used 
+> > any time without enabling anything special.
 
-On Tue, Apr 28, 2009 at 12:10 PM, Andi Kleen <andi@firstfloor.org> wrote:
->> Also, while you probably don't want to use tracepoints for this kind of
->> instrumentation, you might want to look into reusing the ftrace
->> reporting bits.
->
-> There's already perfectly fine code in tree for this, I don't see why it would
-> need another infrastructure that doesn't really fit anyways.
+( That's a dubious claim in any case - tracepoints are very cheap.
+  And they could be made even cheaper and such efforts would benefit
+  all the tracepoint users so it's a prime focus of interest.
+  Andi is a SystemTap proponent, right? I saw him oppose pretty much 
+  everything built-in kernel tracing related. I consider that a 
+  pretty extreme position. )
 
-It's just that I suspect that we want page flag printing and
-zero-overhead statistics for kmemtrace at some point. But anyway, I'm
-not objecting to extending /proc/kpageflags if that's what people want
-to do.
+> Yes, zero overhead is important for certain things (like 
+> CONFIG_SLUB_STATS, for example). However, putting slab allocator 
+> specific checks in fs/proc looks pretty fragile to me. It would be 
+> nice to have this under the "kmemtrace umbrella" so that there's 
+> just one place that needs to be fixed up when allocators change.
+> 
+> Also, while you probably don't want to use tracepoints for this 
+> kind of instrumentation, you might want to look into reusing the 
+> ftrace reporting bits.
 
-                                          Pekka
+Exactly - we have a tracing and statistics framework for a reason.
+
+	Ingo
