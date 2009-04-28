@@ -1,47 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbZD1KQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbZD1KQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759471AbZD1KQa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 06:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759010AbZD1KQM
+	id S1759679AbZD1KQs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 06:16:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759059AbZD1KQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 28 Apr 2009 06:16:14 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:58226 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759007AbZD1KQM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 28 Apr 2009 06:16:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55964 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758957AbZD1KQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 06:16:10 -0400
-Message-ID: <49F6D767.9050801@redhat.com>
-Date: Tue, 28 Apr 2009 13:16:07 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:cc:content-type:content-transfer-encoding;
+        b=Aon5YjGFztU4G36lbU/6qJV+h7vpMx7HLNGialvFxb8dbEEe4iRN/yVlcNWkLokolh
+         uLGISoIcq+a4rxIlKWzV734E28R0Ui+4YkTsq4/i078qetwvxd4m9NQttm+TW4dTu/+M
+         MWk6sMVYEylNvyHNy5VOWkgklN3sEgkzAevew=
 MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Marcelo Tosatti <marcelo@kvack.or>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [PATCH 0/7] KVM support for 1GB pages v2
-References: <1240574327-21575-1-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1240574327-21575-1-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Date: Tue, 28 Apr 2009 18:16:11 +0800
+X-Google-Sender-Auth: 2010cc7b588a366d
+Message-ID: <2a27d3730904280316l7049bddbie914907b16ccfff6@mail.gmail.com>
+Subject: [PATCH 0/5] rapidio: adding memory mapping IO support and misc fixes
+From: Li Yang <leoli@freescale.com>
+To: akpm@linux-foundation.org, Kumar Gala <galak@kernel.crashing.org>,
+       David Miller <davem@davemloft.net>, mporter@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org,
+       linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+       Netdev <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> Hi,
->
-> this is the second version of the patches implementing support for 1GB
-> pages in KVM. There are too many changes to the first version to mention
-> them all here. The core support was rewritten to work with mapping
-> levels instead of page sizes. This was the main part of the change.
-> The patches still only support KVM with nested paging enabled
+The patch series add MMIO support to Linux rapidio and fix a few nits.
+ The patches cross rapidio, netdev, powerpc sub-systems.  It will be
+good for them to go through one tree.  Probably Andrew?  As the
+previous rapidio patches are mostly merged by you.
 
-What is missing to get shadow paging working with this?  I don't think 
-it's particularly important (it will be pretty hard to find a GB page 
-without any shadowed pages in it), but I don't like arbitrary constraints.
-
-walk_addr() needs to change to support GB pages, did I miss it in the 
-patchset?
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+- Leo
