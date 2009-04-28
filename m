@@ -1,61 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162AbZD1IjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbZD1IoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754162AbZD1IjQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 04:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZD1IjA
+	id S1754534AbZD1IoS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 04:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZD1IoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 04:39:00 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:59093 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752922AbZD1Ii7 (ORCPT
+	Tue, 28 Apr 2009 04:44:00 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:43467 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752927AbZD1In6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 04:38:59 -0400
-Date: Tue, 28 Apr 2009 09:38:57 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2.6.30-rc3] regulator: regression fix
-Message-ID: <20090428083856.GD14626@sirena.org.uk>
-References: <200904271959.40526.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904271959.40526.david-b@pacbell.net>
-X-Cookie: A company is known by the men it keeps.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+	Tue, 28 Apr 2009 04:43:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=Q8o86sbjAYkjJdOCfACPLC4cVzK7LWSmTwh8573sXZKVNux9zBW6xcKFjIfA+1IIgJ
+         OOJZbnx0fHDMZ8tNjZ8zOH+VHx2Ela3yVwBGuTJR1S6E/Y9SEKxZsqJMn48oeaCg8Mgn
+         xOUgO177+uQsnxVFDzypVzfJQpYY/+i9n6qtk=
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Paul Menage <menage@google.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, tytso@mit.edu,
+       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
+       matt@bluehost.com, dradford@bluehost.com, ngupta@google.com,
+       randy.dunlap@oracle.com, roberto@unbit.it,
+       Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
+       fchecconi@gmail.com, paolo.valente@unimore.it, m-ikeda@ds.jp.nec.com,
+       paulmck@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH v15 0/7] cgroup: io-throttle controller
+Date: Tue, 28 Apr 2009 10:43:47 +0200
+Message-Id: <1240908234-15434-1-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 07:59:40PM -0700, David Brownell wrote:
+Objective
+~~~~~~~~~
+The objective of the io-throttle controller is to improve IO performance
+predictability of different cgroups that share the same block devices.
 
-> By removing the "else", it breaks the handling of fixed-voltage
-> regulators ... turning a non-error/non-warning situation into
-> a complete init failure, which can then prevent system startup.
+State of the art (quick overview)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+A recent work made by Vivek propose a weighted BW solution introducing
+fair queuing support in the elevator layer and modifying the existent IO
+schedulers to use that functionality
+(https://lists.linux-foundation.org/pipermail/containers/2009-March/016129.html).
 
-The change you're making isn't relevant to what I suspect the actual
-problem is (you didn't specify, I may be wrong here).
+For the fair queuing part Vivek's IO controller makes use of the BFQ
+code as posted by Paolo and Fabio (http://lkml.org/lkml/2008/11/11/148).
 
-For fixed voltage regulators either the user will have specified a
-voltage constraint (in which case we'll fall into your else case since
-cmin ought to be non-zero) or they won't (in which case it's the default
-constraint code you added will fill it in).  The problem I think you're
-seeing is that the code you added to fill in a default constraint for
-fixed voltage regulators uses INT_MIN as the minimum contraint value.
-This is a negative value and so fails the correctness check further
-down.
+The dm-ioband controller by the valinux guys is also proposing a
+proportional ticket-based solution fully implemented at the device
+mapper level (http://people.valinux.co.jp/~ryov/dm-ioband/).
 
-> You might want to provide a different patch, but ignoring
-> this regression doesn't seem practical...
+The bio-cgroup patch (http://people.valinux.co.jp/~ryov/bio-cgroup/) is
+a BIO tracking mechanism for cgroups, implemented in the cgroup memory
+subsystem. It is maintained by Ryo and it allows dm-ioband to track
+writeback requests issued by kernel threads (pdflush).
 
-The code that was being fixed was only even in -next for a relatively
-brief period of time.
+Another work by Satoshi implements the cgroup awareness in CFQ, mapping
+per-cgroup priority to CFQ IO priorities and this also provide only the
+proportional BW support (http://lwn.net/Articles/306772/).
 
->  		/* else require explicit machine-level constraints */
-> -		if (cmin <= 0 || cmax <= 0 || cmax < cmin) {
-> +		else if (cmin <= 0 || cmax <= 0 || cmax < cmin) {
+Please correct me or integrate if I missed someone or something. :)
 
-Yeah, a different patch I think.  I'll send one shortly.
+Proposed solution
+~~~~~~~~~~~~~~~~~
+Respect to other priority/weight-based solutions the approach used by
+this controller is to explicitly choke applications' requests that
+directly or indirectly generate IO activity in the system (this
+controller addresses both synchronous IO and writeback/buffered IO).
+
+The bandwidth and iops limiting method has the advantage of improving
+the performance predictability at the cost of reducing, in general, the
+overall performance of the system in terms of throughput.
+
+IO throttling and accounting is performed during the submission of IO
+requests and it is independent of the particular IO scheduler.
+
+Detailed informations about design, goal and usage are described in the
+documentation (see [PATCH 1/7]).
+
+Implementation
+~~~~~~~~~~~~~~
+Patchset against latest Linus' git:
+
+  [PATCH v15 0/7] cgroup: block device IO controller
+  [PATCH v15 1/7] io-throttle documentation
+  [PATCH v15 2/7] res_counter: introduce ratelimiting attributes
+  [PATCH v15 3/7] page_cgroup: provide a generic page tracking infrastructure
+  [PATCH v15 4/7] io-throttle controller infrastructure
+  [PATCH v15 5/7] kiothrottled: throttle buffered (writeback) IO
+  [PATCH v15 6/7] io-throttle instrumentation
+  [PATCH v15 7/7] io-throttle: export per-task statistics to userspace
+
+The v15 all-in-one patch, along with the previous versions, can be found at:
+http://download.systemimager.org/~arighi/linux/patches/io-throttle/
+
+Changelog (v14 -> v15)
+~~~~~~~~~~~~~~~~~~~~~~
+* performance optimization for direct IO (O_DIRECT): in submit_bio() instead of
+  checking if the bio has been generated by the current task using the slow
+  get_iothrottle_from_bio(), use the faster is_in_dio(), that simply check the
+  value of task_struct->in_dio, set before submitting O_DIRECT requests and
+  unset for.
+* block tasks that have exceeded the cgroup limits also in
+  balance_dirty_pages_ratelimited_nr(): when the submission of IO requests is
+  blocked by io-throttle we also want to throttle the dirty page rate, to reduce
+  the generation of hard reclaimable dirty pages in the system and prevent
+  potential OOM conditions
+* explicitly check if cgroup_lock() is held in the iothrottle block device list
+  (suggested by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>)
+* fixed a build bug in page_cgroup.c when CONFIG_SPARSEMEM was not set
+  (reported by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>)
+* small styling fixes in res_counter
+
+Overall diffstat
+~~~~~~~~~~~~~~~~
+ Documentation/cgroups/io-throttle.txt |  417 ++++++++++++++++
+ block/Makefile                        |    1 +
+ block/blk-core.c                      |    8 +
+ block/blk-io-throttle.c               |  851 +++++++++++++++++++++++++++++++++
+ block/kiothrottled.c                  |  341 +++++++++++++
+ fs/aio.c                              |   12 +
+ fs/buffer.c                           |    2 +
+ fs/direct-io.c                        |    3 +
+ fs/proc/base.c                        |   18 +
+ include/linux/blk-io-throttle.h       |  168 +++++++
+ include/linux/cgroup.h                |    1 +
+ include/linux/cgroup_subsys.h         |    6 +
+ include/linux/memcontrol.h            |    6 +
+ include/linux/mmzone.h                |    4 +-
+ include/linux/page_cgroup.h           |   33 ++-
+ include/linux/res_counter.h           |   69 ++-
+ include/linux/sched.h                 |    8 +
+ init/Kconfig                          |   16 +
+ kernel/cgroup.c                       |    9 +
+ kernel/fork.c                         |    8 +
+ kernel/res_counter.c                  |   73 +++
+ mm/Makefile                           |    3 +-
+ mm/bounce.c                           |    2 +
+ mm/filemap.c                          |    2 +
+ mm/memcontrol.c                       |    6 +
+ mm/page-writeback.c                   |   13 +
+ mm/page_cgroup.c                      |   96 ++++-
+ mm/readahead.c                        |    3 +
+ 28 files changed, 2145 insertions(+), 34 deletions(-)
+
+-Andrea
