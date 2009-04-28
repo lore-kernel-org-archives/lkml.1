@@ -1,73 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbZD1Uy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbZD1U6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757365AbZD1Uy3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbZD1UyR
+	id S1755488AbZD1U6x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 16:58:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbZD1U6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:54:17 -0400
-Received: from n14.bullet.mail.mud.yahoo.com ([68.142.206.41]:41857 "HELO
-	n14.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756175AbZD1UyP (ORCPT
+	Tue, 28 Apr 2009 16:58:42 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:34756 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752845AbZD1U6l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:54:15 -0400
-X-Yahoo-Newman-Id: 63570.34852.bm@omp415.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=IhVKFRAAxSFVMuQiOcvUhs4ZyPDM/vFJucYTnU8pVkSd05IeXHBqmMsud9K8fPgiipa2+JJAGj9tXmv+zsOQvLSKYdMU3NYG1sBgKXRCyZF3ZinovVOnfbQin5D2dRRrTO1mlKEjGTL7hiRYClBb6Gdqaa9/eB4UbHe4pHGiTa0=  ;
-X-YMail-OSG: uEbPHaoVM1kMGUc.xeHkivaVuFXZTvi11RWNTmxEsAO5WevxcEfJXHfb3WZ7JK_SIl4MI3AcC48_XgP.V2Ot6EGUMvUTaQVsWPBNHN3qRSjja9Z8CSDZ_kIB1ejpB_t5S2tF37CruxgbzlM0amFlnbJYdZEop6l5nJ4rqnWlYGw._N0pvM2l5dKZmmFKAbaLi1l.TcnSZQ4Fh5VhfCeYF.jQI59NjV4ut0o.gwQqxOWeniRC4QbZJDjl_xCQppEnKNxFamfthhAI5oWC0mLARoXSnhyjfOU1nCxMvXCiRaCqUxSgHDoA1IXGyhGdOUQCYdIgqpj2zCYjPK5zteQCsJfn1Yo-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Florian Fainelli <florian@openwrt.org>
-Subject: Re: [spi-devel-general] [PATCH v2] spi: Add support for the OpenCores SPI controller.
-Date: Tue, 28 Apr 2009 13:54:11 -0700
-User-Agent: KMail/1.9.10
-Cc: Thierry Reding <thierry.reding@avionic-design.de>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <200904041227.54687.david-b@pacbell.net> <20090428122011.GB6325@avionic-design.de> <200904281541.21238.florian@openwrt.org>
-In-Reply-To: <200904281541.21238.florian@openwrt.org>
+	Tue, 28 Apr 2009 16:58:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Dx944hjNEghyQ/qE1/iPSRaORNriuOdZj369dFFSCGdIwHVVHK5F0wOigPmgCeOb9e
+         TD4JUu9JPdJ0BzhcCCfwJtOPNPsz3uzXU34RoguAG3iaKbTdM25I68YLyGj7u/fa9UXH
+         RUMqNV3ZdoMbMcVa1dihM43zfjFHtL0jFQBtU=
+Message-ID: <49F76DF2.5070704@gmail.com>
+Date: Tue, 28 Apr 2009 22:58:26 +0200
+From: Niel Lambrechts <niel.lambrechts@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: reinette chatre <reinette.chatre@intel.com>
+CC: "linux.kernel" <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+Subject: Re: 2.6.30-rc3: iwlagn probe timeouts (regression)
+References: <49F4F5B1.4020201@gmail.com> <1240852777.29221.6.camel@rc-desk>
+In-Reply-To: <1240852777.29221.6.camel@rc-desk>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904281354.12192.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 28 April 2009, Florian Fainelli wrote:
-> > > Is this the http://www.opencores.org/?do=project&who=spi core?
-> >
-> > Yes, it is.
-> >
-> > > Its summary says "Variable length of transfer word up to 32 bits";
-> > > does that mean "configurable when core is synthesized" instead of
-> > > truly "variable"?
-> 
-> This is indeed configured at synthesis time.
+On 04/27/2009 07:19 PM, reinette chatre wrote:
+> Hi Niel,
+>
+> On Sun, 2009-04-26 at 17:00 -0700, Niel Lambrechts wrote:
+>   
+>> Hi,
+>>
+>> In earlier 2.6.30 (rc1 and 2) kernel tests I suffered the "beacon loss,
+>> sending probe request" problem, during which my connection would
+>> intermittently fail and reconnect. With the latest git kernel which
+>> seems to include a patch (ad935687dbe7307f5abd9e3f610a965a287324a9) for
+>> at least some of this, my card (Intel 5300AGN REV=0x24) completely fails
+>> to associate and I get:
+>>
+>> Apr 27 01:32:36 linux-7vph kernel: Registered led device: iwl-phy0::radio
+>> Apr 27 01:32:36 linux-7vph kernel: Registered led device: iwl-phy0::assoc
+>> Apr 27 01:32:36 linux-7vph kernel: Registered led device: iwl-phy0::RX
+>> Apr 27 01:32:36 linux-7vph kernel: Registered led device: iwl-phy0::TX
+>> Apr 27 01:32:36 linux-7vph kernel: ADDRCONF(NETDEV_UP): wlan0: link is
+>> not ready
+>> Apr 27 01:32:40 linux-7vph sudo:   niella : TTY=pts/2 ; PWD=/home/niella
+>> ; USER=root ; COMMAND=/usr/bin/tail -f /var/log/messages
+>> Apr 27 01:33:16 linux-7vph kernel: wlan0: direct probe to AP
+>> 00:1d:92:1d:1e:8e try 1
+>> Apr 27 01:33:16 linux-7vph kernel: wlan0: direct probe to AP
+>> 00:1d:92:1d:1e:8e try 2
+>> Apr 27 01:33:16 linux-7vph kernel: wlan0: direct probe to AP
+>> 00:1d:92:1d:1e:8e try 3
+>> Apr 27 01:33:16 linux-7vph kernel: wlan0: direct probe to AP
+>> 00:1d:92:1d:1e:8e timed out
+>> Apr 27 01:33:29 linux-7vph kernel: wlan0: direct probe to AP
+>> 00:1d:92:1d:1e:8e try 1
+>> Apr 27 01:33:29 linux-7vph kernel: wlan0: direct probe to AP
+>> 00:1d:92:1d:1e:8e try 1
+>> Apr 27 01:33:29 linux-7vph kernel: wlan0: direct probe to AP
+>> 00:1d:92:1d:1e:8e try 2
+>> Apr 27 01:33:29 linux-7vph kernel: wlan0: direct probe to AP
+>> 00:1d:92:1d:1e:8e try 3
+>> Apr 27 01:33:29 linux-7vph kernel: wlan0: direct probe to AP
+>> 00:1d:92:1d:1e:8e timed out
+>> Apr 27 01:33:42 linux-7vph kernel: wlan0: direct probe to AP
+>> 00:1d:92:1d:1e:8e try 1
+>> Apr 27 01:33:42 linux-7vph kernel: wlan0: direct probe to AP
+>> 00:1d:92:1d:1e:8e try 1
+>> Apr 27 01:33:42 linux-7vph kernel: wlan0: direct probe to AP
+>> 00:1d:92:1d:1e:8e try 2
+>> Apr 27 01:33:42 linux-7vph kernel: wlan0: direct probe to AP
+>> 00:1d:92:1d:1e:8e try 3
+>> Apr 27 01:33:43 linux-7vph kernel: wlan0: direct probe to AP
+>> 00:1d:92:1d:1e:8e timed out
+>>
+>> I do not have any similar problems with 2.6.29 or 2.6.28 at the exact
+>> same physical location.
+>>
+>> I can try to bisect in a day or two if need be.
+>>     
+>
+> >From what I can tell we did not send any iwlagn patches to 2.6.30 that
+> are related to this behavior. Please do try a bisect. 
+>   
+Okidoki, I've managed to bisect it:
 
-Now I'm confused again.  Thierry says (below) that the number of bits
-can be set per-"transfer".
+commit 47afbaf5af9454a7a1a64591e20cbfcc27ca67a8
+Author: Johannes Berg <johannes@sipsolutions.net>
+Date:   Tue Apr 7 15:22:28 2009 +0200
 
-Now, I can easily understand that a *maximum* would be configured
-at synthesis time ... if there's a 32-bit CPU or DMA engine, it'd
-make very limited sense to interact using 128-bit I/O words.
+    mac80211: correct wext transmit power handler
+---------
 
-Is there both a configurable maximum, *and* a word-size setting that
-can be changed on the fly?  That's what I would expect; it's what
-most other designs do.  The only time I've seen fixed "you must use
-N-bit words" designs is on cost-eradicated 8-bit microcontrollers.
+Under normal working circumstances, I get a reported 30-42% signal
+strength to my wireless router, with the problematic kernels I just kept
+getting probe attempts followed by the timeout, as per my original post.
 
-- Dave
-
-
-> > That summary seems out-dated. The variable length of transfer word is
-> > actually the maximum length of a single transfer and is 128 bits in the
-> > latest version. So you get 4 registers, each 32 bits wide into which you
-> > program the data you want to transfer. Then you set the number of bits of
-> > that transfer so the core knows which registers and what bits of those
-> > registers to shift out serially.
-
-
-
+Regards,
+Niel
