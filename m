@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758479AbZD1OBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761355AbZD1OBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758479AbZD1OBc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 10:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755763AbZD1OBX
+	id S1761355AbZD1OBs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 10:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760591AbZD1OBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 10:01:23 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52406 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754839AbZD1OBX (ORCPT
+	Tue, 28 Apr 2009 10:01:34 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:59722 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760248AbZD1OBc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 10:01:23 -0400
-Subject: Re: [PATCH] sched: make sure sched_child_runs_first WORK
-From: Peter Zijlstra <peterz@infradead.org>
-To: marywangran <marywangran@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <e82940b20904280655j6b7208f6jff8bbdef290d9872@mail.gmail.com>
-References: <e82940b20904280421p171343a8h9072215028948b57@mail.gmail.com>
-	 <e82940b20904280426j53ff8be7h3caeed84a02bbfe9@mail.gmail.com>
-	 <1240919612.7620.155.camel@twins>
-	 <e82940b20904280655j6b7208f6jff8bbdef290d9872@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 28 Apr 2009 16:01:18 +0200
-Message-Id: <1240927278.7620.159.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 28 Apr 2009 10:01:32 -0400
+X-IronPort-AV: E=Sophos;i="4.40,260,1238976000"; 
+   d="scan'208";a="294359461"
+From: Roland Dreier <rdreier@cisco.com>
+To: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+Cc: Stefan Roscher <ossrosch@linux.vnet.ibm.com>, fenkes@de.ibm.com,
+       LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
+       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
+       alexschm@de.ibm.com, stefan.roscher@de.ibm.com
+Subject: Re: [ewg] Re: [PATCH 1/3] IB/ehca: Replace vmalloc with kmalloc
+References: <200904211716.45245.ossrosch@linux.vnet.ibm.com>
+	<adaws9dvrkp.fsf@cisco.com>
+	<200904221602.29028.ossrosch@linux.vnet.ibm.com>
+	<20090428150736.1ea143f0@BL3D1974.boeblingen.de.ibm.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 28 Apr 2009 07:01:32 -0700
+In-Reply-To: <20090428150736.1ea143f0@BL3D1974.boeblingen.de.ibm.com>
+	(Alexander Schmidt's message of "Tue, 28 Apr 2009 15:07:36 +0200")
+Message-ID: <adabpqgx4g3.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 28 Apr 2009 14:01:32.0192 (UTC) FILETIME=[D5AD1200:01C9C809]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-28 at 21:55 +0800, marywangran wrote:
-> 
-> 
-> 2009/4/28 Peter Zijlstra <peterz@infradead.org>
->         On Tue, 2009-04-28 at 19:26 +0800, marywangran wrote:
->         
->         
->         > Signed-off-by: Ya Zhao <marywangran@gmail.com>
->         > ---
->         > --- linux-2.6.28.1/kernel/sched_fair.c.orig     2009-04-28
->         > 22:26:00.000000000 +0800
->         > +++ linux-2.6.28.1/kernel/sched_fair.c  2009-04-28 22:34:49.000000000 +0800
->         > @@ -1628,12 +1628,13 @@ static void task_new_fair(struct rq *rq,
->         >
->         >        /* 'curr' will be NULL if the child belongs to a different group */
->         >        if (sysctl_sched_child_runs_first && this_cpu == task_cpu(p) &&
->         > -                       curr && curr->vruntime < se->vruntime) {
->         > +                      curr){
->         >                /*
->         >                 * Upon rescheduling, sched_class::put_prev_task() will place
->         >                 * 'current' within the tree based on its new key value.
->         >                 */
->         > -               swap(curr->vruntime, se->vruntime);
->         > +               if( curr->vruntime < se->vruntime )
->         > +                       swap(curr->vruntime, se->vruntime);
->         >                resched_task(rq->curr);
->         >        }
->         
->         
->         Aside from the style issue the patch seems sensible enough.
->         
->         Thing is, do we really care about child runs first?
-> 
-> but if the child runs last,there maybe more copy-on-write.User can
-> disable child-runs-first if he can confirm the child would not do exec
-> or so . now that the kernel provide the policy,why we implement it
-> halfway?
+ > did you have a chance to take a look at the patchset and will you apply it, or
+ > are there any outstanding issues we need to address?
 
-Sure, I just wanted to raise the issue, child-runs-first doesn't really
-work reliably on SMP, and since even embedded is moving to SMP the value
-of keeping it around seems to be less each day.
+I guess it's OK, but definitely 2.6.31 material.  I guess I'll stick it
+linux-next soon.
 
-But as long as we do have it, I agree that your patch is wanted.
+ - R.
