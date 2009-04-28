@@ -1,81 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbZD1XmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbZD1Xru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbZD1XmV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 19:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbZD1XmI
+	id S1756960AbZD1Xru (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 19:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbZD1Xrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 19:42:08 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:56681 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751757AbZD1XmG (ORCPT
+	Tue, 28 Apr 2009 19:47:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53666 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751869AbZD1Xrk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 19:42:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=AxD25NOycNu7FQC86NDIIXox0vu9bjkEqdZ2/dTfessSaKEQb5pgLKkPGUWKSqI9dF
-         MO0Qg0aIET5NiTeqnf96aNfSHnDp8wgqk2uZaVpSklqqfWlHdQCz6CFd/R5v+7gyeHEf
-         E9fv38J2mXidQ9nEKa9x2pnSVcILJiUpBgQO0=
-MIME-Version: 1.0
-In-Reply-To: <1240903942.7620.68.camel@twins>
-References: <21d7e9970904270121s1c58365bqc8933f8a3ffc5f1a@mail.gmail.com>
-	 <20090427083935.GA20941@elte.hu> <1240846843.7620.32.camel@twins>
-	 <21d7e9970904271854q68242f08pb3f8e12f0ddb6506@mail.gmail.com>
-	 <1240903942.7620.68.camel@twins>
-Date: Wed, 29 Apr 2009 09:42:05 +1000
-Message-ID: <21d7e9970904281642x348d9d26s153bc6f75159c262@mail.gmail.com>
-Subject: Re: kms in defconfig
-From: Dave Airlie <airlied@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 28 Apr 2009 19:47:40 -0400
+Date: Tue, 28 Apr 2009 16:42:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
+       kosaki.motohiro@jp.fujitsu.com, andi@firstfloor.org,
+       adobriyan@gmail.com, linux-mm@kvack.org
+Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
+Message-Id: <20090428164248.0c8cffef.akpm@linux-foundation.org>
+In-Reply-To: <1240961469.938.1077.camel@calx>
+References: <20090428010907.912554629@intel.com>
+	<20090428014920.769723618@intel.com>
+	<20090428143244.4e424d36.akpm@linux-foundation.org>
+	<1240958794.938.1045.camel@calx>
+	<20090428160219.ca0123a1.akpm@linux-foundation.org>
+	<1240961469.938.1077.camel@calx>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 5:32 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Tue, 2009-04-28 at 11:54 +1000, Dave Airlie wrote:
->> On Tue, Apr 28, 2009 at 1:40 AM, Peter Zijlstra <peterz@infradead.org> wrote:
->> > On Mon, 2009-04-27 at 10:39 +0200, Ingo Molnar wrote:
->> >> * Dave Airlie <airlied@gmail.com> wrote:
->> >>
->> >> > Hi guys,
->> >> >
->> >> > I just noticed CONFIG_DRM_I915_KMS is enabled for x86-64.
->> >> >
->> >> > This should never be the case, as anyone who built defconfig
->> >> > kernels before, will now get KMS enabled when really they need to
->> >> > have done userspace upgrades.
->> >>
->> >> I've yet to see such a bugreport.
->> >
->> > Whenever I accidentally enable KMS I get a dead X (happens way more
->> > often that I'd like to), I blame this on the ubuntu Xorg packages, but
->> > can't be arsed to fix it myself -- hopefully the kinky koala will fix
->> > stuff, but who knows.
->>
->> Well you can't really blame anyone else for it, since you have to put
->> the code upstream
->> in the kernel before you can release drivers that use it for distros to package.
->>
->> So it would be impossible for any distro to have shipped kms drivers in a useful
->> fashion before KMS is actually in the kernel.
->
-> Can't the driver detect KMS and use it when present? In that case they
-> could just ship a KMS capable driver that works either way.
->
+On Tue, 28 Apr 2009 18:31:09 -0500
+Matt Mackall <mpm@selenic.com> wrote:
 
-Again it can't tell the future. The kernel can't know what userspace
-driver is installed
-or what driver the X server is going to run on it. So new drivers can
-of course deal with both cases
-as the userspace driver is kms aware, but a non-kms aware userspace cannot know
-about KMS without time travel.
+> On Tue, 2009-04-28 at 16:02 -0700, Andrew Morton wrote:
+> > On Tue, 28 Apr 2009 17:46:34 -0500
+> > Matt Mackall <mpm@selenic.com> wrote:
+> > 
+> > > > > +/* a helper function _not_ intended for more general uses */
+> > > > > +static inline int page_cap_writeback_dirty(struct page *page)
+> > > > > +{
+> > > > > +	struct address_space *mapping;
+> > > > > +
+> > > > > +	if (!PageSlab(page))
+> > > > > +		mapping = page_mapping(page);
+> > > > > +	else
+> > > > > +		mapping = NULL;
+> > > > > +
+> > > > > +	return mapping && mapping_cap_writeback_dirty(mapping);
+> > > > > +}
+> > > > 
+> > > > If the page isn't locked then page->mapping can be concurrently removed
+> > > > and freed.  This actually happened to me in real-life testing several
+> > > > years ago.
+> > > 
+> > > We certainly don't want to be taking locks per page to build the flags
+> > > data here. As we don't have any pretense of being atomic, it's ok if we
+> > > can find a way to do the test that's inaccurate when a race occurs, so
+> > > long as it doesn't dereference null.
+> > > 
+> > > But if there's not an obvious way to do that, we should probably just
+> > > drop this flag bit for this iteration.
+> > 
+> > trylock_page() could be used here, perhaps.
+> > 
+> > Then again, why _not_ just do lock_page()?  After all, few pages are
+> > ever locked.  There will be latency if the caller stumbles across a
+> > page which is under read I/O, but so be it?
+> 
+> As I mentioned just a bit ago, it's really not an unreasonable use case
+> to want to do this on every page in the system back to back. So per page
+> overhead matters. And the odds of stalling on a locked page when
+> visiting 1M pages while under load are probably not negligible.
 
-Once distros ship the kms aware userspaces then it should all work fine.
+The chances of stalling on a locked page are pretty good, and the
+duration of the stall might be long indeed.  Perhaps a trylock is a
+decent compromise - it depends on the value of this metric, and I've
+forgotten what we're talking about ;)
 
-Dave.
+umm, seems that this flag is needed to enable PG_error, PG_dirty,
+PG_uptodate and PG_writeback reporting.  So simply removing this code
+would put a huge hole in the patchset, no?
+
+> Our lock primitives are pretty low overhead in the fast path, but every
+> cycle counts. The new tests and branches this code already adds are a
+> bit worrisome, but on balance probably worth it.
+
+That should be easy to quantify (hint).
