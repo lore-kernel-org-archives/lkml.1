@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758476AbZD1Va6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZD1VeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758476AbZD1Va6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 17:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbZD1Vas
+	id S1756574AbZD1VeV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 17:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbZD1VeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 17:30:48 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:53976 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbZD1Var (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 17:30:47 -0400
-Date: Tue, 28 Apr 2009 17:21:29 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Scheduler regression: Too frequent timer interrupts(?)
-In-Reply-To: <1240953796.7620.160.camel@twins>
-Message-ID: <alpine.DEB.1.10.0904281719480.15947@qirst.com>
-References: <alpine.DEB.1.10.0904161539130.23632@qirst.com>  <1239951613.23397.4107.camel@laptop>  <alpine.DEB.1.10.0904170941020.11877@qirst.com>  <1239977776.23397.4590.camel@laptop>  <alpine.DEB.1.10.0904171021360.20239@qirst.com>  <1239979901.23397.4638.camel@laptop>
-  <alpine.DEB.1.10.0904171100510.21575@qirst.com>  <1239982137.23397.4684.camel@laptop> <20090423044228.GA2428@ucw.cz>  <alpine.DEB.1.10.0904281700220.15947@qirst.com> <1240953796.7620.160.camel@twins>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 28 Apr 2009 17:34:12 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:39466 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753011AbZD1VeL convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 17:34:11 -0400
+From: Edward Goggin <egoggin@vmware.com>
+To: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+Date: Tue, 28 Apr 2009 14:33:53 -0700
+Subject: Simple typo in reboot.c when enabling CONFIG_KDB_KDUMP
+Thread-Topic: Simple typo in reboot.c when enabling CONFIG_KDB_KDUMP
+Thread-Index: AcnISQXYsxPYPXudSga5oeAy4n++fg==
+Message-ID: <B1FD1A0C73AC4E46A4F95BADC77079D35F55F114@PA-EXMBX02.vmware.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009, Peter Zijlstra wrote:
+Patch 1 of 1
 
-> On Tue, 2009-04-28 at 17:02 -0400, Christoph Lameter wrote:
-> > On Thu, 23 Apr 2009, Pavel Machek wrote:
-> >
-> > > I'd say that taking interrupt and returning in below 1000nsec is
-> > > impossible, even on very fast hw.
-> >
-> > Hmmm.... Could it be that CONFIG_NO_HZ caused the timer interrupt to be
-> > avoided in earlier releases? NO_HZ theory at least is to only schedule
-> > interrupts when  necessary. So an interrupt is needed at the end of the
-> > scheduling intervals and not at HZ frequency.
->
-> No, NOHZ only works on idle cpus.
+Simple typo when enabling CONFIG_KDB_KDUMP.
 
-It is advertised to do more:
-
-config NO_HZ
-        bool "Tickless System (Dynamic Ticks)"
-        depends on GENERIC_TIME && GENERIC_CLOCKEVENTS
-        select TICK_ONESHOT
-        help
-          This option enables a tickless system: timer interrupts will
-          only trigger on an as-needed basis both when the system is
-          busy and when the system is idle.
+Signed-off-by: Ed Goggin <egoggin@vmware.com>
 
 
-So NO_HZ is really IDLE_NO_HZ. The system is not tickless.
-
+--- linux-2.6.29/arch/x86/kernel/reboot.c	2009-04-28 14:37:30.000000000 -0400
++++ linux-2.6.29.fix/arch/x86/kernel/./reboot.c	2009-04-28 14:37:37.000000000 -0400
+@@ -649,7 +649,7 @@ void halt_current_cpu(struct pt_regs *re
+ #ifdef CONFIG_X86_32
+ 	if (!user_mode_vm(regs)) {
+ 		crash_fixup_ss_esp(&fixed_regs, regs);
+-		regs = &fixed_Regs;
++		regs = &fixed_regs;
+ 	}
+ #endif
+         crash_save_cpu(regs, raw_smp_processor_id());
 
