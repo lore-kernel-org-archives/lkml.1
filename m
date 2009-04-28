@@ -1,108 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbZD1ViP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758399AbZD1VlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206AbZD1ViP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 17:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754768AbZD1Vh4
+	id S1758399AbZD1VlU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 17:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZD1VlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 17:37:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39970 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754016AbZD1Vh4 (ORCPT
+	Tue, 28 Apr 2009 17:41:04 -0400
+Received: from mail.fieldses.org ([141.211.133.115]:52615 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751816AbZD1VlB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 17:37:56 -0400
-Date: Tue, 28 Apr 2009 14:32:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
-       andi@firstfloor.org, mpm@selenic.com, adobriyan@gmail.com,
-       fengguang.wu@intel.com, linux-mm@kvack.org
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-Message-Id: <20090428143244.4e424d36.akpm@linux-foundation.org>
-In-Reply-To: <20090428014920.769723618@intel.com>
-References: <20090428010907.912554629@intel.com>
-	<20090428014920.769723618@intel.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Apr 2009 17:41:01 -0400
+Date: Tue, 28 Apr 2009 17:40:43 -0400
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH v2] lockd: fix FILE_LOCKING=n build error
+Message-ID: <20090428214043.GM23924@fieldses.org>
+References: <20090428165343.2e357d7a.sfr@canb.auug.org.au> <49F71F4A.3080908@oracle.com> <20090428172137.GA22451@fieldses.org> <49F7421A.1090709@oracle.com> <1240942554.7376.38.camel@heimdal.trondhjem.org> <49F76E8C.3070808@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49F76E8C.3070808@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009 09:09:12 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+On Tue, Apr 28, 2009 at 02:01:00PM -0700, Randy Dunlap wrote:
+> Trond Myklebust wrote:
+> > Until someone finds time to go through the code and add in all the
+> > CONFIG_FILE_LOCKING special cases, the above needs to be a 'depends on
+> > INET && FILE_LOCKING'.
+> 
+> That seems to work.  Thanks.
 
-> +/*
-> + * Kernel flags are exported faithfully to Linus and his fellow hackers.
-> + * Otherwise some details are masked to avoid confusing the end user:
-> + * - some kernel flags are completely invisible
-> + * - some kernel flags are conditionally invisible on their odd usages
-> + */
-> +#ifdef CONFIG_DEBUG_KERNEL
-> +static inline int genuine_linus(void) { return 1; }
+Looks good to me.--b.
 
-Although he's a fine chap, the use of the "_linus" tag isn't terribly
-clear (to me).  I think what you're saying here is that this enables
-kernel-developer-only features, yes?
-
-If so, perhaps we could come up with an identifier which expresses that
-more clearly.
-
-But I'd expect that everyone and all distros enable CONFIG_DEBUG_KERNEL
-for _some_ reason, so what's the point?
-
-It is preferable that we always implement the same interface for all
-Kconfig settings.  If this exposes information which is confusing or
-not useful to end-users then so be it - we should be able to cover that
-in supporting documentation.
-
-Also, as mentioned in the other email, it would be good if we were to
-publish a little userspace app which people can use to access this raw
-data.  We could give that application an `--i-am-a-kernel-developer'
-option!
-
-> +#else
-> +static inline int genuine_linus(void) { return 0; }
-> +#endif
-
-This isn't an appropriate use of CONFIG_DEBUG_KERNEL.
-
-DEBUG_KERNEL is a Kconfig-only construct which is use to enable _other_
-debugging features.  The way you've used it here, if the person who is
-configuring the kernel wants to enable any other completely-unrelated
-debug feature, they have to enable DEBUG_KERNEL first.  But when they
-do that, they unexpectedly alter the behaviour of pagemap!
-
-There are two other places where CONFIG_DEBUG_KERNEL affects code
-generation in .c files: arch/parisc/mm/init.c and
-arch/powerpc/kernel/sysfs.c.  These are both wrong, and need slapping ;)
-
-> +#define kpf_copy_bit(uflags, kflags, visible, ubit, kbit)		\
-> +	do {								\
-> +		if (visible || genuine_linus())				\
-> +			uflags |= ((kflags >> kbit) & 1) << ubit;	\
-> +	} while (0);
-
-Did this have to be implemented as a macro?
-
-It's bad, because it might or might not reference its argument, so if
-someone passes it an expression-with-side-effects, the end result is
-unpredictable.  A C function is almost always preferable if possible.
-
-> +/* a helper function _not_ intended for more general uses */
-> +static inline int page_cap_writeback_dirty(struct page *page)
-> +{
-> +	struct address_space *mapping;
-> +
-> +	if (!PageSlab(page))
-> +		mapping = page_mapping(page);
-> +	else
-> +		mapping = NULL;
-> +
-> +	return mapping && mapping_cap_writeback_dirty(mapping);
-> +}
-
-If the page isn't locked then page->mapping can be concurrently removed
-and freed.  This actually happened to me in real-life testing several
-years ago.
-
+> 
+> 
+> 
+> 
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> lockd without FILE_LOCKING doesn't make sense, so make LOCKD and
+> LOCKD_V4 depend on FILE_LOCKING, and make NFS depend on FILE_LOCKING.
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  fs/Kconfig     |    2 ++
+>  fs/nfs/Kconfig |    2 +-
+>  2 files changed, 3 insertions(+), 1 deletion(-)
+> 
+> --- linux-next-20090428.orig/fs/Kconfig
+> +++ linux-next-20090428/fs/Kconfig
+> @@ -226,10 +226,12 @@ source "fs/nfsd/Kconfig"
+>  
+>  config LOCKD
+>  	tristate
+> +	depends on FILE_LOCKING
+>  
+>  config LOCKD_V4
+>  	bool
+>  	depends on NFSD_V3 || NFS_V3
+> +	depends on FILE_LOCKING
+>  	default y
+>  
+>  config EXPORTFS
+> --- linux-next-20090428.orig/fs/nfs/Kconfig
+> +++ linux-next-20090428/fs/nfs/Kconfig
+> @@ -1,6 +1,6 @@
+>  config NFS_FS
+>  	tristate "NFS client support"
+> -	depends on INET
+> +	depends on INET && FILE_LOCKING
+>  	select LOCKD
+>  	select SUNRPC
+>  	select NFS_ACL_SUPPORT if NFS_V3_ACL
