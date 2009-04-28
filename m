@@ -1,187 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932308AbZD1LHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932380AbZD1LHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932308AbZD1LHd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 07:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755334AbZD1LHT
+	id S932380AbZD1LHz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 07:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932231AbZD1LHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 07:07:19 -0400
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:37512 "EHLO
-	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756472AbZD1LHR (ORCPT
+	Tue, 28 Apr 2009 07:07:32 -0400
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:48988 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932308AbZD1LHb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 07:07:17 -0400
+	Tue, 28 Apr 2009 07:07:31 -0400
 From: "Henrik Rydberg" <rydberg@euromail.se>
 To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
        linux-kernel@vger.kernel.org, Henrik Rydberg <rydberg@euromail.se>
-Subject: [PATCH] input: Document the multi-touch (MT) protocol
-Date: Tue, 28 Apr 2009 13:06:57 +0200
-Message-Id: <1240916817-18995-2-git-send-email-rydberg@euromail.se>
+Subject: [PATCH] input: Document the bcm5974 driver
+Date: Tue, 28 Apr 2009 13:06:56 +0200
+Message-Id: <1240916817-18995-1-git-send-email-rydberg@euromail.se>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1240916817-18995-1-git-send-email-rydberg@euromail.se>
-References: <1240916817-18995-1-git-send-email-rydberg@euromail.se>
 X-Originating-IP: 83.248.194.102
-X-Scan-Result: No virus found in message 1Lyl9V-0008Qo-5m.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1Lyl9V-0008Qo-5m 55945b63fdda8dacb60dbff99e929aae
+X-Scan-Result: No virus found in message 1Lyl9O-0000CB-9X.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1Lyl9O-0000CB-9X b7cc6f3c52c745c39196eb798eb3cf90
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchs adds documentation for the multi-touch protocol to
-Documentation/input/.
+This patch adds documentation for the bcm5974 to Documentation/input/.
 
 Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
 ---
- Documentation/input/multi-touch-protocol.txt |  140 ++++++++++++++++++++++++++
- 1 files changed, 140 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/input/multi-touch-protocol.txt
+ Documentation/input/bcm5974.txt |   65 +++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 65 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/input/bcm5974.txt
 
-diff --git a/Documentation/input/multi-touch-protocol.txt b/Documentation/input/multi-touch-protocol.txt
+diff --git a/Documentation/input/bcm5974.txt b/Documentation/input/bcm5974.txt
 new file mode 100644
-index 0000000..2e99cd6
+index 0000000..6db0763
 --- /dev/null
-+++ b/Documentation/input/multi-touch-protocol.txt
-@@ -0,0 +1,140 @@
-+Multi-touch (MT) Protocol
-+-------------------------
-+	Copyright (C) 2009	Henrik Rydberg <rydberg@euromail.se>
++++ b/Documentation/input/bcm5974.txt
+@@ -0,0 +1,65 @@
++BCM5974 Driver (bcm5974)
++------------------------
++	Copyright (C) 2008-2009	Henrik Rydberg <rydberg@euromail.se>
 +
++The USB initialization and package decoding was made by Scott Shawcroft as
++part of the touchd user-space driver project:
++	Copyright (C) 2008	Scott Shawcroft (scott.shawcroft@gmail.com)
 +
-+Introduction
-+------------
++The BCM5974 driver is based on the appletouch driver:
++	Copyright (C) 2001-2004	Greg Kroah-Hartman (greg@kroah.com)
++	Copyright (C) 2005	Johannes Berg (johannes@sipsolutions.net)
++	Copyright (C) 2005	Stelian Pop (stelian@popies.net)
++	Copyright (C) 2005	Frank Arnold (frank@scirocco-5v-turbo.de)
++	Copyright (C) 2005	Peter Osterlund (petero2@telia.com)
++	Copyright (C) 2005	Michael Hanselmann (linux-kernel@hansmi.ch)
++	Copyright (C) 2006	Nicolas Boichat (nicolas@boichat.ch)
 +
-+In order to utilize the full power of the new multi-touch devices, a way to
-+report detailed finger data to user space is needed. This document
-+describes the multi-touch (MT) protocol which allows kernel drivers to
-+report details for an arbitrary number of fingers.
++This driver adds support for the multi-touch trackpad on the new Apple
++Macbook Air and Macbook Pro laptops. It replaces the appletouch driver on
++those computers, and integrates well with the synaptics driver of the Xorg
++system.
 +
++Known to work on Macbook Air, Macbook Pro Penryn and the new unibody
++Macbook 5 and Macbook Pro 5.
 +
 +Usage
 +-----
 +
-+Anonymous finger details are sent sequentially as separate packets of ABS
-+events. Only the ABS_MT events are recognized as part of a finger
-+packet. The end of a packet is marked by calling the input_mt_sync()
-+function, which generates a SYN_MT_REPORT event. The end of multi-touch
-+transfer is marked by calling the usual input_sync() function.
++The driver loads automatically for the supported usb device ids, and
++becomes available both as an event device (/dev/input/event*) and as a
++mouse via the mousedev driver (/dev/input/mice).
 +
-+A set of ABS_MT events with the desired properties are defined. The events
-+are divided into categories, to allow for partial implementation.  The
-+minimum set consists of ABS_MT_TOUCH_MAJOR, ABS_MT_POSITION_X and
-+ABS_MT_POSITION_Y, which allows for multiple fingers to be tracked.  If the
-+device supports it, the ABS_MT_WIDTH_MAJOR may be used to provide the size
-+of the approaching finger. Anisotropy and direction may be specified with
-+ABS_MT_TOUCH_MINOR, ABS_MT_WIDTH_MINOR and ABS_MT_ORIENTATION. Devices with
-+more granular information may specify general shapes as blobs, i.e., as a
-+sequence of rectangular shapes grouped together by a
-+ABS_MT_BLOB_ID. Finally, the ABS_MT_TOOL_TYPE may be used to specify
-+whether the touching tool is a finger or a pen or something else.
++USB Race
++--------
 +
++The Apple multi-touch trackpads report both mouse and keyboard events via
++different interfaces of the same usb device. This creates a race condition
++with the HID driver, which, if not told otherwise, will find the standard
++HID mouse and keyboard, and claim the whole device. To remedy, the usb
++product id must be listed in the mouse_ignore list of the hid driver.
 +
-+Event Semantics
-+---------------
++Debug output
++------------
 +
-+The word "contact" is used to describe a tool which is in direct contact
-+with the surface. A finger, a pen or a rubber all classify as contacts.
++To ease the development for new hardware version, verbose packet output can
++be switched on with the debug kernel module parameter. The range [1-9]
++yields different levels of verbosity. Example (as root):
 +
-+ABS_MT_TOUCH_MAJOR
++rmmod bcm5974 && sudo modprobe bcm5974 debug=9
 +
-+The length of the major axis of the contact. The length should be given in
-+surface units. If the surface has a X time Y resolution, the largest
-+possible value of ABS_MT_TOUCH_MAJOR is sqrt(X^2 + Y^2), the diameter.
++tail -f /var/log/debug
 +
-+ABS_MT_TOUCH_MINOR
++rmmod bcm5974 && sudo modprobe bcm5974 debug=0
 +
-+The length, in surface units, of the minor axis of the contact. If the
-+contact is circular, this event can be omitted.
++Trivia
++------
 +
-+ABS_MT_WIDTH_MAJOR
++The driver was developed at the ubuntu forums in June 2008 [1], and now has
++a more permanent home at bitmath.org [2].
 +
-+The length, in surface units, of the major axis of the approaching
-+tool. This should be understood as the size of the tool itself. The
-+orientation of the contact and the approaching tool are assumed to be the
-+same.
-+
-+ABS_MT_WIDTH_MINOR
-+
-+The length, in surface units, of the minor axis of the approaching
-+tool. Omit if circular.
-+
-+The above four values can be used to derive additional information about
-+the contact. The ratio ABS_MT_TOUCH_MAJOR / ABS_MT_WIDTH_MAJOR approximates
-+the notion of pressure. The fingers of the hand and the palm all have
-+different characteristic widths [1].
-+
-+ABS_MT_ORIENTATION
-+
-+The orientation of the ellipse. The value should describe half a revolution
-+clockwise around the touch center. The scale of the value is arbitrary, but
-+zero should be returned for an ellipse aligned along the Y axis of the
-+surface. As an example, an index finger placed straight onto the axis could
-+return zero orientation, something negative when twisted to the left, and
-+something positive when twisted to the right. This value can be omitted if
-+the touching object is circular, or if the information is not available in
-+the kernel driver.
-+
-+ABS_MT_POSITION_X
-+
-+The surface X coordinate of the center of the touching ellipse.
-+
-+ABS_MT_POSITION_Y
-+
-+The surface Y coordinate of the center of the touching ellipse.
-+
-+ABS_MT_TOOL_TYPE
-+
-+The type of approaching tool. A lot of kernel drivers cannot distinguish
-+between different tool types, such as a finger or a pen. I such cases, the
-+event should be omitted. The protocol currently supports MT_TOOL_FINGER and
-+MT_TOOL_PEN [2].
-+
-+ABS_MT_BLOB_ID
-+
-+The BLOB_ID groups several packets together into one arbitrarily shaped
-+contact. This is a low-level anonymous grouping, and should not be confused
-+with the high-level contactID, explained below. Most kernel drivers will
-+not have this capability, and can safely omit the event.
-+
-+
-+Finger Tracking
-+---------------
-+
-+The kernel driver should generate an arbitrary enumeration of the set of
-+anonymous contacts currently on the surface. The order in which the packets
-+appear in the event stream is not important.
-+
-+The process of finger tracking, i.e., to assign a unique contactID to each
-+initiated contact on the surface, is left to user space; preferably the
-+multi-touch X driver [3]. In that driver, the contactID stays the same and
-+unique until the contact vanishes (when the finger leaves the surface). The
-+problem of assigning a set of anonymous fingers to a set of identified
-+fingers is a euclidian bipartite matching problem at each event update, and
-+relies on a sufficiently rapid update rate.
-+
-+Notes
++Links
 +-----
 +
-+In order to stay compatible with existing applications, the data
-+reported in a finger packet must not be recognized as single-touch
-+events. In addition, all finger data must bypass input filtering,
-+since subsequent events of the same type refer to different fingers.
-+
-+The first kernel driver to utilize the MT protocol is the bcm5974 driver,
-+where examples can be found.
-+
-+[1] With the extension ABS_MT_APPROACH_X and ABS_MT_APPROACH_Y, the
-+difference between the contact position and the approaching tool position
-+could be used to derive tilt.
-+[2] The list can of course be extended.
-+[3] The multi-touch X driver is currently in the prototyping stage. At the
-+time of writing (April 2009), the MT protocol is not yet merged, and the
-+prototype implements finger matching, basic mouse support and two-finger
-+scrolling. The project aims at improving the quality of current multi-touch
-+functionality available in the synaptics X driver, and in addition
-+implement more advanced gestures.
++[1] http://ubuntuforums.org/showthread.php?t=840040
++[2] http://http://bitmath.org/code/
 -- 
 1.5.6.3
 
