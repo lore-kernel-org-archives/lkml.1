@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760735AbZD1Mrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760282AbZD1MrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760735AbZD1Mrc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 08:47:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758934AbZD1MrH
+	id S1760282AbZD1MrR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 08:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760042AbZD1Mqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 08:47:07 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:40466 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758316AbZD1MrG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 08:47:06 -0400
-Date: Tue, 28 Apr 2009 21:47:05 +0900 (JST)
-Message-Id: <20090428.214705.112621770.ryov@valinux.co.jp>
-To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Subject: [PATCH 6/7] blkio-cgroup: Add a cgroup support to dm-ioband
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090428.214632.189725895.ryov@valinux.co.jp>
-References: <20090428.214535.71090234.ryov@valinux.co.jp>
-	<20090428.214604.104034341.ryov@valinux.co.jp>
-	<20090428.214632.189725895.ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Apr 2009 08:46:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43172 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760116AbZD1Mqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 08:46:47 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <alpine.DEB.1.10.0904271946520.27012@vinegar-pot.mit.edu>
+References: <alpine.DEB.1.10.0904271946520.27012@vinegar-pot.mit.edu> <1240864388-26315-4-git-send-email-tabbott@mit.edu> <1240864388-26315-1-git-send-email-tabbott@mit.edu> <1240864388-26315-2-git-send-email-tabbott@mit.edu> <1240864388-26315-3-git-send-email-tabbott@mit.edu> <4678.1240875782@redhat.com>
+To: Tim Abbott <tabbott@MIT.EDU>
+Cc: dhowells@redhat.com, Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 03/14] mn10300: Use macros for .bss.page_aligned section.
+Date: Tue, 28 Apr 2009 13:45:36 +0100
+Message-ID: <31713.1240922736@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With this patch, dm-ioband can work with the blkio-cgroup.
+Tim Abbott <tabbott@MIT.EDU> wrote:
 
-Based on 2.6.30-rc3-git3
-Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
-Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
+> No, it is.  The macro is new in PATCH 1/14 of this series.
+
+Aha!  Okay, I've applied that patch too, and now I see:
+
+  LD      .tmp_vmlinux1
+/opt/nickc/H-i686-pc-linux-gnulibc2.3/bin/am33_2.0-linux-gnu-ld:arch/mn10300/kernel/vmlinux.lds:237: syntax error
+
+Where the error occurs on line 237, which is:
+
+	  __bss_start = .; /* BSS */
+	  .bss : {
+	 . = ALIGN(+(1 << 12)) *(.bss.page_aligned)
+	 *(.bss)
+ ==>	  }
+	  . = ALIGN(4);
+	  __bss_stop = .;
+
+in the expanded linker script.
+
+The problem is that your patch #1 is wrong.  You need to apply:
 
 ---
- drivers/md/dm-ioband-type.c |   10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index a76275f..c9b16a6 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -118,11 +118,11 @@
+ 	TRACE_SYSCALLS()
+ 
+ #define PAGE_ALIGNED_DATA						\
+-	. = ALIGN(PAGE_SIZE)						\
++	. = ALIGN(PAGE_SIZE);						\
+ 	*(.data.page_aligned)
+ 
+ #define PAGE_ALIGNED_BSS						\
+-	. = ALIGN(PAGE_SIZE)						\
++	. = ALIGN(PAGE_SIZE);						\
+ 	*(.bss.page_aligned)
+ 
+ #define RO_DATA(align)							\
+---
 
-Index: linux-2.6.30-rc3-git3/drivers/md/dm-ioband-type.c
-===================================================================
---- linux-2.6.30-rc3-git3.orig/drivers/md/dm-ioband-type.c
-+++ linux-2.6.30-rc3-git3/drivers/md/dm-ioband-type.c
-@@ -6,6 +6,7 @@
-  * This file is released under the GPL.
-  */
- #include <linux/bio.h>
-+#include <linux/biotrack.h>
- #include "dm.h"
- #include "dm-ioband.h"
- 
-@@ -52,14 +53,7 @@ static int ioband_node(struct bio *bio)
- 
- static int ioband_cgroup(struct bio *bio)
- {
--	/*
--	 * This function should return the ID of the cgroup which
--	 * issued "bio". The ID of the cgroup which the current
--	 * process belongs to won't be suitable ID for this purpose,
--	 * since some BIOs will be handled by kernel threads like aio
--	 * or pdflush on behalf of the process requesting the BIOs.
--	 */
--	return 0;	/* not implemented yet */
-+	return get_blkio_cgroup_id(bio);
- }
- 
- struct group_type dm_ioband_group_type[] = {
+to it.
+
+David
