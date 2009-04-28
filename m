@@ -1,62 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754427AbZD1UMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbZD1UOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754427AbZD1UMc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbZD1UMX
+	id S1754302AbZD1UOV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 16:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbZD1UOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:12:23 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:54120 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750804AbZD1UMX (ORCPT
+	Tue, 28 Apr 2009 16:14:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42152 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750905AbZD1UOH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:12:23 -0400
-To: tiwai@suse.de
-CC: miklos@szeredi.hu, teheo@suse.de, linux-kernel@vger.kernel.org,
-       greg@kroah.com, fuse-devel@lists.sourceforge.net
-In-reply-to: <s5hfxfsr2uq.wl%tiwai@suse.de> (message from Takashi Iwai on Tue,
-	28 Apr 2009 21:32:29 +0200)
-Subject: Re: [ANNOUNCE] OSS Proxy 1.2 using CUSE
-References: <48B6F711.1040604@kernel.org>
-	<49E3F91E.4000801@suse.de>
-	<E1Lypk4-0004it-BA@pomaz-ex.szeredi.hu>
-	<s5hmya0spao.wl%tiwai@suse.de>
-	<E1Lyqvi-0004vX-2G@pomaz-ex.szeredi.hu> <s5hfxfsr2uq.wl%tiwai@suse.de>
-Message-Id: <E1Lytf8-0005LD-HJ@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 28 Apr 2009 22:12:18 +0200
+	Tue, 28 Apr 2009 16:14:07 -0400
+Date: Tue, 28 Apr 2009 13:08:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: eparis@redhat.com, linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       hch@infradead.org, alan@lxorguk.ukuu.org.uk, sfr@canb.auug.org.au,
+       john@johnmccutchan.com, rlove@rlove.org
+Subject: Re: [PATCH -V2 01/13] mutex: add atomic_dec_and_mutex_lock
+Message-Id: <20090428130847.849478bd.akpm@linux-foundation.org>
+In-Reply-To: <20090407160601.a824da99.akpm@linux-foundation.org>
+References: <20090327200508.32007.63278.stgit@paris.rdu.redhat.com>
+	<20090407160601.a824da99.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009, Takashi Iwai wrote:
-> At Tue, 28 Apr 2009 19:17:14 +0200,
-> Miklos Szeredi wrote:
-> > 
-> > On Tue, 28 Apr 2009, Takashi Iwai wrote:
-> > > Are you using pulse plugin for ALSA, too?
-> > 
-> > alsa-plugins-pulse package is installed.  How can I find out if ALSA
-> > is actually using this plugin?
+On Tue, 7 Apr 2009 16:06:01 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Fri, 27 Mar 2009 16:05:08 -0400
+> Eric Paris <eparis@redhat.com> wrote:
 > 
-> For example, if you start aplay with -v option, it'll show the plugins
-> to use.
-
-OK, it doesn't.  So I have to tweak some config files to make it use
-this plugin...
-
-...done.  Well, now things do work, but the sound quality is very
-crappy when PA is mixing two or more streams together (loud cracking
-that maybe sounds like integer overflow).
-
-> > What is the disadvantage of non-native ALSA vs. native ALSA?
+> > Much like the atomic_dec_and_lock() function in which we take an hold a
+> > spin_lock if we drop the atomic to 0 this function takes and holds the
+> > mutex if we dec the atomic to 0.
+> > 
+> > Signed-off-by: Eric Paris <eparis@redhat.com>
+> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > LKML-Reference: <20090323172417.410913479@chello.nl>
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > ---
+> > 
+> >  include/linux/mutex.h |   23 +++++++++++++++++++++++
+> >  1 files changed, 23 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/include/linux/mutex.h b/include/linux/mutex.h
+> > index 3069ec7..93054fc 100644
+> > --- a/include/linux/mutex.h
+> > +++ b/include/linux/mutex.h
+> > @@ -151,4 +151,27 @@ extern int __must_check mutex_lock_killable(struct mutex *lock);
+> >  extern int mutex_trylock(struct mutex *lock);
+> >  extern void mutex_unlock(struct mutex *lock);
+> >  
+> > +/**
+> > + * atomic_dec_and_mutex_lock - return holding mutex if we dec to 0
+> > + * @cnt: the atomic which we are to dec
+> > + * @lock: the mutex to return holding if we dec to 0
+> > + *
+> > + * return true and hold lock if we dec to 0, return false otherwise
+> > + */
+> > +static inline int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock)
+> > +{
+> > +	/* dec if we can't possibly hit 0 */
+> > +	if (atomic_add_unless(cnt, -1, 1))
+> > +		return 0;
+> > +	/* we might hit 0, so take the lock */
+> > +	mutex_lock(lock);
+> > +	if (!atomic_dec_and_test(cnt)) {
+> > +		/* when we actually did the dec, we didn't hit 0 */
+> > +		mutex_unlock(lock);
+> > +		return 0;
+> > +	}
+> > +	/* we hit 0, and we hold the lock */
+> > +	return 1;
+> > +}
+> > +
 > 
-> Well, the question is rather whether you need PA or not...
+> This looks too large to be inlined?
 
-Yes, OSSP needs it.  So the question (to Tejun) is why does OSSP use
-libpulse API instead of libalsa API?
+It still looks too large to be inlined.
 
-The former seems to be much more mature and easier to configure than
-the latter.
+Take a look at atomic_add_unless(), and split your sides laughing.
 
-Thanks,
-Miklos
+Once you factor in all the lockdep and other debug goop, the code
+generation here is pretty bewildering, but it won't be small.
+
