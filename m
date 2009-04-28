@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759068AbZD1KQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbZD1KQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759068AbZD1KQO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 06:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757268AbZD1KP5
+	id S1759471AbZD1KQa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 06:16:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759010AbZD1KQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 06:15:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59938 "EHLO mx3.mail.elte.hu"
+	Tue, 28 Apr 2009 06:16:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55964 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755541AbZD1KP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 06:15:56 -0400
-Date: Tue, 28 Apr 2009 12:14:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 8/9] x86/irq: make MSI irq_desc numa aware -v3
-Message-ID: <20090428101448.GA28495@elte.hu>
-References: <49E68C41.4020801@kernel.org> <20090416090315.GF9813@elte.hu> <49E802CE.5030406@kernel.org> <49E804AD.9020702@kernel.org> <49F6559F.7070005@kernel.org>
+	id S1758957AbZD1KQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 06:16:10 -0400
+Message-ID: <49F6D767.9050801@redhat.com>
+Date: Tue, 28 Apr 2009 13:16:07 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49F6559F.7070005@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Joerg Roedel <joerg.roedel@amd.com>
+CC: Marcelo Tosatti <marcelo@kvack.or>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [PATCH 0/7] KVM support for 1GB pages v2
+References: <1240574327-21575-1-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1240574327-21575-1-git-send-email-joerg.roedel@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Joerg Roedel wrote:
+> Hi,
+>
+> this is the second version of the patches implementing support for 1GB
+> pages in KVM. There are too many changes to the first version to mention
+> them all here. The core support was rewritten to work with mapping
+> levels instead of page sizes. This was the main part of the change.
+> The patches still only support KVM with nested paging enabled
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+What is missing to get shadow paging working with this?  I don't think 
+it's particularly important (it will be pretty hard to find a GB page 
+without any shadowed pages in it), but I don't like arbitrary constraints.
 
-> +#ifdef CONFIG_NUMA_IRQ_DESC
-> +		/* different node ?*/
-> +		if (desc_new->node != node)
-> +			desc = move_irq_desc(desc, node);
-> +#endif
+walk_addr() needs to change to support GB pages, did I miss it in the 
+patchset?
 
-this should have been CONFIG_NUMA_MIGRATE_IRQ_DESC. But even with 
-that fixed, CONFIG_NUMA_MIGRATE_IRQ_DESC is _removed_ in the #2 
-patch in your series and never reintroduced!
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-I've fixed these two bugs in the series and i'm thinking about 
-applying them, but this really makes me think how much testing 
-you've put into this code.
-
-You really should check that the feature actually does what you 
-think, that it can be enabled and you should also check the 
-before/after layout of irq descriptors on a NUMA box.
-
-	Ingo
