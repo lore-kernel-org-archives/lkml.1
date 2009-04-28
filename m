@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759874AbZD1EKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759681AbZD1ELN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759874AbZD1EKt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 00:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbZD1EHs
+	id S1759681AbZD1ELN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 00:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbZD1EHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 28 Apr 2009 00:07:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38786 "EHLO hera.kernel.org"
+Received: from hera.kernel.org ([140.211.167.34]:38787 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751407AbZD1EHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753455AbZD1EHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 28 Apr 2009 00:07:47 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, linux-kernel@vger.kernel.org, donari75@gmail.com,
@@ -15,9 +15,9 @@ To: axboe@kernel.dk, linux-kernel@vger.kernel.org, donari75@gmail.com,
        davem@davemloft.net, jdike@linux.intel.com, benh@kernel.crashing.org,
        Laurent@lvivier.info
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 09/14] swim3: clean up request completion paths
-Date: Tue, 28 Apr 2009 13:06:12 +0900
-Message-Id: <1240891577-4813-10-git-send-email-tj@kernel.org>
+Subject: [PATCH 10/14] swim: clean up request completion paths
+Date: Tue, 28 Apr 2009 13:06:13 +0900
+Message-Id: <1240891577-4813-11-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1240891577-4813-1-git-send-email-tj@kernel.org>
 References: <1240891577-4813-1-git-send-email-tj@kernel.org>
@@ -26,33 +26,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-swim3 curiously tries to update request parameters before calling
-__blk_end_request() when __blk_end_request() will do it anyway, and it
-updates request for partial completion manually instead of using
-blk_update_request().  Also, it does some spurious checks on rq such
-as testing whether rq->sector is negative or current_nr_sectors is
-zero right after fetching.
+swim curiously tries to update request parameters before calling
+__blk_end_request() when __blk_end_request() will do it anyway and
+unnecessarily checks whether current_nr_sectors is zero right after
+fetching.
 
 Drop unnecessary stuff and use standard block layer mechanisms.
 
 [ Impact: cleanup ]
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Laurent Vivier <Laurent@lvivier.info>
 ---
- drivers/block/swim3.c |   31 +++++--------------------------
- 1 files changed, 5 insertions(+), 26 deletions(-)
+ drivers/block/swim.c |    7 -------
+ 1 files changed, 0 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/block/swim3.c b/drivers/block/swim3.c
-index 5904f7b..4248559 100644
---- a/drivers/block/swim3.c
-+++ b/drivers/block/swim3.c
-@@ -319,14 +319,10 @@ static void start_request(struct floppy_state *fs)
- 		       req->errors, req->current_nr_sectors);
- #endif
- 
--		if (req->sector < 0 || req->sector >= fs->total_secs) {
-+		if (req->sector >= fs->total_secs) {
+diff --git a/drivers/block/swim.c b/drivers/block/swim.c
+index 6544a7b..97ef426 100644
+--- a/drivers/block/swim.c
++++ b/drivers/block/swim.c
+@@ -535,10 +535,6 @@ static void redo_fd_request(struct request_queue *q)
  			__blk_end_request_cur(req, -EIO);
  			continue;
  		}
@@ -60,69 +53,19 @@ index 5904f7b..4248559 100644
 -			__blk_end_request_cur(req, 0);
 -			continue;
 -		}
- 		if (fs->ejected) {
+ 		if (!fs->disk_in) {
  			__blk_end_request_cur(req, -EIO);
  			continue;
-@@ -593,8 +589,6 @@ static void xfer_timeout(unsigned long data)
- 	struct floppy_state *fs = (struct floppy_state *) data;
- 	struct swim3 __iomem *sw = fs->swim3;
- 	struct dbdma_regs __iomem *dr = fs->dma;
--	struct dbdma_cmd *cp = fs->dma_cmd;
--	unsigned long s;
- 	int n;
- 
- 	fs->timeout_pending = 0;
-@@ -605,14 +599,6 @@ static void xfer_timeout(unsigned long data)
- 	out_8(&sw->intr_enable, 0);
- 	out_8(&sw->control_bic, WRITE_SECTORS | DO_ACTION);
- 	out_8(&sw->select, RELAX);
--	if (rq_data_dir(fd_req) == WRITE)
--		++cp;
--	if (ld_le16(&cp->xfer_status) != 0)
--		s = fs->scount - ((ld_le16(&cp->res_count) + 511) >> 9);
--	else
--		s = 0;
--	fd_req->sector += s;
--	fd_req->current_nr_sectors -= s;
- 	printk(KERN_ERR "swim3: timeout %sing sector %ld\n",
- 	       (rq_data_dir(fd_req)==WRITE? "writ": "read"), (long)fd_req->sector);
- 	__blk_end_request_cur(fd_req, -EIO);
-@@ -719,9 +705,7 @@ static irqreturn_t swim3_interrupt(int irq, void *dev_id)
- 		if (intr & ERROR_INTR) {
- 			n = fs->scount - 1 - resid / 512;
- 			if (n > 0) {
--				fd_req->sector += n;
--				fd_req->current_nr_sectors -= n;
--				fd_req->buffer += n * 512;
-+				blk_update_request(fd_req, 0, n << 9);
- 				fs->req_sector += n;
+@@ -561,9 +557,6 @@ static void redo_fd_request(struct request_queue *q)
+ 				__blk_end_request_cur(req, -EIO);
+ 				continue;
  			}
- 			if (fs->retries < 5) {
-@@ -745,13 +729,7 @@ static irqreturn_t swim3_interrupt(int irq, void *dev_id)
- 				start_request(fs);
- 				break;
- 			}
--			fd_req->sector += fs->scount;
--			fd_req->current_nr_sectors -= fs->scount;
--			fd_req->buffer += fs->scount * 512;
--			if (fd_req->current_nr_sectors <= 0) {
--				__blk_end_request_cur(fd_req, 0);
--				fs->state = idle;
--			} else {
-+			if (__blk_end_request(fd_req, 0, fs->scount << 9)) {
- 				fs->req_sector += fs->scount;
- 				if (fs->req_sector > fs->secpertrack) {
- 					fs->req_sector -= fs->secpertrack;
-@@ -761,7 +739,8 @@ static irqreturn_t swim3_interrupt(int irq, void *dev_id)
- 					}
- 				}
- 				act(fs);
--			}
-+			} else
-+				fs->state = idle;
+-			req->nr_sectors -= req->current_nr_sectors;
+-			req->sector += req->current_nr_sectors;
+-			req->buffer += req->current_nr_sectors * 512;
+ 			__blk_end_request_cur(req, 0);
+ 			break;
  		}
- 		if (fs->state == idle)
- 			start_request(fs);
 -- 
 1.6.0.2
 
