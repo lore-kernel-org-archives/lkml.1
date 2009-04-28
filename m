@@ -1,157 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbZD1UdG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbZD1Udq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756050AbZD1UdG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:33:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755286AbZD1Ucu
+	id S1756694AbZD1Udq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 16:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbZD1Udg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:32:50 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:57812 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754853AbZD1Uct (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:32:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=glheH6fu1qNNMk8TWE8KKOOOEfOValyGjxUNNn5AWLkZh/AvEsr7DJrqF9CpBIrsKC
-         PkGPsDo4wyd7B1WiJ59LX5/4uCwXUgJ0i15/um0b54y+mh6l/WmvXhQvqYeA4G0yMJPm
-         u8uvKLZgmHVognX/e3Rv4An1dWHpZfPfL2o7Y=
-Date: Tue, 28 Apr 2009 22:32:46 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: BUG: Function graph tracer hang
-Message-ID: <20090428203244.GE7337@nowhere>
-References: <20090417144055.857407604@goodmis.org> <20090417151135.GG23493@elte.hu> <20090417151303.GA18267@elte.hu> <20090428111223.GA20526@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090428111223.GA20526@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 28 Apr 2009 16:33:36 -0400
+Received: from mga09.intel.com ([134.134.136.24]:25597 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752927AbZD1Ude (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 16:33:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,262,1239001200"; 
+   d="scan'208";a="407729522"
+Subject: Re: mmotm 2009-04-27-15-45 uploaded - iwl3945 oops
+From: reinette chatre <reinette.chatre@intel.com>
+To: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "Zhu, Yi" <yi.zhu@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mm-commits@vger.kernel.org" <mm-commits@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+In-Reply-To: <25818.1240938876@turing-police.cc.vt.edu>
+References: <200904272305.n3RN51mu031395@imap1.linux-foundation.org>
+	 <25818.1240938876@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Tue, 28 Apr 2009 13:39:44 -0700
+Message-Id: <1240951184.1207.11.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 01:12:23PM +0200, Ingo Molnar wrote:
+On Tue, 2009-04-28 at 10:14 -0700, Valdis.Kletnieks@vt.edu wrote:
+> On Mon, 27 Apr 2009 15:46:07 PDT, akpm@linux-foundation.org said:
+> > The mm-of-the-moment snapshot 2009-04-27-15-45 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
 > 
-> FYI, a testbox triggered this message today:
+> Saw this while booting at home, out of range of any access points I was
+> configured to associate with (there *are* 4 APs owned by neighbors that I can
+> see via kismet, but wpa_supplicant isn't configured to use them).  Didn't
+> happen this morning at my office, when there's APs in range.
 > 
->   BUG: Function graph tracer hang!
+> This didn't happen in mmotm-0424, so it's something new in the last few days.
+
+A recent patch that is related is ...
+
+commit 4583f7455c6b668a4e9cab154b5a7b6c583b288a
+Author: Johannes Berg <johannes@sipsolutions.net>
+Date:   Thu Apr 23 10:45:04 2009 +0200
+
+    iwlwifi: notify on scan completion even when shutting down
+
+    Under certain circumstances iwlwifi can get stuck and will no
+    longer accept scan requests, because the core code (cfg80211)
+    thinks that it's still processing one. This fixes one of the
+    points where it can happen, but I've still seen it (although
+    only with my radio-off-when-idle patch).
+    
+    Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+    Acked-by: Reinette Chatre <reinette.chatre@intel.com>
+    Signed-off-by: John W. Linville <linville@tuxdriver.com>
+
+
+Could you please revert this and test again?
+
+If this does not help, could you please bisect?
+
+Thank you
+
+Reinette
+
+
 > 
-> i've attached the bootlog. Not sure how reproducible it is. I havent 
-> seen this message recently.
+> [  519.180281] iwl3945 0000:0c:00.0: Error sending REPLY_SCAN_CMD: time out after 500ms.
+> [  519.680281] iwl3945 0000:0c:00.0: Error sending REPLY_TX_PWR_TABLE_CMD: time out after 500ms.
+> [  519.926455] ------------[ cut here ]------------
+> [  519.926461] WARNING: at net/mac80211/scan.c:282 warn_slowpath_null+0xd/0xf()
+> [  519.926465] Hardware name: Latitude D820                   
+> [  519.926476] BUG: unable to handle kernel NULL pointer dereference at (null)
+> [  519.926485] IP: [<ffffffff802384ff>] warn_slowpath_fmt+0x7d/0xd0
+> [  519.926494] PGD 7ead4067 PUD 7f8e3067 PMD 0 
+> [  519.926504] Oops: 0000 [#1] PREEMPT SMP 
+> [  519.926512] last sysfs file: /sys/devices/platform/dock.0/docked
+> [  519.926518] CPU 1 
+> [  519.926522] Modules linked in: sunrpc nvidia(P) [last unloaded: microcode]
+> [  519.926536] Pid: 649, comm: iwl3945 Tainted: P           2.6.30-rc3-mmotm0427 #1 Latitude D820                   
+> [  519.926541] RIP: 0010:[<ffffffff802384ff>]  [<ffffffff802384ff>] warn_slowpath_fmt+0x7d/0xd0
+> [  519.926551] RSP: 0018:ffff88007e7e3c70  EFLAGS: 00010286
+> [  519.926555] RAX: 0000000000000042 RBX: 000000000000011a RCX: 00000000ffffffff
+> [  519.926560] RDX: ffff8800010f1000 RSI: ffffffff8064d3b3 RDI: ffffffff80239038
+> [  519.926564] RBP: ffff88007e7e3dd0 R08: 0000000000000082 R09: 0000000000000000
+> [  519.926569] R10: 0000000000000005 R11: 0000000000000000 R12: ffffffff8082531c
+> [  519.926574] R13: 0000000000000000 R14: ffff88007e7e3c70 R15: ffff8800010f0100
+> [  519.926579] FS:  0000000000000000(0000) GS:ffff8800010f1000(0000) knlGS:0000000000000000
+> [  519.926584] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> [  519.926589] CR2: 0000000000000000 CR3: 000000007ead5000 CR4: 00000000000006e0
+> [  519.926593] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [  519.926598] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [  519.926604] Process iwl3945 (pid: 649, threadinfo ffff88007e7e2000, task ffff88007e794500)
+> [  519.926608] Stack:
+> [  519.926611]  6f6c735f6e726177 756e5f6874617077 302f6478302b6c6c ffffffff80006678
+> [  519.926620]  ffff880000000000 ffff88007f8008c0 ffff88007e7e3d20 0000000000000046
+> [  519.926631]  0000000000000002 0000000000000000 ffffffff8046e959 0000000000000000
+> [  519.926643] Call Trace:
+> [  519.926647]  [<ffffffff8046e959>] ? iwl_rx_queue_update_write_ptr+0x2d/0xd8
+> [  519.926657]  [<ffffffff80259a62>] ? trace_hardirqs_off_caller+0x1f/0xa2
+> [  519.926667]  [<ffffffff8064fd91>] ? _spin_unlock_irqrestore+0x5b/0x69
+> [  519.926677]  [<ffffffff8046e9f2>] ? iwl_rx_queue_update_write_ptr+0xc6/0xd8
+> [  519.926684]  [<ffffffff80473c3e>] ? iwl_bg_scan_completed+0x0/0x65
+> [  519.926692]  [<ffffffff8023855f>] warn_slowpath_null+0xd/0xf
+> [  519.926699]  [<ffffffff80612dc9>] ieee80211_scan_completed+0x4d/0x367
+> [  519.926709]  [<ffffffff80473c3e>] ? iwl_bg_scan_completed+0x0/0x65
+> [  519.926716]  [<ffffffff80473c76>] iwl_bg_scan_completed+0x38/0x65
+> [  519.926723]  [<ffffffff802488e0>] worker_thread+0x251/0x369
+> [  519.926731]  [<ffffffff80248887>] ? worker_thread+0x1f8/0x369
+> [  519.926738]  [<ffffffff8064fd70>] ? _spin_unlock_irqrestore+0x3a/0x69
+> [  519.926745]  [<ffffffff8024cb21>] ? autoremove_wake_function+0x0/0x34
+> [  519.926753]  [<ffffffff8024868f>] ? worker_thread+0x0/0x369
+> [  519.926760]  [<ffffffff8024c728>] kthread+0x55/0x80
+> [  519.926767]  [<ffffffff8020c1ba>] child_rip+0xa/0x20
+> [  519.926774]  [<ffffffff802305ac>] ? finish_task_switch+0x7f/0xc9
+> [  519.926782]  [<ffffffff8020bb80>] ? restore_args+0x0/0x30
+> [  519.926790]  [<ffffffff8024c6d3>] ? kthread+0x0/0x80
+> [  519.926796]  [<ffffffff8020c1b0>] ? child_rip+0x0/0x20
+> [  519.926802] Code: 77 a5 7b 80 31 c0 e8 98 4e 41 00 bf 05 00 00 00 e8 e7 ad 2a 00 48 85 c0 74 11 48 89 c6 48 c7 c7 92 a5 7b 80 31 c0 e8 78 4e 41 00 <41> 80 7d 00 00 74 23 48 8d 45 10 48 8d 75 90 48 89 45 98 c7 45 
+> [  519.926904] RIP  [<ffffffff802384ff>] warn_slowpath_fmt+0x7d/0xd0
+> [  519.926912]  RSP <ffff88007e7e3c70>
+> Apr 28 01:50:28 turing-police kernel: [  519.926915] CR2: 0000000000000000
+> Apr 28 01:50:28 turing-police kernel: [  519.926920] ---[ end trace 00d0bec46e95e015 ]---
 > 
-> [    3.847095] Testing tracer function_graph: <3>INFO: RCU detected CPU 0 stall (t=10000 jiffies)
-> [   13.856011] Pid: 302, comm: kstop/0 Not tainted 2.6.30-rc3-tip #37050
-> [   13.856011] Call Trace:
-> [   13.856011]  <IRQ>  [<ffffffff802c677f>] check_cpu_stall+0x7a/0x11e
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff802105c8>] dump_trace+0x289/0x325
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff802118d9>] show_trace_log_lvl+0x51/0x5e
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff802118fb>] show_trace+0x15/0x17
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff80aa3362>] dump_stack+0x77/0x80
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff802c6841>] __rcu_pending+0x1e/0x16b
-> [   13.856011]  [<ffffffff8024c8c9>] ? cpumask_next+0x4/0x37
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff802c69ba>] rcu_pending+0x2c/0x5d
-> [   13.856011]  [<ffffffff80250112>] ? tg_shares_up+0x20c/0x22c
-> [   13.856011]  [<ffffffff8024c8c9>] ? cpumask_next+0x4/0x37
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff8027570c>] update_process_times+0x3c/0x7a
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff80294e16>] tick_periodic+0x7e/0x80
-> [   13.856011]  [<ffffffff802cd04f>] ? trace_clock_local+0x28/0x35
-> [   13.856011]  [<ffffffff802e7ab5>] ftrace_push_return_trace+0x84/0x108
-> [   13.856011]  [<ffffffff80250112>] ? tg_shares_up+0x20c/0x22c
-> [   13.856011]  [<ffffffff8022cfdd>] prepare_ftrace_return+0x104/0x164
-> [   13.856011]  [<ffffffff8020c9d6>] ftrace_graph_caller+0x46/0x6d
-> [   13.856011]  [<ffffffff8024c8ce>] ? cpumask_next+0x9/0x37
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff80294e3a>] tick_handle_periodic+0x22/0xa4
-> [   13.856011]  [<ffffffff8024ff06>] ? tg_shares_up+0x0/0x22c
-> [   13.856011]  [<ffffffff80247568>] ? tg_nop+0x0/0xd
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff80aaea0f>] smp_apic_timer_interrupt+0x9e/0xb6
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff8020d883>] apic_timer_interrupt+0x13/0x20
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff8025aba7>] walk_tg_tree+0xac/0x11a
-> [   13.856011]  [<ffffffff8025ffd6>] ? rebalance_domains+0xc0/0x2da
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff8025b030>] update_shares+0x64/0x69
-> [   13.856011]  [<ffffffff8020c9d6>] ? ftrace_graph_caller+0x46/0x6d
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff8025fa03>] load_balance+0xb6/0x5c9
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff802600e5>] rebalance_domains+0x1cf/0x2da
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff80260234>] run_rebalance_domains+0x44/0x153
-> [   13.856011]  [<ffffffff8020f75a>] do_softirq+0x82/0x196
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff8026f4cd>] __do_softirq+0x1a3/0x3b6
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff8020debc>] call_softirq+0x1c/0x28
-> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
-> [   13.856011]  [<ffffffff8026ec7a>] irq_exit+0x67/0xee
-> [   13.856011]  <EOI>  [<ffffffff802b532f>] ? stop_cpu+0x187/0x196
-> [   13.856011]  [<ffffffff8027fe94>] ? run_workqueue+0x20b/0x34a
-> [   13.856011]  [<ffffffff8027fe3b>] ? run_workqueue+0x1b2/0x34a
-> [   13.856011]  [<ffffffff80aa4053>] ? schedule+0x6ca/0x6f7
-> [   13.856011]  [<ffffffff802b51a8>] ? stop_cpu+0x0/0x196
-> [   13.856011]  [<ffffffff802800e0>] ? worker_thread+0x10d/0x123
-> [   13.856011]  [<ffffffff8028615f>] ? autoremove_wake_function+0x0/0x53
-> [   13.856011]  [<ffffffff8027ffd3>] ? worker_thread+0x0/0x123
-> [   13.856011]  [<ffffffff80285bb4>] ? kthread+0x71/0xb4
-> [   13.856011]  [<ffffffff8020ddba>] ? child_rip+0xa/0x20
-> [   13.856011]  [<ffffffff8020d714>] ? restore_args+0x0/0x30
-> [   13.856011]  [<ffffffff80285b43>] ? kthread+0x0/0xb4
-> [   13.856011]  [<ffffffff8020ddb0>] ? child_rip+0x0/0x20
 
 
-
-Stuck in the timer interrupt.
-
-
-> CONFIG_HZ_1000=y
-> CONFIG_HZ=1000
-
-
-A lot of timer interrupts.
-
-
-
-> CONFIG_PROFILE_ALL_BRANCHES=y
-
-And, looks like a very close recipe to the last hangs we had with
-the function graph tracer.
-So I'm tempted by the same diagnosis you did with branch prediction
-tracing.
-
-Note that the branch profiler does that:
-
-______f.miss_hit[______r]++;
-
-Which is a read + write on the cacheline.
-If each "if" are profiled in the timer interrupt, we can
-have the cachelines doing a ping-pong of dirtifying since the above
-variable is shared.
-
-Then the timer interrupt becomes slower. The function graph tracer itself makes
-it slower.
-Moreover it is traced itself. So not only the "if" in code are traced, but also
-each "if" processed by the function graph tracer on function calls and returns.
-
-Which means a fair amount of cacheline dirtifying.
-
-Then if the timer interrupt is slowed, and we have a lot of them (1000 Hz),
-the system spends all of its time inside it.
-
-At least we need the branch tracing to be done per cpu, I guess.
-
-Frederic.
 
