@@ -1,134 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932263AbZD1HlM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760167AbZD1HmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932263AbZD1HlM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 03:41:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZD1Hk7
+	id S1760167AbZD1HmK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 03:42:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZD1Hlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 03:40:59 -0400
-Received: from mga03.intel.com ([143.182.124.21]:29126 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751363AbZD1Hk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 03:40:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,259,1239001200"; 
-   d="asc'?scan'208";a="136676611"
-Subject: Re: [PATCH 3/4] PCI: PCIE AER: PCIE AER software error injection
-From: Huang Ying <ying.huang@intel.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-In-Reply-To: <49F140F7.4030705@jp.fujitsu.com>
-References: <1240541127.6842.681.camel@yhuang-dev.sh.intel.com>
-	 <49F140F7.4030705@jp.fujitsu.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-4056tMnHhPRqHP4i1+4a"
-Date: Tue, 28 Apr 2009 15:40:55 +0800
-Message-Id: <1240904455.6842.1138.camel@yhuang-dev.sh.intel.com>
+	Tue, 28 Apr 2009 03:41:52 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42923 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752703AbZD1Hlu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 03:41:50 -0400
+Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Stephen Hemminger <shemminger@vyatta.com>,
+       Evgeniy Polyakov <zbr@ioremap.net>, Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
+       Jarek Poplawski <jarkao2@gmail.com>, Paul Mackerras <paulus@samba.org>,
+       paulmck@linux.vnet.ibm.com, kaber@trash.net, jeff.chua.linux@gmail.com,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org, benh@kernel.crashing.org
+In-Reply-To: <alpine.LFD.2.00.0904271619240.22156@localhost.localdomain>
+References: <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam>
+	 <49F4A6E3.7080102@cosmosbay.com> <20090426185646.GB29238@Krystal>
+	 <20090426145746.1184aeba@nehalam> <1240854297.7620.65.camel@twins>
+	 <20090427113010.5e3f1700@nehalam> <20090427185423.GC23862@elte.hu>
+	 <20090427120658.35a858bb@nehalam>
+	 <alpine.LFD.2.00.0904271219570.22156@localhost.localdomain>
+	 <20090427203616.GB3836@ioremap.net>
+	 <alpine.LFD.2.00.0904271340400.22156@localhost.localdomain>
+	 <20090427144054.1fb9b7a6@nehalam>
+	 <alpine.LFD.2.00.0904271506530.22156@localhost.localdomain>
+	 <alpine.LFD.2.00.0904271525120.22156@localhost.localdomain>
+	 <alpine.LFD.2.00.0904271619240.22156@localhost.localdomain>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 28 Apr 2009 09:41:08 +0200
+Message-Id: <1240904468.7620.70.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-04-27 at 16:32 -0700, Linus Torvalds wrote:
+> 
+> On Mon, 27 Apr 2009, Linus Torvalds wrote:
+> > 
+> > I left the commentary about "readers" and "writers", because in many
+> > ways it's correct, and what the code actually does is very much to
+> > emulate a reader-writer lock.  I put quotes around the uses in the
+> > comments to high-light that it largely _acts_ as a reader-writer lock. 
+> 
+> Btw, I think it was Paul who pointed out that technically it's probably 
+> better to call them "local" and "global" lockers instead of "readers" and 
+> "writers".
 
---=-4056tMnHhPRqHP4i1+4a
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+exclusive vs non-exclusive is what the literature would call them in
+most cases I think.
 
-Hi, All,
-
-The PCIE AER software error injection user space tool has been put in:
-
-http://www.kernel.org/pub/linux/utils/pci/aer-inject/
-
-This is the final place. I will change description in success version of
-patches.
-
-Best Regards,
-Huang Ying
-
-On Fri, 2009-04-24 at 12:32 +0800, Kenji Kaneshige wrote:
-> Huang Ying wrote:
-> > Debugging PCIE AER code can be very difficult because it is hard to
-> > trigger various real hardware errors. This patch provide a software
-> > based error injection tool, which can fake various PCIE errors with a
-> > user space helper tool named "aer-inject". Which can be gotten from:
-> >=20
-> >   http://www.kernel.org/pub/linux/kernel/people/yhuang/
-> >=20
-> > The patch fakes AER error by faking some PCIE AER related registers
-> > and an AER interrupt for specified the PCIE device.
-> >=20
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> >=20
-> > ---
-> >  drivers/pci/pcie/aer/Kconfig       |    2=20
-> >  drivers/pci/pcie/aer/Kconfig.debug |   18 +
-> >  drivers/pci/pcie/aer/Makefile      |    1=20
-> >  drivers/pci/pcie/aer/aer_inject.c  |  472 ++++++++++++++++++++++++++++=
-+++++++++
-> >  4 files changed, 493 insertions(+)
-> >=20
-> > --- /dev/null
-> > +++ b/drivers/pci/pcie/aer/aer_inject.c
-> > @@ -0,0 +1,472 @@
-> > +/*
-> > + * PCIE AER software error injection support.
-> > + *
-> > + * Debuging PCIE AER code is quite difficult because it is hard to
-> > + * trigger various real hardware errors. Software based error
-> > + * injection can fake almost all kinds of errors with the help of a
-> > + * user space helper tool aer-inject, which can be gotten from:
-> > + *   http://www.kernel.org/pub/utils/pcie/aer-inject
->=20
-> Shouldn't it be=20
->=20
-> http://www.kernel.org/pub/linux/kernel/people/yhuang/
->=20
-> ?
->=20
-> (snip.)
->=20
-> > --- /dev/null
-> > +++ b/drivers/pci/pcie/aer/Kconfig.debug
-> > @@ -0,0 +1,18 @@
-> > +#
-> > +# PCI Express Root Port Device AER Debug Configuration
-> > +#
-> > +
-> > +config PCIEAER_INJECT
-> > +	tristate "PCIE AER error injector support"
-> > +	depends on PCIEAER
-> > +	default n
-> > +	help
-> > +	  This enables PCI Express Root Port Advanced Error Reporting
-> > +	  (AER) software error injector.
-> > +
-> > +	  Debuging PCIE AER code is quite difficult because it is hard
-> > +	  to trigger various real hardware errors. Software based
-> > +	  error injection can fake almost all kinds of errors with the
-> > +	  help of a user space helper tool aer-inject, which can be
-> > +	  gotten from:
-> > +	     http://www.kernel.org/pub/utils/pcie/aer-inject
-> >=20
->=20
-> Ditto.
->=20
-> Thanks,
-> Kenji Kaneshige
->=20
-
---=-4056tMnHhPRqHP4i1+4a
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkn2sv4ACgkQKhFGF+eHlpg9dgCfTPs7GGdYqy4gT01h+x9D786T
-CFwAn1NnJxoX3llZbW8w7NAeUl6TgClz
-=flqG
------END PGP SIGNATURE-----
-
---=-4056tMnHhPRqHP4i1+4a--
-
+> That also probably clarifies the rules on when you use one over the other 
+> (ie reading off all the statistics is a "global" operation, as is 
+> obviously replacing the tables).
+> 
+> Of course, "readers" and "writers" is something most Linux lock people are 
+> more used to. Or "brlock" for the old-timers, but that involves a heavy 
+> dose of bad taste. The new use is much nicer, especially since it never 
+> takes the global lock on _all_ cpu's (which was really a killer in so 
+> many ways).
+> 
+> 			Linus
