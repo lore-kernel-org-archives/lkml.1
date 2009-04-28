@@ -1,172 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbZD1JZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbZD1J1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756940AbZD1JZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 05:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbZD1JZr
+	id S1756828AbZD1J1T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 05:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbZD1J1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 05:25:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37114 "EHLO mx3.mail.elte.hu"
+	Tue, 28 Apr 2009 05:27:06 -0400
+Received: from mga03.intel.com ([143.182.124.21]:33161 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755682AbZD1JZq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 05:25:46 -0400
-Date: Tue, 28 Apr 2009 11:24:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Larry Woodman <lwoodman@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090428092454.GB21085@elte.hu>
-References: <20090428010907.912554629@intel.com> <20090428014920.769723618@intel.com> <20090428065507.GA2024@elte.hu> <20090428083320.GB17038@localhost>
+	id S1753538AbZD1J1E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 05:27:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,259,1239001200"; 
+   d="scan'208";a="136708187"
+Date: Tue, 28 Apr 2009 17:26:48 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>
+Subject: Re: Swappiness vs. mmap() and interactive response
+Message-ID: <20090428092648.GA21226@localhost>
+References: <20090428044426.GA5035@eskimo.com> <20090428143019.EBBF.A69D9226@jp.fujitsu.com> <1240904919.7620.73.camel@twins> <20090428090916.GC17038@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090428083320.GB17038@localhost>
+In-Reply-To: <20090428090916.GC17038@localhost>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 28, 2009 at 05:09:16PM +0800, Wu Fengguang wrote:
+> On Tue, Apr 28, 2009 at 09:48:39AM +0200, Peter Zijlstra wrote:
+> > On Tue, 2009-04-28 at 14:35 +0900, KOSAKI Motohiro wrote:
+> > > (cc to linux-mm and Rik)
+> > >
+> > >
+> > > > Hi,
+> > > >
+> > > > So, I just set up Ubuntu Jaunty (using Linux 2.6.28) on a quad core phenom box,
+> > > > and then I did the following (with XFS over LVM):
+> > > >
+> > > > mv /500gig/of/data/on/disk/one /disk/two
+> > > >
+> > > > This quickly caused the system to. grind.. to... a.... complete..... halt.
+> > > > Basically every UI operation, including the mouse in Xorg, started experiencing
+> > > > multiple second lag and delays.  This made the system essentially unusable --
+> > > > for example, just flipping to the window where the "mv" command was running
+> > > > took 10 seconds on more than one occasion.  Basically a "click and get coffee"
+> > > > interface.
+> > >
+> > > I have some question and request.
+> > >
+> > > 1. please post your /proc/meminfo
+> > > 2. Do above copy make tons swap-out? IOW your disk read much faster than write?
+> > > 3. cache limitation of memcgroup solve this problem?
+> > > 4. Which disk have your /bin and /usr/bin?
+> > >
+> >
+> > FWIW I fundamentally object to 3 as being a solution.
+> >
+> > I still think the idea of read-ahead driven drop-behind is a good one,
+> > alas last time we brought that up people thought differently.
+>
+> The semi-drop-behind is a great idea for the desktop - to put just
+> accessed pages to end of LRU. However I'm still afraid it vastly
+> changes the caching behavior and wont work well as expected in server
+> workloads - shall we verify this?
+>
+> Back to this big-cp-hurts-responsibility issue. Background write
+> requests can easily pass the io scheduler's obstacles and fill up
+> the disk queue. Now every read request will have to wait 10+ writes
+> - leading to 10x slow down of major page faults.
+>
+> I reach this conclusion based on recent CFQ code reviews. Will bring up
+> a queue depth limiting patch for more exercises..
 
-* Wu Fengguang <fengguang.wu@intel.com> wrote:
+Sorry - just realized that Elladan's root fs lies in sda - the read side.
 
-> On Tue, Apr 28, 2009 at 08:55:07AM +0200, Ingo Molnar wrote:
-> > 
-> > * Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > 
-> > > Export 9 page flags in /proc/kpageflags, and 8 more for kernel developers.
-> > > 
-> > > 1) for kernel hackers (on CONFIG_DEBUG_KERNEL)
-> > >    - all available page flags are exported, and
-> > >    - exported as is
-> > > 2) for admins and end users
-> > >    - only the more `well known' flags are exported:
-> > > 	11. KPF_MMAP		(pseudo flag) memory mapped page
-> > > 	12. KPF_ANON		(pseudo flag) memory mapped page (anonymous)
-> > > 	13. KPF_SWAPCACHE	page is in swap cache
-> > > 	14. KPF_SWAPBACKED	page is swap/RAM backed
-> > > 	15. KPF_COMPOUND_HEAD	(*)
-> > > 	16. KPF_COMPOUND_TAIL	(*)
-> > > 	17. KPF_UNEVICTABLE	page is in the unevictable LRU list
-> > > 	18. KPF_HWPOISON	hardware detected corruption
-> > > 	19. KPF_NOPAGE		(pseudo flag) no page frame at the address
-> > > 
-> > > 	(*) For compound pages, exporting _both_ head/tail info enables
-> > > 	    users to tell where a compound page starts/ends, and its order.
-> > > 
-> > >    - limit flags to their typical usage scenario, as indicated by KOSAKI:
-> > > 	- LRU pages: only export relevant flags
-> > > 		- PG_lru
-> > > 		- PG_unevictable
-> > > 		- PG_active
-> > > 		- PG_referenced
-> > > 		- page_mapped()
-> > > 		- PageAnon()
-> > > 		- PG_swapcache
-> > > 		- PG_swapbacked
-> > > 		- PG_reclaim
-> > > 	- no-IO pages: mask out irrelevant flags
-> > > 		- PG_dirty
-> > > 		- PG_uptodate
-> > > 		- PG_writeback
-> > > 	- SLAB pages: mask out overloaded flags:
-> > > 		- PG_error
-> > > 		- PG_active
-> > > 		- PG_private
-> > > 	- PG_reclaim: mask out the overloaded PG_readahead
-> > > 	- compound flags: only export huge/gigantic pages
-> > > 
-> > > Here are the admin/linus views of all page flags on a newly booted nfs-root system:
-> > > 
-> > > # ./page-types # for admin
-> > >          flags  page-count       MB  symbolic-flags                     long-symbolic-flags
-> > > 0x000000000000      491174     1918  ____________________________                
-> > > 0x000000000020           1        0  _____l______________________       lru      
-> > > 0x000000000028        2543        9  ___U_l______________________       uptodate,lru
-> > > 0x00000000002c        5288       20  __RU_l______________________       referenced,uptodate,lru
-> > > 0x000000004060           1        0  _____lA_______b_____________       lru,active,swapbacked
-> > 
-> > I think i have to NAK this kind of ad-hoc instrumentation of kernel 
-> > internals and statistics until we clear up why such instrumentation 
-> > measures are being accepted into the MM while other, more dynamic 
-> > and more flexible MM instrumentation are being resisted by Andrew.
-> 
-> An unexpected NAK - to throw away an orange because we are to have an apple? ;-)
-> 
-> Anyway here are the missing rationals.
-> 
-> 1) FAST
-> 
-> It takes merely 0.2s to scan 4GB pages:
-> 
->         ./page-types  0.02s user 0.20s system 99% cpu 0.216 total
-> 
-> 2) SIMPLE
-> 
-> /proc/kpageflags will be a *long standing* hack we have to live 
-> with - it was originally introduced by Matt to do shared memory 
-> accounting and a facility to analyze applications' memory 
-> consumptions, with the hope it will also help kernel developers 
-> someday.
-> 
-> So why not extend and embrace it, in a straightforward way?
-> 
-> 3) USE CASES
-> 
-> I have/will take advantage of the above page-types command in a number ways:
-> - to help track down memory leak (the recent trace/ring_buffer.c case)
-> - to estimate the system wide readahead miss ratio
-> - Andi want to examine the major page types in different workloads
->   (for the hwpoison work)
-> - Me too, for fun of learning: read/write/lock/whatever a lot of pages
->   and examine their flags, to get an idea of some random kernel behaviors.
->   (the dynamic tracing tools can be more helpful, as a different view)
-> 
-> 4) COMPLEMENTARITY
-> 
-> In some cases the dynamic tracing tool is not enough (or too complex)
-> to rebuild the current status view.
-> 
-> I myself have a dynamic readahead tracing tool(very useful!). At 
-> the same time I also use readahead accounting numbers, and the 
-> /proc/filecache tool(frequently!), and the above page-types tool. 
-> I simply need them all - they are handy for different cases.
+Then why shall a single read stream to cause 2000ms major fault delays?
+The 'await' value for sda is <10ms, not even close to 2000ms:
 
-Well, the main counter argument here is that statistics is _derived_ 
-from events. In their simplest form the 'counts' are the integral of 
-events over time.
+> Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
+> sda              67.70     0.00  373.10    0.20    48.47     0.00   265.90     1.94    5.21   2.10  78.32
+> sdb               0.00  1889.60    0.00  139.80     0.00    52.52   769.34    35.01  250.45   5.17  72.28
+> ---
+> sda               5.30     0.00  483.80    0.30    60.65     0.00   256.59     1.59    3.28   1.65  79.72
+> sdb               0.00  3632.70    0.00  171.10     0.00    61.10   731.39   117.09  709.66   5.84 100.00
+> ---
+> sda              51.20     0.00  478.10    1.00    65.79     0.01   281.27     2.48    5.18   1.96  93.72
+> sdb               0.00  2104.60    0.00  174.80     0.00    62.84   736.28   108.50  613.64   5.72 100.00
+> --
+> sda             153.20     0.00  349.40    0.20    60.99     0.00   357.30     4.47   13.19   2.85  99.80
+> sdb               0.00  1766.50    0.00  158.60     0.00    59.89   773.34   110.07  672.25   6.30  99.96
 
-So if we capture all interesting events, and do that with low 
-overhead (and in fact can even collect and integrate them in-kernel, 
-today), we _dont have_ to maintain various overlapping counters all 
-around the kernel. This is really a general instrumentation design 
-observation.
 
-Every time we add yet another /proc hack we splinter Linux 
-instrumentation, in a hard to reverse way.
-
-So your single-purpose /proc hack could be made multi-purpose and 
-could help a much broader range of people, with just a little bit of 
-effort i believe. Pekka already wrote the page tracking patch for 
-example, that would be a good starting point.
-
-Does it mean more work to do? You bet ;-)
-
-	Ingo
+Thanks,
+Fengguang
