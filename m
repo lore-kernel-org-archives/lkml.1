@@ -1,56 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760205AbZD1Lxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758594AbZD1LyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760205AbZD1Lxs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 07:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZD1Lxi
+	id S1758594AbZD1LyM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 07:54:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759421AbZD1Lxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 07:53:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49074 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753067AbZD1Lxh (ORCPT
+	Tue, 28 Apr 2009 07:53:47 -0400
+Received: from mxpdbe1.wincor-nixdorf.com ([80.154.98.129]:40286 "EHLO
+	mxpdbe1.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758668AbZD1Lxq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 07:53:37 -0400
-Subject: Re: [PATCH] sched: make sure sched_child_runs_first WORK
-From: Peter Zijlstra <peterz@infradead.org>
-To: marywangran <marywangran@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <e82940b20904280426j53ff8be7h3caeed84a02bbfe9@mail.gmail.com>
-References: <e82940b20904280421p171343a8h9072215028948b57@mail.gmail.com>
-	 <e82940b20904280426j53ff8be7h3caeed84a02bbfe9@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 28 Apr 2009 13:53:32 +0200
-Message-Id: <1240919612.7620.155.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 28 Apr 2009 07:53:46 -0400
+Message-ID: <49F6ED54.7040200@wincor-nixdorf.com>
+Date: Tue, 28 Apr 2009 13:49:40 +0200
+From: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Organization: Wincor Nixdorf International
+User-Agent: Thunderbird 2.0.0.19 (X11/20090107)
+MIME-Version: 1.0
+To: Henrik Rydberg <rydberg@euromail.se>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: Document the bcm5974 driver
+References: <1240916817-18995-1-git-send-email-rydberg@euromail.se>
+In-Reply-To: <1240916817-18995-1-git-send-email-rydberg@euromail.se>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig2EECE7D1B2EAF52641D020BF"
+X-OriginalArrivalTime: 28 Apr 2009 11:53:29.0475 (UTC) FILETIME=[F26B7D30:01C9C7F7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-28 at 19:26 +0800, marywangran wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig2EECE7D1B2EAF52641D020BF
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
+Hi Henrik,
 
-> Signed-off-by: Ya Zhao <marywangran@gmail.com>
+Henrik Rydberg wrote:
+> This patch adds documentation for the bcm5974 to Documentation/input/.
+>=20
+> Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
 > ---
-> --- linux-2.6.28.1/kernel/sched_fair.c.orig     2009-04-28
-> 22:26:00.000000000 +0800
-> +++ linux-2.6.28.1/kernel/sched_fair.c  2009-04-28 22:34:49.000000000 +0800
-> @@ -1628,12 +1628,13 @@ static void task_new_fair(struct rq *rq,
-> 
->        /* 'curr' will be NULL if the child belongs to a different group */
->        if (sysctl_sched_child_runs_first && this_cpu == task_cpu(p) &&
-> -                       curr && curr->vruntime < se->vruntime) {
-> +                      curr){
->                /*
->                 * Upon rescheduling, sched_class::put_prev_task() will place
->                 * 'current' within the tree based on its new key value.
->                 */
-> -               swap(curr->vruntime, se->vruntime);
-> +               if( curr->vruntime < se->vruntime )
-> +                       swap(curr->vruntime, se->vruntime);
->                resched_task(rq->curr);
->        }
+=2E..
+> +Debug output
+> +------------
+> +
+> +To ease the development for new hardware version, verbose packet outpu=
+t can
+> +be switched on with the debug kernel module parameter. The range [1-9]=
 
-Aside from the style issue the patch seems sensible enough.
+> +yields different levels of verbosity. Example (as root):
+> +
+> +rmmod bcm5974 && sudo modprobe bcm5974 debug=3D9
+> +
+> +tail -f /var/log/debug
+> +
+> +rmmod bcm5974 && sudo modprobe bcm5974 debug=3D0
 
-Thing is, do we really care about child runs first? 
+What about skipping rmmod and modprobe by doing
+	echo -n 9 > /sys/module/bcm5974/parameters/debug
+and
+	echo -n 0 > /sys/module/bcm5974/parameters/debug
+?
+
+Kind regards,
+Niels
+
+
+
+--------------enig2EECE7D1B2EAF52641D020BF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFJ9u1U5KAkGQPO/QoRAqnIAKCV/5dqEhWrqiVbIsgjA1H2WgbLqQCgvJwo
+dwPVB1xUngT7fFAso9TBK0k=
+=KxUs
+-----END PGP SIGNATURE-----
+
+--------------enig2EECE7D1B2EAF52641D020BF--
