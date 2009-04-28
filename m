@@ -1,107 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757707AbZD1Jko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbZD1Jny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757707AbZD1Jko (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 05:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbZD1Jk2
+	id S1756760AbZD1Jny (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 05:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbZD1Jnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 05:40:28 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:29549 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754689AbZD1Jk0 (ORCPT
+	Tue, 28 Apr 2009 05:43:45 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:47938 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753504AbZD1Jno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 05:40:26 -0400
-Message-ID: <49F6CEF5.5090203@panasas.com>
-Date: Tue, 28 Apr 2009 12:40:05 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Tue, 28 Apr 2009 05:43:44 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=6WpPkB7dYZ3BnQbeIiR6QJysaWbzvYCzZtzs0BPP0ODxYFPFGE7xNbS/+Zdw5SiZLxrXUKu1sjm5+mLRBzdcJSvUyQQAPzM8EyqGkj/AQlGUL/CL/aFb22zg+wF5ha0ye3PSwo/PZdpSUHvzwgeCuln5iLFJjJbS4cDRxCqooJw=  ;
+X-YMail-OSG: HAHxDnEVM1mqU5WXRnp4cCYGHd5z3TxXtawMxZJYXI4aIESf_HIx0vrBnOi.yNFDJTybDuMAfNgGYndV9RyPC5RlQx5o61vvaLZ6NXLhHi8K9GAP8JiURGQm2q2i2mB_8QwVPNJHEqKuAWWvjY6xBVtnESPh9.FfMpV3oh5FNl5SY4bk3_yAjEkU219kCKiqAcH7z5cBTfiDGaBgcSECSfEzpnxv87hH0yMqAEpLKNzKQsMD1WBCHUrkNf9wu_9c3bNM6DvtzpvMCVe9
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [patch 2.6.30-rc3] regulator: regression fix
+Date: Tue, 28 Apr 2009 02:43:42 -0700
+User-Agent: KMail/1.9.10
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>
+References: <200904271959.40526.david-b@pacbell.net> <20090428083856.GD14626@sirena.org.uk>
+In-Reply-To: <20090428083856.GD14626@sirena.org.uk>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James.Bottomley@HansenPartnership.com, osd-dev@open-osd.org,
-       Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 3/3 v3] osdblk: a Linux block device for OSD objects
-References: <20090402015455.GA14087@havoc.gtf.org> <20090407225302.GA14248@havoc.gtf.org> <20090410114821.GA10602@havoc.gtf.org> <20090410114908.GB10602@havoc.gtf.org> <20090410115045.GC10602@havoc.gtf.org> <49F5D66E.2040506@panasas.com> <20090427182434.GD4593@kernel.dk>
-In-Reply-To: <20090427182434.GD4593@kernel.dk>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Apr 2009 09:40:25.0204 (UTC) FILETIME=[5B6C6B40:01C9C7E5]
+Content-Disposition: inline
+Message-Id: <200904280243.42927.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/27/2009 09:24 PM, Jens Axboe wrote:
-> On Mon, Apr 27 2009, Boaz Harrosh wrote:
-
-Jens Hi, Thanks for your reply. Please I need some help with
-this.
-
->>> +static struct bio *bio_chain_clone(struct bio *old_chain, gfp_t gfpmask)
->>> +{
->>> +	struct bio *tmp, *new_chain = NULL, *tail = NULL;
->>> +
->>> +	while (old_chain) {
->>> +		tmp = bio_clone(old_chain, gfpmask);
->>> +		if (!tmp)
->>> +			goto err_out;
->>> +
->>> +		tmp->bi_next = NULL;
->>> +		if (!new_chain)
->>> +			new_chain = tail = tmp;
->>> +		else {
->>> +			tail->bi_next = tmp;
->>> +			tail = tmp;
->>> +		}
->>> +
->>> +		old_chain = old_chain->bi_next;
->>> +	}
->>> +
->>> +	return new_chain;
->>> +
->>> +err_out:
->>> +	bio_chain_put(new_chain);
->>> +	return NULL;
->>> +}
->>> +
->> NOTE-TO-ME:
->>   blk_bio_clone()
+On Tuesday 28 April 2009, Mark Brown wrote:
+> On Mon, Apr 27, 2009 at 07:59:40PM -0700, David Brownell wrote:
 > 
-> Note to Boaz - this is illegal, unless gfp_mask is GFP_ATOMIC (in which
-> case you should not pass it in). 
-
-OK it is only used with GFP_ATOMIC.
-Theoretically, what if I use a thread and am aloud to sleep,
-(and executing requests in serial). Can I then wait on the first bio_clone.
-
-> The only way to make this work is to:
+> > By removing the "else", it breaks the handling of fixed-voltage
+> > regulators ... turning a non-error/non-warning situation into
+> > a complete init failure, which can then prevent system startup.
 > 
+> The change you're making isn't relevant to what I suspect the actual
+> problem is (you didn't specify, I may be wrong here).
 
-Are you saying that, in the case I'm a swap device? or do you mean that if I
-use the above code I can break it for other devices that are swap-devices
-and cause a live lock for them.
+Restoring the "else" fixed the logic flaw ...
 
-Currently the OSD library is not swap safe. And even if it was, iSCSI is not.
-So there is no option of this ever been swap.
 
-> 1) Have a private bio pool, and
+> For fixed voltage regulators either the user will have specified a
+> voltage constraint (in which case we'll fall into your else case since
+> cmin ought to be non-zero) or they won't (in which case it's the default
+> constraint code you added will fill it in).  The problem I think you're
+> seeing is that the code you added to fill in a default constraint for
+> fixed voltage regulators uses INT_MIN as the minimum contraint value.
+> This is a negative value and so fails the correctness check further
+> down.
 
-Do I need to manage such a pool internally and use __bio_clone() or is there
-an easy way to associate a private bio-pool to a request_queue?
+That was my conclusion too.  I forget all the relevant history,
+except that you disliked the notion that boards be able to accept
+whatever constraint the regulator allows ... so that some of the
+logic there is left over.
 
-> 2) Make sure it has enough reserved entries to populate the chain
 
-Is there a system limit to that, that I can be sure of? Or just choose
-a magic number and if it is exceeded just split the io up in parts?
+> > You might want to provide a different patch, but ignoring
+> > this regression doesn't seem practical...
+> 
+> The code that was being fixed was only even in -next for a relatively
+> brief period of time.
 
-> 3) Ensure only a single caller at the time, or entries enough for the N
->    users that are allowed. It has to be controlled either way, whether N
->    is 1 or larger.
+This is the first time I've seen the "fix" though.  Recall that
+the code in question has been in use for several months now, while
+waiting to wend its way into mainline.  It might be useful to CC
+a few more folk on such "fix" patches.
 
-osdblk_rq_fn (the queue fn) is it serialized to one thread? If not
-could I use the queue lock for the duration of the clone?
 
+> >  		/* else require explicit machine-level constraints */
+> > -		if (cmin <= 0 || cmax <= 0 || cmax < cmin) {
+> > +		else if (cmin <= 0 || cmax <= 0 || cmax < cmin) {
+> 
+> Yeah, a different patch I think.  I'll send one shortly.
+> 
 > 
 
-Thanks for your help
-Boaz
+
