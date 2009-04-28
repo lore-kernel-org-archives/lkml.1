@@ -1,101 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759728AbZD1Gxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759794AbZD1GyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759728AbZD1Gxr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 02:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757375AbZD1Gxf
+	id S1759794AbZD1GyT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 02:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759706AbZD1GyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 02:53:35 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48395 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751688AbZD1Gxe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 02:53:34 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       seto.hidetoshi@jp.fujitsu.com
-Subject: [PATCH] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20090428153611.EBC6.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 28 Apr 2009 15:53:32 +0900 (JST)
+	Tue, 28 Apr 2009 02:54:01 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:45584 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757375AbZD1Gx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 02:53:59 -0400
+Date: Tue, 28 Apr 2009 16:53:43 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for April 28
+Message-Id: <20090428165343.2e357d7a.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__28_Apr_2009_16_53_43_+1000_blbsIOiXhQE2NYDb"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Tue__28_Apr_2009_16_53_43_+1000_blbsIOiXhQE2NYDb
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'm not cpuacct expert. please give me comment.
+Hi all,
 
-====================
-Subject: [PATCH] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime caching
+I have added a tree that contains only simple build fixes for Linus'
+tree.  It currently contains:
 
-impact: little performance improvement
+	powerpc: fix for long standing bug noticed by gcc 4.4.0
 
-cpuacct_update_stats() is called at every tick updating. and it use percpu_counter
-for avoiding performance degression.
+This is just an experiment for now and I am not sure if I should push
+these fixes directly to Linus ...
 
-Unfortunately, it doesn't works on VIRT_CPU_ACCOUNTING=y environment properly.
-if VIRT_CPU_ACCOUNTING=y, every tick update much than 1000 cputime.
-Thus every percpu_counter_add() makes spinlock grabbing and update non-percpu-variable.
+Changes since 20090424:
 
-This patch change the batch rule. now, every cpu can store "percpu_counter_bach x jiffies"
-cputime in percpu cache.
-it mean this patch don't have behavior change if VIRT_CPU_ACCOUNTING=n, but
-works well on VIRT_CPU_ACCOUNTING=y too.
+The acpi tree lost its build failure.
 
+The ext4 tree gained a build failure so I used the version from
+next-20090424.
 
-Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: Balaji Rao <balajirrao@gmail.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- kernel/sched.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+The voltage tree gained a build failure so I reverted a commit.
 
-Index: b/kernel/sched.c
-===================================================================
---- a/kernel/sched.c	2009-04-28 14:18:36.000000000 +0900
-+++ b/kernel/sched.c	2009-04-28 15:18:07.000000000 +0900
-@@ -10117,6 +10117,7 @@ struct cpuacct {
- };
- 
- struct cgroup_subsys cpuacct_subsys;
-+static s32 cpuacct_batch;
- 
- /* return cpu accounting group corresponding to this container */
- static inline struct cpuacct *cgroup_ca(struct cgroup *cgrp)
-@@ -10146,6 +10147,9 @@ static struct cgroup_subsys_state *cpuac
- 	if (!ca->cpuusage)
- 		goto out_free_ca;
- 
-+	if (!cpuacct_batch)
-+		cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
-+
- 	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
- 		if (percpu_counter_init(&ca->cpustat[i], 0))
- 			goto out_free_counters;
-@@ -10342,7 +10346,7 @@ static void cpuacct_update_stats(struct 
- 	ca = task_ca(tsk);
- 
- 	do {
--		percpu_counter_add(&ca->cpustat[idx], val);
-+		__percpu_counter_add(&ca->cpustat[idx], val, cpuacct_batch);
- 		ca = ca->parent;
- 	} while (ca);
- 	rcu_read_unlock();
+----------------------------------------------------------------------------
 
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 135 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+CONFLICT (content): Merge conflict in arch/arm/mm/mmu.c
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging configfs/linux-next
+Merging ext4/next
+$ git reset --hard HEAD^
+Merging refs/next/20090424/ext4
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging ubifs/linux-next
+Merging xfs/master
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging tracing/auto-tracing-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging kbuild/master
+Merging ide/for-next
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+CONFLICT (content): Merge conflict in include/Kbuild
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/rndis_wlan.c
+CONFLICT (content): Merge conflict in include/linux/mmc/sdio_ids.h
+Merging wireless/master
+[master dc91289] Revert "rfkill: remove user_claim stuff"
+Merging mtd/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
+req.c
+Merging cifs/master
+Merging mmc/next
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in drivers/usb/serial/cypress_m8.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/option.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/usb-serial.c
+Merging agp/agp-next
+Merging generic-ipi/auto-generic-ipi-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging suspend/linux-next
+Merging quilt/driver-core
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+[master 703ca50] Revert "regulator: add userspace-consumer driver"
+
+--Signature=_Tue__28_Apr_2009_16_53_43_+1000_blbsIOiXhQE2NYDb
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkn2p/cACgkQjjKRsyhoI8x7BgCgjFBRjW90fmYYKZAL/oKcXlFA
+m0AAoLK+dIbeWmFyO/OwTTmv4Nk6ZYlg
+=rtbB
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__28_Apr_2009_16_53_43_+1000_blbsIOiXhQE2NYDb--
