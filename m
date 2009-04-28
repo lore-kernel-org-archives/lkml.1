@@ -1,136 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760000AbZD1Kkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758289AbZD1KtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760000AbZD1Kkk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 06:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbZD1Kk3
+	id S1758289AbZD1KtT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 06:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbZD1KtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 06:40:29 -0400
-Received: from fallback-out1.mxes.net ([216.86.168.190]:1270 "EHLO
-	fallback-in1.mxes.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755559AbZD1Kk1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 06:40:27 -0400
-X-Greylist: delayed 759 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Apr 2009 06:40:27 EDT
-Message-ID: <49F6DA14.7030608@tuffmail.co.uk>
-Date: Tue, 28 Apr 2009 11:27:32 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Tue, 28 Apr 2009 06:49:06 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33448 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751847AbZD1KtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 06:49:03 -0400
+Date: Tue, 28 Apr 2009 12:48:25 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
+       hpa@c2micro.com, tglx@linutronix.de, hpa@linux.intel.com,
+       jeremy.fitzhardinge@citrix.com, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/urgent] x86: linker script: avoid ALIGN statements
+	inside output sections
+Message-ID: <20090428104825.GA25347@elte.hu>
+References: <tip-c707f31e2e6af2d37bc742c31be0c7e96946c71f@git.kernel.org> <20090428081455.GA19736@elte.hu> <20090428083804.GB17622@uranus.ravnborg.org> <20090428090211.GD26487@elte.hu> <20090428100023.GA18148@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Johannes Berg <johannes@sipsolutions.net>
-CC: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH] [RFC] EEE PC hangs when booting off battery
-References: <49E065CF.6040408@tuffmail.co.uk>	 <200904140859.02188.bjorn.helgaas@hp.com>	 <20090414081728.10de978a@infradead.org>	 <200904140948.37633.bjorn.helgaas@hp.com> <49E5F01B.2060201@tuffmail.co.uk>	 <49EF0ABD.2080801@tuffmail.co.uk> <49F446AE.6070607@tuffmail.co.uk>	 <49F6CA0E.5040101@tuffmail.co.uk> (sfid-20090428_111942_198975_13CDA6F5) <1240912688.28835.10.camel@johannes.local>
-In-Reply-To: <1240912688.28835.10.camel@johannes.local>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090428100023.GA18148@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Berg wrote:
-> It seems the only reason lockdep doesn't warn is the detour to userspace
-> (modprobe) and the waiting for a userspace task (waiting isn't lockdep
-> annotated and I don't think it can be)
->
-> It seems you cannot load a module while under _any_ lock, ever, since
-> userspace might turn around and do something that requires that lock? I
-> think we should probably add a warning to the code that waits for the
-> userspace task:
->
-> 	debug_check_no_locks_held(current);
->
-> Or not? Some purely internal locks _might_ be ok... but how could you
-> verify that?
->
->   
->> - ieee80211_wep_init(), which is called with rtnl_lock() held, is
->> blocked in request_module() [waiting for modprobe to load a crypto module].
->>     
->
-> Right.
->
->   
->> - modprobe is blocked in a call to flush_workqueue(), caused by closing
->> a TTY.
->>     
->
-> Can you point out where? I can't find that.
->   
 
-I posted the calltraces earlier at
-<http://marc.info/?l=linux-wireless&m=124074566523506&w=2>.
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-wait_for_completion
-flush_cpu_workqueue
-? wq_barrier_func
-flush_workqueue
-flush_scheduled_work
-tty_ldisc_release
-? tty_fasyc
-tty_release_dev
-? free_pgtables
-tty_release
-__fput
-filp_close
-sys_close
-syscall_call
+> > 
+> > Below is hpa's fix merged up by me on top of your cleanups. That 
+> > merge-up is incomplete as we lose these fixlets.
+> > 
+> > And in this form it's visible how we lose those cleanups you did - 
+> > which werent really cleanups ... Please keep such side-effects apart 
+> > from truly mechanic cleanups, whenever possible - it makes life 
+> > really simpler.
+> 
+> The cleanup that you applied did NOT move any ALIGN() - or
+> at least not on purpose.
+> It was supposed to be a noop from a functionality point of view.
 
+yeah - indeed - i mis-interpreted your statement.
 
->> - worker_thread is blocked because the workqueue item linkwatch_event()
->> is blocked on rtnl_lock.
->>     
->
-> This I know about.
->
->   
->> I've hacked up a test patch to move wep_init() outside of rtnl_lock, and
->> it solved the problem.  My one caveat is that it would probably be
->> cleaner to move it after rtnl_unlock(), instead of before rtnl_lock(). 
->> I just wasn't 100% sure if that would be safe.  Here's the patch:
->>     
->
-> That doesn't seem relevant, this just does some initialisation. However,
-> you definitely missed adding a call to wep_free().
->   
+> I have started to unify the the two vmlinux.lds files for
+> 32 and 64 bit - and as part of that serie (yet to be published) you will
+> see individual commits where ALING() is moved and secitons
+> are reordered etc.
+> I do this in baby steps so we can track regressions using bisect.
+> 
+> The work is done on top of x86/kbuild and I will rebase as needed 
+> when I have it ready.
 
-Hah, I should have realized something was wrong when I noticed I was
-removing more lines that I added. 
+Cool :)
 
-The crypto init does cause the module load:
-
-wait_for_completion
-call_usermodehelper_exec
-__request_module
-crypto_larval_lookup
-? extract_entropy
-crypto_alg_mod_lookup
-crypto_alloc_base
-ieee80211_wep_init
-ieee80211_register_hw
-? ath5k_hw_set_bss
-ath5k+pci_probe
-local_pci_probe
-pci_device_probe
-driver_probe_device
-__driver_attach
-bus_for_each_dev
-driver_attach
-? __driver_attach
-buad_add_driver
-driver_register
-? ktime_get_ts
-__pci_register_driver
-init_ath5k_pci
-_stext
-? init_ath5k_pci
-? proc_create_data
-? register_ieq_proc
-kernel_init
-
-
-Thanks
-Alan
-
+	Ingo
