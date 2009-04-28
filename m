@@ -1,66 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762057AbZD1Qaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761926AbZD1QdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762057AbZD1Qaw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbZD1Qan
+	id S1761926AbZD1QdU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760586AbZD1QdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:30:43 -0400
-Received: from outbound-mail-311.bluehost.com ([67.222.54.4]:53866 "HELO
-	outbound-mail-311.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755268AbZD1Qam (ORCPT
+	Tue, 28 Apr 2009 12:33:09 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:39740 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758506AbZD1QdI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:30:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=AsCtahkZGEOK8gJEb0DRahyHQeUiyLT53DObvqcBpu6afcw4ztRJnx7wce2fZGCOEJCTpUqj6BAV6oA7tDlIqK1qqjQK0RUCL9hI8hcmC+ec6IOLnQFSpRRxNbX8WCCQ;
-Date: Tue, 28 Apr 2009 09:28:50 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, linux-pci@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 9/9] irq: make ht irq_desc numa aware
-Message-ID: <20090428092850.7f1559c9@hobbes>
-In-Reply-To: <20090428101917.GB28495@elte.hu>
-References: <49E68C41.4020801@kernel.org>
-	<20090416090315.GF9813@elte.hu>
-	<49E802CE.5030406@kernel.org>
-	<49E804D4.70009@kernel.org>
-	<49F655B6.8020109@kernel.org>
-	<20090428101917.GB28495@elte.hu>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Tue, 28 Apr 2009 12:33:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SKCbvxCvlKzRvS23xrW4VMxXq3cYrqOHmAnG7vgm3Nmxx1P6zllV1hDvg1qFFEB0JO
+         S2oikHT3hskYeBti0xK6t7fRfIN22szKNVgRk8DT1VX7fsMDIKUBGlsfItl5cfxowqcg
+         pv9WPAAwJUOK/7BIihM75lnj7W7JDqjL/cQlA=
+Date: Tue, 28 Apr 2009 18:33:02 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org
+Subject: Re: LTTng "TIF_KERNEL_TRACE"
+Message-ID: <20090428163300.GD5978@nowhere>
+References: <20090428132037.GA27519@Krystal> <20090428150102.GB26546@elte.hu> <20090428154046.GA32381@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090428154046.GA32381@Krystal>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009 12:19:17 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
-
+On Tue, Apr 28, 2009 at 11:40:46AM -0400, Mathieu Desnoyers wrote:
+> * Ingo Molnar (mingo@elte.hu) wrote:
+> > 
+> > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > 
+> > > Hi Ingo,
+> > > 
+> > > Looking at the current -tip tree, I notice that the 
+> > > TIF_SYSCALL_FTRACE flag is only implemented for x86.
+> > > 
+> > > I have TIF_KERNEL_TRACE in my lttng tree which applies to all 
+> > > architectures to do the exact same thing :
+> > > 
+> > > lttng-kernel-trace-thread-flag-alpha.patch
+> > > lttng-kernel-trace-thread-flag-arm.patch
+> > > lttng-kernel-trace-thread-flag-avr32.patch
+> > > lttng-kernel-trace-thread-flag-blackfin.patch
+> > > lttng-kernel-trace-thread-flag-cris.patch
+> > > lttng-kernel-trace-thread-flag-frv.patch
+> > > lttng-kernel-trace-thread-flag-h8300.patch
+> > > lttng-kernel-trace-thread-flag-ia64.patch
+> > > lttng-kernel-trace-thread-flag-m32r.patch
+> > > lttng-kernel-trace-thread-flag-m68k.patch
+> > > lttng-kernel-trace-thread-flag-mips.patch
+> > > lttng-kernel-trace-thread-flag-parisc.patch
+> > > lttng-kernel-trace-thread-flag-powerpc.patch
+> > > lttng-kernel-trace-thread-flag-s390.patch
+> > > lttng-kernel-trace-thread-flag-sh.patch
+> > > lttng-kernel-trace-thread-flag-sparc.patch
+> > > lttng-kernel-trace-thread-flag-um.patch
+> > > lttng-kernel-trace-thread-flag-x86.patch
+> > > lttng-kernel-trace-thread-flag-xtensa.patch
+> > > lttng-kernel-trace-thread-flag-api.patch
+> > > 
+> > > Is there any way we could get this merged ?
+> > > 
+> > > One thing I like about the name TIF_KERNEL_TRACE compared to 
+> > > TIF_SYSCALL_FTRACE is that it gives us a per-thread flag that 
+> > > could eventually be used for more kernel tracing purposes than 
+> > > just syscalls.
+> > 
+> > Yeah - TIF_KERNEL_TRACE indeed sounds more descriptive and less 
+> > restrictive. TIF_SYSCALL_FTRACE was a bit ad-hoc.
+> > 
 > 
-> * Yinghai Lu <yinghai@kernel.org> wrote:
+> Second question :
 > 
-> > Try to get irq_desc on the same node as create_irq_nr().
-> >
-> > [ Impact: optimization, make HT IRQs more NUMA-aware ]
-> >
-> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> > ---
-> >  drivers/pci/htirq.c |    4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
+> LTTng :
+>         read_lock(&tasklist_lock);
+>         do_each_thread(p, t) {
+>                 set_tsk_thread_flag(t, TIF_KERNEL_TRACE);
+>         } while_each_thread(p, t);
+>         read_unlock(&tasklist_lock);
 > 
-> Looks good - but this really needs an Ack from Jesse (Cc:-ed) before 
-> we can pick it up into the irq tree.
+> Ftrace:
+>         read_lock_irqsave(&tasklist_lock, flags);
+> 
+>         do_each_thread(g, t) {
+>                 clear_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
+>         } while_each_thread(g, t);
+> 
+>         read_unlock_irqrestore(&tasklist_lock, flags);
+> 
+> With or without irqsave ?
+> 
+> Arguments against irqsave for this read lock :
+> 
+> - it's not used consistently for this read lock all over the kernel.
+>   Sometimes the read lock is taken without irqsave.
+> - it can be a long iteration, and therefore disables interrupts for a
+>   long time.
+> 
+> Arguments for irqsave for this read lock :
+> 
+> - Taking any kind of spin/rwlock with inconsistent irq disabling leads
+>   to races where interrupts can be disabled for an unbounded amount of
+>   time if a spinlock with irqoff waits on a spinlock with irqs on. This
+>   is a general problem with current kernel rwlock usage. See my
+>   "priority sifting reader-writer lock" patchset for a fix to this
+>   problem.
+> 
+> Mathieu
+> 
 
-Oh sorry meant to add:
-Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+I don't know why I used irqsave here, I guess I was tired.
+
+$ git-grep "read_lock_irqsave(&tasklist_lock)" | wc -l
+0
+$ git-grep "write_lock_irqsave(&tasklist_lock)" | wc -l
+0
+
+It is never used in an irq safe fashion, unless one of these sites
+has the irqs disabled.
+Lockdep should even have complained about this, when you hold
+a lock class in an irq safe fashion and thereafter you try to hold
+it in an irq unsafe fashion, then the state of the kernel becomes unsafe
+and lockdep is supposed to complain about that.
+
+Frederic.
+
+
