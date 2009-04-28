@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762058AbZD1PKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762154AbZD1PLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762058AbZD1PKa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761518AbZD1PGv
+	id S1762154AbZD1PLV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761707AbZD1PGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:06:51 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:35916 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761682AbZD1PGq (ORCPT
+	Tue, 28 Apr 2009 11:06:52 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:7480 "EHLO
+	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1761616AbZD1PGs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:06:46 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KITGMR-01-UAR-01
+	Tue, 28 Apr 2009 11:06:48 -0400
+X-BigFish: VPS-2(zz14c3Mzz1202hzzz32i43j)
+X-FB-SS: 5,
+X-WSS-ID: 0KITGMS-02-1DS-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: akpm@linux-foundation.org, greg@kroah.com
 CC: <linux-kernel@vger.kernel.org>, Doug Thompson <dougthompson@xmission.com>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 15/21] amd64_edac: add x4 chipkill syndrome mapping table
-Date: Tue, 28 Apr 2009 17:06:07 +0200
-Message-ID: <1240931173-17477-16-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 17/21] amd64_edac: add EDAC core-related initializers
+Date: Tue, 28 Apr 2009 17:06:09 +0200
+Message-ID: <1240931173-17477-18-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
 References: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 28 Apr 2009 15:06:23.0193 (UTC) FILETIME=[E4E4B490:01C9C812]
+X-OriginalArrivalTime: 28 Apr 2009 15:06:24.0084 (UTC) FILETIME=[E56CA940:01C9C812]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,166 +35,354 @@ From: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |  141 ++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 140 insertions(+), 1 deletions(-)
+ drivers/edac/amd64_edac.c |  336 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 336 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 49c0ce0..2de797d 100644
+index 8f6fbc4..f6cfff0 100644
 --- a/drivers/edac/amd64_edac.c
 +++ b/drivers/edac/amd64_edac.c
-@@ -2171,7 +2171,6 @@ static void k8_map_sysaddr_to_csrow(struct mem_ctl_info *mci,
- 
- 	/* CHIPKILL enabled */
- 	if (info->nbcfg & K8_NBCFG_CHIPKILL) {
--		/* x4 chipkill ecc mode - determine channel */
- 		channel = get_channel_from_ecc_syndrome(syndrome);
- 		if (channel < 0) {
- 			/* Syndrome didn't map, so we don't know which of
-@@ -3163,4 +3162,144 @@ static void do_rdmsr(int cpu, u32 reg, u32 *eax, u32 *edx)
- 	*edx = cmd.data[1];
+@@ -3871,4 +3871,340 @@ static int amd64_process_error_info(struct mem_ctl_info *mci,
+ 	return 1;
  }
  
 +/*
-+ * syndrome mapping table for ECC ChipKill devices
++ * amd64_check
 + *
-+ * The comment in each row is the token (nibble) number that is in error.
-+ * The least significant nibble of the syndrome is the mask for the bits
-+ * that are in error (need to be toggled) for the particular nibble.
-+ *
-+ * Each row contains 16 entries.
-+ * The first entry (0th) is the channel number for that row of syndromes.
-+ * The remaining 15 entries are the syndromes for the respective Error
-+ * bit mask index.
-+ *
-+ * 1st index entry is 0x0001 mask, indicating that the rightmost bit is the
-+ * bit in error.
-+ * The 2nd index entry is 0x0010 that the second bit is damaged.
-+ * The 3rd index entry is 0x0011 indicating that the rightmost 2 bits
-+ * are damaged.
-+ * Thus so on until index 15, 0x1111, whose entry has the syndrome
-+ * indicating that all 4 bits are damaged.
-+ *
-+ * A search is performed on this table looking for a given syndrome.
-+ *
-+ * See the AMD documentation for ECC syndromes. This ECC table is valid
-+ * across all the versions of the AMD64 processors.
-+ *
-+ * A fast lookup is to use the LAST four bits of the 16-bit syndrome as a
-+ * COLUMN index, then search all ROWS of that column, looking for a match
-+ * with the input syndrome. The ROW value will be the token number.
-+ *
-+ * The 0'th entry on that row, can be returned as the CHANNEL (0 or 1) of this
-+ * error.
++ * The main polling 'check' function, called FROM the edac core to perform the
++ * error checking and if an error is encountered, error processing.
 + */
-+#define NUMBER_ECC_ROWS  36
-+static const unsigned short ecc_chipkill_syndromes[NUMBER_ECC_ROWS][16] = {
-+	/* Channel 0 syndromes */
-+	{/*0*/  0, 0xe821, 0x7c32, 0x9413, 0xbb44, 0x5365, 0xc776, 0x2f57,
-+	   0xdd88, 0x35a9, 0xa1ba, 0x499b, 0x66cc, 0x8eed, 0x1afe, 0xf2df },
-+	{/*1*/  0, 0x5d31, 0xa612, 0xfb23, 0x9584, 0xc8b5, 0x3396, 0x6ea7,
-+	   0xeac8, 0xb7f9, 0x4cda, 0x11eb, 0x7f4c, 0x227d, 0xd95e, 0x846f },
-+	{/*2*/  0, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
-+	   0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x000f },
-+	{/*3*/  0, 0x2021, 0x3032, 0x1013, 0x4044, 0x6065, 0x7076, 0x5057,
-+	   0x8088, 0xa0a9, 0xb0ba, 0x909b, 0xc0cc, 0xe0ed, 0xf0fe, 0xd0df },
-+	{/*4*/  0, 0x5041, 0xa082, 0xf0c3, 0x9054, 0xc015, 0x30d6, 0x6097,
-+	   0xe0a8, 0xb0e9, 0x402a, 0x106b, 0x70fc, 0x20bd, 0xd07e, 0x803f },
-+	{/*5*/  0, 0xbe21, 0xd732, 0x6913, 0x2144, 0x9f65, 0xf676, 0x4857,
-+	   0x3288, 0x8ca9, 0xe5ba, 0x5b9b, 0x13cc, 0xaded, 0xc4fe, 0x7adf },
-+	{/*6*/  0, 0x4951, 0x8ea2, 0xc7f3, 0x5394, 0x1ac5, 0xdd36, 0x9467,
-+	   0xa1e8, 0xe8b9, 0x2f4a, 0x661b, 0xf27c, 0xbb2d, 0x7cde, 0x358f },
-+	{/*7*/  0, 0x74e1, 0x9872, 0xec93, 0xd6b4, 0xa255, 0x4ec6, 0x3a27,
-+	   0x6bd8, 0x1f39, 0xf3aa, 0x874b, 0xbd6c, 0xc98d, 0x251e, 0x51ff },
-+	{/*8*/  0, 0x15c1, 0x2a42, 0x3f83, 0xcef4, 0xdb35, 0xe4b6, 0xf177,
-+	   0x4758, 0x5299, 0x6d1a, 0x78db, 0x89ac, 0x9c6d, 0xa3ee, 0xb62f },
-+	{/*9*/  0, 0x3d01, 0x1602, 0x2b03, 0x8504, 0xb805, 0x9306, 0xae07,
-+	   0xca08, 0xf709, 0xdc0a, 0xe10b, 0x4f0c, 0x720d, 0x590e, 0x640f },
-+	{/*a*/  0, 0x9801, 0xec02, 0x7403, 0x6b04, 0xf305, 0x8706, 0x1f07,
-+	   0xbd08, 0x2509, 0x510a, 0xc90b, 0xd60c, 0x4e0d, 0x3a0e, 0xa20f },
-+	{/*b*/  0, 0xd131, 0x6212, 0xb323, 0x3884, 0xe9b5, 0x5a96, 0x8ba7,
-+	   0x1cc8, 0xcdf9, 0x7eda, 0xafeb, 0x244c, 0xf57d, 0x465e, 0x976f },
-+	{/*c*/  0, 0xe1d1, 0x7262, 0x93b3, 0xb834, 0x59e5, 0xca56, 0x2b87,
-+	   0xdc18, 0x3dc9, 0xae7a, 0x4fab, 0x542c, 0x85fd, 0x164e, 0xf79f },
-+	{/*d*/  0, 0x6051, 0xb0a2, 0xd0f3, 0x1094, 0x70c5, 0xa036, 0xc067,
-+	   0x20e8, 0x40b9, 0x904a, 0x601b, 0x307c, 0x502d, 0x80de, 0xe08f },
-+	{/*e*/  0, 0xa4c1, 0xf842, 0x5c83, 0xe6f4, 0x4235, 0x1eb6, 0xba77,
-+	   0x7b58, 0xdf99, 0x831a, 0x27db, 0x9dac, 0x396d, 0x65ee, 0xc12f },
-+	{/*f*/  0, 0x11c1, 0x2242, 0x3383, 0xc8f4, 0xd935, 0xeab6, 0xfb77,
-+	   0x4c58, 0x5d99, 0x6e1a, 0x7fdb, 0x84ac, 0x956d, 0xa6ee, 0xb72f },
-+
-+	/* Channel 1 syndromes */
-+	{/*10*/ 1, 0x45d1, 0x8a62, 0xcfb3, 0x5e34, 0x1be5, 0xd456, 0x9187,
-+	   0xa718, 0xe2c9, 0x2d7a, 0x68ab, 0xf92c, 0xbcfd, 0x734e, 0x369f },
-+	{/*11*/ 1, 0x63e1, 0xb172, 0xd293, 0x14b4, 0x7755, 0xa5c6, 0xc627,
-+	   0x28d8, 0x4b39, 0x99aa, 0xfa4b, 0x3c6c, 0x5f8d, 0x8d1e, 0xeeff },
-+	{/*12*/ 1, 0xb741, 0xd982, 0x6ec3, 0x2254, 0x9515, 0xfbd6, 0x4c97,
-+	   0x33a8, 0x84e9, 0xea2a, 0x5d6b, 0x11fc, 0xa6bd, 0xc87e, 0x7f3f },
-+	{/*13*/ 1, 0xdd41, 0x6682, 0xbbc3, 0x3554, 0xe815, 0x53d6, 0xce97,
-+	   0x1aa8, 0xc7e9, 0x7c2a, 0xa1fb, 0x2ffc, 0xf2bd, 0x497e, 0x943f },
-+	{/*14*/ 1, 0x2bd1, 0x3d62, 0x16b3, 0x4f34, 0x64e5, 0x7256, 0x5987,
-+	   0x8518, 0xaec9, 0xb87a, 0x93ab, 0xca2c, 0xe1fd, 0xf74e, 0xdc9f },
-+	{/*15*/ 1, 0x83c1, 0xc142, 0x4283, 0xa4f4, 0x2735, 0x65b6, 0xe677,
-+	   0xf858, 0x7b99, 0x391a, 0xbadb, 0x5cac, 0xdf6d, 0x9dee, 0x1e2f },
-+	{/*16*/ 1, 0x8fd1, 0xc562, 0x4ab3, 0xa934, 0x26e5, 0x6c56, 0xe387,
-+	   0xfe18, 0x71c9, 0x3b7a, 0xb4ab, 0x572c, 0xd8fd, 0x924e, 0x1d9f },
-+	{/*17*/ 1, 0x4791, 0x89e2, 0xce73, 0x5264, 0x15f5, 0xdb86, 0x9c17,
-+	   0xa3b8, 0xe429, 0x2a5a, 0x6dcb, 0xf1dc, 0xb64d, 0x783e, 0x3faf },
-+	{/*18*/ 1, 0x5781, 0xa9c2, 0xfe43, 0x92a4, 0xc525, 0x3b66, 0x6ce7,
-+	   0xe3f8, 0xb479, 0x4a3a, 0x1dbb, 0x715c, 0x26dd, 0xd89e, 0x8f1f },
-+	{/*19*/ 1, 0xbf41, 0xd582, 0x6ac3, 0x2954, 0x9615, 0xfcd6, 0x4397,
-+	   0x3ea8, 0x81e9, 0xeb2a, 0x546b, 0x17fc, 0xa8bd, 0xc27e, 0x7d3f },
-+	{/*1a*/ 1, 0x9891, 0xe1e2, 0x7273, 0x6464, 0xf7f5, 0x8586, 0x1617,
-+	   0xb8b8, 0x2b29, 0x595a, 0xcacb, 0xdcdc, 0x4f4d, 0x3d3e, 0xaeaf },
-+	{/*1b*/ 1, 0xcce1, 0x4472, 0x8893, 0xfdb4, 0x3f55, 0xb9c6, 0x7527,
-+	   0x56d8, 0x9a39, 0x12aa, 0xde4b, 0xab6c, 0x678d, 0xef1e, 0x23ff },
-+	{/*1c*/ 1, 0xa761, 0xf9b2, 0x5ed3, 0xe214, 0x4575, 0x1ba6, 0xbcc7,
-+	   0x7328, 0xd449, 0x8a9a, 0x2dfb, 0x913c, 0x365d, 0x688e, 0xcfef },
-+	{/*1d*/ 1, 0xff61, 0x55b2, 0xaad3, 0x7914, 0x8675, 0x2ca6, 0xd3c7,
-+	   0x9e28, 0x6149, 0xcb9a, 0x34fb, 0xe73c, 0x185d, 0xb28e, 0x4def },
-+	{/*1e*/ 1, 0x5451, 0xa8a2, 0xfcf3, 0x9694, 0xc2c5, 0x3e36, 0x6a67,
-+	   0xebe8, 0xbfb9, 0x434a, 0x171b, 0x7d7c, 0x292d, 0xd5de, 0x818f },
-+	{/*1f*/ 1, 0x6fc1, 0xb542, 0xda83, 0x19f4, 0x7635, 0xacb6, 0xc377,
-+	   0x2e58, 0x4199, 0x9b1a, 0xf4db, 0x37ac, 0x586d, 0x82ee, 0xed2f },
-+
-+	/* ECC bits are also in the set of tokens and they too can go bad
-+	 * first 2 cover channel 0, while the second 2 cover channel 1
-+	 */
-+	{/*20*/ 0, 0xbe01, 0xd702, 0x6903, 0x2104, 0x9f05, 0xf606, 0x4807,
-+	   0x3208, 0x8c09, 0xe50a, 0x5b0b, 0x130c, 0xad0d, 0xc40e, 0x7a0f },
-+	{/*21*/ 0, 0x4101, 0x8202, 0xc303, 0x5804, 0x1905, 0xda06, 0x9b07,
-+	   0xac08, 0xed09, 0x2e0a, 0x6f0b, 0x640c, 0xb50d, 0x760e, 0x370f },
-+	{/*22*/ 1, 0xc441, 0x4882, 0x8cc3, 0xf654, 0x3215, 0xbed6, 0x7a97,
-+	   0x5ba8, 0x9fe9, 0x132a, 0xd76b, 0xadfc, 0x69bd, 0xe57e, 0x213f },
-+	{/*23*/ 1, 0x7621, 0x9b32, 0xed13, 0xda44, 0xac65, 0x4176, 0x3757,
-+	   0x6f88, 0x19a9, 0xf4ba, 0x829b, 0xb5cc, 0xc3ed, 0x2efe, 0x58df }
-+};
- 
-+/*
-+ * get_channel_from_ecc_syndrome
-+ *
-+ *	given the syndrome argument, scan each of the channel tables
-+ *	looking for a syndrome match. Depending on which table it is
-+ *	found, return the channel number
-+ */
-+static int get_channel_from_ecc_syndrome(unsigned short syndrome)
++static void amd64_check(struct mem_ctl_info *mci)
 +{
-+	int row;
-+	int column;
++	struct amd64_error_info_regs info;
 +
-+	debugf0("%s()\n", __func__);
++	debugf3("%s()\n", __func__);
++	if (amd64_get_error_info(mci, &info))
++		amd64_process_error_info(mci, &info, 1);
++}
 +
-+	/* Determine column to scan */
-+	column = syndrome & 0xF;
++/*
++ * amd64_reserve_mc_sibling_devices
++ *
++ * Input:
++ *	1) struct amd64_pvt which contains pvt->dram_f2_ctl pointer
++ *	2) AMD Family index value
++ *
++ * Ouput:
++ *	Upon return of 0, the following filled in:
++ *
++ *		struct pvt->addr_f1_ctl
++ *		struct pvt->misc_f3_ctl
++ *
++ *	Filled in with related device funcitions of 'dram_f2_ctl'
++ *	These devices are "reserved" via the pci_get_device()
++ *
++ *	Upon return of 1 (error status):
++ *
++ *		Nothing reserved
++ */
++static int amd64_reserve_mc_sibling_devices(struct amd64_pvt *pvt,
++					 int mc_type_index)
++{
++	const struct amd64_family_type
++		*amd64_dev = &amd64_family_types[mc_type_index];
 +
-+	/* Scan all rows, looking for syndrome, or end of table */
-+	for (row = 0; row < NUMBER_ECC_ROWS; row++) {
-+		if (ecc_chipkill_syndromes[row][column] == syndrome)
-+			return ecc_chipkill_syndromes[row][0];
++	/* Reserve the ADDRESS MAP Device */
++	pvt->addr_f1_ctl = pci_get_related_function(pvt->dram_f2_ctl->vendor,
++						amd64_dev->addr_f1_ctl,
++						pvt->dram_f2_ctl);
++	if (pvt->addr_f1_ctl == NULL) {
++		amd64_printk(KERN_ERR, "error address map device not found: "
++			  "vendor %x device 0x%x (broken BIOS?)\n",
++			  PCI_VENDOR_ID_AMD, amd64_dev->addr_f1_ctl);
++		return 1;
 +	}
 +
-+	debugf0("%s(): syndrome(%x) not found\n", __func__, syndrome);
-+	return -1;
++	/* Reserve the MISC Device */
++	pvt->misc_f3_ctl = pci_get_related_function(pvt->dram_f2_ctl->vendor,
++						amd64_dev->misc_f3_ctl,
++						pvt->dram_f2_ctl);
++	if (pvt->misc_f3_ctl == NULL) {
++		pci_dev_put(pvt->addr_f1_ctl);
++		pvt->addr_f1_ctl = NULL;
++
++		amd64_printk(KERN_ERR, "error miscellaneous device not found: "
++			  "vendor %x device 0x%x (broken BIOS?)\n",
++			  PCI_VENDOR_ID_AMD, amd64_dev->misc_f3_ctl);
++		return 1;
++	}
++
++	debugf1("    Addr Map device PCI Bus ID:\t%s\n",
++		pci_name(pvt->addr_f1_ctl));
++	debugf1("    DRAM MEM-CTL PCI Bus ID:\t%s\n",
++		pci_name(pvt->dram_f2_ctl));
++	debugf1("    Misc device PCI Bus ID:\t\t%s\n",
++		pci_name(pvt->misc_f3_ctl));
++
++	return 0;
 +}
++
++/*
++ * amd64_read_mc_registers
++ *
++ * Retrieve the hardware registers of the memory controller (this includes the
++ * 'Address Map' and 'Misc' device regs)
++ */
++static void amd64_read_mc_registers(struct amd64_pvt *pvt)
++{
++	u64 msr_val;
++	int dram;
++	int err;
++
++	debugf0("%s(MC node-id=%d): (ExtModel=%d)\n",
++		__func__, pvt->mc_node_id, pvt->ext_model);
++
++	/*
++	 * Retrieve TOP_MEM and TOP_MEM2; no masking off of reserved
++	 * bits since those are Read-As-Zero
++	 */
++	rdmsrl(MSR_K8_TOP_MEM1, msr_val);
++	pvt->top_mem = msr_val >> 23;
++	debugf0("  TOP_MEM=0x%08llx\n", pvt->top_mem);
++
++	/* check first whether TOP_MEM2 is enabled */
++	rdmsrl(MSR_K8_SYSCFG, msr_val);
++	if (msr_val & (1U << 21)) {
++		rdmsrl(MSR_K8_TOP_MEM2, msr_val);
++		pvt->top_mem2 = msr_val >> 23;
++		debugf0("  TOP_MEM2=0x%08llx\n", pvt->top_mem2);
++	} else
++		debugf0("  TOP_MEM2 disabled.\n");
++
++	amd64_cpu_display_info(pvt);
++
++	err = pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCAP, &pvt->nbcap);
++	if (err != 0)
++		debugf0("%s() Reading K8_NBCAP failed\n", __func__);
++
++	if (pvt->ops->read_dram_ctl_register)
++		pvt->ops->read_dram_ctl_register(pvt);
++
++	for (dram = 0; dram < DRAM_REG_COUNT; dram++) {
++		/*
++		 * Call CPU specific READ function to get the DRAM Base and
++		 * Limit values from the DCT.
++		 */
++		pvt->ops->read_dram_base_limit(pvt, dram);
++
++		/* Only print out debug info on rows with both R and W
++		 * Enabled.  Normal processing, compiler should optimize
++		 * this whole 'if' debug output block away
++		 */
++		if (pvt->dram_rw_en[dram] != 0) {
++			debugf1("  DRAM_BASE[%d]: 0x%8.08x-%8.08x "
++				"DRAM_LIMIT:  0x%8.08x-%8.08x\n",
++				dram,
++				(u32)(pvt->dram_base[dram] >> 32),
++				(u32)(pvt->dram_base[dram] & 0xFFFFFFFF),
++				(u32)(pvt->dram_limit[dram] >> 32),
++				(u32)(pvt->dram_limit[dram] & 0xFFFFFFFF));
++			debugf1("        IntlvEn=%s %s %s "
++				"IntlvSel=%d DstNode=%d\n",
++				pvt->dram_IntlvEn[dram] ?
++					"Enabled" : "Disabled",
++				(pvt->dram_rw_en[dram] & 0x2) ? "W" : "!W",
++				(pvt->dram_rw_en[dram] & 0x1) ? "R" : "!R",
++				pvt->dram_IntlvSel[dram],
++				pvt->dram_DstNode[dram]);
++		}
++	}
++
++	amd64_read_dct_base_mask(pvt);
++
++	err = pci_read_config_dword(pvt->addr_f1_ctl, K8_DHAR, &pvt->dhar);
++	if (err != 0)
++		debugf0("%s() Reading K8_DHAR failed\n", __func__);
++
++	amd64_read_dbam_reg(pvt);
++
++	err = pci_read_config_dword(pvt->misc_f3_ctl,
++				F10_ONLINE_SPARE, &pvt->online_spare);
++	if (err != 0)
++		debugf0("%s() Reading ONLINE_SPARE failed\n", __func__);
++
++	err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCLR_0, &pvt->dclr0);
++	if (err != 0)
++		debugf0("%s() Reading F10_DCLR_0 failed\n", __func__);
++	err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCHR_0, &pvt->dchr0);
++	if (err != 0)
++		debugf0("%s() Reading F10_DCHR_0 failed\n", __func__);
++
++	if (!dct_ganging_enabled(pvt)) {
++		err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCLR_1,
++						&pvt->dclr1);
++		if (err != 0)
++			debugf0("%s() Reading F10_DCLR_1 failed\n", __func__);
++		err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCHR_1,
++						&pvt->dchr1);
++		if (err != 0)
++			debugf0("%s() Reading F10_DCHR_1 failed\n", __func__);
++	}
++
++	amd64_dump_misc_regs(pvt);
++}
++
++/*
++ * amd64_csrow_nr_pages
++ *
++ *	NOTE: CPU Revision Dependent code
++ *
++ *	Input:
++ *		csrow_nr  ChipSelect Row Number (0..CHIPSELECT_COUNT-1)
++ *		k8 private pointer to -->
++ *			DRAM Bank Address mapping register
++ *			node_id
++ *			DCL register where dual_channel_active is
++ *
++ *	The DBAM register consists of 4 sets of 4 bits each definitions:
++ *
++ *	Bits:		CSROWs
++ *	0-3		CSROWs 0 and 1
++ *	4-7		CSROWs 2 and 3
++ *	8-11		CSROWs 4 and 5
++ *	12-15		CSROWs 6 and 7
++ *
++ *	Values range from: 0 to 15
++ *	The meanings of the values depends on CPU REV and dual-channel state
++ *
++ *	Various CPU revisions have different size definitions for this
++ *	4 bit values.
++ *	Therefore, we need to examine which CPU we are running on to
++ *	extract meaning for these bits:
++ *
++ *	REV CG and earlier have a given DIMM size definition
++ *	REV D & REV E share another set of size definitions
++ *
++ *	REV CG, D and E all have a common beginning set of size definitions,
++ *	but change the meanings midway into the table.
++ *
++ *	REV F has yet another set of size definitions, which has a totally
++ *	different starting point.
++ *
++ *	REV ? future revs? We won't know till we get the specs
++ *
++ *	The memory controller provides for total of only 8 CSROWs in its
++ *	current architecture. Each "pair" of CSROWs normally represents
++ *	just one (1) *	DIMM in single channel or just two (2) DIMMs
++ *	in dual channel mode.
++ *
++ *	The following code logic collapses the various tables for CSROW
++ *	based on CPU Rev number.
++ *	See the tables/algorithms in the respective BKDG manuals.
++ *
++ *	return:
++ *		The number of PAGE_SIZE pages on the specified CSROW number
++ *		it encompasses
++ *
++ */
++static u32 amd64_csrow_nr_pages(int csrow_nr, struct amd64_pvt *pvt)
++{
++	u32 dram_map;
++	u32 nr_pages;
++
++	/* The math on this doesn't look right on the surface because x/2*4
++	 * can be simplified to x*2 but this expression makes use of the fact
++	 * that it is integral math where 1/2=0. This intermediate value
++	 * becomes the number of bits to shift the DBAM register to extract
++	 * the proper CSROW field.
++	 */
++	dram_map = (pvt->dbam0 >> ((csrow_nr / 2) * 4)) & 0xF;	/* PG88 */
++
++	nr_pages = pvt->ops->dbam_map_to_pages(pvt, dram_map);
++
++	/* If dual channel then double the memory size of single channel */
++	/* channel count is 1 or 2 */
++	nr_pages <<= (pvt->channel_count - 1);
++
++	debugf0("  %s(csrow=%d) DBAM map index= %d\n", __func__,
++		csrow_nr, dram_map);
++	debugf0("    nr_pages= %u  channel-count = %d\n",
++		nr_pages, pvt->channel_count);
++
++	return nr_pages;
++}
++
++/*
++ * amd64_init_csrows
++ *
++ *	perform initialization on the array of csrow attribute instances,
++ *	based on the values from pci config hardware registers
++ */
++static int amd64_init_csrows(struct mem_ctl_info *mci)
++{
++	struct csrow_info *csrow;
++	struct amd64_pvt *pvt;
++	int i;
++	int empty = 1;
++	u64 input_addr_min, input_addr_max, sys_addr;
++	int err;
++
++	pvt = mci->pvt_info;
++
++	err = pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCFG, &pvt->nbcfg);
++	if (err != 0)
++		debugf0("%s() Reading K8_NBCFG failed\n", __func__);
++
++	debugf0("%s() NBCFG= 0x%x  CHIPKILL= %s DRAM ECC= %s\n",
++		__func__, pvt->nbcfg,
++		(pvt->nbcfg & K8_NBCFG_CHIPKILL) ? "Enabled" : "Disabled",
++		(pvt->nbcfg & K8_NBCFG_ECC_ENABLE) ? "Enabled" : "Disabled"
++		);
++
++	for (i = 0; i < CHIPSELECT_COUNT; i++) {
++		csrow = &mci->csrows[i];
++
++		if ((pvt->dcsb0[i] & K8_DCSB_CS_ENABLE) == 0) {
++			debugf1("----CSROW %d EMPTY for node %d\n", i,
++				pvt->mc_node_id);
++			continue;
++		}
++
++		debugf1("----CSROW %d VALID for MC node %d\n",
++			i, pvt->mc_node_id);
++
++		empty = 0;
++		csrow->nr_pages = amd64_csrow_nr_pages(i, pvt);
++		find_csrow_limits(mci, i, &input_addr_min, &input_addr_max);
++		sys_addr = input_addr_to_sys_addr(mci, input_addr_min);
++		csrow->first_page = (u32) (sys_addr >> PAGE_SHIFT);
++		sys_addr = input_addr_to_sys_addr(mci, input_addr_max);
++		csrow->last_page = (u32) (sys_addr >> PAGE_SHIFT);
++		csrow->page_mask = ~mask_from_dct_mask(pvt, i);
++		/* 8 bytes of resolution */
++
++		csrow->mtype = amd64_determine_memory_type(pvt);
++
++		debugf1("  for MC node %d csrow %d:\n", pvt->mc_node_id, i);
++		debugf1("    input_addr_min: 0x%lx input_addr_max: 0x%lx\n",
++			(unsigned long)input_addr_min,
++			(unsigned long)input_addr_max);
++		debugf1("    sys_addr: 0x%lx  page_mask: 0x%lx\n",
++			(unsigned long)sys_addr, csrow->page_mask);
++		debugf1("    nr_pages: %u  first_page: 0x%lx "
++			"last_page: 0x%lx\n",
++			(unsigned)csrow->nr_pages,
++			csrow->first_page, csrow->last_page);
++
++		/*
++		 * determine whether CHIPKILL or JUST ECC or NO ECC is operating
++		 */
++		if (pvt->nbcfg & K8_NBCFG_ECC_ENABLE)
++			csrow->edac_mode =
++			    (pvt->nbcfg & K8_NBCFG_CHIPKILL) ?
++			    EDAC_S4ECD4ED : EDAC_SECDED;
++		else
++			csrow->edac_mode = EDAC_NONE;
++	}
++
++	return empty;
++}
+ 
 -- 
 1.6.2.4
 
