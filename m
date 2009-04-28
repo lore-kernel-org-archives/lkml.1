@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758569AbZD1BDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759548AbZD1BDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758569AbZD1BDU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 21:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbZD1BDC
+	id S1759548AbZD1BDu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 21:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759706AbZD1BDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 21:03:02 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56797 "EHLO hera.kernel.org"
+	Mon, 27 Apr 2009 21:03:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56817 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753187AbZD1BDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 21:03:00 -0400
-Message-ID: <49F65560.20904@kernel.org>
-Date: Mon, 27 Apr 2009 18:01:20 -0700
+	id S1759635AbZD1BDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 21:03:22 -0400
+Message-ID: <49F6559F.7070005@kernel.org>
+Date: Mon, 27 Apr 2009 18:02:23 -0700
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
@@ -19,14 +19,11 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>,
        Suresh Siddha <suresh.b.siddha@intel.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Len Brown <lenb@kernel.org>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Tony Luck <tony.luck@intel.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       linux-ia64@vger.kernel.org
-Subject: [PATCH 6/9] irq: make io_apic_set_pci_routing to take device
-References: <49E68C41.4020801@kernel.org> <20090416090315.GF9813@elte.hu> <49E802CE.5030406@kernel.org> <49E80457.5060403@kernel.org>
-In-Reply-To: <49E80457.5060403@kernel.org>
+       Rusty Russell <rusty@rustcorp.com.au>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 8/9] x86/irq: make MSI irq_desc numa aware -v3
+References: <49E68C41.4020801@kernel.org> <20090416090315.GF9813@elte.hu> <49E802CE.5030406@kernel.org> <49E804AD.9020702@kernel.org>
+In-Reply-To: <49E804AD.9020702@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,202 +31,95 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: so use dev_to_node later
+try to get irq_desc on the node in create_irq_nr
+
+v2: don't check if we can move it when sparse_irq is not used
+v3: use move_irq_des, if that node is not what we want
+[ Impact: use irq_desc_alloc_node ]
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: linux-acpi@vger.kernel.org
-Acked-by: Len Brown <lenb@kernel.org>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: linux-ia64@vger.kernel.org
-Cc: Tony Luck <tony.luck@intel.com>
-
 ---
- arch/ia64/kernel/acpi.c        |    5 +++--
- arch/x86/include/asm/io_apic.h |    4 ++--
- arch/x86/include/asm/mpspec.h  |    4 +++-
- arch/x86/kernel/acpi/boot.c    |    8 ++++----
- arch/x86/kernel/apic/io_apic.c |    3 ++-
- drivers/acpi/pci_irq.c         |    5 +++--
- drivers/char/hpet.c            |    4 ++--
- drivers/pnp/pnpacpi/rsparser.c |    2 +-
- include/linux/acpi.h           |    2 +-
- 9 files changed, 21 insertions(+), 16 deletions(-)
+ arch/x86/kernel/apic/io_apic.c |   17 +++++++++++++----
+ include/linux/irq.h            |    2 +-
+ 2 files changed, 14 insertions(+), 5 deletions(-)
 
-Index: linux-2.6/arch/ia64/kernel/acpi.c
-===================================================================
---- linux-2.6.orig/arch/ia64/kernel/acpi.c
-+++ linux-2.6/arch/ia64/kernel/acpi.c
-@@ -636,7 +636,7 @@ void __init acpi_numa_arch_fixup(void)
-  * success: return IRQ number (>=0)
-  * failure: return < 0
-  */
--int acpi_register_gsi(u32 gsi, int triggering, int polarity)
-+int acpi_register_gsi(struct device *dev, u32 gsi, int triggering, int polarity)
- {
- 	if (acpi_irq_model == ACPI_IRQ_MODEL_PLATFORM)
- 		return gsi;
-@@ -678,7 +678,8 @@ static int __init acpi_parse_fadt(struct
- 
- 	fadt = (struct acpi_table_fadt *)fadt_header;
- 
--	acpi_register_gsi(fadt->sci_interrupt, ACPI_LEVEL_SENSITIVE, ACPI_ACTIVE_LOW);
-+	acpi_register_gsi(NULL, fadt->sci_interrupt, ACPI_LEVEL_SENSITIVE,
-+				 ACPI_ACTIVE_LOW);
- 	return 0;
- }
- 
-Index: linux-2.6/arch/x86/include/asm/io_apic.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/io_apic.h
-+++ linux-2.6/arch/x86/include/asm/io_apic.h
-@@ -154,8 +154,8 @@ extern int timer_through_8259;
- extern int io_apic_get_unique_id(int ioapic, int apic_id);
- extern int io_apic_get_version(int ioapic);
- extern int io_apic_get_redir_entries(int ioapic);
--extern int io_apic_set_pci_routing(int ioapic, int pin, int irq,
--				   int edge_level, int active_high_low);
-+extern int io_apic_set_pci_routing(struct device *dev, int ioapic, int pin,
-+				  int irq, int edge_level, int active_high_low);
- #endif /* CONFIG_ACPI */
- 
- extern int (*ioapic_renumber_irq)(int ioapic, int irq);
-Index: linux-2.6/arch/x86/include/asm/mpspec.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/mpspec.h
-+++ linux-2.6/arch/x86/include/asm/mpspec.h
-@@ -72,7 +72,9 @@ extern void mp_register_ioapic(int id, u
- extern void mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
- 				   u32 gsi);
- extern void mp_config_acpi_legacy_irqs(void);
--extern int mp_register_gsi(u32 gsi, int edge_level, int active_high_low);
-+struct device;
-+extern int mp_register_gsi(struct device *dev, u32 gsi, int edge_level,
-+				 int active_high_low);
- extern int acpi_probe_gsi(void);
- #ifdef CONFIG_X86_IO_APIC
- extern int mp_config_acpi_gsi(unsigned char number, unsigned int devfn, u8 pin,
-Index: linux-2.6/arch/x86/kernel/acpi/boot.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
-+++ linux-2.6/arch/x86/kernel/acpi/boot.c
-@@ -522,7 +522,7 @@ int acpi_gsi_to_irq(u32 gsi, unsigned in
-  * success: return IRQ number (>=0)
-  * failure: return < 0
-  */
--int acpi_register_gsi(u32 gsi, int triggering, int polarity)
-+int acpi_register_gsi(struct device *dev, u32 gsi, int triggering, int polarity)
- {
- 	unsigned int irq;
- 	unsigned int plat_gsi = gsi;
-@@ -539,7 +539,7 @@ int acpi_register_gsi(u32 gsi, int trigg
- 
- #ifdef CONFIG_X86_IO_APIC
- 	if (acpi_irq_model == ACPI_IRQ_MODEL_IOAPIC) {
--		plat_gsi = mp_register_gsi(gsi, triggering, polarity);
-+		plat_gsi = mp_register_gsi(dev, gsi, triggering, polarity);
- 	}
- #endif
- 	acpi_gsi_to_irq(plat_gsi, &irq);
-@@ -1158,7 +1158,7 @@ void __init mp_config_acpi_legacy_irqs(v
- 	}
- }
- 
--int mp_register_gsi(u32 gsi, int triggering, int polarity)
-+int mp_register_gsi(struct device *dev, u32 gsi, int triggering, int polarity)
- {
- 	int ioapic;
- 	int ioapic_pin;
-@@ -1253,7 +1253,7 @@ int mp_register_gsi(u32 gsi, int trigger
- 		}
- 	}
- #endif
--	io_apic_set_pci_routing(ioapic, ioapic_pin, gsi,
-+	io_apic_set_pci_routing(dev, ioapic, ioapic_pin, gsi,
- 				triggering == ACPI_EDGE_SENSITIVE ? 0 : 1,
- 				polarity == ACPI_ACTIVE_HIGH ? 0 : 1);
- 	return gsi;
 Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
 +++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-@@ -3916,7 +3916,8 @@ int __init io_apic_get_version(int ioapi
- }
- #endif
- 
--int io_apic_set_pci_routing (int ioapic, int pin, int irq, int triggering, int polarity)
-+int io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
-+				 int triggering, int polarity)
+@@ -3130,14 +3130,13 @@ static int nr_irqs_gsi = NR_IRQS_LEGACY;
+ /*
+  * Dynamic irq allocate and deallocation
+  */
+-unsigned int create_irq_nr(unsigned int irq_want)
++unsigned int create_irq_nr(unsigned int irq_want, int node)
  {
- 	struct irq_desc *desc;
- 	struct irq_cfg *cfg;
-Index: linux-2.6/drivers/acpi/pci_irq.c
+ 	/* Allocate an unused irq */
+ 	unsigned int irq;
+ 	unsigned int new;
+ 	unsigned long flags;
+ 	struct irq_cfg *cfg_new = NULL;
+-	int node = cpu_to_node(boot_cpu_id);
+ 	struct irq_desc *desc_new = NULL;
+ 
+ 	irq = 0;
+@@ -3155,6 +3154,13 @@ unsigned int create_irq_nr(unsigned int
+ 
+ 		if (cfg_new->vector != 0)
+ 			continue;
++
++#ifdef CONFIG_NUMA_IRQ_DESC
++		/* different node ?*/
++		if (desc_new->node != node)
++			desc = move_irq_desc(desc, node);
++#endif
++
+ 		if (__assign_irq_vector(new, cfg_new, apic->target_cpus()) == 0)
+ 			irq = new;
+ 		break;
+@@ -3172,11 +3178,12 @@ unsigned int create_irq_nr(unsigned int
+ 
+ int create_irq(void)
+ {
++	int node = cpu_to_node(boot_cpu_id);
+ 	unsigned int irq_want;
+ 	int irq;
+ 
+ 	irq_want = nr_irqs_gsi;
+-	irq = create_irq_nr(irq_want);
++	irq = create_irq_nr(irq_want, node);
+ 
+ 	if (irq == 0)
+ 		irq = -1;
+@@ -3434,15 +3441,17 @@ int arch_setup_msi_irqs(struct pci_dev *
+ 	unsigned int irq_want;
+ 	struct intel_iommu *iommu = NULL;
+ 	int index = 0;
++	int node;
+ 
+ 	/* x86 doesn't support multiple MSI yet */
+ 	if (type == PCI_CAP_ID_MSI && nvec > 1)
+ 		return 1;
+ 
++	node = dev_to_node(&dev->dev);
+ 	irq_want = nr_irqs_gsi;
+ 	sub_handle = 0;
+ 	list_for_each_entry(msidesc, &dev->msi_list, list) {
+-		irq = create_irq_nr(irq_want);
++		irq = create_irq_nr(irq_want, node);
+ 		if (irq == 0)
+ 			return -1;
+ 		irq_want = irq + 1;
+Index: linux-2.6/include/linux/irq.h
 ===================================================================
---- linux-2.6.orig/drivers/acpi/pci_irq.c
-+++ linux-2.6/drivers/acpi/pci_irq.c
-@@ -401,7 +401,8 @@ int acpi_pci_irq_enable(struct pci_dev *
- 		/* Interrupt Line values above 0xF are forbidden */
- 		if (dev->irq > 0 && (dev->irq <= 0xF)) {
- 			printk(" - using IRQ %d\n", dev->irq);
--			acpi_register_gsi(dev->irq, ACPI_LEVEL_SENSITIVE,
-+			acpi_register_gsi(&dev->dev, dev->irq,
-+					  ACPI_LEVEL_SENSITIVE,
- 					  ACPI_ACTIVE_LOW);
- 			return 0;
- 		} else {
-@@ -410,7 +411,7 @@ int acpi_pci_irq_enable(struct pci_dev *
- 		}
- 	}
+--- linux-2.6.orig/include/linux/irq.h
++++ linux-2.6/include/linux/irq.h
+@@ -376,7 +376,7 @@ extern void set_irq_noprobe(unsigned int
+ extern void set_irq_probe(unsigned int irq);
  
--	rc = acpi_register_gsi(gsi, triggering, polarity);
-+	rc = acpi_register_gsi(&dev->dev, gsi, triggering, polarity);
- 	if (rc < 0) {
- 		dev_warn(&dev->dev, "PCI INT %c: failed to register GSI\n",
- 			 pin_name(pin));
-Index: linux-2.6/drivers/char/hpet.c
-===================================================================
---- linux-2.6.orig/drivers/char/hpet.c
-+++ linux-2.6/drivers/char/hpet.c
-@@ -224,7 +224,7 @@ static void hpet_timer_set_irq(struct hp
- 			break;
- 		}
+ /* Handle dynamic irq creation and destruction */
+-extern unsigned int create_irq_nr(unsigned int irq_want);
++extern unsigned int create_irq_nr(unsigned int irq_want, int node);
+ extern int create_irq(void);
+ extern void destroy_irq(unsigned int irq);
  
--		gsi = acpi_register_gsi(irq, ACPI_LEVEL_SENSITIVE,
-+		gsi = acpi_register_gsi(NULL, irq, ACPI_LEVEL_SENSITIVE,
- 					ACPI_ACTIVE_LOW);
- 		if (gsi > 0)
- 			break;
-@@ -939,7 +939,7 @@ static acpi_status hpet_resources(struct
- 		irqp = &res->data.extended_irq;
- 
- 		for (i = 0; i < irqp->interrupt_count; i++) {
--			irq = acpi_register_gsi(irqp->interrupts[i],
-+			irq = acpi_register_gsi(NULL, irqp->interrupts[i],
- 				      irqp->triggering, irqp->polarity);
- 			if (irq < 0)
- 				return AE_ERROR;
-Index: linux-2.6/drivers/pnp/pnpacpi/rsparser.c
-===================================================================
---- linux-2.6.orig/drivers/pnp/pnpacpi/rsparser.c
-+++ linux-2.6/drivers/pnp/pnpacpi/rsparser.c
-@@ -123,7 +123,7 @@ static void pnpacpi_parse_allocated_irqr
- 	}
- 
- 	flags = irq_flags(triggering, polarity, shareable);
--	irq = acpi_register_gsi(gsi, triggering, polarity);
-+	irq = acpi_register_gsi(&dev->dev, gsi, triggering, polarity);
- 	if (irq >= 0)
- 		pcibios_penalize_isa_irq(irq, 1);
- 	else
-Index: linux-2.6/include/linux/acpi.h
-===================================================================
---- linux-2.6.orig/include/linux/acpi.h
-+++ linux-2.6/include/linux/acpi.h
-@@ -119,7 +119,7 @@ extern int pci_mmcfg_config_num;
- extern int sbf_port;
- extern unsigned long acpi_realmode_flags;
- 
--int acpi_register_gsi (u32 gsi, int triggering, int polarity);
-+int acpi_register_gsi (struct device *dev, u32 gsi, int triggering, int polarity);
- int acpi_gsi_to_irq (u32 gsi, unsigned int *irq);
- 
- #ifdef CONFIG_X86_IO_APIC
