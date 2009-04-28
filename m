@@ -1,137 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbZD1BVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbZD1Bbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758735AbZD1BVR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 21:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbZD1BVA
+	id S1758185AbZD1Bbk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 21:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbZD1Bba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 21:21:00 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57481 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750806AbZD1BU7 (ORCPT
+	Mon, 27 Apr 2009 21:31:30 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:54244 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754458AbZD1Bb3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 21:20:59 -0400
-Date: Tue, 28 Apr 2009 10:19:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: nishimura@mxp.nes.nec.co.jp
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fix leak of swap accounting as stale swap cache under
- memcg
-Message-Id: <20090428101924.88f67e27.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <isapiwc.d5d1bc3c.6e29.49f6574a.db2ee.65@mail.jp.nec.com>
-References: <20090427181259.6efec90b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090427210856.d5f4109e.d-nishimura@mtf.biglobe.ne.jp>
-	<20090428091902.fc44efbc.kamezawa.hiroyu@jp.fujitsu.com>
-	<isapiwc.d5d1bc3c.6e29.49f6574a.db2ee.65@mail.jp.nec.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Apr 2009 21:31:29 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] fsldma: use PCI Read Multiple command
+Date: Tue, 28 Apr 2009 09:31:08 +0800
+Message-ID: <D7CCA83BB0796C49BC0BB53B6AB1208928CAB2@zch01exm21.fsl.freescale.net>
+In-Reply-To: <ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] fsldma: use PCI Read Multiple command
+Thread-Index: AcnHRPdBWwGiOijVTWu5E4TWalmxaAAW+Frg
+References: <20090424183517.GB23140@ovro.caltech.edu> <D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net> <ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com>
+From: "Liu Dave-R63238" <DaveLiu@freescale.com>
+To: "Tabi Timur-B04825" <timur@freescale.com>
+Cc: "Ira Snyder" <iws@ovro.caltech.edu>, <linux-kernel@vger.kernel.org>,
+       <linuxppc-dev@ozlabs.org>, "Dan Williams" <dan.j.williams@intel.com>,
+       "Li Yang-R58472" <LeoLi@freescale.com>
+X-Brightmail-Tracker: AAAAAQAAAWE=
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009 10:09:30 +0900
-nishimura@mxp.nes.nec.co.jp wrote:
-
-> > On Mon, 27 Apr 2009 21:08:56 +0900
-> > Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> wrote:
-> > 
-> >> > Index: mmotm-2.6.30-Apr24/mm/vmscan.c
-> >> > ===================================================================
-> >> > --- mmotm-2.6.30-Apr24.orig/mm/vmscan.c
-> >> > +++ mmotm-2.6.30-Apr24/mm/vmscan.c
-> >> > @@ -661,6 +661,9 @@ static unsigned long shrink_page_list(st
-> >> >  		if (PageAnon(page) && !PageSwapCache(page)) {
-> >> >  			if (!(sc->gfp_mask & __GFP_IO))
-> >> >  				goto keep_locked;
-> >> > +			/* avoid making more stale swap caches */
-> >> > +			if (memcg_stale_swap_congestion())
-> >> > +				goto keep_locked;
-> >> >  			if (!add_to_swap(page))
-> >> >  				goto activate_locked;
-> >> >  			may_enter_fs = 1;
-> >> > 
-> >> Well, as I mentioned before(http://marc.info/?l=linux-kernel&m=124066623510867&w=2),
-> >> this cannot avoid type-2(set !PageCgroupUsed by the owner process via
-> >> page_remove_rmap()->mem_cgroup_uncharge_page() before being added to swap cache).
-> >> If these swap caches go through shrink_page_list() without beeing freed
-> >> for some reason, these swap caches doesn't go back to memcg's LRU.
-> >> 
-> >> Type-2 doesn't pressure memsw.usage, but you can see it by plotting
-> >> "grep SwapCached /proc/meminfo".
-> >> 
-> >> And I don't think it's a good idea to add memcg_stale_swap_congestion() here.
-> >> This means less possibility to reclaim pages.
-> >> 
-> > Hmm. maybe adding congestion_wait() ?
-> > 
-> I don't think no hook before add_to_swap() is needed.
+> > You are assuming the PCI memory space is prefetchable( no 
+> > side effect) for DMA.
+> > Is it possible that DMA is from non-prefetchable memory space?
 > 
-> >> Do you dislike the patch I attached in the above mail ?
-> >> 
-> > I doubt whether the patch covers all type-2 case.
-> > 
-> hmm, I didn't see any leak anymore when I tested the patch.
+> This should be a safe assumption for this driver.  Remember, this
+> driver just does offload memcpy, from one region to another.  So the
+> PCI memory that you are reading from should be just a buffer of data,
+> and there should be side-effect of reading it.
 > 
+> However, I would like to see a comment at the top of the file warning
+> people that copying from PCI memory will result in prefetched reads.
 
-At first, your patch
-==
- 		if (PageAnon(page) && !PageSwapCache(page)) {
- 			if (!(sc->gfp_mask & __GFP_IO))
- 				goto keep_locked;
--			/* avoid making more stale swap caches */
--			if (memcg_stale_swap_congestion())
--				goto keep_locked;
- 			if (!add_to_swap(page))
- 				goto activate_locked;
-+			/*
-+			 * The owner process might have uncharged the page
-+			 * (by page_remove_rmap()) before it has been added
-+			 * to swap cache.
-+			 * Check it here to avoid making it stale.
-+			 */
-+			if (memcg_free_unused_swapcache(page))
-+				goto keep_locked;
- 			may_enter_fs = 1;
- 		}
-==
-Should be
-==
-
-	if (PageAnon(page) && !PageSwapCache(page)) {
-		... // don't modify here
-	}
-	if (PageAnon(page) && PageSwapCache(page) && !page_mapped(page)) {
-		if (try_to_free_page(page)) // or memcg_free_unused_swapcache()
-			goto free_it;
-	}
-==
-I think.
-
-And we need hook to free_swap_and_cache() for handling PageWriteback() case.
-
-
-> But because of machine time limit, I could only test for about 3 hours.
-> (I had seen some leak at that point before applying my patch)
-> I'll test for longer time if possible.
-> 
-Sigh, my work time is also limited for these months ;(
-
-> > I'll consider again and post v3.
-> > But I'll go into a series of holidays, so, may not come back until May/6.
-> > 
-> It's the same for me :)
-> 
-Enjoy good holidays :)
-
-Thanks,
--Kame
-
-
-
-
+How about FIFO RAM case?
