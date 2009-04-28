@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZD1TqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbZD1Ttb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756574AbZD1TqW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 15:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbZD1TqL
+	id S1755097AbZD1Ttb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 15:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbZD1TtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 15:46:11 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:52197 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751868AbZD1TqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 15:46:10 -0400
-Date: Tue, 28 Apr 2009 21:45:31 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: "Kumar, Purushotam" <purushotam@ti.com>
-Cc: "davinci-linux-open-source@linux.davincidsp.com" 
-	<davinci-linux-open-source@linux.davincidsp.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] DaVinci: MMC: V4: MMC/SD controller driver for
- DaVinci family.
-Message-ID: <20090428214531.23950257@mjolnir.ossman.eu>
-In-Reply-To: <B85A65D85D7EB246BE421B3FB0FBB59301CCA0190F@dbde02.ent.ti.com>
-References: <1238666196-29979-1-git-send-email-purushotam@ti.com>
-	<20090410214143.4aa4045e@mjolnir.ossman.eu>
-	<B85A65D85D7EB246BE421B3FB0FBB59301CCA0190F@dbde02.ent.ti.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Apr 2009 15:49:22 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:53008 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752037AbZD1TtV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 15:49:21 -0400
+Date: Tue, 28 Apr 2009 15:48:24 -0400 (EDT)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH v2 00/15] clean up page aligned data and bss sections
+In-Reply-To: <1240938062-3264-1-git-send-email-tabbott@mit.edu>
+Message-ID: <alpine.DEB.1.10.0904281527210.1623@vinegar-pot.mit.edu>
+References: <1240938062-3264-1-git-send-email-tabbott@mit.edu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Apr 2009 16:34:22 +0530
-"Kumar, Purushotam" <purushotam@ti.com> wrote:
+On Tue, 28 Apr 2009, Tim Abbott wrote:
 
-> > > +
-> > > +	if (mmc_freq > mmc_req_freq)
-> > > +		mmc_push_pull = mmc_push_pull + 1;
-> > 
-> > The naming of the divider is a bit confusing here. :)
-> 
-> I am thinking to change " mmc_push_pull" to " mmc_push_pull_divider". Please suggest other appropriate name.
-> 
+> Here's a new version of the page-aligned section cleanup patch
+> series.  Changes since last version include:
 
-Or just "divider". The rest should be clear from the context.
+Sam,
 
-> > > +	if (ios->bus_mode == MMC_BUSMODE_OPENDRAIN) {
-> > > +		u32 temp;
-> > > +
-> > > +		/* Ignoring the init clock value passed for fixing the inter
-> > > +		 * operability with different cards.
-> > > +		 */
-> > > +		open_drain_freq = ((unsigned int)cpu_arm_clk
-> > > +				/ (2 * MMCSD_INIT_CLOCK)) - 1;
-> > > +
-> > > +		if (open_drain_freq > 0xFF)
-> > > +			open_drain_freq = 0xFF;
-> > > +
-> > > +		temp = readl(host->base + DAVINCI_MMCCLK) & ~MMCCLK_CLKRT_MASK;
-> > > +		temp |= open_drain_freq;
-> > > +		writel(temp, host->base + DAVINCI_MMCCLK);
-> > > +
-> > > +		/* Convert ns to clock cycles */
-> > > +		ns_in_one_cycle = (1000000) / (MMCSD_INIT_CLOCK/1000);
-> > 
-> > I'm still not sure why you need this. Open drain mode is always used at
-> > a low frequency anyway.
-> 
-> 
-> If my understanding is correct you are suggesting that at lower freq. there is no need to update the timeout parameter and can use the default value of ns_in_one_cycle.
-> 
-> The mmc_davinci_prepare_data() may  be called even during open drain frequency mode and here we are calculating the timeout value and updating the timeout reg. So ns_in_one_cycle should hold a proper value once we call mmc_davinci_prepare_data(). I think there is no harm in having this calculation here.
-> 
+I am close to having prepared another 4 patch series of similar size to 
+this one for .data.nosave, .data.cacheline_aligned, .data.init_task, and 
+.data.read_mostly.  Along with this page-aligned series and the things 
+that have already been merged, I think these are all of the major 
+cross-architecture patchsets needed for -ffunction-sections (there will 
+remain a good number of section names that only appear on one or two 
+architectures).
 
-I see. I thought this was some fiddling to override the core's decision
-on clock frequency.
+It seems with this set of patches that we're going to bother all the arch 
+maintainers several times if we handle these all completely independently 
+(especially since each patch series has patches that depend on patches 
+from the previous one).  So, I was thinking perhaps we should proceed as 
+follows:
 
-Why do you need to calculate the timeout differently based on
-push-pull/open drain mode though?
+(1) I send a patch series that does the architecture-independent macro 
+additions as well as the changes for one architecture (say, x86) to use 
+those macros so that they can be reviewed along with the actual usage.
 
-Rgds
--- 
-     -- Pierre Ossman
+(2) We get those reviewed and merge at least the architecture-independent 
+patches
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-  TigerVNC, core developer          http://www.tigervnc.org
+(3) I can send one patch series for each architecture that is just using 
+the macros that have already been merged; then the patch series are nicely 
+decoupled and each arch maintainer only has to ack a single set of changes 
+to their architecture.
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+Does this plan make sense?
+
+	-Tim Abbott
+
