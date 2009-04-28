@@ -1,141 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbZD1W4D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbZD1W5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755195AbZD1W4D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 18:56:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZD1Wzu
+	id S1757479AbZD1W5K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 18:57:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZD1W44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 18:55:50 -0400
-Received: from mga02.intel.com ([134.134.136.20]:28153 "EHLO mga02.intel.com"
+	Tue, 28 Apr 2009 18:56:56 -0400
+Received: from tundra.namei.org ([65.99.196.166]:60232 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753201AbZD1Wzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 18:55:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,262,1239001200"; 
-   d="scan'208";a="407769928"
-Subject: Re: regression IWl3945 - doesn't work with recent 2.6.30-rcX
-From: reinette chatre <reinette.chatre@intel.com>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-In-Reply-To: <c4e36d110904270059m3e43d6ccl18cc2ec6954e5649@mail.gmail.com>
-References: <c4e36d110904220333u37304c79k6ab528f92b5f3718@mail.gmail.com>
-	 <20090422140107.GD3288@tuxdriver.com>
-	 <c4e36d110904241218x209a4b76kf271f7288f1a33da@mail.gmail.com>
-	 <c4e36d110904270059m3e43d6ccl18cc2ec6954e5649@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 28 Apr 2009 16:02:03 -0700
-Message-Id: <1240959723.1207.104.camel@rc-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1753986AbZD1W4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 18:56:54 -0400
+Date: Wed, 29 Apr 2009 08:56:32 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, hooanon05@yahoo.co.jp,
+       david safford <safford@watson.ibm.com>,
+       "J. Bruce Fields" <bfields@fieldses.org>, linux-nfs@vger.kernel.org
+Subject: Re: integrity: nfsd imbalance bug fix
+In-Reply-To: <1240943534.4143.55.camel@dyn9002018117.watson.ibm.com>
+Message-ID: <alpine.LRH.2.00.0904290855230.4263@tundra.namei.org>
+References: <1240943534.4143.55.camel@dyn9002018117.watson.ibm.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-27 at 00:59 -0700, Zdenek Kabelac wrote:
-> 2009/4/24 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
-> > 2009/4/22 John W. Linville <linville@tuxdriver.com>:
-> >> On Wed, Apr 22, 2009 at 12:33:03PM +0200, Zdenek Kabelac wrote:
-> >>> Hi
-> >>>
-> >>> I'm checking whether -rcX kernel could be usable on my
-> >>> T61/4GB/C2D/x86_64 - but wireless seems to be still out of
-> >>> functionality:
-> >>> I'm getting lots of weird trace-back messages and it looks like
-> >>> iwl3945 is not working at all.
-> >>> (attached messages from fresh build of -rc3 - but it never worked even in -rc1)
-> >>
-> >> Looks like this one did _not_ make -rc3:
-> >>
-> >> commit df833b1d73680f9f9dc72cbc3215edbbc6ab740d
-> >> Author: Reinette Chatre <reinette.chatre@intel.com>
-> >> Date:   Tue Apr 21 10:55:48 2009 -0700
-> >>
-> >>    iwlwifi: DMA fixes
-> >>
-> >>    A few issues wrt DMA were uncovered when using the driver with swiotlb.
-> >> ...
-> >>
-> >> It is in wireless-2.6 and should be in net-2.6 -- please try one of those kernels.
-> >
-> >
-> > I can confirm that current upstream linux commit
-> > 9f5a691253924fd033a58c6b1fed57bb0a4eccf4 works again with iwlwifi.
-> > and it already contains the patch you suggested to check.
-> >
+On Tue, 28 Apr 2009, Mimi Zohar wrote:
+
+> The number of calls to ima_path_check()/ima_file_free()
+> should be balanced.  An extra call to fput(), indicates
+> the file could have been accessed without first being
+> measured.
 > 
+> An nfsd exported file is opened/closed by the kernel
+> causing an integrity imbalance message.
+
+[Adding NFS folk to the CC]
+
 > 
-> While Wifi seems to be working well - I've noticed once attached long
-> INFO message during suspend.
+> - rename and export opencount_get to ima_opencount_get
+> - replace ima_shm_check calls with ima_opencount_get
+> - add call to increment opencount for files opened by nfsd.
+> - add call to measure exported files in nfsd_permission().
+> - export ima_path_check
 > 
-> Zdenek
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 > 
-> -----------
-> 
-> Linux version 2.6.30-rc3-00324-g8087eae (gcc version 4.4.0 20090414
-> (Red Hat 4.4.0-0.34) (GCC) ) #55 SMP Fri Apr 24 20:22:26 CEST 2009
-> Command line: ro root=/dev/sda5 selinux=0 no_console_suspend
-> ...
-> ADDRCONF(NETDEV_UP): wlan0: link is not ready
-> virbr0: no IPv6 routers present
-> wlan0: authenticate with AP 00:11:d8:da:65:40
-> wlan0: authenticated
-> wlan0: associate with AP 00:11:d8:da:65:40
-> wlan0: RX AssocResp from 00:11:d8:da:65:40 (capab=0x401 status=0 aid=4)
-> wlan0: associated
-> ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-> wlan0: disassociating by local choice (reason=3)
-> audit(1240599276.009:18266): audit_enabled=0 old=1 auid=4294967295
-> ses=4294967295 res=1
-> wlan0: no IPv6 routers present
-> fuse init (API version 7.11)
-> wlan0: authenticate with AP 00:11:d8:da:65:40
-> wlan0: authenticated
-> wlan0: associate with AP 00:11:d8:da:65:40
-> wlan0: RX AssocResp from 00:11:d8:da:65:40 (capab=0x401 status=0 aid=4)
-> wlan0: associated
-> wlan0: no probe response from AP 00:11:d8:da:65:40 - disassociating
-> wlan0: deauthenticated (Reason: 7)
-> wlan0: authenticate with AP 00:11:d8:da:65:40
-> wlan0: authenticate with AP 00:11:d8:da:65:40
-> wlan0: authenticate with AP 00:11:d8:da:65:40
-> wlan0: authenticated
-> wlan0: associate with AP 00:11:d8:da:65:40
-> wlan0: RX ReassocResp from 00:11:d8:da:65:40 (capab=0x401 status=0 aid=4)
-> wlan0: associated
-> 
-> ..........
-> 
-> =========================================================
-> [ INFO: possible irq lock inversion dependency detected ]
-> 2.6.30-rc3-00324-g8087eae #55
-> ---------------------------------------------------------
-> swapper/0 just changed the state of lock:
->  (&(&priv->scan_check)->timer){+.-...}, at: [<ffffffff80250d90>]
-> run_timer_softirq+0x120/0x2e0
-> but this lock was taken by another, HARDIRQ-safe lock in the past:
->  (&priv->lock){-.-...}
-> 
-> and interrupts could create inverse lock ordering between them.
+> Index: security-testing-2.6/fs/nfsd/vfs.c
+> ===================================================================
+> --- security-testing-2.6.orig/fs/nfsd/vfs.c
+> +++ security-testing-2.6/fs/nfsd/vfs.c
+> @@ -55,6 +55,7 @@
+>  #include <linux/security.h>
+>  #endif /* CONFIG_NFSD_V4 */
+>  #include <linux/jhash.h>
+> +#include <linux/ima.h>
+>  
+>  #include <asm/uaccess.h>
+>  
+> @@ -735,6 +736,8 @@ nfsd_open(struct svc_rqst *rqstp, struct
+>  			    flags, cred);
+>  	if (IS_ERR(*filp))
+>  		host_err = PTR_ERR(*filp);
+> +	else
+> +		ima_opencount_get(*filp);
+>  out_nfserr:
+>  	err = nfserrno(host_err);
+>  out:
+> @@ -2096,7 +2099,13 @@ nfsd_permission(struct svc_rqst *rqstp, 
+>  	if (err == -EACCES && S_ISREG(inode->i_mode) &&
+>  	    acc == (NFSD_MAY_READ | NFSD_MAY_OWNER_OVERRIDE))
+>  		err = inode_permission(inode, MAY_EXEC);
+> +	if (err)
+> +		goto nfsd_out;
+>  
+> +	err = ima_path_check(&exp->ex_path,
+> +			     acc & (MAY_READ | MAY_WRITE | MAY_EXEC));
+> +	return err;
+> +nfsd_out:
+>  	return err? nfserrno(err) : 0;
+>  }
+>  
+> Index: security-testing-2.6/security/integrity/ima/ima_main.c
+> ===================================================================
+> --- security-testing-2.6.orig/security/integrity/ima/ima_main.c
+> +++ security-testing-2.6/security/integrity/ima/ima_main.c
+> @@ -206,6 +206,7 @@ out:
+>  	kref_put(&iint->refcount, iint_free);
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL_GPL(ima_path_check);
+>  
+>  static int process_measurement(struct file *file, const unsigned char *filename,
+>  			       int mask, int function)
+> @@ -234,7 +235,16 @@ out:
+>  	return rc;
+>  }
+>  
+> -static void opencount_get(struct file *file)
+> +/*
+> + * ima_opencount_get - incr opencount for files opened by the kernel
+> + *
+> + * - IPC shm and shmat create/fput a file.
+> + * - nfsd opens/closes exported files.
+> + *
+> + * Increment the opencount for these files to prevent unnecessary
+> + * imbalance messages.
+> + */
+> +void ima_opencount_get(struct file *file)
+>  {
+>  	struct inode *inode = file->f_dentry->d_inode;
+>  	struct ima_iint_cache *iint;
+> @@ -248,6 +258,7 @@ static void opencount_get(struct file *f
+>  	iint->opencount++;
+>  	mutex_unlock(&iint->mutex);
+>  }
+> +EXPORT_SYMBOL_GPL(ima_opencount_get);
+>  
+>  /**
+>   * ima_file_mmap - based on policy, collect/store measurement.
+> @@ -272,18 +283,6 @@ int ima_file_mmap(struct file *file, uns
+>  	return 0;
+>  }
+>  
+> -/*
+> - * ima_shm_check - IPC shm and shmat create/fput a file
+> - *
+> - * Maintain the opencount for these files to prevent unnecessary
+> - * imbalance messages.
+> - */
+> -void ima_shm_check(struct file *file)
+> -{
+> -	opencount_get(file);
+> -	return;
+> -}
+> -
+>  /**
+>   * ima_bprm_check - based on policy, collect/store measurement.
+>   * @bprm: contains the linux_binprm structure
+> Index: security-testing-2.6/include/linux/ima.h
+> ===================================================================
+> --- security-testing-2.6.orig/include/linux/ima.h
+> +++ security-testing-2.6/include/linux/ima.h
+> @@ -20,7 +20,7 @@ extern void ima_inode_free(struct inode 
+>  extern int ima_path_check(struct path *path, int mask);
+>  extern void ima_file_free(struct file *file);
+>  extern int ima_file_mmap(struct file *file, unsigned long prot);
+> -extern void ima_shm_check(struct file *file);
+> +extern void ima_opencount_get(struct file *file);
+>  
+>  #else
+>  static inline int ima_bprm_check(struct linux_binprm *bprm)
+> @@ -53,7 +53,7 @@ static inline int ima_file_mmap(struct f
+>  	return 0;
+>  }
+>  
+> -static inline void ima_shm_check(struct file *file)
+> +static inline void ima_opencount_get(struct file *file)
+>  {
+>  	return;
+>  }
+> Index: security-testing-2.6/ipc/shm.c
+> ===================================================================
+> --- security-testing-2.6.orig/ipc/shm.c
+> +++ security-testing-2.6/ipc/shm.c
+> @@ -384,7 +384,7 @@ static int newseg(struct ipc_namespace *
+>  	error = PTR_ERR(file);
+>  	if (IS_ERR(file))
+>  		goto no_file;
+> -	ima_shm_check(file);
+> +	ima_opencount_get(file);
+>  
+>  	id = ipc_addid(&shm_ids(ns), &shp->shm_perm, ns->shm_ctlmni);
+>  	if (id < 0) {
+> @@ -891,7 +891,7 @@ long do_shmat(int shmid, char __user *sh
+>  	file = alloc_file(path.mnt, path.dentry, f_mode, &shm_file_operations);
+>  	if (!file)
+>  		goto out_free;
+> -	ima_shm_check(file);
+> +	ima_opencount_get(file);
+>  
+>  	file->private_data = sfd;
+>  	file->f_mapping = shp->shm_file->f_mapping;
+> Index: security-testing-2.6/mm/shmem.c
+> ===================================================================
+> --- security-testing-2.6.orig/mm/shmem.c
+> +++ security-testing-2.6/mm/shmem.c
+> @@ -2680,7 +2680,7 @@ int shmem_zero_setup(struct vm_area_stru
+>  	if (IS_ERR(file))
+>  		return PTR_ERR(file);
+>  
+> -	ima_shm_check(file);
+> +	ima_opencount_get(file);
+>  	if (vma->vm_file)
+>  		fput(vma->vm_file);
+>  	vma->vm_file = file;
 > 
 > 
 
-The locking used to protect scan_check is not consistent and is so
-because we overusing the priv->lock spinlock. scan_check is used in
-three places (iwl_rx_scan_complete_notif, iwl3945_bg_request_scan, and
-iwl3945_set_mode). In iwl_rx_scan_complete_notif the access is protected
-with priv->lock, while the other two use priv->mutex. The protection in
-iwl_rx_scan_complete_notif with priv->lock is not necessary ... but a
-significant effort is required to change this. We are starting to move
-in this direction. A workaround will be to acquire priv->lock in
-iwl3945_bg_request_scan and iwl3945_set_mode, but that will be ugly. 
-
-We can leave this code as is in 2.6.30 because inverse lock ordering is
-not possible here as priv->mutex cannot be obtained in
-iwl_rx_scan_complete_notif path as it (the mutex) sleeps and this code
-path doesn't (it is run in a tasklet).
-
-Reinette
-
-
+-- 
+James Morris
+<jmorris@namei.org>
