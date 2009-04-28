@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbZD1FK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbZD1FQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757347AbZD1FK4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 01:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbZD1FKr
+	id S1757606AbZD1FQb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 01:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbZD1FQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 01:10:47 -0400
-Received: from kroah.org ([198.145.64.141]:33643 "EHLO coco.kroah.org"
+	Tue, 28 Apr 2009 01:16:21 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34782 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751350AbZD1FKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 01:10:46 -0400
-Date: Mon, 27 Apr 2009 22:07:42 -0700
-From: Greg KH <greg@kroah.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2.6.30-rc3] platform_bus:  remove "which
-	platform_data?" confusion
-Message-ID: <20090428050742.GB17432@kroah.com>
-References: <200904271943.40588.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904271943.40588.david-b@pacbell.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1751295AbZD1FQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 01:16:21 -0400
+Date: Tue, 28 Apr 2009 15:16:10 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, hch@infradead.org,
+       alan@lxorguk.ukuu.org.uk, john@johnmccutchan.com, rlove@rlove.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 05/12] dnotify: reimplement dnotify using fsnotify
+Message-Id: <20090428151610.fbc75279.sfr@canb.auug.org.au>
+In-Reply-To: <20090427215328.14161.85505.stgit@paris.rdu.redhat.com>
+References: <20090427215305.14161.33354.stgit@paris.rdu.redhat.com>
+	<20090427215328.14161.85505.stgit@paris.rdu.redhat.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__28_Apr_2009_15_16_10_+1000_rhH9eXV=lt7_Y_Pd"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 07:43:40PM -0700, David Brownell wrote:
-> From: David Brownell <dbrownell@users.sourceforge.net>
-> 
-> Recent patches have caused platform_device_add_pdata() users
-> to trigger confused "use which platform_data?" error messages
-> from the kernel.  ("The _only_ one you were given, dummy!" is
-> the correct answer.)
-> 
-> This patch fixes those messages so they only appear if there's
-> reason to be confused.  (The call should probably fail too...)
-> 
-> Those patches seem to support what I think is a misguided
-> notion:  that somehow device.platform_data might move into
-> the platform_device.  The problem with that idea is that it's
-> a general purpose hook, and is used by other busses to provide
-> board-specific configuration data ... not just for platform_bus.
+--Signature=_Tue__28_Apr_2009_15_16_10_+1000_rhH9eXV=lt7_Y_Pd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It is?  What other busses do this?  And why, can't they use their own
-bus private data pointers?
+Hi Eric,
 
-thanks,
+On Mon, 27 Apr 2009 17:53:28 -0400 Eric Paris <eparis@redhat.com> wrote:
+>
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -1792,6 +1792,8 @@ F:	drivers/char/digi*
+>  DIRECTORY NOTIFICATION (DNOTIFY)
+>  P:	Stephen Rothwell
+>  M:	sfr@canb.auug.org.au
+> +P:	Eric Paris
+> +M:	eparis@parisplace.org
 
-greg k-h
+At this point, you might as well remove me as a maintainer of dnotify.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__28_Apr_2009_15_16_10_+1000_rhH9eXV=lt7_Y_Pd
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkn2kRoACgkQjjKRsyhoI8yZ9ACfXzKU6xc1sgzY/X527IR7cs3/
+9CgAnRcWOSgsoirtYWjVtV2DFLuXc3A6
+=hWhj
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__28_Apr_2009_15_16_10_+1000_rhH9eXV=lt7_Y_Pd--
