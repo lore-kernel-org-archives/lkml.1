@@ -1,461 +1,914 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759761AbZD1QYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762419AbZD1QYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759761AbZD1QYW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbZD1QYE
+	id S1762419AbZD1QYm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761628AbZD1QYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:24:04 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56017 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753955AbZD1QYB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:24:01 -0400
-Date: Tue, 28 Apr 2009 18:23:59 +0200
-From: Jan Kara <jack@suse.cz>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [PATCH 1/5] ext4: Avoid races caused by on-line resizing and SMP memory reordering
-Message-ID: <20090428162359.GK21950@atrey.karlin.mff.cuni.cz>
-References: <1240717765-16572-1-git-send-email-tytso@mit.edu> <1240717765-16572-2-git-send-email-tytso@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240717765-16572-2-git-send-email-tytso@mit.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 28 Apr 2009 12:24:24 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:38123 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761935AbZD1QYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 12:24:19 -0400
+Date: Tue, 28 Apr 2009 09:24:11 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: David Miller <davem@davemloft.net>
+Cc: mathieu.desnoyers@polymtl.ca, mingo@elte.hu, dada1@cosmosbay.com,
+       torvalds@linux-foundation.org, zbr@ioremap.net, peterz@infradead.org,
+       jarkao2@gmail.com, paulus@samba.org, paulmck@linux.vnet.ibm.com,
+       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: [PATCH] netfilter: revised locking for x_tables
+Message-ID: <20090428092411.5331c4a1@nehalam>
+In-Reply-To: <20090428.080031.14741305.davem@davemloft.net>
+References: <20090428135219.GA28513@Krystal>
+	<20090428.073759.78537345.davem@davemloft.net>
+	<20090428144920.GA28942@Krystal>
+	<20090428.080031.14741305.davem@davemloft.net>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ext4's on-line resizing adds a new block group and then, only at the
-> last step adjusts s_groups_count.  However, it's possible on SMP
-> systems that another CPU could see the updated the s_group_count and
-> not see the newly initialized data structures for the just-added block
-> group.  For this reason, it's important to insert a SMP read barrier
-> after reading s_groups_count and before reading any, say, block group
-> descriptors allowed by the block group count.
-> 
-> Unfortunately, we rather blatently violate this locking protocol as
-> documented in fs/ext4/resize.c.  Fortunately, (1) on-line resizes
-> happen relatively rarely, and (2) it seems rare that the filesystem
-> code will immediately try to use just-added block group before any
-> memory ordering issues resolve themselves.  So apparently problems
-> here are relatively hard to hit, since ext3 also is vulnerable to this
-> race and no one has apparently complained.
-  Ouch... Hmm, smp_rmb() isn't completely free and mainly it's a bit
-ugly and prone to errors (I'm afraid next time someone changes the
-allocation code, we miss some barriers again)... so.. Maybe a stupid
-idea but wouldn't it be easier to solve the online resize like: freeze
-the filesystem, do all the changes required for extend, unfreeze the
-filesystem?
-  I guess the resize code might get simpler as well with this.
+The x_tables are organized with a table structure and a per-cpu copies
+of the counters and rules. On older kernels there was a reader/writer 
+lock per table which was a performance bottleneck. In 2.6.30-rc, this
+was converted to use RCU and the counters/rules which solved the performance
+problems for do_table but made replacing rules much slower because of
+the necessary RCU grace period.
 
-								Honza
-> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-> ---
->  fs/ext4/balloc.c  |    6 ++++--
->  fs/ext4/ialloc.c  |   34 +++++++++++++++++++++-------------
->  fs/ext4/mballoc.c |   49 ++++++++++++++++++++++++++++++++-----------------
->  3 files changed, 57 insertions(+), 32 deletions(-)
-> 
-> diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
-> index 53c72ad..d1615f2 100644
-> --- a/fs/ext4/balloc.c
-> +++ b/fs/ext4/balloc.c
-> @@ -88,9 +88,11 @@ unsigned ext4_init_block_bitmap(struct super_block *sb, struct buffer_head *bh,
->  		 ext4_group_t block_group, struct ext4_group_desc *gdp)
->  {
->  	int bit, bit_max;
-> +	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
->  	unsigned free_blocks, group_blocks;
->  	struct ext4_sb_info *sbi = EXT4_SB(sb);
->  
-> +	smp_rmb();		/* after reading s_groups_count first */
->  	if (bh) {
->  		J_ASSERT_BH(bh, buffer_locked(bh));
->  
-> @@ -123,7 +125,7 @@ unsigned ext4_init_block_bitmap(struct super_block *sb, struct buffer_head *bh,
->  		bit_max += ext4_bg_num_gdb(sb, block_group);
->  	}
->  
-> -	if (block_group == sbi->s_groups_count - 1) {
-> +	if (block_group == ngroups - 1) {
->  		/*
->  		 * Even though mke2fs always initialize first and last group
->  		 * if some other tool enabled the EXT4_BG_BLOCK_UNINIT we need
-> @@ -131,7 +133,7 @@ unsigned ext4_init_block_bitmap(struct super_block *sb, struct buffer_head *bh,
->  		 */
->  		group_blocks = ext4_blocks_count(sbi->s_es) -
->  			le32_to_cpu(sbi->s_es->s_first_data_block) -
-> -			(EXT4_BLOCKS_PER_GROUP(sb) * (sbi->s_groups_count - 1));
-> +			(EXT4_BLOCKS_PER_GROUP(sb) * (ngroups - 1));
->  	} else {
->  		group_blocks = EXT4_BLOCKS_PER_GROUP(sb);
->  	}
-> diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-> index f18e0a0..52ce274 100644
-> --- a/fs/ext4/ialloc.c
-> +++ b/fs/ext4/ialloc.c
-> @@ -322,6 +322,7 @@ static int find_group_dir(struct super_block *sb, struct inode *parent,
->  	ext4_group_t group;
->  	int ret = -1;
->  
-> +	smp_rmb();		/* after reading s_groups_count first */
->  	freei = percpu_counter_read_positive(&EXT4_SB(sb)->s_freeinodes_counter);
->  	avefreei = freei / ngroups;
->  
-> @@ -362,7 +363,8 @@ static int find_group_flex(struct super_block *sb, struct inode *parent,
->  	ext4_group_t n_fbg_groups;
->  	ext4_group_t i;
->  
-> -	n_fbg_groups = (sbi->s_groups_count + flex_size - 1) >>
-> +	smp_rmb();		/* after reading s_groups_count first */
-> +	n_fbg_groups = (ngroups + flex_size - 1) >>
->  		sbi->s_log_groups_per_flex;
->  
->  find_close_to_parent:
-> @@ -478,18 +480,18 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
->  {
->  	ext4_group_t parent_group = EXT4_I(parent)->i_block_group;
->  	struct ext4_sb_info *sbi = EXT4_SB(sb);
-> -	ext4_group_t ngroups = sbi->s_groups_count;
->  	int inodes_per_group = EXT4_INODES_PER_GROUP(sb);
->  	unsigned int freei, avefreei;
->  	ext4_fsblk_t freeb, avefreeb;
->  	unsigned int ndirs;
->  	int max_dirs, min_inodes;
->  	ext4_grpblk_t min_blocks;
-> -	ext4_group_t i, grp, g;
-> +	ext4_group_t i, grp, g, ngroups = sbi->s_groups_count;;
->  	struct ext4_group_desc *desc;
->  	struct orlov_stats stats;
->  	int flex_size = ext4_flex_bg_size(sbi);
->  
-> +	smp_rmb();		/* after reading s_groups_count first */
->  	if (flex_size > 1) {
->  		ngroups = (ngroups + flex_size - 1) >>
->  			sbi->s_log_groups_per_flex;
-> @@ -585,6 +587,7 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
->  fallback:
->  	ngroups = sbi->s_groups_count;
->  	avefreei = freei / ngroups;
-> +	smp_rmb();
->  fallback_retry:
->  	parent_group = EXT4_I(parent)->i_block_group;
->  	for (i = 0; i < ngroups; i++) {
-> @@ -613,11 +616,11 @@ static int find_group_other(struct super_block *sb, struct inode *parent,
->  			    ext4_group_t *group, int mode)
->  {
->  	ext4_group_t parent_group = EXT4_I(parent)->i_block_group;
-> -	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
-> +	ext4_group_t i, last, ngroups = EXT4_SB(sb)->s_groups_count;
->  	struct ext4_group_desc *desc;
-> -	ext4_group_t i, last;
->  	int flex_size = ext4_flex_bg_size(EXT4_SB(sb));
->  
-> +	smp_rmb();		/* after reading s_groups_count first */
->  	/*
->  	 * Try to place the inode is the same flex group as its
->  	 * parent.  If we can't find space, use the Orlov algorithm to
-> @@ -799,7 +802,7 @@ struct inode *ext4_new_inode(handle_t *handle, struct inode *dir, int mode)
->  	struct super_block *sb;
->  	struct buffer_head *inode_bitmap_bh = NULL;
->  	struct buffer_head *group_desc_bh;
-> -	ext4_group_t group = 0;
-> +	ext4_group_t ngroups, group = 0;
->  	unsigned long ino = 0;
->  	struct inode *inode;
->  	struct ext4_group_desc *gdp = NULL;
-> @@ -851,12 +854,14 @@ struct inode *ext4_new_inode(handle_t *handle, struct inode *dir, int mode)
->  		ret2 = find_group_other(sb, dir, &group, mode);
->  
->  got_group:
-> +	ngroups = sbi->s_groups_count;
-> +	smp_rmb();
->  	EXT4_I(dir)->i_last_alloc_group = group;
->  	err = -ENOSPC;
->  	if (ret2 == -1)
->  		goto out;
->  
-> -	for (i = 0; i < sbi->s_groups_count; i++) {
-> +	for (i = 0; i < ngroups; i++) {
->  		err = -EIO;
->  
->  		gdp = ext4_get_group_desc(sb, group, &group_desc_bh);
-> @@ -917,7 +922,7 @@ repeat_in_this_group:
->  		 * group descriptor metadata has not yet been updated.
->  		 * So we just go onto the next blockgroup.
->  		 */
-> -		if (++group == sbi->s_groups_count)
-> +		if (++group == ngroups)
->  			group = 0;
->  	}
->  	err = -ENOSPC;
-> @@ -1158,17 +1163,18 @@ unsigned long ext4_count_free_inodes(struct super_block *sb)
->  {
->  	unsigned long desc_count;
->  	struct ext4_group_desc *gdp;
-> -	ext4_group_t i;
-> +	ext4_group_t i, ngroups = EXT4_SB(sb)->s_groups_count;
->  #ifdef EXT4FS_DEBUG
->  	struct ext4_super_block *es;
->  	unsigned long bitmap_count, x;
->  	struct buffer_head *bitmap_bh = NULL;
->  
-> +	smp_rmb();		/* after reading s_groups_count first */
->  	es = EXT4_SB(sb)->s_es;
->  	desc_count = 0;
->  	bitmap_count = 0;
->  	gdp = NULL;
-> -	for (i = 0; i < EXT4_SB(sb)->s_groups_count; i++) {
-> +	for (i = 0; i < ngroups; i++) {
->  		gdp = ext4_get_group_desc(sb, i, NULL);
->  		if (!gdp)
->  			continue;
-> @@ -1189,8 +1195,9 @@ unsigned long ext4_count_free_inodes(struct super_block *sb)
->  	       le32_to_cpu(es->s_free_inodes_count), desc_count, bitmap_count);
->  	return desc_count;
->  #else
-> +	smp_rmb();		/* after reading s_groups_count first */
->  	desc_count = 0;
-> -	for (i = 0; i < EXT4_SB(sb)->s_groups_count; i++) {
-> +	for (i = 0; i < ngroups; i++) {
->  		gdp = ext4_get_group_desc(sb, i, NULL);
->  		if (!gdp)
->  			continue;
-> @@ -1205,9 +1212,10 @@ unsigned long ext4_count_free_inodes(struct super_block *sb)
->  unsigned long ext4_count_dirs(struct super_block * sb)
->  {
->  	unsigned long count = 0;
-> -	ext4_group_t i;
-> +	ext4_group_t i, ngroups = EXT4_SB(sb)->s_groups_count;
->  
-> -	for (i = 0; i < EXT4_SB(sb)->s_groups_count; i++) {
-> +	smp_rmb();		/* after reading s_groups_count first */
-> +	for (i = 0; i < ngroups; i++) {
->  		struct ext4_group_desc *gdp = ext4_get_group_desc(sb, i, NULL);
->  		if (!gdp)
->  			continue;
-> diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-> index f871677..ecc2d49 100644
-> --- a/fs/ext4/mballoc.c
-> +++ b/fs/ext4/mballoc.c
-> @@ -739,6 +739,7 @@ static void ext4_mb_generate_buddy(struct super_block *sb,
->  
->  static int ext4_mb_init_cache(struct page *page, char *incore)
->  {
-> +	ext4_group_t ngroups;
->  	int blocksize;
->  	int blocks_per_page;
->  	int groups_per_page;
-> @@ -757,6 +758,8 @@ static int ext4_mb_init_cache(struct page *page, char *incore)
->  
->  	inode = page->mapping->host;
->  	sb = inode->i_sb;
-> +	ngroups = EXT4_SB(sb)->s_groups_count;
-> +	smp_rmb();
->  	blocksize = 1 << inode->i_blkbits;
->  	blocks_per_page = PAGE_CACHE_SIZE / blocksize;
->  
-> @@ -780,7 +783,7 @@ static int ext4_mb_init_cache(struct page *page, char *incore)
->  	for (i = 0; i < groups_per_page; i++) {
->  		struct ext4_group_desc *desc;
->  
-> -		if (first_group + i >= EXT4_SB(sb)->s_groups_count)
-> +		if (first_group + i >= ngroups)
->  			break;
->  
->  		err = -EIO;
-> @@ -852,7 +855,7 @@ static int ext4_mb_init_cache(struct page *page, char *incore)
->  		struct ext4_group_info *grinfo;
->  
->  		group = (first_block + i) >> 1;
-> -		if (group >= EXT4_SB(sb)->s_groups_count)
-> +		if (group >= ngroups)
->  			break;
->  
->  		/*
-> @@ -1788,9 +1791,11 @@ int ext4_mb_get_buddy_cache_lock(struct super_block *sb, ext4_group_t group)
->  	int block, pnum;
->  	int blocks_per_page;
->  	int groups_per_page;
-> +	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
->  	ext4_group_t first_group;
->  	struct ext4_group_info *grp;
->  
-> +	smp_rmb();		/* after reading s_groups_count first */
->  	blocks_per_page = PAGE_CACHE_SIZE / sb->s_blocksize;
->  	/*
->  	 * the buddy cache inode stores the block bitmap
-> @@ -1807,7 +1812,7 @@ int ext4_mb_get_buddy_cache_lock(struct super_block *sb, ext4_group_t group)
->  	/* read all groups the page covers into the cache */
->  	for (i = 0; i < groups_per_page; i++) {
->  
-> -		if ((first_group + i) >= EXT4_SB(sb)->s_groups_count)
-> +		if ((first_group + i) >= ngroups)
->  			break;
->  		grp = ext4_get_group_info(sb, first_group + i);
->  		/* take all groups write allocation
-> @@ -1945,8 +1950,7 @@ err:
->  static noinline_for_stack int
->  ext4_mb_regular_allocator(struct ext4_allocation_context *ac)
->  {
-> -	ext4_group_t group;
-> -	ext4_group_t i;
-> +	ext4_group_t ngroups, group, i;
->  	int cr;
->  	int err = 0;
->  	int bsbits;
-> @@ -1957,6 +1961,8 @@ ext4_mb_regular_allocator(struct ext4_allocation_context *ac)
->  
->  	sb = ac->ac_sb;
->  	sbi = EXT4_SB(sb);
-> +	ngroups = EXT4_SB(sb)->s_groups_count;
-> +	smp_rmb();
->  	BUG_ON(ac->ac_status == AC_STATUS_FOUND);
->  
->  	/* first, try the goal */
-> @@ -2017,11 +2023,11 @@ repeat:
->  		 */
->  		group = ac->ac_g_ex.fe_group;
->  
-> -		for (i = 0; i < EXT4_SB(sb)->s_groups_count; group++, i++) {
-> +		for (i = 0; i < ngroups; group++, i++) {
->  			struct ext4_group_info *grp;
->  			struct ext4_group_desc *desc;
->  
-> -			if (group == EXT4_SB(sb)->s_groups_count)
-> +			if (group == ngroups)
->  				group = 0;
->  
->  			/* quick check to skip empty groups */
-> @@ -2320,7 +2326,7 @@ static void *ext4_mb_seq_groups_start(struct seq_file *seq, loff_t *pos)
->  
->  	if (*pos < 0 || *pos >= sbi->s_groups_count)
->  		return NULL;
-> -
-> +	smp_rmb();
->  	group = *pos + 1;
->  	return (void *) ((unsigned long) group);
->  }
-> @@ -2334,6 +2340,7 @@ static void *ext4_mb_seq_groups_next(struct seq_file *seq, void *v, loff_t *pos)
->  	++*pos;
->  	if (*pos < 0 || *pos >= sbi->s_groups_count)
->  		return NULL;
-> +	smp_rmb();
->  	group = *pos + 1;
->  	return (void *) ((unsigned long) group);
->  }
-> @@ -2587,6 +2594,7 @@ void ext4_mb_update_group_info(struct ext4_group_info *grp, ext4_grpblk_t add)
->  
->  static int ext4_mb_init_backend(struct super_block *sb)
->  {
-> +	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
->  	ext4_group_t i;
->  	int metalen;
->  	struct ext4_sb_info *sbi = EXT4_SB(sb);
-> @@ -2597,8 +2605,10 @@ static int ext4_mb_init_backend(struct super_block *sb)
->  	struct ext4_group_info **meta_group_info;
->  	struct ext4_group_desc *desc;
->  
-> +	smp_rmb();		/* after reading s_groups_count first */
-> +
->  	/* This is the number of blocks used by GDT */
-> -	num_meta_group_infos = (sbi->s_groups_count + EXT4_DESC_PER_BLOCK(sb) -
-> +	num_meta_group_infos = (ngroups + EXT4_DESC_PER_BLOCK(sb) -
->  				1) >> EXT4_DESC_PER_BLOCK_BITS(sb);
->  
->  	/*
-> @@ -2644,7 +2654,7 @@ static int ext4_mb_init_backend(struct super_block *sb)
->  	for (i = 0; i < num_meta_group_infos; i++) {
->  		if ((i + 1) == num_meta_group_infos)
->  			metalen = sizeof(*meta_group_info) *
-> -				(sbi->s_groups_count -
-> +				(ngroups -
->  					(i << EXT4_DESC_PER_BLOCK_BITS(sb)));
->  		meta_group_info = kmalloc(metalen, GFP_KERNEL);
->  		if (meta_group_info == NULL) {
-> @@ -2655,7 +2665,7 @@ static int ext4_mb_init_backend(struct super_block *sb)
->  		sbi->s_group_info[i] = meta_group_info;
->  	}
->  
-> -	for (i = 0; i < sbi->s_groups_count; i++) {
-> +	for (i = 0; i < ngroups; i++) {
->  		desc = ext4_get_group_desc(sb, i, NULL);
->  		if (desc == NULL) {
->  			printk(KERN_ERR
-> @@ -2781,13 +2791,15 @@ static void ext4_mb_cleanup_pa(struct ext4_group_info *grp)
->  
->  int ext4_mb_release(struct super_block *sb)
->  {
-> +	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
->  	ext4_group_t i;
->  	int num_meta_group_infos;
->  	struct ext4_group_info *grinfo;
->  	struct ext4_sb_info *sbi = EXT4_SB(sb);
->  
-> +	smp_rmb();		/* after reading s_groups_count first */
->  	if (sbi->s_group_info) {
-> -		for (i = 0; i < sbi->s_groups_count; i++) {
-> +		for (i = 0; i < ngroups; i++) {
->  			grinfo = ext4_get_group_info(sb, i);
->  #ifdef DOUBLE_CHECK
->  			kfree(grinfo->bb_bitmap);
-> @@ -2797,7 +2809,7 @@ int ext4_mb_release(struct super_block *sb)
->  			ext4_unlock_group(sb, i);
->  			kfree(grinfo);
->  		}
-> -		num_meta_group_infos = (sbi->s_groups_count +
-> +		num_meta_group_infos = (ngroups +
->  				EXT4_DESC_PER_BLOCK(sb) - 1) >>
->  			EXT4_DESC_PER_BLOCK_BITS(sb);
->  		for (i = 0; i < num_meta_group_infos; i++)
-> @@ -4121,7 +4133,7 @@ static void ext4_mb_return_to_preallocation(struct inode *inode,
->  static void ext4_mb_show_ac(struct ext4_allocation_context *ac)
->  {
->  	struct super_block *sb = ac->ac_sb;
-> -	ext4_group_t i;
-> +	ext4_group_t ngroups, i;
->  
->  	printk(KERN_ERR "EXT4-fs: Can't allocate:"
->  			" Allocation context details:\n");
-> @@ -4145,7 +4157,9 @@ static void ext4_mb_show_ac(struct ext4_allocation_context *ac)
->  	printk(KERN_ERR "EXT4-fs: %lu scanned, %d found\n", ac->ac_ex_scanned,
->  		ac->ac_found);
->  	printk(KERN_ERR "EXT4-fs: groups: \n");
-> -	for (i = 0; i < EXT4_SB(sb)->s_groups_count; i++) {
-> +	ngroups = EXT4_SB(ac->ac_sb)->s_groups_count;
-> +	smp_rmb();
-> +	for (i = 0; i < EXT4_SB(sb)->ngroups; i++) {
->  		struct ext4_group_info *grp = ext4_get_group_info(sb, i);
->  		struct ext4_prealloc_space *pa;
->  		ext4_grpblk_t start;
-> @@ -4469,13 +4483,14 @@ static int ext4_mb_release_context(struct ext4_allocation_context *ac)
->  
->  static int ext4_mb_discard_preallocations(struct super_block *sb, int needed)
->  {
-> -	ext4_group_t i;
-> +	ext4_group_t i, ngroups = EXT4_SB(sb)->s_groups_count;
->  	int ret;
->  	int freed = 0;
->  
-> +	smp_rmb();		/* after reading s_groups_count first */
->  	trace_mark(ext4_mb_discard_preallocations, "dev %s needed %d",
->  		   sb->s_id, needed);
-> -	for (i = 0; i < EXT4_SB(sb)->s_groups_count && needed > 0; i++) {
-> +	for (i = 0; i < ngroups && needed > 0; i++) {
->  		ret = ext4_mb_discard_group_preallocations(sb, i, needed);
->  		freed += ret;
->  		needed -= ret;
-> -- 
-> 1.5.6.3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+This version uses a per-cpu set of spinlocks and counters to allow to
+table processing to proceed without the cache thrashing of a global
+reader lock and keeps the same performance for table updates.
+
+Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+
+---
+Probably same as dave/linus but with different comments.
+
+ include/linux/netfilter/x_tables.h |   73 +++++++++++++++++++--
+ net/ipv4/netfilter/arp_tables.c    |  125 ++++++++++--------------------------
+ net/ipv4/netfilter/ip_tables.c     |  126 ++++++++++---------------------------
+ net/ipv6/netfilter/ip6_tables.c    |  123 ++++++++++--------------------------
+ net/netfilter/x_tables.c           |   53 ++++++++-------
+ 5 files changed, 204 insertions(+), 296 deletions(-)
+
+--- a/include/linux/netfilter/x_tables.h	2009-04-28 08:01:59.942151297 -0700
++++ b/include/linux/netfilter/x_tables.h	2009-04-28 09:15:09.240990339 -0700
+@@ -354,9 +354,6 @@ struct xt_table
+ 	/* What hooks you will enter on */
+ 	unsigned int valid_hooks;
+ 
+-	/* Lock for the curtain */
+-	struct mutex lock;
+-
+ 	/* Man behind the curtain... */
+ 	struct xt_table_info *private;
+ 
+@@ -434,8 +431,74 @@ extern void xt_proto_fini(struct net *ne
+ 
+ extern struct xt_table_info *xt_alloc_table_info(unsigned int size);
+ extern void xt_free_table_info(struct xt_table_info *info);
+-extern void xt_table_entry_swap_rcu(struct xt_table_info *old,
+-				    struct xt_table_info *new);
++
++/*
++ * Per-CPU spinlock associated with per-cpu table entries, and
++ * with a counter for the "reading" side that allows a recursive
++ * reader to avoid taking the lock and deadlocking.
++ *
++ * "reading" is used by ip/arp/ip6 tables rule processing which runs per-cpu.
++ * It needs to ensure that the rules are not being changed while the packet
++ * is being processed. In some cases, the read lock will be acquired
++ * twice on the same CPU; this is okay because of the count.
++ *
++ * "writing" is used when reading counters.
++ *  During replace any readers that are using the old tables have to complete
++ *  before freeing the old table. This is handled by the write locking
++ *  necessary for reading the counters.
++ */
++struct xt_info_lock {
++	spinlock_t lock;
++	unsigned char readers;
++};
++DECLARE_PER_CPU(struct xt_info_lock, xt_info_locks);
++
++/*
++ * Note: we need to ensure that preemption is disabled before acquiring
++ * the per-cpu-variable, so we do it as a two step process rather than
++ * using "spin_lock_bh()".
++ *
++ * We _also_ need to disable bottom half processing before updating our
++ * nesting count, to make sure that the only kind of re-entrancy is this
++ * code being called by itself: since the count+lock is not an atomic
++ * operation, we can allow no races.
++ *
++ * _Only_ that special combination of being per-cpu and never getting
++ * re-entered asynchronously means that the count is safe.
++ */
++static inline void xt_info_rdlock_bh(void)
++{
++	struct xt_info_lock *lock;
++
++	local_bh_disable();
++	lock = &__get_cpu_var(xt_info_locks);
++	if (!lock->readers++)
++		spin_lock(&lock->lock);
++}
++
++static inline void xt_info_rdunlock_bh(void)
++{
++	struct xt_info_lock *lock = &__get_cpu_var(xt_info_locks);
++
++	if (!--lock->readers)
++		spin_unlock(&lock->lock);
++	local_bh_enable();
++}
++
++/*
++ * The "writer" side needs to get exclusive access to the lock,
++ * regardless of readers.  This must be called with bottom half
++ * processing (and thus also preemption) disabled.
++ */
++static inline void xt_info_wrlock(unsigned int cpu)
++{
++	spin_lock(&per_cpu(xt_info_locks, cpu).lock);
++}
++
++static inline void xt_info_wrunlock(unsigned int cpu)
++{
++	spin_unlock(&per_cpu(xt_info_locks, cpu).lock);
++}
+ 
+ /*
+  * This helper is performance critical and must be inlined
+--- a/net/ipv4/netfilter/arp_tables.c	2009-04-28 08:01:59.925950000 -0700
++++ b/net/ipv4/netfilter/arp_tables.c	2009-04-28 08:02:15.211234592 -0700
+@@ -253,9 +253,9 @@ unsigned int arpt_do_table(struct sk_buf
+ 	indev = in ? in->name : nulldevname;
+ 	outdev = out ? out->name : nulldevname;
+ 
+-	rcu_read_lock_bh();
+-	private = rcu_dereference(table->private);
+-	table_base = rcu_dereference(private->entries[smp_processor_id()]);
++	xt_info_rdlock_bh();
++	private = table->private;
++	table_base = private->entries[smp_processor_id()];
+ 
+ 	e = get_entry(table_base, private->hook_entry[hook]);
+ 	back = get_entry(table_base, private->underflow[hook]);
+@@ -273,6 +273,7 @@ unsigned int arpt_do_table(struct sk_buf
+ 
+ 			hdr_len = sizeof(*arp) + (2 * sizeof(struct in_addr)) +
+ 				(2 * skb->dev->addr_len);
++
+ 			ADD_COUNTER(e->counters, hdr_len, 1);
+ 
+ 			t = arpt_get_target(e);
+@@ -328,8 +329,7 @@ unsigned int arpt_do_table(struct sk_buf
+ 			e = (void *)e + e->next_offset;
+ 		}
+ 	} while (!hotdrop);
+-
+-	rcu_read_unlock_bh();
++	xt_info_rdunlock_bh();
+ 
+ 	if (hotdrop)
+ 		return NF_DROP;
+@@ -711,9 +711,12 @@ static void get_counters(const struct xt
+ 	/* Instead of clearing (by a previous call to memset())
+ 	 * the counters and using adds, we set the counters
+ 	 * with data used by 'current' CPU
+-	 * We dont care about preemption here.
++	 *
++	 * Bottom half has to be disabled to prevent deadlock
++	 * if new softirq were to run and call ipt_do_table
+ 	 */
+-	curcpu = raw_smp_processor_id();
++	local_bh_disable();
++	curcpu = smp_processor_id();
+ 
+ 	i = 0;
+ 	ARPT_ENTRY_ITERATE(t->entries[curcpu],
+@@ -726,73 +729,22 @@ static void get_counters(const struct xt
+ 		if (cpu == curcpu)
+ 			continue;
+ 		i = 0;
++		xt_info_wrlock(cpu);
+ 		ARPT_ENTRY_ITERATE(t->entries[cpu],
+ 				   t->size,
+ 				   add_entry_to_counter,
+ 				   counters,
+ 				   &i);
++		xt_info_wrunlock(cpu);
+ 	}
+-}
+-
+-
+-/* We're lazy, and add to the first CPU; overflow works its fey magic
+- * and everything is OK. */
+-static int
+-add_counter_to_entry(struct arpt_entry *e,
+-		     const struct xt_counters addme[],
+-		     unsigned int *i)
+-{
+-	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
+-
+-	(*i)++;
+-	return 0;
+-}
+-
+-/* Take values from counters and add them back onto the current cpu */
+-static void put_counters(struct xt_table_info *t,
+-			 const struct xt_counters counters[])
+-{
+-	unsigned int i, cpu;
+-
+-	local_bh_disable();
+-	cpu = smp_processor_id();
+-	i = 0;
+-	ARPT_ENTRY_ITERATE(t->entries[cpu],
+-			  t->size,
+-			  add_counter_to_entry,
+-			  counters,
+-			  &i);
+ 	local_bh_enable();
+ }
+ 
+-static inline int
+-zero_entry_counter(struct arpt_entry *e, void *arg)
+-{
+-	e->counters.bcnt = 0;
+-	e->counters.pcnt = 0;
+-	return 0;
+-}
+-
+-static void
+-clone_counters(struct xt_table_info *newinfo, const struct xt_table_info *info)
+-{
+-	unsigned int cpu;
+-	const void *loc_cpu_entry = info->entries[raw_smp_processor_id()];
+-
+-	memcpy(newinfo, info, offsetof(struct xt_table_info, entries));
+-	for_each_possible_cpu(cpu) {
+-		memcpy(newinfo->entries[cpu], loc_cpu_entry, info->size);
+-		ARPT_ENTRY_ITERATE(newinfo->entries[cpu], newinfo->size,
+-				  zero_entry_counter, NULL);
+-	}
+-}
+-
+ static struct xt_counters *alloc_counters(struct xt_table *table)
+ {
+ 	unsigned int countersize;
+ 	struct xt_counters *counters;
+ 	struct xt_table_info *private = table->private;
+-	struct xt_table_info *info;
+ 
+ 	/* We need atomic snapshot of counters: rest doesn't change
+ 	 * (other than comefrom, which userspace doesn't care
+@@ -802,30 +754,11 @@ static struct xt_counters *alloc_counter
+ 	counters = vmalloc_node(countersize, numa_node_id());
+ 
+ 	if (counters == NULL)
+-		goto nomem;
+-
+-	info = xt_alloc_table_info(private->size);
+-	if (!info)
+-		goto free_counters;
+-
+-	clone_counters(info, private);
++		return ERR_PTR(-ENOMEM);
+ 
+-	mutex_lock(&table->lock);
+-	xt_table_entry_swap_rcu(private, info);
+-	synchronize_net();	/* Wait until smoke has cleared */
+-
+-	get_counters(info, counters);
+-	put_counters(private, counters);
+-	mutex_unlock(&table->lock);
+-
+-	xt_free_table_info(info);
++	get_counters(private, counters);
+ 
+ 	return counters;
+-
+- free_counters:
+-	vfree(counters);
+- nomem:
+-	return ERR_PTR(-ENOMEM);
+ }
+ 
+ static int copy_entries_to_user(unsigned int total_size,
+@@ -1094,8 +1027,9 @@ static int __do_replace(struct net *net,
+ 	    (newinfo->number <= oldinfo->initial_entries))
+ 		module_put(t->me);
+ 
+-	/* Get the old counters. */
++	/* Get the old counters, and synchronize with replace */
+ 	get_counters(oldinfo, counters);
++
+ 	/* Decrease module usage counts and free resource */
+ 	loc_cpu_old_entry = oldinfo->entries[raw_smp_processor_id()];
+ 	ARPT_ENTRY_ITERATE(loc_cpu_old_entry, oldinfo->size, cleanup_entry,
+@@ -1165,10 +1099,23 @@ static int do_replace(struct net *net, v
+ 	return ret;
+ }
+ 
++/* We're lazy, and add to the first CPU; overflow works its fey magic
++ * and everything is OK. */
++static int
++add_counter_to_entry(struct arpt_entry *e,
++		     const struct xt_counters addme[],
++		     unsigned int *i)
++{
++	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
++
++	(*i)++;
++	return 0;
++}
++
+ static int do_add_counters(struct net *net, void __user *user, unsigned int len,
+ 			   int compat)
+ {
+-	unsigned int i;
++	unsigned int i, curcpu;
+ 	struct xt_counters_info tmp;
+ 	struct xt_counters *paddc;
+ 	unsigned int num_counters;
+@@ -1224,26 +1171,26 @@ static int do_add_counters(struct net *n
+ 		goto free;
+ 	}
+ 
+-	mutex_lock(&t->lock);
++	local_bh_disable();
+ 	private = t->private;
+ 	if (private->number != num_counters) {
+ 		ret = -EINVAL;
+ 		goto unlock_up_free;
+ 	}
+ 
+-	preempt_disable();
+ 	i = 0;
+ 	/* Choose the copy that is on our node */
+-	loc_cpu_entry = private->entries[smp_processor_id()];
++	curcpu = smp_processor_id();
++	loc_cpu_entry = private->entries[curcpu];
++	xt_info_wrlock(curcpu);
+ 	ARPT_ENTRY_ITERATE(loc_cpu_entry,
+ 			   private->size,
+ 			   add_counter_to_entry,
+ 			   paddc,
+ 			   &i);
+-	preempt_enable();
++	xt_info_wrunlock(curcpu);
+  unlock_up_free:
+-	mutex_unlock(&t->lock);
+-
++	local_bh_enable();
+ 	xt_table_unlock(t);
+ 	module_put(t->me);
+  free:
+--- a/net/ipv4/netfilter/ip_tables.c	2009-04-28 08:01:59.933149333 -0700
++++ b/net/ipv4/netfilter/ip_tables.c	2009-04-28 08:02:15.221802628 -0700
+@@ -338,10 +338,9 @@ ipt_do_table(struct sk_buff *skb,
+ 	tgpar.hooknum = hook;
+ 
+ 	IP_NF_ASSERT(table->valid_hooks & (1 << hook));
+-
+-	rcu_read_lock_bh();
+-	private = rcu_dereference(table->private);
+-	table_base = rcu_dereference(private->entries[smp_processor_id()]);
++	xt_info_rdlock_bh();
++	private = table->private;
++	table_base = private->entries[smp_processor_id()];
+ 
+ 	e = get_entry(table_base, private->hook_entry[hook]);
+ 
+@@ -436,8 +435,7 @@ ipt_do_table(struct sk_buff *skb,
+ 			e = (void *)e + e->next_offset;
+ 		}
+ 	} while (!hotdrop);
+-
+-	rcu_read_unlock_bh();
++	xt_info_rdunlock_bh();
+ 
+ #ifdef DEBUG_ALLOW_ALL
+ 	return NF_ACCEPT;
+@@ -896,10 +894,13 @@ get_counters(const struct xt_table_info 
+ 
+ 	/* Instead of clearing (by a previous call to memset())
+ 	 * the counters and using adds, we set the counters
+-	 * with data used by 'current' CPU
+-	 * We dont care about preemption here.
++	 * with data used by 'current' CPU.
++	 *
++	 * Bottom half has to be disabled to prevent deadlock
++	 * if new softirq were to run and call ipt_do_table
+ 	 */
+-	curcpu = raw_smp_processor_id();
++	local_bh_disable();
++	curcpu = smp_processor_id();
+ 
+ 	i = 0;
+ 	IPT_ENTRY_ITERATE(t->entries[curcpu],
+@@ -912,74 +913,22 @@ get_counters(const struct xt_table_info 
+ 		if (cpu == curcpu)
+ 			continue;
+ 		i = 0;
++		xt_info_wrlock(cpu);
+ 		IPT_ENTRY_ITERATE(t->entries[cpu],
+ 				  t->size,
+ 				  add_entry_to_counter,
+ 				  counters,
+ 				  &i);
++		xt_info_wrunlock(cpu);
+ 	}
+-
+-}
+-
+-/* We're lazy, and add to the first CPU; overflow works its fey magic
+- * and everything is OK. */
+-static int
+-add_counter_to_entry(struct ipt_entry *e,
+-		     const struct xt_counters addme[],
+-		     unsigned int *i)
+-{
+-	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
+-
+-	(*i)++;
+-	return 0;
+-}
+-
+-/* Take values from counters and add them back onto the current cpu */
+-static void put_counters(struct xt_table_info *t,
+-			 const struct xt_counters counters[])
+-{
+-	unsigned int i, cpu;
+-
+-	local_bh_disable();
+-	cpu = smp_processor_id();
+-	i = 0;
+-	IPT_ENTRY_ITERATE(t->entries[cpu],
+-			  t->size,
+-			  add_counter_to_entry,
+-			  counters,
+-			  &i);
+ 	local_bh_enable();
+ }
+ 
+-
+-static inline int
+-zero_entry_counter(struct ipt_entry *e, void *arg)
+-{
+-	e->counters.bcnt = 0;
+-	e->counters.pcnt = 0;
+-	return 0;
+-}
+-
+-static void
+-clone_counters(struct xt_table_info *newinfo, const struct xt_table_info *info)
+-{
+-	unsigned int cpu;
+-	const void *loc_cpu_entry = info->entries[raw_smp_processor_id()];
+-
+-	memcpy(newinfo, info, offsetof(struct xt_table_info, entries));
+-	for_each_possible_cpu(cpu) {
+-		memcpy(newinfo->entries[cpu], loc_cpu_entry, info->size);
+-		IPT_ENTRY_ITERATE(newinfo->entries[cpu], newinfo->size,
+-				  zero_entry_counter, NULL);
+-	}
+-}
+-
+ static struct xt_counters * alloc_counters(struct xt_table *table)
+ {
+ 	unsigned int countersize;
+ 	struct xt_counters *counters;
+ 	struct xt_table_info *private = table->private;
+-	struct xt_table_info *info;
+ 
+ 	/* We need atomic snapshot of counters: rest doesn't change
+ 	   (other than comefrom, which userspace doesn't care
+@@ -988,30 +937,11 @@ static struct xt_counters * alloc_counte
+ 	counters = vmalloc_node(countersize, numa_node_id());
+ 
+ 	if (counters == NULL)
+-		goto nomem;
++		return ERR_PTR(-ENOMEM);
+ 
+-	info = xt_alloc_table_info(private->size);
+-	if (!info)
+-		goto free_counters;
+-
+-	clone_counters(info, private);
+-
+-	mutex_lock(&table->lock);
+-	xt_table_entry_swap_rcu(private, info);
+-	synchronize_net();	/* Wait until smoke has cleared */
+-
+-	get_counters(info, counters);
+-	put_counters(private, counters);
+-	mutex_unlock(&table->lock);
+-
+-	xt_free_table_info(info);
++	get_counters(private, counters);
+ 
+ 	return counters;
+-
+- free_counters:
+-	vfree(counters);
+- nomem:
+-	return ERR_PTR(-ENOMEM);
+ }
+ 
+ static int
+@@ -1306,8 +1236,9 @@ __do_replace(struct net *net, const char
+ 	    (newinfo->number <= oldinfo->initial_entries))
+ 		module_put(t->me);
+ 
+-	/* Get the old counters. */
++	/* Get the old counters, and synchronize with replace */
+ 	get_counters(oldinfo, counters);
++
+ 	/* Decrease module usage counts and free resource */
+ 	loc_cpu_old_entry = oldinfo->entries[raw_smp_processor_id()];
+ 	IPT_ENTRY_ITERATE(loc_cpu_old_entry, oldinfo->size, cleanup_entry,
+@@ -1377,11 +1308,23 @@ do_replace(struct net *net, void __user 
+ 	return ret;
+ }
+ 
++/* We're lazy, and add to the first CPU; overflow works its fey magic
++ * and everything is OK. */
++static int
++add_counter_to_entry(struct ipt_entry *e,
++		     const struct xt_counters addme[],
++		     unsigned int *i)
++{
++	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
++
++	(*i)++;
++	return 0;
++}
+ 
+ static int
+ do_add_counters(struct net *net, void __user *user, unsigned int len, int compat)
+ {
+-	unsigned int i;
++	unsigned int i, curcpu;
+ 	struct xt_counters_info tmp;
+ 	struct xt_counters *paddc;
+ 	unsigned int num_counters;
+@@ -1437,25 +1380,26 @@ do_add_counters(struct net *net, void __
+ 		goto free;
+ 	}
+ 
+-	mutex_lock(&t->lock);
++	local_bh_disable();
+ 	private = t->private;
+ 	if (private->number != num_counters) {
+ 		ret = -EINVAL;
+ 		goto unlock_up_free;
+ 	}
+ 
+-	preempt_disable();
+ 	i = 0;
+ 	/* Choose the copy that is on our node */
+-	loc_cpu_entry = private->entries[raw_smp_processor_id()];
++	curcpu = smp_processor_id();
++	loc_cpu_entry = private->entries[curcpu];
++	xt_info_wrlock(curcpu);
+ 	IPT_ENTRY_ITERATE(loc_cpu_entry,
+ 			  private->size,
+ 			  add_counter_to_entry,
+ 			  paddc,
+ 			  &i);
+-	preempt_enable();
++	xt_info_wrunlock(curcpu);
+  unlock_up_free:
+-	mutex_unlock(&t->lock);
++	local_bh_enable();
+ 	xt_table_unlock(t);
+ 	module_put(t->me);
+  free:
+--- a/net/ipv6/netfilter/ip6_tables.c	2009-04-28 08:01:59.920112241 -0700
++++ b/net/ipv6/netfilter/ip6_tables.c	2009-04-28 08:02:15.239235774 -0700
+@@ -365,9 +365,9 @@ ip6t_do_table(struct sk_buff *skb,
+ 
+ 	IP_NF_ASSERT(table->valid_hooks & (1 << hook));
+ 
+-	rcu_read_lock_bh();
+-	private = rcu_dereference(table->private);
+-	table_base = rcu_dereference(private->entries[smp_processor_id()]);
++	xt_info_rdlock_bh();
++	private = table->private;
++	table_base = private->entries[smp_processor_id()];
+ 
+ 	e = get_entry(table_base, private->hook_entry[hook]);
+ 
+@@ -466,7 +466,7 @@ ip6t_do_table(struct sk_buff *skb,
+ #ifdef CONFIG_NETFILTER_DEBUG
+ 	((struct ip6t_entry *)table_base)->comefrom = NETFILTER_LINK_POISON;
+ #endif
+-	rcu_read_unlock_bh();
++	xt_info_rdunlock_bh();
+ 
+ #ifdef DEBUG_ALLOW_ALL
+ 	return NF_ACCEPT;
+@@ -926,9 +926,12 @@ get_counters(const struct xt_table_info 
+ 	/* Instead of clearing (by a previous call to memset())
+ 	 * the counters and using adds, we set the counters
+ 	 * with data used by 'current' CPU
+-	 * We dont care about preemption here.
++	 *
++	 * Bottom half has to be disabled to prevent deadlock
++	 * if new softirq were to run and call ipt_do_table
+ 	 */
+-	curcpu = raw_smp_processor_id();
++	local_bh_disable();
++	curcpu = smp_processor_id();
+ 
+ 	i = 0;
+ 	IP6T_ENTRY_ITERATE(t->entries[curcpu],
+@@ -941,72 +944,22 @@ get_counters(const struct xt_table_info 
+ 		if (cpu == curcpu)
+ 			continue;
+ 		i = 0;
++		xt_info_wrlock(cpu);
+ 		IP6T_ENTRY_ITERATE(t->entries[cpu],
+ 				  t->size,
+ 				  add_entry_to_counter,
+ 				  counters,
+ 				  &i);
++		xt_info_wrunlock(cpu);
+ 	}
+-}
+-
+-/* We're lazy, and add to the first CPU; overflow works its fey magic
+- * and everything is OK. */
+-static int
+-add_counter_to_entry(struct ip6t_entry *e,
+-		     const struct xt_counters addme[],
+-		     unsigned int *i)
+-{
+-	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
+-
+-	(*i)++;
+-	return 0;
+-}
+-
+-/* Take values from counters and add them back onto the current cpu */
+-static void put_counters(struct xt_table_info *t,
+-			 const struct xt_counters counters[])
+-{
+-	unsigned int i, cpu;
+-
+-	local_bh_disable();
+-	cpu = smp_processor_id();
+-	i = 0;
+-	IP6T_ENTRY_ITERATE(t->entries[cpu],
+-			   t->size,
+-			   add_counter_to_entry,
+-			   counters,
+-			   &i);
+ 	local_bh_enable();
+ }
+ 
+-static inline int
+-zero_entry_counter(struct ip6t_entry *e, void *arg)
+-{
+-	e->counters.bcnt = 0;
+-	e->counters.pcnt = 0;
+-	return 0;
+-}
+-
+-static void
+-clone_counters(struct xt_table_info *newinfo, const struct xt_table_info *info)
+-{
+-	unsigned int cpu;
+-	const void *loc_cpu_entry = info->entries[raw_smp_processor_id()];
+-
+-	memcpy(newinfo, info, offsetof(struct xt_table_info, entries));
+-	for_each_possible_cpu(cpu) {
+-		memcpy(newinfo->entries[cpu], loc_cpu_entry, info->size);
+-		IP6T_ENTRY_ITERATE(newinfo->entries[cpu], newinfo->size,
+-				   zero_entry_counter, NULL);
+-	}
+-}
+-
+ static struct xt_counters *alloc_counters(struct xt_table *table)
+ {
+ 	unsigned int countersize;
+ 	struct xt_counters *counters;
+ 	struct xt_table_info *private = table->private;
+-	struct xt_table_info *info;
+ 
+ 	/* We need atomic snapshot of counters: rest doesn't change
+ 	   (other than comefrom, which userspace doesn't care
+@@ -1015,30 +968,11 @@ static struct xt_counters *alloc_counter
+ 	counters = vmalloc_node(countersize, numa_node_id());
+ 
+ 	if (counters == NULL)
+-		goto nomem;
+-
+-	info = xt_alloc_table_info(private->size);
+-	if (!info)
+-		goto free_counters;
+-
+-	clone_counters(info, private);
+-
+-	mutex_lock(&table->lock);
+-	xt_table_entry_swap_rcu(private, info);
+-	synchronize_net();	/* Wait until smoke has cleared */
+-
+-	get_counters(info, counters);
+-	put_counters(private, counters);
+-	mutex_unlock(&table->lock);
++		return ERR_PTR(-ENOMEM);
+ 
+-	xt_free_table_info(info);
++	get_counters(private, counters);
+ 
+ 	return counters;
+-
+- free_counters:
+-	vfree(counters);
+- nomem:
+-	return ERR_PTR(-ENOMEM);
+ }
+ 
+ static int
+@@ -1334,8 +1268,9 @@ __do_replace(struct net *net, const char
+ 	    (newinfo->number <= oldinfo->initial_entries))
+ 		module_put(t->me);
+ 
+-	/* Get the old counters. */
++	/* Get the old counters, and synchronize with replace */
+ 	get_counters(oldinfo, counters);
++
+ 	/* Decrease module usage counts and free resource */
+ 	loc_cpu_old_entry = oldinfo->entries[raw_smp_processor_id()];
+ 	IP6T_ENTRY_ITERATE(loc_cpu_old_entry, oldinfo->size, cleanup_entry,
+@@ -1405,11 +1340,24 @@ do_replace(struct net *net, void __user 
+ 	return ret;
+ }
+ 
++/* We're lazy, and add to the first CPU; overflow works its fey magic
++ * and everything is OK. */
++static int
++add_counter_to_entry(struct ip6t_entry *e,
++		     const struct xt_counters addme[],
++		     unsigned int *i)
++{
++	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
++
++	(*i)++;
++	return 0;
++}
++
+ static int
+ do_add_counters(struct net *net, void __user *user, unsigned int len,
+ 		int compat)
+ {
+-	unsigned int i;
++	unsigned int i, curcpu;
+ 	struct xt_counters_info tmp;
+ 	struct xt_counters *paddc;
+ 	unsigned int num_counters;
+@@ -1465,25 +1413,28 @@ do_add_counters(struct net *net, void __
+ 		goto free;
+ 	}
+ 
+-	mutex_lock(&t->lock);
++
++	local_bh_disable();
+ 	private = t->private;
+ 	if (private->number != num_counters) {
+ 		ret = -EINVAL;
+ 		goto unlock_up_free;
+ 	}
+ 
+-	preempt_disable();
+ 	i = 0;
+ 	/* Choose the copy that is on our node */
+-	loc_cpu_entry = private->entries[raw_smp_processor_id()];
++	curcpu = smp_processor_id();
++	xt_info_wrlock(curcpu);
++	loc_cpu_entry = private->entries[curcpu];
+ 	IP6T_ENTRY_ITERATE(loc_cpu_entry,
+ 			  private->size,
+ 			  add_counter_to_entry,
+ 			  paddc,
+ 			  &i);
+-	preempt_enable();
++	xt_info_wrunlock(curcpu);
++
+  unlock_up_free:
+-	mutex_unlock(&t->lock);
++	local_bh_enable();
+ 	xt_table_unlock(t);
+ 	module_put(t->me);
+  free:
+--- a/net/netfilter/x_tables.c	2009-04-28 08:01:59.909139984 -0700
++++ b/net/netfilter/x_tables.c	2009-04-28 09:21:33.947865827 -0700
+@@ -625,20 +625,6 @@ void xt_free_table_info(struct xt_table_
+ }
+ EXPORT_SYMBOL(xt_free_table_info);
+ 
+-void xt_table_entry_swap_rcu(struct xt_table_info *oldinfo,
+-			     struct xt_table_info *newinfo)
+-{
+-	unsigned int cpu;
+-
+-	for_each_possible_cpu(cpu) {
+-		void *p = oldinfo->entries[cpu];
+-		rcu_assign_pointer(oldinfo->entries[cpu], newinfo->entries[cpu]);
+-		newinfo->entries[cpu] = p;
+-	}
+-
+-}
+-EXPORT_SYMBOL_GPL(xt_table_entry_swap_rcu);
+-
+ /* Find table by name, grabs mutex & ref.  Returns ERR_PTR() on error. */
+ struct xt_table *xt_find_table_lock(struct net *net, u_int8_t af,
+ 				    const char *name)
+@@ -676,32 +662,43 @@ void xt_compat_unlock(u_int8_t af)
+ EXPORT_SYMBOL_GPL(xt_compat_unlock);
+ #endif
+ 
++DEFINE_PER_CPU(struct xt_info_lock, xt_info_locks);
++EXPORT_PER_CPU_SYMBOL_GPL(xt_info_locks);
++
++
+ struct xt_table_info *
+ xt_replace_table(struct xt_table *table,
+ 	      unsigned int num_counters,
+ 	      struct xt_table_info *newinfo,
+ 	      int *error)
+ {
+-	struct xt_table_info *oldinfo, *private;
++	struct xt_table_info *private;
+ 
+ 	/* Do the substitution. */
+-	mutex_lock(&table->lock);
++	local_bh_disable();
+ 	private = table->private;
++
+ 	/* Check inside lock: is the old number correct? */
+ 	if (num_counters != private->number) {
+ 		duprintf("num_counters != table->private->number (%u/%u)\n",
+ 			 num_counters, private->number);
+-		mutex_unlock(&table->lock);
++		local_bh_enable();
+ 		*error = -EAGAIN;
+ 		return NULL;
+ 	}
+-	oldinfo = private;
+-	rcu_assign_pointer(table->private, newinfo);
+-	newinfo->initial_entries = oldinfo->initial_entries;
+-	mutex_unlock(&table->lock);
+ 
+-	synchronize_net();
+-	return oldinfo;
++	table->private = newinfo;
++	newinfo->initial_entries = private->initial_entries;
++
++	/*
++	 * Even though table entries have now been swapped, other CPU's
++	 * may still be using the old entries. This is okay, because
++	 * resynchronization happens because of the locking done
++	 * during the get_counters() routine.
++	 */
++	local_bh_enable();
++
++	return private;
+ }
+ EXPORT_SYMBOL_GPL(xt_replace_table);
+ 
+@@ -734,7 +731,6 @@ struct xt_table *xt_register_table(struc
+ 
+ 	/* Simplifies replace_table code. */
+ 	table->private = bootstrap;
+-	mutex_init(&table->lock);
+ 
+ 	if (!xt_replace_table(table, 0, newinfo, &ret))
+ 		goto unlock;
+@@ -1147,7 +1143,14 @@ static struct pernet_operations xt_net_o
+ 
+ static int __init xt_init(void)
+ {
+-	int i, rv;
++	unsigned int i;
++	int rv;
++
++	for_each_possible_cpu(i) {
++		struct xt_info_lock *lock = &per_cpu(xt_info_locks, i);
++		spin_lock_init(&lock->lock);
++		lock->readers = 0;
++	}
+ 
+ 	xt = kmalloc(sizeof(struct xt_af) * NFPROTO_NUMPROTO, GFP_KERNEL);
+ 	if (!xt)
