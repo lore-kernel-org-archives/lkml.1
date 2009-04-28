@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759955AbZD1Cnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759245AbZD1CzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759955AbZD1Cnz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 22:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758635AbZD1Cnp
+	id S1759245AbZD1CzW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 22:55:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbZD1CzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 22:43:45 -0400
-Received: from n23b.bullet.mail.mud.yahoo.com ([68.142.206.142]:48052 "HELO
-	n23b.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758444AbZD1Cnn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 22:43:43 -0400
-X-Yahoo-Newman-Id: 462269.80594.bm@omp419.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ZZjeObKmAaA0/Wk1BQErJ41s4+a3w1CcDV+tbQEfKAlBsQpBR206Ono6GT2P5SYtPOqm2GoEIoMsLsqYIyHjkklJpMlFABmlTEYtijGNXb/Hx4w7Ud8laz7W9o/TjyCbKFwiGIf/pzBzjBqLegK9XP9eVVzoraWSCV/NeVkkYzQ=  ;
-X-YMail-OSG: WA1YbksVM1nqWFRK2GexMJxIoztLTxtB.kuxLQ2RNv9C4rPTow14FhVTTlw0yAfbhEEFcOKk81FFLjwNwUEQD62ph13iSlitUcsmJ5cHrrnYDoIwELfXaxuTyAn6H6JJJEYjK5E7JY2kWsQ0BSh71yualG0cAIHcus.xmlyR1jswsOSieyw3K92V9E_FgluQqFc47HFGJYz7D9rz.ug3vueFxG6_P3OZfy41li2Ty6_vGpWc0uTHoEoZHwnxOcUvBd9hOwLwlCm_D7vM5IGX_LyGU4lfvoyGQmlIwwMLPuYPpSIZ7J7vOw61QA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Greg KH <greg@kroah.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: [patch 2.6.30-rc3] platform_bus:  remove "which platform_data?" confusion
-Date: Mon, 27 Apr 2009 19:43:40 -0700
-User-Agent: KMail/1.9.10
+	Mon, 27 Apr 2009 22:55:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35099 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753067AbZD1CzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 22:55:06 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904271943.40588.david-b@pacbell.net>
+From: Roland McGrath <roland@redhat.com>
+To: Paul Mundt <lethal@linux-sh.org>
+X-Fcc: ~/Mail/linus
+Cc: Russell King <rmk@arm.linux.org.uk>, Christoph Hellwig <hch@lst.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 12/17] arm: user_regset: iWMMXt in core dumps
+In-Reply-To: Paul Mundt's message of  Tuesday, 28 April 2009 07:43:55 +0900 <20090427224355.GD5033@linux-sh.org>
+References: <20090425000634.313E4FC3C8@magilla.sf.frob.com>
+	<20090425001259.CDC92FC3C8@magilla.sf.frob.com>
+	<20090427224355.GD5033@linux-sh.org>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20090428025347.63D18FC3C6@magilla.sf.frob.com>
+Date: Mon, 27 Apr 2009 19:53:47 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+> Are these note definitions centrally defined anywhere? I looked at the
+> include/elf/common.h in gdb, but it seemed fairly similar to linux/elf.h.
 
-Recent patches have caused platform_device_add_pdata() users
-to trigger confused "use which platform_data?" error messages
-from the kernel.  ("The _only_ one you were given, dummy!" is
-the correct answer.)
+linux/elf.h constitutes the central place.  (And basically, de facto
+everyone now seems to check with me for new ones.)  New user_regset types
+all get the "LINUX" note name, so there is no real authority beyond the
+kernel maintainers to harmonize with.
 
-This patch fixes those messages so they only appear if there's
-reason to be confused.  (The call should probably fail too...)
+> Both sh and mips would benefit from a note type for DSP registers. Would
+> something like an NT_PRDSPREG be accetable for this? Also, the note
+> definitions seem to have hopped from 4 to 6, is there a definition for 5,
+> or can that be used for a DSP register note type?
 
-Those patches seem to support what I think is a misguided
-notion:  that somehow device.platform_data might move into
-the platform_device.  The problem with that idea is that it's
-a general purpose hook, and is used by other busses to provide
-board-specific configuration data ... not just for platform_bus.
+There is no particular benefit to packing the space.  It's just a 32-bit
+identifier, with existing values assigned that are both large and small.
+Please do not use any more small values.  They are used on other systems
+that some tools already deal with, and it just keeps things simpler not to
+add any new n_type values that are reused with different names on different
+systems.  (I'll NAK any new use of values <= 20, which already have names
+in glibc's elf.h.)
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
-For 2.6.30, which recently acquired this confusion.
+For a new purpose, it is my inclination to use a new NT_<machine>_<type>
+name and pick a new value range, e.g. NT_SH_* at 0x300+n.  The
+interpretation of these type codes is machine-specific, but it just seems
+simpler to assign a new block of numbers to each machine and not have any
+overlaps.
 
- drivers/base/platform.c |   22 +++++++++++++---------
- 1 file changed, 13 insertions(+), 9 deletions(-)
+If you really mean a new particular note format that would actually match
+across different machines, then a new generically-named type for that is
+appropriate.  For that, I'd start with another new value range like 0x10000+n
+(leaving the 0x?00+n blocks to be assigned for particular arch's).
 
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -251,16 +251,20 @@ int platform_device_add(struct platform_
- 	* if all platform devices pass its platform specific data
- 	* from platform_device. The conversion is going to be a
- 	* long time, so we allow the two cases coexist to make
--	* this kind of fix more easily*/
--	if (pdev->platform_data && pdev->dev.platform_data) {
--		printk(KERN_ERR
--			       "%s: use which platform_data?\n",
--			       dev_name(&pdev->dev));
--	} else if (pdev->platform_data) {
--		pdev->dev.platform_data = pdev->platform_data;
--	} else if (pdev->dev.platform_data) {
-+	* this kind of fix more easily
-+	*
-+	* REVISIT platform_data is used by more than "platform_bus".
-+	* It's a generic hook for data that's specific to a given
-+	* board.  Removing it seems rather impractical...
-+	*/
-+	if (!pdev->platform_data)
- 		pdev->platform_data = pdev->dev.platform_data;
--	}
-+	else if (!pdev->dev.platform_data)
-+		pdev->dev.platform_data = pdev->platform_data;
-+
-+	if (pdev->platform_data != pdev->dev.platform_data)
-+		pr_err("%s: use which platform_data?\n",
-+			       dev_name(&pdev->dev));
- 
- 	for (i = 0; i < pdev->num_resources; i++) {
- 		struct resource *p, *r = &pdev->resource[i];
 
+Thanks,
+Roland
