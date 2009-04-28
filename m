@@ -1,79 +1,394 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760282AbZD1MrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753662AbZD1Mrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760282AbZD1MrR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 08:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760042AbZD1Mqs
+	id S1753662AbZD1Mrz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 08:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756060AbZD1Mrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 08:46:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43172 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760116AbZD1Mqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 08:46:47 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.DEB.1.10.0904271946520.27012@vinegar-pot.mit.edu>
-References: <alpine.DEB.1.10.0904271946520.27012@vinegar-pot.mit.edu> <1240864388-26315-4-git-send-email-tabbott@mit.edu> <1240864388-26315-1-git-send-email-tabbott@mit.edu> <1240864388-26315-2-git-send-email-tabbott@mit.edu> <1240864388-26315-3-git-send-email-tabbott@mit.edu> <4678.1240875782@redhat.com>
-To: Tim Abbott <tabbott@MIT.EDU>
-Cc: dhowells@redhat.com, Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 03/14] mn10300: Use macros for .bss.page_aligned section.
-Date: Tue, 28 Apr 2009 13:45:36 +0100
-Message-ID: <31713.1240922736@redhat.com>
+	Tue, 28 Apr 2009 08:47:42 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:40587 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755859AbZD1Mrl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 08:47:41 -0400
+Date: Tue, 28 Apr 2009 21:47:40 +0900 (JST)
+Message-Id: <20090428.214740.183024301.ryov@valinux.co.jp>
+To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Subject: [PATCH 7/7] blkio-cgroup: Fast page tracking
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090428.214705.112621770.ryov@valinux.co.jp>
+References: <20090428.214604.104034341.ryov@valinux.co.jp>
+	<20090428.214632.189725895.ryov@valinux.co.jp>
+	<20090428.214705.112621770.ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Abbott <tabbott@MIT.EDU> wrote:
+This is an extra patch which reduces the overhead of IO tracking but
+increases the size of struct page_cgroup.
 
-> No, it is.  The macro is new in PATCH 1/14 of this series.
-
-Aha!  Okay, I've applied that patch too, and now I see:
-
-  LD      .tmp_vmlinux1
-/opt/nickc/H-i686-pc-linux-gnulibc2.3/bin/am33_2.0-linux-gnu-ld:arch/mn10300/kernel/vmlinux.lds:237: syntax error
-
-Where the error occurs on line 237, which is:
-
-	  __bss_start = .; /* BSS */
-	  .bss : {
-	 . = ALIGN(+(1 << 12)) *(.bss.page_aligned)
-	 *(.bss)
- ==>	  }
-	  . = ALIGN(4);
-	  __bss_stop = .;
-
-in the expanded linker script.
-
-The problem is that your patch #1 is wrong.  You need to apply:
+Based on 2.6.30-rc3-git3
+Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
 
 ---
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index a76275f..c9b16a6 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -118,11 +118,11 @@
- 	TRACE_SYSCALLS()
- 
- #define PAGE_ALIGNED_DATA						\
--	. = ALIGN(PAGE_SIZE)						\
-+	. = ALIGN(PAGE_SIZE);						\
- 	*(.data.page_aligned)
- 
- #define PAGE_ALIGNED_BSS						\
--	. = ALIGN(PAGE_SIZE)						\
-+	. = ALIGN(PAGE_SIZE);						\
- 	*(.bss.page_aligned)
- 
- #define RO_DATA(align)							\
----
+ include/linux/biotrack.h    |    5 -
+ include/linux/page_cgroup.h |   26 --------
+ mm/biotrack.c               |  134 ++++++++++++++++++++++++++------------------
+ 3 files changed, 87 insertions(+), 78 deletions(-)
 
-to it.
-
-David
+Index: linux-2.6.30-rc3-git3/mm/biotrack.c
+===================================================================
+--- linux-2.6.30-rc3-git3.orig/mm/biotrack.c
++++ linux-2.6.30-rc3-git3/mm/biotrack.c
+@@ -3,9 +3,6 @@
+  * Copyright (C) VA Linux Systems Japan, 2008-2009
+  * Developed by Hirokazu Takahashi <taka@valinux.co.jp>
+  *
+- * Copyright (C) 2008 Andrea Righi <righi.andrea@gmail.com>
+- * Use part of page_cgroup->flags to store blkio-cgroup ID.
+- *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation; either version 2 of the License, or
+@@ -20,6 +17,7 @@
+ #include <linux/module.h>
+ #include <linux/smp.h>
+ #include <linux/bit_spinlock.h>
++#include <linux/idr.h>
+ #include <linux/blkdev.h>
+ #include <linux/biotrack.h>
+ #include <linux/mm_inline.h>
+@@ -45,8 +43,11 @@ static inline struct blkio_cgroup *blkio
+ 					struct blkio_cgroup, css);
+ }
+ 
++static struct idr blkio_cgroup_id;
++static DEFINE_SPINLOCK(blkio_cgroup_idr_lock);
+ static struct io_context default_blkio_io_context;
+ static struct blkio_cgroup default_blkio_cgroup = {
++	.id		= 0,
+ 	.io_context	= &default_blkio_io_context,
+ };
+ 
+@@ -61,7 +62,6 @@ void blkio_cgroup_set_owner(struct page 
+ {
+ 	struct blkio_cgroup *biog;
+ 	struct page_cgroup *pc;
+-	unsigned long id;
+ 
+ 	if (blkio_cgroup_disabled())
+ 		return;
+@@ -69,29 +69,27 @@ void blkio_cgroup_set_owner(struct page 
+ 	if (unlikely(!pc))
+ 		return;
+ 
+-	lock_page_cgroup(pc);
+-	page_cgroup_set_id(pc, 0);	/* 0: default blkio_cgroup id */
+-	unlock_page_cgroup(pc);
++	pc->blkio_cgroup_id = 0;	/* 0: default blkio_cgroup id */
+ 	if (!mm)
+ 		return;
+ 
++	/*
++	 * Locking "pc" isn't necessary here since the current process is
++	 * the only one that can access the members related to blkio_cgroup.
++	 */
+ 	rcu_read_lock();
+ 	biog = blkio_cgroup_from_task(rcu_dereference(mm->owner));
+-	if (unlikely(!biog)) {
+-		rcu_read_unlock();
+-		return;
+-	}
++	if (unlikely(!biog))
++		goto out;
+ 	/*
+ 	 * css_get(&bio->css) isn't called to increment the reference
+ 	 * count of this blkio_cgroup "biog" so the css_id might turn
+ 	 * invalid even if this page is still active.
+ 	 * This approach is chosen to minimize the overhead.
+ 	 */
+-	id = css_id(&biog->css);
++	pc->blkio_cgroup_id = biog->id;
++out:
+ 	rcu_read_unlock();
+-	lock_page_cgroup(pc);
+-	page_cgroup_set_id(pc, id);
+-	unlock_page_cgroup(pc);
+ }
+ 
+ /**
+@@ -103,6 +101,13 @@ void blkio_cgroup_set_owner(struct page 
+  */
+ void blkio_cgroup_reset_owner(struct page *page, struct mm_struct *mm)
+ {
++	/*
++	 * A little trick:
++	 * Just call blkio_cgroup_set_owner() for pages which are already
++	 * active since the blkio_cgroup_id member of page_cgroup can be
++	 * updated without any locks. This is because an integer type of
++	 * variable can be set a new value at once on modern cpus.
++	 */
+ 	blkio_cgroup_set_owner(page, mm);
+ }
+ 
+@@ -133,7 +138,6 @@ void blkio_cgroup_reset_owner_pagedirty(
+ void blkio_cgroup_copy_owner(struct page *npage, struct page *opage)
+ {
+ 	struct page_cgroup *npc, *opc;
+-	unsigned long id;
+ 
+ 	if (blkio_cgroup_disabled())
+ 		return;
+@@ -144,12 +148,11 @@ void blkio_cgroup_copy_owner(struct page
+ 	if (unlikely(!opc))
+ 		return;
+ 
+-	lock_page_cgroup(opc);
+-	lock_page_cgroup(npc);
+-	id = page_cgroup_get_id(opc);
+-	page_cgroup_set_id(npc, id);
+-	unlock_page_cgroup(npc);
+-	unlock_page_cgroup(opc);
++	/*
++	 * Do this without any locks. The reason is the same as
++	 * blkio_cgroup_reset_owner().
++	 */
++	npc->blkio_cgroup_id = opc->blkio_cgroup_id;
+ }
+ 
+ /* Create a new blkio-cgroup. */
+@@ -158,25 +161,44 @@ blkio_cgroup_create(struct cgroup_subsys
+ {
+ 	struct blkio_cgroup *biog;
+ 	struct io_context *ioc;
++	int ret;
+ 
+ 	if (!cgrp->parent) {
+ 		biog = &default_blkio_cgroup;
+ 		init_io_context(biog->io_context);
+ 		/* Increment the referrence count not to be released ever. */
+ 		atomic_inc(&biog->io_context->refcount);
++		idr_init(&blkio_cgroup_id);
+ 		return &biog->css;
+ 	}
+ 
+ 	biog = kzalloc(sizeof(*biog), GFP_KERNEL);
+-	if (!biog)
+-		return ERR_PTR(-ENOMEM);
+ 	ioc = alloc_io_context(GFP_KERNEL, -1);
+-	if (!ioc) {
+-		kfree(biog);
+-		return ERR_PTR(-ENOMEM);
++	if (!ioc || !biog) {
++		ret = -ENOMEM;
++		goto out_err;
+ 	}
+ 	biog->io_context = ioc;
++retry:
++	if (!idr_pre_get(&blkio_cgroup_id, GFP_KERNEL)) {
++		ret = -EAGAIN;
++		goto out_err;
++	}
++	spin_lock_irq(&blkio_cgroup_idr_lock);
++	ret = idr_get_new_above(&blkio_cgroup_id, (void *)biog, 1, &biog->id);
++	spin_unlock_irq(&blkio_cgroup_idr_lock);
++	if (ret == -EAGAIN)
++		goto retry;
++	else if (ret)
++		goto out_err;
++
+ 	return &biog->css;
++out_err:
++	if (biog)
++		kfree(biog);
++	if (ioc)
++		put_io_context(ioc);
++	return ERR_PTR(ret);
+ }
+ 
+ /* Delete the blkio-cgroup. */
+@@ -185,10 +207,28 @@ static void blkio_cgroup_destroy(struct 
+ 	struct blkio_cgroup *biog = cgroup_blkio(cgrp);
+ 
+ 	put_io_context(biog->io_context);
+-	free_css_id(&blkio_cgroup_subsys, &biog->css);
++
++	spin_lock_irq(&blkio_cgroup_idr_lock);
++	idr_remove(&blkio_cgroup_id, biog->id);
++	spin_unlock_irq(&blkio_cgroup_idr_lock);
++
+ 	kfree(biog);
+ }
+ 
++static struct blkio_cgroup *find_blkio_cgroup(int id)
++{
++	struct blkio_cgroup *biog;
++	spin_lock_irq(&blkio_cgroup_idr_lock);
++	/*
++	 * It might fail to find A bio-group associated with "id" since it
++	 * is allowed to remove the bio-cgroup even when some of I/O requests
++	 * this group issued haven't completed yet.
++	 */
++	biog = (struct blkio_cgroup *)idr_find(&blkio_cgroup_id, id);
++	spin_unlock_irq(&blkio_cgroup_idr_lock);
++	return biog;
++}
++
+ /**
+  * get_blkio_cgroup_id() - determine the blkio-cgroup ID
+  * @bio:	the &struct bio which describes the I/O
+@@ -200,14 +240,11 @@ unsigned long get_blkio_cgroup_id(struct
+ {
+ 	struct page_cgroup *pc;
+ 	struct page *page = bio_iovec_idx(bio, 0)->bv_page;
+-	unsigned long id = 0;
++	int	id = 0;
+ 
+ 	pc = lookup_page_cgroup(page);
+-	if (pc) {
+-		lock_page_cgroup(pc);
+-		id = page_cgroup_get_id(pc);
+-		unlock_page_cgroup(pc);
+-	}
++	if (pc)
++		id = pc->blkio_cgroup_id;
+ 	return id;
+ }
+ 
+@@ -219,21 +256,17 @@ unsigned long get_blkio_cgroup_id(struct
+  */
+ struct io_context *get_blkio_cgroup_iocontext(struct bio *bio)
+ {
+-	struct cgroup_subsys_state *css;
+-	struct blkio_cgroup *biog;
++	struct blkio_cgroup *biog = NULL;
+ 	struct io_context *ioc;
+-	unsigned long id;
++	int	id = 0;
+ 
+ 	id = get_blkio_cgroup_id(bio);
+-	rcu_read_lock();
+-	css = css_lookup(&blkio_cgroup_subsys, id);
+-	if (css)
+-		biog = container_of(css, struct blkio_cgroup, css);
+-	else
++	if (id)
++		biog = find_blkio_cgroup(id);
++	if (!biog)
+ 		biog = &default_blkio_cgroup;
+ 	ioc = biog->io_context;	/* default io_context for this cgroup */
+ 	atomic_inc(&ioc->refcount);
+-	rcu_read_unlock();
+ 	return ioc;
+ }
+ 
+@@ -249,17 +282,15 @@ struct io_context *get_blkio_cgroup_ioco
+  */
+ struct cgroup *blkio_cgroup_lookup(int id)
+ {
+-	struct cgroup *cgrp;
+-	struct cgroup_subsys_state *css;
++	struct blkio_cgroup *biog = NULL;
+ 
+ 	if (blkio_cgroup_disabled())
+ 		return NULL;
+-
+-	css = css_lookup(&blkio_cgroup_subsys, id);
+-	if (!css)
++	if (id)
++		biog = find_blkio_cgroup(id);
++	if (!biog)
+ 		return NULL;
+-	cgrp = css->cgroup;
+-	return cgrp;
++	return biog->css.cgroup;
+ }
+ EXPORT_SYMBOL(get_blkio_cgroup_iocontext);
+ EXPORT_SYMBOL(get_blkio_cgroup_id);
+@@ -273,7 +304,7 @@ static u64 blkio_id_read(struct cgroup *
+ 	rcu_read_lock();
+ 	id = css_id(&biog->css);
+ 	rcu_read_unlock();
+-	return (u64)id;
++	return (u64) biog->id;
+ }
+ 
+ 
+@@ -296,5 +327,4 @@ struct cgroup_subsys blkio_cgroup_subsys
+ 	.destroy	= blkio_cgroup_destroy,
+ 	.populate	= blkio_cgroup_populate,
+ 	.subsys_id	= blkio_cgroup_subsys_id,
+-	.use_id		= 1,
+ };
+Index: linux-2.6.30-rc3-git3/include/linux/biotrack.h
+===================================================================
+--- linux-2.6.30-rc3-git3.orig/include/linux/biotrack.h
++++ linux-2.6.30-rc3-git3/include/linux/biotrack.h
+@@ -12,6 +12,7 @@ struct block_device;
+ 
+ struct blkio_cgroup {
+ 	struct cgroup_subsys_state css;
++	int id;
+ 	struct io_context *io_context;	/* default io_context */
+ /*	struct radix_tree_root io_context_root; per device io_context */
+ };
+@@ -24,9 +25,7 @@ struct blkio_cgroup {
+  */
+ static inline void __init_blkio_page_cgroup(struct page_cgroup *pc)
+ {
+-	lock_page_cgroup(pc);
+-	page_cgroup_set_id(pc, 0);
+-	unlock_page_cgroup(pc);
++	pc->blkio_cgroup_id = 0;
+ }
+ 
+ /**
+Index: linux-2.6.30-rc3-git3/include/linux/page_cgroup.h
+===================================================================
+--- linux-2.6.30-rc3-git3.orig/include/linux/page_cgroup.h
++++ linux-2.6.30-rc3-git3/include/linux/page_cgroup.h
+@@ -17,6 +17,9 @@ struct page_cgroup {
+ 	struct mem_cgroup *mem_cgroup;
+ 	struct list_head lru;		/* per cgroup LRU list */
+ #endif
++#ifdef CONFIG_CGROUP_BLKIO
++	int blkio_cgroup_id;
++#endif
+ };
+ 
+ void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat);
+@@ -124,27 +127,4 @@ static inline void swap_cgroup_swapoff(i
+ }
+ 
+ #endif
+-
+-#ifdef CONFIG_CGROUP_BLKIO
+-/*
+- * use lower 16 bits for flags and reserve the rest for the page tracking id
+- */
+-#define PCG_TRACKING_ID_SHIFT	(16)
+-#define PCG_TRACKING_ID_BITS \
+-	(8 * sizeof(unsigned long) - PCG_TRACKING_ID_SHIFT)
+-
+-/* NOTE: must be called with page_cgroup() held */
+-static inline unsigned long page_cgroup_get_id(struct page_cgroup *pc)
+-{
+-	return pc->flags >> PCG_TRACKING_ID_SHIFT;
+-}
+-
+-/* NOTE: must be called with page_cgroup() held */
+-static inline void page_cgroup_set_id(struct page_cgroup *pc, unsigned long id)
+-{
+-	WARN_ON(id >= (1UL << PCG_TRACKING_ID_BITS));
+-	pc->flags &= (1UL << PCG_TRACKING_ID_SHIFT) - 1;
+-	pc->flags |= (unsigned long)(id << PCG_TRACKING_ID_SHIFT);
+-}
+-#endif
+ #endif
