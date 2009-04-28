@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbZD1UrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbZD1Urf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755102AbZD1UrU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZD1UrJ
+	id S1755365AbZD1Urf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 16:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZD1UrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:47:09 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:61580 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752424AbZD1UrI (ORCPT
+	Tue, 28 Apr 2009 16:47:11 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:57875 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752455AbZD1UrJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:47:08 -0400
-Date: Tue, 28 Apr 2009 16:47:04 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: BUG: Function graph tracer hang
-In-Reply-To: <20090428203244.GE7337@nowhere>
-Message-ID: <alpine.DEB.2.00.0904281645020.8066@gandalf.stny.rr.com>
-References: <20090417144055.857407604@goodmis.org> <20090417151135.GG23493@elte.hu> <20090417151303.GA18267@elte.hu> <20090428111223.GA20526@elte.hu> <20090428203244.GE7337@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 28 Apr 2009 16:47:09 -0400
+X-Greylist: delayed 9315 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Apr 2009 16:47:08 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=dVt4/1dnsnrIBZLXREQbccmuxuSzUqvj4lB0t/Niv70Q5ZnEK+JAb4DXPRn84LFwfw
+         H8hhx/ffQUm/VVF2hGpG7QC0ac5j21AkcFey2zOrZLijX3yvkfV45DdnOC9MewvER8vB
+         tC4Fr22YgDoAhZ9LQ2RZZ/MJ8RG7jvWXzRrBM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <1240943671.938.575.camel@calx>
+References: <20090428010907.912554629@intel.com>
+	 <20090428014920.769723618@intel.com> <20090428065507.GA2024@elte.hu>
+	 <20090428083320.GB17038@localhost>
+	 <12c511ca0904281111r10f37a5coe5a2750f4dbfbcda@mail.gmail.com>
+	 <1240943671.938.575.camel@calx>
+Date: Tue, 28 Apr 2009 13:47:07 -0700
+Message-ID: <12c511ca0904281347m394b04e0mcb61f7c336752cc4@mail.gmail.com>
+Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
+From: Tony Luck <tony.luck@gmail.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Larry Woodman <lwoodman@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 28, 2009 at 11:34 AM, Matt Mackall <mpm@selenic.com> wrote:
+> Bah. The rate of change is proportional to #cpus, not #pages. Assuming
+> you've got 1024 processors, you could run the scan in parallel in .2
+> seconds still.
 
-On Tue, 28 Apr 2009, Frederic Weisbecker wrote:
+That would help ... it would also make the patch to support this
+functionality a lot more complex.
 
-> 
-> Note that the branch profiler does that:
-> 
-> ______f.miss_hit[______r]++;
-> 
-> Which is a read + write on the cacheline.
-> If each "if" are profiled in the timer interrupt, we can
-> have the cachelines doing a ping-pong of dirtifying since the above
-> variable is shared.
-> 
-> Then the timer interrupt becomes slower. The function graph tracer itself makes
-> it slower.
-> Moreover it is traced itself. So not only the "if" in code are traced, but also
-> each "if" processed by the function graph tracer on function calls and returns.
-> 
-> Which means a fair amount of cacheline dirtifying.
-> 
-> Then if the timer interrupt is slowed, and we have a lot of them (1000 Hz),
-> the system spends all of its time inside it.
-> 
-> At least we need the branch tracing to be done per cpu, I guess.
-
-This can be done by basically reimplementing what percpu does. This is 
-because the data is saved off in its own section at every if statement. We 
-could copy that section per cpu and add code to the incrementors to add 
-only to their own CPU buffers.
-
-This is low in my priority of things to do, but I'll at least add it to my 
-"to do" list.
-
--- Steve
-
+-Tony
