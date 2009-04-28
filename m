@@ -1,105 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760181AbZD1Hc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbZD1Hct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760181AbZD1Hc2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 03:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZD1HcT
+	id S1759356AbZD1Hct (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 03:32:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZD1Hci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 03:32:19 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:41377 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753113AbZD1HcS (ORCPT
+	Tue, 28 Apr 2009 03:32:38 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54561 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757410AbZD1Hci (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 03:32:18 -0400
-Date: Tue, 28 Apr 2009 13:01:51 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       seto.hidetoshi@jp.fujitsu.com
-Subject: Re: [PATCH] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu
-	cputime count
-Message-ID: <20090428073151.GC3825@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090428153611.EBC6.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090428153611.EBC6.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 28 Apr 2009 03:32:38 -0400
+Subject: Re: kms in defconfig
+From: Peter Zijlstra <peterz@infradead.org>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <21d7e9970904271854q68242f08pb3f8e12f0ddb6506@mail.gmail.com>
+References: <21d7e9970904270121s1c58365bqc8933f8a3ffc5f1a@mail.gmail.com>
+	 <20090427083935.GA20941@elte.hu> <1240846843.7620.32.camel@twins>
+	 <21d7e9970904271854q68242f08pb3f8e12f0ddb6506@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 28 Apr 2009 09:32:22 +0200
+Message-Id: <1240903942.7620.68.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 03:53:32PM +0900, KOSAKI Motohiro wrote:
+On Tue, 2009-04-28 at 11:54 +1000, Dave Airlie wrote:
+> On Tue, Apr 28, 2009 at 1:40 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Mon, 2009-04-27 at 10:39 +0200, Ingo Molnar wrote:
+> >> * Dave Airlie <airlied@gmail.com> wrote:
+> >>
+> >> > Hi guys,
+> >> >
+> >> > I just noticed CONFIG_DRM_I915_KMS is enabled for x86-64.
+> >> >
+> >> > This should never be the case, as anyone who built defconfig
+> >> > kernels before, will now get KMS enabled when really they need to
+> >> > have done userspace upgrades.
+> >>
+> >> I've yet to see such a bugreport.
+> >
+> > Whenever I accidentally enable KMS I get a dead X (happens way more
+> > often that I'd like to), I blame this on the ubuntu Xorg packages, but
+> > can't be arsed to fix it myself -- hopefully the kinky koala will fix
+> > stuff, but who knows.
 > 
-> I'm not cpuacct expert. please give me comment.
+> Well you can't really blame anyone else for it, since you have to put
+> the code upstream
+> in the kernel before you can release drivers that use it for distros to package.
 > 
-> ====================
-> Subject: [PATCH] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime caching
-> 
-> impact: little performance improvement
-> 
-> cpuacct_update_stats() is called at every tick updating. and it use percpu_counter
-> for avoiding performance degression.
-> 
-> Unfortunately, it doesn't works on VIRT_CPU_ACCOUNTING=y environment properly.
-> if VIRT_CPU_ACCOUNTING=y, every tick update much than 1000 cputime.
-> Thus every percpu_counter_add() makes spinlock grabbing and update non-percpu-variable.
-> 
-> This patch change the batch rule. now, every cpu can store "percpu_counter_bach x jiffies"
-> cputime in percpu cache.
-> it mean this patch don't have behavior change if VIRT_CPU_ACCOUNTING=n, but
-> works well on VIRT_CPU_ACCOUNTING=y too.
+> So it would be impossible for any distro to have shipped kms drivers in a useful
+> fashion before KMS is actually in the kernel.
 
-Let me try to understand what you are saying...
+Can't the driver detect KMS and use it when present? In that case they
+could just ship a KMS capable driver that works either way.
 
-For archs which define VIRT_CPU_ACCOUNTING, every tick would result
-in around 1000 units of cputime updates and since this is much much greater
-than percpu_batch_counter, we end up taking spinlock on every tick.
+Anyway, I'm sure it'll all sort itself out.
 
-If my above reading of the problem is correct, please look at my below comments.
 
-> Index: b/kernel/sched.c
-> ===================================================================
-> --- a/kernel/sched.c	2009-04-28 14:18:36.000000000 +0900
-> +++ b/kernel/sched.c	2009-04-28 15:18:07.000000000 +0900
-> @@ -10117,6 +10117,7 @@ struct cpuacct {
->  };
-> 
->  struct cgroup_subsys cpuacct_subsys;
-> +static s32 cpuacct_batch;
-> 
->  /* return cpu accounting group corresponding to this container */
->  static inline struct cpuacct *cgroup_ca(struct cgroup *cgrp)
-> @@ -10146,6 +10147,9 @@ static struct cgroup_subsys_state *cpuac
->  	if (!ca->cpuusage)
->  		goto out_free_ca;
-> 
-> +	if (!cpuacct_batch)
-> +		cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
-
-You essentially end up increasing the batch value from the default value
-of max(32, nr_cpus*2). 
-
-> +
->  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
->  		if (percpu_counter_init(&ca->cpustat[i], 0))
->  			goto out_free_counters;
-> @@ -10342,7 +10346,7 @@ static void cpuacct_update_stats(struct 
->  	ca = task_ca(tsk);
-> 
->  	do {
-> -		percpu_counter_add(&ca->cpustat[idx], val);
-> +		__percpu_counter_add(&ca->cpustat[idx], val, cpuacct_batch);
-
-And you do this unconditionally which will affect all archs ? So you make
-this behaviour default for archs which have VIRT_CPU_ACCOUNTING=n.
-
-BTW, did you observe any real problem with the percpu counter spinlock ?
-
-Regards,
-Bharata.
