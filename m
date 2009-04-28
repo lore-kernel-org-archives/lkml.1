@@ -1,136 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbZD1Udq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbZD1Uej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbZD1Udq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbZD1Udg
+	id S1753691AbZD1Uej (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 16:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbZD1UeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:33:36 -0400
-Received: from mga09.intel.com ([134.134.136.24]:25597 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752927AbZD1Ude (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:33:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,262,1239001200"; 
-   d="scan'208";a="407729522"
-Subject: Re: mmotm 2009-04-27-15-45 uploaded - iwl3945 oops
-From: reinette chatre <reinette.chatre@intel.com>
-To: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, "Zhu, Yi" <yi.zhu@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mm-commits@vger.kernel.org" <mm-commits@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-In-Reply-To: <25818.1240938876@turing-police.cc.vt.edu>
-References: <200904272305.n3RN51mu031395@imap1.linux-foundation.org>
-	 <25818.1240938876@turing-police.cc.vt.edu>
-Content-Type: text/plain
-Date: Tue, 28 Apr 2009 13:39:44 -0700
-Message-Id: <1240951184.1207.11.camel@rc-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Apr 2009 16:34:24 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:33779 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751816AbZD1UeX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 16:34:23 -0400
+Message-ID: <49F767FD.2040205@cosmosbay.com>
+Date: Tue, 28 Apr 2009 22:33:01 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux.com>
+CC: linux kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       jesse.brandeburg@intel.com, netdev@vger.kernel.org, haoki@redhat.com,
+       mchan@broadcom.com, davidel@xmailserver.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
+References: <alpine.DEB.1.10.0904241554100.29995@qirst.com> <49F3308B.1030507@cosmosbay.com> <20090426.020411.157511269.davem@davemloft.net> <49F43B8F.2050907@cosmosbay.com> <87ab60rh8t.fsf@basil.nowhere.org> <49F71B63.8010503@cosmosbay.com> <alpine.DEB.1.10.0904281501300.13862@qirst.com> <49F76174.6060009@cosmosbay.com> <alpine.DEB.1.10.0904281612560.13862@qirst.com>
+In-Reply-To: <alpine.DEB.1.10.0904281612560.13862@qirst.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 28 Apr 2009 22:33:02 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-28 at 10:14 -0700, Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 27 Apr 2009 15:46:07 PDT, akpm@linux-foundation.org said:
-> > The mm-of-the-moment snapshot 2009-04-27-15-45 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
+Christoph Lameter a écrit :
+> On Tue, 28 Apr 2009, Eric Dumazet wrote:
 > 
-> Saw this while booting at home, out of range of any access points I was
-> configured to associate with (there *are* 4 APs owned by neighbors that I can
-> see via kismet, but wpa_supplicant isn't configured to use them).  Didn't
-> happen this morning at my office, when there's APs in range.
+>> Part about recvfrom() wakeup avoidance is in David net-2.6 tree, and saves 2 us on udpping here.
+>>
+>> Is it what you call git2p1 ?
 > 
-> This didn't happen in mmotm-0424, so it's something new in the last few days.
-
-A recent patch that is related is ...
-
-commit 4583f7455c6b668a4e9cab154b5a7b6c583b288a
-Author: Johannes Berg <johannes@sipsolutions.net>
-Date:   Thu Apr 23 10:45:04 2009 +0200
-
-    iwlwifi: notify on scan completion even when shutting down
-
-    Under certain circumstances iwlwifi can get stuck and will no
-    longer accept scan requests, because the core code (cfg80211)
-    thinks that it's still processing one. This fixes one of the
-    points where it can happen, but I've still seen it (although
-    only with my radio-off-when-idle patch).
-    
-    Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-    Acked-by: Reinette Chatre <reinette.chatre@intel.com>
-    Signed-off-by: John W. Linville <linville@tuxdriver.com>
-
-
-Could you please revert this and test again?
-
-If this does not help, could you please bisect?
-
-Thank you
-
-Reinette
-
-
+> No that is just the prior version of the poll/select improvements.
 > 
-> [  519.180281] iwl3945 0000:0c:00.0: Error sending REPLY_SCAN_CMD: time out after 500ms.
-> [  519.680281] iwl3945 0000:0c:00.0: Error sending REPLY_TX_PWR_TABLE_CMD: time out after 500ms.
-> [  519.926455] ------------[ cut here ]------------
-> [  519.926461] WARNING: at net/mac80211/scan.c:282 warn_slowpath_null+0xd/0xf()
-> [  519.926465] Hardware name: Latitude D820                   
-> [  519.926476] BUG: unable to handle kernel NULL pointer dereference at (null)
-> [  519.926485] IP: [<ffffffff802384ff>] warn_slowpath_fmt+0x7d/0xd0
-> [  519.926494] PGD 7ead4067 PUD 7f8e3067 PMD 0 
-> [  519.926504] Oops: 0000 [#1] PREEMPT SMP 
-> [  519.926512] last sysfs file: /sys/devices/platform/dock.0/docked
-> [  519.926518] CPU 1 
-> [  519.926522] Modules linked in: sunrpc nvidia(P) [last unloaded: microcode]
-> [  519.926536] Pid: 649, comm: iwl3945 Tainted: P           2.6.30-rc3-mmotm0427 #1 Latitude D820                   
-> [  519.926541] RIP: 0010:[<ffffffff802384ff>]  [<ffffffff802384ff>] warn_slowpath_fmt+0x7d/0xd0
-> [  519.926551] RSP: 0018:ffff88007e7e3c70  EFLAGS: 00010286
-> [  519.926555] RAX: 0000000000000042 RBX: 000000000000011a RCX: 00000000ffffffff
-> [  519.926560] RDX: ffff8800010f1000 RSI: ffffffff8064d3b3 RDI: ffffffff80239038
-> [  519.926564] RBP: ffff88007e7e3dd0 R08: 0000000000000082 R09: 0000000000000000
-> [  519.926569] R10: 0000000000000005 R11: 0000000000000000 R12: ffffffff8082531c
-> [  519.926574] R13: 0000000000000000 R14: ffff88007e7e3c70 R15: ffff8800010f0100
-> [  519.926579] FS:  0000000000000000(0000) GS:ffff8800010f1000(0000) knlGS:0000000000000000
-> [  519.926584] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> [  519.926589] CR2: 0000000000000000 CR3: 000000007ead5000 CR4: 00000000000006e0
-> [  519.926593] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [  519.926598] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [  519.926604] Process iwl3945 (pid: 649, threadinfo ffff88007e7e2000, task ffff88007e794500)
-> [  519.926608] Stack:
-> [  519.926611]  6f6c735f6e726177 756e5f6874617077 302f6478302b6c6c ffffffff80006678
-> [  519.926620]  ffff880000000000 ffff88007f8008c0 ffff88007e7e3d20 0000000000000046
-> [  519.926631]  0000000000000002 0000000000000000 ffffffff8046e959 0000000000000000
-> [  519.926643] Call Trace:
-> [  519.926647]  [<ffffffff8046e959>] ? iwl_rx_queue_update_write_ptr+0x2d/0xd8
-> [  519.926657]  [<ffffffff80259a62>] ? trace_hardirqs_off_caller+0x1f/0xa2
-> [  519.926667]  [<ffffffff8064fd91>] ? _spin_unlock_irqrestore+0x5b/0x69
-> [  519.926677]  [<ffffffff8046e9f2>] ? iwl_rx_queue_update_write_ptr+0xc6/0xd8
-> [  519.926684]  [<ffffffff80473c3e>] ? iwl_bg_scan_completed+0x0/0x65
-> [  519.926692]  [<ffffffff8023855f>] warn_slowpath_null+0xd/0xf
-> [  519.926699]  [<ffffffff80612dc9>] ieee80211_scan_completed+0x4d/0x367
-> [  519.926709]  [<ffffffff80473c3e>] ? iwl_bg_scan_completed+0x0/0x65
-> [  519.926716]  [<ffffffff80473c76>] iwl_bg_scan_completed+0x38/0x65
-> [  519.926723]  [<ffffffff802488e0>] worker_thread+0x251/0x369
-> [  519.926731]  [<ffffffff80248887>] ? worker_thread+0x1f8/0x369
-> [  519.926738]  [<ffffffff8064fd70>] ? _spin_unlock_irqrestore+0x3a/0x69
-> [  519.926745]  [<ffffffff8024cb21>] ? autoremove_wake_function+0x0/0x34
-> [  519.926753]  [<ffffffff8024868f>] ? worker_thread+0x0/0x369
-> [  519.926760]  [<ffffffff8024c728>] kthread+0x55/0x80
-> [  519.926767]  [<ffffffff8020c1ba>] child_rip+0xa/0x20
-> [  519.926774]  [<ffffffff802305ac>] ? finish_task_switch+0x7f/0xc9
-> [  519.926782]  [<ffffffff8020bb80>] ? restore_args+0x0/0x30
-> [  519.926790]  [<ffffffff8024c6d3>] ? kthread+0x0/0x80
-> [  519.926796]  [<ffffffff8020c1b0>] ? child_rip+0x0/0x20
-> [  519.926802] Code: 77 a5 7b 80 31 c0 e8 98 4e 41 00 bf 05 00 00 00 e8 e7 ad 2a 00 48 85 c0 74 11 48 89 c6 48 c7 c7 92 a5 7b 80 31 c0 e8 78 4e 41 00 <41> 80 7d 00 00 74 23 48 8d 45 10 48 8d 75 90 48 89 45 98 c7 45 
-> [  519.926904] RIP  [<ffffffff802384ff>] warn_slowpath_fmt+0x7d/0xd0
-> [  519.926912]  RSP <ffff88007e7e3c70>
-> Apr 28 01:50:28 turing-police kernel: [  519.926915] CR2: 0000000000000000
-> Apr 28 01:50:28 turing-police kernel: [  519.926920] ---[ end trace 00d0bec46e95e015 ]---
+> Which patch are you referring to?
+> 
 > 
 
+The one that did improved your udpping 'bench' :)
+
+http://git2.kernel.org/?p=linux/kernel/git/davem/net-2.6.git;a=commitdiff;h=bf368e4e70cd4e0f880923c44e95a4273d725ab4
+
+[PATCH] net: Avoid extra wakeups of threads blocked in wait_for_packet()
+
+In 2.6.25 we added UDP mem accounting.
+
+This unfortunatly added a penalty when a frame is transmitted, since
+we have at TX completion time to call sock_wfree() to perform necessary
+memory accounting. This calls sock_def_write_space() and utimately
+scheduler if any thread is waiting on the socket.
+Thread(s) waiting for an incoming frame was scheduled, then had to sleep
+again as event was meaningless.
+
+(All threads waiting on a socket are using same sk_sleep anchor)
+
+This adds lot of extra wakeups and increases latencies, as noted
+by Christoph Lameter, and slows down softirq handler.
+
+Reference : http://marc.info/?l=linux-netdev&m=124060437012283&w=2 
+
+Fortunatly, Davide Libenzi recently added concept of keyed wakeups
+into kernel, and particularly for sockets (see commit
+37e5540b3c9d838eb20f2ca8ea2eb8072271e403 
+epoll keyed wakeups: make sockets use keyed wakeups)
+
+Davide goal was to optimize epoll, but this new wakeup infrastructure
+can help non epoll users as well, if they care to setup an appropriate
+handler.
+
+This patch introduces new DEFINE_WAIT_FUNC() helper and uses it
+in wait_for_packet(), so that only relevant event can wakeup a thread
+blocked in this function.
+
+Trace of function calls from bnx2 TX completion bnx2_poll_work() is :
+__kfree_skb()
+ skb_release_head_state()
+  sock_wfree()
+   sock_def_write_space()
+    __wake_up_sync_key()
+     __wake_up_common()
+      receiver_wake_function() : Stops here since thread is waiting for an INPUT
+
+
+Reported-by: Christoph Lameter <cl@linux.com>
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ include/linux/wait.h |    6 ++++--
+ net/core/datagram.c  |   14 +++++++++++++-
+ 2 files changed, 17 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/wait.h b/include/linux/wait.h
+index 5d631c1..bc02463 100644
+--- a/include/linux/wait.h
++++ b/include/linux/wait.h
+@@ -440,13 +440,15 @@ void abort_exclusive_wait(wait_queue_head_t *q, wait_queue_t *wait,
+ int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
+ int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
+ 
+-#define DEFINE_WAIT(name)						\
++#define DEFINE_WAIT_FUNC(name, function)				\
+ 	wait_queue_t name = {						\
+ 		.private	= current,				\
+-		.func		= autoremove_wake_function,		\
++		.func		= function,				\
+ 		.task_list	= LIST_HEAD_INIT((name).task_list),	\
+ 	}
+ 
++#define DEFINE_WAIT(name) DEFINE_WAIT_FUNC(name, autoremove_wake_function)
++
+ #define DEFINE_WAIT_BIT(name, word, bit)				\
+ 	struct wait_bit_queue name = {					\
+ 		.key = __WAIT_BIT_KEY_INITIALIZER(word, bit),		\
+diff --git a/net/core/datagram.c b/net/core/datagram.c
+index d0de644..b7960a3 100644
+--- a/net/core/datagram.c
++++ b/net/core/datagram.c
+@@ -64,13 +64,25 @@ static inline int connection_based(struct sock *sk)
+ 	return sk->sk_type == SOCK_SEQPACKET || sk->sk_type == SOCK_STREAM;
+ }
+ 
++static int receiver_wake_function(wait_queue_t *wait, unsigned mode, int sync,
++				  void *key)
++{
++	unsigned long bits = (unsigned long)key;
++
++	/*
++	 * Avoid a wakeup if event not interesting for us
++	 */
++	if (bits && !(bits & (POLLIN | POLLERR)))
++		return 0;
++	return autoremove_wake_function(wait, mode, sync, key);
++}
+ /*
+  * Wait for a packet..
+  */
+ static int wait_for_packet(struct sock *sk, int *err, long *timeo_p)
+ {
+ 	int error;
+-	DEFINE_WAIT(wait);
++	DEFINE_WAIT_FUNC(wait, receiver_wake_function);
+ 
+ 	prepare_to_wait_exclusive(sk->sk_sleep, &wait, TASK_INTERRUPTIBLE);
+ 
 
 
