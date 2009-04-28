@@ -1,69 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754382AbZD1Mg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZD1Mlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754382AbZD1Mg7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 08:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbZD1Mgt
+	id S1755873AbZD1Mlw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 08:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbZD1Mli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 08:36:49 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:61147 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515AbZD1Mgt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 08:36:49 -0400
+	Tue, 28 Apr 2009 08:41:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54660 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751720AbZD1Mlg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 08:41:36 -0400
+Date: Tue, 28 Apr 2009 14:40:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: dada1@cosmosbay.com, torvalds@linux-foundation.org, shemminger@vyatta.com,
+       zbr@ioremap.net, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
+       jarkao2@gmail.com, paulus@samba.org, paulmck@linux.vnet.ibm.com,
+       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
+Message-ID: <20090428124033.GA1655@elte.hu>
+References: <alpine.LFD.2.00.0904271525120.22156@localhost.localdomain> <alpine.LFD.2.00.0904271602390.22156@localhost.localdomain> <49F6A8FD.3010804@cosmosbay.com> <20090428.045342.206106171.davem@davemloft.net>
 MIME-Version: 1.0
-In-Reply-To: <20090428100830.1a5d944c@hyperion.delvare>
-References: <20090329174836.6de797d6@hyperion.delvare> <ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com> 
-	<20090330104952.26f03c13@hyperion.delvare> <ac3eb2510903300424s2604d027h653a3f77163e0242@mail.gmail.com> 
-	<20090426085401.3788fc9c@hyperion.delvare> <ac3eb2510904260642s66a15a8eg5811fdc6b339d493@mail.gmail.com> 
-	<20090427180036.269a40b3@hyperion.delvare> <ac3eb2510904271457w30aac8f5j9ee0d6508f8444c1@mail.gmail.com> 
-	<20090428100830.1a5d944c@hyperion.delvare>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Tue, 28 Apr 2009 14:36:27 +0200
-Message-ID: <ac3eb2510904280536k656fad91neb0383f77bfb8ee7@mail.gmail.com>
-Subject: Re: Class device namespaces
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Michael E Brown <Michael_E_Brown@dell.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Matt Domsch <Matt_Domsch@dell.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090428.045342.206106171.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 10:08, Jean Delvare <khali@linux-fr.org> wrote:
-> On Mon, 27 Apr 2009 23:57:40 +0200, Kay Sievers wrote:
 
->> Register a "i2c" bus_type with the core, and instead of assigning
->> dev.class = class, you assign dev.bus = bus to the devices you
->> register, that should work, if there is nothing more complicated going
->> on in the background.
->
-> Err, I'm confused. We _already_ have an "i2c" bus type, and we already
-> assign dev.bus = &i2c_bus_type, but for i2c devices (or slaves if you
-> prefer), not adapters (masters). Doing the same for adapters (the
-> parents) and devices (the children) looks totally wrong to me.
->
-> Are you really certain that i2c-adapters should be bus devices rather
-> than class devices?
+* David Miller <davem@davemloft.net> wrote:
 
-i2c seem to do things nothing else is doing, so I can not really be
-certain. :) But I still think it would be nice to do that, if the
-adapters have child devices.
+> From: Eric Dumazet <dada1@cosmosbay.com>
+> Date: Tue, 28 Apr 2009 08:58:05 +0200
+> 
+> > I am not sure my day job will permit me to polish a patch mixing all
+> > the bits and comments. But I am glad we eventually got back spinlocks
+> > which are probably better than rwlocks for implementing this stuff.
+> > 
+> > Instead of submitting a full patch again, we could first submit a new
+> >  include file containg all comments and inline functions ?
+> > 
+> > This include file could be local to netfilter, with a big stick on
+> > it to forbids its use on other areas (No changes in Documentation/ )
+> > 
+> > Then, as soon as we can go back to pure RCU solution, we can 
+> > safely delete this controversial-locking-nesting-per-cpu-thing ?
+> 
+> I say we merge Linus's locking idea into the XV patch, fixup the 
+> commit message wording, and move on with life.
+> 
+> For something that's going to get deleted as soon as the faster 
+> grace period RCU stuff is available, it has consumed an inordinate 
+> amount of our time :-)
 
-It is unusual to stack class devices of different classes. The common
-model would be to put the adapters, and all other possible device
-types to the already existing "i2c" bus, and distinguish them by name,
-and internally by "struct device_type" if needed.
+One more reason to factor out this code into general locking code.
 
-Like USB puts usb-interface, usb-device, root-hub under the "usb"
-bus_type, or SCSI puts host, target, lun under the "scsi" bus. All
-these different devices build the tree of the core devices of a
-specific subsystem.
+The latest code looks a bit similar to the old big-reader-locks hack 
+(which got dropped for good many eons ago and with which i deny any 
+involvement with, such as having authored it. [oh, did i say that 
+out loud? crap.]), implemented cleanly and properly.
 
-Any possible class devices would only be leaves in these trees, which
-do not have any interconnection between the individual class devices.
+IMHO this locking construct should be considered for 
+linux/local_lock.h and kernel/local_lock.c. Even if the netfilter 
+code drops its use soon afterwards ;-)
 
-Thanks,
-Kay
+[ The _only_ thing i am worried about is the apparent fact that
+  there's so much confusion about recursion versus read-access.
+  Recursion might be hard to factor out of the netfilter code, and
+  maybe it's not even possible realistically (we fought years with
+  the BKL and are still fighting it) but if its harms are not even
+  _realized_ that difficult task turns into an impossible task ;-) ]
+
+	Ingo
