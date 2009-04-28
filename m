@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933342AbZD1RJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933402AbZD1RKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933342AbZD1RJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 13:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933123AbZD1RGq
+	id S933402AbZD1RKP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 13:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933175AbZD1RHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 13:06:46 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:56017 "EHLO
+	Tue, 28 Apr 2009 13:07:09 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:56153 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933155AbZD1RGp (ORCPT
+	by vger.kernel.org with ESMTP id S933184AbZD1RHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 13:06:45 -0400
+	Tue, 28 Apr 2009 13:07:08 -0400
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -18,13 +18,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Denys Vlasenko <vda.linux@googlemail.com>,
        Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
        David Howells <dhowells@redhat.com>, Tim Abbott <tabbott@MIT.EDU>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 10/15] powerpc: Remove unused __page_aligned macro.
-Date: Tue, 28 Apr 2009 13:00:57 -0400
-Message-Id: <1240938062-3264-11-git-send-email-tabbott@mit.edu>
+       Ingo Molnar <mingo@redhat.com>
+Subject: [PATCH v2 15/15] x86: Use macros for .data.page_aligned.
+Date: Tue, 28 Apr 2009 13:01:02 -0400
+Message-Id: <1240938062-3264-16-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1240938062-3264-10-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1240938062-3264-15-git-send-email-tabbott@mit.edu>
 References: <1240938062-3264-1-git-send-email-tabbott@mit.edu>
  <1240938062-3264-2-git-send-email-tabbott@mit.edu>
  <1240938062-3264-3-git-send-email-tabbott@mit.edu>
@@ -35,39 +34,91 @@ References: <1240938062-3264-1-git-send-email-tabbott@mit.edu>
  <1240938062-3264-8-git-send-email-tabbott@mit.edu>
  <1240938062-3264-9-git-send-email-tabbott@mit.edu>
  <1240938062-3264-10-git-send-email-tabbott@mit.edu>
+ <1240938062-3264-11-git-send-email-tabbott@mit.edu>
+ <1240938062-3264-12-git-send-email-tabbott@mit.edu>
+ <1240938062-3264-13-git-send-email-tabbott@mit.edu>
+ <1240938062-3264-14-git-send-email-tabbott@mit.edu>
+ <1240938062-3264-15-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Tim Abbott <tabbott@mit.edu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
----
- arch/powerpc/include/asm/page_64.h |    8 --------
- 1 files changed, 0 insertions(+), 8 deletions(-)
+.data.page_aligned should not need a separate output section.  So, as
+part of this cleanup I moved it into the .data output section in the
+linker scripts in order to eliminate unnecessary references to the
+section name.
 
-diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-index 043bfdf..20f9c74 100644
---- a/arch/powerpc/include/asm/page_64.h
-+++ b/arch/powerpc/include/asm/page_64.h
-@@ -152,14 +152,6 @@ do {						\
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Cc: Ingo Molnar <mingo@redhat.com>
+---
+ arch/x86/kernel/head_32.S        |    2 +-
+ arch/x86/kernel/vmlinux_32.lds.S |    6 +-----
+ arch/x86/kernel/vmlinux_64.lds.S |    6 +-----
+ 3 files changed, 3 insertions(+), 11 deletions(-)
+
+diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+index 8f2a18b..f2a44f3 100644
+--- a/arch/x86/kernel/head_32.S
++++ b/arch/x86/kernel/head_32.S
+@@ -636,7 +636,7 @@ ENTRY(empty_zero_page)
+  * This starts the data section.
+  */
+ #ifdef CONFIG_X86_PAE
+-.section ".data.page_aligned","wa"
++__PAGE_ALIGNED_DATA
+ 	/* Page-aligned for the benefit of paravirt? */
+ 	.align PAGE_SIZE_asm
+ ENTRY(swapper_pg_dir)
+diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
+index fdb0642..57cbcf2 100644
+--- a/arch/x86/kernel/vmlinux_32.lds.S
++++ b/arch/x86/kernel/vmlinux_32.lds.S
+@@ -64,6 +64,7 @@ SECTIONS
+   /* writeable */
+   . = ALIGN(PAGE_SIZE);
+   .data : AT(ADDR(.data) - LOAD_OFFSET) {	/* Data */
++	PAGE_ALIGNED_DATA
+ 	DATA_DATA
+ 	CONSTRUCTORS
+ 	} :data
+@@ -76,11 +77,6 @@ SECTIONS
+   	__nosave_end = .;
+   }
  
- #endif /* !CONFIG_HUGETLB_PAGE */
- 
--#ifdef MODULE
--#define __page_aligned __attribute__((__aligned__(PAGE_SIZE)))
--#else
--#define __page_aligned \
--	__attribute__((__aligned__(PAGE_SIZE), \
--		__section__(".data.page_aligned")))
--#endif
+-  . = ALIGN(PAGE_SIZE);
+-  .data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
+-	*(.data.page_aligned)
+-  }
 -
- #define VM_DATA_DEFAULT_FLAGS \
- 	(test_thread_flag(TIF_32BIT) ? \
- 	 VM_DATA_DEFAULT_FLAGS32 : VM_DATA_DEFAULT_FLAGS64)
+   . = ALIGN(32);
+   .data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
+ 	*(.data.cacheline_aligned)
+diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
+index 424fb87..5b74dc9 100644
+--- a/arch/x86/kernel/vmlinux_64.lds.S
++++ b/arch/x86/kernel/vmlinux_64.lds.S
+@@ -64,6 +64,7 @@ SECTIONS
+ 	. = ALIGN(PAGE_SIZE);
+ 	/* Data */
+ 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
++		PAGE_ALIGNED_DATA
+ 		DATA_DATA
+ 		CONSTRUCTORS
+ 		/* End of data section */
+@@ -157,11 +158,6 @@ SECTIONS
+ 		*(.data.init_task)
+ 	} :data.init
+ 
+-	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
+-		. = ALIGN(PAGE_SIZE);
+-		*(.data.page_aligned)
+-	}
+-
+ 	.smp_locks : AT(ADDR(.smp_locks) - LOAD_OFFSET) {
+ 		/* might get freed after init */
+ 		. = ALIGN(PAGE_SIZE);
 -- 
 1.6.2.1
 
