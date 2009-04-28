@@ -1,82 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760946AbZD1H6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761008AbZD1H7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760946AbZD1H6g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 03:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbZD1H61
+	id S1761008AbZD1H7s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 03:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759530AbZD1H7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 03:58:27 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:6908 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753735AbZD1H60 convert rfc822-to-8bit (ORCPT
+	Tue, 28 Apr 2009 03:59:39 -0400
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:36357 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756226AbZD1H7i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 03:58:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Q1N3KfrCRvJc4fxbv6tVs5Cw1Ft8HNSxBLAETL7qnmJbjiUIQltvyeJQLa6IBGVN3a
-         2pvyPMX9NJQ9eBSN9qQ84fNPhMjquCZeaMo533M3npKQ56V+H7hCLh+yAUm+BJaJKDlE
-         W4opkRJe13KSVWTys9VwF3uIbbZhsF0qcfCHg=
-MIME-Version: 1.0
-In-Reply-To: <1240904919.7620.73.camel@twins>
-References: <20090428044426.GA5035@eskimo.com>
-	 <20090428143019.EBBF.A69D9226@jp.fujitsu.com>
-	 <1240904919.7620.73.camel@twins>
-Date: Tue, 28 Apr 2009 13:28:25 +0530
-X-Google-Sender-Auth: a33264b7b4311e20
-Message-ID: <661de9470904280058ub16c66bi6a52d36ca4c2d52c@mail.gmail.com>
-Subject: Re: Swappiness vs. mmap() and interactive response
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org,
-       linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 28 Apr 2009 03:59:38 -0400
+From: "Henrik Rydberg" <rydberg@euromail.se>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Henrik Rydberg <rydberg@euromail.se>
+Subject: [PATCH] input: Add a detailed multi-touch finger data report protocol (rev3)
+Date: Tue, 28 Apr 2009 09:58:46 +0200
+Message-Id: <1240905526-15845-1-git-send-email-rydberg@euromail.se>
+X-Mailer: git-send-email 1.5.6.3
+X-Originating-IP: 83.248.194.102
+X-Scan-Result: No virus found in message 1LyiDH-0001sB-5m.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1LyiDH-0001sB-5m 858a205e9298748910ca7c2b189156f3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 1:18 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Tue, 2009-04-28 at 14:35 +0900, KOSAKI Motohiro wrote:
->> (cc to linux-mm and Rik)
->>
->>
->> > Hi,
->> >
->> > So, I just set up Ubuntu Jaunty (using Linux 2.6.28) on a quad core phenom box,
->> > and then I did the following (with XFS over LVM):
->> >
->> > mv /500gig/of/data/on/disk/one /disk/two
->> >
->> > This quickly caused the system to. grind.. to... a.... complete..... halt.
->> > Basically every UI operation, including the mouse in Xorg, started experiencing
->> > multiple second lag and delays.  This made the system essentially unusable --
->> > for example, just flipping to the window where the "mv" command was running
->> > took 10 seconds on more than one occasion.  Basically a "click and get coffee"
->> > interface.
->>
->> I have some question and request.
->>
->> 1. please post your /proc/meminfo
->> 2. Do above copy make tons swap-out? IOW your disk read much faster than write?
->> 3. cache limitation of memcgroup solve this problem?
->> 4. Which disk have your /bin and /usr/bin?
->>
->
-> FWIW I fundamentally object to 3 as being a solution.
->
+In order to utilize the full power of the new multi-touch devices, a
+way to report detailed finger data to user space is needed. This patch
+adds a multi-touch (MT) protocol which allows drivers to report details
+for an arbitrary number of fingers.
 
-memcgroup were not created to solve latency problems, but they do
-isolate memory and if that helps latency, I don't see why that is a
-problem. I don't think isolating applications that we think are not
-important and interfere or consume more resources than desired is a
-bad solution.
+The driver sends a SYN_MT_REPORT event via the input_mt_sync() function
+when a complete finger has been reported.
 
-> I still think the idea of read-ahead driven drop-behind is a good one,
-> alas last time we brought that up people thought differently.
+In order to stay compatible with existing applications, the data
+reported in a finger packet must not be recognized as single-touch
+events. In addition, all finger data must bypass input filtering,
+since subsequent events of the same type refer to different fingers.
 
-I vaguely remember the patches, but can't recollect the details.
+A set of ABS_MT events with the desired properties are defined. The
+events are divided into categories, to allow for partial implementation.
+The minimum set consists of ABS_MT_TOUCH_MAJOR, ABS_MT_POSITION_X and
+ABS_MT_POSITION_Y, which allows for multiple fingers to be tracked.
+If the device supports it, the ABS_MT_WIDTH_MAJOR may be used to provide
+the size of the approaching finger. Anisotropy and direction may be
+specified with ABS_MT_TOUCH_MINOR, ABS_MT_WIDTH_MINOR and
+ABS_MT_ORIENTATION. Devices with more granular information may specify
+general shapes as blobs, i.e., as a sequence of rectangular shapes
+grouped together by a ABS_MT_BLOB_ID. Finally, the ABS_MT_TOOL_TYPE
+may be used to specify whether the touching tool is a finger or a pen.
 
-Balbir
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+---
+ drivers/input/input.c |   13 +++++++++++++
+ include/linux/input.h |   23 +++++++++++++++++++++++
+ 2 files changed, 36 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/input/input.c b/drivers/input/input.c
+index 1e42619..1e7f8a3 100644
+--- a/drivers/input/input.c
++++ b/drivers/input/input.c
+@@ -33,6 +33,15 @@ MODULE_LICENSE("GPL");
+  * EV_ABS events which should not be cached are listed here.
+  */
+ static __initdata unsigned int input_abs_bypass_init_data[] = {
++	ABS_MT_TOUCH_MAJOR,
++	ABS_MT_TOUCH_MINOR,
++	ABS_MT_WIDTH_MAJOR,
++	ABS_MT_WIDTH_MINOR,
++	ABS_MT_ORIENTATION,
++	ABS_MT_POSITION_X,
++	ABS_MT_POSITION_Y,
++	ABS_MT_TOOL_TYPE,
++	ABS_MT_BLOB_ID,
+ 	0
+ };
+ 
+@@ -170,6 +179,10 @@ static void input_handle_event(struct input_dev *dev,
+ 				disposition = INPUT_PASS_TO_HANDLERS;
+ 			}
+ 			break;
++		case SYN_MT_REPORT:
++			dev->sync = 0;
++			disposition = INPUT_PASS_TO_HANDLERS;
++			break;
+ 		}
+ 		break;
+ 
+diff --git a/include/linux/input.h b/include/linux/input.h
+index 32cb825..0e6ff5d 100644
+--- a/include/linux/input.h
++++ b/include/linux/input.h
+@@ -106,6 +106,7 @@ struct input_absinfo {
+ 
+ #define SYN_REPORT		0
+ #define SYN_CONFIG		1
++#define SYN_MT_REPORT		2
+ 
+ /*
+  * Keys and buttons
+@@ -645,6 +646,17 @@ struct input_absinfo {
+ #define ABS_TOOL_WIDTH		0x1c
+ #define ABS_VOLUME		0x20
+ #define ABS_MISC		0x28
++
++#define ABS_MT_TOUCH_MAJOR	0x30	/* Major axis of touching ellipse */
++#define ABS_MT_TOUCH_MINOR	0x31	/* Minor axis (omit if circular) */
++#define ABS_MT_WIDTH_MAJOR	0x32	/* Major axis of approaching ellipse */
++#define ABS_MT_WIDTH_MINOR	0x33	/* Minor axis (omit if circular) */
++#define ABS_MT_ORIENTATION	0x34	/* Ellipse orientation */
++#define ABS_MT_POSITION_X	0x35	/* Center X ellipse position */
++#define ABS_MT_POSITION_Y	0x36	/* Center Y ellipse position */
++#define ABS_MT_TOOL_TYPE	0x37	/* Type of touching device */
++#define ABS_MT_BLOB_ID		0x38	/* Group a set of packets as a blob */
++
+ #define ABS_MAX			0x3f
+ #define ABS_CNT			(ABS_MAX+1)
+ 
+@@ -744,6 +756,12 @@ struct input_absinfo {
+ #define BUS_ATARI		0x1B
+ 
+ /*
++ * MT_TOOL types
++ */
++#define MT_TOOL_FINGER		0
++#define MT_TOOL_PEN		1
++
++/*
+  * Values describing the status of a force-feedback effect
+  */
+ #define FF_STATUS_STOPPED	0x00
+@@ -1312,6 +1330,11 @@ static inline void input_sync(struct input_dev *dev)
+ 	input_event(dev, EV_SYN, SYN_REPORT, 0);
+ }
+ 
++static inline void input_mt_sync(struct input_dev *dev)
++{
++	input_event(dev, EV_SYN, SYN_MT_REPORT, 0);
++}
++
+ void input_set_capability(struct input_dev *dev, unsigned int type, unsigned int code);
+ 
+ static inline void input_set_abs_params(struct input_dev *dev, int axis, int min, int max, int fuzz, int flat)
+-- 
+1.5.6.3
+
