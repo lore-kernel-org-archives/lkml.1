@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbZD1PJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762026AbZD1PJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754741AbZD1PJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761651AbZD1PGq
+	id S1762026AbZD1PJd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761614AbZD1PGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:06:46 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:35773 "EHLO
-	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761280AbZD1PGo (ORCPT
+	Tue, 28 Apr 2009 11:06:45 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:35601 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761635AbZD1PGn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:06:44 -0400
-X-BigFish: VPS1(zzzz1202hzzz32i62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KITGMR-01-UAQ-01
+	Tue, 28 Apr 2009 11:06:43 -0400
+X-BigFish: VPS-2(zz14c3Mzz1202hzzz32i43j63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0KITGMO-01-UAG-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: akpm@linux-foundation.org, greg@kroah.com
 CC: <linux-kernel@vger.kernel.org>, Doug Thompson <dougthompson@xmission.com>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 14/21] amd64_edac: add msr accessors operating on all cpus
-Date: Tue, 28 Apr 2009 17:06:06 +0200
-Message-ID: <1240931173-17477-15-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 09/21] amd64_edac: add k8-specific methods
+Date: Tue, 28 Apr 2009 17:06:01 +0200
+Message-ID: <1240931173-17477-10-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
 References: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 28 Apr 2009 15:06:22.0912 (UTC) FILETIME=[E4B9D400:01C9C812]
+X-OriginalArrivalTime: 28 Apr 2009 15:06:21.0099 (UTC) FILETIME=[E3A52FB0:01C9C812]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,57 +35,211 @@ From: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |   42 ++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 42 insertions(+), 0 deletions(-)
+ drivers/edac/amd64_edac.c |  196 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 196 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index ac4e265..49c0ce0 100644
+index 9e11555..85ef6ad 100644
 --- a/drivers/edac/amd64_edac.c
 +++ b/drivers/edac/amd64_edac.c
-@@ -3121,4 +3121,46 @@ static struct pci_dev *pci_get_related_function(unsigned int vendor,
- 	return dev;
+@@ -2061,4 +2061,200 @@ static enum mem_type amd64_determine_memory_type(struct amd64_pvt *pvt)
+ 	return type;
  }
  
-+/* stolen from msr.c - the calls in msr.c could be exported */
-+struct msr_command {
-+	int cpu;
++/*
++ * k8_early_channel_count
++ *
++ *      NOTE: CPU Revision Dependent code
++ *
++ *      MUST read the hardware DCL register, and decode it, then return it
++ *
++ *      the DCL - DRAM Configuration Low Register contains various
++ *      configuration bits on memory.
++ *
++ *      BUT it is different between CG, D & E revs and the later
++ *      Rev F memory controllers (DDR vs DDR2)
++ *
++ * Return:
++ *      number of Memory Channels in operation
++ * Pass back:
++ *      contents of the DCL0_LOW register
++ */
++static int k8_early_channel_count(struct amd64_pvt *pvt)
++{
++	int flag;
 +	int err;
-+	u32 reg;
-+	u32 data[2];
-+};
 +
-+static void smp_wrmsr(void *cmd_block)
-+{
-+	struct msr_command *cmd = cmd_block;
-+	wrmsr(cmd->reg, cmd->data[0], cmd->data[1]);
++	err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCLR_0, &pvt->dclr0);
++	if (err != 0)
++		debugf0("%s() Reading F10_DCLR_0 failed\n", __func__);
++
++	if ((boot_cpu_data.x86_model >> 4) >= OPTERON_CPU_REV_F) {
++		/* Rev F (NPT) and later */
++		flag = pvt->dclr0 & F10_WIDTH_128;
++	} else {
++		/* Rev E and earlier */
++		flag = pvt->dclr0 & REVE_WIDTH_128;
++	}
++
++	/* not used */
++	pvt->dclr1 = 0;
++
++	return (flag) ? 2 : 1;
 +}
 +
-+static void smp_rdmsr(void *cmd_block)
++/*
++ * k8_get_error_address
++ *	extract from the hardware copies of the error register
++ *	the ERROR ADDRESS for the K8 and Family 0Fh CPUs
++ */
++static u64 k8_get_error_address(struct mem_ctl_info *mci,
++			struct amd64_error_info_regs *info)
 +{
-+	struct msr_command *cmd = cmd_block;
-+	rdmsr(cmd->reg, cmd->data[0], cmd->data[1]);
++	return (((u64) (info->nbeah & 0xff)) << 32) +
++			(info->nbeal & ~0x03);
 +}
 +
-+static void do_wrmsr(int cpu, u32 reg, u32 eax, u32 edx)
++/*
++ * k8_read_dram_base_limit
++ *
++ *	Read the Base and Limit registers for K8 based Memory controllers
++ *	Extract fields from the 'raw' reg into separate data fields
++ *
++ *		Isolates: BASE, LIMIT, IntlvEn, IntlvSel, RW_EN
++ */
++static void k8_read_dram_base_limit(struct amd64_pvt *pvt, int dram)
 +{
-+	struct msr_command cmd;
++	u32 low;
++	u32 off = dram << 3;	/* 8 bytes between DRAM entries */
++	int err;
 +
-+	cmd.cpu = raw_smp_processor_id();
-+	cmd.reg = reg;
-+	cmd.data[0] = eax;
-+	cmd.data[1] = edx;
-+	on_each_cpu(smp_wrmsr, &cmd, 1);
++	err = pci_read_config_dword(pvt->addr_f1_ctl,
++					K8_DRAM_BASE_LOW + off, &low);
++	if (err != 0)
++		debugf0("%s() Reading K8_DRAM_BASE_LOW failed\n", __func__);
++
++	/* Extract parts into separate data entries */
++	pvt->dram_base[dram] = ((u64) low & 0xFFFF0000) << 8;
++	pvt->dram_IntlvEn[dram] = (low >> 8) & 0x7;
++	pvt->dram_rw_en[dram] = (low & 0x3);
++
++	err = pci_read_config_dword(pvt->addr_f1_ctl, K8_DRAM_LIMIT_LOW + off,
++		&low);
++	if (err != 0)
++		debugf0("%s() Reading K8_DRAM_LIMIT_LOW failed\n", __func__);
++
++	/* Extract parts into separate data entries
++	 * Limit is the HIGHEST memory location of the region, so lower
++	 * 24-bit needs to be all ones
++	 */
++	pvt->dram_limit[dram] = (((u64) low & 0xFFFF0000) << 8) | 0x00FFFFFF;
++	pvt->dram_IntlvSel[dram] = (low >> 8) & 0x7;
++	pvt->dram_DstNode[dram] = (low & 0x7);
 +}
 +
-+static void do_rdmsr(int cpu, u32 reg, u32 *eax, u32 *edx)
-+{
-+	struct msr_command cmd;
 +
-+	cmd.cpu = raw_smp_processor_id();
-+	cmd.reg = reg;
-+	on_each_cpu(smp_rdmsr, &cmd, 1);
-+	*eax = cmd.data[0];
-+	*edx = cmd.data[1];
++/*
++ * k8_map_sysaddr_to_csrow
++ *
++ *	map a SystemAddress to NodeID, CSROW, Channel
++ */
++static void k8_map_sysaddr_to_csrow(struct mem_ctl_info *mci,
++					struct amd64_error_info_regs *info,
++					u64 SystemAddress)
++{
++	struct mem_ctl_info *src_mci;
++	unsigned short syndrome;
++	int channel, csrow;
++	u32 page, offset;
++
++	/* Extract the syndrome parts and form a 16-bit syndrome */
++	syndrome = EXTRACT_HIGH_SYNDROME(info->nbsl) << 8;
++	syndrome |= EXTRACT_LOW_SYNDROME(info->nbsh);
++
++	/* CHIPKILL enabled */
++	if (info->nbcfg & K8_NBCFG_CHIPKILL) {
++		/* x4 chipkill ecc mode - determine channel */
++		channel = get_channel_from_x4_syndrome(syndrome);
++		if (channel < 0) {
++			/* Syndrome didn't map, so we don't know which of
++			 * the 2 DIMMs is in error. So we need to ID 'both'
++			 * of them as suspect.
++			 */
++			amd64_mc_printk(mci, KERN_WARNING,
++				     "unknown syndrome 0x%x - possible error "
++				     "reporting race\n", syndrome);
++			edac_mc_handle_ce_no_info(mci, EDAC_MOD_STR);
++			return;
++		}
++	} else {
++		/* non-chipkill ecc mode
++		 *
++		 * The k8 documentation is unclear about how to determine the
++		 * channel number when using non-chipkill memory.  This method
++		 * was obtained from email communication with someone at AMD.
++		 * (Wish the email was placed in this comment - norsk)
++		 */
++		channel = ((SystemAddress & BIT(3)) != 0);
++	}
++
++	/* Find out which node the error address belongs to.  This may be
++	 * different from the node that detected the error.
++	 */
++	src_mci = find_mc_by_sys_addr(mci, SystemAddress);
++	if (src_mci == NULL) {
++		amd64_mc_printk(mci, KERN_ERR,
++			     "failed to map error address 0x%lx to a node\n",
++			     (unsigned long)SystemAddress);
++		edac_mc_handle_ce_no_info(mci, EDAC_MOD_STR);
++		return;
++	}
++
++	/* Now map the SystemAddress to a CSROW */
++	csrow = sys_addr_to_csrow(src_mci, SystemAddress);
++	if (csrow < 0) {
++		edac_mc_handle_ce_no_info(src_mci, EDAC_MOD_STR);
++	} else {
++		error_address_to_page_and_offset(SystemAddress, &page, &offset);
++
++		edac_mc_handle_ce(src_mci, page, offset, syndrome, csrow,
++				  channel, EDAC_MOD_STR);
++	}
++}
++
++/*
++ * k8_dbam_map_to_pages
++ *
++ *	determrine the number of PAGES in for this DIMM's size
++ *	based on its DRAM Address Mapping.
++ */
++static int k8_dbam_map_to_pages(struct amd64_pvt *pvt, int dram_map)
++{
++	int nr_pages;
++
++	/* First step is to calc the number of bits to shift a value of 1
++	 * left to indicate show many pages. Start with the DBAM value
++	 * as the starting bits, then proceed to adjust those shift
++	 * bits, based on CPU REV and the table. See BKDG on the DBAM
++	 */
++	if (pvt->ext_model >= OPTERON_CPU_REV_F) {
++
++		/* REV F and greater section */
++		nr_pages = 1 << (revf_quad_ddr2_shift[dram_map] - PAGE_SHIFT);
++	} else {
++		/* REV E and less section This line is tricky.
++		 * It collapses the table used by revision D and later to one
++		 * that matches revision CG and earlier
++		 */
++		dram_map -= (pvt->ext_model >= OPTERON_CPU_REV_D) ?
++				(dram_map > 8 ? 4 : (dram_map > 5 ?
++				3 : (dram_map > 2 ? 1 : 0))) : 0;
++
++		/* 25 shift, is 32MiB minimum DIMM size in REV E and prior
++		 */
++		nr_pages = 1 << (dram_map + 25 - PAGE_SHIFT);
++	}
++
++	return nr_pages;
 +}
 +
  
