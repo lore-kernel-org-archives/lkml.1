@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762205AbZD1Qpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762149AbZD1QrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762205AbZD1Qpq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761491AbZD1QpQ
+	id S1762149AbZD1QrU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756753AbZD1QrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:45:16 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:46050 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761055AbZD1QpP (ORCPT
+	Tue, 28 Apr 2009 12:47:05 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:60994 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755992AbZD1QrE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:45:15 -0400
-X-IronPort-AV: E=Sophos;i="4.40,261,1238976000"; 
-   d="scan'208";a="178019770"
-From: Roland Dreier <rdreier@cisco.com>
-To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-EWG" <ewg@lists.openfabrics.org>, Roland Dreier <rolandd@cisco.com>,
-       fenkes@de.ibm.com, raisch@de.ibm.com, alexschm@de.ibm.com,
-       stefan.roscher@de.ibm.com, hnguyen@de.ibm.com
-Subject: Re: [PATCH 1/3] IB/ehca: Replace vmalloc with kmalloc
-References: <200904211716.45245.ossrosch@linux.vnet.ibm.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 28 Apr 2009 09:45:14 -0700
-In-Reply-To: <200904211716.45245.ossrosch@linux.vnet.ibm.com> (Stefan
-	Roscher's message of "Tue, 21 Apr 2009 17:16:44 +0200")
-Message-ID: <adaocugviat.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Tue, 28 Apr 2009 12:47:04 -0400
+Date: Tue, 28 Apr 2009 12:37:22 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH] Properly account for freed pages in free_pages_bulk()
+ and when allocating high-order pages in buffered_rmqueue()
+In-Reply-To: <20090428103159.GB23540@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0904281236350.21913@qirst.com>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240819119.2567.884.camel@ymzhang> <20090427143845.GC912@csn.ul.ie> <1240883957.2567.886.camel@ymzhang> <20090428103159.GB23540@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Apr 2009 16:45:14.0874 (UTC) FILETIME=[B47365A0:01C9C820]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks, applied.
+On Tue, 28 Apr 2009, Mel Gorman wrote:
 
- > From: Anton Blanchard <antonb at au1.ibm.com>
- > Signed-off-by: Stefan Roscher <stefan.roscher at de.ibm.com>
+> @@ -1151,6 +1151,7 @@ again:
+>  	} else {
+>  		spin_lock_irqsave(&zone->lock, flags);
+>  		page = __rmqueue(zone, order, migratetype);
+> +		__mod_zone_page_state(zone, NR_FREE_PAGES, -(1UL << order));
+>  		spin_unlock(&zone->lock);
+>  		if (!page)
+>  			goto failed;
 
-please use '@' signs so these are real email addresses.
+__mod_zone_page_state takes an signed integer argument. Not sure what is
+won by the UL suffix here.
 
- - R.
