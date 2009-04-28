@@ -1,121 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932133AbZD1OvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932280AbZD1Oyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932133AbZD1OvT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 10:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761209AbZD1Ou7
+	id S932280AbZD1Oyk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 10:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZD1Oy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 10:50:59 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:62739 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754378AbZD1Ou6 (ORCPT
+	Tue, 28 Apr 2009 10:54:26 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:44305 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754378AbZD1OyZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 10:50:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=MFcrhSnEmyadq8Lbhyc9bnXV/0lOAORY6D2S4o420X33/AZNkQ2H8+laWOpHxkQUhh
-         LcOS80vmkuNOMpJdidRSUc+ZEdOKyMJ/l4nweX5/rSzqrcaMvMo8AH4QBLTPm32oneJu
-         r9ZA8Jg0eB0fFuY4QZG4DY+nj8eTJbN23/bu0=
-Date: Tue, 28 Apr 2009 16:50:50 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Paul Menage <menage@google.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, tytso@mit.edu,
-       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
-       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
-       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
-       matt@bluehost.com, dradford@bluehost.com, ngupta@google.com,
-       randy.dunlap@oracle.com, roberto@unbit.it,
-       Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
-       fchecconi@gmail.com, paolo.valente@unimore.it, m-ikeda@ds.jp.nec.com,
-       paulmck@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v15 4/7] io-throttle controller infrastructure
-Message-ID: <20090428145050.GB990@linux>
-References: <1240908234-15434-1-git-send-email-righi.andrea@gmail.com> <1240908234-15434-5-git-send-email-righi.andrea@gmail.com>
-MIME-Version: 1.0
+	Tue, 28 Apr 2009 10:54:25 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsIEAByz9klMQW1W/2dsb2JhbACBUM14g3MF
+Date: Tue, 28 Apr 2009 10:49:20 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: David Miller <davem@davemloft.net>
+Cc: mingo@elte.hu, dada1@cosmosbay.com, torvalds@linux-foundation.org,
+       shemminger@vyatta.com, zbr@ioremap.net, peterz@infradead.org,
+       jarkao2@gmail.com, paulus@samba.org, paulmck@linux.vnet.ibm.com,
+       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
+Message-ID: <20090428144920.GA28942@Krystal>
+References: <20090428124033.GA1655@elte.hu> <20090428.064340.193569214.davem@davemloft.net> <20090428135219.GA28513@Krystal> <20090428.073759.78537345.davem@davemloft.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1240908234-15434-5-git-send-email-righi.andrea@gmail.com>
+In-Reply-To: <20090428.073759.78537345.davem@davemloft.net>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:46:42 up 59 days, 11:12,  2 users,  load average: 0.24, 0.33,
+	0.30
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 10:43:51AM +0200, Andrea Righi wrote:
-> This is the core of the io-throttle kernel infrastructure. It creates
-> the basic interfaces to the cgroup subsystem and implements the I/O
-> measurement and throttling functionality.
+* David Miller (davem@davemloft.net) wrote:
+> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Date: Tue, 28 Apr 2009 09:52:19 -0400
+> 
+> > The local_bh_disable() could be outside of the locking construct. This
+> > would make it easier to adapt it to various users (irq disable, bh
+> > disable, preempt disable) depending on the contexts from which they much
+> > be protected.
+> > 
+> > And if it still does not work for some reason, using a #define is
+> > discouraged, but could work.
+> 
+> That's what I was hoping to avoid, things like macros and having
+> the callers of this thing expand the two parts of the operation.
+> 
+> What's the point in making this generic if it ends up being ugly
+> as hell?
 
-Subject: io-throttle: correctly throttle O_DIRECT reads
+.. and what's the point in making it generic if it can be replaced
+by a proper RCU implementation ? :-) I am not convinced of the added
+value we get in making it a generic header this soon. I would wait for
+other users to express similar needs, otherwise this could soon become
+an orphaned piece of locking code.
 
-There's a bug in the latest io-throttle patchset: the IO generated by
-O_DIRECT reads is correctly accounted, but tasks doing direct IO are not
-correctly throttled.
+Mathieu
 
-The following fix apply the correct behaviour, throttling the tasks that
-are doing O_DIRECT reads directly, instead of delaying their IO
-requests.
-
-[ This patch must be applied on top of io-throttle v15 ]
-
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
----
- block/blk-io-throttle.c |   21 ++++++++++++---------
- 1 files changed, 12 insertions(+), 9 deletions(-)
-
-diff --git a/block/blk-io-throttle.c b/block/blk-io-throttle.c
-index 380a21a..8dc2c93 100644
---- a/block/blk-io-throttle.c
-+++ b/block/blk-io-throttle.c
-@@ -803,12 +803,21 @@ cgroup_io_throttle(struct bio *bio, struct block_device *bdev, ssize_t bytes)
- 	 * cgroup. If they're different we're doing writeback IO and we can't
- 	 * throttle the current task directly.
- 	 */
--	if (!is_in_dio())
-+	if (!is_in_dio()) {
-+		/*
-+		 * We're not doing O_DIRECT: find the source of this IO
-+		 * request.
-+		 */
- 		iot = get_iothrottle_from_bio(bio);
-+	}
- 	rcu_read_lock();
- 	curr_iot = task_to_iothrottle(current);
--	if (curr_iot != iot) {
--		css_get(&curr_iot->css);
-+	if (iot == NULL) {
-+		/* IO occurs in the same context of the current task */
-+		iot = curr_iot;
-+		css_get(&iot->css);
-+	}
-+	if (iot != curr_iot) {
- 		/*
- 		 * IO occurs in a different context of the current task
- 		 * (writeback IO).
-@@ -819,10 +828,6 @@ cgroup_io_throttle(struct bio *bio, struct block_device *bdev, ssize_t bytes)
- 		 */
- 		can_sleep = 0;
- 	}
--	if (iot == NULL) {
--		/* IO occurs in the same context of the current task */
--		iot = curr_iot;
--	}
- 	/* Apply IO throttling */
- 	iothrottle_evaluate_sleep(&s, iot, bdev, bytes);
- 	sleep = max(s.bw_sleep, s.iops_sleep);
-@@ -831,8 +836,6 @@ cgroup_io_throttle(struct bio *bio, struct block_device *bdev, ssize_t bytes)
- 	if (unlikely(sleep && can_sleep))
- 		iothrottle_acct_stat(iot, bdev, type, sleep);
- 	css_put(&iot->css);
--	if (curr_iot != iot)
--		css_put(&curr_iot->css);
- 	rcu_read_unlock();
- 	if (unlikely(sleep && can_sleep)) {
- 		/* Throttle the current task directly */
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
