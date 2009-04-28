@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755852AbZD1Uvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbZD1UxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755852AbZD1Uvg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZD1UvX
+	id S1754105AbZD1UxU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 16:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbZD1UxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:51:23 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:48659 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751816AbZD1UvW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:51:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=qXhmvMpZdLEXNTBVjSztIytOT3rb+osX3U4M49OYX+6rg0BISrfgTSjo67FhpfzRk0
-         xkSdVB8oME15Ead2LzZbil5lVsUYAp5R39T2wRQZS+AigdetpjZooV6aAhAaGVdLdNrp
-         a6bFHTiUsC8qDb3L0kBFHYb5nrw1y4sFjEkRY=
-Message-ID: <49F76BF6.4040709@gmail.com>
-Date: Tue, 28 Apr 2009 22:49:58 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: "Alexander V. Lukyanov" <lav@netis.ru>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.29.1: unregister_netdevice problem
-References: <20090422055735.GA4334@night.netis.ru> <20090427054103.GA27529@night.netis.ru> <20090428125755.GA5242@night.netis.ru>
-In-Reply-To: <20090428125755.GA5242@night.netis.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Apr 2009 16:53:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58052 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751326AbZD1UxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 16:53:08 -0400
+Date: Tue, 28 Apr 2009 16:51:54 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: zhaolei@cn.fujitsu.com, mingo@elte.hu, kosaki.motohiro@jp.fujitsu.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, tzanussi@gmail.com,
+       linux-kernel@vger.kernel.org, oleg@redhat.com
+Subject: Re: [PATCH 0/4] workqueue_tracepoint: Add worklet tracepoints for worklet lifecycle tracing
+Message-ID: <20090428205154.GE13893@redhat.com>
+References: <20090415085310.AC0D.A69D9226@jp.fujitsu.com> <20090415011533.GI5968@nowhere> <20090415141250.AC46.A69D9226@jp.fujitsu.com> <49E8282A.6010004@cn.fujitsu.com> <49E82CA7.2040606@cn.fujitsu.com> <20090417134557.GA23493@elte.hu> <49F1A59B.3080206@cn.fujitsu.com> <20090424130616.a3c217cb.akpm@linux-foundation.org> <y0mr5zclmhi.fsf@ton.toronto.redhat.com> <20090428114827.afb8bbe6.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090428114827.afb8bbe6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander V. Lukyanov wrote, On 04/28/2009 02:57 PM:
+Hi, Andrew -
 
-> On Mon, Apr 27, 2009 at 09:41:03AM +0400, Alexander V. Lukyanov wrote:
->> On Wed, Apr 22, 2009 at 09:57:35AM +0400, Alexander V. Lukyanov wrote:
->>> unregister_netdevice: waiting for eth0.2 to become free. Usage count = 4
->>>
->>> eth0.2 is a vlan interface, eth0 is 02:00.0 Ethernet controller: Realtek
->>> Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet
->>> controller (rev 01)
->> Ok, now I did manually 'vconfig rem eth0.2' and I get these repeated messages.
->> How do I find out what exactly holds the interface being used?
+On Tue, Apr 28, 2009 at 11:48:27AM -0700, Andrew Morton wrote:
+> [...]
+> > To be fair, if you ask for someone to specify and quantify the
+> > "benefits" side of this, shouldn't someone specify and quantify the
+> > "cost" side of this too?
+> [...]
+> >  That way we would have something to compare.
 > 
-> BTW, it looks like all vlan interfaces (I have many of them) have similar
-> problem, when it happens - every few days:
-> 
-> unregister_netdevice: waiting for eth0.907 to become free. Usage count = 20
-> 
-> and when I run a `vconfig rem', I cannot run another one. It s(t)ucks.
-> 
+> Well, there are two aspects to this.  There's the immediate up-front
+> cost - a little added complexity, more code, etc.
+
+Yes, a little.
 
 
-Do you mean if you wait a bit longer (until the first one is really removed)
-before running another one, it doesn't s(t)uck? Is there a change e.g. wrt.
-2.6.28?
+> But there's also the where-the-hell-is-this-all-going question.  Are we
+> going to end up with hundreds or thousands of tracepoints sprinkled all
+> over core kernel?  If so, what use are they?  What userspace tools will
+> be used to pull them into something useful?  Who will be developing
+> those tools and are they involved in the development of the
+> tracepoints?  
 
-Jarek P.
+(Well, that's back to the "benefits" side, isn't it?)
+
+
+> Will this proliferation of static tracepoints actively kill off the
+> development and maturation of dynamic tracepoints?  If so, is that
+> good?
+
+I hope not, but I believe the consensus has been that both dynamic and
+static instrumentation are necessary & useful.
+
+
+> From where I sit it looks like a mad scramble to sprinkle fairly
+> random tracepoints all over the place under the assumption that
+> this-may-be-useful-to-someone-one-day.  But of course, that means
+> that they many never be useful to anyone ever. [...]
+
+You may not be giving enough credit to the subsystem developers.  If
+they opine that those tracepoints may accomplish (or have already
+accomplished) something forseeably useful, at a reasonably "little"
+cost, should it not require a large burden of proof to overcome their
+judgement?
+
+
+- FChE
