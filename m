@@ -1,182 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932543AbZD1PZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760353AbZD1P0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932543AbZD1PZi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932567AbZD1PWB
+	id S1760353AbZD1P0i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762639AbZD1PXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:22:01 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:39105 "EHLO
-	TX2EHSOBE009.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932358AbZD1PV6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:21:58 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j)
-X-FB-SS: 5,
-X-WSS-ID: 0KITGMW-01-UB5-01
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: akpm@linux-foundation.org, greg@kroah.com
-CC: <linux-kernel@vger.kernel.org>, Doug Thompson <dougthompson@xmission.com>,
-       Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 20/21] amd64_edac: add DRAM error injection logic using sysfs
-Date: Tue, 28 Apr 2009 17:06:12 +0200
-Message-ID: <1240931173-17477-21-git-send-email-borislav.petkov@amd.com>
-X-Mailer: git-send-email 1.6.2.4
-In-Reply-To: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
-References: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 28 Apr 2009 15:06:24.0974 (UTC) FILETIME=[E5F476E0:01C9C812]
+	Tue, 28 Apr 2009 11:23:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59328 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762595AbZD1PXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 11:23:32 -0400
+Message-ID: <49F71EF6.3050102@kernel.org>
+Date: Tue, 28 Apr 2009 08:21:26 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [RFC PATCH] use dev_set_name(,NULL) to prevent leaking
+References: <20090416235452.GE21405@elte.hu> <alpine.LFD.2.00.0904181141100.4042@localhost.localdomain> 	<49EA27B9.3030004@kernel.org> <20090418192314.GA22107@suse.de> 	<ac3eb2510904181300v2593c36dua6c2420828860706@mail.gmail.com> 	<1240086446.2411.9.camel@poy> <20090418203718.GD30144@elte.hu> 	<49EA4EB9.2030307@kernel.org> <49F6B1E6.7050008@kernel.org> 	<49F6B350.9080703@kernel.org> <ac3eb2510904280125w11a58388u6a51997e28609009@mail.gmail.com>
+In-Reply-To: <ac3eb2510904280125w11a58388u6a51997e28609009@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Doug Thompson <dougthompson@xmission.com>
+Kay Sievers wrote:
+> On Tue, Apr 28, 2009 at 09:42, Yinghai Lu <yinghai@kernel.org> wrote:
+>> those about 1/3 dev_set_name() etc.
+> 
+> put_device()?
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=drivers/base/core.c;h=4aa527b8a91381289eb175b33f46e3e418d10374;hb=HEAD#l848
+> 
+ok, normal release path seems right, put_device will free the name.
 
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
----
- drivers/edac/amd64_edac.c |  130 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 130 insertions(+), 0 deletions(-)
+how about other fail path, that there is not put_device involved?
 
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 3c04fd6..1f62346 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -4654,3 +4654,133 @@ static ssize_t amd64_hole_show(struct mem_ctl_info *mci, char *data)
- 
- #endif	/* DEBUG */
- 
-+/*
-+ * Per MC instance Attribute/Control data control structure
-+ *	Can add for debug or for normal use
-+ */
-+static struct mcidev_sysfs_attribute amd64_mc_sysfs_ctls_attrs[] = {
-+
-+#ifdef CONFIG_EDAC_AMD64_OPTERON_ERROR_INJECTION
-+	/* Error injection methods */
-+	{
-+		.attr = {
-+			.name = "z_inject_section",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = NULL,
-+		.store = amd64_inject_section_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "z_inject_word",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = NULL,
-+		.store = amd64_inject_word_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "z_inject_bit_map",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = NULL,
-+		.store = amd64_inject_bit_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "z_inject_write",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = NULL,
-+		.store = amd64_inject_write_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "z_inject_read",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = NULL,
-+		.store = amd64_inject_read_store,
-+	},
-+#endif	/* CONFIG_EDAC_AMD64_OPTERON_ERROR_INJECTION */
-+
-+#ifdef	CONFIG_EDAC_DEBUG
-+	/* RAW register accessors */
-+	{
-+		.attr = {
-+			.name = "zctl_nbea",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = amd64_nbea_show,
-+		.store = amd64_nbea_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "zctl_nbsl",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = amd64_nbsl_show,
-+		.store = amd64_nbsl_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "zctl_nbsh",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = amd64_nbsh_show,
-+		.store = amd64_nbsh_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "zctl_nbcfg",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = amd64_nbcfg_show,
-+		.store = amd64_nbcfg_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "zhw_dhar",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_dhar_show,
-+		.store = NULL,
-+	},
-+	{
-+		.attr = {
-+			.name = "zhw_dbam",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_dbam_show,
-+		.store = NULL,
-+	},
-+	{
-+		.attr = {
-+			.name = "zhw_topmem",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_topmem_show,
-+		.store = NULL,
-+	},
-+	{
-+		.attr = {
-+			.name = "zhw_topmem2",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_topmem2_show,
-+		.store = NULL,
-+	},
-+	{
-+		.attr = {
-+			.name = "zhw_hole",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_hole_show,
-+		.store = NULL,
-+	},
-+#endif
-+	{
-+		.attr = { .name = NULL}
-+	}
-+};
-+
--- 
-1.6.2.4
-
-
+YH
