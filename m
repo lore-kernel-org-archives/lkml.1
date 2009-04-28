@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932789AbZD1QHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932692AbZD1QJL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932789AbZD1QHS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbZD1QHB
+	id S932692AbZD1QJL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:09:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757074AbZD1QIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:07:01 -0400
-Received: from wa4ehsobe002.messaging.microsoft.com ([216.32.181.12]:51947
-	"EHLO WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751294AbZD1QG7 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:06:59 -0400
-X-BigFish: VPS-25(zz1432R98dR1805M936fK10d1Izz1202hzzz32i6bh6di43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KITJE8-02-4QJ-01
-Date: Tue, 28 Apr 2009 18:06:12 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Greg KH <greg@kroah.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 00/21] amd64_edac: EDAC module for AMD64
-Message-ID: <20090428160612.GB7239@aftab>
-References: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com> <20090428155852.GA9956@kroah.com>
+	Tue, 28 Apr 2009 12:08:55 -0400
+Received: from krynn.se.axis.com ([193.13.178.10]:56253 "EHLO
+	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754253AbZD1QIy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 12:08:54 -0400
+Date: Tue, 28 Apr 2009 18:08:46 +0200
+From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Mikael Starvik <mikael.starvik@axis.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] CRIS: Wire up syscalls signalfd4 to writev.
+Message-ID: <20090428160846.GO21811@axis.com>
+References: <20090427081356.GA32167@lst.de> <20090428155856.GN21811@axis.com> <20090428160107.GC26363@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090428155852.GA9956@kroah.com>
+In-Reply-To: <20090428160107.GC26363@lst.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 28 Apr 2009 16:06:12.0753 (UTC) FILETIME=[40701810:01C9C81B]
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 08:58:52AM -0700, Greg KH wrote:
-> On Tue, Apr 28, 2009 at 05:05:52PM +0200, Borislav Petkov wrote:
-> > Hi Andrew,
-> > hi Greg,
+On Tue, Apr 28, 2009 at 06:01:07PM +0200, Christoph Hellwig wrote:
+> On Tue, Apr 28, 2009 at 05:58:56PM +0200, Jesper Nilsson wrote:
+> > On Mon, Apr 27, 2009 at 10:13:56AM +0200, Christoph Hellwig wrote:
+> > > 2.6.30 added the new preadv/pwritev system calls.  The following
+> > > architectures still haven't wired them up:
+> > > 
+> > > 	alpha, avr32, blackfin, cris, frv, h8300, m32r, xtensa
+> > > 
+> > > Can you maintainers please look into wiring these system calls up?
 > > 
-> > I think you've already heard about this driver, so here is a first
-> > upstream submission request. It is quite sizable but partly the reason
-> > for it is that it handles ECC detection and reporting for all AMD
-> > K8, F10h and F11h families. It also implements DRAM error injection
-> > functionality, failing DIMM module detection and some other fun stuff
-> > found on F10h and later CPUs.
+> > I've just added the following patch to the CRIS tree:
 > > 
-> > We've been doing testing/bugfixing/scrubbing here for some time, have
-> > converted it to using kernel facilities and basically removed some slack
-> > from it like glue code due to it being maintained out-of-tree. Please
-> > take a look and let us know of any objections/comments you might have so
-> > that we could tackle them on time.
+> > 
+> > Adds sys_signalfd4, sys_eventfd2, sys_epoll_create1, sys_dup3,
+> > sys_pipe2, sys_inotify_init1, sys_preadv, sys_pwritev
+> > for both CRISv10 and CRISv32.
 > 
-> At first glance, it looks sane to me.
-> 
-> Want me to put it in my driver tree so it can show up in -next?  Or is
-> there some other tree you want to use?
+> Care to send this and your current stack of patches upsteam before
+> 2.6.30 is out?
 
--next should be just fine, let the code see some more testing :).
+Will do, I'll let it sit for a day in linux-next first.
 
-Thanks.
-
+/^JN - Jesper Nilsson
 -- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+               Jesper Nilsson -- jesper.nilsson@axis.com
