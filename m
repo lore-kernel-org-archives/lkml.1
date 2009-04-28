@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763059AbZD1Q52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763206AbZD1Q55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763059AbZD1Q52 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756683AbZD1Q5R
+	id S1763206AbZD1Q55 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbZD1Q5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:57:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58064 "EHLO mx2.redhat.com"
+	Tue, 28 Apr 2009 12:57:47 -0400
+Received: from mail.lang.hm ([64.81.33.126]:32984 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755475AbZD1Q5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:57:16 -0400
-Date: Tue, 28 Apr 2009 12:57:05 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-driver@qlogic.com, linux-scsi@vger.kernel.org
-Subject: Re: Mainline kernel OLTP performance update
-Message-ID: <20090428125705.48ef09e1@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <87ljpmk29b.fsf@basil.nowhere.org>
-References: <D7C42C27E6CB1E4D8CBDF2F81EA92A260345836A3A@azsmsx501.amr.corp.intel.com>
-	<87ljpmk29b.fsf@basil.nowhere.org>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753632AbZD1Q5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 12:57:46 -0400
+Date: Tue, 28 Apr 2009 09:54:18 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Tejun Heo <tj@kernel.org>, Dave Airlie <airlied@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kms in defconfig
+In-Reply-To: <alpine.LFD.2.00.0904271852510.22156@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0904280946210.17268@asgard.lang.hm>
+References: <21d7e9970904270121s1c58365bqc8933f8a3ffc5f1a@mail.gmail.com>  <20090427083935.GA20941@elte.hu> <21d7e9970904270156v54a6483fs20d5b31c97a1d482@mail.gmail.com> <49F65FA2.4010603@kernel.org>
+ <alpine.LFD.2.00.0904271852510.22156@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Apr 2009 09:02:40 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
+On Mon, 27 Apr 2009, Linus Torvalds wrote:
 
-> "Styner, Douglas W" <douglas.w.styner@intel.com> writes:
-> 
-> >
-> > ======oprofile 0.9.3 CPU_CLK_UNHALTED for top 30 functions
-> > Cycles% 2.6.24.2                   Cycles% 2.6.30-rc2
-> > 74.8578 <database>                   67.6966 <database>
-> 
-> The dip in database cycles is indeed worrying.
-> 
-> > 1.0500 qla24xx_start_scsi          1.1724 qla24xx_start_scsi
-> > 0.8089 schedule                    1.0578 qla24xx_intr_handler
-> > 0.5864 kmem_cache_alloc            0.8259 __schedule
-> > 0.4989 __blockdev_direct_IO        0.7451 kmem_cache_alloc
-> > 0.4357 __sigsetjmp                 0.4872 __blockdev_direct_IO
-> > 0.4152 copy_user_generic_string    0.4390 task_rq_lock
-> > 0.3953 qla24xx_intr_handler        0.4338 __sigsetjmp
-> 
-> And also why the qla24xx_intr_handler became ~2.5x as expensive.
-> Cc linux-scsi and qla24xx maintainers.
-> 
+> On Tue, 28 Apr 2009, Tejun Heo wrote:
+>>
+>> I think defconfig should enable options such that it shows where
+>> upstream kernel is headed, so FWIW +1 for KMS from me.
+>
+> I'd actually love to get rid of the stupid defconfig's entirely. They've
+> lost pretty much all relevance over the years, except for specific cases
+> where you might have defconfigs that are for specific platforms.
+>
+> IOW, the embedded kind of "per-platform defconfig" at lest is a useful
+> starting point. But even there I'm not 100% sure that it makes sense to
+> pollute the kernel source tree with them - they mess up things like
+>
+> 	git grep PREVENT_FIRMWARE_BUILD
+>
+> horribly.
+>
+> IOW, they're likely to be more pain than they are worth. And they really
+> aren't useful starting points for normal people (who are probably better
+> off starting with their distro kernel config) or likely even for most
+> kernel developers (who hopefully have noticed that they can install a
+> per-machine defconfig in /etc/kernel-config and forget about it).
+>
+> I'd love to just delete them all.
 
-They are getting 31000 interrupts/sec vs. 22000/sec on older kernels.
+as a end-user creating my own configs, I use the defaults as a guide to 
+understand when something moves from "we think it's a good idea" to 
+"things really need this"
+
+there's a _lot_ of stuff that goes in that is useful only is some 
+situations, and the help text frequently doesn't help understanding what's 
+really needed vs what the author of that feature _thinks_ is really needed 
+(containers are a perfect example, they aren't needed in 99% of current 
+systems, but it's actually _hard_ to really disable them completely)
+
+
+you mention starting from a distro config, but most distro configs have a 
+_huge_ number of things enabled that aren't needed for any particular box. 
+right now it's significantly faster to start with a defconfig and enable 
+hardware drivers than it is to start with a distro config and disable 
+things. If a tool was available to detect the hardware and create a 
+config tailored for the box, this use for a default config would go away
+
+David Lang
