@@ -1,143 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758857AbZD1J7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbZD1KEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758857AbZD1J7T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 05:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755956AbZD1J64
+	id S1756825AbZD1KEa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 06:04:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbZD1KEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 05:58:56 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:60407 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753137AbZD1J6z (ORCPT
+	Tue, 28 Apr 2009 06:04:22 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:35331 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754049AbZD1KEV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 05:58:55 -0400
+	Tue, 28 Apr 2009 06:04:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mime-version
-         :content-type:content-disposition:user-agent;
-        b=pe5LkBQ/W9SGR06Fml1q5aSs0rSKT+htarDrGAGAaZi2EM8IhFE0eYMkitcIZcdhfI
-         PZBbi7PGHDor9NQ3etdC36jvpv9Iu51AbuHbMeAnz9XecbfEhHmaSCXejOofZPRIbaKL
-         JFoptXoi5yj0AjiCyci1+jqhG965mx84bcqaM=
-Date: Tue, 28 Apr 2009 17:56:51 +0800
-From: Zhenwen Xu <helight.xu@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: lm-sensors@lm-sensors.org
-Subject: [PATCH] fix some section mismatch on drivers/hwmon/sht15.c
-Message-ID: <20090428095651.GA9694@helight>
-Reply-To: Zhenwen Xu <helight.xu@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=GaxD1yaDIyHmJOpt4L45X/ubuUU2Wgr6wbJykzv79YOA7GVX9E7wj7D3wU8F9n+tMB
+         X7+PP74fbapRj9QRu2461w4oLywytN1MXpghLsX+1v1CC90HgAPd1cZI0khuBugejwtw
+         Fn0arbyNjxnKkrzSnRKN7wzzhEfXOVNISMpy4=
+Subject: Re: [PATCH] Acer Aspire One Fan Control
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: petkovbb@gmail.com
+Cc: Peter Feuerer <peter@piie.net>, LKML <linux-kernel@vger.kernel.org>,
+       lenb@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>
+In-Reply-To: <20090428072519.GA12170@liondog.tnic>
+References: <cone.1240623959.159615.9486.1000@mentalhome>
+	 <cone.1240648971.372002.7492.1000@mentalhome>
+	 <20090426172947.GB3643@liondog.tnic>
+	 <cone.1240858632.795110.5316.1000@onepiie>
+	 <20090428072519.GA12170@liondog.tnic>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 28 Apr 2009 13:04:15 +0300
+Message-Id: <1240913055.29860.14.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-04-28 at 09:25 +0200, Borislav Petkov wrote:
+> Hi Peter,
+> 
+> On Mon, Apr 27, 2009 at 08:57:12PM +0200, Peter Feuerer wrote:
+> > Hi Boris,
+> >
+> > thank you very much for your email.
+> >
+> > Borislav Petkov writes:
+> >
+> >> I did some testing on my Aspire One machine here and it looks pretty
+> >> nice: while compiling a kernel watched the fan going on when the
+> >> temperature reaches 67-68 (I don't think this is Celsius though, no?)
+> >> and then turning itself off when temp goes below 60.
+> >
+> > It is Celsius, the specification of the chipset and the atom core say 
+> > that the chips are allowed to get 99 degree celsuis hot. So I think 70 
+> > degree Celsius are fine.
+> 
+> Their N270 datasheet
+> (http://download.intel.com/design/processor/datashts/320032.pdf) talks
+> about max Tj (junction temperature) being 90°C for a TDP of 2.5W and if
+> you operate below that limit "functionality and long-term reliability
+> can be expected." :)
+> 
+> There's also an internal termtrip sensor which is designed to go off at
+> Tj=125°C so, yeah, I guess something 70°C should be ok.
 
-Fix those section mismatch wornings:
+I have small note:
 
-WARNING: drivers/hwmon/sht15.o(.data+0x0): Section mismatch in reference from
-the variable sht_drivers to the function .devinit.text:sht15_probe()
-The variable sht_drivers references
-the function __devinit sht15_probe()
-If the reference is valid then annotate the
-variable with __init* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+So yes cpu can withstand 90 C, but will rest of the motherboard?
 
-WARNING: drivers/hwmon/sht15.o(.data+0x4): Section mismatch in reference from
-the variable sht_drivers to the function .devexit.text:sht15_remove()
-The variable sht_drivers references
-the function __devexit sht15_remove()
-If the reference is valid then annotate the
-variable with __exit* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: drivers/hwmon/sht15.o(.data+0x50): Section mismatch in reference from
-the variable sht_drivers to the function .devinit.text:sht15_probe()
-The variable sht_drivers references
-the function __devinit sht15_probe()
-If the reference is valid then annotate the
-variable with __init* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: drivers/hwmon/sht15.o(.data+0x54): Section mismatch in reference from
-the variable sht_drivers to the function .devexit.text:sht15_remove()
-The variable sht_drivers references
-the function __devexit sht15_remove()
-If the reference is valid then annotate the
-variable with __exit* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: drivers/hwmon/sht15.o(.data+0xa0): Section mismatch in reference from
-the variable sht_drivers to the function .devinit.text:sht15_probe()
-The variable sht_drivers references
-the function __devinit sht15_probe()
-If the reference is valid then annotate the
-variable with __init* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: drivers/hwmon/sht15.o(.data+0xa4): Section mismatch in reference from
-the variable sht_drivers to the function .devexit.text:sht15_remove()
-The variable sht_drivers references
-the function __devexit sht15_remove()
-If the reference is valid then annotate the
-variable with __exit* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: drivers/hwmon/sht15.o(.data+0xf0): Section mismatch in reference from
-the variable sht_drivers to the function .devinit.text:sht15_probe()
-The variable sht_drivers references
-the function __devinit sht15_probe()
-If the reference is valid then annotate the
-variable with __init* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: drivers/hwmon/sht15.o(.data+0xf4): Section mismatch in reference from
-the variable sht_drivers to the function .devexit.text:sht15_remove()
-The variable sht_drivers references
-the function __devexit sht15_remove()
-If the reference is valid then annotate the
-variable with __exit* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: drivers/hwmon/sht15.o(.data+0x140): Section mismatch in reference from
-the variable sht_drivers to the function .devinit.text:sht15_probe()
-The variable sht_drivers references
-the function __devinit sht15_probe()
-If the reference is valid then annotate the
-variable with __init* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: drivers/hwmon/sht15.o(.data+0x144): Section mismatch in reference from
-the variable sht_drivers to the function .devexit.text:sht15_remove()
-The variable sht_drivers references
-the function __devexit sht15_remove()
-If the reference is valid then annotate the
-variable with __exit* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+(Most other cpus are rated at 60C)
 
 
+Regards,
+	Maxim Levitsky
 
-Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
----
- drivers/hwmon/sht15.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/hwmon/sht15.c b/drivers/hwmon/sht15.c
-index 6cbdc2f..18061d2 100644
---- a/drivers/hwmon/sht15.c
-+++ b/drivers/hwmon/sht15.c
-@@ -620,7 +620,7 @@ static int __devexit sht15_remove(struct platform_device *pdev)
- }
- 
- 
--static struct platform_driver sht_drivers[] = {
-+static struct platform_driver __refdata sht_drivers[] = {
- 	{
- 		.driver = {
- 			.name = "sht10",
--- 
-1.5.6.5
-
--- 
---------------------------------
-http://zhwen.org - Open and Free
