@@ -1,64 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758816AbZD1Kwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbZD1Kxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758816AbZD1Kwa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 06:52:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbZD1KwV
+	id S1758830AbZD1Kxm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 06:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbZD1Kxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 06:52:21 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:55134 "EHLO song.cn.fujitsu.com"
+	Tue, 28 Apr 2009 06:53:30 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58307 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755759AbZD1KwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 06:52:20 -0400
-Message-ID: <49F6DFB5.2040901@cn.fujitsu.com>
-Date: Tue, 28 Apr 2009 18:51:33 +0800
+	id S1754067AbZD1Kx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 06:53:29 -0400
+Message-ID: <49F6E004.3000309@cn.fujitsu.com>
+Date: Tue, 28 Apr 2009 18:52:52 +0800
 From: Zhaolei <zhaolei@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>,
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Tom Zanussi <tzanussi@gmail.com>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/4] workqueue_trace: Add max execution time mesurement for
- per worklet
+Subject: [PATCH 1/4] tracing/workqueue: turn workfunc_stats::inserted into
+ unsigned int
+References: <49F6DFB5.2040901@cn.fujitsu.com>
+In-Reply-To: <49F6DFB5.2040901@cn.fujitsu.com>
 Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+struct workfunc_stats is belong to per_cpu struct of cpu_workqueue_stats,
+which means we only need to serialize its accessing from one cpu.
 
-This patch add max execution time mesurement for per worklet.
-It is useful for driver-developer and system administrator to
-know which worklet runs how many time.
+And because trace_workqueue_insertion() is already inside a section
+protected by the cpu workqueue lock, we can safely convert it into an
+unsigned int.
 
-It need applied on top of patchset of:
-workqueue_tracepoint: Add worklet tracepoints for worklet lifecycle tracing
+[ Impact: cleanup ]
 
-Output is like:
- # CPU INSERTED EXECUTED M_EXECus TASKNAME:PID
- #  |     |        |        |      `-WORKFUNC
- #  |     |        |        |        |
-     0      905      973          events/0:5
-     0        1        1       37  |-reg_todo+0x0/0x41f
-     0       13       12     2033  |-rt_worker_func+0x0/0x219
-     0       49       48     3157  |-mce_work_fn+0x0/0x31
-     0       14       13      939  |-check_corruption+0x0/0x2a
-     0      707      706     3826  |-vmstat_update+0x0/0x33
-     0        1        1     1846  |-power_supply_changed_work+0x0/0x3c
-     0       11       11     2879  |-console_callback+0x0/0xe1
-     0       30       29     1579  |-do_cache_clean+0x0/0x37
-     0       74       74     2841  |-test_work+0x0/0x53
-     0        3        2      252  |-rekey_seq_generator+0x0/0x5a
-     0        1        1       21  |-grace_ender+0x0/0x14
-     0        1        1     3701  `-flush_to_ldisc+0x0/0x15d
-     0        0        0          cpuset:6
-     0      658      658          khelper:7
-     0      658      658     5735  `-__call_usermodehelper+0x0/0x77
-     0        0        0          netns:11
- ...
+Reported-by: Oleg Nesterov <oleg@redhat.com>
+Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+---
+ kernel/trace/trace_workqueue.c |   13 +++++--------
+ 1 files changed, 5 insertions(+), 8 deletions(-)
 
-Thanks
-Zhaolei
+diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
+index 69ae4aa..7a07d17 100644
+--- a/kernel/trace/trace_workqueue.c
++++ b/kernel/trace/trace_workqueue.c
+@@ -20,12 +20,9 @@ struct workfunc_stats {
+ 
+ 	/* Addr of worklet's callback function */
+ 	work_func_t			func;
+-	/* Can be inserted on different workqueues, need to be atomic */
+-	atomic_t			inserted;
+-	/*
+-	 * Don't need to be atomic, works are serialized in a single workqueue
+-	 * thread on a single CPU.
+-	 */
++
++	/* Protected by cpu workqueue lock */
++	unsigned int			inserted;
+ 	unsigned int			executed;
+ };
+ 
+@@ -80,7 +77,7 @@ int do_worklet_enqueue(struct cpu_workqueue_stats *cws,
+ 
+ 	list_add_tail(&wfstat->list, &cws->workfunclist);
+ found:
+-	atomic_inc(&wfstat->inserted);
++	wfstat->inserted++;
+ 
+ 	return 0;
+ }
+@@ -331,7 +328,7 @@ static int workqueue_stat_show(struct seq_file *s, void *p)
+ 		int lastwf = list_is_last(&wfstat->list, &cws->workfunclist);
+ 		seq_printf(s, "%3d %6d     %6u        %c-%pF\n",
+ 			cws->cpu,
+-			atomic_read(&wfstat->inserted),
++			wfstat->inserted,
+ 			wfstat->executed,
+ 			lastwf ? '`' : '|',
+ 			wfstat->func);
+-- 
+1.5.5.3
+
 
