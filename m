@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbZD1BEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbZD1BNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760136AbZD1BEY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 21:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZD1BEF
+	id S1757773AbZD1BNx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 21:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZD1BNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 21:04:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56836 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751389AbZD1BEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 21:04:04 -0400
-Message-ID: <49F655B6.8020109@kernel.org>
-Date: Mon, 27 Apr 2009 18:02:46 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 27 Apr 2009 21:13:43 -0400
+Received: from mail-qy0-f180.google.com ([209.85.221.180]:59549 "EHLO
+	mail-qy0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751257AbZD1BNm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 21:13:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=I2ed8rur2POrOecfyvdt6tn76IhpAcstb0HbAxRc7rXDek2/dc2n/V7txoQ1Sj2T+a
+         5Y+bD9S/b9y6ddGS3yqjXcflksUnefIfgjV6wTi2J6Li+V99IhMaCbgSD4te8vSDGyYJ
+         TYUuYywKrorN6wwDOFnU2qnnm0eu2la/4Lnkk=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 9/9] irq: make ht irq_desc numa aware
-References: <49E68C41.4020801@kernel.org> <20090416090315.GF9813@elte.hu> <49E802CE.5030406@kernel.org> <49E804D4.70009@kernel.org>
-In-Reply-To: <49E804D4.70009@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <87d4ax7qf3.fsf@free.fr>
+References: <87iqkvp6i3.fsf@free.fr>
+	 <1240566136.27410.3291.camel@vega.slimlogic.co.uk>
+	 <87d4ax7qf3.fsf@free.fr>
+Date: Tue, 28 Apr 2009 09:13:41 +0800
+Message-ID: <f17812d70904271813t2c67d929n67c84bb86f450e35@mail.gmail.com>
+Subject: Re: Patch to add mioa701 glue for voltage regulation
+From: Eric Miao <eric.y.miao@gmail.com>
+To: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: eric.miao@marvell.com, broonie@opensource.wolfsonmicro.com,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Liam Girdwood <lrg@slimlogic.co.uk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 28, 2009 at 5:11 AM, Robert Jarzmik <robert.jarzmik@free.fr> wrote:
+> Liam Girdwood <lrg@slimlogic.co.uk> writes:
+>
+>> On Thu, 2009-04-23 at 20:30 +0200, Robert Jarzmik wrote:
+>>> Hi Mark and Eric,
+>>>
+>>> I have that patch which adds voltage regulation definitions to mioa701
+>>> board. The trick is, this patch depends on two others :
+>>>
+>>>  - one which will be merged through Mark's regulator tree.
+>>>    This one is mandatory as a compiling dependency exists through include files.
+>>>
+>>>  - one which will be merge through Eric pxa tree.
+>>>    This is the cpufreq one, and has a "very weak" dependency, as only the
+>>>    "vcc_core" name _is_ the dependency.
+>>>
+>>> I think the easiest way to solve the compiling dependency
+>>> (include/linux/regulator.max1586.h) is to make that patch go through regulator
+>>> tree as well for linux-next, even if it's arm machine specific, don't you ?
+>>>
+>>
+>> If fine with this going through regulator providing I get an ACK from
+>> Eric.
+>
+> Eric,
+>
+> Since Liam took the max1586 regulator through his tree, would you state if you
+> ack that please ?
+>
 
+I'd really be happy to. However, my concern is that this patch modifies
+arch/arm/mach-pxa/mioa701.c _only_, so it would be better to go through
+my tree so that I can manage all the potential merge conflicts. There are
+several other changes to mioa701.c and I expect the content in
+arch/arm/mach-pxa/* to be heavily changed due to recent addition
+of pxa168/pxa910 support.
 
-Impact: use create_irq_nr
+The issue of dependency, as was always before, can be resolved by
+putting this into 'pending' and monitoring the status of merge window
+before sending the PULL request.
 
-try to get irq_desc on the node with create_irq_nr
+Liam,
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
----
- drivers/pci/htirq.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/pci/htirq.c
-===================================================================
---- linux-2.6.orig/drivers/pci/htirq.c
-+++ linux-2.6/drivers/pci/htirq.c
-@@ -98,6 +98,7 @@ int __ht_create_irq(struct pci_dev *dev,
- 	int max_irq;
- 	int pos;
- 	int irq;
-+	int node;
- 
- 	pos = pci_find_ht_capability(dev, HT_CAPTYPE_IRQ);
- 	if (!pos)
-@@ -125,7 +126,8 @@ int __ht_create_irq(struct pci_dev *dev,
- 	cfg->msg.address_lo = 0xffffffff;
- 	cfg->msg.address_hi = 0xffffffff;
- 
--	irq = create_irq();
-+	node = dev_to_node(&dev->dev);
-+	irq = create_irq_nr(0, node);
- 
- 	if (irq <= 0) {
- 		kfree(cfg);
+Sounds OK to you?
