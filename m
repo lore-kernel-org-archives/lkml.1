@@ -1,59 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbZD1Urf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbZD1UtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755365AbZD1Urf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZD1UrL
+	id S1755612AbZD1UtW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 16:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbZD1UtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:47:11 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:57875 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752455AbZD1UrJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:47:09 -0400
-X-Greylist: delayed 9315 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Apr 2009 16:47:08 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=dVt4/1dnsnrIBZLXREQbccmuxuSzUqvj4lB0t/Niv70Q5ZnEK+JAb4DXPRn84LFwfw
-         H8hhx/ffQUm/VVF2hGpG7QC0ac5j21AkcFey2zOrZLijX3yvkfV45DdnOC9MewvER8vB
-         tC4Fr22YgDoAhZ9LQ2RZZ/MJ8RG7jvWXzRrBM=
-MIME-Version: 1.0
-In-Reply-To: <1240943671.938.575.camel@calx>
-References: <20090428010907.912554629@intel.com>
-	 <20090428014920.769723618@intel.com> <20090428065507.GA2024@elte.hu>
-	 <20090428083320.GB17038@localhost>
-	 <12c511ca0904281111r10f37a5coe5a2750f4dbfbcda@mail.gmail.com>
-	 <1240943671.938.575.camel@calx>
-Date: Tue, 28 Apr 2009 13:47:07 -0700
-Message-ID: <12c511ca0904281347m394b04e0mcb61f7c336752cc4@mail.gmail.com>
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-From: Tony Luck <tony.luck@gmail.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Larry Woodman <lwoodman@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 28 Apr 2009 16:49:07 -0400
+Received: from mga11.intel.com ([192.55.52.93]:57649 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751538AbZD1UtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 16:49:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,262,1239001200"; 
+   d="scan'208";a="685757445"
+Subject: Re: mmotm 2009-04-27-15-45 uploaded - iwl3945 oops
+From: reinette chatre <reinette.chatre@intel.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, "Zhu, Yi" <yi.zhu@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mm-commits@vger.kernel.org" <mm-commits@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+In-Reply-To: <20090428203805.GB3321@tuxdriver.com>
+References: <200904272305.n3RN51mu031395@imap1.linux-foundation.org>
+	 <25818.1240938876@turing-police.cc.vt.edu>
+	 <1240951184.1207.11.camel@rc-desk>  <20090428203805.GB3321@tuxdriver.com>
+Content-Type: text/plain
+Date: Tue, 28 Apr 2009 13:55:17 -0700
+Message-Id: <1240952117.1207.21.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 11:34 AM, Matt Mackall <mpm@selenic.com> wrote:
-> Bah. The rate of change is proportional to #cpus, not #pages. Assuming
-> you've got 1024 processors, you could run the scan in parallel in .2
-> seconds still.
+On Tue, 2009-04-28 at 13:38 -0700, John W. Linville wrote:
+> On Tue, Apr 28, 2009 at 01:39:44PM -0700, reinette chatre wrote:
+> > On Tue, 2009-04-28 at 10:14 -0700, Valdis.Kletnieks@vt.edu wrote:
+> > > On Mon, 27 Apr 2009 15:46:07 PDT, akpm@linux-foundation.org said:
+> > > > The mm-of-the-moment snapshot 2009-04-27-15-45 has been uploaded to
+> > > > 
+> > > >    http://userweb.kernel.org/~akpm/mmotm/
+> > > 
+> > > Saw this while booting at home, out of range of any access points I was
+> > > configured to associate with (there *are* 4 APs owned by neighbors that I can
+> > > see via kismet, but wpa_supplicant isn't configured to use them).  Didn't
+> > > happen this morning at my office, when there's APs in range.
+> > > 
+> > > This didn't happen in mmotm-0424, so it's something new in the last few days.
+> > 
+> > A recent patch that is related is ...
+> > 
+> > commit 4583f7455c6b668a4e9cab154b5a7b6c583b288a
+> > Author: Johannes Berg <johannes@sipsolutions.net>
+> > Date:   Thu Apr 23 10:45:04 2009 +0200
+> > 
+> >     iwlwifi: notify on scan completion even when shutting down
+> > 
+> >     Under certain circumstances iwlwifi can get stuck and will no
+> >     longer accept scan requests, because the core code (cfg80211)
+> >     thinks that it's still processing one. This fixes one of the
+> >     points where it can happen, but I've still seen it (although
+> >     only with my radio-off-when-idle patch).
+> >     
+> >     Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> >     Acked-by: Reinette Chatre <reinette.chatre@intel.com>
+> >     Signed-off-by: John W. Linville <linville@tuxdriver.com>
+> > 
+> > 
+> > Could you please revert this and test again?
+> 
+> I doubt if that will help -- I just put it into wireless-2.6 and
+> wireless-testing today.
+> 
+> > If this does not help, could you please bisect?
+> 
+> Better bet...unless you meant "apply" instead of "revert"...
 
-That would help ... it would also make the patch to support this
-functionality a lot more complex.
+I did mean revert ... without checking that this patch was in mm yet. Sorry.
 
--Tony
+Reinette
+
+
+
+
+
