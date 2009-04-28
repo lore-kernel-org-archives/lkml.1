@@ -1,105 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbZD1Tiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755397AbZD1Tpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755424AbZD1Tiv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 15:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbZD1Tij
+	id S1755397AbZD1Tpw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 15:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbZD1Tpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 15:38:39 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:40367 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752631AbZD1Tii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 15:38:38 -0400
-Date: Tue, 28 Apr 2009 21:38:33 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
-       Tony Lindgren <tony@atomide.com>
-Cc: "Gadiyar, Anand" <gadiyar@ti.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Subject: Re: [PATCH] OMAP: HSMMC: Do not enable buffer ready interrupt if
- using DMA
-Message-ID: <20090428213833.18afbba0@mjolnir.ossman.eu>
-In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB02FB2F2A90@dbde02.ent.ti.com>
-References: <5A47E75E594F054BAF48C5E4FC4B92AB02FB2F2A90@dbde02.ent.ti.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-7766-1240947514-0001-2"
+	Tue, 28 Apr 2009 15:45:42 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:49843 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751903AbZD1Tpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 15:45:42 -0400
+Date: Tue, 28 Apr 2009 12:45:37 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
+       niv@us.ibm.com, dvhltc@us.ibm.com, lethal@linux-sh.org,
+       kernel@wantstofly.org, matthew@wil.cx
+Subject: Re: [PATCH] v3 RCU: the bloatwatch edition
+Message-ID: <20090428194537.GN6730@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090329203118.GA14005@linux.vnet.ibm.com> <20090203183426.GA14409@linux.vnet.ibm.com> <13990.1240928654@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <13990.1240928654@redhat.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Tue, Apr 28, 2009 at 03:24:14PM +0100, David Howells wrote:
+> Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > This patch is a version of RCU designed for (!SMP && EMBEDDED)
+> > provided as a proof of concept of a small-footprint RCU implementation.
+> > In particular, the implementation of synchronize_rcu() is extremely
+> > lightweight and high performance.  It passes rcutorture testing in each
+> > of the four relevant configurations (combinations of NO_HZ and PREEMPT)
+> > on x86.  This saves about 900 bytes compared to Classic RCU, and a
+> > couple kilobytes compared to Hierarchical RCU:
+> 
+> On FRV, CLASSIC_RCU:
+> 
+>    text    data     bss     dec     hex filename
+>    2616     184       0    2800     af0 kernel/rcuclassic.o
+>     884      32      20     936     3a8 kernel/rcupdate.o
+> 
+> TREE_RCU:
+> 
+>    3940     328       0    4268    10ac kernel/rcutree.o
+>     884      32      20     936     3a8 kernel/rcupdate.o
+> 
+> TINY_RCU:
+> 
+>    1152      32       0    1184     4a0 kernel/rcutiny.o
+>     836      32      20     888     378 kernel/rcupdate.o
+> 
+> It works on my FRV board.
+> 
+> Possibly TINY_RCU could be shrunk a bit more by a judicious bit of inlining of
+> some of the very small functions.
+> 
+> Acked-by: David Howells <dhowells@redhat.com>
 
---=_freyr.ossman.eu-7766-1240947514-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Thank you for looking this over!
 
-Jarkko? Tony?
+Your thought is that some of the functions could be moved to tinyrcu.h?
+Indeed, some of them would be smaller if inlined than even the call
+sequence.  For example, rcu_needs_cpu() should remove code from the
+dynticks implementation given that it always returns zero.
 
-On Tue, 21 Apr 2009 13:09:22 +0530
-"Gadiyar, Anand" <gadiyar@ti.com> wrote:
-
-> From: Anand Gadiyar <gadiyar@ti.com>
->=20
-> OMAP: HSMMC: Do not enable buffer ready interrupt if using DMA
->=20
-> This considerably reduces the number of interrupts during a transfer
-> and ought to result in some power saving.
->=20
-> Signed-off-by: Anand Gadiyar <gadiyar@ti.com>
-> Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
-> Acked-by: Kishore Kadiyala <kishore.kadiyala@ti.com>
-> ---
-> diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-> index e62a22a..2d83807 100644
-> --- a/drivers/mmc/host/omap_hsmmc.c
-> +++ b/drivers/mmc/host/omap_hsmmc.c
-> @@ -70,6 +70,8 @@
->  #define DTO_MASK		0x000F0000
->  #define DTO_SHIFT		16
->  #define INT_EN_MASK		0x307F0033
-> +#define BWR_ENABLE		(1 << 4)
-> +#define BRR_ENABLE		(1 << 5)
->  #define INIT_STREAM		(1 << 1)
->  #define DP_SELECT		(1 << 21)
->  #define DDIR			(1 << 4)
-> @@ -241,7 +243,12 @@ mmc_omap_start_command(struct mmc_omap_host *host, s=
-truct mmc_command *cmd,
->  	 */
->  	OMAP_HSMMC_WRITE(host->base, STAT, STAT_CLEAR);
->  	OMAP_HSMMC_WRITE(host->base, ISE, INT_EN_MASK);
-> -	OMAP_HSMMC_WRITE(host->base, IE, INT_EN_MASK);
-> +
-> +	if (host->use_dma)
-> +		OMAP_HSMMC_WRITE(host->base, IE,
-> +				 INT_EN_MASK & ~(BRR_ENABLE | BWR_ENABLE));
-> +	else
-> +		OMAP_HSMMC_WRITE(host->base, IE, INT_EN_MASK);
-> =20
->  	host->response_busy =3D 0;
->  	if (cmd->flags & MMC_RSP_PRESENT) {
-
-
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-7766-1240947514-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkn3WzsACgkQ7b8eESbyJLgNnACg2R3hBqIGqBmYVD+IksF/B+l+
-19sAoLfrXO//XciTOlBTGI94jVDoiMww
-=ZMZQ
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-7766-1240947514-0001-2--
+							Thanx, Paul
