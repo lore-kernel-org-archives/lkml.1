@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbZD1KEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbZD1KJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756825AbZD1KEa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 06:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbZD1KEW
+	id S1756841AbZD1KJu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 06:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbZD1KJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 06:04:22 -0400
-Received: from fk-out-0910.google.com ([209.85.128.188]:35331 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754049AbZD1KEV (ORCPT
+	Tue, 28 Apr 2009 06:09:40 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:50578 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754063AbZD1KJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 06:04:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=GaxD1yaDIyHmJOpt4L45X/ubuUU2Wgr6wbJykzv79YOA7GVX9E7wj7D3wU8F9n+tMB
-         X7+PP74fbapRj9QRu2461w4oLywytN1MXpghLsX+1v1CC90HgAPd1cZI0khuBugejwtw
-         Fn0arbyNjxnKkrzSnRKN7wzzhEfXOVNISMpy4=
-Subject: Re: [PATCH] Acer Aspire One Fan Control
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: petkovbb@gmail.com
-Cc: Peter Feuerer <peter@piie.net>, LKML <linux-kernel@vger.kernel.org>,
-       lenb@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>
-In-Reply-To: <20090428072519.GA12170@liondog.tnic>
-References: <cone.1240623959.159615.9486.1000@mentalhome>
-	 <cone.1240648971.372002.7492.1000@mentalhome>
-	 <20090426172947.GB3643@liondog.tnic>
-	 <cone.1240858632.795110.5316.1000@onepiie>
-	 <20090428072519.GA12170@liondog.tnic>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 28 Apr 2009 13:04:15 +0300
-Message-Id: <1240913055.29860.14.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 28 Apr 2009 06:09:40 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 2.6.30] regulator: Fix default constraints for fixed voltage regulators
+Date: Tue, 28 Apr 2009 11:09:38 +0100
+Message-Id: <1240913378-22201-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-28 at 09:25 +0200, Borislav Petkov wrote:
-> Hi Peter,
-> 
-> On Mon, Apr 27, 2009 at 08:57:12PM +0200, Peter Feuerer wrote:
-> > Hi Boris,
-> >
-> > thank you very much for your email.
-> >
-> > Borislav Petkov writes:
-> >
-> >> I did some testing on my Aspire One machine here and it looks pretty
-> >> nice: while compiling a kernel watched the fan going on when the
-> >> temperature reaches 67-68 (I don't think this is Celsius though, no?)
-> >> and then turning itself off when temp goes below 60.
-> >
-> > It is Celsius, the specification of the chipset and the atom core say 
-> > that the chips are allowed to get 99 degree celsuis hot. So I think 70 
-> > degree Celsius are fine.
-> 
-> Their N270 datasheet
-> (http://download.intel.com/design/processor/datashts/320032.pdf) talks
-> about max Tj (junction temperature) being 90°C for a TDP of 2.5W and if
-> you operate below that limit "functionality and long-term reliability
-> can be expected." :)
-> 
-> There's also an internal termtrip sensor which is designed to go off at
-> Tj=125°C so, yeah, I guess something 70°C should be ok.
+Default voltage constraints were being provided for fixed voltage
+regulator where board constraints were not provided but these constraints
+used INT_MIN as the default minimum voltage which is not a valid value
+since it is less than zero. Use 1uV instead.
 
-I have small note:
+Also set the default values we set in the constraints themselves since
+otherwise the max_uV constraint we determine will not be stored in the
+actual constraint strucutre and will therefore not be used.
 
-So yes cpu can withstand 90 C, but will rest of the motherboard?
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/regulator/core.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-(Most other cpus are rated at 60C)
-
-
-Regards,
-	Maxim Levitsky
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 01f7702..dccf94d 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -703,10 +703,13 @@ static int set_machine_constraints(struct regulator_dev *rdev,
+ 		int	cmin = constraints->min_uV;
+ 		int	cmax = constraints->max_uV;
+ 
+-		/* it's safe to autoconfigure fixed-voltage supplies */
++		/* it's safe to autoconfigure fixed-voltage supplies
++		   and the constraints are used by list_voltage. */
+ 		if (count == 1 && !cmin) {
+-			cmin = INT_MIN;
++			cmin = 1;
+ 			cmax = INT_MAX;
++			constraints->min_uV = cmin;
++			constraints->max_uV = cmax;
+ 		}
+ 
+ 		/* voltage constraints are optional */
+-- 
+1.6.2.4
 
