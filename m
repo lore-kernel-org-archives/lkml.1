@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758289AbZD1KtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757520AbZD1Ktv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758289AbZD1KtT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 06:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbZD1KtG
+	id S1757520AbZD1Ktv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 06:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbZD1Ktl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 06:49:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33448 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751847AbZD1KtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 06:49:03 -0400
-Date: Tue, 28 Apr 2009 12:48:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
-       hpa@c2micro.com, tglx@linutronix.de, hpa@linux.intel.com,
-       jeremy.fitzhardinge@citrix.com, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86: linker script: avoid ALIGN statements
-	inside output sections
-Message-ID: <20090428104825.GA25347@elte.hu>
-References: <tip-c707f31e2e6af2d37bc742c31be0c7e96946c71f@git.kernel.org> <20090428081455.GA19736@elte.hu> <20090428083804.GB17622@uranus.ravnborg.org> <20090428090211.GD26487@elte.hu> <20090428100023.GA18148@uranus.ravnborg.org>
+	Tue, 28 Apr 2009 06:49:41 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:41181 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752002AbZD1Ktk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 06:49:40 -0400
+Date: Tue, 28 Apr 2009 11:49:38 +0100
+From: Mark Brown <broonie@sirena.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2.6.30-rc3] regulator: regression fix
+Message-ID: <20090428104938.GG14626@sirena.org.uk>
+References: <200904271959.40526.david-b@pacbell.net> <20090428083856.GD14626@sirena.org.uk> <200904280243.42927.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090428100023.GA18148@uranus.ravnborg.org>
+In-Reply-To: <200904280243.42927.david-b@pacbell.net>
+X-Cookie: A company is known by the men it keeps.
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 28, 2009 at 02:43:42AM -0700, David Brownell wrote:
+> On Tuesday 28 April 2009, Mark Brown wrote:
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+> > The change you're making isn't relevant to what I suspect the actual
+> > problem is (you didn't specify, I may be wrong here).
 
-> > 
-> > Below is hpa's fix merged up by me on top of your cleanups. That 
-> > merge-up is incomplete as we lose these fixlets.
-> > 
-> > And in this form it's visible how we lose those cleanups you did - 
-> > which werent really cleanups ... Please keep such side-effects apart 
-> > from truly mechanic cleanups, whenever possible - it makes life 
-> > really simpler.
-> 
-> The cleanup that you applied did NOT move any ALIGN() - or
-> at least not on purpose.
-> It was supposed to be a noop from a functionality point of view.
+> Restoring the "else" fixed the logic flaw ...
 
-yeah - indeed - i mis-interpreted your statement.
+I'm not sure the code ever worked for whatever it is you're doing with
+it - it'd never have set a maximum voltage constraint.
 
-> I have started to unify the the two vmlinux.lds files for
-> 32 and 64 bit - and as part of that serie (yet to be published) you will
-> see individual commits where ALING() is moved and secitons
-> are reordered etc.
-> I do this in baby steps so we can track regressions using bisect.
-> 
-> The work is done on top of x86/kbuild and I will rebase as needed 
-> when I have it ready.
+> > The code that was being fixed was only even in -next for a relatively
+> > brief period of time.
 
-Cool :)
+> This is the first time I've seen the "fix" though.  Recall that
+> the code in question has been in use for several months now, while
+> waiting to wend its way into mainline.  It might be useful to CC
+> a few more folk on such "fix" patches.
 
-	Ingo
+The fix was nothing to do with the behaviour of fixed voltage regulators
+- it was about restoring support for regulators without voltage
+constraints.  The code looked like it was just one of the small
+optimisations you're fond of, skipping the validity check since we just
+set constraints which ought to be valid.
+
+I should've pushed back harder on the obscure code in the first place.
