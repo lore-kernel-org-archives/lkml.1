@@ -1,89 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817AbZD1VDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbZD1VGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757817AbZD1VDw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 17:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbZD1VDn
+	id S1755398AbZD1VGU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 17:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbZD1VGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 17:03:43 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:40562 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751757AbZD1VDm (ORCPT
+	Tue, 28 Apr 2009 17:06:03 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:45116 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753277AbZD1VGB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 17:03:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=lFeLPwlejOiau/O86N5LfdK3zTTCVOYg8bPtJoPdtG+TICutHSS4Thm4aUrygHOjf41A+/rWqx76ir9WAqHiTNQNRJewYDxXOKc3nOR2CgSumSoIR/B4iH8EeY+PKRA6dF79md0slFIb3VCC2zi/eBve8uBO0/IE4dW3nbrt6ZM=  ;
-X-YMail-OSG: 6R8EP7YVM1mUZ7aRWLekpu9srmGlnKDJEOf2fBIu.ZO7CxG5xFSNV.H0BL8W225gw4esbt02450N0I5bA5rMdxHtqd_4ZEfiqZN_DYxwjuDs.llWhH5C.xo1Za1eJCf2CzTqSJIIKyLkuGnk7R1EFadMUfza9XD_P.4AIfAAwjOlj9DuxRiyDaUZd3EKOuZkRA0ky3P44uQ__9e2Wi.dUQnKB2bXWgAy5jOyLQXyLoJZaYmbbjdNQSrBrn9j0RbaWW4NTrq0fAiztmCHxuRjuVG2P9.QRqntx6leuBFG98JwUveb35xPhxaYPnxRqAAdpi_A3KMUfTsPc3unP7.PS_MtMBE-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Thierry Reding <thierry.reding@avionic-design.de>
-Subject: Re: [spi-devel-general] [PATCH v2] spi: Add support for the OpenCores SPI controller.
-Date: Tue, 28 Apr 2009 14:03:40 -0700
-User-Agent: KMail/1.9.10
-Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <200904041227.54687.david-b@pacbell.net> <200904280458.23018.david-b@pacbell.net> <20090428122011.GB6325@avionic-design.de>
-In-Reply-To: <20090428122011.GB6325@avionic-design.de>
+	Tue, 28 Apr 2009 17:06:01 -0400
+Message-ID: <49F76F6C.80005@cosmosbay.com>
+Date: Tue, 28 Apr 2009 23:04:44 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904281403.40757.david-b@pacbell.net>
+To: Christoph Lameter <cl@linux.com>
+CC: linux kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       jesse.brandeburg@intel.com, netdev@vger.kernel.org, haoki@redhat.com,
+       mchan@broadcom.com, davidel@xmailserver.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
+References: <alpine.DEB.1.10.0904241554100.29995@qirst.com> <49F3308B.1030507@cosmosbay.com> <20090426.020411.157511269.davem@davemloft.net> <49F43B8F.2050907@cosmosbay.com> <87ab60rh8t.fsf@basil.nowhere.org> <49F71B63.8010503@cosmosbay.com> <alpine.DEB.1.10.0904281501300.13862@qirst.com> <49F76174.6060009@cosmosbay.com> <alpine.DEB.1.10.0904281612560.13862@qirst.com> <49F767FD.2040205@cosmosbay.com> <alpine.DEB.1.10.0904281629090.15947@qirst.com>
+In-Reply-To: <alpine.DEB.1.10.0904281629090.15947@qirst.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 28 Apr 2009 23:04:45 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 28 April 2009, Thierry Reding wrote:
-> > > I couldn't really find a way to implement per-transfer overrides for the
-> > > word size because the controller simply has no concept of word sizes. Is it
-> > > in such cases still necessary to hardwire the word size to 8 bits?
-> > 
-> > Is this the http://www.opencores.org/?do=project&who=spi core?
+Christoph Lameter a écrit :
+> On Tue, 28 Apr 2009, Eric Dumazet wrote:
 > 
-> Yes, it is.
+>> The one that did improved your udpping 'bench' :)
+>>
+>> http://git2.kernel.org/?p=linux/kernel/git/davem/net-2.6.git;a=commitdiff;h=bf368e4e70cd4e0f880923c44e95a4273d725ab4
 > 
-> > Its summary says "Variable length of transfer word up to 32 bits";
-> > does that mean "configurable when core is synthesized" instead of
-> > truly "variable"?
+> Well yes that is git2p1. The measurements that we took showed not much of
+> an effect as you see.
 > 
-> That summary seems out-dated. The variable length of transfer word is
-> actually the maximum length of a single transfer and is 128 bits in the
-> latest version.
 
-So long as they don't couple "transfer" with chipselect activation
-and then de-activation, that's normal.
+It depends of coalescing parameters of NIC.
 
-128 bits is pretty big, but it should make no difference to the slave
-whether the host thinks of its data as one 128-bit word, sixteen 8-bit
-words, one 9-bit word followed by a 119-bit one, or whatever.
+BNX2 interrupts first handle TX completions, then RX events.
+So If by the
 
-Unless the design is broken, so that you can't send words without
-flapping the chipselect.  That would surprise me.
-
-
-> I'm not sure whether this is supposed to be the same as the word size. If it
-> is it would mean that a single transfer can always only transfer one word.
-> Which is kind of inefficient, I would think.
-
-A "struct spi_transfer" should include a arbitrary number of
-such words.  If the word size is over 8 bits, all the usual
-byte ordering concerns come into play.  You may optimize the
-register I/O however you like, so long as the bits on the
-wire come out in the right sequence.
-
-Ignoring clock options, the canonical SPI transfer starts by
-activating a chip select, then clocking out an arbitrary number
-of bits (clocking *in* one bit for each one clocked out), and
-then de-activating chipselect.  Those bits are usually viewed
-as a sequence of various-size words ... not necesarily all
-the same size.  Example, some LCD controllers use 9-bit command
-words followed by pixel data encoded in bytes.
-
-Now, how the bits get to/from the controller is an area where
-silicon can optimize.  For example, it's common to offload
-that work to a DMA controller that can do burst operations
-to keep the data bus efficiency high ... and to have a FIFO
-in there, so those bursts can be bigger than the word size.
-
-- Dave
