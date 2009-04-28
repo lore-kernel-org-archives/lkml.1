@@ -1,130 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbZD1EZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758975AbZD1EZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758565AbZD1EZg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 00:25:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZD1EZ1
+	id S1758975AbZD1EZx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 00:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZD1EZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 00:25:27 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41819 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbZD1EZ0 (ORCPT
+	Tue, 28 Apr 2009 00:25:41 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:43082 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756229AbZD1EZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 00:25:26 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: meminfo Committed_AS underflows
-Cc: kosaki.motohiro@jp.fujitsu.com, balbir@linux.vnet.ibm.com,
-       dave@linux.vnet.ibm.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, ebmunson@us.ibm.com,
-       mel@linux.vnet.ibm.com, cl@linux-foundation.org, stable@kernel.org
-In-Reply-To: <20090427202707.9d36ce8a.akpm@linux-foundation.org>
-References: <20090428092400.EBB6.A69D9226@jp.fujitsu.com> <20090427202707.9d36ce8a.akpm@linux-foundation.org>
-Message-Id: <20090428130035.EBB9.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 28 Apr 2009 13:25:23 +0900 (JST)
+	Tue, 28 Apr 2009 00:25:39 -0400
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
+       Tim Abbott <tabbott@MIT.EDU>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 2/2] powerpc: Use macros for .data.page_aligned section.
+Date: Tue, 28 Apr 2009 00:21:42 -0400
+Message-Id: <1240892502-9857-2-git-send-email-tabbott@mit.edu>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1240892502-9857-1-git-send-email-tabbott@mit.edu>
+References: <alpine.DEB.1.10.0904280015040.15450@vinegar-pot.mit.edu>
+ <1240892502-9857-1-git-send-email-tabbott@mit.edu>
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > > > >  	committed = atomic_long_read(&vm_committed_space);
-> > > > > > > +	if (committed < 0)
-> > > > > > > +		committed = 0;
-> > > > > > 
-> > > 
-> > > Is there a reason why we can't use a boring old percpu_counter for
-> > > vm_committed_space?  That way the meminfo code can just use
-> > > percpu_counter_read_positive().
-> > > 
-> > > Or perhaps just percpu_counter_read().  The percpu_counter code does a
-> > > better job of handling large cpu counts than the
-> > > mysteriously-duplicative open-coded stuff we have there.
-> > 
-> > At that time, I thought smallest patch is better because it can send -stable
-> > tree easily.
-> > but maybe I was wrong. it made bikeshed discussion :(
-> 
-> Yes, I know what you mean.  But otoh it's a good idea to keep -stable
-> in sync with mainline - it means that -stable can merge things which
-> have had a suitable amount of testing.
+.data.page_aligned should not need a separate output section, so as
+part of this cleanup I moved into the .data output section in the
+linker scripts in order to eliminate unnecessary references to the
+section name.
 
-Agreed.
+Note that this change moves the page-aligned data inside _edata.
+Since it _is_ data, I suspect having page-aligned data outside _edata
+was a bug.  Please comment if it is not.
 
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/kernel/vdso.c                  |    2 +-
+ arch/powerpc/kernel/vdso32/vdso32_wrapper.S |    3 ++-
+ arch/powerpc/kernel/vdso64/vdso64_wrapper.S |    3 ++-
+ arch/powerpc/kernel/vmlinux.lds.S           |    6 +-----
+ 4 files changed, 6 insertions(+), 8 deletions(-)
 
-> > Reported-by: Dave Hansen <dave@linux.vnet.ibm.com>
-> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > Cc: Eric B Munson <ebmunson@us.ibm.com>
-> > ---
-> >  fs/proc/meminfo.c    |    2 +-
-> >  include/linux/mman.h |    9 +++------
-> >  mm/mmap.c            |   12 ++++++------
-> >  mm/nommu.c           |   13 +++++++------
-> >  mm/swap.c            |   46 ----------------------------------------------
-> >  5 files changed, 17 insertions(+), 65 deletions(-)
-> 
-> Well that was nice.
-> 
-> There's potential here for weird performance regressions, so I think
-> that if we do this in mainline, we should wait a while (a few weeks?)
-> before backporting it.
-> 
-> Do we know how long this bug has existed for?  Quite a while, I expect?
-
-ACCT_THRESHOLD was introduced bit-keeper age.
-powerpc default NR_CPUS is still less 128.
-
-% grep NR_CPUS *
-cell_defconfig:CONFIG_NR_CPUS=4
-celleb_defconfig:CONFIG_NR_CPUS=4
-chrp32_defconfig:CONFIG_NR_CPUS=4
-g5_defconfig:CONFIG_NR_CPUS=4
-iseries_defconfig:CONFIG_NR_CPUS=32
-maple_defconfig:CONFIG_NR_CPUS=4
-mpc86xx_defconfig:CONFIG_NR_CPUS=2
-pasemi_defconfig:CONFIG_NR_CPUS=2
-ppc64_defconfig:CONFIG_NR_CPUS=32
-ps3_defconfig:CONFIG_NR_CPUS=2
-pseries_defconfig:CONFIG_NR_CPUS=128
-
-powerpc maximum NR_CPUS was increased following commit.
-I'm not sure about one year is short or long.
-
-==========================================================
-commit 90035fe378c7459ba19c43c63d5f878284224ce4
-Author: Tony Breeds <tony@bakeyournoodle.com>
-Date:   Thu Apr 24 13:43:49 2008 +1000
-
-    [POWERPC] Raise the upper limit of NR_CPUS and move the pacas into the BSS
-
-    This adds the required functionality to fill in all pacas at runtime.
-
-    With NR_CPUS=1024
-    text    data     bss     dec     hex filename
-     137 1704032       0 1704169  1a00e9 arch/powerpc/kernel/paca.o :Before
-     121 1179744  524288 1704153  1a00d9 arch/powerpc/kernel/paca.o :After
-
-    Also remove unneeded #includes from arch/powerpc/kernel/paca.c
-
-    Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 5fc7fac..f7efaa9 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -220,8 +220,8 @@ config SMP
-          If you don't know what to do here, say N.
-
- config NR_CPUS
--       int "Maximum number of CPUs (2-128)"
--       range 2 128
-+       int "Maximum number of CPUs (2-1024)"
-+       range 2 1024
-        depends on SMP
-        default "32" if PPC64
-        default "4"
-
-
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index ad06d5c..841910a 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -74,7 +74,7 @@ static int vdso_ready;
+ static union {
+ 	struct vdso_data	data;
+ 	u8			page[PAGE_SIZE];
+-} vdso_data_store __attribute__((__section__(".data.page_aligned")));
++} vdso_data_store __page_aligned_data
+ struct vdso_data *vdso_data = &vdso_data_store.data;
+ 
+ /* Format of the patch table */
+diff --git a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
+index 556f0ca..6e8f507 100644
+--- a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
++++ b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
+@@ -1,7 +1,8 @@
+ #include <linux/init.h>
++#include <linux/linkage.h>
+ #include <asm/page.h>
+ 
+-	.section ".data.page_aligned"
++	__PAGE_ALIGNED_DATA
+ 
+ 	.globl vdso32_start, vdso32_end
+ 	.balign PAGE_SIZE
+diff --git a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
+index 0529cb9..b8553d6 100644
+--- a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
++++ b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
+@@ -1,7 +1,8 @@
+ #include <linux/init.h>
++#include <linux/linkage.h>
+ #include <asm/page.h>
+ 
+-	.section ".data.page_aligned"
++	__PAGE_ALIGNED_DATA
+ 
+ 	.globl vdso64_start, vdso64_end
+ 	.balign PAGE_SIZE
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 4f0f7d1..30ec994 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -221,6 +221,7 @@ SECTIONS
+ 	_sdata = .;
+ 
+ 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
++		PAGE_ALIGNED_DATA
+ 		DATA_DATA
+ #ifdef CONFIG_PPC32
+ 		*(.sdata)
+@@ -258,11 +259,6 @@ SECTIONS
+ 		*(.data.init_task)
+ 	}
+ 
+-	. = ALIGN(PAGE_SIZE);
+-	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
+-		*(.data.page_aligned)
+-	}
+-
+ 	.data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
+ 		*(.data.cacheline_aligned)
+ 	}
+-- 
+1.6.2.1
 
