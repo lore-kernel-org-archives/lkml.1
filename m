@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759004AbZD1BhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759422AbZD1Bpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759004AbZD1BhV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 21:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755788AbZD1BhG
+	id S1759422AbZD1Bpn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 21:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbZD1Bpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 21:37:06 -0400
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:48360 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755550AbZD1BhF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 21:37:05 -0400
-Message-ID: <49F65DBA.2090702@ovro.caltech.edu>
-Date: Mon, 27 Apr 2009 18:36:58 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 27 Apr 2009 21:45:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41690 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752932AbZD1Bpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 21:45:33 -0400
+Message-ID: <49F65FA2.4010603@kernel.org>
+Date: Tue, 28 Apr 2009 10:45:06 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Liu Dave-R63238 <DaveLiu@freescale.com>
-CC: Tabi Timur-B04825 <timur@freescale.com>, linuxppc-dev@ozlabs.org,
-       Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
-       Ira Snyder <iws@ovro.caltech.edu>
-Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
-References: <20090424183517.GB23140@ovro.caltech.edu>	<D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net>	<ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com> <D7CCA83BB0796C49BC0BB53B6AB1208928CAB2@zch01exm21.fsl.freescale.net>
-In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB1208928CAB2@zch01exm21.fsl.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Dave Airlie <airlied@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kms in defconfig
+References: <21d7e9970904270121s1c58365bqc8933f8a3ffc5f1a@mail.gmail.com>	 <20090427083935.GA20941@elte.hu> <21d7e9970904270156v54a6483fs20d5b31c97a1d482@mail.gmail.com>
+In-Reply-To: <21d7e9970904270156v54a6483fs20d5b31c97a1d482@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Mon, 27 Apr 2009 18:37:04 -0700 (PDT)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 28 Apr 2009 01:44:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-> How about FIFO RAM case?
+Dave Airlie wrote:
+> My main worry is distro configs going forward, where they pull
+> something from defconfig, granted I've no idea if that'll happen,
+> maybe distro kernel maintainers are smarter than I give them credit
+> for :-)
 
-If the FIFO has a fixed address, then according to
-the user guide, the DMA controller won't generate
-a burst transaction to it.
+We're probably as dumb as or even dumber than you give credit for but
+we do have testing cycles in place to compensate for it, so I don't
+think distros-might-screw-up needs to be a concern when deciding what
+gets turned on in defconfig.  :-)
 
-We can try confirming this if you'd like.
+I think defconfig should enable options such that it shows where
+upstream kernel is headed, so FWIW +1 for KMS from me.
 
-Cheers,
-Dave
+Thanks.
 
-
-
-
+-- 
+tejun
