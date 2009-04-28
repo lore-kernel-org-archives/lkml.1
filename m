@@ -1,60 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762242AbZD1Pvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762184AbZD1PxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762242AbZD1Pvz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbZD1Pvp
+	id S1762184AbZD1PxM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:53:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761479AbZD1Pwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:51:45 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:39173 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754776AbZD1Pvn (ORCPT
+	Tue, 28 Apr 2009 11:52:53 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48758 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755669AbZD1Pww (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:51:43 -0400
-Date: Tue, 28 Apr 2009 11:51:43 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Clemens Ladisch <clemens@ladisch.de>
-cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: NLS: utf8 conversions
-In-Reply-To: <49F6A756.7070203@ladisch.de>
-Message-ID: <Pine.LNX.4.44L0.0904281148410.670-100000@netrider.rowland.org>
+	Tue, 28 Apr 2009 11:52:52 -0400
+Date: Tue, 28 Apr 2009 17:52:51 +0200
+From: Jan Kara <jack@suse.cz>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH 4/5] ext4: Replace lock/unlock_super() with an explicit lock for the orphan list
+Message-ID: <20090428155250.GH21950@atrey.karlin.mff.cuni.cz>
+References: <1240717765-16572-1-git-send-email-tytso@mit.edu> <1240717765-16572-2-git-send-email-tytso@mit.edu> <1240717765-16572-3-git-send-email-tytso@mit.edu> <1240717765-16572-4-git-send-email-tytso@mit.edu> <1240717765-16572-5-git-send-email-tytso@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240717765-16572-5-git-send-email-tytso@mit.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009, Clemens Ladisch wrote:
+  Hi,
 
-> Alan Stern wrote:
-> > Your comments agree pretty well with what I had concluded.  However a 
-> > lot of the source files have lengthy tables of wchar_t values; changing 
-> > them to 32 bits would waste a lot of space.
-> > 
-> > As a sort of compromise, I came up with this patch (not tested yet,
-> > although it compiles okay).  How does it look to you?
+> Use a separate lock to protect the orphan list, so we can stop
+> overloading the use of lock_super().
+  Yes, this was needed for a long time.
+
+> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+> ---
+>  fs/ext4/ext4_sb.h |    1 +
+>  fs/ext4/namei.c   |   20 +++++++++++---------
+>  fs/ext4/super.c   |    1 +
+>  3 files changed, 13 insertions(+), 9 deletions(-)
 > 
-> From a not-having-it-tested-either perspective, it looks good.
-> 
-> > +utf8_to_utf32(unicode_t *p, const u8 *s, int n)
-> > +utf32_to_utf8(u8 *s, unicode_t u, int maxlen)
-> > +utf8s_to_utf16s(wchar_t *pwcs, const u8 *s, int n)
-> > +utf16s_to_utf8s(u8 *s, const wchar_t *pwcs, int maxlen, int inlen,
-> 
-> Minor nitpick: You already have enhanced the insane parameter ordering
-> of wcsntombs_be(), but the meaning of all these functions' parameters
-> would be even more obvious if the buffer size would immediately follow
-> the corresponding buffer pointer.
+> diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
+> index 57b71fe..4bda2f7 100644
+> --- a/fs/ext4/ext4_sb.h
+> +++ b/fs/ext4/ext4_sb.h
+> @@ -71,6 +71,7 @@ struct ext4_sb_info {
+>  	struct inode *s_journal_inode;
+>  	struct journal_s *s_journal;
+>  	struct list_head s_orphan;
+> +	struct mutex s_orphan_lock;
+>  	unsigned long s_commit_interval;
+>  	u32 s_max_batch_time;
+>  	u32 s_min_batch_time;
+> diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
+> index 22098e1..8018e49 100644
+> --- a/fs/ext4/namei.c
+> +++ b/fs/ext4/namei.c
+> @@ -1997,7 +1997,7 @@ int ext4_orphan_add(handle_t *handle, struct inode *inode)
+>  	if (!ext4_handle_valid(handle))
+>  		return 0;
+>  
+> -	lock_super(sb);
+> +	mutex_lock(&EXT4_SB(sb)->s_orphan_lock);
+>  	if (!list_empty(&EXT4_I(inode)->i_orphan))
+>  		goto out_unlock;
+>  
+> @@ -2006,9 +2006,13 @@ int ext4_orphan_add(handle_t *handle, struct inode *inode)
+>  
+>  	/* @@@ FIXME: Observation from aviro:
+>  	 * I think I can trigger J_ASSERT in ext4_orphan_add().  We block
+> -	 * here (on lock_super()), so race with ext4_link() which might bump
+> +	 * here (on s_orphan_lock), so race with ext4_link() which might bump
+>  	 * ->i_nlink. For, say it, character device. Not a regular file,
+>  	 * not a directory, not a symlink and ->i_nlink > 0.
+> +	 *
+> +	 * tytso, 4/25/2009: I'm not sure how that could happen;
+> +	 * shouldn't the fs core protect us from these sort of
+> +	 * unlink()/link() races?
+>  	 */
+  We always call ext4_orphan_add() under i_mutex of the inode we are
+adding (except for migrate code, well) and hence i_nlink should better
+be stable... I'd just remove the comment.
 
-Since these routines are used in so few places, I can easily change the
-parameter ordering to something more reasonable (like uni2char and
-char2uni, for example).
+>  	J_ASSERT((S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode) ||
+>  		  S_ISLNK(inode->i_mode)) || inode->i_nlink == 0);
+> @@ -2045,7 +2049,7 @@ int ext4_orphan_add(handle_t *handle, struct inode *inode)
+>  	jbd_debug(4, "orphan inode %lu will point to %d\n",
+>  			inode->i_ino, NEXT_ORPHAN(inode));
+>  out_unlock:
+> -	unlock_super(sb);
+> +	mutex_unlock(&EXT4_SB(sb)->s_orphan_lock);
+>  	ext4_std_error(inode->i_sb, err);
+>  	return err;
+>  }
+> @@ -2066,11 +2070,9 @@ int ext4_orphan_del(handle_t *handle, struct inode *inode)
+>  	if (!ext4_handle_valid(handle))
+>  		return 0;
+>  
+> -	lock_super(inode->i_sb);
+> -	if (list_empty(&ei->i_orphan)) {
+> -		unlock_super(inode->i_sb);
+> -		return 0;
+> -	}
+> +	mutex_lock(&EXT4_SB(inode->i_sb)->s_orphan_lock);
+> +	if (list_empty(&ei->i_orphan))
+> +		goto out;
+>  
+>  	ino_next = NEXT_ORPHAN(inode);
+>  	prev = ei->i_orphan.prev;
+> @@ -2120,7 +2122,7 @@ int ext4_orphan_del(handle_t *handle, struct inode *inode)
+>  out_err:
+>  	ext4_std_error(inode->i_sb, err);
+>  out:
+> -	unlock_super(inode->i_sb);
+> +	mutex_unlock(&EXT4_SB(inode->i_sb)->s_orphan_lock);
+>  	return err;
+>  
+>  out_brelse:
+> diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+> index 176d43f..c23e82c 100644
+> --- a/fs/ext4/super.c
+> +++ b/fs/ext4/super.c
+> @@ -2623,6 +2623,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
+>  	sb->dq_op = &ext4_quota_operations;
+>  #endif
+>  	INIT_LIST_HEAD(&sbi->s_orphan); /* unlinked but open files */
+> +	mutex_init(&sbi->s_orphan_lock);
+>  
+>  	sb->s_root = NULL;
+  Otherwise the patch looks good.
 
-> Anyway,
-> Acked-by: Clemens Ladisch <clemens@ladisch.de>
-
-Thanks for the review.
-
-Alan Stern
-
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
