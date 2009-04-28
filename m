@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763248AbZD1RXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763357AbZD1RYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763248AbZD1RXw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 13:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761224AbZD1RXm
+	id S1763357AbZD1RYe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 13:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761224AbZD1RYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 13:23:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49923 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754371AbZD1RXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 13:23:42 -0400
-Date: Tue, 28 Apr 2009 19:22:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Cc: david@lang.hm, Tejun Heo <tj@kernel.org>, Dave Airlie <airlied@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kms in defconfig
-Message-ID: <20090428172226.GA15115@elte.hu>
-References: <21d7e9970904270121s1c58365bqc8933f8a3ffc5f1a@mail.gmail.com> <20090427083935.GA20941@elte.hu> <21d7e9970904270156v54a6483fs20d5b31c97a1d482@mail.gmail.com> <49F65FA2.4010603@kernel.org> <alpine.LFD.2.00.0904271852510.22156@localhost.localdomain> <alpine.DEB.1.10.0904280946210.17268@asgard.lang.hm> <alpine.LFD.2.00.0904281002570.22156@localhost.localdomain>
+	Tue, 28 Apr 2009 13:24:23 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:41448 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760775AbZD1RYV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 13:24:21 -0400
+Date: Tue, 28 Apr 2009 18:15:30 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Christoph Lameter <cl@linux.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH] Properly account for freed pages in free_pages_bulk()
+ and when allocating high-order pages in buffered_rmqueue()
+In-Reply-To: <20090428165129.GA18893@csn.ul.ie>
+Message-ID: <Pine.LNX.4.64.0904281810240.30878@blonde.anvils>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
+ <1240819119.2567.884.camel@ymzhang> <20090427143845.GC912@csn.ul.ie>
+ <1240883957.2567.886.camel@ymzhang> <20090428103159.GB23540@csn.ul.ie>
+ <alpine.DEB.1.10.0904281236350.21913@qirst.com> <20090428165129.GA18893@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904281002570.22156@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> So yes, it would be good to automate it:
+On Tue, 28 Apr 2009, Mel Gorman wrote:
+> On Tue, Apr 28, 2009 at 12:37:22PM -0400, Christoph Lameter wrote:
+> > On Tue, 28 Apr 2009, Mel Gorman wrote:
+> > 
+> > > @@ -1151,6 +1151,7 @@ again:
+> > >  	} else {
+> > >  		spin_lock_irqsave(&zone->lock, flags);
+> > >  		page = __rmqueue(zone, order, migratetype);
+> > > +		__mod_zone_page_state(zone, NR_FREE_PAGES, -(1UL << order));
+> > >  		spin_unlock(&zone->lock);
+> > >  		if (!page)
+> > >  			goto failed;
+> > 
+> > __mod_zone_page_state takes an signed integer argument. Not sure what is
+> > won by the UL suffix here.
+> > 
 > 
-> > If a tool was available to detect the hardware and create a 
-> > config tailored for the box, this use for a default config would 
-> > go away
-> 
-> Yeah, I've wished for that.
+> Matches other call sites such as in __offline_isolated_pages(), habit when
+> using shifts like this and matches other locations, paranoia, doesn't hurt.
 
-Steve (Cc:-ed) submitted such a script last year IIRC. It wasnt 
-particularly complex.
+Well, not a big deal, but I'd say that it does hurt: by wasting people's
+time (mine!), wondering what that "UL" is for - I'd have had to ask, if
+Christoph hadn't cleared this up first (thank you).  And elsewhere,
+you're using an int << order to update NR_FREE_PAGES, so I don't see
+the consistency argument.
 
-	Ingo
+Hugh
