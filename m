@@ -1,125 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbZD1GhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbZD1Gqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759342AbZD1GhB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 02:37:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbZD1Ggv
+	id S1759257AbZD1Gqc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 02:46:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbZD1GqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 02:36:51 -0400
-Received: from ultra7.eskimo.com ([204.122.16.70]:3926 "EHLO ultra7.eskimo.com"
+	Tue, 28 Apr 2009 02:46:22 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40001 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751288AbZD1Ggu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 02:36:50 -0400
-Date: Mon, 27 Apr 2009 23:36:25 -0700
-From: Elladan <elladan@eskimo.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org,
-       linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>
-Subject: Re: Swappiness vs. mmap() and interactive response
-Message-ID: <20090428063625.GA17785@eskimo.com>
-References: <20090428044426.GA5035@eskimo.com> <20090428143019.EBBF.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090428143019.EBBF.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1754821AbZD1GqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 02:46:22 -0400
+Subject: Re: [PATCH 09/14] swim3: clean up request completion paths
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, donari75@gmail.com,
+       bzolnier@gmail.com, joerg@dorchain.net, geert@linux-m68k.org,
+       davem@davemloft.net, jdike@linux.intel.com, Laurent@lvivier.info
+In-Reply-To: <1240891577-4813-10-git-send-email-tj@kernel.org>
+References: <1240891577-4813-1-git-send-email-tj@kernel.org>
+	 <1240891577-4813-10-git-send-email-tj@kernel.org>
+Content-Type: text/plain
+Date: Tue, 28 Apr 2009 16:44:50 +1000
+Message-Id: <1240901090.9924.2.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 02:35:29PM +0900, KOSAKI Motohiro wrote:
-> (cc to linux-mm and Rik)
+On Tue, 2009-04-28 at 13:06 +0900, Tejun Heo wrote:
+> swim3 curiously tries to update request parameters before calling
+> __blk_end_request() when __blk_end_request() will do it anyway, and it
+> updates request for partial completion manually instead of using
+> blk_update_request().  Also, it does some spurious checks on rq such
+> as testing whether rq->sector is negative or current_nr_sectors is
+> zero right after fetching.
 > 
-> > Hi,
-> > 
-> > So, I just set up Ubuntu Jaunty (using Linux 2.6.28) on a quad core phenom box,
-> > and then I did the following (with XFS over LVM):
-> > 
-> > mv /500gig/of/data/on/disk/one /disk/two
-> > 
-> > This quickly caused the system to. grind.. to... a.... complete..... halt.
-> > Basically every UI operation, including the mouse in Xorg, started experiencing
-> > multiple second lag and delays.  This made the system essentially unusable --
-> > for example, just flipping to the window where the "mv" command was running
-> > took 10 seconds on more than one occasion.  Basically a "click and get coffee"
-> > interface.
+> Drop unnecessary stuff and use standard block layer mechanisms.
+
+That smells like historical stuff from floppy.c :-)
+
+I'll try to dig a mac with a floppy drive to test that.
+
+Cheers,
+Ben.
+
+> [ Impact: cleanup ]
 > 
-> I have some question and request.
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  drivers/block/swim3.c |   31 +++++--------------------------
+>  1 files changed, 5 insertions(+), 26 deletions(-)
 > 
-> 1. please post your /proc/meminfo
-> 2. Do above copy make tons swap-out? IOW your disk read much faster than write?
-> 3. cache limitation of memcgroup solve this problem?
-> 4. Which disk have your /bin and /usr/bin?
-
-I'll answer these out of order if you don't mind.
-
-2. Do above copy make tons swap-out? IOW your disk read much faster than write?
-
-The disks should be roughly similar.  However:
-
-sda is the read disk, sdb is the write.  Here's a few snippets from iostat -xm 10
-
-Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
-sda              67.70     0.00  373.10    0.20    48.47     0.00   265.90     1.94    5.21   2.10  78.32
-sdb               0.00  1889.60    0.00  139.80     0.00    52.52   769.34    35.01  250.45   5.17  72.28
----
-sda               5.30     0.00  483.80    0.30    60.65     0.00   256.59     1.59    3.28   1.65  79.72
-sdb               0.00  3632.70    0.00  171.10     0.00    61.10   731.39   117.09  709.66   5.84 100.00
----
-sda              51.20     0.00  478.10    1.00    65.79     0.01   281.27     2.48    5.18   1.96  93.72
-sdb               0.00  2104.60    0.00  174.80     0.00    62.84   736.28   108.50  613.64   5.72 100.00
---
-sda             153.20     0.00  349.40    0.20    60.99     0.00   357.30     4.47   13.19   2.85  99.80
-sdb               0.00  1766.50    0.00  158.60     0.00    59.89   773.34   110.07  672.25   6.30  99.96
-
-This data seems to indicate the IO performance varies, but the reader is usually faster.
-
-4. Which disk have your /bin and /usr/bin?
-
-sda, the reader.
-
-3. cache limitation of memcgroup solve this problem?
-
-I was unable to get this to work -- do you have some documentation handy?
-
-1. please post your /proc/meminfo
-
-$ cat /proc/meminfo 
-MemTotal:        3467668 kB
-MemFree:           20164 kB
-Buffers:             204 kB
-Cached:          2295232 kB
-SwapCached:         4012 kB
-Active:           639608 kB
-Inactive:        2620880 kB
-Active(anon):     608104 kB
-Inactive(anon):   360812 kB
-Active(file):      31504 kB
-Inactive(file):  2260068 kB
-Unevictable:           8 kB
-Mlocked:               8 kB
-SwapTotal:       4194296 kB
-SwapFree:        4186968 kB
-Dirty:            147280 kB
-Writeback:          8424 kB
-AnonPages:        961280 kB
-Mapped:            39016 kB
-Slab:              81904 kB
-SReclaimable:      59044 kB
-SUnreclaim:        22860 kB
-PageTables:        20548 kB
-NFS_Unstable:          0 kB
-Bounce:                0 kB
-WritebackTmp:          0 kB
-CommitLimit:     5928128 kB
-Committed_AS:    1770348 kB
-VmallocTotal:   34359738367 kB
-VmallocUsed:      281908 kB
-VmallocChunk:   34359449059 kB
-HugePages_Total:       0
-HugePages_Free:        0
-HugePages_Rsvd:        0
-HugePages_Surp:        0
-Hugepagesize:       2048 kB
-DirectMap4k:       44928 kB
-DirectMap2M:     3622912 kB
+> diff --git a/drivers/block/swim3.c b/drivers/block/swim3.c
+> index 5904f7b..4248559 100644
+> --- a/drivers/block/swim3.c
+> +++ b/drivers/block/swim3.c
+> @@ -319,14 +319,10 @@ static void start_request(struct floppy_state *fs)
+>  		       req->errors, req->current_nr_sectors);
+>  #endif
+>  
+> -		if (req->sector < 0 || req->sector >= fs->total_secs) {
+> +		if (req->sector >= fs->total_secs) {
+>  			__blk_end_request_cur(req, -EIO);
+>  			continue;
+>  		}
+> -		if (req->current_nr_sectors == 0) {
+> -			__blk_end_request_cur(req, 0);
+> -			continue;
+> -		}
+>  		if (fs->ejected) {
+>  			__blk_end_request_cur(req, -EIO);
+>  			continue;
+> @@ -593,8 +589,6 @@ static void xfer_timeout(unsigned long data)
+>  	struct floppy_state *fs = (struct floppy_state *) data;
+>  	struct swim3 __iomem *sw = fs->swim3;
+>  	struct dbdma_regs __iomem *dr = fs->dma;
+> -	struct dbdma_cmd *cp = fs->dma_cmd;
+> -	unsigned long s;
+>  	int n;
+>  
+>  	fs->timeout_pending = 0;
+> @@ -605,14 +599,6 @@ static void xfer_timeout(unsigned long data)
+>  	out_8(&sw->intr_enable, 0);
+>  	out_8(&sw->control_bic, WRITE_SECTORS | DO_ACTION);
+>  	out_8(&sw->select, RELAX);
+> -	if (rq_data_dir(fd_req) == WRITE)
+> -		++cp;
+> -	if (ld_le16(&cp->xfer_status) != 0)
+> -		s = fs->scount - ((ld_le16(&cp->res_count) + 511) >> 9);
+> -	else
+> -		s = 0;
+> -	fd_req->sector += s;
+> -	fd_req->current_nr_sectors -= s;
+>  	printk(KERN_ERR "swim3: timeout %sing sector %ld\n",
+>  	       (rq_data_dir(fd_req)==WRITE? "writ": "read"), (long)fd_req->sector);
+>  	__blk_end_request_cur(fd_req, -EIO);
+> @@ -719,9 +705,7 @@ static irqreturn_t swim3_interrupt(int irq, void *dev_id)
+>  		if (intr & ERROR_INTR) {
+>  			n = fs->scount - 1 - resid / 512;
+>  			if (n > 0) {
+> -				fd_req->sector += n;
+> -				fd_req->current_nr_sectors -= n;
+> -				fd_req->buffer += n * 512;
+> +				blk_update_request(fd_req, 0, n << 9);
+>  				fs->req_sector += n;
+>  			}
+>  			if (fs->retries < 5) {
+> @@ -745,13 +729,7 @@ static irqreturn_t swim3_interrupt(int irq, void *dev_id)
+>  				start_request(fs);
+>  				break;
+>  			}
+> -			fd_req->sector += fs->scount;
+> -			fd_req->current_nr_sectors -= fs->scount;
+> -			fd_req->buffer += fs->scount * 512;
+> -			if (fd_req->current_nr_sectors <= 0) {
+> -				__blk_end_request_cur(fd_req, 0);
+> -				fs->state = idle;
+> -			} else {
+> +			if (__blk_end_request(fd_req, 0, fs->scount << 9)) {
+>  				fs->req_sector += fs->scount;
+>  				if (fs->req_sector > fs->secpertrack) {
+>  					fs->req_sector -= fs->secpertrack;
+> @@ -761,7 +739,8 @@ static irqreturn_t swim3_interrupt(int irq, void *dev_id)
+>  					}
+>  				}
+>  				act(fs);
+> -			}
+> +			} else
+> +				fs->state = idle;
+>  		}
+>  		if (fs->state == idle)
+>  			start_request(fs);
 
