@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbZD1JwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbZD1JwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756760AbZD1JwA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 05:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbZD1Jvu
+	id S1756659AbZD1JwZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 05:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756869AbZD1Jv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 05:51:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51135 "EHLO mx2.redhat.com"
+	Tue, 28 Apr 2009 05:51:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51140 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753966AbZD1Jvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 05:51:48 -0400
+	id S1758134AbZD1Jv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 05:51:57 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/4] FRV: Remove in-kernel strace code
+Subject: [PATCH 3/4] FRV: Don't turn on TIF_SYSCALL_TRACE unconditionally in
+	syscall prologue
 To: torvalds@osdl.org, akpm@linux-foundation.org
 Cc: dhowells@redhat.com, hch@lst.de, roland@redhat.com,
        linux-kernel@vger.kernel.org
-Date: Tue, 28 Apr 2009 10:49:31 +0100
-Message-ID: <20090428094931.11879.99536.stgit@warthog.procyon.org.uk>
+Date: Tue, 28 Apr 2009 10:49:41 +0100
+Message-ID: <20090428094941.11879.59831.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090428094931.11879.99536.stgit@warthog.procyon.org.uk>
+References: <20090428094931.11879.99536.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -28,406 +31,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove in-kernel strace code from the FRV arch as it's not really needed any
-more.
+Don't turn on TIF_SYSCALL_TRACE unconditionally in syscall prologue in FRV's
+entry.S.  This was originally for debugging stuff and should have been removed
+a long time ago.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- arch/frv/kernel/ptrace.c |  379 ----------------------------------------------
- 1 files changed, 0 insertions(+), 379 deletions(-)
+ arch/frv/kernel/entry.S |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
 
-diff --git a/arch/frv/kernel/ptrace.c b/arch/frv/kernel/ptrace.c
-index 5e7d401..6b15e5d 100644
---- a/arch/frv/kernel/ptrace.c
-+++ b/arch/frv/kernel/ptrace.c
-@@ -306,387 +306,8 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- 	return ret;
- }
+diff --git a/arch/frv/kernel/entry.S b/arch/frv/kernel/entry.S
+index 1da523b..268dfbd 100644
+--- a/arch/frv/kernel/entry.S
++++ b/arch/frv/kernel/entry.S
+@@ -886,7 +886,6 @@ system_call:
+ 	bnc		icc0,#0,__syscall_badsys
  
--int __nongprelbss kstrace;
--
--static const struct {
--	const char	*name;
--	unsigned	argmask;
--} __syscall_name_table[NR_syscalls] = {
--	[0]	= { "restart_syscall"			},
--	[1]	= { "exit",		0x000001	},
--	[2]	= { "fork",		0xffffff	},
--	[3]	= { "read",		0x000141	},
--	[4]	= { "write",		0x000141	},
--	[5]	= { "open",		0x000235	},
--	[6]	= { "close",		0x000001	},
--	[7]	= { "waitpid",		0x000141	},
--	[8]	= { "creat",		0x000025	},
--	[9]	= { "link",		0x000055	},
--	[10]	= { "unlink",		0x000005	},
--	[11]	= { "execve",		0x000445	},
--	[12]	= { "chdir",		0x000005	},
--	[13]	= { "time",		0x000004	},
--	[14]	= { "mknod",		0x000325	},
--	[15]	= { "chmod",		0x000025	},
--	[16]	= { "lchown",		0x000025	},
--	[17]	= { "break" },
--	[18]	= { "oldstat",		0x000045	},
--	[19]	= { "lseek",		0x000131	},
--	[20]	= { "getpid",		0xffffff	},
--	[21]	= { "mount",		0x043555	},
--	[22]	= { "umount",		0x000005	},
--	[23]	= { "setuid",		0x000001	},
--	[24]	= { "getuid",		0xffffff	},
--	[25]	= { "stime",		0x000004	},
--	[26]	= { "ptrace",		0x004413	},
--	[27]	= { "alarm",		0x000001	},
--	[28]	= { "oldfstat",		0x000041	},
--	[29]	= { "pause",		0xffffff	},
--	[30]	= { "utime",		0x000045	},
--	[31]	= { "stty" },
--	[32]	= { "gtty" },
--	[33]	= { "access",		0x000025	},
--	[34]	= { "nice",		0x000001	},
--	[35]	= { "ftime" },
--	[36]	= { "sync",		0xffffff	},
--	[37]	= { "kill",		0x000011	},
--	[38]	= { "rename",		0x000055	},
--	[39]	= { "mkdir",		0x000025	},
--	[40]	= { "rmdir",		0x000005	},
--	[41]	= { "dup",		0x000001	},
--	[42]	= { "pipe",		0x000004	},
--	[43]	= { "times",		0x000004	},
--	[44]	= { "prof" },
--	[45]	= { "brk",		0x000004	},
--	[46]	= { "setgid",		0x000001	},
--	[47]	= { "getgid",		0xffffff	},
--	[48]	= { "signal",		0x000041	},
--	[49]	= { "geteuid",		0xffffff	},
--	[50]	= { "getegid",		0xffffff	},
--	[51]	= { "acct",		0x000005	},
--	[52]	= { "umount2",		0x000035	},
--	[53]	= { "lock" },
--	[54]	= { "ioctl",		0x000331	},
--	[55]	= { "fcntl",		0x000331	},
--	[56]	= { "mpx" },
--	[57]	= { "setpgid",		0x000011	},
--	[58]	= { "ulimit" },
--	[60]	= { "umask",		0x000002	},
--	[61]	= { "chroot",		0x000005	},
--	[62]	= { "ustat",		0x000043	},
--	[63]	= { "dup2",		0x000011	},
--	[64]	= { "getppid",		0xffffff	},
--	[65]	= { "getpgrp",		0xffffff	},
--	[66]	= { "setsid",		0xffffff	},
--	[67]	= { "sigaction" },
--	[68]	= { "sgetmask" },
--	[69]	= { "ssetmask" },
--	[70]	= { "setreuid" },
--	[71]	= { "setregid" },
--	[72]	= { "sigsuspend" },
--	[73]	= { "sigpending" },
--	[74]	= { "sethostname" },
--	[75]	= { "setrlimit" },
--	[76]	= { "getrlimit" },
--	[77]	= { "getrusage" },
--	[78]	= { "gettimeofday" },
--	[79]	= { "settimeofday" },
--	[80]	= { "getgroups" },
--	[81]	= { "setgroups" },
--	[82]	= { "select" },
--	[83]	= { "symlink" },
--	[84]	= { "oldlstat" },
--	[85]	= { "readlink" },
--	[86]	= { "uselib" },
--	[87]	= { "swapon" },
--	[88]	= { "reboot" },
--	[89]	= { "readdir" },
--	[91]	= { "munmap",		0x000034	},
--	[92]	= { "truncate" },
--	[93]	= { "ftruncate" },
--	[94]	= { "fchmod" },
--	[95]	= { "fchown" },
--	[96]	= { "getpriority" },
--	[97]	= { "setpriority" },
--	[99]	= { "statfs" },
--	[100]	= { "fstatfs" },
--	[102]	= { "socketcall" },
--	[103]	= { "syslog" },
--	[104]	= { "setitimer" },
--	[105]	= { "getitimer" },
--	[106]	= { "stat" },
--	[107]	= { "lstat" },
--	[108]	= { "fstat" },
--	[111]	= { "vhangup" },
--	[114]	= { "wait4" },
--	[115]	= { "swapoff" },
--	[116]	= { "sysinfo" },
--	[117]	= { "ipc" },
--	[118]	= { "fsync" },
--	[119]	= { "sigreturn" },
--	[120]	= { "clone" },
--	[121]	= { "setdomainname" },
--	[122]	= { "uname" },
--	[123]	= { "modify_ldt" },
--	[123]	= { "cacheflush" },
--	[124]	= { "adjtimex" },
--	[125]	= { "mprotect" },
--	[126]	= { "sigprocmask" },
--	[127]	= { "create_module" },
--	[128]	= { "init_module" },
--	[129]	= { "delete_module" },
--	[130]	= { "get_kernel_syms" },
--	[131]	= { "quotactl" },
--	[132]	= { "getpgid" },
--	[133]	= { "fchdir" },
--	[134]	= { "bdflush" },
--	[135]	= { "sysfs" },
--	[136]	= { "personality" },
--	[137]	= { "afs_syscall" },
--	[138]	= { "setfsuid" },
--	[139]	= { "setfsgid" },
--	[140]	= { "_llseek",			0x014331	},
--	[141]	= { "getdents" },
--	[142]	= { "_newselect",		0x000141	},
--	[143]	= { "flock" },
--	[144]	= { "msync" },
--	[145]	= { "readv" },
--	[146]	= { "writev" },
--	[147]	= { "getsid",			0x000001	},
--	[148]	= { "fdatasync",		0x000001	},
--	[149]	= { "_sysctl",			0x000004	},
--	[150]	= { "mlock" },
--	[151]	= { "munlock" },
--	[152]	= { "mlockall" },
--	[153]	= { "munlockall" },
--	[154]	= { "sched_setparam" },
--	[155]	= { "sched_getparam" },
--	[156]	= { "sched_setscheduler" },
--	[157]	= { "sched_getscheduler" },
--	[158]	= { "sched_yield" },
--	[159]	= { "sched_get_priority_max" },
--	[160]	= { "sched_get_priority_min" },
--	[161]	= { "sched_rr_get_interval" },
--	[162]	= { "nanosleep",		0x000044	},
--	[163]	= { "mremap" },
--	[164]	= { "setresuid" },
--	[165]	= { "getresuid" },
--	[166]	= { "vm86" },
--	[167]	= { "query_module" },
--	[168]	= { "poll" },
--	[169]	= { "nfsservctl" },
--	[170]	= { "setresgid" },
--	[171]	= { "getresgid" },
--	[172]	= { "prctl",			0x333331	},
--	[173]	= { "rt_sigreturn",		0xffffff	},
--	[174]	= { "rt_sigaction",		0x001441	},
--	[175]	= { "rt_sigprocmask",		0x001441	},
--	[176]	= { "rt_sigpending",		0x000014	},
--	[177]	= { "rt_sigtimedwait",		0x001444	},
--	[178]	= { "rt_sigqueueinfo",		0x000411	},
--	[179]	= { "rt_sigsuspend",		0x000014	},
--	[180]	= { "pread",			0x003341	},
--	[181]	= { "pwrite",			0x003341	},
--	[182]	= { "chown",			0x000115	},
--	[183]	= { "getcwd" },
--	[184]	= { "capget" },
--	[185]	= { "capset" },
--	[186]	= { "sigaltstack" },
--	[187]	= { "sendfile" },
--	[188]	= { "getpmsg" },
--	[189]	= { "putpmsg" },
--	[190]	= { "vfork",			0xffffff	},
--	[191]	= { "ugetrlimit" },
--	[192]	= { "mmap2",			0x313314	},
--	[193]	= { "truncate64" },
--	[194]	= { "ftruncate64" },
--	[195]	= { "stat64",			0x000045	},
--	[196]	= { "lstat64",			0x000045	},
--	[197]	= { "fstat64",			0x000041	},
--	[198]	= { "lchown32" },
--	[199]	= { "getuid32",			0xffffff	},
--	[200]	= { "getgid32",			0xffffff	},
--	[201]	= { "geteuid32",		0xffffff	},
--	[202]	= { "getegid32",		0xffffff	},
--	[203]	= { "setreuid32" },
--	[204]	= { "setregid32" },
--	[205]	= { "getgroups32" },
--	[206]	= { "setgroups32" },
--	[207]	= { "fchown32" },
--	[208]	= { "setresuid32" },
--	[209]	= { "getresuid32" },
--	[210]	= { "setresgid32" },
--	[211]	= { "getresgid32" },
--	[212]	= { "chown32" },
--	[213]	= { "setuid32" },
--	[214]	= { "setgid32" },
--	[215]	= { "setfsuid32" },
--	[216]	= { "setfsgid32" },
--	[217]	= { "pivot_root" },
--	[218]	= { "mincore" },
--	[219]	= { "madvise" },
--	[220]	= { "getdents64" },
--	[221]	= { "fcntl64" },
--	[223]	= { "security" },
--	[224]	= { "gettid" },
--	[225]	= { "readahead" },
--	[226]	= { "setxattr" },
--	[227]	= { "lsetxattr" },
--	[228]	= { "fsetxattr" },
--	[229]	= { "getxattr" },
--	[230]	= { "lgetxattr" },
--	[231]	= { "fgetxattr" },
--	[232]	= { "listxattr" },
--	[233]	= { "llistxattr" },
--	[234]	= { "flistxattr" },
--	[235]	= { "removexattr" },
--	[236]	= { "lremovexattr" },
--	[237]	= { "fremovexattr" },
--	[238]	= { "tkill" },
--	[239]	= { "sendfile64" },
--	[240]	= { "futex" },
--	[241]	= { "sched_setaffinity" },
--	[242]	= { "sched_getaffinity" },
--	[243]	= { "set_thread_area" },
--	[244]	= { "get_thread_area" },
--	[245]	= { "io_setup" },
--	[246]	= { "io_destroy" },
--	[247]	= { "io_getevents" },
--	[248]	= { "io_submit" },
--	[249]	= { "io_cancel" },
--	[250]	= { "fadvise64" },
--	[252]	= { "exit_group",		0x000001	},
--	[253]	= { "lookup_dcookie" },
--	[254]	= { "epoll_create" },
--	[255]	= { "epoll_ctl" },
--	[256]	= { "epoll_wait" },
--	[257]	= { "remap_file_pages" },
--	[258]	= { "set_tid_address" },
--	[259]	= { "timer_create" },
--	[260]	= { "timer_settime" },
--	[261]	= { "timer_gettime" },
--	[262]	= { "timer_getoverrun" },
--	[263]	= { "timer_delete" },
--	[264]	= { "clock_settime" },
--	[265]	= { "clock_gettime" },
--	[266]	= { "clock_getres" },
--	[267]	= { "clock_nanosleep" },
--	[268]	= { "statfs64" },
--	[269]	= { "fstatfs64" },
--	[270]	= { "tgkill" },
--	[271]	= { "utimes" },
--	[272]	= { "fadvise64_64" },
--	[273]	= { "vserver" },
--	[274]	= { "mbind" },
--	[275]	= { "get_mempolicy" },
--	[276]	= { "set_mempolicy" },
--	[277]	= { "mq_open" },
--	[278]	= { "mq_unlink" },
--	[279]	= { "mq_timedsend" },
--	[280]	= { "mq_timedreceive" },
--	[281]	= { "mq_notify" },
--	[282]	= { "mq_getsetattr" },
--	[283]	= { "sys_kexec_load" },
--};
--
- asmlinkage void do_syscall_trace(int leaving)
- {
--#if 0
--	unsigned long *argp;
--	const char *name;
--	unsigned argmask;
--	char buffer[16];
--
--	if (!kstrace)
--		return;
--
--	if (!current->mm)
--		return;
--
--	if (__frame->gr7 == __NR_close)
--		return;
--
--#if 0
--	if (__frame->gr7 != __NR_mmap2 &&
--	    __frame->gr7 != __NR_vfork &&
--	    __frame->gr7 != __NR_execve &&
--	    __frame->gr7 != __NR_exit)
--		return;
--#endif
--
--	argmask = 0;
--	name = NULL;
--	if (__frame->gr7 < NR_syscalls) {
--		name = __syscall_name_table[__frame->gr7].name;
--		argmask = __syscall_name_table[__frame->gr7].argmask;
--	}
--	if (!name) {
--		sprintf(buffer, "sys_%lx", __frame->gr7);
--		name = buffer;
--	}
--
--	if (!leaving) {
--		if (!argmask) {
--			printk(KERN_CRIT "[%d] %s(%lx,%lx,%lx,%lx,%lx,%lx)\n",
--			       current->pid,
--			       name,
--			       __frame->gr8,
--			       __frame->gr9,
--			       __frame->gr10,
--			       __frame->gr11,
--			       __frame->gr12,
--			       __frame->gr13);
--		}
--		else if (argmask == 0xffffff) {
--			printk(KERN_CRIT "[%d] %s()\n",
--			       current->pid,
--			       name);
--		}
--		else {
--			printk(KERN_CRIT "[%d] %s(",
--			       current->pid,
--			       name);
--
--			argp = &__frame->gr8;
--
--			do {
--				switch (argmask & 0xf) {
--				case 1:
--					printk("%ld", (long) *argp);
--					break;
--				case 2:
--					printk("%lo", *argp);
--					break;
--				case 3:
--					printk("%lx", *argp);
--					break;
--				case 4:
--					printk("%p", (void *) *argp);
--					break;
--				case 5:
--					printk("\"%s\"", (char *) *argp);
--					break;
--				}
--
--				argp++;
--				argmask >>= 4;
--				if (argmask)
--					printk(",");
--
--			} while (argmask);
--
--			printk(")\n");
--		}
--	}
--	else {
--		if ((int)__frame->gr8 > -4096 && (int)__frame->gr8 < 4096)
--			printk(KERN_CRIT "[%d] %s() = %ld\n", current->pid, name, __frame->gr8);
--		else
--			printk(KERN_CRIT "[%d] %s() = %lx\n", current->pid, name, __frame->gr8);
--	}
--	return;
--#endif
--
- 	if (!test_thread_flag(TIF_SYSCALL_TRACE))
- 		return;
+ 	ldi		@(gr15,#TI_FLAGS),gr4
+-	ori		gr4,#_TIF_SYSCALL_TRACE,gr4
+ 	andicc		gr4,#_TIF_SYSCALL_TRACE,gr0,icc0
+ 	bne		icc0,#0,__syscall_trace_entry
  
 
