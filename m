@@ -1,39 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761408AbZD1OQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760765AbZD1OSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761408AbZD1OQa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 10:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757574AbZD1OQV
+	id S1760765AbZD1OSq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 10:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756337AbZD1OSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 10:16:21 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54124 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756628AbZD1OQV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 10:16:21 -0400
-Date: Tue, 28 Apr 2009 15:17:28 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Fabio Comolli <fabio.comolli@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: OT - Regression: Cisco VPN module hangs 2.6.30-rcX
-Message-ID: <20090428151728.14f456b5@lxorguk.ukuu.org.uk>
-In-Reply-To: <b637ec0b0904280609h2583e72ds38867bdf7867a0a2@mail.gmail.com>
-References: <b637ec0b0904280609h2583e72ds38867bdf7867a0a2@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 28 Apr 2009 10:18:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60806 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751083AbZD1OSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 10:18:37 -0400
+Message-ID: <49F70FED.3040903@kernel.org>
+Date: Tue, 28 Apr 2009 07:17:17 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 8/9] x86/irq: make MSI irq_desc numa aware -v3
+References: <49E68C41.4020801@kernel.org> <20090416090315.GF9813@elte.hu> <49E802CE.5030406@kernel.org> <49E804AD.9020702@kernel.org> <49F6559F.7070005@kernel.org> <20090428101448.GA28495@elte.hu>
+In-Reply-To: <20090428101448.GA28495@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009 15:09:46 +0200
-Fabio Comolli <fabio.comolli@gmail.com> wrote:
+Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
+> 
+>> +#ifdef CONFIG_NUMA_IRQ_DESC
+>> +		/* different node ?*/
+>> +		if (desc_new->node != node)
+>> +			desc = move_irq_desc(desc, node);
+>> +#endif
+> 
+> this should have been CONFIG_NUMA_MIGRATE_IRQ_DESC. But even with 
+> that fixed, CONFIG_NUMA_MIGRATE_IRQ_DESC is _removed_ in the #2 
+> patch in your series and never reintroduced!
 
-> Hi all.
-> Please forgive me if this question is considered offtopic on this
-> list. I'm not sure where to post it.
+should change that to CONFIG_SPARSE_IRQ
 
-Cisco's own lists.
-
-You can probably use openconnect instead.
-
+YH
