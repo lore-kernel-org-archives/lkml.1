@@ -1,107 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbZD1UcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbZD1UdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323AbZD1UcG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbZD1Ubu
+	id S1756050AbZD1UdG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 16:33:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755286AbZD1Ucu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:31:50 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:54901 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753358AbZD1Ubt (ORCPT
+	Tue, 28 Apr 2009 16:32:50 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:57812 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754853AbZD1Uct (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:31:49 -0400
+	Tue, 28 Apr 2009 16:32:49 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=JOznjUBsMyjt7P2y9T7tWxad5vzSVQBSVbOWexigxpKJg53Xq48EzI5wabkK/2ps9H
-         VEKd15xN22B+S6XFT2PoaOIjVnG4H2Z08/90lLLBLiPikF8Dqf0LRL7vmlvzVOWhHC4s
-         rU0yt5AA4lT4rS9331SXaw4I9fZ+DQ95KVqv4=
-Subject: Re: [PATCH] Acer Aspire One Fan Control
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Peter Feuerer <peter@piie.net>
-Cc: petkovbb@gmail.com, LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-In-Reply-To: <cone.1240949852.549814.7466.1000@mentalhome>
-References: <cone.1240623959.159615.9486.1000@mentalhome>
-	 <cone.1240648971.372002.7492.1000@mentalhome>
-	 <20090426172947.GB3643@liondog.tnic>
-	 <cone.1240858632.795110.5316.1000@onepiie>
-	 <20090428072519.GA12170@liondog.tnic>
-	 <1240913055.29860.14.camel@maxim-laptop>
-	 <cone.1240949852.549814.7466.1000@mentalhome>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 28 Apr 2009 23:31:44 +0300
-Message-Id: <1240950704.3781.12.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=glheH6fu1qNNMk8TWE8KKOOOEfOValyGjxUNNn5AWLkZh/AvEsr7DJrqF9CpBIrsKC
+         PkGPsDo4wyd7B1WiJ59LX5/4uCwXUgJ0i15/um0b54y+mh6l/WmvXhQvqYeA4G0yMJPm
+         u8uvKLZgmHVognX/e3Rv4An1dWHpZfPfL2o7Y=
+Date: Tue, 28 Apr 2009 22:32:46 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+Subject: Re: BUG: Function graph tracer hang
+Message-ID: <20090428203244.GE7337@nowhere>
+References: <20090417144055.857407604@goodmis.org> <20090417151135.GG23493@elte.hu> <20090417151303.GA18267@elte.hu> <20090428111223.GA20526@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090428111223.GA20526@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-28 at 22:17 +0200, Peter Feuerer wrote:
-> Hi Maxim,
+On Tue, Apr 28, 2009 at 01:12:23PM +0200, Ingo Molnar wrote:
 > 
-> >> Their N270 datasheet
-> >> (http://download.intel.com/design/processor/datashts/320032.pdf) talks
-> >> about max Tj (junction temperature) being 90°C for a TDP of 2.5W and if
-> >> you operate below that limit "functionality and long-term reliability
-> >> can be expected." :)
-> >> 
-> >> There's also an internal termtrip sensor which is designed to go off at
-> >> Tj=125°C so, yeah, I guess something 70°C should be ok.
-> > 
-> > I have small note:
-> > 
-> > So yes cpu can withstand 90 C, but will rest of the motherboard?
-> > 
-> > (Most other cpus are rated at 60C)
+> FYI, a testbox triggered this message today:
 > 
-> That's why the module is started in "user mode" where the bios controls the 
-> fan. - The Bios just starts the fan as soon as the temperature is higher 
-> than 40 degree celsius.
+>   BUG: Function graph tracer hang!
 > 
-> The user must explicitely start "kernel mode" to make the kernel 
-> controlling the fan. Maybe we should add a warning somewhere, that it could 
-> harm the hardware?
-Then its fine.
+> i've attached the bootlog. Not sure how reproducible it is. I havent 
+> seen this message recently.
+> 
+> [    3.847095] Testing tracer function_graph: <3>INFO: RCU detected CPU 0 stall (t=10000 jiffies)
+> [   13.856011] Pid: 302, comm: kstop/0 Not tainted 2.6.30-rc3-tip #37050
+> [   13.856011] Call Trace:
+> [   13.856011]  <IRQ>  [<ffffffff802c677f>] check_cpu_stall+0x7a/0x11e
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff802105c8>] dump_trace+0x289/0x325
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff802118d9>] show_trace_log_lvl+0x51/0x5e
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff802118fb>] show_trace+0x15/0x17
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff80aa3362>] dump_stack+0x77/0x80
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff802c6841>] __rcu_pending+0x1e/0x16b
+> [   13.856011]  [<ffffffff8024c8c9>] ? cpumask_next+0x4/0x37
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff802c69ba>] rcu_pending+0x2c/0x5d
+> [   13.856011]  [<ffffffff80250112>] ? tg_shares_up+0x20c/0x22c
+> [   13.856011]  [<ffffffff8024c8c9>] ? cpumask_next+0x4/0x37
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff8027570c>] update_process_times+0x3c/0x7a
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff80294e16>] tick_periodic+0x7e/0x80
+> [   13.856011]  [<ffffffff802cd04f>] ? trace_clock_local+0x28/0x35
+> [   13.856011]  [<ffffffff802e7ab5>] ftrace_push_return_trace+0x84/0x108
+> [   13.856011]  [<ffffffff80250112>] ? tg_shares_up+0x20c/0x22c
+> [   13.856011]  [<ffffffff8022cfdd>] prepare_ftrace_return+0x104/0x164
+> [   13.856011]  [<ffffffff8020c9d6>] ftrace_graph_caller+0x46/0x6d
+> [   13.856011]  [<ffffffff8024c8ce>] ? cpumask_next+0x9/0x37
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff80294e3a>] tick_handle_periodic+0x22/0xa4
+> [   13.856011]  [<ffffffff8024ff06>] ? tg_shares_up+0x0/0x22c
+> [   13.856011]  [<ffffffff80247568>] ? tg_nop+0x0/0xd
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff80aaea0f>] smp_apic_timer_interrupt+0x9e/0xb6
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff8020d883>] apic_timer_interrupt+0x13/0x20
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff8025aba7>] walk_tg_tree+0xac/0x11a
+> [   13.856011]  [<ffffffff8025ffd6>] ? rebalance_domains+0xc0/0x2da
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff8025b030>] update_shares+0x64/0x69
+> [   13.856011]  [<ffffffff8020c9d6>] ? ftrace_graph_caller+0x46/0x6d
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff8025fa03>] load_balance+0xb6/0x5c9
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff802600e5>] rebalance_domains+0x1cf/0x2da
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff80260234>] run_rebalance_domains+0x44/0x153
+> [   13.856011]  [<ffffffff8020f75a>] do_softirq+0x82/0x196
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff8026f4cd>] __do_softirq+0x1a3/0x3b6
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff8020debc>] call_softirq+0x1c/0x28
+> [   13.856011]  [<ffffffff8020c9fd>] return_to_handler+0x0/0x33
+> [   13.856011]  [<ffffffff8026ec7a>] irq_exit+0x67/0xee
+> [   13.856011]  <EOI>  [<ffffffff802b532f>] ? stop_cpu+0x187/0x196
+> [   13.856011]  [<ffffffff8027fe94>] ? run_workqueue+0x20b/0x34a
+> [   13.856011]  [<ffffffff8027fe3b>] ? run_workqueue+0x1b2/0x34a
+> [   13.856011]  [<ffffffff80aa4053>] ? schedule+0x6ca/0x6f7
+> [   13.856011]  [<ffffffff802b51a8>] ? stop_cpu+0x0/0x196
+> [   13.856011]  [<ffffffff802800e0>] ? worker_thread+0x10d/0x123
+> [   13.856011]  [<ffffffff8028615f>] ? autoremove_wake_function+0x0/0x53
+> [   13.856011]  [<ffffffff8027ffd3>] ? worker_thread+0x0/0x123
+> [   13.856011]  [<ffffffff80285bb4>] ? kthread+0x71/0xb4
+> [   13.856011]  [<ffffffff8020ddba>] ? child_rip+0xa/0x20
+> [   13.856011]  [<ffffffff8020d714>] ? restore_args+0x0/0x30
+> [   13.856011]  [<ffffffff80285b43>] ? kthread+0x0/0xb4
+> [   13.856011]  [<ffffffff8020ddb0>] ? child_rip+0x0/0x20
 
-(I probably won't turn fan off though).
-
-I have a aspire one, so I install this driver.
-one more note thought, you might want to rename it to something else,
-or maybe merge with acer-wmi?
-
-If I understand correctly, this driver also provides temperature
-reading, which is in my opinion very nice.
-Thus, this seems more a 'acer aspire extras'
-
-Or, maybe even better, maybe you can name it a 'EC extra driver', since
-today many notebooks are controlled via EC, and thus you or other
-contributors might add more features to this driver.
-How about a EC register dump for example in /sys, so users could look at
-EC registers comfortably
-
-But of course, I think this driver should first be merged.
-
-Another small note, is would be very nice to have a locking mechanism
-for EC reads/writes, so there would be no conflicts between accesses.
-
-For example my main notebook, acer 5720, has semi broken fan control
-(they broke it in newer bioses, but I have to use them, because fan
-won't work at all in 64-bit OS I use (linux of course).
-
-There is a way to control the fan, by writing fake temperatures to EC
-and doing that very often, since I think SMI writes there too.
-But when I do so, ofnen other EC related things fail, like brightness
-control for example. I think this is due to the fact that acer_ec does
-direct I/O.
-
-so I would like to see a interface to read/write EC properly.
-
-Best regards, and thanks,
-	Maxim Levitsky
 
 
+Stuck in the timer interrupt.
+
+
+> CONFIG_HZ_1000=y
+> CONFIG_HZ=1000
+
+
+A lot of timer interrupts.
+
+
+
+> CONFIG_PROFILE_ALL_BRANCHES=y
+
+And, looks like a very close recipe to the last hangs we had with
+the function graph tracer.
+So I'm tempted by the same diagnosis you did with branch prediction
+tracing.
+
+Note that the branch profiler does that:
+
+______f.miss_hit[______r]++;
+
+Which is a read + write on the cacheline.
+If each "if" are profiled in the timer interrupt, we can
+have the cachelines doing a ping-pong of dirtifying since the above
+variable is shared.
+
+Then the timer interrupt becomes slower. The function graph tracer itself makes
+it slower.
+Moreover it is traced itself. So not only the "if" in code are traced, but also
+each "if" processed by the function graph tracer on function calls and returns.
+
+Which means a fair amount of cacheline dirtifying.
+
+Then if the timer interrupt is slowed, and we have a lot of them (1000 Hz),
+the system spends all of its time inside it.
+
+At least we need the branch tracing to be done per cpu, I guess.
+
+Frederic.
 
