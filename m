@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762563AbZD1Q2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762057AbZD1Qaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762563AbZD1Q2w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756174AbZD1Q2m
+	id S1762057AbZD1Qaw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbZD1Qan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:28:42 -0400
-Received: from outbound-mail-130.bluehost.com ([67.222.38.30]:60114 "HELO
-	outbound-mail-130.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755683AbZD1Q2m (ORCPT
+	Tue, 28 Apr 2009 12:30:43 -0400
+Received: from outbound-mail-311.bluehost.com ([67.222.54.4]:53866 "HELO
+	outbound-mail-311.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755268AbZD1Qam (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:28:42 -0400
+	Tue, 28 Apr 2009 12:30:42 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
 	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=bxvb3DDC4iJ5yqbB3FNNd+vUQ5CZPBLowueXTS3+FZJK9g9fnpSLfG1C7BKg7pAdpF12qC0wtZDAbxPKDNTM7GZUaTSBmhqDjDth7bOL85VZOjP+8L1c60v5oqYoLf3G;
-Date: Tue, 28 Apr 2009 09:28:35 -0700
+	b=AsCtahkZGEOK8gJEb0DRahyHQeUiyLT53DObvqcBpu6afcw4ztRJnx7wce2fZGCOEJCTpUqj6BAV6oA7tDlIqK1qqjQK0RUCL9hI8hcmC+ec6IOLnQFSpRRxNbX8WCCQ;
+Date: Tue, 28 Apr 2009 09:28:50 -0700
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Yinghai Lu <yinghai@kernel.org>, linux-pci@vger.kernel.org,
@@ -24,7 +24,7 @@ Cc: Yinghai Lu <yinghai@kernel.org>, linux-pci@vger.kernel.org,
        Rusty Russell <rusty@rustcorp.com.au>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH 9/9] irq: make ht irq_desc numa aware
-Message-ID: <20090428092835.3cc252d3@hobbes>
+Message-ID: <20090428092850.7f1559c9@hobbes>
 In-Reply-To: <20090428101917.GB28495@elte.hu>
 References: <49E68C41.4020801@kernel.org>
 	<20090416090315.GF9813@elte.hu>
@@ -59,9 +59,8 @@ Ingo Molnar <mingo@elte.hu> wrote:
 > Looks good - but this really needs an Ack from Jesse (Cc:-ed) before 
 > we can pick it up into the irq tree.
 
-Looks fine.  I had to look up what the first arg of create_irq_nr meant
-(maybe we should have an IRQ_NR_ANY #define for that?), but otherwise
-it looks fine.
+Oh sorry meant to add:
+Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
 -- 
 Jesse Barnes, Intel Open Source Technology Center
