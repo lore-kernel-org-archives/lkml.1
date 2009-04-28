@@ -1,138 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761644AbZD1PaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761721AbZD1Pg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761644AbZD1PaW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbZD1P37
+	id S1761721AbZD1Pg3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:36:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbZD1PgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:29:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50394 "EHLO mx2.redhat.com"
+	Tue, 28 Apr 2009 11:36:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52299 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752745AbZD1P36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:29:58 -0400
-Message-ID: <49F7209E.2090405@redhat.com>
-Date: Tue, 28 Apr 2009 11:28:30 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1753326AbZD1PgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 11:36:17 -0400
+Message-ID: <49F72205.7030306@kernel.org>
+Date: Tue, 28 Apr 2009 08:34:29 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Swappiness vs. mmap() and interactive response
-References: <20090428044426.GA5035@eskimo.com> <20090428143019.EBBF.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20090428143019.EBBF.A69D9226@jp.fujitsu.com>
-Content-Type: multipart/mixed;
- boundary="------------030309060908000804060301"
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [RFC PATCH] use dev_set_name(,NULL) to prevent leaking
+References: <20090416235452.GE21405@elte.hu> <alpine.LFD.2.00.0904181141100.4042@localhost.localdomain> 	<49EA27B9.3030004@kernel.org> <20090418192314.GA22107@suse.de> 	<ac3eb2510904181300v2593c36dua6c2420828860706@mail.gmail.com> 	<1240086446.2411.9.camel@poy> <20090418203718.GD30144@elte.hu> 	<49EA4EB9.2030307@kernel.org> <49F6B1E6.7050008@kernel.org> 	<49F6B350.9080703@kernel.org> <ac3eb2510904280125w11a58388u6a51997e28609009@mail.gmail.com> <49F71EF6.3050102@kernel.org>
+In-Reply-To: <49F71EF6.3050102@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030309060908000804060301
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-
-KOSAKI Motohiro wrote:
-
->> Next, I set the following:
+Yinghai Lu wrote:
+> Kay Sievers wrote:
+>> On Tue, Apr 28, 2009 at 09:42, Yinghai Lu <yinghai@kernel.org> wrote:
+>>> those about 1/3 dev_set_name() etc.
+>> put_device()?
 >>
->> echo 0 > /proc/sys/vm/swappiness
+>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=drivers/base/core.c;h=4aa527b8a91381289eb175b33f46e3e418d10374;hb=HEAD#l848
 >>
->> ... hoping it would prevent paging out of the UI in favor of file data that's
->> only used once.  It did appear to help to a small degree, but not much.  The
->> system is still effectively unusable while a file copy is going on.
->>
->> From this, I diagnosed that most likely, the kernel was paging out all my
->> application file mmap() data (such as my executables and shared libraries) in
->> favor of total garbage VM load from the file copy.
+> ok, normal release path seems right, put_device will free the name.
+> 
+> how about other fail path, that there is not put_device involved?
+> 
+ 
+looks like need to follow this pattern
 
-I believe your analysis is correct.
+static int
+sa1111_init_one_child(struct sa1111 *sachip, struct resource *parent,
+                      struct sa1111_dev_info *info)
+{
+        struct sa1111_dev *dev;
+        int ret;
 
-When merging the split LRU code upstream, some code was changed
-(for scalability reasons) that results in active file pages being
-moved to the inactive list any time we evict inactive file pages.
+        dev = kzalloc(sizeof(struct sa1111_dev), GFP_KERNEL);
+        if (!dev) {
+                ret = -ENOMEM;
+                goto out;
+        }
 
-Even if the active file pages are referenced, they are not
-protected from the streaming IO.
+        dev_set_name(&dev->dev, "%4.4lx", info->offset);
+        dev->devid       = info->devid;
+        dev->dev.parent  = sachip->dev;
+        dev->dev.bus     = &sa1111_bus_type;
+        dev->dev.release = sa1111_dev_release;
+        dev->dev.coherent_dma_mask = sachip->dev->coherent_dma_mask;
+        dev->res.start   = sachip->phys + info->offset;
+        dev->res.end     = dev->res.start + 511;
+        dev->res.name    = dev_name(&dev->dev);
+        dev->res.flags   = IORESOURCE_MEM;
+        dev->mapbase     = sachip->base + info->offset;
+        dev->skpcr_mask  = info->skpcr_mask;
+        memmove(dev->irq, info->irq, sizeof(dev->irq));
 
-However, the use-once policy in the VM depends on the active
-pages being protected from streaming IO.
+        ret = request_resource(parent, &dev->res);
+        if (ret) {
+                printk("SA1111: failed to allocate resource for %s\n",
+                        dev->res.name);
+                dev_set_name(&dev->dev, NULL); ============> clear the name
+                kfree(dev);
+                goto out;
+        }
+        
 
-A little before the decision to no longer honor the referenced
-bit on active file pages was made, we dropped an ugly patch (by
-me) after deciding it was just too much of a hack.  However, now
-that we have _no_ protection for active file pages against large
-amounts of streaming IO, we may want to reinstate something like
-it.  Hopefully in a prettier way...
+        ret = device_register(&dev->dev);
+        if (ret) {
+                release_resource(&dev->res);
+                put_device(&dev->dev);   ==================> put the device...
+                kfree(dev);
+                goto out;
+        }
 
-The old patch is attached for inspiration, discussion and maybe
-testing :)
 
--- 
-All rights reversed.
+YH
 
---------------030309060908000804060301
-Content-Type: text/plain;
- name="evict-cache-first.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="evict-cache-first.patch"
-
-V2hlbiB0aGVyZSBpcyBhIGxvdCBvZiBzdHJlYW1pbmcgSU8gZ29pbmcgb24sIHdlIGRvIG5v
-dCB3YW50CnRvIHNjYW4gb3IgZXZpY3QgcGFnZXMgZnJvbSB0aGUgd29ya2luZyBzZXQuICBU
-aGUgb2xkIFZNIHVzZWQKdG8gc2tpcCBhbnkgbWFwcGVkIHBhZ2UsIGJ1dCBzdGlsbCBldmlj
-dCBpbmRpcmVjdCBibG9ja3MgYW5kCm90aGVyIGRhdGEgdGhhdCBpcyB1c2VmdWwgdG8gY2Fj
-aGUuCgpUaGlzIHBhdGNoIGFkZHMgbG9naWMgdG8gc2tpcCBzY2FubmluZyB0aGUgYW5vbiBs
-aXN0cyBhbmQKdGhlIGFjdGl2ZSBmaWxlIGxpc3QgaWYgbW9zdCBvZiB0aGUgZmlsZSBwYWdl
-cyBhcmUgb24gdGhlCmluYWN0aXZlIGZpbGUgbGlzdCAod2hlcmUgc3RyZWFtaW5nIElPIHBh
-Z2VzIGxpdmUpLCB3aGlsZQphdCB0aGUgbG93ZXN0IHNjYW5uaW5nIHByaW9yaXR5LgoKSWYg
-dGhlIHN5c3RlbSBpcyBub3QgZG9pbmcgYSBsb3Qgb2Ygc3RyZWFtaW5nIElPLCBlZy4gdGhl
-CnN5c3RlbSBpcyBydW5uaW5nIGEgZGF0YWJhc2Ugd29ya2xvYWQsIHRoZW4gbW9yZSBvZnRl
-biB1c2VkCmZpbGUgcGFnZXMgd2lsbCBiZSBvbiB0aGUgYWN0aXZlIGZpbGUgbGlzdCBhbmQg
-dGhpcyBsb2dpYwppcyBhdXRvbWF0aWNhbGx5IGRpc2FibGVkLgoKU2lnbmVkLW9mZi1ieTog
-UmlrIHZhbiBSaWVsIDxyaWVsQHJlZGhhdC5jb20+Ci0tLQogaW5jbHVkZS9saW51eC9tbXpv
-bmUuaCB8ICAgIDEgKwogbW0vdm1zY2FuLmMgICAgICAgICAgICB8ICAgMTggKysrKysrKysr
-KysrKysrKy0tCiAyIGZpbGVzIGNoYW5nZWQsIDE3IGluc2VydGlvbnMoKyksIDIgZGVsZXRp
-b25zKC0pCgpJbmRleDogbGludXgtMi42LjI2LXJjOC1tbTEvaW5jbHVkZS9saW51eC9tbXpv
-bmUuaAo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYuMjYtcmM4LW1tMS5vcmlnL2luY2x1
-ZGUvbGludXgvbW16b25lLmgJMjAwOC0wNy0wNyAxNTo0MTozMi4wMDAwMDAwMDAgLTA0MDAK
-KysrIGxpbnV4LTIuNi4yNi1yYzgtbW0xL2luY2x1ZGUvbGludXgvbW16b25lLmgJMjAwOC0w
-Ny0xNSAxNDo1ODo1MC4wMDAwMDAwMDAgLTA0MDAKQEAgLTQ1Myw2ICs0NTMsNyBAQCBzdGF0
-aWMgaW5saW5lIGludCB6b25lX2lzX29vbV9sb2NrZWQoY29uCiAgKiBxdWV1ZXMgKCJxdWV1
-ZV9sZW5ndGggPj4gMTIiKSBkdXJpbmcgYW4gYWdpbmcgcm91bmQuCiAgKi8KICNkZWZpbmUg
-REVGX1BSSU9SSVRZIDEyCisjZGVmaW5lIFBSSU9fQ0FDSEVfT05MWSBERUZfUFJJT1JJVFkr
-MQogCiAvKiBNYXhpbXVtIG51bWJlciBvZiB6b25lcyBvbiBhIHpvbmVsaXN0ICovCiAjZGVm
-aW5lIE1BWF9aT05FU19QRVJfWk9ORUxJU1QgKE1BWF9OVU1OT0RFUyAqIE1BWF9OUl9aT05F
-UykKSW5kZXg6IGxpbnV4LTIuNi4yNi1yYzgtbW0xL21tL3Ztc2Nhbi5jCj09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT0KLS0tIGxpbnV4LTIuNi4yNi1yYzgtbW0xLm9yaWcvbW0vdm1zY2FuLmMJMjAwOC0wNy0w
-NyAxNTo0MTozMy4wMDAwMDAwMDAgLTA0MDAKKysrIGxpbnV4LTIuNi4yNi1yYzgtbW0xL21t
-L3Ztc2Nhbi5jCTIwMDgtMDctMTUgMTU6MTA6MDUuMDAwMDAwMDAwIC0wNDAwCkBAIC0xNDgx
-LDYgKzE0ODEsMjAgQEAgc3RhdGljIHVuc2lnbmVkIGxvbmcgc2hyaW5rX3pvbmUoaW50IHBy
-aQogCQl9CiAJfQogCisJLyoKKwkgKiBJZiB0aGVyZSBpcyBhIGxvdCBvZiBzZXF1ZW50aWFs
-IElPIGdvaW5nIG9uLCBtb3N0IG9mIHRoZQorCSAqIGZpbGUgcGFnZXMgd2lsbCBiZSBvbiB0
-aGUgaW5hY3RpdmUgZmlsZSBsaXN0LiAgV2Ugc3RhcnQKKwkgKiBvdXQgYnkgcmVjbGFpbWlu
-ZyB0aG9zZSBwYWdlcywgd2l0aG91dCBwdXR0aW5nIHByZXNzdXJlIG9uCisJICogdGhlIHdv
-cmtpbmcgc2V0LiAgV2Ugb25seSBkbyB0aGlzIGlmIHRoZSBidWxrIG9mIHRoZSBmaWxlIHBh
-Z2VzCisJICogYXJlIG5vdCBpbiB0aGUgd29ya2luZyBzZXQgKG9uIHRoZSBhY3RpdmUgZmls
-ZSBsaXN0KS4KKwkgKi8KKwlpZiAocHJpb3JpdHkgPT0gUFJJT19DQUNIRV9PTkxZICYmCisJ
-CQkobnJbTFJVX0lOQUNUSVZFX0ZJTEVdID4gbnJbTFJVX0FDVElWRV9GSUxFXSkpCisJCWZv
-cl9lYWNoX2V2aWN0YWJsZV9scnUobCkKKwkJCS8qIFNjYW4gb25seSB0aGUgaW5hY3RpdmVf
-ZmlsZSBsaXN0LiAqLworCQkJaWYgKGwgIT0gTFJVX0lOQUNUSVZFX0ZJTEUpCisJCQkJbnJb
-bF0gPSAwOworCiAJd2hpbGUgKG5yW0xSVV9JTkFDVElWRV9BTk9OXSB8fCBucltMUlVfQUNU
-SVZFX0ZJTEVdIHx8CiAJCQkJCW5yW0xSVV9JTkFDVElWRV9GSUxFXSkgewogCQlmb3JfZWFj
-aF9ldmljdGFibGVfbHJ1KGwpIHsKQEAgLTE2MDksNyArMTYyMyw3IEBAIHN0YXRpYyB1bnNp
-Z25lZCBsb25nIGRvX3RyeV90b19mcmVlX3BhZ2UKIAkJfQogCX0KIAotCWZvciAocHJpb3Jp
-dHkgPSBERUZfUFJJT1JJVFk7IHByaW9yaXR5ID49IDA7IHByaW9yaXR5LS0pIHsKKwlmb3Ig
-KHByaW9yaXR5ID0gUFJJT19DQUNIRV9PTkxZOyBwcmlvcml0eSA+PSAwOyBwcmlvcml0eS0t
-KSB7CiAJCXNjLT5ucl9zY2FubmVkID0gMDsKIAkJaWYgKCFwcmlvcml0eSkKIAkJCWRpc2Fi
-bGVfc3dhcF90b2tlbigpOwpAQCAtMTc3MSw3ICsxNzg1LDcgQEAgbG9vcF9hZ2FpbjoKIAlm
-b3IgKGkgPSAwOyBpIDwgcGdkYXQtPm5yX3pvbmVzOyBpKyspCiAJCXRlbXBfcHJpb3JpdHlb
-aV0gPSBERUZfUFJJT1JJVFk7CiAKLQlmb3IgKHByaW9yaXR5ID0gREVGX1BSSU9SSVRZOyBw
-cmlvcml0eSA+PSAwOyBwcmlvcml0eS0tKSB7CisJZm9yIChwcmlvcml0eSA9IFBSSU9fQ0FD
-SEVfT05MWTsgcHJpb3JpdHkgPj0gMDsgcHJpb3JpdHktLSkgewogCQlpbnQgZW5kX3pvbmUg
-PSAwOwkvKiBJbmNsdXNpdmUuICAwID0gWk9ORV9ETUEgKi8KIAkJdW5zaWduZWQgbG9uZyBs
-cnVfcGFnZXMgPSAwOwogCg==
---------------030309060908000804060301--
