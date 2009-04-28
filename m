@@ -1,131 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759912AbZD1Oq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbZD1OtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759912AbZD1Oq5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 10:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbZD1Oqr
+	id S1761326AbZD1OtP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 10:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZD1Os6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 10:46:47 -0400
-Received: from sh.osrg.net ([192.16.179.4]:60045 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756557AbZD1Oqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 10:46:47 -0400
-Date: Tue, 28 Apr 2009 23:44:51 +0900
-To: mmx@riz.pl
-Cc: fujita.tomonori@lab.ntt.co.jp, rientjes@google.com, cl@linux.com,
-       penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, rjw@sisk.pl, akpm@linux-foundation.org,
-       jens.axboe@oracle.com
-Subject: Re: [Bug #13112] Oops in drain_array
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <Pine.LNX.4.64.0904281425040.2455@galaxy.riz.pl>
-References: <alpine.DEB.2.00.0904271327140.11650@chino.kir.corp.google.com>
-	<20090428171139N.fujita.tomonori@lab.ntt.co.jp>
-	<Pine.LNX.4.64.0904281425040.2455@galaxy.riz.pl>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090428234512P.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 28 Apr 2009 23:44:53 +0900 (JST)
+	Tue, 28 Apr 2009 10:48:58 -0400
+Received: from smtp.flash.net.br ([201.46.240.48]:53394 "EHLO
+	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757181AbZD1Os6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 10:48:58 -0400
+Date: Tue, 28 Apr 2009 11:48:14 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: minimizing the configuration of
+	linkstation_defconfig
+Message-ID: <20090428144814.GA14926@ime.usp.br>
+References: <20090424065816.GA15525@ime.usp.br> <Pine.LNX.4.64.0904242158210.8309@axis700.grange> <20090424223355.GB7858@ime.usp.br> <2CE2BC61-1C6B-4D01-870B-BC460730AD79@kernel.crashing.org> <20090428022711.GA30538@ime.usp.br> <F78629F9-59D2-4974-8461-06B7FAC2625D@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <F78629F9-59D2-4974-8461-06B7FAC2625D@kernel.crashing.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009 14:43:37 +0200 (CEST)
-Bart <mmx@riz.pl> wrote:
+On Apr 28 2009, Kumar Gala wrote:
+> I'm pretty sure we need this for old initrd style ramdisks so I'd prefer 
+> we leave it enabled.
 
-> > On Mon, 27 Apr 2009 13:36:46 -0700 (PDT)
-> > David Rientjes <rientjes@google.com> wrote:
-> >
-> >> On Mon, 27 Apr 2009, Bart wrote:
-> >>
-> >>> After turning the suggested debuging options I've got tons of these when
-> >>> trying to stress the tape device like before:
-> >>>
-> >>> Apr 27 16:57:30 fs kernel: [   96.446708] slab error in verify_redzone_free():
-> >>> cache `size-128': memory outside object was overwritten
-> >>> Apr 27 16:57:30 fs kernel: [   96.446713] Pid: 0, comm: swapper Not tainted
-> >>> 2.6.29.1-64 #2
-> >>> Apr 27 16:57:30 fs kernel: [   96.446715] Call Trace:
-> >>> Apr 27 16:57:30 fs kernel: [   96.446717]  <IRQ>  [<ffffffff8029adc5>]
-> >>> __slab_error+0x1f/0x25
-> >>> Apr 27 16:57:30 fs kernel: [   96.446728]  [<ffffffff8029b24b>]
-> >>> cache_free_debugcheck+0x108/0x1d6
-> >>> Apr 27 16:57:30 fs kernel: [   96.446731]  [<ffffffff8029b473>]
-> >>> kfree+0x81/0xc2
-> >>> Apr 27 16:57:30 fs kernel: [   96.446735]  [<ffffffff802bd311>]
-> >>> bio_free_map_data+0xc/0x1e
-> >>
-> >> This appears to be kfree(bmd->iovecs) in bio_free_map_data().  It looks
-> >> like the memcpy size in bio_set_map_data() overrides the kmalloc size; in
-> >> other words, for a redzone error, bio->bi_vcnt > nr_pages in
-> >> bio_copy_user_iov().
-> >
-> > Can you try this?
-> >
-> > diff --git a/fs/bio.c b/fs/bio.c
-> > index 7bbc98f..6a09356 100644
-> > --- a/fs/bio.c
-> > +++ b/fs/bio.c
-> > @@ -817,6 +817,9 @@ struct bio *bio_copy_user_iov(struct request_queue *q,
-> > 		len += iov[i].iov_len;
-> > 	}
-> >
-> > +	if (offset)
-> > +		nr_pages += 1;
-> > +
-> > 	bmd = bio_alloc_map_data(nr_pages, iov_count, gfp_mask);
-> > 	if (!bmd)
-> > 		return ERR_PTR(-ENOMEM);
-> >
-> 
-> There are no more errors in the dmesg after applying this patch to 
-> 2.6.29.2.
-> 
-> Without this patch I can reproduce this kind of errors on 
-> 2.6.29.1, 2.6.29.2.
-> 
-> I've not tested this patch with 2.6.29.1 and 2.6.30rc3-git3.
-> I will try to reproduce the error on 2.6.30rc3-git3 as soon as I compile 
-> it.
+Oh, for oldstyle it is needed. You're right. It is better to keep it in
+the defconfig. Just drop the hunk from the patch that I sent you.
 
-Thanks for testing! And very sorry about the bug.
+>> Thanks. The MTD & PHYMAP_COMPAT are the things that have been bugging
+>> me and my main reason to keep with the bleeding edge kernels is to
+>> get things whey they were (regarding mtd) as in kernel 2.6.28.
+>>
+>> As I have no experience with MTD devices, I would appreciate a
+>> reference to their workings... All that I know is that all my
+>> /dev/mtd* devices are gone if I boot a 2.6.29* kernel.
+>>
+>> Of course, I can do a git bisect process (since the MTD subsystem
+>> doesn't work as it did in the past even if I enable PHYMAP_COMPAT and
+>> put the same settings there, quite unfortunately).
+>
+> ok.. I killed my kurobox long ago so can't be much help here.
 
-I'm sure that you hit the same bug with 2.6.30-rc3-git.
+Oh... :-(
 
-Jens, can you please apply this against 2.6.30-rc (and we need this
-for 2.6.29.x too)?
+I will post the problems that I get with MTD on my kurobox so that
+people from both the linux-mtd/linuxppc-dev lists can see what is
+happening and suggest some fixes.
 
-I know that bio_copy_user_iov() is hacky. I'll try to clean up the
-mapping API later.
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] bio: fix memcpy corruption in bio_copy_user_iov()
+Thanks, Rogério Brito.
 
-st driver uses blk_rq_map_user() in order to just build a request out
-of page frames. In this case, map_data->offset is a non zero value and
-iov[0].iov_base is NULL. We need to increase nr_pages for that.
-
-Cc: stable@kernel.org
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- fs/bio.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/fs/bio.c b/fs/bio.c
-index 7bbc98f..9871164 100644
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -817,6 +817,9 @@ struct bio *bio_copy_user_iov(struct request_queue *q,
- 		len += iov[i].iov_len;
- 	}
- 
-+	if (offset)
-+		nr_pages++;
-+
- 	bmd = bio_alloc_map_data(nr_pages, iov_count, gfp_mask);
- 	if (!bmd)
- 		return ERR_PTR(-ENOMEM);
 -- 
-1.6.0.6
-
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
