@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761621AbZD1PFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761671AbZD1PGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761621AbZD1PFy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZD1PFp
+	id S1761671AbZD1PGo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbZD1PG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:05:45 -0400
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:36963
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752116AbZD1PFp convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:05:45 -0400
-X-BigFish: VPS-1(zz4015Lzz1202hzzz32i6bh43j64h)
-X-Spam-TCS-SCL: 3:0
-X-FB-SS: 5,
-X-WSS-ID: 0KITGL5-02-1BU-01
-Date: Tue, 28 Apr 2009 17:05:31 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: David Woodhouse <dwmw2@infradead.org>
-CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       mingo@redhat.com, fujita.tomonori@lab.ntt.co.jp, airlied@linux.ie
-Subject: IOMMU and graphics cards
-Message-ID: <20090428150531.GZ17438@amd.com>
+	Tue, 28 Apr 2009 11:06:29 -0400
+Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:33034
+	"EHLO WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753039AbZD1PG2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 11:06:28 -0400
+X-BigFish: VPS-8(zz1443R10d1Izz1202hzzz32i43j65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0KITGMH-01-UA3-01
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: akpm@linux-foundation.org, greg@kroah.com
+CC: <linux-kernel@vger.kernel.org>, Borislav Petkov <borislav.petkov@amd.com>
+Subject: [RFC PATCH 00/21] amd64_edac: EDAC module for AMD64
+Date: Tue, 28 Apr 2009 17:05:52 +0200
+Message-ID: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
+X-Mailer: git-send-email 1.6.2.4
+X-OriginalArrivalTime: 28 Apr 2009 15:06:17.0537 (UTC) FILETIME=[E185AB10:01C9C812]
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 28 Apr 2009 15:05:32.0206 (UTC) FILETIME=[C680B4E0:01C9C812]
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+Hi Andrew,
+hi Greg,
 
-as I have seen the VT-d code implements a workaround for broken graphics
-card drivers. What it does, when enabled, is giving each grahics device
-direct access to all physical memory. I really don't like to implement
-this but a similar workaround for the AMD IOMMU seems to be necessary.
-The biggest problem here is that this kind of workaround disables device
-isolation for graphics cards. Device isolation is the main reason for
-using an IOMMU in an unvirtualized environment. So if this workaround is
-enabled it is as good as disable the IOMMU at all.
-Thats why I think a kernel compile option for this workaround is not
-sufficient. Distributors will probably enable this in their kernels
-which also disables device isolation even if the user don't want to use
-these broken drivers.
-I think we should change that and provide a better way which allows to
-enable this workaround only if it is required (and it should be
-transparent to the user which IOMMU is built into the system).
-We have several options to do this:
+I think you've already heard about this driver, so here is a first
+upstream submission request. It is quite sizable but partly the reason
+for it is that it handles ECC detection and reporting for all AMD
+K8, F10h and F11h families. It also implements DRAM error injection
+functionality, failing DIMM module detection and some other fun stuff
+found on F10h and later CPUs.
 
-	* Implement a kernel command line option to enable/disable the
-	  workaround (what should be default?)
-	* Use the IOMMU-API and write a kernel module which creates a
-	  direct mapped protection domain and assigns the graphics
-	  cards to it (need to be done carefully to not break graphics 
-	  drivers which do everything right and use the DMA-API)
-	* Any other great idea?
+We've been doing testing/bugfixing/scrubbing here for some time, have
+converted it to using kernel facilities and basically removed some slack
+from it like glue code due to it being maintained out-of-tree. Please
+take a look and let us know of any objections/comments you might have so
+that we could tackle them on time.
 
-So what do you (and all the others reading this :-) think? I would
-prefer the way of implementing a module but there may also be reasons
-against this. I would like this to be disussed before I implement the
-workaround for the AMD IOMMU.
+Thanks in advance.
 
-Thanks,
-
-	Joerg
-
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+ drivers/edac/Kconfig      |   26 +
+ drivers/edac/Makefile     |    1 +
+ drivers/edac/amd64_edac.c | 5249 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 5276 insertions(+), 0 deletions(-)
 
