@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932581AbZD1PWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762588AbZD1PW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932581AbZD1PWf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932123AbZD1PVi
+	id S1762588AbZD1PW5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932297AbZD1PVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:21:38 -0400
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:51084 "EHLO
-	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1762065AbZD1PVg (ORCPT
+	Tue, 28 Apr 2009 11:21:39 -0400
+Received: from wa4ehsobe002.messaging.microsoft.com ([216.32.181.12]:36747
+	"EHLO WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1761841AbZD1PVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:21:36 -0400
-X-BigFish: VPS-6(zz936eQzz1202hzzz32i43j)
+	Tue, 28 Apr 2009 11:21:37 -0400
+X-Greylist: delayed 901 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Apr 2009 11:21:37 EDT
+X-BigFish: VPS-6(zz936eQzz1202hzzz32i43j66h)
+X-Spam-TCS-SCL: 5:0
 X-FB-SS: 5,
-X-WSS-ID: 0KITGMH-02-1DH-01
+X-WSS-ID: 0KITGMK-01-UAA-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: akpm@linux-foundation.org, greg@kroah.com
 CC: <linux-kernel@vger.kernel.org>, Doug Thompson <dougthompson@xmission.com>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 04/21] amd64_edac: add sys addr to memory controller mapping helpers
-Date: Tue, 28 Apr 2009 17:05:56 +0200
-Message-ID: <1240931173-17477-5-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 05/21] amd64_edac: add functionality to compute the DRAM hole
+Date: Tue, 28 Apr 2009 17:05:57 +0200
+Message-ID: <1240931173-17477-6-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
 References: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 28 Apr 2009 15:06:19.0162 (UTC) FILETIME=[E27D9FA0:01C9C812]
+X-OriginalArrivalTime: 28 Apr 2009 15:06:19.0615 (UTC) FILETIME=[E2C2BEF0:01C9C812]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,181 +37,189 @@ From: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |  163 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 163 insertions(+), 0 deletions(-)
+ drivers/edac/amd64_edac.c |  172 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 172 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 13dc472..b33757b 100644
+index b33757b..5f42ff6 100644
 --- a/drivers/edac/amd64_edac.c
 +++ b/drivers/edac/amd64_edac.c
-@@ -1116,4 +1116,167 @@ static int amd64_get_scrub_rate(struct mem_ctl_info *mci, u32 *bw)
- 	return status;
+@@ -1280,3 +1280,175 @@ found:
+ 
+ 	return edac_mc_find(node_id);
  }
- 
++
 +/*
-+ * amd64_map_to_dcs_mask
++ * base_from_dct_base
 + *
-+ *	Map from a CSROW entry to the mask entry that operates on it
++ *	Extract the DRAM CS base address from selected csrow register
 + */
-+static inline u32 amd64_map_to_dcs_mask(struct amd64_pvt *pvt, int csrow)
++static u64 base_from_dct_base(struct amd64_pvt *pvt, int csrow)
 +{
-+	return csrow >> (pvt->num_dcsm >> 3);
++	return ((u64) (amd64_get_dct_base(pvt, 0, csrow) & pvt->dcsb_base)) <<
++				pvt->dcs_shift;
 +}
 +
 +/*
-+ * amd64_get_dct_base()
++ * mask_from_dct_mask
 + *
-+ *	getter function to return the 'base' address the i'th CS entry
-+ *	of the 'dct' DRAM controller
++ *	Extract the Mask from the dcsb0[csrow] entry
++ *	Depends on CPU Revision on how to extract this information
 + */
-+static u32 amd64_get_dct_base(struct amd64_pvt *pvt, int dct, int csrow)
++static u64 mask_from_dct_mask(struct amd64_pvt *pvt, int csrow)
 +{
-+	if (dct == 0)
-+		return pvt->dcsb0[csrow];
-+	else
-+		return pvt->dcsb1[csrow];
-+}
++	u64 dcsm_bits, other_bits;
++	u64 mask;
 +
-+/*
-+ * amd64_get_dct_mask()
-+ *
-+ *	getter function to return the 'mask' address the i'th CS entry.
-+ *	This getter function is needed because there different number
-+ *	of DCSM registers on Rev E and prior vs Rev F and later
-+ */
-+static u32 amd64_get_dct_mask(struct amd64_pvt *pvt, int dct, int csrow)
-+{
-+	if (dct == 0)
-+		return pvt->dcsm0[amd64_map_to_dcs_mask(pvt, csrow)];
-+	else
-+		return pvt->dcsm1[amd64_map_to_dcs_mask(pvt, csrow)];
-+}
++	/* Extract bits bits 29-21 and 15-9 from DCSM (section 3.5.5). */
++	dcsm_bits = amd64_get_dct_mask(pvt, 0, csrow) & pvt->dcsm_mask;
 +
++	/* Set all bits except bits 33-25 and 19-13. */
++	other_bits = pvt->dcsm_mask;
++	other_bits = ~(other_bits << pvt->dcs_shift);
 +
-+/*
-+ * amd64_get_base_and_limit()
-+ *
-+ * In *base and *limit, pass back the full 40-bit base and limit physical
-+ * addresses for the node given by node_id.  This information is obtained from
-+ * DRAM Base (section 3.4.4.1) and DRAM Limit (section 3.4.4.2) registers. The
-+ * base and limit addresses are of type SysAddr, as defined at the start of
-+ * section 3.4.4 (p. 70).  They are the lowest and highest physical addresses
-+ * in the address range they represent.
-+ */
-+static void amd64_get_base_and_limit(struct amd64_pvt *pvt, int node_id,
-+			       u64 *base, u64 *limit)
-+{
-+	*base = pvt->dram_base[node_id];
-+	*limit = pvt->dram_limit[node_id];
-+}
-+
-+/*
-+ * Return 1 if the SysAddr given by sys_addr matches the base/limit associated
-+ * with node_id
-+ */
-+static int amd64_base_limit_match(struct amd64_pvt *pvt,
-+					u64 sys_addr, int node_id)
-+{
-+	u64 base, limit, addr;
- 
-+	amd64_get_base_and_limit(pvt, node_id, &base, &limit);
-+
-+	/* The K8 treats this as a 40-bit value.  However, bits 63-40 will be
-+	 * all ones if the most significant implemented address bit is 1.
-+	 * Here we discard bits 63-40.  See section 3.4.2 of AMD publication
-+	 * 24592: AMD x86-64 Architecture Programmer's Manual Volume 1
-+	 * Application Programming.
++	/* The extracted bits from DCSM belong in the spaces represented by
++	 * the cleared bits in other_bits.
 +	 */
-+	addr = sys_addr & 0x000000ffffffffffull;
++	mask = (dcsm_bits << pvt->dcs_shift) | other_bits;
 +
-+	return (addr >= base) && (addr <= limit);
++	return mask;
 +}
 +
-+/* find_mc_by_sys_addr
++/*
++ * input_addr_to_csrow
 + *
-+ *	Attempt to map a SysAddr to a node.
-+ *
-+ *	On success, return a pointer to the mem_ctl_info structure for
-+ *	the node that the SysAddr maps to.
-+ *
-+ *	On failure, return NULL
++ * input_addr is an InputAddr associated with the node given by mci.  Return
++ * the csrow that input_addr maps to, or -1 on failure (no csrow claims
++ * input_addr).
 + */
-+static struct mem_ctl_info *find_mc_by_sys_addr(struct mem_ctl_info *mci,
-+						u64 sys_addr)
++static int input_addr_to_csrow(struct mem_ctl_info *mci, u64 input_addr)
 +{
 +	struct amd64_pvt *pvt;
-+	int node_id;
-+	u32 intlv_en, bits;
++	int csrow;
++	u64 base, mask;
 +
-+	/*
-+	 * Here we use the DRAM Base (section 3.4.4.1) and DRAM Limit (section
-+	 * 3.4.4.2) registers to map the SysAddr to a node ID.
-+	 */
 +	pvt = mci->pvt_info;
 +
-+	/* The value of this field should be the same for all DRAM Base
-+	 * registers.  Therefore we arbitrarily choose to read it from the
-+	 * register for node 0.
++	/* Here we use the DRAM CS Base (section 3.5.4) and DRAM CS Mask
++	 * (section 3.5.5) registers.  For each CS base/mask register pair,
++	 * test the condition shown near the start of section 3.5.4 (p. 84).
 +	 */
-+	intlv_en = pvt->dram_IntlvEn[0];
++	for (csrow = 0; csrow < CHIPSELECT_COUNT; csrow++) {
 +
-+	if (intlv_en == 0) {
-+		debugf2("%s(): node interleaving disabled\n", __func__);
-+		for (node_id = 0; ; ) {
-+			if (amd64_base_limit_match(pvt, sys_addr, node_id))
-+				break;
-+
-+			if (++node_id >= DRAM_REG_COUNT) {
-+				debugf2("%s(): sys_addr 0x%lx "
-+					"does not match any node\n", __func__,
-+					(unsigned long)sys_addr);
-+				return NULL;
-+			}
++		if ((pvt->dcsb0[csrow] & K8_DCSB_CS_ENABLE) == 0) {
++			debugf2("input_addr_to_csrow: CSBE bit is cleared "
++				"for csrow %d (node %d)\n",
++				csrow, pvt->mc_node_id);
++			continue;
 +		}
 +
-+		goto found;
-+	}
++		base = base_from_dct_base(pvt, csrow);
++		mask = ~mask_from_dct_mask(pvt, csrow);
 +
-+	if (unlikely((intlv_en != (0x01 << 8)) &&
-+		     (intlv_en != (0x03 << 8)) && (intlv_en != (0x07 << 8)))) {
-+		amd64_printk(KERN_WARNING,
-+			  "%s(): junk value of 0x%x extracted from IntlvEn "
-+			  "field of DRAM Base Register for node 0: This "
-+			  "probably indicates a BIOS bug.\n", __func__,
-+			  intlv_en);
-+		return NULL;
-+	}
-+
-+	debugf2("%s(): node interleaving enabled\n", __func__);
-+	bits = (((u32) sys_addr) >> 12) & intlv_en;
-+
-+	for (node_id = 0; ; ) {
-+		if ((pvt->dram_limit[node_id] & intlv_en) == bits)
-+			break;	/* intlv_sel field matches */
-+
-+		if (++node_id >= DRAM_REG_COUNT) {
-+			debugf2("%s(): sys_addr 0x%lx does not match any "
-+				"node\n", __func__, (unsigned long)sys_addr);
-+			return NULL;
++		if ((input_addr & mask) == (base & mask)) {
++			debugf2("InputAddr 0x%lx matches csrow %d "
++				"(MC node %d)\n",
++				(unsigned long)input_addr,
++				csrow, pvt->mc_node_id);
++			return csrow;
 +		}
 +	}
 +
-+	/* sanity test for sys_addr */
-+	if (unlikely(!amd64_base_limit_match(pvt, sys_addr, node_id))) {
-+		amd64_printk(KERN_WARNING,
-+			  "%s(): sys_addr 0x%lx falls outside base/limit "
-+			  "address range for node %d with node interleaving "
-+			  "enabled.\n", __func__, (unsigned long)sys_addr,
-+			  node_id);
-+		return NULL;
-+	}
-+
-+found:
-+	debugf2("%s(): sys_addr 0x%lx matches node %d\n", __func__,
-+		(unsigned long)sys_addr, node_id);
-+
-+	return edac_mc_find(node_id);
++	debugf2("no matching csrow for InputAddr 0x%lx (MC node %d)\n",
++		(unsigned long)input_addr, pvt->mc_node_id);
++	return -1;
 +}
++
++/* Return the base value defined by the DRAM Base register for the node
++ * represented by mci.  This function returns the full 40-bit value despite
++ * the fact that the register only stores bits 39-24 of the value.  See
++ * section 3.4.4.1.
++ */
++static inline u64 get_dram_base(struct mem_ctl_info *mci)
++{
++	struct amd64_pvt *pvt = mci->pvt_info;
++
++	return pvt->dram_base[pvt->mc_node_id];
++}
++
++/*
++ * Obtain info from the DRAM Hole Address Register (section 3.4.8, pub #26094)
++ * for the node represented by mci.  Info is passed back in *hole_base,
++ * *hole_offset, and *hole_size.  Function returns 0 if info is valid or 1 if
++ * info is invalid. Info may be invalid for either of the following reasons:
++ *
++ *     - The revision of the node is not E or greater.  In this case, the DRAM
++ *       Hole Address Register does not exist.
++ *     - The DramHoleValid bit is cleared in the DRAM Hole Address Register,
++ *       indicating that its contents are not valid.
++ *
++ * The values passed back in *hole_base, *hole_offset, and *hole_size are
++ * complete 32-bit values despite the fact that the bitfields in the DHAR
++ * only represent bits 31-24 of the base and offset values.
++ */
++static int amd64_get_dram_hole_info(struct mem_ctl_info *mci, u64 *hole_base,
++				    u64 *hole_offset, u64 *hole_size)
++{
++	struct amd64_pvt *pvt = mci->pvt_info;
++	u64 base;
++
++	/* only revE and later have the DRAM Hole Address Register */
++	if (boot_cpu_data.x86 == 0xf && pvt->ext_model < OPTERON_CPU_REV_E) {
++		debugf1("  revision %d for node %d does not support DHAR\n",
++			pvt->ext_model, pvt->mc_node_id);
++		return 1;
++	}
++
++	/* only valid for Fam10h */
++	if (boot_cpu_data.x86 == 0x10 &&
++	    (pvt->dhar & F10_DRAM_MEM_HOIST_VALID) == 0) {
++		debugf1("  Dram Memory Hoisting is DISABLED on this system\n");
++		return 1;
++	}
++
++	if ((pvt->dhar & DHAR_VALID) == 0) {
++		debugf1("  Dram Memory Hoisting is DISABLED on this node %d\n",
++			pvt->mc_node_id);
++		return 1;
++	}
++
++	/* This node has Memory Hoisting */
++
++	/* +------------------+--------------------+--------------------+-----
++	 * | memory           | DRAM hole          | relocated          |
++	 * | [0, (x - 1)]     | [x, 0xffffffff]    | addresses from     |
++	 * |                  |                    | DRAM hole          |
++	 * |                  |                    | [0x100000000,      |
++	 * |                  |                    |  (0x100000000+     |
++	 * |                  |                    |   (0xffffffff-x))] |
++	 * +------------------+--------------------+--------------------+-----
++	 *
++	 * Above is a diagram of physical memory showing the DRAM hole and the
++	 * relocated addresses from the DRAM hole.  As shown, the DRAM hole
++	 * starts at address x (the base address) and extends through address
++	 * 0xffffffff.  The DRAM Hole Address Register (DHAR) relocates the
++	 * addresses in the hole so that they start at 0x100000000.
++	 */
++
++	base = dhar_base(pvt->dhar);
++
++	*hole_base = base;
++	*hole_size = (0x1ull << 32) - base;
++
++	if (boot_cpu_data.x86 > 0xf)
++		*hole_offset = f10_dhar_offset(pvt->dhar);
++	else
++		*hole_offset = k8_dhar_offset(pvt->dhar);
++
++	debugf1("  DHAR info for node %d base 0x%lx offset 0x%lx size 0x%lx\n",
++		pvt->mc_node_id, (unsigned long)*hole_base,
++		(unsigned long)*hole_offset, (unsigned long)*hole_size);
++
++	return 0;
++}
++
++
 -- 
 1.6.2.4
 
