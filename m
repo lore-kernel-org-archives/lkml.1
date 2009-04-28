@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761458AbZD1OZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761270AbZD1O3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761458AbZD1OZb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 10:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755483AbZD1OZW
+	id S1761270AbZD1O3v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 10:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbZD1O3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 10:25:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48913 "EHLO mx2.redhat.com"
+	Tue, 28 Apr 2009 10:29:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55474 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753580AbZD1OZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 10:25:21 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090329203118.GA14005@linux.vnet.ibm.com>
-References: <20090329203118.GA14005@linux.vnet.ibm.com> <20090203183426.GA14409@linux.vnet.ibm.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, niv@us.ibm.com, dvhltc@us.ibm.com,
-       lethal@linux-sh.org, kernel@wantstofly.org, matthew@wil.cx
-Subject: Re: [PATCH] v3 RCU: the bloatwatch edition
-Date: Tue, 28 Apr 2009 15:24:14 +0100
-Message-ID: <13990.1240928654@redhat.com>
+	id S1751730AbZD1O3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 10:29:40 -0400
+Subject: Re: [PATCH 12/12] inotify: reimplement inotify using fsnotify
+From: Eric Paris <eparis@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       alan@lxorguk.ukuu.org.uk, sfr@canb.auug.org.au, john@johnmccutchan.com,
+       rlove@rlove.org, akpm@linux-foundation.org
+In-Reply-To: <20090428095916.GA14452@infradead.org>
+References: <20090427215305.14161.33354.stgit@paris.rdu.redhat.com>
+	 <20090427215406.14161.88864.stgit@paris.rdu.redhat.com>
+	 <20090428095916.GA14452@infradead.org>
+Content-Type: text/plain
+Date: Tue, 28 Apr 2009 10:28:01 -0400
+Message-Id: <1240928881.3484.29.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+On Tue, 2009-04-28 at 05:59 -0400, Christoph Hellwig wrote:
+> Btw, one thing I noticed is that this adds tons of code despite making
+> dnotify and inotify use command infrastructure.  Do you already add
+> features not actually used by inotify and dnotify?
 
-> This patch is a version of RCU designed for (!SMP && EMBEDDED)
-> provided as a proof of concept of a small-footprint RCU implementation.
-> In particular, the implementation of synchronize_rcu() is extremely
-> lightweight and high performance.  It passes rcutorture testing in each
-> of the four relevant configurations (combinations of NO_HZ and PREEMPT)
-> on x86.  This saves about 900 bytes compared to Classic RCU, and a
-> couple kilobytes compared to Hierarchical RCU:
+No new unused features.
 
-On FRV, CLASSIC_RCU:
+inotify.c (933 lines) and some other inotify code can be considered dead
+when the next series converts audit and will then be marked for removal,
+so that would make the stats look a bit better.
 
-   text    data     bss     dec     hex filename
-   2616     184       0    2800     af0 kernel/rcuclassic.o
-    884      32      20     936     3a8 kernel/rcupdate.o
+The infrastructure code duplicates everything dnotify did and everything
+inotify did.  So now they both have to handle each other's proclivities.
+It also means things like dnotify get the benefits of the dentry flag
+inotify used.  That plus the finer grained event type checking before
+locking should actually make this a performance win.
 
-TREE_RCU:
+If you see something that isn't needed let me know.  I think I succeeded
+in separating all of the infrastructure stuff that was originally
+written for fanotify and some of those vestiges into later unsent
+patches, "there's history in them-thar patches."
 
-   3940     328       0    4268    10ac kernel/rcutree.o
-    884      32      20     936     3a8 kernel/rcupdate.o
+ MAINTAINERS                          |    4 
+ fs/inode.c                           |   10 
+ fs/notify/Kconfig                    |   13 
+ fs/notify/Makefile                   |    4 
+ fs/notify/dnotify/Kconfig            |    1 
+ fs/notify/dnotify/dnotify.c          |  470 +++++++++++++++----
+ fs/notify/fsnotify.c                 |  196 ++++++++
+ fs/notify/fsnotify.h                 |   34 +
+ fs/notify/group.c                    |  256 ++++++++++
+ fs/notify/inode_mark.c               |  425 +++++++++++++++++
+ fs/notify/inotify/Kconfig            |   20 
+ fs/notify/inotify/Makefile           |    2 
+ fs/notify/inotify/inotify.c          |   20 
+ fs/notify/inotify/inotify.h          |   21 
+ fs/notify/inotify/inotify_fsnotify.c |  147 ++++++
+ fs/notify/inotify/inotify_user.c     |  829 ++++++++++++++++-------------------
+ fs/notify/notification.c             |  424 +++++++++++++++++
+ include/linux/dcache.h               |    3 
+ include/linux/dnotify.h              |   29 -
+ include/linux/fs.h                   |   10 
+ include/linux/fsnotify.h             |  302 +++++++-----
+ include/linux/fsnotify_backend.h     |  404 ++++++++++++++++-
+ include/linux/mutex.h                |   23 
+ init/Kconfig                         |    3 
+ 24 files changed, 2915 insertions(+), 735 deletions(-)
 
-TINY_RCU:
 
-   1152      32       0    1184     4a0 kernel/rcutiny.o
-    836      32      20     888     378 kernel/rcupdate.o
-
-It works on my FRV board.
-
-Possibly TINY_RCU could be shrunk a bit more by a judicious bit of inlining of
-some of the very small functions.
-
-Acked-by: David Howells <dhowells@redhat.com>
