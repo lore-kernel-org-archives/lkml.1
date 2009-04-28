@@ -1,111 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbZD1MHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759075AbZD1MIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756535AbZD1MHy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 08:07:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbZD1MHn
+	id S1759075AbZD1MIn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 08:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbZD1MIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 08:07:43 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:60342 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750835AbZD1MHn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 08:07:43 -0400
-Message-ID: <49F6F17E.2040603@novell.com>
-Date: Tue, 28 Apr 2009 08:07:26 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Tue, 28 Apr 2009 08:08:34 -0400
+Received: from THUNK.ORG ([69.25.196.29]:53572 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751812AbZD1MId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 08:08:33 -0400
+Date: Tue, 28 Apr 2009 08:08:18 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>
+Subject: Re: Swappiness vs. mmap() and interactive response
+Message-ID: <20090428120818.GH22104@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Wu Fengguang <fengguang.wu@intel.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org,
+	linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>
+References: <20090428044426.GA5035@eskimo.com> <20090428143019.EBBF.A69D9226@jp.fujitsu.com> <1240904919.7620.73.camel@twins> <20090428090916.GC17038@localhost>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, davidel@xmailserver.org
-Subject: Re: [KVM PATCH v2 2/2] kvm: add support for irqfd via	eventfd-notification
- interface
-References: <20090424042142.1796.60756.stgit@dev.haskins.net> <20090424042518.1796.65593.stgit@dev.haskins.net> <49F572EF.4010909@redhat.com> <49F58A8C.7090808@novell.com> <49F58D75.7040304@redhat.com> <49F5B2DA.5060207@novell.com> <49F6CDFC.6000400@redhat.com> <49F6DB9D.3080501@novell.com> <49F6E1CA.1010106@redhat.com> <49F6E2BB.9070604@novell.com> <49F6E313.7020502@redhat.com> <49F6E3B2.5010306@redhat.com> <49F6EACA.3050808@novell.com> <49F6ECFB.5010406@redhat.com>
-In-Reply-To: <49F6ECFB.5010406@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig538C06BF64E9684E3D975654"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090428090916.GC17038@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig538C06BF64E9684E3D975654
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Apr 28, 2009 at 05:09:16PM +0800, Wu Fengguang wrote:
+> The semi-drop-behind is a great idea for the desktop - to put just
+> accessed pages to end of LRU. However I'm still afraid it vastly
+> changes the caching behavior and wont work well as expected in server
+> workloads - shall we verify this?
+> 
+> Back to this big-cp-hurts-responsibility issue. Background write
+> requests can easily pass the io scheduler's obstacles and fill up
+> the disk queue. Now every read request will have to wait 10+ writes
+> - leading to 10x slow down of major page faults.
+> 
+> I reach this conclusion based on recent CFQ code reviews. Will bring up
+> a queue depth limiting patch for more exercises..
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->> Avi Kivity wrote:
->> =20
->>> Avi Kivity wrote:
->>>   =20
->>>>> So what is your proposal for such interface?
->>>>>
->>>>>          =20
->>>> ->write().
->>>>
->>>>      =20
->>> Alternatively, a new fileop ->signal_event(), which would map to
->>> eventfd_signal() or irqfd_signal().  This would be defined to work in=
+We can muck with the I/O scheduler, but another thing to consider is
+whether the VM should be more aggressively throttling writes in this
+case; it sounds like the big cp in this case may be dirtying pages so
+aggressively that it's driving other (more useful) pages out of the
+page cache --- if the target disk is slower than the source disk (for
+example, backing up a SATA primary disk to a USB-attached backup disk)
+no amount of drop-behind is going to help the situation.
 
->>> irq contexts.  It may also be useful for uio interrupts.
->>>
->>>    =20
->> Hmm...I'm not crazy about either of those.  write() has obvious
->> limitations both from a interrupt execution context, as well as the
->> awkwardness of dealing with creating+passing a viable "userspace"
->> pointer from kernel code.  On the other hand, a new fileop doesn't qui=
-te
->> seem appropriate either since it doesn't apply to the overall fileop
->> abstraction very well.
->>
->> We could potentially have a separate vtable interface just for
->> event-type fds, and make eventfd and irqfd the first implementations.
->> But I am not sure it is worth it.  What I suggest is that we work with=
-in
->> the existing eventfd interface.  It was designed specifically to signa=
-l
->> events, after all.
->>
->> If at some point in the future we need to ensure that the callbacks ar=
-e
->> not invoked from a preempt-off/irq-off critical section, we can revist=
+So that leaves three areas for exploration:
 
->> the eventfd internals at that time.  Note that since we would like to
->> support signaling from interrupt context anyway, trying to get rid of
->> the wqh critical section that we have today may be a fools errand
->> (*). Instead, we should probably focus on making the injection path
->> support
->> non-preemptible contexts, as this will have the biggest benefits and
->> gains in the long run.
->>
->>  =20
-> But again, you're forcing everyone who uses irqfd to require eventfd.
->
-> Maybe we should change eventfd_signal() to fall back to ->write if the
-> file happens not to be an eventfd.  It could also handle the
-> nonpreemptible context as well.
->
->
-Yep, that works.  And the nice thing from my perspective is: we don't
-need a v4 ;)
+* Write-throttling
+* Drop-behind
+* background writes pushing aside foreground reads
 
--Greg
+Hmm, note that although the original bug reporter is running Ubuntu
+Jaunty, and hence 2.6.28, this problem is going to get *worse* with
+2.6.30, since we have the ext3 data=ordered latency fixes which will
+write out the any journal activity, and worse, any synchornous commits
+(i.e., caused by fsync) will force out all of the dirty pages with
+WRITE_SYNC priority.  So with a heavy load, I suspect this is going to
+be more of a VM issue, and especially figuring out how to tune more
+aggressive write-throttling may be key here.
 
-
---------------enig538C06BF64E9684E3D975654
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkn28X4ACgkQlOSOBdgZUxlmDgCaAje96brDsrrlwe33fIUA4hYM
-13YAnjFV81gWohl6yIgkhOmnj7DN8rjj
-=PmWg
------END PGP SIGNATURE-----
-
---------------enig538C06BF64E9684E3D975654--
+					- Ted
