@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbZD1JIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbZD1JJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbZD1JIn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 05:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbZD1JIb
+	id S1755714AbZD1JJq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 05:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462AbZD1JJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 05:08:31 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57406
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754081AbZD1JIb (ORCPT
+	Tue, 28 Apr 2009 05:09:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60386 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753931AbZD1JJf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 05:08:31 -0400
-Date: Tue, 28 Apr 2009 02:08:24 -0700 (PDT)
-Message-Id: <20090428.020824.12093588.davem@davemloft.net>
-To: hartleys@visionengravers.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] net/ipv6/tcp_ipv6.c: fix sparse warnings
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19090165F12C@mi8nycmail19.Mi8.com>
-References: <BD79186B4FD85F4B8E60E381CAEE19090165F12C@mi8nycmail19.Mi8.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Apr 2009 05:09:35 -0400
+Date: Tue, 28 Apr 2009 05:09:30 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Christoph Hellwig <hch@infradead.org>, npiggin@suse.de,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [patch 00/27] [rfc] vfs scalability patchset
+Message-ID: <20090428090930.GA14638@infradead.org>
+References: <20090425012020.457460929@suse.de> <20090425041829.GX8633@ZenIV.linux.org.uk> <20090425080143.GA29033@infradead.org> <20090425080649.GA8633@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090425080649.GA8633@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-Date: Wed, 22 Apr 2009 20:35:39 -0400
+On Sat, Apr 25, 2009 at 09:06:49AM +0100, Al Viro wrote:
+> Maybe...  What Eric proposed is essentially a reuse of s_list for per-inode
+> list of struct file.  Presumably with something like i_lock for protection.
+> So that's not a conflict.
 
-> Fix the following sparse warnings in net/ipv6/tcp_ipv6.c.
-> 
->   warning: symbol 'tcp6_gro_receive' was not declared. Should it be static?
->   warning: symbol 'tcp6_gro_complete' was not declared. Should it be static?
-> 
-> Both symbols are exported but not referenced anywhere outside of
-> this source file. Remove the exports and make the functions static.
-> 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+But what do we actually want it for?  Right now it's only used for
+ttys, which Nick has split out, and for remount r/o.  For the normal
+remount r/o case it will go away once we have proper per-sb writer
+counts.  And the fource remount r/o from sysrq is completely broken.
 
-1) Please post networking patches with netdev@vger.kernel.org
-   at least CC:'d
+A while ago Peter had patches for files_lock scalability that went even
+further than Nicks, and if I remember the arguments correctly just
+splitting the lock wasn't really enough and he required additional
+batching because there just were too many lock roundtrips.  (Peter, do
+you remember the defails?)
 
-2) Your email client corrupted this patch, making it not apply
-   properly.
-
-Please fix these details up and resubmit your patch, thanks!
