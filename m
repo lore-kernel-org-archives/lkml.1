@@ -1,133 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760148AbZD1G4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759696AbZD1HE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760148AbZD1G4U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 02:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757375AbZD1G4J
+	id S1759696AbZD1HE5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 03:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757783AbZD1HEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 02:56:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38615 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757297AbZD1G4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 02:56:08 -0400
-Date: Tue, 28 Apr 2009 08:55:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Wu Fengguang <fengguang.wu@intel.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Larry Woodman <lwoodman@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090428065507.GA2024@elte.hu>
-References: <20090428010907.912554629@intel.com> <20090428014920.769723618@intel.com>
+	Tue, 28 Apr 2009 03:04:48 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:59655 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757297AbZD1HEr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 03:04:47 -0400
+Message-ID: <49F6A8FD.3010804@cosmosbay.com>
+Date: Tue, 28 Apr 2009 08:58:05 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090428014920.769723618@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Stephen Hemminger <shemminger@vyatta.com>,
+       Evgeniy Polyakov <zbr@ioremap.net>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       David Miller <davem@davemloft.net>, Jarek Poplawski <jarkao2@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
+       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
+References: <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam> <49F4A6E3.7080102@cosmosbay.com> <20090426185646.GB29238@Krystal> <20090426145746.1184aeba@nehalam> <1240854297.7620.65.camel@twins> <20090427113010.5e3f1700@nehalam> <20090427185423.GC23862@elte.hu> <20090427120658.35a858bb@nehalam> <alpine.LFD.2.00.0904271219570.22156@localhost.localdomain> <20090427203616.GB3836@ioremap.net> <alpine.LFD.2.00.0904271340400.22156@localhost.localdomain> <20090427144054.1fb9b7a6@nehalam> <alpine.LFD.2.00.0904271506530.22156@localhost.localdomain> <alpine.LFD.2.00.0904271525120.22156@localhost.localdomain> <alpine.LFD.2.00.0904271602390.22156@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904271602390.22156@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 28 Apr 2009 08:58:08 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Wu Fengguang <fengguang.wu@intel.com> wrote:
-
-> Export 9 page flags in /proc/kpageflags, and 8 more for kernel developers.
+Linus Torvalds a écrit :
 > 
-> 1) for kernel hackers (on CONFIG_DEBUG_KERNEL)
->    - all available page flags are exported, and
->    - exported as is
-> 2) for admins and end users
->    - only the more `well known' flags are exported:
-> 	11. KPF_MMAP		(pseudo flag) memory mapped page
-> 	12. KPF_ANON		(pseudo flag) memory mapped page (anonymous)
-> 	13. KPF_SWAPCACHE	page is in swap cache
-> 	14. KPF_SWAPBACKED	page is swap/RAM backed
-> 	15. KPF_COMPOUND_HEAD	(*)
-> 	16. KPF_COMPOUND_TAIL	(*)
-> 	17. KPF_UNEVICTABLE	page is in the unevictable LRU list
-> 	18. KPF_HWPOISON	hardware detected corruption
-> 	19. KPF_NOPAGE		(pseudo flag) no page frame at the address
+> On Mon, 27 Apr 2009, Linus Torvalds wrote:
+>> BTW: THIS IS TOTALLY UNTESTED.
 > 
-> 	(*) For compound pages, exporting _both_ head/tail info enables
-> 	    users to tell where a compound page starts/ends, and its order.
+> Gaah. I should have read through it one more time before sending.
 > 
->    - limit flags to their typical usage scenario, as indicated by KOSAKI:
-> 	- LRU pages: only export relevant flags
-> 		- PG_lru
-> 		- PG_unevictable
-> 		- PG_active
-> 		- PG_referenced
-> 		- page_mapped()
-> 		- PageAnon()
-> 		- PG_swapcache
-> 		- PG_swapbacked
-> 		- PG_reclaim
-> 	- no-IO pages: mask out irrelevant flags
-> 		- PG_dirty
-> 		- PG_uptodate
-> 		- PG_writeback
-> 	- SLAB pages: mask out overloaded flags:
-> 		- PG_error
-> 		- PG_active
-> 		- PG_private
-> 	- PG_reclaim: mask out the overloaded PG_readahead
-> 	- compound flags: only export huge/gigantic pages
+>> static inline void xt_info_rdunlock_bh(void)
+>> {
+>> 	struct xt_info_lock *lock;
+>>
+>> 	lock = &__get_cpu_var(xt_info_locks);
+>> 	if (!--lock->readers)
+>> 		spin_unlock(&lock->lock);
+>> }
 > 
-> Here are the admin/linus views of all page flags on a newly booted nfs-root system:
+> This one was missing the "local_bh_enable()" at the end.
 > 
-> # ./page-types # for admin
->          flags  page-count       MB  symbolic-flags                     long-symbolic-flags
-> 0x000000000000      491174     1918  ____________________________                
-> 0x000000000020           1        0  _____l______________________       lru      
-> 0x000000000028        2543        9  ___U_l______________________       uptodate,lru
-> 0x00000000002c        5288       20  __RU_l______________________       referenced,uptodate,lru
-> 0x000000004060           1        0  _____lA_______b_____________       lru,active,swapbacked
+> There may be other bugs, but that's the one I noticed immediately when 
+> reading what I sent out. Oops.
 
-I think i have to NAK this kind of ad-hoc instrumentation of kernel 
-internals and statistics until we clear up why such instrumentation 
-measures are being accepted into the MM while other, more dynamic 
-and more flexible MM instrumentation are being resisted by Andrew.
+I am not sure my day job will permit me to polish a patch mixing all
+the bits and comments. But I am glad we eventually got back spinlocks
+which are probably better than rwlocks for implementing this stuff.
 
-The above type of condensed information can be built out of dynamic 
-trace data too - and much more. Being able to track page state 
-transitions is very valuable when debugging VM problems. One such 
-'view' of trace data would be a summary histogram like above.
+Instead of submitting a full patch again, we could first submit a new
+ include file containg all comments and inline functions ?
 
-( done after a "echo 3 > /proc/sys/vm/drop_caches" to make sure all 
-  interesting pages have been re-established and their state is 
-  present in the trace. )
+This include file could be local to netfilter, with a big stick on
+it to forbids its use on other areas (No changes in Documentation/ )
 
-The SLAB code already has such a facility, kmemtrace: it's very 
-useful and successful in visualizing complex SLAB details, both 
-dynamically and statically.
+Then, as soon as we can go back to pure RCU solution, we can safely
+delete this controversial-locking-nesting-per-cpu-thing ?
 
-I think the same general approach should be used for the page 
-allocator too (and for the page cache and some other struct page 
-based caches): the life-time of an object should be followed. If we 
-capture the important details we capture the big picture too. Pekka 
-already sent an RFC patch to extend kmemtrace in such a fashion. Why 
-is that more useful method not being pursued?
 
-By extending upon the (existing) /proc/kpageflags hack a usecase is 
-taken away from the tracing based solution and a needless overlap is 
-created - and that's not particularly helpful IMHO. We now have all 
-the facilities upstream that allow us to do intelligent 
-instrumentation - we should make use of them.
+Instead of local/global name that Paul suggested, that was about
+'global' locking all locks at the same time. Not any more the good
+name IMHO
 
-	Ingo
+Maybe something like local/remote or owner/foreigner ?
+
+xt_info_owner_lock_bh(), xt_info_owner_unlock_bh()
+xt_info_foreigner_lock(), xt_info_foreigner_unlock()
+
+One comment about this comment you wrote :
+
+/*
+ * The "writer" side needs to get exclusive access to the lock,
+ * regardless of readers.  This must be called with bottom half
+ * processing (and thus also preemption) disabled. 
+ */
+static inline void xt_info_wrlock(unsigned int cpu)
+{
+	spin_lock(&per_cpu(xt_info_locks, cpu).lock);
+}
+
+static inline void xt_info_wrunlock(unsigned int cpu)
+{
+	spin_unlock(&per_cpu(xt_info_locks, cpu).lock);
+}
+
+Its true that BH should be disabled if caller runs
+on the cpu it wants to lock. 
+For other ones (true foreigners), there is
+no requirement about BH (current cpu could be interrupted
+by a softirq and packets could fly)
+
+We could use following construct and not require disabling BH
+more than a short period of time.
+(But preemption disabled for the whole duration)
+
+preempt_disable(); // could be cpu_migration_disable();
+
+int curcpu = smp_processor_id();
+/*
+ * Gather stats for current cpu : must disable BH
+ * before trying to lock.
+ */
+local_bh_disable();
+xt_info_wrlock(curcpu);
+// copy stats of this cpu on my private data (not shown here)
+xt_info_wrunlock(curcpu);
+local_bh_enable();
+
+for_each_possible_cpu(cpu) {
+	if (cpu == curcpu)
+		continue;
+	xt_info_wrlock(cpu);
+	// fold stats of "cpu" on my private data (not shown here)
+	xt_info_wrunlock((cpu);
+}
+preempt_enable(); // could be cpu_migration_enable();
+
+
+So your initial comment could be changed to :
+
+/*
+ * The "writer" side needs to get exclusive access to the lock,
+ * regardless of readers. If caller is about to lock its own lock,
+ * he must have disabled BH before. For other cpus, no special
+ * care but preemption disabled to guarantee no cpu migration.
+ */
+
+Back to work now :)
+
