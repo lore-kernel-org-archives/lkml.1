@@ -1,117 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757088AbZD1V2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758479AbZD1V2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757088AbZD1V2R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 17:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754468AbZD1V15
+	id S1758479AbZD1V2f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 17:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbZD1V2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 17:27:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55201 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755304AbZD1V14 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 17:27:56 -0400
-Date: Tue, 28 Apr 2009 14:17:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tony Luck <tony.luck@gmail.com>
-Cc: fengguang.wu@intel.com, mingo@elte.hu, rostedt@goodmis.org,
-       fweisbec@gmail.com, lwoodman@redhat.com, a.p.zijlstra@chello.nl,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
-       linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
-       andi@firstfloor.org, mpm@selenic.com, adobriyan@gmail.com,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-Message-Id: <20090428141738.77e599f4.akpm@linux-foundation.org>
-In-Reply-To: <12c511ca0904281111r10f37a5coe5a2750f4dbfbcda@mail.gmail.com>
-References: <20090428010907.912554629@intel.com>
-	<20090428014920.769723618@intel.com>
-	<20090428065507.GA2024@elte.hu>
-	<20090428083320.GB17038@localhost>
-	<12c511ca0904281111r10f37a5coe5a2750f4dbfbcda@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Apr 2009 17:28:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40932 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754823AbZD1V2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 17:28:04 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1240938062-3264-2-git-send-email-tabbott@mit.edu>
+References: <1240938062-3264-2-git-send-email-tabbott@mit.edu> <1240938062-3264-1-git-send-email-tabbott@mit.edu>
+To: Tim Abbott <tabbott@MIT.EDU>
+Cc: dhowells@redhat.com, Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH v2 01/15] Add new macros for page-aligned data and bss sections.
+Date: Tue, 28 Apr 2009 22:27:12 +0100
+Message-ID: <1301.1240954032@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009 11:11:52 -0700
-Tony Luck <tony.luck@gmail.com> wrote:
+Tim Abbott <tabbott@MIT.EDU> wrote:
 
-> On Tue, Apr 28, 2009 at 1:33 AM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > 1) FAST
-> >
-> > It takes merely 0.2s to scan 4GB pages:
-> >
-> > __ __ __ __./page-types __0.02s user 0.20s system 99% cpu 0.216 total
+> This patch is preparation for replacing most uses of
+> ".bss.page_aligned" and ".data.page_aligned" in the kernel with
+> macros, so that the section name can later be changed without having
+> to touch a lot of the kernel.
 > 
-> OK on a tiny system ... but sounds painful on a big
-> server. 0.2s for 4G scales up to 3 minutes 25 seconds
-> on a 4TB system (4TB systems were being sold two
-> years ago ... so by now the high end will have moved
-> up to 8TB or perhaps 16TB).
+> The long-term goal here is to be able to change the kernel's magic
+> section names to those that are compatible with -ffunction-sections
+> -fdata-sections.  This requires renaming all magic sections with names
+> of the form ".data.foo".
 > 
-> Would the resulting output be anything but noise on
-> a big system (a *lot* of pages can change state in
-> 3 minutes)?
-> 
+> Signed-off-by: Tim Abbott <tabbott@mit.edu>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
 
-Reading the state of all of memory in this fashion would be a somewhat
-peculiar thing to do.  Bear in mind that kpagemap and friends are also
-designed to allow userspace to inspect the state of a particular
-process's memory.
-
-Documentation/vm/pagemap.txt describes it nicely:
-
-: The general procedure for using pagemap to find out about a process' memory
-: usage goes like this:
-: 
-:  1. Read /proc/pid/maps to determine which parts of the memory space are
-:     mapped to what.
-:  2. Select the maps you are interested in -- all of them, or a particular
-:     library, or the stack or the heap, etc.
-:  3. Open /proc/pid/pagemap and seek to the pages you would like to examine.
-:  4. Read a u64 for each page from pagemap.
-:  5. Open /proc/kpagecount and/or /proc/kpageflags.  For each PFN you just
-:     read, seek to that entry in the file, and read the data you want.
-
-although I expect that this is not the use case when the feature is
-being used to debug/tune readahead.
-
-But yes, if you have huge amounts of memory and you decide to write an
-application which inspects the state of every physical page in the
-machine, you can expect it to take a long time!
-
-Of course, the VM does also accumulate bulk aggregated page statistics
-and presents them in /proc/meminfo, /proc/vmstat and probably other
-places.  These numbers are maintained at runtime and the cost of doing
-this is significant.
-
-I don't _think_ there are presently any such counters which are
-accumulated simply for instrumentation purposes - the kernel needs to
-maintain them anyway for various reasons and it's a simple (and useful)
-matter to make them available to userspace.
-
-
-Generally, I think that pagemap is another of those things where we've
-failed on the follow-through.  There's a nice and powerful interface
-for inspecting the state of a process's VM, but nobody knows about it
-and there are no tools for accessing it and nobody is using it.
-
-(Or maybe I'm wrong about that - I expect I'd have bugged Matt about
-this and I expect that he'd have done something.  Brain failed).
-
-Either way, I think we'd serve the world better if we were to have some
-nice little userspace tools which users could use to access this
-information.  Documentation/vm already has a Makefile!
-
-Fengguang, you mention an executable called "page-types".  Perhaps you
-could "productise" that sometime?
-
-A model here is Documentation/accounting/getdelays.c - that proved
-quite useful and successful in the development of taskstats and I know
-that several people are actually using getdelays.c as-is in serious
-production environments.  If we hadn't provided and maintained that
-code in the kernel tree, it's unlikely that taskstats would have proved
-as useful to users.
-
+Acked-by: David Howells <dhowells@redhat.com>
