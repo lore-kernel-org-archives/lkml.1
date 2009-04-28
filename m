@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759432AbZD1LeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757138AbZD1LhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759432AbZD1LeN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 07:34:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbZD1Ld5
+	id S1757138AbZD1LhR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 07:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754961AbZD1LhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 07:33:57 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:14034 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754961AbZD1Ld4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 07:33:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=JeLCQ61im7EfQFvfJhsPvKjs8bhvwQeNfSuNCRcm8ZmwNjQJoou0ObEGjP+IiwHkcP
-         gwauCxxKVK1RXX/CVtWj1KnwDID/ZdT00hcm3IYXLLysQajE20kd38tD2373ZsCSlD41
-         RPBBVgLIXP0UPk3ieu4NawoD9S0a6A8vlieyQ=
-From: Philipp Zabel <philipp.zabel@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
-       Philipp Zabel <philipp.zabel@gmail.com>
-Subject: [PATCH 1/1] regulator/bq24022: fix bug in is_enabled function
-Date: Tue, 28 Apr 2009 13:34:14 +0200
-Message-Id: <1240918454-25118-1-git-send-email-philipp.zabel@gmail.com>
-X-Mailer: git-send-email 1.6.2.4
+	Tue, 28 Apr 2009 07:37:04 -0400
+Received: from mga03.intel.com ([143.182.124.21]:24754 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752976AbZD1LhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 07:37:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,260,1239001200"; 
+   d="scan'208";a="136743187"
+Date: Tue, 28 Apr 2009 19:36:16 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?utf-8?B?RnLpppjpp7tpYw==?= Weisbecker <fweisbec@gmail.com>,
+       Larry Woodman <lwoodman@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090428113616.GA22439@localhost>
+References: <84144f020904280219p197d5ceag846ae9a80a76884e@mail.gmail.com> <20090428092918.GC21085@elte.hu> <20090428183237.EBDE.A69D9226@jp.fujitsu.com> <20090428093833.GE21085@elte.hu> <20090428095551.GB21168@localhost> <20090428110553.GD25347@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090428110553.GD25347@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This seems to be fallout from last October's regulator core rework.
-It got noticed only because of recent regulator framework changes.
+On Tue, Apr 28, 2009 at 07:05:53PM +0800, Ingo Molnar wrote:
+> 
+> * Wu Fengguang <fengguang.wu@intel.com> wrote:
+> 
+> > > See my other mail i just sent: it would be a natural extension 
+> > > of tracing to also dump all current object state when tracing is 
+> > > turned on. That way no drop_caches is needed at all.
+> > 
+> > I can understand the merits here - I also did readahead 
+> > tracing/accounting in _one_ piece of code. Very handy.
+> > 
+> > The readahead traces are now raw printks - converting to the 
+> > ftrace framework would be a big win.
+> > 
+> > But. It's still not a fit-all solution. Imagine when full data 
+> > _since_ booting is required, but the user cannot afford a reboot.
+> 
+> The above 'get object state' interface (which allows passive 
+> sampling) - integrated into the tracing framework - would serve that 
+> goal, agreed?
 
-Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
----
- drivers/regulator/bq24022.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+Agreed. That could in theory a good complement to dynamic tracings.
 
-diff --git a/drivers/regulator/bq24022.c b/drivers/regulator/bq24022.c
-index 7ecb820..d08cd9b 100644
---- a/drivers/regulator/bq24022.c
-+++ b/drivers/regulator/bq24022.c
-@@ -61,8 +61,7 @@ static int bq24022_disable(struct regulator_dev *rdev)
- 
- static int bq24022_is_enabled(struct regulator_dev *rdev)
- {
--	struct platform_device *pdev = rdev_get_drvdata(rdev);
--	struct bq24022_mach_info *pdata = pdev->dev.platform_data;
-+	struct bq24022_mach_info *pdata = rdev_get_drvdata(rdev);
- 
- 	return !gpio_get_value(pdata->gpio_nce);
- }
--- 
-1.6.2.4
+Then what will be the canonical form for all the 'get object state'
+interfaces - "object.attr=value", or whatever? I'm afraid we will have
+to sacrifice efficiency or human readability to have a normalized form.
+Or to define two standard forms? One "key value" form and one "value1
+value2 value3..." form?
+
+Thanks,
+Fengguang
 
