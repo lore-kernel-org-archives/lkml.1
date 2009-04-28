@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761568AbZD1PSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762038AbZD1PTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761568AbZD1PSW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758723AbZD1PSH
+	id S1762038AbZD1PTu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760816AbZD1PTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:18:07 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:43916 "EHLO smtps.tip.net.au"
+	Tue, 28 Apr 2009 11:19:37 -0400
+Received: from rtr.ca ([76.10.145.34]:37195 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755317AbZD1PSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:18:06 -0400
-Date: Wed, 29 Apr 2009 01:17:56 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tim Abbott <tabbott@MIT.EDU>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
-       Tim Abbott <tabbott@MIT.EDU>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 11/14] powerpc: Use macros for .data.page_aligned
- section.
-Message-Id: <20090429011756.6cccbc7d.sfr@canb.auug.org.au>
-In-Reply-To: <20090429010753.851e0f59.sfr@canb.auug.org.au>
-References: <1240864388-26315-1-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-2-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-3-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-4-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-5-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-6-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-7-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-8-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-9-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-10-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-11-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-12-git-send-email-tabbott@mit.edu>
-	<20090429010753.851e0f59.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__29_Apr_2009_01_17_56_+1000_7t_2EKfvSxU9SVmT"
+	id S1758723AbZD1PTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 11:19:36 -0400
+Message-ID: <49F71E86.7040300@rtr.ca>
+Date: Tue, 28 Apr 2009 11:19:34 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, donari75@gmail.com,
+       bzolnier@gmail.com, linux-ide@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 2/3] mg_disk: fix CONFIG_LBD=y warning
+References: <1240890740-3462-1-git-send-email-tj@kernel.org> <1240890740-3462-3-git-send-email-tj@kernel.org>
+In-Reply-To: <1240890740-3462-3-git-send-email-tj@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__29_Apr_2009_01_17_56_+1000_7t_2EKfvSxU9SVmT
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Tejun Heo wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> 
+> drivers/block/mg_disk.c: In function ‘mg_dump_status’:
+> drivers/block/mg_disk.c:265: warning: format ‘%ld’ expects type ‘long int’, but
+> argument 2 has type ‘sector_t’
+> 
+> [ Impact: kill build warning ]
+> 
+> Cc: unsik Kim <donari75@gmail.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> ---
+>  drivers/block/mg_disk.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/block/mg_disk.c b/drivers/block/mg_disk.c
+> index d3e72ad..f389835 100644
+> --- a/drivers/block/mg_disk.c
+> +++ b/drivers/block/mg_disk.c
+> @@ -79,7 +79,7 @@ static void mg_dump_status(const char *msg, unsigned int stat,
+>  			if (host->breq) {
+>  				req = elv_next_request(host->breq);
+>  				if (req)
+> -					printk(", sector=%ld", req->sector);
+> +					printk(", sector=%u", (u32)req->sector);
+..
 
-On Wed, 29 Apr 2009 01:07:53 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> This moves the page_aligned section from a common part of the
-> vmlinux.lds to a 32 bit only part.  Was that intentional?
+Eh?  Shouldn't that be fixed the other way around, like this:
 
-Just saw your later patches, so ignore this.
+  +					printk(", sector=%llu", (u64)req->sector);
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+This way, it will still give correct data when sector_t is a u64.
 
---Signature=_Wed__29_Apr_2009_01_17_56_+1000_7t_2EKfvSxU9SVmT
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkn3HiQACgkQjjKRsyhoI8wYnQCgtVLjC0ymSa8ExUYejFYABlnq
-xh4AnjxqlGPU3jrnx6yxubkifNykP7IJ
-=eakv
------END PGP SIGNATURE-----
-
---Signature=_Wed__29_Apr_2009_01_17_56_+1000_7t_2EKfvSxU9SVmT--
+???
