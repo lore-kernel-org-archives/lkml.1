@@ -1,125 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761225AbZD1Pk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761941AbZD1Pmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761225AbZD1Pk7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbZD1Pkt
+	id S1761941AbZD1Pmb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbZD1PmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:40:49 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:48804 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754371AbZD1Pks (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:40:48 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsIEAGG99klMQW1W/2dsb2JhbACBUM4Bg3MF
-Date: Tue, 28 Apr 2009 11:40:46 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: LTTng "TIF_KERNEL_TRACE"
-Message-ID: <20090428154046.GA32381@Krystal>
-References: <20090428132037.GA27519@Krystal> <20090428150102.GB26546@elte.hu>
-Mime-Version: 1.0
+	Tue, 28 Apr 2009 11:42:19 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:40966 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754851AbZD1PmS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 11:42:18 -0400
+Date: Tue, 28 Apr 2009 08:42:13 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: mingo@elte.hu, dada1@cosmosbay.com, torvalds@linux-foundation.org,
+       shemminger@vyatta.com, zbr@ioremap.net, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jarkao2@gmail.com, paulus@samba.org,
+       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
+Message-ID: <20090428154213.GA10833@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <49F6A8FD.3010804@cosmosbay.com> <20090428.045342.206106171.davem@davemloft.net> <20090428124033.GA1655@elte.hu> <20090428.064340.193569214.davem@davemloft.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090428150102.GB26546@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:35:31 up 59 days, 12:01,  1 user,  load average: 0.27, 0.31,
-	0.37
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090428.064340.193569214.davem@davemloft.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
+On Tue, Apr 28, 2009 at 06:43:40AM -0700, David Miller wrote:
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Tue, 28 Apr 2009 14:40:33 +0200
 > 
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > IMHO this locking construct should be considered for 
+> > linux/local_lock.h and kernel/local_lock.c. Even if the netfilter 
+> > code drops its use soon afterwards ;-)
 > 
-> > Hi Ingo,
-> > 
-> > Looking at the current -tip tree, I notice that the 
-> > TIF_SYSCALL_FTRACE flag is only implemented for x86.
-> > 
-> > I have TIF_KERNEL_TRACE in my lttng tree which applies to all 
-> > architectures to do the exact same thing :
-> > 
-> > lttng-kernel-trace-thread-flag-alpha.patch
-> > lttng-kernel-trace-thread-flag-arm.patch
-> > lttng-kernel-trace-thread-flag-avr32.patch
-> > lttng-kernel-trace-thread-flag-blackfin.patch
-> > lttng-kernel-trace-thread-flag-cris.patch
-> > lttng-kernel-trace-thread-flag-frv.patch
-> > lttng-kernel-trace-thread-flag-h8300.patch
-> > lttng-kernel-trace-thread-flag-ia64.patch
-> > lttng-kernel-trace-thread-flag-m32r.patch
-> > lttng-kernel-trace-thread-flag-m68k.patch
-> > lttng-kernel-trace-thread-flag-mips.patch
-> > lttng-kernel-trace-thread-flag-parisc.patch
-> > lttng-kernel-trace-thread-flag-powerpc.patch
-> > lttng-kernel-trace-thread-flag-s390.patch
-> > lttng-kernel-trace-thread-flag-sh.patch
-> > lttng-kernel-trace-thread-flag-sparc.patch
-> > lttng-kernel-trace-thread-flag-um.patch
-> > lttng-kernel-trace-thread-flag-x86.patch
-> > lttng-kernel-trace-thread-flag-xtensa.patch
-> > lttng-kernel-trace-thread-flag-api.patch
-> > 
-> > Is there any way we could get this merged ?
-> > 
-> > One thing I like about the name TIF_KERNEL_TRACE compared to 
-> > TIF_SYSCALL_FTRACE is that it gives us a per-thread flag that 
-> > could eventually be used for more kernel tracing purposes than 
-> > just syscalls.
+> If you can show me have to pass a per-cpu variable (the variable,
+> not a dereference of it) as an argument to an inline function,
+> I'll implement this :-)
 > 
-> Yeah - TIF_KERNEL_TRACE indeed sounds more descriptive and less 
-> restrictive. TIF_SYSCALL_FTRACE was a bit ad-hoc.
-> 
+> It has to be dereferenced after local_bh_disable() for the
+> read side acquisition.
 
-Second question :
+The way I did this in treercu.c was to create an array of references
+to the per-CPU data in question.  Not necessarily recommended, but
+one way of doing it.  That said, one could argue that we should wait
+until we have at least three users before creating a generic primitive.
 
-LTTng :
-        read_lock(&tasklist_lock);
-        do_each_thread(p, t) {
-                set_tsk_thread_flag(t, TIF_KERNEL_TRACE);
-        } while_each_thread(p, t);
-        read_unlock(&tasklist_lock);
+And I just know that I am going to regret this deeply, but I cannot
+resist posting the following URL:
 
-Ftrace:
-        read_lock_irqsave(&tasklist_lock, flags);
+http://en.wikipedia.org/wiki/Wikipedia:Avoid_Parkinson's_Bicycle_Shed_Effect
 
-        do_each_thread(g, t) {
-                clear_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-        } while_each_thread(g, t);
-
-        read_unlock_irqrestore(&tasklist_lock, flags);
-
-With or without irqsave ?
-
-Arguments against irqsave for this read lock :
-
-- it's not used consistently for this read lock all over the kernel.
-  Sometimes the read lock is taken without irqsave.
-- it can be a long iteration, and therefore disables interrupts for a
-  long time.
-
-Arguments for irqsave for this read lock :
-
-- Taking any kind of spin/rwlock with inconsistent irq disabling leads
-  to races where interrupts can be disabled for an unbounded amount of
-  time if a spinlock with irqoff waits on a spinlock with irqs on. This
-  is a general problem with current kernel rwlock usage. See my
-  "priority sifting reader-writer lock" patchset for a fix to this
-  problem.
-
-Mathieu
-
-> 	Ingo
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+							Thanx, Paul
