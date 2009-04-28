@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbZD1UFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZD1UGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752680AbZD1UFg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbZD1UF0
+	id S1754093AbZD1UGe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 16:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbZD1UGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:05:26 -0400
-Received: from kroah.org ([198.145.64.141]:47757 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751019AbZD1UF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:05:26 -0400
-Date: Tue, 28 Apr 2009 12:58:13 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Borislav Petkov <borislav.petkov@amd.com>, linux-kernel@vger.kernel.org,
-       Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [RFC PATCH 00/21] amd64_edac: EDAC module for AMD64
-Message-ID: <20090428195813.GA4474@kroah.com>
-References: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com> <20090428155852.GA9956@kroah.com> <20090428160612.GB7239@aftab> <20090428113410.e0b04f94.akpm@linux-foundation.org>
+	Tue, 28 Apr 2009 16:06:23 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:33135 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752633AbZD1UGT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 16:06:19 -0400
+Message-ID: <49F76174.6060009@cosmosbay.com>
+Date: Tue, 28 Apr 2009 22:05:08 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090428113410.e0b04f94.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Christoph Lameter <cl@linux.com>
+CC: linux kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       jesse.brandeburg@intel.com, netdev@vger.kernel.org, haoki@redhat.com,
+       mchan@broadcom.com, davidel@xmailserver.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
+References: <alpine.DEB.1.10.0904241554100.29995@qirst.com> <49F3308B.1030507@cosmosbay.com> <20090426.020411.157511269.davem@davemloft.net> <49F43B8F.2050907@cosmosbay.com> <87ab60rh8t.fsf@basil.nowhere.org> <49F71B63.8010503@cosmosbay.com> <alpine.DEB.1.10.0904281501300.13862@qirst.com>
+In-Reply-To: <alpine.DEB.1.10.0904281501300.13862@qirst.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 28 Apr 2009 22:05:10 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 11:34:10AM -0700, Andrew Morton wrote:
+Christoph Lameter a écrit :
+> For the udpping test load these patches have barely any effect:
 > 
-> (cc Doug.  He was omitted from the [0/n] email.  Please be careul about
-> that)
-> 
-> On Tue, 28 Apr 2009 18:06:12 +0200
-> Borislav Petkov <borislav.petkov@amd.com> wrote:
-> 
-> > On Tue, Apr 28, 2009 at 08:58:52AM -0700, Greg KH wrote:
-> > > On Tue, Apr 28, 2009 at 05:05:52PM +0200, Borislav Petkov wrote:
-> > > > Hi Andrew,
-> > > > hi Greg,
-> > > > 
-> > > > I think you've already heard about this driver, so here is a first
-> > > > upstream submission request. It is quite sizable but partly the reason
-> > > > for it is that it handles ECC detection and reporting for all AMD
-> > > > K8, F10h and F11h families. It also implements DRAM error injection
-> > > > functionality, failing DIMM module detection and some other fun stuff
-> > > > found on F10h and later CPUs.
-> > > > 
-> > > > We've been doing testing/bugfixing/scrubbing here for some time, have
-> > > > converted it to using kernel facilities and basically removed some slack
-> > > > from it like glue code due to it being maintained out-of-tree. Please
-> > > > take a look and let us know of any objections/comments you might have so
-> > > > that we could tackle them on time.
-> > > 
-> > > At first glance, it looks sane to me.
-> > > 
-> > > Want me to put it in my driver tree so it can show up in -next?  Or is
-> > > there some other tree you want to use?
-> > 
-> > -next should be just fine, let the code see some more testing :).
-> 
-> I suspect we will need another iteration because of the rdmsr/wrmsr
-> thing.
-> 
-> I normally merge EDAC patches via -mm but there will be little overlap
-> with a new driver such as this and I still haven't got my junk into
-> linux-next yet.  So whatever.
+> git2p1 is the first version of the patch
+> git2p2 is the second version (this one)
 
-Ok, you can take them, I have enough patches in my tree :)
+But... udpping does *not* use poll() nor select(), unless I am mistaken ?
 
-thanks,
+If you really want to test this patch with udpping, you might add a poll() call
+before recvfrom() :
 
-greg k-h
+                while(1) {
++                       struct pollfd pfd = { .fd = sock, .events = POLLIN};
++                       poll(pfd, 1, -1);
+                        nbytes = recvfrom(sock, msg, min(inblocksize, sizeof(msg)),
+                                                                0, &inad, &inadlen);
+                        if (nbytes < 0) {
+                                perror("recvfrom");
+                                break;
+                        }
+                        if (sendto(sock, msg, nbytes, 0, &inad, inadlen) < 0) {
+                                perror("sendto");
+                                break;
+                        }
+                }
+
+Part about recvfrom() wakeup avoidance is in David net-2.6 tree, and saves 2 us on udpping here.
+
+Is it what you call git2p1 ?
+
+
+
