@@ -1,84 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbZD1Lpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbZD1Lrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753248AbZD1Lpj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 07:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZD1Lp1
+	id S1758171AbZD1Lrk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 07:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbZD1Lr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 07:45:27 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:49094 "EHLO mail-out1.uio.no"
+	Tue, 28 Apr 2009 07:47:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49338 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750973AbZD1Lp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 07:45:26 -0400
-Subject: Re: NFS BUG_ON in nfs_do_writepage
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, Rince <rincebrain@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-In-Reply-To: <20090428042717.GA6304@wotan.suse.de>
-References: <20090412235010.c8e3475b.akpm@linux-foundation.org>
-	 <1239650202.16771.15.camel@heimdal.trondhjem.org>
-	 <5da0588e0904131506k5c58e8ddob9bf38f61da6302a@mail.gmail.com>
-	 <5da0588e0904131644g131dc816r61884e83bc4cd006@mail.gmail.com>
-	 <5da0588e0904240226j3454941y5f58c17a32a9a23d@mail.gmail.com>
-	 <1240671428.6112.1.camel@heimdal.trondhjem.org>
-	 <20090426064026.GD28555@wotan.suse.de>
-	 <1240755509.5055.34.camel@heimdal.trondhjem.org>
-	 <20090426151324.GB5588@wotan.suse.de>
-	 <1240768522.10548.33.camel@heimdal.trondhjem.org>
-	 <20090428042717.GA6304@wotan.suse.de>
-Content-Type: text/plain
-Date: Tue, 28 Apr 2009 07:45:17 -0400
-Message-Id: <1240919117.7376.6.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1751112AbZD1Lr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 07:47:28 -0400
+Message-ID: <49F6ECFB.5010406@redhat.com>
+Date: Tue, 28 Apr 2009 14:48:11 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Gregory Haskins <ghaskins@novell.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, davidel@xmailserver.org
+Subject: Re: [KVM PATCH v2 2/2] kvm: add support for irqfd via	eventfd-notification
+ interface
+References: <20090424042142.1796.60756.stgit@dev.haskins.net> <20090424042518.1796.65593.stgit@dev.haskins.net> <49F572EF.4010909@redhat.com> <49F58A8C.7090808@novell.com> <49F58D75.7040304@redhat.com> <49F5B2DA.5060207@novell.com> <49F6CDFC.6000400@redhat.com> <49F6DB9D.3080501@novell.com> <49F6E1CA.1010106@redhat.com> <49F6E2BB.9070604@novell.com> <49F6E313.7020502@redhat.com> <49F6E3B2.5010306@redhat.com> <49F6EACA.3050808@novell.com>
+In-Reply-To: <49F6EACA.3050808@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 9 sum msgs/h 2 total rcpts 81 max rcpts/h 10 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=_BLID_, uiouri=_URIID_)
-X-UiO-Scanned: C23BD9C7905C45275FA018467F0A0C9CD6D1F2EA
-X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 207 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-28 at 06:27 +0200, Nick Piggin wrote:
-> On Sun, Apr 26, 2009 at 01:55:22PM -0400, Trond Myklebust wrote:
-> > On Sun, 2009-04-26 at 17:13 +0200, Nick Piggin wrote:
-> > > This doesn't seem to fix the race, though... on kernels with the
-> > > race still there, it will just open a window where you can have
-> > > a dirty pte but the page not written out.
-> > > 
-> > > I don't understand.
-> > 
-> > I'm just pointing out that the NFS client already calls
-> > __set_page_dirty_nobuffers() while holding the page lock inside the
-> > nfs_vm_page_mkwrite() call, so having the VM do it too in the call to
-> > set_page_dirty_balance() is actually redundant. IOW: as far as the NFS
-> > code is concerned, we can get rid of the ->set_page_dirty() callback in
-> > that situation.
-> > 
-> > I couldn't find any other places in the VM code where we can have a
-> > dirty pte without also having called page_mkwrite() (and hence
-> > __set_page_dirty_nobuffers). As I said, adding a WARN_ON(!PageDirty())
-> > in ->set_page_dirty() didn't ever trigger any cases where the
-> > set_page_dirty() was actually setting the dirty bit (except in the case
-> > where we race with page writeout in do_wp_page() and __do_fault()).
-> > 
-> > That's why I believe disabling ->set_page_dirty() is safe here, and will
-> > in fact suffice to fix the page writeout race.
-> 
-> Ah, no I don't think so because it opens another race where the
-> pte is dity but the page is marked clean.
+Gregory Haskins wrote:
+> Avi Kivity wrote:
+>   
+>> Avi Kivity wrote:
+>>     
+>>>> So what is your proposal for such interface?
+>>>>
+>>>>   
+>>>>         
+>>> ->write().
+>>>
+>>>       
+>> Alternatively, a new fileop ->signal_event(), which would map to
+>> eventfd_signal() or irqfd_signal().  This would be defined to work in
+>> irq contexts.  It may also be useful for uio interrupts.
+>>
+>>     
+> Hmm...I'm not crazy about either of those.  write() has obvious
+> limitations both from a interrupt execution context, as well as the
+> awkwardness of dealing with creating+passing a viable "userspace"
+> pointer from kernel code.  On the other hand, a new fileop doesn't quite
+> seem appropriate either since it doesn't apply to the overall fileop
+> abstraction very well.
+>
+> We could potentially have a separate vtable interface just for
+> event-type fds, and make eventfd and irqfd the first implementations. 
+> But I am not sure it is worth it.  What I suggest is that we work within
+> the existing eventfd interface.  It was designed specifically to signal
+> events, after all.
+>
+> If at some point in the future we need to ensure that the callbacks are
+> not invoked from a preempt-off/irq-off critical section, we can revist
+> the eventfd internals at that time.  Note that since we would like to
+> support signaling from interrupt context anyway, trying to get rid of
+> the wqh critical section that we have today may be a fools errand (*). 
+> Instead, we should probably focus on making the injection path support
+> non-preemptible contexts, as this will have the biggest benefits and
+> gains in the long run.
+>
+>   
+But again, you're forcing everyone who uses irqfd to require eventfd.
 
-So how can that happen?
+Maybe we should change eventfd_signal() to fall back to ->write if the 
+file happens not to be an eventfd.  It could also handle the 
+nonpreemptible context as well.
 
-AFAICS, when the pte is dirtied, we should get a page fault, which
-causes the page itself to be marked dirty by the nfs_vm_page_mkwrite()
-callback.
-When the page gets written out, the VM calls clear_page_dirty_for_io()
-which also causes the pte to be cleaned.
 
-At what point can you therefore have a situation where the pte is dirty
-without the page being marked as dirty too?
-
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
