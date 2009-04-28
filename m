@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762091AbZD1Qz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763059AbZD1Q52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762091AbZD1Qz4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbZD1Qzq
+	id S1763059AbZD1Q52 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756683AbZD1Q5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:55:46 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:33128 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756035AbZD1Qzp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:55:45 -0400
-Subject: Re: Default HZ value for X86
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090428003454.08d1660c@lxorguk.ukuu.org.uk>
-References: <1240873630.14713.25.camel@alok-dev1>
-	 <20090428003454.08d1660c@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Tue, 28 Apr 2009 09:55:45 -0700
-Message-Id: <1240937745.3831.18.camel@alok-dev1>
+	Tue, 28 Apr 2009 12:57:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58064 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755475AbZD1Q5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 12:57:16 -0400
+Date: Tue, 28 Apr 2009 12:57:05 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-driver@qlogic.com, linux-scsi@vger.kernel.org
+Subject: Re: Mainline kernel OLTP performance update
+Message-ID: <20090428125705.48ef09e1@dhcp-100-2-144.bos.redhat.com>
+In-Reply-To: <87ljpmk29b.fsf@basil.nowhere.org>
+References: <D7C42C27E6CB1E4D8CBDF2F81EA92A260345836A3A@azsmsx501.amr.corp.intel.com>
+	<87ljpmk29b.fsf@basil.nowhere.org>
+Organization: Red Hat, Inc.
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 27 Apr 2009 09:02:40 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-On Mon, 2009-04-27 at 16:34 -0700, Alan Cox wrote:
-> On Mon, 27 Apr 2009 16:07:10 -0700
-> Alok Kataria <akataria@vmware.com> wrote:
+> "Styner, Douglas W" <douglas.w.styner@intel.com> writes:
 > 
-> > Hi, 
-> > 
-> > I was wondering why do we still have the default HZ value as 1000 for
-> > the x86 kernels.
-> > 
-> > arch/x86/configs/i386_defconfig:CONFIG_HZ=1000
-> > arch/x86/configs/x86_64_defconfig:CONFIG_HZ=1000
-> > 
-> > With the highres timer implementation it was planned to move away from
-> > relying on high timer interrupt frequency for applications requiring
-> > precise high resolution timers.
+> >
+> > ======oprofile 0.9.3 CPU_CLK_UNHALTED for top 30 functions
+> > Cycles% 2.6.24.2                   Cycles% 2.6.30-rc2
+> > 74.8578 <database>                   67.6966 <database>
 > 
-> With the tickless kernel does this really matter any more ? 
-
-Agreed that with tickless it won't be an issue anymore when the system
-is idle, but when the system is loaded the interrupts will still fire at
-HZ frequency. 
-I ran a simple tight loop to check what kind of effect would the HZ
-value have on system performance. This tight loop was run on a 2.6.29
-kernel running under VMware looping till count of 6X10^9. 
-The one with HZ = 1000 took about 4m 24s, (264sec) 
-Total timer interrupts = 264405
-
-And the one with HZ = 100 took about 4m 15s (255sec)
-Total timer interrupts = 25593.
-
-Please note that the system was booted in a single user mode and only
-the minimal services were running to reduce any interference from any
-other process. These numbers are averaged across 3 runs.
-
-The cost of servicing an interrupt would be a little higher in the
-virtualized environment, so I am not sure if it would have a similar
-impact on a real hardware. 
-So this mail is more to understand if there could be any real downsides
-with reducing the Hz value, FWIU it shouldn't affect the correctness of
-the system right ?
-
-> We might as
-> well keep a logical 1000 for convenience and accuracy.
-
-What is the accuracy factor that you are mentioning here ? i guess you
-mean the precision of the timeouts, but that shouldn't matter much
-right ? 
-
-Thanks,
-Alok
+> The dip in database cycles is indeed worrying.
 > 
-> Alan
+> > 1.0500 qla24xx_start_scsi          1.1724 qla24xx_start_scsi
+> > 0.8089 schedule                    1.0578 qla24xx_intr_handler
+> > 0.5864 kmem_cache_alloc            0.8259 __schedule
+> > 0.4989 __blockdev_direct_IO        0.7451 kmem_cache_alloc
+> > 0.4357 __sigsetjmp                 0.4872 __blockdev_direct_IO
+> > 0.4152 copy_user_generic_string    0.4390 task_rq_lock
+> > 0.3953 qla24xx_intr_handler        0.4338 __sigsetjmp
+> 
+> And also why the qla24xx_intr_handler became ~2.5x as expensive.
+> Cc linux-scsi and qla24xx maintainers.
+> 
 
+They are getting 31000 interrupts/sec vs. 22000/sec on older kernels.
