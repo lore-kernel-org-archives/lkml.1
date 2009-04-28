@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbZD1Ttb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbZD1TuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755097AbZD1Ttb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 15:49:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbZD1TtW
+	id S1756917AbZD1TuA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 15:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbZD1Ttu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 15:49:22 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:53008 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752037AbZD1TtV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 15:49:21 -0400
-Date: Tue, 28 Apr 2009 15:48:24 -0400 (EDT)
-From: Tim Abbott <tabbott@MIT.EDU>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH v2 00/15] clean up page aligned data and bss sections
-In-Reply-To: <1240938062-3264-1-git-send-email-tabbott@mit.edu>
-Message-ID: <alpine.DEB.1.10.0904281527210.1623@vinegar-pot.mit.edu>
-References: <1240938062-3264-1-git-send-email-tabbott@mit.edu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Tue, 28 Apr 2009 15:49:50 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:58769 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752475AbZD1Ttt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 15:49:49 -0400
+Date: Tue, 28 Apr 2009 21:49:47 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: JosephChan@via.com.tw
+Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, ben-linux@fluff.org
+Subject: Re: [Patch 1/1 v5] via-sdmmc: VIA MSP card reader driver support
+Message-ID: <20090428214947.7478e66b@mjolnir.ossman.eu>
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8090CA2D4@exchtp03.taipei.via.com.tw>
+References: <20090410203520.6e43acb2@mjolnir.ossman.eu>
+	<C80EF34A3D2E494DBAF9AC29C7AE4EB8090CA2D4@exchtp03.taipei.via.com.tw>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009, Tim Abbott wrote:
+On Wed, 22 Apr 2009 01:35:29 +0800
+JosephChan@via.com.tw wrote:
 
-> Here's a new version of the page-aligned section cleanup patch
-> series.  Changes since last version include:
+> -----Original Message-----
+> From: Pierre Ossman [mailto:drzeus-mmc@drzeus.cx] 
+> >> +	else if (ios->clock >=  5000000)
+> >> +		clock = PCI_CLK_8M;
+> >>+	else
+> >>+		clock = PCI_CLK_375K;
+> >>+
+> 
+> > This looks a bit strange. Why are you not comparing with the clock frequency you'll be setting?
+> 
+> Do you mean that we should check the current clock frequency before setting?
 
-Sam,
+No. My point was that you compare with, for example, 5 MHz, but then
+you set the clock to 8 MHz. This is very dangerous as you'll most
+likely overclock things.
 
-I am close to having prepared another 4 patch series of similar size to 
-this one for .data.nosave, .data.cacheline_aligned, .data.init_task, and 
-.data.read_mostly.  Along with this page-aligned series and the things 
-that have already been merged, I think these are all of the major 
-cross-architecture patchsets needed for -ffunction-sections (there will 
-remain a good number of section names that only appear on one or two 
-architectures).
 
-It seems with this set of patches that we're going to bother all the arch 
-maintainers several times if we handle these all completely independently 
-(especially since each patch series has patches that depend on patches 
-from the previous one).  So, I was thinking perhaps we should proceed as 
-follows:
+> 
+> > You also need to set the bits stating if the controller supports the high-speed SD and/or MMC mode, otherwise the core won't go over 25/20 MHz.
+> 
+> 
+> OK, we will add the following line in the via_init_mmc_host function:
+> 
+>        mmc->caps |= MMC_CAP_MMC_HIGHSPEED |MMC_CAP_SD_HIGHSPEED;
+> 
 
-(1) I send a patch series that does the architecture-independent macro 
-additions as well as the changes for one architecture (say, x86) to use 
-those macros so that they can be reviewed along with the actual usage.
+You sure the controller handles MMC high-speed timings though? They are
+different from SD high-speed, which is why there are two separate caps
+bits.
 
-(2) We get those reviewed and merge at least the architecture-independent 
-patches
+Rgds
+-- 
+     -- Pierre Ossman
 
-(3) I can send one patch series for each architecture that is just using 
-the macros that have already been merged; then the patch series are nicely 
-decoupled and each arch maintainer only has to ack a single set of changes 
-to their architecture.
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+  TigerVNC, core developer          http://www.tigervnc.org
 
-Does this plan make sense?
-
-	-Tim Abbott
-
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
