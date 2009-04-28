@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760152AbZD1KWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbZD1KXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760152AbZD1KWs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 06:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932457AbZD1KVx
+	id S1756784AbZD1KXP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 06:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932494AbZD1KWC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 06:21:53 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:45243 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932445AbZD1KVv (ORCPT
+	Tue, 28 Apr 2009 06:22:02 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44404 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932489AbZD1KV7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 06:21:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=aweSqlow0nefhr9e1s2sp1Id/QXDLM1F4lKVJ26dgO7TZayTWcQnNm5ve0YPoe8oKi
-         2F3my4WWSGfE7Ut+qlnbxr4Rqj6Lt98BikVrs/z+YTAosl4GjxIvH+xF6DURZJEDy4V9
-         9VC+yq6WZ09eKotjqXduQDm88p9BMRkRSCXgU=
-MIME-Version: 1.0
-In-Reply-To: <20090428190822.EBED.A69D9226@jp.fujitsu.com>
-References: <20090428093621.GD21085@elte.hu>
-	 <84144f020904280257j57b5b686k91cc4096a8e5ca29@mail.gmail.com>
-	 <20090428190822.EBED.A69D9226@jp.fujitsu.com>
-Date: Tue, 28 Apr 2009 13:21:50 +0300
-X-Google-Sender-Auth: d63f090a41de331c
-Message-ID: <84144f020904280321u4be9fb10t6f0123b589752b80@mail.gmail.com>
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       =?ISO-2022-JP?B?RnIbJEJxRXFTGyhCaWMgV2Vpc2JlY2tlcg==?= 
-	<fweisbec@gmail.com>,
-       Larry Woodman <lwoodman@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 28 Apr 2009 06:21:59 -0400
+Subject: Re: [PATCH -v2] x86: MCE: Re-implement MCE log ring buffer as
+ per-CPU ring buffer
+From: Peter Zijlstra <peterz@infradead.org>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1240910841.6842.1163.camel@yhuang-dev.sh.intel.com>
+References: <1240910841.6842.1163.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 28 Apr 2009 12:21:43 +0200
+Message-Id: <1240914103.7620.110.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 2009-04-28 at 17:27 +0800, Huang Ying wrote:
+> Re-implement MCE log ring buffer as per-CPU ring buffer for better
+> scalability. Basic design is as follow:
+> 
+> - One ring buffer for each CPU
+> 
+>   + MCEs are added to corresponding local per-CPU buffer, instead of
+>     one big global buffer. Contention/unfairness between CPUs is
+>     eleminated.
+> 
+>   + MCE records are read out and removed from per-CPU buffers by mutex
+>     protected global reader function. Because there are no many
+>     readers in system to contend in most cases.
+> 
+> - Per-CPU ring buffer data structure
+> 
+>   + An array is used to hold MCE records. integer "head" indicates
+>     next writing position and integer "tail" indicates next reading
+>     position.
+> 
+>   + To distinguish buffer empty and full, head and tail wrap to 0 at
+>     MCE_LOG_LIMIT instead of MCE_LOG_LEN. Then the real next writing
+>     position is head % MCE_LOG_LEN, and real next reading position is
+>     tail % MCE_LOG_LEN. If buffer is empty, head == tail, if buffer is
+>     full, head % MCE_LOG_LEN == tail % MCE_LOG_LEN and head != tail.
+> 
+> - Lock-less for writer side
+> 
+>   + MCE log writer may come from NMI, so the writer side must be
+>     lock-less. For per-CPU buffer of one CPU, writers may come from
+>     process, IRQ or NMI context, so "head" is increased with
+>     cmpxchg_local() to allocate buffer space.
+> 
+>   + Reader side is protected with a mutex to guarantee only one reader
+>     is active in the whole system.
+> 
+> 
+> Performance test show that the throughput of per-CPU mcelog buffer can
+> reach 430k records/s compared with 5.3k records/s for original
+> implementation on a 2-core 2.1GHz Core2 machine.
 
-2009/4/28 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>:
->> I guess the main question here is whether this approach will scale to
->> something like kmalloc() or the page allocator in production
->> environments. For any serious workload, the frequency of events is
->> going to be pretty high.
->
-> Immediate Values patch series makes zero-overhead to tracepoint
-> while it's not used.
->
-> So, We have to implement to stop collect stastics way. it restore
-> zero overhead world.
-> We don't lose any performance by trace.
+We're talking about Machine Check Exceptions here, right? Is there a
+valid scenario where you care about performance? I always thought that
+an MCE meant something seriously went wrong, log the event and reboot
+the machine -- possibly start ordering replacement parts.
 
-Sure but I meant the _enabled_ case here. kmalloc() (and the page
-allocator to some extent) is very performance sensitive in many
-workloads so you probably don't want to use tracepoints if you're
-collecting some overall statistics (i.e. tracing all events) like we
-do here.
+But now you're saying we want to be able to record more than 5.3k events
+a second on this? Sounds daft to me.
 
-                                      Pekka
+Also, it sounds like something that might fit the ftrace ringbuffer
+thingy.
