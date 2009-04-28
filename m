@@ -1,68 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbZD1U23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbZD1UcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754864AbZD1U23 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197AbZD1U2J
+	id S1755323AbZD1UcG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 16:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbZD1Ubu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:28:09 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45505 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754243AbZD1U2H (ORCPT
+	Tue, 28 Apr 2009 16:31:50 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:54901 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753358AbZD1Ubt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:28:07 -0400
-Date: Sun, 26 Apr 2009 11:26:01 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Valerie Aurora Henson <vaurora@redhat.com>
-Cc: Theodore Tso <tytso@mit.edu>, Jamie Lokier <jamie@shareable.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Chris Mason <chris.mason@oracle.com>, Eric Sandeen <sandeen@redhat.com>,
-       Ric Wheeler <rwheeler@redhat.com>
-Subject: Re: [RFC PATCH] fpathconf() for fsync() behavior
-Message-ID: <20090426092601.GC1354@ucw.cz>
-References: <20090423001257.GA16540@shell> <20090422221748.8c9022d1.akpm@linux-foundation.org> <20090423112105.GA1589@shareable.org> <20090423124230.GF2723@mit.edu> <20090423161612.GG8476@shell>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090423161612.GG8476@shell>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 28 Apr 2009 16:31:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=JOznjUBsMyjt7P2y9T7tWxad5vzSVQBSVbOWexigxpKJg53Xq48EzI5wabkK/2ps9H
+         VEKd15xN22B+S6XFT2PoaOIjVnG4H2Z08/90lLLBLiPikF8Dqf0LRL7vmlvzVOWhHC4s
+         rU0yt5AA4lT4rS9331SXaw4I9fZ+DQ95KVqv4=
+Subject: Re: [PATCH] Acer Aspire One Fan Control
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Peter Feuerer <peter@piie.net>
+Cc: petkovbb@gmail.com, LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+In-Reply-To: <cone.1240949852.549814.7466.1000@mentalhome>
+References: <cone.1240623959.159615.9486.1000@mentalhome>
+	 <cone.1240648971.372002.7492.1000@mentalhome>
+	 <20090426172947.GB3643@liondog.tnic>
+	 <cone.1240858632.795110.5316.1000@onepiie>
+	 <20090428072519.GA12170@liondog.tnic>
+	 <1240913055.29860.14.camel@maxim-laptop>
+	 <cone.1240949852.549814.7466.1000@mentalhome>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 28 Apr 2009 23:31:44 +0300
+Message-Id: <1240950704.3781.12.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > Application writers don't care about OS portability (it only has to
-> > work on Linux), or working on multiple filesystems (it only has work
-> > on ext3, and any filesystems which doesn't do automagic fsync's at the
-> > right magic times automagically is broken by design).  This includes
-> > many GNOME and KDE developers.  So as we concluded at the filesystem
-> > and storage workshop, we probably will have to keep automagic
-> > hueristics out there, for all of the broken applications.  Heck, Linus
-> > even refused to call those applications "broken".  
-> > 
-> > So we can create a more finer-grained controlled system call ---
-> > although I would suggest that we just add some extra flags to
-> > sync_file_range() --- but it's doubtful that many application
-> > programmers will use it.
+On Tue, 2009-04-28 at 22:17 +0200, Peter Feuerer wrote:
+> Hi Maxim,
 > 
-> I remain hopeful. :) Application developers *want* to do the right
-> thing in general; they are just facing a hopeless catch-22 right now.
-> The POSIX-ly correct use of fsync() exposes them to potential
-> multi-second delays on 95% of file systems currently in existence -
-> and the fsync() isn't even needed in many cases!
+> >> Their N270 datasheet
+> >> (http://download.intel.com/design/processor/datashts/320032.pdf) talks
+> >> about max Tj (junction temperature) being 90°C for a TDP of 2.5W and if
+> >> you operate below that limit "functionality and long-term reliability
+> >> can be expected." :)
+> >> 
+> >> There's also an internal termtrip sensor which is designed to go off at
+> >> Tj=125°C so, yeah, I guess something 70°C should be ok.
+> > 
+> > I have small note:
+> > 
+> > So yes cpu can withstand 90 C, but will rest of the motherboard?
+> > 
+> > (Most other cpus are rated at 60C)
+> 
+> That's why the module is started in "user mode" where the bios controls the 
+> fan. - The Bios just starts the fan as soon as the temperature is higher 
+> than 40 degree celsius.
+> 
+> The user must explicitely start "kernel mode" to make the kernel 
+> controlling the fan. Maybe we should add a warning somewhere, that it could 
+> harm the hardware?
+Then its fine.
 
-Perhaps we should create documentation file explaining what kernel
-guarantees and what works mostly by mistake?
+(I probably won't turn fan off though).
 
-For example (and I tried to watch the discussion...):
+I have a aspire one, so I install this driver.
+one more note thought, you might want to rename it to something else,
+or maybe merge with acer-wmi?
 
-On ext3 data=ordered, is "echo new > bar.new; mv -f bar.new bar "
-actually safe?
+If I understand correctly, this driver also provides temperature
+reading, which is in my opinion very nice.
+Thus, this seems more a 'acer aspire extras'
 
-Is it still safe on ext4 with workarounds, or is it that you just
-shrank the window?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Or, maybe even better, maybe you can name it a 'EC extra driver', since
+today many notebooks are controlled via EC, and thus you or other
+contributors might add more features to this driver.
+How about a EC register dump for example in /sys, so users could look at
+EC registers comfortably
+
+But of course, I think this driver should first be merged.
+
+Another small note, is would be very nice to have a locking mechanism
+for EC reads/writes, so there would be no conflicts between accesses.
+
+For example my main notebook, acer 5720, has semi broken fan control
+(they broke it in newer bioses, but I have to use them, because fan
+won't work at all in 64-bit OS I use (linux of course).
+
+There is a way to control the fan, by writing fake temperatures to EC
+and doing that very often, since I think SMI writes there too.
+But when I do so, ofnen other EC related things fail, like brightness
+control for example. I think this is due to the fact that acer_ec does
+direct I/O.
+
+so I would like to see a interface to read/write EC properly.
+
+Best regards, and thanks,
+	Maxim Levitsky
+
+
+
