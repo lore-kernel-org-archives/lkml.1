@@ -1,47 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbZD1U7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbZD1VA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbZD1U7U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbZD1U65
+	id S1754791AbZD1VA7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 17:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbZD1VAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:58:57 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:48158 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755970AbZD1U64 (ORCPT
+	Tue, 28 Apr 2009 17:00:48 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:61467 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752985AbZD1VAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:58:56 -0400
-Date: Tue, 28 Apr 2009 16:49:36 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: linux kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       jesse.brandeburg@intel.com, netdev@vger.kernel.org, haoki@redhat.com,
-       mchan@broadcom.com, davidel@xmailserver.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
-In-Reply-To: <49F767FD.2040205@cosmosbay.com>
-Message-ID: <alpine.DEB.1.10.0904281629090.15947@qirst.com>
-References: <alpine.DEB.1.10.0904241554100.29995@qirst.com> <49F3308B.1030507@cosmosbay.com> <20090426.020411.157511269.davem@davemloft.net> <49F43B8F.2050907@cosmosbay.com> <87ab60rh8t.fsf@basil.nowhere.org> <49F71B63.8010503@cosmosbay.com>
- <alpine.DEB.1.10.0904281501300.13862@qirst.com> <49F76174.6060009@cosmosbay.com> <alpine.DEB.1.10.0904281612560.13862@qirst.com> <49F767FD.2040205@cosmosbay.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 28 Apr 2009 17:00:47 -0400
+Message-ID: <49F76E8C.3070808@oracle.com>
+Date: Tue, 28 Apr 2009 14:01:00 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: "J. Bruce Fields" <bfields@fieldses.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: [PATCH v2] lockd: fix FILE_LOCKING=n build error
+References: <20090428165343.2e357d7a.sfr@canb.auug.org.au>	 <49F71F4A.3080908@oracle.com> <20090428172137.GA22451@fieldses.org>	 <49F7421A.1090709@oracle.com> <1240942554.7376.38.camel@heimdal.trondhjem.org>
+In-Reply-To: <1240942554.7376.38.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010209.49F76E45.000B:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009, Eric Dumazet wrote:
+Trond Myklebust wrote:
+> Until someone finds time to go through the code and add in all the
+> CONFIG_FILE_LOCKING special cases, the above needs to be a 'depends on
+> INET && FILE_LOCKING'.
 
-> The one that did improved your udpping 'bench' :)
->
-> http://git2.kernel.org/?p=linux/kernel/git/davem/net-2.6.git;a=commitdiff;h=bf368e4e70cd4e0f880923c44e95a4273d725ab4
-
-Well yes that is git2p1. The measurements that we took showed not much of
-an effect as you see.
+That seems to work.  Thanks.
 
 
 
 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
+lockd without FILE_LOCKING doesn't make sense, so make LOCKD and
+LOCKD_V4 depend on FILE_LOCKING, and make NFS depend on FILE_LOCKING.
 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ fs/Kconfig     |    2 ++
+ fs/nfs/Kconfig |    2 +-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+--- linux-next-20090428.orig/fs/Kconfig
++++ linux-next-20090428/fs/Kconfig
+@@ -226,10 +226,12 @@ source "fs/nfsd/Kconfig"
+ 
+ config LOCKD
+ 	tristate
++	depends on FILE_LOCKING
+ 
+ config LOCKD_V4
+ 	bool
+ 	depends on NFSD_V3 || NFS_V3
++	depends on FILE_LOCKING
+ 	default y
+ 
+ config EXPORTFS
+--- linux-next-20090428.orig/fs/nfs/Kconfig
++++ linux-next-20090428/fs/nfs/Kconfig
+@@ -1,6 +1,6 @@
+ config NFS_FS
+ 	tristate "NFS client support"
+-	depends on INET
++	depends on INET && FILE_LOCKING
+ 	select LOCKD
+ 	select SUNRPC
+ 	select NFS_ACL_SUPPORT if NFS_V3_ACL
