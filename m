@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbZD1BtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759830AbZD1BvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759531AbZD1BtW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 21:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756980AbZD1BtJ
+	id S1759830AbZD1BvZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 21:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbZD1BvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 21:49:09 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:56607 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755111AbZD1BtH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 21:49:07 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] fsldma: use PCI Read Multiple command
-Date: Tue, 28 Apr 2009 09:48:58 +0800
-Message-ID: <D7CCA83BB0796C49BC0BB53B6AB1208928CABC@zch01exm21.fsl.freescale.net>
-In-Reply-To: <49F608B7.9080409@ovro.caltech.edu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] fsldma: use PCI Read Multiple command
-Thread-Index: AcnHb0Tk8Z1RdEKzT6q9dGfnC8niAgAMwnbw
-References: <20090424183517.GB23140@ovro.caltech.edu>	<D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net> <ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com> <49F608B7.9080409@ovro.caltech.edu>
-From: "Liu Dave-R63238" <DaveLiu@freescale.com>
-To: "David Hawkins" <dwh@ovro.caltech.edu>,
-       "Tabi Timur-B04825" <timur@freescale.com>
-Cc: "Ira Snyder" <iws@ovro.caltech.edu>, <linux-kernel@vger.kernel.org>,
-       <linuxppc-dev@ozlabs.org>, "Dan Williams" <dan.j.williams@intel.com>,
-       "Zhang Wei" <wei.zhang@freescale.com>
-X-Brightmail-Tracker: AAAAAQAAAWE=
-X-Brightmail-Tracker: AAAAAQAAAWE=
+	Mon, 27 Apr 2009 21:51:14 -0400
+Received: from mga03.intel.com ([143.182.124.21]:9251 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751461AbZD1BvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 21:51:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,257,1239001200"; 
+   d="scan'208";a="136585590"
+Message-Id: <20090428010907.912554629@intel.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 28 Apr 2009 09:09:07 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: "Wu, Fengguang" <fengguang.wu@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: [PATCH 0/5] proc: export more page flags in /proc/kpageflags (take 4)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Here's a few results from DMA tests between two
-> MPC8349EA boards housed in a CPCI chassis.
-> 
-> 1. DMA mode register (DMAMRn)
->     PCI read command (PRC, bits 11:10)
-> 
->     a) DMAMRn[PRC] = 00 = PCI Read
-> 
->        The PCI read command is 6h on the PCI bus.
->        For DMA lengths of less than 1 cache line (32-bytes)
->        the DMA controller will generate a PCI 6h command.
->        However, for lengths of 32-bytes and higher, the
->        DMA controller actually generates a PCI Read Line (Eh)
->        command.
-> 
->        Freescale indicated that this 'change of PCI command code'
->        functionality is an undocumented 'feature', there to
->        improve performance for longer read lengths.
-> 
->     b) DMAMRn[PRC] = 01 = PCI Read Line
-> 
->        Generated the PCI command code for PCI read line (Eh),
->        regardless of DMA length.
-> 
->     c) DMAMRn[PRC] = 10 = PCI Read Multiple
-> 
->        Generated the PCI command code for PCI Read Multiple (Ch),
->        regardless of DMA length.
+Hi all,
 
-Good summary!
+Export 9 more flags to end users (and more for kernel developers):
 
-For the DMA PCI read/line/multi-line is outbound transaction.
-So according to your experiment, the 8349 PCI controller(as master)
-attemp to streaming/combining the outbound transaction(treated as
-prefetchable
-space). 
-IIRC, the early 8349EUM has the bit[2]-SE in the POCMRn
-register, and is removed now. Not sure if it does function.
+        11. KPF_MMAP            (pseudo flag) memory mapped page
+        12. KPF_ANON            (pseudo flag) memory mapped page (anonymous)
+        13. KPF_SWAPCACHE       page is in swap cache
+        14. KPF_SWAPBACKED      page is swap/RAM backed
+        15. KPF_COMPOUND_HEAD   (*)
+        16. KPF_COMPOUND_TAIL   (*)
+        17. KPF_UNEVICTABLE     page is in the unevictable LRU list
+        18. KPF_HWPOISON        hardware detected corruption
+        19. KPF_NOPAGE          (pseudo flag) no page frame at the address
+
+        (*) For compound pages, exporting _both_ head/tail info enables
+            users to tell where a compound page starts/ends, and its order.
+
+Please check the documentary patch and changelog of the final patch
+for the details.
+
+	[PATCH 1/5] pagemap: document clarifications                                             
+	[PATCH 2/5] pagemap: documentation new page flags                                        
+	[PATCH 3/5] mm: introduce PageHuge() for testing huge/gigantic pages                     
+	[PATCH 4/5] proc: kpagecount/kpageflags code cleanup                                     
+	[PATCH 5/5] proc: export more page flags in /proc/kpageflags                             
+
+Thanks,
+Fengguang
+-- 
+
