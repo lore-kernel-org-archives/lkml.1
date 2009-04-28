@@ -1,102 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbZD1MoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758472AbZD1Moi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755664AbZD1MoW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 08:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754958AbZD1MoH
+	id S1758472AbZD1Moi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 08:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbZD1MoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 08:44:07 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38470 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753777AbZD1MoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 08:44:05 -0400
-Date: Tue, 28 Apr 2009 14:42:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       =?utf-8?B?RnLpppjpp7tpYw==?= Weisbecker <fweisbec@gmail.com>,
-       Larry Woodman <lwoodman@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090428124259.GA3731@elte.hu>
-References: <20090428093621.GD21085@elte.hu> <84144f020904280257j57b5b686k91cc4096a8e5ca29@mail.gmail.com> <20090428190822.EBED.A69D9226@jp.fujitsu.com> <84144f020904280321u4be9fb10t6f0123b589752b80@mail.gmail.com> <20090428105603.GB25347@elte.hu> <2f11576a0904280409h4dedc04u43a5b68ef492e56d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2f11576a0904280409h4dedc04u43a5b68ef492e56d@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 28 Apr 2009 08:44:25 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:38102 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757731AbZD1MoX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 08:44:23 -0400
+Date: Tue, 28 Apr 2009 21:44:23 +0900 (JST)
+Message-Id: <20090428.214423.193684619.ryov@valinux.co.jp>
+To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Subject: [PATCH 1/7] blkio-cgroup: Introduction
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+This is a new release of blkio-cgroup which provides an IO tracking
+mechanism. You can also download this series of patches from
+http://people.valinux.co.jp/~ryov/blkio-cgroup/
 
-> 2009/4/28 Ingo Molnar <mingo@elte.hu>:
-> >
-> > * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> >
-> >> Hi!
-> >>
-> >> 2009/4/28 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>:
-> >> >> I guess the main question here is whether this approach will scale to
-> >> >> something like kmalloc() or the page allocator in production
-> >> >> environments. For any serious workload, the frequency of events is
-> >> >> going to be pretty high.
-> >> >
-> >> > Immediate Values patch series makes zero-overhead to tracepoint
-> >> > while it's not used.
-> >> >
-> >> > So, We have to implement to stop collect stastics way. it restore
-> >> > zero overhead world.
-> >> > We don't lose any performance by trace.
-> >>
-> >> Sure but I meant the _enabled_ case here. kmalloc() (and the page
-> >> allocator to some extent) is very performance sensitive in many
-> >> workloads so you probably don't want to use tracepoints if you're
-> >> collecting some overall statistics (i.e. tracing all events) like
-> >> we do here.
-> >
-> > That's where 'collect current state' kind of tracepoints would help
-> > - they could be used even without enabling any of the other
-> > tracepoints. And they'd still be in a coherent whole with the
-> > dynamic-events tracepoints.
-> >
-> > So i'm not arguing against these techniques at all - and we can move
-> > on a wide scale from zero-overhead to lots-of-tracing-enabled models
-> > - what i'm arguing against is the splintering.
-> 
-> umm.
-> I guess Pekka and you talk about different thing.
-> 
-> if tracepoint is ON, tracepoint makes one function call. but few 
-> hot spot don't have patience to one function call overhead.
-> 
-> scheduler stat and slab stat are one of good example, I think.
-> 
-> I really don't want convert slab_stat and sched_stat to ftrace 
-> base stastics. currently it don't need extra function call and it 
-> only touch per-cpu variable. So, a overhead is extream small.
-> 
-> Unfortunately, tracepoint still don't reach this extream 
-> performance.
+Changes from the previous release
+=================================
+- bio-cgroup renamed to blkio-cgroup.
+- Use part of page_cgroup->flags to store the blkio-cgroup ID.
+  This code is taken from Andrea's io-throttle.
+  http://download.systemimager.org/~arighi/linux/patches/io-throttle/cgroup-io-throttle-v14.patch
+- Add a new function blkio_cgroup_lookup(ID) which can be called from
+  other cgroup subsystems and return the cgroup associated with a
+  given blkio-cgroup ID. It makes it easy to use blkio-cgroup from other
+  cgroup subsystems.
+- Add an extra patch which reduces the overhead of IO tracking.
+- Can be applied to 2.6.30-rc3 and 2.6.30-rc3-git3.
 
-I understand that - please see my "[rfc] object collection tracing" 
-reply in this thread, for a more detailed description about what i 
-meant under 'object state tracing'.
+What's blkio-cgroup all about?
+==============================
 
-	Ingo
+With this feature, you can determine the owners of any type of
+I/Os. This makes dm-ioband_--_I/O_bandwidth_controller_-- be able to
+control the Block I/O bandwidths even when it accepts delayed write
+requests. Dm-ioband can find the owner cgroup of each request. It is
+also possible that the other people who work on the I/O bandwidth
+throttling use this functionality to control asynchronous I/Os with a
+little enhancement.
+
+Setting up blkio-cgroup
+=======================
+
+You have to apply the patch dm-ioband before applying this series of
+blkio-cgroup patches.
+And you have to select the following config options when compiling
+kernel.
+
+      CONFIG_CGROUPS=y
+      CONFIG_CGROUP_BLKIO=y
+
+And I recommend you should also select the options for cgroup memory
+subsystem, because it makes it possible to give some I/O bandwidth and
+some memory to a certain cgroup to control delayed write requests and
+the processes in the cgroup will be able to make pages dirty only
+inside the cgroup even when the given bandwidth is narrow.
+
+      CONFIG_RESOURCE_COUNTERS=y
+      CONFIG_CGROUP_MEM_RES_CTLR=y
+
+Using blkio-cgroup
+==================
+
+The following shows how to use dm-ioband with cgroups. Please assume
+that you want make two cgroups, which we call "bio cgroup" here, to
+track down block I/Os and assign them to ioband device "ioband1".
+
+First, mount the bio cgroup filesystem.
+
+      # mount -t cgroup -o blkio none /cgroup
+
+Then, make new bio cgroups and put some processes in them.
+
+      # mkdir /cgroup/grp1
+      # mkdir /cgroup/grp2
+      # echo 1234 > /cgroup/grp1/tasks
+      # echo 5678 > /cgroup/grp2/tasks
+
+Now, check the ID of each blkio cgroup which is just created.
+
+      # cat /cgroup/grp1/blkio.id
+      2
+      # cat /cgroup/grp2/blkio.id
+      3
+
+Finally, attach the cgroups to "ioband1" and assign them weights.
+
+      # dmsetup message ioband1 0 type cgroup
+      # dmsetup message ioband1 0 attach 2
+      # dmsetup message ioband1 0 attach 3
+      # dmsetup message ioband1 0 weight 2:30
+      # dmsetup message ioband1 0 weight 3:60
