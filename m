@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763003AbZD1Qv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763052AbZD1Qvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763003AbZD1Qv2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758107AbZD1QvQ
+	id S1763052AbZD1Qvr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762931AbZD1Qvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:51:16 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:50861 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755714AbZD1QvP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:51:15 -0400
+	Tue, 28 Apr 2009 12:51:33 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:42698 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762992AbZD1Qvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 12:51:32 -0400
+Date: Tue, 28 Apr 2009 17:51:29 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH] Properly account for freed pages in free_pages_bulk()
+	and when allocating high-order pages in buffered_rmqueue()
+Message-ID: <20090428165129.GA18893@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240819119.2567.884.camel@ymzhang> <20090427143845.GC912@csn.ul.ie> <1240883957.2567.886.camel@ymzhang> <20090428103159.GB23540@csn.ul.ie> <alpine.DEB.1.10.0904281236350.21913@qirst.com>
 MIME-Version: 1.0
-In-Reply-To: <49F7308A.2010804@kernel.org>
-References: <20090418192314.GA22107@suse.de> <49F6B1E6.7050008@kernel.org> 
-	<49F6B350.9080703@kernel.org> <ac3eb2510904280125w11a58388u6a51997e28609009@mail.gmail.com> 
-	<49F71EF6.3050102@kernel.org> <49F72205.7030306@kernel.org> 
-	<20090428153906.GA8896@suse.de> <49F7260F.8030405@kernel.org> 
-	<ac3eb2510904280856m1fc07002pc4fb630fd2946b62@mail.gmail.com> 
-	<49F7308A.2010804@kernel.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Tue, 28 Apr 2009 18:50:52 +0200
-Message-ID: <ac3eb2510904280950i761bb122p74299e0ff5b3a86e@mail.gmail.com>
-Subject: Re: [RFC PATCH] use dev_set_name(,NULL) to prevent leaking
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0904281236350.21913@qirst.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 18:36, Yinghai Lu <yinghai@kernel.org> wrote:
-> Kay Sievers wrote:
->> On Tue, Apr 28, 2009 at 17:51, Yinghai Lu <yinghai@kernel.org> wrote:
->>
->>> before device_register==>device_initialize is called, kobj->ref is still 0.
->>>
->>> will get warn from
->>>                if (!kobj->state_initialized)
->>
->> Initialize the device before you do anything with it. And call _put()
->> any time to get rid of ressources, which might have been allocated
->> before registering.
->
-> need to replace device_register with device_add and call device_initialize before device_set_name?
+On Tue, Apr 28, 2009 at 12:37:22PM -0400, Christoph Lameter wrote:
+> On Tue, 28 Apr 2009, Mel Gorman wrote:
+> 
+> > @@ -1151,6 +1151,7 @@ again:
+> >  	} else {
+> >  		spin_lock_irqsave(&zone->lock, flags);
+> >  		page = __rmqueue(zone, order, migratetype);
+> > +		__mod_zone_page_state(zone, NR_FREE_PAGES, -(1UL << order));
+> >  		spin_unlock(&zone->lock);
+> >  		if (!page)
+> >  			goto failed;
+> 
+> __mod_zone_page_state takes an signed integer argument. Not sure what is
+> won by the UL suffix here.
+> 
 
-Sounds right in the case you want to jump out between set_name() and
-_register() -- means you have an uninitialized device, where you can
-not call put_device(). Otherwise after a failing _register() it should
-work fine.
+Matches other call sites such as in __offline_isolated_pages(), habit when
+using shifts like this and matches other locations, paranoia, doesn't hurt.
 
-Kay
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
