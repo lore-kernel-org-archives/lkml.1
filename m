@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932512AbZD1KWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932387AbZD1KVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932512AbZD1KWH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 06:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760134AbZD1KVI
+	id S932387AbZD1KVk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 06:21:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759363AbZD1KUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 06:21:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39944 "EHLO mx2.redhat.com"
+	Tue, 28 Apr 2009 06:20:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34419 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760130AbZD1KVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 06:21:06 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090424180612.GC6754@linux.vnet.ibm.com>
-References: <20090424180612.GC6754@linux.vnet.ibm.com> <32260.1239658818@redhat.com> <20090413214852.GA1127@redhat.com> <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com> <14561.1239873018@redhat.com> <21239.1240407420@redhat.com> <5591.1240417398@redhat.com> <21209.1240504344@redhat.com> <26028.1240573601@redhat.com> <27891.1240595286@redhat.com> 
-To: paulmck@linux.vnet.ibm.com
-Cc: dhowells@redhat.com, Oleg Nesterov <oleg@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, torvalds@osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>, serue@us.ibm.com,
-       viro@zeniv.linux.org.uk, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] It may not be assumed that wake_up(), finish_wait() and co. imply a memory barrier
-Date: Tue, 28 Apr 2009 11:18:51 +0100
-Message-ID: <13379.1240913931@redhat.com>
+	id S1759331AbZD1KUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 06:20:35 -0400
+Date: Tue, 28 Apr 2009 12:19:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       linux-pci@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 9/9] irq: make ht irq_desc numa aware
+Message-ID: <20090428101917.GB28495@elte.hu>
+References: <49E68C41.4020801@kernel.org> <20090416090315.GF9813@elte.hu> <49E802CE.5030406@kernel.org> <49E804D4.70009@kernel.org> <49F655B6.8020109@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49F655B6.8020109@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-> But I would strongly suggest at least a note calling this out, preferably a
-> "don't do this" example.
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-How about I add this to the bottom of the new section:
+> Try to get irq_desc on the same node as create_irq_nr().
+>
+> [ Impact: optimization, make HT IRQs more NUMA-aware ]
+>
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> ---
+>  drivers/pci/htirq.c |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
-[!] Note that the memory barriers implied by the sleeper and the waker do _not_
-order multiple stores before the wake-up with respect to loads of those stored
-values after the sleeper has called set_current_state().  For instance, if the
-sleeper does:
+Looks good - but this really needs an Ack from Jesse (Cc:-ed) before 
+we can pick it up into the irq tree.
 
-	set_current_state(TASK_INTERRUPTIBLE);
-	if (event_indicated)
-		break;
-	__set_current_state(TASK_RUNNING);
-	do_something(my_data);
-
-and the waker does:
-
-	my_data = value;
-	event_indicated = 1;
-	wake_up(&event_wait_queue);
-
-there's no guarantee that the change to event_indicated will be perceived by
-the sleeper as coming after the change to my_data.  In such a circumstance, the
-code on both sides must interpolate its own memory barriers between the
-separate data accesses.  Thus the above sleeper ought to do:
-
-	set_current_state(TASK_INTERRUPTIBLE);
-	if (event_indicated) {
-		smp_rmb();
-		do_something(my_data);
-	}
-
-and the waker should do:
-
-	my_data = value;
-	smp_wmb();
-	event_indicated = 1;
-	wake_up(&event_wait_queue);
-
-
-David
+	Ingo
