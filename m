@@ -1,91 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbZD1EmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbZD1E4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756901AbZD1EmN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 00:42:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbZD1El5
+	id S1754206AbZD1E4E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 00:56:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751104AbZD1Ezx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 00:41:57 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:53688 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751328AbZD1El4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 00:41:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=JRb4LH3kYdsER04tnapkC5RPKAimbzKlrA+5uFXjdibfiSkxiJ5Zi1lxkjiR7uZg7U
-         eKbKPLfES4FavA/WnRHfXEiOm9qak0TitDn7hBBsZ4ol1davpM8AzzgEXRm+emmo8bg5
-         qYRtKwLwS5aMpy1ouc4SrKm81zNDsyhCnR4Ys=
+	Tue, 28 Apr 2009 00:55:53 -0400
+Received: from ultra7.eskimo.com ([204.122.16.70]:3359 "EHLO ultra7.eskimo.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750885AbZD1Ezw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 00:55:52 -0400
+X-Greylist: delayed 676 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Apr 2009 00:55:52 EDT
+Date: Mon, 27 Apr 2009 21:44:26 -0700
+From: Elladan <elladan@eskimo.com>
+To: linux-kernel@vger.kernel.org
+Subject: Swappiness vs. mmap() and interactive response
+Message-ID: <20090428044426.GA5035@eskimo.com>
 MIME-Version: 1.0
-In-Reply-To: <1240864388-26315-13-git-send-email-tabbott@mit.edu>
-References: <1240864388-26315-1-git-send-email-tabbott@mit.edu>
-	 <1240864388-26315-5-git-send-email-tabbott@mit.edu>
-	 <1240864388-26315-6-git-send-email-tabbott@mit.edu>
-	 <1240864388-26315-7-git-send-email-tabbott@mit.edu>
-	 <1240864388-26315-8-git-send-email-tabbott@mit.edu>
-	 <1240864388-26315-9-git-send-email-tabbott@mit.edu>
-	 <1240864388-26315-10-git-send-email-tabbott@mit.edu>
-	 <1240864388-26315-11-git-send-email-tabbott@mit.edu>
-	 <1240864388-26315-12-git-send-email-tabbott@mit.edu>
-	 <1240864388-26315-13-git-send-email-tabbott@mit.edu>
-Date: Tue, 28 Apr 2009 08:41:54 +0400
-X-Google-Sender-Auth: 25213c19ff8bb576
-Message-ID: <aa79d98a0904272141y1aff7689ld9a67c18c6579336@mail.gmail.com>
-Subject: Re: [PATCH 12/14] mn10300: Drop unused .data.idt section.
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: Tim Abbott <tabbott@mit.edu>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@mit.edu>, Waseem Daher <wdaher@mit.edu>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@mit.edu>, Paul Mundt <lethal@linux-sh.org>,
-       David Howells <dhowells@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/28/09, Tim Abbott <tabbott@mit.edu> wrote:
-> Since nothing gets put into .data.idt on this architecture, eliminate
-> it from the linker script.
->
-> This change was apparently proposed previously:
-> <http://lkml.indiana.edu/hypermail/linux/kernel/0802.2/2538.html>
->
-> CCing the author and people who acked that patch in case there was a
-> reason it wasn't applied.
->
-> Signed-off-by: Tim Abbott <tabbott@mit.edu>
-> Cc: David Howells <dhowells@redhat.com>
-> Cc: Cyrill Gorcunov <gorcunov@openvz.org>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> ---
->  arch/mn10300/kernel/vmlinux.lds.S |    3 ---
->  1 files changed, 0 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/mn10300/kernel/vmlinux.lds.S
-> b/arch/mn10300/kernel/vmlinux.lds.S
-> index 6ad0fa8..364250f 100644
-> --- a/arch/mn10300/kernel/vmlinux.lds.S
-> +++ b/arch/mn10300/kernel/vmlinux.lds.S
-> @@ -59,9 +59,6 @@ SECTIONS
->    . = ALIGN(PAGE_SIZE);
->    __nosave_end = .;
->
-> -  . = ALIGN(PAGE_SIZE);
-> -  .data.page_aligned : { *(.data.idt) }
-> -
->    . = ALIGN(32);
->    .data.cacheline_aligned : { *(.data.cacheline_aligned) }
->
-> --
-> 1.6.2.1
->
->
+Hi,
 
-Thanks Tim!
-Acked-by: Cyrill Gorcunov <gorcunov@openvz.org>
+So, I just set up Ubuntu Jaunty (using Linux 2.6.28) on a quad core phenom box,
+and then I did the following (with XFS over LVM):
+
+mv /500gig/of/data/on/disk/one /disk/two
+
+This quickly caused the system to. grind.. to... a.... complete..... halt.
+Basically every UI operation, including the mouse in Xorg, started experiencing
+multiple second lag and delays.  This made the system essentially unusable --
+for example, just flipping to the window where the "mv" command was running
+took 10 seconds on more than one occasion.  Basically a "click and get coffee"
+interface.
+
+There was no particular kernel CPU load -- the SATA DMA seemed fine.
+
+If I actively used the GUI, then the pieces I was using would work better, but
+they'd start experiencing astonishing latency again if I just let the UI sit
+for a little while.  From this, I diagnosed that the problem was probably
+related to the VM paging out my GUI.
+
+Next, I set the following:
+
+echo 0 > /proc/sys/vm/swappiness
+
+... hoping it would prevent paging out of the UI in favor of file data that's
+only used once.  It did appear to help to a small degree, but not much.  The
+system is still effectively unusable while a file copy is going on.
+
+>From this, I diagnosed that most likely, the kernel was paging out all my
+application file mmap() data (such as my executables and shared libraries) in
+favor of total garbage VM load from the file copy.
+
+I don't know how to verify that this is true definitively.  Are there some
+magic numbers in /proc I can look at?  However, I did run latencytop, and it
+showed massive 2000+ msec latency in the page fault handler, as well as in
+various operations such as XFS read.  
+
+Could this be something else?  There were some long delays in latencytop from
+various apps doing fsync as well, but it seems unlikely that this would destroy
+latency in Xorg, and again, latency improved whenever I touched an app, for
+that app.
+
+Is there any way to fix this, short of rewriting the VM myself?  For example,
+is there some way I could convince this VM that pages with active mappings are
+valuable?
+
+Thanks.
+
