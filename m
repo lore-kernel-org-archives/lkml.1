@@ -1,73 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763457AbZD1Rso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762723AbZD1Rtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763457AbZD1Rso (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 13:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZD1Rse
+	id S1762723AbZD1Rtu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 13:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230AbZD1Rtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 13:48:34 -0400
-Received: from ausxipps301.us.dell.com ([143.166.148.223]:61877 "EHLO
-	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754191AbZD1Rsd (ORCPT
+	Tue, 28 Apr 2009 13:49:41 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:41748 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753555AbZD1Rtk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 13:48:33 -0400
-Date: Tue, 28 Apr 2009 12:39:29 -0500
-From: Doug Warzecha <Douglas_Warzecha@dell.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Michael Brown <mebrown@michaels-house.net>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Matt Domsch <Matt_Domsch@dell.com>
-Subject: Re: Class device namespaces
-Message-ID: <20090428173929.GA5006@sysman-doug.us.dell.com>
-References: <20090329174836.6de797d6@hyperion.delvare> <ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com> <20090330104952.26f03c13@hyperion.delvare> <ac3eb2510903300424s2604d027h653a3f77163e0242@mail.gmail.com> <20090426085401.3788fc9c@hyperion.delvare> <20090427132041.GA18391@sc1430.michaels-house.net> <20090427172710.5a0c7f48@hyperion.delvare> <437908170904271023k3eefd4c1ma0cacdb78ad7acd7@mail.gmail.com> <20090428101020.0e4c2b0c@hyperion.delvare>
-Mime-Version: 1.0
+	Tue, 28 Apr 2009 13:49:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=fDnXRKtizTa9vkXMu5FUp7+NSv1JgQzdneVEt6kpc3D5V+dwFIjguT1ItonBv9gok7
+         kWc1dPu8HAXEhrHEHbW+tDq9D7OtVtQKSHDY1ffD5uLt4UO75nEVXI1qqFIPfMoNygeU
+         I+K8v9tLOUsdRMbfTYSg5UU0oZAEf4RtwjYk8=
+Date: Tue, 28 Apr 2009 19:49:36 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       zhaolei@cn.fujitsu.com, kosaki.motohiro@jp.fujitsu.com,
+       rostedt@goodmis.org, tzanussi@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] workqueue_tracepoint: Add worklet tracepoints for
+	worklet lifecycle tracing
+Message-ID: <20090428174935.GC7337@nowhere>
+References: <20090424130616.a3c217cb.akpm@linux-foundation.org> <20090424225909.GA6658@nowhere> <20090424162056.45907fef.akpm@linux-foundation.org> <20090425003702.GC6658@nowhere> <20090424182821.8263f445.akpm@linux-foundation.org> <20090426104747.GA5983@elte.hu> <20090426224450.8ea9f724.akpm@linux-foundation.org> <20090427150241.GA23700@redhat.com> <20090428134209.GA5978@nowhere> <20090428164342.GA27584@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090428101020.0e4c2b0c@hyperion.delvare>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20090428164342.GA27584@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 10:10:20AM +0200, Jean Delvare wrote:
-> On Mon, 27 Apr 2009 12:23:30 -0500, Michael Brown wrote:
-> > On Mon, Apr 27, 2009 at 10:27 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> > > The question was: any change to _which_ paths exactly? Sysfs often
-> > > offers several ways to reach the same object, and it matters to know
-> > > which need to be preserved and which can change.
+On Tue, Apr 28, 2009 at 06:43:42PM +0200, Oleg Nesterov wrote:
+> On 04/28, Frederic Weisbecker wrote:
+> >
+> > On Mon, Apr 27, 2009 at 05:02:41PM +0200, Oleg Nesterov wrote:
 > > >
-> > > const char *rbu_v2_fw_data_file = "/sys/class/firmware/dell_rbu/data";
-> > > const char *rbu_v2_fw_load_file = "/sys/class/firmware/dell_rbu/loading";
-> > > const char *rbu_v2_img_type_file = "/sys/devices/platform/dell_rbu/image_type";
-> > > const char *rbu_v2_pkt_size_file = "/sys/devices/platform/dell_rbu/packet_size";
-> > >
-> > > I guess that noawadays v2 applies, so the only path which needs to be
-> > > preserved is "/sys/class/firmware/dell_rbu". Is that correct? Is it the
-> > > same for srvadmin-hap?
-> > 
-> > You are correct WRT libsmbios. For hapi, I've cc'd Doug who can tell
-> > you about their code. I've done a quick grep of their code, and the
-> > paths above look like the same ones he is using, but I could be wrong.
-> > 
-> > hapi/apilibrary/dchbas/linux/umhbaslx.c:#define
-> > HBAS_RBU_SYSFS_NEW_DATAREAD_PFNAME		"/sys/devices/platform/dell_rbu/data"
-> > hapi/apilibrary/dchbas/linux/umhbaslx.c:#define
-> > HBAS_RBU_SYSFS_NEW_IMAGETYPE_PFNAME		"/sys/devices/platform/dell_rbu/image_type"
-> > hapi/apilibrary/dchbas/linux/umhbaslx.c:#define
-> > HBAS_RBU_SYSFS_NEW_PKTSIZE_PFNAME		"/sys/devices/platform/dell_rbu/packet_size"
+> > > I must admit, I don't really understand why trace_workqueue.c uses
+> > > cwq->thread as a "primary key". I have the feeling we can simplify
+> > > this code if we pass "struct workqueue_struct *" instead, but I am
+> > > not sure.
+> >
+> > Indeed, I wanted to use it as the identifier first. The problem
+> > is that this structure is privately defined inside kernel/workqueue.c
 > 
-> This doesn't make use of the firmware class at all, so I guess it won't
-> be affected by any change to the firmware class?
+> Perhaps we have to export some bits or add some simple helpers to
+> workqueue.c. But I am not sure trace/trace_workqueue.c actually needs
+> any additional info. Again, we can use "struct workqueue_struct *" as
+> a "void *", and probe_workqueue_creation() can use alloc_percpu() to
+> record the events per-cpu. (_Perhaps_, we can also add some fields
+> to workqueue_struct or cpu_workqueue_struct under #ifdef and eliminate
+> the list search code in trace_workqueue.c).
+
+
+
+Hmm. Yes, basing this tracing against the workqueue as a unit basis
+using per_cpu buffers seems rather more natural.
+
+
+ 
+> > But actually it's not really a 1:1 matching in CONFIG_HOTPLUG_CPU
+> > case, because the thread can destroyed and the cpu_workqueue assigned
+> > with a new one later.
+> 
+> Indeed, I also thought about this. This is subjective, but perhaps it
+> is better to keep the history. If not, we can clear it on CPU_DEAD.
 > 
 
-Dell makes use of the following dell_rbu paths:
 
-/sys/class/firmware/dell_rbu/loading
-/sys/class/firmware/dell_rbu/data
-/sys/devices/platform/dell_rbu/data
-/sys/devices/platform/dell_rbu/image_type
-/sys/devices/platform/dell_rbu/packet_size
 
-Doug
+Yeah, it means we should separate cleanup and destroy events.
+
+
+> 
+> But let me repeat, I am not very sure these changes are really good,
+> and I didn't try to really think about them. Even _if_ I am right
+> we can do this later.
+> 
+
+
+The changes you suggest seem to me logical and could simplify this
+tracer.
+So I will apply Zhaolei patches and then start addressing
+your comments :-)
+
+
+> > I'm currently gathering Zhaolei patches and I will push them all in
+> > git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+> >  tracing/workqueue
+> 
+> Thanks! Will try to look when I have the chance. Not that I think
+> I can really help though ;)
+
+
+Thanks!
+
+
+> Oleg.
+> 
 
