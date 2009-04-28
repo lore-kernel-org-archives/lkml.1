@@ -1,66 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763357AbZD1RYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759942AbZD1RZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763357AbZD1RYe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 13:24:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761224AbZD1RYX
+	id S1759942AbZD1RZF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 13:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761224AbZD1RYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 13:24:23 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:41448 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760775AbZD1RYV (ORCPT
+	Tue, 28 Apr 2009 13:24:50 -0400
+Received: from miranda.se.axis.com ([193.13.178.8]:43113 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759896AbZD1RYt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 13:24:21 -0400
-Date: Tue, 28 Apr 2009 18:15:30 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Christoph Lameter <cl@linux.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>, Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH] Properly account for freed pages in free_pages_bulk()
- and when allocating high-order pages in buffered_rmqueue()
-In-Reply-To: <20090428165129.GA18893@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0904281810240.30878@blonde.anvils>
-References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
- <1240819119.2567.884.camel@ymzhang> <20090427143845.GC912@csn.ul.ie>
- <1240883957.2567.886.camel@ymzhang> <20090428103159.GB23540@csn.ul.ie>
- <alpine.DEB.1.10.0904281236350.21913@qirst.com> <20090428165129.GA18893@csn.ul.ie>
+	Tue, 28 Apr 2009 13:24:49 -0400
+Date: Tue, 28 Apr 2009 19:24:42 +0200
+From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Mikael Starvik <mikael.starvik@axis.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] CRISv32: Fix typo compile error in ARTPEC-3 gpio driver.
+Message-ID: <20090428172442.GP21811@axis.com>
+References: <alpine.LFD.2.00.0904261952510.1991@localhost.localdomain> <4BEA3FF3CAA35E408EA55C7BE2E61D053B089B66DD@xmail3.se.axis.com> <alpine.LFD.2.00.0904270711040.5689@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904270711040.5689@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009, Mel Gorman wrote:
-> On Tue, Apr 28, 2009 at 12:37:22PM -0400, Christoph Lameter wrote:
-> > On Tue, 28 Apr 2009, Mel Gorman wrote:
-> > 
-> > > @@ -1151,6 +1151,7 @@ again:
-> > >  	} else {
-> > >  		spin_lock_irqsave(&zone->lock, flags);
-> > >  		page = __rmqueue(zone, order, migratetype);
-> > > +		__mod_zone_page_state(zone, NR_FREE_PAGES, -(1UL << order));
-> > >  		spin_unlock(&zone->lock);
-> > >  		if (!page)
-> > >  			goto failed;
-> > 
-> > __mod_zone_page_state takes an signed integer argument. Not sure what is
-> > won by the UL suffix here.
-> > 
+On Mon, Apr 27, 2009 at 01:11:39PM +0200, Robert P. J. Day wrote:
+> On Mon, 27 Apr 2009, Mikael Starvik wrote:
+> >   should that not be "spin_unlock_irqrestore()"?
 > 
-> Matches other call sites such as in __offline_isolated_pages(), habit when
-> using shifts like this and matches other locations, paranoia, doesn't hurt.
+>   um ... the code is correct, or my observation is correct?  in any
+> event, i'll leave this with you.
 
-Well, not a big deal, but I'd say that it does hurt: by wasting people's
-time (mine!), wondering what that "UL" is for - I'd have had to ask, if
-Christoph hadn't cleared this up first (thank you).  And elsewhere,
-you're using an int << order to update NR_FREE_PAGES, so I don't see
-the consistency argument.
+Hi, I've just added the following patch to the CRIS-tree:
 
-Hugh
+=============
+Subject: [PATCH] CRISv32: Fix typo compile error in ARTPEC-3 gpio driver.
+
+arch/cris/arch-v32/drivers/mach-a3/gpio.c:
++spin_lock_irqrestore(&gpio_lock, flags);
+arch/cris/arch-v32/drivers/mach-a3/gpio.c:
++spin_lock_irqrestore(&gpio_lock, flags);
+
+  should that not be "spin_unlock_irqrestore()"?
+
+The code in question was inside an (most often) undefined ifdef.
+
+Reported-by: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+---
+ arch/cris/arch-v32/drivers/mach-a3/gpio.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/cris/arch-v32/drivers/mach-a3/gpio.c b/arch/cris/arch-v32/drivers/mach-a3/gpio.c
+index 7a87bc0..97357cf 100644
+--- a/arch/cris/arch-v32/drivers/mach-a3/gpio.c
++++ b/arch/cris/arch-v32/drivers/mach-a3/gpio.c
+@@ -681,7 +681,7 @@ static int virtual_gpio_ioctl(struct file *file, unsigned int cmd,
+ 		shadow |= ~readl(dir_oe[priv->minor]) |
+ 			(arg & changeable_bits[priv->minor]);
+ 		i2c_write(VIRT_I2C_ADDR, (void *)&shadow, sizeof(shadow));
+-		spin_lock_irqrestore(&gpio_lock, flags);
++		spin_unlock_irqrestore(&gpio_lock, flags);
+ 		break;
+ 	case IO_CLRBITS:
+ 		spin_lock_irqsave(&gpio_lock, flags);
+@@ -690,7 +690,7 @@ static int virtual_gpio_ioctl(struct file *file, unsigned int cmd,
+ 		shadow |= ~readl(dir_oe[priv->minor]) &
+ 			~(arg & changeable_bits[priv->minor]);
+ 		i2c_write(VIRT_I2C_ADDR, (void *)&shadow, sizeof(shadow));
+-		spin_lock_irqrestore(&gpio_lock, flags);
++		spin_unlock_irqrestore(&gpio_lock, flags);
+ 		break;
+ 	case IO_HIGHALARM:
+ 		/* Set alarm when bits with 1 in arg go high. */
+-- 
+1.6.1
+
+
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
