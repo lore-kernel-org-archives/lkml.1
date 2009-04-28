@@ -1,86 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZD1Mlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbZD1Mnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbZD1Mlw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 08:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbZD1Mli
+	id S1753243AbZD1Mnz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 08:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754898AbZD1Mno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 08:41:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54660 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751720AbZD1Mlg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 08:41:36 -0400
-Date: Tue, 28 Apr 2009 14:40:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: dada1@cosmosbay.com, torvalds@linux-foundation.org, shemminger@vyatta.com,
-       zbr@ioremap.net, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-       jarkao2@gmail.com, paulus@samba.org, paulmck@linux.vnet.ibm.com,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
-Message-ID: <20090428124033.GA1655@elte.hu>
-References: <alpine.LFD.2.00.0904271525120.22156@localhost.localdomain> <alpine.LFD.2.00.0904271602390.22156@localhost.localdomain> <49F6A8FD.3010804@cosmosbay.com> <20090428.045342.206106171.davem@davemloft.net>
+	Tue, 28 Apr 2009 08:43:44 -0400
+Received: from galaxy-old.riz.pl ([195.94.202.2]:57464 "HELO vhost.riz.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754382AbZD1Mnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 08:43:43 -0400
+Date: Tue, 28 Apr 2009 14:43:37 +0200 (CEST)
+From: Bart <mmx@riz.pl>
+X-X-Sender: evil@galaxy.riz.pl
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+cc: rientjes@google.com, cl@linux.com, penberg@cs.helsinki.fi,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       rjw@sisk.pl, akpm@linux-foundation.org, jens.axboe@oracle.com
+Subject: Re: [Bug #13112] Oops in drain_array
+In-Reply-To: <20090428171139N.fujita.tomonori@lab.ntt.co.jp>
+Message-ID: <Pine.LNX.4.64.0904281425040.2455@galaxy.riz.pl>
+References: <alpine.DEB.1.10.0904271000200.16119@qirst.com>
+ <Pine.LNX.4.64.0904271849590.2455@galaxy.riz.pl>
+ <alpine.DEB.2.00.0904271327140.11650@chino.kir.corp.google.com>
+ <20090428171139N.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090428.045342.206106171.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> On Mon, 27 Apr 2009 13:36:46 -0700 (PDT)
+> David Rientjes <rientjes@google.com> wrote:
+>
+>> On Mon, 27 Apr 2009, Bart wrote:
+>>
+>>> After turning the suggested debuging options I've got tons of these when
+>>> trying to stress the tape device like before:
+>>>
+>>> Apr 27 16:57:30 fs kernel: [   96.446708] slab error in verify_redzone_free():
+>>> cache `size-128': memory outside object was overwritten
+>>> Apr 27 16:57:30 fs kernel: [   96.446713] Pid: 0, comm: swapper Not tainted
+>>> 2.6.29.1-64 #2
+>>> Apr 27 16:57:30 fs kernel: [   96.446715] Call Trace:
+>>> Apr 27 16:57:30 fs kernel: [   96.446717]  <IRQ>  [<ffffffff8029adc5>]
+>>> __slab_error+0x1f/0x25
+>>> Apr 27 16:57:30 fs kernel: [   96.446728]  [<ffffffff8029b24b>]
+>>> cache_free_debugcheck+0x108/0x1d6
+>>> Apr 27 16:57:30 fs kernel: [   96.446731]  [<ffffffff8029b473>]
+>>> kfree+0x81/0xc2
+>>> Apr 27 16:57:30 fs kernel: [   96.446735]  [<ffffffff802bd311>]
+>>> bio_free_map_data+0xc/0x1e
+>>
+>> This appears to be kfree(bmd->iovecs) in bio_free_map_data().  It looks
+>> like the memcpy size in bio_set_map_data() overrides the kmalloc size; in
+>> other words, for a redzone error, bio->bi_vcnt > nr_pages in
+>> bio_copy_user_iov().
+>
+> Can you try this?
+>
+> diff --git a/fs/bio.c b/fs/bio.c
+> index 7bbc98f..6a09356 100644
+> --- a/fs/bio.c
+> +++ b/fs/bio.c
+> @@ -817,6 +817,9 @@ struct bio *bio_copy_user_iov(struct request_queue *q,
+> 		len += iov[i].iov_len;
+> 	}
+>
+> +	if (offset)
+> +		nr_pages += 1;
+> +
+> 	bmd = bio_alloc_map_data(nr_pages, iov_count, gfp_mask);
+> 	if (!bmd)
+> 		return ERR_PTR(-ENOMEM);
+>
 
-* David Miller <davem@davemloft.net> wrote:
+There are no more errors in the dmesg after applying this patch to 
+2.6.29.2.
 
-> From: Eric Dumazet <dada1@cosmosbay.com>
-> Date: Tue, 28 Apr 2009 08:58:05 +0200
-> 
-> > I am not sure my day job will permit me to polish a patch mixing all
-> > the bits and comments. But I am glad we eventually got back spinlocks
-> > which are probably better than rwlocks for implementing this stuff.
-> > 
-> > Instead of submitting a full patch again, we could first submit a new
-> >  include file containg all comments and inline functions ?
-> > 
-> > This include file could be local to netfilter, with a big stick on
-> > it to forbids its use on other areas (No changes in Documentation/ )
-> > 
-> > Then, as soon as we can go back to pure RCU solution, we can 
-> > safely delete this controversial-locking-nesting-per-cpu-thing ?
-> 
-> I say we merge Linus's locking idea into the XV patch, fixup the 
-> commit message wording, and move on with life.
-> 
-> For something that's going to get deleted as soon as the faster 
-> grace period RCU stuff is available, it has consumed an inordinate 
-> amount of our time :-)
+Without this patch I can reproduce this kind of errors on 
+2.6.29.1, 2.6.29.2.
 
-One more reason to factor out this code into general locking code.
+I've not tested this patch with 2.6.29.1 and 2.6.30rc3-git3.
+I will try to reproduce the error on 2.6.30rc3-git3 as soon as I compile 
+it.
 
-The latest code looks a bit similar to the old big-reader-locks hack 
-(which got dropped for good many eons ago and with which i deny any 
-involvement with, such as having authored it. [oh, did i say that 
-out loud? crap.]), implemented cleanly and properly.
-
-IMHO this locking construct should be considered for 
-linux/local_lock.h and kernel/local_lock.c. Even if the netfilter 
-code drops its use soon afterwards ;-)
-
-[ The _only_ thing i am worried about is the apparent fact that
-  there's so much confusion about recursion versus read-access.
-  Recursion might be hard to factor out of the netfilter code, and
-  maybe it's not even possible realistically (we fought years with
-  the BKL and are still fighting it) but if its harms are not even
-  _realized_ that difficult task turns into an impossible task ;-) ]
-
-	Ingo
+-- 
+  Regards
+  Bart mmx@riz.pl
