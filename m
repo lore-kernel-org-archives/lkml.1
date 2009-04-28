@@ -1,103 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbZD1XtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758178AbZD1X5E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758599AbZD1XtK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 19:49:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbZD1Xs4
+	id S1758178AbZD1X5E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 19:57:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbZD1X4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 19:48:56 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:55175 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753373AbZD1Xsy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 19:48:54 -0400
-Subject: [git pull] Intel DRM fixes for 2.6.30-rc3
-From: Eric Anholt <eric@anholt.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-UrKZUBDKBNlVvhJIzdcL"
-Date: Tue, 28 Apr 2009 16:48:53 -0700
-Message-Id: <1240962533.12272.32.camel@gaiman.anholt.net>
+	Tue, 28 Apr 2009 19:56:52 -0400
+Received: from waste.org ([66.93.16.53]:56108 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754718AbZD1X4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 19:56:52 -0400
+Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
+       kosaki.motohiro@jp.fujitsu.com, andi@firstfloor.org,
+       adobriyan@gmail.com, linux-mm@kvack.org
+In-Reply-To: <20090428164248.0c8cffef.akpm@linux-foundation.org>
+References: <20090428010907.912554629@intel.com>
+	 <20090428014920.769723618@intel.com>
+	 <20090428143244.4e424d36.akpm@linux-foundation.org>
+	 <1240958794.938.1045.camel@calx>
+	 <20090428160219.ca0123a1.akpm@linux-foundation.org>
+	 <1240961469.938.1077.camel@calx>
+	 <20090428164248.0c8cffef.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 28 Apr 2009 18:55:10 -0500
+Message-Id: <1240962910.938.1084.camel@calx>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-04-28 at 16:42 -0700, Andrew Morton wrote:
+> On Tue, 28 Apr 2009 18:31:09 -0500
+> Matt Mackall <mpm@selenic.com> wrote:
+> 
+> > On Tue, 2009-04-28 at 16:02 -0700, Andrew Morton wrote:
+> > > On Tue, 28 Apr 2009 17:46:34 -0500
+> > > Matt Mackall <mpm@selenic.com> wrote:
+> > > 
+> > > > > > +/* a helper function _not_ intended for more general uses */
+> > > > > > +static inline int page_cap_writeback_dirty(struct page *page)
+> > > > > > +{
+> > > > > > +	struct address_space *mapping;
+> > > > > > +
+> > > > > > +	if (!PageSlab(page))
+> > > > > > +		mapping = page_mapping(page);
+> > > > > > +	else
+> > > > > > +		mapping = NULL;
+> > > > > > +
+> > > > > > +	return mapping && mapping_cap_writeback_dirty(mapping);
+> > > > > > +}
+> > > > > 
+> > > > > If the page isn't locked then page->mapping can be concurrently removed
+> > > > > and freed.  This actually happened to me in real-life testing several
+> > > > > years ago.
+> > > > 
+> > > > We certainly don't want to be taking locks per page to build the flags
+> > > > data here. As we don't have any pretense of being atomic, it's ok if we
+> > > > can find a way to do the test that's inaccurate when a race occurs, so
+> > > > long as it doesn't dereference null.
+> > > > 
+> > > > But if there's not an obvious way to do that, we should probably just
+> > > > drop this flag bit for this iteration.
+> > > 
+> > > trylock_page() could be used here, perhaps.
+> > > 
+> > > Then again, why _not_ just do lock_page()?  After all, few pages are
+> > > ever locked.  There will be latency if the caller stumbles across a
+> > > page which is under read I/O, but so be it?
+> > 
+> > As I mentioned just a bit ago, it's really not an unreasonable use case
+> > to want to do this on every page in the system back to back. So per page
+> > overhead matters. And the odds of stalling on a locked page when
+> > visiting 1M pages while under load are probably not negligible.
+> 
+> The chances of stalling on a locked page are pretty good, and the
+> duration of the stall might be long indeed.  Perhaps a trylock is a
+> decent compromise - it depends on the value of this metric, and I've
+> forgotten what we're talking about ;)
+> 
+> umm, seems that this flag is needed to enable PG_error, PG_dirty,
+> PG_uptodate and PG_writeback reporting.  So simply removing this code
+> would put a huge hole in the patchset, no?
 
---=-UrKZUBDKBNlVvhJIzdcL
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+We can report those bits anyway. But this patchset does something
+clever: it filters irrelevant (and possibly overloaded) bits in various
+contexts. 
 
-The following changes since commit cd97824994042b809493807ea644ba26c0c23290=
-:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../davem/net-2.6
+> > Our lock primitives are pretty low overhead in the fast path, but every
+> > cycle counts. The new tests and branches this code already adds are a
+> > bit worrisome, but on balance probably worth it.
+> 
+> That should be easy to quantify (hint).
 
-are available in the git repository at:
+I'll let Fengguang address both these points.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel drm-intel-=
-next
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-This is mostly a resend of the last pull request that didn't make it in,
-featuring a critical KMS fix.  In the meantime one of the patches made
-it in through a different tree, and G41 support (PCI ID addition) has
-been added along with a couple of error path fixups.
-
-Chris Wright (1):
-      drm/i915: fix up error path leak in i915_cmdbuffer
-
-Eric Anholt (1):
-      drm/i915: Don't let an oops get triggered from irq_emit without dma i=
-nit.
-
-Jesse Barnes (1):
-      drm/i915: allow tiled front buffers on 965+
-
-Keith Packard (1):
-      drm/i915: fix transition to I915_TILING_NONE
-
-Matthew Garrett (3):
-      drm/i915: Register ACPI video even when not modesetting
-      drm/i915: Unregister ACPI video driver when exiting
-      drm/i915: Enable ASLE if present
-
-Wu Fengguang (1):
-      drm/i915: fix unpaired i915 device mutex on entervt failure.
-
-Zhenyu Wang (1):
-      drm/i915: add support for G41 chipset
-
- drivers/acpi/video.c                   |    3 ++-
- drivers/gpu/drm/i915/i915_dma.c        |    8 ++++----
- drivers/gpu/drm/i915/i915_drv.c        |    2 +-
- drivers/gpu/drm/i915/i915_drv.h        |    8 +++++---
- drivers/gpu/drm/i915/i915_gem.c        |    4 +++-
- drivers/gpu/drm/i915/i915_gem_tiling.c |    1 -
- drivers/gpu/drm/i915/i915_irq.c        |    2 +-
- drivers/gpu/drm/i915/i915_opregion.c   |   15 ++++++++++-----
- drivers/gpu/drm/i915/i915_reg.h        |    1 +
- drivers/gpu/drm/i915/intel_display.c   |    9 +++++++++
- include/acpi/video.h                   |    2 ++
- include/drm/drm_pciids.h               |    1 +
- 12 files changed, 39 insertions(+), 17 deletions(-)
-
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-UrKZUBDKBNlVvhJIzdcL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkn3leUACgkQHUdvYGzw6vcGwwCaA1IIiZLWS7o2pRaYBr0CoC6Q
-JPQAoJYAsOHrlp4qnBD5pf6HpqWFjgb4
-=Fg5/
------END PGP SIGNATURE-----
-
---=-UrKZUBDKBNlVvhJIzdcL--
 
