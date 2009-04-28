@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbZD1UOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbZD1URr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754302AbZD1UOV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbZD1UOJ
+	id S1754461AbZD1URr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 16:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbZD1URi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:14:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42152 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750905AbZD1UOH (ORCPT
+	Tue, 28 Apr 2009 16:17:38 -0400
+Received: from smtprelay08.ispgateway.de ([80.67.29.8]:33039 "EHLO
+	smtprelay08.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752550AbZD1URi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:14:07 -0400
-Date: Tue, 28 Apr 2009 13:08:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: eparis@redhat.com, linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       hch@infradead.org, alan@lxorguk.ukuu.org.uk, sfr@canb.auug.org.au,
-       john@johnmccutchan.com, rlove@rlove.org
-Subject: Re: [PATCH -V2 01/13] mutex: add atomic_dec_and_mutex_lock
-Message-Id: <20090428130847.849478bd.akpm@linux-foundation.org>
-In-Reply-To: <20090407160601.a824da99.akpm@linux-foundation.org>
-References: <20090327200508.32007.63278.stgit@paris.rdu.redhat.com>
-	<20090407160601.a824da99.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 28 Apr 2009 16:17:38 -0400
+References: <cone.1240623959.159615.9486.1000@mentalhome> <cone.1240648971.372002.7492.1000@mentalhome> <20090426172947.GB3643@liondog.tnic> <cone.1240858632.795110.5316.1000@onepiie> <20090428072519.GA12170@liondog.tnic> <1240913055.29860.14.camel@maxim-laptop>
+Message-ID: <cone.1240949852.549814.7466.1000@mentalhome>
+X-Mailer: http://www.courier-mta.org/cone/
+From: Peter Feuerer <peter@piie.net>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: petkovbb@gmail.com, LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] Acer Aspire One Fan Control
+Date: Tue, 28 Apr 2009 22:17:32 +0200
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; format=flowed; charset="UTF-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-Df-Sender: 404094
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Apr 2009 16:06:01 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Hi Maxim,
 
-> On Fri, 27 Mar 2009 16:05:08 -0400
-> Eric Paris <eparis@redhat.com> wrote:
+>> Their N270 datasheet
+>> (http://download.intel.com/design/processor/datashts/320032.pdf) talks
+>> about max Tj (junction temperature) being 90°C for a TDP of 2.5W and if
+>> you operate below that limit "functionality and long-term reliability
+>> can be expected." :)
+>> 
+>> There's also an internal termtrip sensor which is designed to go off at
+>> Tj=125°C so, yeah, I guess something 70°C should be ok.
 > 
-> > Much like the atomic_dec_and_lock() function in which we take an hold a
-> > spin_lock if we drop the atomic to 0 this function takes and holds the
-> > mutex if we dec the atomic to 0.
-> > 
-> > Signed-off-by: Eric Paris <eparis@redhat.com>
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > LKML-Reference: <20090323172417.410913479@chello.nl>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > ---
-> > 
-> >  include/linux/mutex.h |   23 +++++++++++++++++++++++
-> >  1 files changed, 23 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/linux/mutex.h b/include/linux/mutex.h
-> > index 3069ec7..93054fc 100644
-> > --- a/include/linux/mutex.h
-> > +++ b/include/linux/mutex.h
-> > @@ -151,4 +151,27 @@ extern int __must_check mutex_lock_killable(struct mutex *lock);
-> >  extern int mutex_trylock(struct mutex *lock);
-> >  extern void mutex_unlock(struct mutex *lock);
-> >  
-> > +/**
-> > + * atomic_dec_and_mutex_lock - return holding mutex if we dec to 0
-> > + * @cnt: the atomic which we are to dec
-> > + * @lock: the mutex to return holding if we dec to 0
-> > + *
-> > + * return true and hold lock if we dec to 0, return false otherwise
-> > + */
-> > +static inline int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock)
-> > +{
-> > +	/* dec if we can't possibly hit 0 */
-> > +	if (atomic_add_unless(cnt, -1, 1))
-> > +		return 0;
-> > +	/* we might hit 0, so take the lock */
-> > +	mutex_lock(lock);
-> > +	if (!atomic_dec_and_test(cnt)) {
-> > +		/* when we actually did the dec, we didn't hit 0 */
-> > +		mutex_unlock(lock);
-> > +		return 0;
-> > +	}
-> > +	/* we hit 0, and we hold the lock */
-> > +	return 1;
-> > +}
-> > +
+> I have small note:
 > 
-> This looks too large to be inlined?
+> So yes cpu can withstand 90 C, but will rest of the motherboard?
+> 
+> (Most other cpus are rated at 60C)
 
-It still looks too large to be inlined.
+That's why the module is started in "user mode" where the bios controls the 
+fan. - The Bios just starts the fan as soon as the temperature is higher 
+than 40 degree celsius.
 
-Take a look at atomic_add_unless(), and split your sides laughing.
+The user must explicitely start "kernel mode" to make the kernel 
+controlling the fan. Maybe we should add a warning somewhere, that it could 
+harm the hardware?
 
-Once you factor in all the lockdep and other debug goop, the code
-generation here is pretty bewildering, but it won't be small.
-
+regards,
+--peter
