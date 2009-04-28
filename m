@@ -1,247 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbZD1TDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbZD1TF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754049AbZD1TDW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 15:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750887AbZD1TDM
+	id S1754197AbZD1TF1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 15:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbZD1TFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 15:03:12 -0400
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:12726 "EHLO
-	TX2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750804AbZD1TDK convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 15:03:10 -0400
-X-BigFish: VPS-23(zz1432R1453M98dR1805M936fK873fnzz1202hzzz32i6bh6di43j)
-X-FB-SS: 5,
-X-WSS-ID: 0KITRKL-01-5V0-01
-Date: Tue, 28 Apr 2009 21:02:49 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: greg@kroah.com, linux-kernel@vger.kernel.org, dougthompson@xmission.com
-Subject: Re: [PATCH 02/21] amd64_edac: add driver structs
-Message-ID: <20090428190249.GA2215@aftab>
-References: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com> <1240931173-17477-3-git-send-email-borislav.petkov@amd.com> <20090428111349.d7a6a770.akpm@linux-foundation.org>
+	Tue, 28 Apr 2009 15:05:14 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:47489 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750804AbZD1TFM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 15:05:12 -0400
+X-IronPort-AV: E=Sophos;i="4.40,261,1238976000"; 
+   d="scan'208";a="73713561"
+From: Roland Dreier <rdreier@cisco.com>
+To: hpa@zytor.com, mingo@elte.hu, tglx@linutronix.de
+Cc: David Miller <davem@davemloft.net>, h.mitake@gmail.com,
+       rpjday@crashcourse.ca, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: Remove readq()/writeq() on 32-bit
+References: <49EE19E0.8040405@zytor.com> <adaocupvhid.fsf@cisco.com>
+	<49EE37AF.4020507@zytor.com>
+	<20090421.173123.191021055.davem@davemloft.net>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 28 Apr 2009 12:05:10 -0700
+In-Reply-To: <20090421.173123.191021055.davem@davemloft.net> (David Miller's
+	message of "Tue, 21 Apr 2009 17:31:23 -0700 (PDT)")
+Message-ID: <adak55438gp.fsf_-_@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <20090428111349.d7a6a770.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 28 Apr 2009 19:02:52.0190 (UTC) FILETIME=[EE31D3E0:01C9C833]
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 28 Apr 2009 19:05:11.0195 (UTC) FILETIME=[410C4EB0:01C9C834]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 11:13:49AM -0700, Andrew Morton wrote:
-> On Tue, 28 Apr 2009 17:05:54 +0200
-> Borislav Petkov <borislav.petkov@amd.com> wrote:
-> 
-> > From: Doug Thompson <dougthompson@xmission.com>
-> > 
-> > Signed-off-by: Doug Thompson <dougthompson@xmission.com>
-> > Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-> >
-> > ...
-> >
-> > +/**
-> > + * popcnt - count the set bits in a bit vector.
-> > + * @vec - bit vector
-> > + *
-> > + * This instruction is supported only on F10h and later CPUs.
-> > + */
-> > +#define popcnt(x)						\
-> > +({								\
-> > +	typeof(x) __ret;					\
-> > +	__asm__("popcnt %1, %0" : "=r" (__ret) : "r" (x));	\
-> > +	__ret;							\
-> > +})
-> 
-> We kinda already have this, in bitmap_weight().  Your popcnt() looks
-> more efficient.
-> 
-> I'm scratching my head at the types.  I'd have thought that I could do
-> 
-> 	char foo[32];
-> 	int n;
-> 	...
-> 	n = popcnt(foo);
-> 
-> but obviosuly not, because a) popcnt() doesn't take a length argumetn
-> and b) returning a char* is silly.
-> 
-> Some of this would be clearer if popcnt() wasn't implemented as a sucky
-> macro.
-> 
-> <googles the popcnt instruction>
-> 
-> hm, it seems to operate on a 64-bit operand.  You just reinvented
-> hweight64()?
+As discussed in <http://lkml.org/lkml/2009/4/19/164> and follow-ups,
+readq()/writeq() for 32-bit x86 are implemented as two readl()/writel()
+operations.  This is not atomic (in the sense that another MMIO
+operation from another CPU or thread can be done in the middle of the
+two read/writes), and may not access the two halves of the register in
+the correct order to work with hardware.
 
-Yep, exactly. However, this is done in hardware and thus faster.
-Actually, popcnt operates on 16, 32 and 64 bit reg/mem operands, here
-are the mnemonics:
+Rather than silently providing a 32-bit fallback that leaves a
+possibility for strange driver bugs, it's better to provide readq()
+and writeq() only for 64-bit architectures, and have a compile failure
+on 32-bit architectures that forces driver authors to think about what
+the correct solution is.
 
-Mnemonic                  Opcode       Description
-POPCNT   reg16, reg/mem16  F3 0F B8 /r  Count the 1s in reg/mem16.
-POPCNT   reg32, reg/mem32  F3 0F B8 /r  Count the 1s in reg/mem32.
-POPCNT   reg64, reg/mem64  F3 0F B8 /r  Count the 1s in reg/mem64.
+This essentially reverts 2c5643b1 ("x86: provide readq()/writeq() on
+32-bit too") and follow-on commits.  If in the future someone wants to
+provide a generic solution for all 32-bit architectures, that's great,
+but there's not much point in providing (arguably broken)
+implementations for only one architecture, since any portable driver
+will have to implement fallbacks for other architectures anyway.
 
-> Still, returning the same type as the input argument seems peculiar.
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+We never seemed to reach closure on this.  I would strongly suggest
+merging something like this, and then if someone has a grand plan to
+unify all fallbacks, we can add that when it shows up.  As it stands,
+the x86-32 situation is not progress towards that grand unified plans,
+and does nothing that I can tell beyond setting a trap for drivers.
 
-and the destination operand has the same width as the source. That's
-why it is easier to have a single macro for all bitwidths instead of
-hweight{16,32,64} per source operand width.
+ arch/x86/Kconfig          |    2 --
+ arch/x86/include/asm/io.h |   23 ++---------------------
+ 2 files changed, 2 insertions(+), 23 deletions(-)
 
-I have here somewhere patches which replaced those hweight* library
-calls with hardware instructions on CPUs which support popcnt but our
-poorman's kernel compile measurements showed little speedup since this
-is used mainly in sched code but not often enough to make a noticeable
-difference.
-
-By the way, u8 src operands will get caught by gas saying something in
-the likes of:
-
-Error: suffix or operands invalid for `popcnt'
-
-
-> >
-> > ...
-> >
-> > +struct amd64_pvt {
-> > +	/* pci_device handles which we utilize */
-> > +	struct pci_dev *addr_f1_ctl;
-> > +	struct pci_dev *dram_f2_ctl;
-> > +	struct pci_dev *misc_f3_ctl;
-> > +
-> > +	int mc_node_id;		/* MC index of this MC node */
-> > +	int ext_model;		/* extended model value of this node */
-> > +
-> > +	struct low_ops	*ops;	/* pointer to per PCI Device ID func table */
-> > +
-> > +	int channel_count;	/* Count of 'channels' */
-> > +
-> > +	/* Raw registers */
-> > +	u32 dclr0;		/* DRAM Configuration Low DCT0 reg */
-> > +	u32 dclr1;		/* DRAM Configuration Low DCT1 reg */
-> > +	u32 dchr0;		/* DRAM Configuration High DCT0 reg */
-> > +	u32 dchr1;		/* DRAM Configuration High DCT1 reg */
-> > +	u32 nbcap;		/* North Bridge Capabilities */
-> > +	u32 nbcfg;		/* F10 North Bridge Configuration */
-> > +	u32 ext_nbcfg;		/* Extended F10 North Bridge Configuration */
-> > +	u32 dhar;		/* DRAM Hoist reg */
-> > +	u32 dbam0;		/* DRAM Base Address Mapping reg for DCT0 */
-> > +	u32 dbam1;		/* DRAM Base Address Mapping reg for DCT1 */
-> > +
-> > +	/* DRAM CS Base Address Registers
-> > +	 *   F2x[1,0][5C:40]
-> > +	 */
-> > +	u32 dcsb0[CHIPSELECT_COUNT];    /* DRAM CS Base Registers */
-> > +	u32 dcsb1[CHIPSELECT_COUNT];    /* DRAM CS Base Registers */
-> > +
-> > +	/* DRAM CS Mask Registers
-> > +	 *   F2x[1,0][6C:60]
-> > +	 */
-> > +	u32 dcsm0[CHIPSELECT_COUNT];    /* DRAM CS Mask Registers */
-> > +	u32 dcsm1[CHIPSELECT_COUNT];    /* DRAM CS Mask Registers */
-> > +
-> > +	/* Decoded parts of DRAM BASE and LIMIT Registers
-> > +	 * F1x[78,70,68,60,58,50,48,40]
-> > +	 */
-> > +	u64 dram_base[DRAM_REG_COUNT];/* DRAM Base Reg */
-> > +	u64 dram_limit[DRAM_REG_COUNT];/* DRAM Limit Reg */
-> > +	u8 dram_IntlvSel[DRAM_REG_COUNT];
-> > +	u8 dram_IntlvEn[DRAM_REG_COUNT];
-> > +	u8 dram_DstNode[DRAM_REG_COUNT];
-> > +	u8 dram_rw_en[DRAM_REG_COUNT];
-> > +
-> > +	/* The following fields are set at (load) run time, after Revision has
-> > +	 * been determined, since the dct_base and dct_mask registers vary
-> > +	 * by CPU Revsion
-> > +	 */
-> > +	u32 dcsb_base;		/* DCSB base bits */
-> > +	u32 dcsm_mask;		/* DCSM mask bits */
-> > +	u32 num_dcsm;		/* Number of DCSM registers */
-> > +	u32 dcs_mask_notused;	/* DCSM notused mask bits */
-> > +	u32 dcs_shift;		/* DCSB and DCSM shift value */
-> > +
-> > +	u64 top_mem;		/* top of memory below 4GB */
-> > +	u64 top_mem2;		/* top of memory above 4GB */
-> > +
-> > +	/* F10 registers */
-> > +	u32 dram_ctl_select_low;	/* DRAM Controller Select Low Reg */
-> > +	u32 dram_ctl_select_high;	/* DRAM Controller Select High Reg */
-> > +	u32 online_spare;               /* On-Line spare Reg */
-> > +
-> > +	/* sysfs storage area: Temp storage for when input
-> > +	 * is received from sysfs
-> > +	 */
-> > +	struct amd64_error_info_regs ctl_error_info;
-> > +
-> > +	/* Place to store error injection parameters prior to issue */
-> > +	struct error_injection injection;
-> > +
-> > +	/* Save old hw registers' values before we modified them */
-> > +	u32 nbctl_mcgctl_saved;		/* When true, following 2 are valid */
-> > +	u32 old_nbctl;
-> > +	u32 old_mcgctl;
-> > +
-> > +	/* MC Type Index value: socket F vs Family 10h */
-> > +	u32 mc_type_index;
-> > +
-> > +	/* misc settings */
-> > +	struct flags {
-> > +		unsigned long cf8_extcfg :1;
-> 
-> checkpatch correctly warns here.
-
-will fix.
-
-> > +	} flags;
-> > +};
-> > +
-> > +/*
-> > + * See F2x80 for K8 and F2x[1,0]80 for Fam10 and later. The table below is only
-> > + * for DDR2 DRAM mapping.
-> > + */
-> > +static u32 revf_quad_ddr2_shift[] =
-> > +{
-> 
-> static u32 revf_quad_ddr2_shift[] = {
-> 
-> would be more typical.
-
-patch coming up...
-
-> > +	0,	/* 0000b NULL DIMM (128mb) */
-> > +	28,	/* 0001b 256mb */
-> > +	29,	/* 0010b 512mb */
-> > +	29,	/* 0011b 512mb */
-> > +	29,	/* 0100b 512mb */
-> > +	30,	/* 0101b 1gb */
-> > +	30,	/* 0110b 1gb */
-> > +	31,	/* 0111b 2gb */
-> > +	31,	/* 1000b 2gb */
-> > +	32,	/* 1001b 4gb */
-> > +	32,	/* 1010b 4gb */
-> > +	33,	/* 1011b 8gb */
-> > +	0,	/* 1100b future */
-> > +	0,	/* 1101b future */
-> > +	0,	/* 1110b future */
-> > +	0	/* 1111b future */
-> > +};
-> > +
-> >
-> > ...
-> >
-> 
-> 
-
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index df9e885..0be277b 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -19,8 +19,6 @@ config X86_64
+ config X86
+ 	def_bool y
+ 	select HAVE_AOUT if X86_32
+-	select HAVE_READQ
+-	select HAVE_WRITEQ
+ 	select HAVE_UNSTABLE_SCHED_CLOCK
+ 	select HAVE_IDE
+ 	select HAVE_OPROFILE
+diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
+index 7373932..199c7b9 100644
+--- a/arch/x86/include/asm/io.h
++++ b/arch/x86/include/asm/io.h
+@@ -51,27 +51,6 @@ build_mmio_write(__writel, "l", unsigned int, "r", )
+ build_mmio_read(readq, "q", unsigned long, "=r", :"memory")
+ build_mmio_write(writeq, "q", unsigned long, "r", :"memory")
+ 
+-#else
+-
+-static inline __u64 readq(const volatile void __iomem *addr)
+-{
+-	const volatile u32 __iomem *p = addr;
+-	u32 low, high;
+-
+-	low = readl(p);
+-	high = readl(p + 1);
+-
+-	return low + ((u64)high << 32);
+-}
+-
+-static inline void writeq(__u64 val, volatile void __iomem *addr)
+-{
+-	writel(val, addr);
+-	writel(val >> 32, addr+4);
+-}
+-
+-#endif
+-
+ #define readq_relaxed(a)	readq(a)
+ 
+ #define __raw_readq(a)		readq(a)
+@@ -81,6 +60,8 @@ static inline void writeq(__u64 val, volatile void __iomem *addr)
+ #define readq			readq
+ #define writeq			writeq
+ 
++#endif
++
+ /**
+  *	virt_to_phys	-	map virtual addresses to physical
+  *	@address: address to remap
