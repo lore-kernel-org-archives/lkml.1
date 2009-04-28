@@ -1,154 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbZD1Uej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbZD1Ufc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753691AbZD1Uej (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbZD1UeY
+	id S1755246AbZD1Ufc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 16:35:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZD1UfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:34:24 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:33779 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751816AbZD1UeX convert rfc822-to-8bit (ORCPT
+	Tue, 28 Apr 2009 16:35:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43480 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752035AbZD1UfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:34:23 -0400
-Message-ID: <49F767FD.2040205@cosmosbay.com>
-Date: Tue, 28 Apr 2009 22:33:01 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux.com>
-CC: linux kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       jesse.brandeburg@intel.com, netdev@vger.kernel.org, haoki@redhat.com,
-       mchan@broadcom.com, davidel@xmailserver.org,
+	Tue, 28 Apr 2009 16:35:17 -0400
+Date: Tue, 28 Apr 2009 13:27:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, hch@infradead.org,
+       alan@lxorguk.ukuu.org.uk, sfr@canb.auug.org.au, john@johnmccutchan.com,
+       rlove@rlove.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
-References: <alpine.DEB.1.10.0904241554100.29995@qirst.com> <49F3308B.1030507@cosmosbay.com> <20090426.020411.157511269.davem@davemloft.net> <49F43B8F.2050907@cosmosbay.com> <87ab60rh8t.fsf@basil.nowhere.org> <49F71B63.8010503@cosmosbay.com> <alpine.DEB.1.10.0904281501300.13862@qirst.com> <49F76174.6060009@cosmosbay.com> <alpine.DEB.1.10.0904281612560.13862@qirst.com>
-In-Reply-To: <alpine.DEB.1.10.0904281612560.13862@qirst.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 28 Apr 2009 22:33:02 +0200 (CEST)
+Subject: Re: [PATCH 01/12] mutex: add atomic_dec_and_mutex_lock
+Message-Id: <20090428132742.7da75691.akpm@linux-foundation.org>
+In-Reply-To: <20090427215305.14161.33354.stgit@paris.rdu.redhat.com>
+References: <20090427215305.14161.33354.stgit@paris.rdu.redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> On Tue, 28 Apr 2009, Eric Dumazet wrote:
-> 
->> Part about recvfrom() wakeup avoidance is in David net-2.6 tree, and saves 2 us on udpping here.
->>
->> Is it what you call git2p1 ?
-> 
-> No that is just the prior version of the poll/select improvements.
-> 
-> Which patch are you referring to?
-> 
-> 
+On Mon, 27 Apr 2009 17:53:05 -0400
+Eric Paris <eparis@redhat.com> wrote:
 
-The one that did improved your udpping 'bench' :)
+> Much like the atomic_dec_and_lock() function in which we take and hold a
+> spin_lock if we drop the atomic to 0 this function takes and holds the
+> mutex if we dec the atomic to 0.
 
-http://git2.kernel.org/?p=linux/kernel/git/davem/net-2.6.git;a=commitdiff;h=bf368e4e70cd4e0f880923c44e95a4273d725ab4
+I sucked these patches into -mm, mainly for a bit of compile-time and
+runtime testing.
 
-[PATCH] net: Avoid extra wakeups of threads blocked in wait_for_packet()
+I read through them all on the previous iteration.  IIRC my main
+impression was that the code and the data structures were not
+sufficiently well commented for that review to have been particularly
+effective.  Hopefully things improved there?
 
-In 2.6.25 we added UDP mem accounting.
+It would be good if Al and/or hch and/or others could review this work.
+Christoph has indicated that he will be doing this.
 
-This unfortunatly added a penalty when a frame is transmitted, since
-we have at TX completion time to call sock_wfree() to perform necessary
-memory accounting. This calls sock_def_write_space() and utimately
-scheduler if any thread is waiting on the socket.
-Thread(s) waiting for an incoming frame was scheduled, then had to sleep
-again as event was meaningless.
+You didn't reply to all my review comments from last time, but from a
+quick random sample I see that some/most comments have been addressed. 
+Hopefully all were at least considered.
 
-(All threads waiting on a socket are using same sk_sleep anchor)
-
-This adds lot of extra wakeups and increases latencies, as noted
-by Christoph Lameter, and slows down softirq handler.
-
-Reference : http://marc.info/?l=linux-netdev&m=124060437012283&w=2 
-
-Fortunatly, Davide Libenzi recently added concept of keyed wakeups
-into kernel, and particularly for sockets (see commit
-37e5540b3c9d838eb20f2ca8ea2eb8072271e403 
-epoll keyed wakeups: make sockets use keyed wakeups)
-
-Davide goal was to optimize epoll, but this new wakeup infrastructure
-can help non epoll users as well, if they care to setup an appropriate
-handler.
-
-This patch introduces new DEFINE_WAIT_FUNC() helper and uses it
-in wait_for_packet(), so that only relevant event can wakeup a thread
-blocked in this function.
-
-Trace of function calls from bnx2 TX completion bnx2_poll_work() is :
-__kfree_skb()
- skb_release_head_state()
-  sock_wfree()
-   sock_def_write_space()
-    __wake_up_sync_key()
-     __wake_up_common()
-      receiver_wake_function() : Stops here since thread is waiting for an INPUT
-
-
-Reported-by: Christoph Lameter <cl@linux.com>
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- include/linux/wait.h |    6 ++++--
- net/core/datagram.c  |   14 +++++++++++++-
- 2 files changed, 17 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 5d631c1..bc02463 100644
---- a/include/linux/wait.h
-+++ b/include/linux/wait.h
-@@ -440,13 +440,15 @@ void abort_exclusive_wait(wait_queue_head_t *q, wait_queue_t *wait,
- int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
- int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
- 
--#define DEFINE_WAIT(name)						\
-+#define DEFINE_WAIT_FUNC(name, function)				\
- 	wait_queue_t name = {						\
- 		.private	= current,				\
--		.func		= autoremove_wake_function,		\
-+		.func		= function,				\
- 		.task_list	= LIST_HEAD_INIT((name).task_list),	\
- 	}
- 
-+#define DEFINE_WAIT(name) DEFINE_WAIT_FUNC(name, autoremove_wake_function)
-+
- #define DEFINE_WAIT_BIT(name, word, bit)				\
- 	struct wait_bit_queue name = {					\
- 		.key = __WAIT_BIT_KEY_INITIALIZER(word, bit),		\
-diff --git a/net/core/datagram.c b/net/core/datagram.c
-index d0de644..b7960a3 100644
---- a/net/core/datagram.c
-+++ b/net/core/datagram.c
-@@ -64,13 +64,25 @@ static inline int connection_based(struct sock *sk)
- 	return sk->sk_type == SOCK_SEQPACKET || sk->sk_type == SOCK_STREAM;
- }
- 
-+static int receiver_wake_function(wait_queue_t *wait, unsigned mode, int sync,
-+				  void *key)
-+{
-+	unsigned long bits = (unsigned long)key;
-+
-+	/*
-+	 * Avoid a wakeup if event not interesting for us
-+	 */
-+	if (bits && !(bits & (POLLIN | POLLERR)))
-+		return 0;
-+	return autoremove_wake_function(wait, mode, sync, key);
-+}
- /*
-  * Wait for a packet..
-  */
- static int wait_for_packet(struct sock *sk, int *err, long *timeo_p)
- {
- 	int error;
--	DEFINE_WAIT(wait);
-+	DEFINE_WAIT_FUNC(wait, receiver_wake_function);
- 
- 	prepare_to_wait_exclusive(sk->sk_sleep, &wait, TASK_INTERRUPTIBLE);
- 
-
-
+It's a little worrisome that my comment against this particular patch
+was lost, and the patch was verbatim merged into Ingo's perfcounter
+branch.  Did anything else get lost?
