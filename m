@@ -1,81 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932457AbZD1LIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760228AbZD1LJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932457AbZD1LIa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 07:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbZD1LIQ
+	id S1760228AbZD1LJv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 07:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752444AbZD1LJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 07:08:16 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:65321 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752444AbZD1LIO convert rfc822-to-8bit (ORCPT
+	Tue, 28 Apr 2009 07:09:40 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:46083 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754114AbZD1LJj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 07:08:14 -0400
+	Tue, 28 Apr 2009 07:09:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:sender:in-reply-to:references:date
          :x-google-sender-auth:message-id:subject:from:to:cc:content-type
          :content-transfer-encoding;
-        b=qvS7pmdWUsyiwgr/e4nF15j5EC6IOboAkzRpUKCwBWj1pjx9pTXCRXVP+oST580wP7
-         qKlAo7lnCkDc+M7b3aJvViyg15k2Uw5crn3I/4nxua3olTcIGI1gk/hOGw0i1+2aKw0I
-         0+EHYI9FFz6Cyb0u1R+i4vncdu/lgZAfuFJ/s=
+        b=fRmX769u2PSXGT0d0BJitqa7kq+3qUgKZaE3BKpyp/Of+MowQtjJsIaIq7fwqkKkrw
+         83KqOc3iOhWl2ByqtC2UvfXFlfGIwZWl2r+MkzYpJZJi+xCyYAhy2ncPrVeeA6CXWqAn
+         VK7HKArbJuhE2f9nTFGxsEjeGrreIha8UVpt0=
 MIME-Version: 1.0
-In-Reply-To: <1240915882.15414.3.camel@localhost>
-References: <2a27d3730904280316l7049bddbie914907b16ccfff6@mail.gmail.com>
-	 <1240913737-23773-1-git-send-email-leoli@freescale.com>
-	 <1240913737-23773-2-git-send-email-leoli@freescale.com>
-	 <1240913737-23773-3-git-send-email-leoli@freescale.com>
-	 <1240913737-23773-4-git-send-email-leoli@freescale.com>
-	 <1240913737-23773-5-git-send-email-leoli@freescale.com>
-	 <1240915882.15414.3.camel@localhost>
-Date: Tue, 28 Apr 2009 19:08:13 +0800
-X-Google-Sender-Auth: 24293894411bc033
-Message-ID: <2a27d3730904280408j636d8e4tc1b6e1c827509379@mail.gmail.com>
-Subject: Re: [PATCH] rio: warn_unused_result warnings fix
-From: Li Yang <leoli@freescale.com>
-To: michael@ellerman.id.au
-Cc: akpm@linux-foundation.org, galak@kernel.crashing.org, davem@davemloft.net,
-       mporter@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090428105603.GB25347@elte.hu>
+References: <20090428093621.GD21085@elte.hu>
+	 <84144f020904280257j57b5b686k91cc4096a8e5ca29@mail.gmail.com>
+	 <20090428190822.EBED.A69D9226@jp.fujitsu.com>
+	 <84144f020904280321u4be9fb10t6f0123b589752b80@mail.gmail.com>
+	 <20090428105603.GB25347@elte.hu>
+Date: Tue, 28 Apr 2009 20:09:38 +0900
+X-Google-Sender-Auth: 45ae0949b8f795ec
+Message-ID: <2f11576a0904280409h4dedc04u43a5b68ef492e56d@mail.gmail.com>
+Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-2022-JP?B?RnIbJEJxRXFTGyhCaWMgV2Vpc2JlY2tlcg==?= 
+	<fweisbec@gmail.com>,
+       Larry Woodman <lwoodman@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 6:51 PM, Michael Ellerman
-<michael@ellerman.id.au> wrote:
-> On Tue, 2009-04-28 at 18:15 +0800, Li Yang wrote:
->> warning: ignoring return value of 'device_add', declared with attribute warn_unused_result
->> warning: ignoring return value of 'sysfs_create_bin_file', declared with attribute warn_unused_result
->>
->> Signed-off-by: Li Yang <leoli@freescale.com>
->> ---
->>  drivers/rapidio/rio-scan.c  |    5 ++++-
->>  drivers/rapidio/rio-sysfs.c |    6 ++++--
->>  2 files changed, 8 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/rapidio/rio-scan.c b/drivers/rapidio/rio-scan.c
->> index 74d0bfa..9309e24 100644
->> --- a/drivers/rapidio/rio-scan.c
->> +++ b/drivers/rapidio/rio-scan.c
->> @@ -265,7 +265,10 @@ static void rio_route_set_ops(struct rio_dev *rdev)
->>   */
->>  static void __devinit rio_add_device(struct rio_dev *rdev)
->>  {
->> -     device_add(&rdev->dev);
->> +     int err;
->> +
->> +     err = device_add(&rdev->dev);
->> +     WARN_ON(err);
->>
->>       spin_lock(&rio_global_list_lock);
->>       list_add_tail(&rdev->global_list, &rio_devices);
+2009/4/28 Ingo Molnar <mingo@elte.hu>:
 >
-> Is that really useful? Why not return the error to rio_setup_device()
-> which can tell it's caller.
+> * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+>
+>> Hi!
+>>
+>> 2009/4/28 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>:
+>> >> I guess the main question here is whether this approach will scale to
+>> >> something like kmalloc() or the page allocator in production
+>> >> environments. For any serious workload, the frequency of events is
+>> >> going to be pretty high.
+>> >
+>> > Immediate Values patch series makes zero-overhead to tracepoint
+>> > while it's not used.
+>> >
+>> > So, We have to implement to stop collect stastics way. it restore
+>> > zero overhead world.
+>> > We don't lose any performance by trace.
+>>
+>> Sure but I meant the _enabled_ case here. kmalloc() (and the page
+>> allocator to some extent) is very performance sensitive in many
+>> workloads so you probably don't want to use tracepoints if you're
+>> collecting some overall statistics (i.e. tracing all events) like
+>> we do here.
+>
+> That's where 'collect current state' kind of tracepoints would help
+> - they could be used even without enabling any of the other
+> tracepoints. And they'd still be in a coherent whole with the
+> dynamic-events tracepoints.
+>
+> So i'm not arguing against these techniques at all - and we can move
+> on a wide scale from zero-overhead to lots-of-tracing-enabled models
+> - what i'm arguing against is the splintering.
 
-IMHO, when device_add() fails the system is quite broken.  So the
-value is very limited for it to fail cleanly, which need some effort
-to implement.  I can add it if you insist.
+umm.
+I guess Pekka and you talk about different thing.
 
-- Leo
+if tracepoint is ON, tracepoint makes one function call. but few hot spot don't
+have patience to one function call overhead.
+
+scheduler stat and slab stat are one of good example, I think.
+
+I really don't want convert slab_stat and sched_stat to ftrace base stastics.
+currently it don't need extra function call and it only touch per-cpu variable.
+So, a overhead is extream small.
+
+Unfortunately, tracepoint still don't reach this extream performance.
