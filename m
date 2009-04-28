@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762272AbZD1QAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762797AbZD1QBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762272AbZD1QAd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761902AbZD1QAR
+	id S1762797AbZD1QBY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761618AbZD1QBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:00:17 -0400
-Received: from xi.wantstofly.org ([80.101.37.227]:42695 "EHLO
-	mail.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758211AbZD1QAQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:00:16 -0400
-Date: Tue, 28 Apr 2009 18:03:17 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Eddie Dawydiuk <eddie@embeddedarm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Marvell 88F6281 Reference design
-Message-ID: <20090428160316.GK14729@mail.wantstofly.org>
-References: <49F7280C.5060709@embeddedarm.com>
+	Tue, 28 Apr 2009 12:01:10 -0400
+Received: from verein.lst.de ([213.95.11.210]:51958 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757500AbZD1QBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 12:01:09 -0400
+Date: Tue, 28 Apr 2009 18:01:07 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: Christoph Hellwig <hch@lst.de>, Mikael Starvik <mikael.starvik@axis.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] CRIS: Wire up syscalls signalfd4 to writev.
+Message-ID: <20090428160107.GC26363@lst.de>
+References: <20090427081356.GA32167@lst.de> <20090428155856.GN21811@axis.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49F7280C.5060709@embeddedarm.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20090428155856.GN21811@axis.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 09:00:12AM -0700, Eddie Dawydiuk wrote:
-
-> Hello,
-
-Hi,
-
-
-> I have a Marvell 88F6281 Reference design board I'm trying to compile a 
-> 2.6.28 kernel for. Although, the machine id check is failing. The error is 
-> as follows
+On Tue, Apr 28, 2009 at 05:58:56PM +0200, Jesper Nilsson wrote:
+> On Mon, Apr 27, 2009 at 10:13:56AM +0200, Christoph Hellwig wrote:
+> > 2.6.30 added the new preadv/pwritev system calls.  The following
+> > architectures still haven't wired them up:
+> > 
+> > 	alpha, avr32, blackfin, cris, frv, h8300, m32r, xtensa
+> > 
+> > Can you maintainers please look into wiring these system calls up?
 > 
-> Uncompressing 
-> Linux.............................................................................................................................
-> . done, booting the kernel.
+> I've just added the following patch to the CRIS tree:
 > 
-> Error: unrecognized/unsupported machine ID (r1 = 0x0000020f).
 > 
-> Available machine support:
-> 
-> ID (hex)        NAME
-> 00000690        Marvell DB-88F6281-BP Development Board
-> 00000691        Marvell RD-88F6192-NAS Development Board
-> 00000692        Marvell RD-88F6281 Reference Board
-> 
-> Please check your kernel config and/or bootloader.
+> Adds sys_signalfd4, sys_eventfd2, sys_epoll_create1, sys_dup3,
+> sys_pipe2, sys_inotify_init1, sys_preadv, sys_pwritev
+> for both CRISv10 and CRISv32.
 
-This is because the boot loader passes in the wrong machine ID.
+Care to send this and your current stack of patches upsteam before
+2.6.30 is out?
 
-If you have the u-boot "arcNumber" parameter, try setting that to
-the correct machine ID before booting the kernel.  Otherwise, you
-can prepend a bit of code to the zImage that sets the machine ID to
-the right value, e.g. for the 6281 RD:
-
-	(echo -en "\x06\x1c\xa0\xe3\x92\x10\x81\xe3"; cat zImage) > zImage.rd88f6281
-
-and then use mkimage on zImage.rd88f6281 to create a uImage that you
-can boot on the board.
