@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761337AbZD1OXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761458AbZD1OZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761337AbZD1OXX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 10:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757574AbZD1OXJ
+	id S1761458AbZD1OZb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 10:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755483AbZD1OZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 10:23:09 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:41491 "EHLO e7.ny.us.ibm.com"
+	Tue, 28 Apr 2009 10:25:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48913 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757911AbZD1OXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 10:23:08 -0400
-Date: Tue, 28 Apr 2009 07:22:59 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Evgeniy Polyakov <zbr@ioremap.net>, Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       Jarek Poplawski <jarkao2@gmail.com>, Paul Mackerras <paulus@samba.org>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
-Message-ID: <20090428142258.GA6730@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090427185423.GC23862@elte.hu> <20090427120658.35a858bb@nehalam> <alpine.LFD.2.00.0904271219570.22156@localhost.localdomain> <20090427203616.GB3836@ioremap.net> <alpine.LFD.2.00.0904271340400.22156@localhost.localdomain> <20090427144054.1fb9b7a6@nehalam> <alpine.LFD.2.00.0904271506530.22156@localhost.localdomain> <alpine.LFD.2.00.0904271525120.22156@localhost.localdomain> <alpine.LFD.2.00.0904271619240.22156@localhost.localdomain> <1240904468.7620.70.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240904468.7620.70.camel@twins>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1753580AbZD1OZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 10:25:21 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090329203118.GA14005@linux.vnet.ibm.com>
+References: <20090329203118.GA14005@linux.vnet.ibm.com> <20090203183426.GA14409@linux.vnet.ibm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, niv@us.ibm.com, dvhltc@us.ibm.com,
+       lethal@linux-sh.org, kernel@wantstofly.org, matthew@wil.cx
+Subject: Re: [PATCH] v3 RCU: the bloatwatch edition
+Date: Tue, 28 Apr 2009 15:24:14 +0100
+Message-ID: <13990.1240928654@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 09:41:08AM +0200, Peter Zijlstra wrote:
-> On Mon, 2009-04-27 at 16:32 -0700, Linus Torvalds wrote:
-> > 
-> > On Mon, 27 Apr 2009, Linus Torvalds wrote:
-> > > 
-> > > I left the commentary about "readers" and "writers", because in many
-> > > ways it's correct, and what the code actually does is very much to
-> > > emulate a reader-writer lock.  I put quotes around the uses in the
-> > > comments to high-light that it largely _acts_ as a reader-writer lock. 
-> > 
-> > Btw, I think it was Paul who pointed out that technically it's probably 
-> > better to call them "local" and "global" lockers instead of "readers" and 
-> > "writers".
-> 
-> exclusive vs non-exclusive is what the literature would call them in
-> most cases I think.
+Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-I would argue that the non-exclusive category includes both reader-writer
-locking and local-global locking.  That said, we have an unusual variant
-of local-global in this case, as the global processing acquires only one
-of the locks at a time.
+> This patch is a version of RCU designed for (!SMP && EMBEDDED)
+> provided as a proof of concept of a small-footprint RCU implementation.
+> In particular, the implementation of synchronize_rcu() is extremely
+> lightweight and high performance.  It passes rcutorture testing in each
+> of the four relevant configurations (combinations of NO_HZ and PREEMPT)
+> on x86.  This saves about 900 bytes compared to Classic RCU, and a
+> couple kilobytes compared to Hierarchical RCU:
 
-							Thanx, Paul
+On FRV, CLASSIC_RCU:
+
+   text    data     bss     dec     hex filename
+   2616     184       0    2800     af0 kernel/rcuclassic.o
+    884      32      20     936     3a8 kernel/rcupdate.o
+
+TREE_RCU:
+
+   3940     328       0    4268    10ac kernel/rcutree.o
+    884      32      20     936     3a8 kernel/rcupdate.o
+
+TINY_RCU:
+
+   1152      32       0    1184     4a0 kernel/rcutiny.o
+    836      32      20     888     378 kernel/rcupdate.o
+
+It works on my FRV board.
+
+Possibly TINY_RCU could be shrunk a bit more by a judicious bit of inlining of
+some of the very small functions.
+
+Acked-by: David Howells <dhowells@redhat.com>
