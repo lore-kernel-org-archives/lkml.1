@@ -1,78 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762657AbZD1SKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763274AbZD1SLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762657AbZD1SKX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 14:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbZD1SKF
+	id S1763274AbZD1SLc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 14:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760929AbZD1SLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 14:10:05 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:54188 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754039AbZD1SKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 14:10:04 -0400
-Message-ID: <49F74672.2090407@garzik.org>
-Date: Tue, 28 Apr 2009 14:09:54 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: Mark Lord <liml@rtr.ca>, Tejun Heo <tj@kernel.org>, axboe@kernel.dk,
-       linux-kernel@vger.kernel.org, donari75@gmail.com,
-       linux-ide@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 2/3] mg_disk: fix CONFIG_LBD=y warning
-References: <1240890740-3462-1-git-send-email-tj@kernel.org> <1240890740-3462-3-git-send-email-tj@kernel.org> <49F71E86.7040300@rtr.ca> <200904281728.58209.bzolnier@gmail.com>
-In-Reply-To: <200904281728.58209.bzolnier@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Tue, 28 Apr 2009 14:11:23 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:36157 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760898AbZD1SLW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 14:11:22 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsIEAIng9klMQW1W/2dsb2JhbACBUM49g3MF
+Date: Tue, 28 Apr 2009 14:11:14 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [GIT PULL] x86: cleanup alternative.h
+Message-ID: <20090428181114.GB2030@Krystal>
+References: <20090422201852.092307236@polymtl.ca> <20090422202453.673946867@polymtl.ca> <20090428130501.GC26600@Krystal> <20090428145839.GA26546@elte.hu> <49F73F79.7060809@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <49F73F79.7060809@zytor.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:10:41 up 59 days, 14:36,  4 users,  load average: 0.10, 0.27,
+	0.32
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> On Tuesday 28 April 2009 17:19:34 Mark Lord wrote:
->> Tejun Heo wrote:
->>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->>>
->>> drivers/block/mg_disk.c: In function ‘mg_dump_status’:
->>> drivers/block/mg_disk.c:265: warning: format ‘%ld’ expects type ‘long int’, but
->>> argument 2 has type ‘sector_t’
->>>
->>> [ Impact: kill build warning ]
->>>
->>> Cc: unsik Kim <donari75@gmail.com>
->>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->>> Signed-off-by: Tejun Heo <tj@kernel.org>
->>> ---
->>>  drivers/block/mg_disk.c |    2 +-
->>>  1 files changed, 1 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/drivers/block/mg_disk.c b/drivers/block/mg_disk.c
->>> index d3e72ad..f389835 100644
->>> --- a/drivers/block/mg_disk.c
->>> +++ b/drivers/block/mg_disk.c
->>> @@ -79,7 +79,7 @@ static void mg_dump_status(const char *msg, unsigned int stat,
->>>  			if (host->breq) {
->>>  				req = elv_next_request(host->breq);
->>>  				if (req)
->>> -					printk(", sector=%ld", req->sector);
->>> +					printk(", sector=%u", (u32)req->sector);
->> ..
->>
->> Eh?  Shouldn't that be fixed the other way around, like this:
->>
->>   +					printk(", sector=%llu", (u64)req->sector);
->>
->> This way, it will still give correct data when sector_t is a u64.
+* H. Peter Anvin (hpa@zytor.com) wrote:
+> Ingo Molnar wrote:
+> > 
+> > Please try to align both the continuation backslashes and the 
+> > comments vertically. Something like:
+> > 
+> >> +#define ALTERNATIVE(oldinstr, newinstr, feature)			 \
+> >> +									 \
+> >> +	"661:\n\t" oldinstr "\n662:\n"					 \
+> >> +	".section .altinstructions,\"a\"\n"			 	 \
+> >> +	_ASM_ALIGN "\n"						 	 \
+> >> +	_ASM_PTR "661b\n"			   /* label           */ \
+> >> +	_ASM_PTR "663f\n"			   /* new instruction */ \
+> >> +	 "	 .byte " __stringify(feature) "\n" /* feature bit     */ \
+> >> +	 "	 .byte 662b-661b\n"		   /* sourcelen       */ \
+> >> +	 "	 .byte 664f-663f\n"		   /* replacementlen  */ \ 
+> > 
+> > ... should do the trick. (also note the extra line after the #define)
+> > 
 > 
-> shouldn't matter, req->sector is never > u32 for mg_disk
+> This formatting seems a bit odd; _ASM_ALIGN, _ASM_PTR, and .section are
+> functionally equivalent to the opcode field, as is .byte, so the shift
+> in indentation for the .byte lines seems odd at best.
+> 
 
-It never matters... until the code gets copied elsewhere.  IMO wrong 
-code should never be kept -- "impossible to hit" just means it is low 
-priority :)
+OK, I'll repost with corrected indentation. I tried to follow the
+original style as closely as possible, but indeed a cleanup is needed
+here.
 
-	Jeff
+Mathieu
 
+> 	-hpa
+> 
+> -- 
+> H. Peter Anvin, Intel Open Source Technology Center
+> I work for Intel.  I don't speak on their behalf.
+> 
 
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
