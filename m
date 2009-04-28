@@ -1,71 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762367AbZD1Rgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760832AbZD1Rkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762367AbZD1Rgi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 13:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbZD1Rg2
+	id S1760832AbZD1Rkf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 13:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbZD1RkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 13:36:28 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57926 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754055AbZD1Rg1 (ORCPT
+	Tue, 28 Apr 2009 13:40:24 -0400
+Received: from ausxipps301.us.dell.com ([143.166.148.223]:4763 "EHLO
+	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752942AbZD1RkX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 13:36:27 -0400
-Date: Tue, 28 Apr 2009 13:36:26 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
-       Tejun Heo <tj@kernel.org>, Dave Airlie <airlied@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kms in defconfig
-In-Reply-To: <20090428172226.GA15115@elte.hu>
-Message-ID: <alpine.DEB.2.00.0904281331040.8066@gandalf.stny.rr.com>
-References: <21d7e9970904270121s1c58365bqc8933f8a3ffc5f1a@mail.gmail.com> <20090427083935.GA20941@elte.hu> <21d7e9970904270156v54a6483fs20d5b31c97a1d482@mail.gmail.com> <49F65FA2.4010603@kernel.org> <alpine.LFD.2.00.0904271852510.22156@localhost.localdomain>
- <alpine.DEB.1.10.0904280946210.17268@asgard.lang.hm> <alpine.LFD.2.00.0904281002570.22156@localhost.localdomain> <20090428172226.GA15115@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 28 Apr 2009 13:40:23 -0400
+Message-ID: <49F73F92.9000201@dell.com>
+Date: Tue, 28 Apr 2009 12:40:34 -0500
+From: Mario Limonciello <mario_limonciello@dell.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Ignore garbage in dell-wmi events
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigBE91C302E964777B58B0587D"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigBE91C302E964777B58B0587D
+Content-Type: multipart/mixed;
+ boundary="------------070907050000020300020104"
 
-On Tue, 28 Apr 2009, Ingo Molnar wrote:
+This is a multi-part message in MIME format.
+--------------070907050000020300020104
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > So yes, it would be good to automate it:
-> > 
-> > > If a tool was available to detect the hardware and create a 
-> > > config tailored for the box, this use for a default config would 
-> > > go away
-> > 
-> > Yeah, I've wished for that.
-> 
-> Steve (Cc:-ed) submitted such a script last year IIRC. It wasnt 
-> particularly complex.
+Hi:
 
-I've submitted the script  a few times to LKML but it is not exactly what 
-people want, but is quite useful in the mean time.
+In debugging with some future machines that actually contain BIOS level
+support for dell-wmi, I've determined that the upper half of the data
+that comes back from wmi_get_event_data may sometimes contain extra
+information that isn't currently relevant when pulling scan codes out of
+the data.  This causes dell-wmi to improperly respond to these events.
 
-What people want is a script that will analyze their system devices and 
-enable all the configs that will support them.
+I'm attaching a patch (Exchange would munge up the line breaks otherwise)=
+=2E
 
-My script requires that you have booted the kernel (or similar kernel with 
-the same config options and modules). It then runs lsmod, and searches for 
-the options that enable those modules. It then reads the current .config 
-file and prints out a new config that disables all module configs that are 
-not used to enable the modules found with lsmod.
+Thanks,
 
-Here's the code (perl script):
+--=20
+Mario Limonciello
+*Dell | Linux Engineering*
+mario_limonciello@dell.com
 
-http://rostedt.homelinux.com/code/streamline_config.pl
+--------------070907050000020300020104
+Content-Type: text/x-patch;
+ name="dell-wmi-mask-buffer.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline;
+ filename="dell-wmi-mask-buffer.patch"
 
-The instructions on how to use it are at the top of the file.
+--- a/drivers/platform/x86/dell-wmi.c~	2009-04-28 12:32:32.000000000 -050=
+0
++++ b/drivers/platform/x86/dell-wmi.c	2009-04-28 12:33:02.000000000 -0500=
 
-This script has brought down my full kernel compile times with distcc from 
-50 minutes to under 10.
+@@ -182,7 +182,7 @@
+=20
+ 	if (obj && obj->type =3D=3D ACPI_TYPE_BUFFER) {
+ 		int *buffer =3D (int *)obj->buffer.pointer;
+-		key =3D dell_wmi_get_entry_by_scancode(buffer[1]);
++		key =3D dell_wmi_get_entry_by_scancode(0xFFFF & buffer[1]);
+ 		if (key) {
+ 			input_report_key(dell_wmi_input_dev, key->keycode, 1);
+ 			input_sync(dell_wmi_input_dev);
+@@ -190,7 +190,7 @@
+ 			input_sync(dell_wmi_input_dev);
+ 		} else
+ 			printk(KERN_INFO "dell-wmi: Unknown key %x pressed\n",
+-			       buffer[1]);
++			       0xFFFF & buffer[1]);
+ 	}
+ }
+=20
 
--- Steve
+--------------070907050000020300020104--
 
+--------------enigBE91C302E964777B58B0587D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkn3P5IACgkQ2CrZjkA73YtCDwCfRkLkC/pwtbBkwJ5/WdbUcpfT
+bIEAnArGeF/Hv08L64pb4X4kArJRMsid
+=vOJp
+-----END PGP SIGNATURE-----
+
+--------------enigBE91C302E964777B58B0587D--
