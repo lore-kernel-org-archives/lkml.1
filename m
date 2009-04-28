@@ -1,92 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbZD1Xru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758700AbZD1XsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756960AbZD1Xru (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 19:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbZD1Xrl
+	id S1758700AbZD1XsV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 19:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbZD1XsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 19:47:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53666 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751869AbZD1Xrk (ORCPT
+	Tue, 28 Apr 2009 19:48:05 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:16860 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753896AbZD1XsC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 19:47:40 -0400
-Date: Tue, 28 Apr 2009 16:42:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matt Mackall <mpm@selenic.com>
-Cc: fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
-       kosaki.motohiro@jp.fujitsu.com, andi@firstfloor.org,
-       adobriyan@gmail.com, linux-mm@kvack.org
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-Message-Id: <20090428164248.0c8cffef.akpm@linux-foundation.org>
-In-Reply-To: <1240961469.938.1077.camel@calx>
-References: <20090428010907.912554629@intel.com>
-	<20090428014920.769723618@intel.com>
-	<20090428143244.4e424d36.akpm@linux-foundation.org>
-	<1240958794.938.1045.camel@calx>
-	<20090428160219.ca0123a1.akpm@linux-foundation.org>
-	<1240961469.938.1077.camel@calx>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 28 Apr 2009 19:48:02 -0400
+Message-ID: <49F795C9.6040909@oracle.com>
+Date: Tue, 28 Apr 2009 16:48:25 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-nfs@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "J. Bruce Fields" <bfields@fieldses.org>, Neil Brown <neilb@suse.de>
+Subject: [PATCH] nfsd: use C99 struct initializers
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010205.49F7957A.0086:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009 18:31:09 -0500
-Matt Mackall <mpm@selenic.com> wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> On Tue, 2009-04-28 at 16:02 -0700, Andrew Morton wrote:
-> > On Tue, 28 Apr 2009 17:46:34 -0500
-> > Matt Mackall <mpm@selenic.com> wrote:
-> > 
-> > > > > +/* a helper function _not_ intended for more general uses */
-> > > > > +static inline int page_cap_writeback_dirty(struct page *page)
-> > > > > +{
-> > > > > +	struct address_space *mapping;
-> > > > > +
-> > > > > +	if (!PageSlab(page))
-> > > > > +		mapping = page_mapping(page);
-> > > > > +	else
-> > > > > +		mapping = NULL;
-> > > > > +
-> > > > > +	return mapping && mapping_cap_writeback_dirty(mapping);
-> > > > > +}
-> > > > 
-> > > > If the page isn't locked then page->mapping can be concurrently removed
-> > > > and freed.  This actually happened to me in real-life testing several
-> > > > years ago.
-> > > 
-> > > We certainly don't want to be taking locks per page to build the flags
-> > > data here. As we don't have any pretense of being atomic, it's ok if we
-> > > can find a way to do the test that's inaccurate when a race occurs, so
-> > > long as it doesn't dereference null.
-> > > 
-> > > But if there's not an obvious way to do that, we should probably just
-> > > drop this flag bit for this iteration.
-> > 
-> > trylock_page() could be used here, perhaps.
-> > 
-> > Then again, why _not_ just do lock_page()?  After all, few pages are
-> > ever locked.  There will be latency if the caller stumbles across a
-> > page which is under read I/O, but so be it?
-> 
-> As I mentioned just a bit ago, it's really not an unreasonable use case
-> to want to do this on every page in the system back to back. So per page
-> overhead matters. And the odds of stalling on a locked page when
-> visiting 1M pages while under load are probably not negligible.
+Eliminate 56 sparse warnings like this one:
 
-The chances of stalling on a locked page are pretty good, and the
-duration of the stall might be long indeed.  Perhaps a trylock is a
-decent compromise - it depends on the value of this metric, and I've
-forgotten what we're talking about ;)
+fs/nfsd/nfs4xdr.c:1331:15: warning: obsolete array initializer, use C99 syntax
 
-umm, seems that this flag is needed to enable PG_error, PG_dirty,
-PG_uptodate and PG_writeback reporting.  So simply removing this code
-would put a huge hole in the patchset, no?
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: J. Bruce Fields <bfields@fieldses.org>
+Cc: Neil Brown <neilb@suse.de>
+---
+ fs/nfsd/nfs4xdr.c |  112 +++++++++++++++++++++++++++---------------------------
+ 1 file changed, 56 insertions(+), 56 deletions(-)
 
-> Our lock primitives are pretty low overhead in the fast path, but every
-> cycle counts. The new tests and branches this code already adds are a
-> bit worrisome, but on balance probably worth it.
+--- linux-2.6.30-rc3-git4.orig/fs/nfsd/nfs4xdr.c
++++ linux-2.6.30-rc3-git4/fs/nfsd/nfs4xdr.c
+@@ -1328,64 +1328,64 @@ static nfsd4_dec nfsd4_dec_ops[] = {
+ };
+ 
+ static nfsd4_dec nfsd41_dec_ops[] = {
+-	[OP_ACCESS]		(nfsd4_dec)nfsd4_decode_access,
+-	[OP_CLOSE]		(nfsd4_dec)nfsd4_decode_close,
+-	[OP_COMMIT]		(nfsd4_dec)nfsd4_decode_commit,
+-	[OP_CREATE]		(nfsd4_dec)nfsd4_decode_create,
+-	[OP_DELEGPURGE]		(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_DELEGRETURN]	(nfsd4_dec)nfsd4_decode_delegreturn,
+-	[OP_GETATTR]		(nfsd4_dec)nfsd4_decode_getattr,
+-	[OP_GETFH]		(nfsd4_dec)nfsd4_decode_noop,
+-	[OP_LINK]		(nfsd4_dec)nfsd4_decode_link,
+-	[OP_LOCK]		(nfsd4_dec)nfsd4_decode_lock,
+-	[OP_LOCKT]		(nfsd4_dec)nfsd4_decode_lockt,
+-	[OP_LOCKU]		(nfsd4_dec)nfsd4_decode_locku,
+-	[OP_LOOKUP]		(nfsd4_dec)nfsd4_decode_lookup,
+-	[OP_LOOKUPP]		(nfsd4_dec)nfsd4_decode_noop,
+-	[OP_NVERIFY]		(nfsd4_dec)nfsd4_decode_verify,
+-	[OP_OPEN]		(nfsd4_dec)nfsd4_decode_open,
+-	[OP_OPENATTR]		(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_OPEN_CONFIRM]	(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_OPEN_DOWNGRADE]	(nfsd4_dec)nfsd4_decode_open_downgrade,
+-	[OP_PUTFH]		(nfsd4_dec)nfsd4_decode_putfh,
+-	[OP_PUTPUBFH]		(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_PUTROOTFH]		(nfsd4_dec)nfsd4_decode_noop,
+-	[OP_READ]		(nfsd4_dec)nfsd4_decode_read,
+-	[OP_READDIR]		(nfsd4_dec)nfsd4_decode_readdir,
+-	[OP_READLINK]		(nfsd4_dec)nfsd4_decode_noop,
+-	[OP_REMOVE]		(nfsd4_dec)nfsd4_decode_remove,
+-	[OP_RENAME]		(nfsd4_dec)nfsd4_decode_rename,
+-	[OP_RENEW]		(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_RESTOREFH]		(nfsd4_dec)nfsd4_decode_noop,
+-	[OP_SAVEFH]		(nfsd4_dec)nfsd4_decode_noop,
+-	[OP_SECINFO]		(nfsd4_dec)nfsd4_decode_secinfo,
+-	[OP_SETATTR]		(nfsd4_dec)nfsd4_decode_setattr,
+-	[OP_SETCLIENTID]	(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_SETCLIENTID_CONFIRM](nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_VERIFY]		(nfsd4_dec)nfsd4_decode_verify,
+-	[OP_WRITE]		(nfsd4_dec)nfsd4_decode_write,
+-	[OP_RELEASE_LOCKOWNER]	(nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_ACCESS]		= (nfsd4_dec)nfsd4_decode_access,
++	[OP_CLOSE]		= (nfsd4_dec)nfsd4_decode_close,
++	[OP_COMMIT]		= (nfsd4_dec)nfsd4_decode_commit,
++	[OP_CREATE]		= (nfsd4_dec)nfsd4_decode_create,
++	[OP_DELEGPURGE]		= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_DELEGRETURN]	= (nfsd4_dec)nfsd4_decode_delegreturn,
++	[OP_GETATTR]		= (nfsd4_dec)nfsd4_decode_getattr,
++	[OP_GETFH]		= (nfsd4_dec)nfsd4_decode_noop,
++	[OP_LINK]		= (nfsd4_dec)nfsd4_decode_link,
++	[OP_LOCK]		= (nfsd4_dec)nfsd4_decode_lock,
++	[OP_LOCKT]		= (nfsd4_dec)nfsd4_decode_lockt,
++	[OP_LOCKU]		= (nfsd4_dec)nfsd4_decode_locku,
++	[OP_LOOKUP]		= (nfsd4_dec)nfsd4_decode_lookup,
++	[OP_LOOKUPP]		= (nfsd4_dec)nfsd4_decode_noop,
++	[OP_NVERIFY]		= (nfsd4_dec)nfsd4_decode_verify,
++	[OP_OPEN]		= (nfsd4_dec)nfsd4_decode_open,
++	[OP_OPENATTR]		= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_OPEN_CONFIRM]	= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_OPEN_DOWNGRADE]	= (nfsd4_dec)nfsd4_decode_open_downgrade,
++	[OP_PUTFH]		= (nfsd4_dec)nfsd4_decode_putfh,
++	[OP_PUTPUBFH]		= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_PUTROOTFH]		= (nfsd4_dec)nfsd4_decode_noop,
++	[OP_READ]		= (nfsd4_dec)nfsd4_decode_read,
++	[OP_READDIR]		= (nfsd4_dec)nfsd4_decode_readdir,
++	[OP_READLINK]		= (nfsd4_dec)nfsd4_decode_noop,
++	[OP_REMOVE]		= (nfsd4_dec)nfsd4_decode_remove,
++	[OP_RENAME]		= (nfsd4_dec)nfsd4_decode_rename,
++	[OP_RENEW]		= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_RESTOREFH]		= (nfsd4_dec)nfsd4_decode_noop,
++	[OP_SAVEFH]		= (nfsd4_dec)nfsd4_decode_noop,
++	[OP_SECINFO]		= (nfsd4_dec)nfsd4_decode_secinfo,
++	[OP_SETATTR]		= (nfsd4_dec)nfsd4_decode_setattr,
++	[OP_SETCLIENTID]	= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_SETCLIENTID_CONFIRM]= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_VERIFY]		= (nfsd4_dec)nfsd4_decode_verify,
++	[OP_WRITE]		= (nfsd4_dec)nfsd4_decode_write,
++	[OP_RELEASE_LOCKOWNER]	= (nfsd4_dec)nfsd4_decode_notsupp,
+ 
+ 	/* new operations for NFSv4.1 */
+-	[OP_BACKCHANNEL_CTL]	(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_BIND_CONN_TO_SESSION](nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_EXCHANGE_ID]	(nfsd4_dec)nfsd4_decode_exchange_id,
+-	[OP_CREATE_SESSION]	(nfsd4_dec)nfsd4_decode_create_session,
+-	[OP_DESTROY_SESSION]	(nfsd4_dec)nfsd4_decode_destroy_session,
+-	[OP_FREE_STATEID]	(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_GET_DIR_DELEGATION]	(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_GETDEVICEINFO]	(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_GETDEVICELIST]	(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_LAYOUTCOMMIT]	(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_LAYOUTGET]		(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_LAYOUTRETURN]	(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_SECINFO_NO_NAME]	(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_SEQUENCE]		(nfsd4_dec)nfsd4_decode_sequence,
+-	[OP_SET_SSV]		(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_TEST_STATEID]	(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_WANT_DELEGATION]	(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_DESTROY_CLIENTID]	(nfsd4_dec)nfsd4_decode_notsupp,
+-	[OP_RECLAIM_COMPLETE]	(nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_BACKCHANNEL_CTL]	= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_BIND_CONN_TO_SESSION]= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_EXCHANGE_ID]	= (nfsd4_dec)nfsd4_decode_exchange_id,
++	[OP_CREATE_SESSION]	= (nfsd4_dec)nfsd4_decode_create_session,
++	[OP_DESTROY_SESSION]	= (nfsd4_dec)nfsd4_decode_destroy_session,
++	[OP_FREE_STATEID]	= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_GET_DIR_DELEGATION]	= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_GETDEVICEINFO]	= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_GETDEVICELIST]	= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_LAYOUTCOMMIT]	= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_LAYOUTGET]		= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_LAYOUTRETURN]	= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_SECINFO_NO_NAME]	= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_SEQUENCE]		= (nfsd4_dec)nfsd4_decode_sequence,
++	[OP_SET_SSV]		= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_TEST_STATEID]	= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_WANT_DELEGATION]	= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_DESTROY_CLIENTID]	= (nfsd4_dec)nfsd4_decode_notsupp,
++	[OP_RECLAIM_COMPLETE]	= (nfsd4_dec)nfsd4_decode_notsupp,
+ };
+ 
+ struct nfsd4_minorversion_ops {
 
-That should be easy to quantify (hint).
