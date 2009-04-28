@@ -1,144 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbZD1IrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbZD1Iqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754323AbZD1IrT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 04:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755179AbZD1IpD
+	id S1755519AbZD1Iqx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 04:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZD1Io0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 04:45:03 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:37135 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755165AbZD1Io7 (ORCPT
+	Tue, 28 Apr 2009 04:44:26 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:43467 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754653AbZD1IoY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 04:44:59 -0400
-Subject: Re: [PATCH] appletouch: fix DMA to/from stack buffer
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Bob Copeland <me@bobcopeland.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090428015844.GA16190@hash.localnet>
-References: <20090428015844.GA16190@hash.localnet>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-aClLdoYWDh0LEjgoPiLM"
-Date: Tue, 28 Apr 2009 10:44:54 +0200
-Message-Id: <1240908294.19534.2.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Tue, 28 Apr 2009 04:44:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=BBgvUbm+H+MmxHHqylS07pTs7lNZFX8Sf4/vw/It3/LSjk1xbFR5KdwRraKUSKhA4P
+         qV9OpykUugySHlPKf97dLwJ1Sn7oVRaIu3o1qDO1EphesbvboaT51Hpam8XPnfXlGW7A
+         O0Aj0wX+TD7jTmdw3qHiHUUiGyki3ADz3tMrE=
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Paul Menage <menage@google.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, tytso@mit.edu,
+       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
+       matt@bluehost.com, dradford@bluehost.com, ngupta@google.com,
+       randy.dunlap@oracle.com, roberto@unbit.it,
+       Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
+       fchecconi@gmail.com, paolo.valente@unimore.it, m-ikeda@ds.jp.nec.com,
+       paulmck@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
+Subject: [PATCH v15 7/7] io-throttle: export per-task statistics to userspace
+Date: Tue, 28 Apr 2009 10:43:54 +0200
+Message-Id: <1240908234-15434-8-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.6.0.4
+In-Reply-To: <1240908234-15434-1-git-send-email-righi.andrea@gmail.com>
+References: <1240908234-15434-1-git-send-email-righi.andrea@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Export the throttling statistics collected for each task through
+/proc/PID/io-throttle-stat.
 
---=-aClLdoYWDh0LEjgoPiLM
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Example:
+  $ cat /proc/$$/io-throttle-stat
+  0 0 0 0
+  ^ ^ ^ ^
+   \ \ \ \_____global iops sleep (in clock ticks)
+    \ \ \______global iops counter
+     \ \_______global bandwidth sleep (in clock ticks)
+      \________global bandwidth counter
 
-On Mon, 2009-04-27 at 21:58 -0400, Bob Copeland wrote:
-> CONFIG_DMA_API_DEBUG spotted an instance of appletouch using
-> an array on the stack as a DMA buffer for certain hardware.
-> Change it to use a kmalloc()ed buffer instead.
->=20
-> This fixes the following error:
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+---
+ fs/proc/base.c |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
 
-> Signed-off-by: Bob Copeland <me@bobcopeland.com>
-
-Reviewed-by: Johannes Berg <johannes@sipsolutions.net>
-
-Interestingly, I first thought the GFP_KERNEL is wrong due to
-atp_reinit, but the GFP_ATOMIC in that is wrong instead :)
-
-> ---
->  drivers/input/mouse/appletouch.c |   24 ++++++++++++++++++------
->  1 files changed, 18 insertions(+), 6 deletions(-)
->=20
-> diff --git a/drivers/input/mouse/appletouch.c b/drivers/input/mouse/apple=
-touch.c
-> index 454b961..e0140fd 100644
-> --- a/drivers/input/mouse/appletouch.c
-> +++ b/drivers/input/mouse/appletouch.c
-> @@ -255,15 +255,22 @@ MODULE_PARM_DESC(debug, "Activate debugging output"=
-);
->   */
->  static int atp_geyser_init(struct usb_device *udev)
->  {
-> -	char data[8];
-> +	char *data;
->  	int size;
->  	int i;
-> +	int ret;
-> +
-> +	data =3D kmalloc(8, GFP_KERNEL);
-> +	if (!data) {
-> +		err("Out of memory");
-> +		return -ENOMEM;
-> +	}
-> =20
->  	size =3D usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
->  			ATP_GEYSER_MODE_READ_REQUEST_ID,
->  			USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
->  			ATP_GEYSER_MODE_REQUEST_VALUE,
-> -			ATP_GEYSER_MODE_REQUEST_INDEX, &data, 8, 5000);
-> +			ATP_GEYSER_MODE_REQUEST_INDEX, data, 8, 5000);
-> =20
->  	if (size !=3D 8) {
->  		dprintk("atp_geyser_init: read error\n");
-> @@ -271,7 +278,8 @@ static int atp_geyser_init(struct usb_device *udev)
->  			dprintk("appletouch[%d]: %d\n", i, data[i]);
-> =20
->  		err("Failed to read mode from device.");
-> -		return -EIO;
-> +		ret =3D -EIO;
-> +		goto out_free;
->  	}
-> =20
->  	/* Apply the mode switch */
-> @@ -281,7 +289,7 @@ static int atp_geyser_init(struct usb_device *udev)
->  			ATP_GEYSER_MODE_WRITE_REQUEST_ID,
->  			USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
->  			ATP_GEYSER_MODE_REQUEST_VALUE,
-> -			ATP_GEYSER_MODE_REQUEST_INDEX, &data, 8, 5000);
-> +			ATP_GEYSER_MODE_REQUEST_INDEX, data, 8, 5000);
-> =20
->  	if (size !=3D 8) {
->  		dprintk("atp_geyser_init: write error\n");
-> @@ -289,9 +297,13 @@ static int atp_geyser_init(struct usb_device *udev)
->  			dprintk("appletouch[%d]: %d\n", i, data[i]);
-> =20
->  		err("Failed to request geyser raw mode");
-> -		return -EIO;
-> +		ret =3D -EIO;
-> +		goto out_free;
->  	}
-> -	return 0;
-> +	ret =3D 0;
-> +out_free:
-> +	kfree(data);
-> +	return ret;
->  }
-> =20
->  /*
-> --=20
-> 1.6.0.6
->=20
-
---=-aClLdoYWDh0LEjgoPiLM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJ9sIEAAoJEKVg1VMiehFYkjoP/2YsxPTHDu0VBopQJHJvn9X5
-8s+Wwec7vAOKCy+NN4sTBNgzbsZB2IjdTNVPnSf4GN9iBqvN4+tqw79jIpNLy/od
-nhS68Pw3EP3LtHZh8uWde9t0uevCgDuvx6beWjrYZQWfzvsUHMCKdVvB10VcO3U9
-7pPT/AncHrNMogk0ARoRxKWyXkzNTYsUX9YCcf4euSkXFE1hNaIgcb56fqISKKDM
-jywAZiZzz4G6qfPCmqaZv8JN4bExrrKZ2P1F+choj5UFnBKc2zMrUhWdaCtOkS4p
-lqvIx353w9cyU4oMooT3P6Wgnz+LMtvVUgzyDXj6Tf1zv2raEWZHIAPJvqz29NfY
-JdhRII2jtBf0z7+ebHU1bejEFIMA6Etcygsp+7ZY4EFjIpBpHAQaT4XMpoXhCM/D
-iNPbid6lZXntXw9K/U6J5iI4ZKDQ5/kwyGg0ayeQfWyGfbk4/xove2OAou++3nQQ
-OjFD7Dv5u702CuEFfRwuvBrF9BduvO3AB86sgousu7bNTSFtpKGCh9RT5P3I/uH4
-Dy4Nqg7OBiTz6OVBPsI8L3jikQqNBcAl5DA1hpx3TRJGSWzuQBdQ/7/ODUQ4kSuf
-9VPwrjiBhTYq8crOYH8P5otHWAiepBV0BQ02pCecbGeoZPOX5oFrn70/FX+yZk5z
-eF5hzKlmnbPrsuUtn0WT
-=apZP
------END PGP SIGNATURE-----
-
---=-aClLdoYWDh0LEjgoPiLM--
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index aa763ab..94061bf 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -54,6 +54,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/stat.h>
+ #include <linux/task_io_accounting_ops.h>
++#include <linux/blk-io-throttle.h>
+ #include <linux/init.h>
+ #include <linux/capability.h>
+ #include <linux/file.h>
+@@ -2453,6 +2454,17 @@ static int proc_tgid_io_accounting(struct task_struct *task, char *buffer)
+ }
+ #endif /* CONFIG_TASK_IO_ACCOUNTING */
+ 
++#ifdef CONFIG_CGROUP_IO_THROTTLE
++static int proc_iothrottle_stat(struct task_struct *task, char *buffer)
++{
++	return sprintf(buffer, "%llu %llu %llu %llu\n",
++			get_io_throttle_cnt(task, IOTHROTTLE_BANDWIDTH),
++			get_io_throttle_sleep(task, IOTHROTTLE_BANDWIDTH),
++			get_io_throttle_cnt(task, IOTHROTTLE_IOPS),
++			get_io_throttle_sleep(task, IOTHROTTLE_IOPS));
++}
++#endif /* CONFIG_CGROUP_IO_THROTTLE */
++
+ static int proc_pid_personality(struct seq_file *m, struct pid_namespace *ns,
+ 				struct pid *pid, struct task_struct *task)
+ {
+@@ -2539,6 +2551,9 @@ static const struct pid_entry tgid_base_stuff[] = {
+ #ifdef CONFIG_TASK_IO_ACCOUNTING
+ 	INF("io",	S_IRUGO, proc_tgid_io_accounting),
+ #endif
++#ifdef CONFIG_CGROUP_IO_THROTTLE
++	INF("io-throttle-stat",	S_IRUGO, proc_iothrottle_stat),
++#endif
+ };
+ 
+ static int proc_tgid_base_readdir(struct file * filp,
+@@ -2874,6 +2889,9 @@ static const struct pid_entry tid_base_stuff[] = {
+ #ifdef CONFIG_TASK_IO_ACCOUNTING
+ 	INF("io",	S_IRUGO, proc_tid_io_accounting),
+ #endif
++#ifdef CONFIG_CGROUP_IO_THROTTLE
++	INF("io-throttle-stat",	S_IRUGO, proc_iothrottle_stat),
++#endif
+ };
+ 
+ static int proc_tid_base_readdir(struct file * filp,
+-- 
+1.6.0.4
 
