@@ -1,79 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbZD1Lrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759742AbZD1LsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758171AbZD1Lrk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 07:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbZD1Lr3
+	id S1759742AbZD1LsP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 07:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbZD1Lrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 07:47:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49338 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751112AbZD1Lr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 07:47:28 -0400
-Message-ID: <49F6ECFB.5010406@redhat.com>
-Date: Tue, 28 Apr 2009 14:48:11 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 28 Apr 2009 07:47:55 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:38526 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756881AbZD1Lry (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 07:47:54 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=mrKJwmb1CfYtUJnivTcnfYsFjOkC1txtzKBF6H2f/+5uV2wU82nw8SbPqc8hpjlAQJihLrfL4ER5hZbFxRPsFSN7a13Hz/QOwW2H8fJrOiAh4LsStodQkAG6f9AMaocAovJinkXJqyXRvNCBCbQapa/943TrrtMLAXIBWborjEw=  ;
+X-YMail-OSG: dOqZTBEVM1l.pfcoC3fiWV9BuWSrh4qpxJmKT7.fjPQ2viTBuwY3.jsg65gl_SDQvFGCTXXSIbvd01.1KBxq.SE_ADHIxPZniXp6htb2QrOnDa_op.RztYXZBrILkZpw3jth4nCQJs.OAMbGcYwzb7JVJ7ZDz9VUwciuK9UaokiSG3wCqBi_ERrdfHdmNiWvDa5.5suY_pbM_fYNJo5aUZuqlPvPa7CTdo75hb5wh91TAFKrbeSb5YNI6AkYquU3dYJBxlq4dfKGyRSZ
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [PATCH] regulator core: fix double-free in regulator_register() error path
+Date: Tue, 28 Apr 2009 04:47:52 -0700
+User-Agent: KMail/1.9.10
+Cc: Paul Walmsley <paul@pwsan.com>, linux-omap@vger.kernel.org,
+       lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org
+References: <alpine.DEB.2.00.0904250526210.28378@utopia.booyaka.com> <200904280232.56329.david-b@pacbell.net> <20090428110052.GH14626@sirena.org.uk>
+In-Reply-To: <20090428110052.GH14626@sirena.org.uk>
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, davidel@xmailserver.org
-Subject: Re: [KVM PATCH v2 2/2] kvm: add support for irqfd via	eventfd-notification
- interface
-References: <20090424042142.1796.60756.stgit@dev.haskins.net> <20090424042518.1796.65593.stgit@dev.haskins.net> <49F572EF.4010909@redhat.com> <49F58A8C.7090808@novell.com> <49F58D75.7040304@redhat.com> <49F5B2DA.5060207@novell.com> <49F6CDFC.6000400@redhat.com> <49F6DB9D.3080501@novell.com> <49F6E1CA.1010106@redhat.com> <49F6E2BB.9070604@novell.com> <49F6E313.7020502@redhat.com> <49F6E3B2.5010306@redhat.com> <49F6EACA.3050808@novell.com>
-In-Reply-To: <49F6EACA.3050808@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200904280447.52954.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> Avi Kivity wrote:
->   
->> Avi Kivity wrote:
->>     
->>>> So what is your proposal for such interface?
->>>>
->>>>   
->>>>         
->>> ->write().
->>>
->>>       
->> Alternatively, a new fileop ->signal_event(), which would map to
->> eventfd_signal() or irqfd_signal().  This would be defined to work in
->> irq contexts.  It may also be useful for uio interrupts.
->>
->>     
-> Hmm...I'm not crazy about either of those.  write() has obvious
-> limitations both from a interrupt execution context, as well as the
-> awkwardness of dealing with creating+passing a viable "userspace"
-> pointer from kernel code.  On the other hand, a new fileop doesn't quite
-> seem appropriate either since it doesn't apply to the overall fileop
-> abstraction very well.
->
-> We could potentially have a separate vtable interface just for
-> event-type fds, and make eventfd and irqfd the first implementations. 
-> But I am not sure it is worth it.  What I suggest is that we work within
-> the existing eventfd interface.  It was designed specifically to signal
-> events, after all.
->
-> If at some point in the future we need to ensure that the callbacks are
-> not invoked from a preempt-off/irq-off critical section, we can revist
-> the eventfd internals at that time.  Note that since we would like to
-> support signaling from interrupt context anyway, trying to get rid of
-> the wqh critical section that we have today may be a fools errand (*). 
-> Instead, we should probably focus on making the injection path support
-> non-preemptible contexts, as this will have the biggest benefits and
-> gains in the long run.
->
->   
-But again, you're forcing everyone who uses irqfd to require eventfd.
+On Tuesday 28 April 2009, Mark Brown wrote:
+> On Tue, Apr 28, 2009 at 02:32:56AM -0700, David Brownell wrote:
+> > On Tuesday 28 April 2009, Mark Brown wrote:
+> > > >
+> > > > For the record, that "incomplete constraints" message is bogus.
+> > > > On that board, VAUX3 has a complete set of constraints:  it may
+> > > > only emit 2.8V.
+> > > > 
+> > > > What it lacks is something entirely different:  driver support
+> > > > for the LCD which uses the regulator framework,
+> > > 
+> > > It's not VAUX3 that it's saying has incomplete constraints, it's the
+> > > board as a whole - if the constraints for the board were fully specified
+> >
+> > No; driver support != constraint.  Only one of the
+> > issues is packaged as a "constraint".
+> 
+> Driver support isn't particularly relevant here.
 
-Maybe we should change eventfd_signal() to fall back to ->write if the 
-file happens not to be an eventfd.  It could also handle the 
-nonpreemptible context as well.
+It's the *entire* point.  The driver is talking directly
+to the regulator, bypassing this framework.  The constraints
+on that regulator are fully defined ... and then bypassed.
 
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+> > > > Mark and/or Liam ... you might want to fix that diagnostic, to
+> > > > avoid leading more developers astray!
+> 
+> > > Probably shove a "board has" in there or something I guess.
+> 
+> > How about:  "VAUX3 board support is incomplete".
+> > That's accurate.
+> 
+> No.  The constraints being complete is a property of the board as a
+> whole and not the particular regulator.
+
+Except ... that "constraint" isn't the issue, it's
+unexpected driver behavior.  And "board" is exactly
+what I said, so I don't know why you're arguing.
+(For the "fun" of it?)
+
+Board support includes full driver support, as well
+as board setup (constraints).  That's the common way
+to factor it, at any rate -- a "board support package"
+addresses both, and they need to work together.
 
