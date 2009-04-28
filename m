@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932692AbZD1QON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932869AbZD1QPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932692AbZD1QON (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbZD1QNz
+	id S932869AbZD1QPu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbZD1QPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:13:55 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53859 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751294AbZD1QNy (ORCPT
+	Tue, 28 Apr 2009 12:15:38 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:55484 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753024AbZD1QPh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:13:54 -0400
-Date: Tue, 28 Apr 2009 18:13:53 +0200
-From: Jan Kara <jack@suse.cz>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 2/5] ext4: Remove outdated comment about lock_super()
-Message-ID: <20090428161353.GJ21950@atrey.karlin.mff.cuni.cz>
-References: <1240717765-16572-1-git-send-email-tytso@mit.edu> <1240717765-16572-2-git-send-email-tytso@mit.edu> <1240717765-16572-3-git-send-email-tytso@mit.edu>
+	Tue, 28 Apr 2009 12:15:37 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240717765-16572-3-git-send-email-tytso@mit.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <49F729F1.2020107@kernel.org>
+References: <20090418192314.GA22107@suse.de> <49F6B1E6.7050008@kernel.org> 
+	<49F6B350.9080703@kernel.org> <ac3eb2510904280125w11a58388u6a51997e28609009@mail.gmail.com> 
+	<49F71EF6.3050102@kernel.org> <49F72205.7030306@kernel.org> 
+	<20090428153906.GA8896@suse.de> <49F7260F.8030405@kernel.org> 
+	<ac3eb2510904280856m1fc07002pc4fb630fd2946b62@mail.gmail.com> 
+	<49F729F1.2020107@kernel.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Tue, 28 Apr 2009 18:15:15 +0200
+Message-ID: <ac3eb2510904280915m472e7e56w8c0331acfd9f083f@mail.gmail.com>
+Subject: Re: [RFC PATCH] use dev_set_name(,NULL) to prevent leaking
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ext4_fill_super() is no longer called by read_super(), and it is no
-> longer called with the superblock locked.  The
-> unlock_super()/lock_super() is no longer present, so this comment is
-> entirely superfluous.
-  Yes, the comment seems to be out of date.
+On Tue, Apr 28, 2009 at 18:08, Yinghai Lu <yinghai@kernel.org> wrote:
+> Kay Sievers wrote:
+>> On Tue, Apr 28, 2009 at 17:51, Yinghai Lu <yinghai@kernel.org> wrote:
+>>
+>>> before device_register==>device_initialize is called, kobj->ref is still 0.
+>>>
+>>> will get warn from
+>>>                if (!kobj->state_initialized)
+>>
+>> Initialize the device before you do anything with it. And call _put()
+>> any time to get rid of ressources, which might have been allocated
+>> before registering.
 
-Acked-by: Jan Kara <jack@suse.cz>
+> so you mean don't call dev_set_name before device_register and let device_register or device_add take name param?
 
-									Honza
-> 
-> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-> ---
->  fs/ext4/super.c |    8 --------
->  1 files changed, 0 insertions(+), 8 deletions(-)
-> 
-> diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-> index e20ff9c..e0b0c9f 100644
-> --- a/fs/ext4/super.c
-> +++ b/fs/ext4/super.c
-> @@ -2806,14 +2806,6 @@ no_journal:
->  		goto failed_mount4;
->  	};
->  
-> -	/*
-> -	 * akpm: core read_super() calls in here with the superblock locked.
-> -	 * That deadlocks, because orphan cleanup needs to lock the superblock
-> -	 * in numerous places.  Here we just pop the lock - it's relatively
-> -	 * harmless, because we are now ready to accept write_super() requests,
-> -	 * and aviro says that's the only reason for hanging onto the
-> -	 * superblock lock.
-> -	 */
->  	EXT4_SB(sb)->s_mount_state |= EXT4_ORPHAN_FS;
->  	ext4_orphan_cleanup(sb, es);
->  	EXT4_SB(sb)->s_mount_state &= ~EXT4_ORPHAN_FS;
-> -- 
-> 1.5.6.3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+No. I meant:
+
+  device_initialize()
+    call put_device() any time you want to get rid of ressources of the device
+  device_set_name()
+    call put_device() any time you want to get rid of ressources of the device
+  device_register()
+...
+
+Kay
