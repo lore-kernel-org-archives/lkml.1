@@ -1,103 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbZD1SXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZD1SXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754796AbZD1SXA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 14:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbZD1SWu
+	id S1755842AbZD1SXv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 14:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZD1SXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 14:22:50 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:45152 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750857AbZD1SWt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 14:22:49 -0400
-Date: Tue, 28 Apr 2009 20:22:48 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: mmx@riz.pl, rientjes@google.com, cl@linux.com, penberg@cs.helsinki.fi,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       rjw@sisk.pl, akpm@linux-foundation.org
-Subject: Re: [Bug #13112] Oops in drain_array
-Message-ID: <20090428182248.GL4593@kernel.dk>
-References: <alpine.DEB.2.00.0904271327140.11650@chino.kir.corp.google.com> <20090428171139N.fujita.tomonori@lab.ntt.co.jp> <Pine.LNX.4.64.0904281425040.2455@galaxy.riz.pl> <20090428234512P.fujita.tomonori@lab.ntt.co.jp>
+	Tue, 28 Apr 2009 14:23:40 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:37177 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbZD1SXj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 14:23:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=iOdCIH81jvXBvjiMiLe6oZnd9YY1LsqUSpyROReRwAlpL1c/gCGdj7wXOw7LHdZCdB
+         GXDyYiJKuVsNqh6lTg3G1A8/lZu2dr6HfBLHZGqquhk+DORaO5ikw2QZxfoivsPxljk3
+         CTDSRp0RU50XfxfLxT2NZOyxEqj472yBdOzRI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 2/3] mg_disk: fix CONFIG_LBD=y warning
+Date: Tue, 28 Apr 2009 20:28:11 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29-next-20090403; KDE/4.2.2; i686; ; )
+Cc: Mark Lord <liml@rtr.ca>, Tejun Heo <tj@kernel.org>, axboe@kernel.dk,
+       linux-kernel@vger.kernel.org, donari75@gmail.com,
+       linux-ide@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+References: <1240890740-3462-1-git-send-email-tj@kernel.org> <200904281728.58209.bzolnier@gmail.com> <49F74672.2090407@garzik.org>
+In-Reply-To: <49F74672.2090407@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090428234512P.fujita.tomonori@lab.ntt.co.jp>
+Message-Id: <200904282028.12047.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28 2009, FUJITA Tomonori wrote:
-> On Tue, 28 Apr 2009 14:43:37 +0200 (CEST)
-> Bart <mmx@riz.pl> wrote:
-> 
-> > > On Mon, 27 Apr 2009 13:36:46 -0700 (PDT)
-> > > David Rientjes <rientjes@google.com> wrote:
-> > >
-> > >> On Mon, 27 Apr 2009, Bart wrote:
-> > >>
-> > >>> After turning the suggested debuging options I've got tons of these when
-> > >>> trying to stress the tape device like before:
-> > >>>
-> > >>> Apr 27 16:57:30 fs kernel: [   96.446708] slab error in verify_redzone_free():
-> > >>> cache `size-128': memory outside object was overwritten
-> > >>> Apr 27 16:57:30 fs kernel: [   96.446713] Pid: 0, comm: swapper Not tainted
-> > >>> 2.6.29.1-64 #2
-> > >>> Apr 27 16:57:30 fs kernel: [   96.446715] Call Trace:
-> > >>> Apr 27 16:57:30 fs kernel: [   96.446717]  <IRQ>  [<ffffffff8029adc5>]
-> > >>> __slab_error+0x1f/0x25
-> > >>> Apr 27 16:57:30 fs kernel: [   96.446728]  [<ffffffff8029b24b>]
-> > >>> cache_free_debugcheck+0x108/0x1d6
-> > >>> Apr 27 16:57:30 fs kernel: [   96.446731]  [<ffffffff8029b473>]
-> > >>> kfree+0x81/0xc2
-> > >>> Apr 27 16:57:30 fs kernel: [   96.446735]  [<ffffffff802bd311>]
-> > >>> bio_free_map_data+0xc/0x1e
-> > >>
-> > >> This appears to be kfree(bmd->iovecs) in bio_free_map_data().  It looks
-> > >> like the memcpy size in bio_set_map_data() overrides the kmalloc size; in
-> > >> other words, for a redzone error, bio->bi_vcnt > nr_pages in
-> > >> bio_copy_user_iov().
-> > >
-> > > Can you try this?
-> > >
-> > > diff --git a/fs/bio.c b/fs/bio.c
-> > > index 7bbc98f..6a09356 100644
-> > > --- a/fs/bio.c
-> > > +++ b/fs/bio.c
-> > > @@ -817,6 +817,9 @@ struct bio *bio_copy_user_iov(struct request_queue *q,
-> > > 		len += iov[i].iov_len;
-> > > 	}
-> > >
-> > > +	if (offset)
-> > > +		nr_pages += 1;
-> > > +
-> > > 	bmd = bio_alloc_map_data(nr_pages, iov_count, gfp_mask);
-> > > 	if (!bmd)
-> > > 		return ERR_PTR(-ENOMEM);
-> > >
+On Tuesday 28 April 2009 20:09:54 Jeff Garzik wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+> > On Tuesday 28 April 2009 17:19:34 Mark Lord wrote:
+> >> Tejun Heo wrote:
+> >>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> >>>
+> >>> drivers/block/mg_disk.c: In function ‘mg_dump_status’:
+> >>> drivers/block/mg_disk.c:265: warning: format ‘%ld’ expects type ‘long int’, but
+> >>> argument 2 has type ‘sector_t’
+> >>>
+> >>> [ Impact: kill build warning ]
+> >>>
+> >>> Cc: unsik Kim <donari75@gmail.com>
+> >>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> >>> Signed-off-by: Tejun Heo <tj@kernel.org>
+> >>> ---
+> >>>  drivers/block/mg_disk.c |    2 +-
+> >>>  1 files changed, 1 insertions(+), 1 deletions(-)
+> >>>
+> >>> diff --git a/drivers/block/mg_disk.c b/drivers/block/mg_disk.c
+> >>> index d3e72ad..f389835 100644
+> >>> --- a/drivers/block/mg_disk.c
+> >>> +++ b/drivers/block/mg_disk.c
+> >>> @@ -79,7 +79,7 @@ static void mg_dump_status(const char *msg, unsigned int stat,
+> >>>  			if (host->breq) {
+> >>>  				req = elv_next_request(host->breq);
+> >>>  				if (req)
+> >>> -					printk(", sector=%ld", req->sector);
+> >>> +					printk(", sector=%u", (u32)req->sector);
+> >> ..
+> >>
+> >> Eh?  Shouldn't that be fixed the other way around, like this:
+> >>
+> >>   +					printk(", sector=%llu", (u64)req->sector);
+> >>
+> >> This way, it will still give correct data when sector_t is a u64.
 > > 
-> > There are no more errors in the dmesg after applying this patch to 
-> > 2.6.29.2.
-> > 
-> > Without this patch I can reproduce this kind of errors on 
-> > 2.6.29.1, 2.6.29.2.
-> > 
-> > I've not tested this patch with 2.6.29.1 and 2.6.30rc3-git3.
-> > I will try to reproduce the error on 2.6.30rc3-git3 as soon as I compile 
-> > it.
+> > shouldn't matter, req->sector is never > u32 for mg_disk
 > 
-> Thanks for testing! And very sorry about the bug.
-> 
-> I'm sure that you hit the same bug with 2.6.30-rc3-git.
-> 
-> Jens, can you please apply this against 2.6.30-rc (and we need this
-> for 2.6.29.x too)?
-> 
-> I know that bio_copy_user_iov() is hacky. I'll try to clean up the
-> mapping API later.
+> It never matters... until the code gets copied elsewhere.  IMO wrong 
+> code should never be kept -- "impossible to hit" just means it is low 
+> priority :)
 
-I'll apply it for 2.6.30-rc and CC stable. bio_copy_user_iov() is indeed
-not pretty, both the API and the implementation needs looking at...
-
--- 
-Jens Axboe
-
+Well, if you feel strongly about it feel free to replace my patch with
+your improved version.  You may also fix hd.c (from which the above code
+has been copied) while at it.
