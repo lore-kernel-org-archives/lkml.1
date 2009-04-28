@@ -1,86 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761590AbZD1PEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761621AbZD1PFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761590AbZD1PEF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:04:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761272AbZD1PDx
+	id S1761621AbZD1PFy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZD1PFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:03:53 -0400
-Received: from ru.mvista.com ([213.79.90.228]:3658 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1761047AbZD1PDx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:03:53 -0400
-Date: Tue, 28 Apr 2009 19:03:52 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Evgeniy Polyakov <zbr@ioremap.net>, Daniel Mack <daniel@caiaq.de>
-Cc: linux-kernel@vger.kernel.org, Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>,
-       Matt Reimer <mreimer@vpop.net>, Anton Vorontsov <cbou@mail.ru>
-Subject: Re: [PATCH 3/3] w1: ds2760_battery: add support for sleep mode
-	feature
-Message-ID: <20090428150352.GB14209@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1240908902-24646-1-git-send-email-daniel@caiaq.de> <1240908902-24646-2-git-send-email-daniel@caiaq.de> <1240908902-24646-3-git-send-email-daniel@caiaq.de>
+	Tue, 28 Apr 2009 11:05:45 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:36963
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752116AbZD1PFp convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 11:05:45 -0400
+X-BigFish: VPS-1(zz4015Lzz1202hzzz32i6bh43j64h)
+X-Spam-TCS-SCL: 3:0
+X-FB-SS: 5,
+X-WSS-ID: 0KITGL5-02-1BU-01
+Date: Tue, 28 Apr 2009 17:05:31 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: David Woodhouse <dwmw2@infradead.org>
+CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       mingo@redhat.com, fujita.tomonori@lab.ntt.co.jp, airlied@linux.ie
+Subject: IOMMU and graphics cards
+Message-ID: <20090428150531.GZ17438@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <1240908902-24646-3-git-send-email-daniel@caiaq.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 28 Apr 2009 15:05:32.0206 (UTC) FILETIME=[C680B4E0:01C9C812]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 10:55:02AM +0200, Daniel Mack wrote:
-> This adds support for ds2760's sleep mode feature. With this feature
-> enabled, the chip enters a deep sleep mode and disconnects from the
-> battery when the w1 line is held down for more than 2 seconds.
-> 
-> This new behaviour can be switched on and off using a new module
-> parameter.
-> 
-> Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
-> Cc: Matt Reimer <mreimer@vpop.net>
-> Cc: Anton Vorontsov <cbou@mail.ru>
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> ---
-[...]
-> --- a/drivers/power/ds2760_battery.c
-> +++ b/drivers/power/ds2760_battery.c
-[...]
-> diff --git a/drivers/w1/slaves/w1_ds2760.h b/drivers/w1/slaves/w1_ds2760.h
-> index ea39419..58e7741 100644
-> --- a/drivers/w1/slaves/w1_ds2760.h
-> +++ b/drivers/w1/slaves/w1_ds2760.h
-> @@ -25,6 +25,10 @@
->  
->  #define DS2760_PROTECTION_REG		0x00
->  #define DS2760_STATUS_REG		0x01
-> +	#define DS2760_STATUS_IE	(1 << 2)
-> +	#define DS2760_STATUS_SWEN	(1 << 3)
-> +	#define DS2760_STATUS_RNAOP	(1 << 4)
-> +	#define DS2760_STATUS_PMOD	(1 << 5)
+Hi David,
 
-The single patch touch battery and w1 trees.
+as I have seen the VT-d code implements a workaround for broken graphics
+card drivers. What it does, when enabled, is giving each grahics device
+direct access to all physical memory. I really don't like to implement
+this but a similar workaround for the AMD IOMMU seems to be necessary.
+The biggest problem here is that this kind of workaround disables device
+isolation for graphics cards. Device isolation is the main reason for
+using an IOMMU in an unvirtualized environment. So if this workaround is
+enabled it is as good as disable the IOMMU at all.
+Thats why I think a kernel compile option for this workaround is not
+sufficient. Distributors will probably enable this in their kernels
+which also disables device isolation even if the user don't want to use
+these broken drivers.
+I think we should change that and provide a better way which allows to
+enable this workaround only if it is required (and it should be
+transparent to the user which IOMMU is built into the system).
+We have several options to do this:
 
-So, Evgeniy, would you mind if I take this patch?
+	* Implement a kernel command line option to enable/disable the
+	  workaround (what should be default?)
+	* Use the IOMMU-API and write a kernel module which creates a
+	  direct mapped protection domain and assigns the graphics
+	  cards to it (need to be done carefully to not break graphics 
+	  drivers which do everything right and use the DMA-API)
+	* Any other great idea?
 
+So what do you (and all the others reading this :-) think? I would
+prefer the way of implementing a module but there may also be reasons
+against this. I would like this to be disussed before I implement the
+workaround for the AMD IOMMU.
 
-Thanks!
+Thanks,
 
->  #define DS2760_EEPROM_REG		0x07
->  #define DS2760_SPECIAL_FEATURE_REG	0x08
->  #define DS2760_VOLTAGE_MSB		0x0c
-> @@ -38,6 +42,7 @@
->  #define DS2760_EEPROM_BLOCK0		0x20
->  #define DS2760_ACTIVE_FULL		0x20
->  #define DS2760_EEPROM_BLOCK1		0x30
-> +#define DS2760_STATUS_WRITE_REG		0x31
->  #define DS2760_RATED_CAPACITY		0x32
->  #define DS2760_CURRENT_OFFSET_BIAS	0x33
->  #define DS2760_ACTIVE_EMPTY		0x3b
-> -- 
-> 1.6.2.1
+	Joerg
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
+
