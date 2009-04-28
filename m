@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759894AbZD1HLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbZD1HTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759894AbZD1HLr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 03:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755759AbZD1HLj
+	id S1759773AbZD1HTv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 03:19:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbZD1HTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 03:11:39 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:56606 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752729AbZD1HLj convert rfc822-to-8bit (ORCPT
+	Tue, 28 Apr 2009 03:19:41 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:59580 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751455AbZD1HTk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 03:11:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=dHU8Ew6PMX9OtSjIzvexQuzn/nLALNetmyd1Ec8yOobaxSOKlv3C2ZzKBO4xpYjA/r
-         0b42oUg54o7dxCK99BynQRjXLVGN2XqgKEAAJlYBbSluVfQKVAMDRBdPysIXRmn72itD
-         WXnU/DfOuMX8xSLgXkhbkM9txi1xNMwZZtXqk=
+	Tue, 28 Apr 2009 03:19:40 -0400
+Date: Tue, 28 Apr 2009 10:17:51 +0300
+From: Mika Kukkonen <mika.kukkonen@nokia.com>
+To: lrg@slimlogic.co.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Remove extra semicolon from if() in
+	drivers/regulator/core.c
+Message-ID: <20090428071751.GA25645@nokia.com>
+Reply-To: mika.kukkonen@nokia.com
 MIME-Version: 1.0
-In-Reply-To: <20090428014920.217785938@intel.com>
-References: <20090428010907.912554629@intel.com>
-	 <20090428014920.217785938@intel.com>
-Date: Tue, 28 Apr 2009 10:11:37 +0300
-Message-ID: <93e6a6040904280011o25c68e9o672cf2ab64af26cd@mail.gmail.com>
-Subject: Re: [PATCH 1/5] pagemap: document clarifications
-From: Tommi Rantala <tt.rantala@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 28 Apr 2009 07:19:29.0579 (UTC) FILETIME=[AB7A6FB0:01C9C7D1]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/28 Wu Fengguang <fengguang.wu@intel.com>:
-> Some bit ranges were inclusive and some not.
-> Fix them to be consistently inclusive.
->
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  Documentation/vm/pagemap.txt |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->
-> --- mm.orig/Documentation/vm/pagemap.txt
-> +++ mm/Documentation/vm/pagemap.txt
-> @@ -12,9 +12,9 @@ There are three components to pagemap:
->    value for each virtual page, containing the following data (from
->    fs/proc/task_mmu.c, above pagemap_read):
->
-> -    * Bits 0-55  page frame number (PFN) if present
-> +    * Bits 0-54  page frame number (PFN) if present
->     * Bits 0-4   swap type if swapped
-> -    * Bits 5-55  swap offset if swapped
-> +    * Bits 5-54  swap offset if swapped
->     * Bits 55-60 page shift (page size = 1<<page shift)
->     * Bit  61    reserved for future use
->     * Bit  62    page swapped
+In function drms_uA_update() in file drivers/regulator/core.c there is a tailing semicolon
+in the end of if() condition which causes the function in question to return unconditionally.
+Remove it to enable rest of the code in the function.
 
-The same fix should be applied to fs/proc/task_mmu.c as well,
-it includes the same description of the bits.
+Signed-off-By: Mika Kukkonen <mika.kukkonen@nokia.com>
 
-Regards,
-Tommi Rantala
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 01f7702..47fc6e6 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -540,8 +540,8 @@ static void drms_uA_update(struct regulator_dev *rdev)
+ 
+ 	err = regulator_check_drms(rdev);
+ 	if (err < 0 || !rdev->desc->ops->get_optimum_mode ||
+-	    !rdev->desc->ops->get_voltage || !rdev->desc->ops->set_mode);
+-	return;
++	    !rdev->desc->ops->get_voltage || !rdev->desc->ops->set_mode)
++		return;
+ 
+ 	/* get output voltage */
+ 	output_uV = rdev->desc->ops->get_voltage(rdev);
+
