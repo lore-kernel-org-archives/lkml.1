@@ -1,281 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbZD1DIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbZD1DJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755154AbZD1DIT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 23:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbZD1DIG
+	id S1755195AbZD1DJG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 23:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbZD1DIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 23:08:06 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33717 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752169AbZD1DIF (ORCPT
+	Mon, 27 Apr 2009 23:08:53 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:26209 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752676AbZD1DIw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 23:08:05 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: meminfo Committed_AS underflows
-Cc: kosaki.motohiro@jp.fujitsu.com, balbir@linux.vnet.ibm.com,
-       dave@linux.vnet.ibm.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, ebmunson@us.ibm.com,
-       mel@linux.vnet.ibm.com, cl@linux-foundation.org
-In-Reply-To: <20090427132722.926b07f1.akpm@linux-foundation.org>
-References: <20090415084713.GU7082@balbir.in.ibm.com> <20090427132722.926b07f1.akpm@linux-foundation.org>
-Message-Id: <20090428092400.EBB6.A69D9226@jp.fujitsu.com>
+	Mon, 27 Apr 2009 23:08:52 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Q3h+7FFSCvd7u95nbPXC4oK8VqNDBCsmVdajnnQFuC+C4fnSArMxjNsu23V/auP3JYU2KE+ZmtUMh/01BFSGb8rGWfj5m4KdVWIiZRdgNIL5lQRxvhdfrjaWs9URuxfm+K62lT5DPUEadv48iPbieT3K4AT+Lq09CwrDZjFWfOM=  ;
+X-YMail-OSG: YNEkNHcVM1no.r0YVcagxbKYt_0P0p0qC6x4UATlSBI.iHyST4VlnLYHaTzEn6jgUGjaG1ASdC9WCaXITqhm6kwjbOwr9e8xDOATTWYzBpyBSvCYwtncM3Hk4C3oKRhVjVqLHIk71QonVdj2r2GAo5GouKllv2wnNLLdjHLG1b_VTUwEr2HdftRhQ7FdXDcsx1DnMgJN.1cKFJdaeEopeQlsRb2iMcDzSh0rRusxqHcGVxmvClj0vCbS_6YhBJS0jjOBPWKc6lyKoBn2
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Paul Walmsley <paul@pwsan.com>
+Subject: Re: [PATCH] regulator core: fix double-free in regulator_register() error path
+Date: Mon, 27 Apr 2009 20:08:50 -0700
+User-Agent: KMail/1.9.10
+Cc: linux-omap@vger.kernel.org, lrg@slimlogic.co.uk,
+       broonie@opensource.wolfsonmicro.com, linux-kernel@vger.kernel.org
+References: <alpine.DEB.2.00.0904250526210.28378@utopia.booyaka.com> <alpine.DEB.2.00.0904252250230.4291@utopia.booyaka.com>
+In-Reply-To: <alpine.DEB.2.00.0904252250230.4291@utopia.booyaka.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 28 Apr 2009 12:07:59 +0900 (JST)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200904272008.50268.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 15 Apr 2009 14:17:13 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Saturday 25 April 2009, Paul Walmsley wrote:
 > 
-> > * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-04-15 13:10:06]:
-> > 
-> > > > * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-04-15 11:04:59]:
-> > > > 
-> > > > >  	committed = atomic_long_read(&vm_committed_space);
-> > > > > +	if (committed < 0)
-> > > > > +		committed = 0;
-> > > > 
+> > device_unregister() calls regulator_dev_release() which frees rdev.  The 
+> > subsequent kfree corrupts memory and causes some OMAP3 systems to oops on 
+> > boot in regulator_get().
 > 
-> Is there a reason why we can't use a boring old percpu_counter for
-> vm_committed_space?  That way the meminfo code can just use
-> percpu_counter_read_positive().
-> 
-> Or perhaps just percpu_counter_read().  The percpu_counter code does a
-> better job of handling large cpu counts than the
-> mysteriously-duplicative open-coded stuff we have there.
+> For the 3430SDP users out there, this patch also fixes the boot hang after 
+> "regulator_init_complete: incomplete constraints, leaving VAUX3 on"
+> on that device.
 
-At that time, I thought smallest patch is better because it can send -stable
-tree easily.
-but maybe I was wrong. it made bikeshed discussion :(
+For the record, that "incomplete constraints" message is bogus.
+On that board, VAUX3 has a complete set of constraints:  it may
+only emit 2.8V.
 
-ok, I'm going to right way.
+What it lacks is something entirely different:  driver support
+for the LCD which uses the regulator framework, instead of just
+bypassing it and talking directly to the PMIC.  By the time it
+gets there, the LCD has probably been turned on.
 
-
-=========================================
-Subject: [PATCH] fix Committed_AS underfolow on large NR_CPUS environment
-
-As reported by Dave Hansen, the Committed_AS field can underflow in certain
-situations:
-
->         # while true; do cat /proc/meminfo  | grep _AS; sleep 1; done | uniq -c
->               1 Committed_AS: 18446744073709323392 kB
->              11 Committed_AS: 18446744073709455488 kB
->               6 Committed_AS:    35136 kB
->               5 Committed_AS: 18446744073709454400 kB
->               7 Committed_AS:    35904 kB
->               3 Committed_AS: 18446744073709453248 kB
->               2 Committed_AS:    34752 kB
->               9 Committed_AS: 18446744073709453248 kB
->               8 Committed_AS:    34752 kB
->               3 Committed_AS: 18446744073709320960 kB
->               7 Committed_AS: 18446744073709454080 kB
->               3 Committed_AS: 18446744073709320960 kB
->               5 Committed_AS: 18446744073709454080 kB
->               6 Committed_AS: 18446744073709320960 kB
-
-Because NR_CPUS can be greater than 1000 and meminfo_proc_show() does not check
-for underflow.
-
-But NR_CPUS proportional isn't good calculation. In general, possibility of
-lock contention is proportional to the number of online cpus, not theorical
-maximum cpus (NR_CPUS).
-the current kernel has generic percpu-counter stuff. using it is right way.
-it makes code simplify and percpu_counter_read_positive() don't make underflow issue.
-
-
-Reported-by: Dave Hansen <dave@linux.vnet.ibm.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Eric B Munson <ebmunson@us.ibm.com>
----
- fs/proc/meminfo.c    |    2 +-
- include/linux/mman.h |    9 +++------
- mm/mmap.c            |   12 ++++++------
- mm/nommu.c           |   13 +++++++------
- mm/swap.c            |   46 ----------------------------------------------
- 5 files changed, 17 insertions(+), 65 deletions(-)
-
-Index: b/fs/proc/meminfo.c
-===================================================================
---- a/fs/proc/meminfo.c	2009-04-28 11:36:43.000000000 +0900
-+++ b/fs/proc/meminfo.c	2009-04-28 11:36:54.000000000 +0900
-@@ -35,7 +35,7 @@ static int meminfo_proc_show(struct seq_
- #define K(x) ((x) << (PAGE_SHIFT - 10))
- 	si_meminfo(&i);
- 	si_swapinfo(&i);
--	committed = atomic_long_read(&vm_committed_space);
-+	committed = percpu_counter_read_positive(&vm_committed_as);
- 	allowed = ((totalram_pages - hugetlb_total_pages())
- 		* sysctl_overcommit_ratio / 100) + total_swap_pages;
- 
-Index: b/mm/mmap.c
-===================================================================
---- a/mm/mmap.c	2009-04-28 11:36:43.000000000 +0900
-+++ b/mm/mmap.c	2009-04-28 11:36:54.000000000 +0900
-@@ -85,7 +85,7 @@ EXPORT_SYMBOL(vm_get_page_prot);
- int sysctl_overcommit_memory = OVERCOMMIT_GUESS;  /* heuristic overcommit */
- int sysctl_overcommit_ratio = 50;	/* default is 50% */
- int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
--atomic_long_t vm_committed_space = ATOMIC_LONG_INIT(0);
-+struct percpu_counter vm_committed_as;
- 
- /*
-  * Check that a process has enough memory to allocate a new virtual
-@@ -179,11 +179,7 @@ int __vm_enough_memory(struct mm_struct 
- 	if (mm)
- 		allowed -= mm->total_vm / 32;
- 
--	/*
--	 * cast `allowed' as a signed long because vm_committed_space
--	 * sometimes has a negative value
--	 */
--	if (atomic_long_read(&vm_committed_space) < (long)allowed)
-+	if (percpu_counter_read_positive(&vm_committed_as) < allowed)
- 		return 0;
- error:
- 	vm_unacct_memory(pages);
-@@ -2481,4 +2477,8 @@ void mm_drop_all_locks(struct mm_struct 
-  */
- void __init mmap_init(void)
- {
-+	int ret;
-+
-+	ret = percpu_counter_init(&vm_committed_as, 0);
-+	VM_BUG_ON(ret);
- }
-Index: b/mm/nommu.c
-===================================================================
---- a/mm/nommu.c	2009-04-28 11:36:43.000000000 +0900
-+++ b/mm/nommu.c	2009-04-28 11:36:54.000000000 +0900
-@@ -62,7 +62,7 @@ void *high_memory;
- struct page *mem_map;
- unsigned long max_mapnr;
- unsigned long num_physpages;
--atomic_long_t vm_committed_space = ATOMIC_LONG_INIT(0);
-+struct percpu_counter vm_committed_as;
- int sysctl_overcommit_memory = OVERCOMMIT_GUESS; /* heuristic overcommit */
- int sysctl_overcommit_ratio = 50; /* default is 50% */
- int sysctl_max_map_count = DEFAULT_MAX_MAP_COUNT;
-@@ -463,6 +463,10 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
-  */
- void __init mmap_init(void)
- {
-+	int ret;
-+
-+	ret = percpu_counter_init(&vm_committed_as, 0);
-+	VM_BUG_ON(ret);
- 	vm_region_jar = KMEM_CACHE(vm_region, SLAB_PANIC);
- }
- 
-@@ -1847,12 +1851,9 @@ int __vm_enough_memory(struct mm_struct 
- 	if (mm)
- 		allowed -= mm->total_vm / 32;
- 
--	/*
--	 * cast `allowed' as a signed long because vm_committed_space
--	 * sometimes has a negative value
--	 */
--	if (atomic_long_read(&vm_committed_space) < (long)allowed)
-+	if (percpu_counter_read_positive(&vm_committed_as) < allowed)
- 		return 0;
-+
- error:
- 	vm_unacct_memory(pages);
- 
-Index: b/mm/swap.c
-===================================================================
---- a/mm/swap.c	2009-04-28 11:36:43.000000000 +0900
-+++ b/mm/swap.c	2009-04-28 11:36:54.000000000 +0900
-@@ -491,49 +491,6 @@ unsigned pagevec_lookup_tag(struct pagev
- 
- EXPORT_SYMBOL(pagevec_lookup_tag);
- 
--#ifdef CONFIG_SMP
--/*
-- * We tolerate a little inaccuracy to avoid ping-ponging the counter between
-- * CPUs
-- */
--#define ACCT_THRESHOLD	max(16, NR_CPUS * 2)
--
--static DEFINE_PER_CPU(long, committed_space);
--
--void vm_acct_memory(long pages)
--{
--	long *local;
--
--	preempt_disable();
--	local = &__get_cpu_var(committed_space);
--	*local += pages;
--	if (*local > ACCT_THRESHOLD || *local < -ACCT_THRESHOLD) {
--		atomic_long_add(*local, &vm_committed_space);
--		*local = 0;
--	}
--	preempt_enable();
--}
--
--#ifdef CONFIG_HOTPLUG_CPU
--
--/* Drop the CPU's cached committed space back into the central pool. */
--static int cpu_swap_callback(struct notifier_block *nfb,
--			     unsigned long action,
--			     void *hcpu)
--{
--	long *committed;
--
--	committed = &per_cpu(committed_space, (long)hcpu);
--	if (action == CPU_DEAD || action == CPU_DEAD_FROZEN) {
--		atomic_long_add(*committed, &vm_committed_space);
--		*committed = 0;
--		drain_cpu_pagevecs((long)hcpu);
--	}
--	return NOTIFY_OK;
--}
--#endif /* CONFIG_HOTPLUG_CPU */
--#endif /* CONFIG_SMP */
--
- /*
-  * Perform any setup for the swap system
-  */
-@@ -554,7 +511,4 @@ void __init swap_setup(void)
- 	 * Right now other parts of the system means that we
- 	 * _really_ don't want to cluster much more
- 	 */
--#ifdef CONFIG_HOTPLUG_CPU
--	hotcpu_notifier(cpu_swap_callback, 0);
--#endif
- }
-Index: b/include/linux/mman.h
-===================================================================
---- a/include/linux/mman.h	2009-04-28 11:32:47.000000000 +0900
-+++ b/include/linux/mman.h	2009-04-28 11:38:42.000000000 +0900
-@@ -12,21 +12,18 @@
- 
- #ifdef __KERNEL__
- #include <linux/mm.h>
-+#include <linux/percpu_counter.h>
- 
- #include <asm/atomic.h>
- 
- extern int sysctl_overcommit_memory;
- extern int sysctl_overcommit_ratio;
--extern atomic_long_t vm_committed_space;
-+extern struct percpu_counter vm_committed_as;
- 
--#ifdef CONFIG_SMP
--extern void vm_acct_memory(long pages);
--#else
- static inline void vm_acct_memory(long pages)
- {
--	atomic_long_add(pages, &vm_committed_space);
-+	percpu_counter_add(&vm_committed_as, pages);
- }
--#endif
- 
- static inline void vm_unacct_memory(long pages)
- {
-
+Mark and/or Liam ... you might want to fix that diagnostic, to
+avoid leading more developers astray!
 
