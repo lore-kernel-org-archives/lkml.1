@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762797AbZD1QBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762830AbZD1QBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762797AbZD1QBY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:01:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761618AbZD1QBK
+	id S1762830AbZD1QBk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762771AbZD1QBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:01:10 -0400
-Received: from verein.lst.de ([213.95.11.210]:51958 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757500AbZD1QBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:01:09 -0400
-Date: Tue, 28 Apr 2009 18:01:07 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Christoph Hellwig <hch@lst.de>, Mikael Starvik <mikael.starvik@axis.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] CRIS: Wire up syscalls signalfd4 to writev.
-Message-ID: <20090428160107.GC26363@lst.de>
-References: <20090427081356.GA32167@lst.de> <20090428155856.GN21811@axis.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090428155856.GN21811@axis.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+	Tue, 28 Apr 2009 12:01:17 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:45328 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762786AbZD1QBQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 12:01:16 -0400
+To: teheo@suse.de
+CC: linux-kernel@vger.kernel.org, greg@kroah.com, miklos@szeredi.hu,
+       tiwai@suse.de, fuse-devel@lists.sourceforge.net
+In-reply-to: <49E3F91E.4000801@suse.de> (message from Tejun Heo on Tue, 14 Apr
+	2009 11:46:54 +0900)
+Subject: Re: [ANNOUNCE] OSS Proxy 1.2 using CUSE
+References: <48B6F711.1040604@kernel.org> <49E3F91E.4000801@suse.de>
+Message-Id: <E1Lypk4-0004it-BA@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 28 Apr 2009 18:01:08 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 05:58:56PM +0200, Jesper Nilsson wrote:
-> On Mon, Apr 27, 2009 at 10:13:56AM +0200, Christoph Hellwig wrote:
-> > 2.6.30 added the new preadv/pwritev system calls.  The following
-> > architectures still haven't wired them up:
-> > 
-> > 	alpha, avr32, blackfin, cris, frv, h8300, m32r, xtensa
-> > 
-> > Can you maintainers please look into wiring these system calls up?
-> 
-> I've just added the following patch to the CRIS tree:
-> 
-> 
-> Adds sys_signalfd4, sys_eventfd2, sys_epoll_create1, sys_dup3,
-> sys_pipe2, sys_inotify_init1, sys_preadv, sys_pwritev
-> for both CRISv10 and CRISv32.
+>From the README:
 
-Care to send this and your current stack of patches upsteam before
-2.6.30 is out?
+| ALSA contains OSS emulation but sadly the emulation is behind
+| multiplexing layer (which is in userland) which means that if your
+| sound card doesn't support multiple audio streams, only either one of
+| ALSA or OSS interface would be usable at any given moment.
 
+This seems to imply (and I was hoping very much) that this won't be a
+limitation of a CUSE based OSS Proxy.  But at the moment I'm finding
+that while ossp is doing some playback other ALSA apps cannot start
+playback and vice versa.
+
+In fact if something else is playing though ALSA and I start a
+playback through ossp, then ossp will print some errors, return EIO
+and get into a bad state, that it recoveres from only by starting the
+playback twice more (after stopping the other playback through ALSA).
+
+ossp-padsp[mszeredi:24123]  ERR: pa_stream_write() failed (Connection terminated)
+osspd  ERR: failed to read_fill 16 bytes from fd 7 (Connection reset by peer)
+osspd WARN: S[1/24122] communication with slave failed (can't read reply: Connection reset by peer)
+E: socket-client.c: socket(): Address family not supported by protocol
+E: context.c: waitpid(): No child processes
+ossp-padsp[mszeredi:24130]  ERR: failed to connect context, state=5 (Bad state)
+
+Thanks,
+Miklos
