@@ -1,100 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760628AbZD1L0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbZD1LcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760628AbZD1L0S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 07:26:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756747AbZD1L0D
+	id S1758950AbZD1LcU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 07:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754830AbZD1LcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 07:26:03 -0400
-Received: from mail-qy0-f112.google.com ([209.85.221.112]:60348 "EHLO
-	mail-qy0-f112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756416AbZD1L0B convert rfc822-to-8bit (ORCPT
+	Tue, 28 Apr 2009 07:32:09 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:47486 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754303AbZD1LcI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 07:26:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=xcSdB9g9jL2whZn+YF8KM+NgYPy7C7OrDwAxDYyT2lxQMqH5JOH/9n2egcYGSFzuyX
-         Y4wLguJeiFrybENZvNjcSUD029u6LQwyXxwyyJU5nz+jBDxC86ADJjJjek8iKNLXtF4U
-         0UgGOMBeNaNrbMI/61nGS6u8vpPmN8jZ6Sz+g=
-MIME-Version: 1.0
-In-Reply-To: <e82940b20904280421p171343a8h9072215028948b57@mail.gmail.com>
-References: <e82940b20904280421p171343a8h9072215028948b57@mail.gmail.com>
-Date: Tue, 28 Apr 2009 19:26:00 +0800
-Message-ID: <e82940b20904280426j53ff8be7h3caeed84a02bbfe9@mail.gmail.com>
-Subject: Re: [PATCH] sched: make sure sched_child_runs_first WORK
-From: marywangran <marywangran@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 8BIT
+	Tue, 28 Apr 2009 07:32:08 -0400
+Subject: Re: [patch] slub: add Documentation/ABI/testing/sysfs-kernel-slab
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: David Rientjes <rientjes@google.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0904241625460.10046@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0904231136390.20852@chino.kir.corp.google.com>
+	 <alpine.DEB.2.00.0904231137440.20852@chino.kir.corp.google.com>
+	 <alpine.DEB.1.10.0904231436410.7406@qirst.com>
+	 <alpine.DEB.2.00.0904241625460.10046@chino.kir.corp.google.com>
+Date: Tue, 28 Apr 2009 14:32:06 +0300
+Message-Id: <1240918326.1982.18.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is new patch,it is simple,and it work all right
-  CFS scheduler become the main scheduler after 2.6.23.everything is
-fair,no starvation,no complexity.The new task would not simply be
-queued  at the head to quickly preempt current.according to the code
-of kernel 2.6.28,if you clear the STAR_DEBIT bit by sysctl -w
-kernel.sched_features=orig_value&~STSRT_DEBIT_bit,child task would not
-preempt its father always,and this problem is easier to recur if you
-use a father task with lower nice value. my test file is:
+On Fri, 2009-04-24 at 16:26 -0700, David Rientjes wrote:
+> Adds documentation for the slub ABI.
+> 
+> This is placed in the `testing' directory since the meanings of these
+> files are still subject to change as slub is developed.
+> 
+> Cc: Christoph Lameter <cl@linux-foundation.org>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Signed-off-by: David Rientjes <rientjes@google.com>
 
-/*******child_first.c**********/
-#include <sched.h>
-#include <sys/types.h>
-#include <unistd.h>
-int main(int argc,char *argv[])
-{
-       cpu_set_t mask;
-       __CPU_ZERO( &mask );
-       __CPU_SET(0, &mask );
-       sched_setaffinity( 0, sizeof(mask), &mask );
-       int v = atoi(argv[1]);
-       nice(v);
-       int i = 90000;
-       while(i-->0)
-       {
-               v++;
-       }
-       if(fork() == 0)
-       {
-               printf("sub\n");
-               exit(0);
-       }
-       printf("main,%d\n",v);
-}
-just compile it to child_first and do following:
-[root@zhaoya ~]#sysctl -w kernel.sched_features=0
-[root@zhaoya ~]#./child_first -20
-[root@zhaoya ~]#./child_first -xx
-...
-[root@zhaoya ~]#./child_first 10000...
-after all this,believe your eyes.
- because the code judgeing the condition whether the child should
-preempt the father is very LOOSE£¡if the nice value of father is very
-low and the nr_running is very small,the cfs_rq->min_vruntime is
-always equal with the vruntime of father,so {curr->vruntime <=
-se->vruntime}.if the nice value if high,the cfs_rq->min_vruntime is
-always little than father so {cfs_rq->min_vruntime <= curr->vruntime}
-Signed-off-by: Ya Zhao <marywangran@gmail.com>
----
---- linux-2.6.28.1/kernel/sched_fair.c.orig     2009-04-28
-22:26:00.000000000 +0800
-+++ linux-2.6.28.1/kernel/sched_fair.c  2009-04-28 22:34:49.000000000 +0800
-@@ -1628,12 +1628,13 @@ static void task_new_fair(struct rq *rq,
+Applied, thanks!
 
-       /* 'curr' will be NULL if the child belongs to a different group */
-       if (sysctl_sched_child_runs_first && this_cpu == task_cpu(p) &&
--                       curr && curr->vruntime < se->vruntime) {
-+                      curr){
-               /*
-                * Upon rescheduling, sched_class::put_prev_task() will place
-                * 'current' within the tree based on its new key value.
-                */
--               swap(curr->vruntime, se->vruntime);
-+               if( curr->vruntime < se->vruntime )
-+                       swap(curr->vruntime, se->vruntime);
-               resched_task(rq->curr);
-       }
---
