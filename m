@@ -1,118 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752268AbZD1WVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbZD1WV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752268AbZD1WVK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 18:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbZD1WUz
+	id S1753955AbZD1WV3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 18:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbZD1WVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 18:20:55 -0400
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:54854 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751728AbZD1WUy (ORCPT
+	Tue, 28 Apr 2009 18:21:10 -0400
+Received: from e28smtp08.in.ibm.com ([59.145.155.8]:53053 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752268AbZD1WVI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 18:20:54 -0400
-Date: Wed, 29 Apr 2009 03:38:54 +0530
+	Tue, 28 Apr 2009 18:21:08 -0400
+Date: Wed, 29 Apr 2009 03:16:06 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       seto.hidetoshi@jp.fujitsu.com
-Subject: Re: [PATCH] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu
-	cputime count
-Message-ID: <20090428220854.GC12698@balbir.in.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix leak of swap accounting as stale swap cache under
+	memcg
+Message-ID: <20090428214606.GB12698@balbir.in.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
-References: <20090428153611.EBC6.A69D9226@jp.fujitsu.com>
+References: <20090427181259.6efec90b.kamezawa.hiroyu@jp.fujitsu.com> <20090427101323.GK4454@balbir.in.ibm.com> <20090427203535.4e3f970b.d-nishimura@mtf.biglobe.ne.jp> <661de9470904271217t7ef9e300x1e40bbf0362ca14f@mail.gmail.com> <20090428085753.a91b6007.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090428153611.EBC6.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20090428085753.a91b6007.kamezawa.hiroyu@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-04-28 15:53:32]:
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-28 08:57:53]:
 
+> On Tue, 28 Apr 2009 00:47:31 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> I'm not cpuacct expert. please give me comment.
+> > Thanks for the detailed explanation of the possible race conditions. I
+> > am beginning to wonder why we don't have any hooks in add_to_swap.*.
+> > for charging a page. If the page is already charged and if it is a
+> > context issue (charging it to the right cgroup) that is already
+> > handled from what I see. Won't that help us solve the !PageCgroupUsed
+> > issue?
+> > 
 > 
-> ====================
-> Subject: [PATCH] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime caching
+> For adding hook to add_to_swap_cache, we need to know which cgroup the swap cache
+> should be charged. Then, we have to remove CONFIG_CGROUP_MEM_RES_CTRL_SWAP_EXT
+> and enable memsw control always.
 > 
-> impact: little performance improvement
-> 
-> cpuacct_update_stats() is called at every tick updating. and it use percpu_counter
-> for avoiding performance degression.
-> 
-> Unfortunately, it doesn't works on VIRT_CPU_ACCOUNTING=y environment properly.
-> if VIRT_CPU_ACCOUNTING=y, every tick update much than 1000 cputime.
-> Thus every percpu_counter_add() makes spinlock grabbing and update non-percpu-variable.
-> 
-> This patch change the batch rule. now, every cpu can store "percpu_counter_bach x jiffies"
-> cputime in percpu cache.
-> it mean this patch don't have behavior change if VIRT_CPU_ACCOUNTING=n, but
-> works well on VIRT_CPU_ACCOUNTING=y too.
-> 
-> 
-> Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> Cc: Balaji Rao <balajirrao@gmail.com>
-> Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  kernel/sched.c |    6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> Index: b/kernel/sched.c
-> ===================================================================
-> --- a/kernel/sched.c	2009-04-28 14:18:36.000000000 +0900
-> +++ b/kernel/sched.c	2009-04-28 15:18:07.000000000 +0900
-> @@ -10117,6 +10117,7 @@ struct cpuacct {
->  };
-> 
->  struct cgroup_subsys cpuacct_subsys;
-> +static s32 cpuacct_batch;
-> 
->  /* return cpu accounting group corresponding to this container */
->  static inline struct cpuacct *cgroup_ca(struct cgroup *cgrp)
-> @@ -10146,6 +10147,9 @@ static struct cgroup_subsys_state *cpuac
->  	if (!ca->cpuusage)
->  		goto out_free_ca;
-> 
-> +	if (!cpuacct_batch)
-> +		cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
-> +
+> When using swap_cgroup, we'll know which cgroup the new swap cache should be charged.
+> Then, the new page readed in will be charged to recorded cgroup in swap_cgroup.
+> One bad thing of this method is a cgroup which swap_cgroup point to is different from
+> a cgroup which the task calls do_swap_fault(). This means that a page-fault by a
+> task can cause memory-reclaim under another cgroup and moreover, OOM.
+> I don't think it's sane behavior. So, current design of swap accounting waits until the
+> page is mapped.
+>
+ 
+I know (that is why we removed the hooks from the original memcg at
+some point). Why can't we mark the page here as swap pending to be
+mapped, so that we don't lose them. As far as OOM is concerned, I
+think they'll get relocated again when they are mapped (as per the
+current implementation), the ones that don't are stale and can be
+easily reclaimed.
 
-I expect cpuacct_batch to be a large number
-
->  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
->  		if (percpu_counter_init(&ca->cpustat[i], 0))
->  			goto out_free_counters;
-> @@ -10342,7 +10346,7 @@ static void cpuacct_update_stats(struct 
->  	ca = task_ca(tsk);
-> 
->  	do {
-> -		percpu_counter_add(&ca->cpustat[idx], val);
-> +		__percpu_counter_add(&ca->cpustat[idx], val, cpuacct_batch);
-
-This will make the end result very off the real value due to large
-batch value per cpu. If we are going to go this route, we should
-probably consider using __percpu_counter_sum so that the batch value
-does not show data that is way off.
-
->  		ca = ca->parent;
->  	} while (ca);
->  	rcu_read_unlock();
-> 
-> 
 
 -- 
 	Balbir
