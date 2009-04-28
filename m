@@ -1,72 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762072AbZD1QCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762839AbZD1QDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762072AbZD1QCt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932251AbZD1QCd
+	id S1762839AbZD1QDU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932400AbZD1QCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:02:33 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:59362 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932181AbZD1QCb (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:02:31 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mm-commits@vger.kernel.org
-Subject: Re: mmotm 2009-04-24-18-14 uploaded - NVidia indigestion
-In-Reply-To: Your message of "Tue, 28 Apr 2009 08:15:57 +0200."
-             <20090428061557.GA29299@wotan.suse.de>
-From: Valdis.Kletnieks@vt.edu
-References: <200904250133.n3P1XBJn006790@imap1.linux-foundation.org> <5622.1240628800@turing-police.cc.vt.edu> <20090425052434.GE10088@wotan.suse.de> <57773.1240857915@turing-police.cc.vt.edu>
-            <20090428061557.GA29299@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1240934480_4310P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 28 Apr 2009 12:01:21 -0400
-Message-ID: <20954.1240934481@turing-police.cc.vt.edu>
+	Tue, 28 Apr 2009 12:02:39 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57430 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932478AbZD1QCi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 12:02:38 -0400
+Date: Tue, 28 Apr 2009 18:02:37 +0200
+From: Jan Kara <jack@suse.cz>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH 5/5] ext4: Replace lock/unlock_super() with an explicit lock for resizing
+Message-ID: <20090428160236.GI21950@atrey.karlin.mff.cuni.cz>
+References: <1240717765-16572-1-git-send-email-tytso@mit.edu> <1240717765-16572-2-git-send-email-tytso@mit.edu> <1240717765-16572-3-git-send-email-tytso@mit.edu> <1240717765-16572-4-git-send-email-tytso@mit.edu> <1240717765-16572-5-git-send-email-tytso@mit.edu> <1240717765-16572-6-git-send-email-tytso@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240717765-16572-6-git-send-email-tytso@mit.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1240934480_4310P
-Content-Type: text/plain; charset=us-ascii
-
-On Tue, 28 Apr 2009 08:15:57 +0200, Nick Piggin said:
-
-Here's the code (pretty much *all* the code):
-
-> #include <linux/version.h>
-> #include <linux/utsname.h>
-> int main() {
-> 	if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)) {
-> 		return 0;
-> 	} else {
-> 		return 1;
-> 	}
-> }
-
-> Hmm, yes if you build without -O, then it appears like the compiler
-> trips over this. I wouldn't be unhappy with just removing the BUILD_BUG_ON,
-> but shouldn't the module be using -O[s2]?
-
-It's a little autoconfig chunk from vendor code that determines if we're
-building on a sane/recent kernel.  Not the sort of thing you'd expect to
-need to invoke the frikking optimizer for program *correctness* :)
-
-
-
---==_Exmh_1240934480_4310P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJ9yhQcC3lWbTT17ARAp4pAJ9lmNwbL7k1NuxNUY+iibD86F8MdQCdFbKN
-vjn1KypPeMRZhYtw8F0C+Vc=
-=aqix
------END PGP SIGNATURE-----
-
---==_Exmh_1240934480_4310P--
+> Use a separate lock to protect s_groups_count and the other block
+> group descriptors which get changed via an on-line resize operation,
+> so we can stop overloading the use of lock_super().
+  This patch looks good as well. You can add
+Acked-by: Jan Kara <jack@suse.cz>
+> 
+> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+> ---
+>  fs/ext4/ext4_sb.h |    1 +
+>  fs/ext4/resize.c  |   35 ++++++++++++++++++-----------------
+>  fs/ext4/super.c   |    1 +
+>  3 files changed, 20 insertions(+), 17 deletions(-)
+> 
+> diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
+> index 4bda2f7..2d36223 100644
+> --- a/fs/ext4/ext4_sb.h
+> +++ b/fs/ext4/ext4_sb.h
+> @@ -72,6 +72,7 @@ struct ext4_sb_info {
+>  	struct journal_s *s_journal;
+>  	struct list_head s_orphan;
+>  	struct mutex s_orphan_lock;
+> +	struct mutex s_resize_lock;
+>  	unsigned long s_commit_interval;
+>  	u32 s_max_batch_time;
+>  	u32 s_min_batch_time;
+> diff --git a/fs/ext4/resize.c b/fs/ext4/resize.c
+> index 546c7dd..e8ded13 100644
+> --- a/fs/ext4/resize.c
+> +++ b/fs/ext4/resize.c
+> @@ -193,7 +193,7 @@ static int setup_new_group_blocks(struct super_block *sb,
+>  	if (IS_ERR(handle))
+>  		return PTR_ERR(handle);
+>  
+> -	lock_super(sb);
+> +	mutex_lock(&sbi->s_resize_lock);
+>  	if (input->group != sbi->s_groups_count) {
+>  		err = -EBUSY;
+>  		goto exit_journal;
+> @@ -302,7 +302,7 @@ exit_bh:
+>  	brelse(bh);
+>  
+>  exit_journal:
+> -	unlock_super(sb);
+> +	mutex_unlock(&sbi->s_resize_lock);
+>  	if ((err2 = ext4_journal_stop(handle)) && !err)
+>  		err = err2;
+>  
+> @@ -643,11 +643,12 @@ exit_free:
+>   * important part is that the new block and inode counts are in the backup
+>   * superblocks, and the location of the new group metadata in the GDT backups.
+>   *
+> - * We do not need lock_super() for this, because these blocks are not
+> - * otherwise touched by the filesystem code when it is mounted.  We don't
+> - * need to worry about last changing from sbi->s_groups_count, because the
+> - * worst that can happen is that we do not copy the full number of backups
+> - * at this time.  The resize which changed s_groups_count will backup again.
+> + * We do not need take the s_resize_lock for this, because these
+> + * blocks are not otherwise touched by the filesystem code when it is
+> + * mounted.  We don't need to worry about last changing from
+> + * sbi->s_groups_count, because the worst that can happen is that we
+> + * do not copy the full number of backups at this time.  The resize
+> + * which changed s_groups_count will backup again.
+>   */
+>  static void update_backups(struct super_block *sb,
+>  			   int blk_off, char *data, int size)
+> @@ -809,7 +810,7 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
+>  		goto exit_put;
+>  	}
+>  
+> -	lock_super(sb);
+> +	mutex_lock(&sbi->s_resize_lock);
+>  	if (input->group != sbi->s_groups_count) {
+>  		ext4_warning(sb, __func__,
+>  			     "multiple resizers run on filesystem!");
+> @@ -840,7 +841,7 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
+>          /*
+>           * OK, now we've set up the new group.  Time to make it active.
+>           *
+> -         * Current kernels don't lock all allocations via lock_super(),
+> +         * We do not lock all allocations via s_resize_lock
+>           * so we have to be safe wrt. concurrent accesses the group
+>           * data.  So we need to be careful to set all of the relevant
+>           * group descriptor data etc. *before* we enable the group.
+> @@ -900,12 +901,12 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
+>  	 *
+>  	 * The precise rules we use are:
+>  	 *
+> -	 * * Writers of s_groups_count *must* hold lock_super
+> +	 * * Writers of s_groups_count *must* hold s_resize_lock
+>  	 * AND
+>  	 * * Writers must perform a smp_wmb() after updating all dependent
+>  	 *   data and before modifying the groups count
+>  	 *
+> -	 * * Readers must hold lock_super() over the access
+> +	 * * Readers must hold s_resize_lock over the access
+>  	 * OR
+>  	 * * Readers must perform an smp_rmb() after reading the groups count
+>  	 *   and before reading any dependent data.
+> @@ -948,7 +949,7 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
+>  	sb->s_dirt = 1;
+>  
+>  exit_journal:
+> -	unlock_super(sb);
+> +	mutex_unlock(&sbi->s_resize_lock);
+>  	if ((err2 = ext4_journal_stop(handle)) && !err)
+>  		err = err2;
+>  	if (!err) {
+> @@ -986,7 +987,7 @@ int ext4_group_extend(struct super_block *sb, struct ext4_super_block *es,
+>  
+>  	/* We don't need to worry about locking wrt other resizers just
+>  	 * yet: we're going to revalidate es->s_blocks_count after
+> -	 * taking lock_super() below. */
+> +	 * taking the s_resize_lock below. */
+>  	o_blocks_count = ext4_blocks_count(es);
+>  	o_groups_count = EXT4_SB(sb)->s_groups_count;
+>  
+> @@ -1056,11 +1057,11 @@ int ext4_group_extend(struct super_block *sb, struct ext4_super_block *es,
+>  		goto exit_put;
+>  	}
+>  
+> -	lock_super(sb);
+> +	mutex_lock(&EXT4_SB(sb)->s_resize_lock);
+>  	if (o_blocks_count != ext4_blocks_count(es)) {
+>  		ext4_warning(sb, __func__,
+>  			     "multiple resizers run on filesystem!");
+> -		unlock_super(sb);
+> +		mutex_unlock(&EXT4_SB(sb)->s_resize_lock);
+>  		ext4_journal_stop(handle);
+>  		err = -EBUSY;
+>  		goto exit_put;
+> @@ -1070,14 +1071,14 @@ int ext4_group_extend(struct super_block *sb, struct ext4_super_block *es,
+>  						 EXT4_SB(sb)->s_sbh))) {
+>  		ext4_warning(sb, __func__,
+>  			     "error %d on journal write access", err);
+> -		unlock_super(sb);
+> +		mutex_unlock(&EXT4_SB(sb)->s_resize_lock);
+>  		ext4_journal_stop(handle);
+>  		goto exit_put;
+>  	}
+>  	ext4_blocks_count_set(es, o_blocks_count + add);
+>  	ext4_handle_dirty_metadata(handle, NULL, EXT4_SB(sb)->s_sbh);
+>  	sb->s_dirt = 1;
+> -	unlock_super(sb);
+> +	mutex_unlock(&EXT4_SB(sb)->s_resize_lock);
+>  	ext4_debug("freeing blocks %llu through %llu\n", o_blocks_count,
+>  		   o_blocks_count + add);
+>  	/* We add the blocks to the bitmap and set the group need init bit */
+> diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+> index c23e82c..b4735e4 100644
+> --- a/fs/ext4/super.c
+> +++ b/fs/ext4/super.c
+> @@ -2624,6 +2624,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
+>  #endif
+>  	INIT_LIST_HEAD(&sbi->s_orphan); /* unlinked but open files */
+>  	mutex_init(&sbi->s_orphan_lock);
+> +	mutex_init(&sbi->s_resize_lock);
+>  
+>  	sb->s_root = NULL;
+>  
+> -- 
+> 1.5.6.3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
