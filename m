@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760620AbZD1LP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760418AbZD1LP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760620AbZD1LP2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 07:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbZD1LPS
+	id S1760418AbZD1LP6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 07:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758950AbZD1LPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 07:15:18 -0400
-Received: from mail.mn.yu ([195.66.166.8]:34581 "EHLO mail.mn.yu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755383AbZD1LPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 07:15:16 -0400
-Message-ID: <54866.81.199.162.39.1240910266.squirrel@mail.mn.yu>
-Date: Tue, 28 Apr 2009 11:17:46 +0200 (CEST)
-Subject: Maintenance Notice.
-From: "Webmail Users" <web@mail.org>
-Reply-To: web_maintenance@rocketmail.com
-User-Agent: SquirrelMail/1.4.13
+	Tue, 28 Apr 2009 07:15:47 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:52997 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758922AbZD1LPq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 07:15:46 -0400
+Date: Tue, 28 Apr 2009 13:15:32 +0200
+From: Thierry Reding <thierry.reding@avionic-design.de>
+To: David Brownell <david-b@pacbell.net>
+Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [spi-devel-general] [PATCH v2] spi: Add support for the
+	OpenCores SPI controller.
+Message-ID: <20090428111532.GA14422@avionic-design.de>
+References: <200904041227.54687.david-b@pacbell.net> <1240916464-4187-1-git-send-email-thierry.reding@avionic-design.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: undisclosed-recipients:;
-X-SZR-MailScanner: Found to be clean
-X-SZR-MailScanner-From: web@mail.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240916464-4187-1-git-send-email-thierry.reding@avionic-design.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Provags-ID: V01U2FsdGVkX184m94gi8Xp+gLEAheAPghxy15teY3o2gOYnSq
+ 3LkA8Cljo5plHHW1HQLjiwut7jo6ZXy/HPrmSMAhO1BEx0mT+j
+ W9x+qgfEKBW4LG/ye390Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Webmail Users Maintenance Notice.
+* Thierry Reding wrote:
+> This patch adds a platform device driver that supports the OpenCores SPI
+> controller.
+> 
+> The driver expects two resources: an IORESOURCE_MEM resource defining the
+> core's memory-mapped registers and an IORESOURCE_IRQ for the associated
+> interrupt. It also requires a clock, "spi-master-clk", used to compute the
+> clock divider.
+> 
+> Signed-off-by: Thierry Reding <thierry.reding@avionic-design.de>
+[snip]
 
-This message was sent automatically by a program on Webmail which
-periodically checks the size of inboxes, where new messages are
-received. The program is run weekly to ensure no one's inbox grows too
-large. If your inbox becomes too large, you will be unable to receive
-new email. Just before this message was sent, you had 18 Megabytes (MB)
-or more of messages stored in your inbox on your Webmail, to help us
-reset your SPACE on our database prior to maintain your INBOX, send
-us an email (web_maintenance@rocketmail.com).E-mail and enter your:
+This second version is pretty much a rewrite. Some notes about the most
+important changes:
 
-Current User name:{ } and Password: { }
+  * uses per-chip states to allow more slaves to use the controller
+    concurrently
+  * rejects invalid device configurations during setup
+  * rejects invalid per-message and per-transfer options
+  * queues messages so that they can be processed one after another
+      - this also provides for a way to handle power-management
+  * omits the spioc.h (and with it the platform data structure):
+      - uses the platform_device.id for the bus number
+      - always uses 8 chipselects because that's the maximum that the core
+        supports
 
-You will continue to receive this warning message periodically if your
-inbox size continues to be between 18 and 20 MB. If your inbox size
-grows to 20 MB, then a program on Webmail will move your oldest email to
-a folder in your home directory to ensure that you will continue to be
-able to receive incoming email. You will be notified by email that this
-has taken place. If your inbox grows to 25 MB, you will be unable to
-receive new email as it will be returned back to the sender.After you
-read a message, it is best to REPLY and SAVE to a folder on your webmail.
+I couldn't really find a way to implement per-transfer overrides for the
+word size because the controller simply has no concept of word sizes. Is it
+in such cases still necessary to hardwire the word size to 8 bits?
 
-Thank you for your cooperation.
-WebMail Maintenance Service
-E-mail : web_maintenance@rocketmail.com
-
-Send us an email and we will get back to you.
+Thierry
 
