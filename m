@@ -1,49 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933443AbZD1RKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932683AbZD1RLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933443AbZD1RKn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 13:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933080AbZD1RIH
+	id S932683AbZD1RLP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 13:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933254AbZD1RI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 13:08:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33169 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750857AbZD1RIE (ORCPT
+	Tue, 28 Apr 2009 13:08:26 -0400
+Received: from mga11.intel.com ([192.55.52.93]:16505 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933238AbZD1RIY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 13:08:04 -0400
-Date: Tue, 28 Apr 2009 09:55:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Stephen Hemminger <shemminger@vyatta.com>
-cc: David Miller <davem@davemloft.net>, mathieu.desnoyers@polymtl.ca,
-       mingo@elte.hu, dada1@cosmosbay.com, zbr@ioremap.net,
-       peterz@infradead.org, jarkao2@gmail.com, paulus@samba.org,
-       paulmck@linux.vnet.ibm.com, kaber@trash.net, jeff.chua.linux@gmail.com,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: revised locking for x_tables
-In-Reply-To: <alpine.LFD.2.00.0904280931360.22156@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904280954500.22156@localhost.localdomain>
-References: <20090428135219.GA28513@Krystal> <20090428.073759.78537345.davem@davemloft.net> <20090428144920.GA28942@Krystal> <20090428.080031.14741305.davem@davemloft.net> <20090428092411.5331c4a1@nehalam>
- <alpine.LFD.2.00.0904280931360.22156@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 28 Apr 2009 13:08:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,261,1239001200"; 
+   d="scan'208";a="452192892"
+From: "Styner, Douglas W" <douglas.w.styner@intel.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Ma, Chinang" <chinang.ma@intel.com>,
+       "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
+       "Recalde, Luis F" <luis.f.recalde@intel.com>,
+       "Nelson, Doug" <doug.nelson@intel.com>,
+       "Cheng, Wu-sun" <wu-sun.cheng@intel.com>,
+       "Prickett, Terry O" <terry.o.prickett@intel.com>,
+       "Shunmuganathan, Rajalakshmi" <rajalakshmi.shunmuganathan@intel.com>,
+       "Garg, Anil K" <anil.k.garg@intel.com>,
+       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>
+Date: Tue, 28 Apr 2009 10:08:22 -0700
+Subject: Mainline kernel OLTP performance update
+Thread-Topic: Mainline kernel OLTP performance update
+Thread-Index: AcnII+9lL49UMYmOSz+EzjzDKzxLqA==
+Message-ID: <D7C42C27E6CB1E4D8CBDF2F81EA92A2603459F3D6A@azsmsx501.amr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Summary: Measured the mainline kernel from kernel.org (2.6.30-rc3). 
+
+The regression for 2.6.30-rc3 against the baseline, 2.6.24.2 is 1.91%.  Oprofile reports 71.1626% user, 28.8295% system.  
+
+Linux OLTP Performance summary
+Kernel#            Speedup(x)   Intr/s  CtxSw/s us%     sys%    idle%   iowait%
+2.6.24.2                1.000   22106   43709   75      24      0       0
+2.6.30-rc3              0.981   30645   43027   75      25      0       0
+
+Server configurations:
+Intel Xeon Quad-core 2.0GHz  2 cpus/8 cores/8 threads
+64GB memory, 3 qle2462 FC HBA, 450 spindles (30 logical units)
 
 
-On Tue, 28 Apr 2009, Linus Torvalds wrote:
->
-> Ack. 
-> 
-> It could do with the update from Eric about how non-current CPU writelocks 
-> only require preemp-disable around get_counters() (and then the 
-> local_bh_disable() only around the current-CPU case).
+======oprofile CPU_CLK_UNHALTED for top 30 functions
+Cycles% 2.6.24.2                   Cycles% 2.6.30-rc3
+74.8578 <database>                 69.1925 <database>
+1.0500 qla24xx_start_scsi          1.1314 qla24xx_intr_handler
+0.8089 schedule                    1.0031 qla24xx_start_scsi
+0.5864 kmem_cache_alloc            0.8476 __schedule
+0.4989 __blockdev_direct_IO        0.6532 kmem_cache_alloc
+0.4357 __sigsetjmp                 0.4490 __blockdev_direct_IO
+0.4152 copy_user_generic_string    0.4199 __sigsetjmp
+0.3953 qla24xx_intr_handler        0.3946 __switch_to
+0.3850 memcpy                      0.3538 __list_add
+0.3596 scsi_request_fn             0.3499 task_rq_lock
+0.3188 __switch_to                 0.3402 scsi_request_fn
+0.2889 lock_timer_base             0.3382 rb_get_reader_page
+0.2750 memmove                     0.3363 copy_user_generic_string
+0.2519 task_rq_lock                0.3324 aio_complete
+0.2474 aio_complete                0.3110 try_to_wake_up
+0.2460 scsi_alloc_sgtable          0.2877 ring_buffer_consume
+0.2445 generic_make_request        0.2683 mod_timer
+0.2263 qla2x00_process_completed_re0.2605 qla2x00_process_completed_re
+0.2118 blk_queue_end_tag           0.2566 blk_queue_end_tag
+0.2085 dio_bio_complete            0.2566 generic_make_request
+0.2021 e1000_xmit_frame            0.2547 tcp_sendmsg
+0.2006 __end_that_request_first    0.2372 lock_timer_base
+0.1954 generic_file_aio_read       0.2333 memmove
+0.1949 kfree                       0.2294 memset_c
+0.1915 tcp_sendmsg                 0.2080 mempool_free
+0.1901 try_to_wake_up              0.2022 generic_file_aio_read
+0.1895 kref_get                    0.1963 scsi_device_unbusy
+0.1864 __mod_timer                 0.1963 plist_del
+0.1863 thread_return               0.1944 dequeue_rt_stack
+0.1854 math_state_restore          0.1924 e1000_xmit_frame
 
-Btw, regardless, that's an incremental improvement, and does not negate 
-the "Ack" part.
-
-			Linus
+Thanks
+Doug
