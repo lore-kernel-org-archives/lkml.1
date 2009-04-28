@@ -1,101 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932646AbZD1Puv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762242AbZD1Pvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932646AbZD1Puv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:50:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbZD1Pum
+	id S1762242AbZD1Pvz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbZD1Pvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:50:42 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:59487 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754657AbZD1Pum (ORCPT
+	Tue, 28 Apr 2009 11:51:45 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:39173 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754776AbZD1Pvn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:50:42 -0400
-Date: Tue, 28 Apr 2009 11:50:39 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Tom Zanussi <tzanussi@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 0/3] tracing/filters: new event parser
-In-Reply-To: <1240905879.6416.118.camel@tropicana>
-Message-ID: <alpine.DEB.2.00.0904281149280.8066@gandalf.stny.rr.com>
-References: <1240905879.6416.118.camel@tropicana>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 28 Apr 2009 11:51:43 -0400
+Date: Tue, 28 Apr 2009 11:51:43 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Clemens Ladisch <clemens@ladisch.de>
+cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: NLS: utf8 conversions
+In-Reply-To: <49F6A756.7070203@ladisch.de>
+Message-ID: <Pine.LNX.4.44L0.0904281148410.670-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 28 Apr 2009, Clemens Ladisch wrote:
 
-On Tue, 28 Apr 2009, Tom Zanussi wrote:
+> Alan Stern wrote:
+> > Your comments agree pretty well with what I had concluded.  However a 
+> > lot of the source files have lengthy tables of wchar_t values; changing 
+> > them to 32 bits would waste a lot of space.
+> > 
+> > As a sort of compromise, I came up with this patch (not tested yet,
+> > although it compiles okay).  How does it look to you?
+> 
+> From a not-having-it-tested-either perspective, it looks good.
+> 
+> > +utf8_to_utf32(unicode_t *p, const u8 *s, int n)
+> > +utf32_to_utf8(u8 *s, unicode_t u, int maxlen)
+> > +utf8s_to_utf16s(wchar_t *pwcs, const u8 *s, int n)
+> > +utf16s_to_utf8s(u8 *s, const wchar_t *pwcs, int maxlen, int inlen,
+> 
+> Minor nitpick: You already have enhanced the insane parameter ordering
+> of wcsntombs_be(), but the meaning of all these functions' parameters
+> would be even more obvious if the buffer size would immediately follow
+> the corresponding buffer pointer.
 
-> This patchset replaces the current event parser hack with a better, more
-> extensible version.  See patch 3 for the details on syntax and usage.  
-> 
-> Basically, instead of defining a filter predicate by predicate as in the
-> current version, you now define the whole thing all at once and in
-> addition to the current == and != operators, can use >, <, >=, <=,
-> parens and the logical operators && and ||.  Some examples:
-> 
-> # echo "((sig >= 10 && sig < 15) || sig == 17) && comm != bash" > filter
-> 
-> # echo "common_preempt_count > 4" > filter
-> 
-> # echo "common_preempt_count > 4 && common_pid != 0" > filter
-> 
-> It also does some basic error reporting, which you can see by cat'ing
-> the filter file after a failed set (this needs a little more work to
-> report the error position, but is still useful):
-> 
-> # echo "(sig >= 10 && sig < 15) || dsig == 17) && comm != bash" > filter
-> -bash: echo: write error: Invalid argument
-> # cat filter
-> (sig >= 10 && sig < 15) || dsig == 17) && comm != bash
-> ^
-> parse_error: Unbalanced parens
-> 
-> It should be relatively easy to add new operators; it's implemented as a
-> standard infix to postfix converter - when a filter is defined, as
-> before, it creates a set of predicates that are evaluated efficiently at
-> run-time.
-> 
-> I tried to make the parser itself reusable so that it could also be
-> pointed at a completely separate set of operators and an unevaluated
-> operand, with the resulting expression components available in the
-> intermediate postfix list. e.g. for say a field of type dev_t, the
-> parser could be set up and pointed at an operand of the form (8,3) or
-> 8:3 or /dev/sda, and the parsed results retrieved from the parse state
-> object, something like this:
-> 
-> enum kdev_t_filter_op_ids
-> {
->        COMMA_OP,
-> }; 
-> 
-> struct filter_op kdev_t_filter_ops[] = {
->        { COMMA_OP, ",", 1 },
->        { NO_OP, "NO_OP", 0 },
->        { OPEN_PAREN_OP, "(", 0 },
-> };
-> 
-> parse_init(parse_state, kdev_t_filter_ops, dev_string);
-> filter_parse(parse_state);
-> 
-> The parsed operator and operands could then be found in the
-> parse_state.postfix list and used to generate the dev_t value, or if it
-> was specified as a string ('sda' or /dev/sda), there would only be one
-> item in the list which could be used in that case to look up the value.
-> 
+Since these routines are used in so few places, I can easily change the
+parameter ordering to something more reasonable (like uni2char and
+char2uni, for example).
 
-Hi Tom,
+> Anyway,
+> Acked-by: Clemens Ladisch <clemens@ladisch.de>
 
-Cool stuff. I just skimmed the patches and did not see anything 
-I object to.
+Thanks for the review.
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-
--- Steve
-
+Alan Stern
 
