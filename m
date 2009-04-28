@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763148AbZD1SIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762657AbZD1SKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763148AbZD1SIS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 14:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756325AbZD1SIF
+	id S1762657AbZD1SKX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 14:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbZD1SKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 14:08:05 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:41653 "EHLO gir.skynet.ie"
+	Tue, 28 Apr 2009 14:10:05 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54188 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755719AbZD1SIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 14:08:04 -0400
-Date: Tue, 28 Apr 2009 19:07:59 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>, Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: [PATCH] Properly account for freed pages in free_pages_bulk() and
-	when allocating high-order pages in buffered_rmqueue() V2
-Message-ID: <20090428180759.GB18893@csn.ul.ie>
-References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240819119.2567.884.camel@ymzhang> <20090427143845.GC912@csn.ul.ie> <1240883957.2567.886.camel@ymzhang> <20090428103159.GB23540@csn.ul.ie> <alpine.DEB.1.10.0904281236350.21913@qirst.com> <20090428165129.GA18893@csn.ul.ie> <Pine.LNX.4.64.0904281810240.30878@blonde.anvils>
+	id S1754039AbZD1SKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 14:10:04 -0400
+Message-ID: <49F74672.2090407@garzik.org>
+Date: Tue, 28 Apr 2009 14:09:54 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0904281810240.30878@blonde.anvils>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Mark Lord <liml@rtr.ca>, Tejun Heo <tj@kernel.org>, axboe@kernel.dk,
+       linux-kernel@vger.kernel.org, donari75@gmail.com,
+       linux-ide@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 2/3] mg_disk: fix CONFIG_LBD=y warning
+References: <1240890740-3462-1-git-send-email-tj@kernel.org> <1240890740-3462-3-git-send-email-tj@kernel.org> <49F71E86.7040300@rtr.ca> <200904281728.58209.bzolnier@gmail.com>
+In-Reply-To: <200904281728.58209.bzolnier@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-free_pages_bulk() updates the number of free pages in the zone but it is
-assuming that the pages being freed are order-0. While this is currently
-always true, it's wrong to assume the order is 0. This patch fixes the problem.
+Bartlomiej Zolnierkiewicz wrote:
+> On Tuesday 28 April 2009 17:19:34 Mark Lord wrote:
+>> Tejun Heo wrote:
+>>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>>
+>>> drivers/block/mg_disk.c: In function ‘mg_dump_status’:
+>>> drivers/block/mg_disk.c:265: warning: format ‘%ld’ expects type ‘long int’, but
+>>> argument 2 has type ‘sector_t’
+>>>
+>>> [ Impact: kill build warning ]
+>>>
+>>> Cc: unsik Kim <donari75@gmail.com>
+>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>> Signed-off-by: Tejun Heo <tj@kernel.org>
+>>> ---
+>>>  drivers/block/mg_disk.c |    2 +-
+>>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>>
+>>> diff --git a/drivers/block/mg_disk.c b/drivers/block/mg_disk.c
+>>> index d3e72ad..f389835 100644
+>>> --- a/drivers/block/mg_disk.c
+>>> +++ b/drivers/block/mg_disk.c
+>>> @@ -79,7 +79,7 @@ static void mg_dump_status(const char *msg, unsigned int stat,
+>>>  			if (host->breq) {
+>>>  				req = elv_next_request(host->breq);
+>>>  				if (req)
+>>> -					printk(", sector=%ld", req->sector);
+>>> +					printk(", sector=%u", (u32)req->sector);
+>> ..
+>>
+>> Eh?  Shouldn't that be fixed the other way around, like this:
+>>
+>>   +					printk(", sector=%llu", (u64)req->sector);
+>>
+>> This way, it will still give correct data when sector_t is a u64.
+> 
+> shouldn't matter, req->sector is never > u32 for mg_disk
 
-buffered_rmqueue() is not updating NR_FREE_PAGES when allocating pages with
-__rmqueue(). As a result, high-order allocation will appear to increase
-the number of free pages leading to the situation where the free page count
-exceeds available RAM. This patch accounts for those allocated pages properly.
+It never matters... until the code gets copied elsewhere.  IMO wrong 
+code should never be kept -- "impossible to hit" just means it is low 
+priority :)
 
-This is a fix for page-allocator-update-nr_free_pages-only-as-necessary.patch.
+	Jeff
 
-Changelog since V1
-  o Change 1UL to 1 as it's unnecessary in this case to be unsigned long
 
-Reported-by: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- mm/page_alloc.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 5dd2d59..59eb2e1 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -545,7 +545,7 @@ static void free_pages_bulk(struct zone *zone, int count,
- 	zone_clear_flag(zone, ZONE_ALL_UNRECLAIMABLE);
- 	zone->pages_scanned = 0;
- 
--	__mod_zone_page_state(zone, NR_FREE_PAGES, count);
-+	__mod_zone_page_state(zone, NR_FREE_PAGES, count << order);
- 	while (count--) {
- 		struct page *page;
- 
-@@ -1151,6 +1151,7 @@ again:
- 	} else {
- 		spin_lock_irqsave(&zone->lock, flags);
- 		page = __rmqueue(zone, order, migratetype);
-+		__mod_zone_page_state(zone, NR_FREE_PAGES, -(1 << order));
- 		spin_unlock(&zone->lock);
- 		if (!page)
- 			goto failed;
