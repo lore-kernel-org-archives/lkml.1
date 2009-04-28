@@ -1,55 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbZD1DPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755626AbZD1DdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756900AbZD1DPp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 23:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZD1DPf
+	id S1755626AbZD1DdT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 23:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZD1DdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 23:15:35 -0400
-Received: from mga14.intel.com ([143.182.124.37]:10793 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751922AbZD1DPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 23:15:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,258,1239001200"; 
-   d="scan'208";a="136606456"
-Date: Tue, 28 Apr 2009 11:15:20 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Christoph Lameter <cl@linux.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Vivek Kashyap <vivk@us.ibm.com>, Mel Gorman <mel@linux.vnet.ibm.com>,
-       Robert MacFarlan <Robert_MacFarlan@us.ibm.com>,
-       "Fu, Michael" <michael.fu@intel.com>
-Subject: Re: Large Pages - Linux Foundation HPC
-Message-ID: <20090428031520.GA17434@localhost>
-References: <1240331533.32731.2.camel@badari-desktop> <1240333025.32604.392.camel@nimitz> <20090421182555.GA8977@balbir.in.ibm.com> <20090425084804.GA517@localhost> <1240728861.29485.41.camel@nimitz> <alpine.DEB.1.10.0904271010300.1474@qirst.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904271010300.1474@qirst.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 27 Apr 2009 23:33:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37715 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753932AbZD1DdG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 23:33:06 -0400
+Date: Mon, 27 Apr 2009 20:27:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, dave@linux.vnet.ibm.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, ebmunson@us.ibm.com,
+       mel@linux.vnet.ibm.com, cl@linux-foundation.org, stable@kernel.org
+Subject: Re: meminfo Committed_AS underflows
+Message-Id: <20090427202707.9d36ce8a.akpm@linux-foundation.org>
+In-Reply-To: <20090428092400.EBB6.A69D9226@jp.fujitsu.com>
+References: <20090415084713.GU7082@balbir.in.ibm.com>
+	<20090427132722.926b07f1.akpm@linux-foundation.org>
+	<20090428092400.EBB6.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 10:12:26PM +0800, Christoph Lameter wrote:
-> On Sat, 25 Apr 2009, Dave Hansen wrote:
-> 
-> > On Sat, 2009-04-25 at 16:48 +0800, Wu Fengguang wrote:
-> > > Based on Dave's descriptions that HPC apps typically
-> > > - do mlock(), to pre-populate memory and pin them in memory
-> > > - run at fresh boot, with loads of high order pages available
-> >
-> > There are definitely some of them that do this, but it certainly isn't
-> > all.  It may not even be the norm.
-> 
-> Some of the machine have so much memory available that 2M allocations are
-> likely to succeed. If a machine has a couple of terabytes of memory
-> available then its highly unlikely that a 2M allocation will not succeed.
+On Tue, 28 Apr 2009 12:07:59 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-Huge pages used to be explicitly managed as scarce resources. As time
-goes by I'd imagine the move to "huge page as an optimization" POV.
-Optimizations that can benefit unmodified applications and can fail
-gracefully.
+> > On Wed, 15 Apr 2009 14:17:13 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > > * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-04-15 13:10:06]:
+> > > 
+> > > > > * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-04-15 11:04:59]:
+> > > > > 
+> > > > > >  	committed = atomic_long_read(&vm_committed_space);
+> > > > > > +	if (committed < 0)
+> > > > > > +		committed = 0;
+> > > > > 
+> > 
+> > Is there a reason why we can't use a boring old percpu_counter for
+> > vm_committed_space?  That way the meminfo code can just use
+> > percpu_counter_read_positive().
+> > 
+> > Or perhaps just percpu_counter_read().  The percpu_counter code does a
+> > better job of handling large cpu counts than the
+> > mysteriously-duplicative open-coded stuff we have there.
+> 
+> At that time, I thought smallest patch is better because it can send -stable
+> tree easily.
+> but maybe I was wrong. it made bikeshed discussion :(
+
+Yes, I know what you mean.  But otoh it's a good idea to keep -stable
+in sync with mainline - it means that -stable can merge things which
+have had a suitable amount of testing.
+
+> ok, I'm going to right way.
+> 
+> 
+> =========================================
+> Subject: [PATCH] fix Committed_AS underfolow on large NR_CPUS environment
+> 
+> As reported by Dave Hansen, the Committed_AS field can underflow in certain
+> situations:
+> 
+> >         # while true; do cat /proc/meminfo  | grep _AS; sleep 1; done | uniq -c
+> >               1 Committed_AS: 18446744073709323392 kB
+> >              11 Committed_AS: 18446744073709455488 kB
+> >               6 Committed_AS:    35136 kB
+> >               5 Committed_AS: 18446744073709454400 kB
+> >               7 Committed_AS:    35904 kB
+> >               3 Committed_AS: 18446744073709453248 kB
+> >               2 Committed_AS:    34752 kB
+> >               9 Committed_AS: 18446744073709453248 kB
+> >               8 Committed_AS:    34752 kB
+> >               3 Committed_AS: 18446744073709320960 kB
+> >               7 Committed_AS: 18446744073709454080 kB
+> >               3 Committed_AS: 18446744073709320960 kB
+> >               5 Committed_AS: 18446744073709454080 kB
+> >               6 Committed_AS: 18446744073709320960 kB
+> 
+> Because NR_CPUS can be greater than 1000 and meminfo_proc_show() does not check
+> for underflow.
+> 
+> But NR_CPUS proportional isn't good calculation. In general, possibility of
+> lock contention is proportional to the number of online cpus, not theorical
+> maximum cpus (NR_CPUS).
+> the current kernel has generic percpu-counter stuff. using it is right way.
+> it makes code simplify and percpu_counter_read_positive() don't make underflow issue.
+> 
+> 
+> Reported-by: Dave Hansen <dave@linux.vnet.ibm.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: Eric B Munson <ebmunson@us.ibm.com>
+> ---
+>  fs/proc/meminfo.c    |    2 +-
+>  include/linux/mman.h |    9 +++------
+>  mm/mmap.c            |   12 ++++++------
+>  mm/nommu.c           |   13 +++++++------
+>  mm/swap.c            |   46 ----------------------------------------------
+>  5 files changed, 17 insertions(+), 65 deletions(-)
+
+Well that was nice.
+
+There's potential here for weird performance regressions, so I think
+that if we do this in mainline, we should wait a while (a few weeks?)
+before backporting it.
+
+Do we know how long this bug has existed for?  Quite a while, I expect?
+
+
