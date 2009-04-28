@@ -1,287 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762663AbZD1PXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762717AbZD1PYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762663AbZD1PXt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762108AbZD1PVq
+	id S1762717AbZD1PYi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:24:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761865AbZD1PVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:21:46 -0400
-Received: from wa4ehsobe003.messaging.microsoft.com ([216.32.181.13]:19949
-	"EHLO WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1761623AbZD1PVn (ORCPT
+	Tue, 28 Apr 2009 11:21:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33137 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932538AbZD1PVv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:21:43 -0400
-X-BigFish: VPS1(zzzz1202hzzz32i65h)
-X-Spam-TCS-SCL: 4:0
-X-FB-SS: 5,
-X-WSS-ID: 0KITGMO-01-UAH-01
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: akpm@linux-foundation.org, greg@kroah.com
-CC: <linux-kernel@vger.kernel.org>, Doug Thompson <dougthompson@xmission.com>,
-       Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 10/21] amd64_edac: add f10-and-later methods-p1
-Date: Tue, 28 Apr 2009 17:06:02 +0200
-Message-ID: <1240931173-17477-11-git-send-email-borislav.petkov@amd.com>
-X-Mailer: git-send-email 1.6.2.4
-In-Reply-To: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
-References: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 28 Apr 2009 15:06:21.0381 (UTC) FILETIME=[E3D03750:01C9C812]
+	Tue, 28 Apr 2009 11:21:51 -0400
+Date: Tue, 28 Apr 2009 08:09:10 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Stephen Hemminger <shemminger@vyatta.com>,
+       Evgeniy Polyakov <zbr@ioremap.net>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       David Miller <davem@davemloft.net>, Jarek Poplawski <jarkao2@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
+       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
+In-Reply-To: <49F6A8FD.3010804@cosmosbay.com>
+Message-ID: <alpine.LFD.2.00.0904280748350.22156@localhost.localdomain>
+References: <49F22465.80305@gmail.com> <20090425133052.4cb711f5@nehalam> <49F4A6E3.7080102@cosmosbay.com> <20090426185646.GB29238@Krystal> <20090426145746.1184aeba@nehalam> <1240854297.7620.65.camel@twins> <20090427113010.5e3f1700@nehalam> <20090427185423.GC23862@elte.hu>
+ <20090427120658.35a858bb@nehalam> <alpine.LFD.2.00.0904271219570.22156@localhost.localdomain> <20090427203616.GB3836@ioremap.net> <alpine.LFD.2.00.0904271340400.22156@localhost.localdomain> <20090427144054.1fb9b7a6@nehalam> <alpine.LFD.2.00.0904271506530.22156@localhost.localdomain>
+ <alpine.LFD.2.00.0904271525120.22156@localhost.localdomain> <alpine.LFD.2.00.0904271602390.22156@localhost.localdomain> <49F6A8FD.3010804@cosmosbay.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Doug Thompson <dougthompson@xmission.com>
-
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
----
- drivers/edac/amd64_edac.c |  233 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 233 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 85ef6ad..9357c62 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -2257,4 +2257,237 @@ static int k8_dbam_map_to_pages(struct amd64_pvt *pvt, int dram_map)
- 	return nr_pages;
- }
- 
-+/*
-+ * f10_early_channel_count
-+ *
-+ * Get the number of DCT channels in use
-+ *
-+ * Return:
-+ *	number of Memory Channels in operation
-+ * Pass back:
-+ *	contents of the DCL0_LOW register
-+ */
-+static int f10_early_channel_count(struct amd64_pvt *pvt)
-+{
-+	int err;
-+	int channels = 0;
-+	u32 dbam;
-+
-+	err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCLR_0, &pvt->dclr0);
-+	if (err != 0)
-+		debugf0("%s() Reading F10_DCLR_0 failed\n", __func__);
-+
-+	err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCLR_1, &pvt->dclr1);
-+	if (err != 0)
-+		debugf0("%s() Reading F10_DCLR_0 failed\n", __func__);
-+
-+	/* If we are in 128 bit mode, then we are using 2 channels */
-+	if (pvt->dclr0 & F10_WIDTH_128) {
-+		debugf0("%s() Data WIDTH is 128 bits - 2 channels\n",
-+			__func__);
-+		channels = 2;
-+		return channels;
-+	}
-+
-+	/* Need to check if in UN-ganged mode: In such, there are 2
-+	 * channels, but they are NOT in 128 bit mode and thus the above
-+	 * 'dcl0' status bit will be OFF, but there still are 2 channels
-+	 *
-+	 * Need to check DCT0[0] and DCT1[0] to see if only one of them
-+	 * has their CSEnable bit on. If so, then SINGLE DIMM case.
-+	 */
-+	debugf0("%s() Data WIDTH is NOT 128 bits - need more decoding\n",
-+		__func__);
-+
-+	/* Check DRAM Bank Address Mapping values for each DIMM
-+	 * to see if there is more than just one DIMM present in an
-+	 * unganged mode. Need to check both controllers sinc DIMMs
-+	 * can be placed in either one
-+	 */
-+	channels = 0;
-+	err = pci_read_config_dword(pvt->dram_f2_ctl, DBAM0, &dbam);
-+	if (err != 0)
-+		debugf0("%s() Reading DBAM0 failed\n", __func__);
-+
-+	if (DBAM_DIMM(0, dbam) > 0)
-+		channels++;
-+	if (DBAM_DIMM(1, dbam) > 0)
-+		channels++;
-+	if (DBAM_DIMM(2, dbam) > 0)
-+		channels++;
-+	if (DBAM_DIMM(3, dbam) > 0)
-+		channels++;
-+
-+	/* If more than 2 DIMMs are present, then we have 2 channels */
-+	if (channels > 2)
-+		channels = 2;
-+	else if (channels == 0) {
-+		/* No DIMMs on DCT0, so look at DCT1 */
-+		err = pci_read_config_dword(pvt->dram_f2_ctl, DBAM0, &dbam);
-+		if (err != 0)
-+			debugf0("%s() Reading DBAM1 failed\n", __func__);
-+
-+		if (DBAM_DIMM(0, dbam) > 0)
-+			channels++;
-+		if (DBAM_DIMM(1, dbam) > 0)
-+			channels++;
-+		if (DBAM_DIMM(2, dbam) > 0)
-+			channels++;
-+		if (DBAM_DIMM(3, dbam) > 0)
-+			channels++;
-+
-+		if (channels > 2)
-+			channels = 2;
-+	}
-+
-+	/* If we found ALL 0 values, then assume just ONE DIMM-ONE Channel */
-+	if (channels == 0)
-+		channels = 1;
-+
-+	debugf0("%s() DIMM count= %d\n", __func__, channels);
-+
-+	return channels;
-+}
-+
-+/*
-+ * f10_dbam_map_to_pages
-+ */
-+static int f10_dbam_map_to_pages(struct amd64_pvt *pvt, int dram_map)
-+{
-+	return 1 << (revf_quad_ddr2_shift[dram_map] - PAGE_SHIFT);
-+}
-+
-+/*
-+ * amd64_setup
-+ *
-+ *	Perform needed operations on this NB thare are needed
-+ *	for the duration of time that the module is operating
-+ *
-+ *	1) Enable "extended configuration access via 0xCF8" feature
-+ */
-+static void amd64_setup(struct amd64_pvt *pvt)
-+{
-+	u32 reg;
-+	int err;
-+
-+	err = pci_read_config_dword(pvt->misc_f3_ctl, F10_NB_CFG_HIGH, &reg);
-+	if (err != 0)
-+		debugf0("%s() Reading F10_NB_CFG_HIGH failed\n",
-+			__func__);
-+
-+	pvt->flags.cf8_extcfg = !!(reg & F10_NB_CFG_LOW_ENABLE_EXT_CFG);
-+	reg |= F10_NB_CFG_LOW_ENABLE_EXT_CFG;
-+	pci_write_config_dword(pvt->misc_f3_ctl, F10_NB_CFG_HIGH, reg);
-+}
-+
-+/*
-+ * amd64_teardown
-+ *
-+ *	teardown any items that were 'setup' in the setup func
-+ *
-+ *	1) Restore the "extended configuration access via 0xCF8" feature
-+ */
-+static void amd64_teardown(struct amd64_pvt *pvt)
-+{
-+	u32 reg;
-+	int err;
-+
-+	err = pci_read_config_dword(pvt->misc_f3_ctl, F10_NB_CFG_HIGH, &reg);
-+	if (err != 0)
-+		debugf0("%s() Reading F10_NB_CFG_HIGH failed\n",
-+			__func__);
-+
-+	reg &= ~F10_NB_CFG_LOW_ENABLE_EXT_CFG;
-+	if (pvt->flags.cf8_extcfg)
-+		reg |= F10_NB_CFG_LOW_ENABLE_EXT_CFG;
-+	pci_write_config_dword(pvt->misc_f3_ctl, F10_NB_CFG_HIGH, reg);
-+}
-+
-+/*
-+ * f10_get_error_address
-+ *	extract from the hardware copies of the error register
-+ *	the ERROR ADDRESS for Family 10h CPUs
-+ */
-+static u64 f10_get_error_address(struct mem_ctl_info *mci,
-+			struct amd64_error_info_regs *info)
-+{
-+	return (((u64) (info->nbeah & 0xffff)) << 32) +
-+			(info->nbeal & ~0x01);
-+}
-+
-+/*
-+ * f10_read_dram_base_limit
-+ *
-+ *	Read the Base and Limit registers for F10 based Memory controllers
-+ *	Extract fields from the 'raw' reg into separate data fields
-+ *
-+ *		Isolates: BASE, LIMIT, IntlvEn, IntlvSel, RW_EN
-+ */
-+static void f10_read_dram_base_limit(struct amd64_pvt *pvt, int dram)
-+{
-+	u32 high_offset;
-+	u32 low_offset;
-+	u32 high_base;
-+	u32 low_base;
-+	u32 high_limit;
-+	u32 low_limit;
-+	int err;
-+
-+	low_offset = K8_DRAM_BASE_LOW + (dram << 3);
-+	high_offset = F10_DRAM_BASE_HIGH + (dram << 3);
-+
-+	/* read the 'raw' DRAM BASE Address register */
-+	err = pci_read_config_dword(pvt->addr_f1_ctl, low_offset, &low_base);
-+	if (err != 0)
-+		debugf0("%s() Reading low_offset= 0x%x failed\n", __func__,
-+			low_offset);
-+
-+	/* Read from the ECS data register */
-+	err = pci_read_config_dword(pvt->addr_f1_ctl,
-+					high_offset, &high_base);
-+	if (err != 0)
-+		debugf0("%s() Reading high_offset= 0x%x failed. Default=0\n",
-+			__func__, high_offset);
-+
-+	/* Extract parts into separate data entries */
-+	pvt->dram_rw_en[dram] = (low_base & 0x3);
-+
-+	if (pvt->dram_rw_en[dram] == 0)
-+		return;
-+
-+	pvt->dram_IntlvEn[dram] = (low_base >> 8) & 0x7;
-+
-+	pvt->dram_base[dram] = (((((u64) high_base & 0x000000FF) << 32) |
-+				((u64) low_base & 0xFFFF0000))) << 8;
- 
-+	low_offset = K8_DRAM_LIMIT_LOW + (dram << 3);
-+	high_offset = F10_DRAM_LIMIT_HIGH + (dram << 3);
-+
-+	/* read the 'raw' LIMIT registers */
-+	err = pci_read_config_dword(pvt->addr_f1_ctl, low_offset, &low_limit);
-+	if (err != 0)
-+		debugf0("%s() Reading low_offset= 0x%x failed\n", __func__,
-+			low_offset);
-+
-+	/* Read from the ECS data register for the HIGH portion */
-+	err = pci_read_config_dword(pvt->addr_f1_ctl,
-+			high_offset, &high_limit);
-+	if (err != 0)
-+		debugf0("%s() Reading high_ofset= 0x%x failed\n", __func__,
-+			high_offset);
-+
-+	debugf0("%s() on dram=%d\n", __func__, dram);
-+	debugf0("  HW Regs: BASE=0x%08x-%08x      LIMIT=  0x%08x-%08x\n",
-+		high_base, low_base, high_limit, low_limit);
-+
-+	pvt->dram_DstNode[dram] = (low_limit & 0x7);
-+	pvt->dram_IntlvSel[dram] = (low_limit >> 8) & 0x7;
-+
-+	/* Extract address values and form a LIMIT address
-+	 * Limit is the HIGHEST memory location of the region, so lower
-+	 * 24-bit needs to be all ones
-+	 */
-+	low_limit |= 0x0000FFFF;
-+	pvt->dram_limit[dram] =
-+		((((u64) high_limit << 32) + (u64) low_limit) << 8) | (0xFF);
-+}
--- 
-1.6.2.4
 
 
+On Tue, 28 Apr 2009, Eric Dumazet wrote:
+> 
+> Instead of submitting a full patch again, we could first submit a new
+>  include file containg all comments and inline functions ?
+
+Well, I actually already suggested to David that he should just merge the 
+last patch I saw floating around (with the "recursive" -> "readwrite" fix 
+in the comment ;), so that we can at least get the basic issue fixed, and 
+then we can tweak it a bit with smaller patches flying around.
+
+And at least right now, the difference between the rwlock and the 
+"count+spinlock" should be basically almost unnoticeable, and a very small 
+implementation issue. They're entirely interchangeable, after all.
+
+> This include file could be local to netfilter, with a big stick on
+> it to forbids its use on other areas (No changes in Documentation/ )
+>
+> Then, as soon as we can go back to pure RCU solution, we can safely
+> delete this controversial-locking-nesting-per-cpu-thing ?
+
+I don't have any strogn preferences, but I'd almost prefer to not abstract 
+things out even that much. It's already pretty well hidden inside 
+<netfilter/x_tables.h>, I'd hate to add a new file just for this. 
+
+As to just adding more commenting that it must not be used anywhere else, 
+I certainly agree with that.
+
+> Instead of local/global name that Paul suggested, that was about
+> 'global' locking all locks at the same time. Not any more the good
+> name IMHO
+> 
+> Maybe something like local/remote or owner/foreigner ?
+
+local/remote works for me, and yes, since we only take the remote side one 
+CPU at a time, I guess "global" is misleading. But "owner/foreigner" 
+sounds pretty odd.
+
+> One comment about this comment you wrote :
+> 
+> /*
+>  * The "writer" side needs to get exclusive access to the lock,
+>  * regardless of readers.  This must be called with bottom half
+>  * processing (and thus also preemption) disabled. 
+>  */
+> 
+> Its true that BH should be disabled if caller runs
+> on the cpu it wants to lock. 
+> For other ones (true foreigners), there is
+> no requirement about BH (current cpu could be interrupted
+> by a softirq and packets could fly)
+
+Yes. Other CPU's just require preemption protection. 
+
+> We could use following construct and not require disabling BH
+> more than a short period of time.
+> (But preemption disabled for the whole duration)
+> 
+> preempt_disable(); // could be cpu_migration_disable();
+> 
+> int curcpu = smp_processor_id();
+> /*
+>  * Gather stats for current cpu : must disable BH
+>  * before trying to lock.
+>  */
+> local_bh_disable();
+> xt_info_wrlock(curcpu);
+> // copy stats of this cpu on my private data (not shown here)
+> xt_info_wrunlock(curcpu);
+> local_bh_enable();
+> 
+> for_each_possible_cpu(cpu) {
+> 	if (cpu == curcpu)
+> 		continue;
+> 	xt_info_wrlock(cpu);
+> 	// fold stats of "cpu" on my private data (not shown here)
+> 	xt_info_wrunlock((cpu);
+> }
+> preempt_enable(); // could be cpu_migration_enable();
+
+Agreed. 
+
+> So your initial comment could be changed to :
+> 
+> /*
+>  * The "writer" side needs to get exclusive access to the lock,
+>  * regardless of readers. If caller is about to lock its own lock,
+>  * he must have disabled BH before. For other cpus, no special
+>  * care but preemption disabled to guarantee no cpu migration.
+>  */
+
+Ack.
+
+			Linus
