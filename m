@@ -1,68 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbZD1JkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757707AbZD1Jko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757945AbZD1JkH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 05:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbZD1Jjx
+	id S1757707AbZD1Jko (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 05:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbZD1Jk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 05:39:53 -0400
-Received: from n71.bullet.mail.sp1.yahoo.com ([98.136.44.36]:35741 "HELO
-	n71.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751693AbZD1Jjw (ORCPT
+	Tue, 28 Apr 2009 05:40:28 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:29549 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754689AbZD1Jk0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 05:39:52 -0400
-X-Greylist: delayed 407 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Apr 2009 05:39:52 EDT
-X-Yahoo-Newman-Id: 296095.3729.bm@omp409.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=jOPdnkb6gRR4nbfcg6rJpQdvc9sHSL7hbT/hlV7LZrppFhk6Lw1Ay7JToDtTu+Np+jUa0JgnEIqks5lnmPZOHY5Rw5zvDWS1NqdUA0M4MnJ8O0wsk9TLbJV/+RnQehaYIgB9EMsSs6YRm+uE1lfA8pFt7oOhvXu3JFQxL5exn6o=  ;
-X-YMail-OSG: HCM0fzAVM1nxagUa8oJufV0NqsYSIPgzQ5m2QrmQulX8Un0LoZ1MJzNyv6KVLD2tYaPVcr4Pj0He6OqMaHFyj8cy2Q2bZlqs83W211vWYDbehRF38eR9E7g0tQpAu0bDaiyZ0jaCCwUiCi56ufiYUntsENR.kUMuoiOacdl0d09fS3H81HoVHt8OQf1ak9vfO.dI5QbiNI9.TIHLhoNGddmIK4MHpIbkVr8cS2asSLLEqKI176o.Xus053APMAc7WNOx_jk_Odl5fN4qG.xZ0qyoas_atpCNK9Sh6GWA.liQ37dU62SY
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH] regulator core: fix double-free in regulator_register() error path
-Date: Tue, 28 Apr 2009 02:32:56 -0700
-User-Agent: KMail/1.9.10
-Cc: Paul Walmsley <paul@pwsan.com>, linux-omap@vger.kernel.org,
-       lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org
-References: <alpine.DEB.2.00.0904250526210.28378@utopia.booyaka.com> <200904272008.50268.david-b@pacbell.net> <20090428081646.GC20027@rakim.wolfsonmicro.main>
-In-Reply-To: <20090428081646.GC20027@rakim.wolfsonmicro.main>
+	Tue, 28 Apr 2009 05:40:26 -0400
+Message-ID: <49F6CEF5.5090203@panasas.com>
+Date: Tue, 28 Apr 2009 12:40:05 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200904280232.56329.david-b@pacbell.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James.Bottomley@HansenPartnership.com, osd-dev@open-osd.org,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 3/3 v3] osdblk: a Linux block device for OSD objects
+References: <20090402015455.GA14087@havoc.gtf.org> <20090407225302.GA14248@havoc.gtf.org> <20090410114821.GA10602@havoc.gtf.org> <20090410114908.GB10602@havoc.gtf.org> <20090410115045.GC10602@havoc.gtf.org> <49F5D66E.2040506@panasas.com> <20090427182434.GD4593@kernel.dk>
+In-Reply-To: <20090427182434.GD4593@kernel.dk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Apr 2009 09:40:25.0204 (UTC) FILETIME=[5B6C6B40:01C9C7E5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 28 April 2009, Mark Brown wrote:
-> > For the record, that "incomplete constraints" message is bogus.
-> > On that board, VAUX3 has a complete set of constraints:  it may
-> > only emit 2.8V.
+On 04/27/2009 09:24 PM, Jens Axboe wrote:
+> On Mon, Apr 27 2009, Boaz Harrosh wrote:
+
+Jens Hi, Thanks for your reply. Please I need some help with
+this.
+
+>>> +static struct bio *bio_chain_clone(struct bio *old_chain, gfp_t gfpmask)
+>>> +{
+>>> +	struct bio *tmp, *new_chain = NULL, *tail = NULL;
+>>> +
+>>> +	while (old_chain) {
+>>> +		tmp = bio_clone(old_chain, gfpmask);
+>>> +		if (!tmp)
+>>> +			goto err_out;
+>>> +
+>>> +		tmp->bi_next = NULL;
+>>> +		if (!new_chain)
+>>> +			new_chain = tail = tmp;
+>>> +		else {
+>>> +			tail->bi_next = tmp;
+>>> +			tail = tmp;
+>>> +		}
+>>> +
+>>> +		old_chain = old_chain->bi_next;
+>>> +	}
+>>> +
+>>> +	return new_chain;
+>>> +
+>>> +err_out:
+>>> +	bio_chain_put(new_chain);
+>>> +	return NULL;
+>>> +}
+>>> +
+>> NOTE-TO-ME:
+>>   blk_bio_clone()
 > 
-> It's not VAUX3 that it's saying has incomplete constraints, it's the
-> board as a whole - if the constraints for the board were fully specified
+> Note to Boaz - this is illegal, unless gfp_mask is GFP_ATOMIC (in which
+> case you should not pass it in). 
 
-No; driver support != constraint.  Only one of the
-issues is packaged as a "constraint".
+OK it is only used with GFP_ATOMIC.
+Theoretically, what if I use a thread and am aloud to sleep,
+(and executing requests in serial). Can I then wait on the first bio_clone.
 
-
-> (and the core had been told about it) then it would power off VAUX3 at
-> that point.
->
-> > Mark and/or Liam ... you might want to fix that diagnostic, to
-> > avoid leading more developers astray!
+> The only way to make this work is to:
 > 
-> Probably shove a "board has" in there or something I guess.
 
-How about:  "VAUX3 board support is incomplete".
-That's accurate.
+Are you saying that, in the case I'm a swap device? or do you mean that if I
+use the above code I can break it for other devices that are swap-devices
+and cause a live lock for them.
 
-A comment there might suggest constraints and
-driver support as two common issues ... I'd not
-be surprised to see a few more idioms pop up.
+Currently the OSD library is not swap safe. And even if it was, iSCSI is not.
+So there is no option of this ever been swap.
 
-- Dave
+> 1) Have a private bio pool, and
 
+Do I need to manage such a pool internally and use __bio_clone() or is there
+an easy way to associate a private bio-pool to a request_queue?
+
+> 2) Make sure it has enough reserved entries to populate the chain
+
+Is there a system limit to that, that I can be sure of? Or just choose
+a magic number and if it is exceeded just split the io up in parts?
+
+> 3) Ensure only a single caller at the time, or entries enough for the N
+>    users that are allowed. It has to be controlled either way, whether N
+>    is 1 or larger.
+
+osdblk_rq_fn (the queue fn) is it serialized to one thread? If not
+could I use the queue lock for the duration of the clone?
+
+> 
+
+Thanks for your help
+Boaz
