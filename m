@@ -1,119 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932160AbZD1Hje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932177AbZD1Hjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932160AbZD1Hje (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 03:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760421AbZD1Hi4
+	id S932177AbZD1Hjy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 03:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760655AbZD1HjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 03:38:56 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50576 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760031AbZD1Hiz (ORCPT
+	Tue, 28 Apr 2009 03:39:10 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:43363 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760621AbZD1HjJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 03:38:55 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: bharata@linux.vnet.ibm.com
-Subject: Re: [PATCH] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       seto.hidetoshi@jp.fujitsu.com
-In-Reply-To: <20090428073151.GC3825@in.ibm.com>
-References: <20090428153611.EBC6.A69D9226@jp.fujitsu.com> <20090428073151.GC3825@in.ibm.com>
-Message-Id: <20090428163509.EBCF.A69D9226@jp.fujitsu.com>
+	Tue, 28 Apr 2009 03:39:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=h2EPu3AtZE/sqUNdsOt2SREf1wpc2bOuyvqjLk8pUcVHbT2KbCA5CCHQgtaQ0lT5VW
+         MY8quL2arH2EgkC//uoWGsDAeAcLxGuhB8KInV9C3BzJNe2kv2ijtfGQYRIG8eb4/VPS
+         h+GkhCURDPzNzVPG+XXXW/XFOa75P+9+2pTs8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+In-Reply-To: <1240864388-26315-10-git-send-email-tabbott@mit.edu>
+References: <1240864388-26315-1-git-send-email-tabbott@mit.edu>
+	 <1240864388-26315-2-git-send-email-tabbott@mit.edu>
+	 <1240864388-26315-3-git-send-email-tabbott@mit.edu>
+	 <1240864388-26315-4-git-send-email-tabbott@mit.edu>
+	 <1240864388-26315-5-git-send-email-tabbott@mit.edu>
+	 <1240864388-26315-6-git-send-email-tabbott@mit.edu>
+	 <1240864388-26315-7-git-send-email-tabbott@mit.edu>
+	 <1240864388-26315-8-git-send-email-tabbott@mit.edu>
+	 <1240864388-26315-9-git-send-email-tabbott@mit.edu>
+	 <1240864388-26315-10-git-send-email-tabbott@mit.edu>
+Date: Tue, 28 Apr 2009 11:39:07 +0400
+X-Google-Sender-Auth: 8e1d7a8c316d255f
+Message-ID: <aa79d98a0904280039l3eef7e76g3994018c2e9d42eb@mail.gmail.com>
+Subject: Re: [PATCH 09/14] s390: Use macros for .data.page_aligned.
+From: Cyrill Gorcunov <gorcunov@openvz.org>
+To: Tim Abbott <tabbott@mit.edu>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@mit.edu>, Waseem Daher <wdaher@mit.edu>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@mit.edu>, Paul Mundt <lethal@linux-sh.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 28 Apr 2009 16:38:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, Apr 28, 2009 at 03:53:32PM +0900, KOSAKI Motohiro wrote:
-> > 
-> > I'm not cpuacct expert. please give me comment.
-> > 
-> > ====================
-> > Subject: [PATCH] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime caching
-> > 
-> > impact: little performance improvement
-> > 
-> > cpuacct_update_stats() is called at every tick updating. and it use percpu_counter
-> > for avoiding performance degression.
-> > 
-> > Unfortunately, it doesn't works on VIRT_CPU_ACCOUNTING=y environment properly.
-> > if VIRT_CPU_ACCOUNTING=y, every tick update much than 1000 cputime.
-> > Thus every percpu_counter_add() makes spinlock grabbing and update non-percpu-variable.
-> > 
-> > This patch change the batch rule. now, every cpu can store "percpu_counter_bach x jiffies"
-> > cputime in percpu cache.
-> > it mean this patch don't have behavior change if VIRT_CPU_ACCOUNTING=n, but
-> > works well on VIRT_CPU_ACCOUNTING=y too.
-> 
-> Let me try to understand what you are saying...
-> 
-> For archs which define VIRT_CPU_ACCOUNTING, every tick would result
-> in around 1000 units of cputime updates and since this is much much greater
-> than percpu_batch_counter, we end up taking spinlock on every tick.
+On 4/28/09, Tim Abbott <tabbott@mit.edu> wrote:
+> .data.page_aligned should not need a separate output section, so as
+> part of this cleanup I moved into the .data output section in the
+> linker scripts in order to eliminate unnecessary references to the
+> section name.
+>
+> Remove the reference to .data.idt, since nothing is put into the
+> .data.idt section on the s390 architecture.  It looks like Cyrill
+> Gorcunov posted a patch to remove the .data.idt code on s390
+> previously:
+>
+> <http://lkml.indiana.edu/hypermail/linux/kernel/0802.2/2536.html>
+>
+> CCing him and the people who acked that patch in case there's a reason
+> it wasn't applied.
+>
 
-Correct.
+It was not applied case of being a bit buggy.
+You've fixed it as well. Thanks and my ack if needed.
 
-> 
-> If my above reading of the problem is correct, please look at my below comments.
-> 
-> > Index: b/kernel/sched.c
-> > ===================================================================
-> > --- a/kernel/sched.c	2009-04-28 14:18:36.000000000 +0900
-> > +++ b/kernel/sched.c	2009-04-28 15:18:07.000000000 +0900
-> > @@ -10117,6 +10117,7 @@ struct cpuacct {
-> >  };
-> > 
-> >  struct cgroup_subsys cpuacct_subsys;
-> > +static s32 cpuacct_batch;
-> > 
-> >  /* return cpu accounting group corresponding to this container */
-> >  static inline struct cpuacct *cgroup_ca(struct cgroup *cgrp)
-> > @@ -10146,6 +10147,9 @@ static struct cgroup_subsys_state *cpuac
-> >  	if (!ca->cpuusage)
-> >  		goto out_free_ca;
-> > 
-> > +	if (!cpuacct_batch)
-> > +		cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
-> 
-> You essentially end up increasing the batch value from the default value
-> of max(32, nr_cpus*2). 
-> 
-> > +
-> >  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
-> >  		if (percpu_counter_init(&ca->cpustat[i], 0))
-> >  			goto out_free_counters;
-> > @@ -10342,7 +10346,7 @@ static void cpuacct_update_stats(struct 
-> >  	ca = task_ca(tsk);
-> > 
-> >  	do {
-> > -		percpu_counter_add(&ca->cpustat[idx], val);
-> > +		__percpu_counter_add(&ca->cpustat[idx], val, cpuacct_batch);
-> 
-> And you do this unconditionally which will affect all archs ? So you make
-> this behaviour default for archs which have VIRT_CPU_ACCOUNTING=n.
-
-if VIRT_CPU_ACCOUNTING=n, jiffies_to_cputime(n) return n. 
-IOW, jiffies_to_cputime() don't change value.
-
-and percpu_counter() use percpu_counter_batch as batch.
-
-Then, if VIRT_CPU_ACCOUNTING=n, this patch don't change behavior.
-
-
-
-> BTW, did you observe any real problem with the percpu counter spinlock ?
-
-No.
-I review percpu_counter() caller recently and it seems stragen usage.
-
-
-
+> Signed-off-by: Tim Abbott <tabbott@mit.edu>
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Cc: Cyrill Gorcunov <gorcunov@openvz.org>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> ---
+>  arch/s390/kernel/vdso.c                  |    2 +-
+>  arch/s390/kernel/vdso32/vdso32_wrapper.S |    3 ++-
+>  arch/s390/kernel/vdso64/vdso64_wrapper.S |    3 ++-
+>  arch/s390/kernel/vmlinux.lds.S           |    6 +-----
+>  4 files changed, 6 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/s390/kernel/vdso.c b/arch/s390/kernel/vdso.c
+> index 89b2e7f..eff6fba 100644
+> --- a/arch/s390/kernel/vdso.c
+> +++ b/arch/s390/kernel/vdso.c
+> @@ -64,7 +64,7 @@ __setup("vdso=", vdso_setup);
+>  static union {
+>  	struct vdso_data	data;
+>  	u8			page[PAGE_SIZE];
+> -} vdso_data_store __attribute__((__section__(".data.page_aligned")));
+> +} vdso_data_store __page_aligned_data
+>  struct vdso_data *vdso_data = &vdso_data_store.data;
+>
+>  /*
+> diff --git a/arch/s390/kernel/vdso32/vdso32_wrapper.S
+> b/arch/s390/kernel/vdso32/vdso32_wrapper.S
+> index 61639a8..ae42f8c 100644
+> --- a/arch/s390/kernel/vdso32/vdso32_wrapper.S
+> +++ b/arch/s390/kernel/vdso32/vdso32_wrapper.S
+> @@ -1,7 +1,8 @@
+>  #include <linux/init.h>
+> +#include <linux/linkage.h>
+>  #include <asm/page.h>
+>
+> -	.section ".data.page_aligned"
+> +	__PAGE_ALIGNED_DATA
+>
+>  	.globl vdso32_start, vdso32_end
+>  	.balign PAGE_SIZE
+> diff --git a/arch/s390/kernel/vdso64/vdso64_wrapper.S
+> b/arch/s390/kernel/vdso64/vdso64_wrapper.S
+> index d8e2ac1..c245842 100644
+> --- a/arch/s390/kernel/vdso64/vdso64_wrapper.S
+> +++ b/arch/s390/kernel/vdso64/vdso64_wrapper.S
+> @@ -1,7 +1,8 @@
+>  #include <linux/init.h>
+> +#include <linux/linkage.h>
+>  #include <asm/page.h>
+>
+> -	.section ".data.page_aligned"
+> +	__PAGE_ALIGNED_DATA
+>
+>  	.globl vdso64_start, vdso64_end
+>  	.balign PAGE_SIZE
+> diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
+> index 89399b8..d552089 100644
+> --- a/arch/s390/kernel/vmlinux.lds.S
+> +++ b/arch/s390/kernel/vmlinux.lds.S
+> @@ -59,6 +59,7 @@ SECTIONS
+>  	} :data
+>
+>  	.data : {		/* Data */
+> +		PAGE_ALIGNED_DATA
+>  		DATA_DATA
+>  		CONSTRUCTORS
+>  	}
+> @@ -71,11 +72,6 @@ SECTIONS
+>  	. = ALIGN(PAGE_SIZE);
+>  	__nosave_end = .;
+>
+> -	. = ALIGN(PAGE_SIZE);
+> -	.data.page_aligned : {
+> -		*(.data.idt)
+> -	}
+> -
+>  	. = ALIGN(0x100);
+>  	.data.cacheline_aligned : {
+>  		*(.data.cacheline_aligned)
+> --
+> 1.6.2.1
+>
+>
