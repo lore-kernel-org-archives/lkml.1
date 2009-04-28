@@ -1,83 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757469AbZD1JjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbZD1JkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757469AbZD1JjY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 05:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbZD1JjP
+	id S1757945AbZD1JkH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 05:40:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbZD1Jjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 05:39:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46181 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752663AbZD1JjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 05:39:14 -0400
-Date: Tue, 28 Apr 2009 11:38:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       =?utf-8?B?RnLpppjpp7tpYw==?= Weisbecker <fweisbec@gmail.com>,
-       Larry Woodman <lwoodman@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090428093833.GE21085@elte.hu>
-References: <84144f020904280219p197d5ceag846ae9a80a76884e@mail.gmail.com> <20090428092918.GC21085@elte.hu> <20090428183237.EBDE.A69D9226@jp.fujitsu.com>
+	Tue, 28 Apr 2009 05:39:53 -0400
+Received: from n71.bullet.mail.sp1.yahoo.com ([98.136.44.36]:35741 "HELO
+	n71.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751693AbZD1Jjw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 05:39:52 -0400
+X-Greylist: delayed 407 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Apr 2009 05:39:52 EDT
+X-Yahoo-Newman-Id: 296095.3729.bm@omp409.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=jOPdnkb6gRR4nbfcg6rJpQdvc9sHSL7hbT/hlV7LZrppFhk6Lw1Ay7JToDtTu+Np+jUa0JgnEIqks5lnmPZOHY5Rw5zvDWS1NqdUA0M4MnJ8O0wsk9TLbJV/+RnQehaYIgB9EMsSs6YRm+uE1lfA8pFt7oOhvXu3JFQxL5exn6o=  ;
+X-YMail-OSG: HCM0fzAVM1nxagUa8oJufV0NqsYSIPgzQ5m2QrmQulX8Un0LoZ1MJzNyv6KVLD2tYaPVcr4Pj0He6OqMaHFyj8cy2Q2bZlqs83W211vWYDbehRF38eR9E7g0tQpAu0bDaiyZ0jaCCwUiCi56ufiYUntsENR.kUMuoiOacdl0d09fS3H81HoVHt8OQf1ak9vfO.dI5QbiNI9.TIHLhoNGddmIK4MHpIbkVr8cS2asSLLEqKI176o.Xus053APMAc7WNOx_jk_Odl5fN4qG.xZ0qyoas_atpCNK9Sh6GWA.liQ37dU62SY
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH] regulator core: fix double-free in regulator_register() error path
+Date: Tue, 28 Apr 2009 02:32:56 -0700
+User-Agent: KMail/1.9.10
+Cc: Paul Walmsley <paul@pwsan.com>, linux-omap@vger.kernel.org,
+       lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org
+References: <alpine.DEB.2.00.0904250526210.28378@utopia.booyaka.com> <200904272008.50268.david-b@pacbell.net> <20090428081646.GC20027@rakim.wolfsonmicro.main>
+In-Reply-To: <20090428081646.GC20027@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <20090428183237.EBDE.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200904280232.56329.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> > 
-> > * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > 
-> > > I have no idea how expensive tracepoints are but I suspect they 
-> > > don't make too much sense for this particular scenario. After all, 
-> > > kmemtrace is mainly interested in _allocation patterns_ whereas 
-> > > this patch seems to be more interested in "memory layout" type of 
-> > > things.
-> > 
-> > My point is that the allocation patterns can be derived from dynamic 
-> > events. We can build a map of everything if we know all the events 
-> > that led up to it. Doing:
-> > 
-> >   echo 3 > /proc/sys/vm/drop_caches
-> > 
-> > will clear 99% of the memory allocations, so we can build a new map 
-> > from scratch just about anytime. (and if boot allocations are 
-> > interesting they can be traced too)
-> > 
-> > _And_ via this angle we'll also have access to the dynamic events, 
-> > in a different 'view' of the same tracepoints - which is obviously 
-> > very useful for different purposes.
+On Tuesday 28 April 2009, Mark Brown wrote:
+> > For the record, that "incomplete constraints" message is bogus.
+> > On that board, VAUX3 has a complete set of constraints:  it may
+> > only emit 2.8V.
 > 
-> I am one of most strongly want guys to MM tracepoint. but No, many 
-> cunstomer never permit to use drop_caches.
+> It's not VAUX3 that it's saying has incomplete constraints, it's the
+> board as a whole - if the constraints for the board were fully specified
 
-See my other mail i just sent: it would be a natural extension of 
-tracing to also dump all current object state when tracing is turned 
-on. That way no drop_caches is needed at all.
+No; driver support != constraint.  Only one of the
+issues is packaged as a "constraint".
 
-But it has to be expressed in one framework that cares about the 
-totality of the kernel - not just these splintered bits of 
-instrumentation and pieces of statistics.
 
-	Ingo
+> (and the core had been told about it) then it would power off VAUX3 at
+> that point.
+>
+> > Mark and/or Liam ... you might want to fix that diagnostic, to
+> > avoid leading more developers astray!
+> 
+> Probably shove a "board has" in there or something I guess.
+
+How about:  "VAUX3 board support is incomplete".
+That's accurate.
+
+A comment there might suggest constraints and
+driver support as two common issues ... I'd not
+be surprised to see a few more idioms pop up.
+
+- Dave
+
