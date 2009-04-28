@@ -1,42 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbZD1KQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932315AbZD1KTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759679AbZD1KQs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 06:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759059AbZD1KQO
+	id S932315AbZD1KTs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 06:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755905AbZD1KTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 06:16:14 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:58226 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759007AbZD1KQM (ORCPT
+	Tue, 28 Apr 2009 06:19:25 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:40587 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752497AbZD1KTX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 06:16:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:cc:content-type:content-transfer-encoding;
-        b=Aon5YjGFztU4G36lbU/6qJV+h7vpMx7HLNGialvFxb8dbEEe4iRN/yVlcNWkLokolh
-         uLGISoIcq+a4rxIlKWzV734E28R0Ui+4YkTsq4/i078qetwvxd4m9NQttm+TW4dTu/+M
-         MWk6sMVYEylNvyHNy5VOWkgklN3sEgkzAevew=
-MIME-Version: 1.0
-Date: Tue, 28 Apr 2009 18:16:11 +0800
-X-Google-Sender-Auth: 2010cc7b588a366d
-Message-ID: <2a27d3730904280316l7049bddbie914907b16ccfff6@mail.gmail.com>
-Subject: [PATCH 0/5] rapidio: adding memory mapping IO support and misc fixes
+	Tue, 28 Apr 2009 06:19:23 -0400
 From: Li Yang <leoli@freescale.com>
-To: akpm@linux-foundation.org, Kumar Gala <galak@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, mporter@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org,
-       linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-       Netdev <netdev@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: akpm@linux-foundation.org, galak@kernel.crashing.org, davem@davemloft.net,
+       mporter@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, Li Yang <leoli@freescale.com>
+Subject: [PATCH] powerpc/fsl_rio: use LAW address from device tree
+Date: Tue, 28 Apr 2009 18:15:34 +0800
+Message-Id: <1240913737-23773-2-git-send-email-leoli@freescale.com>
+X-Mailer: git-send-email 1.5.4
+In-Reply-To: <1240913737-23773-1-git-send-email-leoli@freescale.com>
+References: <2a27d3730904280316l7049bddbie914907b16ccfff6@mail.gmail.com>
+ <1240913737-23773-1-git-send-email-leoli@freescale.com>
+X-OriginalArrivalTime: 28 Apr 2009 10:19:04.0035 (UTC) FILETIME=[C18DF330:01C9C7EA]
+X-Brightmail-Tracker: AAAAAQAAAWE=
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch series add MMIO support to Linux rapidio and fix a few nits.
- The patches cross rapidio, netdev, powerpc sub-systems.  It will be
-good for them to go through one tree.  Probably Andrew?  As the
-previous rapidio patches are mostly merged by you.
+Instead of fixed address in old code.
 
-- Leo
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_rio.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
+index abdb124..fa0720f 100644
+--- a/arch/powerpc/sysdev/fsl_rio.c
++++ b/arch/powerpc/sysdev/fsl_rio.c
+@@ -1077,8 +1077,9 @@ int fsl_rio_setup(struct of_device *dev)
+ 
+ 	INIT_LIST_HEAD(&port->dbells);
+ 	port->iores.start = law_start;
+-	port->iores.end = law_start + law_size;
++	port->iores.end = law_start + law_size - 1;
+ 	port->iores.flags = IORESOURCE_MEM;
++	port->iores.name = "rio_io_win";
+ 
+ 	priv->bellirq = irq_of_parse_and_map(dev->node, 2);
+ 	priv->txirq = irq_of_parse_and_map(dev->node, 3);
+@@ -1156,14 +1157,15 @@ int fsl_rio_setup(struct of_device *dev)
+ 		out_be32((priv->regs_win + RIO_ISR_AACR), RIO_ISR_AACR_AA);
+ 
+ 	/* Configure maintenance transaction window */
+-	out_be32(&priv->maint_atmu_regs->rowbar, 0x000c0000);
+-	out_be32(&priv->maint_atmu_regs->rowar, 0x80077015);
++	out_be32(&priv->maint_atmu_regs->rowbar, law_start >> 12);
++	out_be32(&priv->maint_atmu_regs->rowar, 0x80077015);	/* 4M */
+ 
+ 	priv->maint_win = ioremap(law_start, RIO_MAINT_WIN_SIZE);
+ 
+ 	/* Configure outbound doorbell window */
+-	out_be32(&priv->dbell_atmu_regs->rowbar, 0x000c0400);
+-	out_be32(&priv->dbell_atmu_regs->rowar, 0x8004200b);
++	out_be32(&priv->dbell_atmu_regs->rowbar,
++			(law_start + RIO_MAINT_WIN_SIZE) >> 12);
++	out_be32(&priv->dbell_atmu_regs->rowar, 0x8004200b);	/* 4k */
+ 	fsl_rio_doorbell_init(port);
+ 
+ 	return 0;
+-- 
+1.5.4
+
