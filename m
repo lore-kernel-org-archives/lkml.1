@@ -1,48 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbZD1Uxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZD1Uxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756050AbZD1Uxf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755137AbZD1UxX
+	id S1756806AbZD1Uxw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 16:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756397AbZD1Uxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:53:23 -0400
-Received: from gate.crashing.org ([63.228.1.57]:48022 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756237AbZD1UxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:53:22 -0400
-Subject: Re: Please revert edada399 and 9203fc9c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tim Abbott <tabbott@MIT.EDU>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <20090428083528.GA17622@uranus.ravnborg.org>
-References: <18934.35969.872225.70725@cargo.ozlabs.ibm.com>
-	 <20090428083528.GA17622@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Wed, 29 Apr 2009 06:52:27 +1000
-Message-Id: <1240951947.15263.5.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 28 Apr 2009 16:53:41 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:63534 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756175AbZD1Uxk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 16:53:40 -0400
+Message-ID: <49F76CC4.8050200@oracle.com>
+Date: Tue, 28 Apr 2009 13:53:24 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org
+Subject: [PATCH] cgroups: make messages more readable
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A01020A.49F76C75.0260:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-28 at 10:35 +0200, Sam Ravnborg wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> This is partly my fault :-(
-> I acked them as I did not see the issue with conditional branches.
-> Could I ask you to add a comment to the lds file about this.
+Fix some cgroup messages to read better.
+Update MAINTAINERS to include mm/*cgroup* files.
 
-I'm back :-)
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ MAINTAINERS      |    1 +
+ mm/page_cgroup.c |   14 +++++++-------
+ 2 files changed, 8 insertions(+), 7 deletions(-)
 
-Not a huge deal per-se, it's just that the patches were merged in Linus
-tree only a few hours after being initially submitted it seems, which
-doesn't leave much chance for anybody to test, to hit -next, or anything
-like that... that was a little bit too trigger happy .
-
-Cheers,
-Ben.
-
-
+--- lnx-2630-rc3.orig/mm/page_cgroup.c
++++ lnx-2630-rc3/mm/page_cgroup.c
+@@ -83,12 +83,12 @@ void __init page_cgroup_init(void)
+ 			goto fail;
+ 	}
+ 	printk(KERN_INFO "allocated %ld bytes of page_cgroup\n", total_usage);
+-	printk(KERN_INFO "please try cgroup_disable=memory option if you"
+-	" don't want\n");
++	printk(KERN_INFO "please try 'cgroup_disable=memory' option if you"
++	" don't want memory cgroups\n");
+ 	return;
+ fail:
+-	printk(KERN_CRIT "allocation of page_cgroup was failed.\n");
+-	printk(KERN_CRIT "please try cgroup_disable=memory boot option\n");
++	printk(KERN_CRIT "allocation of page_cgroup failed.\n");
++	printk(KERN_CRIT "please try 'cgroup_disable=memory' boot option\n");
+ 	panic("Out of memory");
+ }
+ 
+@@ -257,14 +257,14 @@ void __init page_cgroup_init(void)
+ 		fail = init_section_page_cgroup(pfn);
+ 	}
+ 	if (fail) {
+-		printk(KERN_CRIT "try cgroup_disable=memory boot option\n");
++		printk(KERN_CRIT "try 'cgroup_disable=memory' boot option\n");
+ 		panic("Out of memory");
+ 	} else {
+ 		hotplug_memory_notifier(page_cgroup_callback, 0);
+ 	}
+ 	printk(KERN_INFO "allocated %ld bytes of page_cgroup\n", total_usage);
+-	printk(KERN_INFO "please try cgroup_disable=memory option if you don't"
+-	" want\n");
++	printk(KERN_INFO "please try 'cgroup_disable=memory' option if you don't"
++	" want memory cgroups\n");
+ }
+ 
+ void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
+--- lnx-2630-rc3.orig/MAINTAINERS
++++ lnx-2630-rc3/MAINTAINERS
+@@ -1519,6 +1519,7 @@ L:	containers@lists.linux-foundation.org
+ S:	Maintained
+ F:	include/linux/cgroup*
+ F:	kernel/cgroup*
++F:	mm/*cgroup*
+ 
+ CORETEMP HARDWARE MONITORING DRIVER
+ P:	Rudolf Marek
