@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbZD1Irk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbZD1IqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755998AbZD1Irk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 04:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbZD1IrM
+	id S1755205AbZD1IqR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 04:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbZD1IoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 04:47:12 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:50864 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755824AbZD1IrI (ORCPT
+	Tue, 28 Apr 2009 04:44:21 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:43467 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754492AbZD1IoR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 04:47:08 -0400
+	Tue, 28 Apr 2009 04:44:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GnitVnfnxDRf888+QlV+Kkby+NMFn1OPOSHncJEFaWQED5FDWUfdfj+ttLsn6KrGFu
-         hwlihMRPPZsQwZ2OKqSLz21YztfTb2ud0hfF8S2XD2NH+yMRSesgauZusQeTeunP8lVJ
-         3elT2pceqQ4kGuIdPViqkqfrmPsLEZ0gMdXKs=
-Date: Tue, 28 Apr 2009 10:47:00 +0200
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=GSCqft5ZxzoElyxZzNrO2HjxvM70tptAVBq8QvKSX+K0DY9SenT8RpnlkWGGO6NP43
+         CJtzbvrTbxlqxEgg0D2yKoKeFCzCkaTN5jm0WFlXaOh746HvF0hLbzNbYPnYyXdTXYU8
+         WSe0gpEFYJwjxwi5snUTwmu4W5WjcbbZ0OVsc=
 From: Andrea Righi <righi.andrea@gmail.com>
 To: Paul Menage <menage@google.com>
 Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
@@ -35,271 +33,397 @@ Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
        yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
        fchecconi@gmail.com, paolo.valente@unimore.it, m-ikeda@ds.jp.nec.com,
        paulmck@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v15 0/7] cgroup: io-throttle controller
-Message-ID: <20090428084700.GA13279@linux>
-References: <1240908234-15434-1-git-send-email-righi.andrea@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+       linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
+Subject: [PATCH v15 5/7] kiothrottled: throttle buffered (writeback) IO
+Date: Tue, 28 Apr 2009 10:43:52 +0200
+Message-Id: <1240908234-15434-6-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1240908234-15434-1-git-send-email-righi.andrea@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <1240908234-15434-1-git-send-email-righi.andrea@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've repeated some tests with this new version (v15) of the io-throttle
-controller.
+Together with cgroup_io_throttle() the kiothrottled kernel thread
+represents the core of the io-throttle subsystem.
 
-The following results have been generated using the io-throttle
-testcase, available at:
-http://download.systemimager.org/~arighi/linux/patches/io-throttle/testcase/
+All the writeback IO requests that need to be throttled are not
+dispatched immediately in submit_bio(). Instead, they are added into an
+rbtree by iothrottle_make_request() and processed asynchronously by
+kiothrottled.
 
-The testcase is an update version of the io-throttle testcase included
-in LTP
-(http://ltp.cvs.sourceforge.net/viewvc/ltp/ltp/testcases/kernel/controllers/io-throttle/).
+A deadline is associated to each request depending on the bandwidth
+usage of the cgroup it belongs. When a request is inserted into the
+rbtree kiothrottled is awakened. This thread selects all the requests
+with an expired deadline and submit the bunch of selected requests to
+the underlying block devices using generic_make_request().
 
-Summary
-~~~~~~~
-The goal of this test is to highlight the effectiveness of io-throttle
-to control direct and writeback IO applying maximum BW limits (the
-proportional BW approach is not addressed by this test, only absolute BW
-limits are considered).
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+---
+ block/Makefile       |    2 +-
+ block/kiothrottled.c |  341 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 342 insertions(+), 1 deletions(-)
+ create mode 100644 block/kiothrottled.c
 
-The benchmark #1 is a run of different parallel streams per cgroup
-without imposing any IO limitation. The benchmark #2 repeats the same
-tests using 4 cgroups with a BW limit of respectively 2MB/s, 4MB/s,
-6MB/s and 8MB/s. The disk IO is constantly monitored (using dstat) to
-evaluate the amount of writeback IO with and without the IO BW limits.
+diff --git a/block/Makefile b/block/Makefile
+index 42b6a46..5f10a45 100644
+--- a/block/Makefile
++++ b/block/Makefile
+@@ -13,6 +13,6 @@ obj-$(CONFIG_IOSCHED_AS)	+= as-iosched.o
+ obj-$(CONFIG_IOSCHED_DEADLINE)	+= deadline-iosched.o
+ obj-$(CONFIG_IOSCHED_CFQ)	+= cfq-iosched.o
+ 
+-obj-$(CONFIG_CGROUP_IO_THROTTLE)	+= blk-io-throttle.o
++obj-$(CONFIG_CGROUP_IO_THROTTLE)	+= blk-io-throttle.o kiothrottled.o
+ obj-$(CONFIG_BLOCK_COMPAT)	+= compat_ioctl.o
+ obj-$(CONFIG_BLK_DEV_INTEGRITY)	+= blk-integrity.o
+diff --git a/block/kiothrottled.c b/block/kiothrottled.c
+new file mode 100644
+index 0000000..3df22c1
+--- /dev/null
++++ b/block/kiothrottled.c
+@@ -0,0 +1,341 @@
++/*
++ * kiothrottled.c
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public
++ * License along with this program; if not, write to the
++ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
++ * Boston, MA 021110-1307, USA.
++ *
++ * Copyright (C) 2008 Andrea Righi <righi.andrea@gmail.com>
++ */
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/sched.h>
++#include <linux/seq_file.h>
++#include <linux/proc_fs.h>
++#include <linux/kthread.h>
++#include <linux/jiffies.h>
++#include <linux/ioprio.h>
++#include <linux/rbtree.h>
++#include <linux/blkdev.h>
++
++/* io-throttle bio element */
++struct iot_bio {
++	struct rb_node node;
++	unsigned long deadline;
++	struct bio *bio;
++};
++
++/* io-throttle bio tree */
++struct iot_bio_tree {
++	/* Protect the iothrottle rbtree */
++	spinlock_t lock;
++	struct rb_root tree;
++};
++
++/*
++ * TODO: create one iothrottle rbtree per block device and many kiothrottled
++ * threads per rbtree, instead of a poor scalable single rbtree / single thread
++ * solution.
++ */
++static struct iot_bio_tree *iot;
++static struct task_struct *kiothrottled_thread;
++
++/* Timer used to periodically wake-up kiothrottled */
++static struct timer_list kiothrottled_timer;
++
++/* Insert a new iot_bio element in the iot_bio_tree */
++static void iot_bio_insert(struct rb_root *root, struct iot_bio *data)
++{
++	struct rb_node **new = &(root->rb_node), *parent = NULL;
++
++	while (*new) {
++		struct iot_bio *this = container_of(*new, struct iot_bio, node);
++		parent = *new;
++		if (data->deadline < this->deadline)
++			new = &((*new)->rb_left);
++		else
++			new = &((*new)->rb_right);
++	}
++	rb_link_node(&data->node, parent, new);
++	rb_insert_color(&data->node, root);
++}
++
++/*
++ * NOTE: no need to care about locking here, we're flushing all the pending
++ * requests, kiothrottled has been stopped and no additional request will be
++ * submitted in the tree.
++ */
++static void iot_bio_cleanup(struct rb_root *root)
++{
++	struct iot_bio *data;
++	struct rb_node *next;
++
++	next = rb_first(root);
++	while (next) {
++		data = rb_entry(next, struct iot_bio, node);
++		pr_debug("%s: dispatching element: %p (%lu)\n",
++				__func__, data->bio, data->deadline);
++		generic_make_request(data->bio);
++		next = rb_next(&data->node);
++		rb_erase(&data->node, root);
++		kfree(data);
++	}
++}
++
++/**
++ * iothrottle_make_request() - submit a delayed IO requests that will be
++ * processed asynchronously by kiothrottled.
++ *
++ * @bio:	the bio structure that contains the IO request's informations
++ * @deadline:	the request will be actually dispatched only when the deadline
++ *		will expire
++ *
++ * Returns 0 if the request is successfully submitted and inserted into the
++ * iot_bio_tree. Return a negative value in case of failure.
++ **/
++int iothrottle_make_request(struct bio *bio, unsigned long deadline)
++{
++	struct iot_bio *data;
++
++	BUG_ON(!iot);
++
++	if (unlikely(!kiothrottled_thread))
++		return -ENOENT;
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (unlikely(!data))
++		return -ENOMEM;
++	data->deadline = deadline;
++	data->bio = bio;
++
++	spin_lock_irq(&iot->lock);
++	iot_bio_insert(&iot->tree, data);
++	spin_unlock_irq(&iot->lock);
++
++	wake_up_process(kiothrottled_thread);
++	return 0;
++}
++EXPORT_SYMBOL(iothrottle_make_request);
++
++static void kiothrottled_timer_expired(unsigned long __unused)
++{
++	wake_up_process(kiothrottled_thread);
++}
++
++static void kiothrottled_sleep(void)
++{
++	set_current_state(TASK_INTERRUPTIBLE);
++	schedule();
++}
++
++/**
++ * kiothrottled() - throttle buffered (writeback) i/o activity
++ *
++ * Together with cgroup_io_throttle() this kernel thread represents the core of
++ * the cgroup-io-throttle subsystem.
++ *
++ * All the writeback IO requests that need to be throttled are not dispatched
++ * immediately in submit_bio(). Instead, they are added into the iot_bio_tree
++ * rbtree by iothrottle_make_request() and processed asynchronously by
++ * kiothrottled.
++ *
++ * A deadline is associated to each request depending on the bandwidth usage of
++ * the cgroup it belongs. When a request is inserted into the rbtree
++ * kiothrottled is awakened. This thread selects all the requests with an
++ * expired deadline and submit the bunch of selected requests to the underlying
++ * block devices using generic_make_request().
++ **/
++static int kiothrottled(void *__unused)
++{
++	/*
++	 * kiothrottled is responsible of dispatching all the writeback IO
++	 * requests with an expired deadline. To dispatch those requests as
++	 * soon as possible and to avoid priority inversion problems set
++	 * maximum IO real-time priority for this thread.
++	 */
++	set_task_ioprio(current, IOPRIO_PRIO_VALUE(IOPRIO_CLASS_RT, 0));
++
++	while (!kthread_should_stop()) {
++		struct iot_bio *data;
++		struct rb_node *req;
++		struct rb_root staging_tree = RB_ROOT;
++		unsigned long now = jiffies;
++		long delta_t = 0;
++
++		/* Select requests to dispatch */
++		spin_lock_irq(&iot->lock);
++		req = rb_first(&iot->tree);
++		while (req) {
++			data = rb_entry(req, struct iot_bio, node);
++			delta_t = (long)data->deadline - (long)now;
++			if (delta_t > 0)
++				break;
++			req = rb_next(&data->node);
++			rb_erase(&data->node, &iot->tree);
++			iot_bio_insert(&staging_tree, data);
++		}
++		spin_unlock_irq(&iot->lock);
++
++		/* Dispatch requests */
++		req = rb_first(&staging_tree);
++		while (req) {
++			data = rb_entry(req, struct iot_bio, node);
++			req = rb_next(&data->node);
++			rb_erase(&data->node, &staging_tree);
++			pr_debug("%s: dispatching request: %p (%lu)\n",
++					__func__, data->bio, data->deadline);
++			generic_make_request(data->bio);
++			kfree(data);
++		}
++
++		/* Wait for new requests ready to be dispatched */
++		if (delta_t > 0)
++			mod_timer(&kiothrottled_timer, jiffies + HZ);
++		kiothrottled_sleep();
++	}
++	return 0;
++}
++
++/* TODO: handle concurrent startup and shutdown */
++static void kiothrottle_shutdown(void)
++{
++	if (!kiothrottled_thread)
++		return;
++	del_timer(&kiothrottled_timer);
++	printk(KERN_INFO "%s: stopping kiothrottled\n", __func__);
++	kthread_stop(kiothrottled_thread);
++	printk(KERN_INFO "%s: flushing pending requests\n", __func__);
++	spin_lock_irq(&iot->lock);
++	kiothrottled_thread = NULL;
++	spin_unlock_irq(&iot->lock);
++	iot_bio_cleanup(&iot->tree);
++}
++
++static int kiothrottle_startup(void)
++{
++	init_timer(&kiothrottled_timer);
++	kiothrottled_timer.function = kiothrottled_timer_expired;
++
++	printk(KERN_INFO "%s: starting kiothrottled\n", __func__);
++	kiothrottled_thread = kthread_run(kiothrottled, NULL, "kiothrottled");
++	if (IS_ERR(kiothrottled_thread))
++		return -PTR_ERR(kiothrottled_thread);
++	return 0;
++}
++
++/*
++ * NOTE: provide this interface only for emergency situations, when we need to
++ * force the immediate flush of pending (writeback) IO throttled requests.
++ */
++int iothrottle_sync(void)
++{
++	kiothrottle_shutdown();
++	return kiothrottle_startup();
++}
++EXPORT_SYMBOL(iothrottle_sync);
++
++/*
++ * Writing in /proc/kiothrottled_debug enforces an immediate flush of throttled
++ * IO requests.
++ */
++static ssize_t kiothrottle_write(struct file *filp, const char __user *buffer,
++				size_t count, loff_t *data)
++{
++	int ret;
++
++	ret = iothrottle_sync();
++	if (ret)
++		return ret;
++	return count;
++}
++
++/*
++ * Export to userspace the list of pending IO throttled requests.
++ * TODO: this can be useful only for debugging, maybe we should make this
++ * interface optionally, depending on an opportune compile-time config option.
++ */
++static int kiothrottle_show(struct seq_file *m, void *v)
++{
++	struct iot_bio *data;
++	struct rb_node *next;
++	unsigned long now = jiffies;
++	long delta_t;
++
++	spin_lock_irq(&iot->lock);
++	next = rb_first(&iot->tree);
++	while (next) {
++		data = rb_entry(next, struct iot_bio, node);
++		delta_t = (long)data->deadline - (long)now;
++		seq_printf(m, "%p %lu %lu %li\n", data->bio,
++				data->deadline, now, delta_t);
++		next = rb_next(&data->node);
++	}
++	spin_unlock_irq(&iot->lock);
++
++	return 0;
++}
++
++static int kiothrottle_open(struct inode *inode, struct file *filp)
++{
++	return single_open(filp, kiothrottle_show, NULL);
++}
++
++static const struct file_operations kiothrottle_ops = {
++	.open           = kiothrottle_open,
++	.read           = seq_read,
++	.write		= kiothrottle_write,
++	.llseek         = seq_lseek,
++	.release        = seq_release,
++};
++
++int __init kiothrottled_init(void)
++{
++	struct proc_dir_entry *pe;
++	int ret;
++
++	iot = kzalloc(sizeof(*iot), GFP_KERNEL);
++	if (unlikely(!iot))
++		return -ENOMEM;
++	spin_lock_init(&iot->lock);
++	iot->tree = RB_ROOT;
++
++	pe = create_proc_entry("kiothrottled_debug", 0644, NULL);
++	if (!pe) {
++		kfree(iot);
++		return -ENOMEM;
++	}
++	pe->proc_fops = &kiothrottle_ops;
++
++	ret = kiothrottle_startup();
++	if (ret) {
++		remove_proc_entry("kiothrottled_debug", NULL);
++		kfree(iot);
++		return ret;
++	}
++	printk(KERN_INFO "%s: initialized\n", __func__);
++	return 0;
++}
++
++void __exit kiothrottled_exit(void)
++{
++	kiothrottle_shutdown();
++	remove_proc_entry("kiothrottled_debug", NULL);
++	kfree(iot);
++	printk(KERN_INFO "%s: unloaded\n", __func__);
++}
++
++module_init(kiothrottled_init);
++module_exit(kiothrottled_exit);
++MODULE_LICENSE("GPL");
+-- 
+1.6.0.4
 
-The results of benchmark #2 show the validity of the IO controller both
-from the application's and disk's point of view.
-
-Experimental Results
-~~~~~~~~~~~~~~~~~~~~
-==> collect system info <==
-* kernel: 2.6.30-rc3
-* disk: /dev/sda:
- Timing cached reads:   1380 MB in  2.00 seconds = 690.79 MB/sec
- Timing buffered disk reads:   76 MB in  3.07 seconds =  24.73 MB/sec
-* filesystem: ext3
-* VM dirty_ratio/dirty_background_ratio: 20/10
-
-==> start benchmark #1 <==
-* block-size: 16384 KB
-* file-size: 262144 KB
-* using 4 io-throttle cgroups:
-  - unlimited IO BW
-
-==> results #1 (avg io-rate per cgroup) <==
-* 1 parallel streams per cgroup, O_DIRECT=n
-(cgroup-1, 1 tasks) [async-io] rate 12695 KiB/s
-(cgroup-2, 1 tasks) [async-io] rate 13671 KiB/s
-(cgroup-3, 1 tasks) [async-io] rate 12695 KiB/s
-(cgroup-4, 1 tasks) [async-io] rate 12695 KiB/s
-* 2 parallel streams per cgroup, O_DIRECT=n
-(cgroup-1, 2 tasks) [async-io] rate 14648 KiB/s
-(cgroup-2, 2 tasks) [async-io] rate 15625 KiB/s
-(cgroup-3, 2 tasks) [async-io] rate 14648 KiB/s
-(cgroup-4, 2 tasks) [async-io] rate 14648 KiB/s
-* 4 parallel streams per cgroup, O_DIRECT=n
-(cgroup-1, 4 tasks) [async-io] rate 20507 KiB/s
-(cgroup-2, 4 tasks) [async-io] rate 20507 KiB/s
-(cgroup-3, 4 tasks) [async-io] rate 20507 KiB/s
-(cgroup-4, 4 tasks) [async-io] rate 20507 KiB/s
-* 1 parallel streams per cgroup, O_DIRECT=y
-(cgroup-1, 1 tasks) [direct-io] rate 3906 KiB/s
-(cgroup-2, 1 tasks) [direct-io] rate 3906 KiB/s
-(cgroup-3, 1 tasks) [direct-io] rate 3906 KiB/s
-(cgroup-4, 1 tasks) [direct-io] rate 3906 KiB/s
-* 2 parallel streams per cgroup, O_DIRECT=y
-(cgroup-1, 2 tasks) [direct-io] rate 3906 KiB/s
-(cgroup-2, 2 tasks) [direct-io] rate 3906 KiB/s
-(cgroup-3, 2 tasks) [direct-io] rate 3906 KiB/s
-(cgroup-4, 2 tasks) [direct-io] rate 3906 KiB/s
-* 4 parallel streams per cgroup, O_DIRECT=y
-(cgroup-1, 4 tasks) [direct-io] rate 3906 KiB/s
-(cgroup-2, 4 tasks) [direct-io] rate 3906 KiB/s
-(cgroup-3, 4 tasks) [direct-io] rate 3906 KiB/s
-(cgroup-4, 4 tasks) [direct-io] rate 3906 KiB/s
-
-A snapshot of the writeback IO (with O_DIRECT=n) in bytes/sec:
-(statistics collected using dstat)
-
-	/dev/sda
-	----------
-	21729280.0
-	20733952.0
-	19628032.0
-	19390464.0
-	...		<-- uniform to 20MB/s for the whole run
-
-	average: 19563861.33
-	stdev:    1078639.21
-
-
-==> start benchmark #2 <==
-* block-size: 16384 KB
-* file-size: 262144 KB
-* using 4 io-throttle cgroups:
-  - cgroup 1: 2048 KB/s on /dev/sda
-  - cgroup 2: 4096 KB/s on /dev/sda
-  - cgroup 3: 6144 KB/s on /dev/sda
-  - cgroup 4: 8192 KB/s on /dev/sda
-
-==> results #2 (avg io-rate per cgroup) <==
-* 1 parallel streams per cgroup, O_DIRECT=n
-(cgroup-1, 1 tasks) [async-io] io-bw 2048 KiB/s, io-rate 12695 KiB/s
-(cgroup-2, 1 tasks) [async-io] io-bw 4096 KiB/s, io-rate 15625 KiB/s
-(cgroup-3, 1 tasks) [async-io] io-bw 6144 KiB/s, io-rate 15625 KiB/s
-(cgroup-4, 1 tasks) [async-io] io-bw 8192 KiB/s, io-rate 22460 KiB/s
-* 2 parallel streams per cgroup, O_DIRECT=n
-(cgroup-1, 2 tasks) [async-io] io-bw 2048 KiB/s, io-rate 14648 KiB/s
-(cgroup-2, 2 tasks) [async-io] io-bw 4096 KiB/s, io-rate 20507 KiB/s
-(cgroup-3, 2 tasks) [async-io] io-bw 6144 KiB/s, io-rate 23437 KiB/s
-(cgroup-4, 2 tasks) [async-io] io-bw 8192 KiB/s, io-rate 29296 KiB/s
-* 4 parallel streams per cgroup, O_DIRECT=n
-(cgroup-1, 4 tasks) [async-io] io-bw 2048 KiB/s, io-rate 10742 KiB/s
-(cgroup-2, 4 tasks) [async-io] io-bw 4096 KiB/s, io-rate 16601 KiB/s
-(cgroup-3, 4 tasks) [async-io] io-bw 6144 KiB/s, io-rate 21484 KiB/s
-(cgroup-4, 4 tasks) [async-io] io-bw 8192 KiB/s, io-rate 23437 KiB/s
-* 1 parallel streams per cgroup, O_DIRECT=y
-(cgroup-1, 1 tasks) [direct-io] io-bw 2048 KiB/s, io-rate 2929 KiB/s
-(cgroup-2, 1 tasks) [direct-io] io-bw 4096 KiB/s, io-rate 3906 KiB/s
-(cgroup-3, 1 tasks) [direct-io] io-bw 6144 KiB/s, io-rate 4882 KiB/s
-(cgroup-4, 1 tasks) [direct-io] io-bw 8192 KiB/s, io-rate 5859 KiB/s
-* 2 parallel streams per cgroup, O_DIRECT=y
-(cgroup-1, 2 tasks) [direct-io] io-bw 2048 KiB/s, io-rate 2929 KiB/s
-(cgroup-2, 2 tasks) [direct-io] io-bw 4096 KiB/s, io-rate 4882 KiB/s
-(cgroup-3, 2 tasks) [direct-io] io-bw 6144 KiB/s, io-rate 5859 KiB/s
-(cgroup-4, 2 tasks) [direct-io] io-bw 8192 KiB/s, io-rate 5859 KiB/s
-* 4 parallel streams per cgroup, O_DIRECT=y
-(cgroup-1, 4 tasks) [direct-io] io-bw 2048 KiB/s, io-rate 976 KiB/s
-(cgroup-2, 4 tasks) [direct-io] io-bw 4096 KiB/s, io-rate 1953 KiB/s
-(cgroup-3, 4 tasks) [direct-io] io-bw 6144 KiB/s, io-rate 2929 KiB/s
-(cgroup-4, 4 tasks) [direct-io] io-bw 8192 KiB/s, io-rate 3906 KiB/s
-
-A snapshot of the writeback IO (with O_DIRECT=n) in bytes/sec:
-(statistics collected using dstat)
-
-	/dev/sda
-	----------
-	...		<-- all cgroups running (expected io-rate 20MB/s)
-	19550208.0
-	19030016.0
-	19546112.0
-	20070400.0
-	...		<-- 1st cgroup ends (expected io-rate 12MB/s)
-	12673024.0
-	11304960.0
-	10604544.0
-	12357632.0
-	...		<-- 2nd cgroup ends (expected io-rate 6MB/s)
- 	 6332416.0
-	 6324224.0
-	 6324224.0
-	 6320128.0
-	...		<-- 3rd cgroup ends (expected io-rate 2MB/s)
-	 2105344.0
-	 2113536.0
-	 2097152.0
-	 2101248.0
-
-Open issues & toughts
-~~~~~~~~~~~~~~~~~~~~~
-1) impact for the VM
-
-Limiting the IO without considering the amount of dirty pages per cgroup
-can cause potential OOM conditions due to the presence of hard
-reclaimable pages (that must be flushed to disk, before being evicted
-from memory). At the moment, when a cgroup exceeds the IO BW limit,
-direct IO requests are delayed and at the same time each task (in the
-exceeding cgroups) is blocked in balance_dirty_pages_ratelimited_nr() to
-prevent the generation of additional dirty pages in the system.
-
-This will be probably handled in a better way by the memory cgroup soft
-limits (under development by Kamezawa) and the accounting of the dirty
-pages per cgroup. For the accounting something like task_struct->dirties
-should be probably implemented in struct mem_cgroup (i.e.
-memcg->dirties) to keep track of the dirty pages generated by a generic
-mem_cgroup. And based on these statistics tasks should start to actively
-writeback dirty inodes in proportion of the previously generated dirty
-pages, when a threshold is exceeded.
-
-There are also the cgroups interactions to keep in consideration. As a
-practical example, if task T belonging to cgroup A is dirtying some
-pages in cgroup B and the other tasks in cgroup A dirtied a lot of pages
-in the whole system before, then task T1 should be forced to writeback
-some pages, in proportion of the dirtied pages accounted to A.
-
-In general, all the IO requests generated to writeback some dirty pages
-must be affected by the IO BW limiting rules of the cgroup that
-originally dirtied those pages. So, if B is under memory pressure and
-task T stops to write, the tasks in cgroup B must start to actively
-writeback some dirty pages, but using the BW limits defined for cgroup A
-(that originally dirtied the pages).
-
->From the IO controller point of view, it should only keep track of the
-cgroup that dirtied each page and apply the IO BW limits defined for
-this cgroup for the writeback IO. At the moment the io-throttle
-controller uses this approach to throttle writeback IO requests.
-
-2) impact for the IO subsystem
-
-A block device with IO limits should be considered just like a "normal"
-slow device by the kernel. Following the io-throttle approach, the
-slowness is implemented in the submission of IO requests (throttling the
-tasks directly in submit_bio() for synchronous requests, or delaying
-these requests, adding them in a rbtree and dispatch them asynchronously
-by kiothrottled, for writeback IO). Implementing such slowness at the IO
-scheduler level is another valid solution that should be explored (i.e.
-the work proposed by Vivek).
-
-3) proportional BW and absolute BW limits
-
-Other related works, like dm-ioband or a recent work proposed by Vivek
-(https://lists.linux-foundation.org/pipermail/containers/2009-March/016129.html)
-implement the logic of proportional weight IO control.
-
-Proportional BW control allows to better exploit the whole physical BW
-of the disk: if a cgroup is not using its dedicated BW, other cgroups
-sharing the same disk can make use of the spare BW.
-
-OTOH, absolute limiting rules do not fully exploit all the physical BW,
-but offer an immediate action on policy enforcement. With absolute BW
-limits the problem is mitigated before it happens, because the system
-guarantees that the "hard" limits are never exceeded. IOW it is a kind
-of performance isolation through static partitioning. This approach can
-be suitable for environments where certain critical/low-latency
-applications must respect strict timing constraint (real-time). Or in
-hosted environment where we want to "contain" classes of user as if they
-were on a virtual private system (depending on how much customer
-customer pays).
-
-A good "general-purpose" IO controller should be able to provide both
-solutions to satisfy all the possible user requirements.
-
-Currentely, the proportional BW control is not provided by io-throttle.
-This is in the TODO list, but it requires additional work, especially to
-maintain the controller "light" and to not introduce too much overhead
-or complexity.
-
-4) sync(2) handling
-
-What is the correct behaviour when an user issues "sync" in presence of
-the io-throttle controller?
-
->From the sync(2) manpage:
-
-  According to the standard specification (e.g., POSIX.1-2001), sync() schedules
-  the writes, but may return before the actual  writing  is  done.  However,
-  since version 1.3.20 Linux does actually wait.  (This still does not
-  guarantee data integrity: modern disks have large caches.)
-
-In the current io-throttle implementation the sync(2) waits that all the
-delayed IO requests pending in the rbtree are all flushed back to disk.
-In this way obviuosly a cgroup can be forced to wait for other cgroups'
-BW limit, that could sound strange, but this is probably the correct
-behaviour to respect the semantic of this command.
-
--Andrea
