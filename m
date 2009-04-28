@@ -1,61 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbZD1KJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbZD1KK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbZD1KJu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 06:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbZD1KJk
+	id S1756593AbZD1KK1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 06:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756115AbZD1KKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 06:09:40 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:50578 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754063AbZD1KJk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 06:09:40 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 2.6.30] regulator: Fix default constraints for fixed voltage regulators
-Date: Tue, 28 Apr 2009 11:09:38 +0100
-Message-Id: <1240913378-22201-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.2.4
+	Tue, 28 Apr 2009 06:10:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60324 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754303AbZD1KKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 06:10:06 -0400
+Message-ID: <49F6D5FC.90106@redhat.com>
+Date: Tue, 28 Apr 2009 13:10:04 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Joerg Roedel <joerg.roedel@amd.com>
+CC: Marcelo Tosatti <marcelo@kvack.or>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [PATCH 7/7] kvm x86: report 1GB page support to userspace
+References: <1240574327-21575-1-git-send-email-joerg.roedel@amd.com> <1240574327-21575-8-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1240574327-21575-8-git-send-email-joerg.roedel@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Default voltage constraints were being provided for fixed voltage
-regulator where board constraints were not provided but these constraints
-used INT_MIN as the default minimum voltage which is not a valid value
-since it is less than zero. Use 1uV instead.
+Joerg Roedel wrote:
+> If userspace knows that the kernel part supports 1GB pages it can enable
+> the corresponding cpuid bit so that guests actually use GB pages.
+>   
 
-Also set the default values we set in the constraints themselves since
-otherwise the max_uV constraint we determine will not be stored in the
-actual constraint strucutre and will therefore not be used.
+Why not do everything via KVM_GET_SUPPORTED_CPUID2 and virtualized 
+cpuid?  We can enable it in the kernel unconditionally.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/regulator/core.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index 01f7702..dccf94d 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -703,10 +703,13 @@ static int set_machine_constraints(struct regulator_dev *rdev,
- 		int	cmin = constraints->min_uV;
- 		int	cmax = constraints->max_uV;
- 
--		/* it's safe to autoconfigure fixed-voltage supplies */
-+		/* it's safe to autoconfigure fixed-voltage supplies
-+		   and the constraints are used by list_voltage. */
- 		if (count == 1 && !cmin) {
--			cmin = INT_MIN;
-+			cmin = 1;
- 			cmax = INT_MAX;
-+			constraints->min_uV = cmin;
-+			constraints->max_uV = cmax;
- 		}
- 
- 		/* voltage constraints are optional */
 -- 
-1.6.2.4
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
