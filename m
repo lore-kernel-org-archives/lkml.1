@@ -1,153 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762304AbZD1POB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762358AbZD1POc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762304AbZD1POB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:14:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761749AbZD1PHX
+	id S1762358AbZD1POc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761909AbZD1PIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:07:23 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:35484 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761728AbZD1PHV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:07:21 -0400
-Message-ID: <49F71B63.8010503@cosmosbay.com>
-Date: Tue, 28 Apr 2009 17:06:11 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: linux kernel <linux-kernel@vger.kernel.org>
-CC: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       cl@linux.com, jesse.brandeburg@intel.com, netdev@vger.kernel.org,
-       haoki@redhat.com, mchan@broadcom.com, davidel@xmailserver.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] poll: Avoid extra wakeups in select/poll
-References: <alpine.DEB.1.10.0904241554100.29995@qirst.com>	<49F3308B.1030507@cosmosbay.com>	<20090426.020411.157511269.davem@davemloft.net>	<49F43B8F.2050907@cosmosbay.com> <87ab60rh8t.fsf@basil.nowhere.org>
-In-Reply-To: <87ab60rh8t.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 28 Apr 2009 17:06:12 +0200 (CEST)
+	Tue, 28 Apr 2009 11:08:11 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47117 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761895AbZD1PII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 11:08:08 -0400
+Date: Wed, 29 Apr 2009 01:07:53 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tim Abbott <tabbott@MIT.EDU>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
+       Tim Abbott <tabbott@MIT.EDU>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 11/14] powerpc: Use macros for .data.page_aligned
+ section.
+Message-Id: <20090429010753.851e0f59.sfr@canb.auug.org.au>
+In-Reply-To: <1240864388-26315-12-git-send-email-tabbott@mit.edu>
+References: <1240864388-26315-1-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-2-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-3-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-4-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-5-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-6-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-7-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-8-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-9-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-10-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-11-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-12-git-send-email-tabbott@mit.edu>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__29_Apr_2009_01_07_53_+1000_iaD9/.Vhwwp9qaES"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] poll: Avoid extra wakeups in select/poll
+--Signature=_Wed__29_Apr_2009_01_07_53_+1000_iaD9/.Vhwwp9qaES
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-After introduction of keyed wakeups Davide Libenzi did on epoll, we
-are able to avoid spurious wakeups in poll()/select() code too.
+Hi Tim,
 
-For example, typical use of poll()/select() is to wait for incoming
-network frames on many sockets. But TX completion for UDP/TCP 
-frames call sock_wfree() which in turn schedules thread.
+Firstly, patches for a particular architecture should really be cc'd to
+the list associated with that architecture.  In this case,
+linuxppc-dev@ozlabs.org (cc'd).
 
-When scheduled, thread does a full scan of all polled fds and
-can sleep again, because nothing is really available. If number
-of fds is large, this cause significant load.
+On Mon, 27 Apr 2009 16:33:05 -0400 Tim Abbott <tabbott@MIT.EDU> wrote:
+>
+> +++ b/arch/powerpc/kernel/vmlinux.lds.S
+> @@ -222,6 +222,7 @@ SECTIONS
+> =20
+>  #ifdef CONFIG_PPC32
+>  	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+> +		PAGE_ALIGNED_DATA
+>  		DATA_DATA
+>  		*(.sdata)
+>  		*(.got.plt) *(.got)
+> @@ -259,11 +260,6 @@ SECTIONS
+>  		*(.data.init_task)
+>  	}
+> =20
+> -	. =3D ALIGN(PAGE_SIZE);
+> -	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
+> -		*(.data.page_aligned)
+> -	}
+> -
 
-This patch makes select()/poll() aware of keyed wakeups and
-useless wakeups are avoided. This reduces number of context
-switches by about 50% on some setups, and work performed
-by sofirq handlers.
+This moves the page_aligned section from a common part of the
+vmlinux.lds to a 32 bit only part.  Was that intentional?
 
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-Acked-by: David S. Miller <davem@davemloft.net>
-Acked-by: Andi Kleen <ak@linux.intel.com>
----
- fs/select.c          |   28 +++++++++++++++++++++++++---
- include/linux/poll.h |    3 +++
- 2 files changed, 28 insertions(+), 3 deletions(-)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-diff --git a/fs/select.c b/fs/select.c
-index 0fe0e14..2708187 100644
---- a/fs/select.c
-+++ b/fs/select.c
-@@ -168,7 +168,7 @@ static struct poll_table_entry *poll_get_entry(struct poll_wqueues *p)
- 	return table->entry++;
- }
- 
--static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
-+static int __pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
- {
- 	struct poll_wqueues *pwq = wait->private;
- 	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
-@@ -194,6 +194,16 @@ static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
- 	return default_wake_function(&dummy_wait, mode, sync, key);
- }
- 
-+static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
-+{
-+	struct poll_table_entry *entry;
-+
-+	entry = container_of(wait, struct poll_table_entry, wait);
-+	if (key && !((unsigned long)key & entry->key))
-+		return 0;
-+	return __pollwake(wait, mode, sync, key);
-+}
-+
- /* Add a new entry */
- static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
- 				poll_table *p)
-@@ -205,6 +215,7 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
- 	get_file(filp);
- 	entry->filp = filp;
- 	entry->wait_address = wait_address;
-+	entry->key = p->key;
- 	init_waitqueue_func_entry(&entry->wait, pollwake);
- 	entry->wait.private = pwq;
- 	add_wait_queue(wait_address, &entry->wait);
-@@ -418,8 +429,16 @@ int do_select(int n, fd_set_bits *fds, struct timespec *end_time)
- 				if (file) {
- 					f_op = file->f_op;
- 					mask = DEFAULT_POLLMASK;
--					if (f_op && f_op->poll)
-+					if (f_op && f_op->poll) {
-+						if (wait) {
-+							wait->key = POLLEX_SET;
-+							if (in & bit)
-+								wait->key |= POLLIN_SET;
-+							if (out & bit)
-+								wait->key |= POLLOUT_SET;
-+						}
- 						mask = (*f_op->poll)(file, retval ? NULL : wait);
-+					}
- 					fput_light(file, fput_needed);
- 					if ((mask & POLLIN_SET) && (in & bit)) {
- 						res_in |= bit;
-@@ -685,8 +704,11 @@ static inline unsigned int do_pollfd(struct pollfd *pollfd, poll_table *pwait)
- 		mask = POLLNVAL;
- 		if (file != NULL) {
- 			mask = DEFAULT_POLLMASK;
--			if (file->f_op && file->f_op->poll)
-+			if (file->f_op && file->f_op->poll) {
-+				if (pwait)
-+					pwait->key = pollfd->events | POLLERR | POLLHUP;
- 				mask = file->f_op->poll(file, pwait);
-+			}
- 			/* Mask out unneeded events. */
- 			mask &= pollfd->events | POLLERR | POLLHUP;
- 			fput_light(file, fput_needed);
-diff --git a/include/linux/poll.h b/include/linux/poll.h
-index 8c24ef8..3327389 100644
---- a/include/linux/poll.h
-+++ b/include/linux/poll.h
-@@ -32,6 +32,7 @@ typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_
- 
- typedef struct poll_table_struct {
- 	poll_queue_proc qproc;
-+	unsigned long key;
- } poll_table;
- 
- static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
-@@ -43,10 +44,12 @@ static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_addres
- static inline void init_poll_funcptr(poll_table *pt, poll_queue_proc qproc)
- {
- 	pt->qproc = qproc;
-+	pt->key   = ~0UL; /* all events enabled */
- }
- 
- struct poll_table_entry {
- 	struct file *filp;
-+	unsigned long key;
- 	wait_queue_t wait;
- 	wait_queue_head_t *wait_address;
- };
+--Signature=_Wed__29_Apr_2009_01_07_53_+1000_iaD9/.Vhwwp9qaES
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkn3G8kACgkQjjKRsyhoI8w3FgCfb8JFX/KnkIXLvseIwHQEDQWq
+cJwAniqdZMkUcyCnxdU3lIZbIUenyPqQ
+=yCB6
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__29_Apr_2009_01_07_53_+1000_iaD9/.Vhwwp9qaES--
