@@ -1,43 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763448AbZD1Rn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932322AbZD1Rp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763448AbZD1Rn2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 13:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932356AbZD1Rmu
+	id S932322AbZD1Rp2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 13:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757660AbZD1RpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 13:42:50 -0400
-Received: from dns2.vpop.net ([216.193.240.3]:2687 "EHLO thorin.vpop.net"
+	Tue, 28 Apr 2009 13:45:09 -0400
+Received: from waste.org ([66.93.16.53]:58683 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762541AbZD1RmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 13:42:13 -0400
-X-Greylist: delayed 1878 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Apr 2009 13:42:13 EDT
-Message-ID: <49F738A8.2050001@vpop.net>
-Date: Tue, 28 Apr 2009 10:11:04 -0700
-From: Matt Reimer <mreimer@vpop.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
-MIME-Version: 1.0
-To: Daniel Mack <daniel@caiaq.de>
-CC: linux-kernel@vger.kernel.org, Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>,
-       Anton Vorontsov <cbou@mail.ru>
-Subject: Re: [PATCH 2/3] w1: ds2760: add support for EEPROM read and write
-References: <1240908902-24646-1-git-send-email-daniel@caiaq.de> <1240908902-24646-2-git-send-email-daniel@caiaq.de>
-In-Reply-To: <1240908902-24646-2-git-send-email-daniel@caiaq.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1755540AbZD1RpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 13:45:07 -0400
+Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
+From: Matt Mackall <mpm@selenic.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Larry Woodman <lwoodman@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <20090428093621.GD21085@elte.hu>
+References: <20090428010907.912554629@intel.com>
+	 <20090428014920.769723618@intel.com> <20090428065507.GA2024@elte.hu>
+	 <20090428074031.GK27382@one.firstfloor.org>
+	 <1240909484.1982.16.camel@penberg-laptop> <20090428091508.GA21085@elte.hu>
+	 <84144f020904280219p197d5ceag846ae9a80a76884e@mail.gmail.com>
+	 <84144f020904280225h490ef682p8973cb1241a1f3ea@mail.gmail.com>
+	 <20090428093621.GD21085@elte.hu>
+Content-Type: text/plain
+Date: Tue, 28 Apr 2009 12:42:08 -0500
+Message-Id: <1240940528.938.426.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Mack wrote:
-> In order to modify the DS2762's status registers and to add support for
-> sleep mode, there is need for functions to write the internal EEPROM.
->
-> Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
-> Cc: Matt Reimer <mreimer@vpop.net>
-> Cc: Anton Vorontsov <cbou@mail.ru>
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
->   
+On Tue, 2009-04-28 at 11:36 +0200, Ingo Molnar wrote:
+> I 'integrate' traces all the time to get summary counts. This series 
+> of dynamic events:
+> 
+>   allocation
+>   page count up
+>   page count up
+>   page count down
+>   page count up
+>   page count up
+>   page count up
+>   page count up
+> 
+> integrates into: "page count is 6".
 
-Ack.
+Perhaps you've failed calculus. The integral is 6 + C.
 
-Matt
+This is a critical distinction. Tracing is great for looking at changes,
+but it completely falls down for static system-wide measurements because
+it would require integrating from time=0 to get a meaningful summation.
+That's completely useless for taking a measurement on a system that
+already has an uptime of months. 
+
+Never mind that summing up page flag changes for every page on the
+system since boot time through the trace interface is incredibly
+wasteful given that we're keeping a per-page integral in the page tables
+anyway.
+
+Tracing is not the answer for everything.
+
+-- 
+http://selenic.com : development and support for Mercurial and Linux
+
+
