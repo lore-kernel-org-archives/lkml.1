@@ -1,209 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762165AbZD1PL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762222AbZD1PMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762165AbZD1PL5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761716AbZD1PGx
+	id S1762222AbZD1PMx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761460AbZD1PGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:06:53 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:36112 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760649AbZD1PGt (ORCPT
+	Tue, 28 Apr 2009 11:06:55 -0400
+Received: from gate.crashing.org ([63.228.1.57]:43302 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761706AbZD1PGx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:06:49 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0KITGML-02-1DN-01
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: akpm@linux-foundation.org, greg@kroah.com
-CC: <linux-kernel@vger.kernel.org>, Doug Thompson <dougthompson@xmission.com>,
-       Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 07/21] amd64_edac: add helper to dump relevant registers
-Date: Tue, 28 Apr 2009 17:05:59 +0200
-Message-ID: <1240931173-17477-8-git-send-email-borislav.petkov@amd.com>
-X-Mailer: git-send-email 1.6.2.4
-In-Reply-To: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
-References: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 28 Apr 2009 15:06:20.0505 (UTC) FILETIME=[E34A8C90:01C9C812]
-MIME-Version: 1.0
-Content-Type: text/plain
+	Tue, 28 Apr 2009 11:06:53 -0400
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Message-Id: <982CAD05-5F4A-4A33-B991-16162CFFE1D8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
+In-Reply-To: <20090428144814.GA14926@ime.usp.br>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
+Content-Transfer-Encoding: 8BIT
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] powerpc: minimizing the configuration of linkstation_defconfig
+Date: Tue, 28 Apr 2009 09:54:27 -0500
+References: <20090424065816.GA15525@ime.usp.br> <Pine.LNX.4.64.0904242158210.8309@axis700.grange> <20090424223355.GB7858@ime.usp.br> <2CE2BC61-1C6B-4D01-870B-BC460730AD79@kernel.crashing.org> <20090428022711.GA30538@ime.usp.br> <F78629F9-59D2-4974-8461-06B7FAC2625D@kernel.crashing.org> <20090428144814.GA14926@ime.usp.br>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Doug Thompson <dougthompson@xmission.com>
 
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
----
- drivers/edac/amd64_edac.c |  157 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 157 insertions(+), 0 deletions(-)
+On Apr 28, 2009, at 9:48 AM, Rogério Brito wrote:
 
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index b6d0b30..8d67d1b 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -1752,3 +1752,160 @@ static int sys_addr_to_csrow(struct mem_ctl_info *mci, u64 sys_addr)
- 	return csrow;
- }
- 
-+static int get_channel_from_x4_syndrome(unsigned short syndrome);
-+static int get_channel_from_x8_syndrome(unsigned short syndrome);
-+
-+
-+static void amd64_cpu_display_info(struct amd64_pvt *pvt)
-+{
-+	if (boot_cpu_data.x86 == 0x11)
-+		edac_printk(KERN_DEBUG, EDAC_MC, "F11h CPU detected\n");
-+	else if (boot_cpu_data.x86 == 0x10)
-+		edac_printk(KERN_DEBUG, EDAC_MC, "F10h CPU detected\n");
-+	else if (boot_cpu_data.x86 == 0xf)
-+		edac_printk(KERN_DEBUG, EDAC_MC, "%s detected\n",
-+			(pvt->ext_model >= OPTERON_CPU_REV_F) ?
-+			"Rev F or later" : "Rev E or earlier");
-+	else
-+		/* we'll hardly ever ever get here */
-+		edac_printk(KERN_ERR, EDAC_MC, "Unknown cpu!\n");
-+}
-+
-+/*
-+ * amd64_determine_edac_cap
-+ *
-+ *	Determine if the DIMMs have ECC enabled. ECC is enabled ONLY if all the
-+ *	DIMMs are ECC capable.
-+ */
-+static enum edac_type amd64_determine_edac_cap(struct amd64_pvt *pvt)
-+{
-+	int bit;
-+	enum dev_type edac_cap = EDAC_NONE;
-+
-+	bit = (boot_cpu_data.x86 > 0xf || pvt->ext_model >= OPTERON_CPU_REV_F)
-+		? 19
-+		: 17;
-+
-+	if (pvt->dclr0 >> BIT(bit)) {
-+		debugf1("  edac_type is: EDAC_FLAG_SECDED\n");
-+		edac_cap = EDAC_FLAG_SECDED;
-+	}
-+
-+	return edac_cap;
-+}
-+
-+
-+static void f10_debug_display_dimm_sizes(int ctrl,
-+					struct amd64_pvt *pvt, int ganged);
-+
-+/*
-+ * amd64_dump_misc_regs
-+ *
-+ *	for debug purposes, display and decode various NB registers that
-+ *	are for the f10 family.
-+ *
-+ *	This function become a no-op when DEBUG is disabled
-+ */
-+static void amd64_dump_misc_regs(struct amd64_pvt *pvt)
-+{
-+	int ganged;
-+
-+	debugf1("  nbcap:0x%8.08x DctDualCap=%s DualNode=%s 8-Node=%s\n",
-+		pvt->nbcap,
-+		(pvt->nbcap & K8_NBCAP_DCT_DUAL) ? "True" : "False",
-+		(pvt->nbcap & K8_NBCAP_DUAL_NODE) ? "True" : "False",
-+		(pvt->nbcap & K8_NBCAP_8_NODE) ? "True" : "False");
-+	debugf1("    ECC Capable=%s   ChipKill Capable=%s\n",
-+		(pvt->nbcap & K8_NBCAP_SECDED) ? "True" : "False",
-+		(pvt->nbcap & K8_NBCAP_CHIPKILL) ? "True" : "False");
-+	debugf1("  DramCfg0-low=0x%08x DIMM-ECC=%s Parity=%s Width=%s\n",
-+		pvt->dclr0,
-+		(pvt->dclr0 & BIT(19)) ?  "Enabled" : "Disabled",
-+		(pvt->dclr0 & BIT(8)) ?  "Enabled" : "Disabled",
-+		(pvt->dclr0 & BIT(11)) ?  "128b" : "64b");
-+	debugf1("    DIMM x4 Present: L0=%s L1=%s L2=%s L3=%s  DIMM Type=%s\n",
-+		(pvt->dclr0 & BIT(12)) ?  "Y" : "N",
-+		(pvt->dclr0 & BIT(13)) ?  "Y" : "N",
-+		(pvt->dclr0 & BIT(14)) ?  "Y" : "N",
-+		(pvt->dclr0 & BIT(15)) ?  "Y" : "N",
-+		(pvt->dclr0 & BIT(16)) ?  "UN-Buffered" : "Buffered");
-+
-+
-+	debugf1("  online-spare: 0x%8.08x\n", pvt->online_spare);
-+
-+	if (boot_cpu_data.x86 == 0xf) {
-+		/* K8 DHAR regiseter */
-+		debugf1("  dhar: 0x%8.08x Base=0x%08x Offset=0x%08x\n",
-+			pvt->dhar, dhar_base(pvt->dhar),
-+			k8_dhar_offset(pvt->dhar));
-+		debugf1("      DramHoleValid=%s\n",
-+			(pvt->dhar & DHAR_VALID) ?  "True" : "False");
-+
-+		debugf1("  dbam-dkt: 0x%8.08x\n", pvt->dbam0);
-+
-+		/* everything below this point is Fam10h and above */
-+		return;
-+
-+	} else {
-+		/* F10 DHAR register */
-+		debugf1("  dhar: 0x%8.08x Base=0x%08x Offset=0x%08x\n",
-+			pvt->dhar, dhar_base(pvt->dhar),
-+			f10_dhar_offset(pvt->dhar));
-+		debugf1("    DramMemHoistValid=%s DramHoleValid=%s\n",
-+			(pvt->dhar & F10_DRAM_MEM_HOIST_VALID) ?
-+			"True" : "False",
-+			(pvt->dhar & DHAR_VALID) ?
-+			"True" : "False");
-+	}
-+
-+	/* Only if NOT ganged does dcl1 have valid info */
-+	if (!dct_ganging_enabled(pvt)) {
-+		debugf1("  DramCfg1-low=0x%08x DIMM-ECC=%s Parity=%s "
-+			"Width=%s\n", pvt->dclr1,
-+			(pvt->dclr1 & BIT(19)) ?  "Enabled" : "Disabled",
-+			(pvt->dclr1 & BIT(8)) ?  "Enabled" : "Disabled",
-+			(pvt->dclr1 & BIT(11)) ?  "128b" : "64b");
-+		debugf1("    DIMM x4 Present: L0=%s L1=%s L2=%s L3=%s  "
-+			"DIMM Type=%s\n",
-+			(pvt->dclr1 & BIT(12)) ?  "Y" : "N",
-+			(pvt->dclr1 & BIT(13)) ?  "Y" : "N",
-+			(pvt->dclr1 & BIT(14)) ?  "Y" : "N",
-+			(pvt->dclr1 & BIT(15)) ?  "Y" : "N",
-+			(pvt->dclr1 & BIT(16)) ?  "UN-Buffered" : "Buffered");
-+	}
-+
-+	/*
-+	 * Determine if ganged and then dump memory sizes for first controller,
-+	 * and if NOT ganged dump info for 2nd controller.
-+	 */
-+	ganged = dct_ganging_enabled(pvt);
-+
-+	f10_debug_display_dimm_sizes(0, pvt, ganged);
-+
-+	if (!ganged)
-+		f10_debug_display_dimm_sizes(1, pvt, ganged);
-+}
-+
-+/*
-+ * amd64_read_dbam_reg
-+ *
-+ * Read in both of DBAM registers
-+ */
-+static void amd64_read_dbam_reg(struct amd64_pvt *pvt)
-+{
-+	int err;
-+
-+	err = pci_read_config_dword(pvt->dram_f2_ctl, DBAM0, &pvt->dbam0);
-+	if (err != 0)
-+		debugf0("%s() Reading DBAM0 failed\n", __func__);
-+
-+	if (boot_cpu_data.x86 >= 0x10) {
-+		err = pci_read_config_dword(pvt->dram_f2_ctl, DBAM1,
-+					&pvt->dbam1);
-+
-+		if (err != 0)
-+			debugf0("%s() Reading DBAM1 failed\n", __func__);
-+	}
-+}
-+
-+
--- 
-1.6.2.4
+> On Apr 28 2009, Kumar Gala wrote:
+>> I'm pretty sure we need this for old initrd style ramdisks so I'd  
+>> prefer
+>> we leave it enabled.
+>
+> Oh, for oldstyle it is needed. You're right. It is better to keep it  
+> in
+> the defconfig. Just drop the hunk from the patch that I sent you.
 
+just send a new patch w/this fixed.
 
+- k
