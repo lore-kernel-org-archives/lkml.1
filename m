@@ -1,138 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762184AbZD1PxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762340AbZD1Pxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762184AbZD1PxM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:53:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761479AbZD1Pwx
+	id S1762340AbZD1Pxt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761597AbZD1Pxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:52:53 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48758 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755669AbZD1Pww (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:52:52 -0400
-Date: Tue, 28 Apr 2009 17:52:51 +0200
-From: Jan Kara <jack@suse.cz>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [PATCH 4/5] ext4: Replace lock/unlock_super() with an explicit lock for the orphan list
-Message-ID: <20090428155250.GH21950@atrey.karlin.mff.cuni.cz>
-References: <1240717765-16572-1-git-send-email-tytso@mit.edu> <1240717765-16572-2-git-send-email-tytso@mit.edu> <1240717765-16572-3-git-send-email-tytso@mit.edu> <1240717765-16572-4-git-send-email-tytso@mit.edu> <1240717765-16572-5-git-send-email-tytso@mit.edu>
+	Tue, 28 Apr 2009 11:53:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41261 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761199AbZD1Pxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 11:53:35 -0400
+Message-ID: <49F7260F.8030405@kernel.org>
+Date: Tue, 28 Apr 2009 08:51:43 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240717765-16572-5-git-send-email-tytso@mit.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Greg KH <gregkh@suse.de>
+CC: Kay Sievers <kay.sievers@vrfy.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [RFC PATCH] use dev_set_name(,NULL) to prevent leaking
+References: <20090418192314.GA22107@suse.de> <ac3eb2510904181300v2593c36dua6c2420828860706@mail.gmail.com> <1240086446.2411.9.camel@poy> <20090418203718.GD30144@elte.hu> <49EA4EB9.2030307@kernel.org> <49F6B1E6.7050008@kernel.org> <49F6B350.9080703@kernel.org> <ac3eb2510904280125w11a58388u6a51997e28609009@mail.gmail.com> <49F71EF6.3050102@kernel.org> <49F72205.7030306@kernel.org> <20090428153906.GA8896@suse.de>
+In-Reply-To: <20090428153906.GA8896@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
-
-> Use a separate lock to protect the orphan list, so we can stop
-> overloading the use of lock_super().
-  Yes, this was needed for a long time.
-
-> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-> ---
->  fs/ext4/ext4_sb.h |    1 +
->  fs/ext4/namei.c   |   20 +++++++++++---------
->  fs/ext4/super.c   |    1 +
->  3 files changed, 13 insertions(+), 9 deletions(-)
+Greg KH wrote:
+> On Tue, Apr 28, 2009 at 08:34:29AM -0700, Yinghai Lu wrote:
+>> Yinghai Lu wrote:
+>>> Kay Sievers wrote:
+>>>> On Tue, Apr 28, 2009 at 09:42, Yinghai Lu <yinghai@kernel.org> wrote:
+>>>>> those about 1/3 dev_set_name() etc.
+>>>> put_device()?
+>>>>
+>>>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=drivers/base/core.c;h=4aa527b8a91381289eb175b33f46e3e418d10374;hb=HEAD#l848
+>>>>
+>>> ok, normal release path seems right, put_device will free the name.
+>>>
+>>> how about other fail path, that there is not put_device involved?
+>>>
+>>  
+>> looks like need to follow this pattern
+>>
+>> static int
+>> sa1111_init_one_child(struct sa1111 *sachip, struct resource *parent,
+>>                       struct sa1111_dev_info *info)
+>> {
+>>         struct sa1111_dev *dev;
+>>         int ret;
+>>
+>>         dev = kzalloc(sizeof(struct sa1111_dev), GFP_KERNEL);
+>>         if (!dev) {
+>>                 ret = -ENOMEM;
+>>                 goto out;
+>>         }
+>>
+>>         dev_set_name(&dev->dev, "%4.4lx", info->offset);
+>>         dev->devid       = info->devid;
+>>         dev->dev.parent  = sachip->dev;
+>>         dev->dev.bus     = &sa1111_bus_type;
+>>         dev->dev.release = sa1111_dev_release;
+>>         dev->dev.coherent_dma_mask = sachip->dev->coherent_dma_mask;
+>>         dev->res.start   = sachip->phys + info->offset;
+>>         dev->res.end     = dev->res.start + 511;
+>>         dev->res.name    = dev_name(&dev->dev);
+>>         dev->res.flags   = IORESOURCE_MEM;
+>>         dev->mapbase     = sachip->base + info->offset;
+>>         dev->skpcr_mask  = info->skpcr_mask;
+>>         memmove(dev->irq, info->irq, sizeof(dev->irq));
+>>
+>>         ret = request_resource(parent, &dev->res);
+>>         if (ret) {
+>>                 printk("SA1111: failed to allocate resource for %s\n",
+>>                         dev->res.name);
+>>                 dev_set_name(&dev->dev, NULL); ============> clear the name
+>>                 kfree(dev);
+>>                 goto out;
+>>         }
+>>         
+>>
+>>         ret = device_register(&dev->dev);
+>>         if (ret) {
+>>                 release_resource(&dev->res);
+>>                 put_device(&dev->dev);   ==================> put the device...
+>>                 kfree(dev);
+>>                 goto out;
+>>         }
 > 
-> diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
-> index 57b71fe..4bda2f7 100644
-> --- a/fs/ext4/ext4_sb.h
-> +++ b/fs/ext4/ext4_sb.h
-> @@ -71,6 +71,7 @@ struct ext4_sb_info {
->  	struct inode *s_journal_inode;
->  	struct journal_s *s_journal;
->  	struct list_head s_orphan;
-> +	struct mutex s_orphan_lock;
->  	unsigned long s_commit_interval;
->  	u32 s_max_batch_time;
->  	u32 s_min_batch_time;
-> diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
-> index 22098e1..8018e49 100644
-> --- a/fs/ext4/namei.c
-> +++ b/fs/ext4/namei.c
-> @@ -1997,7 +1997,7 @@ int ext4_orphan_add(handle_t *handle, struct inode *inode)
->  	if (!ext4_handle_valid(handle))
->  		return 0;
->  
-> -	lock_super(sb);
-> +	mutex_lock(&EXT4_SB(sb)->s_orphan_lock);
->  	if (!list_empty(&EXT4_I(inode)->i_orphan))
->  		goto out_unlock;
->  
-> @@ -2006,9 +2006,13 @@ int ext4_orphan_add(handle_t *handle, struct inode *inode)
->  
->  	/* @@@ FIXME: Observation from aviro:
->  	 * I think I can trigger J_ASSERT in ext4_orphan_add().  We block
-> -	 * here (on lock_super()), so race with ext4_link() which might bump
-> +	 * here (on s_orphan_lock), so race with ext4_link() which might bump
->  	 * ->i_nlink. For, say it, character device. Not a regular file,
->  	 * not a directory, not a symlink and ->i_nlink > 0.
-> +	 *
-> +	 * tytso, 4/25/2009: I'm not sure how that could happen;
-> +	 * shouldn't the fs core protect us from these sort of
-> +	 * unlink()/link() races?
->  	 */
-  We always call ext4_orphan_add() under i_mutex of the inode we are
-adding (except for migrate code, well) and hence i_nlink should better
-be stable... I'd just remove the comment.
+> You can just do a "put_device()" in both places, and it should be fine.
+> 
 
->  	J_ASSERT((S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode) ||
->  		  S_ISLNK(inode->i_mode)) || inode->i_nlink == 0);
-> @@ -2045,7 +2049,7 @@ int ext4_orphan_add(handle_t *handle, struct inode *inode)
->  	jbd_debug(4, "orphan inode %lu will point to %d\n",
->  			inode->i_ino, NEXT_ORPHAN(inode));
->  out_unlock:
-> -	unlock_super(sb);
-> +	mutex_unlock(&EXT4_SB(sb)->s_orphan_lock);
->  	ext4_std_error(inode->i_sb, err);
->  	return err;
->  }
-> @@ -2066,11 +2070,9 @@ int ext4_orphan_del(handle_t *handle, struct inode *inode)
->  	if (!ext4_handle_valid(handle))
->  		return 0;
->  
-> -	lock_super(inode->i_sb);
-> -	if (list_empty(&ei->i_orphan)) {
-> -		unlock_super(inode->i_sb);
-> -		return 0;
-> -	}
-> +	mutex_lock(&EXT4_SB(inode->i_sb)->s_orphan_lock);
-> +	if (list_empty(&ei->i_orphan))
-> +		goto out;
->  
->  	ino_next = NEXT_ORPHAN(inode);
->  	prev = ei->i_orphan.prev;
-> @@ -2120,7 +2122,7 @@ int ext4_orphan_del(handle_t *handle, struct inode *inode)
->  out_err:
->  	ext4_std_error(inode->i_sb, err);
->  out:
-> -	unlock_super(inode->i_sb);
-> +	mutex_unlock(&EXT4_SB(inode->i_sb)->s_orphan_lock);
->  	return err;
->  
->  out_brelse:
-> diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-> index 176d43f..c23e82c 100644
-> --- a/fs/ext4/super.c
-> +++ b/fs/ext4/super.c
-> @@ -2623,6 +2623,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
->  	sb->dq_op = &ext4_quota_operations;
->  #endif
->  	INIT_LIST_HEAD(&sbi->s_orphan); /* unlinked but open files */
-> +	mutex_init(&sbi->s_orphan_lock);
->  
->  	sb->s_root = NULL;
-  Otherwise the patch looks good.
+before device_register==>device_initialize is called, kobj->ref is still 0.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+will get warn from
+                if (!kobj->state_initialized)
+                        WARN(1, KERN_WARNING "kobject: '%s' (%p): is not "
+                               "initialized, yet kobject_put() is being "
+                               "called.\n", kobject_name(kobj), kobj);
+
+also wonder
+int kref_put(struct kref *kref, void (*release)(struct kref *kref))
+{
+        WARN_ON(release == NULL);
+        WARN_ON(release == (void (*)(struct kref *))kfree);
+
+        if (atomic_dec_and_test(&kref->refcount)) {
+                release(kref);
+                return 1;
+        }
+        return 0;
+}
+
+what will be return from atomic_dec_and_test
+
+YH
