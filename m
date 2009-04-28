@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbZD1W0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbZD1WfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756012AbZD1W0o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 18:26:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbZD1W0b
+	id S1754461AbZD1WfA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 18:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbZD1Wev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 18:26:31 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:35322 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753360AbZD1W0a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 18:26:30 -0400
-Subject: Re: [PATCH] scsi: ses check name in enclosure_component_register
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Linux-Scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <49F6678D.3080207@kernel.org>
-References: <49F6678D.3080207@kernel.org>
-Content-Type: text/plain
-Date: Tue, 28 Apr 2009 17:26:29 -0500
-Message-Id: <1240957589.3380.67.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Apr 2009 18:34:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50408 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753243AbZD1Weu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 18:34:50 -0400
+Date: Wed, 29 Apr 2009 00:30:25 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: David Howells <dhowells@redhat.com>, Eric Paris <eparis@parisplace.org>,
+       James Morris <jmorris@namei.org>, Roland McGrath <roland@redhat.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>
+Cc: linux-kernel@vger.kernel.org
+Subject: Q: selinux_bprm_committed_creds() && signals/do_wait
+Message-ID: <20090428223025.GA11997@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-27 at 19:18 -0700, Yinghai Lu wrote:
-> dev_set_name will use sprintf to copy the name.
-> need to check if the name does valid.
-> 
-> otherwise will error from device_add later.
+selinux_bprm_committed_creds:
 
-I think what you mean to say is that empty names aren't allowed in the
-device model.
+	rc = avc_has_perm()
+	if (rc) {
+		flush_signals(current);
 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> diff --git a/drivers/misc/enclosure.c b/drivers/misc/enclosure.c
-> index 3cf61ec..68743a9 100644
-> --- a/drivers/misc/enclosure.c
-> +++ b/drivers/misc/enclosure.c
-> @@ -255,7 +255,7 @@ enclosure_component_register(struct enclosure_device *edev,
->  	ecomp->number = number;
->  	cdev = &ecomp->cdev;
->  	cdev->parent = get_device(&edev->edev);
-> -	if (name)
-> +	if (name && name[0])
->  		dev_set_name(cdev, name);
+This doesn't look right. If the task was SIGKILL'ed we must not proceed,
+the task should die. The fix is simple, we should check SIGNAL_GROUP_EXIT
+and do nothing in this case, the task will exit before return to user
+space. If SIGNAL_GROUP_EXIT is set, it is just wrong to drop SIGKILL and
+continue.
 
-Actually, I think this should become
+But, before fixing, I'd like to understand why we are doing
 
-dev_set_name(cdev, "%s", name);
+		flush_signal_handlers(current, 1);
+		sigemptyset(&current->blocked);
 
-as well, otherwise any name with a percent in it will get interpreted in
-ways we're not expecting at all.
+later. Could someone explain ? This looks unneeded.
 
-James
 
+Another question,
+
+	wake_up_interruptible(&current->parent->signal->wait_chldexit);
+
+Shouldn't we use ->real_parent ? Afaics, we shouldn't worry about the tracer
+if current is ptraced, exec must not succeed if the tracer has no rights to
+trace this task after cred changing. But we should notify ->real_parent which
+is, well, real parent.
+
+Also, we don't need _irq to take tasklist_lock, and we don't actually need
+->siglock.
+
+Oleg.
 
