@@ -1,48 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbZD1OuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932133AbZD1OvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756472AbZD1OuX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 10:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759209AbZD1OuH
+	id S932133AbZD1OvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 10:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761209AbZD1Ou7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 10:50:07 -0400
-Received: from relay.atmel.no ([80.232.32.139]:56721 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756024AbZD1OuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 10:50:06 -0400
-Date: Tue, 28 Apr 2009 16:49:59 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Tim Abbott <tabbott@MIT.EDU>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
-       Tim Abbott <tabbott@MIT.EDU>
-Subject: Re: [PATCH 07/14] avr32: Use standard macros for .data.page_aligned
- section.
-Message-ID: <20090428164959.021fd35b@hskinnemoen-d830>
-In-Reply-To: <1240864388-26315-8-git-send-email-tabbott@mit.edu>
-References: <1240864388-26315-1-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-2-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-3-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-4-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-5-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-6-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-7-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-8-git-send-email-tabbott@mit.edu>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Apr 2009 10:50:59 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:62739 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754378AbZD1Ou6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 10:50:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MFcrhSnEmyadq8Lbhyc9bnXV/0lOAORY6D2S4o420X33/AZNkQ2H8+laWOpHxkQUhh
+         LcOS80vmkuNOMpJdidRSUc+ZEdOKyMJ/l4nweX5/rSzqrcaMvMo8AH4QBLTPm32oneJu
+         r9ZA8Jg0eB0fFuY4QZG4DY+nj8eTJbN23/bu0=
+Date: Tue, 28 Apr 2009 16:50:50 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Paul Menage <menage@google.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, tytso@mit.edu,
+       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
+       matt@bluehost.com, dradford@bluehost.com, ngupta@google.com,
+       randy.dunlap@oracle.com, roberto@unbit.it,
+       Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
+       fchecconi@gmail.com, paolo.valente@unimore.it, m-ikeda@ds.jp.nec.com,
+       paulmck@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v15 4/7] io-throttle controller infrastructure
+Message-ID: <20090428145050.GB990@linux>
+References: <1240908234-15434-1-git-send-email-righi.andrea@gmail.com> <1240908234-15434-5-git-send-email-righi.andrea@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240908234-15434-5-git-send-email-righi.andrea@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Abbott wrote:
-> Signed-off-by: Tim Abbott <tabbott@mit.edu>
-> Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+On Tue, Apr 28, 2009 at 10:43:51AM +0200, Andrea Righi wrote:
+> This is the core of the io-throttle kernel infrastructure. It creates
+> the basic interfaces to the cgroup subsystem and implements the I/O
+> measurement and throttling functionality.
 
-Assuming the definition of PAGE_ALIGNED_DATA is sane,
+Subject: io-throttle: correctly throttle O_DIRECT reads
 
-Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+There's a bug in the latest io-throttle patchset: the IO generated by
+O_DIRECT reads is correctly accounted, but tasks doing direct IO are not
+correctly throttled.
+
+The following fix apply the correct behaviour, throttling the tasks that
+are doing O_DIRECT reads directly, instead of delaying their IO
+requests.
+
+[ This patch must be applied on top of io-throttle v15 ]
+
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+---
+ block/blk-io-throttle.c |   21 ++++++++++++---------
+ 1 files changed, 12 insertions(+), 9 deletions(-)
+
+diff --git a/block/blk-io-throttle.c b/block/blk-io-throttle.c
+index 380a21a..8dc2c93 100644
+--- a/block/blk-io-throttle.c
++++ b/block/blk-io-throttle.c
+@@ -803,12 +803,21 @@ cgroup_io_throttle(struct bio *bio, struct block_device *bdev, ssize_t bytes)
+ 	 * cgroup. If they're different we're doing writeback IO and we can't
+ 	 * throttle the current task directly.
+ 	 */
+-	if (!is_in_dio())
++	if (!is_in_dio()) {
++		/*
++		 * We're not doing O_DIRECT: find the source of this IO
++		 * request.
++		 */
+ 		iot = get_iothrottle_from_bio(bio);
++	}
+ 	rcu_read_lock();
+ 	curr_iot = task_to_iothrottle(current);
+-	if (curr_iot != iot) {
+-		css_get(&curr_iot->css);
++	if (iot == NULL) {
++		/* IO occurs in the same context of the current task */
++		iot = curr_iot;
++		css_get(&iot->css);
++	}
++	if (iot != curr_iot) {
+ 		/*
+ 		 * IO occurs in a different context of the current task
+ 		 * (writeback IO).
+@@ -819,10 +828,6 @@ cgroup_io_throttle(struct bio *bio, struct block_device *bdev, ssize_t bytes)
+ 		 */
+ 		can_sleep = 0;
+ 	}
+-	if (iot == NULL) {
+-		/* IO occurs in the same context of the current task */
+-		iot = curr_iot;
+-	}
+ 	/* Apply IO throttling */
+ 	iothrottle_evaluate_sleep(&s, iot, bdev, bytes);
+ 	sleep = max(s.bw_sleep, s.iops_sleep);
+@@ -831,8 +836,6 @@ cgroup_io_throttle(struct bio *bio, struct block_device *bdev, ssize_t bytes)
+ 	if (unlikely(sleep && can_sleep))
+ 		iothrottle_acct_stat(iot, bdev, type, sleep);
+ 	css_put(&iot->css);
+-	if (curr_iot != iot)
+-		css_put(&curr_iot->css);
+ 	rcu_read_unlock();
+ 	if (unlikely(sleep && can_sleep)) {
+ 		/* Throttle the current task directly */
