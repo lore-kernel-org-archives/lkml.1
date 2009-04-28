@@ -1,127 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756415AbZD1AnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbZD1A7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756415AbZD1AnU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 20:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZD1AnJ
+	id S1755161AbZD1A7L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 20:59:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbZD1A64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 20:43:09 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:32887 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751257AbZD1AnI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 20:43:08 -0400
-Date: Tue, 28 Apr 2009 09:41:32 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fix leak of swap accounting as stale swap cache under
- memcg
-Message-Id: <20090428094132.6f4e0912.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090427101323.GK4454@balbir.in.ibm.com>
-References: <20090427181259.6efec90b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090427101323.GK4454@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Apr 2009 20:58:56 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47293 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751257AbZD1A6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 20:58:55 -0400
+Message-ID: <49F6546E.3040406@kernel.org>
+Date: Mon, 27 Apr 2009 17:57:18 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/9] irq: correct CPUMASKS_OFFSTACK typo -v5
+References: <49E68C41.4020801@kernel.org> <20090416090315.GF9813@elte.hu> <49E802CE.5030406@kernel.org>
+In-Reply-To: <49E802CE.5030406@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Apr 2009 15:43:23 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-27 18:12:59]:
-> 
-> > Works very well under my test as following.
-> >   prepare a program which does malloc, touch pages repeatedly.
-> > 
-> >   # echo 2M > /cgroup/A/memory.limit_in_bytes  # set limit to 2M.
-> >   # echo 0 > /cgroup/A/tasks.                  # add shell to the group. 
-> > 
-> >   while true; do
-> >     malloc_and_touch 1M &                       # run malloc and touch program.
-> >     malloc_and_touch 1M &
-> >     malloc_and_touch 1M &
-> >     sleep 3
-> >     pkill malloc_and_touch                      # kill them
-> >   done
-> > 
-> > Then, you can see memory.memsw.usage_in_bytes increase gradually and exceeds 3M bytes.
-> > This means account for swp_entry is not reclaimed at kill -> exit-> zap_pte()
-> > because of race with swap-ops and zap_pte() under memcg.
-> > 
-> > ==
-> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> > Because free_swap_and_cache() function is called under spinlocks,
-> > it can't sleep and use trylock_page() instead of lock_page().
-> > By this, swp_entry which is not used after zap_xx can exists as
-> > SwapCache, which will be never used.
-> > This kind of SwapCache is reclaimed by global LRU when it's found
-> > at LRU rotation. Typical case is following.
-> >
-> 
-> The changelog is not clear, this is the typical case for?
->  
-> >        (CPU0 zap_pte)      (CPU1 swapin-readahead)
-> >      zap_pte()                swap_duplicate()
-> >      swap_entry_free()
-> >      -> nothing to do 
-> >                               swap will be read in.
-> > 
-> > (This race window is wider than expected because of readahead)
-> > 
-> 
-> This should happen when the page is undergoing IO and this page_lock
-> is not available. BTW, do we need page_lock to uncharge the page from
-> the memory resource controller?
-> 
-> > When memory cgroup is used, the global LRU will not be kicked and
-> > stale Swap Caches will not be reclaimed. Newly read-in swap cache is
-> > not accounted and not added to memcg's LRU until it's mapped.
-> 
->       ^^^^^^^ I thought it was accounted for but not on LRU
-> 
-> > So, memcg itself cant reclaim it but swp_entry is freed untila
->                                                    ^ not?
-> > global LRU finds it.
-> > 
-> > This is problematic because memcg's swap entry accounting is leaked
-> > memcg can't know it. To catch this stale SwapCache, we have to chase it
-> > and check the swap is alive or not again.
-> > 
-> > For chasing all swap entry, we need amount of memory but we don't
-> > have enough space and it seems overkill. But, because stale-swap-cache
-> > can be short-lived if we free it in proper way, we can check them
-> > and sweep them out in lazy way with (small) static size buffer.
-> > 
-> > This patch adds a function to chase stale swap cache and reclaim it.
-> > When zap_xxx fails to remove swap ent, it will be recoreded into buffer
-> > and memcg's sweep routine will reclaim it later.
-> > No sleep, no memory allocation under free_swap_and_cache().
-> > 
-> > This patch also adds stale-swap-cache-congestion logic and try to avoid to
-> > have too much stale swap caches at once.
-> > 
-> > Implementation is naive but maybe the cost meets trade-off.
-> >
-> 
-> To be honest, I don't like the code complexity added, that is why I
-> want to explore more before agreeing to add an entire GC. We could
-> consider using pagevecs, but we might not need some of the members
-> like cold. I know you and Daisuke have worked hard on this problem, if
-> we can't really find a better way, I'll let this pass.
->  
-I'll drop this patch and consider again. (If no way found, I'll do this again.)
-It's ok if you or Nishimura think of something new.
+Impact: fix smp_affinity copying when moving irq_desc
 
+CPUMASKS_OFFSTACK is not defined anywhere. it is a typo
+and init_allocate_desc_masks called before it set affinity to all cpus...
 
-Thanks,
--Kame
+split init_alloc_desc_masks() into all_desc_masks() and init_desc_masks()
 
+also could use that CPUMASK_OFFSTACK in alloc_desc_masks()
+
+v5: apply before NUMA_IRQ_DESC_MIGRATION
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+
+---
+ include/linux/irq.h       |   27 ++++++++++++++++++---------
+ kernel/irq/handle.c       |    9 ++++++---
+ kernel/irq/numa_migrate.c |    2 +-
+ 3 files changed, 25 insertions(+), 13 deletions(-)
+
+Index: linux-2.6/include/linux/irq.h
+===================================================================
+--- linux-2.6.orig/include/linux/irq.h
++++ linux-2.6/include/linux/irq.h
+@@ -424,27 +424,25 @@ extern int set_irq_msi(unsigned int irq,
+ 
+ #ifdef CONFIG_SMP
+ /**
+- * init_alloc_desc_masks - allocate cpumasks for irq_desc
++ * alloc_desc_masks - allocate cpumasks for irq_desc
+  * @desc:	pointer to irq_desc struct
+  * @cpu:	cpu which will be handling the cpumasks
+  * @boot:	true if need bootmem
+  *
+  * Allocates affinity and pending_mask cpumask if required.
+  * Returns true if successful (or not required).
+- * Side effect: affinity has all bits set, pending_mask has all bits clear.
+  */
+-static inline bool init_alloc_desc_masks(struct irq_desc *desc, int cpu,
++static inline bool alloc_desc_masks(struct irq_desc *desc, int cpu,
+ 								bool boot)
+ {
++#ifdef CONFIG_CPUMASK_OFFSTACK
+ 	int node;
+ 
+ 	if (boot) {
+ 		alloc_bootmem_cpumask_var(&desc->affinity);
+-		cpumask_setall(desc->affinity);
+ 
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+ 		alloc_bootmem_cpumask_var(&desc->pending_mask);
+-		cpumask_clear(desc->pending_mask);
+ #endif
+ 		return true;
+ 	}
+@@ -453,18 +451,25 @@ static inline bool init_alloc_desc_masks
+ 
+ 	if (!alloc_cpumask_var_node(&desc->affinity, GFP_ATOMIC, node))
+ 		return false;
+-	cpumask_setall(desc->affinity);
+ 
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+ 	if (!alloc_cpumask_var_node(&desc->pending_mask, GFP_ATOMIC, node)) {
+ 		free_cpumask_var(desc->affinity);
+ 		return false;
+ 	}
+-	cpumask_clear(desc->pending_mask);
++#endif
+ #endif
+ 	return true;
+ }
+ 
++static inline void init_desc_masks(struct irq_desc *desc)
++{
++	cpumask_setall(desc->affinity);
++#ifdef CONFIG_GENERIC_PENDING_IRQ
++	cpumask_clear(desc->pending_mask);
++#endif
++}
++
+ /**
+  * init_copy_desc_masks - copy cpumasks for irq_desc
+  * @old_desc:	pointer to old irq_desc struct
+@@ -478,7 +483,7 @@ static inline bool init_alloc_desc_masks
+ static inline void init_copy_desc_masks(struct irq_desc *old_desc,
+ 					struct irq_desc *new_desc)
+ {
+-#ifdef CONFIG_CPUMASKS_OFFSTACK
++#ifdef CONFIG_CPUMASK_OFFSTACK
+ 	cpumask_copy(new_desc->affinity, old_desc->affinity);
+ 
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+@@ -499,12 +504,16 @@ static inline void free_desc_masks(struc
+ 
+ #else /* !CONFIG_SMP */
+ 
+-static inline bool init_alloc_desc_masks(struct irq_desc *desc, int cpu,
++static inline bool alloc_desc_masks(struct irq_desc *desc, int cpu,
+ 								bool boot)
+ {
+ 	return true;
+ }
+ 
++static inline void init_desc_masks(struct irq_desc *desc)
++{
++}
++
+ static inline void init_copy_desc_masks(struct irq_desc *old_desc,
+ 					struct irq_desc *new_desc)
+ {
+Index: linux-2.6/kernel/irq/handle.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/handle.c
++++ linux-2.6/kernel/irq/handle.c
+@@ -117,10 +117,11 @@ static void init_one_irq_desc(int irq, s
+ 		printk(KERN_ERR "can not alloc kstat_irqs\n");
+ 		BUG_ON(1);
+ 	}
+-	if (!init_alloc_desc_masks(desc, cpu, false)) {
++	if (!alloc_desc_masks(desc, cpu, false)) {
+ 		printk(KERN_ERR "can not alloc irq_desc cpumasks\n");
+ 		BUG_ON(1);
+ 	}
++	init_desc_masks(desc);
+ 	arch_init_chip_data(desc, cpu);
+ }
+ 
+@@ -171,7 +172,8 @@ int __init early_irq_init(void)
+ 		desc[i].irq = i;
+ 		desc[i].kstat_irqs = kstat_irqs_legacy + i * nr_cpu_ids;
+ 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
+-		init_alloc_desc_masks(&desc[i], 0, true);
++		alloc_desc_masks(&desc[i], 0, true);
++		init_desc_masks(&desc[i]);
+ 		irq_desc_ptrs[i] = desc + i;
+ 	}
+ 
+@@ -258,7 +260,8 @@ int __init early_irq_init(void)
+ 
+ 	for (i = 0; i < count; i++) {
+ 		desc[i].irq = i;
+-		init_alloc_desc_masks(&desc[i], 0, true);
++		alloc_desc_masks(&desc[i], 0, true);
++		init_desc_masks(&desc[i]);
+ 		desc[i].kstat_irqs = kstat_irqs_all[i];
+ 	}
+ 	return arch_early_irq_init();
+Index: linux-2.6/kernel/irq/numa_migrate.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/numa_migrate.c
++++ linux-2.6/kernel/irq/numa_migrate.c
+@@ -37,7 +37,7 @@ static bool init_copy_one_irq_desc(int i
+ 		 struct irq_desc *desc, int cpu)
+ {
+ 	memcpy(desc, old_desc, sizeof(struct irq_desc));
+-	if (!init_alloc_desc_masks(desc, cpu, false)) {
++	if (!alloc_desc_masks(desc, cpu, false)) {
+ 		printk(KERN_ERR "irq %d: can not get new irq_desc cpumask "
+ 				"for migration.\n", irq);
+ 		return false;
