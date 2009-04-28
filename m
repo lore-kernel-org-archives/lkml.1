@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761941AbZD1Pmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761340AbZD1PnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761941AbZD1Pmb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbZD1PmT
+	id S1761340AbZD1PnU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbZD1PnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:42:19 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:40966 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754851AbZD1PmS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:42:18 -0400
-Date: Tue, 28 Apr 2009 08:42:13 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, dada1@cosmosbay.com, torvalds@linux-foundation.org,
-       shemminger@vyatta.com, zbr@ioremap.net, peterz@infradead.org,
-       mathieu.desnoyers@polymtl.ca, jarkao2@gmail.com, paulus@samba.org,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
-Message-ID: <20090428154213.GA10833@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <49F6A8FD.3010804@cosmosbay.com> <20090428.045342.206106171.davem@davemloft.net> <20090428124033.GA1655@elte.hu> <20090428.064340.193569214.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090428.064340.193569214.davem@davemloft.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 28 Apr 2009 11:43:08 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:53564 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753024AbZD1PnH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 11:43:07 -0400
+To: tj@kernel.org
+CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org,
+       fuse-devel@lists.sourceforge.net
+In-reply-to: <49F043A4.2060700@kernel.org> (message from Tejun Heo on Thu, 23
+	Apr 2009 19:32:04 +0900)
+Subject: Re: [PATCHSET] CUSE: implement CUSE, take #3
+References: <1239674094-30894-1-git-send-email-tj@kernel.org> <E1Lwanr-00041r-RP@pomaz-ex.szeredi.hu> <49EFB1A9.3060503@kernel.org> <E1LwvrC-00068P-5r@pomaz-ex.szeredi.hu> <49F043A4.2060700@kernel.org>
+Message-Id: <E1LypSa-0004fR-J1@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 28 Apr 2009 17:43:04 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 06:43:40AM -0700, David Miller wrote:
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Tue, 28 Apr 2009 14:40:33 +0200
+Hi Tejun,
+
+On Thu, 23 Apr 2009, Tejun Heo wrote:
+> Miklos Szeredi wrote:
+> > VFS inode should never be needed by the CUSE codepaths.  Well, maybe
+> > for setting access/modification times, but in any case those need not
+> > be shared with fuse code.
 > 
-> > IMHO this locking construct should be considered for 
-> > linux/local_lock.h and kernel/local_lock.c. Even if the netfilter 
-> > code drops its use soon afterwards ;-)
+> One more usage: locking.
+
+You mean inode->i_mutex locking?  It doesn't look to me as if cuse
+would need to do any of that.
+
+> > I don't see any problems with doing the device initialization in the
+> > context of the replying process (which will usually be the same as
+> > the one opening the device anyway).
 > 
-> If you can show me have to pass a per-cpu variable (the variable,
-> not a dereference of it) as an argument to an inline function,
-> I'll implement this :-)
-> 
-> It has to be dereferenced after local_bh_disable() for the
-> read side acquisition.
+> I don't know.  If it's simple, sure why not.  If it makes things even
+> marginally more complex (state saving and so on), why go that way?
 
-The way I did this in treercu.c was to create an array of references
-to the per-CPU data in question.  Not necessarily recommended, but
-one way of doing it.  That said, one could argue that we should wait
-until we have at least three users before creating a generic primitive.
+OK, I folded FUSE_INIT into CUSE_INIT, and moved the CUSE_INIT reply
+processing into the ->end() callback.  This also allows us to remove
+the CUSE_INIT_DONE message, since now the write(2) on the cuse device
+will only return when the device initialization is complete.
 
-And I just know that I am going to regret this deeply, but I cannot
-resist posting the following URL:
+Overall it results in some 100 lines less code (well, some of that is
+because I folded <linux/cuse.h> into <linux/fuse.h>).  But the simpler
+initialization sequence is, I think, definitely worth it.
 
-http://en.wikipedia.org/wiki/Wikipedia:Avoid_Parkinson's_Bicycle_Shed_Effect
+The patches are pushed out to the 'cuse' and 'for-next' branches of
 
-							Thanx, Paul
+  git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/fuse.git
+
+I'll post the updated libfuse patch as well.  Please let me know if
+you find anything wrong with the current patches.
+
+Thanks,
+Miklos
