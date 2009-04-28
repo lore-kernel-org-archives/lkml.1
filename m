@@ -1,136 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760033AbZD1ClO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759321AbZD1CnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760033AbZD1ClO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 22:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbZD1Ck6
+	id S1759321AbZD1CnX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 22:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757809AbZD1CnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 22:40:58 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:52586 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751389AbZD1Ck5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 22:40:57 -0400
-Message-id: <isapiwc.d5d1bc3c.6e29.49f66c08.26940.be@mail.jp.nec.com>
-In-Reply-To: <20090428101924.88f67e27.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090427181259.6efec90b.kamezawa.hiroyu@jp.fujitsu.com>
- <20090427210856.d5f4109e.d-nishimura@mtf.biglobe.ne.jp>
- <20090428091902.fc44efbc.kamezawa.hiroyu@jp.fujitsu.com>
- <isapiwc.d5d1bc3c.6e29.49f6574a.db2ee.65@mail.jp.nec.com>
- <20090428101924.88f67e27.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 28 Apr 2009 11:38:00 +0900
-From: nishimura@mxp.nes.nec.co.jp
-Subject: Re: [PATCH] fix leak of swap accounting as stale swap cache under
- memcg
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       nishimura@mxp.nes.nec.co.jp
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Apr 2009 22:43:13 -0400
+Received: from mga09.intel.com ([134.134.136.24]:24780 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752469AbZD1CnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Apr 2009 22:43:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,258,1239001200"; 
+   d="scan'208";a="407451045"
+Subject: Re: acpi 'video' driver, and issues with
+	'brightness_switch_enabled=0'
+From: Zhang Rui <rui.zhang@intel.com>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+In-Reply-To: <1240855052.11237.7.camel@maxim-laptop>
+References: <1240855052.11237.7.camel@maxim-laptop>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 28 Apr 2009 10:43:24 +0800
+Message-Id: <1240886605.4639.19.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 28 Apr 2009 10:09:30 +0900
-> nishimura@mxp.nes.nec.co.jp wrote:
+On Tue, 2009-04-28 at 01:57 +0800, Maxim Levitsky wrote:
+> I have a notebook which handles brightness keys in hardware, but tells
+> loudly when it does so.
 > 
->> > On Mon, 27 Apr 2009 21:08:56 +0900
->> > Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> wrote:
->> > 
->> >> > Index: mmotm-2.6.30-Apr24/mm/vmscan.c
->> >> > ===================================================================
->> >> > --- mmotm-2.6.30-Apr24.orig/mm/vmscan.c
->> >> > +++ mmotm-2.6.30-Apr24/mm/vmscan.c
->> >> > @@ -661,6 +661,9 @@ static unsigned long shrink_page_list(st
->> >> >  		if (PageAnon(page) && !PageSwapCache(page)) {
->> >> >  			if (!(sc->gfp_mask & __GFP_IO))
->> >> >  				goto keep_locked;
->> >> > +			/* avoid making more stale swap caches */
->> >> > +			if (memcg_stale_swap_congestion())
->> >> > +				goto keep_locked;
->> >> >  			if (!add_to_swap(page))
->> >> >  				goto activate_locked;
->> >> >  			may_enter_fs = 1;
->> >> > 
->> >> Well, as I mentioned before(http://marc.info/?l=linux-kernel&m=124066623510867&w=2),
->> >> this cannot avoid type-2(set !PageCgroupUsed by the owner process via
->> >> page_remove_rmap()->mem_cgroup_uncharge_page() before being added to swap cache).
->> >> If these swap caches go through shrink_page_list() without beeing freed
->> >> for some reason, these swap caches doesn't go back to memcg's LRU.
->> >> 
->> >> Type-2 doesn't pressure memsw.usage, but you can see it by plotting
->> >> "grep SwapCached /proc/meminfo".
->> >> 
->> >> And I don't think it's a good idea to add memcg_stale_swap_congestion() here.
->> >> This means less possibility to reclaim pages.
->> >> 
->> > Hmm. maybe adding congestion_wait() ?
->> > 
->> I don't think no hook before add_to_swap() is needed.
->> 
->> >> Do you dislike the patch I attached in the above mail ?
->> >> 
->> > I doubt whether the patch covers all type-2 case.
->> > 
->> hmm, I didn't see any leak anymore when I tested the patch.
->> 
+if you boot into console mode w/o ACPI video driver, does the brightness
+still change when you press the hotkeys?
+
+> Currently, acpi 'video' also sets the brightness, which result in double
+> setting, and on top of that it emits a key that makes gpm set brightness
+> again.
 > 
-> At first, your patch
-> ==
->  		if (PageAnon(page) && !PageSwapCache(page)) {
->  			if (!(sc->gfp_mask & __GFP_IO))
->  				goto keep_locked;
-> -			/* avoid making more stale swap caches */
-> -			if (memcg_stale_swap_congestion())
-> -				goto keep_locked;
->  			if (!add_to_swap(page))
->  				goto activate_locked;
-> +			/*
-> +			 * The owner process might have uncharged the page
-> +			 * (by page_remove_rmap()) before it has been added
-> +			 * to swap cache.
-> +			 * Check it here to avoid making it stale.
-> +			 */
-> +			if (memcg_free_unused_swapcache(page))
-> +				goto keep_locked;
->  			may_enter_fs = 1;
->  		}
-> ==
-> Should be
-> ==
+we need to support the brightness control in console mode.
+and "﻿brightness_switch_enabled" should be cleared in graphics mode to
+prevent the ACPI video driver action upon hotkey events.
+
+> And (yes...) on top of that keyboard emits a brightness up/down even,
+> which (you guessed...) sets brightness again.
 > 
-> 	if (PageAnon(page) && !PageSwapCache(page)) {
-> 		... // don't modify here
-> 	}
-> 	if (PageAnon(page) && PageSwapCache(page) && !page_mapped(page)) {
-> 		if (try_to_free_page(page)) // or memcg_free_unused_swapcache()
-> 			goto free_it;
-> 	}
-> ==
-> I think.
+> I found out that it is possible to tell gnome-power-manager not to set
+> brightness, but yet in kernel driver still sets it.
 > 
-It may work too.
-
-But if the page is on swap cache already at the point of page_remove_rmap()
--> mem_cgroup_uncharge_page, the page is not uncharged.
-So, it can be freed in memcg's LRU scanning in the long run by
-shrink_page_list()->pageout()->swap_writepage()->try_to_free_swap().
-
-I added the hook there just because I wanted to clarify what the
-problematic case is.
-
-And I don't think "goto free_it" is good.
-It calls free_hot_cold_page(), but some process (like swapoff) might
-have got the swap cache already and be waiting for the lock of the page.
-
-> And we need hook to free_swap_and_cache() for handling PageWriteback() case.
+> I found out even earlier that I can use brightness_switch_enabled=0,
+> which supposed to make inkernel driver not touch the brightness.
+> But I found out that this driver won't update the brightness, in /sys
+> interface when I set this param.
 > 
-Ah, You're right.
+No, when ﻿"﻿brightness_switch_enabled" is cleared, gdm should still use
+the ACPI backlight sysfs I/F if available to change the backlight,
+i.e. /sys/class/backlight/acpi_video0/...
 
+what's the model name of your laptop?
+are you using Intel graphics?
+please attach the output of acpidump and lspci.
+It would be great if you can file a bug report about this issue at
+bugzilla.kernel.org.
 
-Thanks,
-Daisuke Nishimura.
+thanks,
+rui
+
