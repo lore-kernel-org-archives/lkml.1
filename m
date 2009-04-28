@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761919AbZD1PJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762058AbZD1PKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761919AbZD1PJA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761487AbZD1PGo
+	id S1762058AbZD1PKa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761518AbZD1PGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:06:44 -0400
-Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:33410
-	"EHLO WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1761663AbZD1PGm (ORCPT
+	Tue, 28 Apr 2009 11:06:51 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:35916 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761682AbZD1PGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:06:42 -0400
-X-BigFish: VPS-3(zz936eQ14e1Jzz1202hzzz32i68o)
-X-Spam-TCS-SCL: 7:0
-X-FB-SS: 5,
-X-WSS-ID: 0KITGMS-01-UAU-01
+	Tue, 28 Apr 2009 11:06:46 -0400
+X-BigFish: VPS3(zzzz1202hzzz32i43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KITGMR-01-UAR-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: akpm@linux-foundation.org, greg@kroah.com
 CC: <linux-kernel@vger.kernel.org>, Doug Thompson <dougthompson@xmission.com>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 16/21] amd64_edac: add error decoding logic
-Date: Tue, 28 Apr 2009 17:06:08 +0200
-Message-ID: <1240931173-17477-17-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 15/21] amd64_edac: add x4 chipkill syndrome mapping table
+Date: Tue, 28 Apr 2009 17:06:07 +0200
+Message-ID: <1240931173-17477-16-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
 References: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 28 Apr 2009 15:06:23.0756 (UTC) FILETIME=[E53A9CC0:01C9C812]
+X-OriginalArrivalTime: 28 Apr 2009 15:06:23.0193 (UTC) FILETIME=[E4E4B490:01C9C812]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,586 +35,166 @@ From: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |  569 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 569 insertions(+), 0 deletions(-)
+ drivers/edac/amd64_edac.c |  141 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 140 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 2de797d..8f6fbc4 100644
+index 49c0ce0..2de797d 100644
 --- a/drivers/edac/amd64_edac.c
 +++ b/drivers/edac/amd64_edac.c
-@@ -3303,3 +3303,572 @@ static int get_channel_from_ecc_syndrome(unsigned short syndrome)
- 	debugf0("%s(): syndrome(%x) not found\n", __func__, syndrome);
- 	return -1;
+@@ -2171,7 +2171,6 @@ static void k8_map_sysaddr_to_csrow(struct mem_ctl_info *mci,
+ 
+ 	/* CHIPKILL enabled */
+ 	if (info->nbcfg & K8_NBCFG_CHIPKILL) {
+-		/* x4 chipkill ecc mode - determine channel */
+ 		channel = get_channel_from_ecc_syndrome(syndrome);
+ 		if (channel < 0) {
+ 			/* Syndrome didn't map, so we don't know which of
+@@ -3163,4 +3162,144 @@ static void do_rdmsr(int cpu, u32 reg, u32 *eax, u32 *edx)
+ 	*edx = cmd.data[1];
  }
-+
+ 
 +/*
-+ * toString tables for the various error decoding values
++ * syndrome mapping table for ECC ChipKill devices
++ *
++ * The comment in each row is the token (nibble) number that is in error.
++ * The least significant nibble of the syndrome is the mask for the bits
++ * that are in error (need to be toggled) for the particular nibble.
++ *
++ * Each row contains 16 entries.
++ * The first entry (0th) is the channel number for that row of syndromes.
++ * The remaining 15 entries are the syndromes for the respective Error
++ * bit mask index.
++ *
++ * 1st index entry is 0x0001 mask, indicating that the rightmost bit is the
++ * bit in error.
++ * The 2nd index entry is 0x0010 that the second bit is damaged.
++ * The 3rd index entry is 0x0011 indicating that the rightmost 2 bits
++ * are damaged.
++ * Thus so on until index 15, 0x1111, whose entry has the syndrome
++ * indicating that all 4 bits are damaged.
++ *
++ * A search is performed on this table looking for a given syndrome.
++ *
++ * See the AMD documentation for ECC syndromes. This ECC table is valid
++ * across all the versions of the AMD64 processors.
++ *
++ * A fast lookup is to use the LAST four bits of the 16-bit syndrome as a
++ * COLUMN index, then search all ROWS of that column, looking for a match
++ * with the input syndrome. The ROW value will be the token number.
++ *
++ * The 0'th entry on that row, can be returned as the CHANNEL (0 or 1) of this
++ * error.
 + */
-+static const char *tt_msgs[] = {        /* transaction type */
-+	"instruction",
-+	"data",
-+	"generic",
-+	"reserved"
-+};
++#define NUMBER_ECC_ROWS  36
++static const unsigned short ecc_chipkill_syndromes[NUMBER_ECC_ROWS][16] = {
++	/* Channel 0 syndromes */
++	{/*0*/  0, 0xe821, 0x7c32, 0x9413, 0xbb44, 0x5365, 0xc776, 0x2f57,
++	   0xdd88, 0x35a9, 0xa1ba, 0x499b, 0x66cc, 0x8eed, 0x1afe, 0xf2df },
++	{/*1*/  0, 0x5d31, 0xa612, 0xfb23, 0x9584, 0xc8b5, 0x3396, 0x6ea7,
++	   0xeac8, 0xb7f9, 0x4cda, 0x11eb, 0x7f4c, 0x227d, 0xd95e, 0x846f },
++	{/*2*/  0, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
++	   0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x000f },
++	{/*3*/  0, 0x2021, 0x3032, 0x1013, 0x4044, 0x6065, 0x7076, 0x5057,
++	   0x8088, 0xa0a9, 0xb0ba, 0x909b, 0xc0cc, 0xe0ed, 0xf0fe, 0xd0df },
++	{/*4*/  0, 0x5041, 0xa082, 0xf0c3, 0x9054, 0xc015, 0x30d6, 0x6097,
++	   0xe0a8, 0xb0e9, 0x402a, 0x106b, 0x70fc, 0x20bd, 0xd07e, 0x803f },
++	{/*5*/  0, 0xbe21, 0xd732, 0x6913, 0x2144, 0x9f65, 0xf676, 0x4857,
++	   0x3288, 0x8ca9, 0xe5ba, 0x5b9b, 0x13cc, 0xaded, 0xc4fe, 0x7adf },
++	{/*6*/  0, 0x4951, 0x8ea2, 0xc7f3, 0x5394, 0x1ac5, 0xdd36, 0x9467,
++	   0xa1e8, 0xe8b9, 0x2f4a, 0x661b, 0xf27c, 0xbb2d, 0x7cde, 0x358f },
++	{/*7*/  0, 0x74e1, 0x9872, 0xec93, 0xd6b4, 0xa255, 0x4ec6, 0x3a27,
++	   0x6bd8, 0x1f39, 0xf3aa, 0x874b, 0xbd6c, 0xc98d, 0x251e, 0x51ff },
++	{/*8*/  0, 0x15c1, 0x2a42, 0x3f83, 0xcef4, 0xdb35, 0xe4b6, 0xf177,
++	   0x4758, 0x5299, 0x6d1a, 0x78db, 0x89ac, 0x9c6d, 0xa3ee, 0xb62f },
++	{/*9*/  0, 0x3d01, 0x1602, 0x2b03, 0x8504, 0xb805, 0x9306, 0xae07,
++	   0xca08, 0xf709, 0xdc0a, 0xe10b, 0x4f0c, 0x720d, 0x590e, 0x640f },
++	{/*a*/  0, 0x9801, 0xec02, 0x7403, 0x6b04, 0xf305, 0x8706, 0x1f07,
++	   0xbd08, 0x2509, 0x510a, 0xc90b, 0xd60c, 0x4e0d, 0x3a0e, 0xa20f },
++	{/*b*/  0, 0xd131, 0x6212, 0xb323, 0x3884, 0xe9b5, 0x5a96, 0x8ba7,
++	   0x1cc8, 0xcdf9, 0x7eda, 0xafeb, 0x244c, 0xf57d, 0x465e, 0x976f },
++	{/*c*/  0, 0xe1d1, 0x7262, 0x93b3, 0xb834, 0x59e5, 0xca56, 0x2b87,
++	   0xdc18, 0x3dc9, 0xae7a, 0x4fab, 0x542c, 0x85fd, 0x164e, 0xf79f },
++	{/*d*/  0, 0x6051, 0xb0a2, 0xd0f3, 0x1094, 0x70c5, 0xa036, 0xc067,
++	   0x20e8, 0x40b9, 0x904a, 0x601b, 0x307c, 0x502d, 0x80de, 0xe08f },
++	{/*e*/  0, 0xa4c1, 0xf842, 0x5c83, 0xe6f4, 0x4235, 0x1eb6, 0xba77,
++	   0x7b58, 0xdf99, 0x831a, 0x27db, 0x9dac, 0x396d, 0x65ee, 0xc12f },
++	{/*f*/  0, 0x11c1, 0x2242, 0x3383, 0xc8f4, 0xd935, 0xeab6, 0xfb77,
++	   0x4c58, 0x5d99, 0x6e1a, 0x7fdb, 0x84ac, 0x956d, 0xa6ee, 0xb72f },
 +
-+static const char *ll_msgs[] = {	/* cache level */
-+	"L0",
-+	"L1",
-+	"L2",
-+	"L3/generic"
-+};
++	/* Channel 1 syndromes */
++	{/*10*/ 1, 0x45d1, 0x8a62, 0xcfb3, 0x5e34, 0x1be5, 0xd456, 0x9187,
++	   0xa718, 0xe2c9, 0x2d7a, 0x68ab, 0xf92c, 0xbcfd, 0x734e, 0x369f },
++	{/*11*/ 1, 0x63e1, 0xb172, 0xd293, 0x14b4, 0x7755, 0xa5c6, 0xc627,
++	   0x28d8, 0x4b39, 0x99aa, 0xfa4b, 0x3c6c, 0x5f8d, 0x8d1e, 0xeeff },
++	{/*12*/ 1, 0xb741, 0xd982, 0x6ec3, 0x2254, 0x9515, 0xfbd6, 0x4c97,
++	   0x33a8, 0x84e9, 0xea2a, 0x5d6b, 0x11fc, 0xa6bd, 0xc87e, 0x7f3f },
++	{/*13*/ 1, 0xdd41, 0x6682, 0xbbc3, 0x3554, 0xe815, 0x53d6, 0xce97,
++	   0x1aa8, 0xc7e9, 0x7c2a, 0xa1fb, 0x2ffc, 0xf2bd, 0x497e, 0x943f },
++	{/*14*/ 1, 0x2bd1, 0x3d62, 0x16b3, 0x4f34, 0x64e5, 0x7256, 0x5987,
++	   0x8518, 0xaec9, 0xb87a, 0x93ab, 0xca2c, 0xe1fd, 0xf74e, 0xdc9f },
++	{/*15*/ 1, 0x83c1, 0xc142, 0x4283, 0xa4f4, 0x2735, 0x65b6, 0xe677,
++	   0xf858, 0x7b99, 0x391a, 0xbadb, 0x5cac, 0xdf6d, 0x9dee, 0x1e2f },
++	{/*16*/ 1, 0x8fd1, 0xc562, 0x4ab3, 0xa934, 0x26e5, 0x6c56, 0xe387,
++	   0xfe18, 0x71c9, 0x3b7a, 0xb4ab, 0x572c, 0xd8fd, 0x924e, 0x1d9f },
++	{/*17*/ 1, 0x4791, 0x89e2, 0xce73, 0x5264, 0x15f5, 0xdb86, 0x9c17,
++	   0xa3b8, 0xe429, 0x2a5a, 0x6dcb, 0xf1dc, 0xb64d, 0x783e, 0x3faf },
++	{/*18*/ 1, 0x5781, 0xa9c2, 0xfe43, 0x92a4, 0xc525, 0x3b66, 0x6ce7,
++	   0xe3f8, 0xb479, 0x4a3a, 0x1dbb, 0x715c, 0x26dd, 0xd89e, 0x8f1f },
++	{/*19*/ 1, 0xbf41, 0xd582, 0x6ac3, 0x2954, 0x9615, 0xfcd6, 0x4397,
++	   0x3ea8, 0x81e9, 0xeb2a, 0x546b, 0x17fc, 0xa8bd, 0xc27e, 0x7d3f },
++	{/*1a*/ 1, 0x9891, 0xe1e2, 0x7273, 0x6464, 0xf7f5, 0x8586, 0x1617,
++	   0xb8b8, 0x2b29, 0x595a, 0xcacb, 0xdcdc, 0x4f4d, 0x3d3e, 0xaeaf },
++	{/*1b*/ 1, 0xcce1, 0x4472, 0x8893, 0xfdb4, 0x3f55, 0xb9c6, 0x7527,
++	   0x56d8, 0x9a39, 0x12aa, 0xde4b, 0xab6c, 0x678d, 0xef1e, 0x23ff },
++	{/*1c*/ 1, 0xa761, 0xf9b2, 0x5ed3, 0xe214, 0x4575, 0x1ba6, 0xbcc7,
++	   0x7328, 0xd449, 0x8a9a, 0x2dfb, 0x913c, 0x365d, 0x688e, 0xcfef },
++	{/*1d*/ 1, 0xff61, 0x55b2, 0xaad3, 0x7914, 0x8675, 0x2ca6, 0xd3c7,
++	   0x9e28, 0x6149, 0xcb9a, 0x34fb, 0xe73c, 0x185d, 0xb28e, 0x4def },
++	{/*1e*/ 1, 0x5451, 0xa8a2, 0xfcf3, 0x9694, 0xc2c5, 0x3e36, 0x6a67,
++	   0xebe8, 0xbfb9, 0x434a, 0x171b, 0x7d7c, 0x292d, 0xd5de, 0x818f },
++	{/*1f*/ 1, 0x6fc1, 0xb542, 0xda83, 0x19f4, 0x7635, 0xacb6, 0xc377,
++	   0x2e58, 0x4199, 0x9b1a, 0xf4db, 0x37ac, 0x586d, 0x82ee, 0xed2f },
 +
-+static const char *rrrr_msgs[] = {
-+	"generic",
-+	"generic read",
-+	"generic write",
-+	"data read",
-+	"data write",
-+	"inst fetch",
-+	"prefetch",
-+	"evict",
-+	"snoop",
-+	"reserved RRRR= 9",
-+	"reserved RRRR= 10",
-+	"reserved RRRR= 11",
-+	"reserved RRRR= 12",
-+	"reserved RRRR= 13",
-+	"reserved RRRR= 14",
-+	"reserved RRRR= 15"
-+};
-+
-+static const char *pp_msgs[] = {	/* participating processor */
-+	"local node originated (SRC)",
-+	"local node responded to request (RES)",
-+	"local node observed as 3rd party (OBS)",
-+	"generic"
-+};
-+
-+static const char *to_msgs[] = {
-+	"no timeout",
-+	"timed out"
-+};
-+
-+static const char *ii_msgs[] = {	/* memory or i/o */
-+	"mem access",
-+	"reserved",
-+	"i/o access",
-+	"generic"
-+};
-+
-+/* Map the 5 bits of Extended Error code toString table
-+ *	enhanced to support the new F10 error codes
-+ *	esp, with L3 cache errors
-+ */
-+static const char *ext_msgs[] = {	/* extended error */
-+	"K8 ECC error/F10 reserved",	/* 0_0000b */
-+	"CRC error",			/* 0_0001b */
-+	"sync error",			/* 0_0010b */
-+	"mst abort",			/* 0_0011b */
-+	"tgt abort",			/* 0_0100b */
-+	"GART error",			/* 0_0101b */
-+	"RMW error",			/* 0_0110b */
-+	"Wdog timer error",		/* 0_0111b */
-+	"F10-ECC/K8-Chipkill error",	/* 0_1000b */
-+	"DEV Error",			/* 0_1001b */
-+	"Link Data error",		/* 0_1010b */
-+	"Link or L3 Protocol error",	/* 0_1011b */
-+	"NB Array error",		/* 0_1100b */
-+	"DRAM Parity error",		/* 0_1101b */
-+	"Link Retry/GART Table Walk/DEV Table Walk error", /* 0_1110b */
-+	"Res 0x0ff error",		/* 0_1111b */
-+	"Res 0x100 error",		/* 1_0000b */
-+	"Res 0x101 error",		/* 1_0001b */
-+	"Res 0x102 error",		/* 1_0010b */
-+	"Res 0x103 error",		/* 1_0011b */
-+	"Res 0x104 error",		/* 1_0100b */
-+	"Res 0x105 error",		/* 1_0101b */
-+	"Res 0x106 error",		/* 1_0110b */
-+	"Res 0x107 error",		/* 1_0111b */
-+	"Res 0x108 error",		/* 1_1000b */
-+	"Res 0x109 error",		/* 1_1001b */
-+	"Res 0x10A error",		/* 1_1010b */
-+	"Res 0x10B error",		/* 1_1011b */
-+	"L3 Cache Data error",		/* 1_1100b */
-+	"L3 CacheTag error",		/* 1_1101b */
-+	"L3 Cache LRU error",		/* 1_1110b */
-+	"Res 0x1FF error"		/* 1_1111b */
-+};
-+
-+static const char *htlink_msgs[] = {
-+	"none",
-+	"1",
-+	"2",
-+	"1 2",
-+	"3",
-+	"1 3",
-+	"2 3",
-+	"1 2 3"
-+};
-+
-+/*
-+ * amd64_error_info_valid
-+ *
-+ * Return 1 if hardware contains valid error information.
-+ * Else return 0, no valid error information.
-+ */
-+static inline int amd64_error_info_valid(struct amd64_error_info_regs *regs)
-+{
-+	return ((regs->nbsh & K8_NBSH_VALID_BIT) != 0);
-+}
-+
-+/*
-+ * amd64_get_error_info_regs
-+ *
-+ *	read the North Bridge Status register HIGH and test the
-+ *	VALID ERROR status bit in that register.
-+ *
-+ *	If set, proceed to read:
-+ *		NBS Low
-+ *		NBEA LOW
-+ *		NBEA HIGH
-+ *
-+ *	and store data into error structure
-+ *
-+ * return 1: if hardware regs contains valid error info
-+ * return 0: if no valid error is indicated
-+ */
-+static int amd64_get_error_info_regs(struct mem_ctl_info *mci,
-+				  struct amd64_error_info_regs *regs)
-+{
-+	struct amd64_pvt *pvt;
-+	struct pci_dev *misc_f3_ctl;
-+	int err;
-+
-+	pvt = mci->pvt_info;
-+	misc_f3_ctl = pvt->misc_f3_ctl;
-+
-+	/* Read the NB Status Register High to get ERROR VALID bit */
-+	err = pci_read_config_dword(misc_f3_ctl, K8_NBSH, &regs->nbsh);
-+	if (err != 0)
-+		debugf0("%s() Reading K8_NBSH failed\n", __func__);
-+
-+	if (!amd64_error_info_valid(regs))
-+		return 0;
-+
-+	/* valid error, read remaining error information registers */
-+	err = pci_read_config_dword(misc_f3_ctl, K8_NBSL, &regs->nbsl);
-+	if (err != 0)
-+		debugf0("%s() Reading K8_NBSL failed\n", __func__);
-+	err = pci_read_config_dword(misc_f3_ctl, K8_NBEAL, &regs->nbeal);
-+	if (err != 0)
-+		debugf0("%s() Reading K8_NBEAL failed\n", __func__);
-+	err = pci_read_config_dword(misc_f3_ctl, K8_NBEAH, &regs->nbeah);
-+	if (err != 0)
-+		debugf0("%s() Reading K8_NBEAH failed\n", __func__);
-+	err = pci_read_config_dword(misc_f3_ctl, K8_NBCFG, &regs->nbcfg);
-+	if (err != 0)
-+		debugf0("%s() Reading K8_NBCFG failed\n", __func__);
-+
-+	return 1;
-+}
-+
-+/*
-+ * amd64_get_error_info
-+ *
-+ *	this function is called to retrieve the error data from hardware
-+ *	and store it in the info structure.
-+ *
-+ *	return:
-+ *		1 if a valid error is found
-+ *		0 if no error is found
-+ */
-+static int amd64_get_error_info(struct mem_ctl_info *mci,
-+			      struct amd64_error_info_regs *info)
-+{
-+	struct amd64_pvt *pvt;
-+	struct amd64_error_info_regs regs;
-+
-+	pvt = mci->pvt_info;
-+
-+	if (!amd64_get_error_info_regs(mci, info))
-+		return 0;
-+
-+	/*
-+	 * Here's the problem with the K8's EDAC reporting:
-+	 * There are four registers which report pieces of error
-+	 * information.  These four registers are shared between
-+	 * CEs and UEs.  Furthermore, contrary to what is stated in
-+	 * the OBKG, the overflow bit is never used!  Every error
-+	 * always updates the reporting registers.
-+	 *
-+	 * Can you see the race condition?  All four error reporting
-+	 * registers must be read before a new error updates them!
-+	 * There is no way to read all four registers atomically.  The
-+	 * best than can be done is to detect that a race has occured
-+	 * and then report the error without any kind of precision.
-+	 *
-+	 * What is still positive is that errors are
-+	 * still reported and thus problems can still be detected -
-+	 * just not localized because the syndrome and address are
-+	 * spread out across registers.
-+	 *
-+	 * Grrrrr!!!!!  Here's hoping that AMD fixes this in some
-+	 * future K8 rev. UEs and CEs should have separate
-+	 * register sets with proper overflow bits that are used!
-+	 * At very least the problem can be fixed by honoring the
-+	 * ErrValid bit in 'nbsh' and not updating registers - just
-+	 * set the overflow bit - unless the current error is CE
-+	 * and the new error is UE which would be the only situation
-+	 * for overwriting the current values.
++	/* ECC bits are also in the set of tokens and they too can go bad
++	 * first 2 cover channel 0, while the second 2 cover channel 1
 +	 */
-+
-+	regs = *info;
-+
-+	/* Use info from the second read - most current */
-+	if (unlikely(!amd64_get_error_info_regs(mci, info)))
-+		return 0;
-+
-+	/* clear the error bits in hardware */
-+	pci_write_bits32(pvt->misc_f3_ctl, K8_NBSH, 0, K8_NBSH_VALID_BIT);
-+
-+	/* Check for the possible race condition */
-+	if ((regs.nbsh != info->nbsh) ||
-+	     (regs.nbsl != info->nbsl) ||
-+	     (regs.nbeah != info->nbeah) ||
-+	     (regs.nbeal != info->nbeal)) {
-+		amd64_mc_printk(mci, KERN_WARNING,
-+			"hardware STATUS read access race "
-+			"condition detected!\n");
-+		return 0;
-+	}
-+
-+	return 1;
-+}
-+
-+static inline void amd64_decode_gart_tlb_error(struct mem_ctl_info *mci,
-+					 struct amd64_error_info_regs *info)
-+{
-+	u32 err_code;
-+	u32 ec_tt;		/* error code transaction type (2b) */
-+	u32 ec_ll;		/* error code cache level (2b) */
-+
-+	err_code = EXTRACT_ERROR_CODE(info->nbsl);
-+	ec_ll = EXTRACT_LL_CODE(err_code);
-+	ec_tt = EXTRACT_TT_CODE(err_code);
-+
-+	amd64_mc_printk(mci, KERN_ERR,
-+		     "GART TLB event: transaction type(%s), "
-+		     "cache level(%s)\n", tt_msgs[ec_tt], ll_msgs[ec_ll]);
-+}
-+
-+static inline void amd64_decode_mem_cache_error(struct mem_ctl_info *mci,
-+				      struct amd64_error_info_regs *info)
-+{
-+	u32 err_code;
-+	u32 ec_rrrr;		/* error code memory transaction (4b) */
-+	u32 ec_tt;		/* error code transaction type (2b) */
-+	u32 ec_ll;		/* error code cache level (2b) */
-+
-+	err_code = EXTRACT_ERROR_CODE(info->nbsl);
-+	ec_ll = EXTRACT_LL_CODE(err_code);
-+	ec_tt = EXTRACT_TT_CODE(err_code);
-+	ec_rrrr = EXTRACT_RRRR_CODE(err_code);
-+
-+	amd64_mc_printk(mci, KERN_ERR,
-+		     "cache hierarchy error: memory transaction type(%s), "
-+		     "transaction type(%s), cache level(%s)\n",
-+		     rrrr_msgs[ec_rrrr], tt_msgs[ec_tt], ll_msgs[ec_ll]);
-+}
-+
-+
++	{/*20*/ 0, 0xbe01, 0xd702, 0x6903, 0x2104, 0x9f05, 0xf606, 0x4807,
++	   0x3208, 0x8c09, 0xe50a, 0x5b0b, 0x130c, 0xad0d, 0xc40e, 0x7a0f },
++	{/*21*/ 0, 0x4101, 0x8202, 0xc303, 0x5804, 0x1905, 0xda06, 0x9b07,
++	   0xac08, 0xed09, 0x2e0a, 0x6f0b, 0x640c, 0xb50d, 0x760e, 0x370f },
++	{/*22*/ 1, 0xc441, 0x4882, 0x8cc3, 0xf654, 0x3215, 0xbed6, 0x7a97,
++	   0x5ba8, 0x9fe9, 0x132a, 0xd76b, 0xadfc, 0x69bd, 0xe57e, 0x213f },
++	{/*23*/ 1, 0x7621, 0x9b32, 0xed13, 0xda44, 0xac65, 0x4176, 0x3757,
++	   0x6f88, 0x19a9, 0xf4ba, 0x829b, 0xb5cc, 0xc3ed, 0x2efe, 0x58df }
++};
+ 
 +/*
-+ * amd64_handle_ce
++ * get_channel_from_ecc_syndrome
 + *
-+ *	this routine is called to handle any Correctable Errors (CEs)
-+ *	that have occurred. Check for valid ERROR ADDRESS and process
++ *	given the syndrome argument, scan each of the channel tables
++ *	looking for a syndrome match. Depending on which table it is
++ *	found, return the channel number
 + */
-+static void amd64_handle_ce(struct mem_ctl_info *mci,
-+				struct amd64_error_info_regs *info)
++static int get_channel_from_ecc_syndrome(unsigned short syndrome)
 +{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	u64 SystemAddress;
++	int row;
++	int column;
 +
-+	/* Ensure that the Error Address is VALID */
-+	if ((info->nbsh & K8_NBSH_VALID_ERROR_ADDR) == 0) {
-+		amd64_mc_printk(mci, KERN_ERR,
-+			"HW has no ERROR_ADDRESS available\n");
-+		edac_mc_handle_ce_no_info(mci, EDAC_MOD_STR);
-+		return;
++	debugf0("%s()\n", __func__);
++
++	/* Determine column to scan */
++	column = syndrome & 0xF;
++
++	/* Scan all rows, looking for syndrome, or end of table */
++	for (row = 0; row < NUMBER_ECC_ROWS; row++) {
++		if (ecc_chipkill_syndromes[row][column] == syndrome)
++			return ecc_chipkill_syndromes[row][0];
 +	}
 +
-+	SystemAddress = extract_error_address(mci, info);
-+
-+	amd64_mc_printk(mci, KERN_ERR,
-+		"CE ERROR_ADDRESS= 0x%llx\n", SystemAddress);
-+
-+	pvt->ops->map_sysaddr_to_csrow(mci, info, SystemAddress);
++	debugf0("%s(): syndrome(%x) not found\n", __func__, syndrome);
++	return -1;
 +}
-+
-+/*
-+ * amd64_handle_ue
-+ *
-+ *	this routine is called to handle any Un-correctable Errors (UEs)
-+ */
-+static void amd64_handle_ue(struct mem_ctl_info *mci,
-+				struct amd64_error_info_regs *info)
-+{
-+	int csrow;
-+	u64 SystemAddress;
-+	u32 page, offset;
-+	struct mem_ctl_info *log_mci, *src_mci;
-+
-+	log_mci = mci;
-+
-+	/* Ensure that the Error Address is VALID */
-+	if ((info->nbsh & K8_NBSH_VALID_ERROR_ADDR) == 0) {
-+		amd64_mc_printk(mci, KERN_CRIT,
-+			"HW has no ERROR_ADDRESS available\n");
-+		edac_mc_handle_ue_no_info(log_mci, EDAC_MOD_STR);
-+		return;
-+	}
-+
-+	SystemAddress = extract_error_address(mci, info);
-+
-+	/* Find out which node the error address belongs to.  This may be
-+	 * different from the node that detected the error.
-+	 */
-+	src_mci = find_mc_by_sys_addr(mci, SystemAddress);
-+	if (src_mci == NULL) {
-+		amd64_mc_printk(mci, KERN_CRIT,
-+			"ERROR ADDRESS (0x%lx) value NOT mapped to a MC\n",
-+			(unsigned long)SystemAddress);
-+		edac_mc_handle_ue_no_info(log_mci, EDAC_MOD_STR);
-+		return;
-+	}
-+
-+	log_mci = src_mci;
-+
-+	csrow = sys_addr_to_csrow(log_mci, SystemAddress);
-+	if (csrow < 0) {
-+		amd64_mc_printk(mci, KERN_CRIT,
-+			"ERROR_ADDRESS (0x%lx) value NOT mapped to 'csrow'\n",
-+			(unsigned long)SystemAddress);
-+		edac_mc_handle_ue_no_info(log_mci, EDAC_MOD_STR);
-+	} else {
-+		error_address_to_page_and_offset(SystemAddress, &page, &offset);
-+		edac_mc_handle_ue(log_mci, page, offset, csrow, EDAC_MOD_STR);
-+	}
-+}
-+
-+/*
-+ * amd64_decode_bus_error
-+ *
-+ *	Perform decode of the AMD64 "BUS" error code
-+ */
-+static void amd64_decode_bus_error(struct mem_ctl_info *mci,
-+			     struct amd64_error_info_regs *info)
-+{
-+	u32 err_code, ext_ec;
-+	u32 ec_pp;		/* error code participating processor (2p) */
-+	u32 ec_to;		/* error code timed out (1b) */
-+	u32 ec_rrrr;		/* error code memory transaction (4b) */
-+	u32 ec_ii;		/* error code memory or I/O (2b) */
-+	u32 ec_ll;		/* error code cache level (2b) */
-+
-+	debugf0("MC%d: %s()\n", mci->mc_idx, __func__);
-+
-+	ext_ec = EXTRACT_EXT_ERROR_CODE(info->nbsl);
-+	err_code = EXTRACT_ERROR_CODE(info->nbsl);
-+
-+	ec_ll = EXTRACT_LL_CODE(err_code);
-+	ec_ii = EXTRACT_II_CODE(err_code);
-+	ec_rrrr = EXTRACT_RRRR_CODE(err_code);
-+	ec_to = EXTRACT_TO_CODE(err_code);
-+	ec_pp = EXTRACT_PP_CODE(err_code);
-+
-+	/* Log AMD Specific information */
-+	amd64_mc_printk(mci, KERN_ERR,
-+		"BUS ERROR:\n"
-+		"  time-out(%s) mem or i/o(%s)\n"
-+		"  participating processor(%s)\n"
-+		"  memory transaction type(%s)\n"
-+		"  cache level(%s) Error Found by: %s\n",
-+		to_msgs[ec_to],
-+		ii_msgs[ec_ii],
-+		pp_msgs[ec_pp],
-+		rrrr_msgs[ec_rrrr],
-+		ll_msgs[ec_ll],
-+		(info->nbsh & K8_NBSH_ERR_SCRUBER) ?
-+			"Scrubber" : "Normal Operation");
-+
-+	/* If this was an 'observed' error, early out */
-+	if (ec_pp == K8_NBSL_PP_OBS)
-+		return;		/* We aren't the node involved */
-+
-+	/* Parse out the extended error code for ECC events */
-+	switch (ext_ec) {
-+	/* F10 changed to one Extended ECC error code */
-+	case F10_NBSL_EXT_ERR_RES:		/* Reserved field */
-+	case F10_NBSL_EXT_ERR_ECC:		/* F10 ECC ext err code */
-+		break;
-+
-+	default:
-+		amd64_mc_printk(mci, KERN_ERR,
-+			"NOT ECC: no special error handling for this error\n");
-+		return;
-+	}
-+
-+	/* CE or UE event? */
-+	if (info->nbsh & K8_NBSH_CECC)
-+		amd64_handle_ce(mci, info);
-+	else if (info->nbsh & K8_NBSH_UECC)
-+		amd64_handle_ue(mci, info);
-+
-+	/* If main error is CE then overflow must be CE.  If main error is UE
-+	 * then overflow is unknown.  We'll call the overflow a CE - if
-+	 * panic_on_ue is set then we're already panic'ed and won't arrive
-+	 * here.  If panic_on_ue is not set then apparently someone doesn't
-+	 * think that UE's are catastrophic.
-+	 */
-+	if (info->nbsh & K8_NBSH_OVERFLOW)
-+		edac_mc_handle_ce_no_info(mci,
-+			EDAC_MOD_STR " Error Overflow set");
-+}
-+
-+/*
-+ * amd64_process_error_info
-+ *
-+ *	process the error information of the AMD64 chipset
-+ *
-+ *	return:
-+ *		1 if error found or
-+ *		0 if all ok
-+ */
-+static int amd64_process_error_info(struct mem_ctl_info *mci,
-+					struct amd64_error_info_regs *info,
-+					int handle_errors)
-+{
-+	struct amd64_pvt *pvt;
-+	struct amd64_error_info_regs *regs;
-+	u32 err_code, ext_ec;
-+	int gart_tlb_error = 0;
-+
-+	pvt = mci->pvt_info;
-+
-+	/* If caller doesn't want us to process the error, return */
-+	if (!handle_errors)
-+		return 1;
-+
-+	regs = info;
-+
-+	debugf1("NorthBridge ERROR: mci(0x%p)\n", mci);
-+	debugf1("  MC node(%d) Error-Address(0x%.8x-%.8x)\n",
-+		pvt->mc_node_id, regs->nbeah, regs->nbeal);
-+	debugf1("  nbsh(0x%.8x) nbsl(0x%.8x)\n",
-+		regs->nbsh, regs->nbsl);
-+	debugf1("  Valid Error=%s Overflow=%s\n",
-+		(regs->nbsh & K8_NBSH_VALID_BIT) ? "True" : "False",
-+		(regs->nbsh & K8_NBSH_OVERFLOW) ? "True" : "False");
-+	debugf1("  Err Uncorrected=%s MCA Error Reporting=%s\n",
-+		(regs->nbsh & K8_NBSH_UNCORRECTED_ERR) ?
-+			"True" : "False",
-+		(regs->nbsh & K8_NBSH_ERR_ENABLE) ?
-+			"True" : "False");
-+	debugf1("  MiscErr Valid=%s ErrAddr Valid=%s PCC=%s\n",
-+		(regs->nbsh & K8_NBSH_MISC_ERR_VALID) ?
-+			"True" : "False",
-+		(regs->nbsh & K8_NBSH_VALID_ERROR_ADDR) ?
-+			"True" : "False",
-+		(regs->nbsh & K8_NBSH_PCC) ?
-+			"True" : "False");
-+	debugf1("  CECC=%s UECC=%s Found by Scruber=%s\n",
-+		(regs->nbsh & K8_NBSH_CECC) ?
-+			"True" : "False",
-+		(regs->nbsh & K8_NBSH_UECC) ?
-+			"True" : "False",
-+		(regs->nbsh & K8_NBSH_ERR_SCRUBER) ?
-+			"True" : "False");
-+	debugf1("  CORE0=%s CORE1=%s CORE2=%s CORE3=%s\n",
-+		(regs->nbsh & K8_NBSH_CORE0) ? "True" : "False",
-+		(regs->nbsh & K8_NBSH_CORE1) ? "True" : "False",
-+		(regs->nbsh & K8_NBSH_CORE2) ? "True" : "False",
-+		(regs->nbsh & K8_NBSH_CORE3) ? "True" : "False");
-+
-+
-+	err_code = EXTRACT_ERROR_CODE(regs->nbsl);
-+
-+	/* Determine which error type:
-+	 *	1) GART errors - non-fatal, developmental events
-+	 *	2) MEMORY errors
-+	 *	3) BUS errors
-+	 *	4) Unknown error
-+	 */
-+	if (TEST_TLB_ERROR(err_code)) {
-+		/*
-+		 * GART errors are intended to help graphics driver
-+		 * developers to detect bad GART PTEs. It is recommended by
-+		 * AMD to disable GART table walk error reporting by default[1]
-+		 * (currently being disabled in mce_cpu_quirks()) and according
-+		 * to the comment in mce_cpu_quirks(), such GART errors can be
-+		 * incorrectly triggered. We may see these errors anyway and
-+		 * unless requested by the user, they won't be reported.
-+		 *
-+		 * [1] section 13.10.1 on BIOS and Kernel Developers Guide for
-+		 *     AMD NPT family 0Fh processors
-+		 */
-+		if (report_gart_errors == 0)
-+			return 1;
-+
-+		/* Only if GART error reporting are requested should
-+		 * we generate any logs. If not requested, we left above.
-+		 */
-+		gart_tlb_error = 1;
-+
-+		debugf1("GART TLB error\n");
-+		amd64_decode_gart_tlb_error(mci, info);
-+	} else if (TEST_MEM_ERROR(err_code)) {
-+		debugf1("Memory/Cache error\n");
-+		amd64_decode_mem_cache_error(mci, info);
-+	} else if (TEST_BUS_ERROR(err_code)) {
-+		debugf1("Bus (Link/DRAM) error\n");
-+		amd64_decode_bus_error(mci, info);
-+	} else {
-+		/* shouldn't reach here! */
-+		amd64_mc_printk(mci, KERN_WARNING,
-+			     "%s(): unknown MCE error 0x%x\n", __func__,
-+			     err_code);
-+	}
-+
-+	ext_ec = EXTRACT_EXT_ERROR_CODE(regs->nbsl);
-+	amd64_mc_printk(mci, KERN_ERR,
-+		"ExtErr=(0x%x) %s\n", ext_ec, ext_msgs[ext_ec]);
-+
-+	if (((ext_ec >= F10_NBSL_EXT_ERR_CRC &&
-+			ext_ec <= F10_NBSL_EXT_ERR_TGT) ||
-+			(ext_ec == F10_NBSL_EXT_ERR_RMW)) &&
-+			EXTRACT_LDT_LINK(info->nbsh)) {
-+
-+		amd64_mc_printk(mci, KERN_ERR,
-+			"Error on hypertransport link: %s\n",
-+			htlink_msgs[
-+			EXTRACT_LDT_LINK(info->nbsh)]);
-+	}
-+
-+	/* Check the UE bit of the NB status high register, if set
-+	 * Generate some logs.
-+	 * If NOT a GART error, then process the event as a NO-INFO event.
-+	 * If it was a GART error, skip that process.
-+	 */
-+	if (regs->nbsh & K8_NBSH_UNCORRECTED_ERR) {
-+		amd64_mc_printk(mci, KERN_CRIT, "uncorrected error\n");
-+		if (!gart_tlb_error)
-+			edac_mc_handle_ue_no_info(mci, "UE bit is set\n");
-+	}
-+
-+	if (regs->nbsh & K8_NBSH_PCC)
-+		amd64_mc_printk(mci, KERN_CRIT,
-+			"PCC (processor context corrupt) set\n");
-+
-+	return 1;
-+}
-+
-+
 -- 
 1.6.2.4
 
