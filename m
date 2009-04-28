@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932280AbZD1Oyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759250AbZD1O5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932280AbZD1Oyk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 10:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZD1Oy0
+	id S1759250AbZD1O5v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 10:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbZD1O5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 10:54:26 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:44305 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754378AbZD1OyZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 10:54:25 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsIEAByz9klMQW1W/2dsb2JhbACBUM14g3MF
-Date: Tue, 28 Apr 2009 10:49:20 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, dada1@cosmosbay.com, torvalds@linux-foundation.org,
-       shemminger@vyatta.com, zbr@ioremap.net, peterz@infradead.org,
-       jarkao2@gmail.com, paulus@samba.org, paulmck@linux.vnet.ibm.com,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-CPU r**ursive lock {XV}
-Message-ID: <20090428144920.GA28942@Krystal>
-References: <20090428124033.GA1655@elte.hu> <20090428.064340.193569214.davem@davemloft.net> <20090428135219.GA28513@Krystal> <20090428.073759.78537345.davem@davemloft.net>
-Mime-Version: 1.0
+	Tue, 28 Apr 2009 10:57:41 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54741 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752998AbZD1O5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 10:57:40 -0400
+Date: Tue, 28 Apr 2009 07:51:44 -0700
+From: Greg KH <gregkh@suse.de>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Kay Sievers <kay.sievers@vrfy.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH] driver: make dev_set_name(, NULL) work
+Message-ID: <20090428145144.GA8352@suse.de>
+References: <49E8FD0B.2050308@zytor.com> <49E96731.1000501@kernel.org> <alpine.LFD.2.00.0904181141100.4042@localhost.localdomain> <49EA27B9.3030004@kernel.org> <20090418192314.GA22107@suse.de> <ac3eb2510904181300v2593c36dua6c2420828860706@mail.gmail.com> <1240086446.2411.9.camel@poy> <20090418203718.GD30144@elte.hu> <49EA4EB9.2030307@kernel.org> <49F6B1E6.7050008@kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090428.073759.78537345.davem@davemloft.net>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:46:42 up 59 days, 11:12,  2 users,  load average: 0.24, 0.33,
-	0.30
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49F6B1E6.7050008@kernel.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* David Miller (davem@davemloft.net) wrote:
-> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Date: Tue, 28 Apr 2009 09:52:19 -0400
+On Tue, Apr 28, 2009 at 12:36:06AM -0700, Yinghai Lu wrote:
 > 
-> > The local_bh_disable() could be outside of the locking construct. This
-> > would make it easier to adapt it to various users (irq disable, bh
-> > disable, preempt disable) depending on the contexts from which they much
-> > be protected.
-> > 
-> > And if it still does not work for some reason, using a #define is
-> > discouraged, but could work.
+> while looking dev_set_name() calling, there is one
+> 	dev_set_name(&dev->dev, NULL)
+> to used to try to free the device name, before kfree that device.
+
+What's wrong with that?
+
+> need to move the check for device_add in
+> | commit 8a577ffc75d9194fe8cdb7479236f2081c26ca1f
+> | Author: Kay Sievers <kay.sievers@vrfy.org>
+> | Date:   Sat Apr 18 15:05:45 2009 -0700
+> |
+> |    driver: dont update dev_name via device_add path
+> from kobject_set_name_vargs to kobject_add_vargs instead.
 > 
-> That's what I was hoping to avoid, things like macros and having
-> the callers of this thing expand the two parts of the operation.
+> in kobject_set_name_vargs will check if fmt is NULL.
 > 
-> What's the point in making this generic if it ends up being ugly
-> as hell?
+> actually we need to use dev_set_name(,NULL) later on failing path
+> and release to prevent leaking
 
-.. and what's the point in making it generic if it can be replaced
-by a proper RCU implementation ? :-) I am not convinced of the added
-value we get in making it a generic header this soon. I would wait for
-other users to express similar needs, otherwise this could soon become
-an orphaned piece of locking code.
+Are you sure?
 
-Mathieu
+confused,
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+greg k-h
