@@ -1,64 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762038AbZD1PTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762058AbZD1PVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762038AbZD1PTu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760816AbZD1PTh
+	id S1762058AbZD1PVl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761037AbZD1PVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:19:37 -0400
-Received: from rtr.ca ([76.10.145.34]:37195 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758723AbZD1PTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:19:36 -0400
-Message-ID: <49F71E86.7040300@rtr.ca>
-Date: Tue, 28 Apr 2009 11:19:34 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, donari75@gmail.com,
-       bzolnier@gmail.com, linux-ide@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 2/3] mg_disk: fix CONFIG_LBD=y warning
-References: <1240890740-3462-1-git-send-email-tj@kernel.org> <1240890740-3462-3-git-send-email-tj@kernel.org>
-In-Reply-To: <1240890740-3462-3-git-send-email-tj@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 28 Apr 2009 11:21:30 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:53167 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760976AbZD1PV3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 11:21:29 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsIEABu29klMQW1W/2dsb2JhbACBUM12g3MF
+Date: Tue, 28 Apr 2009 11:21:26 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: LTTng "TIF_KERNEL_TRACE"
+Message-ID: <20090428152126.GC31212@Krystal>
+References: <20090428132037.GA27519@Krystal> <20090428150102.GB26546@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090428150102.GB26546@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:17:21 up 59 days, 11:43,  1 user,  load average: 0.44, 0.59,
+	0.47
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+* Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> drivers/block/mg_disk.c: In function ‘mg_dump_status’:
-> drivers/block/mg_disk.c:265: warning: format ‘%ld’ expects type ‘long int’, but
-> argument 2 has type ‘sector_t’
+> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 > 
-> [ Impact: kill build warning ]
+> > Hi Ingo,
+> > 
+> > Looking at the current -tip tree, I notice that the 
+> > TIF_SYSCALL_FTRACE flag is only implemented for x86.
+> > 
+> > I have TIF_KERNEL_TRACE in my lttng tree which applies to all 
+> > architectures to do the exact same thing :
+> > 
+> > lttng-kernel-trace-thread-flag-alpha.patch
+> > lttng-kernel-trace-thread-flag-arm.patch
+> > lttng-kernel-trace-thread-flag-avr32.patch
+> > lttng-kernel-trace-thread-flag-blackfin.patch
+> > lttng-kernel-trace-thread-flag-cris.patch
+> > lttng-kernel-trace-thread-flag-frv.patch
+> > lttng-kernel-trace-thread-flag-h8300.patch
+> > lttng-kernel-trace-thread-flag-ia64.patch
+> > lttng-kernel-trace-thread-flag-m32r.patch
+> > lttng-kernel-trace-thread-flag-m68k.patch
+> > lttng-kernel-trace-thread-flag-mips.patch
+> > lttng-kernel-trace-thread-flag-parisc.patch
+> > lttng-kernel-trace-thread-flag-powerpc.patch
+> > lttng-kernel-trace-thread-flag-s390.patch
+> > lttng-kernel-trace-thread-flag-sh.patch
+> > lttng-kernel-trace-thread-flag-sparc.patch
+> > lttng-kernel-trace-thread-flag-um.patch
+> > lttng-kernel-trace-thread-flag-x86.patch
+> > lttng-kernel-trace-thread-flag-xtensa.patch
+> > lttng-kernel-trace-thread-flag-api.patch
+> > 
+> > Is there any way we could get this merged ?
+> > 
+> > One thing I like about the name TIF_KERNEL_TRACE compared to 
+> > TIF_SYSCALL_FTRACE is that it gives us a per-thread flag that 
+> > could eventually be used for more kernel tracing purposes than 
+> > just syscalls.
 > 
-> Cc: unsik Kim <donari75@gmail.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> ---
->  drivers/block/mg_disk.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> Yeah - TIF_KERNEL_TRACE indeed sounds more descriptive and less 
+> restrictive. TIF_SYSCALL_FTRACE was a bit ad-hoc.
 > 
-> diff --git a/drivers/block/mg_disk.c b/drivers/block/mg_disk.c
-> index d3e72ad..f389835 100644
-> --- a/drivers/block/mg_disk.c
-> +++ b/drivers/block/mg_disk.c
-> @@ -79,7 +79,7 @@ static void mg_dump_status(const char *msg, unsigned int stat,
->  			if (host->breq) {
->  				req = elv_next_request(host->breq);
->  				if (req)
-> -					printk(", sector=%ld", req->sector);
-> +					printk(", sector=%u", (u32)req->sector);
-..
+> 	Ingo
 
-Eh?  Shouldn't that be fixed the other way around, like this:
+lttng-kernel-trace-thread-flag-api.patch adds the enable/disable API,
+with refcount, in kernel/sched.c just because I did not know where to
+put it. Should we move this to its own file in kernel/trace/???.c ?
 
-  +					printk(", sector=%llu", (u64)req->sector);
+One option is kernel/trace/trace.c, which is compiled as soon as
+CONFIG_TRACING is enabled.
 
-This way, it will still give correct data when sector_t is a u64.
+I added the prototypes to linux/sched.h, they should probably be moved
+to... linux/trace.h ?
 
-???
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
