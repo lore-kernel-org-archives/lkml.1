@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759850AbZD1LGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932332AbZD1LGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759850AbZD1LGT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 07:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbZD1LGC
+	id S932332AbZD1LGy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 07:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbZD1LGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 07:06:02 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41271 "EHLO mx2.redhat.com"
+	Tue, 28 Apr 2009 07:06:44 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35130 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754369AbZD1LGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 07:06:00 -0400
-Message-ID: <49F6E313.7020502@redhat.com>
-Date: Tue, 28 Apr 2009 14:05:55 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1756902AbZD1LGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 07:06:43 -0400
+Date: Tue, 28 Apr 2009 13:05:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?utf-8?B?RnLpppjpp7tpYw==?= Weisbecker <fweisbec@gmail.com>,
+       Larry Woodman <lwoodman@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090428110553.GD25347@elte.hu>
+References: <84144f020904280219p197d5ceag846ae9a80a76884e@mail.gmail.com> <20090428092918.GC21085@elte.hu> <20090428183237.EBDE.A69D9226@jp.fujitsu.com> <20090428093833.GE21085@elte.hu> <20090428095551.GB21168@localhost>
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, davidel@xmailserver.org
-Subject: Re: [KVM PATCH v2 2/2] kvm: add support for irqfd via	eventfd-notification
- interface
-References: <20090424042142.1796.60756.stgit@dev.haskins.net> <20090424042518.1796.65593.stgit@dev.haskins.net> <49F572EF.4010909@redhat.com> <49F58A8C.7090808@novell.com> <49F58D75.7040304@redhat.com> <49F5B2DA.5060207@novell.com> <49F6CDFC.6000400@redhat.com> <49F6DB9D.3080501@novell.com> <49F6E1CA.1010106@redhat.com> <49F6E2BB.9070604@novell.com>
-In-Reply-To: <49F6E2BB.9070604@novell.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090428095551.GB21168@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
->>>> But eventfd_signal basically marries us to eventfd.
->>>>     
->>>>         
->>> Well, only if we expect the fd to have eventfd semantics.  There are
->>> advantages to doing so, as we have discussed, because things like AIO
->>> can polymorhpically signal an interrupt without even knowing whats
->>> behind the eventfd.  But this isn't a strict requirement to support
->>> AIO.  Really all we need is a way for both kernel and userspace to
->>> signal.  Perhaps I should export an "irqfd_signal()" function from kvm,
->>> which today will map to eventfd_signal(), and tomorrow to ??.  I don't
->>> think using f_ops->write() is an option for in-kernel signaling, so we
->>> need some kind of interface here.
->>>
->>> Does that sound reasonable?
->>>   
->>>       
->> irqfd_signal() ties the user of irqfd to kvm.  I want this user to be
->> independent of kvm; it should work with eventfd, kvm's eventfd
->> lookalike (if we move away from eventfd) or pipes.
->>     
->
-> So what is your proposal for such interface?
->
->   
 
-->write().
+* Wu Fengguang <fengguang.wu@intel.com> wrote:
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+> > See my other mail i just sent: it would be a natural extension 
+> > of tracing to also dump all current object state when tracing is 
+> > turned on. That way no drop_caches is needed at all.
+> 
+> I can understand the merits here - I also did readahead 
+> tracing/accounting in _one_ piece of code. Very handy.
+> 
+> The readahead traces are now raw printks - converting to the 
+> ftrace framework would be a big win.
+> 
+> But. It's still not a fit-all solution. Imagine when full data 
+> _since_ booting is required, but the user cannot afford a reboot.
 
+The above 'get object state' interface (which allows passive 
+sampling) - integrated into the tracing framework - would serve that 
+goal, agreed?
+
+	Ingo
