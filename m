@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbZD1Iof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbZD1Ip1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754664AbZD1Iof (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 04:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbZD1IoG
+	id S1754848AbZD1Ip1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 04:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbZD1IoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 04:44:06 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:28892 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753015AbZD1IoB (ORCPT
+	Tue, 28 Apr 2009 04:44:15 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:36552 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753374AbZD1IoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 04:44:01 -0400
+	Tue, 28 Apr 2009 04:44:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=rBb2C74QaoKSzuRT6vMqVUPvkq8KTwD56Ov60LkinF7VIcdlkpmc3DTho9RK5XDdBD
-         ZFcLTOT+C/YIl7oqiTpnysXeJeiaEPRcb8T6np3yAdvtHBjaG7o3nxewe7DB4BSPh9dw
-         dpK/IeXKKojlEhNLRhTgttnXBfj9NIlF9SxC8=
+        b=wOCr7fFQeRqLLeW0EAuiIvkSUztq1XEujFrLVu49zGvExQkz9GBFKpkyrQc1gBRMiJ
+         iMKhu81DWjVO4W/BD62L1qQjl9S9L7pThQt8x1lt7WctEkrQarIs6hWBQjSLyqwloV0d
+         a0jN7RStKGv4z+KVpPJ45BS7lzt5vzRdT0Ujw=
 From: Andrea Righi <righi.andrea@gmail.com>
 To: Paul Menage <menage@google.com>
 Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
@@ -34,9 +34,9 @@ Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
        fchecconi@gmail.com, paolo.valente@unimore.it, m-ikeda@ds.jp.nec.com,
        paulmck@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH v15 1/7] io-throttle documentation
-Date: Tue, 28 Apr 2009 10:43:48 +0200
-Message-Id: <1240908234-15434-2-git-send-email-righi.andrea@gmail.com>
+Subject: [PATCH v15 3/7] page_cgroup: provide a generic page tracking infrastructure
+Date: Tue, 28 Apr 2009 10:43:50 +0200
+Message-Id: <1240908234-15434-4-git-send-email-righi.andrea@gmail.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1240908234-15434-1-git-send-email-righi.andrea@gmail.com>
 References: <1240908234-15434-1-git-send-email-righi.andrea@gmail.com>
@@ -44,438 +44,364 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Documentation of the block device I/O controller: description, usage,
-advantages and design.
+Dirty pages in the page cache can be processed asynchronously by kernel
+threads (pdflush) using a writeback policy. For this reason the real
+writes to the underlying block devices occur in a different IO context
+respect to the task that originally generated the dirty pages involved
+in the IO operation. This makes the tracking and throttling of writeback
+IO more complicate respect to the synchronous IO.
+
+The page_cgroup infrastructure, currently available only for the memory
+cgroup controller, can be used to store the owner of each page and
+opportunely track the writeback IO. This information is encoded in
+page_cgroup->flags.
+
+A owner can be identified using a generic ID number and the following
+interfaces are provided to store a retrieve this information:
+
+  unsigned long page_cgroup_get_owner(struct page *page);
+  int page_cgroup_set_owner(struct page *page, unsigned long id);
+  int page_cgroup_copy_owner(struct page *npage, struct page *opage);
+
+The io-throttle controller uses the cgroup css_id() as the owner's ID
+number.
+
+A big part of this code is taken from the Ryo and Hirokazu's
+bio-cgroup controller (http://people.valinux.co.jp/~ryov/bio-cgroup/).
+
+TODO: try to remove the lock/unlock_page_cgroup() in
+page_cgroup_*_owner().
 
 Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
 ---
- Documentation/cgroups/io-throttle.txt |  417 +++++++++++++++++++++++++++++++++
- 1 files changed, 417 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/cgroups/io-throttle.txt
+ include/linux/memcontrol.h  |    6 +++
+ include/linux/mmzone.h      |    4 +-
+ include/linux/page_cgroup.h |   33 +++++++++++++-
+ init/Kconfig                |    4 ++
+ mm/Makefile                 |    3 +-
+ mm/memcontrol.c             |    6 +++
+ mm/page_cgroup.c            |   96 ++++++++++++++++++++++++++++++++++++++-----
+ 7 files changed, 135 insertions(+), 17 deletions(-)
 
-diff --git a/Documentation/cgroups/io-throttle.txt b/Documentation/cgroups/io-throttle.txt
-new file mode 100644
-index 0000000..789116c
---- /dev/null
-+++ b/Documentation/cgroups/io-throttle.txt
-@@ -0,0 +1,417 @@
-+
-+               Block device I/O bandwidth controller
-+
-+----------------------------------------------------------------------
-+1. DESCRIPTION
-+
-+This controller allows to limit the I/O bandwidth of specific block devices for
-+specific process containers (cgroups [1]) imposing additional delays on I/O
-+requests for those processes that exceed the limits defined in the control
-+group filesystem.
-+
-+Bandwidth limiting rules offer better control over QoS with respect to priority
-+or weight-based solutions that only give information about applications'
-+relative performance requirements. Nevertheless, priority based solutions are
-+affected by performance bursts, when only low-priority requests are submitted
-+to a general purpose resource dispatcher.
-+
-+The goal of the I/O bandwidth controller is to improve performance
-+predictability from the applications' point of view and provide performance
-+isolation of different control groups sharing the same block devices.
-+
-+NOTE #1: If you're looking for a way to improve the overall throughput of the
-+system probably you should use a different solution.
-+
-+NOTE #2: The current implementation does not guarantee minimum bandwidth
-+levels, the QoS is implemented only slowing down I/O "traffic" that exceeds the
-+limits specified by the user; minimum I/O rate thresholds are supposed to be
-+guaranteed if the user configures a proper I/O bandwidth partitioning of the
-+block devices shared among the different cgroups (theoretically if the sum of
-+all the single limits defined for a block device doesn't exceed the total I/O
-+bandwidth of that device).
-+
-+----------------------------------------------------------------------
-+2. USER INTERFACE
-+
-+A new I/O limitation rule is described using the files:
-+- blockio.bandwidth-max
-+- blockio.iops-max
-+
-+The I/O bandwidth (blockio.bandwidth-max) can be used to limit the throughput
-+of a certain cgroup, while blockio.iops-max can be used to throttle cgroups
-+containing applications doing a sparse/seeky I/O workload. Any combination of
-+them can be used to define more complex I/O limiting rules, expressed both in
-+terms of iops/s and bandwidth.
-+
-+The same files can be used to set multiple rules for different block devices
-+relative to the same cgroup.
-+
-+The following syntax can be used to configure any limiting rule:
-+
-+# /bin/echo DEV:LIMIT:STRATEGY:BUCKET_SIZE > CGROUP/FILE
-+
-+- DEV is the name of the device the limiting rule is applied to.
-+
-+- LIMIT is the maximum I/O activity allowed on DEV by CGROUP; LIMIT can
-+  represent a bandwidth limitation (expressed in bytes/s) when writing to
-+  blockio.bandwidth-max, or a limitation to the maximum I/O operations per
-+  second (expressed in iops/s) issued by CGROUP.
-+
-+  A generic I/O limiting rule for a block device DEV can be removed setting the
-+  LIMIT to 0.
-+
-+- STRATEGY is the throttling strategy used to throttle the applications' I/O
-+  requests from/to device DEV. At the moment two different strategies can be
-+  used [2][3]:
-+
-+  0 = leaky bucket: the controller accepts at most B bytes (B = LIMIT * time)
-+		    or O operations (O = LIMIT * time); further I/O requests
-+		    are delayed scheduling a timeout for the tasks that made
-+		    those requests.
-+
-+            Different I/O flow
-+               | | |
-+               | v |
-+               |   v
-+               v
-+              .......
-+              \     /
-+               \   /  leaky-bucket
-+                ---
-+                |||
-+                vvv
-+             Smoothed I/O flow
-+
-+  1 = token bucket: LIMIT tokens are added to the bucket every seconds; the
-+		    bucket can hold at the most BUCKET_SIZE tokens; I/O
-+		    requests are accepted if there are available tokens in the
-+		    bucket; when a request of N bytes arrives N tokens are
-+		    removed from the bucket; if fewer than N tokens are
-+		    available the request is delayed until a sufficient amount
-+		    of token is available in the bucket.
-+
-+            Tokens (I/O rate)
-+                o
-+                o
-+                o
-+              ....... <--.
-+              \     /    | Bucket size (burst limit)
-+               \ooo/     |
-+                ---   <--'
-+                 |ooo
-+    Incoming --->|---> Conforming
-+    I/O          |oo   I/O
-+    requests  -->|-->  requests
-+                 |
-+            ---->|
-+
-+  Leaky bucket is more precise than token bucket to respect the limits, because
-+  bursty workloads are always smoothed. Token bucket, instead, allows a small
-+  irregularity degree in the I/O flows (burst limit), and, for this, it is
-+  better in terms of efficiency (bursty workloads are not smoothed when there
-+  are sufficient tokens in the bucket).
-+
-+- BUCKET_SIZE is used only with token bucket (STRATEGY == 1) and defines the
-+  size of the bucket in bytes (blockio.bandwidth-max) or in I/O operations
-+  (blockio.iops-max).
-+
-+- CGROUP is the name of the limited process container.
-+
-+Also the following syntaxes are allowed:
-+
-+- remove an I/O bandwidth limiting rule
-+# /bin/echo DEV:0 > CGROUP/blockio.bandwidth-max
-+
-+- configure a limiting rule using leaky bucket throttling (ignore bucket size):
-+# /bin/echo DEV:LIMIT:0 > CGROUP/blockio.bandwidth-max
-+
-+- configure a limiting rule using token bucket throttling
-+  (with bucket size == LIMIT):
-+# /bin/echo DEV:LIMIT:1 > CGROUP/blockio.bandwidth-max
-+
-+2.2. Show I/O limiting rules
-+
-+All the defined rules and statistics for a specific cgroup can be shown reading
-+the files blockio.bandwidth-max for bandwidth constraints and blockio.iops-max
-+for I/O operations per second constraints.
-+
-+The following syntax is used:
-+
-+$ cat CGROUP/blockio.bandwidth-max
-+MAJOR MINOR LIMIT STRATEGY LEAKY_STAT BUCKET_SIZE BUCKET_FILL TIME_DELTA
-+
-+- MAJOR is the major device number of DEV (defined above)
-+
-+- MINOR is the minor device number of DEV (defined above)
-+
-+- LIMIT, STRATEGY and BUCKET_SIZE are the same parameters defined above
-+
-+- LEAKY_STAT is the amount of bytes (blockio.bandwidth-max) or I/O operations
-+  (blockio.iops-max) currently allowed by the I/O controller (only used with
-+  leaky bucket strategy - STRATEGY == 0)
-+
-+- BUCKET_FILL represents the amount of tokens present in the bucket (only used
-+  with token bucket strategy - STRATEGY == 1)
-+
-+- TIME_DELTA can be one of the following:
-+  - the amount of jiffies elapsed from the last I/O request (token bucket)
-+  - the amount of jiffies during which the bytes or the number of I/O
-+    operations given by LEAKY_STAT have been accumulated (leaky bucket)
-+
-+Multiple per-block device rules are reported in multiple rows
-+(DEVi, i = 1 ..  n):
-+
-+$ cat CGROUP/blockio.bandwidth-max
-+MAJOR1 MINOR1 BW1 STRATEGY1 LEAKY_STAT1 BUCKET_SIZE1 BUCKET_FILL1 TIME_DELTA1
-+MAJOR1 MINOR1 BW2 STRATEGY2 LEAKY_STAT2 BUCKET_SIZE2 BUCKET_FILL2 TIME_DELTA2
-+...
-+MAJORn MINORn BWn STRATEGYn LEAKY_STATn BUCKET_SIZEn BUCKET_FILLn TIME_DELTAn
-+
-+The same fields are used to describe I/O operations/sec rules. The only
-+difference is that the cost of each I/O operation is scaled up by a factor of
-+1000. This allows to apply better fine grained sleeps and provide a more
-+precise throttling.
-+
-+$ cat CGROUP/blockio.iops-max
-+MAJOR MINOR LIMITx1000 STRATEGY LEAKY_STATx1000 BUCKET_SIZEx1000 BUCKET_FILLx1000 TIME_DELTA
-+...
-+
-+2.3. Additional I/O statistics
-+
-+Additional cgroup I/O throttling statistics are reported in
-+blockio.throttlecnt:
-+
-+$ cat CGROUP/blockio.throttlecnt
-+MAJOR MINOR BW_COUNTER BW_SLEEP IOPS_COUNTER IOPS_SLEEP
-+
-+ - MAJOR, MINOR are respectively the major and the minor number of the device
-+   the following statistics refer to
-+ - BW_COUNTER gives the number of times that the cgroup bandwidth limit of
-+   this particular device was exceeded
-+ - BW_SLEEP is the amount of sleep time measured in clock ticks (divide
-+   by sysconf(_SC_CLK_TCK)) imposed to the processes of this cgroup that
-+   exceeded the bandwidth limit for this particular device
-+ - IOPS_COUNTER gives the number of times that the cgroup I/O operation per
-+   second limit of this particular device was exceeded
-+ - IOPS_SLEEP is the amount of sleep time measured in clock ticks (divide
-+   by sysconf(_SC_CLK_TCK)) imposed to the processes of this cgroup that
-+   exceeded the I/O operations per second limit for this particular device
-+
-+Example:
-+$ cat CGROUP/blockio.throttlecnt
-+8 0 0 0 0 0
-+^ ^ ^ ^ ^ ^
-+ \ \ \ \ \ \___iops sleep (in clock ticks)
-+  \ \ \ \ \____iops throttle counter
-+   \ \ \ \_____bandwidth sleep (in clock ticks)
-+    \ \ \______bandwidth throttle counter
-+     \ \_______minor dev. number
-+      \________major dev. number
-+
-+Distinct statistics for each process are reported in
-+/proc/PID/io-throttle-stat:
-+
-+$ cat /proc/PID/io-throttle-stat
-+BW_COUNTER BW_SLEEP IOPS_COUNTER IOPS_SLEEP
-+
-+Example:
-+$ cat /proc/$$/io-throttle-stat
-+0 0 0 0
-+^ ^ ^ ^
-+ \ \ \ \_____global iops sleep (in clock ticks)
-+  \ \ \______global iops counter
-+   \ \_______global bandwidth sleep (clock ticks)
-+    \________global bandwidth counter
-+
-+2.5. Generic usage examples
-+
-+* Mount the cgroup filesystem (blockio subsystem):
-+  # mkdir /mnt/cgroup
-+  # mount -t cgroup -oblockio blockio /mnt/cgroup
-+
-+* Instantiate the new cgroup "foo":
-+  # mkdir /mnt/cgroup/foo
-+  --> the cgroup foo has been created
-+
-+* Add the current shell process to the cgroup "foo":
-+  # /bin/echo $$ > /mnt/cgroup/foo/tasks
-+  --> the current shell has been added to the cgroup "foo"
-+
-+* Give maximum 1MiB/s of I/O bandwidth on /dev/sda for the cgroup "foo", using
-+  leaky bucket throttling strategy:
-+  # /bin/echo /dev/sda:$((1024 * 1024)):0:0 > \
-+  > /mnt/cgroup/foo/blockio.bandwidth-max
-+  # sh
-+  --> the subshell 'sh' is running in cgroup "foo" and it can use a maximum I/O
-+      bandwidth of 1MiB/s on /dev/sda
-+
-+* Give maximum 8MiB/s of I/O bandwidth on /dev/sdb for the cgroup "foo", using
-+  token bucket throttling strategy, bucket size = 8MiB:
-+  # /bin/echo /dev/sdb:$((8 * 1024 * 1024)):1:$((8 * 1024 * 1024)) > \
-+  > /mnt/cgroup/foo/blockio.bandwidth-max
-+  # sh
-+  --> the subshell 'sh' is running in cgroup "foo" and it can use a maximum I/O
-+      bandwidth of 1MiB/s on /dev/sda (controlled by leaky bucket throttling)
-+      and 8MiB/s on /dev/sdb (controlled by token bucket throttling)
-+
-+* Run a benchmark doing I/O on /dev/sda and /dev/sdb; I/O limits and usage
-+  defined for cgroup "foo" can be shown as following:
-+  # cat /mnt/cgroup/foo/blockio.bandwidth-max
-+  8 16 8388608 1 0 8388608 -522560 48
-+  8 0 1048576 0 737280 0 0 216
-+
-+* Extend the maximum I/O bandwidth for the cgroup "foo" to 16MiB/s on /dev/sda:
-+  # /bin/echo /dev/sda:$((16 * 1024 * 1024)):0:0 > \
-+  > /mnt/cgroup/foo/blockio.bandwidth-max
-+  # cat /mnt/cgroup/foo/blockio.bandwidth-max
-+  8 16 8388608 1 0 8388608 -84432 206436
-+  8 0 16777216 0 0 0 0 15212
-+
-+* Remove limiting rule on /dev/sdb for cgroup "foo":
-+  # /bin/echo /dev/sdb:0:0:0 > /mnt/cgroup/foo/blockio.bandwidth-max
-+  # cat /mnt/cgroup/foo/blockio.bandwidth-max
-+  8 0 16777216 0 0 0 0 110388
-+
-+* Set a maximum of 100 I/O operations/sec (leaky bucket strategy) to /dev/sdc
-+  for cgroup "foo":
-+  # /bin/echo /dev/sdc:100:0 > /mnt/cgroup/foo/blockio.iops-max
-+  # cat /mnt/cgroup/foo/blockio.iops-max
-+  8 32 100000 0 846000 0 2113
-+          ^        ^
-+         /________/
-+        /
-+  Remember: these values are scaled up by a factor of 1000 to apply a fine
-+  grained throttling (i.e. LIMIT == 100000 means a maximum of 100 I/O operation
-+  per second)
-+
-+* Remove limiting rule for I/O operations from /dev/sdc for cgroup "foo":
-+  # /bin/echo /dev/sdc:0 > /mnt/cgroup/foo/blockio.iops-max
-+
-+----------------------------------------------------------------------
-+3. ADVANTAGES OF PROVIDING THIS FEATURE
-+
-+* Allow I/O traffic shaping for block device shared among different cgroups
-+* Improve I/O performance predictability on block devices shared between
-+  different cgroups
-+* Limiting rules do not depend of the particular I/O scheduler (anticipatory,
-+  deadline, CFQ, noop) and/or the type of the underlying block devices
-+* The bandwidth limitations are guaranteed both for synchronous and
-+  asynchronous operations, even the I/O passing through the page cache or
-+  buffers and not only direct I/O (see below for details)
-+* It is possible to implement a simple user-space application to dynamically
-+  adjust the I/O workload of different process containers at run-time,
-+  according to the particular users' requirements and applications' performance
-+  constraints
-+
-+----------------------------------------------------------------------
-+4. DESIGN
-+
-+The I/O throttling is performed imposing an explicit timeout on the processes
-+that exceed the I/O limits dedicated to the cgroup they belong to. I/O
-+accounting happens per cgroup.
-+
-+Only the actual I/O that flows in the block devices is considered. Multiple
-+re-reads of pages already present in the page cache as well as re-writes of
-+dirty pages are not considered to account and throttle the I/O activity, since
-+they don't actually generate any real I/O operation.
-+
-+This means that a process that re-reads or re-writes multiple times the same
-+blocks of a file is affected by the I/O limitations only for the actual I/O
-+performed from/to the underlying block devices.
-+
-+4.1. Synchronous I/O tracking and throttling
-+
-+The io-throttle controller just works as expected for synchronous (read and
-+write) operations: the real I/O activity is reduced synchronously according to
-+the defined limitations.
-+
-+If the operation is synchronous we automatically know that the context of the
-+request is the current task and so we can charge the cgroup the current task
-+belongs to. And throttle the current task as well, if it exceeded the cgroup
-+limitations.
-+
-+4.2. Buffered I/O (write-back) tracking
-+
-+For buffered writes the scenario is a bit more complex, because the writes in
-+the page cache are processed asynchronously by kernel threads (pdflush), using
-+a write-back policy. So the real writes to the underlying block devices occur
-+in a different I/O context respect to the task that originally generated the
-+dirty pages.
-+
-+The I/O bandwidth controller uses the following solution to resolve this
-+problem.
-+
-+If the operation is a buffered write, we can charge the right cgroup looking at
-+the owner of the first page involved in the I/O operation, that gives the
-+context that generated the I/O activity at the source. This information can be
-+retrieved using the page_cgroup functionality originally provided by the cgroup
-+memory controller [4], and now provided by a modified version of the bio-cgroup
-+controller [5], embedding the page tracking feature directly into the
-+io-throttle controller.
-+
-+The page_cgroup structure is used to encode the owner of each struct page: this
-+information is encoded in page_cgroup->flags. A owner is characterized by a
-+numeric ID: the io-throttle css_id(). The owner of a page is set when a page is
-+dirtied or added to the page cache. At the moment I/O generated by anonymous
-+pages (swap) is not considered by the io-throttle controller.
-+
-+In this way we can correctly account the I/O cost to the right cgroup, but we
-+cannot throttle the current task in this stage, because, in general, it is a
-+different task (e.g., pdflush that is processing asynchronously the dirty
-+page).
-+
-+For this reason, all the write-back requests that are not directly submitted by
-+the real owner and that need to be throttled are not dispatched immediately in
-+submit_bio(). Instead, they are added into an rbtree and processed
-+asynchronously by a dedicated kernel thread: kiothrottled.
-+
-+A deadline is associated to each throttled write-back request depending on the
-+bandwidth usage of the cgroup it belongs. When a request is inserted into the
-+rbtree kiothrottled is awakened. This thread periodically selects all the
-+requests with an expired deadline and submit the bunch of selected requests to
-+the underlying block devices using generic_make_request().
-+
-+4.3. Per-block device IO limiting rules
-+
-+Multiple rules for different block devices are stored in a linked list, using
-+the dev_t number of each block device as key to uniquely identify each element
-+of the list. RCU synchronization is used to protect the whole list structure,
-+since the elements in the list are not supposed to change frequently (they
-+change only when a new rule is defined or an old rule is removed or updated),
-+while the reads in the list occur at each operation that generates I/O. This
-+allows to provide zero overhead for cgroups that do not use any limitation.
-+
-+WARNING: per-block device limiting rules always refer to the dev_t device
-+number. If a block device is unplugged (i.e. a USB device) the limiting rules
-+defined for that device persist and they are still valid if a new device is
-+plugged in the system and it uses the same major and minor numbers.
-+
-+4.4. Asynchronous I/O (AIO) handling
-+
-+Explicit sleeps are *not* imposed on tasks doing asynchronous I/O (AIO)
-+operations; AIO throttling is performed returning -EAGAIN from sys_io_submit().
-+Userspace applications must be able to handle this error code opportunely.
-+
-+----------------------------------------------------------------------
-+5. TODO
-+
-+* Support proportional I/O bandwidth for an optimal bandwidth usage. For
-+  example use the kiothrottled rbtree: all the requests queued to the I/O
-+  subsystem first will go into the rbtree; then based on a per-cgroup I/O
-+  priority and feedback from I/O schedulers dispatch the requests to the
-+  elevator. This would allow to provide both bandwidth limiting and
-+  proportional bandwidth functionalities using a generic approach.
-+
-+* Implement a fair throttling policy: distribute the time to sleep equally
-+  among all the tasks of a cgroup that exceeded the I/O limits, e.g., depending
-+  of the amount of I/O activity previously generated in the past by each task
-+  (see task_io_accounting).
-+
-+----------------------------------------------------------------------
-+6. REFERENCES
-+
-+[1] Documentation/cgroups/cgroups.txt
-+[2] http://en.wikipedia.org/wiki/Leaky_bucket
-+[3] http://en.wikipedia.org/wiki/Token_bucket
-+[4] Documentation/controllers/memory.txt
-+[5] http://people.valinux.co.jp/~ryov/bio-cgroup
+diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+index a9e3b76..e80e335 100644
+--- a/include/linux/memcontrol.h
++++ b/include/linux/memcontrol.h
+@@ -37,6 +37,8 @@ struct mm_struct;
+  * (Of course, if memcg does memory allocation in future, GFP_KERNEL is sane.)
+  */
+ 
++extern void __init_mem_page_cgroup(struct page_cgroup *pc);
++
+ extern int mem_cgroup_newpage_charge(struct page *page, struct mm_struct *mm,
+ 				gfp_t gfp_mask);
+ /* for swap handling */
+@@ -120,6 +122,10 @@ extern bool mem_cgroup_oom_called(struct task_struct *task);
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ struct mem_cgroup;
+ 
++static inline void __init_mem_page_cgroup(struct page_cgroup *pc)
++{
++}
++
+ static inline int mem_cgroup_newpage_charge(struct page *page,
+ 					struct mm_struct *mm, gfp_t gfp_mask)
+ {
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 186ec6a..b178eb9 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -607,7 +607,7 @@ typedef struct pglist_data {
+ 	int nr_zones;
+ #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
+ 	struct page *node_mem_map;
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_PAGE_TRACKING
+ 	struct page_cgroup *node_page_cgroup;
+ #endif
+ #endif
+@@ -958,7 +958,7 @@ struct mem_section {
+ 
+ 	/* See declaration of similar field in struct zone */
+ 	unsigned long *pageblock_flags;
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_PAGE_TRACKING
+ 	/*
+ 	 * If !SPARSEMEM, pgdat doesn't have page_cgroup pointer. We use
+ 	 * section. (see memcontrol.h/page_cgroup.h about this.)
+diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
+index 7339c7b..f24d081 100644
+--- a/include/linux/page_cgroup.h
++++ b/include/linux/page_cgroup.h
+@@ -1,7 +1,7 @@
+ #ifndef __LINUX_PAGE_CGROUP_H
+ #define __LINUX_PAGE_CGROUP_H
+ 
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_PAGE_TRACKING
+ #include <linux/bit_spinlock.h>
+ /*
+  * Page Cgroup can be considered as an extended mem_map.
+@@ -12,11 +12,38 @@
+  */
+ struct page_cgroup {
+ 	unsigned long flags;
+-	struct mem_cgroup *mem_cgroup;
+ 	struct page *page;
++#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++	struct mem_cgroup *mem_cgroup;
+ 	struct list_head lru;		/* per cgroup LRU list */
++#endif
+ };
+ 
++/*
++ * use lower 16 bits for flags and reserve the rest for the page tracking id
++ */
++#define PAGE_TRACKING_ID_SHIFT	(16)
++#define PAGE_TRACKING_ID_BITS \
++		(8 * sizeof(unsigned long) - PAGE_TRACKING_ID_SHIFT)
++
++/* NOTE: must be called with page_cgroup() held */
++static inline unsigned long page_cgroup_get_id(struct page_cgroup *pc)
++{
++	return pc->flags >> PAGE_TRACKING_ID_SHIFT;
++}
++
++/* NOTE: must be called with page_cgroup() held */
++static inline void page_cgroup_set_id(struct page_cgroup *pc, unsigned long id)
++{
++	WARN_ON(id >= (1UL << PAGE_TRACKING_ID_BITS));
++	pc->flags &= (1UL << PAGE_TRACKING_ID_SHIFT) - 1;
++	pc->flags |= (unsigned long)(id << PAGE_TRACKING_ID_SHIFT);
++}
++
++unsigned long page_cgroup_get_owner(struct page *page);
++int page_cgroup_set_owner(struct page *page, unsigned long id);
++int page_cgroup_copy_owner(struct page *npage, struct page *opage);
++
+ void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat);
+ void __init page_cgroup_init(void);
+ struct page_cgroup *lookup_page_cgroup(struct page *page);
+@@ -71,7 +98,7 @@ static inline void unlock_page_cgroup(struct page_cgroup *pc)
+ 	bit_spin_unlock(PCG_LOCK, &pc->flags);
+ }
+ 
+-#else /* CONFIG_CGROUP_MEM_RES_CTLR */
++#else /* CONFIG_PAGE_TRACKING */
+ struct page_cgroup;
+ 
+ static inline void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
+diff --git a/init/Kconfig b/init/Kconfig
+index 7be4d38..5428ac7 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -569,6 +569,7 @@ config CGROUP_MEM_RES_CTLR
+ 	bool "Memory Resource Controller for Control Groups"
+ 	depends on CGROUPS && RESOURCE_COUNTERS
+ 	select MM_OWNER
++	select PAGE_TRACKING
+ 	help
+ 	  Provides a memory resource controller that manages both anonymous
+ 	  memory and page cache. (See Documentation/cgroups/memory.txt)
+@@ -611,6 +612,9 @@ endif # CGROUPS
+ config MM_OWNER
+ 	bool
+ 
++config PAGE_TRACKING
++	bool
++
+ config SYSFS_DEPRECATED
+ 	bool
+ 
+diff --git a/mm/Makefile b/mm/Makefile
+index ec73c68..b94e074 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -37,4 +37,5 @@ else
+ obj-$(CONFIG_SMP) += allocpercpu.o
+ endif
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+-obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
++obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o
++obj-$(CONFIG_PAGE_TRACKING) += page_cgroup.o
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index e44fb0f..69d1c31 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -2524,6 +2524,12 @@ struct cgroup_subsys mem_cgroup_subsys = {
+ 	.use_id = 1,
+ };
+ 
++void __meminit __init_mem_page_cgroup(struct page_cgroup *pc)
++{
++	pc->mem_cgroup = NULL;
++	INIT_LIST_HEAD(&pc->lru);
++}
++
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ 
+ static int __init disable_swap_account(char *s)
+diff --git a/mm/page_cgroup.c b/mm/page_cgroup.c
+index 791905c..ec9ed05 100644
+--- a/mm/page_cgroup.c
++++ b/mm/page_cgroup.c
+@@ -3,6 +3,7 @@
+ #include <linux/bootmem.h>
+ #include <linux/bit_spinlock.h>
+ #include <linux/page_cgroup.h>
++#include <linux/blk-io-throttle.h>
+ #include <linux/hash.h>
+ #include <linux/slab.h>
+ #include <linux/memory.h>
+@@ -14,9 +15,8 @@ static void __meminit
+ __init_page_cgroup(struct page_cgroup *pc, unsigned long pfn)
+ {
+ 	pc->flags = 0;
+-	pc->mem_cgroup = NULL;
+ 	pc->page = pfn_to_page(pfn);
+-	INIT_LIST_HEAD(&pc->lru);
++	__init_mem_page_cgroup(pc);
+ }
+ static unsigned long total_usage;
+ 
+@@ -74,7 +74,7 @@ void __init page_cgroup_init(void)
+ 
+ 	int nid, fail;
+ 
+-	if (mem_cgroup_disabled())
++	if (mem_cgroup_disabled() && iothrottle_disabled())
+ 		return;
+ 
+ 	for_each_online_node(nid)  {
+@@ -83,12 +83,13 @@ void __init page_cgroup_init(void)
+ 			goto fail;
+ 	}
+ 	printk(KERN_INFO "allocated %ld bytes of page_cgroup\n", total_usage);
+-	printk(KERN_INFO "please try cgroup_disable=memory option if you"
+-	" don't want\n");
++	printk(KERN_INFO
++		"try cgroup_disable=memory,blockio option if you don't want\n");
+ 	return;
+ fail:
+ 	printk(KERN_CRIT "allocation of page_cgroup was failed.\n");
+-	printk(KERN_CRIT "please try cgroup_disable=memory boot option\n");
++	printk(KERN_CRIT
++		"try cgroup_disable=memory,blockio boot option\n");
+ 	panic("Out of memory");
+ }
+ 
+@@ -248,7 +249,7 @@ void __init page_cgroup_init(void)
+ 	unsigned long pfn;
+ 	int fail = 0;
+ 
+-	if (mem_cgroup_disabled())
++	if (mem_cgroup_disabled() && iothrottle_disabled())
+ 		return;
+ 
+ 	for (pfn = 0; !fail && pfn < max_pfn; pfn += PAGES_PER_SECTION) {
+@@ -257,14 +258,15 @@ void __init page_cgroup_init(void)
+ 		fail = init_section_page_cgroup(pfn);
+ 	}
+ 	if (fail) {
+-		printk(KERN_CRIT "try cgroup_disable=memory boot option\n");
++		printk(KERN_CRIT
++			"try cgroup_disable=memory,blockio boot option\n");
+ 		panic("Out of memory");
+ 	} else {
+ 		hotplug_memory_notifier(page_cgroup_callback, 0);
+ 	}
+ 	printk(KERN_INFO "allocated %ld bytes of page_cgroup\n", total_usage);
+-	printk(KERN_INFO "please try cgroup_disable=memory option if you don't"
+-	" want\n");
++	printk(KERN_INFO
++		"try cgroup_disable=memory,blockio option if you don't want\n");
+ }
+ 
+ void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
+@@ -272,8 +274,80 @@ void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
+ 	return;
+ }
+ 
+-#endif
++#endif /* !defined(CONFIG_SPARSEMEM) */
++
++/**
++ * page_cgroup_get_owner() - get the owner ID of a page
++ * @page:	the page we want to find the owner
++ *
++ * Returns the owner ID of the page, 0 means that the owner cannot be
++ * retrieved.
++ **/
++unsigned long page_cgroup_get_owner(struct page *page)
++{
++	struct page_cgroup *pc;
++	unsigned long ret;
++
++	pc = lookup_page_cgroup(page);
++	if (unlikely(!pc))
++		return 0;
++
++	lock_page_cgroup(pc);
++	ret = page_cgroup_get_id(pc);
++	unlock_page_cgroup(pc);
++	return ret;
++}
++
++/**
++ * page_cgroup_set_owner() - set the owner ID of a page
++ * @page:	the page we want to tag
++ * @id:		the ID number that will be associated to page
++ *
++ * Returns 0 if the owner is correctly associated to the page. Returns a
++ * negative value in case of failure.
++ **/
++int page_cgroup_set_owner(struct page *page, unsigned long id)
++{
++	struct page_cgroup *pc;
++
++	pc = lookup_page_cgroup(page);
++	if (unlikely(!pc))
++		return -ENOENT;
++
++	lock_page_cgroup(pc);
++	page_cgroup_set_id(pc, id);
++	unlock_page_cgroup(pc);
++	return 0;
++}
+ 
++/**
++ * page_cgroup_copy_owner() - copy the owner ID of a page into another page
++ * @npage:	the page where we want to copy the owner
++ * @opage:	the page from which we want to copy the ID
++ *
++ * Returns 0 if the owner is correctly associated to npage. Returns a negative
++ * value in case of failure.
++ **/
++int page_cgroup_copy_owner(struct page *npage, struct page *opage)
++{
++	struct page_cgroup *npc, *opc;
++	unsigned long id;
++
++	npc = lookup_page_cgroup(npage);
++	if (unlikely(!npc))
++		return -ENOENT;
++	opc = lookup_page_cgroup(opage);
++	if (unlikely(!opc))
++		return -ENOENT;
++	lock_page_cgroup(opc);
++	lock_page_cgroup(npc);
++	id = page_cgroup_get_id(opc);
++	page_cgroup_set_id(npc, id);
++	unlock_page_cgroup(npc);
++	unlock_page_cgroup(opc);
++
++	return 0;
++}
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ 
 -- 
 1.6.0.4
 
