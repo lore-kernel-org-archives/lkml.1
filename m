@@ -1,140 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757459AbZD1Qhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbZD1Qia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757459AbZD1Qhl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZD1Qhd
+	id S1758654AbZD1Qia (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZD1QiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:37:33 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:42022 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754055AbZD1Qhc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:37:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=acg4HOzZYNsZxDe2rB9/qZR01v8Nout35skfs3gJ/5jER5dqKVDI+GtSzhV39VyRgZ
-         ZZ41I1XT+pbigFE+anIs7pavximeki3fpokX6DmHV0FpieiUTYYtJD2aeEEKEQ3QUUNx
-         VQeKxZBqdsd5OaRrjnK0qc4rlL5vjvD3JWN/I=
+	Tue, 28 Apr 2009 12:38:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:32942 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754778AbZD1QiT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 12:38:19 -0400
+Message-ID: <49F7308A.2010804@kernel.org>
+Date: Tue, 28 Apr 2009 09:36:26 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <20090428163300.GD5978@nowhere>
-References: <20090428132037.GA27519@Krystal> <20090428150102.GB26546@elte.hu>
-	 <20090428154046.GA32381@Krystal> <20090428163300.GD5978@nowhere>
-Date: Tue, 28 Apr 2009 18:37:30 +0200
-Message-ID: <c62985530904280937m5bb04d21tc1c6695a845df234@mail.gmail.com>
-Subject: Re: LTTng "TIF_KERNEL_TRACE"
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [RFC PATCH] use dev_set_name(,NULL) to prevent leaking
+References: <20090418192314.GA22107@suse.de> <20090418203718.GD30144@elte.hu> 	<49EA4EB9.2030307@kernel.org> <49F6B1E6.7050008@kernel.org> 	<49F6B350.9080703@kernel.org> <ac3eb2510904280125w11a58388u6a51997e28609009@mail.gmail.com> 	<49F71EF6.3050102@kernel.org> <49F72205.7030306@kernel.org> 	<20090428153906.GA8896@suse.de> <49F7260F.8030405@kernel.org> <ac3eb2510904280856m1fc07002pc4fb630fd2946b62@mail.gmail.com>
+In-Reply-To: <ac3eb2510904280856m1fc07002pc4fb630fd2946b62@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/28 Frederic Weisbecker <fweisbec@gmail.com>:
-> On Tue, Apr 28, 2009 at 11:40:46AM -0400, Mathieu Desnoyers wrote:
->> * Ingo Molnar (mingo@elte.hu) wrote:
->> >
->> > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
->> >
->> > > Hi Ingo,
->> > >
->> > > Looking at the current -tip tree, I notice that the
->> > > TIF_SYSCALL_FTRACE flag is only implemented for x86.
->> > >
->> > > I have TIF_KERNEL_TRACE in my lttng tree which applies to all
->> > > architectures to do the exact same thing :
->> > >
->> > > lttng-kernel-trace-thread-flag-alpha.patch
->> > > lttng-kernel-trace-thread-flag-arm.patch
->> > > lttng-kernel-trace-thread-flag-avr32.patch
->> > > lttng-kernel-trace-thread-flag-blackfin.patch
->> > > lttng-kernel-trace-thread-flag-cris.patch
->> > > lttng-kernel-trace-thread-flag-frv.patch
->> > > lttng-kernel-trace-thread-flag-h8300.patch
->> > > lttng-kernel-trace-thread-flag-ia64.patch
->> > > lttng-kernel-trace-thread-flag-m32r.patch
->> > > lttng-kernel-trace-thread-flag-m68k.patch
->> > > lttng-kernel-trace-thread-flag-mips.patch
->> > > lttng-kernel-trace-thread-flag-parisc.patch
->> > > lttng-kernel-trace-thread-flag-powerpc.patch
->> > > lttng-kernel-trace-thread-flag-s390.patch
->> > > lttng-kernel-trace-thread-flag-sh.patch
->> > > lttng-kernel-trace-thread-flag-sparc.patch
->> > > lttng-kernel-trace-thread-flag-um.patch
->> > > lttng-kernel-trace-thread-flag-x86.patch
->> > > lttng-kernel-trace-thread-flag-xtensa.patch
->> > > lttng-kernel-trace-thread-flag-api.patch
->> > >
->> > > Is there any way we could get this merged ?
->> > >
->> > > One thing I like about the name TIF_KERNEL_TRACE compared to
->> > > TIF_SYSCALL_FTRACE is that it gives us a per-thread flag that
->> > > could eventually be used for more kernel tracing purposes than
->> > > just syscalls.
->> >
->> > Yeah - TIF_KERNEL_TRACE indeed sounds more descriptive and less
->> > restrictive. TIF_SYSCALL_FTRACE was a bit ad-hoc.
->> >
+Kay Sievers wrote:
+> On Tue, Apr 28, 2009 at 17:51, Yinghai Lu <yinghai@kernel.org> wrote:
+> 
+>> before device_register==>device_initialize is called, kobj->ref is still 0.
 >>
->> Second question :
->>
->> LTTng :
->>         read_lock(&tasklist_lock);
->>         do_each_thread(p, t) {
->>                 set_tsk_thread_flag(t, TIF_KERNEL_TRACE);
->>         } while_each_thread(p, t);
->>         read_unlock(&tasklist_lock);
->>
->> Ftrace:
->>         read_lock_irqsave(&tasklist_lock, flags);
->>
->>         do_each_thread(g, t) {
->>                 clear_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
->>         } while_each_thread(g, t);
->>
->>         read_unlock_irqrestore(&tasklist_lock, flags);
->>
->> With or without irqsave ?
->>
->> Arguments against irqsave for this read lock :
->>
->> - it's not used consistently for this read lock all over the kernel.
->>   Sometimes the read lock is taken without irqsave.
->> - it can be a long iteration, and therefore disables interrupts for a
->>   long time.
->>
->> Arguments for irqsave for this read lock :
->>
->> - Taking any kind of spin/rwlock with inconsistent irq disabling leads
->>   to races where interrupts can be disabled for an unbounded amount of
->>   time if a spinlock with irqoff waits on a spinlock with irqs on. This
->>   is a general problem with current kernel rwlock usage. See my
->>   "priority sifting reader-writer lock" patchset for a fix to this
->>   problem.
->>
->> Mathieu
->>
->
->
-> I don't know why I used irqsave here, I guess I was tired.
->
-> $ git-grep "read_lock_irqsave(&tasklist_lock)" | wc -l
-> 0
-> $ git-grep "write_lock_irqsave(&tasklist_lock)" | wc -l
-> 0
->
-> It is never used in an irq safe fashion, unless one of these sites
-> has the irqs disabled.
-> Lockdep should even have complained about this, when you hold
-> a lock class in an irq safe fashion and thereafter you try to hold
-> it in an irq unsafe fashion, then the state of the kernel becomes unsafe
-> and lockdep is supposed to complain about that.
+>> will get warn from
+>>                if (!kobj->state_initialized)
+> 
+> Initialize the device before you do anything with it. And call _put()
+> any time to get rid of ressources, which might have been allocated
+> before registering.
 
+need to replace device_register with device_add and call device_initialize before device_set_name?
 
-I mean, it's usually a proof of an unsafe state. Not here because we
-actually never hold
-it from irq context.
+YH
