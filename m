@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753628AbZD1TUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbZD1TX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753628AbZD1TUh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 15:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbZD1TU0
+	id S1754204AbZD1TX2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 15:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZD1TXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 15:20:26 -0400
-Received: from jacques.telenet-ops.be ([195.130.132.50]:51308 "EHLO
-	jacques.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752064AbZD1TUZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 15:20:25 -0400
-Date: Tue, 28 Apr 2009 21:20:11 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Tim Abbott <tabbott@mit.edu>
-cc: Sam Ravnborg <sam@ravnborg.org>, Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] m68k: arch/m68k/kernel/sun3-head.S needs <linux/init.h>
-Message-ID: <Pine.LNX.4.64.0904282118330.14413@anakin>
+	Tue, 28 Apr 2009 15:23:19 -0400
+Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:1618 "EHLO
+	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751223AbZD1TXS convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 15:23:18 -0400
+X-BigFish: VPS-22(z34a4jz1432R98dR1805M936fKzz1202hzzz32i6bh6di43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KITSIC-02-FOK-01
+Date: Tue, 28 Apr 2009 21:23:05 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: greg@kroah.com, linux-kernel@vger.kernel.org, dougthompson@xmission.com,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 14/21] amd64_edac: add msr accessors operating on all
+	cpus
+Message-ID: <20090428192305.GA5008@aftab>
+References: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com> <1240931173-17477-15-git-send-email-borislav.petkov@amd.com> <20090428112107.af44e6db.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <20090428112107.af44e6db.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 28 Apr 2009 19:23:08.0158 (UTC) FILETIME=[C2F7D1E0:01C9C836]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-| arch/m68k/kernel/sun3-head.S: Assembler messages:
-| arch/m68k/kernel/sun3-head.S:32: Error: Unknown operator -- statement `__head' ignored
+On Tue, Apr 28, 2009 at 11:21:07AM -0700, Andrew Morton wrote:
+> I'm all confused.  We interrupt _all_ CPUs and get each one of them to
+> write to cmd.data[0] and cmd.data[1].  So what we end up returning is
+> the result which was provided by the last CPU which got there,
+> whichever CPU that was.
+> 
+> Am I mising something, or is this all totally screwy?
 
-Introduced by commit 6f335cab0431d5df4995bcd4fd952d4c746d5a86 ("m68k: convert
-to use __HEAD and HEAD_TEXT macros."), which started using __HEAD without
-adding the appropriate include.
+Gaa, I had fixed those but the patch somehow got lost. Will redo and resend the
+whole patchset tomorrow.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
-Can we please run `trivial' changes through linux-next too, please? Thx!
+Thanks.
 
- arch/m68k/kernel/sun3-head.S |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/arch/m68k/kernel/sun3-head.S b/arch/m68k/kernel/sun3-head.S
-index 9e5c3e5..43036bf 100644
---- a/arch/m68k/kernel/sun3-head.S
-+++ b/arch/m68k/kernel/sun3-head.S
-@@ -1,4 +1,5 @@
- #include <linux/linkage.h>
-+#include <linux/init.h>
- 
- #include <asm/entry.h>
- #include <asm/page.h>
 -- 
-1.6.2.4
+Regards/Gruss,
+Boris.
 
-Gr{oetje,eeting}s,
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
