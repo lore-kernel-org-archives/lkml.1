@@ -1,346 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZD1Iqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbZD1IrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbZD1Iqh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 04:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZD1IoY
+	id S1754323AbZD1IrT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 04:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755179AbZD1IpD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 04:44:24 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:43467 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754580AbZD1IoV (ORCPT
+	Tue, 28 Apr 2009 04:45:03 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:37135 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755165AbZD1Io7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 04:44:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=wUH3JAzH28w8xoROZMCw3tkpOsV8VY69j0odE8GrSuz7E0P0jReF8UjczuhvagJx+i
-         GVUt2qtaFIYIO86OdODxOZvlLY6v8GjcEQnN+UGkRQJHYgLwMe6eU+vEeyZ0ByqSiEE7
-         G0gzypZ7Oh0oVs/rZdMAFPewXreOafZVV7O0s=
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Paul Menage <menage@google.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, tytso@mit.edu,
-       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
-       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
-       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
-       matt@bluehost.com, dradford@bluehost.com, ngupta@google.com,
-       randy.dunlap@oracle.com, roberto@unbit.it,
-       Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
-       fchecconi@gmail.com, paolo.valente@unimore.it, m-ikeda@ds.jp.nec.com,
-       paulmck@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH v15 6/7] io-throttle instrumentation
-Date: Tue, 28 Apr 2009 10:43:53 +0200
-Message-Id: <1240908234-15434-7-git-send-email-righi.andrea@gmail.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1240908234-15434-1-git-send-email-righi.andrea@gmail.com>
-References: <1240908234-15434-1-git-send-email-righi.andrea@gmail.com>
+	Tue, 28 Apr 2009 04:44:59 -0400
+Subject: Re: [PATCH] appletouch: fix DMA to/from stack buffer
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Bob Copeland <me@bobcopeland.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090428015844.GA16190@hash.localnet>
+References: <20090428015844.GA16190@hash.localnet>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-aClLdoYWDh0LEjgoPiLM"
+Date: Tue, 28 Apr 2009 10:44:54 +0200
+Message-Id: <1240908294.19534.2.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apply the io-throttle control and page tracking to the opportune kernel
-functions.
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
----
- block/blk-core.c      |    8 ++++++++
- fs/aio.c              |   12 ++++++++++++
- fs/buffer.c           |    2 ++
- fs/direct-io.c        |    3 +++
- include/linux/sched.h |    8 ++++++++
- kernel/fork.c         |    8 ++++++++
- mm/bounce.c           |    2 ++
- mm/filemap.c          |    2 ++
- mm/page-writeback.c   |   13 +++++++++++++
- mm/readahead.c        |    3 +++
- 10 files changed, 61 insertions(+), 0 deletions(-)
+--=-aClLdoYWDh0LEjgoPiLM
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 2998fe3..a9689df 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -26,6 +26,7 @@
- #include <linux/swap.h>
- #include <linux/writeback.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/blktrace_api.h>
- #include <linux/fault-inject.h>
- #include <trace/block.h>
-@@ -1549,11 +1550,16 @@ void submit_bio(int rw, struct bio *bio)
- 	 * go through the normal accounting stuff before submission.
- 	 */
- 	if (bio_has_data(bio)) {
-+		unsigned long sleep = 0;
-+
- 		if (rw & WRITE) {
- 			count_vm_events(PGPGOUT, count);
-+			sleep = cgroup_io_throttle(bio,
-+					bio->bi_bdev, bio->bi_size);
- 		} else {
- 			task_io_account_read(bio->bi_size);
- 			count_vm_events(PGPGIN, count);
-+			cgroup_io_throttle(NULL, bio->bi_bdev, bio->bi_size);
- 		}
- 
- 		if (unlikely(block_dump)) {
-@@ -1564,6 +1570,8 @@ void submit_bio(int rw, struct bio *bio)
- 				(unsigned long long)bio->bi_sector,
- 				bdevname(bio->bi_bdev, b));
- 		}
-+		if (sleep && !iothrottle_make_request(bio, jiffies + sleep))
-+			return;
- 	}
- 
- 	generic_make_request(bio);
-diff --git a/fs/aio.c b/fs/aio.c
-index 76da125..ab6c457 100644
---- a/fs/aio.c
-+++ b/fs/aio.c
-@@ -22,6 +22,7 @@
- #include <linux/sched.h>
- #include <linux/fs.h>
- #include <linux/file.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/mm.h>
- #include <linux/mman.h>
- #include <linux/slab.h>
-@@ -1587,6 +1588,7 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
- {
- 	struct kiocb *req;
- 	struct file *file;
-+	struct block_device *bdev;
- 	ssize_t ret;
- 
- 	/* enforce forwards compatibility on users */
-@@ -1609,6 +1611,14 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
- 	if (unlikely(!file))
- 		return -EBADF;
- 
-+	/* check if we're exceeding the IO throttling limits */
-+	bdev = as_to_bdev(file->f_mapping);
-+	ret = cgroup_io_throttle(NULL, bdev, 0);
-+	if (unlikely(ret)) {
-+		fput(file);
-+		return -EAGAIN;
-+	}
-+
- 	req = aio_get_req(ctx);		/* returns with 2 references to req */
- 	if (unlikely(!req)) {
- 		fput(file);
-@@ -1652,12 +1662,14 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
- 		goto out_put_req;
- 
- 	spin_lock_irq(&ctx->ctx_lock);
-+	set_in_aio();
- 	aio_run_iocb(req);
- 	if (!list_empty(&ctx->run_list)) {
- 		/* drain the run list */
- 		while (__aio_run_iocbs(ctx))
- 			;
- 	}
-+	unset_in_aio();
- 	spin_unlock_irq(&ctx->ctx_lock);
- 	aio_put_req(req);	/* drop extra ref to req */
- 	return 0;
-diff --git a/fs/buffer.c b/fs/buffer.c
-index b3e5be7..2eb581f 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -36,6 +36,7 @@
- #include <linux/buffer_head.h>
- #include <linux/task_io_accounting_ops.h>
- #include <linux/bio.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/notifier.h>
- #include <linux/cpu.h>
- #include <linux/bitops.h>
-@@ -668,6 +669,7 @@ static void __set_page_dirty(struct page *page,
- 	if (page->mapping) {	/* Race with truncate? */
- 		WARN_ON_ONCE(warn && !PageUptodate(page));
- 		account_page_dirtied(page, mapping);
-+		iothrottle_set_pagedirty_owner(page, current->mm);
- 		radix_tree_tag_set(&mapping->page_tree,
- 				page_index(page), PAGECACHE_TAG_DIRTY);
- 	}
-diff --git a/fs/direct-io.c b/fs/direct-io.c
-index 05763bb..1b304b6 100644
---- a/fs/direct-io.c
-+++ b/fs/direct-io.c
-@@ -28,6 +28,7 @@
- #include <linux/highmem.h>
- #include <linux/pagemap.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/bio.h>
- #include <linux/wait.h>
- #include <linux/err.h>
-@@ -340,7 +341,9 @@ static void dio_bio_submit(struct dio *dio)
- 	if (dio->is_async && dio->rw == READ)
- 		bio_set_pages_dirty(bio);
- 
-+	set_in_dio();
- 	submit_bio(dio->rw, bio);
-+	unset_in_dio();
- 
- 	dio->bio = NULL;
- 	dio->boundary = 0;
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index b4c38bc..3294430 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1356,6 +1356,14 @@ struct task_struct {
- 	unsigned long ptrace_message;
- 	siginfo_t *last_siginfo; /* For ptrace use.  */
- 	struct task_io_accounting ioac;
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+	atomic_t in_aio;
-+	atomic_t in_dio;
-+	unsigned long long io_throttle_bw_cnt;
-+	unsigned long long io_throttle_bw_sleep;
-+	unsigned long long io_throttle_iops_cnt;
-+	unsigned long long io_throttle_iops_sleep;
-+#endif
- #if defined(CONFIG_TASK_XACCT)
- 	u64 acct_rss_mem1;	/* accumulated rss usage */
- 	u64 acct_vm_mem1;	/* accumulated virtual memory usage */
-diff --git a/kernel/fork.c b/kernel/fork.c
-index b9e2edd..7b4d991 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1043,6 +1043,14 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 	task_io_accounting_init(&p->ioac);
- 	acct_clear_integrals(p);
- 
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+	atomic_set(&p->in_aio, 0);
-+	atomic_set(&p->in_dio, 0);
-+	p->io_throttle_bw_cnt = 0;
-+	p->io_throttle_bw_sleep = 0;
-+	p->io_throttle_iops_cnt = 0;
-+	p->io_throttle_iops_sleep = 0;
-+#endif
- 	posix_cpu_timers_init(p);
- 
- 	p->lock_depth = -1;		/* -1 = no lock */
-diff --git a/mm/bounce.c b/mm/bounce.c
-index e590272..80bf52c 100644
---- a/mm/bounce.c
-+++ b/mm/bounce.c
-@@ -10,6 +10,7 @@
- #include <linux/pagemap.h>
- #include <linux/mempool.h>
- #include <linux/blkdev.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/init.h>
- #include <linux/hash.h>
- #include <linux/highmem.h>
-@@ -212,6 +213,7 @@ static void __blk_queue_bounce(struct request_queue *q, struct bio **bio_orig,
- 		to->bv_len = from->bv_len;
- 		to->bv_offset = from->bv_offset;
- 		inc_zone_page_state(to->bv_page, NR_BOUNCE);
-+		iothrottle_copy_page_owner(to->bv_page, page);
- 
- 		if (rw == WRITE) {
- 			char *vto, *vfrom;
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 379ff0b..5498d1d 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -28,6 +28,7 @@
- #include <linux/backing-dev.h>
- #include <linux/pagevec.h>
- #include <linux/blkdev.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/security.h>
- #include <linux/syscalls.h>
- #include <linux/cpuset.h>
-@@ -464,6 +465,7 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
- 					gfp_mask & GFP_RECLAIM_MASK);
- 	if (error)
- 		goto out;
-+	iothrottle_set_page_owner(page, current->mm);
- 
- 	error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
- 	if (error == 0) {
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 30351f0..90cd65a 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -24,6 +24,7 @@
- #include <linux/backing-dev.h>
- #include <linux/task_io_accounting_ops.h>
- #include <linux/blkdev.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/mpage.h>
- #include <linux/rmap.h>
- #include <linux/percpu.h>
-@@ -626,12 +627,23 @@ void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
- 	static DEFINE_PER_CPU(unsigned long, ratelimits) = 0;
- 	unsigned long ratelimit;
- 	unsigned long *p;
-+	struct block_device *bdev = as_to_bdev(mapping);
- 
- 	ratelimit = ratelimit_pages;
- 	if (mapping->backing_dev_info->dirty_exceeded)
- 		ratelimit = 8;
- 
- 	/*
-+	 * Just check if we've exceeded cgroup IO limits, but do not account
-+	 * anything here because we're not actually doing IO at this stage.
-+	 *
-+	 * We just want to stop to dirty additional pages in the system,
-+	 * because we're not dispatching the IO requests generated by this
-+	 * cgroup.
-+	 */
-+	cgroup_io_throttle(NULL, bdev, 0);
-+
-+	/*
- 	 * Check the rate limiting. Also, we do not want to throttle real-time
- 	 * tasks in balance_dirty_pages(). Period.
- 	 */
-@@ -1243,6 +1255,7 @@ int __set_page_dirty_nobuffers(struct page *page)
- 			BUG_ON(mapping2 != mapping);
- 			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
- 			account_page_dirtied(page, mapping);
-+			iothrottle_set_pagedirty_owner(page, current->mm);
- 			radix_tree_tag_set(&mapping->page_tree,
- 				page_index(page), PAGECACHE_TAG_DIRTY);
- 		}
-diff --git a/mm/readahead.c b/mm/readahead.c
-index 133b6d5..25cae4c 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -14,6 +14,7 @@
- #include <linux/blkdev.h>
- #include <linux/backing-dev.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/pagevec.h>
- #include <linux/pagemap.h>
- 
-@@ -81,6 +82,7 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
- 			int (*filler)(void *, struct page *), void *data)
- {
- 	struct page *page;
-+	struct block_device *bdev = as_to_bdev(mapping);
- 	int ret = 0;
- 
- 	while (!list_empty(pages)) {
-@@ -99,6 +101,7 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
- 			break;
- 		}
- 		task_io_account_read(PAGE_CACHE_SIZE);
-+		cgroup_io_throttle(NULL, bdev, PAGE_CACHE_SIZE);
- 	}
- 	return ret;
- }
--- 
-1.6.0.4
+On Mon, 2009-04-27 at 21:58 -0400, Bob Copeland wrote:
+> CONFIG_DMA_API_DEBUG spotted an instance of appletouch using
+> an array on the stack as a DMA buffer for certain hardware.
+> Change it to use a kmalloc()ed buffer instead.
+>=20
+> This fixes the following error:
+
+> Signed-off-by: Bob Copeland <me@bobcopeland.com>
+
+Reviewed-by: Johannes Berg <johannes@sipsolutions.net>
+
+Interestingly, I first thought the GFP_KERNEL is wrong due to
+atp_reinit, but the GFP_ATOMIC in that is wrong instead :)
+
+> ---
+>  drivers/input/mouse/appletouch.c |   24 ++++++++++++++++++------
+>  1 files changed, 18 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/drivers/input/mouse/appletouch.c b/drivers/input/mouse/apple=
+touch.c
+> index 454b961..e0140fd 100644
+> --- a/drivers/input/mouse/appletouch.c
+> +++ b/drivers/input/mouse/appletouch.c
+> @@ -255,15 +255,22 @@ MODULE_PARM_DESC(debug, "Activate debugging output"=
+);
+>   */
+>  static int atp_geyser_init(struct usb_device *udev)
+>  {
+> -	char data[8];
+> +	char *data;
+>  	int size;
+>  	int i;
+> +	int ret;
+> +
+> +	data =3D kmalloc(8, GFP_KERNEL);
+> +	if (!data) {
+> +		err("Out of memory");
+> +		return -ENOMEM;
+> +	}
+> =20
+>  	size =3D usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
+>  			ATP_GEYSER_MODE_READ_REQUEST_ID,
+>  			USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
+>  			ATP_GEYSER_MODE_REQUEST_VALUE,
+> -			ATP_GEYSER_MODE_REQUEST_INDEX, &data, 8, 5000);
+> +			ATP_GEYSER_MODE_REQUEST_INDEX, data, 8, 5000);
+> =20
+>  	if (size !=3D 8) {
+>  		dprintk("atp_geyser_init: read error\n");
+> @@ -271,7 +278,8 @@ static int atp_geyser_init(struct usb_device *udev)
+>  			dprintk("appletouch[%d]: %d\n", i, data[i]);
+> =20
+>  		err("Failed to read mode from device.");
+> -		return -EIO;
+> +		ret =3D -EIO;
+> +		goto out_free;
+>  	}
+> =20
+>  	/* Apply the mode switch */
+> @@ -281,7 +289,7 @@ static int atp_geyser_init(struct usb_device *udev)
+>  			ATP_GEYSER_MODE_WRITE_REQUEST_ID,
+>  			USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
+>  			ATP_GEYSER_MODE_REQUEST_VALUE,
+> -			ATP_GEYSER_MODE_REQUEST_INDEX, &data, 8, 5000);
+> +			ATP_GEYSER_MODE_REQUEST_INDEX, data, 8, 5000);
+> =20
+>  	if (size !=3D 8) {
+>  		dprintk("atp_geyser_init: write error\n");
+> @@ -289,9 +297,13 @@ static int atp_geyser_init(struct usb_device *udev)
+>  			dprintk("appletouch[%d]: %d\n", i, data[i]);
+> =20
+>  		err("Failed to request geyser raw mode");
+> -		return -EIO;
+> +		ret =3D -EIO;
+> +		goto out_free;
+>  	}
+> -	return 0;
+> +	ret =3D 0;
+> +out_free:
+> +	kfree(data);
+> +	return ret;
+>  }
+> =20
+>  /*
+> --=20
+> 1.6.0.6
+>=20
+
+--=-aClLdoYWDh0LEjgoPiLM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJ9sIEAAoJEKVg1VMiehFYkjoP/2YsxPTHDu0VBopQJHJvn9X5
+8s+Wwec7vAOKCy+NN4sTBNgzbsZB2IjdTNVPnSf4GN9iBqvN4+tqw79jIpNLy/od
+nhS68Pw3EP3LtHZh8uWde9t0uevCgDuvx6beWjrYZQWfzvsUHMCKdVvB10VcO3U9
+7pPT/AncHrNMogk0ARoRxKWyXkzNTYsUX9YCcf4euSkXFE1hNaIgcb56fqISKKDM
+jywAZiZzz4G6qfPCmqaZv8JN4bExrrKZ2P1F+choj5UFnBKc2zMrUhWdaCtOkS4p
+lqvIx353w9cyU4oMooT3P6Wgnz+LMtvVUgzyDXj6Tf1zv2raEWZHIAPJvqz29NfY
+JdhRII2jtBf0z7+ebHU1bejEFIMA6Etcygsp+7ZY4EFjIpBpHAQaT4XMpoXhCM/D
+iNPbid6lZXntXw9K/U6J5iI4ZKDQ5/kwyGg0ayeQfWyGfbk4/xove2OAou++3nQQ
+OjFD7Dv5u702CuEFfRwuvBrF9BduvO3AB86sgousu7bNTSFtpKGCh9RT5P3I/uH4
+Dy4Nqg7OBiTz6OVBPsI8L3jikQqNBcAl5DA1hpx3TRJGSWzuQBdQ/7/ODUQ4kSuf
+9VPwrjiBhTYq8crOYH8P5otHWAiepBV0BQ02pCecbGeoZPOX5oFrn70/FX+yZk5z
+eF5hzKlmnbPrsuUtn0WT
+=apZP
+-----END PGP SIGNATURE-----
+
+--=-aClLdoYWDh0LEjgoPiLM--
 
