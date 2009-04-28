@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbZD1DJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZD1DOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755195AbZD1DJG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Apr 2009 23:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbZD1DIx
+	id S1755345AbZD1DOo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Apr 2009 23:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZD1DOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Apr 2009 23:08:53 -0400
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:26209 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752676AbZD1DIw (ORCPT
+	Mon, 27 Apr 2009 23:14:35 -0400
+Received: from mailgw.miraclelinux.com ([122.216.84.157]:47142 "EHLO
+	mailgw.miraclelinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751922AbZD1DOf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Apr 2009 23:08:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Q3h+7FFSCvd7u95nbPXC4oK8VqNDBCsmVdajnnQFuC+C4fnSArMxjNsu23V/auP3JYU2KE+ZmtUMh/01BFSGb8rGWfj5m4KdVWIiZRdgNIL5lQRxvhdfrjaWs9URuxfm+K62lT5DPUEadv48iPbieT3K4AT+Lq09CwrDZjFWfOM=  ;
-X-YMail-OSG: YNEkNHcVM1no.r0YVcagxbKYt_0P0p0qC6x4UATlSBI.iHyST4VlnLYHaTzEn6jgUGjaG1ASdC9WCaXITqhm6kwjbOwr9e8xDOATTWYzBpyBSvCYwtncM3Hk4C3oKRhVjVqLHIk71QonVdj2r2GAo5GouKllv2wnNLLdjHLG1b_VTUwEr2HdftRhQ7FdXDcsx1DnMgJN.1cKFJdaeEopeQlsRb2iMcDzSh0rRusxqHcGVxmvClj0vCbS_6YhBJS0jjOBPWKc6lyKoBn2
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Paul Walmsley <paul@pwsan.com>
-Subject: Re: [PATCH] regulator core: fix double-free in regulator_register() error path
-Date: Mon, 27 Apr 2009 20:08:50 -0700
-User-Agent: KMail/1.9.10
-Cc: linux-omap@vger.kernel.org, lrg@slimlogic.co.uk,
-       broonie@opensource.wolfsonmicro.com, linux-kernel@vger.kernel.org
-References: <alpine.DEB.2.00.0904250526210.28378@utopia.booyaka.com> <alpine.DEB.2.00.0904252250230.4291@utopia.booyaka.com>
-In-Reply-To: <alpine.DEB.2.00.0904252250230.4291@utopia.booyaka.com>
+	Mon, 27 Apr 2009 23:14:35 -0400
+X-Greylist: delayed 1764 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Apr 2009 23:14:35 EDT
+Message-ID: <49F66DB5.7020603@miraclelinux.com>
+Date: Tue, 28 Apr 2009 11:45:09 +0900
+From: Naohiro Ooiwa <nooiwa@miraclelinux.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200904272008.50268.david-b@pacbell.net>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mfd: Fix define values of CS1_HIB_MODE.
+References: <492548F3.6090307@miraclelinux.com> <20081120140427.GA27464@rakim.wolfsonmicro.main>
+In-Reply-To: <20081120140427.GA27464@rakim.wolfsonmicro.main>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 25 April 2009, Paul Walmsley wrote:
+Hi Mark,
+
+I'm sorry for this late reply.
+
+I checked the WM8350 DATA SHEET Rev 4.0 P287.
+It's already corrected.
+
+Thank you for your work.
+
+Regards,
+Naohiro Ooiwa
+
+
+Mark Brown wrote::
+> On Thu, Nov 20, 2008 at 08:24:35PM +0900, Naohiro Ooiwa wrote:
 > 
-> > device_unregister() calls regulator_dev_release() which frees rdev.  The 
-> > subsequent kfree corrupts memory and causes some OMAP3 systems to oops on 
-> > boot in regulator_get().
+>> I found a little mistake.
+>> The define values are wrong.
 > 
-> For the 3430SDP users out there, this patch also fixes the boot hang after 
-> "regulator_init_complete: incomplete constraints, leaving VAUX3 on"
-> on that device.
-
-For the record, that "incomplete constraints" message is bogus.
-On that board, VAUX3 has a complete set of constraints:  it may
-only emit 2.8V.
-
-What it lacks is something entirely different:  driver support
-for the LCD which uses the regulator framework, instead of just
-bypassing it and talking directly to the PMIC.  By the time it
-gets there, the LCD has probably been turned on.
-
-Mark and/or Liam ... you might want to fix that diagnostic, to
-avoid leading more developers astray!
+>> It is written in the WM8350 DATA SHEET Rev 3.4 P285 that
+>> CS1_HIB_MODE(bit 12) is disable at "1".
+> 
+> I will double check but I believe this to be a datasheet error - if it
+> is it will be corrected in the datasheet.
+> 
 
