@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932869AbZD1QPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932953AbZD1QQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932869AbZD1QPu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:15:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbZD1QPi
+	id S932953AbZD1QQZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932936AbZD1QP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:15:38 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:55484 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753024AbZD1QPh convert rfc822-to-8bit (ORCPT
+	Tue, 28 Apr 2009 12:15:59 -0400
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:43949 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932934AbZD1QP7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:15:37 -0400
+	Tue, 28 Apr 2009 12:15:59 -0400
+Date: Tue, 28 Apr 2009 21:45:36 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v1 0/3] Saving power by cpu evacuation using
+	sched_mc=n
+Message-ID: <20090428161536.GE7178@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20090426204029.17495.46609.stgit@drishya.in.ibm.com> <1240826954.8216.8.camel@twins> <20090427142044.GA7178@dirshya.in.ibm.com> <1240907618.7620.86.camel@twins> <20090428085237.GB26487@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <49F729F1.2020107@kernel.org>
-References: <20090418192314.GA22107@suse.de> <49F6B1E6.7050008@kernel.org> 
-	<49F6B350.9080703@kernel.org> <ac3eb2510904280125w11a58388u6a51997e28609009@mail.gmail.com> 
-	<49F71EF6.3050102@kernel.org> <49F72205.7030306@kernel.org> 
-	<20090428153906.GA8896@suse.de> <49F7260F.8030405@kernel.org> 
-	<ac3eb2510904280856m1fc07002pc4fb630fd2946b62@mail.gmail.com> 
-	<49F729F1.2020107@kernel.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Tue, 28 Apr 2009 18:15:15 +0200
-Message-ID: <ac3eb2510904280915m472e7e56w8c0331acfd9f083f@mail.gmail.com>
-Subject: Re: [RFC PATCH] use dev_set_name(,NULL) to prevent leaking
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090428085237.GB26487@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 18:08, Yinghai Lu <yinghai@kernel.org> wrote:
-> Kay Sievers wrote:
->> On Tue, Apr 28, 2009 at 17:51, Yinghai Lu <yinghai@kernel.org> wrote:
->>
->>> before device_register==>device_initialize is called, kobj->ref is still 0.
->>>
->>> will get warn from
->>>                if (!kobj->state_initialized)
->>
->> Initialize the device before you do anything with it. And call _put()
->> any time to get rid of ressources, which might have been allocated
->> before registering.
+* Ingo Molnar <mingo@elte.hu> [2009-04-28 10:52:37]:
 
-> so you mean don't call dev_set_name before device_register and let device_register or device_add take name param?
+> 
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> 
+> > > > Also, the user interface should be that single thermal 
+> > > > capacity knob, more fine grained control is undesired.
+> > > 
+> > > For power savings, a single evacuation knob will do.  While for 
+> > > thermal we will need additional parameters to choose the right 
+> > > cores to evacuate.  Some sort of directional/vector parameter.
+> > 
+> > Why? are machines that non-uniform in cooling capacity that it 
+> > really matters which core generates the heat? Sounds like badly 
+> > designed hardware to me.
+> > 
+> > I would expect it to only be the total head generated/power taken 
+> > from the rack unit.
+> 
+> If we add thermal throttling at the kernel level then a single knob 
+> (with a percentile-ish unit) is probably the furthest we will go - 
+> with "not doing it at all" still being the other, very tempting 
+> alternative.
 
-No. I meant:
+Sure, this is all we would like to do.  Simpler interface is welcome
+and will have easy adoption.
+ 
+> If the only technical way you can find to do it is via myriads of 
+> non-intuitive knobs and per core settings - then the answer is 
+> really 'no thanks'.
 
-  device_initialize()
-    call put_device() any time you want to get rid of ressources of the device
-  device_set_name()
-    call put_device() any time you want to get rid of ressources of the device
-  device_register()
-...
+Agreed.  We definitely do not want to add myriads of non-intuitive
+knobs.  Lets see if a percentage/capacity type knob will work for all.
 
-Kay
+Thanks,
+Vaidy
+
