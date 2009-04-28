@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbZD1Jny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757106AbZD1Jsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756760AbZD1Jny (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 05:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbZD1Jnp
+	id S1757106AbZD1Jsf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 05:48:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbZD1JsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 05:43:45 -0400
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:47938 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753504AbZD1Jno (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 05:43:44 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=6WpPkB7dYZ3BnQbeIiR6QJysaWbzvYCzZtzs0BPP0ODxYFPFGE7xNbS/+Zdw5SiZLxrXUKu1sjm5+mLRBzdcJSvUyQQAPzM8EyqGkj/AQlGUL/CL/aFb22zg+wF5ha0ye3PSwo/PZdpSUHvzwgeCuln5iLFJjJbS4cDRxCqooJw=  ;
-X-YMail-OSG: HAHxDnEVM1mqU5WXRnp4cCYGHd5z3TxXtawMxZJYXI4aIESf_HIx0vrBnOi.yNFDJTybDuMAfNgGYndV9RyPC5RlQx5o61vvaLZ6NXLhHi8K9GAP8JiURGQm2q2i2mB_8QwVPNJHEqKuAWWvjY6xBVtnESPh9.FfMpV3oh5FNl5SY4bk3_yAjEkU219kCKiqAcH7z5cBTfiDGaBgcSECSfEzpnxv87hH0yMqAEpLKNzKQsMD1WBCHUrkNf9wu_9c3bNM6DvtzpvMCVe9
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [patch 2.6.30-rc3] regulator: regression fix
-Date: Tue, 28 Apr 2009 02:43:42 -0700
-User-Agent: KMail/1.9.10
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>
-References: <200904271959.40526.david-b@pacbell.net> <20090428083856.GD14626@sirena.org.uk>
-In-Reply-To: <20090428083856.GD14626@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Apr 2009 05:48:24 -0400
+Received: from cantor.suse.de ([195.135.220.2]:45754 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752756AbZD1JsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 05:48:23 -0400
+Date: Tue, 28 Apr 2009 11:48:21 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [patch 00/27] [rfc] vfs scalability patchset
+Message-ID: <20090428094821.GC9442@wotan.suse.de>
+References: <20090425012020.457460929@suse.de> <20090425041829.GX8633@ZenIV.linux.org.uk> <20090425080143.GA29033@infradead.org> <20090425080649.GA8633@ZenIV.linux.org.uk> <20090428090930.GA14638@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904280243.42927.david-b@pacbell.net>
+In-Reply-To: <20090428090930.GA14638@infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 28 April 2009, Mark Brown wrote:
-> On Mon, Apr 27, 2009 at 07:59:40PM -0700, David Brownell wrote:
+On Tue, Apr 28, 2009 at 05:09:30AM -0400, Christoph Hellwig wrote:
+> On Sat, Apr 25, 2009 at 09:06:49AM +0100, Al Viro wrote:
+> > Maybe...  What Eric proposed is essentially a reuse of s_list for per-inode
+> > list of struct file.  Presumably with something like i_lock for protection.
+> > So that's not a conflict.
 > 
-> > By removing the "else", it breaks the handling of fixed-voltage
-> > regulators ... turning a non-error/non-warning situation into
-> > a complete init failure, which can then prevent system startup.
+> But what do we actually want it for?  Right now it's only used for
+> ttys, which Nick has split out, and for remount r/o.  For the normal
+> remount r/o case it will go away once we have proper per-sb writer
+> counts.  And the fource remount r/o from sysrq is completely broken.
 > 
-> The change you're making isn't relevant to what I suspect the actual
-> problem is (you didn't specify, I may be wrong here).
+> A while ago Peter had patches for files_lock scalability that went even
+> further than Nicks, and if I remember the arguments correctly just
+> splitting the lock wasn't really enough and he required additional
+> batching because there just were too many lock roundtrips.  (Peter, do
+> you remember the defails?)
 
-Restoring the "else" fixed the logic flaw ...
+Hmm, Peter's patch seemed like it was overkill to me. It avoids
+the need for per-cpu files lists in the sb, but the cost is the
+locked lists, the batching, etc. But even then it would still
+generate more cacheline bounces because it needs to flush batches
+back to the per-sb list.
 
+Actually it should not be a problem to avoid the memory overhead
+of my patch if we are willing to make the slowpath even slower.
+Just have a global per-cpu list, and just test for sb equality
+when walking the lists.
 
-> For fixed voltage regulators either the user will have specified a
-> voltage constraint (in which case we'll fall into your else case since
-> cmin ought to be non-zero) or they won't (in which case it's the default
-> constraint code you added will fill it in).  The problem I think you're
-> seeing is that the code you added to fill in a default constraint for
-> fixed voltage regulators uses INT_MIN as the minimum contraint value.
-> This is a negative value and so fails the correctness check further
-> down.
-
-That was my conclusion too.  I forget all the relevant history,
-except that you disliked the notion that boards be able to accept
-whatever constraint the regulator allows ... so that some of the
-logic there is left over.
-
-
-> > You might want to provide a different patch, but ignoring
-> > this regression doesn't seem practical...
-> 
-> The code that was being fixed was only even in -next for a relatively
-> brief period of time.
-
-This is the first time I've seen the "fix" though.  Recall that
-the code in question has been in use for several months now, while
-waiting to wend its way into mainline.  It might be useful to CC
-a few more folk on such "fix" patches.
-
-
-> >  		/* else require explicit machine-level constraints */
-> > -		if (cmin <= 0 || cmax <= 0 || cmax < cmin) {
-> > +		else if (cmin <= 0 || cmax <= 0 || cmax < cmin) {
-> 
-> Yeah, a different patch I think.  I'll send one shortly.
-> 
-> 
-
-
+Anyway, I'll just continue to maintain this patch and if something
+gets done with the file list first, then all the better.
