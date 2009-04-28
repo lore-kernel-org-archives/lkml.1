@@ -1,113 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbZD1JTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbZD1JUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756679AbZD1JTc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 05:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbZD1JTT
+	id S1756646AbZD1JUG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 05:20:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbZD1JTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 05:19:19 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:16964 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755869AbZD1JTQ (ORCPT
+	Tue, 28 Apr 2009 05:19:53 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:46574 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754181AbZD1JTv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 05:19:16 -0400
+	Tue, 28 Apr 2009 05:19:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=ElCLU+8YHl8lGTPkXhDLSEI4kkfbYBQ4o1skjzcOD001AdqW4+fqe2jos/vDnQ32Fm
-         xH5REhfbj15CMh4A+8VU5gDbkm3dFSMVt+8x58Je4DD35xzYYmms1fBSVwBxojRPNCS5
-         k5VcRnvDuN3kvA9Bw8Uw3KMZH8KKJYlriTk8Q=
-Message-ID: <49F6CA0E.5040101@tuffmail.co.uk>
-Date: Tue, 28 Apr 2009 10:19:10 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=fuM9sI2ejiF2ajrDo+bAktsI8DhtPdxjAhCL/UmO1knHqnPRmf9RkInjotkebLzUdd
+         LRvcCn96ReB3u6Nqb4Ji8S4Dc46BntLjGG5YrlWRoTZvJJVFaypu/7mI9zaF+ZyqO9cq
+         v5vnvulffKhekSnbjy5eLeEDCbpzUpytA7Vzg=
 MIME-Version: 1.0
-To: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: [PATCH] [RFC] EEE PC hangs when booting off battery
-References: <49E065CF.6040408@tuffmail.co.uk> <200904140859.02188.bjorn.helgaas@hp.com> <20090414081728.10de978a@infradead.org> <200904140948.37633.bjorn.helgaas@hp.com> <49E5F01B.2060201@tuffmail.co.uk> <49EF0ABD.2080801@tuffmail.co.uk> <49F446AE.6070607@tuffmail.co.uk>
-In-Reply-To: <49F446AE.6070607@tuffmail.co.uk>
+In-Reply-To: <20090428091508.GA21085@elte.hu>
+References: <20090428010907.912554629@intel.com>
+	 <20090428014920.769723618@intel.com> <20090428065507.GA2024@elte.hu>
+	 <20090428074031.GK27382@one.firstfloor.org>
+	 <1240909484.1982.16.camel@penberg-laptop>
+	 <20090428091508.GA21085@elte.hu>
+Date: Tue, 28 Apr 2009 12:19:50 +0300
+X-Google-Sender-Auth: 3a967fc62945d38f
+Message-ID: <84144f020904280219p197d5ceag846ae9a80a76884e@mail.gmail.com>
+Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Larry Woodman <lwoodman@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Matt Mackall <mpm@selenic.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I found a regression where my EEE hangs at boot time, if the battery is
-present.
+Hi Ingo,
 
-I'm confident it's a regression because it disappears if I revert
-Arjan's asynchronous battery initialisation.  However, the evidence
-points to a deadlock in the wireless stack which has simply been
-uncovered by timing changes.
+On Tue, 2009-04-28 at 09:40 +0200, Andi Kleen wrote:
+>> > > I think i have to NAK this kind of ad-hoc instrumentation of kernel
+>> > > internals and statistics until we clear up why such instrumentation
 
-If I leave the system long enough, I get a series of hung task
-warnings.  They suggest the following deadlock:
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+>> > I think because it has zero fast path overhead and can be used
+>> > any time without enabling anything special.
 
-- ieee80211_wep_init(), which is called with rtnl_lock() held, is
-blocked in request_module() [waiting for modprobe to load a crypto module].
-- modprobe is blocked in a call to flush_workqueue(), caused by closing
-a TTY.
-- worker_thread is blocked because the workqueue item linkwatch_event()
-is blocked on rtnl_lock.
+On Tue, Apr 28, 2009 at 12:15 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> ( That's a dubious claim in any case - tracepoints are very cheap.
+>  And they could be made even cheaper and such efforts would benefit
+>  all the tracepoint users so it's a prime focus of interest.
+>  Andi is a SystemTap proponent, right? I saw him oppose pretty much
+>  everything built-in kernel tracing related. I consider that a
+>  pretty extreme position. )
 
+I have no idea how expensive tracepoints are but I suspect they don't
+make too much sense for this particular scenario. After all, kmemtrace
+is mainly interested in _allocation patterns_ whereas this patch seems
+to be more interested in "memory layout" type of things.
 
-I've hacked up a test patch to move wep_init() outside of rtnl_lock, and
-it solved the problem.  My one caveat is that it would probably be
-cleaner to move it after rtnl_unlock(), instead of before rtnl_lock(). 
-I just wasn't 100% sure if that would be safe.  Here's the patch:
-
----8<---
-
-diff --git a/net/mac80211/main.c b/net/mac80211/main.c
-index fbcbed6..fffa7f9 100644
---- a/net/mac80211/main.c
-+++ b/net/mac80211/main.c
-@@ -909,6 +909,13 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
- 	if (result < 0)
- 		goto fail_sta_info;
- 
-+	result = ieee80211_wep_init(local);
-+	if (result < 0) {
-+		printk(KERN_DEBUG "%s: Failed to initialize wep: %d\n",
-+		       wiphy_name(local->hw.wiphy), result);
-+		goto fail_wep;
-+	}
-+
- 	rtnl_lock();
- 	result = dev_alloc_name(local->mdev, local->mdev->name);
- 	if (result < 0)
-@@ -930,14 +937,6 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
- 		goto fail_rate;
- 	}
- 
--	result = ieee80211_wep_init(local);
--
--	if (result < 0) {
--		printk(KERN_DEBUG "%s: Failed to initialize wep: %d\n",
--		       wiphy_name(local->hw.wiphy), result);
--		goto fail_wep;
--	}
--
- 	/* add one default STA interface if supported */
- 	if (local->hw.wiphy->interface_modes & BIT(NL80211_IFTYPE_STATION)) {
- 		result = ieee80211_if_add(local, "wlan%d", NULL,
-@@ -967,13 +966,12 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
- 
- 	return 0;
- 
--fail_wep:
--	rate_control_deinitialize(local);
- fail_rate:
- 	unregister_netdevice(local->mdev);
- 	local->mdev = NULL;
- fail_dev:
- 	rtnl_unlock();
-+fail_wep:
- 	sta_info_stop(local);
- fail_sta_info:
- 	debugfs_hw_del(local);
-
-
+                                                Pekka
