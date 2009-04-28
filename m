@@ -1,65 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbZD1Hct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760282AbZD1Hgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759356AbZD1Hct (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 03:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZD1Hci
+	id S1760282AbZD1Hgm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 03:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbZD1Hgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 03:32:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54561 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757410AbZD1Hci (ORCPT
+	Tue, 28 Apr 2009 03:36:33 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34538 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753531AbZD1Hgd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 03:32:38 -0400
-Subject: Re: kms in defconfig
-From: Peter Zijlstra <peterz@infradead.org>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <21d7e9970904271854q68242f08pb3f8e12f0ddb6506@mail.gmail.com>
-References: <21d7e9970904270121s1c58365bqc8933f8a3ffc5f1a@mail.gmail.com>
-	 <20090427083935.GA20941@elte.hu> <1240846843.7620.32.camel@twins>
-	 <21d7e9970904271854q68242f08pb3f8e12f0ddb6506@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 28 Apr 2009 09:32:22 +0200
-Message-Id: <1240903942.7620.68.camel@twins>
+	Tue, 28 Apr 2009 03:36:33 -0400
+Date: Tue, 28 Apr 2009 09:40:31 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Larry Woodman <lwoodman@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090428074031.GK27382@one.firstfloor.org>
+References: <20090428010907.912554629@intel.com> <20090428014920.769723618@intel.com> <20090428065507.GA2024@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090428065507.GA2024@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-28 at 11:54 +1000, Dave Airlie wrote:
-> On Tue, Apr 28, 2009 at 1:40 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Mon, 2009-04-27 at 10:39 +0200, Ingo Molnar wrote:
-> >> * Dave Airlie <airlied@gmail.com> wrote:
-> >>
-> >> > Hi guys,
-> >> >
-> >> > I just noticed CONFIG_DRM_I915_KMS is enabled for x86-64.
-> >> >
-> >> > This should never be the case, as anyone who built defconfig
-> >> > kernels before, will now get KMS enabled when really they need to
-> >> > have done userspace upgrades.
-> >>
-> >> I've yet to see such a bugreport.
-> >
-> > Whenever I accidentally enable KMS I get a dead X (happens way more
-> > often that I'd like to), I blame this on the ubuntu Xorg packages, but
-> > can't be arsed to fix it myself -- hopefully the kinky koala will fix
-> > stuff, but who knows.
-> 
-> Well you can't really blame anyone else for it, since you have to put
-> the code upstream
-> in the kernel before you can release drivers that use it for distros to package.
-> 
-> So it would be impossible for any distro to have shipped kms drivers in a useful
-> fashion before KMS is actually in the kernel.
+> I think i have to NAK this kind of ad-hoc instrumentation of kernel 
+> internals and statistics until we clear up why such instrumentation 
 
-Can't the driver detect KMS and use it when present? In that case they
-could just ship a KMS capable driver that works either way.
+I think because it has zero fast path overhead and can be used
+any time without enabling anything special.
 
-Anyway, I'm sure it'll all sort itself out.
+> measures are being accepted into the MM while other, more dynamic 
 
+While the dynamic instrumentation you're proposing 
+has non zero fast path overhead, especially if you consider the
+CPU time needed for the backend computation in user space too.
 
+And it requires explicit tracing first and some backend 
+that counts the events and maintains a shadow data structure
+covering all of mem_map again.
+
+So it's clear your alternative will be much more costly, plus
+have additional drawbacks (needs enabling first, cannot
+take a snapshot at arbitary time)
+
+Also dynamic tracing tends to have trouble with full memory
+observation. I experimented with systemtap tracing for my
+memory usage paper I did a couple of years ago, but ended 
+up with integrated counters (similar to those) because it was
+impossible to do proper accounting for the pages set up
+in early boot with the standard tracers.
+
+I suspect both have their uses (that's indeed some things
+that can only be done with dynamic tracing), but they're clearly
+complementary and the static facility seems useful enough
+on its own. 
+
+I think Fengguang is demonstrating that clearly by the great
+improvements he's doing for readahead which are enabled by these
+patches.
+
+-Andi
