@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762483AbZD1P4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762522AbZD1P5E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762483AbZD1P4h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 11:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbZD1P41
+	id S1762522AbZD1P5E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 11:57:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761518AbZD1P4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 11:56:27 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:59070 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753756AbZD1P40 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 11:56:26 -0400
-MIME-Version: 1.0
-In-Reply-To: <49F7260F.8030405@kernel.org>
-References: <20090418192314.GA22107@suse.de> <20090418203718.GD30144@elte.hu> 
-	<49EA4EB9.2030307@kernel.org> <49F6B1E6.7050008@kernel.org> 
-	<49F6B350.9080703@kernel.org> <ac3eb2510904280125w11a58388u6a51997e28609009@mail.gmail.com> 
-	<49F71EF6.3050102@kernel.org> <49F72205.7030306@kernel.org> 
-	<20090428153906.GA8896@suse.de> <49F7260F.8030405@kernel.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Tue, 28 Apr 2009 17:56:05 +0200
-Message-ID: <ac3eb2510904280856m1fc07002pc4fb630fd2946b62@mail.gmail.com>
-Subject: Re: [RFC PATCH] use dev_set_name(,NULL) to prevent leaking
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 28 Apr 2009 11:56:48 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:64595 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761690AbZD1P4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 11:56:47 -0400
+Date: Wed, 29 Apr 2009 00:56:50 +0900 (JST)
+Message-Id: <20090429.005650.95062036.anemo@mba.ocn.ne.jp>
+To: hans-christian.egtvedt@atmel.com
+Cc: alessandro.zummo@towertech.it, rtc-linux@googlegroups.com,
+       david-b@pacbell.net, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, hcegtvedt@atmel.com, vapier@gentoo.org,
+       rongkai.zhan@windriver.com, balajirrao@openmoko.org,
+       broonie@opensource.wolfsonmicro.com
+Subject: Re: [rtc-linux] Re: [PATCH] rtc: Make rtc_update_irq callable with
+ irqs enabled
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20090428151353.0c15c5fc@hcegtvedt.norway.atmel.com>
+References: <20090425.014850.93020801.anemo@mba.ocn.ne.jp>
+	<20090425.020612.92585418.anemo@mba.ocn.ne.jp>
+	<20090428151353.0c15c5fc@hcegtvedt.norway.atmel.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 17:51, Yinghai Lu <yinghai@kernel.org> wrote:
+On Tue, 28 Apr 2009 15:13:53 +0200, Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com> wrote:
+> AVR32 has interrupts disabled during the interrupt handler, so AFAICT
+> the rtc-at32ap700x.c should be fine.
 
-> before device_register==>device_initialize is called, kobj->ref is still 0.
->
-> will get warn from
->                if (!kobj->state_initialized)
+If IRQF_DISABLED was not set, handle_IRQ_event() enables interrupts
+on AVR32, as well as other archs, no?
 
-Initialize the device before you do anything with it. And call _put()
-any time to get rid of ressources, which might have been allocated
-before registering.
+Anyway rtc-at32ap700x uses only one interrupt so there should be no
+real problem.
 
-Thanks,
-Kay
+---
+Atsushi Nemoto
