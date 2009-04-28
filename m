@@ -1,58 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757520AbZD1Ktv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758437AbZD1Kvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757520AbZD1Ktv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 06:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbZD1Ktl
+	id S1758437AbZD1Kvh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 06:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZD1KvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 06:49:41 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:41181 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752002AbZD1Ktk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 06:49:40 -0400
-Date: Tue, 28 Apr 2009 11:49:38 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2.6.30-rc3] regulator: regression fix
-Message-ID: <20090428104938.GG14626@sirena.org.uk>
-References: <200904271959.40526.david-b@pacbell.net> <20090428083856.GD14626@sirena.org.uk> <200904280243.42927.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904280243.42927.david-b@pacbell.net>
-X-Cookie: A company is known by the men it keeps.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+	Tue, 28 Apr 2009 06:51:25 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:38001 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752000AbZD1KvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 06:51:24 -0400
+Subject: Re: [PATCH] rio: warn_unused_result warnings fix
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Li Yang <leoli@freescale.com>
+Cc: akpm@linux-foundation.org, galak@kernel.crashing.org, davem@davemloft.net,
+       mporter@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <1240913737-23773-5-git-send-email-leoli@freescale.com>
+References: <2a27d3730904280316l7049bddbie914907b16ccfff6@mail.gmail.com>
+	 <1240913737-23773-1-git-send-email-leoli@freescale.com>
+	 <1240913737-23773-2-git-send-email-leoli@freescale.com>
+	 <1240913737-23773-3-git-send-email-leoli@freescale.com>
+	 <1240913737-23773-4-git-send-email-leoli@freescale.com>
+	 <1240913737-23773-5-git-send-email-leoli@freescale.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-OdvJ9k/N8AGJspQ0lAI/"
+Date: Tue, 28 Apr 2009 20:51:22 +1000
+Message-Id: <1240915882.15414.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 02:43:42AM -0700, David Brownell wrote:
-> On Tuesday 28 April 2009, Mark Brown wrote:
 
-> > The change you're making isn't relevant to what I suspect the actual
-> > problem is (you didn't specify, I may be wrong here).
+--=-OdvJ9k/N8AGJspQ0lAI/
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> Restoring the "else" fixed the logic flaw ...
+On Tue, 2009-04-28 at 18:15 +0800, Li Yang wrote:
+> warning: ignoring return value of 'device_add', declared with attribute w=
+arn_unused_result
+> warning: ignoring return value of 'sysfs_create_bin_file', declared with =
+attribute warn_unused_result
+>=20
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+>  drivers/rapidio/rio-scan.c  |    5 ++++-
+>  drivers/rapidio/rio-sysfs.c |    6 ++++--
+>  2 files changed, 8 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/rapidio/rio-scan.c b/drivers/rapidio/rio-scan.c
+> index 74d0bfa..9309e24 100644
+> --- a/drivers/rapidio/rio-scan.c
+> +++ b/drivers/rapidio/rio-scan.c
+> @@ -265,7 +265,10 @@ static void rio_route_set_ops(struct rio_dev *rdev)
+>   */
+>  static void __devinit rio_add_device(struct rio_dev *rdev)
+>  {
+> -	device_add(&rdev->dev);
+> +	int err;
+> +
+> +	err =3D device_add(&rdev->dev);
+> +	WARN_ON(err);
+> =20
+>  	spin_lock(&rio_global_list_lock);
+>  	list_add_tail(&rdev->global_list, &rio_devices);
 
-I'm not sure the code ever worked for whatever it is you're doing with
-it - it'd never have set a maximum voltage constraint.
+Is that really useful? Why not return the error to rio_setup_device()
+which can tell it's caller.
 
-> > The code that was being fixed was only even in -next for a relatively
-> > brief period of time.
+cheers
 
-> This is the first time I've seen the "fix" though.  Recall that
-> the code in question has been in use for several months now, while
-> waiting to wend its way into mainline.  It might be useful to CC
-> a few more folk on such "fix" patches.
+--=-OdvJ9k/N8AGJspQ0lAI/
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-The fix was nothing to do with the behaviour of fixed voltage regulators
-- it was about restoring support for regulators without voltage
-constraints.  The code looked like it was just one of the small
-optimisations you're fond of, skipping the validity check since we just
-set constraints which ought to be valid.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-I should've pushed back harder on the obscure code in the first place.
+iEYEABECAAYFAkn236oACgkQdSjSd0sB4dLRVQCfZBsUfUFtOG4FjDmc8WfwpUYn
+LG8AoLdA+sjSxdDmbFUMcgPQ0Bp3mtMU
+=UsnV
+-----END PGP SIGNATURE-----
+
+--=-OdvJ9k/N8AGJspQ0lAI/--
+
