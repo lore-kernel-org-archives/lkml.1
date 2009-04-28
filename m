@@ -1,118 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbZD1SSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbZD1STn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753505AbZD1SSq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 14:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbZD1SSg
+	id S1755088AbZD1STn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 14:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbZD1STa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 14:18:36 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:41175 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751150AbZD1SSg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 14:18:36 -0400
-Subject: Re: [.30-rc2 regression] garbled screen on video
-From: Eric Anholt <eric@anholt.net>
-To: Justin Madru <jdm64@gawab.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <49F10D49.5010604@gawab.com>
-References: <49F10D49.5010604@gawab.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Lq7ZKq6aEOLxCx+J0mkl"
-Date: Tue, 28 Apr 2009 11:18:34 -0700
-Message-Id: <1240942714.13997.71.camel@gaiman.anholt.net>
+	Tue, 28 Apr 2009 14:19:30 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:53968 "EHLO mail-out2.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752412AbZD1ST2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 14:19:28 -0400
+Subject: Re: [PATCH] lockd: fix FILE_LOCKING=n build error
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <49F7421A.1090709@oracle.com>
+References: <20090428165343.2e357d7a.sfr@canb.auug.org.au>
+	 <49F71F4A.3080908@oracle.com> <20090428172137.GA22451@fieldses.org>
+	 <49F7421A.1090709@oracle.com>
+Content-Type: text/plain
+Date: Tue, 28 Apr 2009 14:15:54 -0400
+Message-Id: <1240942554.7376.38.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 8 msgs/h 1 sum rcpts/h 11 sum msgs/h 1 total rcpts 96 max rcpts/h 12 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=_BLID_, uiouri=_URIID_)
+X-UiO-Scanned: 42E68724C6C8CAEE5BAC53400DE7844F8893DB24
+X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 210 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-04-28 at 10:51 -0700, Randy Dunlap wrote:
+> J. Bruce Fields wrote:
+> > On Tue, Apr 28, 2009 at 08:22:50AM -0700, Randy Dunlap wrote:
+> >> From: Randy Dunlap <randy.dunlap@oracle.com>
+> >>
+> >> lockd/svclock.c is missing a header file <linux/fs.h>.
+> >>
+> >> <linux/fs.h> is missing a definition of locks_release_private()
+> >> for the config case of FILE_LOCKING=n, causing a build error:
+> >>
+> >> fs/lockd/svclock.c:330: error: implicit declaration of function 'locks_release_private'
+> > 
+> > LOCKD without FILE_LOCKING doesn't really make sense; would it be better
+> > to add a config dependency?
+> 
+> 
+> I just tried a patch like the one below instead of the first one,
+> but it has build errors too, so more Makefile/Kconfig work is
+> needed (by someone who knows what interfaces are needed here):
+> 
+> 
+> fs/built-in.o: In function `nfs_start_lockd':
+> client.c:(.text+0xe8848): undefined reference to `nlmclnt_init'
+> fs/built-in.o: In function `nfs_destroy_server':
+> client.c:(.text+0xe8885): undefined reference to `nlmclnt_done'
+> fs/built-in.o: In function `nfs_proc_lock':
+> proc.c:(.text+0xf735f): undefined reference to `nlmclnt_proc'
+> fs/built-in.o: In function `nfs3_proc_lock':
+> nfs3proc.c:(.text+0xfd1df): undefined reference to `nlmclnt_proc'
+> 
+> 
+> 
+> 
+> lockd without FILE_LOCKING doesn't make sense, so make LOCKD and
+> LOCKD_V4 depend on FILE_LOCKING.
+> ---
+>  fs/Kconfig     |    2 ++
+>  fs/nfs/Kconfig |    2 +-
+>  2 files changed, 3 insertions(+), 1 deletion(-)
+> 
+> --- linux-next-20090428.orig/fs/Kconfig
+> +++ linux-next-20090428/fs/Kconfig
+> @@ -226,10 +226,12 @@ source "fs/nfsd/Kconfig"
+>  
+>  config LOCKD
+>  	tristate
+> +	depends on FILE_LOCKING
+>  
+>  config LOCKD_V4
+>  	bool
+>  	depends on NFSD_V3 || NFS_V3
+> +	depends on FILE_LOCKING
+>  	default y
+>  
+>  config EXPORTFS
+> --- linux-next-20090428.orig/fs/nfs/Kconfig
+> +++ linux-next-20090428/fs/nfs/Kconfig
+> @@ -1,7 +1,7 @@
+>  config NFS_FS
+>  	tristate "NFS client support"
+>  	depends on INET
+> -	select LOCKD
+> +	select LOCKD if FILE_LOCKING
+>  	select SUNRPC
+>  	select NFS_ACL_SUPPORT if NFS_V3_ACL
+>  	help
 
---=-Lq7ZKq6aEOLxCx+J0mkl
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Until someone finds time to go through the code and add in all the
+CONFIG_FILE_LOCKING special cases, the above needs to be a 'depends on
+INET && FILE_LOCKING'.
 
-On Thu, 2009-04-23 at 17:52 -0700, Justin Madru wrote:
-> Hi everyone,
->=20
-> Summary:
-> After playing a video for a little bit, the screen gets garbled. The=20
-> only way to fix it is to
-> switch to a virtual console and then back. The screen is fixed but=20
-> unfortunately only for
-> less than a few minuets and the screen gets corrupted again.
->=20
-> Effected Version: 2.6.30-rc2+
-> Picture showing a corrupt screen:=20
-> http://ecs.fullerton.edu/~cs351a15/badscreen.jpg
->=20
-> My System:
-> Ubuntu 9.4 with 943/940GML Express Integrated Graphics Controller=20
-> [8086:27a2]
-> UXA/GEM/DRI2 enable. Full info at=20
-> http://jdserver.homelinux.org/bugreports/004/
->=20
-> Syslog Messages:
-> None, but switching virtual consoles gives
-> [drm:i915_get_vblank_counter] *ERROR* trying to get vblank count for=20
-> disabled pipe 0
-> But I think that is another bug introduced with .30-rc1.
+Trond
 
-Interesting.  Could you open a bug at bugs.freedesktop.org against xorg,
-driver/intel, to be sure this doesn't get lost?
-
-However, I suspect that the commit in question isn't causing your issue,
-but is just when tiling got reenabled on your platform so you got to see
-other (likely userland) bugs.  To test, you could revert the patch you
-bisected to and just apply one of the hunks with a little tweak:
-
-diff --git a/drivers/gpu/drm/i915/i915_gem_tiling.c b/drivers/gpu/drm/i915/=
-i915_gem_tiling.c
-index 6be3f92..f27e523 100644
---- a/drivers/gpu/drm/i915/i915_gem_tiling.c
-+++ b/drivers/gpu/drm/i915/i915_gem_tiling.c
-@@ -127,8 +129,8 @@ i915_gem_detect_bit_6_swizzle(struct drm_device *dev)
- 				swizzle_y =3D I915_BIT_6_SWIZZLE_9_11;
- 			} else {
- 				/* Bit 17 swizzling by the CPU in addition. */
--				swizzle_x =3D I915_BIT_6_SWIZZLE_UNKNOWN;
--				swizzle_y =3D I915_BIT_6_SWIZZLE_UNKNOWN;
-+				swizzle_x =3D I915_BIT_6_SWIZZLE_9_10;
-+				swizzle_y =3D I915_BIT_6_SWIZZLE_9;
- 			}
- 			break;
- 		}
-
-You'll get typical swizzling corruption if any tiled buffers get swapped
-out, but that shouldn't happen because Ubuntu 9.04 is stuck with DRI1 so
-all tiled buffers are pinned.  Note that DRI1 with compiz has many
-graphical corruption and stability issues that are fixed with DRI2, but
-I'm not sure that what you're seeing is one of those.
-
-If that patch doesn't make things work, then to fix a giant pile of
-userland bugs that might account for it, update to the 2.7.0 2D driver
-and enable UXA, which will get you DRI2.
-
-If the revert + small diff fixes things, I'm interested in seeing the
-output of either reg_dumper from a compile of the 2D driver or a printk
-of dcc in that function, combined with a screenshot of mesa's readpix
-demo, on master (no reverts or anything).
-
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-Lq7ZKq6aEOLxCx+J0mkl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkn3SHoACgkQHUdvYGzw6vdSBgCePRVEqsA3v4t/ViyRXtieuI+t
-s7YAnRtKs6yOV30mk1+VA/fJ/1XOubER
-=GK5c
------END PGP SIGNATURE-----
-
---=-Lq7ZKq6aEOLxCx+J0mkl--
