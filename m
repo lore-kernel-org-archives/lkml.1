@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757891AbZD1WHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbZD1WLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757891AbZD1WHz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 18:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbZD1WHq
+	id S1758656AbZD1WLi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 18:11:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbZD1WL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 18:07:46 -0400
-Received: from ausxippc101.us.dell.com ([143.166.85.207]:5061 "EHLO
-	ausxippc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753943AbZD1WHp (ORCPT
+	Tue, 28 Apr 2009 18:11:29 -0400
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:45435 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754603AbZD1WL2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 18:07:45 -0400
-X-Greylist: delayed 570 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Apr 2009 18:07:45 EDT
-X-Loopcount0: from 10.35.10.31
-Date: Tue, 28 Apr 2009 16:58:44 -0500
-From: Doug Warzecha <Douglas_Warzecha@dell.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Jean Delvare <khali@linux-fr.org>,
-       Michael Brown <mebrown@michaels-house.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Matt Domsch <Matt_Domsch@dell.com>
-Subject: Re: Class device namespaces
-Message-ID: <20090428215844.GA1396@sysman-doug.us.dell.com>
-References: <ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com> <20090330104952.26f03c13@hyperion.delvare> <ac3eb2510903300424s2604d027h653a3f77163e0242@mail.gmail.com> <20090426085401.3788fc9c@hyperion.delvare> <20090427132041.GA18391@sc1430.michaels-house.net> <20090427172710.5a0c7f48@hyperion.delvare> <437908170904271023k3eefd4c1ma0cacdb78ad7acd7@mail.gmail.com> <20090428101020.0e4c2b0c@hyperion.delvare> <20090428173929.GA5006@sysman-doug.us.dell.com> <ac3eb2510904281046i6e9899acg89f7606da783f72c@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 28 Apr 2009 18:11:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=d7dCCeTnECQ232kUohEk0f2yPI+6SCtdueTWVu/EL22TG+k+JyVjhc5kmA7gpXVFWDds7SkhF2BvC+btdhrReBLWRSetAfw+98fc3bkBOv/CXdQfR/+9hy8p92MYeK4gDdFjbEAHkCMd84jy831FvaXi+JBerKfYAMYuCF61O9k=  ;
+X-YMail-OSG: vBtPOcEVM1noMsT71TAccGxABF7YzCJ1jGzo_J.v5XuuAzF64s333e8Q6QDTQ8ry8Bz6KdHDmCBKsCUnD2hG96LBeOh0bTBjirgXKicvwU7aZOtnS87dIoowTLZY.BZR1ZoPgoWatoB9vVsIVMr7xYKgnTJdHzIybD_GI9NyW5l0r6j9mZva_uJtKTH_iEAvXe8992KU6oM9vf33p1fPHwEz8hm1cGAxCCuhHORxV6kKg3LBPUxZYPPZcMnjxk6ThmZUtBmiwt44V_3IiX0YC6n9MpcgbyZ49aFqgLKkEvQDgH6ZePzf
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH] make mmci-omap using platform_driver_probe
+Date: Tue, 28 Apr 2009 15:11:26 -0700
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, Grazvydas Ignotas <notasas@gmail.com>,
+       Tony Lindgren <tony@atomide.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Paul Walmsley <paul@pwsan.com>,
+       Jarkko Lavinen <jarkko.lavinen@nokia.com>,
+       Hiroshi DOYU <Hiroshi.DOYU@nokia.com>,
+       Kyungmin Park <kyungmin.park@samsung.com>,
+       Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200903280927.32786.david-b@pacbell.net> <1238694461-29501-1-git-send-email-u.kleine-koenig@pengutronix.de> <20090428212714.3c9bbc3d@mjolnir.ossman.eu>
+In-Reply-To: <20090428212714.3c9bbc3d@mjolnir.ossman.eu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <ac3eb2510904281046i6e9899acg89f7606da783f72c@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200904281511.26608.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 07:46:57PM +0200, Kay Sievers wrote:
-> On Tue, Apr 28, 2009 at 19:39, Doug Warzecha <Douglas_Warzecha@dell.com> wrote:
-> 
-> > /sys/class/firmware/dell_rbu/loading
-> > /sys/class/firmware/dell_rbu/data
-> 
-> These pathes only ever exist for a fraction of a second, during a
-> kernel initiated firmware request. This request is usually only
-> handled by the udev firmware loader script, and not interesting for
-> anything else. Are you replacing the udev firmware script here? Are
-> you sure you do something else here?
+On Tuesday 28 April 2009, Pierre Ossman wrote:
+> > 
+> > As requested by David Brownell platform_driver_probe is used instead of
+> > moving the probe function to .devinit.text.  This saves some memory, but
+> > might have the downside that a device being registered after the call to
+> > mmc_omap_init but before the init sections are discarded will not be
+> > bound anymore to the driver.
 
-A Dell library writes data to those paths when a Dell BIOS Update Package is run and requests the BIOS image to be loaded into memory.
-
-Doug
+However, as I noted that *does not happen* ... so, no worries.
 
