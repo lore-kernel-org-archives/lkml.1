@@ -1,120 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758975AbZD1EZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbZD1E1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758975AbZD1EZx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 00:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZD1EZl
+	id S1759330AbZD1E1e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 00:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbZD1E1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 00:25:41 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:43082 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756229AbZD1EZj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 00:25:39 -0400
-From: Tim Abbott <tabbott@MIT.EDU>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
-       Tim Abbott <tabbott@MIT.EDU>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/2] powerpc: Use macros for .data.page_aligned section.
-Date: Tue, 28 Apr 2009 00:21:42 -0400
-Message-Id: <1240892502-9857-2-git-send-email-tabbott@mit.edu>
-X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1240892502-9857-1-git-send-email-tabbott@mit.edu>
-References: <alpine.DEB.1.10.0904280015040.15450@vinegar-pot.mit.edu>
- <1240892502-9857-1-git-send-email-tabbott@mit.edu>
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Tue, 28 Apr 2009 00:27:23 -0400
+Received: from cantor.suse.de ([195.135.220.2]:38430 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750735AbZD1E1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 00:27:22 -0400
+Date: Tue, 28 Apr 2009 06:27:17 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: linux-fsdevel@vger.kernel.org, Rince <rincebrain@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Subject: Re: NFS BUG_ON in nfs_do_writepage
+Message-ID: <20090428042717.GA6304@wotan.suse.de>
+References: <20090412235010.c8e3475b.akpm@linux-foundation.org> <1239650202.16771.15.camel@heimdal.trondhjem.org> <5da0588e0904131506k5c58e8ddob9bf38f61da6302a@mail.gmail.com> <5da0588e0904131644g131dc816r61884e83bc4cd006@mail.gmail.com> <5da0588e0904240226j3454941y5f58c17a32a9a23d@mail.gmail.com> <1240671428.6112.1.camel@heimdal.trondhjem.org> <20090426064026.GD28555@wotan.suse.de> <1240755509.5055.34.camel@heimdal.trondhjem.org> <20090426151324.GB5588@wotan.suse.de> <1240768522.10548.33.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240768522.10548.33.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-.data.page_aligned should not need a separate output section, so as
-part of this cleanup I moved into the .data output section in the
-linker scripts in order to eliminate unnecessary references to the
-section name.
+On Sun, Apr 26, 2009 at 01:55:22PM -0400, Trond Myklebust wrote:
+> On Sun, 2009-04-26 at 17:13 +0200, Nick Piggin wrote:
+> > This doesn't seem to fix the race, though... on kernels with the
+> > race still there, it will just open a window where you can have
+> > a dirty pte but the page not written out.
+> > 
+> > I don't understand.
+> 
+> I'm just pointing out that the NFS client already calls
+> __set_page_dirty_nobuffers() while holding the page lock inside the
+> nfs_vm_page_mkwrite() call, so having the VM do it too in the call to
+> set_page_dirty_balance() is actually redundant. IOW: as far as the NFS
+> code is concerned, we can get rid of the ->set_page_dirty() callback in
+> that situation.
+> 
+> I couldn't find any other places in the VM code where we can have a
+> dirty pte without also having called page_mkwrite() (and hence
+> __set_page_dirty_nobuffers). As I said, adding a WARN_ON(!PageDirty())
+> in ->set_page_dirty() didn't ever trigger any cases where the
+> set_page_dirty() was actually setting the dirty bit (except in the case
+> where we race with page writeout in do_wp_page() and __do_fault()).
+> 
+> That's why I believe disabling ->set_page_dirty() is safe here, and will
+> in fact suffice to fix the page writeout race.
 
-Note that this change moves the page-aligned data inside _edata.
-Since it _is_ data, I suspect having page-aligned data outside _edata
-was a bug.  Please comment if it is not.
-
-Signed-off-by: Tim Abbott <tabbott@mit.edu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/kernel/vdso.c                  |    2 +-
- arch/powerpc/kernel/vdso32/vdso32_wrapper.S |    3 ++-
- arch/powerpc/kernel/vdso64/vdso64_wrapper.S |    3 ++-
- arch/powerpc/kernel/vmlinux.lds.S           |    6 +-----
- 4 files changed, 6 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index ad06d5c..841910a 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -74,7 +74,7 @@ static int vdso_ready;
- static union {
- 	struct vdso_data	data;
- 	u8			page[PAGE_SIZE];
--} vdso_data_store __attribute__((__section__(".data.page_aligned")));
-+} vdso_data_store __page_aligned_data
- struct vdso_data *vdso_data = &vdso_data_store.data;
- 
- /* Format of the patch table */
-diff --git a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-index 556f0ca..6e8f507 100644
---- a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-+++ b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso32_start, vdso32_end
- 	.balign PAGE_SIZE
-diff --git a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-index 0529cb9..b8553d6 100644
---- a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-+++ b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso64_start, vdso64_end
- 	.balign PAGE_SIZE
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 4f0f7d1..30ec994 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -221,6 +221,7 @@ SECTIONS
- 	_sdata = .;
- 
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
-+		PAGE_ALIGNED_DATA
- 		DATA_DATA
- #ifdef CONFIG_PPC32
- 		*(.sdata)
-@@ -258,11 +259,6 @@ SECTIONS
- 		*(.data.init_task)
- 	}
- 
--	. = ALIGN(PAGE_SIZE);
--	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
--		*(.data.page_aligned)
--	}
--
- 	.data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
- 		*(.data.cacheline_aligned)
- 	}
--- 
-1.6.2.1
+Ah, no I don't think so because it opens another race where the
+pte is dity but the page is marked clean.
 
