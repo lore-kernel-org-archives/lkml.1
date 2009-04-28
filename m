@@ -1,259 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759794AbZD1GyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760148AbZD1G4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759794AbZD1GyT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 02:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759706AbZD1GyB
+	id S1760148AbZD1G4U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 02:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757375AbZD1G4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 02:54:01 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:45584 "EHLO smtps.tip.net.au"
+	Tue, 28 Apr 2009 02:56:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38615 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757375AbZD1Gx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 02:53:59 -0400
-Date: Tue, 28 Apr 2009 16:53:43 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for April 28
-Message-Id: <20090428165343.2e357d7a.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__28_Apr_2009_16_53_43_+1000_blbsIOiXhQE2NYDb"
+	id S1757297AbZD1G4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 02:56:08 -0400
+Date: Tue, 28 Apr 2009 08:55:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Wu Fengguang <fengguang.wu@intel.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Larry Woodman <lwoodman@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090428065507.GA2024@elte.hu>
+References: <20090428010907.912554629@intel.com> <20090428014920.769723618@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090428014920.769723618@intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__28_Apr_2009_16_53_43_+1000_blbsIOiXhQE2NYDb
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+* Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-I have added a tree that contains only simple build fixes for Linus'
-tree.  It currently contains:
+> Export 9 page flags in /proc/kpageflags, and 8 more for kernel developers.
+> 
+> 1) for kernel hackers (on CONFIG_DEBUG_KERNEL)
+>    - all available page flags are exported, and
+>    - exported as is
+> 2) for admins and end users
+>    - only the more `well known' flags are exported:
+> 	11. KPF_MMAP		(pseudo flag) memory mapped page
+> 	12. KPF_ANON		(pseudo flag) memory mapped page (anonymous)
+> 	13. KPF_SWAPCACHE	page is in swap cache
+> 	14. KPF_SWAPBACKED	page is swap/RAM backed
+> 	15. KPF_COMPOUND_HEAD	(*)
+> 	16. KPF_COMPOUND_TAIL	(*)
+> 	17. KPF_UNEVICTABLE	page is in the unevictable LRU list
+> 	18. KPF_HWPOISON	hardware detected corruption
+> 	19. KPF_NOPAGE		(pseudo flag) no page frame at the address
+> 
+> 	(*) For compound pages, exporting _both_ head/tail info enables
+> 	    users to tell where a compound page starts/ends, and its order.
+> 
+>    - limit flags to their typical usage scenario, as indicated by KOSAKI:
+> 	- LRU pages: only export relevant flags
+> 		- PG_lru
+> 		- PG_unevictable
+> 		- PG_active
+> 		- PG_referenced
+> 		- page_mapped()
+> 		- PageAnon()
+> 		- PG_swapcache
+> 		- PG_swapbacked
+> 		- PG_reclaim
+> 	- no-IO pages: mask out irrelevant flags
+> 		- PG_dirty
+> 		- PG_uptodate
+> 		- PG_writeback
+> 	- SLAB pages: mask out overloaded flags:
+> 		- PG_error
+> 		- PG_active
+> 		- PG_private
+> 	- PG_reclaim: mask out the overloaded PG_readahead
+> 	- compound flags: only export huge/gigantic pages
+> 
+> Here are the admin/linus views of all page flags on a newly booted nfs-root system:
+> 
+> # ./page-types # for admin
+>          flags  page-count       MB  symbolic-flags                     long-symbolic-flags
+> 0x000000000000      491174     1918  ____________________________                
+> 0x000000000020           1        0  _____l______________________       lru      
+> 0x000000000028        2543        9  ___U_l______________________       uptodate,lru
+> 0x00000000002c        5288       20  __RU_l______________________       referenced,uptodate,lru
+> 0x000000004060           1        0  _____lA_______b_____________       lru,active,swapbacked
 
-	powerpc: fix for long standing bug noticed by gcc 4.4.0
+I think i have to NAK this kind of ad-hoc instrumentation of kernel 
+internals and statistics until we clear up why such instrumentation 
+measures are being accepted into the MM while other, more dynamic 
+and more flexible MM instrumentation are being resisted by Andrew.
 
-This is just an experiment for now and I am not sure if I should push
-these fixes directly to Linus ...
+The above type of condensed information can be built out of dynamic 
+trace data too - and much more. Being able to track page state 
+transitions is very valuable when debugging VM problems. One such 
+'view' of trace data would be a summary histogram like above.
 
-Changes since 20090424:
+( done after a "echo 3 > /proc/sys/vm/drop_caches" to make sure all 
+  interesting pages have been re-established and their state is 
+  present in the trace. )
 
-The acpi tree lost its build failure.
+The SLAB code already has such a facility, kmemtrace: it's very 
+useful and successful in visualizing complex SLAB details, both 
+dynamically and statically.
 
-The ext4 tree gained a build failure so I used the version from
-next-20090424.
+I think the same general approach should be used for the page 
+allocator too (and for the page cache and some other struct page 
+based caches): the life-time of an object should be followed. If we 
+capture the important details we capture the big picture too. Pekka 
+already sent an RFC patch to extend kmemtrace in such a fashion. Why 
+is that more useful method not being pursued?
 
-The voltage tree gained a build failure so I reverted a commit.
+By extending upon the (existing) /proc/kpageflags hack a usecase is 
+taken away from the tracing based solution and a needless overlap is 
+created - and that's not particularly helpful IMHO. We now have all 
+the facilities upstream that allow us to do intelligent 
+instrumentation - we should make use of them.
 
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 135 trees (counting Linus' and 18 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-CONFLICT (content): Merge conflict in arch/arm/mm/mmu.c
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging configfs/linux-next
-Merging ext4/next
-$ git reset --hard HEAD^
-Merging refs/next/20090424/ext4
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging tracing/auto-tracing-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging ide/for-next
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-CONFLICT (content): Merge conflict in include/Kbuild
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/rndis_wlan.c
-CONFLICT (content): Merge conflict in include/linux/mmc/sdio_ids.h
-Merging wireless/master
-[master dc91289] Revert "rfkill: remove user_claim stuff"
-Merging mtd/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
-req.c
-Merging cifs/master
-Merging mmc/next
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-CONFLICT (content): Merge conflict in drivers/usb/serial/cypress_m8.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/option.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/usb-serial.c
-Merging agp/agp-next
-Merging generic-ipi/auto-generic-ipi-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging kmemleak/kmemleak
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging suspend/linux-next
-Merging quilt/driver-core
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-[master 703ca50] Revert "regulator: add userspace-consumer driver"
-
---Signature=_Tue__28_Apr_2009_16_53_43_+1000_blbsIOiXhQE2NYDb
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkn2p/cACgkQjjKRsyhoI8x7BgCgjFBRjW90fmYYKZAL/oKcXlFA
-m0AAoLK+dIbeWmFyO/OwTTmv4Nk6ZYlg
-=rtbB
------END PGP SIGNATURE-----
-
---Signature=_Tue__28_Apr_2009_16_53_43_+1000_blbsIOiXhQE2NYDb--
+	Ingo
