@@ -1,212 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbZD1Ju0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbZD1Jva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756619AbZD1Ju0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 05:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbZD1JuG
+	id S1757788AbZD1Jva (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 05:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZD1JvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 05:50:06 -0400
-Received: from wa4ehsobe003.messaging.microsoft.com ([216.32.181.13]:4057 "EHLO
-	WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755123AbZD1JuE convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 05:50:04 -0400
-X-BigFish: VPS-23(z34a4jz1432R98dR1805M936fKzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KIT1YV-03-3FC-01
-Date: Tue, 28 Apr 2009 11:49:40 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Marcelo Tosatti <mtosatti@redhat.com>
-CC: Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [PATCH 3/7] kvm/mmu: rename is_largepage_backed to
-	mapping_level
-Message-ID: <20090428094940.GW17438@amd.com>
-References: <1240574327-21575-1-git-send-email-joerg.roedel@amd.com> <1240574327-21575-4-git-send-email-joerg.roedel@amd.com> <20090427171245.GA3494@amt.cnet>
+	Tue, 28 Apr 2009 05:51:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51132 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751779AbZD1JvU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 05:51:20 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 2/4] FRV: Implement TIF_NOTIFY_RESUME
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, hch@lst.de, roland@redhat.com,
+       linux-kernel@vger.kernel.org
+Date: Tue, 28 Apr 2009 10:49:36 +0100
+Message-ID: <20090428094936.11879.96224.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090428094931.11879.99536.stgit@warthog.procyon.org.uk>
+References: <20090428094931.11879.99536.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <20090427171245.GA3494@amt.cnet>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 28 Apr 2009 09:49:41.0136 (UTC) FILETIME=[A6C8E900:01C9C7E6]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marcello,
+Implement the TIF_NOTIFY_RESUME thread flag, making it call do_notify_resume()
+which then clears it.  This will be made use of later by tracehooks in the
+new-style ptrace implementation
 
-On Mon, Apr 27, 2009 at 02:12:45PM -0300, Marcelo Tosatti wrote:
-> On Fri, Apr 24, 2009 at 01:58:43PM +0200, Joerg Roedel wrote:
-> > With the new name and the corresponding backend changes this function
-> > can now support multiple hugepage sizes.
-> > 
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > ---
-> >  arch/x86/kvm/mmu.c         |  100 +++++++++++++++++++++++++++++--------------
-> >  arch/x86/kvm/paging_tmpl.h |    4 +-
-> >  2 files changed, 69 insertions(+), 35 deletions(-)
-> > 
-> > diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-> > index e3421d8..56cd7c2 100644
-> > --- a/arch/x86/kvm/mmu.c
-> > +++ b/arch/x86/kvm/mmu.c
-> > @@ -382,37 +382,52 @@ static void mmu_free_rmap_desc(struct kvm_rmap_desc *rd)
-> >   * Return the pointer to the largepage write count for a given
-> >   * gfn, handling slots that are not large page aligned.
-> >   */
-> > -static int *slot_largepage_idx(gfn_t gfn, struct kvm_memory_slot *slot)
-> > +static int *slot_largepage_idx(gfn_t gfn,
-> > +			       struct kvm_memory_slot *slot,
-> > +			       int level)
-> >  {
-> >  	unsigned long idx;
-> >  
-> > -	idx = (gfn / KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL)) -
-> > -	      (slot->base_gfn / KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL));
-> > -	return &slot->lpage_info[0][idx].write_count;
-> > +	idx = (gfn / KVM_PAGES_PER_HPAGE(level)) -
-> > +	      (slot->base_gfn / KVM_PAGES_PER_HPAGE(level));
-> > +	return &slot->lpage_info[level - 2][idx].write_count;
-> >  }
-> >  
-> >  static void account_shadowed(struct kvm *kvm, gfn_t gfn)
-> >  {
-> > +	struct kvm_memory_slot *slot;
-> >  	int *write_count;
-> > +	int i;
-> >  
-> >  	gfn = unalias_gfn(kvm, gfn);
-> > -	write_count = slot_largepage_idx(gfn,
-> > -					 gfn_to_memslot_unaliased(kvm, gfn));
-> > -	*write_count += 1;
-> > +
-> > +	for (i = PT_DIRECTORY_LEVEL;
-> > +	     i < PT_PAGE_TABLE_LEVEL + KVM_NR_PAGE_SIZES; ++i) {
-> > +		slot          = gfn_to_memslot_unaliased(kvm, gfn);
-> > +		write_count   = slot_largepage_idx(gfn, slot, i);
-> > +		*write_count += 1;
-> > +	}
-> >  }
-> >  
-> >  static void unaccount_shadowed(struct kvm *kvm, gfn_t gfn)
-> >  {
-> > +	struct kvm_memory_slot *slot;
-> >  	int *write_count;
-> > +	int i;
-> >  
-> >  	gfn = unalias_gfn(kvm, gfn);
-> > -	write_count = slot_largepage_idx(gfn,
-> > -					 gfn_to_memslot_unaliased(kvm, gfn));
-> > -	*write_count -= 1;
-> > -	WARN_ON(*write_count < 0);
-> > +	for (i = PT_DIRECTORY_LEVEL;
-> > +	     i < PT_PAGE_TABLE_LEVEL + KVM_NR_PAGE_SIZES; ++i) {
-> > +		slot          = gfn_to_memslot_unaliased(kvm, gfn);
-> > +		write_count   = slot_largepage_idx(gfn, slot, i);
-> > +		*write_count -= 1;
-> > +		WARN_ON(*write_count < 0);
-> > +	}
-> >  }
-> >  
-> > -static int has_wrprotected_page(struct kvm *kvm, gfn_t gfn)
-> > +static int has_wrprotected_page(struct kvm *kvm,
-> > +				gfn_t gfn,
-> > +				int level)
-> >  {
-> >  	struct kvm_memory_slot *slot;
-> >  	int *largepage_idx;
-> > @@ -420,47 +435,67 @@ static int has_wrprotected_page(struct kvm *kvm, gfn_t gfn)
-> >  	gfn = unalias_gfn(kvm, gfn);
-> >  	slot = gfn_to_memslot_unaliased(kvm, gfn);
-> >  	if (slot) {
-> > -		largepage_idx = slot_largepage_idx(gfn, slot);
-> > +		largepage_idx = slot_largepage_idx(gfn, slot, level);
-> >  		return *largepage_idx;
-> >  	}
-> >  
-> >  	return 1;
-> >  }
-> >  
-> > -static int host_largepage_backed(struct kvm *kvm, gfn_t gfn)
-> > +static int host_mapping_level(struct kvm *kvm, gfn_t gfn)
-> >  {
-> > +	unsigned long page_size = PAGE_SIZE;
-> >  	struct vm_area_struct *vma;
-> >  	unsigned long addr;
-> > -	int ret = 0;
-> > +	int i, ret = 0;
-> >  
-> >  	addr = gfn_to_hva(kvm, gfn);
-> >  	if (kvm_is_error_hva(addr))
-> > -		return ret;
-> > +		return page_size;
-> >  
-> >  	down_read(&current->mm->mmap_sem);
-> >  	vma = find_vma(current->mm, addr);
-> > -	if (vma && is_vm_hugetlb_page(vma))
-> > -		ret = 1;
-> > +	if (!vma)
-> > +		goto out;
-> > +
-> > +	page_size = vma_kernel_pagesize(vma);
-> > +
-> > +out:
-> >  	up_read(&current->mm->mmap_sem);
-> >  
-> > +	for (i = PT_PAGE_TABLE_LEVEL;
-> > +	     i < (PT_PAGE_TABLE_LEVEL + KVM_NR_PAGE_SIZES); ++i) {
-> > +		if (page_size >= KVM_HPAGE_SIZE(i))
-> > +			ret = i;
-> > +		else
-> > +			break;
-> > +	}
-> > +
-> >  	return ret;
-> >  }
-> >  
-> > -static int is_largepage_backed(struct kvm_vcpu *vcpu, gfn_t large_gfn)
-> > +static int mapping_level(struct kvm_vcpu *vcpu, gfn_t large_gfn)
-> >  {
-> >  	struct kvm_memory_slot *slot;
-> > -
-> > -	if (has_wrprotected_page(vcpu->kvm, large_gfn))
-> > -		return 0;
-> > -
-> > -	if (!host_largepage_backed(vcpu->kvm, large_gfn))
-> > -		return 0;
-> > +	int host_level;
-> > +	int level = PT_PAGE_TABLE_LEVEL;
-> >  
-> >  	slot = gfn_to_memslot(vcpu->kvm, large_gfn);
-> >  	if (slot && slot->dirty_bitmap)
-> > -		return 0;
-> > +		return PT_PAGE_TABLE_LEVEL;
-> >  
-> > -	return 1;
-> > +	host_level = host_mapping_level(vcpu->kvm, large_gfn);
-> > +
-> > +	if (host_level == PT_PAGE_TABLE_LEVEL)
-> > +		return host_level;
-> > +
-> > +	for (level = PT_DIRECTORY_LEVEL; level <= host_level; ++level) {
-> > +
-> > +		if (has_wrprotected_page(vcpu->kvm, large_gfn, level))
-> > +			break;
-> 
-> Is there any reason for checking for 4k wrprotect pages in the 2MB
-> lpage_info if you're going to map 1GB pages?
+Also discard TIF_IRET as that's not used by FRV.
 
-Yes. The reason is that if we can't map the page with 1GB than we can
-fall back to 2MB and not down to 4kb pages.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Joerg
+ arch/frv/include/asm/thread_info.h |   10 +++++-----
+ arch/frv/kernel/signal.c           |    5 +++++
+ 2 files changed, 10 insertions(+), 5 deletions(-)
 
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+
+diff --git a/arch/frv/include/asm/thread_info.h b/arch/frv/include/asm/thread_info.h
+index bb53ab7..e8a5ed7 100644
+--- a/arch/frv/include/asm/thread_info.h
++++ b/arch/frv/include/asm/thread_info.h
+@@ -109,20 +109,20 @@ register struct thread_info *__current_thread_info asm("gr15");
+  * - other flags in MSW
+  */
+ #define TIF_SYSCALL_TRACE	0	/* syscall trace active */
+-#define TIF_SIGPENDING		1	/* signal pending */
+-#define TIF_NEED_RESCHED	2	/* rescheduling necessary */
+-#define TIF_SINGLESTEP		3	/* restore singlestep on return to user mode */
+-#define TIF_IRET		4	/* return with iret */
++#define TIF_NOTIFY_RESUME	1	/* callback before returning to user */
++#define TIF_SIGPENDING		2	/* signal pending */
++#define TIF_NEED_RESCHED	3	/* rescheduling necessary */
++#define TIF_SINGLESTEP		4	/* restore singlestep on return to user mode */
+ #define TIF_RESTORE_SIGMASK	5	/* restore signal mask in do_signal() */
+ #define TIF_POLLING_NRFLAG	16	/* true if poll_idle() is polling TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		17	/* OOM killer killed process */
+ #define TIF_FREEZE		18	/* freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
++#define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
+ #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
+ #define _TIF_NEED_RESCHED	(1 << TIF_NEED_RESCHED)
+ #define _TIF_SINGLESTEP		(1 << TIF_SINGLESTEP)
+-#define _TIF_IRET		(1 << TIF_IRET)
+ #define _TIF_RESTORE_SIGMASK	(1 << TIF_RESTORE_SIGMASK)
+ #define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
+ #define _TIF_FREEZE		(1 << TIF_FREEZE)
+diff --git a/arch/frv/kernel/signal.c b/arch/frv/kernel/signal.c
+index 3bdb368..7ae290a 100644
+--- a/arch/frv/kernel/signal.c
++++ b/arch/frv/kernel/signal.c
+@@ -564,4 +564,9 @@ asmlinkage void do_notify_resume(__u32 thread_info_flags)
+ 	if (thread_info_flags & (_TIF_SIGPENDING | _TIF_RESTORE_SIGMASK))
+ 		do_signal();
+ 
++	/* deal with notification on about to resume userspace execution */
++	if (thread_info_flags & _TIF_NOTIFY_RESUME) {
++		clear_thread_flag(TIF_NOTIFY_RESUME);
++	}
++
+ } /* end do_notify_resume() */
 
