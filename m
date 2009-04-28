@@ -1,78 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932322AbZD1Rp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763445AbZD1Rr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932322AbZD1Rp2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 13:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757660AbZD1RpJ
+	id S1763445AbZD1Rr0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 13:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZD1RrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 13:45:09 -0400
-Received: from waste.org ([66.93.16.53]:58683 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755540AbZD1RpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 13:45:07 -0400
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-From: Matt Mackall <mpm@selenic.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Larry Woodman <lwoodman@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-In-Reply-To: <20090428093621.GD21085@elte.hu>
-References: <20090428010907.912554629@intel.com>
-	 <20090428014920.769723618@intel.com> <20090428065507.GA2024@elte.hu>
-	 <20090428074031.GK27382@one.firstfloor.org>
-	 <1240909484.1982.16.camel@penberg-laptop> <20090428091508.GA21085@elte.hu>
-	 <84144f020904280219p197d5ceag846ae9a80a76884e@mail.gmail.com>
-	 <84144f020904280225h490ef682p8973cb1241a1f3ea@mail.gmail.com>
-	 <20090428093621.GD21085@elte.hu>
-Content-Type: text/plain
-Date: Tue, 28 Apr 2009 12:42:08 -0500
-Message-Id: <1240940528.938.426.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Tue, 28 Apr 2009 13:47:18 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:51244 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752915AbZD1RrS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 13:47:18 -0400
+MIME-Version: 1.0
+In-Reply-To: <20090428173929.GA5006@sysman-doug.us.dell.com>
+References: <20090329174836.6de797d6@hyperion.delvare> <ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com> 
+	<20090330104952.26f03c13@hyperion.delvare> <ac3eb2510903300424s2604d027h653a3f77163e0242@mail.gmail.com> 
+	<20090426085401.3788fc9c@hyperion.delvare> <20090427132041.GA18391@sc1430.michaels-house.net> 
+	<20090427172710.5a0c7f48@hyperion.delvare> <437908170904271023k3eefd4c1ma0cacdb78ad7acd7@mail.gmail.com> 
+	<20090428101020.0e4c2b0c@hyperion.delvare> <20090428173929.GA5006@sysman-doug.us.dell.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Tue, 28 Apr 2009 19:46:57 +0200
+Message-ID: <ac3eb2510904281046i6e9899acg89f7606da783f72c@mail.gmail.com>
+Subject: Re: Class device namespaces
+To: Doug Warzecha <Douglas_Warzecha@dell.com>
+Cc: Jean Delvare <khali@linux-fr.org>,
+       Michael Brown <mebrown@michaels-house.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Matt Domsch <Matt_Domsch@dell.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-28 at 11:36 +0200, Ingo Molnar wrote:
-> I 'integrate' traces all the time to get summary counts. This series 
-> of dynamic events:
-> 
->   allocation
->   page count up
->   page count up
->   page count down
->   page count up
->   page count up
->   page count up
->   page count up
-> 
-> integrates into: "page count is 6".
+On Tue, Apr 28, 2009 at 19:39, Doug Warzecha <Douglas_Warzecha@dell.com> wrote:
 
-Perhaps you've failed calculus. The integral is 6 + C.
+> /sys/class/firmware/dell_rbu/loading
+> /sys/class/firmware/dell_rbu/data
 
-This is a critical distinction. Tracing is great for looking at changes,
-but it completely falls down for static system-wide measurements because
-it would require integrating from time=0 to get a meaningful summation.
-That's completely useless for taking a measurement on a system that
-already has an uptime of months. 
+These pathes only ever exist for a fraction of a second, during a
+kernel initiated firmware request. This request is usually only
+handled by the udev firmware loader script, and not interesting for
+anything else. Are you replacing the udev firmware script here? Are
+you sure you do something else here?
 
-Never mind that summing up page flag changes for every page on the
-system since boot time through the trace interface is incredibly
-wasteful given that we're keeping a per-page integral in the page tables
-anyway.
-
-Tracing is not the answer for everything.
-
--- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+Thanks,
+Kay
