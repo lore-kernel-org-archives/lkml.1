@@ -1,90 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZD1Uxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbZD1Uy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbZD1Uxw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 16:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756397AbZD1Uxl
+	id S1757365AbZD1Uy3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 16:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbZD1UyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 16:53:41 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:63534 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756175AbZD1Uxk (ORCPT
+	Tue, 28 Apr 2009 16:54:17 -0400
+Received: from n14.bullet.mail.mud.yahoo.com ([68.142.206.41]:41857 "HELO
+	n14.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756175AbZD1UyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 16:53:40 -0400
-Message-ID: <49F76CC4.8050200@oracle.com>
-Date: Tue, 28 Apr 2009 13:53:24 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 28 Apr 2009 16:54:15 -0400
+X-Yahoo-Newman-Id: 63570.34852.bm@omp415.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=IhVKFRAAxSFVMuQiOcvUhs4ZyPDM/vFJucYTnU8pVkSd05IeXHBqmMsud9K8fPgiipa2+JJAGj9tXmv+zsOQvLSKYdMU3NYG1sBgKXRCyZF3ZinovVOnfbQin5D2dRRrTO1mlKEjGTL7hiRYClBb6Gdqaa9/eB4UbHe4pHGiTa0=  ;
+X-YMail-OSG: uEbPHaoVM1kMGUc.xeHkivaVuFXZTvi11RWNTmxEsAO5WevxcEfJXHfb3WZ7JK_SIl4MI3AcC48_XgP.V2Ot6EGUMvUTaQVsWPBNHN3qRSjja9Z8CSDZ_kIB1ejpB_t5S2tF37CruxgbzlM0amFlnbJYdZEop6l5nJ4rqnWlYGw._N0pvM2l5dKZmmFKAbaLi1l.TcnSZQ4Fh5VhfCeYF.jQI59NjV4ut0o.gwQqxOWeniRC4QbZJDjl_xCQppEnKNxFamfthhAI5oWC0mLARoXSnhyjfOU1nCxMvXCiRaCqUxSgHDoA1IXGyhGdOUQCYdIgqpj2zCYjPK5zteQCsJfn1Yo-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Florian Fainelli <florian@openwrt.org>
+Subject: Re: [spi-devel-general] [PATCH v2] spi: Add support for the OpenCores SPI controller.
+Date: Tue, 28 Apr 2009 13:54:11 -0700
+User-Agent: KMail/1.9.10
+Cc: Thierry Reding <thierry.reding@avionic-design.de>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <200904041227.54687.david-b@pacbell.net> <20090428122011.GB6325@avionic-design.de> <200904281541.21238.florian@openwrt.org>
+In-Reply-To: <200904281541.21238.florian@openwrt.org>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org
-Subject: [PATCH] cgroups: make messages more readable
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A01020A.49F76C75.0260:SCFMA4539814,ss=1,fgs=0
+Content-Disposition: inline
+Message-Id: <200904281354.12192.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Tuesday 28 April 2009, Florian Fainelli wrote:
+> > > Is this the http://www.opencores.org/?do=project&who=spi core?
+> >
+> > Yes, it is.
+> >
+> > > Its summary says "Variable length of transfer word up to 32 bits";
+> > > does that mean "configurable when core is synthesized" instead of
+> > > truly "variable"?
+> 
+> This is indeed configured at synthesis time.
 
-Fix some cgroup messages to read better.
-Update MAINTAINERS to include mm/*cgroup* files.
+Now I'm confused again.  Thierry says (below) that the number of bits
+can be set per-"transfer".
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- MAINTAINERS      |    1 +
- mm/page_cgroup.c |   14 +++++++-------
- 2 files changed, 8 insertions(+), 7 deletions(-)
+Now, I can easily understand that a *maximum* would be configured
+at synthesis time ... if there's a 32-bit CPU or DMA engine, it'd
+make very limited sense to interact using 128-bit I/O words.
 
---- lnx-2630-rc3.orig/mm/page_cgroup.c
-+++ lnx-2630-rc3/mm/page_cgroup.c
-@@ -83,12 +83,12 @@ void __init page_cgroup_init(void)
- 			goto fail;
- 	}
- 	printk(KERN_INFO "allocated %ld bytes of page_cgroup\n", total_usage);
--	printk(KERN_INFO "please try cgroup_disable=memory option if you"
--	" don't want\n");
-+	printk(KERN_INFO "please try 'cgroup_disable=memory' option if you"
-+	" don't want memory cgroups\n");
- 	return;
- fail:
--	printk(KERN_CRIT "allocation of page_cgroup was failed.\n");
--	printk(KERN_CRIT "please try cgroup_disable=memory boot option\n");
-+	printk(KERN_CRIT "allocation of page_cgroup failed.\n");
-+	printk(KERN_CRIT "please try 'cgroup_disable=memory' boot option\n");
- 	panic("Out of memory");
- }
- 
-@@ -257,14 +257,14 @@ void __init page_cgroup_init(void)
- 		fail = init_section_page_cgroup(pfn);
- 	}
- 	if (fail) {
--		printk(KERN_CRIT "try cgroup_disable=memory boot option\n");
-+		printk(KERN_CRIT "try 'cgroup_disable=memory' boot option\n");
- 		panic("Out of memory");
- 	} else {
- 		hotplug_memory_notifier(page_cgroup_callback, 0);
- 	}
- 	printk(KERN_INFO "allocated %ld bytes of page_cgroup\n", total_usage);
--	printk(KERN_INFO "please try cgroup_disable=memory option if you don't"
--	" want\n");
-+	printk(KERN_INFO "please try 'cgroup_disable=memory' option if you don't"
-+	" want memory cgroups\n");
- }
- 
- void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
---- lnx-2630-rc3.orig/MAINTAINERS
-+++ lnx-2630-rc3/MAINTAINERS
-@@ -1519,6 +1519,7 @@ L:	containers@lists.linux-foundation.org
- S:	Maintained
- F:	include/linux/cgroup*
- F:	kernel/cgroup*
-+F:	mm/*cgroup*
- 
- CORETEMP HARDWARE MONITORING DRIVER
- P:	Rudolf Marek
+Is there both a configurable maximum, *and* a word-size setting that
+can be changed on the fly?  That's what I would expect; it's what
+most other designs do.  The only time I've seen fixed "you must use
+N-bit words" designs is on cost-eradicated 8-bit microcontrollers.
+
+- Dave
+
+
+> > That summary seems out-dated. The variable length of transfer word is
+> > actually the maximum length of a single transfer and is 128 bits in the
+> > latest version. So you get 4 registers, each 32 bits wide into which you
+> > program the data you want to transfer. Then you set the number of bits of
+> > that transfer so the core knows which registers and what bits of those
+> > registers to shift out serially.
+
+
+
