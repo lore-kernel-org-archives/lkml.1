@@ -1,202 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758403AbZD1SQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbZD1SSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758403AbZD1SQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 14:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761950AbZD1SQP
+	id S1753505AbZD1SSq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 14:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbZD1SSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 14:16:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45069 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754175AbZD1SQO (ORCPT
+	Tue, 28 Apr 2009 14:18:36 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:41175 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751150AbZD1SSg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 14:16:14 -0400
-Date: Tue, 28 Apr 2009 11:13:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org, dougthompson@xmission.com,
-       borislav.petkov@amd.com
-Subject: Re: [PATCH 02/21] amd64_edac: add driver structs
-Message-Id: <20090428111349.d7a6a770.akpm@linux-foundation.org>
-In-Reply-To: <1240931173-17477-3-git-send-email-borislav.petkov@amd.com>
-References: <1240931173-17477-1-git-send-email-borislav.petkov@amd.com>
-	<1240931173-17477-3-git-send-email-borislav.petkov@amd.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 28 Apr 2009 14:18:36 -0400
+Subject: Re: [.30-rc2 regression] garbled screen on video
+From: Eric Anholt <eric@anholt.net>
+To: Justin Madru <jdm64@gawab.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <49F10D49.5010604@gawab.com>
+References: <49F10D49.5010604@gawab.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Lq7ZKq6aEOLxCx+J0mkl"
+Date: Tue, 28 Apr 2009 11:18:34 -0700
+Message-Id: <1240942714.13997.71.camel@gaiman.anholt.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009 17:05:54 +0200
-Borislav Petkov <borislav.petkov@amd.com> wrote:
 
-> From: Doug Thompson <dougthompson@xmission.com>
-> 
-> Signed-off-by: Doug Thompson <dougthompson@xmission.com>
-> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
->
-> ...
->
-> +/**
-> + * popcnt - count the set bits in a bit vector.
-> + * @vec - bit vector
-> + *
-> + * This instruction is supported only on F10h and later CPUs.
-> + */
-> +#define popcnt(x)						\
-> +({								\
-> +	typeof(x) __ret;					\
-> +	__asm__("popcnt %1, %0" : "=r" (__ret) : "r" (x));	\
-> +	__ret;							\
-> +})
+--=-Lq7ZKq6aEOLxCx+J0mkl
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-We kinda already have this, in bitmap_weight().  Your popcnt() looks
-more efficient.
+On Thu, 2009-04-23 at 17:52 -0700, Justin Madru wrote:
+> Hi everyone,
+>=20
+> Summary:
+> After playing a video for a little bit, the screen gets garbled. The=20
+> only way to fix it is to
+> switch to a virtual console and then back. The screen is fixed but=20
+> unfortunately only for
+> less than a few minuets and the screen gets corrupted again.
+>=20
+> Effected Version: 2.6.30-rc2+
+> Picture showing a corrupt screen:=20
+> http://ecs.fullerton.edu/~cs351a15/badscreen.jpg
+>=20
+> My System:
+> Ubuntu 9.4 with 943/940GML Express Integrated Graphics Controller=20
+> [8086:27a2]
+> UXA/GEM/DRI2 enable. Full info at=20
+> http://jdserver.homelinux.org/bugreports/004/
+>=20
+> Syslog Messages:
+> None, but switching virtual consoles gives
+> [drm:i915_get_vblank_counter] *ERROR* trying to get vblank count for=20
+> disabled pipe 0
+> But I think that is another bug introduced with .30-rc1.
 
-I'm scratching my head at the types.  I'd have thought that I could do
+Interesting.  Could you open a bug at bugs.freedesktop.org against xorg,
+driver/intel, to be sure this doesn't get lost?
 
-	char foo[32];
-	int n;
-	...
-	n = popcnt(foo);
+However, I suspect that the commit in question isn't causing your issue,
+but is just when tiling got reenabled on your platform so you got to see
+other (likely userland) bugs.  To test, you could revert the patch you
+bisected to and just apply one of the hunks with a little tweak:
 
-but obviosuly not, because a) popcnt() doesn't take a length argumetn
-and b) returning a char* is silly.
+diff --git a/drivers/gpu/drm/i915/i915_gem_tiling.c b/drivers/gpu/drm/i915/=
+i915_gem_tiling.c
+index 6be3f92..f27e523 100644
+--- a/drivers/gpu/drm/i915/i915_gem_tiling.c
++++ b/drivers/gpu/drm/i915/i915_gem_tiling.c
+@@ -127,8 +129,8 @@ i915_gem_detect_bit_6_swizzle(struct drm_device *dev)
+ 				swizzle_y =3D I915_BIT_6_SWIZZLE_9_11;
+ 			} else {
+ 				/* Bit 17 swizzling by the CPU in addition. */
+-				swizzle_x =3D I915_BIT_6_SWIZZLE_UNKNOWN;
+-				swizzle_y =3D I915_BIT_6_SWIZZLE_UNKNOWN;
++				swizzle_x =3D I915_BIT_6_SWIZZLE_9_10;
++				swizzle_y =3D I915_BIT_6_SWIZZLE_9;
+ 			}
+ 			break;
+ 		}
 
-Some of this would be clearer if popcnt() wasn't implemented as a sucky
-macro.
+You'll get typical swizzling corruption if any tiled buffers get swapped
+out, but that shouldn't happen because Ubuntu 9.04 is stuck with DRI1 so
+all tiled buffers are pinned.  Note that DRI1 with compiz has many
+graphical corruption and stability issues that are fixed with DRI2, but
+I'm not sure that what you're seeing is one of those.
 
-<googles the popcnt instruction>
+If that patch doesn't make things work, then to fix a giant pile of
+userland bugs that might account for it, update to the 2.7.0 2D driver
+and enable UXA, which will get you DRI2.
 
-hm, it seems to operate on a 64-bit operand.  You just reinvented
-hweight64()?
+If the revert + small diff fixes things, I'm interested in seeing the
+output of either reg_dumper from a compile of the 2D driver or a printk
+of dcc in that function, combined with a screenshot of mesa's readpix
+demo, on master (no reverts or anything).
 
-Still, returning the same type as the input argument seems peculiar.
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
 
->
-> ...
->
-> +struct amd64_pvt {
-> +	/* pci_device handles which we utilize */
-> +	struct pci_dev *addr_f1_ctl;
-> +	struct pci_dev *dram_f2_ctl;
-> +	struct pci_dev *misc_f3_ctl;
-> +
-> +	int mc_node_id;		/* MC index of this MC node */
-> +	int ext_model;		/* extended model value of this node */
-> +
-> +	struct low_ops	*ops;	/* pointer to per PCI Device ID func table */
-> +
-> +	int channel_count;	/* Count of 'channels' */
-> +
-> +	/* Raw registers */
-> +	u32 dclr0;		/* DRAM Configuration Low DCT0 reg */
-> +	u32 dclr1;		/* DRAM Configuration Low DCT1 reg */
-> +	u32 dchr0;		/* DRAM Configuration High DCT0 reg */
-> +	u32 dchr1;		/* DRAM Configuration High DCT1 reg */
-> +	u32 nbcap;		/* North Bridge Capabilities */
-> +	u32 nbcfg;		/* F10 North Bridge Configuration */
-> +	u32 ext_nbcfg;		/* Extended F10 North Bridge Configuration */
-> +	u32 dhar;		/* DRAM Hoist reg */
-> +	u32 dbam0;		/* DRAM Base Address Mapping reg for DCT0 */
-> +	u32 dbam1;		/* DRAM Base Address Mapping reg for DCT1 */
-> +
-> +	/* DRAM CS Base Address Registers
-> +	 *   F2x[1,0][5C:40]
-> +	 */
-> +	u32 dcsb0[CHIPSELECT_COUNT];    /* DRAM CS Base Registers */
-> +	u32 dcsb1[CHIPSELECT_COUNT];    /* DRAM CS Base Registers */
-> +
-> +	/* DRAM CS Mask Registers
-> +	 *   F2x[1,0][6C:60]
-> +	 */
-> +	u32 dcsm0[CHIPSELECT_COUNT];    /* DRAM CS Mask Registers */
-> +	u32 dcsm1[CHIPSELECT_COUNT];    /* DRAM CS Mask Registers */
-> +
-> +	/* Decoded parts of DRAM BASE and LIMIT Registers
-> +	 * F1x[78,70,68,60,58,50,48,40]
-> +	 */
-> +	u64 dram_base[DRAM_REG_COUNT];/* DRAM Base Reg */
-> +	u64 dram_limit[DRAM_REG_COUNT];/* DRAM Limit Reg */
-> +	u8 dram_IntlvSel[DRAM_REG_COUNT];
-> +	u8 dram_IntlvEn[DRAM_REG_COUNT];
-> +	u8 dram_DstNode[DRAM_REG_COUNT];
-> +	u8 dram_rw_en[DRAM_REG_COUNT];
-> +
-> +	/* The following fields are set at (load) run time, after Revision has
-> +	 * been determined, since the dct_base and dct_mask registers vary
-> +	 * by CPU Revsion
-> +	 */
-> +	u32 dcsb_base;		/* DCSB base bits */
-> +	u32 dcsm_mask;		/* DCSM mask bits */
-> +	u32 num_dcsm;		/* Number of DCSM registers */
-> +	u32 dcs_mask_notused;	/* DCSM notused mask bits */
-> +	u32 dcs_shift;		/* DCSB and DCSM shift value */
-> +
-> +	u64 top_mem;		/* top of memory below 4GB */
-> +	u64 top_mem2;		/* top of memory above 4GB */
-> +
-> +	/* F10 registers */
-> +	u32 dram_ctl_select_low;	/* DRAM Controller Select Low Reg */
-> +	u32 dram_ctl_select_high;	/* DRAM Controller Select High Reg */
-> +	u32 online_spare;               /* On-Line spare Reg */
-> +
-> +	/* sysfs storage area: Temp storage for when input
-> +	 * is received from sysfs
-> +	 */
-> +	struct amd64_error_info_regs ctl_error_info;
-> +
-> +	/* Place to store error injection parameters prior to issue */
-> +	struct error_injection injection;
-> +
-> +	/* Save old hw registers' values before we modified them */
-> +	u32 nbctl_mcgctl_saved;		/* When true, following 2 are valid */
-> +	u32 old_nbctl;
-> +	u32 old_mcgctl;
-> +
-> +	/* MC Type Index value: socket F vs Family 10h */
-> +	u32 mc_type_index;
-> +
-> +	/* misc settings */
-> +	struct flags {
-> +		unsigned long cf8_extcfg :1;
 
-checkpatch correctly warns here.
 
-> +	} flags;
-> +};
-> +
-> +/*
-> + * See F2x80 for K8 and F2x[1,0]80 for Fam10 and later. The table below is only
-> + * for DDR2 DRAM mapping.
-> + */
-> +static u32 revf_quad_ddr2_shift[] =
-> +{
+--=-Lq7ZKq6aEOLxCx+J0mkl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-static u32 revf_quad_ddr2_shift[] = {
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-would be more typical.
+iEYEABECAAYFAkn3SHoACgkQHUdvYGzw6vdSBgCePRVEqsA3v4t/ViyRXtieuI+t
+s7YAnRtKs6yOV30mk1+VA/fJ/1XOubER
+=GK5c
+-----END PGP SIGNATURE-----
 
-> +	0,	/* 0000b NULL DIMM (128mb) */
-> +	28,	/* 0001b 256mb */
-> +	29,	/* 0010b 512mb */
-> +	29,	/* 0011b 512mb */
-> +	29,	/* 0100b 512mb */
-> +	30,	/* 0101b 1gb */
-> +	30,	/* 0110b 1gb */
-> +	31,	/* 0111b 2gb */
-> +	31,	/* 1000b 2gb */
-> +	32,	/* 1001b 4gb */
-> +	32,	/* 1010b 4gb */
-> +	33,	/* 1011b 8gb */
-> +	0,	/* 1100b future */
-> +	0,	/* 1101b future */
-> +	0,	/* 1110b future */
-> +	0	/* 1111b future */
-> +};
-> +
->
-> ...
->
-
+--=-Lq7ZKq6aEOLxCx+J0mkl--
