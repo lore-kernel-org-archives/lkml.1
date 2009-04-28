@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbZD1QDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762957AbZD1QEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757074AbZD1QDl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 12:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932622AbZD1QCv
+	id S1762957AbZD1QEH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 12:04:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932700AbZD1QDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 12:02:51 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:41388 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932604AbZD1QCu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 12:02:50 -0400
-From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] IB/ehca: Replace vmalloc with kmalloc
-Date: Tue, 28 Apr 2009 18:02:47 +0200
-User-Agent: KMail/1.9.9
-Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>, Roland Dreier <rolandd@cisco.com>,
-       fenkes@de.ibm.com, raisch@de.ibm.com, alexschm@de.ibm.com,
-       stefan.roscher@de.ibm.com, hnguyen@de.ibm.com
-References: <200904211716.45245.ossrosch@linux.vnet.ibm.com> <1240931572.29485.77.camel@nimitz>
-In-Reply-To: <1240931572.29485.77.camel@nimitz>
+	Tue, 28 Apr 2009 12:03:09 -0400
+Received: from oz.embeddedarm.com ([67.40.67.44]:62712 "EHLO
+	oz.embeddedARM.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932699AbZD1QDH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 12:03:07 -0400
+X-Greylist: delayed 371 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Apr 2009 12:03:06 EDT
+Message-ID: <49F7280C.5060709@embeddedarm.com>
+Date: Tue, 28 Apr 2009 09:00:12 -0700
+From: Eddie Dawydiuk <eddie@embeddedarm.com>
+Organization: Technologic Systems
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: buytenh@gnu.org, linux-kernel@vger.kernel.org
+Subject: Marvell 88F6281 Reference design
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904281802.47809.ossrosch@linux.vnet.ibm.com>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0.1 (oz.embeddedARM.com [192.168.0.11]); Tue, 28 Apr 2009 08:56:44 -0700 (MST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 28 April 2009 05:12:51 pm Dave Hansen wrote:
-> On Tue, 2009-04-21 at 17:16 +0200, Stefan Roscher wrote:
-> > From: Anton Blanchard <antonb at au1.ibm.com>
-> > 
-> > To improve performance of driver ressource allocation,
-> > replace the vmalloc() call with kmalloc().
-> 
-> Just curious, but how big are these allocations?  Why was vmalloc() even
-> ever used if we know they'll be small?
-> 
-> -- Dave
-> 
-> 
+Hello,
 
-The theoretical maximum size can be 512k, but for common queue pairs 
-less than 128k is used.Because of the theoretical maximum we implemented
-vmalloc() first, but recognized a huge performance impact.
+I have a Marvell 88F6281 Reference design board I'm trying to compile a 2.6.28 
+kernel for. Although, the machine id check is failing. The error is as follows
 
--- Stefan 
+Uncompressing 
+Linux.............................................................................................................................
+. done, booting the kernel.
 
+Error: unrecognized/unsupported machine ID (r1 = 0x0000020f).
+
+Available machine support:
+
+ID (hex)        NAME
+00000690        Marvell DB-88F6281-BP Development Board
+00000691        Marvell RD-88F6192-NAS Development Board
+00000692        Marvell RD-88F6281 Reference Board
+
+Please check your kernel config and/or bootloader.
+
+I'm going to comment out this check temporarily(arch/arm/head.S), but wanted to 
+notify you of this...
+
+Please CC me personally with any responses.
+
+-- 
+Best Regards,
+________________________________________________________________
+  Eddie Dawydiuk, Technologic Systems | voice:  (480) 837-5200
+  16525 East Laser Drive 	     | fax:    (480) 837-5300
+  Fountain Hills, AZ 85268            | web: www.embeddedARM.com
