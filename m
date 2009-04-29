@@ -1,54 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbZD2Npj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbZD2NqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754821AbZD2Npj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 09:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbZD2Npa
+	id S1756015AbZD2NqR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 09:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZD2Np7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 09:45:30 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47164 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752941AbZD2Npa (ORCPT
+	Wed, 29 Apr 2009 09:45:59 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:36307 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751138AbZD2Np6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 09:45:30 -0400
-Date: Wed, 29 Apr 2009 09:45:28 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/4] workqueue_trace: Add max execution time mesurement
- for per worklet
-In-Reply-To: <20090429133342.GA5987@nowhere>
-Message-ID: <alpine.DEB.2.00.0904290944290.8066@gandalf.stny.rr.com>
-References: <49F6DFB5.2040901@cn.fujitsu.com> <20090429000616.f7e72b73.akpm@linux-foundation.org> <20090429133342.GA5987@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 29 Apr 2009 09:45:58 -0400
+Date: Wed, 29 Apr 2009 09:44:53 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Jiri Kosina <jkosina@suse.cz>
+cc: hannes@cmpxchg.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: how to properly post/disseminate kernel cleanup/janitorial
+ possibilities?
+In-Reply-To: <alpine.LNX.2.00.0904291400200.5012@wotan.suse.de>
+Message-ID: <alpine.LFD.2.00.0904290938310.5304@localhost.localdomain>
+References: <alpine.LFD.2.00.0904271637470.4906@localhost.localdomain> <20090427222035.GA2700@cmpxchg.org> <alpine.LNX.2.00.0904281024150.5012@wotan.suse.de> <alpine.LFD.2.00.0904280619590.16989@localhost.localdomain>
+ <alpine.LNX.2.00.0904291400200.5012@wotan.suse.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 29 Apr 2009, Jiri Kosina wrote:
 
-On Wed, 29 Apr 2009, Frederic Weisbecker wrote:
->  * pointer to the real address.
-> 
-> But the output formatting is the same: address, offset, size, modname.
-> 
-> I found it a bit annoying, so I proposed the following patch recently:
-> 
-> http://lkml.org/lkml/2009/4/15/310
-> 
-> And someone came with a better idea, IMO:
-> 
-> http://lkml.org/lkml/2009/4/17/105
+> On Tue, 28 Apr 2009, Robert P. J. Day wrote:
+>
+> > > > Perhaps Jiri can pick up some of the patches that remove stale
+> > > > config symbols, correct typos etc.
 
-Note,
+> > > Absolutely. I'll happily apply anything trivial enough (typo fixes,
+> > > removal of obviously unused symbols/config options, etc).
 
-If these ever do get merged, I would be happy to convert ftrace to use 
-them to replace my version.
+> > the *problem* is that, sometimes, it's not obvious.  as in, when a
+> > Kconfig file has a pile of unused config options but it turns out
+> > that those were added for future consideration to match up with
+> > code that hasn't been added yet and the subsystem maintainer knows
+> > about it but wants it to stay (IMHO, a really bad idea -- adding
+> > kernel features in incomplete pieces, but whatever).
+>
+> Hmm ... do you have any particular outstanding examples of this?
 
--- Steve
+  historically, plenty, based on the number of times i've submitted
+patches to various maintainers to remove unused symbols, only to be
+told that those symbols were added in a preliminary fashion, and the
+accompanying code should be along any day now.  obviously, that
+doesn't cause any actual problems but it certainly messes up the
+history of a feature by breaking its introduction over more than one
+patch.
 
+  and as for *current* examples, well, there's this page:
+
+http://www.crashcourse.ca/wiki/index.php/Unused_CONFIG_variables
+
+one recent example was MAC80211_VERBOSE_SPECT_MGMT_DEBUG, if you
+wanted an actual reference.
+
+  really, i'm *aware* that 99% of this scanning and cleanup is benign.
+but that final 1% sometimes really does represent a bug and, since i
+have the scripts and it's pretty much free to run them whenever i
+want, we're back to the original question -- what's the best venue to
+distribute this info so as not to bore to tears the people who don't
+care about it?
+
+rday
+--
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Linked In:                             http://www.linkedin.com/in/rpjday
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
