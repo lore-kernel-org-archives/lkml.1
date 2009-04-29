@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbZD2RWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbZD2RYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757373AbZD2RWE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 13:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbZD2RVx
+	id S1759009AbZD2RYa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 13:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbZD2RYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 13:21:53 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:7745 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbZD2RVw (ORCPT
+	Wed, 29 Apr 2009 13:24:21 -0400
+Received: from web32602.mail.mud.yahoo.com ([68.142.207.229]:45089 "HELO
+	web32602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753189AbZD2RYV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 13:21:52 -0400
-X-IronPort-AV: E=Sophos;i="4.40,267,1238976000"; 
-   d="scan'208";a="73873494"
-From: Roland Dreier <rdreier@cisco.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
-       tglx@linutronix.de, h.mitake@gmail.com, rpjday@crashcourse.ca,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Remove readq()/writeq() on 32-bit
-References: <49EE37AF.4020507@zytor.com>
-	<20090421.173123.191021055.davem@davemloft.net>
-	<adak55438gp.fsf_-_@cisco.com>
-	<20090428.221228.217954247.davem@davemloft.net>
-	<20090429115654.GC11586@elte.hu>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 29 Apr 2009 10:21:45 -0700
-In-Reply-To: <20090429115654.GC11586@elte.hu> (Ingo Molnar's message of "Wed,
-	29 Apr 2009 13:56:54 +0200")
-Message-ID: <adaljpj1il2.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Wed, 29 Apr 2009 13:24:21 -0400
+Message-ID: <884894.99151.qm@web32602.mail.mud.yahoo.com>
+X-YMail-OSG: zFxZ.f8VM1ldaOjnDDxhsdz3lIZNPB9mYUXXEiLfavEMoiQgv7FF_SB4yhyOLU43Hw4ezsghKM9z0BsgtSQHOuItGwGqtyTEu1pR8hB7VoHlJGKOD3pfYnC07GatGlsAmnbFLcW8e.AgHfbajnpq3mszj3O3AmWpgX8C_PooKDreHBFIosjBKjmOY940D6XYZB6N1QUTrCYD_INVnEoekAHfmrtT.YIFJEoFAclef2jiLbtxWRz_BTZ24J7CSbwc3pkUJGxxzYBZuVLyp1l.OHwdJ2IKeOq5S0IK9qhssvanSL_IkgEO.EbYxIyheJjhZoql.YJFHMJApAApi.zYEx0-
+X-RocketYMMF: knobi.rm
+X-Mailer: YahooMailRC/1277.35 YahooMailWebService/0.7.289.1
+References: <409142.83316.qm@web32605.mail.mud.yahoo.com> <20090428182837.62c51f26.akpm@linux-foundation.org> <1240977096.5478.3.camel@marge.simson.net> <20090429011755.c141c599.akpm@linux-foundation.org> <20090429120827.GI8633@ZenIV.linux.org.uk>
+Date: Wed, 29 Apr 2009 10:24:20 -0700 (PDT)
+From: Martin Knoblauch <knobi@knobisoft.de>
+Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
+To: Al Viro <viro@ZenIV.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Mike Galbraith <efault@gmx.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org,
+       tigran aivazian <tigran@aivazian.fsnet.co.uk>
+In-Reply-To: <20090429120827.GI8633@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 29 Apr 2009 17:21:45.0660 (UTC) FILETIME=[F8AC8FC0:01C9C8EE]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > What caused 2c5643b1 was that right now we have ugly per driver
- > #defines and inlines for readq/writeq. See:
 
-but 2c5643b1 doesn't fix that situation -- a portable driver still needs
-the #defines for other 32-bit architectures.  And 2c5643b1 isn't really
-a particularly good step towards rectifying the situation, since if
-every 32-bit architecture follows suit and adds its own compatibility
-versions, then we'll want someone to go through and unify them into a
-generic implementation.  In other words removing the x86 private version
-will be part of the work in getting to a final solution.
+----- Original Message ----
 
- > Atomicity of a 64-bit IO space access on 32-bit platforms, on an 
- > unknown-bitness transport (it might even be a 64-bit PCI device 
- > bridged over a 32-bit bridge) is obviously not guaranteed.
+> From: Al Viro <viro@ZenIV.linux.org.uk>
+> To: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Mike Galbraith <efault@gmx.de>; Martin Knoblauch <knobi@knobisoft.de>; Rafael J. Wysocki <rjw@sisk.pl>; linux-kernel@vger.kernel.org; tigran aivazian <tigran@aivazian.fsnet.co.uk>
+> Sent: Wednesday, April 29, 2009 2:08:28 PM
+> Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
+> 
+> On Wed, Apr 29, 2009 at 01:17:55AM -0700, Andrew Morton wrote:
+> 
+> > > > > Questions remains: was this intentional? It breaks existing userspace 
+> and should therefore be considered a regression - right? On the other hand, it 
+> will never be a problem for RHEL-4/5 kernels, unless the change in 2.6.29 gets 
+> backported. Any ideas?
+> > > > 
+> > > > afaik that was unintentional and was probably a mistake.
+> > > > 
+> > > > I wonder how we did that.
+> > > 
+> > > 
+> > > > [hotplug]# grep sysfs /proc/mounts
+> > > > none /sys sysfs rw,relatime 0 0
+> > > > /sys /sys sysfs rw,relatime 0 0
+> > > 
+> > > ___(I wonder how the heck that is accomplished)
+> > 
+> > Beats me.  I'm not seeing likely changes in fs/proc/base.c or around
+> > show_mountinfo().  Maybe sysfs broke in an ingenious way.  (hopefully
+> > cc's viro).
+> 
+> Er...  Somebody mounting sysfs twice?  From some init script and from
+> /etc/fstab, perhaps?  That definitely looks like two mount(2) had to
+> have been done to cause that...
 
-Yes, some platforms may not be able to give true atomicity.  eg 32-bit
-PowerPC has no instructions that generate 64-bit cycles, even on the CPU
-bus.  I do think the 32-bit PCI thing is a bit of a red herring, since
-eg PCIe devices can rely on a 64-bit bus.
+ One definitely comes from /etc/fstab, but I am not aware of any other script mounting sysfs in my userspace.
 
- > So trying to suggest that 64-bit readq/writeq when running on a 
- > 64-bit kernel is somehow atomic (or can be made atomic) is really 
- > wrong IMO. The 32-bit wrapper is simply the expression of how the 
- > CPU would do a 64-bit access even in 64-bit mode anyway [if the 
- > transport is 32-bit].
+Cheers
+Martin
 
-As far as I know, all 64-bit CPUs doing 64-bit accesses to a PCIe device
-(eg the NIC driven by the niu driver) will generate 64-bit bus cycles.
-
-The issue for me is that the benefit of having this compatibility define
-is rather minimal, while the cost is potentially high: spending a long
-time debugging platform-specific bugs -- the symptoms will not point
-immediately to the IO define, of course.
-
- - R.
