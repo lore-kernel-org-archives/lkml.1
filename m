@@ -1,115 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbZD2JZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbZD2J03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbZD2JZy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 05:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750834AbZD2JZk
+	id S1756814AbZD2J03 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 05:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbZD2J0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 05:25:40 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:44258 "EHLO
-	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750795AbZD2JZj (ORCPT
+	Wed, 29 Apr 2009 05:26:19 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:22067 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751620AbZD2J0S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 05:25:39 -0400
-Date: Wed, 29 Apr 2009 11:25:32 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Tejun Heo <tj@kernel.org>
-cc: axboe@kernel.dk, Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, jeff@garzik.org, linux-ide@vger.kernel.org,
-       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
-       mike.miller@hp.com, chirag.kantharia@hp.com, Eric.Moore@lsi.com,
-       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
-       zaitcev@redhat.com, sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, jesper.juhl@gmail.com, tim@cyberelk.net,
-       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
-       David Woodhouse <dwmw2@infradead.org>, schwidefsky@de.ibm.com,
-       ballabio_dario@emc.com, "David S. Miller" <davem@davemloft.net>,
-       Paul Russell <rusty@rustcorp.com.au>, Markus.Lidel@shadowconnect.com,
-       bharrosh@panasas.com
-Subject: Re: [PATCH 04/10] block: implement blk_rq_pos/[cur_]sectors() and
- convert obvious ones
-In-Reply-To: <1240996428-10159-5-git-send-email-tj@kernel.org>
-Message-ID: <alpine.LRH.2.00.0904291123440.31700@vixen.sonytel.be>
-References: <1240996428-10159-1-git-send-email-tj@kernel.org> <1240996428-10159-5-git-send-email-tj@kernel.org>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Wed, 29 Apr 2009 05:26:18 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=H29R1tnGV9h5GDy8i/YlkmHoDwiVELces4edcEumO4jeELpFnk0h/jhUJSuFD75uP
+	aEtqiHm8yqA1MjZ5VMj3g==
+Date: Wed, 29 Apr 2009 02:26:11 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrea Righi <righi.andrea@gmail.com>
+cc: akpm@linux-foundation.org, Peter Zijlstra <peterz@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: prevent divide error for small values of
+ vm_dirty_bytes
+In-Reply-To: <1240993759-30787-1-git-send-email-righi.andrea@gmail.com>
+Message-ID: <alpine.DEB.2.00.0904290224260.31490@chino.kir.corp.google.com>
+References: <1240993759-30787-1-git-send-email-righi.andrea@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Apr 2009, Tejun Heo wrote:
-> Implement accessors - blk_rq_pos(), blk_rq_sectors() and
-> blk_rq_cur_sectors() which return rq->sector, rq->hard_nr_sectors and
-> rq->hard_cur_sectors respectively and convert direct references of the
-> said fields to the accessors.
+On Wed, 29 Apr 2009, Andrea Righi wrote:
+
+> Avoid to set less than two pages for vm_dirty_byte: this is necessary to avoid
+> potential division by 0 (like the following) in get_dirty_limits().
 > 
-> This is in preparation of request data length handling cleanup.
-> 
-> [ Impact: cleanup ]
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
->  drivers/block/ps3disk.c         |    2 +-
+Where exactly is the divide by 0 in get_dirty_limits()?
 
-Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-
-> --- a/include/linux/blkdev.h
-> +++ b/include/linux/blkdev.h
-> @@ -832,13 +832,30 @@ static inline void blk_run_address_space(struct address_space *mapping)
->  extern void blkdev_dequeue_request(struct request *req);
->  
->  /*
-> - * blk_end_request() takes bytes instead of sectors as a complete size.
-> - * blk_rq_bytes() returns bytes left to complete in the entire request.
-> - * blk_rq_cur_bytes() returns bytes left to complete in the current segment.
-> + * blk_rq_pos()		: the current sector
-> + * blk_rq_bytes()	: bytes left in the entire request
-> + * blk_rq_cur_bytes()	: bytes left in the current segment
-> + * blk_rq_sectors()	: sectors left in the entire request
-> + * blk_rq_cur_sectors()	: sectors left in the current segment
->   */
-> +static inline sector_t blk_rq_pos(struct request *rq)
-                                     ^
-				     const?
-> +{
-> +	return rq->hard_sector;
-> +}
-> +
->  extern unsigned int blk_rq_bytes(struct request *rq);
->  extern unsigned int blk_rq_cur_bytes(struct request *rq);
->  
-> +static inline unsigned int blk_rq_sectors(struct request *rq)
-					     ^
-					     const?
-> +{
-> +	return rq->hard_nr_sectors;
-> +}
-> +
-> +static inline unsigned int blk_rq_cur_sectors(struct request *rq)
-						 ^
-						 const?
-> +{
-> +	return rq->hard_cur_sectors;
-> +}
-> +
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
-
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+Is this because we forced the background threshold to be half of the dirty 
+threshold when its setting is greater?
