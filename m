@@ -1,15 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZD2WU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759659AbZD2WV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbZD2WU6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbZD2WUl
+	id S1759659AbZD2WV5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbZD2WVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:20:41 -0400
-Received: from kroah.org ([198.145.64.141]:40122 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:07 -0400
+Received: from kroah.org ([198.145.64.141]:40160 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752219AbZD2WUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:20:37 -0400
-Date: Wed, 29 Apr 2009 15:16:57 -0700
+	id S1753061AbZD2WVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:06 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:23 2009
+Message-Id: <20090429220923.070621183@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Wed, 29 Apr 2009 15:07:01 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,112 +25,91 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/58] 2.6.27-stable review
-Message-ID: <20090429221657.GA11765@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+       alan@lxorguk.ukuu.org.uk, Boaz Harrosh <bharrosh@panasas.com>,
+       Matthieu CASTET <castet.matthieu@free.fr>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 02/58] USB: fix USB_STORAGE_CYPRESS_ATACB
+References: <20090429220659.339950874@mini.kroah.org>
+Content-Disposition: inline; filename=0009-USB-fix-USB_STORAGE_CYPRESS_ATACB.patch
+In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.27.22 release.
-There are 58 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+------------------
 
-Responses should be made by Friday, May 1, 20:00:00 UTC.  Anything
-received after that time might be too late.
+From: Boaz Harrosh <bharrosh@panasas.com>
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.22-rc1.gz
-and the diffstat can be found below.
+upstream commit: 1f4159c1620f74377e26d8a569d10ca5907ef475
+
+commit 64a87b24: [SCSI] Let scsi_cmnd->cmnd use request->cmd buffer
+changed the scsi_eh_prep_cmnd logic by making it clear
+the ->cmnd buffer. But the sat to cypress atacb translation supposed
+the ->cmnd buffer wasn't modified.
+
+This patch makes it set the ->cmnd buffer after scsi_eh_prep_cmnd call.
+The problem and a fix was reported by Matthieu CASTET <castet.matthieu@free.fr>
+
+It also removes all the hackery fiddling of scsi_cmnd and scsi_eh_save by
+requesting from scsi_eh_prep_cmnd to prepare a read into ->sense_buffer,
+which is much more suitable a buffer for HW transfers, then after the command
+execution the regs read is copied into regs buffer before actual preparation
+of sense_buffer.
+
+Also fix an alien comment character to my utf-8 editor.
+
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+Signed-off-by: Matthieu CASTET <castet.matthieu@free.fr>
+Cc: stable <stable@kernel.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+ drivers/usb/storage/cypress_atacb.c |   15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
+
+--- a/drivers/usb/storage/cypress_atacb.c
++++ b/drivers/usb/storage/cypress_atacb.c
+@@ -133,19 +133,18 @@ void cypress_atacb_passthrough(struct sc
+ 
+ 		/* build the command for
+ 		 * reading the ATA registers */
+-		scsi_eh_prep_cmnd(srb, &ses, NULL, 0, 0);
+-		srb->sdb.length = sizeof(regs);
+-		sg_init_one(&ses.sense_sgl, regs, srb->sdb.length);
+-		srb->sdb.table.sgl = &ses.sense_sgl;
+-		srb->sc_data_direction = DMA_FROM_DEVICE;
+-		srb->sdb.table.nents = 1;
++		scsi_eh_prep_cmnd(srb, &ses, NULL, 0, sizeof(regs));
++
+ 		/* we use the same command as before, but we set
+ 		 * the read taskfile bit, for not executing atacb command,
+ 		 * but reading register selected in srb->cmnd[4]
+ 		 */
++		srb->cmd_len = 16;
++		srb->cmnd = ses.cmnd;
+ 		srb->cmnd[2] = 1;
+ 
+ 		usb_stor_transparent_scsi_command(srb, us);
++		memcpy(regs, srb->sense_buffer, sizeof(regs));
+ 		tmp_result = srb->result;
+ 		scsi_eh_restore_cmnd(srb, &ses);
+ 		/* we fail to get registers, report invalid command */
+@@ -162,8 +161,8 @@ void cypress_atacb_passthrough(struct sc
+ 
+ 		/* XXX we should generate sk, asc, ascq from status and error
+ 		 * regs
+-		 * (see 11.1 Error translation ­ ATA device error to SCSI error map)
+-		 * and ata_to_sense_error from libata.
++		 * (see 11.1 Error translation ATA device error to SCSI error
++		 *  map, and ata_to_sense_error from libata.)
+ 		 */
+ 
+ 		/* Sense data is current and format is descriptor. */
 
 
-thanks,
-
-greg k-h
-
-
- Makefile                               |    2 +-
- arch/powerpc/include/asm/futex.h       |   12 +-
- arch/powerpc/include/asm/processor.h   |   19 ++++
- arch/powerpc/kernel/signal.c           |    4 +-
- arch/powerpc/kernel/signal.h           |    2 +-
- arch/powerpc/kernel/signal_32.c        |    4 +-
- arch/powerpc/kernel/signal_64.c        |    2 +-
- arch/x86/boot/memory.c                 |    7 +-
- arch/x86/kernel/cpu/mtrr/generic.c     |   51 +++++----
- arch/x86/pci/i386.c                    |    3 +
- drivers/acpi/ec.c                      |   43 ++++----
- drivers/ata/pata_hpt37x.c              |   22 +----
- drivers/char/agp/generic.c             |    2 +-
- drivers/char/raw.c                     |    1 +
- drivers/crypto/ixp4xx_crypto.c         |  182 +++++++++++---------------------
- drivers/ide/pci/hpt366.c               |    4 +-
- drivers/isdn/gigaset/bas-gigaset.c     |   16 +++-
- drivers/misc/thinkpad_acpi.c           |   41 ++++----
- drivers/net/b44.c                      |    2 +-
- drivers/net/bonding/bond_main.c        |   25 ++++-
- drivers/net/bonding/bonding.h          |    6 +
- drivers/net/r8169.c                    |  106 +++++++++++--------
- drivers/net/wireless/ath9k/ath9k.h     |    4 +-
- drivers/net/wireless/ath9k/core.c      |    1 +
- drivers/net/wireless/ath9k/core.h      |   33 ++++++
- drivers/net/wireless/ath9k/hw.c        |   22 ++++-
- drivers/net/wireless/b43/xmit.c        |    2 +-
- drivers/scsi/libiscsi.c                |    9 +-
- drivers/usb/class/cdc-wdm.c            |    2 +-
- drivers/usb/gadget/f_rndis.c           |    2 +-
- drivers/usb/gadget/u_ether.c           |    8 +--
- drivers/usb/host/ehci-q.c              |   32 ++++++
- drivers/usb/host/ehci.h                |    3 +
- drivers/usb/serial/ftdi_sio.c          |    1 +
- drivers/usb/serial/ftdi_sio.h          |    7 ++
- drivers/usb/storage/cypress_atacb.c    |   15 ++--
- drivers/usb/storage/scsiglue.c         |    6 +
- drivers/usb/storage/unusual_devs.h     |    6 +-
- fs/buffer.c                            |    2 +-
- fs/cifs/CHANGES                        |    3 +
- fs/cifs/cifssmb.c                      |    6 +-
- fs/cifs/connect.c                      |    2 +-
- fs/compat.c                            |   12 ++-
- fs/dquot.c                             |    2 +-
- fs/drop_caches.c                       |    2 +-
- fs/exec.c                              |    4 +-
- fs/fs-writeback.c                      |    3 +-
- fs/hugetlbfs/inode.c                   |    3 +-
- fs/ocfs2/file.c                        |    8 +-
- fs/proc/base.c                         |   50 +++------
- fs/splice.c                            |   25 ++++-
- include/linux/capability.h             |   23 ++++-
- include/linux/pci_regs.h               |    2 +-
- include/linux/sched.h                  |    3 +-
- kernel/exit.c                          |    3 +-
- kernel/kprobes.c                       |    4 +-
- kernel/signal.c                        |    8 ++
- mm/filemap_xip.c                       |    4 +-
- mm/mmap.c                              |    3 +
- net/bridge/br_if.c                     |    1 -
- net/ipv4/netfilter/arp_tables.c        |    4 +-
- net/ipv4/netfilter/ip_tables.c         |    4 +-
- net/ipv6/inet6_hashtables.c            |    4 +-
- net/ipv6/ip6_input.c                   |    4 +-
- net/ipv6/netfilter/ip6_tables.c        |    4 +-
- net/netfilter/nf_conntrack_proto_tcp.c |    3 +-
- net/netrom/af_netrom.c                 |    8 ++-
- net/rose/af_rose.c                     |    4 +
- net/sctp/endpointola.c                 |    3 +-
- net/x25/af_x25.c                       |    6 +
- security/selinux/hooks.c               |    1 +
- security/smack/smack_lsm.c             |    4 +-
- sound/pci/hda/patch_analog.c           |    2 +-
- 73 files changed, 550 insertions(+), 383 deletions(-)
