@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763325AbZD2Wo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763388AbZD2Wpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763325AbZD2Wo7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762323AbZD2WbA
+	id S1763388AbZD2Wpf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761489AbZD2WlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:31:00 -0400
-Received: from ausxipps301.us.dell.com ([143.166.148.223]:41507 "EHLO
-	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762300AbZD2Wa6 (ORCPT
+	Wed, 29 Apr 2009 18:41:19 -0400
+Received: from exprod6og101.obsmtp.com ([64.18.1.181]:33248 "HELO
+	exprod6og101.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761194AbZD2WlS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:30:58 -0400
-Message-ID: <49F8D52C.6000200@dell.com>
-Date: Wed, 29 Apr 2009 17:31:08 -0500
-From: Mario Limonciello <mario_limonciello@dell.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+	Wed, 29 Apr 2009 18:41:18 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Add support for more dell-wmi hotkeys
-References: <49ECBAE2.2080308@dell.com> <49EE09D9.2060209@dell.com> <20090429165729.GB32619@srcf.ucam.org> <49F89981.10806@dell.com> <20090429183154.GC2325@srcf.ucam.org> <49F8C59F.2010603@dell.com> <20090429212924.GA7900@srcf.ucam.org>
-In-Reply-To: <20090429212924.GA7900@srcf.ucam.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig2696E8A015B9414078ACA2D2"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: Q: about struct task_struct
+Date: Wed, 29 Apr 2009 18:41:15 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909016C1AF3@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Q: about struct task_struct
+Thread-Index: AcnJG5qpoPFwCEF4QU+LP9LwFYJzZg==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 29 Apr 2009 22:41:16.0485 (UTC) FILETIME=[9B604F50:01C9C91B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig2696E8A015B9414078ACA2D2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hello all,
 
-Hi Matthew:
+In struct task_struck, should set_child_tid and clear_child_tid
+be int __user * or u32 __user *?
 
-Matthew Garrett wrote:
-> On Wed, Apr 29, 2009 at 04:24:47PM -0500, Mario Limonciello wrote:
->
-> Ok. Is there any programmatic way to determine whether a given Dell=20
-> complies with your WMI spec or not? I'd prefer not to use DMI tables=20
-> unless it's the only way to identify the machines - the risk is that=20
-> there'll be something else that also uses its own codes and will just=20
-> behave oddly until someone figures out why it's broken.
->  =20
-Not that I can easily discern.  The only relevant bit that i'm finding
-is whether a key is reported as "programmable", which might be the case
-for the M6300.  I'll try to look further into it to see if that's the
-case here, and if that information can be flagged upon.
---=20
-Mario Limonciello
-*Dell | Linux Engineering*
-mario_limonciello@dell.com
+In include/linux/sched.h they are both int __user * but in
+kernel/fork.c there is the following line:
 
+	u32 __user * tidptr = tsk->clear_child_tid;
 
---------------enig2696E8A015B9414078ACA2D2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+This is causing a sparse warning:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+warning: incorrect type in initializer (different signedness)
+   expected unsigned int [noderef] [usertype] <asn:1>*tidptr
+   got int [noderef] <asn:1>*clear_child_tid
 
-iEYEARECAAYFAkn41SwACgkQ2CrZjkA73Yv7NQCfZbCoWoRTf/9xBZ2sG16yAM5+
-RH8An2TPA8YAeYEh8oLRGlO8SM0bHonb
-=BNj2
------END PGP SIGNATURE-----
+It seems the struct should have them as u32 __user * since the
+clone_flags are defined up to 0x80000000 (CLONE_IO).
 
---------------enig2696E8A015B9414078ACA2D2--
+Thanks,
+Hartley
