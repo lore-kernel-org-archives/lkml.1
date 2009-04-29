@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762755AbZD2WnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763242AbZD2Wnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762755AbZD2WnW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760250AbZD2WWE
+	id S1763242AbZD2Wnl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760759AbZD2WWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:22:04 -0400
-Received: from kroah.org ([198.145.64.141]:40800 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:22:06 -0400
+Received: from kroah.org ([198.145.64.141]:40825 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760040AbZD2WVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:54 -0400
+	id S1760593AbZD2WV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:58 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:31 2009
-Message-Id: <20090429220930.974826191@mini.kroah.org>
+Message-Id: <20090429220931.429528114@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:53 -0700
+Date: Wed, 29 Apr 2009 15:07:56 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Yu Zhao <yu.zhao@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 54/58] PCI: fix incorrect mask of PM No_Soft_Reset bit
+       alan@lxorguk.ukuu.org.uk, Hannes Eder <hannes@hanneseder.net>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <len.brown@intel.com>
+Subject: [patch 57/58] ACPI: EC: fix compilation warning
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=pci-fix-incorrect-mask-of-pm-no_soft_reset-bit.patch
+Content-Disposition: inline; filename=acpi-ec-fix-compilation-warning.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,29 +40,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Yu Zhao <yu.zhao@intel.com>
+From: Hannes Eder <hannes@hanneseder.net>
 
-commit 998dd7c719f62dcfa91d7bf7f4eb9c160e03d817 upstream.
+commit 3e54048691bce3f323fd5460695273be379803b9 upstream.
 
-Reviewed-by: Matthew Wilcox <matthew@wil.cx>
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Fix the warning introduced in commit c5279dee26c0e8d7c4200993bfc4b540d2469598,
+and give the dummy variable a more verbose name.
+
+  drivers/acpi/ec.c: In function 'acpi_ec_ecdt_probe':
+  drivers/acpi/ec.c:1015: warning: ISO C90 forbids mixed declarations and code
+
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+Acked-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/pci_regs.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/acpi/ec.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/include/linux/pci_regs.h
-+++ b/include/linux/pci_regs.h
-@@ -234,7 +234,7 @@
- #define  PCI_PM_CAP_PME_SHIFT	11	/* Start of the PME Mask in PMC */
- #define PCI_PM_CTRL		4	/* PM control and status register */
- #define  PCI_PM_CTRL_STATE_MASK	0x0003	/* Current power state (D0 to D3) */
--#define  PCI_PM_CTRL_NO_SOFT_RESET	0x0004	/* No reset for D3hot->D0 */
-+#define  PCI_PM_CTRL_NO_SOFT_RESET	0x0008	/* No reset for D3hot->D0 */
- #define  PCI_PM_CTRL_PME_ENABLE	0x0100	/* PME pin enable */
- #define  PCI_PM_CTRL_DATA_SEL_MASK	0x1e00	/* Data select (??) */
- #define  PCI_PM_CTRL_DATA_SCALE_MASK	0x6000	/* Data scale (??) */
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -970,6 +970,7 @@ int __init acpi_ec_ecdt_probe(void)
+ {
+ 	acpi_status status;
+ 	struct acpi_table_ecdt *ecdt_ptr;
++	acpi_handle dummy;
+ 
+ 	boot_ec = make_acpi_ec();
+ 	if (!boot_ec)
+@@ -1002,7 +1003,6 @@ int __init acpi_ec_ecdt_probe(void)
+ 	}
+ 	/* This workaround is needed only on some broken machines,
+ 	 * which require early EC, but fail to provide ECDT */
+-	acpi_handle x;
+ 	printk(KERN_DEBUG PREFIX "Look up EC in DSDT\n");
+ 	status = acpi_get_devices(ec_device_ids[0].id, ec_parse_device,
+ 					boot_ec, NULL);
+@@ -1013,7 +1013,7 @@ int __init acpi_ec_ecdt_probe(void)
+ 	 * which needs it, has fake EC._INI method, so use it as flag.
+ 	 * Keep boot_ec struct as it will be needed soon.
+ 	 */
+-	if (ACPI_FAILURE(acpi_get_handle(boot_ec->handle, "_INI", &x)))
++	if (ACPI_FAILURE(acpi_get_handle(boot_ec->handle, "_INI", &dummy)))
+ 		return -ENODEV;
+ install:
+ 	if (!ec_install_handlers(boot_ec)) {
 
 
