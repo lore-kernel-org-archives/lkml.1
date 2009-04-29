@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760201AbZD2NMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760325AbZD2NNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760201AbZD2NMZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 09:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759238AbZD2NH4
+	id S1760325AbZD2NNX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 09:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759111AbZD2NIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 09:07:56 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44664 "EHLO hera.kernel.org"
+	Wed, 29 Apr 2009 09:08:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44688 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759255AbZD2NHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 09:07:54 -0400
-Date: Wed, 29 Apr 2009 13:07:17 GMT
+	id S1758115AbZD2NIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 09:08:14 -0400
+Date: Wed, 29 Apr 2009 13:07:39 GMT
 From: tip-bot for Robert Richter <robert.richter@amd.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
@@ -18,151 +18,165 @@ Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, robert.richter@amd.com,
        a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1241002046-8832-22-git-send-email-robert.richter@amd.com>
-References: <1241002046-8832-22-git-send-email-robert.richter@amd.com>
-Subject: [tip:perfcounters/core] perf_counter, x86: rework counter enable functions
-Message-ID: <tip-7c90cc45f89af4dd4617f97d452740ad95b800d5@git.kernel.org>
-Git-Commit-ID: 7c90cc45f89af4dd4617f97d452740ad95b800d5
+In-Reply-To: <1241002046-8832-24-git-send-email-robert.richter@amd.com>
+References: <1241002046-8832-24-git-send-email-robert.richter@amd.com>
+Subject: [tip:perfcounters/core] perf_counter, x86: change and remove pmu initialization checks
+Message-ID: <tip-85cf9dba92152bb4edec118b2f4f0be1ae7fdcab@git.kernel.org>
+Git-Commit-ID: 85cf9dba92152bb4edec118b2f4f0be1ae7fdcab
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 13:07:19 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 13:07:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7c90cc45f89af4dd4617f97d452740ad95b800d5
-Gitweb:     http://git.kernel.org/tip/7c90cc45f89af4dd4617f97d452740ad95b800d5
+Commit-ID:  85cf9dba92152bb4edec118b2f4f0be1ae7fdcab
+Gitweb:     http://git.kernel.org/tip/85cf9dba92152bb4edec118b2f4f0be1ae7fdcab
 Author:     Robert Richter <robert.richter@amd.com>
-AuthorDate: Wed, 29 Apr 2009 12:47:18 +0200
+AuthorDate: Wed, 29 Apr 2009 12:47:20 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 29 Apr 2009 14:51:11 +0200
+CommitDate: Wed, 29 Apr 2009 14:51:12 +0200
 
-perf_counter, x86: rework counter enable functions
+perf_counter, x86: change and remove pmu initialization checks
 
-There is vendor specific code in generic x86 code, and there is vendor
-specific code that could be generic. This patch introduces
-x86_pmu_enable_counter() for x86 generic code. Fixed counter code for
-Intel is moved to Intel only functions. In the end, checks and calls
-via function pointers were reduced to the necessary. Also, the
-internal function i/f changed.
+Some functions are only called if the pmu was proper initialized. That
+initalization checks can be removed. The way to check initialization
+changed too. Now, the pointer to the interrupt handler is checked. If
+it exists the pmu is initialized. This also removes a static variable
+and uses struct x86_pmu as only data source for the check.
 
-[ Impact: refactor and generalize code ]
+[ Impact: simplify code ]
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 Cc: Paul Mackerras <paulus@samba.org>
 Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1241002046-8832-22-git-send-email-robert.richter@amd.com>
+LKML-Reference: <1241002046-8832-24-git-send-email-robert.richter@amd.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/cpu/perf_counter.c |   52 ++++++++++++++++-------------------
- 1 files changed, 24 insertions(+), 28 deletions(-)
+ arch/x86/kernel/cpu/perf_counter.c |   34 +++++++++++++---------------------
+ 1 files changed, 13 insertions(+), 21 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index d8beebe..ae55933 100644
+index df9012b..2d3681b 100644
 --- a/arch/x86/kernel/cpu/perf_counter.c
 +++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -44,7 +44,7 @@ struct x86_pmu {
- 	int		(*handle_irq)(struct pt_regs *, int);
- 	u64		(*save_disable_all)(void);
- 	void		(*restore_all)(u64);
--	void		(*enable)(int, u64);
-+	void		(*enable)(struct hw_perf_counter *, int);
- 	void		(*disable)(int, u64);
- 	unsigned	eventsel;
- 	unsigned	perfctr;
-@@ -414,28 +414,15 @@ static inline void intel_pmu_ack_status(u64 ack)
- 	wrmsrl(MSR_CORE_PERF_GLOBAL_OVF_CTRL, ack);
+@@ -23,7 +23,6 @@
+ #include <asm/stacktrace.h>
+ #include <asm/nmi.h>
+ 
+-static bool perf_counters_initialized __read_mostly;
+ static u64 perf_counter_mask __read_mostly;
+ 
+ struct cpu_hw_counters {
+@@ -227,6 +226,11 @@ static void hw_perf_counter_destroy(struct perf_counter *counter)
+ 	}
  }
  
--static void intel_pmu_enable_counter(int idx, u64 config)
-+static inline void x86_pmu_enable_counter(struct hw_perf_counter *hwc, int idx)
- {
--	wrmsrl(MSR_ARCH_PERFMON_EVENTSEL0 + idx,
--			config | ARCH_PERFMON_EVENTSEL0_ENABLE);
--}
--
--static void amd_pmu_enable_counter(int idx, u64 config)
--{
--	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
--
--	if (cpuc->enabled)
--		config |= ARCH_PERFMON_EVENTSEL0_ENABLE;
--
--	wrmsrl(MSR_K7_EVNTSEL0 + idx, config);
--}
-+	int err;
- 
--static void hw_perf_enable(int idx, u64 config)
--{
- 	if (unlikely(!perf_counters_initialized))
- 		return;
- 
--	x86_pmu.enable(idx, config);
-+	err = checking_wrmsrl(hwc->config_base + idx,
-+			      hwc->config | ARCH_PERFMON_EVENTSEL0_ENABLE);
- }
- 
- static void intel_pmu_disable_counter(int idx, u64 config)
-@@ -522,8 +509,7 @@ x86_perf_counter_set_period(struct perf_counter *counter,
- }
- 
- static inline void
--__pmc_fixed_enable(struct perf_counter *counter,
--		   struct hw_perf_counter *hwc, int __idx)
-+intel_pmu_enable_fixed(struct hw_perf_counter *hwc, int __idx)
- {
- 	int idx = __idx - X86_PMC_IDX_FIXED;
- 	u64 ctrl_val, bits, mask;
-@@ -548,14 +534,24 @@ __pmc_fixed_enable(struct perf_counter *counter,
- 	err = checking_wrmsrl(hwc->config_base, ctrl_val);
- }
- 
--static void
--__x86_pmu_enable(struct perf_counter *counter,
--		 struct hw_perf_counter *hwc, int idx)
-+static void intel_pmu_enable_counter(struct hw_perf_counter *hwc, int idx)
- {
--	if (unlikely(hwc->config_base == MSR_ARCH_PERFMON_FIXED_CTR_CTRL))
--		__pmc_fixed_enable(counter, hwc, idx);
-+	if (unlikely(hwc->config_base == MSR_ARCH_PERFMON_FIXED_CTR_CTRL)) {
-+		intel_pmu_enable_fixed(hwc, idx);
-+		return;
-+	}
-+
-+	x86_pmu_enable_counter(hwc, idx);
++static inline int x86_pmu_initialized(void)
++{
++	return x86_pmu.handle_irq != NULL;
 +}
 +
-+static void amd_pmu_enable_counter(struct hw_perf_counter *hwc, int idx)
-+{
-+	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
-+
-+	if (cpuc->enabled)
-+		x86_pmu_enable_counter(hwc, idx);
- 	else
--		hw_perf_enable(idx, hwc->config);
-+		amd_pmu_disable_counter(idx, hwc->config);
- }
- 
- static int
-@@ -632,7 +628,7 @@ try_generic:
- 	set_bit(idx, cpuc->active);
- 
- 	x86_perf_counter_set_period(counter, hwc, idx);
--	__x86_pmu_enable(counter, hwc, idx);
-+	x86_pmu.enable(hwc, idx);
- 
- 	return 0;
- }
-@@ -728,7 +724,7 @@ static void intel_pmu_save_and_restart(struct perf_counter *counter)
- 	x86_perf_counter_set_period(counter, hwc, idx);
- 
- 	if (counter->state == PERF_COUNTER_STATE_ACTIVE)
--		__x86_pmu_enable(counter, hwc, idx);
-+		intel_pmu_enable_counter(hwc, idx);
- }
- 
  /*
+  * Setup the hardware configuration for a given hw_event_type
+  */
+@@ -240,8 +244,8 @@ static int __hw_perf_counter_init(struct perf_counter *counter)
+ 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
+ 		return -ENOSYS;
+ 
+-	if (unlikely(!perf_counters_initialized))
+-		return -EINVAL;
++	if (!x86_pmu_initialized())
++		return -ENODEV;
+ 
+ 	err = 0;
+ 	if (atomic_inc_not_zero(&num_counters)) {
+@@ -348,9 +352,8 @@ static u64 amd_pmu_save_disable_all(void)
+ 
+ u64 hw_perf_save_disable(void)
+ {
+-	if (unlikely(!perf_counters_initialized))
++	if (!x86_pmu_initialized())
+ 		return 0;
+-
+ 	return x86_pmu.save_disable_all();
+ }
+ /*
+@@ -388,9 +391,8 @@ static void amd_pmu_restore_all(u64 ctrl)
+ 
+ void hw_perf_restore(u64 ctrl)
+ {
+-	if (unlikely(!perf_counters_initialized))
++	if (!x86_pmu_initialized())
+ 		return;
+-
+ 	x86_pmu.restore_all(ctrl);
+ }
+ /*
+@@ -402,8 +404,6 @@ static inline u64 intel_pmu_get_status(u64 mask)
+ {
+ 	u64 status;
+ 
+-	if (unlikely(!perf_counters_initialized))
+-		return 0;
+ 	rdmsrl(MSR_CORE_PERF_GLOBAL_STATUS, status);
+ 
+ 	return status;
+@@ -417,10 +417,6 @@ static inline void intel_pmu_ack_status(u64 ack)
+ static inline void x86_pmu_enable_counter(struct hw_perf_counter *hwc, int idx)
+ {
+ 	int err;
+-
+-	if (unlikely(!perf_counters_initialized))
+-		return;
+-
+ 	err = checking_wrmsrl(hwc->config_base + idx,
+ 			      hwc->config | ARCH_PERFMON_EVENTSEL0_ENABLE);
+ }
+@@ -428,10 +424,6 @@ static inline void x86_pmu_enable_counter(struct hw_perf_counter *hwc, int idx)
+ static inline void x86_pmu_disable_counter(struct hw_perf_counter *hwc, int idx)
+ {
+ 	int err;
+-
+-	if (unlikely(!perf_counters_initialized))
+-		return;
+-
+ 	err = checking_wrmsrl(hwc->config_base + idx,
+ 			      hwc->config);
+ }
+@@ -787,10 +779,10 @@ void perf_counter_unthrottle(void)
+ {
+ 	struct cpu_hw_counters *cpuc;
+ 
+-	if (!cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
++	if (!x86_pmu_initialized())
+ 		return;
+ 
+-	if (unlikely(!perf_counters_initialized))
++	if (!cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
+ 		return;
+ 
+ 	cpuc = &__get_cpu_var(cpu_hw_counters);
+@@ -829,8 +821,9 @@ void perf_counters_lapic_init(int nmi)
+ {
+ 	u32 apic_val;
+ 
+-	if (!perf_counters_initialized)
++	if (!x86_pmu_initialized())
+ 		return;
++
+ 	/*
+ 	 * Enable the performance counter vector in the APIC LVT:
+ 	 */
+@@ -988,7 +981,6 @@ void __init init_hw_perf_counters(void)
+ 		((1LL << x86_pmu.num_counters_fixed)-1) << X86_PMC_IDX_FIXED;
+ 
+ 	pr_info("... counter mask:    %016Lx\n", perf_counter_mask);
+-	perf_counters_initialized = true;
+ 
+ 	perf_counters_lapic_init(0);
+ 	register_die_notifier(&perf_counter_nmi_notifier);
