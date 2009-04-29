@@ -1,67 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbZD2Nbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbZD2Ncs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754621AbZD2Nbd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 09:31:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbZD2NbX
+	id S1756095AbZD2Ncs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 09:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZD2Nci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 09:31:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40016 "EHLO mx2.redhat.com"
+	Wed, 29 Apr 2009 09:32:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40049 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751341AbZD2NbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 09:31:22 -0400
-Message-ID: <49F8567F.4010703@redhat.com>
-Date: Wed, 29 Apr 2009 09:30:39 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1751757AbZD2Nci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 09:32:38 -0400
+Date: Wed, 29 Apr 2009 15:28:44 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: David Howells <dhowells@redhat.com>
+Cc: James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
+       Roland McGrath <roland@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Q: selinux_bprm_committed_creds() && signals/do_wait
+Message-ID: <20090429132844.GB29151@redhat.com>
+References: <19024.1241008933@redhat.com> <20090429115550.GA25368@redhat.com> <20090429102511.GA10767@redhat.com> <20090429065809.GA477@redhat.com> <20090428223025.GA11997@redhat.com> <alpine.LRH.2.00.0904291024001.5246@tundra.namei.org> <7242.1240999370@redhat.com> <7150.1241003840@redhat.com> <19233.1241009105@redhat.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org, tytso@mit.edu,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
-Subject: Re: [PATCH] vmscan: evict use-once pages first
-References: <20090428044426.GA5035@eskimo.com>	 <20090428192907.556f3a34@bree.surriel.com> <1240987349.4512.18.camel@laptop>
-In-Reply-To: <1240987349.4512.18.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19233.1241009105@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2009-04-28 at 19:29 -0400, Rik van Riel wrote:
-> 
->> diff --git a/mm/vmscan.c b/mm/vmscan.c
->> index eac9577..4c0304e 100644
->> --- a/mm/vmscan.c
->> +++ b/mm/vmscan.c
->> @@ -1489,6 +1489,21 @@ static void shrink_zone(int priority, struct zone *zone,
->>  			nr[l] = scan;
->>  	}
->>  
->> +	/*
->> +	 * When the system is doing streaming IO, memory pressure here
->> +	 * ensures that active file pages get deactivated, until more
->> +	 * than half of the file pages are on the inactive list.
->> +	 *
->> +	 * Once we get to that situation, protect the system's working
->> +	 * set from being evicted by disabling active file page aging
->> +	 * and swapping of swap backed pages.  We still do background
->> +	 * aging of anonymous pages.
->> +	 */
->> +	if (nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE]) {
->> +		nr[LRU_ACTIVE_FILE] = 0;
->> +		nr[LRU_INACTIVE_ANON] = 0;
->> +	}
->> +
-> 
-> Isn't there a hole where LRU_*_FILE << LRU_*_ANON and we now stop
-> shrinking INACTIVE_ANON even though it makes sense to.
+On 04/29, David Howells wrote:
+>
+> From: David Howells <dhowells@redhat.com>
+> Subject: [PATCH] SELinux: Don't flush inherited SIGKILL during execve()
+>
+> Don't flush inherited SIGKILL during execve() in SELinux's post cred commit
+> hook.  This isn't really a security problem: if the SIGKILL came before the
+> credentials were changed, then we were right to receive it at the time, and
+> should honour it; if it came after the creds were changed, then we definitely
+> should honour it; and in any case, all that will happen is that the process
+> will be scrapped before it ever returns to userspace.
+>
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-Only temporarily, until the number of active file pages
-is larger than the number of inactive ones.
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-Think of it as reducing the frequency of shrinking anonymous
-pages while the system is near the threshold.
-
--- 
-All rights reversed.
