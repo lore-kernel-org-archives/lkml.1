@@ -1,110 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757887AbZD2NQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760890AbZD2NQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757887AbZD2NQn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 09:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759509AbZD2NJc
+	id S1760890AbZD2NQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 09:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759504AbZD2NJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 09:09:32 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43588 "EHLO mx2.mail.elte.hu"
+	Wed, 29 Apr 2009 09:09:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44774 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758468AbZD2NJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 09:09:27 -0400
-Date: Wed, 29 Apr 2009 15:09:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Robert Richter <robert.richter@amd.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf_counter: powerpc: allow use of limited-function
-	counters
-Message-ID: <20090429130915.GA23563@elte.hu>
-References: <18936.19035.163066.892208@cargo.ozlabs.ibm.com>
+	id S1759397AbZD2NJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 09:09:32 -0400
+Date: Wed, 29 Apr 2009 13:08:46 GMT
+From: tip-bot for Robert Richter <robert.richter@amd.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, robert.richter@amd.com, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, robert.richter@amd.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1241002046-8832-30-git-send-email-robert.richter@amd.com>
+References: <1241002046-8832-30-git-send-email-robert.richter@amd.com>
+Subject: [tip:perfcounters/core] perf_counter: update 'perf top' documentation
+Message-ID: <tip-38105f0234d4795c77c7c6845916caf3a395c451@git.kernel.org>
+Git-Commit-ID: 38105f0234d4795c77c7c6845916caf3a395c451
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <18936.19035.163066.892208@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 13:08:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  38105f0234d4795c77c7c6845916caf3a395c451
+Gitweb:     http://git.kernel.org/tip/38105f0234d4795c77c7c6845916caf3a395c451
+Author:     Robert Richter <robert.richter@amd.com>
+AuthorDate: Wed, 29 Apr 2009 12:47:26 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 29 Apr 2009 14:51:15 +0200
 
-* Paul Mackerras <paulus@samba.org> wrote:
+perf_counter: update 'perf top' documentation
 
-> POWER5+ and POWER6 have two hardware counters with limited 
-> functionality: PMC5 counts instructions completed in run state and 
-> PMC6 counts cycles in run state.  (Run state is the state when a 
-> hardware RUN bit is 1; the idle task clears RUN while waiting for 
-> work to do and sets it when there is work to do.)
-> 
-> These counters can't be written to by the kernel, can't generate 
-> interrupts, and don't obey the freeze conditions.  That means we 
-> can only use them for per-task counters (where we know we'll 
-> always be in run state; we can't put a per-task counter on an idle 
-> task), and only if we don't want interrupts and we do want to 
-> count in all processor modes.
-> 
-> Obviously some counters can't go on a limited hardware counter, 
-> but there are also situations where we can only put a counter on a 
-> limited hardware counter - if there are already counters on that 
-> exclude some processor modes and we want to put on a per-task 
-> cycle or instruction counter that doesn't exclude any processor 
-> mode, it could go on if it can use a limited hardware counter.
-> 
-> To keep track of these constraints, this adds a flags argument to 
-> the processor-specific get_alternatives() functions, with three 
-> bits defined: one to say that we can accept alternative event 
-> codes that go on limited counters, one to say we only want 
-> alternatives on limited counters, and one to say that this is a 
-> per-task counter and therefore events that are gated by run state 
-> are equivalent to those that aren't (e.g. a "cycles" event is 
-> equivalent to a "cycles in run state" event).  These flags are 
-> computed for each counter and stored in the 
-> counter->hw.counter_base field (slightly wonky name for what it 
-> does, but it was an existing unused field).
-> 
-> Since the limited counters don't freeze when we freeze the other 
-> counters, we need some special handling to avoid getting skew 
-> between things counted on the limited counters and those counted 
-> on normal counters.  To minimize this skew, if we are using any 
-> limited counters, we read PMC5 and PMC6 immediately after setting 
-> and clearing the freeze bit.  This is done in a single asm in the 
-> new write_mmcr0() function.
-> 
-> The code here is specific to PMC5 and PMC6 being the limited 
-> hardware counters.  Being more general (e.g. having a bitmap of 
-> limited hardware counter numbers) would have meant more complex 
-> code to read the limited counters when freezing and unfreezing the 
-> normal counters, with conditional branches, which would have 
-> increased the skew.  Since it isn't necessary for the code to be 
-> more general at this stage, it isn't.
-> 
-> This also extends the back-ends for POWER5+ and POWER6 to be able 
-> to handle up to 6 counters rather than the 4 they previously 
-> handled.
-> 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
->  arch/powerpc/include/asm/perf_counter.h |   13 ++-
->  arch/powerpc/kernel/perf_counter.c      |  297 +++++++++++++++++++++++++++----
->  arch/powerpc/kernel/power4-pmu.c        |    3 +-
->  arch/powerpc/kernel/power5+-pmu.c       |  117 ++++++++++--
->  arch/powerpc/kernel/power5-pmu.c        |    3 +-
->  arch/powerpc/kernel/power6-pmu.c        |  119 +++++++++++--
->  arch/powerpc/kernel/ppc970-pmu.c        |    3 +-
->  7 files changed, 479 insertions(+), 76 deletions(-)
+The documentation about the perf-top build was outdated after
+perfstat has been implemented. This updates it.
 
-Applied, thanks Paul!
+[ Impact: update documentation ]
 
-[ Note, i saw some fuzz in those files. It applied fine but maybe 
-  you have some local changes in them that are not in 
-  tip:perfcounters/core yet? You might want to double check that. ]
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1241002046-8832-30-git-send-email-robert.richter@amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-	Ingo
+
+---
+ Documentation/perf_counter/builtin-top.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/perf_counter/builtin-top.c b/Documentation/perf_counter/builtin-top.c
+index 6a276d2..8d28864 100644
+--- a/Documentation/perf_counter/builtin-top.c
++++ b/Documentation/perf_counter/builtin-top.c
+@@ -3,7 +3,7 @@
+ 
+    Build with:
+ 
+-     cc -O6 -Wall -c -o kerneltop.o kerneltop.c -lrt
++     make -C Documentation/perf_counter/
+ 
+    Sample output:
+ 
