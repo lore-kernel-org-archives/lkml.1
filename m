@@ -1,117 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbZD2JOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbZD2JPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754419AbZD2JOr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 05:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbZD2JOf
+	id S1755593AbZD2JPt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 05:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbZD2JPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 05:14:35 -0400
-Received: from mga11.intel.com ([192.55.52.93]:62695 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751066AbZD2JOd convert rfc822-to-8bit (ORCPT
+	Wed, 29 Apr 2009 05:15:40 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:65163 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751620AbZD2JPi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 05:14:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,265,1239001200"; 
-   d="scan'208";a="452466731"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>
-Date: Wed, 29 Apr 2009 10:14:27 +0100
-Subject: RE: [rfc 2/2] x86, bts: use physically non-contiguous trace buffer
-Thread-Topic: [rfc 2/2] x86, bts: use physically non-contiguous trace buffer
-Thread-Index: AcnHJnBHgrrctlKsQqOeZg6J6YDEsABg2EaA
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E9BB6634C@irsmsx504.ger.corp.intel.com>
-References: <20090424100055.A30408@sedona.ch.intel.com>
-	 <20090424011328.b5e949ce.akpm@linux-foundation.org>
-	 <20090424083128.GI24912@elte.hu> <1240829616.7620.7.camel@twins>
-In-Reply-To: <1240829616.7620.7.camel@twins>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	Wed, 29 Apr 2009 05:15:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=lXoA3yxzSWX+vRyq54iIVYA//xt0cyhxy+Y2Zi3rbHZNYj26rW43ocuztf2vdEgIFK
+         HTFd9SCCViS53EKiWgqcY/h1F7VQzJoYFz0n6iJLBgmDiq0U/LewPFHc+o7Q0PkHRzsE
+         I+P1mlFcw4PT5IwcubDAMyijNmSDLi0c+9lso=
+From: Florian Fainelli <florian@openwrt.org>
+To: Thierry Reding <thierry.reding@avionic-design.de>
+Subject: Re: [spi-devel-general] [PATCH v2] spi: Add support for the OpenCores SPI controller.
+Date: Wed, 29 Apr 2009 11:15:34 +0200
+User-Agent: KMail/1.9.9
+Cc: David Brownell <david-b@pacbell.net>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <200904041227.54687.david-b@pacbell.net> <200904281354.12192.david-b@pacbell.net> <20090429063104.GB7784@avionic-design.de>
+In-Reply-To: <20090429063104.GB7784@avionic-design.de>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200904291115.34847.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
->Sent: Monday, April 27, 2009 12:54 PM
->To: Ingo Molnar
->Cc: Andrew Morton; Metzger, Markus T; markus.t.metzger@gmail.com; roland@redhat.com;
->eranian@googlemail.com; oleg@redhat.com; Villacis, Juan; ak@linux.jf.intel.com; linux-
->kernel@vger.kernel.org; tglx@linutronix.de; hpa@zytor.com
->Subject: Re: [rfc 2/2] x86, bts: use physically non-contiguous trace buffer
+Le Wednesday 29 April 2009 08:31:04 Thierry Reding, vous avez écrit :
+> * David Brownell wrote:
+> > On Tuesday 28 April 2009, Florian Fainelli wrote:
+> > > > > Is this the http://www.opencores.org/?do=project&who=spi core?
+> > > >
+> > > > Yes, it is.
+> > > >
+> > > > > Its summary says "Variable length of transfer word up to 32 bits";
+> > > > > does that mean "configurable when core is synthesized" instead of
+> > > > > truly "variable"?
+> > >
+> > > This is indeed configured at synthesis time.
+> >
+> > Now I'm confused again.  Thierry says (below) that the number of bits
+> > can be set per-"transfer".
+> >
+> > Now, I can easily understand that a *maximum* would be configured
+> > at synthesis time ... if there's a 32-bit CPU or DMA engine, it'd
+> > make very limited sense to interact using 128-bit I/O words.
+
+The maximum size of the FIFO is configured at synthesis time should have made 
+this clear before, sorry for the confusion.
+
 >
->On Fri, 2009-04-24 at 10:31 +0200, Ingo Molnar wrote:
->> * Andrew Morton <akpm@linux-foundation.org> wrote:
->>
+> I can't really comment on the synthesis because I'm not involved with that
+> part. What I was saying that the core provides a field in the control
+> register which defines the number of bits to transfer from/to the
+> transmit/receive registers. The maximum number of bits that can be
+> specified in this way is 128.
+
+Yes, which matches the FIFO size configured in the IP at synthesis time.
+
 >
->> > The patch looks like a regression to me.  vmalloc memory is slower
->> > to allocate, slower to free, slower to access and can exhaust or
->> > fragment the vmalloc arena.  Confused.
->>
->> Performance does not matter here (this is really a slowpath), but
->> fragmentation does matter, especially on 32-bit systems.
->>
->> I'd not uglify the code via vmap() - and vmap has the same
->> fundamental address space limitations on 32-bit as vmalloc().
->>
->> The existing kmalloc() is fine. We do larger than PAGE_SIZE
->> allocations elsewhere too (the kernel stack for example), and this
->> is a debug facility, so failing the allocation is not a big problem
->> even if it happens.
+> > Is there both a configurable maximum, *and* a word-size setting that
+> > can be changed on the fly?  That's what I would expect; it's what
+> > most other designs do.  The only time I've seen fixed "you must use
+> > N-bit words" designs is on cost-eradicated 8-bit microcontrollers.
 >
->Nobody has yet told what the typical size of these allocations are. If
->they're large enough to account in pages, one should arguable use the
->page allocator not kmalloc. Also, any >3 order allocation (>32kb) are
->very likely to fail. Having this ptrace interface work in the (unloaded)
->development environment but not in a (loaded) production environment
->will render it basically useless IMHO.
+> Perhaps that maximum number of bits that can be set through the control
+> register is what can be configured at synthesis time.
 
-The size of these allocations is limited by the lockable memory ulimit
-and debuggers typically need to divide this between multiple threads.
-
-In practice, I would expect the buffers to be small. One page already
-gives you ~170 entries and the most interesting part is the tail of
-the trace, anyway.
-
-
->Having a regular high order allocation with vmalloc/vmap fallback is
->quite normal, esp. if one wants to promote the use of this facility as
->usable.
->
->So, no, I very strongly disagree that the existing kmalloc is fine.
-
-I could add the vmalloc fallback. Is there already some function that
-tries kmalloc and falls back to vmalloc which I should use?
-
-thanks,
-markus.
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+Provided that your FIFO is 128-bits, you can of course ask the core to do up 
+to the FIFO-size transfers for instance provided that you do not exceed the 
+size of the FIFO. The later can obviously not be changed on-the-fly since 
+physical resources of the FPGA for this should be reserved at synthesis time. 
+Of course, one could use partial reconfiguration to increase the size, but 
+that's slightly off-topic ;)
+-- 
+Best regards, Florian Fainelli
+Email : florian@openwrt.org
+http://openwrt.org
+-------------------------------
