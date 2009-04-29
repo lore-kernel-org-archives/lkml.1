@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932141AbZD2WiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932192AbZD2Wid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932141AbZD2WiM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760267AbZD2WVs
+	id S932192AbZD2Wid (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760318AbZD2WVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 29 Apr 2009 18:21:48 -0400
-Received: from kroah.org ([198.145.64.141]:40500 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:40532 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758928AbZD2WVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760053AbZD2WVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 29 Apr 2009 18:21:44 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:29 2009
-Message-Id: <20090429220929.451364200@mini.kroah.org>
+Message-Id: <20090429220929.573174522@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:42 -0700
+Date: Wed, 29 Apr 2009 15:07:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Francois Romieu <romieu@fr.zoreil.com>,
+       alan@lxorguk.ukuu.org.uk, Karsten Wiese <fzu@wemgehoertderstaat.de>,
+       Francois Romieu <romieu@fr.zoreil.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 43/58] r8169: use hardware auto-padding.
+Subject: [patch 44/58] r8169: reset IntrStatus after chip reset
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=r8169-use-hardware-auto-padding.patch
+Content-Disposition: inline; filename=r8169-reset-intrstatus-after-chip-reset.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,42 +42,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Francois Romieu <romieu@fr.zoreil.com>
 
-Upstream as 97d477a914b146e7e6722ded21afa79886ae8ccd (post 2.6.28).
+Upstream as d78ad8cbfe73ad568de38814a75e9c92ad0a907c (post 2.6.29).
 
-It shortens the code and fixes the current pci_unmap leak with
-padded skb reported by Dave Jones.
+Original comment (Karsten):
+On a MSI MS-6702E mainboard, when in rtl8169_init_one() for the first time
+after BIOS has run, IntrStatus reads 5 after chip has been reset.
+IntrStatus should equal 0 there, so patch changes IntrStatus reset to happen
+after chip reset instead of before.
 
+Remark (Francois):
+Assuming that the loglevel of the driver is increased above NETIF_MSG_INTR,
+the bug reveals itself with a typical "interrupt 0025 in poll" message
+at startup. In retrospect, the message should had been read as an hint of
+an unexpected hardware state several months ago :o(
+
+Fixes (at least part of) https://bugzilla.redhat.com/show_bug.cgi?id=460747
+
+Signed-off-by: Karsten Wiese <fzu@wemgehoertderstaat.de>
 Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
+Tested-by: Josep <josep.puigdemont@gmail.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/r8169.c |    8 --------
- 1 file changed, 8 deletions(-)
+ drivers/net/r8169.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 --- a/drivers/net/r8169.c
 +++ b/drivers/net/r8169.c
-@@ -2549,13 +2549,6 @@ static int rtl8169_start_xmit(struct sk_
- 		opts1 |= FirstFrag;
- 	} else {
- 		len = skb->len;
--
--		if (unlikely(len < ETH_ZLEN)) {
--			if (skb_padto(skb, ETH_ZLEN))
--				goto err_update_stats;
--			len = ETH_ZLEN;
--		}
--
- 		opts1 |= FirstFrag | LastFrag;
- 		tp->tx_skb[entry].skb = skb;
+@@ -1687,8 +1687,7 @@ rtl8169_init_one(struct pci_dev *pdev, c
+ 		goto err_out_free_res_4;
  	}
-@@ -2593,7 +2586,6 @@ out:
- err_stop:
- 	netif_stop_queue(dev);
- 	ret = NETDEV_TX_BUSY;
--err_update_stats:
- 	dev->stats.tx_dropped++;
- 	goto out;
- }
+ 
+-	/* Unneeded ? Don't mess with Mrs. Murphy. */
+-	rtl8169_irq_mask_and_ack(ioaddr);
++	RTL_W16(IntrMask, 0x0000);
+ 
+ 	/* Soft reset the chip. */
+ 	RTL_W8(ChipCmd, CmdReset);
+@@ -1700,6 +1699,8 @@ rtl8169_init_one(struct pci_dev *pdev, c
+ 		msleep_interruptible(1);
+ 	}
+ 
++	RTL_W16(IntrStatus, 0xffff);
++
+ 	/* Identify chip attached to board */
+ 	rtl8169_get_mac_version(tp, ioaddr);
+ 
 
 
