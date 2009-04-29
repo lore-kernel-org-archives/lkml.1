@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759780AbZD2TXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760588AbZD2TYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759780AbZD2TXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 15:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756554AbZD2TXm
+	id S1760588AbZD2TYS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 15:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758911AbZD2TX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 15:23:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54621 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754271AbZD2TXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 15:23:41 -0400
-Date: Wed, 29 Apr 2009 21:23:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: borislav.petkov@amd.com, greg@kroah.com, tglx@linutronix.de, hpa@zytor.com,
-       dougthompson@xmission.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/21] amd64_edac: add f10-and-later methods-p3
-Message-ID: <20090429192326.GA14652@elte.hu>
-References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> <1241024107-14535-14-git-send-email-borislav.petkov@amd.com> <20090429182255.GD8321@elte.hu> <20090429120501.ae005dc4.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090429120501.ae005dc4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 29 Apr 2009 15:23:58 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:36938 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759594AbZD2TX5 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 15:23:57 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Mario Limonciello <mario_limonciello@dell.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Add support for more dell-wmi hotkeys
+In-Reply-To: Your message of "Wed, 29 Apr 2009 19:31:54 BST."
+             <20090429183154.GC2325@srcf.ucam.org>
+From: Valdis.Kletnieks@vt.edu
+References: <49ECBAE2.2080308@dell.com> <49EE09D9.2060209@dell.com> <20090429165729.GB32619@srcf.ucam.org> <49F89981.10806@dell.com>
+            <20090429183154.GC2325@srcf.ucam.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1241033029_4397P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 29 Apr 2009 15:23:49 -0400
+Message-ID: <36672.1241033029@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1241033029_4397P
+Content-Type: text/plain; charset="us-ascii"
+Content-Id: <36666.1241033029.1@turing-police.cc.vt.edu>
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+On Wed, 29 Apr 2009 19:31:54 BST, Matthew Garrett said:
+> It's a precision M6300 - I'm afraid I'm not sure what BIOS it's running.
 
-> On Wed, 29 Apr 2009 20:22:55 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > > +		InputAddr = ChannelAddrLong >> 8;
-> > > +
-> > > +		debugf1("   (ChannelAddrLong=0x%llx) >> 8 becomes "
-> > > +			"InputAddr=0x%x\n", ChannelAddrLong, InputAddr);
-> > > +
-> > > +		/* Iterate over the DRAM DCTs looking for a
-> > > +		 * match for InputAddr on the selected NodeID
-> > > +		 */
-> > > +		CSFound = f10_lookup_addr_in_dct(InputAddr,
-> > > +						NodeID, ChannelSelect);
-> > > +
-> > > +		if (CSFound >= 0) {
-> > > +			*node_id = NodeID;
-> > > +			*channel_select = ChannelSelect;
-> > > +		}
-> > > +	}
-> > > +
-> > > +	return CSFound;
-> > > +}
-> > 
-> > this function is probably too large, and also it uses some weird 
-> > hungarian notation coding style. Please dont do that! It's 
-> > completely unacceptable.
-> 
-> These identifers (or at least, DctSelBaseOffsetLong, which is the 
-> only one I googled for) come straight out of the AMD "BIOS and 
-> Kernel Developer's Guide".
-> 
-> Sucky though they are, there's value in making the kernel code 
-> match up with the documentation.
+This works on Latitudes and Optiplexes, should be good for Precision as well:
 
-I'm generally resisting patches that hungarinize arch/x86/ (and heck 
-there's been many attempts ...) but there's some conflicting advice 
-here. I've Cc:-ed Linus, maybe he has an opinion about this.
+# dmidecode | grep -C 5 'BIOS Info'
 
-My gut reaction would be 'hell no'. There's other, structural 
-problems with this code too, and doing some saner naming would 
-mostly be a sed job and would take minimal amount of time. The 
-naming can still be intuitive. The symbols from the documentation 
-can perhaps be mentioned in a couple of comments to establish a 
-mapping.
+should get you (somewhere) this:
 
-	Ingo
+Handle 0x0000, DMI type 0, 24 bytes
+BIOS Information
+        Vendor: Dell Inc.
+        Version: A09
+        Release Date: 06/04/2008
+
+
+--==_Exmh_1241033029_4397P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJ+KlFcC3lWbTT17ARAkzWAKDa/As+kYSKrP9bSpyC0XG7pwn2NwCaA78w
+zdLfV4QJvi+Tvmdv1h9yUGA=
+=BMMZ
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1241033029_4397P--
