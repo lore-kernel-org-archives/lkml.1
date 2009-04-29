@@ -1,106 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbZD2IRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbZD2ITu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756593AbZD2IRX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 04:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbZD2IRJ
+	id S1756077AbZD2ITu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 04:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZD2ITd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 04:17:09 -0400
-Received: from mga14.intel.com ([143.182.124.37]:43063 "EHLO mga14.intel.com"
+	Wed, 29 Apr 2009 04:19:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60780 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751396AbZD2IRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 04:17:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,265,1239001200"; 
-   d="scan'208";a="137154469"
-Date: Wed, 29 Apr 2009 16:16:16 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Andi Kleen <andi@firstfloor.org>, hugh@veritas.com, npiggin@suse.de,
-       riel@redhat.com, lee.schermerhorn@hp.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-Subject: Re: [PATCH] [13/16] POISON: The high level memory error handler in
-	the VM II
-Message-ID: <20090429081616.GA8339@localhost>
-References: <20090407509.382219156@firstfloor.org> <20090407151010.E72A91D0471@basil.firstfloor.org> <1239210239.28688.15.camel@think.oraclecorp.com> <20090409072949.GF14687@one.firstfloor.org> <20090409075805.GG14687@one.firstfloor.org> <1239283829.23150.34.camel@think.oraclecorp.com> <20090409140257.GI14687@one.firstfloor.org> <1239287859.23150.57.camel@think.oraclecorp.com>
+	id S1751288AbZD2ITb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 04:19:31 -0400
+Message-ID: <49F80D67.8030008@redhat.com>
+Date: Wed, 29 Apr 2009 11:18:47 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239287859.23150.57.camel@think.oraclecorp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, davidel@xmailserver.org
+Subject: Re: [KVM PATCH v3 0/2] irqfd
+References: <20090427182540.6646.96740.stgit@dev.haskins.net> <20090428231002.919419dd.akpm@linux-foundation.org>
+In-Reply-To: <20090428231002.919419dd.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 09, 2009 at 10:37:39AM -0400, Chris Mason wrote:
-> On Thu, 2009-04-09 at 16:02 +0200, Andi Kleen wrote:
-> > On Thu, Apr 09, 2009 at 09:30:29AM -0400, Chris Mason wrote:
-> > > > Is that a correct assumption?
-> > > 
-> > > Yes, the page won't become writeback when you're holding the page lock.
-> > > But, the FS usually thinks of try_to_releasepage as a polite request.
-> > > It might fail internally for a bunch of reasons.
-> > > 
-> > > To make things even more fun, the page won't become writeback magically,
-> > > but ext3 and reiser maintain lists of buffer heads for data=ordered, and
-> > > they do the data=ordered IO on the buffer heads directly.  writepage is
-> > > never called and the page lock is never taken, but the buffer heads go
-> > > to disk.  I don't think any of the other filesystems do it this way.
-> > 
-> > Ok, so do you think my code handles this correctly?
-> 
-> Even though try_to_releasepage only checks page_writeback() the lower
-> filesystems all bail on dirty pages or dirty buffers (see the checks
-> done by try_to_free_buffers).
-> 
-> It looks like the only way we have to clean a page and all the buffers
-> in it is the invalidatepage call.  But that doesn't return success or
-> failure, so maybe invalidatepage followed by releasepage?
-> 
-> I'll have to read harder next week, the FS invalidatepage may expect
-> truncate to be the only caller.
+Andrew Morton wrote:
+> On Mon, 27 Apr 2009 14:33:24 -0400 Gregory Haskins <ghaskins@novell.com> wrote:
+>
+>   
+>> (Applies to kvm.git 41b76d8d0487c26d6d4d3fe53c1ff59b3236f096)
+>>
+>> This series implements a mechanism called "irqfd".  It lets you create
+>> an eventfd based file-desriptor to inject interrupts to a kvm guest.  We
+>> associate one gsi per fd for fine-grained routing.
+>>     
+>
+> It'd be nice if the KVM weenies amongst us were to be told why one
+> would want to inject interrupts into a KVM guest.  Monosyllabic words
+> would be preferred ;)
+>   
 
-If direct de-dirty is hard for some pages, how about just ignore them?
-There are the PG_writeback pages anyway. We can inject code to
-intercept them at the last stage of IO request dispatching.
+Interrupts are injected (better word, raised) into a guest because real 
+hardware has interrupts. This patchset does not add the ability to raise 
+interrupts (that existed from day 1); it adds an eventfd interface to do so.
 
-Some perceivable problems and solutions are
-1) the intercepting overheads could be costly => inject code at runtime.
-2) there are cases that the dirty page could be copied for IO:
-   2.1) jbd2 has two copy-out cases => should be rare. just ignore them?
-     2.1.1) do_get_write_access(): buffer sits in two active commits
-     2.1.2) jbd2_journal_write_metadata_buffer(): buffer happens to start
-            with JBD2_MAGIC_NUMBER
-   2.2) btrfs have to read page for compress/encryption
-     Chris: is btrfs_zlib_compress_pages() a good place for detecting
-     poison pages? Or is it necessary at all for btrfs?(ie. it's
-     already relatively easy to de-dirty btrfs pages.)
-   2.3) maybe more cases...
+An eventfd interface is useful, because it allows components to talk to 
+kvm guests without being tied to kvm internals; they signal an eventfd; 
+if the eventfd is terminated in kvm, it injects an interrupt. If the 
+eventfd is terminated in userspace, it returns from epoll().
 
-> > 
-> > > If we really want the page gone, we'll have to tell the FS
-> > > drop-this-or-else....sorry, its some ugly stuff.
-> > 
-> > I would like to give a very strong hint at least. If it fails
-> > we can still ignore it, but it will likely have negative consequences later.
-> > 
-> 
-> Nod.
-> 
-> > > 
-> > > The good news is, it is pretty rare.  I wouldn't hold up the whole patch
-> > 
-> > You mean pages with Private bit are rare? Are you suggesting to just
-> > ignore those? How common is it to have Private pages which are not
-> > locked by someone else?
-> > 
-> 
-> PagePrivate is very common.  try_to_releasepage failing on a clean page
-> without the writeback bit set and without dirty/locked buffers will be
-> pretty rare.
+>> We do not have a user of this interface in this series, though note
+>> future version of virtual-bus (v4 and above) will be based on this.
+>>     
+>
+> So I assume that this patchset will be merged if/when a user of it is
+> merged?
+>   
 
-Yup. btrfs seems to tag most(if not all) dirty pages with PG_private.
-While ext4 won't.
+This interface is applicable to both the kernel and userspace; userspace 
+users won't be merged.
 
-Thanks,
-Fengguang
+But I certainly want to see how the whole thing works.
+
+>> The first patch will require mainline buy-in, particularly from Davide
+>> (cc'd).  The last patch is kvm specific.
+>>     
+>
+> Three EXPORT_SYMBOL_GPL()s.  Once the shouting has subsided I'd suggest
+> that this be merged via the KVM tree.
+>   
+
+I think eventfd makes tons of sense as a generic 'wake me up' mechanism 
+that can be used from both sides of the kernel/user line.
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
