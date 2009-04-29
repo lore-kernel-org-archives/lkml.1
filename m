@@ -1,71 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbZD2WUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbZD2WUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753189AbZD2WUS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750834AbZD2WT6
+	id S1755529AbZD2WUm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbZD2WUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:19:58 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:48689 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbZD2WT6 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:19:58 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Greg KH <greg@kroah.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Mike Frysinger <vapier.adi@gmail.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: usbutils 0.81 release
-In-Reply-To: Your message of "Wed, 29 Apr 2009 14:56:23 PDT."
-             <20090429215623.GA27319@kroah.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20090427193532.GA2948@kroah.com> <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com> <20090429180735.GA29812@kroah.com> <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com> <ac3eb2510904291159s14d7d532q33657eb73007fc4b@mail.gmail.com> <20090429192309.GA15539@kroah.com> <44275.1241041373@turing-police.cc.vt.edu>
-            <20090429215623.GA27319@kroah.com>
+	Wed, 29 Apr 2009 18:20:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36784 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754129AbZD2WUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:20:07 -0400
+Date: Wed, 29 Apr 2009 19:17:10 -0300
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Subject: [GIT PATCHES for 2.6.30] V4L/DVB fixes
+Message-ID: <20090429191710.0855c64d@pedra.chehab.org>
+Organization: Red Hat
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1241043596_4397P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Wed, 29 Apr 2009 18:19:57 -0400
-Message-ID: <46380.1241043597@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1241043596_4397P
-Content-Type: text/plain; charset=us-ascii
+Linus,
 
-On Wed, 29 Apr 2009 14:56:23 PDT, Greg KH said:
+Please pull from:
+        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
 
-> As was pointed out by Mike, a bug in the Makefile prevented it from
-> being added to the tarball.
+For two Kbuild fixes:
+   - kBuild: move media after i2c to be sure that i2c will initialize 
+     before v4l, when both i2c and v4l are compiled with 'Y';
+   - cx231xx: Kconfig fixes;
 
-Yeah, I managed to miss that 3-line part of that e-mail some 259 emails back.
-Sometimes the LKML firehose sucks. :)
+And few driver fixes:
+   - au0828: fix kernel oops regression on USB disconnect;
+   - cx18: Send correct input routing value to external audio multiplexers;
+   - cx18: Fix the handling of i2c bus registration error;
+   - cx23885: Two fixes for DViCO FusionHDTV DVB-T Dual Express;
+   - saa5249.c: fix use-after-free and leak;
+   - saa5246a.c: fix use-after-free;
+   - s2255drv: fix race condition on set mode;
+   - mx3_camera: Fix compilation with CONFIG_PM.
 
-> If youreally want it, you can grab it from the git tree, or wait a day
-> or so for me to implement Mike's changes he so nicely sent me, so I can
-> do a new release.
+Cheers,
+Mauro.
 
-Admittedly, it was mostly the sudden "Wait - why isn't there a update-usbids
-on my laptop?" panic - at least now I understand what happened.
+---
 
-So I grabbed it from the GIT tree, turns out Fedora is already packaging the
-current version of usb.ids as part of the 'hwdata' RPM rather than 'usbutils',
-so the practical impact of the whole thing dropped a big chunk.  Still need to
-get them to upgrade from 0.73 to 0.82 though.
+ drivers/Makefile                            |    4 +-
+ drivers/media/video/au0828/au0828-core.c    |    6 ++-
+ drivers/media/video/cx18/cx18-audio.c       |    2 +-
+ drivers/media/video/cx18/cx18-i2c.c         |   16 ++++++++--
+ drivers/media/video/cx231xx/Kconfig         |   44 +++++++++++++-------------
+ drivers/media/video/cx23885/cx23885-cards.c |    4 +-
+ drivers/media/video/cx23885/cx23885-dvb.c   |    1 +
+ drivers/media/video/mx3_camera.c            |    4 --
+ drivers/media/video/s2255drv.c              |    2 +-
+ drivers/media/video/saa5246a.c              |    3 +-
+ drivers/media/video/saa5249.c               |    4 +-
+ 11 files changed, 49 insertions(+), 41 deletions(-)
 
-Thanks for the clue-by-four... ;)
+Andy Walls (1):
+      V4L/DVB (11494): cx18: Send correct input routing value to external audio multiplexers
 
+Christopher Pascoe (1):
+      V4L/DVB (11626): cx23885: Two fixes for DViCO FusionHDTV DVB-T Dual Express
 
---==_Exmh_1241043596_4397P
-Content-Type: application/pgp-signature
+Dan Carpenter (2):
+      V4L/DVB (11515): drivers/media/video/saa5249.c: fix use-after-free and leak
+      V4L/DVB (11516): drivers/media/video/saa5246a.c: fix use-after-free
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Dean Anderson (1):
+      V4L/DVB (11570): patch: s2255drv: fix race condition on set mode
 
-iD8DBQFJ+NKMcC3lWbTT17ARAvEsAJ4wBFF75Dddpl5W/4NnotDlwgAKawCg2Fic
-rT7P3+HWmGz40UIhv40sot4=
-=VSia
------END PGP SIGNATURE-----
+Devin Heitmueller (1):
+      V4L/DVB (11652): au0828: fix kernel oops regression on USB disconnect.
 
---==_Exmh_1241043596_4397P--
+Guennadi Liakhovetski (1):
+      V4L/DVB (11561a): move media after i2c
+
+Jean Delvare (1):
+      V4L/DVB (11568): cx18: Fix the handling of i2c bus registration error
+
+Mauro Carvalho Chehab (1):
+      V4L/DVB (11494a): cx231xx Kconfig fixes
+
+Sascha Hauer (1):
+      V4L/DVB (11612): mx3_camera: Fix compilation with CONFIG_PM
+
+---------------------------------------------------
+V4L/DVB development is hosted at http://linuxtv.org
