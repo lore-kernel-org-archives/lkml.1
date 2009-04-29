@@ -1,84 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758438AbZD2DPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbZD2DRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758438AbZD2DPu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 23:15:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZD2DPl
+	id S1758040AbZD2DRV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 23:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZD2DRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 23:15:41 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:56088 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754403AbZD2DPk (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 23:15:40 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Debug only with printk ?
-In-Reply-To: Your message of "Tue, 28 Apr 2009 23:27:42 +0200."
-             <2d05c4580904281427r65282bb2m5dd8c9f8a2de5363@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <2d05c4580904281427r65282bb2m5dd8c9f8a2de5363@mail.gmail.com>
+	Tue, 28 Apr 2009 23:17:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34155 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753397AbZD2DRH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 23:17:07 -0400
+Date: Tue, 28 Apr 2009 20:13:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Jeff Mahoney <jeffm@suse.com>, David <david@unsolicited.net>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: 2.6.30-rc3: reiserfs: WARNING: at fs/namei.c:1251
+ lookup_one_len
+Message-Id: <20090428201310.fd2c6c96.akpm@linux-foundation.org>
+In-Reply-To: <a4423d670904261715q4510bdd3u2eb1ac3b90566fbc@mail.gmail.com>
+References: <a4423d670904261715q4510bdd3u2eb1ac3b90566fbc@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1240974935_4310P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Tue, 28 Apr 2009 23:15:35 -0400
-Message-ID: <81278.1240974935@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1240974935_4310P
-Content-Type: text/plain; charset=us-ascii
+On Mon, 27 Apr 2009 04:15:21 +0400 Alexander Beregalov <a.beregalov@gmail.com> wrote:
 
-On Tue, 28 Apr 2009 23:27:42 +0200, Dragoslav Zaric said:
-> I am relatively new in linux kernel and since debugging is key
-> element of programming, I am wondering is it really necessary
-> to use various debugging tools for kernel debugging ?
+> Hi Jeff
+> 
+> REISERFS debug (device sda1): journal-1206: Starting replay from
+> offset 6641050231768444, trans_id 1024
+> REISERFS debug (device sda1): journal-1299: Setting newest_mount_id to 186
+> REISERFS (device sda1): Using r5 hash to sort names
+> ------------[ cut here ]------------
+> WARNING: at fs/namei.c:1251 lookup_one_len+0xd6/0xf0()
+> Hardware name:
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.30-rc3-00340-gce8a742 #3
+> Call Trace:
+>  [<c0445f82>] ? printk+0x18/0x1e
+>  [<c01284e3>] warn_slowpath+0x73/0xd0
+>  [<c014c7d2>] ? mark_held_locks+0x62/0x80
+>  [<c0102f14>] ? restore_nocheck_notrace+0x0/0xe
+>  [<c014cafc>] ? trace_hardirqs_on_caller+0x14c/0x1b0
+>  [<c02c7fe4>] ? trace_hardirqs_on_thunk+0xc/0x10
+>  [<c012cfa7>] ? do_softirq+0x47/0x70
+>  [<c0102f14>] ? restore_nocheck_notrace+0x0/0xe
+>  [<c044939f>] ? _spin_unlock_irqrestore+0x2f/0x70
+>  [<c012908d>] ? vprintk+0x27d/0x3c0
+>  [<c0129097>] ? vprintk+0x287/0x3c0
+>  [<c0192006>] lookup_one_len+0xd6/0xf0
+>  [<c04490d7>] ? _spin_unlock+0x27/0x50
+>  [<c02000b9>] reiserfs_xattr_init+0xb9/0x230
+>  [<c0445f82>] ? printk+0x18/0x1e
+>  [<c01e9207>] reiserfs_fill_super+0x9b7/0xf60
+>  [<c02c60d4>] ? string+0x34/0xd0
+>  [<c02c6b9b>] ? vsnprintf+0x2fb/0x890
+>  [<c02c71ba>] ? snprintf+0x1a/0x20
+>  [<c01c99b9>] ? disk_name+0x59/0xd0
+>  [<c018bc43>] get_sb_bdev+0x133/0x160
+>  [<c017079e>] ? kstrdup+0x2e/0x80
+>  [<c01e6eb1>] get_super_block+0x21/0x30
+> ohci_hcd 0000:00:02.0: auto-stop root hub
+>  [<c01e8850>] ? reiserfs_fill_super+0x0/0xf60
+>  [<c018a96a>] vfs_kern_mount+0x3a/0xa0
+>  [<c018aa29>] do_kern_mount+0x39/0xd0
+>  [<c01a0afb>] do_mount+0x3bb/0x7a0
+>  [<c019ed6c>] ? copy_mount_options+0x3c/0x130
+>  [<c01a0f69>] sys_mount+0x89/0xc0
+>  [<c06fac5e>] mount_block_root+0xd1/0x25e
+>  [<c0194397>] ? sys_mknod+0x27/0x30
+>  [<c06fae44>] mount_root+0x59/0x5f
+>  [<c06faf3a>] prepare_namespace+0xf0/0x16c
+>  [<c0188320>] ? sys_access+0x20/0x30
+>  [<c06fa503>] kernel_init+0xd0/0xe9
+>  [<c06fa433>] ? kernel_init+0x0/0xe9
+>  [<c0103677>] kernel_thread_helper+0x7/0x10
+> ---[ end trace 98ddce1432d20cfb ]---
+> VFS: Mounted root (reiserfs filesystem) readonly on device 8:1.
 
-'git bisect' and friends are your friends if you're trying to track down
-a bug in somebody else's code.
+A number of people are reporting this.  Al Viro said
 
-It's not *mandatory* to use other tools, but it certainly helps.
+: Yeah, the sanity check had caught another place misusing lookup_one_len().
+: I'd keep the warning in place for now; I think I know how to deal with
+: reiserfs side of things, but if it turns out too invasive for post-rc3,
+: we can always turn the check off just for -final.  For now I'd keep the
+: check in place, just to see if anything else runs into it.
 
-> Is simple printing with printk enough to debug any kind of kernel problem,
-> and if not, what are the cases when printk is not enough ?
+It would be nice to plug this sooner rather than later please, to save
+a bit of bug-reporting bandwidth.
 
-Usually, printk's are sufficient *if* you can use them.  Times when this
-may not be true:
-
-1) Debugging an early-boot crash, before even the earlyprintk stuff is alive.
-
-2) "Add a printk, recompile, reboot" gets pretty boring pretty fast, so
-it may be a *lot* faster if you can use one of the kernel debugging/tracing
-tools to do "Well, maybe we should check this... or this.. or wait, how
-about *this*?" testing.
-
-3) If you're trying to debug an issue on a production server, you may not
-have the *option* to do a lot of compile/reboot cycles, and be forced to
-use whatever debug/trace support is present in the already-running kernel.
-
-> Also, is there possibility when using debugging tools to affect
-> kernel environment, because debugging tool will also take cpu time and
-> memory resources ?
-
-If I had a <monetary unit> for every time when even adding a printk call
-was enough to change the timing and cause a Heisenbug to change its behavior,
-I'd have a lot of monetary units.
-
-Yes, debugging tools and printks will change code and data offsets and timing
-so data overlays and race conditions change or even dissapear/reappear.
-
---==_Exmh_1240974935_4310P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJ98ZXcC3lWbTT17ARAtHIAKDWoSZFKJ1eBH0nT+6TILsRwnLKnACfQa7t
-RTp49EBAciYeFCztchZevFE=
-=S8/9
------END PGP SIGNATURE-----
-
---==_Exmh_1240974935_4310P--
