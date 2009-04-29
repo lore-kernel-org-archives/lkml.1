@@ -1,61 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758836AbZD2JYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbZD2JZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758836AbZD2JYU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 05:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZD2JXy
+	id S1756670AbZD2JZy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 05:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750834AbZD2JZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 05:23:54 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55946 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751633AbZD2JXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 05:23:53 -0400
-Date: Wed, 29 Apr 2009 11:22:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, cl@linux.com,
-       jesse.brandeburg@intel.com, netdev@vger.kernel.org, haoki@redhat.com,
-       mchan@broadcom.com, davidel@xmailserver.org
-Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
-Message-ID: <20090429092240.GA30403@elte.hu>
-References: <alpine.DEB.1.10.0904241554100.29995@qirst.com> <49F3308B.1030507@cosmosbay.com> <20090426.020411.157511269.davem@davemloft.net> <49F43B8F.2050907@cosmosbay.com> <87ab60rh8t.fsf@basil.nowhere.org> <49F71B63.8010503@cosmosbay.com> <20090429002049.4bbc8105.akpm@linux-foundation.org> <20090429073539.GR27382@one.firstfloor.org>
+	Wed, 29 Apr 2009 05:25:40 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:44258 "EHLO
+	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750795AbZD2JZj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 05:25:39 -0400
+Date: Wed, 29 Apr 2009 11:25:32 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Tejun Heo <tj@kernel.org>
+cc: axboe@kernel.dk, Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, jeff@garzik.org, linux-ide@vger.kernel.org,
+       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
+       mike.miller@hp.com, chirag.kantharia@hp.com, Eric.Moore@lsi.com,
+       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
+       zaitcev@redhat.com, sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, jesper.juhl@gmail.com, tim@cyberelk.net,
+       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
+       David Woodhouse <dwmw2@infradead.org>, schwidefsky@de.ibm.com,
+       ballabio_dario@emc.com, "David S. Miller" <davem@davemloft.net>,
+       Paul Russell <rusty@rustcorp.com.au>, Markus.Lidel@shadowconnect.com,
+       bharrosh@panasas.com
+Subject: Re: [PATCH 04/10] block: implement blk_rq_pos/[cur_]sectors() and
+ convert obvious ones
+In-Reply-To: <1240996428-10159-5-git-send-email-tj@kernel.org>
+Message-ID: <alpine.LRH.2.00.0904291123440.31700@vixen.sonytel.be>
+References: <1240996428-10159-1-git-send-email-tj@kernel.org> <1240996428-10159-5-git-send-email-tj@kernel.org>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090429073539.GR27382@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andi Kleen <andi@firstfloor.org> wrote:
-
-> > Seems that this is a virtuous patch even though Christoph is struggling
-> > a bit to test it?
+On Wed, 29 Apr 2009, Tejun Heo wrote:
+> Implement accessors - blk_rq_pos(), blk_rq_sectors() and
+> blk_rq_cur_sectors() which return rq->sector, rq->hard_nr_sectors and
+> rq->hard_cur_sectors respectively and convert direct references of the
+> said fields to the accessors.
 > 
-> The main drawback is that the select/poll data structures will get 
-> larger. That could cause regression in theory. [...]
+> This is in preparation of request data length handling cleanup.
+> 
+> [ Impact: cleanup ]
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-Current size of struct poll_table_entry is 0x38 on 64-bit kernels. 
-Adding the key will make it 0x40 - which is not only a power of two 
-but also matches cache line size on most modern CPUs.
+>  drivers/block/ps3disk.c         |    2 +-
 
-So the size of this structure is ideal now and arithmetics on the 
-poll table have become simpler as well.
+Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-So the patch has my ack:
+> --- a/include/linux/blkdev.h
+> +++ b/include/linux/blkdev.h
+> @@ -832,13 +832,30 @@ static inline void blk_run_address_space(struct address_space *mapping)
+>  extern void blkdev_dequeue_request(struct request *req);
+>  
+>  /*
+> - * blk_end_request() takes bytes instead of sectors as a complete size.
+> - * blk_rq_bytes() returns bytes left to complete in the entire request.
+> - * blk_rq_cur_bytes() returns bytes left to complete in the current segment.
+> + * blk_rq_pos()		: the current sector
+> + * blk_rq_bytes()	: bytes left in the entire request
+> + * blk_rq_cur_bytes()	: bytes left in the current segment
+> + * blk_rq_sectors()	: sectors left in the entire request
+> + * blk_rq_cur_sectors()	: sectors left in the current segment
+>   */
+> +static inline sector_t blk_rq_pos(struct request *rq)
+                                     ^
+				     const?
+> +{
+> +	return rq->hard_sector;
+> +}
+> +
+>  extern unsigned int blk_rq_bytes(struct request *rq);
+>  extern unsigned int blk_rq_cur_bytes(struct request *rq);
+>  
+> +static inline unsigned int blk_rq_sectors(struct request *rq)
+					     ^
+					     const?
+> +{
+> +	return rq->hard_nr_sectors;
+> +}
+> +
+> +static inline unsigned int blk_rq_cur_sectors(struct request *rq)
+						 ^
+						 const?
+> +{
+> +	return rq->hard_cur_sectors;
+> +}
+> +
 
-  Acked-by: Ingo Molnar <mingo@elte.hu>
+With kind regards,
 
-	Ingo
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
+
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
