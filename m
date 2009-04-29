@@ -1,78 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbZD2IdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758468AbZD2Iha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757341AbZD2IdL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 04:33:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbZD2Icv
+	id S1758468AbZD2Iha (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 04:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZD2IhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 04:32:51 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52776 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754660AbZD2Ict (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 04:32:49 -0400
-Date: Wed, 29 Apr 2009 10:36:55 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Chris Mason <chris.mason@oracle.com>, Andi Kleen <andi@firstfloor.org>,
-       hugh@veritas.com, npiggin@suse.de, riel@redhat.com,
-       lee.schermerhorn@hp.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-Subject: Re: [PATCH] [13/16] POISON: The high level memory error handler in the VM II
-Message-ID: <20090429083655.GA23223@one.firstfloor.org>
-References: <20090407509.382219156@firstfloor.org> <20090407151010.E72A91D0471@basil.firstfloor.org> <1239210239.28688.15.camel@think.oraclecorp.com> <20090409072949.GF14687@one.firstfloor.org> <20090409075805.GG14687@one.firstfloor.org> <1239283829.23150.34.camel@think.oraclecorp.com> <20090409140257.GI14687@one.firstfloor.org> <1239287859.23150.57.camel@think.oraclecorp.com> <20090429081616.GA8339@localhost>
-Mime-Version: 1.0
+	Wed, 29 Apr 2009 04:37:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34640 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750795AbZD2IhT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 04:37:19 -0400
+Date: Wed, 29 Apr 2009 10:37:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Tim Abbott <tabbott@MIT.EDU>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 02/13] x86, vmlinux.lds: unify header/footer
+Message-ID: <20090429083705.GB16680@elte.hu>
+References: <20090429073510.GA26386@uranus.ravnborg.org> <1240991249-27117-2-git-send-email-sam@ravnborg.org> <20090429080455.GE22129@elte.hu> <20090429081459.GA9369@elte.hu> <20090429082518.GB27386@uranus.ravnborg.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090429081616.GA8339@localhost>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090429082518.GB27386@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I'll have to read harder next week, the FS invalidatepage may expect
-> > truncate to be the only caller.
+
+* Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> On Wed, Apr 29, 2009 at 10:14:59AM +0200, Ingo Molnar wrote:
+> > 
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Sam Ravnborg <sam@ravnborg.org> wrote:
+> > > 
+> > > > Merge everything except PHDRS and SECTIONS into
+> > > > vmlinux.lds.S
+> > > > No functional changes.
+> > > > 
+> > > > This include the removal of an ancient comment that
+> > > > Martin Mares wrote this file.
+> > > 
+> > > > -/* ld script to make i386 Linux 
+> > > > - * Written by Martin Mares <mj@atrey.karlin.mff.cuni.cz>;
+> > > 
+> > > That's a historic copyright notice in essence which we should not 
+> > > remove - we should preserve that as:
+> > > 
+> > > > + Original 32-bit version written by Martin Mares <mj@atrey.karlin.mff.cuni.cz>
+> > > 
+> > > (preferably with a date-of-that-original-patch inserted as well)
+> > 
+> > I've added these credits:
+> > 
+> > +/*
+> > + * ld script for the x86 kernel
+> > + *
+> > + * Historic 32-bit version written by Martin Mares <mj@atrey.karlin.mff.cuni.cz>
+> > + *
+> > + * Modernisation and unification done by Sam Ravnborg <sam@ravnborg.org>
+> > 
+> > is that fine to you?
 > 
-> If direct de-dirty is hard for some pages, how about just ignore them?
+> OK.
+> Albeit in general I do not add stuff like that myself.
 
-You mean just ignoring it for the pages where it is hard?
-Yes that is what it is essentially doing right now. But at least
-some dirty pages need to be handled because most user space
-pages tend to be dirty.
+You are too shy :) Can i also add:
 
-> There are the PG_writeback pages anyway. We can inject code to
-> intercept them at the last stage of IO request dispatching.
+  Portions Copyright (C) 2007-2009 Sam Ravnborg <sam@ravnborg.org>
 
-That would require adding error out code through all the file systems,
-right?
+?
 
-> 
-> Some perceivable problems and solutions are
-> 1) the intercepting overheads could be costly => inject code at runtime.
-> 2) there are cases that the dirty page could be copied for IO:
-
-At some point we should probably add poison checks before these operations
-yes. At least for read it should be the same code path as EIO --
-you have to check PG_error anyways  (or at least you ought to)
-The main difference is that for write you have to check it too.
-
->    2.1) jbd2 has two copy-out cases => should be rare. just ignore them?
->      2.1.1) do_get_write_access(): buffer sits in two active commits
->      2.1.2) jbd2_journal_write_metadata_buffer(): buffer happens to start
->             with JBD2_MAGIC_NUMBER
->    2.2) btrfs have to read page for compress/encryption
->      Chris: is btrfs_zlib_compress_pages() a good place for detecting
->      poison pages? Or is it necessary at all for btrfs?(ie. it's
->      already relatively easy to de-dirty btrfs pages.)
-
-I think btrfs' IO error handling is not very great right now. But once
-it matures i hope poison pages can be handled in the same way as
-regular IO errors.
-
->    2.3) maybe more cases...
-
-Undoubtedly. Goal is just to handle the common cases that cover a lot 
-of memory. This will never be 100%.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+	Ingo
