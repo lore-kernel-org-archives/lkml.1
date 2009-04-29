@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762746AbZD2Wek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760198AbZD2We7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762746AbZD2Wek (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759631AbZD2WVk
+	id S1760198AbZD2We7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759749AbZD2WVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:40 -0400
-Received: from kroah.org ([198.145.64.141]:40500 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:41 -0400
+Received: from kroah.org ([198.145.64.141]:40532 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759625AbZD2WVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:37 -0400
+	id S1759743AbZD2WVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:38 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:28 2009
-Message-Id: <20090429220928.280580763@mini.kroah.org>
+Message-Id: <20090429220928.432626483@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:34 -0700
+Date: Wed, 29 Apr 2009 15:07:35 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Peter Korsgaard <jacmet@sunsite.dk>,
+       alan@lxorguk.ukuu.org.uk, Oliver Neukum <oliver@neukum.org>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 35/58] USB: ftdi_sio: add vendor/project id for JETI specbos 1201 spectrometer
+Subject: [patch 36/58] USB: fix oops in cdc-wdm in case of malformed descriptors
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=0078-USB-ftdi_sio-add-vendor-project-id-for-JETI-specbo.patch
+Content-Disposition: inline; filename=0079-USB-fix-oops-in-cdc-wdm-in-case-of-malformed-descri.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,43 +39,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Peter Korsgaard <jacmet@sunsite.dk>
+From: Oliver Neukum <oliver@neukum.org>
 
-upstream commit: ae27d84351f1f3568118318a8c40ff3a154bd629
+upstream commit: e13c594f3a1fc2c78e7a20d1a07974f71e4b448f
 
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+cdc-wdm needs to ignore extremely malformed descriptors.
+
+Signed-off-by: Oliver Neukum <oliver@neukum.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/usb/serial/ftdi_sio.c |    1 +
- drivers/usb/serial/ftdi_sio.h |    7 +++++++
- 2 files changed, 8 insertions(+)
+ drivers/usb/class/cdc-wdm.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -662,6 +662,7 @@ static struct usb_device_id id_table_com
- 	{ USB_DEVICE(DE_VID, WHT_PID) },
- 	{ USB_DEVICE(ADI_VID, ADI_GNICE_PID),
- 		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
-+	{ USB_DEVICE(JETI_VID, JETI_SPC1201_PID) },
- 	{ },					/* Optional parameter entry */
- 	{ }					/* Terminating entry */
- };
---- a/drivers/usb/serial/ftdi_sio.h
-+++ b/drivers/usb/serial/ftdi_sio.h
-@@ -890,6 +890,13 @@
- #define ADI_GNICE_PID 		0xF000
+--- a/drivers/usb/class/cdc-wdm.c
++++ b/drivers/usb/class/cdc-wdm.c
+@@ -641,7 +641,7 @@ next_desc:
  
- /*
-+ * JETI SPECTROMETER SPECBOS 1201
-+ * http://www.jeti.com/products/sys/scb/scb1201.php
-+ */
-+#define JETI_VID		0x0c6c
-+#define JETI_SPC1201_PID	0x04b2
-+
-+/*
-  *   BmRequestType:  1100 0000b
-  *   bRequest:       FTDI_E2_READ
-  *   wValue:         0
+ 	iface = &intf->altsetting[0];
+ 	ep = &iface->endpoint[0].desc;
+-	if (!usb_endpoint_is_int_in(ep)) {
++	if (!ep || !usb_endpoint_is_int_in(ep)) {
+ 		rv = -EINVAL;
+ 		goto err;
+ 	}
 
 
