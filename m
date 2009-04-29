@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbZD2Oeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbZD2OmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754253AbZD2Oeo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 10:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZD2Oef
+	id S1754493AbZD2OmS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 10:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZD2Ol7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 10:34:35 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:54729 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752049AbZD2Oee (ORCPT
+	Wed, 29 Apr 2009 10:41:59 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:36383 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752654AbZD2Ol6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 10:34:34 -0400
-Date: Wed, 29 Apr 2009 15:34:03 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Martin Knoblauch <knobi@knobisoft.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       tigran aivazian <tigran@aivazian.fsnet.co.uk>
-Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
-Message-ID: <20090429143403.GJ8633@ZenIV.linux.org.uk>
-References: <409142.83316.qm@web32605.mail.mud.yahoo.com> <20090428182837.62c51f26.akpm@linux-foundation.org> <1240977096.5478.3.camel@marge.simson.net> <20090429011755.c141c599.akpm@linux-foundation.org> <20090429120827.GI8633@ZenIV.linux.org.uk> <1241014725.15095.19.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241014725.15095.19.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 29 Apr 2009 10:41:58 -0400
+Subject: Re: [PATCH 03/10] block: add rq->resid_len
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
+       mike.miller@hp.com, chirag.kantharia@hp.com, Eric.Moore@lsi.com,
+       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, jesper.juhl@gmail.com, tim@cyberelk.net,
+       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
+       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
+       davem@davemloft.net, rusty@rustcorp.com.au,
+       Markus.Lidel@shadowconnect.com, bharrosh@panasas.com,
+       Doug Gilbert <dgilbert@interlog.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+In-Reply-To: <1240996428-10159-4-git-send-email-tj@kernel.org>
+References: <1240996428-10159-1-git-send-email-tj@kernel.org>
+	 <1240996428-10159-4-git-send-email-tj@kernel.org>
+Content-Type: text/plain
+Date: Wed, 29 Apr 2009 09:41:54 -0500
+Message-Id: <1241016114.3369.9.camel@mulgrave.int.hansenpartnership.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 04:18:45PM +0200, Mike Galbraith wrote:
-> > /etc/fstab, perhaps?  That definitely looks like two mount(2) had to
-> > have been done to cause that...
+On Wed, 2009-04-29 at 18:13 +0900, Tejun Heo wrote:
+> rq->data_len served two purposes - the length of data buffer on issue
+> and the residual count on completion.  This duality creates some
+> headaches.
 > 
-> Yeah, but how does one go about doing that?
+> First of all, block layer and low level drivers can't really determine
+> what rq->data_len contains while a request is executing.  It could be
+> the total request length or it coulde be anything else one of the
+> lower layers is using to keep track of residual count.  This
+> complicates things because blk_rq_bytes() and thus
+> [__]blk_end_request_all() relies on rq->data_len for PC commands.
+> Drivers which want to report residual count should first cache the
+> total request length, update rq->data_len and then complete the
+> request with the cached data length.
 > 
-> Using mount -f, I can convince mount to succeed, but I still have only
-> one entry in /proc/mounts, despite what my mount binary imagines.
+> Secondly, it makes requests default to reporting full residual count,
+> ie. reporting that no data transfer occurred.  The residual count is
+> an exception not the norm; however, the driver should clear
+> rq->data_len to zero to signify the normal cases while leaving it
+> alone means no data transfer occurred at all.  This reverse default
+> behavior complicates code unnecessarily and renders block PC on some
+> drivers (ide-tape/floppy) unuseable.
+> 
+> This patch adds rq->resid_len which is used only for residual count.
+> 
+> While at it, remove now unnecessasry blk_rq_bytes() caching in
+> ide_pc_intr() as rq->data_len is not changed anymore.
+> 
+> [ Impact: cleanup residual count handling, report 0 resid by default ]
 
-Huh?
-       -f     Causes  everything to be done except for the actual system call;
-              if it's not obvious, this ``fakes'' mounting  the  file  system.
-              This  option is useful in conjunction with the -v flag to deter-
-              mine what the mount command is trying to do. It can also be used
-              to add entries for devices that were mounted earlier with the -n
+This looks good (although I'd like to test it first).
 
-What are you talking about?
+Might it not be better to have an accessor setting resid_len?  All the
+other patches in the series insulate users from the actual members of
+struct request by accessors, so this is a bit the odd man out.
 
-The interesting part is why mount(2) doesn't fail with -EBUSY on that
-overmounting.  Is there anything else mounted on /sys?  That, or any
-interesting patches applied to the tree (fs/sysfs/mount.c, fs/namespace.c)
+James
+
+
