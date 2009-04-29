@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762804AbZD2Wfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759455AbZD2WgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762804AbZD2Wfe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:35:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759810AbZD2WVm
+	id S1759455AbZD2WgA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:36:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759668AbZD2WVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:42 -0400
-Received: from kroah.org ([198.145.64.141]:40500 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:43 -0400
+Received: from kroah.org ([198.145.64.141]:40532 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758251AbZD2WVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759938AbZD2WVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 29 Apr 2009 18:21:39 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:28 2009
-Message-Id: <20090429220928.583064537@mini.kroah.org>
+Message-Id: <20090429220928.710421504@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:36 -0700
+Date: Wed, 29 Apr 2009 15:07:37 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 37/58] USB: usb-storage: augment unusual_devs entry for Simple Tech/Datafab
+       alan@lxorguk.ukuu.org.uk, Shaohua Li <shaohua.li@intel.com>,
+       Dave Airlie <airlied@redhat.com>, Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 38/58] agp: zero pages before sending to userspace
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=0080-USB-usb-storage-augment-unusual_devs-entry-for-Sim.patch
+Content-Disposition: inline; filename=0093-agp-zero-pages-before-sending-to-userspace.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,40 +39,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alan Stern <stern@rowland.harvard.edu>
+upstream commit: 59de2bebabc5027f93df999d59cc65df591c3e6e
 
-upstream commit: e4813eec8d47c8299d968bd5349dc881fa481c26
+CVE-2009-1192
 
-This patch (as1227) adds the MAX_SECTORS_64 flag to the unusual_devs
-entry for the Simple Tech/Datafab controller.  This fixes Bugzilla
-#12882.
+AGP pages might be mapped into userspace finally, so the pages should be
+set to zero before userspace can use it. Otherwise there is potential
+information leakage.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Reported-and-tested-by: binbin <binbinsh@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Dave Airlie <airlied@redhat.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/storage/unusual_devs.h |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/char/agp/generic.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -1241,12 +1241,14 @@ UNUSUAL_DEV(  0x07c4, 0xa400, 0x0000, 0x
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_INQUIRY ),
+--- a/drivers/char/agp/generic.c
++++ b/drivers/char/agp/generic.c
+@@ -1207,7 +1207,7 @@ void *agp_generic_alloc_page(struct agp_
+ {
+ 	struct page * page;
  
--/* Reported by Rauch Wolke <rauchwolke@gmx.net> */
-+/* Reported by Rauch Wolke <rauchwolke@gmx.net>
-+ * and augmented by binbin <binbinsh@gmail.com> (Bugzilla #12882)
-+ */
- UNUSUAL_DEV(  0x07c4, 0xa4a5, 0x0000, 0xffff,
- 		"Simple Tech/Datafab",
- 		"CF+SM Reader",
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
--		US_FL_IGNORE_RESIDUE ),
-+		US_FL_IGNORE_RESIDUE | US_FL_MAX_SECTORS_64 ),
+-	page = alloc_page(GFP_KERNEL | GFP_DMA32);
++	page = alloc_page(GFP_KERNEL | GFP_DMA32 | __GFP_ZERO);
+ 	if (page == NULL)
+ 		return NULL;
  
- /* Casio QV 2x00/3x00/4000/8000 digital still cameras are not conformant
-  * to the USB storage specification in two ways:
 
 
