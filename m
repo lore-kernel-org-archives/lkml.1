@@ -1,165 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760036AbZD2LC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbZD2LFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760036AbZD2LC6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 07:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759773AbZD2LBs
+	id S1755115AbZD2LFW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 07:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbZD2LFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 07:01:48 -0400
-Received: from smtp2.netcologne.de ([194.8.194.112]:58716 "EHLO
-	smtp2.netcologne.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759920AbZD2LBr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 07:01:47 -0400
-X-Greylist: delayed 1717 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Apr 2009 07:01:46 EDT
-Date: Wed, 29 Apr 2009 12:33:08 +0200
-From: Max Kellermann <max@duempel.org>
-To: linux-kernel@vger.kernel.org
-Subject: splice() on two pipes
-Message-ID: <20090429103308.GA23684@squirrel.roonstrasse.net>
-Mail-Followup-To: linux-kernel@vger.kernel.org
+	Wed, 29 Apr 2009 07:05:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49806 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750918AbZD2LFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 07:05:01 -0400
+Date: Wed, 29 Apr 2009 11:04:27 GMT
+From: tip-bot for Stuart Bennett <stuart@freedesktop.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rostedt@goodmis.org, pq@iki.fi, stuart@freedesktop.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, pq@iki.fi, stuart@freedesktop.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1240946271-7083-2-git-send-email-stuart@freedesktop.org>
+References: <1240946271-7083-2-git-send-email-stuart@freedesktop.org>
+Subject: [tip:tracing/urgent] tracing: x86, mmiotrace: fix range test
+Message-ID: <tip-33015c85995716d03f6293346cf05a1908b0fb9a@git.kernel.org>
+Git-Commit-ID: 33015c85995716d03f6293346cf05a1908b0fb9a
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="rwEMma7ioTxnRzrJ"
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 11:04:29 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  33015c85995716d03f6293346cf05a1908b0fb9a
+Gitweb:     http://git.kernel.org/tip/33015c85995716d03f6293346cf05a1908b0fb9a
+Author:     Stuart Bennett <stuart@freedesktop.org>
+AuthorDate: Tue, 28 Apr 2009 20:17:48 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 29 Apr 2009 11:32:22 +0200
 
---rwEMma7ioTxnRzrJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+tracing: x86, mmiotrace: fix range test
 
-Hi,
+Matching on (addr == (p->addr + p->len)) causes problems when mappings
+are adjacent.
 
-when I read about the splice() system call, I thought it was obvious
-that it could copy data between two pipes.  I was surprised that this
-assumption is wrong, it's not possible on 2.6.29, I get EINVAL.  Can
-anybody please explain this limitation?
+[ Impact: fix mmiotrace confusion on adjacent iomaps ]
 
-Background: I want to forward data between two subprocesses, which are
-connected to me with a pipe().
+Signed-off-by: Stuart Bennett <stuart@freedesktop.org>
+Acked-by: Pekka Paalanen <pq@iki.fi>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <1240946271-7083-2-git-send-email-stuart@freedesktop.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-I have attached a small test program which prints a table of supported
-splice operations.  Here's the output on 2.6.29.1:
 
- in\out  pipe    sock    reg     chr
- pipe    no      yes     yes     yes
- sock    no      no      no      no
- reg     yes     no      no      no
- chr     no      no      no      no
+---
+ arch/x86/mm/kmmio.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Max
-
---rwEMma7ioTxnRzrJ
-Content-Type: text/x-csrc; charset=us-ascii
-Content-Disposition: attachment; filename="test_splice.c"
-
-/*
- * Copyright (C) 2009 Max Kellermann <max@duempel.org>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * - Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *
- * - Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the
- * distribution.
- */
-
-/*
- * This tiny program prints a matrix: which file descriptor
- * combinations are supported by splice()?
- */
-
-#define _GNU_SOURCE
-#include <fcntl.h>
-#include <errno.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-
-static struct {
-    const char *const name;
-    int in, out;
-} fds[] = {
-    { .name = "pipe", },
-    { .name = "sock", },
-    { .name = "reg", },
-    { .name = "chr", },
-};
-
-enum {
-    NUM_FDS = sizeof(fds) / sizeof(fds[0]),
-};
-
-int main(int argc, char **argv)
-{
-    int f[2], ret;
-    unsigned x, y;
-    char template1[] = "/tmp/test_splice.XXXXXX";
-    char template2[] = "/tmp/test_splice.XXXXXX";
-
-    (void)argc;
-    (void)argv;
-
-    /* open two file descriptors of each kind */
-
-    fds[0].in = pipe(f) >= 0 ? f[0] : -1;
-    fds[0].out = pipe(f) >= 0 ? f[1] : -1;
-    fds[1].in = socketpair(AF_UNIX, SOCK_STREAM, 0, f) >= 0 ? f[0] : -1;
-    fds[1].out = socketpair(AF_UNIX, SOCK_STREAM, 0, f) >= 0 ? f[0] : -1;
-    fds[2].in = mkstemp(template1);
-    fds[2].out = mkstemp(template2);
-    fds[3].in = open("/dev/zero", O_RDONLY);
-    fds[3].out = open("/dev/null", O_WRONLY);
-
-    /* print table header */
-
-    printf("in\\out");
-    for (x = 0; x < NUM_FDS; ++x)
-        printf("\t%s", fds[x].name);
-    putchar('\n');
-
-    for (y = 0; y < NUM_FDS; ++y) {
-        fputs(fds[y].name, stdout);
-
-        for (x = 0; x < NUM_FDS; ++x) {
-            putchar('\t');
-
-            if (fds[x].out < 0 || fds[y].in < 0) {
-                fputs("n/a", stdout);
-                continue;
-            }
-
-            ret = splice(fds[y].in, NULL, fds[x].out, NULL, 1,
-                         SPLICE_F_NONBLOCK);
-            if (ret >= 0 || errno == EAGAIN || errno == EWOULDBLOCK)
-                /* EAGAIN or EWOULDBLOCK means that the kernel has
-                   accepted this combination, but can't move pages
-                   right now */
-                fputs("yes", stdout);
-            else if (errno == EINVAL)
-                /* the kernel doesn't support this combination */
-                fputs("no", stdout);
-            else if (errno == ENOSYS)
-                /* splice() isn't supported at all */
-                fputs("ENOSYS", stdout);
-            else
-                /* an unexpected error code */
-                fputs("err", stdout);
-        }
-
-        putchar('\n');
-    }
-
-    unlink(template1);
-    unlink(template2);
-}
-
---rwEMma7ioTxnRzrJ--
+diff --git a/arch/x86/mm/kmmio.c b/arch/x86/mm/kmmio.c
+index 4f115e0..50dc802 100644
+--- a/arch/x86/mm/kmmio.c
++++ b/arch/x86/mm/kmmio.c
+@@ -87,7 +87,7 @@ static struct kmmio_probe *get_kmmio_probe(unsigned long addr)
+ {
+ 	struct kmmio_probe *p;
+ 	list_for_each_entry_rcu(p, &kmmio_probes, list) {
+-		if (addr >= p->addr && addr <= (p->addr + p->len))
++		if (addr >= p->addr && addr < (p->addr + p->len))
+ 			return p;
+ 	}
+ 	return NULL;
