@@ -1,130 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757830AbZD2KyI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757808AbZD2Kxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757830AbZD2KyI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 06:54:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbZD2KvR
+	id S1757808AbZD2Kxs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 06:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbZD2KvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 06:51:17 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:9919 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754168AbZD2KvE (ORCPT
+	Wed, 29 Apr 2009 06:51:15 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:21218 "EHLO
+	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753794AbZD2KvE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 29 Apr 2009 06:51:04 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KIUZGR-04-0X5-01
+X-BigFish: VPS1(zzzz1202hzzz32i61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KIUZGS-02-18S-01
 From: Robert Richter <robert.richter@amd.com>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>
 CC: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
        LKML <linux-kernel@vger.kernel.org>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 13/29] x86/perfcounters: modify initialization of struct x86_pmu
-Date: Wed, 29 Apr 2009 12:47:10 +0200
-Message-ID: <1241002046-8832-14-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 24/29] x86/perfcounters: implement the interrupt handler for AMD cpus
+Date: Wed, 29 Apr 2009 12:47:21 +0200
+Message-ID: <1241002046-8832-25-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.1.3
 In-Reply-To: <1241002046-8832-1-git-send-email-robert.richter@amd.com>
 References: <1241002046-8832-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 29 Apr 2009 10:50:49.0352 (UTC) FILETIME=[5BA00080:01C9C8B8]
+X-OriginalArrivalTime: 29 Apr 2009 10:50:49.0633 (UTC) FILETIME=[5BCAE110:01C9C8B8]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds an error handler and changes initialization of struct
-x86_pmu. No functional changes. Needed for follow-on patches.
+This patch implements the interrupt handler for AMD performance
+counters. In difference to the Intel pmu, there is no single status
+register and also there are no fixed counters. This makes the handler
+very different and it is useful to make the handler vendor
+specific. To check if a counter is overflowed the upper bit of the
+counter is checked. Only counters where the active bit is set are
+checked.
+
+With this patch throttling is enabled for AMD performance counters.
+
+This patch also reenables Linux performance counters on AMD cpus.
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- arch/x86/kernel/cpu/perf_counter.c |   27 ++++++++++++++++-----------
- 1 files changed, 16 insertions(+), 11 deletions(-)
+ arch/x86/kernel/cpu/perf_counter.c |   45 +++++++++++++++++++++++++++++------
+ 1 files changed, 37 insertions(+), 8 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 5a52d73..7c72a94 100644
+index 2d3681b..f4d59d4 100644
 --- a/arch/x86/kernel/cpu/perf_counter.c
 +++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -913,7 +913,7 @@ static struct x86_pmu amd_pmu = {
- 	.max_events		= ARRAY_SIZE(amd_perfmon_event_map),
- };
+@@ -240,10 +240,6 @@ static int __hw_perf_counter_init(struct perf_counter *counter)
+ 	struct hw_perf_counter *hwc = &counter->hw;
+ 	int err;
  
--static struct x86_pmu *intel_pmu_init(void)
-+static int intel_pmu_init(void)
- {
- 	union cpuid10_edx edx;
- 	union cpuid10_eax eax;
-@@ -921,7 +921,7 @@ static struct x86_pmu *intel_pmu_init(void)
- 	unsigned int ebx;
- 
- 	if (!cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
--		return NULL;
-+		return -ENODEV;
- 
- 	/*
- 	 * Check whether the Architectural PerfMon supports
-@@ -929,49 +929,54 @@ static struct x86_pmu *intel_pmu_init(void)
- 	 */
- 	cpuid(10, &eax.full, &ebx, &unused, &edx.full);
- 	if (eax.split.mask_length <= ARCH_PERFMON_BRANCH_MISSES_RETIRED)
--		return NULL;
-+		return -ENODEV;
- 
- 	intel_perfmon_version = eax.split.version_id;
- 	if (intel_perfmon_version < 2)
--		return NULL;
-+		return -ENODEV;
- 
- 	pr_info("Intel Performance Monitoring support detected.\n");
- 	pr_info("... version:         %d\n", intel_perfmon_version);
- 	pr_info("... bit width:       %d\n", eax.split.bit_width);
- 	pr_info("... mask length:     %d\n", eax.split.mask_length);
- 
-+	x86_pmu = &intel_pmu;
-+
- 	nr_counters_generic = eax.split.num_counters;
- 	nr_counters_fixed = edx.split.num_counters_fixed;
- 	counter_value_mask = (1ULL << eax.split.bit_width) - 1;
- 
--	return &intel_pmu;
-+	return 0;
- }
- 
--static struct x86_pmu *amd_pmu_init(void)
-+static int amd_pmu_init(void)
- {
-+	x86_pmu = &amd_pmu;
-+
- 	nr_counters_generic = 4;
- 	nr_counters_fixed = 0;
- 	counter_value_mask = 0x0000FFFFFFFFFFFFULL;
- 	counter_value_bits = 48;
- 
- 	pr_info("AMD Performance Monitoring support detected.\n");
+-	/* disable temporarily */
+-	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
+-		return -ENOSYS;
 -
--	return &amd_pmu;
-+	return 0;
+ 	if (!x86_pmu_initialized())
+ 		return -ENODEV;
+ 
+@@ -773,7 +769,43 @@ out:
+ 	return ret;
  }
  
- void __init init_hw_perf_counters(void)
- {
-+	int err;
+-static int amd_pmu_handle_irq(struct pt_regs *regs, int nmi) { return 0; }
++static int amd_pmu_handle_irq(struct pt_regs *regs, int nmi)
++{
++	int cpu = smp_processor_id();
++	struct cpu_hw_counters *cpuc = &per_cpu(cpu_hw_counters, cpu);
++	u64 val;
++	int handled = 0;
++	struct perf_counter *counter;
++	struct hw_perf_counter *hwc;
++	int idx;
 +
- 	switch (boot_cpu_data.x86_vendor) {
- 	case X86_VENDOR_INTEL:
--		x86_pmu = intel_pmu_init();
-+		err = intel_pmu_init();
- 		break;
- 	case X86_VENDOR_AMD:
--		x86_pmu = amd_pmu_init();
-+		err = amd_pmu_init();
- 		break;
- 	default:
- 		return;
- 	}
--	if (!x86_pmu)
-+	if (err != 0)
++	++cpuc->interrupts;
++	for (idx = 0; idx < x86_pmu.num_counters; idx++) {
++		if (!test_bit(idx, cpuc->active))
++			continue;
++		counter = cpuc->counters[idx];
++		hwc = &counter->hw;
++		x86_perf_counter_update(counter, hwc, idx);
++		val = atomic64_read(&hwc->prev_count);
++		if (val & (1ULL << (x86_pmu.counter_bits - 1)))
++			continue;
++		/* counter overflow */
++		x86_perf_counter_set_period(counter, hwc, idx);
++		handled = 1;
++		inc_irq_stat(apic_perf_irqs);
++		if (perf_counter_overflow(counter, nmi, regs, 0))
++			amd_pmu_disable_counter(hwc, idx);
++		else if (cpuc->interrupts >= PERFMON_MAX_INTERRUPTS)
++			/*
++			 * do not reenable when throttled, but reload
++			 * the register
++			 */
++			amd_pmu_disable_counter(hwc, idx);
++		else if (counter->state == PERF_COUNTER_STATE_ACTIVE)
++			amd_pmu_enable_counter(hwc, idx);
++	}
++	return handled;
++}
+ 
+ void perf_counter_unthrottle(void)
+ {
+@@ -782,9 +814,6 @@ void perf_counter_unthrottle(void)
+ 	if (!x86_pmu_initialized())
  		return;
  
- 	pr_info("... num counters:    %d\n", nr_counters_generic);
+-	if (!cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
+-		return;
+-
+ 	cpuc = &__get_cpu_var(cpu_hw_counters);
+ 	if (cpuc->interrupts >= PERFMON_MAX_INTERRUPTS) {
+ 		if (printk_ratelimit())
 -- 
 1.6.1.3
 
