@@ -1,70 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbZD2QIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbZD2QKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759449AbZD2QIJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 12:08:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbZD2QHx
+	id S1757185AbZD2QKh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 12:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbZD2QK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 12:07:53 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:60181 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754012AbZD2QHw convert rfc822-to-8bit (ORCPT
+	Wed, 29 Apr 2009 12:10:27 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40298 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752280AbZD2QK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 12:07:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=fsmefQq7kx5P2NKa8k59aynEsssUgAdz2ziBAKVb63tQWgf6o8gEMZTkyEN1ANqygD
-         hQXeVztQmOnqWnOuGp3J4kxGPNV5bXtk2BQdWHziBicUZ0ydcSGV4DmOx3orJ/hBNgbW
-         oni+8AWu/zcJ9u1broDLx5B/yWgZ+KxgqK3Gg=
-MIME-Version: 1.0
+	Wed, 29 Apr 2009 12:10:27 -0400
+Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org, tytso@mit.edu,
+       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
 In-Reply-To: <20090429114708.66114c03@cuia.bos.redhat.com>
 References: <20090428044426.GA5035@eskimo.com>
 	 <20090428192907.556f3a34@bree.surriel.com>
 	 <1240987349.4512.18.camel@laptop>
 	 <20090429114708.66114c03@cuia.bos.redhat.com>
-Date: Thu, 30 Apr 2009 01:07:51 +0900
-X-Google-Sender-Auth: 13702ed1c39fa3f9
-Message-ID: <2f11576a0904290907g48e94e74ye97aae593f6ac519@mail.gmail.com>
-Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Elladan <elladan@eskimo.com>,
-       linux-kernel@vger.kernel.org, tytso@mit.edu, linux-mm@kvack.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain
+Date: Wed, 29 Apr 2009 18:10:10 +0200
+Message-Id: <1241021410.8021.556.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Wed, 2009-04-29 at 11:47 -0400, Rik van Riel wrote:
+> When the file LRU lists are dominated by streaming IO pages,
+> evict those pages first, before considering evicting other
+> pages.
+> 
+> This should be safe from deadlocks or performance problems
+> because only three things can happen to an inactive file page:
+> 1) referenced twice and promoted to the active list
+> 2) evicted by the pageout code
+> 3) under IO, after which it will get evicted or promoted
+> 
+> The pages freed in this way can either be reused for streaming
+> IO, or allocated for something else. If the pages are used for
+> streaming IO, this pageout pattern continues. Otherwise, we will
+> fall back to the normal pageout pattern.
+> 
+> Signed-off-by: Rik van Riel <riel@redhat.com>
+> ---
+> On Wed, 29 Apr 2009 08:42:29 +0200
+> Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > Isn't there a hole where LRU_*_FILE << LRU_*_ANON and we now stop
+> > shrinking INACTIVE_ANON even though it makes sense to.
+> 
+> Peter, after looking at this again, I believe that the get_scan_ratio
+> logic should take care of protecting the anonymous pages, so we can
+> get away with this following, less intrusive patch.
+> 
+> Elladan, does this smaller patch still work as expected?
 
-Looks good than previous version. but I have one question.
+Provided of course that it actually fixes Elladan's issue, this looks
+good to me.
+
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
 > diff --git a/mm/vmscan.c b/mm/vmscan.c
 > index eac9577..4471dcb 100644
 > --- a/mm/vmscan.c
 > +++ b/mm/vmscan.c
 > @@ -1489,6 +1489,18 @@ static void shrink_zone(int priority, struct zone *zone,
->                        nr[l] = scan;
->        }
->
-> +       /*
-> +        * When the system is doing streaming IO, memory pressure here
-> +        * ensures that active file pages get deactivated, until more
-> +        * than half of the file pages are on the inactive list.
-> +        *
-> +        * Once we get to that situation, protect the system's working
-> +        * set from being evicted by disabling active file page aging.
-> +        * The logic in get_scan_ratio protects anonymous pages.
-> +        */
-> +       if (nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE])
-> +               nr[LRU_ACTIVE_FILE] = 0;
+>  			nr[l] = scan;
+>  	}
+>  
+> +	/*
+> +	 * When the system is doing streaming IO, memory pressure here
+> +	 * ensures that active file pages get deactivated, until more
+> +	 * than half of the file pages are on the inactive list.
+> +	 *
+> +	 * Once we get to that situation, protect the system's working
+> +	 * set from being evicted by disabling active file page aging.
+> +	 * The logic in get_scan_ratio protects anonymous pages.
+> +	 */
+> +	if (nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE])
+> +		nr[LRU_ACTIVE_FILE] = 0;
 > +
->        while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
->                                        nr[LRU_INACTIVE_FILE]) {
->                for_each_evictable_lru(l) {
+>  	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
+>  					nr[LRU_INACTIVE_FILE]) {
+>  		for_each_evictable_lru(l) {
+> 
 
-we handle active_anon vs inactive_anon ratio by shrink_list().
-Why do you insert this logic insert shrink_zone() ?
