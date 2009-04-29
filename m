@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762993AbZD2Wks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763084AbZD2WmJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762993AbZD2Wks (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760094AbZD2WVz
+	id S1763084AbZD2WmJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:42:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760592AbZD2WV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:55 -0400
-Received: from kroah.org ([198.145.64.141]:40722 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:59 -0400
+Received: from kroah.org ([198.145.64.141]:40771 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759938AbZD2WVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:49 -0400
+	id S1760411AbZD2WVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:53 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:30 2009
-Message-Id: <20090429220930.269909506@mini.kroah.org>
+Message-Id: <20090429220930.850358132@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:48 -0700
+Date: Wed, 29 Apr 2009 15:07:52 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Chris Wright <chrisw@sous-sol.org>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -25,11 +26,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Michael Buesch <mb@bu3sch.de>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 49/58] b44: Use kernel DMA addresses for the kernel DMA API
+       alan@lxorguk.ukuu.org.uk, Hugh Dickins <hugh@veritas.com>
+Subject: [patch 53/58] fs core fixes
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=b44-use-kernel-dma-addresses-for-the-kernel-dma-api.patch
+Content-Disposition: inline; filename=fs-core-fixes.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,34 +39,207 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Michael Buesch <mb@bu3sch.de>
+From: Hugh Dickins <hugh@veritas.com>
 
-commit 37efa239901493694a48f1d6f59f8de17c2c4509 upstream.
+Please add the following 4 commits to 2.6.27-stable and 2.6.28-stable.
+However, there has been a lot of change here between 2.6.28 and 2.6.29:
+in particular, fs/exec.c's unsafe_exec() grew into the more complicated
+check_unsafe_exec().  So applying the original patches gives too many
+rejects: at the bottom is the diffstat and the combined patch required.
 
-We must not use the device DMA addresses for the kernel DMA API, because
-device DMA addresses have an additional offset added for the SSB translation.
+1
+Commit: 53e9309e01277ec99c38e84e0ca16921287cf470
+Author: Hugh Dickins <hugh@veritas.com>
+Date: Sat, 28 Mar 2009 23:16:03 +0000 (+0000)
+Subject: [patch 53/58] compat_do_execve should unshare_files
 
-Use the original dma_addr_t for the sync operation.
+2
+Commit: e426b64c412aaa3e9eb3e4b261dc5be0d5a83e78
+Author: Hugh Dickins <hugh@veritas.com>
+Date: Sat, 28 Mar 2009 23:20:19 +0000 (+0000)
+Subject: [patch 53/58] fix setuid sometimes doesn't
 
-Cc: stable@kernel.org
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+3
+Commit: 7c2c7d993044cddc5010f6f429b100c63bc7dffb
+Author: Hugh Dickins <hugh@veritas.com>
+Date: Sat, 28 Mar 2009 23:21:27 +0000 (+0000)
+Subject: [patch 53/58] fix setuid sometimes wouldn't
+
+4
+Commit: f1191b50ec11c8e2ca766d6d99eb5bb9d2c084a3
+Author: Al Viro <viro@zeniv.linux.org.uk>
+Date: Mon, 30 Mar 2009 11:35:18 +0000 (-0400)
+Subject: [patch 53/58] check_unsafe_exec() doesn't care about signal handlers sharing
+
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/b44.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/compat.c    |   12 +++++++++++-
+ fs/exec.c      |    4 +---
+ fs/proc/base.c |   50 ++++++++++++++++----------------------------------
+ 3 files changed, 28 insertions(+), 38 deletions(-)
 
---- a/drivers/net/b44.c
-+++ b/drivers/net/b44.c
-@@ -750,7 +750,7 @@ static void b44_recycle_rx(struct b44 *b
- 					     dest_idx * sizeof(dest_desc),
- 					     DMA_BIDIRECTIONAL);
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -1353,12 +1353,17 @@ int compat_do_execve(char * filename,
+ {
+ 	struct linux_binprm *bprm;
+ 	struct file *file;
++	struct files_struct *displaced;
+ 	int retval;
  
--	ssb_dma_sync_single_for_device(bp->sdev, le32_to_cpu(src_desc->addr),
-+	ssb_dma_sync_single_for_device(bp->sdev, dest_map->mapping,
- 				       RX_PKT_BUF_SZ,
- 				       DMA_FROM_DEVICE);
++	retval = unshare_files(&displaced);
++	if (retval)
++		goto out_ret;
++
+ 	retval = -ENOMEM;
+ 	bprm = kzalloc(sizeof(*bprm), GFP_KERNEL);
+ 	if (!bprm)
+-		goto out_ret;
++		goto out_files;
+ 
+ 	file = open_exec(filename);
+ 	retval = PTR_ERR(file);
+@@ -1410,6 +1415,8 @@ int compat_do_execve(char * filename,
+ 		security_bprm_free(bprm);
+ 		acct_update_integrals(current);
+ 		free_bprm(bprm);
++		if (displaced)
++			put_files_struct(displaced);
+ 		return retval;
+ 	}
+ 
+@@ -1430,6 +1437,9 @@ out_file:
+ out_kfree:
+ 	free_bprm(bprm);
+ 
++out_files:
++	if (displaced)
++		reset_files_struct(displaced);
+ out_ret:
+ 	return retval;
  }
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1089,9 +1089,7 @@ static int unsafe_exec(struct task_struc
+ {
+ 	int unsafe = tracehook_unsafe_exec(p);
+ 
+-	if (atomic_read(&p->fs->count) > 1 ||
+-	    atomic_read(&p->files->count) > 1 ||
+-	    atomic_read(&p->sighand->count) > 1)
++	if (atomic_read(&p->fs->count) > 1)
+ 		unsafe |= LSM_UNSAFE_SHARE;
+ 
+ 	return unsafe;
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -151,15 +151,22 @@ static unsigned int pid_entry_count_dirs
+ int maps_protect;
+ EXPORT_SYMBOL(maps_protect);
+ 
+-static struct fs_struct *get_fs_struct(struct task_struct *task)
++static int get_fs_path(struct task_struct *task, struct path *path, bool root)
+ {
+ 	struct fs_struct *fs;
++	int result = -ENOENT;
++
+ 	task_lock(task);
+ 	fs = task->fs;
+-	if(fs)
+-		atomic_inc(&fs->count);
++	if (fs) {
++		read_lock(&fs->lock);
++		*path = root ? fs->root : fs->pwd;
++		path_get(path);
++		read_unlock(&fs->lock);
++		result = 0;
++	}
+ 	task_unlock(task);
+-	return fs;
++	return result;
+ }
+ 
+ static int get_nr_threads(struct task_struct *tsk)
+@@ -178,42 +185,24 @@ static int get_nr_threads(struct task_st
+ static int proc_cwd_link(struct inode *inode, struct path *path)
+ {
+ 	struct task_struct *task = get_proc_task(inode);
+-	struct fs_struct *fs = NULL;
+ 	int result = -ENOENT;
+ 
+ 	if (task) {
+-		fs = get_fs_struct(task);
++		result = get_fs_path(task, path, 0);
+ 		put_task_struct(task);
+ 	}
+-	if (fs) {
+-		read_lock(&fs->lock);
+-		*path = fs->pwd;
+-		path_get(&fs->pwd);
+-		read_unlock(&fs->lock);
+-		result = 0;
+-		put_fs_struct(fs);
+-	}
+ 	return result;
+ }
+ 
+ static int proc_root_link(struct inode *inode, struct path *path)
+ {
+ 	struct task_struct *task = get_proc_task(inode);
+-	struct fs_struct *fs = NULL;
+ 	int result = -ENOENT;
+ 
+ 	if (task) {
+-		fs = get_fs_struct(task);
++		result = get_fs_path(task, path, 1);
+ 		put_task_struct(task);
+ 	}
+-	if (fs) {
+-		read_lock(&fs->lock);
+-		*path = fs->root;
+-		path_get(&fs->root);
+-		read_unlock(&fs->lock);
+-		result = 0;
+-		put_fs_struct(fs);
+-	}
+ 	return result;
+ }
+ 
+@@ -575,7 +564,6 @@ static int mounts_open_common(struct ino
+ 	struct task_struct *task = get_proc_task(inode);
+ 	struct nsproxy *nsp;
+ 	struct mnt_namespace *ns = NULL;
+-	struct fs_struct *fs = NULL;
+ 	struct path root;
+ 	struct proc_mounts *p;
+ 	int ret = -EINVAL;
+@@ -589,22 +577,16 @@ static int mounts_open_common(struct ino
+ 				get_mnt_ns(ns);
+ 		}
+ 		rcu_read_unlock();
+-		if (ns)
+-			fs = get_fs_struct(task);
++		if (ns && get_fs_path(task, &root, 1) == 0)
++			ret = 0;
+ 		put_task_struct(task);
+ 	}
+ 
+ 	if (!ns)
+ 		goto err;
+-	if (!fs)
++	if (ret)
+ 		goto err_put_ns;
+ 
+-	read_lock(&fs->lock);
+-	root = fs->root;
+-	path_get(&root);
+-	read_unlock(&fs->lock);
+-	put_fs_struct(fs);
+-
+ 	ret = -ENOMEM;
+ 	p = kmalloc(sizeof(struct proc_mounts), GFP_KERNEL);
+ 	if (!p)
 
 
