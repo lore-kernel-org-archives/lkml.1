@@ -1,118 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbZD2FKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756308AbZD2FKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753555AbZD2FKE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 01:10:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbZD2FJw
+	id S1756308AbZD2FKr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 01:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbZD2FK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 01:09:52 -0400
-Received: from mga14.intel.com ([143.182.124.37]:59955 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751472AbZD2FJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 01:09:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,264,1239001200"; 
-   d="scan'208";a="137103385"
-Date: Wed, 29 Apr 2009 13:09:13 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "mpm@selenic.com" <mpm@selenic.com>,
-       "adobriyan@gmail.com" <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Chandra Seetharaman <sekharan@us.ibm.com>, Nathan Lynch <ntl@pobox.com>,
-       Olof Johansson <olof@lixom.net>, Helge Deller <deller@parisc-linux.org>
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090429050913.GA16683@localhost>
-References: <20090428010907.912554629@intel.com> <20090428014920.769723618@intel.com> <20090428143244.4e424d36.akpm@linux-foundation.org> <20090429023842.GA10266@localhost> <20090428195527.4638f58c.akpm@linux-foundation.org> <20090429034829.GA10832@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090429034829.GA10832@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 29 Apr 2009 01:10:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59446 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751903AbZD2FK1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 01:10:27 -0400
+Date: Tue, 28 Apr 2009 22:07:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 1/5] tracing: convert ftrace_dump spinlocks to raw
+Message-Id: <20090428220723.5b85fcae.akpm@linux-foundation.org>
+In-Reply-To: <20090429045904.381487770@goodmis.org>
+References: <20090429044814.138790038@goodmis.org>
+	<20090429045904.381487770@goodmis.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 11:48:29AM +0800, Wu Fengguang wrote:
-> On Wed, Apr 29, 2009 at 10:55:27AM +0800, Andrew Morton wrote:
-> > On Wed, 29 Apr 2009 10:38:42 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > 
-> > > > > +#define kpf_copy_bit(uflags, kflags, visible, ubit, kbit)		\
-> > > > > +	do {								\
-> > > > > +		if (visible || genuine_linus())				\
-> > > > > +			uflags |= ((kflags >> kbit) & 1) << ubit;	\
-> > > > > +	} while (0);
-> > > > 
-> > > > Did this have to be implemented as a macro?
-> > > > 
-> > > > It's bad, because it might or might not reference its argument, so if
-> > > > someone passes it an expression-with-side-effects, the end result is
-> > > > unpredictable.  A C function is almost always preferable if possible.
-> > > 
-> > > Just tried inline function, the code size is increased slightly:
-> > > 
-> > >           text   data    bss     dec    hex   filename
-> > > macro     1804    128      0    1932    78c   fs/proc/page.o
-> > > inline    1828    128      0    1956    7a4   fs/proc/page.o
-> > > 
-> > 
-> > hm, I wonder why.  Maybe it fixed a bug ;)
-> > 
-> > The code is effectively doing
-> > 
-> > 	if (expr1)
-> > 		something();
-> > 	if (expr1)
-> > 		something_else();
-> > 	if (expr1)
-> > 		something_else2();
-> > 
-> > etc.  Obviously we _hope_ that the compiler turns that into
-> > 
-> > 	if (expr1) {
-> > 		something();
-> > 		something_else();
-> > 		something_else2();
-> > 	}
-> > 
-> > for us, but it would be good to check...
-> 
-> By 'expr1', you mean (visible || genuine_linus())?
-> 
-> No, I can confirm the inefficiency does not lie here.
-> 
-> I simplified the kpf_copy_bit() to
-> 
->         #define kpf_copy_bit(uflags, kflags, ubit, kbit)                     \
->                         uflags |= (((kflags) >> (kbit)) & 1) << (ubit);
-> 
-> or
-> 
->         static inline u64 kpf_copy_bit(u64 kflags, int ubit, int kbit)
->         {       
->                 return (((kflags) >> (kbit)) & 1) << (ubit);
->         }
-> 
-> and double checked the differences: the gap grows unexpectedly!
-> 
->               text               data                bss                dec            hex filename
-> macro         1829                168                  0               1997            7cd fs/proc/page.o
-> inline        1893                168                  0               2061            80d fs/proc/page.o
->               +3.5%
-> 
-> (note: the larger absolute text size is due to some experimental code elsewhere.)
+On Wed, 29 Apr 2009 00:48:15 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Wow, after simplifications the text size goes down by -13.2%:
+> +	local_irq_save(flags);
+> +	__raw_spin_lock(&ftrace_dump_lock);
 
-              text               data                bss                dec            hex filename
-macro         1644                  8                  0               1652            674 fs/proc/page.o
-inline        1644                  8                  0               1652            674 fs/proc/page.o
-
-Amazingly we can now use inline function without performance penalty!
-
-Thanks,
-Fengguang
+I'm counting twentyish instances of this.  Maybe it's time to give up
+and implement raw_spin_lock_irqsave().
 
