@@ -1,83 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbZD2H1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbZD2H3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757236AbZD2H1V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 03:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbZD2H1M
+	id S1756510AbZD2H3A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 03:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbZD2H2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 03:27:12 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:10562 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751759AbZD2H1L convert rfc822-to-8bit (ORCPT
+	Wed, 29 Apr 2009 03:28:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53912 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752130AbZD2H2q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 03:27:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SYlQcX/uGE10cwlucefHQPbVhsPisF8pyYECojD/bFjCopXzJsrJljAIRe3qdR36LE
-         1RJnnSpJDmCY7bR2Jpp/keT2GZ6wbpOmIV5qhV4rz5RtFeDEaMBOSX1uGk2AFLpcTNzH
-         RrXfzPpBxwLISrlYpnvouCLYNBDbBGixN7Tao=
-MIME-Version: 1.0
-In-Reply-To: <8563BBE2A1F848B3B98C1A5FAE08BD09@avitech.sk>
-References: <8563BBE2A1F848B3B98C1A5FAE08BD09@avitech.sk>
-Date: Wed, 29 Apr 2009 17:27:11 +1000
-Message-ID: <21d7e9970904290027v1275c346p8a8f29d2fb4658fb@mail.gmail.com>
-Subject: Re: KMS + fb + FBIOPUT_VSCREENINFO
-From: Dave Airlie <airlied@gmail.com>
-To: Peter Hanzel <hanzelpeter@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 29 Apr 2009 03:28:46 -0400
+Date: Wed, 29 Apr 2009 00:20:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: linux kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       cl@linux.com, jesse.brandeburg@intel.com, netdev@vger.kernel.org,
+       haoki@redhat.com, mchan@broadcom.com, davidel@xmailserver.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
+Message-Id: <20090429002049.4bbc8105.akpm@linux-foundation.org>
+In-Reply-To: <49F71B63.8010503@cosmosbay.com>
+References: <alpine.DEB.1.10.0904241554100.29995@qirst.com>
+	<49F3308B.1030507@cosmosbay.com>
+	<20090426.020411.157511269.davem@davemloft.net>
+	<49F43B8F.2050907@cosmosbay.com>
+	<87ab60rh8t.fsf@basil.nowhere.org>
+	<49F71B63.8010503@cosmosbay.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 6:32 PM, Peter Hanzel <hanzelpeter@gmail.com> wrote:
-> Hello.
->
-> I have tried DRM with intel KMS and it is workiing. I am using only
-> framebuffer console.
-> Fbcon initializes 1280x800 mode and it works like a charm.
->
-> But when I try to call FBIOPUT_VSCREENINFO on /dev/fb0, it always returns
-> EINVAL,
-> I have checked drivers/gpu/drm/i915/intel_fb.c
-> and found that
->
-> intelfb_check_var        returns -EINVAL     if (var->pixclock == -1 ||
-> !var->pixclock)
-> intelfb_set_par             returns -EINVAL    if (var->pixclock != -1) {
-> DRM_ERROR("PIXEL CLCOK SET\n");  return
->
-> So the FBIOPUT_VSCREENINFO always fails.
->
-> So is the change of resolution not supported through FBIOPUT_VSCREENINFO
-> call?
->
+On Tue, 28 Apr 2009 17:06:11 +0200 Eric Dumazet <dada1@cosmosbay.com> wrote:
 
-The problem we've had is defining proper semantics for what happens in
-multi-output systems when
- you call this ioctl. Which crtc/output should it set the mode on?
-what happens if the mode isn't valid on all
-connected monitors etc.
+> [PATCH] poll: Avoid extra wakeups in select/poll
+> 
+> After introduction of keyed wakeups Davide Libenzi did on epoll, we
+> are able to avoid spurious wakeups in poll()/select() code too.
+> 
+> For example, typical use of poll()/select() is to wait for incoming
+> network frames on many sockets. But TX completion for UDP/TCP 
+> frames call sock_wfree() which in turn schedules thread.
+> 
+> When scheduled, thread does a full scan of all polled fds and
+> can sleep again, because nothing is really available. If number
+> of fds is large, this cause significant load.
+> 
+> This patch makes select()/poll() aware of keyed wakeups and
+> useless wakeups are avoided. This reduces number of context
+> switches by about 50% on some setups, and work performed
+> by sofirq handlers.
+> 
 
-It should be quite trivial to hook up in fact I already did it once before.
+Seems that this is a virtuous patch even though Christoph is struggling
+a bit to test it?
 
-I think we probably need some sysfs or fb ioctl to configure which
-crtc/output combos will get controlled
-by an fbset.
+>  fs/select.c          |   28 +++++++++++++++++++++++++---
+>  include/linux/poll.h |    3 +++
+>  2 files changed, 28 insertions(+), 3 deletions(-)
+> 
+> diff --git a/fs/select.c b/fs/select.c
+> index 0fe0e14..2708187 100644
+> --- a/fs/select.c
+> +++ b/fs/select.c
+> @@ -168,7 +168,7 @@ static struct poll_table_entry *poll_get_entry(struct poll_wqueues *p)
+>  	return table->entry++;
+>  }
+>  
+> -static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
+> +static int __pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
+>  {
+>  	struct poll_wqueues *pwq = wait->private;
+>  	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
+> @@ -194,6 +194,16 @@ static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
+>  	return default_wake_function(&dummy_wait, mode, sync, key);
+>  }
+>  
+> +static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
+> +{
+> +	struct poll_table_entry *entry;
+> +
+> +	entry = container_of(wait, struct poll_table_entry, wait);
+> +	if (key && !((unsigned long)key & entry->key))
+> +		return 0;
+> +	return __pollwake(wait, mode, sync, key);
+> +}
+> +
+>  /* Add a new entry */
+>  static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+>  				poll_table *p)
+> @@ -205,6 +215,7 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+>  	get_file(filp);
+>  	entry->filp = filp;
+>  	entry->wait_address = wait_address;
+> +	entry->key = p->key;
+>  	init_waitqueue_func_entry(&entry->wait, pollwake);
+>  	entry->wait.private = pwq;
+>  	add_wait_queue(wait_address, &entry->wait);
+> @@ -418,8 +429,16 @@ int do_select(int n, fd_set_bits *fds, struct timespec *end_time)
+>  				if (file) {
+>  					f_op = file->f_op;
+>  					mask = DEFAULT_POLLMASK;
+> -					if (f_op && f_op->poll)
+> +					if (f_op && f_op->poll) {
+> +						if (wait) {
+> +							wait->key = POLLEX_SET;
+> +							if (in & bit)
+> +								wait->key |= POLLIN_SET;
+> +							if (out & bit)
+> +								wait->key |= POLLOUT_SET;
+> +						}
+>  						mask = (*f_op->poll)(file, retval ? NULL : wait);
+> +					}
 
-kms also has an option to run with one fb per crtc, which could also
-be checked out. I'm not sure how much further we got with it.
+<resizes xterm rather a lot>
 
-Dave.
+Can we (and should we) avoid all that manipulation of wait->key if
+`retval' is zero?
 
-> Thanks.
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> --- a/include/linux/poll.h
+> +++ b/include/linux/poll.h
+> @@ -32,6 +32,7 @@ typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_
+>  
+>  typedef struct poll_table_struct {
+>  	poll_queue_proc qproc;
+> +	unsigned long key;
+>  } poll_table;
+>  
+>  static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
+> @@ -43,10 +44,12 @@ static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_addres
+>  static inline void init_poll_funcptr(poll_table *pt, poll_queue_proc qproc)
+>  {
+>  	pt->qproc = qproc;
+> +	pt->key   = ~0UL; /* all events enabled */
+
+I kind of prefer to use plain old -1 for the all-ones pattern.  Because
+it always just works, and doesn't send the reviewer off to check if the
+type was really u64 or something.
+
+It's a bit ugly though.
+
+>  }
+>  
+>  struct poll_table_entry {
+>  	struct file *filp;
+> +	unsigned long key;
+>  	wait_queue_t wait;
+>  	wait_queue_head_t *wait_address;
+>  };
+
