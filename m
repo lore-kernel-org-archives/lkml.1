@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbZD2WcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762547AbZD2Wch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760061AbZD2WcS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759444AbZD2WVf
+	id S1762547AbZD2Wch (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759558AbZD2WVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:35 -0400
+	Wed, 29 Apr 2009 18:21:36 -0400
 Received: from kroah.org ([198.145.64.141]:40500 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759265AbZD2WVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:31 -0400
+	id S1758251AbZD2WVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:32 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:27 2009
-Message-Id: <20090429220927.416887820@mini.kroah.org>
+Message-Id: <20090429220927.546987392@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:28 -0700
+Date: Wed, 29 Apr 2009 15:07:29 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,14 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Nathan Lynch <ntl@pobox.com>,
-       Nigel Cunningham <nigel@tuxonice.net>,
-       containers@lists.linux-foundation.org,
-       linux-pm@lists.linux-foundation.org, Matt Helsley <matthltc@us.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 29/58] sched: do not count frozen tasks toward load
+       alan@lxorguk.ukuu.org.uk, "Serge E. Hallyn" <serue@us.ibm.com>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 30/58] add some long-missing capabilities to fs_mask
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=0060-sched-do-not-count-frozen-tasks-toward-load.patch
+Content-Disposition: inline; filename=0063-add-some-long-missing-capabilities-to-fs_mask.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -42,52 +40,80 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Nathan Lynch <ntl@pobox.com>
+From: Serge E. Hallyn <serue@us.ibm.com>
 
-upstream commit: e3c8ca8336707062f3f7cb1cd7e6b3c753baccdd
+upstream commit: 0ad30b8fd5fe798aae80df6344b415d8309342cc
 
-Freezing tasks via the cgroup freezer causes the load average to climb
-because the freezer's current implementation puts frozen tasks in
-uninterruptible sleep (D state).
+When POSIX capabilities were introduced during the 2.1 Linux
+cycle, the fs mask, which represents the capabilities which having
+fsuid==0 is supposed to grant, did not include CAP_MKNOD and
+CAP_LINUX_IMMUTABLE.  However, before capabilities the privilege
+to call these did in fact depend upon fsuid==0.
 
-Some applications which perform job-scheduling functions consult the
-load average when making decisions.  If a cgroup is frozen, the load
-average does not provide a useful measure of the system's utilization
-to such applications.  This is especially inconvenient if the job
-scheduler employs the cgroup freezer as a mechanism for preempting low
-priority jobs.  Contrast this with using SIGSTOP for the same purpose:
-the stopped tasks do not count toward system load.
+This patch introduces those capabilities into the fsmask,
+restoring the old behavior.
 
-Change task_contributes_to_load() to return false if the task is
-frozen.  This results in /proc/loadavg behavior that better meets
-users' expectations.
+See the thread starting at http://lkml.org/lkml/2009/3/11/157 for
+reference.
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
-Acked-by: Andrew Morton <akpm@linux-foundation.org>
-Acked-by: Nigel Cunningham <nigel@tuxonice.net>
-Tested-by: Nigel Cunningham <nigel@tuxonice.net>
-Cc: containers@lists.linux-foundation.org
-Cc: linux-pm@lists.linux-foundation.org
-Cc: Matt Helsley <matthltc@us.ibm.com>
-LKML-Reference: <20090408194512.47a99b95@manatee.lan>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Note that if this fix is deemed valid, then earlier kernel versions (2.4
+and 2.2) ought to be fixed too.
+
+Changelog:
+	[Mar 23] Actually delete old CAP_FS_SET definition...
+	[Mar 20] Updated against J. Bruce Fields's patch
+
+Reported-by: Igor Zhbanov <izh1979@gmail.com>
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Cc: stable@kernel.org
+Cc: J. Bruce Fields <bfields@citi.umich.edu>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- include/linux/sched.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ include/linux/capability.h |   23 +++++++++++++++++++----
+ 1 file changed, 19 insertions(+), 4 deletions(-)
 
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -201,7 +201,8 @@ extern unsigned long long time_sync_thre
- #define task_is_stopped_or_traced(task)	\
- 			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
- #define task_contributes_to_load(task)	\
--				((task->state & TASK_UNINTERRUPTIBLE) != 0)
-+				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
-+				 (task->flags & PF_FROZEN) == 0)
+--- a/include/linux/capability.h
++++ b/include/linux/capability.h
+@@ -366,7 +366,21 @@ typedef struct kernel_cap_struct {
+ #define CAP_FOR_EACH_U32(__capi)  \
+ 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
  
- #define __set_task_state(tsk, state_value)		\
- 	do { (tsk)->state = (state_value); } while (0)
++/*
++ * CAP_FS_MASK and CAP_NFSD_MASKS:
++ *
++ * The fs mask is all the privileges that fsuid==0 historically meant.
++ * At one time in the past, that included CAP_MKNOD and CAP_LINUX_IMMUTABLE.
++ *
++ * It has never meant setting security.* and trusted.* xattrs.
++ *
++ * We could also define fsmask as follows:
++ *   1. CAP_FS_MASK is the privilege to bypass all fs-related DAC permissions
++ *   2. The security.* and trusted.* xattrs are fs-related MAC permissions
++ */
++
+ # define CAP_FS_MASK_B0     (CAP_TO_MASK(CAP_CHOWN)		\
++			    | CAP_TO_MASK(CAP_MKNOD)		\
+ 			    | CAP_TO_MASK(CAP_DAC_OVERRIDE)	\
+ 			    | CAP_TO_MASK(CAP_DAC_READ_SEARCH)	\
+ 			    | CAP_TO_MASK(CAP_FOWNER)		\
+@@ -381,11 +395,12 @@ typedef struct kernel_cap_struct {
+ # define CAP_EMPTY_SET    ((kernel_cap_t){{ 0, 0 }})
+ # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, ~0 }})
+ # define CAP_INIT_EFF_SET ((kernel_cap_t){{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }})
+-# define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } })
++# define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0 \
++				    | CAP_TO_MASK(CAP_LINUX_IMMUTABLE), \
++				    CAP_FS_MASK_B1 } })
+ # define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0 \
+-					    | CAP_TO_MASK(CAP_SYS_RESOURCE) \
+-					    | CAP_TO_MASK(CAP_MKNOD), \
+-					    CAP_FS_MASK_B1 } })
++				    | CAP_TO_MASK(CAP_SYS_RESOURCE), \
++				    CAP_FS_MASK_B1 } })
+ 
+ #endif /* _KERNEL_CAPABILITY_U32S != 2 */
+ 
 
 
