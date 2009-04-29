@@ -1,78 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753699AbZD2Dba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755AbZD2Den@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753699AbZD2Dba (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 23:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZD2DbU
+	id S1753755AbZD2Den (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 23:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZD2Dee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 23:31:20 -0400
-Received: from kroah.org ([198.145.64.141]:38403 "EHLO coco.kroah.org"
+	Tue, 28 Apr 2009 23:34:34 -0400
+Received: from mga14.intel.com ([143.182.124.37]:6412 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752055AbZD2DbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 23:31:19 -0400
-Date: Tue, 28 Apr 2009 20:24:46 -0700
-From: Greg KH <greg@kroah.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2.6.30-rc3] platform_bus:  remove "which
-	platform_data?" confusion
-Message-ID: <20090429032446.GC23062@kroah.com>
-References: <200904271943.40588.david-b@pacbell.net> <20090428050742.GB17432@kroah.com> <200904280228.07346.david-b@pacbell.net>
+	id S1751812AbZD2Dee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 23:34:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,264,1239001200"; 
+   d="scan'208";a="137079883"
+Date: Wed, 29 Apr 2009 11:33:58 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "adobriyan@gmail.com" <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090429033358.GA10719@localhost>
+References: <20090428010907.912554629@intel.com> <20090428014920.769723618@intel.com> <20090428143244.4e424d36.akpm@linux-foundation.org> <1240958794.938.1045.camel@calx> <20090428160219.ca0123a1.akpm@linux-foundation.org> <1240961469.938.1077.camel@calx> <20090428164248.0c8cffef.akpm@linux-foundation.org> <1240962910.938.1084.camel@calx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200904280228.07346.david-b@pacbell.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1240962910.938.1084.camel@calx>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 02:28:07AM -0700, David Brownell wrote:
-> No comment on the bugfix part of $SUBJECT patch?
-
-Well, no, I'm assuming it is correct :)
-
-Should I just revert the original change, if the fact that busses are
-using the platform_data field?
-
-> On Monday 27 April 2009, Greg KH wrote:
+On Wed, Apr 29, 2009 at 07:55:10AM +0800, Matt Mackall wrote:
+> On Tue, 2009-04-28 at 16:42 -0700, Andrew Morton wrote:
+> > On Tue, 28 Apr 2009 18:31:09 -0500
+> > Matt Mackall <mpm@selenic.com> wrote:
 > > 
-> > > Those patches seem to support what I think is a misguided
-> > > notion:  that somehow device.platform_data might move into
-> > > the platform_device.  The problem with that idea is that it's
-> > > a general purpose hook, and is used by other busses to provide
-> > > board-specific configuration data ... not just for platform_bus.
+> > > On Tue, 2009-04-28 at 16:02 -0700, Andrew Morton wrote:
+> > > > On Tue, 28 Apr 2009 17:46:34 -0500
+> > > > Matt Mackall <mpm@selenic.com> wrote:
+> > > > 
+> > > > > > > +/* a helper function _not_ intended for more general uses */
+> > > > > > > +static inline int page_cap_writeback_dirty(struct page *page)
+> > > > > > > +{
+> > > > > > > +	struct address_space *mapping;
+> > > > > > > +
+> > > > > > > +	if (!PageSlab(page))
+> > > > > > > +		mapping = page_mapping(page);
+> > > > > > > +	else
+> > > > > > > +		mapping = NULL;
+> > > > > > > +
+> > > > > > > +	return mapping && mapping_cap_writeback_dirty(mapping);
+> > > > > > > +}
+> > > > > > 
+> > > > > > If the page isn't locked then page->mapping can be concurrently removed
+> > > > > > and freed.  This actually happened to me in real-life testing several
+> > > > > > years ago.
+> > > > > 
+> > > > > We certainly don't want to be taking locks per page to build the flags
+> > > > > data here. As we don't have any pretense of being atomic, it's ok if we
+> > > > > can find a way to do the test that's inaccurate when a race occurs, so
+> > > > > long as it doesn't dereference null.
+> > > > > 
+> > > > > But if there's not an obvious way to do that, we should probably just
+> > > > > drop this flag bit for this iteration.
+> > > > 
+> > > > trylock_page() could be used here, perhaps.
+> > > > 
+> > > > Then again, why _not_ just do lock_page()?  After all, few pages are
+> > > > ever locked.  There will be latency if the caller stumbles across a
+> > > > page which is under read I/O, but so be it?
+> > > 
+> > > As I mentioned just a bit ago, it's really not an unreasonable use case
+> > > to want to do this on every page in the system back to back. So per page
+> > > overhead matters. And the odds of stalling on a locked page when
+> > > visiting 1M pages while under load are probably not negligible.
 > > 
-> > It is?  What other busses do this?
+> > The chances of stalling on a locked page are pretty good, and the
+> > duration of the stall might be long indeed.  Perhaps a trylock is a
+> > decent compromise - it depends on the value of this metric, and I've
+> > forgotten what we're talking about ;)
+> > 
+> > umm, seems that this flag is needed to enable PG_error, PG_dirty,
+> > PG_uptodate and PG_writeback reporting.  So simply removing this code
+> > would put a huge hole in the patchset, no?
 > 
-> SPI and I2C come quickly to mind...
+> We can report those bits anyway. But this patchset does something
+> clever: it filters irrelevant (and possibly overloaded) bits in various
+> contexts. 
 > 
-> Basically, *any* bus that could ever be used on an embedded
-> system may need platform_data to explain how each discrete
-> chip has been wired up on that particular board.  Very few
-> such busses can self-enumerate like PCI or USB.  And most of
-> the chips sitting on such busses expect to interface to fairly
-> random external hardware.
+> > > Our lock primitives are pretty low overhead in the fast path, but every
+> > > cycle counts. The new tests and branches this code already adds are a
+> > > bit worrisome, but on balance probably worth it.
+> > 
+> > That should be easy to quantify (hint).
 > 
-> And come to think of it, I've seen cases with PCI and USB
-> where board-specific config data is needed.  PCI doesn't
-> always wrap it up in some ACPI bytecode, and sometimes USB
-> devices use "transceiverless link" hookup, so the board
-> can just hook up using a differential pair.
-> 
-> SDIO/MMC doesn't tend to need it though, even for SDIO
-> WLAN or MMC/SD storage links (eMMC, CE-ATA, etc).
-> 
-> 
-> > And why, can't they use their own bus private data pointers?
-> 
-> ENOPATCH.  ;)
-> 
-> Though ... since devices on *any* bus may need this, I
-> don't much see the point of modifying every bus like that.
+> I'll let Fengguang address both these points.
 
-Fair enough, no objection from me.
+A quick micro bench: 100 runs on another T7300@2GHz 2GB laptop:
 
-thanks,
+             user      system       total
+no lock      0.270     22.850       23.607 
+trylock      0.310     25.890       26.484 
+                       +13.3%       +12.2%
 
-greg k-h
+But anyway, the plan is to move filtering to user space and eliminate
+the complex kernel logics.
+
+The IO filtering is no longer possible in user space, but I didn't see
+the error/dirty/writeback bits on this testing system. So I guess it
+won't be a big loss.
+
+The huge/gigantic page filtering is also not possible in user space.
+So I tend to add a KPF_HUGE flag to distinguish (hardware supported)
+huge pages from normal (software) compound pages. Any objections?
+
+Thanks,
+Fengguang
