@@ -1,72 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbZD2Szw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbZD2S4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196AbZD2Szw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 14:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZD2Szj
+	id S1759447AbZD2S4R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 14:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760022AbZD2Szv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 14:55:39 -0400
-Received: from blaine.gmane.org ([80.91.229.8]:41249 "EHLO hugh.gmane.org"
+	Wed, 29 Apr 2009 14:55:51 -0400
+Received: from ns1.t0.or.at ([62.116.70.34]:55435 "EHLO mail.t0.or.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752556AbZD2Szh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 14:55:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=OHE1H3EkD6RRFEkBHsxHtRbv3zDvcEdIAValCQRUPJKTrkje1Is7TTDkuZW39PWuz/
-         WhdPugN7YmKdZLyDlkEtwPuNujnSEx94KKLhcmZsJAD/dHwHi+cfACwvwAwyDnS75vaZ
-         J39twiHxPJo9wmR0ksRmRMeF2YBBJ+8frB4Vw=
-MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.44L0.0904291150200.24643-100000@netrider.rowland.org>
-References: <m3ab5z35f1.fsf@ursa.amorsen.dk>
-	 <Pine.LNX.4.44L0.0904291150200.24643-100000@netrider.rowland.org>
-Date: Wed, 29 Apr 2009 13:27:36 -0400
-Message-ID: <8bd0f97a0904291027y56dd65d4ha77b636036f567c@mail.gmail.com>
-Subject: Re: usbutils 0.81 release
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Benny Amorsen <benny+usenet@amorsen.dk>,
-       Alan Stern 
-	<public-stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@hugh.gmane.org>,
-       Greg KH <public-greg-U8xfFu+wG4EAvxtiuMwx3w@hugh.gmane.org>,
-       Kay Sievers <public-kay.sievers-tD+1rO4QERM@hugh.gmane.org>,
-       USB list <public-linux-usb-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>,
-       Kernel development list 
-	<public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-TMDA-Confirmed: Wed, 29 Apr 2009 20:30:15 +0200
+	id S1759593AbZD2Szu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 14:55:50 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Apr 2009 14:55:49 EDT
+MailScanner-NULL-Check: 1241635731.18285@PGrTdHKKl1PgkzH7Ve7+xA
+Subject: Re: 2.6.30-rc2 + xorg-intel-2.7.0 + DRM_I915_KMS = corruption
+From: Andreas Proschofsky <suka@gentoo.org>
+To: Mateusz Kaduk <mateusz.kaduk@gmail.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, xorg@freedesktop.org,
+       linux-kernel@vger.kernel.org, Alex Bennee <kernel-hacker@bennee.com>
+In-Reply-To: <b56f065e0904291118r7f008508s32852ccd1bb0b645@mail.gmail.com>
+References: <b2cdc9f30904182327w12a3ec32t90c7c6c34980577b@mail.gmail.com>
+	 <20090427234947.394f774f@schatten>
+	 <b2cdc9f30904272237h3a815282h7e6b932e1c252d17@mail.gmail.com>
+	 <20090428095338.3e7b2062@hobbes>
+	 <b2cdc9f30904290049k290a59bfh1265a66735b510e2@mail.gmail.com>
+	 <20090429090607.2d351545@hobbes>
+	 <b56f065e0904291118r7f008508s32852ccd1bb0b645@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-FbN+zNNnGzkXmGp1+euC"
+Date: Wed, 29 Apr 2009 20:46:48 +0200
+Message-Id: <1241030808.2987.0.camel@g-three>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
+X-t0-MailScanner-Information: Please contact the ISP for more information
+X-t0-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
+X-t0-MailScanner-SpamCheck: not spam,
+	SpamAssassin (nicht zwischen gespeichert, Wertung=-0.612,
+	benoetigt 5.4, BAYES_00 -2.60, RCVD_IN_SORBS_DUL 1.99)
+X-MailScanner-From: suka@gentoo.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--=-FbN+zNNnGzkXmGp1+euC
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+This is fixed with Kernel 2.6.30-rc3-git6 for me, so you might try this
+one.
 
-On Wed, Apr 29, 2009 at 11:51, Alan Stern wrote:
-> On Wed, 29 Apr 2009, Benny Amorsen wrote:
->> Alan Stern writes:
->> > Sure they do.  If you've got an RPM-based system, and you want to
->> > install a package version that's more recent than the one bundled in
->> > your distribution (or if your distribution doesn't include the package
->> > at all), then you'd want to build your own RPM.
->>
->> In that case you grab the source package from the distribution, install
->> it, bump the version number and add the tar file to the SOURCES
->> directory. (And then you remove the patches which were upstreamed in the
->> meantime).
->
-> You didn't read all that I wrote.  What if the package isn't included
-> in the distribution at all?
+bye
+Andreas
 
-install a different distro.  any distro even remotely worth its salt
-is going to package usbutils.  this is a devils advocate question, not
-anything resembling reality.
+On Wed, 2009-04-29 at 20:18 +0200, Mateusz Kaduk wrote:
+> This is realy old issue now. Which I reported at begining of this
+> month but exist much longer.
+>=20
+> https://bugs.freedesktop.org/show_bug.cgi?id=3D20896
+>=20
+> Two more people also experience this. This only happens with KMS mode.
+> I am using 1.6.1 xorg/mesa master/ xf86-intel master and libdrm 2.4.9
+> kernel 2.6.30-rc3-git5.
+>=20
+> I hope someone can soleve this some day.
+> _______________________________________________
+> xorg mailing list
+> xorg@lists.freedesktop.org
+> http://lists.freedesktop.org/mailman/listinfo/xorg
+--=20
+Andreas Proschofsky
+Gentoo Developer / OpenOffice.org
 
-otherwise, anyone who is going to build a rpm should be familiar with
-the myriad of possibilities out there that handle exactly this case
-(such as checkinstall).
--mike
+--=-FbN+zNNnGzkXmGp1+euC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEABECAAYFAkn4oJgACgkQauoogOee02Mz/ACZAZp98BM7vLkIQJ+8IPvIiS3E
+9lcAn3wfkk5L/xl49w3Eb49ygcc8pTNo
+=luLX
+-----END PGP SIGNATURE-----
+
+--=-FbN+zNNnGzkXmGp1+euC--
 
