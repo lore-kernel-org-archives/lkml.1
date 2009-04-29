@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761690AbZD2Wln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763124AbZD2Wme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761690AbZD2Wln (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:41:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759723AbZD2WV5
+	id S1763124AbZD2Wme (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760643AbZD2WWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:57 -0400
-Received: from kroah.org ([198.145.64.141]:40771 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:22:00 -0400
+Received: from kroah.org ([198.145.64.141]:40757 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760322AbZD2WVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:52 -0400
+	id S1758928AbZD2WVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:51 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:30 2009
-Message-Id: <20090429220930.695005091@mini.kroah.org>
+Message-Id: <20090429220930.548659812@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:51 -0700
+Date: Wed, 29 Apr 2009 15:07:50 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>
-Subject: [patch 52/58] fix ptrace slowness
+       alan@lxorguk.ukuu.org.uk, Oleg Nesterov <oleg@redhat.com>,
+       Serge Hallyn <serue@us.ibm.com>, Roland McGrath <roland@redhat.com>
+Subject: [patch 51/58] exit_notify: kill the wrong capable(CAP_KILL) check (CVE-2009-1337)
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=fix-ptrace-slowness.patch
+Content-Disposition: inline; filename=exit_notify-kill-the-wrong-capable-check.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,63 +39,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+From: Oleg Nesterov <oleg@redhat.com>
 
-commit 53da1d9456fe7f87a920a78fdbdcf1225d197cb7 upstream.
+CVE-2009-1337
 
-This patch fixes bug #12208:
+commit 432870dab85a2f69dc417022646cb9a70acf7f94 upstream.
 
-  Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12208
-  Subject         : uml is very slow on 2.6.28 host
+The CAP_KILL check in exit_notify() looks just wrong, kill it.
 
-This turned out to be not a scheduler regression, but an already
-existing problem in ptrace being triggered by subtle scheduler
-changes.
+Whatever logic we have to reset ->exit_signal, the malicious user
+can bypass it if it execs the setuid application before exiting.
 
-The problem is this:
-
- - task A is ptracing task B
- - task B stops on a trace event
- - task A is woken up and preempts task B
- - task A calls ptrace on task B, which does ptrace_check_attach()
- - this calls wait_task_inactive(), which sees that task B is still on the runq
- - task A goes to sleep for a jiffy
- - ...
-
-Since UML does lots of the above sequences, those jiffies quickly add
-up to make it slow as hell.
-
-This patch solves this by not rescheduling in read_unlock() after
-ptrace_stop() has woken up the tracer.
-
-Thanks to Oleg Nesterov and Ingo Molnar for the feedback.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-CC: stable@kernel.org
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Acked-by: Roland McGrath <roland@redhat.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/signal.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ kernel/exit.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -1549,7 +1549,15 @@ static void ptrace_stop(int exit_code, i
- 	read_lock(&tasklist_lock);
- 	if (may_ptrace_stop()) {
- 		do_notify_parent_cldstop(current, CLD_TRAPPED);
-+		/*
-+		 * Don't want to allow preemption here, because
-+		 * sys_ptrace() needs this task to be inactive.
-+		 *
-+		 * XXX: implement read_unlock_no_resched().
-+		 */
-+		preempt_disable();
- 		read_unlock(&tasklist_lock);
-+		preempt_enable_no_resched();
- 		schedule();
- 	} else {
- 		/*
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -938,8 +938,7 @@ static void exit_notify(struct task_stru
+ 	 */
+ 	if (tsk->exit_signal != SIGCHLD && !task_detached(tsk) &&
+ 	    (tsk->parent_exec_id != tsk->real_parent->self_exec_id ||
+-	     tsk->self_exec_id != tsk->parent_exec_id) &&
+-	    !capable(CAP_KILL))
++	     tsk->self_exec_id != tsk->parent_exec_id))
+ 		tsk->exit_signal = SIGCHLD;
+ 
+ 	signal = tracehook_notify_death(tsk, &cookie, group_dead);
 
 
