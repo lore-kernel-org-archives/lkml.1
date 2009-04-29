@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757258AbZD2GXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbZD2GbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757258AbZD2GXb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 02:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZD2GXV
+	id S1753118AbZD2GbX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 02:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbZD2GbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 02:23:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49044 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752366AbZD2GXV (ORCPT
+	Wed, 29 Apr 2009 02:31:14 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:61352 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751303AbZD2GbN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 02:23:21 -0400
-Date: Tue, 28 Apr 2009 23:20:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 5/5] ring-buffer: fix printk output
-Message-Id: <20090428232000.6c3d4ce1.akpm@linux-foundation.org>
-In-Reply-To: <20090429060955.GD6148@elte.hu>
-References: <20090429044814.138790038@goodmis.org>
-	<20090429045908.394874083@goodmis.org>
-	<20090428222024.8db50539.akpm@linux-foundation.org>
-	<20090429054359.GA6148@elte.hu>
-	<20090428225541.9ca61a12.akpm@linux-foundation.org>
-	<20090429060955.GD6148@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Apr 2009 02:31:13 -0400
+Date: Wed, 29 Apr 2009 08:31:04 +0200
+From: Thierry Reding <thierry.reding@avionic-design.de>
+To: David Brownell <david-b@pacbell.net>
+Cc: Florian Fainelli <florian@openwrt.org>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [spi-devel-general] [PATCH v2] spi: Add support for the
+	OpenCores SPI controller.
+Message-ID: <20090429063104.GB7784@avionic-design.de>
+References: <200904041227.54687.david-b@pacbell.net> <20090428122011.GB6325@avionic-design.de> <200904281541.21238.florian@openwrt.org> <200904281354.12192.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904281354.12192.david-b@pacbell.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Provags-ID: V01U2FsdGVkX1/XRmJbqAB7suJi3ZOxozeVjmMxzGL6QXFGYb2
+ GefK+kuEudhFyUAatMfgYEcHtXKx3NY5yVJvPTQ7lhYYiy0SoD
+ LOzVJrLIXORP0k/JWy2Qg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Apr 2009 08:09:55 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Wed, 29 Apr 2009 07:43:59 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+* David Brownell wrote:
+> On Tuesday 28 April 2009, Florian Fainelli wrote:
+> > > > Is this the http://www.opencores.org/?do=project&who=spi core?
+> > >
+> > > Yes, it is.
+> > >
+> > > > Its summary says "Variable length of transfer word up to 32 bits";
+> > > > does that mean "configurable when core is synthesized" instead of
+> > > > truly "variable"?
 > > 
-> > > 
-> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > 
-> > > > On Wed, 29 Apr 2009 00:48:19 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
-> > > > 
-> > > > > -	printk_once(KERN_WARNING "Tracing recursion: depth[%d]:"
-> > > > > +	printk_once(KERN_WARNING "Tracing recursion: depth[%ld]:"
-> > > > 
-> > > > hrmph.  I didn't know that printk_once() existed, and I should 
-> > > > have known.  I wonder how many other people don't know.
-> > > 
-> > > Was posted to linux-next@vger.kernel.org.
-> > 
-> > Well no wonder I didn't know about it.
+> > This is indeed configured at synthesis time.
 > 
-> I (too?) think it's counter-productive that the linux-next list is 
-> split out of lkml. I constantly fall into that trap: i get a 
-> bugreport against one of our trees, i see that there's vger in the 
-> Cc: list and mistake it for being Cc:-ed to lkml (all our trees are 
-> developed on lkml and most of the bugreports come Cc:-ed to lkml) 
-> but in reality it's Cc:-ed to linux-next which has a much smaller 
-> audience. (which audience apparently does not even include you)
+> Now I'm confused again.  Thierry says (below) that the number of bits
+> can be set per-"transfer".
 > 
-> If this email list fragmentation and the resoluting loss of 
-> information bothers you too then please ask Stephen to move 
-> linux-next mails to lkml (i've Cc:-ed Stephen) - it's not like it's 
-> actually something separate ... today's linux-next messages are 
-> tomorrow's lkml messages. Moving linux-next mails to lkml would 
-> nicely improve the S/N ratio on lkml.
-> 
+> Now, I can easily understand that a *maximum* would be configured
+> at synthesis time ... if there's a 32-bit CPU or DMA engine, it'd
+> make very limited sense to interact using 128-bit I/O words.
 
-eh.  Just auto-add lkml to tipbot-commit emails?
+I can't really comment on the synthesis because I'm not involved with that
+part. What I was saying that the core provides a field in the control
+register which defines the number of bits to transfer from/to the
+transmit/receive registers. The maximum number of bits that can be specified
+in this way is 128.
 
-printk_once() is racy on smp and preempt btw ;)
+> Is there both a configurable maximum, *and* a word-size setting that
+> can be changed on the fly?  That's what I would expect; it's what
+> most other designs do.  The only time I've seen fixed "you must use
+> N-bit words" designs is on cost-eradicated 8-bit microcontrollers.
+
+Perhaps that maximum number of bits that can be set through the control
+register is what can be configured at synthesis time.
+
+> - Dave
+
+Thierry
+
