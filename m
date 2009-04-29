@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbZD2Kv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbZD2Kvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755564AbZD2Kv2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 06:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbZD2KvB
+	id S1756516AbZD2Kvr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 06:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbZD2KvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 06:51:01 -0400
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:35486
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753836AbZD2Ku7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 06:51:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34872 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754190AbZD2Ku7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 29 Apr 2009 06:50:59 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KIUZGP-03-8M3-01
-From: Robert Richter <robert.richter@amd.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 01/29] x86: perfcounter: remove X86_FEATURE_ARCH_PERFMON flag for AMD cpus
-Date: Wed, 29 Apr 2009 12:46:58 +0200
-Message-ID: <1241002046-8832-2-git-send-email-robert.richter@amd.com>
-X-Mailer: git-send-email 1.6.1.3
-In-Reply-To: <1241002046-8832-1-git-send-email-robert.richter@amd.com>
-References: <1241002046-8832-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 29 Apr 2009 10:50:49.0008 (UTC) FILETIME=[5B6B8300:01C9C8B8]
+Date: Wed, 29 Apr 2009 12:50:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [git-pull -tip] x86: cpu_debug patches
+Message-ID: <20090429105021.GG2373@elte.hu>
+References: <1240190145.3106.90.camel@ht.satnam> <1240191359.3106.93.camel@ht.satnam> <1240217428.3083.2.camel@ht.satnam> <20090420111619.GE6670@elte.hu> <1240933437.3074.4.camel@ht.satnam> <20090428172828.GA15392@elte.hu> <1240977176.3028.0.camel@ht.satnam>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240977176.3028.0.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-X86_FEATURE_ARCH_PERFMON is an Intel hardware feature that does not
-work on AMD CPUs. The flag is now only used in Intel specific code
-(especially initialization).
 
-Signed-off-by: Robert Richter <robert.richter@amd.com>
----
- arch/x86/kernel/cpu/amd.c          |    4 ----
- arch/x86/kernel/cpu/perf_counter.c |    6 +++---
- 2 files changed, 3 insertions(+), 7 deletions(-)
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index fd69c51..7e4a459 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -420,10 +420,6 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- 	if (c->x86 >= 6)
- 		set_cpu_cap(c, X86_FEATURE_FXSAVE_LEAK);
- 
--	/* Enable Performance counter for K7 and later */
--	if (c->x86 > 6 && c->x86 <= 0x11)
--		set_cpu_cap(c, X86_FEATURE_ARCH_PERFMON);
--
- 	if (!c->x86_model_id[0]) {
- 		switch (c->x86) {
- 		case 0xf:
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 0fcbaab..7d0f81d 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -949,6 +949,9 @@ static struct pmc_x86_ops *pmc_intel_init(void)
- 	unsigned int unused;
- 	unsigned int ebx;
- 
-+	if (!cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
-+		return NULL;
-+
- 	/*
- 	 * Check whether the Architectural PerfMon supports
- 	 * Branch Misses Retired Event or not.
-@@ -987,9 +990,6 @@ static struct pmc_x86_ops *pmc_amd_init(void)
- 
- void __init init_hw_perf_counters(void)
- {
--	if (!cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
--		return;
--
- 	switch (boot_cpu_data.x86_vendor) {
- 	case X86_VENDOR_INTEL:
- 		pmc_ops = pmc_intel_init();
--- 
-1.6.1.3
+> On Tue, 2009-04-28 at 19:28 +0200, Ingo Molnar wrote:
+> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> > 
+> > > @@ -850,10 +903,10 @@ static int cpu_init_cpu(void)
+> > >  		cpui = &cpu_data(cpu);
+> > >  		if (!cpu_has(cpui, X86_FEATURE_MSR))
+> > >  			continue;
+> > > -		per_cpu(cpu_model, cpu) = ((cpui->x86_vendor << 16) |
+> > > -					   (cpui->x86 << 8) |
+> > > -					   (cpui->x86_model));
+> > > -		per_cpu(cpu_modelflag, cpu) = get_cpu_modelflag(cpu);
+> > > +		per_cpu(cpu_modelflag, cpu) = get_cpu_flag(cpui);
+> > > +		if (!per_cpu(cpu_modelflag, cpu))
+> > > +			send_report(per_cpu(cpu_priv_count, cpu), cpui);
+> > 
+> > This means that if the CPU is not enumerated in the model table 
+> > explicitly, we'll fall back to some really minimal output, right?
+> > 
+> 
+> Yes.
 
+That's a bug really: it means that for every new CPU type that comes 
+around we need to update this code. I.e. precisely for those CPUs 
+where we might need the most help from such a debug facility, we 
+wont have much info to look at ... New CPUs generally support all 
+the CPU features that are displayed here, in a compatible manner.
 
+So that needs to be improved/changed to not be tied to such a static 
+'cpu model' enumeration but instead be CPU feature flags driven. See 
+all the existing cpu_has_*() tests we have.
+
+	Ingo
