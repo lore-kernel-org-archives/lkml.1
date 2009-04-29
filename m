@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757008AbZD2MJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbZD2MJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757008AbZD2MJW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 08:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZD2MJB
+	id S1756733AbZD2MJi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 08:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757792AbZD2MJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 08:09:01 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:46457 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752985AbZD2MJA (ORCPT
+	Wed, 29 Apr 2009 08:09:06 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:64673 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757333AbZD2MJF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 08:09:00 -0400
-Date: Wed, 29 Apr 2009 13:08:28 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mike Galbraith <efault@gmx.de>, Martin Knoblauch <knobi@knobisoft.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       tigran aivazian <tigran@aivazian.fsnet.co.uk>
-Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
-Message-ID: <20090429120827.GI8633@ZenIV.linux.org.uk>
-References: <409142.83316.qm@web32605.mail.mud.yahoo.com> <20090428182837.62c51f26.akpm@linux-foundation.org> <1240977096.5478.3.camel@marge.simson.net> <20090429011755.c141c599.akpm@linux-foundation.org>
+	Wed, 29 Apr 2009 08:09:05 -0400
+Date: Wed, 29 Apr 2009 08:09:02 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+cc: Sachin Sant <sachinp@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       linux-s390@vger.kernel.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Next April 24: [S390] allmodconfig build failure
+ (trace/events)
+In-Reply-To: <20090429135139.5fac79b8@osiris.boeblingen.de.ibm.com>
+Message-ID: <alpine.DEB.2.00.0904290808300.8066@gandalf.stny.rr.com>
+References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au> <49F16654.8040208@in.ibm.com> <20090424072533.GE24912@elte.hu> <20090424104108.0f2c0f05@osiris.boeblingen.de.ibm.com> <49F8232B.4090007@in.ibm.com>
+ <20090429135139.5fac79b8@osiris.boeblingen.de.ibm.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090429011755.c141c599.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 01:17:55AM -0700, Andrew Morton wrote:
 
-> > > > Questions remains: was this intentional? It breaks existing userspace and should therefore be considered a regression - right? On the other hand, it will never be a problem for RHEL-4/5 kernels, unless the change in 2.6.29 gets backported. Any ideas?
-> > > 
-> > > afaik that was unintentional and was probably a mistake.
-> > > 
-> > > I wonder how we did that.
-> > 
-> > <paste>
-> > > [hotplug]# grep sysfs /proc/mounts
-> > > none /sys sysfs rw,relatime 0 0
-> > > /sys /sys sysfs rw,relatime 0 0
-> > 
-> > ___(I wonder how the heck that is accomplished)
+On Wed, 29 Apr 2009, Heiko Carstens wrote:
 > 
-> Beats me.  I'm not seeing likely changes in fs/proc/base.c or around
-> show_mountinfo().  Maybe sysfs broke in an ingenious way.  (hopefully
-> cc's viro).
+> Subject: [PATCH] tracing: fix compile error
+> 
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> "tracing: create automated trace defines" causes this compile error on s390:
+> 
+> kernel/built-in.o: In function `__do_softirq':
+> (.text+0x1c680): undefined reference to `__tracepoint_softirq_entry'
+> 
+> This happens because the definitions of the softirq tracepoints were moved
+> from kernel/softirq.c to kernel/irq/handle.c. Since s390 doesn't support
+> generic hardirqs handle.c doesn't get compiled and the definitions are
+> missing.
+> So move the tracepoints to softirq.c again.
 
-Er...  Somebody mounting sysfs twice?  From some init script and from
-/etc/fstab, perhaps?  That definitely looks like two mount(2) had to
-have been done to cause that...
+Nice catch!
+
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+
+-- Steve
