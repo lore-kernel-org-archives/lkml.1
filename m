@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbZD2La5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758618AbZD2LcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755441AbZD2La5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 07:30:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbZD2Lar
+	id S1758618AbZD2LcV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 07:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZD2LcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 07:30:47 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:20148 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751260AbZD2Laq (ORCPT
+	Wed, 29 Apr 2009 07:32:12 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:51110 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751631AbZD2LcK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 07:30:46 -0400
-Subject: Re: [PATCH] [13/16] POISON: The high level memory error handler in
- the VM II
-From: Chris Mason <chris.mason@oracle.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "x86@kernel.org" <x86@kernel.org>
-In-Reply-To: <20090429090501.GB15488@localhost>
-References: <20090407509.382219156@firstfloor.org>
-	 <20090407151010.E72A91D0471@basil.firstfloor.org>
-	 <1239210239.28688.15.camel@think.oraclecorp.com>
-	 <20090409072949.GF14687@one.firstfloor.org>
-	 <20090409075805.GG14687@one.firstfloor.org>
-	 <1239283829.23150.34.camel@think.oraclecorp.com>
-	 <20090409140257.GI14687@one.firstfloor.org>
-	 <1239287859.23150.57.camel@think.oraclecorp.com>
-	 <20090429081616.GA8339@localhost>
-	 <20090429083655.GA23223@one.firstfloor.org>
-	 <20090429090501.GB15488@localhost>
-Content-Type: text/plain
-Date: Wed, 29 Apr 2009 07:27:36 -0400
-Message-Id: <1241004456.15136.91.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.49F839AE.00F7:SCFMA4539814,ss=1,fgs=0
+	Wed, 29 Apr 2009 07:32:10 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
+Subject: Re: [PATCH 23/30] microblaze_mmu_v1: Enable fork syscall for MMU and add fork as vfork for noMMU
+Date: Wed, 29 Apr 2009 13:31:26 +0200
+User-Agent: KMail/1.9.9
+Cc: John Williams <john.williams@petalogix.com>, linux-kernel@vger.kernel.org
+References: <1240821139-7247-1-git-send-email-monstr@monstr.eu> <1d3f23370904270443u4ef547b3hab25b65babe329f3@mail.gmail.com> <49F82911.6060207@monstr.eu>
+In-Reply-To: <49F82911.6060207@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200904291331.27043.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19Zfk70ru6oIbng6iZTZFwdMTfqK9mMNzftGyH
+ WLTnqD7woWhF8GMPk/XY4YlnhH5TkxyGHmJPrElv8Bp1dyt1zk
+ r6a7qG/XgR/ZUa6wL+MoA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-29 at 17:05 +0800, Wu Fengguang wrote:
-> On Wed, Apr 29, 2009 at 04:36:55PM +0800, Andi Kleen wrote:
-> > > > I'll have to read harder next week, the FS invalidatepage may expect
-> > > > truncate to be the only caller.
-> > > 
-> > > If direct de-dirty is hard for some pages, how about just ignore them?
+On Wednesday 29 April 2009, Michal Simek wrote:
+> >> +sys_fork_wrapper:
+> >>  sys_vfork_wrapper:
+> >>        brid    sys_vfork
+> >>        addk    r5, r1, r0
 > > 
-> > You mean just ignoring it for the pages where it is hard?
-> 
-> Yes.
-> 
-> > Yes that is what it is essentially doing right now. But at least
-> > some dirty pages need to be handled because most user space
-> > pages tend to be dirty.
-> 
-> Sure.  There are three types of dirty pages:
-> 
-> A. now dirty, can be de-dirty in the current code
-> B. now dirty, cannot be de-dirty
-> C. now dirty and writeback, cannot be de-dirty
-> 
-> I mean B and C can be handled in one single place - the block layer.
-> 
-> If B is hard to be de-dirtied now, ignore them for now and they will
-> eventually be going to IO and become C.
-> 
-> > > There are the PG_writeback pages anyway. We can inject code to
-> > > intercept them at the last stage of IO request dispatching.
+> > NACK!  If only it was that easy :)
 > > 
-> > That would require adding error out code through all the file systems,
-> > right?
+> > On noMMU we cannot just silently call vfork() if the application tries
+> > to fork() - you have to return -ENOSYS (or is there a better one?).
+> > This will just require a small sys_fork_wrapper in entry-nommu.S.
 > 
-> Not necessarily. The file systems deal with buffer head, extend map
-> and bios, they normally won't touch the poisoned page content at all.
+> I will call for noMMU kernel ni_syscall which solve that problem.
+> (Arnd do it in his patches too)
 > 
 
-They often do when zeroing parts of the page that straddle i_size.  At
-least for btrfs its enough to change grab_cache_page and find_get_page
-(and friends) to do the poison magic, along with the functions uses by
-write_cache_pages.
+Note that my patches did not call the wrappers correctly, this
+has to be fixed to make them work first.
 
--chris
+For the fork call on !CONFIG_MMU, we should probably just add
+a cond_syscall() in kernel/sys_ni.c near sys_msync() and
+the other MMU specific calls.
 
-
+	Arnd <><
