@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754331AbZD2Rhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbZD2Rkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754331AbZD2Rhu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 13:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbZD2Rhl
+	id S1758223AbZD2Rkn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 13:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbZD2Rke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 13:37:41 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:39911 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752242AbZD2Rhl (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 13:37:41 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Martin Knoblauch <knobi@knobisoft.de>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org,
-       tigran aivazian <tigran@aivazian.fsnet.co.uk>
-Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
-In-Reply-To: Your message of "Wed, 29 Apr 2009 10:24:20 PDT."
-             <884894.99151.qm@web32602.mail.mud.yahoo.com>
-From: Valdis.Kletnieks@vt.edu
-References: <409142.83316.qm@web32605.mail.mud.yahoo.com> <20090428182837.62c51f26.akpm@linux-foundation.org> <1240977096.5478.3.camel@marge.simson.net> <20090429011755.c141c599.akpm@linux-foundation.org> <20090429120827.GI8633@ZenIV.linux.org.uk>
-            <884894.99151.qm@web32602.mail.mud.yahoo.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1241026559_4397P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Wed, 29 Apr 2009 13:40:34 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:35974 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbZD2Rke (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 13:40:34 -0400
+Message-ID: <49F890D0.7000109@zytor.com>
+Date: Wed, 29 Apr 2009 10:39:28 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Borislav Petkov <borislav.petkov@amd.com>
+CC: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu,
+       tglx@linutronix.de, dougthompson@xmission.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/21] x86: add methods for writing of an MSR on several
+ CPUs
+References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> <1241024107-14535-2-git-send-email-borislav.petkov@amd.com>
+In-Reply-To: <1241024107-14535-2-git-send-email-borislav.petkov@amd.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Date: Wed, 29 Apr 2009 13:35:59 -0400
-Message-ID: <30441.1241026559@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1241026559_4397P
-Content-Type: text/plain; charset=us-ascii
+Borislav Petkov wrote:
+> +}
+> +
+> +/* rdmsr on a bunch of cpus
+> + *
+> + * @mask:	which cpus
+> + * @msr_no:	which MSR
+> + * @l:		array of the lower 32-bit MSR values
+> + * @h:		array of the higher 32-bit MSR values
+> + *
 
-On Wed, 29 Apr 2009 10:24:20 PDT, Martin Knoblauch said:
+Urk!
 
->  One definitely comes from /etc/fstab, but I am not aware of any other script
- mounting sysfs in my userspace.
+Please, for the love of God, no!
 
-You said it was a RedHat box?
+Make it an array of u64s or (equivalently!) an array of (l,h)
+structures, not separate arrays for the halves of the register.
 
-Look in /etc/rc.sysinit:
+	-hpa
 
-        mount -n -t sysfs /sys /sys >/dev/null 2>&1
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-(Near line 28 for RHEL 4, line 23 for RHEL5, and line 21 for Fedora Rawhide)
-
-Probably your culprit.
-
-
---==_Exmh_1241026559_4397P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJ+I//cC3lWbTT17ARAvfPAKC/ilZ7dTEQIqzJ8nhyL8ZA78fVMwCeOqbj
-gT1v0BzA+l6ZhTCjP/BV79U=
-=O0Qc
------END PGP SIGNATURE-----
-
---==_Exmh_1241026559_4397P--
