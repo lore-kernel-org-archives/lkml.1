@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbZD2EuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755375AbZD2Evb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754262AbZD2EuG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 00:50:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbZD2Ety
+	id S1755375AbZD2Evb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 00:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbZD2EvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 00:49:54 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53897 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750981AbZD2Etx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 00:49:53 -0400
-Date: Wed, 29 Apr 2009 14:49:47 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: origin tree build warning
-Message-Id: <20090429144947.5d308d3e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__29_Apr_2009_14_49_47_+1000_BA0/ll41q+4cdkNl"
+	Wed, 29 Apr 2009 00:51:21 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:37832 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750981AbZD2EvU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 00:51:20 -0400
+Date: Wed, 29 Apr 2009 05:51:18 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Jeff Mahoney <jeffm@suse.com>, David <david@unsolicited.net>
+Subject: Re: 2.6.30-rc3: reiserfs: WARNING: at fs/namei.c:1251
+	lookup_one_len
+Message-ID: <20090429045118.GG8633@ZenIV.linux.org.uk>
+References: <a4423d670904261715q4510bdd3u2eb1ac3b90566fbc@mail.gmail.com> <20090428201310.fd2c6c96.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090428201310.fd2c6c96.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__29_Apr_2009_14_49_47_+1000_BA0/ll41q+4cdkNl
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Apr 28, 2009 at 08:13:10PM -0700, Andrew Morton wrote:
+> : Yeah, the sanity check had caught another place misusing lookup_one_len().
+> : I'd keep the warning in place for now; I think I know how to deal with
+> : reiserfs side of things, but if it turns out too invasive for post-rc3,
+> : we can always turn the check off just for -final.  For now I'd keep the
+> : check in place, just to see if anything else runs into it.
+> 
+> It would be nice to plug this sooner rather than later please, to save
+> a bit of bug-reporting bandwidth.
 
-Hi Alan,
-
-Today's linux-next build (x86_64 allmodconfig) produced this warning:
-
-drivers/media/radio/radio-si470x.c: In function 'si470x_fops_release':
-drivers/media/radio/radio-si470x.c:1217: warning: label 'unlock' defined bu=
-t not used
-
-Caused by commit ec5f5bf80501abfe2da2897cfcde8452b545aacb ("radio_si470x:
-Fix free memory corruption") which removed the last reference to this
-label.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__29_Apr_2009_14_49_47_+1000_BA0/ll41q+4cdkNl
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkn33GsACgkQjjKRsyhoI8w/7QCfdZ4tO5LB17QxHtdqklVIQr3e
-h7QAn1nW16OjoLJptM3GPOinWMJm/06g
-=kVP6
------END PGP SIGNATURE-----
-
---Signature=_Wed__29_Apr_2009_14_49_47_+1000_BA0/ll41q+4cdkNl--
+Post-rc4; I've a preliminary for that one, but it'll need to be untangled
+to go in at that phase.  I think I know how to make it reasonably non-invasive,
+but that's still not finished.
