@@ -1,90 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbZD2JL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbZD2JMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756587AbZD2JL6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 05:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759245AbZD2JKm
+	id S1755386AbZD2JMo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 05:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZD2JMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 05:10:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46628 "EHLO mx2.redhat.com"
+	Wed, 29 Apr 2009 05:12:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35457 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759248AbZD2JKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 05:10:40 -0400
-Date: Wed, 29 Apr 2009 11:06:54 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: kpm@redhat.com
-Cc: David Howells <dhowells@redhat.com>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] elf_core_dump: use rcu_read_lock() to access ->real_parent
-Message-ID: <20090429090654.GA8234@redhat.com>
+	id S1751873AbZD2JMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 05:12:30 -0400
+Date: Wed, 29 Apr 2009 11:11:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Christoph Lameter <cl@linux.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       jesse.brandeburg@intel.com, netdev@vger.kernel.org, haoki@redhat.com,
+       mchan@broadcom.com, davidel@xmailserver.org
+Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
+Message-ID: <20090429091130.GA27857@elte.hu>
+References: <49F43B8F.2050907@cosmosbay.com> <87ab60rh8t.fsf@basil.nowhere.org> <49F71B63.8010503@cosmosbay.com> <alpine.DEB.1.10.0904281501300.13862@qirst.com> <49F76174.6060009@cosmosbay.com> <alpine.DEB.1.10.0904281612560.13862@qirst.com> <49F767FD.2040205@cosmosbay.com> <alpine.DEB.1.10.0904281629090.15947@qirst.com> <49F76F6C.80005@cosmosbay.com> <49F77108.7060509@cosmosbay.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <49F77108.7060509@cosmosbay.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(on top of ptrace-s-parent-real_parent-in-binfmt_elf_fdpicc.patch)
 
-In theory it is not safe to dereference ->parent/real_parent without
-tasklist or rcu lock, we can race with re-parenting.
+* Eric Dumazet <dada1@cosmosbay.com> wrote:
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+> On uddpping, I had prior to the patch about 49000 wakeups per 
+> second, and after patch about 26000 wakeups per second (matches 
+> number of incoming udp messages per second)
 
- fs/binfmt_elf.c       |    8 ++++++--
- fs/binfmt_elf_fdpic.c |    8 ++++++--
- 2 files changed, 12 insertions(+), 4 deletions(-)
+very nice. It might not show up as a real performance difference if 
+the CPUs are not fully saturated during the test - but it could show 
+up as a decrease in CPU utilization.
 
---- PTRACE/fs/binfmt_elf.c~RCU_PARENT	2009-04-06 00:03:40.000000000 +0200
-+++ PTRACE/fs/binfmt_elf.c	2009-04-29 10:46:54.000000000 +0200
-@@ -1340,8 +1340,10 @@ static void fill_prstatus(struct elf_prs
- 	prstatus->pr_info.si_signo = prstatus->pr_cursig = signr;
- 	prstatus->pr_sigpend = p->pending.signal.sig[0];
- 	prstatus->pr_sighold = p->blocked.sig[0];
-+	rcu_read_lock();
-+	prstatus->pr_ppid = task_pid_vnr(rcu_dereference(p->real_parent));
-+	rcu_read_unlock();
- 	prstatus->pr_pid = task_pid_vnr(p);
--	prstatus->pr_ppid = task_pid_vnr(p->real_parent);
- 	prstatus->pr_pgrp = task_pgrp_vnr(p);
- 	prstatus->pr_sid = task_session_vnr(p);
- 	if (thread_group_leader(p)) {
-@@ -1382,8 +1384,10 @@ static int fill_psinfo(struct elf_prpsin
- 			psinfo->pr_psargs[i] = ' ';
- 	psinfo->pr_psargs[len] = 0;
- 
-+	rcu_read_lock();
-+	psinfo->pr_ppid = task_pid_vnr(rcu_dereference(p->real_parent));
-+	rcu_read_unlock();
- 	psinfo->pr_pid = task_pid_vnr(p);
--	psinfo->pr_ppid = task_pid_vnr(p->real_parent);
- 	psinfo->pr_pgrp = task_pgrp_vnr(p);
- 	psinfo->pr_sid = task_session_vnr(p);
- 
---- PTRACE/fs/binfmt_elf_fdpic.c~RCU_PARENT	2009-04-28 21:40:49.000000000 +0200
-+++ PTRACE/fs/binfmt_elf_fdpic.c	2009-04-29 10:52:31.000000000 +0200
-@@ -1387,8 +1387,10 @@ static void fill_prstatus(struct elf_prs
- 	prstatus->pr_info.si_signo = prstatus->pr_cursig = signr;
- 	prstatus->pr_sigpend = p->pending.signal.sig[0];
- 	prstatus->pr_sighold = p->blocked.sig[0];
-+	rcu_read_lock();
-+	prstatus->pr_ppid = task_pid_vnr(rcu_dereference(p->real_parent));
-+	rcu_read_unlock();
- 	prstatus->pr_pid = task_pid_vnr(p);
--	prstatus->pr_ppid = task_pid_vnr(p->real_parent);
- 	prstatus->pr_pgrp = task_pgrp_vnr(p);
- 	prstatus->pr_sid = task_session_vnr(p);
- 	if (thread_group_leader(p)) {
-@@ -1432,8 +1434,10 @@ static int fill_psinfo(struct elf_prpsin
- 			psinfo->pr_psargs[i] = ' ';
- 	psinfo->pr_psargs[len] = 0;
- 
-+	rcu_read_lock();
-+	psinfo->pr_ppid = task_pid_vnr(rcu_dereference(p->real_parent));
-+	rcu_read_unlock();
- 	psinfo->pr_pid = task_pid_vnr(p);
--	psinfo->pr_ppid = task_pid_vnr(p->real_parent);
- 	psinfo->pr_pgrp = task_pgrp_vnr(p);
- 	psinfo->pr_sid = task_session_vnr(p);
- 
+Also, if you run the test via 'perf stat -a ./test.sh' you should 
+see a reduction in instructions executed:
 
+aldebaran:~/linux/linux> perf stat -a sleep 1
+
+ Performance counter stats for 'sleep':
+
+   16128.045994  task clock ticks     (msecs)
+          12876  context switches     (events)
+            219  CPU migrations       (events)
+         186144  pagefaults           (events)
+    20911802763  CPU cycles           (events)
+    19309416815  instructions         (events)
+      199608554  cache references     (events)
+       19990754  cache misses         (events)
+
+ Wall-clock time elapsed:  1008.882282 msecs
+
+With -a it's measured system-wide, from start of test to end of test 
+- the results will be a lot more stable (and relevant) statistically 
+than wall-clock time or CPU usage measurements. (both of which are 
+rather imprecise in general)
+
+	Ingo
