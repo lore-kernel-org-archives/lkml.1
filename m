@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbZD2Ou3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbZD2O6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757755AbZD2Ou3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 10:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbZD2OuH
+	id S1753729AbZD2O6Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 10:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbZD2O6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 10:50:07 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:34429 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754253AbZD2OuF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 10:50:05 -0400
+	Wed, 29 Apr 2009 10:58:15 -0400
+Received: from kazi.fit.vutbr.cz ([147.229.8.12]:56849 "EHLO kazi.fit.vutbr.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751223AbZD2O6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 10:58:14 -0400
+Date: Wed, 29 Apr 2009 16:57:53 +0200
+From: Kasparek Tomas <kasparek@fit.vutbr.cz>
+To: Steve Dickson <SteveD@redhat.com>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: NFS client packet storm on 2.6.27.x
+Message-ID: <20090429145753.GL2865@fit.vutbr.cz>
+References: <20090113152201.GD47559@fit.vutbr.cz> <20090116104802.GF47559@fit.vutbr.cz> <20090118130835.GH47559@fit.vutbr.cz> <20090120150301.GG47559@fit.vutbr.cz> <1232465547.7055.3.camel@heimdal.trondhjem.org> <20090303120848.GV89843@fit.vutbr.cz> <1236089767.9631.4.camel@heimdal.trondhjem.org> <20090418051739.GL64731@fit.vutbr.cz> <20090422172707.GC57877@fit.vutbr.cz> <49F84436.5090007@RedHat.com>
 MIME-Version: 1.0
-In-Reply-To: <1240996428-10159-5-git-send-email-tj@kernel.org>
-References: <1240996428-10159-1-git-send-email-tj@kernel.org> 
-	<1240996428-10159-5-git-send-email-tj@kernel.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 29 Apr 2009 08:49:43 -0600
-Message-ID: <fa686aa40904290749v62a3cf70kc2d6b2a437b0bfe4@mail.gmail.com>
-Subject: Re: [PATCH 04/10] block: implement blk_rq_pos/[cur_]sectors() and 
-	convert obvious ones
-To: Tejun Heo <tj@kernel.org>
-Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       linux-ide@vger.kernel.org, James.Bottomley@hansenpartnership.com,
-       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
-       sshtylyov@ru.mvista.com, mike.miller@hp.com, chirag.kantharia@hp.com,
-       Eric.Moore@lsi.com, stern@rowland.harvard.edu,
-       fujita.tomonori@lab.ntt.co.jp, zaitcev@redhat.com,
-       Geert.Uytterhoeven@sonycom.com, sfr@canb.auug.org.au,
-       paul.clements@steeleye.com, jesper.juhl@gmail.com, tim@cyberelk.net,
-       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
-       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
-       davem@davemloft.net, rusty@rustcorp.com.au,
-       Markus.Lidel@shadowconnect.com, bharrosh@panasas.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49F84436.5090007@RedHat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 3:13 AM, Tejun Heo <tj@kernel.org> wrote:
-> Implement accessors - blk_rq_pos(), blk_rq_sectors() and
-> blk_rq_cur_sectors() which return rq->sector, rq->hard_nr_sectors and
-> rq->hard_cur_sectors respectively and convert direct references of the
-> said fields to the accessors.
->
-> This is in preparation of request data length handling cleanup.
->
-> [ Impact: cleanup ]
-> ---
-[...]
->  drivers/block/xsysace.c         |   10 +++++-----
+On Wed, Apr 29, 2009 at 08:12:38AM -0400, Steve Dickson wrote:
+> > I got another client lockup today. It was a desktop so I have some more
+> > dmesg warnings about soft lockup caused probably by network cable unplug
+> > (but hopefully still showing what happens in rpciod) on
+> > 
+> > http://merlin.fit.vutbr.cz/tmp/nfs/pckas-dmesg
+> > 
+> > I can check with top, that rpciod was using 100% cpu. I limited the flow
+> > from client to server with firewall so I was able to save the server and
+> > get some tcpdump -s0 data (actually RPC null with ERR response from server)
+> > 
+> > Just to remind, the client is 2.6.27.21 (i386), the server is 2.6.16.62
+> > (x86_64).
+> > 
+> > Please let me know if I can do anything more, this is really paintfull for
+> > me.
+> Try commenting out the tcp6/udp6 entries from /etc/netconfig....
+> This has help in other places...
 
-Tested-by: and Acked-by: Grant Likely <grant.likely@secretlab.ca>
+It's CentOS 5.3, but if you mean to disable IPv6, I can not do that, the
+server is using IPv6 (but not with these clients). And as mentioned before
+it works well without e06799f958bf7f9f8fae15f0c6f519953fb0257c, both for
+lockd and client floods.
 
-g.
+Bye
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+--   
+
+  Tomas Kasparek, PhD student  E-mail: kasparek@fit.vutbr.cz
+  CVT FIT VUT Brno, L127       Web:    http://www.fit.vutbr.cz/~kasparek
+  Bozetechova 1, 612 66        Fax:    +420 54114-1270
+  Brno, Czech Republic         Phone:  +420 54114-1220
+
+  jabber: tomas.kasparek@jabber.cz
+  GPG: 2F1E 1AAF FD3B CFA3 1537  63BD DCBE 18FF A035 53BC
+
