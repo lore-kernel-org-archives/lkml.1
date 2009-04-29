@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbZD2WVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761563AbZD2WYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757943AbZD2WVa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbZD2WVG
+	id S1761563AbZD2WYh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758168AbZD2WVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:06 -0400
-Received: from kroah.org ([198.145.64.141]:40143 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:15 -0400
+Received: from kroah.org ([198.145.64.141]:40258 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755282AbZD2WVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:05 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:23 2009
-Message-Id: <20090429220922.910328940@mini.kroah.org>
+	id S1758193AbZD2WVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:12 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:24 2009
+Message-Id: <20090429220924.051987610@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:00 -0700
+Date: Wed, 29 Apr 2009 15:07:08 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>,
+       alan@lxorguk.ukuu.org.uk,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Dave Airlie <airlied@redhat.com>, Ingo Molnar <mingo@elte.hu>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 01/58] USB: EHCI: add software retry for transaction errors
+Subject: [patch 09/58] x86, PAT, PCI: Change vma prot in pci_mmap to reflect inherited prot
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=0008-USB-EHCI-add-software-retry-for-transaction-errors.patch
+Content-Disposition: inline; filename=0033-x86-PAT-PCI-Change-vma-prot-in-pci_mmap-to-reflec.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,103 +43,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
 
-upstream commit: a2c2706e1043c17139c2dafd171c4a5cf008ef7e
+upstream commit: 9cdec049389ce2c324fd1ec508a71528a27d4a07
 
-This patch (as1204) adds a software retry mechanism to ehci-hcd.  It
-gets invoked when the driver encounters transaction errors on an
-asynchronous endpoint.  On many systems, hardware deficiencies cause
-such errors to occur if one device is unplugged while the host is
-communicating with another device.  With the patch, the failed
-transactions are retried and generally succeed the second or third
-time through.
+While looking at the issue in the thread:
 
-This is based on code originally written by Koichiro Saito.
+  http://marc.info/?l=dri-devel&m=123606627824556&w=2
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Tested by: Koichiro Saito <Saito.Koichiro@adniss.jp>
-CC: David Brownell <david-b@pacbell.net>
-Cc: stable <stable@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+noticed a bug in pci PAT code and memory type setting.
+
+PCI mmap code did not set the proper protection in vma, when it
+inherited protection in reserve_memtype. This bug only affects
+the case where there exists a WC mapping before X does an mmap
+with /proc or /sys pci interface. This will cause X userlevel
+mmap from /proc or /sysfs to fail on fork.
+
+Reported-by: Kevin Winchester <kjwinchester@gmail.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: <stable@kernel.org>
+LKML-Reference: <20090323190720.GA16831@linux-os.sc.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/host/ehci-q.c |   32 ++++++++++++++++++++++++++++++++
- drivers/usb/host/ehci.h   |    3 +++
- 2 files changed, 35 insertions(+)
+ arch/x86/pci/i386.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/drivers/usb/host/ehci.h
-+++ b/drivers/usb/host/ehci.h
-@@ -500,6 +500,9 @@ struct ehci_qh {
- #define	QH_STATE_UNLINK_WAIT	4		/* LINKED and on reclaim q */
- #define	QH_STATE_COMPLETING	5		/* don't touch token.HALT */
- 
-+	u8			xacterrs;	/* XactErr retry counter */
-+#define	QH_XACTERR_MAX		32		/* XactErr retry limit */
-+
- 	/* periodic schedule info */
- 	u8			usecs;		/* intr bandwidth */
- 	u8			gap_uf;		/* uframes split/csplit gap */
---- a/drivers/usb/host/ehci-q.c
-+++ b/drivers/usb/host/ehci-q.c
-@@ -333,12 +333,40 @@ qh_completions (struct ehci_hcd *ehci, s
- 		token = hc32_to_cpu(ehci, qtd->hw_token);
- 
- 		/* always clean up qtds the hc de-activated */
-+ retry_xacterr:
- 		if ((token & QTD_STS_ACTIVE) == 0) {
- 
- 			/* on STALL, error, and short reads this urb must
- 			 * complete and all its qtds must be recycled.
- 			 */
- 			if ((token & QTD_STS_HALT) != 0) {
-+
-+				/* retry transaction errors until we
-+				 * reach the software xacterr limit
-+				 */
-+				if ((token & QTD_STS_XACT) &&
-+						QTD_CERR(token) == 0 &&
-+						--qh->xacterrs > 0 &&
-+						!urb->unlinked) {
-+					ehci_dbg(ehci,
-+	"detected XactErr len %d/%d retry %d\n",
-+	qtd->length - QTD_LENGTH(token), qtd->length,
-+	QH_XACTERR_MAX - qh->xacterrs);
-+
-+					/* reset the token in the qtd and the
-+					 * qh overlay (which still contains
-+					 * the qtd) so that we pick up from
-+					 * where we left off
-+					 */
-+					token &= ~QTD_STS_HALT;
-+					token |= QTD_STS_ACTIVE |
-+							(EHCI_TUNE_CERR << 10);
-+					qtd->hw_token = cpu_to_hc32(ehci,
-+							token);
-+					wmb();
-+					qh->hw_token = cpu_to_hc32(ehci, token);
-+					goto retry_xacterr;
-+				}
- 				stopped = 1;
- 
- 			/* magic dummy for some short reads; qh won't advance.
-@@ -421,6 +449,9 @@ halt:
- 		/* remove qtd; it's recycled after possible urb completion */
- 		list_del (&qtd->qtd_list);
- 		last = qtd;
-+
-+		/* reinit the xacterr counter for the next qtd */
-+		qh->xacterrs = QH_XACTERR_MAX;
+--- a/arch/x86/pci/i386.c
++++ b/arch/x86/pci/i386.c
+@@ -326,6 +326,9 @@ int pci_mmap_page_range(struct pci_dev *
+ 			return -EINVAL;
+ 		}
+ 		flags = new_flags;
++		vma->vm_page_prot = __pgprot(
++			(pgprot_val(vma->vm_page_prot) & ~_PAGE_CACHE_MASK) |
++			flags);
  	}
  
- 	/* last urb's completion might still need calling */
-@@ -862,6 +893,7 @@ static void qh_link_async (struct ehci_h
- 	head->qh_next.qh = qh;
- 	head->hw_next = dma;
- 
-+	qh->xacterrs = QH_XACTERR_MAX;
- 	qh->qh_state = QH_STATE_LINKED;
- 	/* qtd completions reported later by interrupt */
- }
+ 	if (((vma->vm_pgoff < max_low_pfn_mapped) ||
 
 
