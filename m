@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbZD2JT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbZD2JTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753917AbZD2JT0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 05:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZD2JSd
+	id S1755930AbZD2JTn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 05:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbZD2JSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 05:18:33 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56395 "EHLO hera.kernel.org"
+	Wed, 29 Apr 2009 05:18:36 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56405 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752042AbZD2JS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 05:18:28 -0400
+	id S1752787AbZD2JSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 05:18:32 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
        linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
@@ -24,47 +24,40 @@ To: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
        rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
        bharrosh@panasas.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 01/10] nbd: don't clear rq->sector and nr_sectors unnecessarily
-Date: Wed, 29 Apr 2009 18:13:39 +0900
-Message-Id: <1240996428-10159-2-git-send-email-tj@kernel.org>
+Subject: [PATCH 02/10] ide-tape: don't initialize rq->sector for rw requests
+Date: Wed, 29 Apr 2009 18:13:40 +0900
+Message-Id: <1240996428-10159-3-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1240996428-10159-1-git-send-email-tj@kernel.org>
 References: <1240996428-10159-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 09:13:58 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 09:14:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's no reason to clear rq->sector and nr_sectors after calling
-blk_rq_init().  They're guaranteed to be clear.  Drop unnecessary
-clearing.
+rq->sector is set to the tape->first_frame but it's never actually
+used and not even in the correct unit (512 byte sectors).  Don't set
+it.
 
 [ Impact: cleanup ]
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Paul Clements <paul.clements@steeleye.com>
 ---
- drivers/block/nbd.c |    7 -------
- 1 files changed, 0 insertions(+), 7 deletions(-)
+ drivers/ide/ide-tape.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
-index 4d6de4f..a9ab8be 100644
---- a/drivers/block/nbd.c
-+++ b/drivers/block/nbd.c
-@@ -580,13 +580,6 @@ static int __nbd_ioctl(struct block_device *bdev, struct nbd_device *lo,
- 		blk_rq_init(NULL, &sreq);
- 		sreq.cmd_type = REQ_TYPE_SPECIAL;
- 		nbd_cmd(&sreq) = NBD_CMD_DISC;
--		/*
--		 * Set these to sane values in case server implementation
--		 * fails to check the request type first and also to keep
--		 * debugging output cleaner.
--		 */
--		sreq.sector = 0;
--		sreq.nr_sectors = 0;
- 		if (!lo->sock)
- 			return -EINVAL;
- 		nbd_send_req(lo, &sreq);
+diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+index 8dfc688..7149224 100644
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -892,7 +892,6 @@ static int idetape_queue_rw_tail(ide_drive_t *drive, int cmd, int size)
+ 	rq->cmd_type = REQ_TYPE_SPECIAL;
+ 	rq->cmd[13] = cmd;
+ 	rq->rq_disk = tape->disk;
+-	rq->sector = tape->first_frame;
+ 
+ 	if (size) {
+ 		ret = blk_rq_map_kern(drive->queue, rq, tape->buf, size,
 -- 
 1.6.0.2
 
