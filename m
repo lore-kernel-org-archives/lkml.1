@@ -1,56 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbZD2MJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758487AbZD2MJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756733AbZD2MJi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 08:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757792AbZD2MJG
+	id S1758487AbZD2MJy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 08:09:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757831AbZD2MJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 08:09:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:64673 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757333AbZD2MJF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 08:09:05 -0400
-Date: Wed, 29 Apr 2009 08:09:02 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-cc: Sachin Sant <sachinp@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       linux-s390@vger.kernel.org, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Next April 24: [S390] allmodconfig build failure
- (trace/events)
+	Wed, 29 Apr 2009 08:09:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60269 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757776AbZD2MJS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 08:09:18 -0400
+Date: Wed, 29 Apr 2009 12:07:04 GMT
+From: tip-bot for Heiko Carstens <heiko.carstens@de.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rostedt@goodmis.org, sachinp@in.ibm.com, heiko.carstens@de.ibm.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
+       tglx@linutronix.de, mingo@elte.hu
 In-Reply-To: <20090429135139.5fac79b8@osiris.boeblingen.de.ibm.com>
-Message-ID: <alpine.DEB.2.00.0904290808300.8066@gandalf.stny.rr.com>
-References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au> <49F16654.8040208@in.ibm.com> <20090424072533.GE24912@elte.hu> <20090424104108.0f2c0f05@osiris.boeblingen.de.ibm.com> <49F8232B.4090007@in.ibm.com>
- <20090429135139.5fac79b8@osiris.boeblingen.de.ibm.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+References: <20090429135139.5fac79b8@osiris.boeblingen.de.ibm.com>
+Subject: [tip:tracing/core] tracing: fix build failure on s390
+Message-ID: <tip-fb39b423a214cc3866bbaef78a11af62cae56d31@git.kernel.org>
+Git-Commit-ID: fb39b423a214cc3866bbaef78a11af62cae56d31
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 12:07:05 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  fb39b423a214cc3866bbaef78a11af62cae56d31
+Gitweb:     http://git.kernel.org/tip/fb39b423a214cc3866bbaef78a11af62cae56d31
+Author:     Heiko Carstens <heiko.carstens@de.ibm.com>
+AuthorDate: Wed, 29 Apr 2009 13:51:39 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 29 Apr 2009 14:04:10 +0200
 
-On Wed, 29 Apr 2009, Heiko Carstens wrote:
-> 
-> Subject: [PATCH] tracing: fix compile error
-> 
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> 
-> "tracing: create automated trace defines" causes this compile error on s390:
-> 
-> kernel/built-in.o: In function `__do_softirq':
-> (.text+0x1c680): undefined reference to `__tracepoint_softirq_entry'
-> 
-> This happens because the definitions of the softirq tracepoints were moved
-> from kernel/softirq.c to kernel/irq/handle.c. Since s390 doesn't support
-> generic hardirqs handle.c doesn't get compiled and the definitions are
-> missing.
-> So move the tracepoints to softirq.c again.
+tracing: fix build failure on s390
 
-Nice catch!
+"tracing: create automated trace defines" causes this compile error on s390,
+as reported by Sachin Sant against linux-next:
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+ kernel/built-in.o: In function `__do_softirq':
+ (.text+0x1c680): undefined reference to `__tracepoint_softirq_entry'
 
--- Steve
+This happens because the definitions of the softirq tracepoints were moved
+from kernel/softirq.c to kernel/irq/handle.c. Since s390 doesn't support
+generic hardirqs handle.c doesn't get compiled and the definitions are
+missing.
+
+So move the tracepoints to softirq.c again.
+
+[ Impact: fix build failure on s390 ]
+
+Reported-by: Sachin Sant <sachinp@in.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: fweisbec@gmail.com
+LKML-Reference: <20090429135139.5fac79b8@osiris.boeblingen.de.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/irq/handle.c |    2 --
+ kernel/softirq.c    |    2 ++
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+index 37c6363..e68bb5a 100644
+--- a/kernel/irq/handle.c
++++ b/kernel/irq/handle.c
+@@ -18,8 +18,6 @@
+ #include <linux/rculist.h>
+ #include <linux/hash.h>
+ #include <linux/bootmem.h>
+-
+-#define CREATE_TRACE_POINTS
+ #include <trace/events/irq.h>
+ 
+ #include "internals.h"
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 7ab9dfd..d4ba347 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -24,6 +24,8 @@
+ #include <linux/ftrace.h>
+ #include <linux/smp.h>
+ #include <linux/tick.h>
++
++#define CREATE_TRACE_POINTS
+ #include <trace/events/irq.h>
+ 
+ #include <asm/irq.h>
