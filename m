@@ -1,103 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753070AbZD2L2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbZD2La5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753070AbZD2L2y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 07:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbZD2L2n
+	id S1755441AbZD2La5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 07:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbZD2Lar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 07:28:43 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50962 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752577AbZD2L2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 07:28:41 -0400
-Date: Wed, 29 Apr 2009 13:28:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Robert Richter <robert.richter@amd.com>, Paul Mackerras <paulus@samba.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/29] x86/perfcounters: x86 and AMD cpu updates
-Message-ID: <20090429112829.GB8813@elte.hu>
-References: <1241002046-8832-1-git-send-email-robert.richter@amd.com> <20090429110936.GI2373@elte.hu> <1241004163.8021.256.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241004163.8021.256.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 29 Apr 2009 07:30:47 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:20148 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751260AbZD2Laq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 07:30:46 -0400
+Subject: Re: [PATCH] [13/16] POISON: The high level memory error handler in
+ the VM II
+From: Chris Mason <chris.mason@oracle.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "x86@kernel.org" <x86@kernel.org>
+In-Reply-To: <20090429090501.GB15488@localhost>
+References: <20090407509.382219156@firstfloor.org>
+	 <20090407151010.E72A91D0471@basil.firstfloor.org>
+	 <1239210239.28688.15.camel@think.oraclecorp.com>
+	 <20090409072949.GF14687@one.firstfloor.org>
+	 <20090409075805.GG14687@one.firstfloor.org>
+	 <1239283829.23150.34.camel@think.oraclecorp.com>
+	 <20090409140257.GI14687@one.firstfloor.org>
+	 <1239287859.23150.57.camel@think.oraclecorp.com>
+	 <20090429081616.GA8339@localhost>
+	 <20090429083655.GA23223@one.firstfloor.org>
+	 <20090429090501.GB15488@localhost>
+Content-Type: text/plain
+Date: Wed, 29 Apr 2009 07:27:36 -0400
+Message-Id: <1241004456.15136.91.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.49F839AE.00F7:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Wed, 2009-04-29 at 13:09 +0200, Ingo Molnar wrote:
-> > * Robert Richter <robert.richter@amd.com> wrote:
+On Wed, 2009-04-29 at 17:05 +0800, Wu Fengguang wrote:
+> On Wed, Apr 29, 2009 at 04:36:55PM +0800, Andi Kleen wrote:
+> > > > I'll have to read harder next week, the FS invalidatepage may expect
+> > > > truncate to be the only caller.
+> > > 
+> > > If direct de-dirty is hard for some pages, how about just ignore them?
 > > 
-> > > This patch series updates the perfcounters implementation mainly 
-> > > for the x86 architecture.
+> > You mean just ignoring it for the pages where it is hard?
+> 
+> Yes.
+> 
+> > Yes that is what it is essentially doing right now. But at least
+> > some dirty pages need to be handled because most user space
+> > pages tend to be dirty.
+> 
+> Sure.  There are three types of dirty pages:
+> 
+> A. now dirty, can be de-dirty in the current code
+> B. now dirty, cannot be de-dirty
+> C. now dirty and writeback, cannot be de-dirty
+> 
+> I mean B and C can be handled in one single place - the block layer.
+> 
+> If B is hard to be de-dirtied now, ignore them for now and they will
+> eventually be going to IO and become C.
+> 
+> > > There are the PG_writeback pages anyway. We can inject code to
+> > > intercept them at the last stage of IO request dispatching.
 > > 
-> > Wow, very nice series! Still havent looked through all of them, but 
-> > wanted to give some quick feedback that the splitup and direction 
-> > looks all good.
+> > That would require adding error out code through all the file systems,
+> > right?
 > 
-> Agreed, patches look nice, thanks!
+> Not necessarily. The file systems deal with buffer head, extend map
+> and bios, they normally won't touch the poisoned page content at all.
 > 
-> > > I developed this patches based on 03ced43 and later rebased to 
-> > > 1b88991. The latest tip/percounters/core branch seems to be 
-> > > broken, no nmis are delivered, only perfcounter interrupts with no 
-> > > results on kerneltop. I am still debugging this. However, I could 
-> > > test successfully the patch series based on 03ced43 and want to 
-> > > release the patches anyway.
-> > 
-> > hm, it works all fine for me. This is "perf top" output from an 
-> > AMD/Barcelona box:
-> 
-> Works on my opteron as well:
-> 
-> vendor_id       : AuthenticAMD                         
-> cpu family      : 15                                   
-> model           : 67                                   
-> model name      : Dual-Core AMD Opteron(tm) Processor 1216
-> stepping        : 2 
 
-Mine is:
+They often do when zeroing parts of the page that straddle i_size.  At
+least for btrfs its enough to change grab_cache_page and find_get_page
+(and friends) to do the poison magic, along with the functions uses by
+write_cache_pages.
 
-processor	: 15
-vendor_id	: AuthenticAMD
-cpu family	: 16
-model		: 2
-model name	: Quad-Core AMD Opteron(tm) Processor 8356
-stepping	: 3
-cpu MHz		: 2300.000
-cache size	: 512 KB
-physical id	: 3
-siblings	: 1
-core id		: 3
-cpu cores	: 4
-apicid		: 19
-initial apicid	: 15
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 5
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr 
-pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx 
-mmxext fxsr_opt pdpe1gb rdtscp lm 3dnowext 3dnow constant_tsc 
-arch_perfmon rep_good nonstop_tsc pni monitor cx16 lahf_lm 
-cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 
-3dnowprefetch osvw ibs
-bogomips	: 4621.68
-TLB size	: 1024 4K pages
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 48 bits physical, 48 bits virtual
-power management: ts ttp tm stc 100mhzsteps hwpstate
+-chris
 
-	Ingo
+
