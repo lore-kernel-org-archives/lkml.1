@@ -1,131 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbZD2DIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758438AbZD2DPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756927AbZD2DIN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 23:08:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbZD2DH4
+	id S1758438AbZD2DPu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 23:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZD2DPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 23:07:56 -0400
-Received: from mga09.intel.com ([134.134.136.24]:59049 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752717AbZD2DHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 23:07:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,264,1239001200"; 
-   d="scan'208";a="407822180"
-Subject: Re: acpi 'video' driver, and issues with
-	'brightness_switch_enabled=0'
-From: Zhang Rui <rui.zhang@intel.com>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-In-Reply-To: <1240912731.29860.11.camel@maxim-laptop>
-References: <1240855052.11237.7.camel@maxim-laptop>
-	 <1240886605.4639.19.camel@rzhang-dt>
-	 <1240912731.29860.11.camel@maxim-laptop>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 29 Apr 2009 11:08:20 +0800
-Message-Id: <1240974500.4639.54.camel@rzhang-dt>
+	Tue, 28 Apr 2009 23:15:41 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:56088 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754403AbZD2DPk (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 23:15:40 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Debug only with printk ?
+In-Reply-To: Your message of "Tue, 28 Apr 2009 23:27:42 +0200."
+             <2d05c4580904281427r65282bb2m5dd8c9f8a2de5363@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <2d05c4580904281427r65282bb2m5dd8c9f8a2de5363@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; boundary="==_Exmh_1240974935_4310P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 28 Apr 2009 23:15:35 -0400
+Message-ID: <81278.1240974935@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-28 at 17:58 +0800, Maxim Levitsky wrote:
-> On Tue, 2009-04-28 at 10:43 +0800, Zhang Rui wrote:
-> > On Tue, 2009-04-28 at 01:57 +0800, Maxim Levitsky wrote:
-> > > I have a notebook which handles brightness keys in hardware, but tells
-> > > loudly when it does so.
-> > > 
-> > if you boot into console mode w/o ACPI video driver, does the brightness
-> > still change when you press the hotkeys?
-> They always work.
-> For s while, due to buggy ACPI table, acpi 'video' driver won't work, so
-> I blacklisted it, and yet hw keys did work.
-> 
-so if you kill acpid, and run "cat /proc/acpi/event", there are some
-ACPI video events popping up when you press the hotkeys, right?
+--==_Exmh_1240974935_4310P
+Content-Type: text/plain; charset=us-ascii
 
-this is bad, because these events are "Used to notify OSPM that the
-output device brightness should be increased/decreased by one level.
-Used to notify OSPM that the user pressed a button or key that is
-associated with cycling brightness." according to the ACPI spec.
-So, if BIOS changes the brightness for OS, it should not issue an event
-any more.
+On Tue, 28 Apr 2009 23:27:42 +0200, Dragoslav Zaric said:
+> I am relatively new in linux kernel and since debugging is key
+> element of programming, I am wondering is it really necessary
+> to use various debugging tools for kernel debugging ?
 
-> > 
-> > > Currently, acpi 'video' also sets the brightness, which result in double
-> > > setting, and on top of that it emits a key that makes gpm set brightness
-> > > again.
-> > > 
-> > we need to support the brightness control in console mode.
-> > and "﻿brightness_switch_enabled" should be cleared in graphics mode to
-> > prevent the ACPI video driver action upon hotkey events.
-> How gnome power manager can do that, use /sys/module iface?
-> 
-> > 
-> > > And (yes...) on top of that keyboard emits a brightness up/down even,
-> > > which (you guessed...) sets brightness again.
-> > > 
-> > > I found out that it is possible to tell gnome-power-manager not to set
-> > > brightness, but yet in kernel driver still sets it.
-> > > 
-> > > I found out even earlier that I can use brightness_switch_enabled=0,
-> > > which supposed to make inkernel driver not touch the brightness.
-> > > But I found out that this driver won't update the brightness, in /sys
-> > > interface when I set this param.
-> > > 
-> > No, when ﻿"﻿brightness_switch_enabled" is cleared, gdm should still use
-> > the ACPI backlight sysfs I/F if available to change the backlight,
-> > i.e. /sys/class/backlight/acpi_video0/...
-> Indeed it does, but I don't like it, hardware already changed the
-> brightness, but it receives another two events about brightness up/down.
-> 
-well, this is rather a hardware problem to me.
-Because OS should change the brightness upon such a notification, either
-in ACPI video driver, or in user space.
-IMO, if BIOS doesn't want OS to change the backlight, it should not
-issue such events at all.
+'git bisect' and friends are your friends if you're trying to track down
+a bug in somebody else's code.
 
-> It (and I too) can change the brightness, but it doesn't update to
-> reflect current brightness
-> (/sys/class/backlight/acpi_video0/brightness) shows cached value from
-> last time it was set.
-> 
-> there is also the actual_brightness, but I think it isn't used by gpm.
-> 
-﻿/sys/class/backlight/acpi_video0/brightness doesn't reflect the actual
-brightness level, gdm should use actual_brightness instead.
+It's not *mandatory* to use other tools, but it certainly helps.
 
-But if gdm uses the sysfs backlight I/F, the value of these two files
-should be the same.
+> Is simple printing with printk enough to debug any kind of kernel problem,
+> and if not, what are the cases when printk is not enough ?
 
-can you do this test please?
-1. attach the output of "grep . /sys/class/backlight/acpi_video0/*"
-2. press the hotkey
-3. redo step 1.
+Usually, printk's are sufficient *if* you can use them.  Times when this
+may not be true:
 
-> 
-> > 
-> > what's the model name of your laptop?
-> acer aspire 5720G
+1) Debugging an early-boot crash, before even the earlyprintk stuff is alive.
 
-hah, I know this laptop.
-> > are you using Intel graphics?
-> no, nvidia 8400GS
-> 
-> > please attach the output of acpidump and lspci.
-> 
-> > It would be great if you can file a bug report about this issue at
-> > bugzilla.kernel.org.
-> No problem.
-And I know you're good at reporting bugs. :p
+2) "Add a printk, recompile, reboot" gets pretty boring pretty fast, so
+it may be a *lot* faster if you can use one of the kernel debugging/tracing
+tools to do "Well, maybe we should check this... or this.. or wait, how
+about *this*?" testing.
 
-why not move this discussion to the bugzilla so that I can better track
-this bug?
+3) If you're trying to debug an issue on a production server, you may not
+have the *option* to do a lot of compile/reboot cycles, and be forced to
+use whatever debug/trace support is present in the already-running kernel.
 
-thanks,
-rui
+> Also, is there possibility when using debugging tools to affect
+> kernel environment, because debugging tool will also take cpu time and
+> memory resources ?
 
+If I had a <monetary unit> for every time when even adding a printk call
+was enough to change the timing and cause a Heisenbug to change its behavior,
+I'd have a lot of monetary units.
 
+Yes, debugging tools and printks will change code and data offsets and timing
+so data overlays and race conditions change or even dissapear/reappear.
+
+--==_Exmh_1240974935_4310P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJ98ZXcC3lWbTT17ARAtHIAKDWoSZFKJ1eBH0nT+6TILsRwnLKnACfQa7t
+RTp49EBAciYeFCztchZevFE=
+=S8/9
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1240974935_4310P--
