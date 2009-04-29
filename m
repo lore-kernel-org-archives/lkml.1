@@ -1,43 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757808AbZD2PXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756349AbZD2Ph1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757808AbZD2PXU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 11:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755260AbZD2PXM
+	id S1756349AbZD2Ph1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 11:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbZD2PhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 11:23:12 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44737 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754932AbZD2PXL (ORCPT
+	Wed, 29 Apr 2009 11:37:13 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:53284 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751951AbZD2PhM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 11:23:11 -0400
-To: linux-kernel@vger.kernel.org
-Subject: Re: splice() on two pipes
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090429103308.GA23684@squirrel.roonstrasse.net>
-Date: Wed, 29 Apr 2009 17:23:05 +0200
-In-Reply-To: <20090429103308.GA23684@squirrel.roonstrasse.net> (Max Kellermann's message of "Wed, 29 Apr 2009 12:33:08 +0200")
-Message-ID: <87my9zpjqe.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Wed, 29 Apr 2009 11:37:12 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
+Subject: Re: [PATCH 20/30] microblaze_mmu_v1: uaccess MMU update
+Date: Wed, 29 Apr 2009 17:35:28 +0200
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       john.williams@petalogix.com
+References: <1240821139-7247-1-git-send-email-monstr@monstr.eu> <200904291258.40667.arnd@arndb.de> <49F87009.1000905@monstr.eu>
+In-Reply-To: <49F87009.1000905@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904291735.28964.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/tt29dO7wvh+VX1HhepS3lZLfsywufMojrqQD
+ bW64dM7468QkBKIRRo+MI9JgfgMN4GtQiPGVLYErXs1AE13UJd
+ CQa1nT43oCU1Iy8jGnI/Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max Kellermann <max@duempel.org> writes:
+On Wednesday 29 April 2009, Michal Simek wrote:
+> > The above is just the nommu variant. For mmu, you need to
+> > have exception handling in __clear_user to take care of the
+> > case where the address is part of the user mapping (access_ok)
+> > but not currently mapped.
+> 
+> Is it possible to do it for noMMU kernel too? I mean current MMU
+> implementation of __clear_user in asm is faster than call memset
+> for noMMU. I think I can use MMU implementation for noMMU too.
+> Add two words to __ex_table just extend size of one section but
+> not too much and won't be used for noMMU. 
 
-I don't think splice is about handling all possible cases,
-but just cases where the kernel can do better than user space.
-I don't think that's the case here.
+Well, you can probably do something like this:
 
-> when I read about the splice() system call, I thought it was obvious
-> that it could copy data between two pipes. 
+#ifdef CONFIG_MMU
+#define __FIXUP_SECTION		".section .fixup,\"ax\"\n"
+#define __EX_TABLE_SECTION	".section __ex_table,\"a\"\n"
+#else
+#define __FIXUP_SECTION		".section .discard,\"ax\"\n"
+#define __EX_TABLE_SECTION	".section .discard,\"a\"\n"
+#endif
 
-It would be more efficient if you used fd passing to pass the fd
-around to the other process and let it read directly.
++#define __get_user_asm(insn, __gu_ptr, __gu_val, __gu_err)             \
++({                                                                     \
++       __asm__ __volatile__ (                                          \
++                       "1:"    insn    " %1, %2, r0; \n"               \
++                       "       addk    %0, r0, r0;   \n"               \
++                       "2:                           \n"               \
++                        __FIXUP_SECTION				\
++                       "3:      brid    2b	      \n"               \
++                       "        addik   %0, r0, %3   \n"               \
++                       ".previous		      \n"               \
++                        __EX_TABLE_SECTION	                        \
++                       ".word   1b,3b		      \n"               \
++                       ".previous		      \n"               \
++               : "=r"(__gu_err), "=r"(__gu_val)                        \
++               : "r"(__gu_ptr), "i"(-EFAULT)                           \
++       );                                                              \
++})
 
--Andi
+This should simply throw away all the fixups if you list the .discard
+section in vmlinux.lds.S under '/DISCARD/:', so you have no
+overhead at all.
 
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+	Arnd <><
