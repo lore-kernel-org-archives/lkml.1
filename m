@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbZD2Xuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbZD2Xx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755777AbZD2Xuk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 19:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZD2Xuc
+	id S1758890AbZD2Xx2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 19:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbZD2XxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 19:50:32 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:39563 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752219AbZD2Xub (ORCPT
+	Wed, 29 Apr 2009 19:53:19 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:7061 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751465AbZD2XxS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 19:50:31 -0400
+	Wed, 29 Apr 2009 19:53:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=o5OxF8YBcGkRefDuOt8ZC1WoMyacDTBWweGSZAHIV/634YYSALsHui0dv5Q3WBmVf6
-         53OBmEQ59GyBIGa8mjP6n+BoWSchybVdwgQbmMpyWgGS1YYEU5mkdxR9asI4KBb9u1IZ
-         w5GuemSsPFGV0DuN3IDBeL+cIt7PvpGLV5034=
-Message-ID: <49F8E7C0.30207@gmail.com>
-Date: Wed, 29 Apr 2009 17:50:24 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vHB6t01zgoADH155iUnbAauSdn96x5PhCAfw1iBKEn40WIgYVPizHv3jyptOU/UBLP
+         In+xWlenjreSQrD9u8dkZzYD5/5wOmRbT3phpzX1BW138JCmbHCskLLJWp8JkrSx4ubb
+         yXD7fFNHEjCA9bQ3lR75UcLcYAyZTfJpVRbIw=
 MIME-Version: 1.0
-To: Mao Yilu <ylmao@mail.ustc.edu.cn>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: TSC unstable on Intel Pentium M processor 750
-References: <440758024.12507@ustc.edu.cn>
-In-Reply-To: <440758024.12507@ustc.edu.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090429181657.GA30078@kroah.com>
+References: <200904271943.40588.david-b@pacbell.net>
+	 <20090429040810.GI23062@kroah.com>
+	 <d82e647a0904290508l1b313389qcaf41c5d10f9abcd@mail.gmail.com>
+	 <20090429181657.GA30078@kroah.com>
+Date: Thu, 30 Apr 2009 07:53:17 +0800
+Message-ID: <d82e647a0904291653x2990ee4u3133daec0ee74017@mail.gmail.com>
+Subject: Re: [patch 2.6.30-rc3] platform_bus: remove "which platform_data?" 
+	confusion
+From: Ming Lei <tom.leiming@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: David Brownell <david-b@pacbell.net>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mao Yilu wrote:
-> Hi,
-> 
-> I masked all the interrupts except keyboard interrupt before the instruction “hlt”, So the CPU ran nothing until I click the keyboard button. And I used “rdtscll” and “do_gettimeofday” to get the halt time. But the result of “do_gettimeofday” was longer than the one of “rdtscll” about 3s per minute. I don’t know why.
-> I timed some math job using the same way in contrary to the “hlt” instruction. The TSC was not correct either. In 3 minutes, the result of “do_gettimeofday” was longer than the one of “rdtscll” about 5s.
-> The processor is Intel Pentium M processor 750. From the software developer’s manual of Intel, the processor clock of Pentium M processors is impacted by Intel SpeedStep technology, while some other processors is not. Maybe this is another feature Pentium M processors own.
-> Pentium M processors support 5 C-states. I am sure the TSC doesn’t stop in C0 and C1 states. But I am not sure about other states. Maybe other states will stop the clock, and “hlt” instruction will make the CPU into deeper state.
-> These are my guess. I wanna the truth. Thank you.
-> 
-> Mao Yilu
-> 
+2009/4/30 Greg KH <greg@kroah.com>:
+> On Wed, Apr 29, 2009 at 08:08:10PM +0800, Ming Lei wrote:
+>> 2009/4/29 Greg KH <greg@kroah.com>:
+>> >
+>> > Ming, what do you think of this?
+>>
+>> I did not know platform_data field can be used in other bus , so please
+>> revert the previous patches.
+>
+> So that would be the following 2 commits, right:
+> � � � �ce21c7bcd796fc4f45d48781b7e85f493cc55ee5
+> � � � �006f4571a15fae3a0575f2a0f9e9b63b3d1012f8
+> anything else I need to revert as well?
 
-On many processors the TSC will stop in various C-states, and also the 
-TSC frequency changes when CPU frequency changes. This is why using 
-rdtsc in userspace is not reliable, since the code can't know whether or 
-not TSC can be used on that CPU reliably or how to scale the results.
+Also you need to drop
+http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/driver-core.current/driver-core-platform-do-not-complain-for-platform_data-added-by-platform_device_add_data.patch.
+
+Thanks!
+
+-- 
+Lei Ming
