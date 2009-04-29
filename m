@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762641AbZD2Wdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762685AbZD2WeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762641AbZD2Wdt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759962AbZD2WVi
+	id S1762685AbZD2WeT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757475AbZD2WVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:38 -0400
-Received: from kroah.org ([198.145.64.141]:40500 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:39 -0400
+Received: from kroah.org ([198.145.64.141]:40532 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759265AbZD2WVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:35 -0400
+	id S1758178AbZD2WVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:36 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:28 2009
-Message-Id: <20090429220927.980460357@mini.kroah.org>
+Message-Id: <20090429220928.132621395@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:32 -0700
+Date: Wed, 29 Apr 2009 15:07:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Jeff Garzik <jgarzik@redhat.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 33/58] pata_hpt37x: fix HPT370 DMA timeouts
+       alan@lxorguk.ukuu.org.uk, Jonathan McDowell <noodles@earth.li>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 34/58] usb gadget: fix ethernet link reports to ethtool
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=0070-pata_hpt37x-fix-HPT370-DMA-timeouts.patch
+Content-Disposition: inline; filename=0077-usb-gadget-fix-ethernet-link-reports-to-ethtool.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,73 +40,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+From: Jonathan McDowell <noodles@earth.li>
 
-upstream commit: 265b7215aed36941620b65ecfff516200fb190c1
+upstream commit: 237e75bf1e558f7330f8deb167fa3116405bef2c
 
-The libata driver has copied the code from the IDE driver which caused a post
-2.4.18 regression on many HPT370[A] chips -- DMA stopped to work completely,
-only causing timeouts.  Now remove hpt370_bmdma_start() for good...
+The g_ether USB gadget driver currently decides whether or not there's a
+link to report back for eth_get_link based on if the USB link speed is
+set. The USB gadget speed is however often set even before the device is
+enumerated. It seems more sensible to only report a "link" if we're
+actually connected to a host that wants to talk to us. The patch below
+does this for me - tested with the PXA27x UDC driver.
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Jonathan McDowell <noodles@earth.li>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/ata/pata_hpt37x.c |   22 ++--------------------
- 1 file changed, 2 insertions(+), 20 deletions(-)
+ drivers/usb/gadget/u_ether.c |    8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
---- a/drivers/ata/pata_hpt37x.c
-+++ b/drivers/ata/pata_hpt37x.c
-@@ -8,7 +8,7 @@
-  * Copyright (C) 1999-2003		Andre Hedrick <andre@linux-ide.org>
-  * Portions Copyright (C) 2001	        Sun Microsystems, Inc.
-  * Portions Copyright (C) 2003		Red Hat Inc
-- * Portions Copyright (C) 2005-2007	MontaVista Software, Inc.
-+ * Portions Copyright (C) 2005-2009	MontaVista Software, Inc.
-  *
-  * TODO
-  *	Look into engine reset on timeout errors. Should not be	required.
-@@ -24,7 +24,7 @@
- #include <linux/libata.h>
- 
- #define DRV_NAME	"pata_hpt37x"
--#define DRV_VERSION	"0.6.11"
-+#define DRV_VERSION	"0.6.12"
- 
- struct hpt_clock {
- 	u8	xfer_speed;
-@@ -445,23 +445,6 @@ static void hpt370_set_dmamode(struct at
+--- a/drivers/usb/gadget/u_ether.c
++++ b/drivers/usb/gadget/u_ether.c
+@@ -175,12 +175,6 @@ static void eth_get_drvinfo(struct net_d
+ 	strlcpy(p->bus_info, dev_name(&dev->gadget->dev), sizeof p->bus_info);
  }
  
- /**
-- *	hpt370_bmdma_start		-	DMA engine begin
-- *	@qc: ATA command
-- *
-- *	The 370 and 370A want us to reset the DMA engine each time we
-- *	use it. The 372 and later are fine.
-- */
--
--static void hpt370_bmdma_start(struct ata_queued_cmd *qc)
+-static u32 eth_get_link(struct net_device *net)
 -{
--	struct ata_port *ap = qc->ap;
--	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
--	pci_write_config_byte(pdev, 0x50 + 4 * ap->port_no, 0x37);
--	udelay(10);
--	ata_bmdma_start(qc);
+-	struct eth_dev	*dev = netdev_priv(net);
+-	return dev->gadget->speed != USB_SPEED_UNKNOWN;
 -}
 -
--/**
-  *	hpt370_bmdma_end		-	DMA engine stop
-  *	@qc: ATA command
-  *
-@@ -598,7 +581,6 @@ static struct scsi_host_template hpt37x_
- static struct ata_port_operations hpt370_port_ops = {
- 	.inherits	= &ata_bmdma_port_ops,
+ /* REVISIT can also support:
+  *   - WOL (by tracking suspends and issuing remote wakeup)
+  *   - msglevel (implies updated messaging)
+@@ -189,7 +183,7 @@ static u32 eth_get_link(struct net_devic
  
--	.bmdma_start 	= hpt370_bmdma_start,
- 	.bmdma_stop	= hpt370_bmdma_stop,
+ static struct ethtool_ops ops = {
+ 	.get_drvinfo = eth_get_drvinfo,
+-	.get_link = eth_get_link
++	.get_link = ethtool_op_get_link,
+ };
  
- 	.mode_filter	= hpt370_filter,
+ static void defer_kevent(struct eth_dev *dev, int flag)
 
 
