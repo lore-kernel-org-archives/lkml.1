@@ -1,107 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbZD2BcC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932145AbZD2Bco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759329AbZD2BcC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 21:32:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758826AbZD2Bbw
+	id S932145AbZD2Bco (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 21:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759529AbZD2BcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 21:31:52 -0400
-Received: from mga02.intel.com ([134.134.136.20]:65192 "EHLO mga02.intel.com"
+	Tue, 28 Apr 2009 21:32:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49812 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758211AbZD2Bbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 21:31:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,263,1239001200"; 
-   d="asc'?scan'208";a="510791914"
-Subject: Re: [PATCH -v2] x86: MCE: Re-implement MCE log ring buffer as
- per-CPU ring buffer
-From: Huang Ying <ying.huang@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <87eivdqdsq.fsf@basil.nowhere.org>
-References: <1240910841.6842.1163.camel@yhuang-dev.sh.intel.com>
-	 <87eivdqdsq.fsf@basil.nowhere.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-E5QJUR8RKy/Ee6Mbv28O"
-Date: Wed, 29 Apr 2009 09:31:49 +0800
-Message-Id: <1240968709.6842.1175.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	id S1759378AbZD2BcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 21:32:19 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: linux-crypto@vger.kernel.org
+Subject: [PATCH 2/2] add ansi_cprng test vectors
+Date: Tue, 28 Apr 2009 21:32:10 -0400
+User-Agent: KMail/1.11.2 (Linux/2.6.27.21-170.2.56.fc10.x86_64; KDE/4.2.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
+       Neil Horman <nhorman@tuxdriver.com>
+References: <200904282127.33190.jarod@redhat.com>
+In-Reply-To: <200904282127.33190.jarod@redhat.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904282132.10884.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add ANSI X9.31 Continuous Pseudo-Random Number Generator (AES mode),
+aka 'ansi_cprng' test vectors, taken from Appendix B.2.9 and B.2.10
+of the NIST RNGVS document, found here:
+    http://csrc.nist.gov/groups/STM/cavp/documents/rng/RNGVS.pdf
 
---=-E5QJUR8RKy/Ee6Mbv28O
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Successfully tested against both the cryptodev-2.6 tree and a Red
+Hat Enterprise Linux 5.4 kernel, via 'modprobe tcrypt mode=150'.
 
-On Tue, 2009-04-28 at 18:21 +0800, Andi Kleen wrote:
-> Huang Ying <ying.huang@intel.com> writes:
-> >
-> > ChangeLog:
-> >
-> > v2:
-> >
-> > - Use alloc_percpu() to allocate per_cpu mcelog buffer
->=20
-> Sorry, why didn't you just use DEFINE_PER_CPU ? That should work
-> as well and will be shorter.
+The selection of 150 was semi-arbitrary, didn't seem like it should
+go any place in particular, so I started a new range for rng tests.
 
-OK. I can do that.
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
 
-> Another thing I noticed. the "MACHINECHECK" signature was originally
-> for crash dump tools to find the log. If you change the format
-> you should change it to MACHINECHEC2 or so.
+---
+ crypto/tcrypt.c  |    4 ++
+ crypto/testmgr.c |    9 +++++
+ crypto/testmgr.h |   96 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 109 insertions(+), 0 deletions(-)
 
-Oh, thanks, I will change this.
+diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
+index 0452036..ea3b8a8 100644
+--- a/crypto/tcrypt.c
++++ b/crypto/tcrypt.c
+@@ -707,6 +707,10 @@ static void do_test(int m)
+ 		tcrypt_test("hmac(rmd160)");
+ 		break;
+ 
++	case 150:
++		tcrypt_test("ansi_cprng");
++		break;
++
+ 	case 200:
+ 		test_cipher_speed("ecb(aes)", ENCRYPT, sec, NULL, 0,
+ 				speed_template_16_24_32);
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index 6330081..a0af8b8 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -1380,6 +1380,15 @@ static int alg_test_cprng(const struct alg_test_desc *desc, const char *driver,
+ /* Please keep this list sorted by algorithm name. */
+ static const struct alg_test_desc alg_test_descs[] = {
+ 	{
++		.alg = "ansi_cprng",
++		.test = alg_test_cprng,
++		.suite = {
++			.cprng = {
++				.vecs = ansi_cprng_aes_tv_template,
++				.count = ANSI_CPRNG_AES_TEST_VECTORS
++			}
++		}
++	}, {
+ 		.alg = "cbc(aes)",
+ 		.test = alg_test_skcipher,
+ 		.suite = {
+diff --git a/crypto/testmgr.h b/crypto/testmgr.h
+index 13d5a61..c1c709b 100644
+--- a/crypto/testmgr.h
++++ b/crypto/testmgr.h
+@@ -6208,6 +6208,102 @@ static struct aead_testvec aes_ccm_rfc4309_dec_tv_template[] = {
+ 	},
+ };
+ 
++/*
++ * ANSI X9.31 Continuous Pseudo-Random Number Generator (AES mode)
++ * test vectors, taken from Appendix B.2.9 and B.2.10:
++ *     http://csrc.nist.gov/groups/STM/cavp/documents/rng/RNGVS.pdf
++ * Only AES-128 is supported at this time.
++ */
++#define ANSI_CPRNG_AES_TEST_VECTORS	6
++
++static struct cprng_testvec ansi_cprng_aes_tv_template[] = {
++	{
++		.key	= "\xf3\xb1\x66\x6d\x13\x60\x72\x42"
++			  "\xed\x06\x1c\xab\xb8\xd4\x62\x02",
++		.klen	= 16,
++		.dt	= "\xe6\xb3\xbe\x78\x2a\x23\xfa\x62"
++			  "\xd7\x1d\x4a\xfb\xb0\xe9\x22\xf9",
++		.dtlen	= 16,
++		.v	= "\x80\x00\x00\x00\x00\x00\x00\x00"
++			  "\x00\x00\x00\x00\x00\x00\x00\x00",
++		.vlen	= 16,
++		.result	= "\x59\x53\x1e\xd1\x3b\xb0\xc0\x55"
++			  "\x84\x79\x66\x85\xc1\x2f\x76\x41",
++		.rlen	= 16,
++		.loops	= 1,
++	}, {
++		.key	= "\xf3\xb1\x66\x6d\x13\x60\x72\x42"
++			  "\xed\x06\x1c\xab\xb8\xd4\x62\x02",
++		.klen	= 16,
++		.dt	= "\xe6\xb3\xbe\x78\x2a\x23\xfa\x62"
++			  "\xd7\x1d\x4a\xfb\xb0\xe9\x22\xfa",
++		.dtlen	= 16,
++		.v	= "\xc0\x00\x00\x00\x00\x00\x00\x00"
++			  "\x00\x00\x00\x00\x00\x00\x00\x00",
++		.vlen	= 16,
++		.result	= "\x7c\x22\x2c\xf4\xca\x8f\xa2\x4c"
++			  "\x1c\x9c\xb6\x41\xa9\xf3\x22\x0d",
++		.rlen	= 16,
++		.loops	= 1,
++	}, {
++		.key	= "\xf3\xb1\x66\x6d\x13\x60\x72\x42"
++			  "\xed\x06\x1c\xab\xb8\xd4\x62\x02",
++		.klen	= 16,
++		.dt	= "\xe6\xb3\xbe\x78\x2a\x23\xfa\x62"
++			  "\xd7\x1d\x4a\xfb\xb0\xe9\x22\xfb",
++		.dtlen	= 16,
++		.v	= "\xe0\x00\x00\x00\x00\x00\x00\x00"
++			  "\x00\x00\x00\x00\x00\x00\x00\x00",
++		.vlen	= 16,
++		.result	= "\x8a\xaa\x00\x39\x66\x67\x5b\xe5"
++			  "\x29\x14\x28\x81\xa9\x4d\x4e\xc7",
++		.rlen	= 16,
++		.loops	= 1,
++	}, {
++		.key	= "\xf3\xb1\x66\x6d\x13\x60\x72\x42"
++			  "\xed\x06\x1c\xab\xb8\xd4\x62\x02",
++		.klen	= 16,
++		.dt	= "\xe6\xb3\xbe\x78\x2a\x23\xfa\x62"
++			  "\xd7\x1d\x4a\xfb\xb0\xe9\x22\xfc",
++		.dtlen	= 16,
++		.v	= "\xf0\x00\x00\x00\x00\x00\x00\x00"
++			  "\x00\x00\x00\x00\x00\x00\x00\x00",
++		.vlen	= 16,
++		.result	= "\x88\xdd\xa4\x56\x30\x24\x23\xe5"
++			  "\xf6\x9d\xa5\x7e\x7b\x95\xc7\x3a",
++		.rlen	= 16,
++		.loops	= 1,
++	}, {
++		.key	= "\xf3\xb1\x66\x6d\x13\x60\x72\x42"
++			  "\xed\x06\x1c\xab\xb8\xd4\x62\x02",
++		.klen	= 16,
++		.dt	= "\xe6\xb3\xbe\x78\x2a\x23\xfa\x62"
++			  "\xd7\x1d\x4a\xfb\xb0\xe9\x22\xfd",
++		.dtlen	= 16,
++		.v	= "\xf8\x00\x00\x00\x00\x00\x00\x00"
++			  "\x00\x00\x00\x00\x00\x00\x00\x00",
++		.vlen	= 16,
++		.result	= "\x05\x25\x92\x46\x61\x79\xd2\xcb"
++			  "\x78\xc4\x0b\x14\x0a\x5a\x9a\xc8",
++		.rlen	= 16,
++		.loops	= 1,
++	}, {	/* Monte Carlo Test */
++		.key	= "\x9f\x5b\x51\x20\x0b\xf3\x34\xb5"
++			  "\xd8\x2b\xe8\xc3\x72\x55\xc8\x48",
++		.klen	= 16,
++		.dt	= "\x63\x76\xbb\xe5\x29\x02\xba\x3b"
++			  "\x67\xc9\x25\xfa\x70\x1f\x11\xac",
++		.dtlen	= 16,
++		.v	= "\x57\x2c\x8e\x76\x87\x26\x47\x97"
++			  "\x7e\x74\xfb\xdd\xc4\x95\x01\xd1",
++		.vlen	= 16,
++		.result	= "\x48\xe9\xbd\x0d\x06\xee\x18\xfb"
++			  "\xe4\x57\x90\xd5\xc3\xfc\x9b\x73",
++		.rlen	= 16,
++		.loops	= 10000,
++	},
++};
++
+ /* Cast5 test vectors from RFC 2144 */
+ #define CAST5_ENC_TEST_VECTORS	3
+ #define CAST5_DEC_TEST_VECTORS	3
 
-> > +	size_t usize_limit;
-> > +
-> > +	/* Too large user buffer size may cause system not response */
-> > +	usize_limit =3D num_possible_cpus() * MCE_LOG_LEN * sizeof(struct mce=
-);
-> > +	if (usize > usize_limit)
-> > +		usize =3D usize_limit;
->=20
-> Did you ever track down what happens here? I still find it worrying
 
-Maybe the comment is a little confusing. What we do is limit the size of
-user buffer size to prevent system from not response. If the user buffer
-size is limited, the time taken by mce_read() can be reasonable, and
-will not cause system not to response.
-
-But maybe num_possible_cpus() * MCE_LOG_LEN is not a good upper limit,
-because possible cpus can be fairly large. Maybe we can add another
-limit, something as follow:
-
-#define MCE_READ_RECORD_LIMIT	512
-
-/*
- * Too large user buffer size may cause system not response, so constrain
- * the effective size of user buffer
- */
-usize_limit =3D num_possible_cpus() * MCE_LOG_LEN * sizeof(struct mce);
-if (usize_limit > MCE_RECOARD_LIMIT * sizeof(struct mce))
-	usize_limit =3D MCE_RECOARD_LIMIT * sizeof(struct mce);
-if (usize > usize_limit)
-	usize =3D usize_limit;
-
-Best Regards,
-Huang Ying
-
-
---=-E5QJUR8RKy/Ee6Mbv28O
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkn3rf0ACgkQKhFGF+eHlpiZdACePchNYcmeyUca2rYK6GWagsz5
-RyIAn2bvyuVOGK1Tfvn5ZJlhL3QgsqYL
-=VYau
------END PGP SIGNATURE-----
-
---=-E5QJUR8RKy/Ee6Mbv28O--
-
+-- 
+Jarod Wilson
+jarod@redhat.com
