@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761644AbZD2WZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761910AbZD2W0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761644AbZD2WZY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758355AbZD2WVR
+	id S1761910AbZD2W0v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758233AbZD2WVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:17 -0400
-Received: from kroah.org ([198.145.64.141]:40285 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:23 -0400
+Received: from kroah.org ([198.145.64.141]:40325 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757924AbZD2WVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:14 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:24 2009
-Message-Id: <20090429220924.343650646@mini.kroah.org>
+	id S1758390AbZD2WVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:18 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:25 2009
+Message-Id: <20090429220925.111124389@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:10 -0700
+Date: Wed, 29 Apr 2009 15:07:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tilman Schmidt <tilman@imap.cc>,
+       alan@lxorguk.ukuu.org.uk, Jesper Nilsson <jesper.nilsson@axis.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 11/58] bas_gigaset: correctly allocate USB interrupt transfer buffer
+Subject: [patch 15/58] ipv6: Plug sk_buff leak in ipv6_rcv (net/ipv6/ip6_input.c)
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=bas_gigaset-correctly-allocate-usb-interrupt-transfer-buffer.patch
+Content-Disposition: inline; filename=ipv6-plug-sk_buff-leak-in-ipv6_rcv.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,82 +39,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tilman Schmidt <tilman@imap.cc>
+From: Jesper Nilsson <jesper.nilsson@axis.com>
 
-[ Upstream commit 170ebf85160dd128e1c4206cc197cce7d1424705 ]
+[ Upstream commit 71f6f6dfdf7c7a67462386d9ea05c1095a89c555 ]
 
-Every USB transfer buffer has to be allocated individually by kmalloc.
+Commit 778d80be52699596bf70e0eb0761cf5e1e46088d
+(ipv6: Add disable_ipv6 sysctl to disable IPv6 operaion on specific interface)
+seems to have introduced a leak of sk_buff's for ipv6 traffic,
+at least in some configurations where idev is NULL, or when ipv6
+is disabled via sysctl.
 
-Impact: bugfix, no functional change
+The problem is that if the first condition of the if-statement
+returns non-NULL, it returns an skb with only one reference,
+and when the other conditions apply, execution jumps to the "out"
+label, which does not call kfree_skb for it.
 
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
-Tested-by: Kolja Waschk <kawk@users.sourceforge.net>
+To plug this leak, change to use the "drop" label instead.
+(this relies on it being ok to call kfree_skb on NULL)
+This also allows us to avoid calling rcu_read_unlock here,
+and removes the only user of the "out" label.
+
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/isdn/gigaset/bas-gigaset.c |   16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+ net/ipv6/ip6_input.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
---- a/drivers/isdn/gigaset/bas-gigaset.c
-+++ b/drivers/isdn/gigaset/bas-gigaset.c
-@@ -46,6 +46,9 @@ MODULE_PARM_DESC(cidmode, "Call-ID mode"
- /* length limit according to Siemens 3070usb-protokoll.doc ch. 2.1 */
- #define IF_WRITEBUF 264
- 
-+/* interrupt pipe message size according to ibid. ch. 2.2 */
-+#define IP_MSGSIZE 3
-+
- /* Values for the Gigaset 307x */
- #define USB_GIGA_VENDOR_ID      0x0681
- #define USB_3070_PRODUCT_ID     0x0001
-@@ -110,7 +113,7 @@ struct bas_cardstate {
- 	unsigned char		*rcvbuf;	/* AT reply receive buffer */
- 
- 	struct urb		*urb_int_in;	/* URB for interrupt pipe */
--	unsigned char		int_in_buf[3];
-+	unsigned char		*int_in_buf;
- 
- 	spinlock_t		lock;		/* locks all following */
- 	int			basstate;	/* bitmap (BS_*) */
-@@ -657,7 +660,7 @@ static void read_int_callback(struct urb
+--- a/net/ipv6/ip6_input.c
++++ b/net/ipv6/ip6_input.c
+@@ -74,8 +74,7 @@ int ipv6_rcv(struct sk_buff *skb, struct
+ 	if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL ||
+ 	    !idev || unlikely(idev->cnf.disable_ipv6)) {
+ 		IP6_INC_STATS_BH(idev, IPSTATS_MIB_INDISCARDS);
+-		rcu_read_unlock();
+-		goto out;
++		goto drop;
  	}
  
- 	/* drop incomplete packets even if the missing bytes wouldn't matter */
--	if (unlikely(urb->actual_length < 3)) {
-+	if (unlikely(urb->actual_length < IP_MSGSIZE)) {
- 		dev_warn(cs->dev, "incomplete interrupt packet (%d bytes)\n",
- 			 urb->actual_length);
- 		goto resubmit;
-@@ -2127,6 +2130,7 @@ static void gigaset_reinitbcshw(struct b
- static void gigaset_freecshw(struct cardstate *cs)
- {
- 	/* timers, URBs and rcvbuf are disposed of in disconnect */
-+	kfree(cs->hw.bas->int_in_buf);
- 	kfree(cs->hw.bas);
- 	cs->hw.bas = NULL;
+ 	memset(IP6CB(skb), 0, sizeof(struct inet6_skb_parm));
+@@ -145,7 +144,6 @@ err:
+ drop:
+ 	rcu_read_unlock();
+ 	kfree_skb(skb);
+-out:
+ 	return 0;
  }
-@@ -2232,6 +2236,12 @@ static int gigaset_probe(struct usb_inte
- 		}
- 		hostif = interface->cur_altsetting;
- 	}
-+	ucs->int_in_buf = kmalloc(IP_MSGSIZE, GFP_KERNEL);
-+	if (!ucs->int_in_buf) {
-+		kfree(ucs);
-+		pr_err("out of memory\n");
-+		return 0;
-+	}
  
- 	/* Reject application specific interfaces
- 	 */
-@@ -2290,7 +2300,7 @@ static int gigaset_probe(struct usb_inte
- 	usb_fill_int_urb(ucs->urb_int_in, udev,
- 			 usb_rcvintpipe(udev,
- 					(endpoint->bEndpointAddress) & 0x0f),
--			 ucs->int_in_buf, 3, read_int_callback, cs,
-+			 ucs->int_in_buf, IP_MSGSIZE, read_int_callback, cs,
- 			 endpoint->bInterval);
- 	if ((rc = usb_submit_urb(ucs->urb_int_in, GFP_KERNEL)) != 0) {
- 		dev_err(cs->dev, "could not submit interrupt URB: %s\n",
 
 
