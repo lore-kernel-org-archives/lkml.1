@@ -1,91 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbZD2Ms6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbZD2M4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758027AbZD2Ms6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 08:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZD2Msp
+	id S1753953AbZD2M4W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 08:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbZD2M4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 08:48:45 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:60183 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754106AbZD2Mso (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 08:48:44 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhsFAOvk90lMQW1W/2dsb2JhbACBUM1Eg3UF
-Date: Wed, 29 Apr 2009 08:48:42 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] atomic: fix atomic_long_cmpxchg/xchg for 64 bit
-	architectures
-Message-ID: <20090429124842.GB32163@Krystal>
-References: <20090429143601.1a79ab8f@osiris.boeblingen.de.ibm.com>
-Mime-Version: 1.0
+	Wed, 29 Apr 2009 08:56:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41544 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751604AbZD2M4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 08:56:11 -0400
+Date: Wed, 29 Apr 2009 14:55:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Robert Richter <robert.richter@amd.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 04/29] x86/perfcounters: rework
+	pmc_amd_save_disable_all() and pmc_amd_restore_all()
+Message-ID: <20090429125556.GA31500@elte.hu>
+References: <1241002046-8832-1-git-send-email-robert.richter@amd.com> <1241002046-8832-5-git-send-email-robert.richter@amd.com> <1241003260.8021.236.camel@laptop> <20090429111159.GJ2373@elte.hu> <18936.18732.35199.647196@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090429143601.1a79ab8f@osiris.boeblingen.de.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:44:05 up 60 days,  9:10,  1 user,  load average: 0.60, 0.50,
-	0.48
+In-Reply-To: <18936.18732.35199.647196@cargo.ozlabs.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Heiko Carstens (heiko.carstens@de.ibm.com) wrote:
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+
+
+* Paul Mackerras <paulus@samba.org> wrote:
+
+> Ingo Molnar wrote:
 > 
-> On a linux-next allyesconfig build:
+> > Could we remove the disable-all facility altogether and make the 
+> > core code NMI-safe? The current approach wont scale on CPUs that 
+> > dont have global-disable features.
+> > 
+> > disable-all was arguably a hack i introduced and which spread 
+> > too far. Can you see a conceptual need for it?
 > 
-> kernel/trace/ring_buffer.c:1726:
-> 	warning: passing argument 1 of 'atomic_cmpxchg' from incompatible pointer type
-> linux-next/arch/s390/include/asm/atomic.h:112:
-> 	note: expected 'struct atomic_t *' but argument is of type 'struct atomic64_t *'
-> 
-> atomic_long_cmpxchg and atomic_long_xchg are incorrectly defined for
-> 64 bit architectures. They should be mapped to the atomic64_* variants.
-> 
-> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> ---
->  include/asm-generic/atomic.h |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux-next/include/asm-generic/atomic.h
-> ===================================================================
-> --- linux-next.orig/include/asm-generic/atomic.h
-> +++ linux-next/include/asm-generic/atomic.h
-> @@ -132,9 +132,9 @@ static inline long atomic_long_add_unles
->  #define atomic_long_inc_not_zero(l) atomic64_inc_not_zero((atomic64_t *)(l))
->  
->  #define atomic_long_cmpxchg(l, old, new) \
-> -	(atomic_cmpxchg((atomic64_t *)(l), (old), (new)))
-> +	(atomic64_cmpxchg((atomic64_t *)(l), (old), (new)))
->  #define atomic_long_xchg(v, new) \
-> -	(atomic_xchg((atomic64_t *)(l), (new)))
-> +	(atomic64_xchg((atomic64_t *)(l), (new)))
+> If you're talking about hw_perf_save_disable / hw_perf_restore, 
+> please don't get rid of those.  I use them to batch up counter 
+> enable/disable operations so I only have to compute the PMU config 
+> once for each batch rather than every time an individual counter 
+> is enabled or disabled.
 
-Other architectures usually define something along the lines of :
+ok, sure.
 
-include/asm/atomic.h:#define atomic64_cmpxchg(v, o, n) (cmpxchg(&((v)->counter), (o), (n)))
-
-This is why they did not care about calling atomic_cmpxchg or
-atomic64_cmpxchg.
-
-This fix looks good. Thanks !
-
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
-
->  
->  #else  /*  BITS_PER_LONG == 64  */
->  
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	Ingo
