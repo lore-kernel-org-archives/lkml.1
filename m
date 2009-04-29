@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbZD2UiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760651AbZD2Uka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758699AbZD2UiV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 16:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZD2UiH
+	id S1760651AbZD2Uka (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 16:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbZD2UkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 16:38:07 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:30746 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbZD2UiF (ORCPT
+	Wed, 29 Apr 2009 16:40:18 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:20165 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbZD2UkR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 16:38:05 -0400
-Subject: Re: [PATCH RFC] ext3 data=guarded v5
-From: Chris Mason <chris.mason@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>
-In-Reply-To: <20090429200412.GA27924@duck.suse.cz>
-References: <1240941840.15136.44.camel@think.oraclecorp.com>
-	 <20090429085632.GA18273@duck.suse.cz>
-	 <1241014093.20099.28.camel@think.oraclecorp.com>
-	 <20090429191533.GB22936@duck.suse.cz>
-	 <1241034089.20099.60.camel@think.oraclecorp.com>
-	 <20090429200412.GA27924@duck.suse.cz>
-Content-Type: text/plain
-Date: Wed, 29 Apr 2009 16:37:01 -0400
-Message-Id: <1241037421.20099.70.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020A.49F8BA74.01D6:SCFMA4539814,ss=1,fgs=0
+	Wed, 29 Apr 2009 16:40:17 -0400
+MIME-Version: 1.0
+In-Reply-To: <20090429200032.GD1598@khazad-dum.debian.net>
+References: <20090427193532.GA2948@kroah.com> <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com> 
+	<20090429180735.GA29812@kroah.com> <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com> 
+	<ac3eb2510904291159s14d7d532q33657eb73007fc4b@mail.gmail.com> 
+	<20090429191841.GA1598@khazad-dum.debian.net> <ac3eb2510904291227v48628c8j181dffc8fdfa1de6@mail.gmail.com> 
+	<20090429195037.GC1598@khazad-dum.debian.net> <ac3eb2510904291255j2aee527bx8e32b356ad0260d1@mail.gmail.com> 
+	<20090429200032.GD1598@khazad-dum.debian.net>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Wed, 29 Apr 2009 22:39:56 +0200
+Message-ID: <ac3eb2510904291339y13471168y7cb0dbcb9f967c82@mail.gmail.com>
+Subject: Re: usbutils 0.81 release
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-29 at 22:04 +0200, Jan Kara wrote:
+On Wed, Apr 29, 2009 at 22:00, Henrique de Moraes Holschuh
+<hmh@hmh.eng.br> wrote:
+> On Wed, 29 Apr 2009, Kay Sievers wrote:
+>> And if your distro updates the package, it overwrites the changes you
+>> did to the file, and they are lost?
+>
+> I suppose so, and not just for package updates: if you run update-usbids,
+> the old one is overwritten AFAIK.  I didn't check the scripts, though.  But
+> as a long time Debian Developer and user, that's what is implied by its
+> location in /var.
 
-> > What we don't want to do is have a call to write() over existing blocks
-> > in the file add new things to the data=ordered list.  I don't see how we
-> > can avoid that without datanew.
->   Yes, what I suggest would do exactly that:
-> In ordered_writepage() in the beginning we do:
->   page_bufs = page_buffers(page);
->   if (!walk_page_buffers(NULL, page_bufs, 0, PAGE_CACHE_SIZE,
->                          NULL, buffer_unmapped)) {
->   	return block_write_full_page(page, NULL, wbc);
->   }
-> So we only get to starting a transaction and file some buffers if some buffer
-> in the page is unmapped. Write() maps / allocates all buffers in write_begin()
-> so they are never added to ordered lists in writepage().
+Ah, ok, that sounds fine, if that is still one and the same file, and
+not a "lookup in several locations and pick one" logic.
 
-Right, writepage doesn't really need datanew.
+> If local admin changes are to be preserved, Debian policy mandates that it
+> belongs on /etc.
 
->  We rely on write_end
-> to do it. So the only case where not all buffers in the page are mapped is
-> when we have to allocate in writepage() (mmaped write) or the two cases I
-> describe above.
+Sounds a bit special, but if that is the ways it works, and people
+know that, it's fine I guess.
 
-But I still think write_end does need datanew.  That's where 99% of the
-ordered buffers are going to come from when we overwrite the contents of
-an existing file.
-
--chris
-
-
+Thanks,
+Kay
