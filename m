@@ -1,121 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755AbZD2Den@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbZD2Df0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753755AbZD2Den (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 23:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZD2Dee
+	id S1755253AbZD2Df0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 23:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZD2DfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 23:34:34 -0400
-Received: from mga14.intel.com ([143.182.124.37]:6412 "EHLO mga14.intel.com"
+	Tue, 28 Apr 2009 23:35:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41696 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751812AbZD2Dee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 23:34:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,264,1239001200"; 
-   d="scan'208";a="137079883"
-Date: Wed, 29 Apr 2009 11:33:58 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "adobriyan@gmail.com" <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090429033358.GA10719@localhost>
-References: <20090428010907.912554629@intel.com> <20090428014920.769723618@intel.com> <20090428143244.4e424d36.akpm@linux-foundation.org> <1240958794.938.1045.camel@calx> <20090428160219.ca0123a1.akpm@linux-foundation.org> <1240961469.938.1077.camel@calx> <20090428164248.0c8cffef.akpm@linux-foundation.org> <1240962910.938.1084.camel@calx>
+	id S1752055AbZD2DfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 23:35:11 -0400
+Message-ID: <49F7CA9A.5000701@kernel.org>
+Date: Tue, 28 Apr 2009 20:33:46 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240962910.938.1084.camel@calx>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Matthew Wilcox <matthew@wil.cx>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Linux-Scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH] scsi: ses check name in enclosure_component_register
+References: <49F6678D.3080207@kernel.org> <1240957589.3380.67.camel@mulgrave.int.hansenpartnership.com> <49F7979A.8040302@kernel.org> <1240964289.3380.73.camel@mulgrave.int.hansenpartnership.com> <49F7A71F.5040709@kernel.org> <20090429020331.GF21648@parisc-linux.org>
+In-Reply-To: <20090429020331.GF21648@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 07:55:10AM +0800, Matt Mackall wrote:
-> On Tue, 2009-04-28 at 16:42 -0700, Andrew Morton wrote:
-> > On Tue, 28 Apr 2009 18:31:09 -0500
-> > Matt Mackall <mpm@selenic.com> wrote:
-> > 
-> > > On Tue, 2009-04-28 at 16:02 -0700, Andrew Morton wrote:
-> > > > On Tue, 28 Apr 2009 17:46:34 -0500
-> > > > Matt Mackall <mpm@selenic.com> wrote:
-> > > > 
-> > > > > > > +/* a helper function _not_ intended for more general uses */
-> > > > > > > +static inline int page_cap_writeback_dirty(struct page *page)
-> > > > > > > +{
-> > > > > > > +	struct address_space *mapping;
-> > > > > > > +
-> > > > > > > +	if (!PageSlab(page))
-> > > > > > > +		mapping = page_mapping(page);
-> > > > > > > +	else
-> > > > > > > +		mapping = NULL;
-> > > > > > > +
-> > > > > > > +	return mapping && mapping_cap_writeback_dirty(mapping);
-> > > > > > > +}
-> > > > > > 
-> > > > > > If the page isn't locked then page->mapping can be concurrently removed
-> > > > > > and freed.  This actually happened to me in real-life testing several
-> > > > > > years ago.
-> > > > > 
-> > > > > We certainly don't want to be taking locks per page to build the flags
-> > > > > data here. As we don't have any pretense of being atomic, it's ok if we
-> > > > > can find a way to do the test that's inaccurate when a race occurs, so
-> > > > > long as it doesn't dereference null.
-> > > > > 
-> > > > > But if there's not an obvious way to do that, we should probably just
-> > > > > drop this flag bit for this iteration.
-> > > > 
-> > > > trylock_page() could be used here, perhaps.
-> > > > 
-> > > > Then again, why _not_ just do lock_page()?  After all, few pages are
-> > > > ever locked.  There will be latency if the caller stumbles across a
-> > > > page which is under read I/O, but so be it?
-> > > 
-> > > As I mentioned just a bit ago, it's really not an unreasonable use case
-> > > to want to do this on every page in the system back to back. So per page
-> > > overhead matters. And the odds of stalling on a locked page when
-> > > visiting 1M pages while under load are probably not negligible.
-> > 
-> > The chances of stalling on a locked page are pretty good, and the
-> > duration of the stall might be long indeed.  Perhaps a trylock is a
-> > decent compromise - it depends on the value of this metric, and I've
-> > forgotten what we're talking about ;)
-> > 
-> > umm, seems that this flag is needed to enable PG_error, PG_dirty,
-> > PG_uptodate and PG_writeback reporting.  So simply removing this code
-> > would put a huge hole in the patchset, no?
+Matthew Wilcox wrote:
+> On Tue, Apr 28, 2009 at 06:02:23PM -0700, Yinghai Lu wrote:
+>> dev_set_name(cdev, name);
+>>
+>> the name become fmt. 
 > 
-> We can report those bits anyway. But this patchset does something
-> clever: it filters irrelevant (and possibly overloaded) bits in various
-> contexts. 
+> Yes, and what happens if 'name' is '%s'?
 > 
-> > > Our lock primitives are pretty low overhead in the fast path, but every
-> > > cycle counts. The new tests and branches this code already adds are a
-> > > bit worrisome, but on balance probably worth it.
-> > 
-> > That should be easy to quantify (hint).
-> 
-> I'll let Fengguang address both these points.
 
-A quick micro bench: 100 runs on another T7300@2GHz 2GB laptop:
+change
+dev_set_name(cdev, name);
+to
+dev_set_name(cdev, "%s", name);
 
-             user      system       total
-no lock      0.270     22.850       23.607 
-trylock      0.310     25.890       26.484 
-                       +13.3%       +12.2%
+didn't fix the problem.
 
-But anyway, the plan is to move filtering to user space and eliminate
-the complex kernel logics.
+need to check name && name[0]
 
-The IO filtering is no longer possible in user space, but I didn't see
-the error/dirty/writeback bits on this testing system. So I guess it
-won't be a big loss.
-
-The huge/gigantic page filtering is also not possible in user space.
-So I tend to add a KPF_HUGE flag to distinguish (hardware supported)
-huge pages from normal (software) compound pages. Any objections?
-
-Thanks,
-Fengguang
+YH
