@@ -1,49 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbZD2Nrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZD2NuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754951AbZD2Nrc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 09:47:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758001AbZD2NrS
+	id S1753112AbZD2NuS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 09:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZD2NuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 09:47:18 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:29401 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757769AbZD2NrQ (ORCPT
+	Wed, 29 Apr 2009 09:50:04 -0400
+Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:45649 "EHLO
+	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751481AbZD2NuC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 09:47:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=krs9GMX1PXAgQcbn1u9+w47np5CDctsjmp6FI7y72rujoBuLWoZVpHEysrYlDAyB7A
-         2AxR9rjvMKr//5hjICJLNAdnqiwksW3BpROnsdVjl3jBjM+/cK5hRN2wza+BylFbLrqu
-         jwYyc1bjmL7NIMuikv3NOe9MxzNJzfkHgGZQY=
-Date: Wed, 29 Apr 2009 09:46:39 -0400
-From: Josh Boyer <jwboyer@gmail.com>
-To: Deepak Gaur <dgaur@cdotd.ernet.in>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Powerpc Port linux-2.6.29
-Message-ID: <20090429134639.GB2431@yoda.jdub.homelinux.org>
-References: <20090429110648.M98089@cdotd.ernet.in>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090429110648.M98089@cdotd.ernet.in>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 29 Apr 2009 09:50:02 -0400
+Subject: Re: Q: selinux_bprm_committed_creds() && signals/do_wait
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>,
+       Eric Paris <eparis@parisplace.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090429134235.GA30585@redhat.com>
+References: <20090428223025.GA11997@redhat.com>
+	 <alpine.LRH.2.00.0904291024001.5246@tundra.namei.org>
+	 <20090429065809.GA477@redhat.com>
+	 <1241007630.18249.141.camel@localhost.localdomain>
+	 <20090429125606.GA27901@redhat.com>
+	 <1241011014.18249.192.camel@localhost.localdomain>
+	 <20090429134235.GA30585@redhat.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 29 Apr 2009 09:43:03 -0400
+Message-Id: <1241012583.18249.197.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 04:44:33PM +0530, Deepak Gaur wrote:
->Hi all
->
->I have a custom board with MPC8560 and 1GB DDR SDRAM. I am trying to port linux - 2.6.29
->on this board. The U-BOOT is already ported on the board and is working.
->
->The OS uImage is stored in code flash at address 0xe0000000 and OS is booted by U-BOOT 
->While OS do boot but after some prints weired errors start showing up. Rootfile system
->is NFS based . I have checked the register values with Hardware person using Trace32
->emulator and they are as expected.
+On Wed, 2009-04-29 at 15:42 +0200, Oleg Nesterov wrote:
+> On 04/29, Stephen Smalley wrote:
+> >
+> > On Wed, 2009-04-29 at 14:56 +0200, Oleg Nesterov wrote:
+> > > On 04/29, Stephen Smalley wrote:
+> > > >
+> > > > On Wed, 2009-04-29 at 08:58 +0200, Oleg Nesterov wrote:
+> > > > >
+> > > > > Why do we need to s/IGN/DFL/ and why do we clear ->blocked ? How this can
+> > > > > help from the security pov?
+> > > >
+> > > > We don't want the caller to be able to arrange conditions that prevent
+> > > > correct handling of signals (e.g. SIGHUP) by the callee.  That was
+> > > > motivated by a specific attack against newrole, but was a general issue
+> > > > for any program that runs in a more trusted domain than its caller.
+> > >
+> > > Still can't understand...
+> > >
+> > > If the new image runs in a more trusted domain, then we should not change
+> > > SIG_IGN to SIG_DFL ?
+> > >
+> > > For example, a user does "nohup setuid_app". Now, why should we change
+> > > SIG_IGN to SIG_DFL for SIGHUP? This makes setuid_app more "vulnerable"
+> > > to SIGHUP, not more "protected". Confused.
+> >
+> > Not if the app was depending on the default handler for SIGHUP to
+> > correctly handle vhangup().  The point is that we don't necessarily
+> > trust the caller to define the handling behavior for signals in the
+> > callee.  If we trust the caller to do so, then we can grant the
+> > corresponding permission.
+> >
+> > newrole scenario was to run it nohup, logout, wait for other user to
+> > login on same tty, trigger termination of newrole'd child shell, and
+> > have newrole relabel other user's tty to attacker's sid.
+> >
+> > > OK. Since I don't understand the security magic, you can just ignore me.
+> > > But I will appreciate any explanation for dummies ;)
+> > >
+> > > > As I recall, I based the logic in part on existing logic in
+> > > > call_usermodehelper().
+> > >
+> > > ____call_usermodehelper() does this because we should not exec a user-space
+> > > application with SIGKILL/SIGSTOP ignored/blocked. We don't have this problem
+> > > when user-space execs.
+> >
+> > But we still have the problem of the caller setting up the signal
+> > handlers or blocked signal mask prior to exec'ing the privileged
+> > program, right?
+> 
+> The callee can never setup the signal handler. Note that flush_old_exec()
+> does flush_signal_handlers() too. But it uses force_default == F.
 
-You might have better luck emailing the linuxppc-dev mailing list.
+Right, but it can set it to SIG_IGN, which was the problem in the
+situation above.
 
-josh
+> OK, please forget this. I trust you even if can't understand ;)
+> 
+> My real concerns were SIGKILL and do_wait(), they were addressed.
+> 
+> Thanks!
+> 
+> Oleg.
+-- 
+Stephen Smalley
+National Security Agency
+
