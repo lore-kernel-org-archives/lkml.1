@@ -1,99 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbZD2Hl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbZD2HmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757939AbZD2Hl3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 03:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbZD2HlS
+	id S1758061AbZD2HmA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 03:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755167AbZD2Hlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 03:41:18 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:36660 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751508AbZD2HlR (ORCPT
+	Wed, 29 Apr 2009 03:41:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36806 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753728AbZD2Hlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 03:41:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=w9KwExMM9PgRhf+OMuzCj1p8JZ5Q5/fVdl2rNCfb8D4fzgCVQ7Gvv8NoGzh2QA7uw5
-         f7LB0sCYMy+sjyS9cFGImBldvVhJ8HP/96mo1ahC78/1xK47zeCARxcAv+hTsapd9+CP
-         FHqx1JJYv9YS2iMA5E2/vZ7DKMuLpmZeu9QC4=
-MIME-Version: 1.0
-In-Reply-To: <48f7fe350904281736j5ecb6fa8l12426fc17f591551@mail.gmail.com>
-References: <4e5e476b0903260847m1de3e976ne20279df359176cf@mail.gmail.com>
-	 <9b2b86520903260958r790e5459r553308311522e88f@mail.gmail.com>
-	 <4e5e476b0903261454h1525c30chdc86dbcb1cf3cb5c@mail.gmail.com>
-	 <9b2b86520903270310x78193514l44b89ed6d3088cf8@mail.gmail.com>
-	 <48f7fe350904281736j5ecb6fa8l12426fc17f591551@mail.gmail.com>
-Date: Wed, 29 Apr 2009 09:41:14 +0200
-Message-ID: <4e5e476b0904290041u6bb475e0o9a409b5e6d83b9ba@mail.gmail.com>
-Subject: Re: "ACPI: EC: missing confirmations, switch off interrupt mode" 
-	wastes time on startup
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Ryan Hope <rmh3093@gmail.com>
-Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       linux-kernel@vger.kernel.org, linux acpi <linux-acpi@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 29 Apr 2009 03:41:49 -0400
+Date: Wed, 29 Apr 2009 00:37:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Jeff Haran" <jharan@Brocade.COM>
+Cc: <linux-kernel@vger.kernel.org>, Dave Jiang <djiang@mvista.com>,
+       Doug Thompson <dougthompson@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Kumar Gala <galak@gate.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: bug in drivers/edac/mpc85xx_edac.c:mpc85xx_mc_check()
+Message-Id: <20090429003704.1c37d6e1.akpm@linux-foundation.org>
+In-Reply-To: <57AC2FA1761300418C7AB8F3EA493C9702E319DB@HQ-EXCH-5.corp.brocade.com>
+References: <57AC2FA1761300418C7AB8F3EA493C9702E319DB@HQ-EXCH-5.corp.brocade.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey has provided a patch for this. Please look at:
-http://bugzilla.kernel.org/show_bug.cgi?id=12949
+Let's cc the suitable people.
 
-Corrado
+On Tue, 28 Apr 2009 18:23:42 -0700 "Jeff Haran" <jharan@Brocade.COM> wrote:
 
-On Wed, Apr 29, 2009 at 2:36 AM, Ryan Hope <rmh3093@gmail.com> wrote:
-> I am getting this on my Acer also...
->
-> -Ryan
->
-> On 3/27/09, Alan Jenkins <sourcejedi.lkml@googlemail.com> wrote:
->> On 3/26/09, Corrado Zoccolo <czoccolo@gmail.com> wrote:
->>> On Thu, Mar 26, 2009 at 5:58 PM, Alan Jenkins
->>> <sourcejedi.lkml@googlemail.com> wrote:
->>>> On 3/26/09, Corrado Zoccolo <czoccolo@gmail.com> wrote:
->>>>
->>>> Currently there is no option to force polling, sorry.  I'm _guessing_
->>>> this was a deliberate omission.  But I can sympathise that even 0.5s
->>>> boot delay is bad on a netbook.
->>>>
->>> Yes. Do you think that changing olpc_ec_timeout kernel parameter may
->>> help in getting the timeout sooner?
->>>
->>
->> No, that's something different.  There's no boot option to change the
->> timeout.
->>
->>>> Feel free to create a new bugzilla entry.  You can attach the full
->>>> output of dmesg, but acpidump is probably not required.  What would be
->>>> really helpful is if you could file on bugzilla, and attach a full
->>>> debug trace.  I.e. as well as the normal dmesg, attach the dmesg
->>>> output after recompiling with this change:
->>>>
->>>
->>> bug: http://bugzilla.kernel.org/show_bug.cgi?id=12949
->>> full debug dmesg: http://bugzilla.kernel.org/attachment.cgi?id=20695
->>
->> Great.
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
+> Hi,
+> 
+> Recent versions of this function contain the following snippets:
+> 
+>     if (err_detect & DDR_EDE_SBE)
+>         edac_mc_handle_ce(mci, pfn, err_addr & PAGE_MASK,
+>                   syndrome, row_index, 0, mci->ctl_name);
+> 
+>     if (err_detect & DDR_EDE_MBE)
+>         edac_mc_handle_ue(mci, pfn, err_addr & PAGE_MASK,
+>                   row_index, mci->ctl_name);
+> 
+> I am pretty sure the references to PAGE_MASK should be proceeded by a
+> tilda, as in:
+> 
+>     if (err_detect & DDR_EDE_SBE)
+>         edac_mc_handle_ce(mci, pfn, err_addr & ~PAGE_MASK,
+>                   syndrome, row_index, 0, mci->ctl_name);
+> 
+>     if (err_detect & DDR_EDE_MBE)
+>         edac_mc_handle_ue(mci, pfn, err_addr & ~PAGE_MASK,
+>                   row_index, mci->ctl_name);
+> 
 
+Could well be.  PAGE_MASK is very easy to get wrong.  I've _never_
+trusted my own memory of it and I always have to go back to the
+definition when reviewing code :(
 
+> Much as I would like to submit a tested patch like the rest of the
+> world, I find myself in the situation where the only Freescale target
+> system I have to test on is running a 3 year old kernel (2.6.14), which
+> preceeds the introduction of EDAC driver support, at least for
+> Freescale. So the best I can do is borrow from the new EDAC driver and
+> backport it to the old kernel.
+> 
+> But I have learned a few things in this process and can thus share what
+> I've learned as it may be of help to the EDAC driver developers:
+> 
+> 1) Before you read the Freescale 8548 CAPTURE_ADDRESS register, you want
+> to read CAPTURE_ATTRIBUTES first and make sure the VLD bit (least
+> significant bit in the register) is set or else the data in
+> CAPTURE_ADDRESS may not be yet valid.
+> 
+> 2) When you are done scrubbing the memory with the single bit error, you
+> want to write 0 to CAPTURE_ATTRIBUTES so as to clear VLD and thus setup
+> the ECC capture logic to capture the next single bit error.
+> 
 
--- 
-__________________________________________________________________________
-
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
-The self-confidence of a warrior is not the self-confidence of the average
-man. The average man seeks certainty in the eyes of the onlooker and calls
-that self-confidence. The warrior seeks impeccability in his own eyes and
-calls that humbleness.
-                               Tales of Power - C. Castaneda
