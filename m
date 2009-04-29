@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760582AbZD2RAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbZD2RB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760582AbZD2RAp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 13:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758420AbZD2Qzp
+	id S1756603AbZD2RB1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 13:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbZD2Qzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 12:55:45 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:6323 "EHLO
-	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757778AbZD2Qzj (ORCPT
+	Wed, 29 Apr 2009 12:55:47 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:6362 "EHLO
+	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757808AbZD2Qzj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 29 Apr 2009 12:55:39 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0KIVGC5-01-3V2-01
+X-BigFish: VPS-4(zz14c3Mzz1202hzzz32i65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0KIVGC0-02-4P7-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: akpm@linux-foundation.org, greg@kroah.com
 CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
        dougthompson@xmission.com, <linux-kernel@vger.kernel.org>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 19/21] amd64_edac: add debugging/testing code
-Date: Wed, 29 Apr 2009 18:55:05 +0200
-Message-ID: <1241024107-14535-20-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 10/21] amd64_edac: add k8-specific methods
+Date: Wed, 29 Apr 2009 18:54:56 +0200
+Message-ID: <1241024107-14535-11-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
 References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 29 Apr 2009 16:55:23.0023 (UTC) FILETIME=[495951F0:01C9C8EB]
+X-OriginalArrivalTime: 29 Apr 2009 16:55:18.0257 (UTC) FILETIME=[46821610:01C9C8EB]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,237 +33,228 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Doug Thompson <dougthompson@xmission.com>
 
-This is for dumping different registers and testing the address mapping
-logic using the ECC syndromes.
-
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |  214 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 214 insertions(+), 0 deletions(-)
+ drivers/edac/amd64_edac.c |  200 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 197 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 43f236d..b1a7e8c 100644
+index 937e1f5..813a1ab 100644
 --- a/drivers/edac/amd64_edac.c
 +++ b/drivers/edac/amd64_edac.c
-@@ -4407,3 +4407,217 @@ static int amd64_check_ecc_enabled(struct amd64_pvt *pvt)
- 	return rc;
+@@ -1751,9 +1751,7 @@ static int sys_addr_to_csrow(struct mem_ctl_info *mci, u64 sys_addr)
+ 	return csrow;
  }
  
-+#ifdef	CONFIG_EDAC_DEBUG
+-static int get_channel_from_x4_syndrome(unsigned short syndrome);
+-static int get_channel_from_x8_syndrome(unsigned short syndrome);
+-
++static int get_channel_from_ecc_syndrome(unsigned short syndrome);
+ 
+ static void amd64_cpu_display_info(struct amd64_pvt *pvt)
+ {
+@@ -2060,4 +2058,200 @@ static enum mem_type amd64_determine_memory_type(struct amd64_pvt *pvt)
+ 	return type;
+ }
+ 
 +/*
-+ * amd64_nbea_store
++ * k8_early_channel_count
 + *
-+ * 	Accept a hex value and store it into the virutal error
-+ *	register file, field:	nbeal and nbeah
++ *      NOTE: CPU Revision Dependent code
 + *
-+ *	Assume virtual error values have already been set for:
-+ *		NBSL, NBSH and NBCFG
++ *      MUST read the hardware DCL register, and decode it, then return it
 + *
-+ *	Then proceed to map the error values to a:
-+ *		MC, CSROW and CHANNEL
++ *      the DCL - DRAM Configuration Low Register contains various
++ *      configuration bits on memory.
++ *
++ *      BUT it is different between CG, D & E revs and the later
++ *      Rev F memory controllers (DDR vs DDR2)
++ *
++ * Return:
++ *      number of Memory Channels in operation
++ * Pass back:
++ *      contents of the DCL0_LOW register
 + */
-+static ssize_t amd64_nbea_store(struct mem_ctl_info *mci,
-+					const char *data, size_t count)
++static int k8_early_channel_count(struct amd64_pvt *pvt)
 +{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	unsigned long long value;
-+	int rc;
++	int flag;
++	int err;
 +
-+	rc = strict_strtoull(data, 16, &value);
-+	if (rc != -EINVAL) {
-+		debugf0("%s() received NBEA= 0x%llx\n", __func__, value);
++	err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCLR_0, &pvt->dclr0);
++	if (err != 0)
++		debugf0("%s() Reading F10_DCLR_0 failed\n", __func__);
 +
-+		/* place the value into the virtual error packet */
-+		pvt->ctl_error_info.nbeal = (u32) value;
-+		value >>= 32;
-+		pvt->ctl_error_info.nbeah = (u32) value;
-+
-+		/* Process the Mapping request */
-+		/* TODO: Add race preventation */
-+		amd64_process_error_info(mci, &pvt->ctl_error_info, 1);
-+
-+		return count;
++	if ((boot_cpu_data.x86_model >> 4) >= OPTERON_CPU_REV_F) {
++		/* Rev F (NPT) and later */
++		flag = pvt->dclr0 & F10_WIDTH_128;
++	} else {
++		/* Rev E and earlier */
++		flag = pvt->dclr0 & REVE_WIDTH_128;
 +	}
-+	return rc;
++
++	/* not used */
++	pvt->dclr1 = 0;
++
++	return (flag) ? 2 : 1;
 +}
 +
 +/*
-+ * amd64_nbea_show
-+ *
-+ *	display back what the last NBEA address was written
++ * k8_get_error_address
++ *	extract from the hardware copies of the error register
++ *	the ERROR ADDRESS for the K8 and Family 0Fh CPUs
 + */
-+static ssize_t amd64_nbea_show(struct mem_ctl_info *mci, char *data)
++static u64 k8_get_error_address(struct mem_ctl_info *mci,
++			struct amd64_error_info_regs *info)
 +{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	u64 value;
-+
-+	value = pvt->ctl_error_info.nbeah;
-+	value <<= 32;
-+	value |= pvt->ctl_error_info.nbeal;
-+
-+	return sprintf(data, "%llx\n", value);
++	return (((u64) (info->nbeah & 0xff)) << 32) +
++			(info->nbeal & ~0x03);
 +}
 +
 +/*
-+ * amd64_nbsl_store
++ * k8_read_dram_base_limit
 + *
-+ *	accept and store the NBSL value user desires
++ *	Read the Base and Limit registers for K8 based Memory controllers
++ *	Extract fields from the 'raw' reg into separate data fields
++ *
++ *		Isolates: BASE, LIMIT, IntlvEn, IntlvSel, RW_EN
 + */
-+static ssize_t amd64_nbsl_store(struct mem_ctl_info *mci,
-+					const char *data, size_t count)
++static void k8_read_dram_base_limit(struct amd64_pvt *pvt, int dram)
 +{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	unsigned long value;
-+	int rc;
++	u32 low;
++	u32 off = dram << 3;	/* 8 bytes between DRAM entries */
++	int err;
 +
-+	rc = strict_strtoul(data, 16, &value);
-+	if (rc != -EINVAL) {
-+		debugf0("%s() received NBSL= 0x%lx\n", __func__, value);
++	err = pci_read_config_dword(pvt->addr_f1_ctl,
++					K8_DRAM_BASE_LOW + off, &low);
++	if (err != 0)
++		debugf0("%s() Reading K8_DRAM_BASE_LOW failed\n", __func__);
 +
-+		/* place the NBSL value into the virtual error packet */
-+		pvt->ctl_error_info.nbsl = (u32) value;
++	/* Extract parts into separate data entries */
++	pvt->dram_base[dram] = ((u64) low & 0xFFFF0000) << 8;
++	pvt->dram_IntlvEn[dram] = (low >> 8) & 0x7;
++	pvt->dram_rw_en[dram] = (low & 0x3);
 +
-+		return count;
++	err = pci_read_config_dword(pvt->addr_f1_ctl, K8_DRAM_LIMIT_LOW + off,
++		&low);
++	if (err != 0)
++		debugf0("%s() Reading K8_DRAM_LIMIT_LOW failed\n", __func__);
++
++	/* Extract parts into separate data entries
++	 * Limit is the HIGHEST memory location of the region, so lower
++	 * 24-bit needs to be all ones
++	 */
++	pvt->dram_limit[dram] = (((u64) low & 0xFFFF0000) << 8) | 0x00FFFFFF;
++	pvt->dram_IntlvSel[dram] = (low >> 8) & 0x7;
++	pvt->dram_DstNode[dram] = (low & 0x7);
++}
++
++
++/*
++ * k8_map_sysaddr_to_csrow
++ *
++ *	map a SystemAddress to NodeID, CSROW, Channel
++ */
++static void k8_map_sysaddr_to_csrow(struct mem_ctl_info *mci,
++					struct amd64_error_info_regs *info,
++					u64 SystemAddress)
++{
++	struct mem_ctl_info *src_mci;
++	unsigned short syndrome;
++	int channel, csrow;
++	u32 page, offset;
++
++	/* Extract the syndrome parts and form a 16-bit syndrome */
++	syndrome = EXTRACT_HIGH_SYNDROME(info->nbsl) << 8;
++	syndrome |= EXTRACT_LOW_SYNDROME(info->nbsh);
++
++	/* CHIPKILL enabled */
++	if (info->nbcfg & K8_NBCFG_CHIPKILL) {
++		/* x4 chipkill ecc mode - determine channel */
++		channel = get_channel_from_ecc_syndrome(syndrome);
++		if (channel < 0) {
++			/* Syndrome didn't map, so we don't know which of
++			 * the 2 DIMMs is in error. So we need to ID 'both'
++			 * of them as suspect.
++			 */
++			amd64_mc_printk(mci, KERN_WARNING,
++				     "unknown syndrome 0x%x - possible error "
++				     "reporting race\n", syndrome);
++			edac_mc_handle_ce_no_info(mci, EDAC_MOD_STR);
++			return;
++		}
++	} else {
++		/* non-chipkill ecc mode
++		 *
++		 * The k8 documentation is unclear about how to determine the
++		 * channel number when using non-chipkill memory.  This method
++		 * was obtained from email communication with someone at AMD.
++		 * (Wish the email was placed in this comment - norsk)
++		 */
++		channel = ((SystemAddress & BIT(3)) != 0);
 +	}
-+	return rc;
-+}
 +
-+/*
-+ * amd64_nbsl_show
-+ *
-+ *	display back what the last NBSL value written
-+ */
-+static ssize_t amd64_nbsl_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	u32 value;
-+
-+	value = pvt->ctl_error_info.nbsl;
-+
-+	return sprintf(data, "%x\n", value);
-+}
-+
-+/*
-+ * amd64_nbsh_store
-+ *
-+ *	accept and store the NBSH value user desires
-+ */
-+static ssize_t amd64_nbsh_store(struct mem_ctl_info *mci,
-+					const char *data, size_t count)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	unsigned long value;
-+	int rc;
-+
-+	rc = strict_strtoul(data, 16, &value);
-+	if (rc != -EINVAL) {
-+		debugf0("%s() received NBSL= 0x%lx\n", __func__, value);
-+
-+		/* place the NBSL value into the virtual error packet */
-+		pvt->ctl_error_info.nbsh = (u32) value;
-+
-+		return count;
++	/* Find out which node the error address belongs to.  This may be
++	 * different from the node that detected the error.
++	 */
++	src_mci = find_mc_by_sys_addr(mci, SystemAddress);
++	if (src_mci == NULL) {
++		amd64_mc_printk(mci, KERN_ERR,
++			     "failed to map error address 0x%lx to a node\n",
++			     (unsigned long)SystemAddress);
++		edac_mc_handle_ce_no_info(mci, EDAC_MOD_STR);
++		return;
 +	}
-+	return rc;
-+}
 +
-+/*
-+ * amd64_nbsh_show
-+ *
-+ *	display back what the last NBSL value written
-+ */
-+static ssize_t amd64_nbsh_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	u32 value;
++	/* Now map the SystemAddress to a CSROW */
++	csrow = sys_addr_to_csrow(src_mci, SystemAddress);
++	if (csrow < 0) {
++		edac_mc_handle_ce_no_info(src_mci, EDAC_MOD_STR);
++	} else {
++		error_address_to_page_and_offset(SystemAddress, &page, &offset);
 +
-+	value = pvt->ctl_error_info.nbsh;
-+
-+	return sprintf(data, "%x\n", value);
-+}
-+
-+/*
-+ * amd64_nbcfg_store
-+ *
-+ *	accept and store the NBSL value user desires
-+ */
-+static ssize_t amd64_nbcfg_store(struct mem_ctl_info *mci,
-+					const char *data, size_t count)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	unsigned long value;
-+	int rc;
-+
-+	rc = strict_strtoul(data, 16, &value);
-+	if (rc != -EINVAL) {
-+		debugf0("%s() received NBCFG= 0x%lx\n", __func__, value);
-+
-+		/* place the NBSL value into the virtual error packet */
-+		pvt->ctl_error_info.nbcfg = (u32) value;
-+
-+		return count;
++		edac_mc_handle_ce(src_mci, page, offset, syndrome, csrow,
++				  channel, EDAC_MOD_STR);
 +	}
-+	return rc;
 +}
 +
 +/*
-+ *	Various show routines for the controls of a MCI
++ * k8_dbam_map_to_pages
++ *
++ *	determrine the number of PAGES in for this DIMM's size
++ *	based on its DRAM Address Mapping.
 + */
-+static ssize_t amd64_nbcfg_show(struct mem_ctl_info *mci, char *data)
++static int k8_dbam_map_to_pages(struct amd64_pvt *pvt, int dram_map)
 +{
-+	struct amd64_pvt *pvt = mci->pvt_info;
++	int nr_pages;
 +
-+	return sprintf(data, "%x\n",
-+		pvt->ctl_error_info.nbcfg);
++	/* First step is to calc the number of bits to shift a value of 1
++	 * left to indicate show many pages. Start with the DBAM value
++	 * as the starting bits, then proceed to adjust those shift
++	 * bits, based on CPU REV and the table. See BKDG on the DBAM
++	 */
++	if (pvt->ext_model >= OPTERON_CPU_REV_F) {
++
++		/* REV F and greater section */
++		nr_pages = 1 << (revf_quad_ddr2_shift[dram_map] - PAGE_SHIFT);
++	} else {
++		/* REV E and less section This line is tricky.
++		 * It collapses the table used by revision D and later to one
++		 * that matches revision CG and earlier
++		 */
++		dram_map -= (pvt->ext_model >= OPTERON_CPU_REV_D) ?
++				(dram_map > 8 ? 4 : (dram_map > 5 ?
++				3 : (dram_map > 2 ? 1 : 0))) : 0;
++
++		/* 25 shift, is 32MiB minimum DIMM size in REV E and prior
++		 */
++		nr_pages = 1 << (dram_map + 25 - PAGE_SHIFT);
++	}
++
++	return nr_pages;
 +}
 +
-+
-+static ssize_t amd64_dhar_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return sprintf(data, "%x\n", pvt->dhar);
-+}
-+
-+
-+static ssize_t amd64_dbam_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return sprintf(data, "%x\n", pvt->dbam0);
-+}
-+
-+
-+static ssize_t amd64_topmem_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return sprintf(data, "%llx\n", pvt->top_mem);
-+}
-+
-+
-+static ssize_t amd64_topmem2_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return sprintf(data, "%llx\n", pvt->top_mem2);
-+}
-+
-+static ssize_t amd64_hole_show(struct mem_ctl_info *mci, char *data)
-+{
-+	u64 hole_base = 0;
-+	u64 hole_offset = 0;
-+	u64 hole_size = 0;
-+
-+	amd64_get_dram_hole_info(mci, &hole_base, &hole_offset, &hole_size);
-+
-+	return sprintf(data, "%llx %llx %llx\n", hole_base, hole_offset,
-+						 hole_size);
-+}
-+
-+#endif	/* DEBUG */
-+
+ 
 -- 
 1.6.2.4
 
