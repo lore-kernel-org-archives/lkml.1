@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265AbZD2ImT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbZD2IpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754265AbZD2ImT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 04:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbZD2ImJ
+	id S1754862AbZD2IpK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 04:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZD2Io5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 04:42:09 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:43246 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbZD2ImI (ORCPT
+	Wed, 29 Apr 2009 04:44:57 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33070 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751150AbZD2Io4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 04:42:08 -0400
-Message-ID: <49F812DB.4030102@monstr.eu>
-Date: Wed, 29 Apr 2009 10:42:03 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, john.williams@petalogix.com
-Subject: Re: [PATCH 07/30] microblaze_mmu_v1: MMU initialization
-References: <1240821139-7247-1-git-send-email-monstr@monstr.eu>	<1240821139-7247-2-git-send-email-monstr@monstr.eu>	<1240821139-7247-3-git-send-email-monstr@monstr.eu>	<1240821139-7247-4-git-send-email-monstr@monstr.eu>	<1240821139-7247-5-git-send-email-monstr@monstr.eu>	<1240821139-7247-6-git-send-email-monstr@monstr.eu>	<1240821139-7247-7-git-send-email-monstr@monstr.eu>	<1240821139-7247-8-git-send-email-monstr@monstr.eu> <20090428224247.888c3076.akpm@linux-foundation.org>
-In-Reply-To: <20090428224247.888c3076.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 29 Apr 2009 04:44:56 -0400
+Subject: Re: [PATCH] mm: prevent divide error for small values of
+ vm_dirty_bytes
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: David Rientjes <rientjes@google.com>, akpm@linux-foundation.org,
+       Dave Chinner <david@fromorbit.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1240993759-30787-1-git-send-email-righi.andrea@gmail.com>
+References: <1240993759-30787-1-git-send-email-righi.andrea@gmail.com>
+Content-Type: text/plain
+Date: Wed, 29 Apr 2009 10:44:36 +0200
+Message-Id: <1240994676.8021.83.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 27 Apr 2009 10:31:56 +0200 monstr@monstr.eu wrote:
-> 
->> +	/* Check for nobats option (used in mapin_ram). */
->> +	if (strstr(cmd_line, "nobats"))
->> +		__map_without_bats = 1;
-> 
-> Sometime you could go through the architecture and document all of its
-> kernel command-line parameters in Documentation/kernel-parameters.txt.
-> 
-> Or maybe document them in a separate microblaze documentation file,
-> which gives you a bit more freedom to expound upon what they do.
-> 
+On Wed, 2009-04-29 at 10:29 +0200, Andrea Righi wrote:
+> Avoid to set less than two pages for vm_dirty_byte: this is necessary to avoid
+> potential division by 0 (like the following) in get_dirty_limits().
 
-I fixed it -> it will be in next version.
+isn't changing the .extra1 in the sysctl table a better fix?
 
-Thanks,
-Michal
+> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+> ---
+>  mm/page-writeback.c |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index 30351f0..9d6c427 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -213,6 +213,12 @@ int dirty_bytes_handler(struct ctl_table *table, int write,
+>  	int ret;
+>  
+>  	ret = proc_doulongvec_minmax(table, write, filp, buffer, lenp, ppos);
+> +	/*
+> +	 * Do not allow to set less than two pages for vm_dirty_byte: this is
+> +	 * necessary to avoid division by 0 in get_dirty_limits().
+> +	 */
+> +	vm_dirty_bytes = max_t(typeof(vm_dirty_bytes),
+> +				vm_dirty_bytes, 2 * PAGE_SIZE);
+>  	if (ret == 0 && write && vm_dirty_bytes != old_bytes) {
+>  		update_completion_period();
+>  		vm_dirty_ratio = 0;
 
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
