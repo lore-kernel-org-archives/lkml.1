@@ -1,101 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbZD2ODc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbZD2OHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbZD2ODc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 10:03:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbZD2ODU
+	id S1751962AbZD2OHX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 10:07:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZD2OHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 10:03:20 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:43061 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbZD2ODU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 10:03:20 -0400
-Message-ID: <49F85E24.5050801@petalogix.com>
-Date: Wed, 29 Apr 2009 16:03:16 +0200
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Wed, 29 Apr 2009 10:07:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50002 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750937AbZD2OHF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 10:07:05 -0400
+Date: Wed, 29 Apr 2009 16:02:24 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Stephen Smalley <sds@tycho.nsa.gov>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, Eric Paris <eparis@parisplace.org>,
+       James Morris <jmorris@namei.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: ptrace: selinux_bprm_committed_creds: simplify __wake_up_parent()
+	code and s/parent/real_parent/
+Message-ID: <20090429140224.GA31948@redhat.com>
+References: <20090428223025.GA11997@redhat.com> <1241011116.18249.193.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: monstr@monstr.eu
-CC: Arnd Bergmann <arnd@arndb.de>, John Williams <john.williams@petalogix.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Memory limits - mm_segment_t - MAKE_MM_SEG
-References: <49F85C27.9000308@monstr.eu>
-In-Reply-To: <49F85C27.9000308@monstr.eu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241011116.18249.193.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Simek wrote:
-> Hi all,
->
-> I look at some things which I need to clear for MMU Microblaze patches and
-> I would like to know your opinion about.
->
-> First of all I found that almost all archs use MAKE_MM_SEG macro which should be good
-> to move to generic location (asm-generic/uaccess.h ? )
-> #define MAKE_MM_SEG(s) ((mm_segment_t) { (s) })
->
->
-> The second thing is about place where is stored limit for processes -> mm_segment_t structure
->
-> Where is the proper location for storing mm_segment_t? Some arch use thread_info some of them
-> thread_struct
->
-> For microblaze case are used both -> that's definitely not correct.
->
-> Here is the small table for cpus which are in linux kernel and location and type for them.
-> The most of them uses thread_info structure for it and name is addr_limit.
-> The location of mm_segment_t is different too -> we should move it to any generic location too.
-> What do you think?
->
->         location                     name           location      struct mm_segment_t
-> s390:   processor.h/thread_struct    mm_segment     processor.h   __u32 ar4
-> alpha:  thread_info.h/thread_info    addr_limit     processor.h  unsigned long seg
-> x86:    thread_info.h/thread_info    addr_limit     processor.h  unsigned long seg
-> ia64:   thread_info.h/thread_info    addr_limit     processor.h  unsigned long seg
-> mips:   thread_info.h/thread_info    addr_limit     processor.h  unsigned long seg
-> um:     thread_info.h/thread_info    addr_limit     uaccess.h    unsigned long seg
-> frv:    thread_info.h/thread_info    addr_limit     segment.h    unsigned long seg
-> cris:   thread_info.h/thread_info    addr_limit     segment.h    unsigned long seg
-> sh:     thread_info.h/thread_info    addr_limit     segment.h    unsigned long seg
-> h8300:  not_used     not_used                       segment.h    unsigned long seg
-> nm10300:thread_info.h/thread_info    addr_limit     processor.h  unsigned long seg
-> arm:    thread_info.h/thread_info    addr_limit     thread_info.h  typedef unsigned long mm_segment_t;
-> parisc: thread_info.h/thread_info    addr_limit     processor.h  int seq
-> m32r:   thread_info.h/thread_info    addr_limit     processor.h  unsigned long seg
-> xtensa: thread_info.h/thread_info    addr_limit     segment.h    unsigned long seg
-> avr32:  not_used     not_used                       uaccess.h    unsigned int is_user_space;
-> sparc:  processor_32.h/thread_struct  current_ds    processor_32.h  int seg
-> m68k:   not_used     not_used                       segment.h    unsigned long seg
-> blackfin:thread_info.h/thread_info    addr_limit    thread_info.h  typedef unsigned long mm_segment_t;
-> powerpc: processor.h/thread_struct  current_ds     processor.h  unsigned long seg
->
->
-> There is really mess in it and I would like to have good solution for Microblaze and I think
-> that will be good to have any generic solution and remove code duplication.
->
-> Thanks for your comments,
-> Michal
->
->   
-+ move some macros to generic location too.
-#define get_ds()      (KERNEL_DS)
+(on top of David's "[PATCH] SELinux: Don't flush inherited SIGKILL during execve()",
+ but can be applied independently).
 
-+ get_fs(), set_fs(), segment_eq() after sync changes above
+selinux_bprm_committed_creds() should wake up ->real_parent, not ->parent.
 
-Michal
+We shouldn't worry about the tracer if current is ptraced, exec() must not
+succeed if the tracer has no rights to trace this task after cred changing.
+But we should notify ->real_parent which is, well, real parent.
 
+Also, we don't need _irq to take tasklist, and we don't need parent's
+->siglock to wake_up_interruptible(real_parent->signal->wait_chldexit).
+Since we hold tasklist, real_parent->signal must be stable. Otherwise
+spin_lock(siglock) is not safe too and can't help anyway.
 
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+--- PTRACE/security/selinux/hooks.c~SELINUX_PARENT	2009-04-29 15:45:28.000000000 +0200
++++ PTRACE/security/selinux/hooks.c	2009-04-29 15:48:41.000000000 +0200
+@@ -2375,10 +2375,8 @@ static void selinux_bprm_committed_creds
+ {
+ 	const struct task_security_struct *tsec = current_security();
+ 	struct itimerval itimer;
+-	struct sighand_struct *psig;
+ 	u32 osid, sid;
+ 	int rc, i;
+-	unsigned long flags;
+ 
+ 	osid = tsec->osid;
+ 	sid = tsec->sid;
+@@ -2409,12 +2407,9 @@ static void selinux_bprm_committed_creds
+ 
+ 	/* Wake up the parent if it is waiting so that it can recheck
+ 	 * wait permission to the new task SID. */
+-	read_lock_irq(&tasklist_lock);
+-	psig = current->parent->sighand;
+-	spin_lock_irqsave(&psig->siglock, flags);
+-	wake_up_interruptible(&current->parent->signal->wait_chldexit);
+-	spin_unlock_irqrestore(&psig->siglock, flags);
+-	read_unlock_irq(&tasklist_lock);
++	read_lock(&tasklist_lock);
++	wake_up_interruptible(&current->real_parent->signal->wait_chldexit);
++	read_unlock(&tasklist_lock);
+ }
+ 
+ /* superblock security operations */
 
