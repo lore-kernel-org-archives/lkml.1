@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbZD2JWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757698AbZD2JVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758067AbZD2JWZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 05:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbZD2JUi
+	id S1757698AbZD2JVy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 05:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755666AbZD2JUd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 05:20:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48082 "EHLO hera.kernel.org"
+	Wed, 29 Apr 2009 05:20:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48076 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754090AbZD2JU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 05:20:27 -0400
+	id S1756587AbZD2JU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 05:20:26 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
        linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
@@ -23,201 +23,306 @@ To: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
        schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
        rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
        bharrosh@panasas.com
-Subject: [GIT PATCH] block,scsi,ide: unify sector and data_len
-Date: Wed, 29 Apr 2009 18:13:38 +0900
-Message-Id: <1240996428-10159-1-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 04/10] block: implement blk_rq_pos/[cur_]sectors() and convert obvious ones
+Date: Wed, 29 Apr 2009 18:13:42 +0900
+Message-Id: <1240996428-10159-5-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 09:14:02 +0000 (UTC)
+In-Reply-To: <1240996428-10159-1-git-send-email-tj@kernel.org>
+References: <1240996428-10159-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 09:14:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Implement accessors - blk_rq_pos(), blk_rq_sectors() and
+blk_rq_cur_sectors() which return rq->sector, rq->hard_nr_sectors and
+rq->hard_cur_sectors respectively and convert direct references of the
+said fields to the accessors.
 
-Upon ack, please pull from the following git tree.
+This is in preparation of request data length handling cleanup.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-unify-sector-and-data_len
+[ Impact: cleanup ]
 
-This is the first take of block-unify-sector-and-data_len patchset.
-The primary goal of this patchset is to consolidate all the similar
-bug slightly different current position and data length fields in
-struct request.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Borislav Petkov <petkovbb@googlemail.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ block/blk-barrier.c             |    2 +-
+ block/blk-core.c                |    2 +-
+ block/cfq-iosched.c             |    2 +-
+ drivers/block/ps3disk.c         |    2 +-
+ drivers/block/viodasd.c         |    6 +++---
+ drivers/block/xsysace.c         |   10 +++++-----
+ drivers/ide/ide-cd.c            |    8 ++++----
+ drivers/ide/ide-io.c            |    4 ++--
+ drivers/message/i2o/i2o_block.c |    2 +-
+ drivers/scsi/scsi_lib.c         |    2 +-
+ include/linux/blkdev.h          |   23 ++++++++++++++++++++---
+ kernel/trace/blktrace.c         |    4 ++--
+ 12 files changed, 42 insertions(+), 25 deletions(-)
 
-Currently, there are two current position fields - rq->sector and
-rq->hard_sector.  Three possible total lengths - rq->nr_sectors,
-rq->hard_nr_sectors and rq->data_len and two possible current lengths
-- rq->current_nr_sectors and rq->hard_cur_sectors.
+diff --git a/block/blk-barrier.c b/block/blk-barrier.c
+index c8d0876..c167de5 100644
+--- a/block/blk-barrier.c
++++ b/block/blk-barrier.c
+@@ -163,7 +163,7 @@ static inline bool start_ordered(struct request_queue *q, struct request **rqp)
+ 	 * For an empty barrier, there's no actual BAR request, which
+ 	 * in turn makes POSTFLUSH unnecessary.  Mask them off.
+ 	 */
+-	if (!rq->hard_nr_sectors) {
++	if (!blk_rq_sectors(rq)) {
+ 		q->ordered &= ~(QUEUE_ORDERED_DO_BAR |
+ 				QUEUE_ORDERED_DO_POSTFLUSH);
+ 		/*
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 394c5bd..895e55b 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1683,7 +1683,7 @@ static void blk_account_io_done(struct request *req)
+ unsigned int blk_rq_bytes(struct request *rq)
+ {
+ 	if (blk_fs_request(rq))
+-		return rq->hard_nr_sectors << 9;
++		return blk_rq_sectors(rq) << 9;
+ 
+ 	return rq->data_len;
+ }
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index def0c69..575083a 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -760,7 +760,7 @@ static void cfq_activate_request(struct request_queue *q, struct request *rq)
+ 	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "activate rq, drv=%d",
+ 						cfqd->rq_in_driver);
+ 
+-	cfqd->last_position = rq->hard_sector + rq->hard_nr_sectors;
++	cfqd->last_position = blk_rq_pos(rq) + blk_rq_sectors(rq);
+ }
+ 
+ static void cfq_deactivate_request(struct request_queue *q, struct request *rq)
+diff --git a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
+index f6586e4..c238867 100644
+--- a/drivers/block/ps3disk.c
++++ b/drivers/block/ps3disk.c
+@@ -136,7 +136,7 @@ static int ps3disk_submit_request_sg(struct ps3_storage_device *dev,
+ 	dev_dbg(&dev->sbd.core,
+ 		"%s:%u: %s req has %u bvecs for %lu sectors %lu hard sectors\n",
+ 		__func__, __LINE__, op, n, req->nr_sectors,
+-		req->hard_nr_sectors);
++		blk_rq_sectors(req));
+ #endif
+ 
+ 	start_sector = req->sector * priv->blocking_factor;
+diff --git a/drivers/block/viodasd.c b/drivers/block/viodasd.c
+index ecccf65..e821eed 100644
+--- a/drivers/block/viodasd.c
++++ b/drivers/block/viodasd.c
+@@ -368,12 +368,12 @@ static void do_viodasd_request(struct request_queue *q)
+ 		blkdev_dequeue_request(req);
+ 		/* check that request contains a valid command */
+ 		if (!blk_fs_request(req)) {
+-			viodasd_end_request(req, -EIO, req->hard_nr_sectors);
++			viodasd_end_request(req, -EIO, blk_rq_sectors(req));
+ 			continue;
+ 		}
+ 		/* Try sending the request */
+ 		if (send_request(req) != 0)
+-			viodasd_end_request(req, -EIO, req->hard_nr_sectors);
++			viodasd_end_request(req, -EIO, blk_rq_sectors(req));
+ 	}
+ }
+ 
+@@ -590,7 +590,7 @@ static int viodasd_handle_read_write(struct vioblocklpevent *bevent)
+ 		err = vio_lookup_rc(viodasd_err_table, bevent->sub_result);
+ 		printk(VIOD_KERN_WARNING "read/write error %d:0x%04x (%s)\n",
+ 				event->xRc, bevent->sub_result, err->msg);
+-		num_sect = req->hard_nr_sectors;
++		num_sect = blk_rq_sectors(req);
+ 	}
+ 	qlock = req->q->queue_lock;
+ 	spin_lock_irqsave(qlock, irq_flags);
+diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
+index b1e1d7e..5722931 100644
+--- a/drivers/block/xsysace.c
++++ b/drivers/block/xsysace.c
+@@ -645,8 +645,8 @@ static void ace_fsm_dostate(struct ace_device *ace)
+ 
+ 		/* Okay, it's a data request, set it up for transfer */
+ 		dev_dbg(ace->dev,
+-			"request: sec=%llx hcnt=%lx, ccnt=%x, dir=%i\n",
+-			(unsigned long long) req->sector, req->hard_nr_sectors,
++			"request: sec=%llx hcnt=%x, ccnt=%x, dir=%i\n",
++			(unsigned long long) req->sector, blk_rq_sectors(req),
+ 			req->current_nr_sectors, rq_data_dir(req));
+ 
+ 		ace->req = req;
+@@ -654,7 +654,7 @@ static void ace_fsm_dostate(struct ace_device *ace)
+ 		ace->data_count = req->current_nr_sectors * ACE_BUF_PER_SECTOR;
+ 		ace_out32(ace, ACE_MPULBA, req->sector & 0x0FFFFFFF);
+ 
+-		count = req->hard_nr_sectors;
++		count = blk_rq_sectors(req);
+ 		if (rq_data_dir(req)) {
+ 			/* Kick off write request */
+ 			dev_dbg(ace->dev, "write data\n");
+@@ -719,8 +719,8 @@ static void ace_fsm_dostate(struct ace_device *ace)
+ 		/* bio finished; is there another one? */
+ 		if (__blk_end_request(ace->req, 0,
+ 					blk_rq_cur_bytes(ace->req))) {
+-			/* dev_dbg(ace->dev, "next block; h=%li c=%i\n",
+-			 *      ace->req->hard_nr_sectors,
++			/* dev_dbg(ace->dev, "next block; h=%u c=%u\n",
++			 *      blk_rq_sectors(ace->req),
+ 			 *      ace->req->current_nr_sectors);
+ 			 */
+ 			ace->data_ptr = ace->req->buffer;
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 8bbe222..182320d 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -730,7 +730,7 @@ out_end:
+ 		if (blk_pc_request(rq))
+ 			nsectors = (rq->data_len + 511) >> 9;
+ 		else
+-			nsectors = rq->hard_nr_sectors;
++			nsectors = blk_rq_sectors(rq);
+ 
+ 		if (nsectors == 0)
+ 			nsectors = 1;
+@@ -875,7 +875,7 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
+ 
+ 	return ide_issue_pc(drive, &cmd);
+ out_end:
+-	nsectors = rq->hard_nr_sectors;
++	nsectors = blk_rq_sectors(rq);
+ 
+ 	if (nsectors == 0)
+ 		nsectors = 1;
+@@ -1359,8 +1359,8 @@ static int ide_cdrom_probe_capabilities(ide_drive_t *drive)
+ static int ide_cdrom_prep_fs(struct request_queue *q, struct request *rq)
+ {
+ 	int hard_sect = queue_hardsect_size(q);
+-	long block = (long)rq->hard_sector / (hard_sect >> 9);
+-	unsigned long blocks = rq->hard_nr_sectors / (hard_sect >> 9);
++	long block = (long)blk_rq_pos(rq) / (hard_sect >> 9);
++	unsigned long blocks = blk_rq_sectors(rq) / (hard_sect >> 9);
+ 
+ 	memset(rq->cmd, 0, BLK_MAX_CDB);
+ 
+diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+index a0309ea..df23bcb 100644
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -118,7 +118,7 @@ unsigned int ide_rq_bytes(struct request *rq)
+ 	if (blk_pc_request(rq))
+ 		return rq->data_len;
+ 	else
+-		return rq->hard_cur_sectors << 9;
++		return blk_rq_cur_sectors(rq) << 9;
+ }
+ EXPORT_SYMBOL_GPL(ide_rq_bytes);
+ 
+@@ -133,7 +133,7 @@ int ide_complete_rq(ide_drive_t *drive, int error, unsigned int nr_bytes)
+ 	 * and complete the whole request right now
+ 	 */
+ 	if (blk_noretry_request(rq) && error <= 0)
+-		nr_bytes = rq->hard_nr_sectors << 9;
++		nr_bytes = blk_rq_sectors(rq) << 9;
+ 
+ 	rc = ide_end_rq(drive, rq, error, nr_bytes);
+ 	if (rc == 0)
+diff --git a/drivers/message/i2o/i2o_block.c b/drivers/message/i2o/i2o_block.c
+index 221317e..56e60f0 100644
+--- a/drivers/message/i2o/i2o_block.c
++++ b/drivers/message/i2o/i2o_block.c
+@@ -427,7 +427,7 @@ static void i2o_block_end_request(struct request *req, int error,
+ 	unsigned long flags;
+ 
+ 	if (blk_end_request(req, error, nr_bytes)) {
+-		int leftover = (req->hard_nr_sectors << KERNEL_SECTOR_SHIFT);
++		int leftover = (blk_rq_sectors(req) << KERNEL_SECTOR_SHIFT);
+ 
+ 		if (blk_pc_request(req))
+ 			leftover = req->data_len;
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 7d49ef5..9ff0ca9 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -546,7 +546,7 @@ static struct scsi_cmnd *scsi_end_request(struct scsi_cmnd *cmd, int error,
+ 	 * to queue the remainder of them.
+ 	 */
+ 	if (blk_end_request(req, error, bytes)) {
+-		int leftover = (req->hard_nr_sectors << 9);
++		int leftover = blk_rq_sectors(req) << 9;
+ 
+ 		if (blk_pc_request(req))
+ 			leftover = req->resid_len;
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 6a967ca..1e18ef7 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -832,13 +832,30 @@ static inline void blk_run_address_space(struct address_space *mapping)
+ extern void blkdev_dequeue_request(struct request *req);
+ 
+ /*
+- * blk_end_request() takes bytes instead of sectors as a complete size.
+- * blk_rq_bytes() returns bytes left to complete in the entire request.
+- * blk_rq_cur_bytes() returns bytes left to complete in the current segment.
++ * blk_rq_pos()		: the current sector
++ * blk_rq_bytes()	: bytes left in the entire request
++ * blk_rq_cur_bytes()	: bytes left in the current segment
++ * blk_rq_sectors()	: sectors left in the entire request
++ * blk_rq_cur_sectors()	: sectors left in the current segment
+  */
++static inline sector_t blk_rq_pos(struct request *rq)
++{
++	return rq->hard_sector;
++}
++
+ extern unsigned int blk_rq_bytes(struct request *rq);
+ extern unsigned int blk_rq_cur_bytes(struct request *rq);
+ 
++static inline unsigned int blk_rq_sectors(struct request *rq)
++{
++	return rq->hard_nr_sectors;
++}
++
++static inline unsigned int blk_rq_cur_sectors(struct request *rq)
++{
++	return rq->hard_cur_sectors;
++}
++
+ /*
+  * Request completion related functions.
+  *
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index 921ef5d..42f1c11 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -646,7 +646,7 @@ static void blk_add_trace_rq(struct request_queue *q, struct request *rq,
+ 				rq->cmd_len, rq->cmd);
+ 	} else  {
+ 		what |= BLK_TC_ACT(BLK_TC_FS);
+-		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9,
++		__blk_add_trace(bt, blk_rq_pos(rq), blk_rq_sectors(rq) << 9,
+ 				rw, what, rq->errors, 0, NULL);
+ 	}
+ }
+@@ -857,7 +857,7 @@ void blk_add_driver_data(struct request_queue *q,
+ 		__blk_add_trace(bt, 0, rq->data_len, 0, BLK_TA_DRV_DATA,
+ 				rq->errors, len, data);
+ 	else
+-		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9,
++		__blk_add_trace(bt, blk_rq_pos(rq), blk_rq_sectors(rq) << 9,
+ 				0, BLK_TA_DRV_DATA, rq->errors, len, data);
+ }
+ EXPORT_SYMBOL_GPL(blk_add_driver_data);
+-- 
+1.6.0.2
 
-The hard_ prefixed fields are there to allow low level drivers to
-modify respective fields without the hard_ prefix for partial
-processing.  However, this capability can easily be replaced with
-partial completion and/or blk_update_request() and in fact with recent
-updates there is no remaining user.
-
-data_len equals nr_sectors << 9 for FS requests.  For !FS requests,
-nr_sectors could be zero while data_len contains the request length.
-This is further complicated by the fact that data_len duals as
-residual count on request completion.
-
-All these duplications with slight variances lead to a lot of
-confusion.  For example, it's not very clear what blk_rq_bytes() would
-return during request processing.  It depends on the type of the
-request, whether the driver supports residual byte counting and if so
-how it supports that.  These subtleties show up both in block layer
-and llds requiring request length caching during completion and
-different completion paths depending on request type.
-
-This patch simplifies the situation by doing the followings.
-
-* Introduce rq->resid_len and use it for residual count.  rq->data_len
-  means the left data length in the request at all times.
-
-* Make sure nobody tinkers with rq fields directly.
-
-* Kill rq->hard_sector and use rq->sector exclusively.
-
-* Kill rq->nr_sectors and rq->hard_nr_sectors and use rq->data_len
-  exclusively.
-
-* Kill rq->current_nr_sectors and rq->hard_cur_sectors and use
-  bio_cur_bytes(rq->bio) instead.
-
-* Encapsulate all accesses via accessors.
-
-* Add __ prefix to rq->sector and rq->data_len to make it clear that
-  these fields are internal and llds MUST NOT access these directly.
-  This field renaming is also to trigger build breakage on out-of-tree
-  drivers which access and modify request fields directly which won't
-  work correctly anymore.
-
-This patchset contains the following ten patches.
-
-  0001-nbd-don-t-clear-rq-sector-and-nr_sectors-unnecessa.patch
-  0002-ide-tape-don-t-initialize-rq-sector-for-rw-request.patch
-  0003-block-add-rq-resid_len.patch
-  0004-block-implement-blk_rq_pos-cur_-sectors-and-conv.patch
-  0005-block-convert-to-pos-and-nr_sectors-accessors.patch
-  0006-ide-convert-to-rq-pos-and-nr_sectors-accessors.patch
-  0007-block-drop-request-hard_-and-nr_sectors.patch
-  0008-block-cleanup-rq-data_len-usages.patch
-  0009-ide-cleanup-rq-data_len-usages.patch
-  0010-block-hide-request-sector-and-data_len.patch
-
-0001-0002 remove unnecessary explicit rq field clearing.
-
-0003 adds rq->resid_len.
-
-0004-0006 introduce and use blk_rq_pos() and blk_rq_[cur_]sectors()
-accessors.
-
-0007 drops fields with hard_ prefix.
-
-0008-0009 replaces direct data_len usage with blk_rq_bytes().
-
-0010 hides rq->sector and data_len.
-
-As the patchset contains several block-ide sync points, I think it's
-best to apply this series in unified series.  SCSI also received good
-amount of changes.  If there's a tree I can pull from which won't be
-rebased, please let me know.  If SCSI tree is gonna pull block tree
-after merge, that will be fine too.
-
-All changed llds have been compile tested, mid-high layer resid_len
-handling has been verified and nothing broke during my test runs with
-ide and libata.
-
-This patchset is on top of
-
-  linux-2.6-block#for-2.6.31	(f68adec3c7155a8bbf32a90cb4c4d0737df045d9)
-+ linux-2.6-ide#for-next	(b656eba122929881c52d38ae16637167aaa5b88b)
-
-and contains the following changes.
-
- arch/um/drivers/ubd_kern.c               |    2 
- block/as-iosched.c                       |   18 +++--
- block/blk-barrier.c                      |    4 -
- block/blk-core.c                         |  100 ++++++++++++-------------------
- block/blk-map.c                          |    2 
- block/blk-merge.c                        |   46 ++------------
- block/blk.h                              |    1 
- block/bsg.c                              |    8 +-
- block/cfq-iosched.c                      |   30 ++++-----
- block/deadline-iosched.c                 |    2 
- block/elevator.c                         |   22 +++---
- block/scsi_ioctl.c                       |    2 
- drivers/ata/libata-scsi.c                |    2 
- drivers/block/DAC960.c                   |    6 -
- drivers/block/amiflop.c                  |    6 -
- drivers/block/ataflop.c                  |   10 +--
- drivers/block/cciss.c                    |   35 ++++------
- drivers/block/cpqarray.c                 |    9 +-
- drivers/block/floppy.c                   |   53 ++++++++--------
- drivers/block/hd.c                       |   14 ++--
- drivers/block/nbd.c                      |   19 +----
- drivers/block/paride/pcd.c               |    4 -
- drivers/block/paride/pd.c                |    8 +-
- drivers/block/paride/pf.c                |    8 +-
- drivers/block/ps3disk.c                  |    9 +-
- drivers/block/sunvdc.c                   |    2 
- drivers/block/swim3.c                    |   34 +++++-----
- drivers/block/sx8.c                      |    6 -
- drivers/block/ub.c                       |   16 ++--
- drivers/block/viodasd.c                  |    8 +-
- drivers/block/virtio_blk.c               |    2 
- drivers/block/xd.c                       |    4 -
- drivers/block/xen-blkfront.c             |   11 +--
- drivers/block/xsysace.c                  |   25 ++++---
- drivers/block/z2ram.c                    |    6 -
- drivers/cdrom/gdrom.c                    |    6 -
- drivers/cdrom/viocd.c                    |    2 
- drivers/ide/ide-atapi.c                  |   13 ----
- drivers/ide/ide-cd.c                     |   44 ++++---------
- drivers/ide/ide-disk.c                   |    8 +-
- drivers/ide/ide-dma.c                    |    2 
- drivers/ide/ide-floppy.c                 |   10 +--
- drivers/ide/ide-io.c                     |   10 +--
- drivers/ide/ide-lib.c                    |    2 
- drivers/ide/ide-tape.c                   |   11 +--
- drivers/ide/ide-taskfile.c               |    2 
- drivers/ide/pdc202xx_old.c               |    2 
- drivers/ide/tc86c001.c                   |    2 
- drivers/ide/tx4939ide.c                  |    2 
- drivers/memstick/core/mspro_block.c      |    6 -
- drivers/message/fusion/mptsas.c          |   21 +++---
- drivers/message/i2o/i2o_block.c          |   24 ++++---
- drivers/mmc/card/block.c                 |   10 +--
- drivers/mtd/mtd_blkdevs.c                |    7 +-
- drivers/s390/block/dasd.c                |    2 
- drivers/s390/block/dasd_diag.c           |    5 -
- drivers/s390/block/dasd_eckd.c           |    6 -
- drivers/s390/block/dasd_fba.c            |    7 +-
- drivers/s390/char/tape_34xx.c            |    2 
- drivers/s390/char/tape_3590.c            |    2 
- drivers/s390/char/tape_block.c           |    2 
- drivers/sbus/char/jsflash.c              |    4 -
- drivers/scsi/eata.c                      |   24 +++----
- drivers/scsi/libsas/sas_expander.c       |   14 +---
- drivers/scsi/libsas/sas_host_smp.c       |   52 ++++++++--------
- drivers/scsi/lpfc/lpfc_scsi.c            |   22 +++---
- drivers/scsi/mpt2sas/mpt2sas_transport.c |   23 +++----
- drivers/scsi/osd/osd_initiator.c         |    4 -
- drivers/scsi/scsi_lib.c                  |   45 ++++++-------
- drivers/scsi/scsi_tgt_lib.c              |    2 
- drivers/scsi/sd.c                        |   24 +++----
- drivers/scsi/sd_dif.c                    |    2 
- drivers/scsi/sg.c                        |    2 
- drivers/scsi/sr.c                        |   15 ++--
- drivers/scsi/st.c                        |    2 
- drivers/scsi/u14-34f.c                   |   22 +++---
- fs/exofs/osd.c                           |    4 -
- include/linux/bio.h                      |    6 -
- include/linux/blkdev.h                   |   56 ++++++++++-------
- include/linux/elevator.h                 |    2 
- include/scsi/scsi_cmnd.h                 |    2 
- kernel/trace/blktrace.c                  |   16 ++--
- 82 files changed, 511 insertions(+), 576 deletions(-)
-
-Thanks.
-
---
-tejun
