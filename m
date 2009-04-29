@@ -1,55 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbZD2HBI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756371AbZD2HCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbZD2HBI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 03:01:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbZD2HAz
+	id S1756371AbZD2HCs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 03:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbZD2HCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 03:00:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41212 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750834AbZD2HAz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 03:00:55 -0400
-Date: Tue, 28 Apr 2009 23:57:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Peter Hanzel" <hanzelpeter@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>, <linux-fbdev-devel@lists.sourceforge.net>,
-       dri-devel@lists.sourceforge.net
-Subject: Re: KMS + fb + FBIOPUT_VSCREENINFO
-Message-Id: <20090428235723.f9495676.akpm@linux-foundation.org>
-In-Reply-To: <8563BBE2A1F848B3B98C1A5FAE08BD09@avitech.sk>
-References: <8563BBE2A1F848B3B98C1A5FAE08BD09@avitech.sk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Apr 2009 03:02:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52163 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750892AbZD2HCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 03:02:38 -0400
+Date: Wed, 29 Apr 2009 08:58:09 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: James Morris <jmorris@namei.org>
+Cc: David Howells <dhowells@redhat.com>, Eric Paris <eparis@parisplace.org>,
+       Roland McGrath <roland@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Q: selinux_bprm_committed_creds() && signals/do_wait
+Message-ID: <20090429065809.GA477@redhat.com>
+References: <20090428223025.GA11997@redhat.com> <alpine.LRH.2.00.0904291024001.5246@tundra.namei.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.0904291024001.5246@tundra.namei.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc dri-devel)
+On 04/29, James Morris wrote:
+>
+> On Wed, 29 Apr 2009, Oleg Nesterov wrote:
+>
+> > selinux_bprm_committed_creds:
+> >
+> > 	rc = avc_has_perm()
+> > 	if (rc) {
+> > 		flush_signals(current);
+> >
+> > This doesn't look right. If the task was SIGKILL'ed we must not proceed,
+> > the task should die. The fix is simple, we should check SIGNAL_GROUP_EXIT
+> > and do nothing in this case, the task will exit before return to user
+> > space. If SIGNAL_GROUP_EXIT is set, it is just wrong to drop SIGKILL and
+> > continue.
+>
+> I'm not quite sure what you're asking.  This is a permission check to see
+> if the new task can inherit the signal state of the parent,
 
-On Tue, 28 Apr 2009 10:32:34 +0200 "Peter Hanzel" <hanzelpeter@gmail.com> wrote:
+we can flush the signal which was sent after we changed SID/cred and passed
+the new permission checks,
 
-> Hello.
-> 
-> I have tried DRM with intel KMS and it is workiing. I am using only 
-> framebuffer console.
-> Fbcon initializes 1280x800 mode and it works like a charm.
-> 
-> But when I try to call FBIOPUT_VSCREENINFO on /dev/fb0, it always returns 
-> EINVAL,
-> I have checked drivers/gpu/drm/i915/intel_fb.c
-> and found that
-> 
-> intelfb_check_var        returns -EINVAL     if (var->pixclock == -1 || 
-> !var->pixclock)
-> intelfb_set_par             returns -EINVAL    if (var->pixclock != -1) { 
-> DRM_ERROR("PIXEL CLCOK SET\n");  return
-> 
-> So the FBIOPUT_VSCREENINFO always fails.
-> 
-> So is the change of resolution not supported through FBIOPUT_VSCREENINFO 
-> call?
-> 
+> and if not,
+> the new task's signal state is flushed.
+>
+> Where does a consideration of SIGKILL arise?
+
+It is not possible to flush SIGKILL. Once SIGKILL (or another fatal signal)
+is queued, it sets SIGNAL_GROUP_EXIT which can't be and must not be cleared.
+
+But, there is no need to flush SIGKILL. The task will exit. If it was sent
+before we changed SID, we can pretend the task has died before exec().
+
+> > But, before fixing, I'd like to understand why we are doing
+> >
+> > 		flush_signal_handlers(current, 1);
+> > 		sigemptyset(&current->blocked);
+> >
+> > later. Could someone explain ? This looks unneeded.
+>
+> This is part of clearing all the signal state in the child.
+
+This doesn't explain why we are doing this ;)
+
+Why do we need to s/IGN/DFL/ and why do we clear ->blocked ? How this can
+help from the security pov?
+
+In fact this looks a bit wrong. The only way to ensure we can't lose the
+signal during exec() is to block it beforehand, then install the handler
+after exec(). s/IGN/DFL/ doesn't look good too.
+
+But, if we really need this for security (selinux is a black magic to me),
+then the above doesn't matter. Please help to understand.
+
+Oleg.
 
