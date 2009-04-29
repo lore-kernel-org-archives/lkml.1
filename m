@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759357AbZD2NIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759407AbZD2NIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759357AbZD2NIg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 09:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758507AbZD2NGW
+	id S1759407AbZD2NIy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 09:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755465AbZD2NGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 09:06:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44540 "EHLO hera.kernel.org"
+	Wed, 29 Apr 2009 09:06:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44546 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758313AbZD2NGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 09:06:18 -0400
-Date: Wed, 29 Apr 2009 13:05:47 GMT
+	id S1758342AbZD2NGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 09:06:22 -0400
+Date: Wed, 29 Apr 2009 13:05:36 GMT
 From: tip-bot for Robert Richter <robert.richter@amd.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
@@ -18,128 +18,79 @@ Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, robert.richter@amd.com,
        a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1241002046-8832-14-git-send-email-robert.richter@amd.com>
-References: <1241002046-8832-14-git-send-email-robert.richter@amd.com>
-Subject: [tip:perfcounters/core] perf_counter, x86: modify initialization of struct x86_pmu
-Message-ID: <tip-72eae04d3a3075c26d39e1e685acfc8e8c29db64@git.kernel.org>
-Git-Commit-ID: 72eae04d3a3075c26d39e1e685acfc8e8c29db64
+In-Reply-To: <1241002046-8832-13-git-send-email-robert.richter@amd.com>
+References: <1241002046-8832-13-git-send-email-robert.richter@amd.com>
+Subject: [tip:perfcounters/core] perf_counter, x86: rename intel only functions
+Message-ID: <tip-55de0f2e57994b525324bf0d04d242d9358a2417@git.kernel.org>
+Git-Commit-ID: 55de0f2e57994b525324bf0d04d242d9358a2417
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 13:05:49 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 13:05:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  72eae04d3a3075c26d39e1e685acfc8e8c29db64
-Gitweb:     http://git.kernel.org/tip/72eae04d3a3075c26d39e1e685acfc8e8c29db64
+Commit-ID:  55de0f2e57994b525324bf0d04d242d9358a2417
+Gitweb:     http://git.kernel.org/tip/55de0f2e57994b525324bf0d04d242d9358a2417
 Author:     Robert Richter <robert.richter@amd.com>
-AuthorDate: Wed, 29 Apr 2009 12:47:10 +0200
+AuthorDate: Wed, 29 Apr 2009 12:47:09 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 29 Apr 2009 14:51:07 +0200
+CommitDate: Wed, 29 Apr 2009 14:51:06 +0200
 
-perf_counter, x86: modify initialization of struct x86_pmu
-
-This patch adds an error handler and changes initialization of struct
-x86_pmu. No functional changes. Needed for follow-on patches.
+perf_counter, x86: rename intel only functions
 
 [ Impact: cleanup ]
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 Cc: Paul Mackerras <paulus@samba.org>
 Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1241002046-8832-14-git-send-email-robert.richter@amd.com>
+LKML-Reference: <1241002046-8832-13-git-send-email-robert.richter@amd.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/cpu/perf_counter.c |   27 ++++++++++++++++-----------
- 1 files changed, 16 insertions(+), 11 deletions(-)
+ arch/x86/kernel/cpu/perf_counter.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 5a52d73..7c72a94 100644
+index fa6541d..5a52d73 100644
 --- a/arch/x86/kernel/cpu/perf_counter.c
 +++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -913,7 +913,7 @@ static struct x86_pmu amd_pmu = {
- 	.max_events		= ARRAY_SIZE(amd_perfmon_event_map),
- };
- 
--static struct x86_pmu *intel_pmu_init(void)
-+static int intel_pmu_init(void)
+@@ -725,7 +725,7 @@ static void x86_pmu_disable(struct perf_counter *counter)
+  * Save and restart an expired counter. Called by NMI contexts,
+  * so it has to be careful about preempting normal counter ops:
+  */
+-static void perf_save_and_restart(struct perf_counter *counter)
++static void intel_pmu_save_and_restart(struct perf_counter *counter)
  {
- 	union cpuid10_edx edx;
- 	union cpuid10_eax eax;
-@@ -921,7 +921,7 @@ static struct x86_pmu *intel_pmu_init(void)
- 	unsigned int ebx;
+ 	struct hw_perf_counter *hwc = &counter->hw;
+ 	int idx = hwc->idx;
+@@ -753,7 +753,7 @@ static int intel_pmu_handle_irq(struct pt_regs *regs, int nmi)
+ 	struct cpu_hw_counters *cpuc = &per_cpu(cpu_hw_counters, cpu);
+ 	int ret = 0;
  
- 	if (!cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
--		return NULL;
-+		return -ENODEV;
+-	cpuc->throttle_ctrl = hw_perf_save_disable();
++	cpuc->throttle_ctrl = intel_pmu_save_disable_all();
  
- 	/*
- 	 * Check whether the Architectural PerfMon supports
-@@ -929,49 +929,54 @@ static struct x86_pmu *intel_pmu_init(void)
- 	 */
- 	cpuid(10, &eax.full, &ebx, &unused, &edx.full);
- 	if (eax.split.mask_length <= ARCH_PERFMON_BRANCH_MISSES_RETIRED)
--		return NULL;
-+		return -ENODEV;
+ 	status = intel_pmu_get_status(cpuc->throttle_ctrl);
+ 	if (!status)
+@@ -770,7 +770,7 @@ again:
+ 		if (!counter)
+ 			continue;
  
- 	intel_perfmon_version = eax.split.version_id;
- 	if (intel_perfmon_version < 2)
--		return NULL;
-+		return -ENODEV;
- 
- 	pr_info("Intel Performance Monitoring support detected.\n");
- 	pr_info("... version:         %d\n", intel_perfmon_version);
- 	pr_info("... bit width:       %d\n", eax.split.bit_width);
- 	pr_info("... mask length:     %d\n", eax.split.mask_length);
- 
-+	x86_pmu = &intel_pmu;
-+
- 	nr_counters_generic = eax.split.num_counters;
- 	nr_counters_fixed = edx.split.num_counters_fixed;
- 	counter_value_mask = (1ULL << eax.split.bit_width) - 1;
- 
--	return &intel_pmu;
-+	return 0;
- }
- 
--static struct x86_pmu *amd_pmu_init(void)
-+static int amd_pmu_init(void)
- {
-+	x86_pmu = &amd_pmu;
-+
- 	nr_counters_generic = 4;
- 	nr_counters_fixed = 0;
- 	counter_value_mask = 0x0000FFFFFFFFFFFFULL;
- 	counter_value_bits = 48;
- 
- 	pr_info("AMD Performance Monitoring support detected.\n");
--
--	return &amd_pmu;
-+	return 0;
- }
- 
- void __init init_hw_perf_counters(void)
- {
-+	int err;
-+
- 	switch (boot_cpu_data.x86_vendor) {
- 	case X86_VENDOR_INTEL:
--		x86_pmu = intel_pmu_init();
-+		err = intel_pmu_init();
- 		break;
- 	case X86_VENDOR_AMD:
--		x86_pmu = amd_pmu_init();
-+		err = amd_pmu_init();
- 		break;
- 	default:
- 		return;
+-		perf_save_and_restart(counter);
++		intel_pmu_save_and_restart(counter);
+ 		if (perf_counter_overflow(counter, nmi, regs, 0))
+ 			__x86_pmu_disable(counter, &counter->hw, bit);
  	}
--	if (!x86_pmu)
-+	if (err != 0)
- 		return;
+@@ -788,7 +788,7 @@ out:
+ 	 * Restore - do not reenable when global enable is off or throttled:
+ 	 */
+ 	if (++cpuc->interrupts < PERFMON_MAX_INTERRUPTS)
+-		hw_perf_restore(cpuc->throttle_ctrl);
++		intel_pmu_restore_all(cpuc->throttle_ctrl);
  
- 	pr_info("... num counters:    %d\n", nr_counters_generic);
+ 	return ret;
+ }
