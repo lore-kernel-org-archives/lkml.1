@@ -1,357 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760018AbZD2Q6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760332AbZD2Q7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760018AbZD2Q6z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 12:58:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757117AbZD2Qzj
+	id S1760332AbZD2Q7y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 12:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757923AbZD2Qzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 12:55:39 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:32680 "EHLO
+	Wed, 29 Apr 2009 12:55:43 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:33169 "EHLO
 	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757185AbZD2Qzc (ORCPT
+	with ESMTP id S1754859AbZD2Qzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 12:55:32 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j64h)
-X-Spam-TCS-SCL: 3:0
-X-WSS-ID: 0KIVGBW-02-4OZ-01
+	Wed, 29 Apr 2009 12:55:38 -0400
+X-BigFish: VPS1(zzzz1202hzzz32i63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0KIVGBX-02-4P1-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: akpm@linux-foundation.org, greg@kroah.com
 CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
        dougthompson@xmission.com, <linux-kernel@vger.kernel.org>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 01/21] x86: add methods for writing of an MSR on several CPUs
-Date: Wed, 29 Apr 2009 18:54:47 +0200
-Message-ID: <1241024107-14535-2-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 04/21] amd64_edac: add memory scrubber interface
+Date: Wed, 29 Apr 2009 18:54:50 +0200
+Message-ID: <1241024107-14535-5-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
 References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 29 Apr 2009 16:55:13.0429 (UTC) FILETIME=[43A16450:01C9C8EB]
+X-OriginalArrivalTime: 29 Apr 2009 16:55:14.0804 (UTC) FILETIME=[44733340:01C9C8EB]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Rename msr-on-cpu.c to msr.c accordingly.
+From: Doug Thompson <dougthompson@xmission.com>
 
+Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- arch/x86/include/asm/msr.h |   11 +++
- arch/x86/lib/Makefile      |    2 +-
- arch/x86/lib/msr-on-cpu.c  |   97 ----------------------------
- arch/x86/lib/msr.c         |  151 ++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 163 insertions(+), 98 deletions(-)
- delete mode 100644 arch/x86/lib/msr-on-cpu.c
- create mode 100644 arch/x86/lib/msr.c
+ drivers/edac/amd64_edac.c |  116 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 116 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
-index 638bf62..43d9537 100644
---- a/arch/x86/include/asm/msr.h
-+++ b/arch/x86/include/asm/msr.h
-@@ -2,6 +2,7 @@
- #define _ASM_X86_MSR_H
+diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+index 532a059..a121785 100644
+--- a/drivers/edac/amd64_edac.c
++++ b/drivers/edac/amd64_edac.c
+@@ -1000,3 +1000,119 @@ static struct scrubrate {
+ #define F10_MIN_SCRUB_RATE_BITS	0x5
+ #define F11_MIN_SCRUB_RATE_BITS	0x6
  
- #include <asm/msr-index.h>
-+#include <asm/cpumask.h>
- 
- #ifndef __ASSEMBLY__
- # include <linux/types.h>
-@@ -216,6 +217,8 @@ do {                                                            \
- #ifdef CONFIG_SMP
- int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
-+int rdmsr_on_cpus(const cpumask_t *mask, u32 msr_no, u32 *l, u32 *h);
-+int wrmsr_on_cpus(const cpumask_t *mask, u32 msr_no, u32 *l, u32 *h);
- int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
- #else  /*  CONFIG_SMP  */
-@@ -229,6 +232,14 @@ static inline int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
- 	wrmsr(msr_no, l, h);
- 	return 0;
- }
-+static inline int rdmsr_on_cpus(const cpumask_t *m, u32 msr_no, u32 *l, u32 *h)
-+{
-+	return rdmsr_on_cpu(msr_no, l, h);
-+}
-+static inline int wrmsr_on_cpus(const cpumask_t *m, u32 msr_no, u32 *l, u32 *h)
-+{
-+	return wrmsr_on_cpu(msr_no, l, h);
-+}
- static inline int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no,
- 				    u32 *l, u32 *h)
- {
-diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
-index 55e11aa..f9d3563 100644
---- a/arch/x86/lib/Makefile
-+++ b/arch/x86/lib/Makefile
-@@ -2,7 +2,7 @@
- # Makefile for x86 specific library files.
- #
- 
--obj-$(CONFIG_SMP) := msr-on-cpu.o
-+obj-$(CONFIG_SMP) := msr.o
- 
- lib-y := delay.o
- lib-y += thunk_$(BITS).o
-diff --git a/arch/x86/lib/msr-on-cpu.c b/arch/x86/lib/msr-on-cpu.c
-deleted file mode 100644
-index 321cf72..0000000
---- a/arch/x86/lib/msr-on-cpu.c
-+++ /dev/null
-@@ -1,97 +0,0 @@
--#include <linux/module.h>
--#include <linux/preempt.h>
--#include <linux/smp.h>
--#include <asm/msr.h>
--
--struct msr_info {
--	u32 msr_no;
--	u32 l, h;
--	int err;
--};
--
--static void __rdmsr_on_cpu(void *info)
--{
--	struct msr_info *rv = info;
--
--	rdmsr(rv->msr_no, rv->l, rv->h);
--}
--
--static void __wrmsr_on_cpu(void *info)
--{
--	struct msr_info *rv = info;
--
--	wrmsr(rv->msr_no, rv->l, rv->h);
--}
--
--int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
--{
--	int err;
--	struct msr_info rv;
--
--	rv.msr_no = msr_no;
--	err = smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 1);
--	*l = rv.l;
--	*h = rv.h;
--
--	return err;
--}
--
--int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
--{
--	int err;
--	struct msr_info rv;
--
--	rv.msr_no = msr_no;
--	rv.l = l;
--	rv.h = h;
--	err = smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 1);
--
--	return err;
--}
--
--/* These "safe" variants are slower and should be used when the target MSR
--   may not actually exist. */
--static void __rdmsr_safe_on_cpu(void *info)
--{
--	struct msr_info *rv = info;
--
--	rv->err = rdmsr_safe(rv->msr_no, &rv->l, &rv->h);
--}
--
--static void __wrmsr_safe_on_cpu(void *info)
--{
--	struct msr_info *rv = info;
--
--	rv->err = wrmsr_safe(rv->msr_no, rv->l, rv->h);
--}
--
--int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
--{
--	int err;
--	struct msr_info rv;
--
--	rv.msr_no = msr_no;
--	err = smp_call_function_single(cpu, __rdmsr_safe_on_cpu, &rv, 1);
--	*l = rv.l;
--	*h = rv.h;
--
--	return err ? err : rv.err;
--}
--
--int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
--{
--	int err;
--	struct msr_info rv;
--
--	rv.msr_no = msr_no;
--	rv.l = l;
--	rv.h = h;
--	err = smp_call_function_single(cpu, __wrmsr_safe_on_cpu, &rv, 1);
--
--	return err ? err : rv.err;
--}
--
--EXPORT_SYMBOL(rdmsr_on_cpu);
--EXPORT_SYMBOL(wrmsr_on_cpu);
--EXPORT_SYMBOL(rdmsr_safe_on_cpu);
--EXPORT_SYMBOL(wrmsr_safe_on_cpu);
-diff --git a/arch/x86/lib/msr.c b/arch/x86/lib/msr.c
-new file mode 100644
-index 0000000..4948de1
---- /dev/null
-+++ b/arch/x86/lib/msr.c
-@@ -0,0 +1,151 @@
-+#include <linux/module.h>
-+#include <linux/preempt.h>
-+#include <linux/smp.h>
-+#include <asm/msr.h>
-+
-+struct msr_info {
-+	u32 msr_no;
-+	u32 l, h;
-+	int err;
-+};
-+
-+static void __rdmsr_on_cpu(void *info)
-+{
-+	struct msr_info *rv = info;
-+
-+	rdmsr(rv->msr_no, rv->l, rv->h);
-+}
-+
-+static void __wrmsr_on_cpu(void *info)
-+{
-+	struct msr_info *rv = info;
-+
-+	wrmsr(rv->msr_no, rv->l, rv->h);
-+}
-+
-+int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
-+{
-+	int err;
-+	struct msr_info rv;
-+
-+	rv.msr_no = msr_no;
-+	err = smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 1);
-+	*l = rv.l;
-+	*h = rv.h;
-+
-+	return err;
-+}
-+
-+int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
-+{
-+	int err;
-+	struct msr_info rv;
-+
-+	rv.msr_no = msr_no;
-+	rv.l = l;
-+	rv.h = h;
-+	err = smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 1);
-+
-+	return err;
-+}
-+
-+/* rdmsr on a bunch of cpus
-+ *
-+ * @mask:	which cpus
-+ * @msr_no:	which MSR
-+ * @l:		array of the lower 32-bit MSR values
-+ * @h:		array of the higher 32-bit MSR values
-+ *
-+ * Returns:
-+ * 0 - success
-+ * <0 - read failed on at least one CPU (latter in the mask)
++/*
++ * Memory scrubber control interface. For the K8, memory scrubbing is handled by
++ * hardware and can involve L2 cache, dcache as well as the main memory. With
++ * F10, this is extended to L3 cache scrubbing on CPU models sporting that
++ * functionality.
++ * This causes the "units" for the scrubbing speed to vary from 64 byte blocks
++ * (dram) over to cache lines. This is nasty, so we will use bandwidth in
++ * bytes/sec for the setting.
++ * Currently, we only do dram scrubbing. If the scrubbing is done in software on
++ * other archs, we might not have access to the caches directly.
 + */
-+int rdmsr_on_cpus(const cpumask_t *mask, u32 msr_no, u32 *l, u32 *h)
-+{
-+	int cpu, tmp, err = 0;
-+
-+	int off = cpumask_first(mask);
-+
-+	for_each_cpu(cpu, mask) {
-+		tmp = rdmsr_on_cpu(cpu, msr_no, l + (cpu - off),
-+						h + (cpu - off));
-+		if (tmp)
-+			err = tmp;
-+	}
-+	return err;
-+}
 +
 +/*
-+ * wrmsr of a bunch of cpus
++ * amd64_search_set_scrub_rate
 + *
-+ * @msr_no:	which MSR
-+ * @l:		array of the lower 32-bit MSR values
-+ * @h:		array of the higher 32-bit MSR values
-+ *
-+ * Returns:
-+ * 0 - success
-+ * <0 - write failed on at least one CPU (latter in the mask)
++ * scan the scrub rate mapping table for a close or matching bandwidth value to
++ * issue. If requested is too big, then use last maximum value found.
 + */
-+int wrmsr_on_cpus(const cpumask_t *mask, u32 msr_no, u32 *l, u32 *h)
++static int amd64_search_set_scrub_rate(struct pci_dev *ctl, u32 new_bw,
++				       u32 min_scrubrate)
 +{
-+	int cpu, tmp, err = 0;
++	u32 scrubval;
++	int i;
 +
-+	int off = cpumask_first(mask);
++	/*
++	 * map the configured rate (new_bw) to a value specific to the AMD64
++	 * memory controller and apply to register. Search for the first
++	 * bandwidth entry that is greater or equal than the setting requested
++	 * and program that. If at last entry, accept that as the maximum. This
++	 * saves the user from determing the maximum empirically.
++	 */
++	for (i = 0; i < ARRAY_SIZE(scrubrates); i++) {
++		/*
++		 * skip scrub rates which aren't recommended
++		 * (see F10 BKDG, F3x58)
++		 */
++		if (scrubrates[i].scrubval < min_scrubrate)
++			continue;
 +
-+	for_each_cpu(cpu, mask) {
-+		tmp = wrmsr_on_cpu(cpu, msr_no, *(l + (cpu - off)),
-+						*(h + (cpu - off)));
-+		if (tmp)
-+			err = tmp;
++		if (scrubrates[i].bandwidth <= new_bw)
++			break;
++
++		/*
++		 * if no suitable bandwidth found, turn off DRAM scrubbing
++		 * entirely by falling back to the last element in the
++		 * scrubrates array.
++		 */
 +	}
-+	return err;
++
++	scrubval = scrubrates[i].scrubval;
++	if (scrubval)
++		edac_printk(KERN_DEBUG, EDAC_MC,
++			"Setting scrub rate bandwidth: %u\n",
++			scrubrates[i].bandwidth);
++	else
++		edac_printk(KERN_DEBUG, EDAC_MC,
++			"Turning scrubbing off.\n");
++
++	pci_write_bits32(ctl, K8_SCRCTRL, scrubval, 0x001F);
++
++	return 0;
 +}
 +
-+/* These "safe" variants are slower and should be used when the target MSR
-+   may not actually exist. */
-+static void __rdmsr_safe_on_cpu(void *info)
++static int amd64_set_scrub_rate(struct mem_ctl_info *mci, u32 *bandwidth)
 +{
-+	struct msr_info *rv = info;
++	struct amd64_pvt *pvt = mci->pvt_info;
++	u32 min_scrubrate = 0x0;
 +
-+	rv->err = rdmsr_safe(rv->msr_no, &rv->l, &rv->h);
++	switch (boot_cpu_data.x86) {
++	case 0xf:
++		min_scrubrate = K8_MIN_SCRUB_RATE_BITS;
++		break;
++	case 0x10:
++		min_scrubrate = F10_MIN_SCRUB_RATE_BITS;
++		break;
++	case 0x11:
++		min_scrubrate = F11_MIN_SCRUB_RATE_BITS;
++		break;
++
++	default:
++		amd64_printk(KERN_ERR, "Unsupported family!\n");
++		break;
++	}
++	return amd64_search_set_scrub_rate(pvt->misc_f3_ctl, *bandwidth,
++			min_scrubrate);
 +}
 +
-+static void __wrmsr_safe_on_cpu(void *info)
++static int amd64_get_scrub_rate(struct mem_ctl_info *mci, u32 *bw)
 +{
-+	struct msr_info *rv = info;
-+
-+	rv->err = wrmsr_safe(rv->msr_no, rv->l, rv->h);
-+}
-+
-+int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
-+{
++	struct amd64_pvt *pvt = mci->pvt_info;
++	u32 scrubval = 0;
++	int status = -1;
++	int i;
 +	int err;
-+	struct msr_info rv;
 +
-+	rv.msr_no = msr_no;
-+	err = smp_call_function_single(cpu, __rdmsr_safe_on_cpu, &rv, 1);
-+	*l = rv.l;
-+	*h = rv.h;
++	err = pci_read_config_dword(pvt->misc_f3_ctl, K8_SCRCTRL, &scrubval);
++	if (err != 0)
++		debugf0("%s() Reading K8_SCRCTRL failed\n", __func__);
 +
-+	return err ? err : rv.err;
++	scrubval = scrubval & 0x001F;
++
++	edac_printk(KERN_DEBUG, EDAC_MC,
++		    "pci-read, sdram scrub control value: %d \n", scrubval);
++
++	for (i = 0; ARRAY_SIZE(scrubrates); i++) {
++		if (scrubrates[i].scrubval == scrubval) {
++			*bw = scrubrates[i].bandwidth;
++			status = 0;
++			break;
++		}
++	}
++
++	return status;
 +}
 +
-+int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
-+{
-+	int err;
-+	struct msr_info rv;
 +
-+	rv.msr_no = msr_no;
-+	rv.l = l;
-+	rv.h = h;
-+	err = smp_call_function_single(cpu, __wrmsr_safe_on_cpu, &rv, 1);
-+
-+	return err ? err : rv.err;
-+}
-+
-+EXPORT_SYMBOL(rdmsr_on_cpu);
-+EXPORT_SYMBOL(wrmsr_on_cpu);
-+EXPORT_SYMBOL(rdmsr_on_cpus);
-+EXPORT_SYMBOL(wrmsr_on_cpus);
-+EXPORT_SYMBOL(rdmsr_safe_on_cpu);
-+EXPORT_SYMBOL(wrmsr_safe_on_cpu);
 -- 
 1.6.2.4
 
