@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759350AbZD2Q4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759954AbZD2Q5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759350AbZD2Q4x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 12:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757233AbZD2Qza
+	id S1759954AbZD2Q5y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 12:57:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757428AbZD2Qzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 12:55:30 -0400
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:4478 "EHLO
-	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756993AbZD2Qz1 (ORCPT
+	Wed, 29 Apr 2009 12:55:33 -0400
+Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:16754
+	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756033AbZD2Qz3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 12:55:27 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j66h)
+	Wed, 29 Apr 2009 12:55:29 -0400
+X-BigFish: VPS-4(zz14ffOzz1202hzzz32i43j66h)
 X-Spam-TCS-SCL: 5:0
 X-FB-SS: 5,
-X-WSS-ID: 0KIVGC1-01-3US-01
+X-WSS-ID: 0KIVGC2-01-3UT-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: akpm@linux-foundation.org, greg@kroah.com
 CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
        dougthompson@xmission.com, <linux-kernel@vger.kernel.org>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 11/21] amd64_edac: add f10-and-later methods-p1
-Date: Wed, 29 Apr 2009 18:54:57 +0200
-Message-ID: <1241024107-14535-12-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 14/21] amd64_edac: add per-family descriptors
+Date: Wed, 29 Apr 2009 18:55:00 +0200
+Message-ID: <1241024107-14535-15-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
 References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 29 Apr 2009 16:55:18.0851 (UTC) FILETIME=[46DCB930:01C9C8EB]
+X-OriginalArrivalTime: 29 Apr 2009 16:55:20.0398 (UTC) FILETIME=[47C8C6E0:01C9C8EB]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,251 +37,93 @@ From: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |  233 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 233 insertions(+), 0 deletions(-)
+ drivers/edac/amd64_edac.c |   76 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 76 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 813a1ab..2658852 100644
+index 84075c0..afdb60d 100644
 --- a/drivers/edac/amd64_edac.c
 +++ b/drivers/edac/amd64_edac.c
-@@ -2254,4 +2254,237 @@ static int k8_dbam_map_to_pages(struct amd64_pvt *pvt, int dram_map)
- 	return nr_pages;
+@@ -3045,3 +3045,79 @@ static int f10_probe_valid_hardware(struct amd64_pvt *pvt)
+ 	return rc;
  }
  
 +/*
-+ * f10_early_channel_count
++ * There currently are 3 types type of MC devices for AMD
++ * Athlon/Opterons (as per PCI DEVICE_IDs):
 + *
-+ * Get the number of DCT channels in use
++ * Family K8: That is the Athlon64 and Opteron CPUs. They all have the
++ * same PCI DEVICE ID, even though there is differences between
++ * the different Revisions (CG,D,E,F).
 + *
-+ * Return:
-+ *	number of Memory Channels in operation
-+ * Pass back:
-+ *	contents of the DCL0_LOW register
++ * Family F10h.
++ *
++ * Family F11h.
++ *
 + */
-+static int f10_early_channel_count(struct amd64_pvt *pvt)
++static struct amd64_family_type amd64_family_types[] = {
++	[K8_CPUS] = {
++		.ctl_name = "RevF",
++		.addr_f1_ctl = PCI_DEVICE_ID_AMD_K8_NB_ADDRMAP,
++		.misc_f3_ctl = PCI_DEVICE_ID_AMD_K8_NB_MISC,
++		.ops = {
++			.early_channel_count = k8_early_channel_count,
++			.get_error_address = k8_get_error_address,
++			.read_dram_base_limit = k8_read_dram_base_limit,
++			.map_sysaddr_to_csrow = k8_map_sysaddr_to_csrow,
++			.dbam_map_to_pages = k8_dbam_map_to_pages,
++		}
++	},
++	[F10_CPUS] = {
++		.ctl_name = "Family 10h",
++		.addr_f1_ctl = PCI_DEVICE_ID_AMD_10H_NB_MAP,
++		.misc_f3_ctl = PCI_DEVICE_ID_AMD_10H_NB_MISC,
++		.ops = {
++			.probe_valid_hardware = f10_probe_valid_hardware,
++			.early_channel_count = f10_early_channel_count,
++			.get_error_address = f10_get_error_address,
++			.read_dram_base_limit = f10_read_dram_base_limit,
++			.read_dram_ctl_register = f10_read_dram_ctl_register,
++			.map_sysaddr_to_csrow = f10_map_sysaddr_to_csrow,
++			.dbam_map_to_pages = f10_dbam_map_to_pages,
++		}
++	},
++	[F11_CPUS] = {
++		.ctl_name = "Family 11h",
++		.addr_f1_ctl = PCI_DEVICE_ID_AMD_11H_NB_MAP,
++		.misc_f3_ctl = PCI_DEVICE_ID_AMD_11H_NB_MISC,
++		.ops = {
++			.probe_valid_hardware = f10_probe_valid_hardware,
++			.early_channel_count = f10_early_channel_count,
++			.get_error_address = f10_get_error_address,
++			.read_dram_base_limit = f10_read_dram_base_limit,
++			.read_dram_ctl_register = f10_read_dram_ctl_register,
++			.map_sysaddr_to_csrow = f10_map_sysaddr_to_csrow,
++			.dbam_map_to_pages = f10_dbam_map_to_pages,
++		}
++	},
++};
++
++static struct pci_dev *pci_get_related_function(unsigned int vendor,
++						unsigned int device,
++						struct pci_dev *related)
 +{
-+	int err;
-+	int channels = 0;
-+	u32 dbam;
++	struct pci_dev *dev;
 +
-+	err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCLR_0, &pvt->dclr0);
-+	if (err != 0)
-+		debugf0("%s() Reading F10_DCLR_0 failed\n", __func__);
++	dev = NULL;
 +
-+	err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCLR_1, &pvt->dclr1);
-+	if (err != 0)
-+		debugf0("%s() Reading F10_DCLR_0 failed\n", __func__);
-+
-+	/* If we are in 128 bit mode, then we are using 2 channels */
-+	if (pvt->dclr0 & F10_WIDTH_128) {
-+		debugf0("%s() Data WIDTH is 128 bits - 2 channels\n",
-+			__func__);
-+		channels = 2;
-+		return channels;
++	dev = pci_get_device(vendor, device, dev);
++	while (dev != NULL) {
++		if ((dev->bus->number == related->bus->number) &&
++		    (PCI_SLOT(dev->devfn) == PCI_SLOT(related->devfn)))
++			break;
++		dev = pci_get_device(vendor, device, dev);
 +	}
 +
-+	/* Need to check if in UN-ganged mode: In such, there are 2
-+	 * channels, but they are NOT in 128 bit mode and thus the above
-+	 * 'dcl0' status bit will be OFF, but there still are 2 channels
-+	 *
-+	 * Need to check DCT0[0] and DCT1[0] to see if only one of them
-+	 * has their CSEnable bit on. If so, then SINGLE DIMM case.
-+	 */
-+	debugf0("%s() Data WIDTH is NOT 128 bits - need more decoding\n",
-+		__func__);
-+
-+	/* Check DRAM Bank Address Mapping values for each DIMM
-+	 * to see if there is more than just one DIMM present in an
-+	 * unganged mode. Need to check both controllers sinc DIMMs
-+	 * can be placed in either one
-+	 */
-+	channels = 0;
-+	err = pci_read_config_dword(pvt->dram_f2_ctl, DBAM0, &dbam);
-+	if (err != 0)
-+		debugf0("%s() Reading DBAM0 failed\n", __func__);
-+
-+	if (DBAM_DIMM(0, dbam) > 0)
-+		channels++;
-+	if (DBAM_DIMM(1, dbam) > 0)
-+		channels++;
-+	if (DBAM_DIMM(2, dbam) > 0)
-+		channels++;
-+	if (DBAM_DIMM(3, dbam) > 0)
-+		channels++;
-+
-+	/* If more than 2 DIMMs are present, then we have 2 channels */
-+	if (channels > 2)
-+		channels = 2;
-+	else if (channels == 0) {
-+		/* No DIMMs on DCT0, so look at DCT1 */
-+		err = pci_read_config_dword(pvt->dram_f2_ctl, DBAM0, &dbam);
-+		if (err != 0)
-+			debugf0("%s() Reading DBAM1 failed\n", __func__);
-+
-+		if (DBAM_DIMM(0, dbam) > 0)
-+			channels++;
-+		if (DBAM_DIMM(1, dbam) > 0)
-+			channels++;
-+		if (DBAM_DIMM(2, dbam) > 0)
-+			channels++;
-+		if (DBAM_DIMM(3, dbam) > 0)
-+			channels++;
-+
-+		if (channels > 2)
-+			channels = 2;
-+	}
-+
-+	/* If we found ALL 0 values, then assume just ONE DIMM-ONE Channel */
-+	if (channels == 0)
-+		channels = 1;
-+
-+	debugf0("%s() DIMM count= %d\n", __func__, channels);
-+
-+	return channels;
++	return dev;
 +}
 +
-+/*
-+ * f10_dbam_map_to_pages
-+ */
-+static int f10_dbam_map_to_pages(struct amd64_pvt *pvt, int dram_map)
-+{
-+	return 1 << (revf_quad_ddr2_shift[dram_map] - PAGE_SHIFT);
-+}
 +
-+/*
-+ * amd64_setup
-+ *
-+ *	Perform needed operations on this NB thare are needed
-+ *	for the duration of time that the module is operating
-+ *
-+ *	1) Enable "extended configuration access via 0xCF8" feature
-+ */
-+static void amd64_setup(struct amd64_pvt *pvt)
-+{
-+	u32 reg;
-+	int err;
-+
-+	err = pci_read_config_dword(pvt->misc_f3_ctl, F10_NB_CFG_HIGH, &reg);
-+	if (err != 0)
-+		debugf0("%s() Reading F10_NB_CFG_HIGH failed\n",
-+			__func__);
-+
-+	pvt->flags.cf8_extcfg = !!(reg & F10_NB_CFG_LOW_ENABLE_EXT_CFG);
-+	reg |= F10_NB_CFG_LOW_ENABLE_EXT_CFG;
-+	pci_write_config_dword(pvt->misc_f3_ctl, F10_NB_CFG_HIGH, reg);
-+}
-+
-+/*
-+ * amd64_teardown
-+ *
-+ *	teardown any items that were 'setup' in the setup func
-+ *
-+ *	1) Restore the "extended configuration access via 0xCF8" feature
-+ */
-+static void amd64_teardown(struct amd64_pvt *pvt)
-+{
-+	u32 reg;
-+	int err;
-+
-+	err = pci_read_config_dword(pvt->misc_f3_ctl, F10_NB_CFG_HIGH, &reg);
-+	if (err != 0)
-+		debugf0("%s() Reading F10_NB_CFG_HIGH failed\n",
-+			__func__);
-+
-+	reg &= ~F10_NB_CFG_LOW_ENABLE_EXT_CFG;
-+	if (pvt->flags.cf8_extcfg)
-+		reg |= F10_NB_CFG_LOW_ENABLE_EXT_CFG;
-+	pci_write_config_dword(pvt->misc_f3_ctl, F10_NB_CFG_HIGH, reg);
-+}
-+
-+/*
-+ * f10_get_error_address
-+ *	extract from the hardware copies of the error register
-+ *	the ERROR ADDRESS for Family 10h CPUs
-+ */
-+static u64 f10_get_error_address(struct mem_ctl_info *mci,
-+			struct amd64_error_info_regs *info)
-+{
-+	return (((u64) (info->nbeah & 0xffff)) << 32) +
-+			(info->nbeal & ~0x01);
-+}
-+
-+/*
-+ * f10_read_dram_base_limit
-+ *
-+ *	Read the Base and Limit registers for F10 based Memory controllers
-+ *	Extract fields from the 'raw' reg into separate data fields
-+ *
-+ *		Isolates: BASE, LIMIT, IntlvEn, IntlvSel, RW_EN
-+ */
-+static void f10_read_dram_base_limit(struct amd64_pvt *pvt, int dram)
-+{
-+	u32 high_offset;
-+	u32 low_offset;
-+	u32 high_base;
-+	u32 low_base;
-+	u32 high_limit;
-+	u32 low_limit;
-+	int err;
-+
-+	low_offset = K8_DRAM_BASE_LOW + (dram << 3);
-+	high_offset = F10_DRAM_BASE_HIGH + (dram << 3);
-+
-+	/* read the 'raw' DRAM BASE Address register */
-+	err = pci_read_config_dword(pvt->addr_f1_ctl, low_offset, &low_base);
-+	if (err != 0)
-+		debugf0("%s() Reading low_offset= 0x%x failed\n", __func__,
-+			low_offset);
-+
-+	/* Read from the ECS data register */
-+	err = pci_read_config_dword(pvt->addr_f1_ctl,
-+					high_offset, &high_base);
-+	if (err != 0)
-+		debugf0("%s() Reading high_offset= 0x%x failed. Default=0\n",
-+			__func__, high_offset);
-+
-+	/* Extract parts into separate data entries */
-+	pvt->dram_rw_en[dram] = (low_base & 0x3);
-+
-+	if (pvt->dram_rw_en[dram] == 0)
-+		return;
-+
-+	pvt->dram_IntlvEn[dram] = (low_base >> 8) & 0x7;
-+
-+	pvt->dram_base[dram] = (((((u64) high_base & 0x000000FF) << 32) |
-+				((u64) low_base & 0xFFFF0000))) << 8;
- 
-+	low_offset = K8_DRAM_LIMIT_LOW + (dram << 3);
-+	high_offset = F10_DRAM_LIMIT_HIGH + (dram << 3);
-+
-+	/* read the 'raw' LIMIT registers */
-+	err = pci_read_config_dword(pvt->addr_f1_ctl, low_offset, &low_limit);
-+	if (err != 0)
-+		debugf0("%s() Reading low_offset= 0x%x failed\n", __func__,
-+			low_offset);
-+
-+	/* Read from the ECS data register for the HIGH portion */
-+	err = pci_read_config_dword(pvt->addr_f1_ctl,
-+			high_offset, &high_limit);
-+	if (err != 0)
-+		debugf0("%s() Reading high_ofset= 0x%x failed\n", __func__,
-+			high_offset);
-+
-+	debugf0("%s() on dram=%d\n", __func__, dram);
-+	debugf0("  HW Regs: BASE=0x%08x-%08x      LIMIT=  0x%08x-%08x\n",
-+		high_base, low_base, high_limit, low_limit);
-+
-+	pvt->dram_DstNode[dram] = (low_limit & 0x7);
-+	pvt->dram_IntlvSel[dram] = (low_limit >> 8) & 0x7;
-+
-+	/* Extract address values and form a LIMIT address
-+	 * Limit is the HIGHEST memory location of the region, so lower
-+	 * 24-bit needs to be all ones
-+	 */
-+	low_limit |= 0x0000FFFF;
-+	pvt->dram_limit[dram] =
-+		((((u64) high_limit << 32) + (u64) low_limit) << 8) | (0xFF);
-+}
 -- 
 1.6.2.4
 
