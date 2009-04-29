@@ -1,82 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760616AbZD2UcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbZD2Uff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760616AbZD2UcT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 16:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbZD2UcF
+	id S1755630AbZD2Uff (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 16:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbZD2UfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 16:32:05 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:29331 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754877AbZD2UcE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 16:32:04 -0400
-From: John Wright <john.wright@hp.com>
-To: x86 Maintainers <x86@kernel.org>
-Cc: Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>, John Wright <john.wright@hp.com>
-Subject: [PATCH] x86: gettimeofday() vDSO: fix segfault when tv == NULL
-Date: Wed, 29 Apr 2009 14:32:01 -0600
-Message-Id: <1241037121-14805-1-git-send-email-john.wright@hp.com>
-X-Mailer: git-send-email 1.6.2.3
+	Wed, 29 Apr 2009 16:35:25 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56929 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753444AbZD2UfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 16:35:25 -0400
+Date: Wed, 29 Apr 2009 22:34:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, rostedt@goodmis.org, fweisbec@gmail.com,
+       mathieu.desnoyers@polymtl.ca, wcohen@redhat.com
+Subject: Re: [PATCH 1/3] make kernel-doc understand TRACE_EVENT() macro
+Message-ID: <20090429203439.GD21421@elte.hu>
+References: <200904291745.n3THjPhO019531@ns3.rdu.redhat.com> <49F8A7D1.6010307@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49F8A7D1.6010307@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According to the gettimeofday(2) manual:
 
-       If either tv or tz is NULL, the corresponding structure is not
-       set or returned.
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Since it is legal to give NULL as the tv argument, the code should make
-sure tv is not NULL before trying to dereference it.
+> Jason Baron wrote:
+> > Add support to kernel-doc for tracepoint comments above TRACE_EVENT()
+> > macro definitions. Paves the way for tracepoint docbook.
+> > 
+> > 
+> > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > 
+> > ---
+> >  scripts/kernel-doc |   21 +++++++++++++++++++++
+> >  1 files changed, 21 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/scripts/kernel-doc b/scripts/kernel-doc
+> > index 0f11870..9d9ab4b 100755
+> > --- a/scripts/kernel-doc
+> > +++ b/scripts/kernel-doc
+> > @@ -1827,6 +1827,24 @@ sub reset_state {
+> >      $state = 0;
+> >  }
+> >  
+> > +sub tracepoint_munge() {
+> > +	my $tracepointname = 0;
+> > +	my $tracepointargs = 0;
+> > +
+> > +	if($prototype =~ m/TRACE_EVENT\((.*?),/) {
+> > +		$tracepointname = $1;
+> > +	}
+> > +	if($prototype =~ m/TP_PROTO\((.*?)\)/) {
+> > +		$tracepointargs = $1;
+> > +	}
+> > +	if (($tracepointname eq 0) || ($tracepointargs eq 0)) {
+> > +		print STDERR "Warning: Unrecognized tracepoint format: \n" .
+> > +			     "$prototype\n"
+> 
+> I'd prefer for this warning to use the usual kernel-doc warning format, with
+> file:line information:
+> 
+> 		print STDERR "Warning(${file}:$.): Unrecognized ....
 
-This issue manifests itself on x86_64 when vdso=0 is not on the kernel
-command-line and libc uses the vDSO for gettimeofday() (e.g. glibc >=
-2.7).  A simple reproducer:
+Good point - i'll wait for v2. Or would you like to carry them in 
+your kernel-doc tree?
 
-  #include <stdio.h>
-  #include <sys/time.h>
+This bit:
 
-  int main(void)
-  {
-      struct timezone tz;
+ include/trace/events/irq.h            |   46 ++++++++++++++++++++++++++++++---
 
-      gettimeofday(NULL, &tz);
+Has changed in the tracing tree so it's probably better to carry it 
+there - once your review feedback has been addressed and once your 
+Acked-by is propagated into the patches.
 
-      return 0;
-  }
+Thanks,
 
-See http://bugs.debian.org/466491 for more details.
-
-Signed-off-by: John Wright <john.wright@hp.com>
----
- arch/x86/vdso/vclock_gettime.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
-
-diff --git a/arch/x86/vdso/vclock_gettime.c b/arch/x86/vdso/vclock_gettime.c
-index d9d3582..6a40b78 100644
---- a/arch/x86/vdso/vclock_gettime.c
-+++ b/arch/x86/vdso/vclock_gettime.c
-@@ -104,11 +104,13 @@ notrace int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
- {
- 	long ret;
- 	if (likely(gtod->sysctl_enabled && gtod->clock.vread)) {
--		BUILD_BUG_ON(offsetof(struct timeval, tv_usec) !=
--			     offsetof(struct timespec, tv_nsec) ||
--			     sizeof(*tv) != sizeof(struct timespec));
--		do_realtime((struct timespec *)tv);
--		tv->tv_usec /= 1000;
-+		if (likely(tv != NULL)) {
-+			BUILD_BUG_ON(offsetof(struct timeval, tv_usec) !=
-+				     offsetof(struct timespec, tv_nsec) ||
-+				     sizeof(*tv) != sizeof(struct timespec));
-+			do_realtime((struct timespec *)tv);
-+			tv->tv_usec /= 1000;
-+		}
- 		if (unlikely(tz != NULL)) {
- 			/* Avoid memcpy. Some old compilers fail to inline it */
- 			tz->tz_minuteswest = gtod->sys_tz.tz_minuteswest;
--- 
-1.6.2.3
-
+	Ingo
