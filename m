@@ -1,51 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757846AbZD2SLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757800AbZD2SNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757846AbZD2SLW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 14:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759749AbZD2SKo
+	id S1757800AbZD2SNs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 14:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbZD2SNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 14:10:44 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:53385 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759624AbZD2SKn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 14:10:43 -0400
-Date: Wed, 29 Apr 2009 19:10:41 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Martin Knoblauch <knobi@knobisoft.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mike Galbraith <efault@gmx.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       tigran aivazian <tigran@aivazian.fsnet.co.uk>
-Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
-Message-ID: <20090429181041.GM8633@ZenIV.linux.org.uk>
-References: <409142.83316.qm@web32605.mail.mud.yahoo.com> <20090428182837.62c51f26.akpm@linux-foundation.org> <1240977096.5478.3.camel@marge.simson.net> <20090429011755.c141c599.akpm@linux-foundation.org> <20090429120827.GI8633@ZenIV.linux.org.uk> <884894.99151.qm@web32602.mail.mud.yahoo.com> <20090429174154.GK8633@ZenIV.linux.org.uk> <225539.25847.qm@web32607.mail.mud.yahoo.com>
+	Wed, 29 Apr 2009 14:13:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54460 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753925AbZD2SNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 14:13:33 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <225539.25847.qm@web32607.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptrace: s/parent/real_parent/ in binfmt_elf_fdpic.c
+In-Reply-To: Oleg Nesterov's message of  Wednesday, 29 April 2009 00:30:50 +0200 <20090428223050.GA12020@redhat.com>
+References: <20090428223050.GA12020@redhat.com>
+Emacs: because one operating system isn't enough.
+Message-Id: <20090429181242.CC2DCFC3BF@magilla.sf.frob.com>
+Date: Wed, 29 Apr 2009 11:12:42 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 10:51:35AM -0700, Martin Knoblauch wrote:
-> 2.6.30-rc3-git2:
-> 
-> rootfs / rootfs rw 0 0
-> /proc /proc proc rw,relatime 0 0
-> none /sys sysfs rw,relatime 0 0
-> none /dev tmpfs rw,relatime,mode=755 0 0
-> /dev/root / ext3 rw,relatime,errors=continue,data=writeback 0 0
-> none /dev tmpfs rw,relatime,mode=755 0 0
-> /proc /proc proc rw,relatime 0 0
-> /proc/bus/usb /proc/bus/usb usbfs rw,relatime 0 0
-> /sys /sys sysfs rw,relatime 0 0
-> none /dev/pts devpts rw,relatime,gid=5,mode=620 0 0
-> /dev/cciss/c0d0p1 /boot ext3 rw,relatime,errors=continue,data=writeback 0 0
-> none /dev/shm tmpfs rw,relatime 0 0
-> /dev/cciss/c0d0p4 /scratch ext2 rw,noatime,errors=continue 0 0
-> none /proc/sys/fs/binfmt_misc binfmt_misc rw,relatime 0 0
-> sunrpc /var/lib/nfs/rpc_pipefs rpc_pipefs rw,relatime 0 0
-
-Cute...  I wonder how that second mount(2) managed to succeed.  Could you
-check what explicit mounting of sysfs on that point *again* does?
+Acked-by: Roland McGrath <roland@redhat.com>
