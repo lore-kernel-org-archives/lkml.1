@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbZD2Dai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753699AbZD2Dba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753371AbZD2Dai (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 23:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZD2Da3
+	id S1753699AbZD2Dba (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 23:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZD2DbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 23:30:29 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:59680 "EHLO e4.ny.us.ibm.com"
+	Tue, 28 Apr 2009 23:31:20 -0400
+Received: from kroah.org ([198.145.64.141]:38403 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751790AbZD2Da2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 23:30:28 -0400
-Date: Wed, 29 Apr 2009 09:00:20 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       seto.hidetoshi@jp.fujitsu.com
-Subject: Re: [PATCH] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu
-	cputime count
-Message-ID: <20090429033020.GB3408@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090428165203.EBD5.A69D9226@jp.fujitsu.com> <20090428103701.GE3825@in.ibm.com> <20090429110629.4B05.A69D9226@jp.fujitsu.com>
+	id S1752055AbZD2DbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 23:31:19 -0400
+Date: Tue, 28 Apr 2009 20:24:46 -0700
+From: Greg KH <greg@kroah.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2.6.30-rc3] platform_bus:  remove "which
+	platform_data?" confusion
+Message-ID: <20090429032446.GC23062@kroah.com>
+References: <200904271943.40588.david-b@pacbell.net> <20090428050742.GB17432@kroah.com> <200904280228.07346.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090429110629.4B05.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200904280228.07346.david-b@pacbell.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 11:31:14AM +0900, KOSAKI Motohiro wrote:
-> > > > > > BTW, did you observe any real problem with the percpu counter spinlock ?
-> > > > > 
-> > > > > No.
-> > > > > I review percpu_counter() caller recently and it seems stragen usage.
-> > > > > 
-> > > > 
-> > > > I should have phrased the question better ...
-> > > > 
-> > > > So have you found any performance degradation with any benchmarks/workloads
-> > > > on archs which define VIRT_CPU_ACCOUNTING due to percpu_counter spinlock
-> > > > being taken on every tick ? If the answer is no, don't you think we could
-> > > > wait before making the kind of change you are proposing ?
-> > > 
-> > > maybe, I don't understand your point.
+On Tue, Apr 28, 2009 at 02:28:07AM -0700, David Brownell wrote:
+> No comment on the bugfix part of $SUBJECT patch?
+
+Well, no, I'm assuming it is correct :)
+
+Should I just revert the original change, if the fact that busses are
+using the platform_data field?
+
+> On Monday 27 April 2009, Greg KH wrote:
 > > 
-> > My point is, let us not make this change if it is not a real problem that
-> > has been observed on archs which define VIRT_CPU_ACCOUNTING.
+> > > Those patches seem to support what I think is a misguided
+> > > notion:  that somehow device.platform_data might move into
+> > > the platform_device.  The problem with that idea is that it's
+> > > a general purpose hook, and is used by other busses to provide
+> > > board-specific configuration data ... not just for platform_bus.
+> > 
+> > It is?  What other busses do this?
 > 
-> It's nice joke. but not constructive.
+> SPI and I2C come quickly to mind...
+> 
+> Basically, *any* bus that could ever be used on an embedded
+> system may need platform_data to explain how each discrete
+> chip has been wired up on that particular board.  Very few
+> such busses can self-enumerate like PCI or USB.  And most of
+> the chips sitting on such busses expect to interface to fairly
+> random external hardware.
+> 
+> And come to think of it, I've seen cases with PCI and USB
+> where board-specific config data is needed.  PCI doesn't
+> always wrap it up in some ACPI bytecode, and sometimes USB
+> devices use "transceiverless link" hookup, so the board
+> can just hook up using a differential pair.
+> 
+> SDIO/MMC doesn't tend to need it though, even for SDIO
+> WLAN or MMC/SD storage links (eMMC, CE-ATA, etc).
+> 
+> 
+> > And why, can't they use their own bus private data pointers?
+> 
+> ENOPATCH.  ;)
+> 
+> Though ... since devices on *any* bus may need this, I
+> don't much see the point of modifying every bus like that.
 
-I was only asking you if you have seen any real life problem with this
-and you said no. In that context, if I re-read my above point, I think
-I should have a pretty good sense of humour to consider it as joke :)
+Fair enough, no objection from me.
 
-Regards,
-Bharata.
+thanks,
+
+greg k-h
