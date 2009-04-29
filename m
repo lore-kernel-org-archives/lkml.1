@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761943AbZD2WaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762273AbZD2Waj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761943AbZD2WaK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbZD2WVa
+	id S1762273AbZD2Waj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759106AbZD2WVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:30 -0400
-Received: from kroah.org ([198.145.64.141]:40428 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:31 -0400
+Received: from kroah.org ([198.145.64.141]:40441 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753609AbZD2WV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:26 -0400
+	id S1758187AbZD2WV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:27 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:26 2009
-Message-Id: <20090429220926.523009901@mini.kroah.org>
+Message-Id: <20090429220926.729595728@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:23 -0700
+Date: Wed, 29 Apr 2009 15:07:24 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Patrick McHardy <kaber@trash.net>,
+       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
+       Mark Fasheh <mfasheh@suse.com>, Jens Axboe <jens.axboe@oracle.com>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 24/58] netfilter: {ip, ip6, arp}_tables: fix incorrect loop detection
+Subject: [patch 25/58] splice: fix deadlock in splicing to file
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=0048-netfilter-ip-ip6-arp-_tables-fix-incorrect-loop.patch
+Content-Disposition: inline; filename=0049-splice-fix-deadlock-in-splicing-to-file.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,70 +40,118 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Patrick McHardy <kaber@trash.net>
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-upstream commit: 1f9352ae2253a97b07b34dcf16ffa3b4ca12c558
+upstream commit: 7bfac9ecf0585962fe13584f5cf526d8c8e76f17
 
-Commit e1b4b9f ([NETFILTER]: {ip,ip6,arp}_tables: fix exponential worst-case
-search for loops) introduced a regression in the loop detection algorithm,
-causing sporadic incorrectly detected loops.
+There's a possible deadlock in generic_file_splice_write(),
+splice_from_pipe() and ocfs2_file_splice_write():
 
-When a chain has already been visited during the check, it is treated as
-having a standard target containing a RETURN verdict directly at the
-beginning in order to not check it again. The real target of the first
-rule is then incorrectly treated as STANDARD target and checked not to
-contain invalid verdicts.
+ - task A calls generic_file_splice_write()
+ - this calls inode_double_lock(), which locks i_mutex on both
+   pipe->inode and target inode
+ - ordering depends on inode pointers, can happen that pipe->inode is
+   locked first
+ - __splice_from_pipe() needs more data, calls pipe_wait()
+ - this releases lock on pipe->inode, goes to interruptible sleep
+ - task B calls generic_file_splice_write(), similarly to the first
+ - this locks pipe->inode, then tries to lock inode, but that is
+   already held by task A
+ - task A is interrupted, it tries to lock pipe->inode, but fails, as
+   it is already held by task B
+ - ABBA deadlock
 
-Fix by making sure the rule does actually contain a standard target.
+Fix this by explicitly ordering locks: the outer lock must be on
+target inode and the inner lock (which is later unlocked and relocked)
+must be on pipe->inode.  This is OK, pipe inodes and target inodes
+form two nonoverlapping sets, generic_file_splice_write() and friends
+are not called with a target which is a pipe.
 
-Based on patch by Francis Dupont <Francis_Dupont@isc.org>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Acked-by: Mark Fasheh <mfasheh@suse.com>
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
+Cc: stable@kernel.org
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/ipv4/netfilter/arp_tables.c |    4 +++-
- net/ipv4/netfilter/ip_tables.c  |    4 +++-
- net/ipv6/netfilter/ip6_tables.c |    4 +++-
- 3 files changed, 9 insertions(+), 3 deletions(-)
+ fs/ocfs2/file.c |    8 ++++++--
+ fs/splice.c     |   25 ++++++++++++++++++++-----
+ 2 files changed, 26 insertions(+), 7 deletions(-)
 
---- a/net/ipv4/netfilter/arp_tables.c
-+++ b/net/ipv4/netfilter/arp_tables.c
-@@ -372,7 +372,9 @@ static int mark_source_chains(struct xt_
- 			    && unconditional(&e->arp)) || visited) {
- 				unsigned int oldpos, size;
+--- a/fs/ocfs2/file.c
++++ b/fs/ocfs2/file.c
+@@ -2089,7 +2089,7 @@ static ssize_t ocfs2_file_splice_write(s
+ 		   out->f_path.dentry->d_name.len,
+ 		   out->f_path.dentry->d_name.name);
  
--				if (t->verdict < -NF_MAX_VERDICT - 1) {
-+				if ((strcmp(t->target.u.user.name,
-+					    ARPT_STANDARD_TARGET) == 0) &&
-+				    t->verdict < -NF_MAX_VERDICT - 1) {
- 					duprintf("mark_source_chains: bad "
- 						"negative verdict (%i)\n",
- 								t->verdict);
---- a/net/ipv4/netfilter/ip_tables.c
-+++ b/net/ipv4/netfilter/ip_tables.c
-@@ -502,7 +502,9 @@ mark_source_chains(struct xt_table_info 
- 			    && unconditional(&e->ip)) || visited) {
- 				unsigned int oldpos, size;
+-	inode_double_lock(inode, pipe->inode);
++	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
  
--				if (t->verdict < -NF_MAX_VERDICT - 1) {
-+				if ((strcmp(t->target.u.user.name,
-+			    		    IPT_STANDARD_TARGET) == 0) &&
-+				    t->verdict < -NF_MAX_VERDICT - 1) {
- 					duprintf("mark_source_chains: bad "
- 						"negative verdict (%i)\n",
- 								t->verdict);
---- a/net/ipv6/netfilter/ip6_tables.c
-+++ b/net/ipv6/netfilter/ip6_tables.c
-@@ -529,7 +529,9 @@ mark_source_chains(struct xt_table_info 
- 			    && unconditional(&e->ipv6)) || visited) {
- 				unsigned int oldpos, size;
+ 	ret = ocfs2_rw_lock(inode, 1);
+ 	if (ret < 0) {
+@@ -2104,12 +2104,16 @@ static ssize_t ocfs2_file_splice_write(s
+ 		goto out_unlock;
+ 	}
  
--				if (t->verdict < -NF_MAX_VERDICT - 1) {
-+				if ((strcmp(t->target.u.user.name,
-+					    IP6T_STANDARD_TARGET) == 0) &&
-+				    t->verdict < -NF_MAX_VERDICT - 1) {
- 					duprintf("mark_source_chains: bad "
- 						"negative verdict (%i)\n",
- 								t->verdict);
++	if (pipe->inode)
++		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
+ 	ret = generic_file_splice_write_nolock(pipe, out, ppos, len, flags);
++	if (pipe->inode)
++		mutex_unlock(&pipe->inode->i_mutex);
+ 
+ out_unlock:
+ 	ocfs2_rw_unlock(inode, 1);
+ out:
+-	inode_double_unlock(inode, pipe->inode);
++	mutex_unlock(&inode->i_mutex);
+ 
+ 	mlog_exit(ret);
+ 	return ret;
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -735,10 +735,19 @@ ssize_t splice_from_pipe(struct pipe_ino
+ 	 * ->commit_write. Most of the time, these expect i_mutex to
+ 	 * be held. Since this may result in an ABBA deadlock with
+ 	 * pipe->inode, we have to order lock acquiry here.
++	 *
++	 * Outer lock must be inode->i_mutex, as pipe_wait() will
++	 * release and reacquire pipe->inode->i_mutex, AND inode must
++	 * never be a pipe.
+ 	 */
+-	inode_double_lock(inode, pipe->inode);
++	WARN_ON(S_ISFIFO(inode->i_mode));
++	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
++	if (pipe->inode)
++		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
+ 	ret = __splice_from_pipe(pipe, &sd, actor);
+-	inode_double_unlock(inode, pipe->inode);
++	if (pipe->inode)
++		mutex_unlock(&pipe->inode->i_mutex);
++	mutex_unlock(&inode->i_mutex);
+ 
+ 	return ret;
+ }
+@@ -829,11 +838,17 @@ generic_file_splice_write(struct pipe_in
+ 	};
+ 	ssize_t ret;
+ 
+-	inode_double_lock(inode, pipe->inode);
++	WARN_ON(S_ISFIFO(inode->i_mode));
++	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
+ 	ret = file_remove_suid(out);
+-	if (likely(!ret))
++	if (likely(!ret)) {
++		if (pipe->inode)
++			mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
+ 		ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
+-	inode_double_unlock(inode, pipe->inode);
++		if (pipe->inode)
++			mutex_unlock(&pipe->inode->i_mutex);
++	}
++	mutex_unlock(&inode->i_mutex);
+ 	if (ret > 0) {
+ 		unsigned long nr_pages;
+ 
 
 
