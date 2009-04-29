@@ -1,85 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756371AbZD2HCs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbZD2HDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756371AbZD2HCs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 03:02:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbZD2HCj
+	id S1753275AbZD2HDH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 03:03:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbZD2HCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 03:02:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52163 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750892AbZD2HCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 03:02:38 -0400
-Date: Wed, 29 Apr 2009 08:58:09 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: James Morris <jmorris@namei.org>
-Cc: David Howells <dhowells@redhat.com>, Eric Paris <eparis@parisplace.org>,
-       Roland McGrath <roland@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Q: selinux_bprm_committed_creds() && signals/do_wait
-Message-ID: <20090429065809.GA477@redhat.com>
-References: <20090428223025.GA11997@redhat.com> <alpine.LRH.2.00.0904291024001.5246@tundra.namei.org>
+	Wed, 29 Apr 2009 03:02:42 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:47995 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755930AbZD2HCl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 03:02:41 -0400
+Message-ID: <49F7FB8C.6020202@monstr.eu>
+Date: Wed, 29 Apr 2009 09:02:36 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.0904291024001.5246@tundra.namei.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, john.williams@petalogix.com
+Subject: Re: [PATCH 07/30] microblaze_mmu_v1: MMU initialization
+References: <1240821139-7247-1-git-send-email-monstr@monstr.eu>	<1240821139-7247-2-git-send-email-monstr@monstr.eu>	<1240821139-7247-3-git-send-email-monstr@monstr.eu>	<1240821139-7247-4-git-send-email-monstr@monstr.eu>	<1240821139-7247-5-git-send-email-monstr@monstr.eu>	<1240821139-7247-6-git-send-email-monstr@monstr.eu>	<1240821139-7247-7-git-send-email-monstr@monstr.eu>	<1240821139-7247-8-git-send-email-monstr@monstr.eu> <20090428224247.888c3076.akpm@linux-foundation.org>
+In-Reply-To: <20090428224247.888c3076.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/29, James Morris wrote:
->
-> On Wed, 29 Apr 2009, Oleg Nesterov wrote:
->
-> > selinux_bprm_committed_creds:
-> >
-> > 	rc = avc_has_perm()
-> > 	if (rc) {
-> > 		flush_signals(current);
-> >
-> > This doesn't look right. If the task was SIGKILL'ed we must not proceed,
-> > the task should die. The fix is simple, we should check SIGNAL_GROUP_EXIT
-> > and do nothing in this case, the task will exit before return to user
-> > space. If SIGNAL_GROUP_EXIT is set, it is just wrong to drop SIGKILL and
-> > continue.
->
-> I'm not quite sure what you're asking.  This is a permission check to see
-> if the new task can inherit the signal state of the parent,
+Andrew Morton wrote:
+> On Mon, 27 Apr 2009 10:31:56 +0200 monstr@monstr.eu wrote:
+> 
+>> +	/* Check for nobats option (used in mapin_ram). */
+>> +	if (strstr(cmd_line, "nobats"))
+>> +		__map_without_bats = 1;
+> 
+> Sometime you could go through the architecture and document all of its
+> kernel command-line parameters in Documentation/kernel-parameters.txt.
+> 
+> Or maybe document them in a separate microblaze documentation file,
+> which gives you a bit more freedom to expound upon what they do.
+> 
 
-we can flush the signal which was sent after we changed SID/cred and passed
-the new permission checks,
+this will go away - I forget to remove it. I have to check whole that function.
 
-> and if not,
-> the new task's signal state is flushed.
->
-> Where does a consideration of SIGKILL arise?
+Thanks,
+Michal
 
-It is not possible to flush SIGKILL. Once SIGKILL (or another fatal signal)
-is queued, it sets SIGNAL_GROUP_EXIT which can't be and must not be cleared.
-
-But, there is no need to flush SIGKILL. The task will exit. If it was sent
-before we changed SID, we can pretend the task has died before exec().
-
-> > But, before fixing, I'd like to understand why we are doing
-> >
-> > 		flush_signal_handlers(current, 1);
-> > 		sigemptyset(&current->blocked);
-> >
-> > later. Could someone explain ? This looks unneeded.
->
-> This is part of clearing all the signal state in the child.
-
-This doesn't explain why we are doing this ;)
-
-Why do we need to s/IGN/DFL/ and why do we clear ->blocked ? How this can
-help from the security pov?
-
-In fact this looks a bit wrong. The only way to ensure we can't lose the
-signal during exec() is to block it beforehand, then install the handler
-after exec(). s/IGN/DFL/ doesn't look good too.
-
-But, if we really need this for security (selinux is a black magic to me),
-then the above doesn't matter. Please help to understand.
-
-Oleg.
-
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
