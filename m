@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761255AbZD2WXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761729AbZD2WZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761255AbZD2WXB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:23:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757992AbZD2WVK
+	id S1761729AbZD2WZp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758635AbZD2WVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:10 -0400
-Received: from kroah.org ([198.145.64.141]:40208 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:19 -0400
+Received: from kroah.org ([198.145.64.141]:40300 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757880AbZD2WVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:08 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:23 2009
-Message-Id: <20090429220923.509152271@mini.kroah.org>
+	id S1758298AbZD2WVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:15 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:24 2009
+Message-Id: <20090429220924.494895991@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:04 -0700
+Date: Wed, 29 Apr 2009 15:07:11 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jeff Layton <jlayton@redhat.com>,
-       Steve French <sfrench@us.ibm.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 05/58] cifs: fix buffer format byte on NT Rename/hardlink
+       alan@lxorguk.ukuu.org.uk, Jay Vosburgh <fubar@us.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 12/58] bonding: Fix updating of speed/duplex changes
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=0016-cifs-fix-buffer-format-byte-on-NT-Rename-hardlink.patch
+Content-Disposition: inline; filename=bonding-fix-updating-of-speed-duplex-changes.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,40 +39,83 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jeff Layton <jlayton@tupile.poochiereds.net>
+From: Jay Vosburgh <fubar@us.ibm.com>
 
-upstream commit: fcc7c09d94be7b75c9ea2beb22d0fae191c6b4b9
+[ Upstream commit 17d04500e2528217de5fe967599f98ee84348a9c ]
 
-Discovered at Connnectathon 2009...
+	This patch corrects an omission from the following commit:
 
-The buffer format byte and the pad are transposed in NT_RENAME calls
-(which are used to set hardlinks). Most servers seem to ignore this
-fact, but NetApp filers throw back an error due to this problem. This
-patch fixes it.
+commit f0c76d61779b153dbfb955db3f144c62d02173c2
+Author: Jay Vosburgh <fubar@us.ibm.com>
+Date:   Wed Jul 2 18:21:58 2008 -0700
 
-CC: Stable <stable@kernel.org>
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
-Signed-off-by: Steve French <sfrench@us.ibm.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+    bonding: refactor mii monitor
+
+	The un-refactored code checked the link speed and duplex of
+every slave on every pass; the refactored code did not do so.
+
+	The 802.3ad and balance-alb/tlb modes utilize the speed and
+duplex information, and require it to be kept up to date.  This patch
+adds a notifier check to perform the appropriate updating when the slave
+device speed changes.
+
+Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- fs/cifs/cifssmb.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/fs/cifs/cifssmb.c
-+++ b/fs/cifs/cifssmb.c
-@@ -2348,8 +2348,10 @@ winCreateHardLinkRetry:
- 				     PATH_MAX, nls_codepage, remap);
- 		name_len++;	/* trailing null */
- 		name_len *= 2;
--		pSMB->OldFileName[name_len] = 0;	/* pad */
--		pSMB->OldFileName[name_len + 1] = 0x04;
+---
+ drivers/net/bonding/bond_main.c |   25 ++++++++++++++++++++-----
+ drivers/net/bonding/bonding.h   |    6 ++++++
+ 2 files changed, 26 insertions(+), 5 deletions(-)
+
+--- a/drivers/net/bonding/bonding.h
++++ b/drivers/net/bonding/bonding.h
+@@ -248,6 +248,12 @@ static inline struct bonding *bond_get_b
+ 	return (struct bonding *)slave->dev->master->priv;
+ }
+ 
++static inline bool bond_is_lb(const struct bonding *bond)
++{
++        return bond->params.mode == BOND_MODE_TLB
++                || bond->params.mode == BOND_MODE_ALB;
++}
 +
-+		/* protocol specifies ASCII buffer format (0x04) for unicode */
-+		pSMB->OldFileName[name_len] = 0x04;
-+		pSMB->OldFileName[name_len + 1] = 0x00; /* pad */
- 		name_len2 =
- 		    cifsConvertToUCS((__le16 *)&pSMB->OldFileName[name_len + 2],
- 				     toName, PATH_MAX, nls_codepage, remap);
+ #define BOND_FOM_NONE			0
+ #define BOND_FOM_ACTIVE			1
+ #define BOND_FOM_FOLLOW			2
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -3516,11 +3516,26 @@ static int bond_slave_netdev_event(unsig
+ 		}
+ 		break;
+ 	case NETDEV_CHANGE:
+-		/*
+-		 * TODO: is this what we get if somebody
+-		 * sets up a hierarchical bond, then rmmod's
+-		 * one of the slave bonding devices?
+-		 */
++		if (bond->params.mode == BOND_MODE_8023AD || bond_is_lb(bond)) {
++			struct slave *slave;
++
++			slave = bond_get_slave_by_dev(bond, slave_dev);
++			if (slave) {
++				u16 old_speed = slave->speed;
++				u16 old_duplex = slave->duplex;
++
++				bond_update_speed_duplex(slave);
++
++				if (bond_is_lb(bond))
++					break;
++
++				if (old_speed != slave->speed)
++					bond_3ad_adapter_speed_changed(slave);
++				if (old_duplex != slave->duplex)
++					bond_3ad_adapter_duplex_changed(slave);
++			}
++		}
++
+ 		break;
+ 	case NETDEV_DOWN:
+ 		/*
 
 
