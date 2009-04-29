@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755700AbZD2VnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760146AbZD2Vnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755700AbZD2VnN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 17:43:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbZD2Vm4
+	id S1760146AbZD2Vnc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 17:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757368AbZD2VnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 17:42:56 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:43106 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752219AbZD2Vmz (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 17:42:55 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Greg KH <greg@kroah.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Mike Frysinger <vapier.adi@gmail.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: usbutils 0.81 release
-In-Reply-To: Your message of "Wed, 29 Apr 2009 12:23:09 PDT."
-             <20090429192309.GA15539@kroah.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20090427193532.GA2948@kroah.com> <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com> <20090429180735.GA29812@kroah.com> <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com> <ac3eb2510904291159s14d7d532q33657eb73007fc4b@mail.gmail.com>
-            <20090429192309.GA15539@kroah.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1241041373_4397P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 29 Apr 2009 17:42:53 -0400
-Message-ID: <44275.1241041373@turing-police.cc.vt.edu>
+	Wed, 29 Apr 2009 17:43:17 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:45523 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754356AbZD2VnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 17:43:15 -0400
+Date: Wed, 29 Apr 2009 14:43:12 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v2] acpi: Fix regression where _PPC is not read at boot
+	even when ignore_ppc=0
+Message-ID: <20090429214312.GX7917@plum>
+Reply-To: djwong@us.ibm.com
+References: <20090415225348.GW8311@plum> <200904201113.31371.trenn@suse.de> <20090420104529.GB6670@elte.hu> <200904291519.29683.trenn@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904291519.29683.trenn@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1241041373_4397P
-Content-Type: text/plain; charset=us-ascii
+On Wed, Apr 29, 2009 at 03:19:28PM +0200, Thomas Renninger wrote:
 
-On Wed, 29 Apr 2009 12:23:09 PDT, Greg KH said:
+> Ingo, did you do a BIOS update in between?
+> The DSDT and SSDTs you added do not contain a _PPC function.
+> These ACPI tables definitely do not suffer from an initial _PPC
+> evaluation.
 
-> Distros ship uppdate-usbids.sh, like they do the same for the pci ids
-> file.  And you can consider the usb.ids file a "config file" :)
+P-state tables are probably loaded from separate SSDT tables "CPU0IST" and
+"CPU1IST".  You can download 'em with something like this:
 
-So my Fedora Rawhide box still has usbutils 0.73.  I go snarf usbutils 0.81
-from SourceForge and I find:
+# dmesg | grep IST
+ACPI: SSDT BFD30566, 01FB (r1  PmRef    CPU0IST   3000 INTL 20030224)
+           ^addr     ^length
 
-[~/src/usbutils-0.81] ls
-AUTHORS    Makefile.am  aclocal.m4    depcomp     list.h     missing  usbmisc.c
-COPYING    Makefile.in  config.h.in   devtree.c   lsusb-t.c  names.c  usbmisc.h
-ChangeLog  NEWS         configure     devtree.h   lsusb.8    names.h
-INSTALL    README       configure.ac  install-sh  lsusb.c    usb.ids
-[~/src/usbutils-0.81] grep update-usb *
-ChangeLog:      * update-usbids.sh: add "-q" (quiet) option for cron jobs;
-ChangeLog:      * update-usbids.sh:  add, based on update-pciids.sh
-[~/src/usbutils-0.81] 
+# acpidump --addr 0xBFD30566 --length 0x1FB > cpu0ist
+# iasl -d cpu0ist
 
-So it's not in the tarball, and it's apparently not created by the Makefile.
+Then paste cpu0ist.dsl somewhere.
 
-So where is it?
-
---==_Exmh_1241041373_4397P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJ+MndcC3lWbTT17ARAvmjAJsEhrsYKqvanZaIdeVGVYxJTrrSzQCgnP26
-C6Lu0XsZekexXhYfcciPjq4=
-=TqB0
------END PGP SIGNATURE-----
-
---==_Exmh_1241041373_4397P--
+--D
