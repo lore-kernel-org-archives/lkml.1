@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbZD2MgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbZD2MjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754348AbZD2MgT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 08:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZD2MgG
+	id S1754453AbZD2MjP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 08:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZD2Mi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 08:36:06 -0400
-Received: from mtagate1.uk.ibm.com ([194.196.100.161]:55480 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752556AbZD2MgF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 08:36:05 -0400
-Date: Wed, 29 Apr 2009 14:36:01 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] atomic: fix atomic_long_cmpxchg/xchg for 64 bit
- architectures
-Message-ID: <20090429143601.1a79ab8f@osiris.boeblingen.de.ibm.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 29 Apr 2009 08:38:58 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:50720 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750918AbZD2Mi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 08:38:58 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18936.18732.35199.647196@cargo.ozlabs.ibm.com>
+Date: Wed, 29 Apr 2009 22:33:48 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Robert Richter <robert.richter@amd.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 04/29] x86/perfcounters: rework
+	pmc_amd_save_disable_all() and pmc_amd_restore_all()
+In-Reply-To: <20090429111159.GJ2373@elte.hu>
+References: <1241002046-8832-1-git-send-email-robert.richter@amd.com>
+	<1241002046-8832-5-git-send-email-robert.richter@amd.com>
+	<1241003260.8021.236.camel@laptop>
+	<20090429111159.GJ2373@elte.hu>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+Ingo Molnar wrote:
 
-On a linux-next allyesconfig build:
+> Could we remove the disable-all facility altogether and make the 
+> core code NMI-safe? The current approach wont scale on CPUs that 
+> dont have global-disable features.
+> 
+> disable-all was arguably a hack i introduced and which spread too 
+> far. Can you see a conceptual need for it?
 
-kernel/trace/ring_buffer.c:1726:
-	warning: passing argument 1 of 'atomic_cmpxchg' from incompatible pointer type
-linux-next/arch/s390/include/asm/atomic.h:112:
-	note: expected 'struct atomic_t *' but argument is of type 'struct atomic64_t *'
+If you're talking about hw_perf_save_disable / hw_perf_restore, please
+don't get rid of those.  I use them to batch up counter enable/disable
+operations so I only have to compute the PMU config once for each
+batch rather than every time an individual counter is enabled or
+disabled.
 
-atomic_long_cmpxchg and atomic_long_xchg are incorrectly defined for
-64 bit architectures. They should be mapped to the atomic64_* variants.
-
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- include/asm-generic/atomic.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-next/include/asm-generic/atomic.h
-===================================================================
---- linux-next.orig/include/asm-generic/atomic.h
-+++ linux-next/include/asm-generic/atomic.h
-@@ -132,9 +132,9 @@ static inline long atomic_long_add_unles
- #define atomic_long_inc_not_zero(l) atomic64_inc_not_zero((atomic64_t *)(l))
- 
- #define atomic_long_cmpxchg(l, old, new) \
--	(atomic_cmpxchg((atomic64_t *)(l), (old), (new)))
-+	(atomic64_cmpxchg((atomic64_t *)(l), (old), (new)))
- #define atomic_long_xchg(v, new) \
--	(atomic_xchg((atomic64_t *)(l), (new)))
-+	(atomic64_xchg((atomic64_t *)(l), (new)))
- 
- #else  /*  BITS_PER_LONG == 64  */
- 
+Paul.
