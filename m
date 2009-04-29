@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759881AbZD2Ts2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760040AbZD2Tuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759881AbZD2Ts2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 15:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760661AbZD2Tru
+	id S1760040AbZD2Tuw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 15:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbZD2Tul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 15:47:50 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:63130 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760808AbZD2Trs (ORCPT
+	Wed, 29 Apr 2009 15:50:41 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:50176 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751667AbZD2Tuk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 15:47:48 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-Content-type: text/plain; charset=us-ascii
-Date: Wed, 29 Apr 2009 13:47:31 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH RFC] ext3 data=guarded v5
-In-reply-to: <1241016181.20099.31.camel@think.oraclecorp.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>
-Message-id: <20090429194731.GJ3209@webber.adilger.int>
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <1240941840.15136.44.camel@think.oraclecorp.com>
- <20090429085632.GA18273@duck.suse.cz>
- <1241014093.20099.28.camel@think.oraclecorp.com>
- <1241016181.20099.31.camel@think.oraclecorp.com>
+	Wed, 29 Apr 2009 15:50:40 -0400
+X-Sasl-enc: xCWIhGs1TL5rLLo0Nxg4qIwrb0H1pCnfUF+5vpWLdbzo 1241034639
+Date: Wed, 29 Apr 2009 16:50:37 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: usbutils 0.81 release
+Message-ID: <20090429195037.GC1598@khazad-dum.debian.net>
+References: <20090427193532.GA2948@kroah.com> <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com> <20090429180735.GA29812@kroah.com> <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com> <ac3eb2510904291159s14d7d532q33657eb73007fc4b@mail.gmail.com> <20090429191841.GA1598@khazad-dum.debian.net> <ac3eb2510904291227v48628c8j181dffc8fdfa1de6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ac3eb2510904291227v48628c8j181dffc8fdfa1de6@mail.gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr 29, 2009  10:43 -0400, Chris Mason wrote:
-> On Wed, 2009-04-29 at 10:08 -0400, Chris Mason wrote:
-> > This would mean IO completion (clearing PG_writeback) would have to wait
-> > on the inode mutex, which we can't quite do in O_SYNC and O_DIRECT.
-> > But, what I can do is check i_nlink after the ext3_orphan_del call and
-> > put the inode back on the orphan list if it has gone to zero.
+On Wed, 29 Apr 2009, Kay Sievers wrote:
+> > Debian places it in /var/lib/usbids/ for a good reason.  So does Ubuntu.
+> > Both have working "update-usbids" scripts (might be the one from upstream,
+> > or something different).  They also have the original file in /usr/share, I
+> > don't know if usbutils was changed to check /var first then /usr, or what.
 > 
-> Ugh, that won't work, we'll just race with link and risk an orphan that
-> never gets removed.  I'll make a version of ext3_orphan_del that expects
-> the super lock held and use that instead.
+> Having several files on the same system sounds crazy from a distro
+> standpoint. There needs to be only a single database by default. Users
 
-I looks like ext3_link() checks for i_nlink == 0 and returns -ENOENT to
-avoid this race.
+We are talking about two files, here.  Not several.
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+> can do whatever they want anyway, but packages should not support such
+> a thing.
 
+If they are to be useful, yes, they do.  Or do you want us to package just
+the usb-ids text file by itself and keep updating it all the time?  That's
+the only other possibility, and it is done for the tzdata.
+
+But update-usbids (like update-pciids and update-intel-microcode) works just
+fine, so likely the usbutils maintainer didn't have any reasons to move from
+update-usbids to a volatile package.
+
+> If the user updates it, what does a new ids file do? Overwrite it
+
+Well, the package overwrites the older one if the download suceeds with a
+mv.  No mess.  If the download fails, the temp file is removed, and the
+older one remains untouched.
+
+There is no mess here.  And it might be a simple case of the package
+creating /var/lib/usbids/usb.ids at post-install time from the static
+packaged data, and usbutils always using just /var/lib/usbids/usb.ids. I am
+not the maintainer of that package, and sincerely, given your tone, I am not
+inclined to go fetch the source and read the scripts.
+
+Now, I am not sure there is any checking against partial downloads.  That is
+one thing a more controlled volatile package would be better at.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
