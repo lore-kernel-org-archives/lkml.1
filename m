@@ -1,120 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbZD2JGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753192AbZD2JGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756501AbZD2JGV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 05:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbZD2JFZ
+	id S1753192AbZD2JGk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 05:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbZD2JFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 05:05:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60442 "EHLO hera.kernel.org"
+	Wed, 29 Apr 2009 05:05:30 -0400
+Received: from mga03.intel.com ([143.182.124.21]:51632 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752619AbZD2JFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 05:05:22 -0400
-Date: Wed, 29 Apr 2009 09:03:53 GMT
-From: tip-bot for Sam Ravnborg <sam@ravnborg.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, sam@ravnborg.org, tabbott@MIT.EDU,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org, torvalds@linux-foundation.org, tabbott@MIT.EDU,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1240991249-27117-3-git-send-email-sam@ravnborg.org>
-References: <1240991249-27117-3-git-send-email-sam@ravnborg.org>
-Subject: [tip:x86/kbuild] x86, vmlinux.lds: unify PHDRS
-Message-ID: <tip-afb8095a7eab32e5760613fa73d2f80a39cc45bf@git.kernel.org>
-Git-Commit-ID: afb8095a7eab32e5760613fa73d2f80a39cc45bf
-X-Mailer: tip-git-log-daemon
+	id S1754173AbZD2JFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 05:05:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,265,1239001200"; 
+   d="scan'208";a="137166068"
+Date: Wed, 29 Apr 2009 17:05:01 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [PATCH] [13/16] POISON: The high level memory error handler in
+	the VM II
+Message-ID: <20090429090501.GB15488@localhost>
+References: <20090407509.382219156@firstfloor.org> <20090407151010.E72A91D0471@basil.firstfloor.org> <1239210239.28688.15.camel@think.oraclecorp.com> <20090409072949.GF14687@one.firstfloor.org> <20090409075805.GG14687@one.firstfloor.org> <1239283829.23150.34.camel@think.oraclecorp.com> <20090409140257.GI14687@one.firstfloor.org> <1239287859.23150.57.camel@think.oraclecorp.com> <20090429081616.GA8339@localhost> <20090429083655.GA23223@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 09:03:55 +0000 (UTC)
+In-Reply-To: <20090429083655.GA23223@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  afb8095a7eab32e5760613fa73d2f80a39cc45bf
-Gitweb:     http://git.kernel.org/tip/afb8095a7eab32e5760613fa73d2f80a39cc45bf
-Author:     Sam Ravnborg <sam@ravnborg.org>
-AuthorDate: Wed, 29 Apr 2009 09:47:19 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 29 Apr 2009 10:20:30 +0200
+On Wed, Apr 29, 2009 at 04:36:55PM +0800, Andi Kleen wrote:
+> > > I'll have to read harder next week, the FS invalidatepage may expect
+> > > truncate to be the only caller.
+> > 
+> > If direct de-dirty is hard for some pages, how about just ignore them?
+> 
+> You mean just ignoring it for the pages where it is hard?
 
-x86, vmlinux.lds: unify PHDRS
+Yes.
 
-PHDRS are not equal for the two - so
-use ifdefs to cover up for that.
+> Yes that is what it is essentially doing right now. But at least
+> some dirty pages need to be handled because most user space
+> pages tend to be dirty.
 
-On the assumption that they may become equal the ifdef
-is inside the PHDRS definiton.
+Sure.  There are three types of dirty pages:
 
-[ Impact: cleanup ]
+A. now dirty, can be de-dirty in the current code
+B. now dirty, cannot be de-dirty
+C. now dirty and writeback, cannot be de-dirty
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Tim Abbott <tabbott@MIT.EDU>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <1240991249-27117-3-git-send-email-sam@ravnborg.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+I mean B and C can be handled in one single place - the block layer.
 
+If B is hard to be de-dirtied now, ignore them for now and they will
+eventually be going to IO and become C.
 
----
- arch/x86/kernel/vmlinux.lds.S    |   13 +++++++++++++
- arch/x86/kernel/vmlinux_32.lds.S |    5 -----
- arch/x86/kernel/vmlinux_64.lds.S |   11 -----------
- 3 files changed, 13 insertions(+), 16 deletions(-)
+> > There are the PG_writeback pages anyway. We can inject code to
+> > intercept them at the last stage of IO request dispatching.
+> 
+> That would require adding error out code through all the file systems,
+> right?
 
-diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index d113642..1a1b303 100644
---- a/arch/x86/kernel/vmlinux.lds.S
-+++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -40,6 +40,19 @@ ENTRY(phys_startup_64)
- jiffies_64 = jiffies;
- #endif
- 
-+PHDRS {
-+	text PT_LOAD FLAGS(5);          /* R_E */
-+	data PT_LOAD FLAGS(7);          /* RWE */
-+#ifdef CONFIG_X86_64
-+	user PT_LOAD FLAGS(7);          /* RWE */
-+	data.init PT_LOAD FLAGS(7);     /* RWE */
-+#ifdef CONFIG_SMP
-+	percpu PT_LOAD FLAGS(7);        /* RWE */
-+#endif
-+	data.init2 PT_LOAD FLAGS(7);    /* RWE */
-+#endif
-+	note PT_NOTE FLAGS(0);          /* ___ */
-+}
- 
- #ifdef CONFIG_X86_32
- # include "vmlinux_32.lds.S"
-diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
-index 4c985fc..4fd40dc 100644
---- a/arch/x86/kernel/vmlinux_32.lds.S
-+++ b/arch/x86/kernel/vmlinux_32.lds.S
-@@ -1,8 +1,3 @@
--PHDRS {
--	text PT_LOAD FLAGS(5);		/* R_E */
--	data PT_LOAD FLAGS(7);		/* RWE */
--	note PT_NOTE FLAGS(0);		/* ___ */
--}
- SECTIONS
- {
- 	. = LOAD_OFFSET + LOAD_PHYSICAL_ADDR;
-diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
-index 7f1cc3d..6e7cbee 100644
---- a/arch/x86/kernel/vmlinux_64.lds.S
-+++ b/arch/x86/kernel/vmlinux_64.lds.S
-@@ -1,14 +1,3 @@
--PHDRS {
--	text PT_LOAD FLAGS(5);		/* R_E */
--	data PT_LOAD FLAGS(7);		/* RWE */
--	user PT_LOAD FLAGS(7);		/* RWE */
--	data.init PT_LOAD FLAGS(7);	/* RWE */
--#ifdef CONFIG_SMP
--	percpu PT_LOAD FLAGS(7);	/* RWE */
--#endif
--	data.init2 PT_LOAD FLAGS(7);	/* RWE */
--	note PT_NOTE FLAGS(0);		/* ___ */
--}
- SECTIONS
- {
- 	. = __START_KERNEL;
+Not necessarily. The file systems deal with buffer head, extend map
+and bios, they normally won't touch the poisoned page content at all.
+
+So it's mostly safe to add one single door-keeper at the low level
+request dispatch queue.
+
+> > 
+> > Some perceivable problems and solutions are
+> > 1) the intercepting overheads could be costly => inject code at runtime.
+> > 2) there are cases that the dirty page could be copied for IO:
+> 
+> At some point we should probably add poison checks before these operations
+
+Maybe some ext4 developers can drop us more hint one these two cases.
+We can also do some instruments to see how often (2.1.x) will happen.
+
+But I guess a simple PagePoison() test is cheap anyway.
+
+> yes. At least for read it should be the same code path as EIO --
+> you have to check PG_error anyways  (or at least you ought to)
+> The main difference is that for write you have to check it too.
+
+Check which on write? You mean Copy-out?
+
+Another copy path is the bounced read/write... I guess it won't be
+common in 64bit system though.
+
+> >    2.1) jbd2 has two copy-out cases => should be rare. just ignore them?
+> >      2.1.1) do_get_write_access(): buffer sits in two active commits
+> >      2.1.2) jbd2_journal_write_metadata_buffer(): buffer happens to start
+> >             with JBD2_MAGIC_NUMBER
+> >    2.2) btrfs have to read page for compress/encryption
+> >      Chris: is btrfs_zlib_compress_pages() a good place for detecting
+> >      poison pages? Or is it necessary at all for btrfs?(ie. it's
+> >      already relatively easy to de-dirty btrfs pages.)
+> 
+> I think btrfs' IO error handling is not very great right now. But once
+> it matures i hope poison pages can be handled in the same way as
+> regular IO errors.
+
+OK.
+
+> >    2.3) maybe more cases...
+> 
+> Undoubtedly. Goal is just to handle the common cases that cover a lot 
+> of memory. This will never be 100%.
+
+Right. We'll discover/cover more cases as time goes by.
+
+Thanks,
+Fengguang
