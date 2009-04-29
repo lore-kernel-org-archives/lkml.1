@@ -1,61 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758618AbZD2LcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbZD2Lfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758618AbZD2LcV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 07:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZD2LcM
+	id S1756065AbZD2Lfu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 07:35:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbZD2Lfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 07:32:12 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:51110 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751631AbZD2LcK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 07:32:10 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@monstr.eu
-Subject: Re: [PATCH 23/30] microblaze_mmu_v1: Enable fork syscall for MMU and add fork as vfork for noMMU
-Date: Wed, 29 Apr 2009 13:31:26 +0200
-User-Agent: KMail/1.9.9
-Cc: John Williams <john.williams@petalogix.com>, linux-kernel@vger.kernel.org
-References: <1240821139-7247-1-git-send-email-monstr@monstr.eu> <1d3f23370904270443u4ef547b3hab25b65babe329f3@mail.gmail.com> <49F82911.6060207@monstr.eu>
-In-Reply-To: <49F82911.6060207@monstr.eu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 29 Apr 2009 07:35:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50885 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751757AbZD2Lfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 07:35:39 -0400
+Date: Wed, 29 Apr 2009 13:34:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, sam@ravnborg.org, tabbott@MIT.EDU,
+       tglx@linutronix.de
+Subject: Re: [tip:x86/kbuild] x86, vmlinux.lds: fix relocatable symbols
+Message-ID: <20090429113454.GA11586@elte.hu>
+References: <20090429105056.GA28720@uranus.ravnborg.org> <tip-fd0731944333db6e9e91b6954c6ef95f4b71ab04@git.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904291331.27043.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19Zfk70ru6oIbng6iZTZFwdMTfqK9mMNzftGyH
- WLTnqD7woWhF8GMPk/XY4YlnhH5TkxyGHmJPrElv8Bp1dyt1zk
- r6a7qG/XgR/ZUa6wL+MoA==
+In-Reply-To: <tip-fd0731944333db6e9e91b6954c6ef95f4b71ab04@git.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 April 2009, Michal Simek wrote:
-> >> +sys_fork_wrapper:
-> >>  sys_vfork_wrapper:
-> >>        brid    sys_vfork
-> >>        addk    r5, r1, r0
-> > 
-> > NACK!  If only it was that easy :)
-> > 
-> > On noMMU we cannot just silently call vfork() if the application tries
-> > to fork() - you have to return -ENOSYS (or is there a better one?).
-> > This will just require a small sys_fork_wrapper in entry-nommu.S.
+
+* tip-bot for Ingo Molnar <mingo@elte.hu> wrote:
+
+> Commit-ID:  fd0731944333db6e9e91b6954c6ef95f4b71ab04
+> Gitweb:     http://git.kernel.org/tip/fd0731944333db6e9e91b6954c6ef95f4b71ab04
+> Author:     Ingo Molnar <mingo@elte.hu>
+> AuthorDate: Wed, 29 Apr 2009 12:56:58 +0200
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Wed, 29 Apr 2009 13:01:18 +0200
 > 
-> I will call for noMMU kernel ni_syscall which solve that problem.
-> (Arnd do it in his patches too)
+> x86, vmlinux.lds: fix relocatable symbols
 > 
+> __init_begin/_end symbols should be inside sections as well,
+> otherwise the relocatable kernel gets confused when freeing
+> init sections in the wrong place.
+> 
+> [ Impact: fix bootup crash ]
+> 
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Tim Abbott <tabbott@MIT.EDU>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> LKML-Reference: <20090429105056.GA28720@uranus.ravnborg.org>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> ---
+>  arch/x86/kernel/vmlinux.lds.S |    7 +++++--
+>  1 files changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+> index 0bdbaa5..4c85b2e 100644
+> --- a/arch/x86/kernel/vmlinux.lds.S
+> +++ b/arch/x86/kernel/vmlinux.lds.S
+> @@ -255,8 +255,8 @@ SECTIONS
+>  
+>  	/* Init code and data - will be freed after init */
+>  	. = ALIGN(PAGE_SIZE);
+> -	__init_begin = .; /* paired with __init_end */
+>  	.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
+> +		__init_begin = .; /* paired with __init_end */
+>  		_sinittext = .;
+>  		INIT_TEXT
+>  		_einittext = .;
+> @@ -346,8 +346,11 @@ SECTIONS
+>  #endif
+>  
+>  	. = ALIGN(PAGE_SIZE);
+> +
+>  	/* freed after init ends here */
+> -	__init_end = .;
+> +	.init.end : AT(ADDR(.init.end) - LOAD_OFFSET) {
+> +		__init_end = .;
+> +	}
+>  
+>  #ifdef CONFIG_X86_64
+>  	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
 
-Note that my patches did not call the wrappers correctly, this
-has to be fixed to make them work first.
+For the record - this fixed the crash i reported. No further 
+problems so far, with about 200 test iterations on 7 boxes.
 
-For the fork call on !CONFIG_MMU, we should probably just add
-a cond_syscall() in kernel/sys_ni.c near sys_msync() and
-the other MMU specific calls.
-
-	Arnd <><
+	Ingo
