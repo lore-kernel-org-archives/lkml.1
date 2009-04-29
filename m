@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932065AbZD2VYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761270AbZD2VYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932065AbZD2VYT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 17:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbZD2VYH
+	id S1761270AbZD2VYu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 17:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757980AbZD2VYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 17:24:07 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40636 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753387AbZD2VYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 17:24:04 -0400
-Date: Wed, 29 Apr 2009 23:23:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86/irq: using move_irq_desc
-Message-ID: <20090429212317.GA30147@elte.hu>
-References: <49E802CE.5030406@kernel.org> <49E804AD.9020702@kernel.org> <49F6559F.7070005@kernel.org> <20090428101448.GA28495@elte.hu> <49F70FED.3040903@kernel.org> <20090428143254.GA24351@elte.hu> <49F753DF.6040104@kernel.org> <20090429120056.GE11586@elte.hu> <49F87FF3.1090600@kernel.org> <20090429204135.GF21421@elte.hu>
+	Wed, 29 Apr 2009 17:24:39 -0400
+Received: from ausxippc101.us.dell.com ([143.166.85.207]:17671 "EHLO
+	ausxippc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757663AbZD2VYi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 17:24:38 -0400
+X-Loopcount0: from 10.9.160.254
+Message-ID: <49F8C59F.2010603@dell.com>
+Date: Wed, 29 Apr 2009 16:24:47 -0500
+From: Mario Limonciello <mario_limonciello@dell.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090429204135.GF21421@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Add support for more dell-wmi hotkeys
+References: <49ECBAE2.2080308@dell.com> <49EE09D9.2060209@dell.com> <20090429165729.GB32619@srcf.ucam.org> <49F89981.10806@dell.com> <20090429183154.GC2325@srcf.ucam.org>
+In-Reply-To: <20090429183154.GC2325@srcf.ucam.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig7124979DF7E8A771191AD0B1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig7124979DF7E8A771191AD0B1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Hi Matthew:
 
-> 
-> * Yinghai Lu <yinghai@kernel.org> wrote:
-> 
-> > 
-> > move_irq_desc will try to move irq_desc to node wanted if allocated one is not correct.
-> > (happen on device on different nodes that are using MSI, drivers are loaded and unloaded
-> > randomly)
-> > 
-> > [ Impact: make irq_desc go with device on node ]
-> > 
-> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> > 
-> > ---
-> >  arch/x86/kernel/apic/io_apic.c |    6 +-----
-> >  include/linux/irq.h            |    4 ++++
-> >  2 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> applied, thanks. I'll look into merging it into the irq tree 
-> tomorrow and testing it.
+Matthew Garrett wrote:
+> It's a precision M6300 - I'm afraid I'm not sure what BIOS it's running=
+=2E
+>  =20
+I've obtained one of these and taken a look at it with a copy of Win 7
+and compared with dell-wmi and my patchset applied.  This platform's WMI
+support was introduced before Win7's WMI spec was drafted, and so it
+doesn't adhere to the spec.  I think the best thing to do will be create
+a DMI table to match for keys that are only on a per system basis for
+anything before this spec was ready.  I don't expect many other
+platforms like this, but it will allow for additional granularity in
+case something in the future ever deviates spec as well.
 
-gave it a brief try and got:
+Regards
+--=20
+Mario Limonciello
+*Dell | Linux Engineering*
+mario_limonciello@dell.com
 
-kernel/irq/numa_migrate.c: In function ‘init_copy_one_irq_desc’:
-kernel/irq/numa_migrate.c:46: error: ‘struct irq_desc’ has no member named ‘node’
-kernel/irq/numa_migrate.c: In function ‘move_irq_desc’:
-kernel/irq/numa_migrate.c:114: error: ‘struct irq_desc’ has no member named ‘node’
-kernel/irq/numa_migrate.c:114: error: ‘struct irq_desc’ has no member named ‘node’
-kernel/irq/numa_migrate.c:114: error: ‘struct irq_desc’ has no member named ‘node’
 
-	Ingo
+--------------enig7124979DF7E8A771191AD0B1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkn4xZ8ACgkQ2CrZjkA73YteMQCffe5FY0RE/rSpmPs51cj67AVA
+l/UAoIWNT40e6yLazHv9HZi5lOaffla6
+=l75r
+-----END PGP SIGNATURE-----
+
+--------------enig7124979DF7E8A771191AD0B1--
