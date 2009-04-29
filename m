@@ -1,115 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753417AbZD2GyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752903AbZD2G4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753417AbZD2GyP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 02:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZD2Gx7
+	id S1752903AbZD2G4n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 02:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbZD2G4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 02:53:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36867 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751160AbZD2Gx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 02:53:58 -0400
-From: Nikanth Karthikesan <knikanth@novell.com>
-Organization: Novell
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH][RFC] Handle improbable possibility of io_context->refcount overflow
-Date: Wed, 29 Apr 2009 12:21:39 +0530
-User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
+	Wed, 29 Apr 2009 02:56:34 -0400
+Received: from fornax.pixelized.ch ([88.198.8.169]:54469 "EHLO
+	fornax.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750858AbZD2G4d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 02:56:33 -0400
+Message-ID: <49F7F9FB.7030300@cateee.net>
+Date: Wed, 29 Apr 2009 08:55:55 +0200
+From: Giacomo Catenazzi <cate@cateee.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Florian Mickler <florian@mickler.org>
+CC: linux-kernel@vger.kernel.org, Dave Airlie <airlied@gmail.com>,
+       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, david@lang.hm
+Subject: Re: kms in defconfig
+References: <21d7e9970904270121s1c58365bqc8933f8a3ffc5f1a@mail.gmail.com>	<20090427083935.GA20941@elte.hu>	<21d7e9970904270156v54a6483fs20d5b31c97a1d482@mail.gmail.com>	<49F65FA2.4010603@kernel.org>	<alpine.LFD.2.00.0904271852510.22156@localhost.localdomain>	<alpine.DEB.1.10.0904280946210.17268@asgard.lang.hm>	<alpine.LFD.2.00.0904281002570.22156@localhost.localdomain>	<alpine.DEB.1.10.0904281019580.17268@asgard.lang.hm>	<alpine.LFD.2.00.0904281043420.22156@localhost.localdomain> <20090428234300.4a49d22f@schatten>
+In-Reply-To: <20090428234300.4a49d22f@schatten>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904291221.40361.knikanth@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens
+Florian Mickler wrote:
+> On Tue, 28 Apr 2009 10:50:14 -0700 (PDT)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+>>
+>> On Tue, 28 Apr 2009, david@lang.hm wrote:
+> 
+>>> I've seen people talk about creating such tools, but the responses
+>>> that I've seen have tended to discourage them.
+>> I suspect that they'd generally end up handling the easy cases, and
+>> seldom anything more. At which point they're not all that useful.
+>>
+>> 		Linus
+> 
+> perhaps there needs to be an infrastructure where each
+> kconfig-entry-causer can also provide userlevel code to help with that
+> entry?
+> 
+> i could imagine a kconfig knob to specify an optional
+> per-kconfig-userspace-helperscript which calculates a new "suggested
+> value" at configure time. 
+> this "suggested value" is displayed next to the default value 
+> or is then already incorporated in the default value. 
+> 
+> each maintainer of each kconfig entry 
+> a) decides if it is possible to supply such a script 
+> b) if it would be useful
+> c) suplies and maintains his (focused on only one kconfig entry) script
+> c) if the script is 100% fool-proof he can say so in the description of
+> the kconfig-entry or just skip the user or notify the user of the
+> result. 
+> d) maybe dosn't provide an userspace helper
+> 
+> this spreads the burden of the complex detection-code and hopefully
+> eases configuration for everyone where possible.
+> 
+> what do others think?
 
-Currently io_context has an atomic_t(int) as refcount. In case of cfq, for
-each device a task does I/O, a reference to the io_context would be taken. And
-when there are multiple process sharing io_contexts(CLONE_IO) would also have
-a reference to the same io_context. Theoretically the possible maximum number
-of processes sharing the same io_context + the number of disks/cfq_data
-referring to the same io_context can overflow the 32-bit counter on a very
-high-end machine. Even though it is an improbable case, let us make it
-difficult by changing the refcount to atomic64_t(long).
+Not feasible!  Look at the default values or at the help text of options:
+you see a lot of old and obsolete text.
+Take e.g.: CONFIG_SMP, the intel AGP/DRI, or in general: help texts describe
+usually only the first hardwares supported.
+I think such scripts could not do better: soon will be obsolete.
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+It is also not difficult to do a central script.
+I regularly build a map from modules, mosts buses, etc to the kernel config
+(see lkddb.list in http://cateee.net/sources/lkddb ). With explicit
+coding policy and few patches in kernel it would be easier to generate, but...
 
----
+the problem is in Kconfig: actual interface is ugly:
+it is difficult to know how to add support for an hardware, or to
+remove a driver (because of linear dependencies and need to fullfil
+the dependencies before to enable/disable drivers), and dependencies are
+often not obvious.
+Take a default kernel from your distribution and try to remove most of
+non-needed hardware, using existing interfaces (ok, the Linus' sed method
+simplify the problem, but try to do manually with menuconfig.
 
-diff --git a/block/blk-ioc.c b/block/blk-ioc.c
-index 012f065..4f5ff79 100644
---- a/block/blk-ioc.c
-+++ b/block/blk-ioc.c
-@@ -35,9 +35,9 @@ int put_io_context(struct io_context *ioc)
- 	if (ioc == NULL)
- 		return 1;
- 
--	BUG_ON(atomic_read(&ioc->refcount) == 0);
-+	BUG_ON(atomic64_read(&ioc->refcount) == 0);
- 
--	if (atomic_dec_and_test(&ioc->refcount)) {
-+	if (atomic64_dec_and_test(&ioc->refcount)) {
- 		rcu_read_lock();
- 		if (ioc->aic && ioc->aic->dtor)
- 			ioc->aic->dtor(ioc->aic);
-@@ -151,7 +151,7 @@ struct io_context *get_io_context(gfp_t gfp_flags, int node)
- 		ret = current_io_context(gfp_flags, node);
- 		if (unlikely(!ret))
- 			break;
--	} while (!atomic_inc_not_zero(&ret->refcount));
-+	} while (!atomic64_inc_not_zero(&ret->refcount));
- 
- 	return ret;
- }
-@@ -163,8 +163,8 @@ void copy_io_context(struct io_context **pdst, struct io_context **psrc)
- 	struct io_context *dst = *pdst;
- 
- 	if (src) {
--		BUG_ON(atomic_read(&src->refcount) == 0);
--		atomic_inc(&src->refcount);
-+		BUG_ON(atomic64_read(&src->refcount) == 0);
-+		atomic64_inc(&src->refcount);
- 		put_io_context(dst);
- 		*pdst = src;
- 	}
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index a55a9bd..f829bd2 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -1282,7 +1282,7 @@ static void cfq_dispatch_request(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 	if (!cfqd->active_cic) {
- 		struct cfq_io_context *cic = RQ_CIC(rq);
- 
--		atomic_inc(&cic->ioc->refcount);
-+		atomic64_inc(&cic->ioc->refcount);
- 		cfqd->active_cic = cic;
- 	}
- }
-diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
-index 08b987b..f1a57f4 100644
---- a/include/linux/iocontext.h
-+++ b/include/linux/iocontext.h
-@@ -64,7 +64,7 @@ struct cfq_io_context {
-  * and kmalloc'ed. These could be shared between processes.
-  */
- struct io_context {
--	atomic_t refcount;
-+	atomic64_t refcount;
- 	atomic_t nr_tasks;
- 
- 	/* all the fields below are protected by this lock */
-@@ -91,7 +91,7 @@ static inline struct io_context *ioc_task_link(struct io_context *ioc)
- 	 * if ref count is zero, don't allow sharing (ioc is going away, it's
- 	 * a race).
- 	 */
--	if (ioc && atomic_inc_not_zero(&ioc->refcount)) {
-+	if (ioc && atomic64_inc_not_zero(&ioc->refcount)) {
- 		atomic_inc(&ioc->nr_tasks);
- 		return ioc;
- 	}
+After we replace the build system we could try to develop a right
+"autoconfiguration", which is IMHO a trivial task.
+But the new build system need to solve dependencies (like modern
+package managers). Actual system checks only dependencies, but user
+must know and set it before to configure a specific item.
 
+But creating a new configuration system, with dependency solver, is very
+complex: the kernel has an interesting third state: "m". So we should handle
+3 cases: n/m/y, and some policies:
+- prefer m / prefer y
+- default values
+- on usefull (e.g. filesystems) "non hardware": n / m / y
+  (but not on virtualization, debug)
+- ...
+
+So the old problem: automation and complexity: the solver must do the right thing,
+but probably there is no "right thing" for everybody (or for most people), so we
+cannot automatize it.
+
+ciao
+	cate
