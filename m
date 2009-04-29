@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761226AbZD2NTG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760166AbZD2NT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761226AbZD2NTG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 09:19:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760736AbZD2NP0
+	id S1760166AbZD2NT2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 09:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759900AbZD2NP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 09:15:26 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:55655 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760734AbZD2NPY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 09:15:24 -0400
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fbdev-devel@lists.sourceforge.net" 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>
-Message-Id: <CCB52791-FFE9-487A-97E8-C902622CC162@vmware.com>
-From: Jakob Bornecrantz <jakob@vmware.com>
-To: Peter Hanzel <hanzelpeter@gmail.com>
-In-Reply-To: <7D4BD025A2554467AD77428C455E1FE0@avitech.sk>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: Intel KMS + fbcon + Mplayer
-Date: Wed, 29 Apr 2009 15:15:23 +0200
-References: <7D4BD025A2554467AD77428C455E1FE0@avitech.sk>
-X-Mailer: Apple Mail (2.930.3)
+	Wed, 29 Apr 2009 09:15:59 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:38975 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758810AbZD2NP6 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 09:15:58 -0400
+From: Edward Goggin <egoggin@vmware.com>
+To: "'Ingo Molnar'" <mingo@elte.hu>
+CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+Date: Wed, 29 Apr 2009 06:15:47 -0700
+Subject: RE: Simple typo in reboot.c when enabling CONFIG_KDB_KDUMP
+Thread-Topic: Simple typo in reboot.c when enabling CONFIG_KDB_KDUMP
+Thread-Index: AcnIi/8Ite+941dwTQWrnUv94zzyLAAQHwdA
+Message-ID: <B1FD1A0C73AC4E46A4F95BADC77079D35F55F115@PA-EXMBX02.vmware.com>
+References: <B1FD1A0C73AC4E46A4F95BADC77079D35F55F114@PA-EXMBX02.vmware.com>
+ <20090429053233.GB4103@elte.hu>
+In-Reply-To: <20090429053233.GB4103@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29 apr 2009, at 12.04, Peter Hanzel wrote:
-> Hello.
->
-> I have tried Intel KMS in kernel 2.6.91.1 with fbcon. I am using only
-> framebuffer console.
-> Most fb apps works, but I have problem with mplayer.
-> The init works but the video is badly displayed.
-> I have investigated the problem and found, that for my laptop mode
-> 1280x800-32.
->
-> The ioctl on /dev/fb0 FBIOGET_VSCREENINFO returns.
-> var.bits_per_pixel=32
-> var.transp.length = 0.
->
-> So the mplayer thinks we are in 24 bit mode (maybe this is bug in  
-> mplayer,
-> because bits_per_pixel is 32).
->
-> But next I have checked it with kernel vesafb and for same mode
-> (1280x800-32, vga=0x362 )
-> The fb ioctl returns
-> var.bits_per_pixel=32
-> var.transp.length = 8.
->
-> So is this intentionally made so. Because I think this mode use only  
-> red,
-> green,blue and no transp. But for one pixel you must write 4 bytes.  
-> (so
-> transp is not used).
+Good point.  Its after applying a KDB patch from SGI.  I'll submit
+the patch to Keith Owens at SGI intead. 
 
-Hmm, if I remember correctly from running mplayer in the early days of  
-kms mplayer has two fbdev drivers and I think that only #2 worked. It  
-did worked back then but it was a long time ago. Heck it was one of  
-the first things we demoed kms with.
-
-Cheers Jakob.
+> -----Original Message-----
+> From: Ingo Molnar [mailto:mingo@elte.hu] 
+> Sent: Wednesday, April 29, 2009 1:33 AM
+> To: Edward Goggin
+> Cc: 'linux-kernel@vger.kernel.org'
+> Subject: Re: Simple typo in reboot.c when enabling CONFIG_KDB_KDUMP
+> 
+> 
+> * Edward Goggin <egoggin@vmware.com> wrote:
+> 
+> > Patch 1 of 1
+> > 
+> > Simple typo when enabling CONFIG_KDB_KDUMP.
+> > 
+> > Signed-off-by: Ed Goggin <egoggin@vmware.com>
+> > 
+> > 
+> > --- linux-2.6.29/arch/x86/kernel/reboot.c	2009-04-28 
+> 14:37:30.000000000 -0400
+> > +++ linux-2.6.29.fix/arch/x86/kernel/./reboot.c	
+> 2009-04-28 14:37:37.000000000 -0400
+> > @@ -649,7 +649,7 @@ void halt_current_cpu(struct pt_regs 
+> *re  #ifdef 
+> > CONFIG_X86_32
+> >  	if (!user_mode_vm(regs)) {
+> >  		crash_fixup_ss_esp(&fixed_regs, regs);
+> > -		regs = &fixed_Regs;
+> > +		regs = &fixed_regs;
+> >  	}
+> >  #endif
+> >          crash_save_cpu(regs, raw_smp_processor_id());
+> 
+> There's no such code in the current upstream kernel. Exactly 
+> which kernel version (sha1) are you sending a patch against?
+> 
+> 	Ingo
+> 
