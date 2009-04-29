@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762444AbZD2Wbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbZD2WcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762444AbZD2Wbt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758040AbZD2WVe
+	id S1760061AbZD2WcS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759444AbZD2WVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:34 -0400
-Received: from kroah.org ([198.145.64.141]:40484 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:35 -0400
+Received: from kroah.org ([198.145.64.141]:40500 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758390AbZD2WVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:30 -0400
+	id S1759265AbZD2WVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:31 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:27 2009
-Message-Id: <20090429220927.309155133@mini.kroah.org>
+Message-Id: <20090429220927.416887820@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:27 -0700
+Date: Wed, 29 Apr 2009 15:07:28 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mike Christie <michaelc@cs.wisc.edu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 28/58] SCSI: libiscsi: fix iscsi pool error path again
+       alan@lxorguk.ukuu.org.uk, Nathan Lynch <ntl@pobox.com>,
+       Nigel Cunningham <nigel@tuxonice.net>,
+       containers@lists.linux-foundation.org,
+       linux-pm@lists.linux-foundation.org, Matt Helsley <matthltc@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 29/58] sched: do not count frozen tasks toward load
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=0053-SCSI-libiscsi-fix-iscsi-pool-error-path.patch
+Content-Disposition: inline; filename=0060-sched-do-not-count-frozen-tasks-toward-load.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,47 +42,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jean Delvare <jdelvare@suse.de>
+From: Nathan Lynch <ntl@pobox.com>
 
-upstream commit: fd6e1c14b73dbab89cb76af895d5612e4a8b5522
+upstream commit: e3c8ca8336707062f3f7cb1cd7e6b3c753baccdd
 
-Le lundi 30 mars 2009, Chris Wright a écrit :
-> q->queue could be ERR_PTR(-ENOMEM) which will break unwinding
-> on error.  Make iscsi_pool_free more defensive.
->
+Freezing tasks via the cgroup freezer causes the load average to climb
+because the freezer's current implementation puts frozen tasks in
+uninterruptible sleep (D state).
 
-Making the freeing of q->queue dependent on q->pool being set looks
-really weird (although it is correct at the moment. But this seems
-to be fixable in a much simpler way.
+Some applications which perform job-scheduling functions consult the
+load average when making decisions.  If a cgroup is frozen, the load
+average does not provide a useful measure of the system's utilization
+to such applications.  This is especially inconvenient if the job
+scheduler employs the cgroup freezer as a mechanism for preempting low
+priority jobs.  Contrast this with using SIGSTOP for the same purpose:
+the stopped tasks do not count toward system load.
 
-With the benefit that only the error case is slowed down. In both
-cases we have a problem if q->queue contains an error value but it's
-not -ENOMEM. Apparently this can't happen today, but it doesn't feel
-right to assume this will always be true. Maybe it's the right time
-to fix this as well.
+Change task_contributes_to_load() to return false if the task is
+frozen.  This results in /proc/loadavg behavior that better meets
+users' expectations.
 
-Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-[chrisw: this is a fixlet to f474a37b, also in -stable]
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+Acked-by: Andrew Morton <akpm@linux-foundation.org>
+Acked-by: Nigel Cunningham <nigel@tuxonice.net>
+Tested-by: Nigel Cunningham <nigel@tuxonice.net>
+Cc: containers@lists.linux-foundation.org
+Cc: linux-pm@lists.linux-foundation.org
+Cc: Matt Helsley <matthltc@us.ibm.com>
+LKML-Reference: <20090408194512.47a99b95@manatee.lan>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/scsi/libiscsi.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ include/linux/sched.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/scsi/libiscsi.c
-+++ b/drivers/scsi/libiscsi.c
-@@ -1811,8 +1811,10 @@ iscsi_pool_init(struct iscsi_pool *q, in
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -201,7 +201,8 @@ extern unsigned long long time_sync_thre
+ #define task_is_stopped_or_traced(task)	\
+ 			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
+ #define task_contributes_to_load(task)	\
+-				((task->state & TASK_UNINTERRUPTIBLE) != 0)
++				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
++				 (task->flags & PF_FROZEN) == 0)
  
- 	q->queue = kfifo_init((void*)q->pool, max * sizeof(void*),
- 			      GFP_KERNEL, NULL);
--	if (q->queue == ERR_PTR(-ENOMEM))
-+	if (IS_ERR(q->queue)) {
-+		q->queue = NULL;
- 		goto enomem;
-+	}
- 
- 	for (i = 0; i < max; i++) {
- 		q->pool[i] = kzalloc(item_size, GFP_KERNEL);
+ #define __set_task_state(tsk, state_value)		\
+ 	do { (tsk)->state = (state_value); } while (0)
 
 
