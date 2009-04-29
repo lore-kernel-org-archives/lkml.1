@@ -1,95 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758911AbZD2QGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758468AbZD2QHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758911AbZD2QGc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 12:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbZD2QGN
+	id S1758468AbZD2QHN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 12:07:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbZD2QG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 12:06:13 -0400
-Received: from outbound-mail-148.bluehost.com ([67.222.38.38]:46205 "HELO
-	outbound-mail-148.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756065AbZD2QGK convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 12:06:10 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=HrhyHqrL/M9wSig9bDr8WmCz6PN7rA+dPiOjBRHqXEV0hR285TNPf3Mdx/nbTFZp/KamhmLBstaRIMl9OpPadDMBiXrsXFDpBI2TlATOVk4LrUlR7GBz4pHfdajGPYSj;
-Date: Wed, 29 Apr 2009 09:06:07 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Alex Bennee <kernel-hacker@bennee.com>
-Cc: Florian Mickler <florian@mickler.org>, xorg@freedesktop.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.30-rc2 + xorg-intel-2.7.0 + DRM_I915_KMS = corruption
-Message-ID: <20090429090607.2d351545@hobbes>
-In-Reply-To: <b2cdc9f30904290049k290a59bfh1265a66735b510e2@mail.gmail.com>
-References: <b2cdc9f30904182327w12a3ec32t90c7c6c34980577b@mail.gmail.com>
-	<20090427234947.394f774f@schatten>
-	<b2cdc9f30904272237h3a815282h7e6b932e1c252d17@mail.gmail.com>
-	<20090428095338.3e7b2062@hobbes>
-	<b2cdc9f30904290049k290a59bfh1265a66735b510e2@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Wed, 29 Apr 2009 12:06:58 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:60020 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754055AbZD2QG5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 12:06:57 -0400
+Date: Wed, 29 Apr 2009 18:06:52 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
+Subject: Re: BUG: NULL pointer dereference in try_to_del_timer_sync()
+Message-ID: <20090429160652.GF6291@buzzloop.caiaq.de>
+References: <Pine.LNX.4.44L0.0904291147230.24643-100000@netrider.rowland.org> <Pine.LNX.4.44L0.0904291159240.24643-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0904291159240.24643-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Apr 2009 08:49:47 +0100
-Alex Bennee <kernel-hacker@bennee.com> wrote:
-
-> 2009/4/28 Jesse Barnes <jbarnes@virtuousgeek.org>:
-> > On Tue, 28 Apr 2009 06:37:10 +0100
-> > Alex Bennee <kernel-hacker@bennee.com> wrote:
-> >
-> >> 2009/4/27 Florian Mickler <florian@mickler.org>:
-> >> > On Sun, 19 Apr 2009 07:27:35 +0100
-> >> > Alex Bennee <kernel-hacker@bennee.com> wrote:
-> >> >
-> >> >> Heading the warnings in the menuconfig I did try and ensure I
-> >> >> have all the up to date parts of user-space. With KMS enabled
-> >> >> GDM starts up but then corrupts the display with vertical lines.
-> >> >> Disabling the kernel config and everything starts up fine, UXA
-> >> >> acceleration seems OK and the speed of compiz is finally back up
-> >> >> to ~60fps thanks to the A17 fix.
-> >> >>
-> >> >> Am I missing another bit of user space for KMS to work properly?
-> >>
-> >> Apparently I was missing a key bit and had to enable fbdev from the
-> >> command line:
-> >>
-> >> kernel /kernel-2.6-drm root=/dev/sda2
-> >> video=intelfb:mode=1440x900-32@75,accel,hwcursor
-> >>
-> >> However I still saw the same corruption kick in when GDM started. I
-> >> couldn't switch mode either which kinda defeated the point.
-> >
-> > The above seems to indicate that you have some FB drivers built into
-> > your kernel; that will likely fail in weird ways.  Try disabling all
-> > the FB drivers, but keep CONFIG_FRAMEBUFFER_CONSOLE enabled.  Then
-> > when you load the i915 driver you should get a nice console.
+On Wed, Apr 29, 2009 at 12:00:58PM -0400, Alan Stern wrote:
+> On Wed, 29 Apr 2009, Alan Stern wrote:
 > 
-> Ahh, I was under the (mistaken) impression that the kernel
-> frame-buffer drivers where linked to the console frame buffer driver
-> and needed for it to work well. Disabling them all and I do indeed get
-> a lovely framebuffer console on boot up but still the same corruption
-> when GDM starts. I'm also still not able to switch back to the console
-> like I can with KMS disabled.
+> > Looks like the ftdi_sio driver doesn't use proper reference counting 
+> > for its private data structure.  Does this patch help?
 > 
-> I've attached my .config, a dump of the dmesg of the failing case and
-> a broken and working Xorg.log (working being no KMS and the Linus tree
-> rather than the intel-drm tree, although I have tested the Linus tree
-> fails with KMS enabled in the same way).
+> Oops, I forgot to initialize the kref.  Try this patch instead.
 
-Ok so you're getting a good console, that's a start. :)
+Yep, that did it! Very good, thanks a lot.
+Feel free to add my 'Tested-by' :)
 
-This really sounds like one of the tiling related issues that should be
-fixed now, but if you're on the latest bits...
+Daniel
 
-Can you try setting the tiling option to false in your xorg.conf?
-Also, please file a bug for this at bugs.freedesktop.org with your X
-log & dmesg from your latest config; you can just assign it to me.
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+> Index: 2.6.30-rc3/drivers/usb/serial/ftdi_sio.c
+> ===================================================================
+> --- 2.6.30-rc3.orig/drivers/usb/serial/ftdi_sio.c
+> +++ 2.6.30-rc3/drivers/usb/serial/ftdi_sio.c
+> @@ -56,6 +56,7 @@ static __u16 vendor = FTDI_VID;
+>  static __u16 product;
+>  
+>  struct ftdi_private {
+> +	struct kref kref;
+>  	ftdi_chip_type_t chip_type;
+>  				/* type of device, either SIO or FT8U232AM */
+>  	int baud_base;		/* baud base clock for divisor setting */
+> @@ -1352,6 +1353,7 @@ static int ftdi_sio_port_probe(struct us
+>  		return -ENOMEM;
+>  	}
+>  
+> +	kref_init(&priv->kref);
+>  	spin_lock_init(&priv->rx_lock);
+>  	spin_lock_init(&priv->tx_lock);
+>  	init_waitqueue_head(&priv->delta_msr_wait);
+> @@ -1468,6 +1470,13 @@ static void ftdi_shutdown(struct usb_ser
+>  	dbg("%s", __func__);
+>  }
+>  
+> +static void ftdi_sio_priv_release(struct kref *k)
+> +{
+> +	struct ftdi_private *priv = container_of(k, struct ftdi_private, kref);
+> +
+> +	kfree(priv);
+> +}
+> +
+>  static int ftdi_sio_port_remove(struct usb_serial_port *port)
+>  {
+>  	struct ftdi_private *priv = usb_get_serial_port_data(port);
+> @@ -1482,7 +1491,7 @@ static int ftdi_sio_port_remove(struct u
+>  
+>  	if (priv) {
+>  		usb_set_serial_port_data(port, NULL);
+> -		kfree(priv);
+> +		kref_put(&priv->kref, ftdi_sio_priv_release);
+>  	}
+>  
+>  	return 0;
+> @@ -1547,7 +1556,8 @@ static int ftdi_open(struct tty_struct *
+>  		dev_err(&port->dev,
+>  			"%s - failed submitting read urb, error %d\n",
+>  			__func__, result);
+> -
+> +	else
+> +		kref_get(&priv->kref);
+>  
+>  	return result;
+>  } /* ftdi_open */
+> @@ -1589,11 +1599,11 @@ static void ftdi_close(struct tty_struct
+>  	mutex_unlock(&port->serial->disc_mutex);
+>  
+>  	/* cancel any scheduled reading */
+> -	cancel_delayed_work(&priv->rx_work);
+> -	flush_scheduled_work();
+> +	cancel_delayed_work_sync(&priv->rx_work);
+>  
+>  	/* shutdown our bulk read */
+>  	usb_kill_urb(port->read_urb);
+> +	kref_put(&priv->kref, ftdi_sio_priv_release);
+>  } /* ftdi_close */
+>  
+>  
+> 
