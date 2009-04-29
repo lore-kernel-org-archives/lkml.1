@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbZD2Rkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758567AbZD2Rme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758223AbZD2Rkn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 13:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbZD2Rke
+	id S1758567AbZD2Rme (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 13:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZD2RmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 13:40:34 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35974 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbZD2Rke (ORCPT
+	Wed, 29 Apr 2009 13:42:24 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48977 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbZD2RmY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 13:40:34 -0400
-Message-ID: <49F890D0.7000109@zytor.com>
-Date: Wed, 29 Apr 2009 10:39:28 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 29 Apr 2009 13:42:24 -0400
+Date: Wed, 29 Apr 2009 18:41:54 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Martin Knoblauch <knobi@knobisoft.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mike Galbraith <efault@gmx.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       tigran aivazian <tigran@aivazian.fsnet.co.uk>
+Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
+Message-ID: <20090429174154.GK8633@ZenIV.linux.org.uk>
+References: <409142.83316.qm@web32605.mail.mud.yahoo.com> <20090428182837.62c51f26.akpm@linux-foundation.org> <1240977096.5478.3.camel@marge.simson.net> <20090429011755.c141c599.akpm@linux-foundation.org> <20090429120827.GI8633@ZenIV.linux.org.uk> <884894.99151.qm@web32602.mail.mud.yahoo.com>
 MIME-Version: 1.0
-To: Borislav Petkov <borislav.petkov@amd.com>
-CC: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu,
-       tglx@linutronix.de, dougthompson@xmission.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/21] x86: add methods for writing of an MSR on several
- CPUs
-References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> <1241024107-14535-2-git-send-email-borislav.petkov@amd.com>
-In-Reply-To: <1241024107-14535-2-git-send-email-borislav.petkov@amd.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <884894.99151.qm@web32602.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov wrote:
-> +}
-> +
-> +/* rdmsr on a bunch of cpus
-> + *
-> + * @mask:	which cpus
-> + * @msr_no:	which MSR
-> + * @l:		array of the lower 32-bit MSR values
-> + * @h:		array of the higher 32-bit MSR values
-> + *
+On Wed, Apr 29, 2009 at 10:24:20AM -0700, Martin Knoblauch wrote:
 
-Urk!
+> > Er...  Somebody mounting sysfs twice?  From some init script and from
+> > /etc/fstab, perhaps?  That definitely looks like two mount(2) had to
+> > have been done to cause that...
+> 
+>  One definitely comes from /etc/fstab, but I am not aware of any other script mounting sysfs in my userspace.
 
-Please, for the love of God, no!
-
-Make it an array of u64s or (equivalently!) an array of (l,h)
-structures, not separate arrays for the halves of the register.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Check in /etc/init.d; e.g. on debian it's mountkernfs.  More interesting
+question is what else is mounted on /sys; how about the entire /proc/mounts
+contents?
