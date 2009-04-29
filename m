@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760724AbZD2S6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbZD2TAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760724AbZD2S6q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 14:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760360AbZD2S6f
+	id S1756777AbZD2TAK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 15:00:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZD2S7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 14:58:35 -0400
-Received: from mail00d.mail.t-online.hu ([84.2.42.5]:54271 "EHLO
-	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760413AbZD2S6d (ORCPT
+	Wed, 29 Apr 2009 14:59:54 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:57512 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753161AbZD2S7x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 14:58:33 -0400
-Message-ID: <49F8A325.7060303@freemail.hu>
-Date: Wed, 29 Apr 2009 20:57:41 +0200
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Wed, 29 Apr 2009 14:59:53 -0400
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] v4l2: fill the reserved fields of VIDIOC_REQBUFS ioctl
+In-Reply-To: <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com>
+References: <20090427193532.GA2948@kroah.com> <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com> 
+	<20090429180735.GA29812@kroah.com> <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Wed, 29 Apr 2009 20:59:31 +0200
+Message-ID: <ac3eb2510904291159s14d7d532q33657eb73007fc4b@mail.gmail.com>
+Subject: Re: usbutils 0.81 release
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail00d.mail.t-online.hu 32721; Body=3 Fuz1=3
-	Fuz2=3
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The parameter of VIDIOC_REQBUFS is a pointer to struct v4l2_requestbuffers.
-This structure has reserved fields which has to be filled with zeros
-according to the V4L2 API specification, revision 0.24 [1].
+On Wed, Apr 29, 2009 at 20:17, Mike Frysinger <vapier.adi@gmail.com> wrote:
 
-The patch was tested with v4l-test 0.13 [2] with vivi driver.
+>>> looks like update-usbids.sh was forgotten from EXTRA_DIST in
+>>> Makefile.am so the released tarball doesnt have the script ;(
 
-References:
-[1] V4L2 API specification, revision 0.24
-    http://v4l2spec.bytesex.org/spec/r13696.htm
+> np, i'll send patches for both
 
-[2] v4l-test: Test environment for Video For Linux Two API
-    http://v4l-test.sourceforge.net/
+Ah missed that, sorry. Sounds good if you add it to the tarball, but
+please don't add it to "make install", as packages should not ship
+scripts which change the installed package content, unless it's a
+config file.
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
---- linux-2.6.30-rc3/drivers/media/video/v4l2-ioctl.c.orig	2009-04-22 05:07:00.000000000 +0200
-+++ linux-2.6.30-rc3/drivers/media/video/v4l2-ioctl.c	2009-04-29 19:07:46.000000000 +0200
-@@ -1818,6 +1818,7 @@ static unsigned long cmd_input_size(unsi
- 		CMDINSIZE(G_SLICED_VBI_CAP,	sliced_vbi_cap,	type);
- 		CMDINSIZE(ENUM_FRAMESIZES,	frmsizeenum,	pixel_format);
- 		CMDINSIZE(ENUM_FRAMEINTERVALS,	frmivalenum,	height);
-+		CMDINSIZE(REQBUFS,		requestbuffers, memory);
- 	default:
- 		return _IOC_SIZE(cmd);
- 	}
+Thanks,
+Kay
