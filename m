@@ -1,73 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759993AbZD2SQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760541AbZD2SRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759993AbZD2SQg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 14:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZD2SQZ
+	id S1760541AbZD2SRZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 14:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755295AbZD2SRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 14:16:25 -0400
-Received: from ausc60pc101.us.dell.com ([143.166.85.206]:24807 "EHLO
-	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751843AbZD2SQY (ORCPT
+	Wed, 29 Apr 2009 14:17:14 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:35254 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbZD2SRN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 14:16:24 -0400
-X-Loopcount0: from 10.9.160.254
-Message-ID: <49F89981.10806@dell.com>
-Date: Wed, 29 Apr 2009 13:16:33 -0500
-From: Mario Limonciello <mario_limonciello@dell.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+	Wed, 29 Apr 2009 14:17:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LtXHthKv/FQ+Oagu7tpS3dL1FGdSaXuH9ZQ0QGAHVO8ml7XJPNBVGYxSYLXnAERmNc
+         Df0Tx60s03vyxXicQS8NbJxbOL9R/SFrWWTICE+IQB4lhdXQu9ftCL1GEaw0EK/B7X6y
+         DHRnauAcgSlegmD8EagP7TEZ019n+d85AphC0=
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Add support for more dell-wmi hotkeys
-References: <49ECBAE2.2080308@dell.com> <49EE09D9.2060209@dell.com> <20090429165729.GB32619@srcf.ucam.org>
-In-Reply-To: <20090429165729.GB32619@srcf.ucam.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig8E48161565F76263BEC1E083"
+In-Reply-To: <20090429180735.GA29812@kroah.com>
+References: <20090427193532.GA2948@kroah.com>
+	 <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com>
+	 <20090429180735.GA29812@kroah.com>
+Date: Wed, 29 Apr 2009 14:17:12 -0400
+Message-ID: <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com>
+Subject: Re: usbutils 0.81 release
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig8E48161565F76263BEC1E083
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi Matthew:
-
-Matthew Garrett wrote:
-> Taking another look at this, you've got:
+On Wed, Apr 29, 2009 at 14:07, Greg KH wrote:
+> On Wed, Apr 29, 2009 at 01:53:32PM -0400, Mike Frysinger wrote:
+>> On Mon, Apr 27, 2009 at 15:35, Greg KH wrote:
+>> > After over a year since the last release, I'd like to announce the
+>> > release of usbutils 0.81.  It can be found at the traditionally horrible
+>> > sf.net download page:
+>> >        https://sourceforge.net/project/showfiles.php?group_id=3581
+>> >
+>> > We've switched over to using git for development now, which makes things
+>> > much easier than the old cvs tree.  The tree can be found on both
+>> > kernel.org and github.com if you want to fork it and send us changes
+>> > easier:
+>> >        http://git.kernel.org/?p=linux/kernel/git/gregkh/usbutils.git
+>> >        http://github.com/gregkh/usbutils/tree/master
+>> >
+>> > I've pushed all patches that were in the Gentoo and SuSE usbutils trees
+>> > into this release.  If there are outstanding patches from other distros,
+>> > I'd be very interested in getting them integrated in.
+>>
+>> looks like update-usbids.sh was forgotten from EXTRA_DIST in
+>> Makefile.am so the released tarball doesnt have the script ;(
 >
-> -       {KE_KEY, 0xe045, KEY_PROG1},
-> +    {KE_KEY, 0xe045, KEY_NUMLOCK},
+> Care to send a patch?
 >
-> The hardware I have here uses 0xe045 for the power profile (or whatever=
-=20
-> it is) button above the keyboard. How do we differentiate these?
->  =20
-What hardware is this?  I can look more to see why they are deviating
-from the spec.  Also, are you on the latest BIOS for that box?  It's
-possible it was a BIOS bug causing the wrong key to be sent.
---=20
-Mario Limonciello
-*Dell | Linux Engineering*
-mario_limonciello@dell.com
+>> having to manually run `sed` on the scripts/man pages is annoying when
+>> moving the ids file ... any chance of converting those to normal
+>> configure generated files ?  or is there hard resistance to that ?
+>
+> No objection from me, have a patch?  :)
 
+np, i'll send patches for both
 
+>> i see `usbmodules` has been punted.  was there a reason for that ?
+>
+> It was for 2.4 kernels only.
 
---------------enig8E48161565F76263BEC1E083
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+that's a good reason :)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+>> find being able to run `usbmodules` pretty useful ... i wrote a script
+>> for fun:
+>> http://sources.gentoo.org/sys-apps/usbutils/files/usbmodules.sh
+>
+> Did that work on any 2.6 kernel?
 
-iEYEARECAAYFAkn4mYEACgkQ2CrZjkA73YvfygCggX0L34j47WeUpeyQL58czP9C
-860AoI8a/C8e6o8UKXpYm3CJtGSEfBa6
-=URpJ
------END PGP SIGNATURE-----
+it's the only version ive tested it with ... but it doesnt parse any
+kernel module directly, it reads the generated modules.usbmap file
 
---------------enig8E48161565F76263BEC1E083--
+> There's no reason we can't add "-k" support to lsusb like lspci has to
+> show the modules assigned to different devices.
+
+the method i posted above only needs the module to be compiled, not loaded
+-mike
