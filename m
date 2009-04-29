@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbZD2JIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbZD2JIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757606AbZD2JIK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 05:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755930AbZD2JFw
+	id S1756559AbZD2JIx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 05:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757159AbZD2JG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 05:05:52 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60474 "EHLO hera.kernel.org"
+	Wed, 29 Apr 2009 05:06:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60510 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755564AbZD2JFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 05:05:51 -0400
-Date: Wed, 29 Apr 2009 09:04:35 GMT
+	id S1757063AbZD2JG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 05:06:28 -0400
+Date: Wed, 29 Apr 2009 09:04:57 GMT
 From: tip-bot for Sam Ravnborg <sam@ravnborg.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -18,206 +18,263 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        sam@ravnborg.org, torvalds@linux-foundation.org, tabbott@MIT.EDU,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1240991249-27117-7-git-send-email-sam@ravnborg.org>
-References: <1240991249-27117-7-git-send-email-sam@ravnborg.org>
-Subject: [tip:x86/kbuild] x86, vmlinux.lds: unify data output sections
-Message-ID: <tip-1f6397bac55040cd520d9eaf299e155a7aa01d5f@git.kernel.org>
-Git-Commit-ID: 1f6397bac55040cd520d9eaf299e155a7aa01d5f
+In-Reply-To: <1240991249-27117-9-git-send-email-sam@ravnborg.org>
+References: <1240991249-27117-9-git-send-email-sam@ravnborg.org>
+Subject: [tip:x86/kbuild] x86, vmlinux.lds: unify first part of initdata
+Message-ID: <tip-e58bdaa8f810332e5c1760ce496b01e07d51642c@git.kernel.org>
+Git-Commit-ID: e58bdaa8f810332e5c1760ce496b01e07d51642c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 09:04:38 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 09:04:59 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1f6397bac55040cd520d9eaf299e155a7aa01d5f
-Gitweb:     http://git.kernel.org/tip/1f6397bac55040cd520d9eaf299e155a7aa01d5f
+Commit-ID:  e58bdaa8f810332e5c1760ce496b01e07d51642c
+Gitweb:     http://git.kernel.org/tip/e58bdaa8f810332e5c1760ce496b01e07d51642c
 Author:     Sam Ravnborg <sam@ravnborg.org>
-AuthorDate: Wed, 29 Apr 2009 09:47:23 +0200
+AuthorDate: Wed, 29 Apr 2009 09:47:25 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 29 Apr 2009 10:20:32 +0200
+CommitDate: Wed, 29 Apr 2009 10:20:33 +0200
 
-x86, vmlinux.lds: unify data output sections
+x86, vmlinux.lds: unify first part of initdata
 
-For 64 bit the following functional changes are introduced:
+32-bit:
 
- - .data.page_aligned has moved
- - .data.cacheline_aligned has moved
- - .data.read_mostly has moved
- - ALIGN() moved out of output section for .data.cacheline_aligned
- - ALIGN() moved out of output section for .data.page_aligned
+ - Move definition of __init_begin outside output_section
+   because it covers more than one section
+ - Move ALIGN() for end-of-section inside .smp_locks output section.
+   Same effect but the intent is better documented that
+   we need both start and end aligned.
 
-Notice that 32 bit and 64 bit has different location of _edata.
-.data_nosave is 32 bit only as 64 bit is special due to PERCPU.
+64-bit:
 
-[ Impact: 32-bit: cleanup, 64-bit: use 32-bit linker script ]
+ - Move ALIGN() outside output section in .init.setup
+ - Deleted unused __smp_alt_* symbols
+
+None of the above should result in any functional change.
+
+[ Impact: refactor and unify linker script ]
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Cc: Tim Abbott <tabbott@MIT.EDU>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <1240991249-27117-7-git-send-email-sam@ravnborg.org>
+LKML-Reference: <1240991249-27117-9-git-send-email-sam@ravnborg.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/vmlinux.lds.S    |   55 ++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/vmlinux_32.lds.S |   37 -------------------------
- arch/x86/kernel/vmlinux_64.lds.S |   28 -------------------
- 3 files changed, 55 insertions(+), 65 deletions(-)
+ arch/x86/kernel/vmlinux.lds.S    |   61 ++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/vmlinux_32.lds.S |   60 -------------------------------------
+ arch/x86/kernel/vmlinux_64.lds.S |   59 ------------------------------------
+ 3 files changed, 61 insertions(+), 119 deletions(-)
 
 diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index 67164f6..067bdb0 100644
+index b3106c2..8b203c4 100644
 --- a/arch/x86/kernel/vmlinux.lds.S
 +++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -104,6 +104,61 @@ SECTIONS
+@@ -231,6 +231,67 @@ SECTIONS
  
- 	RODATA
+ #endif /* CONFIG_X86_64 */
  
-+	/* Data */
-+	. = ALIGN(PAGE_SIZE);
-+	.data : AT(ADDR(.data) - LOAD_OFFSET) {
-+		DATA_DATA
-+		CONSTRUCTORS
-+
++	/* init_task */
++	. = ALIGN(THREAD_SIZE);
++	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
++		*(.data.init_task)
++	}
 +#ifdef CONFIG_X86_64
-+		/* End of data section */
-+		_edata = .;
++	 :data.init
 +#endif
-+	} :data
 +
-+#ifdef CONFIG_X86_32
-+	/* 32 bit has nosave before _edata */
++	/*
++	 * smp_locks might be freed after init
++	 * start/end must be page aligned
++	 */
 +	. = ALIGN(PAGE_SIZE);
-+	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
-+		__nosave_begin = .;
-+		*(.data.nosave)
++	.smp_locks : AT(ADDR(.smp_locks) - LOAD_OFFSET) {
++		__smp_locks = .;
++		*(.smp_locks)
++		__smp_locks_end = .;
 +		. = ALIGN(PAGE_SIZE);
-+		__nosave_end = .;
 +	}
-+#endif
 +
++	/* Init code and data - will be freed after init */
 +	. = ALIGN(PAGE_SIZE);
-+	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
-+		*(.data.page_aligned)
-+		*(.data.idt)
++	__init_begin = .; /* paired with __init_end */
++	.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
++		_sinittext = .;
++		INIT_TEXT
++		_einittext = .;
 +	}
 +
-+#ifdef CONFIG_X86_32
-+	. = ALIGN(32);
-+#else
-+	. = ALIGN(PAGE_SIZE);
-+	. = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
-+#endif
-+	.data.cacheline_aligned :
-+		AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
-+		*(.data.cacheline_aligned)
++	.init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {
++		INIT_DATA
 +	}
 +
-+	/* rarely changed data like cpu maps */
-+#ifdef CONFIG_X86_32
-+	. = ALIGN(32);
-+#else
-+	. = ALIGN(CONFIG_X86_INTERNODE_CACHE_BYTES);
-+#endif
-+	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
-+		*(.data.read_mostly)
-+
-+#ifdef CONFIG_X86_32
-+		/* End of data section */
-+		_edata = .;
-+#endif
++	. = ALIGN(16);
++	.init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
++		__setup_start = .;
++		*(.init.setup)
++		__setup_end = .;
++	}
++	.initcall.init : AT(ADDR(.initcall.init) - LOAD_OFFSET) {
++		__initcall_start = .;
++		INITCALLS
++		__initcall_end = .;
 +	}
 +
- 
++	.con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
++		__con_initcall_start = .;
++		*(.con_initcall.init)
++		__con_initcall_end = .;
++	}
++
++	.x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
++		__x86_cpu_dev_start = .;
++		*(.x86_cpu_dev.init)
++		__x86_cpu_dev_end = .;
++	}
++
++	SECURITY_INIT
++
++
  #ifdef CONFIG_X86_32
  # include "vmlinux_32.lds.S"
+ #else
 diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
-index 920cc69..8ade846 100644
+index 8ade846..d8ba539 100644
 --- a/arch/x86/kernel/vmlinux_32.lds.S
 +++ b/arch/x86/kernel/vmlinux_32.lds.S
-@@ -1,40 +1,3 @@
--	/* writeable */
--	. = ALIGN(PAGE_SIZE);
--	/* Data */
--	.data : AT(ADDR(.data) - LOAD_OFFSET) {
--		DATA_DATA
--		CONSTRUCTORS
--	} :data
--
--	. = ALIGN(PAGE_SIZE);
--	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
--		__nosave_begin = .;
--		*(.data.nosave)
--		. = ALIGN(PAGE_SIZE);
--		__nosave_end = .;
+@@ -1,63 +1,3 @@
+-	/* init_task */
+-	. = ALIGN(THREAD_SIZE);
+-	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
+-		*(.data.init_task)
 -	}
 -
 -	. = ALIGN(PAGE_SIZE);
--	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
--		*(.data.page_aligned)
--		*(.data.idt)
+-	.smp_locks : AT(ADDR(.smp_locks) - LOAD_OFFSET) {
+-		/* might get freed after init */
+-		__smp_locks = .;
+-		*(.smp_locks)
+-		__smp_locks_end = .;
+-	}
+-	/* will be freed after init
+-	 * Following ALIGN() is required to make sure no other data falls on the
+-	 * same page where __smp_alt_end is pointing as that page might be freed
+-	 * after boot. Always make sure that ALIGN() directive is present after
+-	 * the section which contains __smp_alt_end.
+-	 */
+-	. = ALIGN(PAGE_SIZE);
+-
+-	/* Init code and data - will be freed after init */
+-	. = ALIGN(PAGE_SIZE);
+-	.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
+-		__init_begin = .;
+-		_sinittext = .;
+-		INIT_TEXT
+-		_einittext = .;
 -	}
 -
--	. = ALIGN(32);
--	.data.cacheline_aligned :
--		AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
--		*(.data.cacheline_aligned)
+-	.init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {
+-		INIT_DATA
 -	}
 -
--	/* rarely changed data like cpu maps */
--	. = ALIGN(32);
--	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
--		*(.data.read_mostly)
--
--		/* End of data section */
--		_edata = .;
+-	. = ALIGN(16);
+-	.init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
+-		__setup_start = .;
+-		*(.init.setup)
+-		__setup_end = .;
+-	}
+-	.initcall.init : AT(ADDR(.initcall.init) - LOAD_OFFSET) {
+-		__initcall_start = .;
+-		INITCALLS
+-		__initcall_end = .;
 -	}
 -
- 	/* init_task */
- 	. = ALIGN(THREAD_SIZE);
- 	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
+-	.con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
+-		__con_initcall_start = .;
+-		*(.con_initcall.init)
+-		__con_initcall_end = .;
+-	}
+-
+-	.x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
+-		__x86_cpu_dev_start = .;
+-		*(.x86_cpu_dev.init)
+-		__x86_cpu_dev_end = .;
+-	}
+-
+-	SECURITY_INIT
+-
+ 	. = ALIGN(4);
+ 	.altinstructions : AT(ADDR(.altinstructions) - LOAD_OFFSET) {
+ 		__alt_instructions = .;
 diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
-index 641f3f9..8262701 100644
+index 013aa0e..0e8054e 100644
 --- a/arch/x86/kernel/vmlinux_64.lds.S
 +++ b/arch/x86/kernel/vmlinux_64.lds.S
-@@ -1,26 +1,3 @@
--	/* Align data segment to page size boundary */
+@@ -1,62 +1,3 @@
+-	/* init_task */
+-	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
+-		. = ALIGN(THREAD_SIZE);
+-		*(.data.init_task)
+-	} :data.init
+-
+-	.smp_locks : AT(ADDR(.smp_locks) - LOAD_OFFSET) {
+-		/* might get freed after init */
+-		. = ALIGN(PAGE_SIZE);
+-		__smp_alt_begin = .;
+-		__smp_locks = .;
+-		*(.smp_locks)
+-		__smp_locks_end = .;
+-		. = ALIGN(PAGE_SIZE);
+-		__smp_alt_end = .;
+-	}
+-
+-	/* Init code and data */
 -	. = ALIGN(PAGE_SIZE);
--	/* Data */
--	.data : AT(ADDR(.data) - LOAD_OFFSET) {
--		DATA_DATA
--		CONSTRUCTORS
--		/* End of data section */
--		_edata = .;
--	} :data
--
--
--	.data.cacheline_aligned :
--		AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
--		. = ALIGN(PAGE_SIZE);
--		. = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
--		*(.data.cacheline_aligned)
+-	__init_begin = .;	/* paired with __init_end */
+-	.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
+-		_sinittext = .;
+-		INIT_TEXT
+-		_einittext = .;
 -	}
 -
--	. = ALIGN(CONFIG_X86_INTERNODE_CACHE_BYTES);
--	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
--		*(.data.read_mostly)
+-	.init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {
+-		__initdata_begin = .;
+-		INIT_DATA
+-		__initdata_end = .;
 -	}
 -
- #define VSYSCALL_ADDR (-10*1024*1024)
- #define VSYSCALL_PHYS_ADDR ((LOADADDR(.data.read_mostly) + \
-                             SIZEOF(.data.read_mostly) + 4095) & ~(4095))
-@@ -95,11 +72,6 @@
- 		*(.data.init_task)
- 	} :data.init
- 
--	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
--		. = ALIGN(PAGE_SIZE);
--		*(.data.page_aligned)
+-	.init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
+-		. = ALIGN(16);
+-		__setup_start = .;
+-		*(.init.setup)
+-		__setup_end = .;
 -	}
 -
- 	.smp_locks : AT(ADDR(.smp_locks) - LOAD_OFFSET) {
- 		/* might get freed after init */
- 		. = ALIGN(PAGE_SIZE);
+-	.initcall.init : AT(ADDR(.initcall.init) - LOAD_OFFSET) {
+-		__initcall_start = .;
+-		INITCALLS
+-		__initcall_end = .;
+-	}
+-
+-	.con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
+-		__con_initcall_start = .;
+-		*(.con_initcall.init)
+-		__con_initcall_end = .;
+-	}
+-
+-	.x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
+-		__x86_cpu_dev_start = .;
+-		*(.x86_cpu_dev.init)
+-		__x86_cpu_dev_end = .;
+-	}
+-
+-	SECURITY_INIT
+-
+ 	. = ALIGN(8);
+ 	.parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
+ 		__parainstructions = .;
