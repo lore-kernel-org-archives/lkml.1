@@ -1,45 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbZD2Ncs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbZD2NeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756095AbZD2Ncs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 09:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZD2Nci
+	id S1754134AbZD2NeA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 09:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZD2Ndt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 09:32:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40049 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751757AbZD2Nci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 09:32:38 -0400
-Date: Wed, 29 Apr 2009 15:28:44 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: David Howells <dhowells@redhat.com>
-Cc: James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
-       Roland McGrath <roland@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Q: selinux_bprm_committed_creds() && signals/do_wait
-Message-ID: <20090429132844.GB29151@redhat.com>
-References: <19024.1241008933@redhat.com> <20090429115550.GA25368@redhat.com> <20090429102511.GA10767@redhat.com> <20090429065809.GA477@redhat.com> <20090428223025.GA11997@redhat.com> <alpine.LRH.2.00.0904291024001.5246@tundra.namei.org> <7242.1240999370@redhat.com> <7150.1241003840@redhat.com> <19233.1241009105@redhat.com>
+	Wed, 29 Apr 2009 09:33:49 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:37560 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752523AbZD2Nds (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 09:33:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ainLZqX7P7NkBZkuftgyW3usvwCUqtEz96yZZZNl0cpnUyLQB7u8ZVMR5P3+AVK+4l
+         0AYMQPseUbZT8P5Q40LA7uInOkA0BgCNkEQrYq3GIoYDyNKUvYo17J09R/r8qonFouKN
+         B2G12p9s97jHxgATMgtc1gN0hAbaU9Du0iQbQ=
+Date: Wed, 29 Apr 2009 15:33:44 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Zhaolei <zhaolei@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Ingo Molnar <mingo@elte.hu>, Tom Zanussi <tzanussi@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/4] workqueue_trace: Add max execution time mesurement
+	for per worklet
+Message-ID: <20090429133342.GA5987@nowhere>
+References: <49F6DFB5.2040901@cn.fujitsu.com> <20090429000616.f7e72b73.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19233.1241009105@redhat.com>
+In-Reply-To: <20090429000616.f7e72b73.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/29, David Howells wrote:
->
-> From: David Howells <dhowells@redhat.com>
-> Subject: [PATCH] SELinux: Don't flush inherited SIGKILL during execve()
->
-> Don't flush inherited SIGKILL during execve() in SELinux's post cred commit
-> hook.  This isn't really a security problem: if the SIGKILL came before the
-> credentials were changed, then we were right to receive it at the time, and
-> should honour it; if it came after the creds were changed, then we definitely
-> should honour it; and in any case, all that will happen is that the process
-> will be scrapped before it ever returns to userspace.
->
-> Signed-off-by: David Howells <dhowells@redhat.com>
+On Wed, Apr 29, 2009 at 12:06:16AM -0700, Andrew Morton wrote:
+> What is the meaning of M_EXECus?  Mean execution time in microseconds,
+> I assume?  I wonder if that is sufficiently high resolution nowadays.
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+
+It's the maximum execution time encountered for a given worklet.
+I also have a small patch, about ready, to get the average.
+
+ 
+> You'll note that all the functions are reported as "foo+0x0/0xN". 
+> There is a way of suppressing the unneeded and unuseful "+0x0/0xN",
+> but I forget what it is and the comments over lib/vsprintf.c:pointer()
+> didn't help.  I think it's %pS.
+
+
+I don't know any way to perform this.
+%pF and %pS will act pretty much the same, except:
+
+Extract from lib/vsprintf.c:
+
+ * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
+ * function pointers are really function descriptors, which contain a
+ * pointer to the real address.
+
+But the output formatting is the same: address, offset, size, modname.
+
+I found it a bit annoying, so I proposed the following patch recently:
+
+http://lkml.org/lkml/2009/4/15/310
+
+And someone came with a better idea, IMO:
+
+http://lkml.org/lkml/2009/4/17/105
+
+
+> 
+> The patchset adds no user documentation for the feature and should not
+> (IMO) be merged in such a state.  Please.
+>
+
+
+Ok, I will try something today about the documentation.
+
+Thanks!
 
