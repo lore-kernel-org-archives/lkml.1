@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbZD2W3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761943AbZD2WaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760876AbZD2W3Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757422AbZD2WV3
+	id S1761943AbZD2WaK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:30:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbZD2WVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:29 -0400
-Received: from kroah.org ([198.145.64.141]:40401 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:30 -0400
+Received: from kroah.org ([198.145.64.141]:40428 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758729AbZD2WVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:24 -0400
+	id S1753609AbZD2WV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:26 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:26 2009
-Message-Id: <20090429220926.269495766@mini.kroah.org>
+Message-Id: <20090429220926.523009901@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:21 -0700
+Date: Wed, 29 Apr 2009 15:07:23 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk, Patrick McHardy <kaber@trash.net>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 22/58] af_rose/x25: Sanity check the maximum user frame size
+Subject: [patch 24/58] netfilter: {ip, ip6, arp}_tables: fix incorrect loop detection
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=0043-af_rose-x25-Sanity-check-the-maximum-user-frame-siz.patch
+Content-Disposition: inline; filename=0048-netfilter-ip-ip6-arp-_tables-fix-incorrect-loop.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,68 +39,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Patrick McHardy <kaber@trash.net>
 
-upstream commit: 83e0bbcbe2145f160fbaa109b0439dae7f4a38a9
+upstream commit: 1f9352ae2253a97b07b34dcf16ffa3b4ca12c558
 
-CVE-2009-0795.
+Commit e1b4b9f ([NETFILTER]: {ip,ip6,arp}_tables: fix exponential worst-case
+search for loops) introduced a regression in the loop detection algorithm,
+causing sporadic incorrectly detected loops.
 
-Otherwise we can wrap the sizes and end up sending garbage.
+When a chain has already been visited during the check, it is treated as
+having a standard target containing a RETURN verdict directly at the
+beginning in order to not check it again. The real target of the first
+rule is then incorrectly treated as STANDARD target and checked not to
+contain invalid verdicts.
 
-Closes #10423
+Fix by making sure the rule does actually contain a standard target.
 
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Based on patch by Francis Dupont <Francis_Dupont@isc.org>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/netrom/af_netrom.c |    6 +++++-
- net/rose/af_rose.c     |    4 ++++
- net/x25/af_x25.c       |    6 ++++++
- 3 files changed, 15 insertions(+), 1 deletion(-)
+ net/ipv4/netfilter/arp_tables.c |    4 +++-
+ net/ipv4/netfilter/ip_tables.c  |    4 +++-
+ net/ipv6/netfilter/ip6_tables.c |    4 +++-
+ 3 files changed, 9 insertions(+), 3 deletions(-)
 
---- a/net/netrom/af_netrom.c
-+++ b/net/netrom/af_netrom.c
-@@ -1082,7 +1082,11 @@ static int nr_sendmsg(struct kiocb *iocb
+--- a/net/ipv4/netfilter/arp_tables.c
++++ b/net/ipv4/netfilter/arp_tables.c
+@@ -372,7 +372,9 @@ static int mark_source_chains(struct xt_
+ 			    && unconditional(&e->arp)) || visited) {
+ 				unsigned int oldpos, size;
  
- 	SOCK_DEBUG(sk, "NET/ROM: sendto: Addresses built.\n");
+-				if (t->verdict < -NF_MAX_VERDICT - 1) {
++				if ((strcmp(t->target.u.user.name,
++					    ARPT_STANDARD_TARGET) == 0) &&
++				    t->verdict < -NF_MAX_VERDICT - 1) {
+ 					duprintf("mark_source_chains: bad "
+ 						"negative verdict (%i)\n",
+ 								t->verdict);
+--- a/net/ipv4/netfilter/ip_tables.c
++++ b/net/ipv4/netfilter/ip_tables.c
+@@ -502,7 +502,9 @@ mark_source_chains(struct xt_table_info 
+ 			    && unconditional(&e->ip)) || visited) {
+ 				unsigned int oldpos, size;
  
--	/* Build a packet */
-+	/* Build a packet - the conventional user limit is 236 bytes. We can
-+	   do ludicrously large NetROM frames but must not overflow */
-+	if (len > 65536)
-+		return -EMSGSIZE;
-+
- 	SOCK_DEBUG(sk, "NET/ROM: sendto: building packet.\n");
- 	size = len + NR_NETWORK_LEN + NR_TRANSPORT_LEN;
+-				if (t->verdict < -NF_MAX_VERDICT - 1) {
++				if ((strcmp(t->target.u.user.name,
++			    		    IPT_STANDARD_TARGET) == 0) &&
++				    t->verdict < -NF_MAX_VERDICT - 1) {
+ 					duprintf("mark_source_chains: bad "
+ 						"negative verdict (%i)\n",
+ 								t->verdict);
+--- a/net/ipv6/netfilter/ip6_tables.c
++++ b/net/ipv6/netfilter/ip6_tables.c
+@@ -529,7 +529,9 @@ mark_source_chains(struct xt_table_info 
+ 			    && unconditional(&e->ipv6)) || visited) {
+ 				unsigned int oldpos, size;
  
---- a/net/rose/af_rose.c
-+++ b/net/rose/af_rose.c
-@@ -1120,6 +1120,10 @@ static int rose_sendmsg(struct kiocb *io
- 
- 	/* Build a packet */
- 	SOCK_DEBUG(sk, "ROSE: sendto: building packet.\n");
-+	/* Sanity check the packet size */
-+	if (len > 65535)
-+		return -EMSGSIZE;
-+
- 	size = len + AX25_BPQ_HEADER_LEN + AX25_MAX_HEADER_LEN + ROSE_MIN_LEN;
- 
- 	if ((skb = sock_alloc_send_skb(sk, size, msg->msg_flags & MSG_DONTWAIT, &err)) == NULL)
---- a/net/x25/af_x25.c
-+++ b/net/x25/af_x25.c
-@@ -1037,6 +1037,12 @@ static int x25_sendmsg(struct kiocb *ioc
- 		sx25.sx25_addr   = x25->dest_addr;
- 	}
- 
-+	/* Sanity check the packet size */
-+	if (len > 65535) {
-+		rc = -EMSGSIZE;
-+		goto out;
-+	}
-+
- 	SOCK_DEBUG(sk, "x25_sendmsg: sendto: Addresses built.\n");
- 
- 	/* Build a packet */
+-				if (t->verdict < -NF_MAX_VERDICT - 1) {
++				if ((strcmp(t->target.u.user.name,
++					    IP6T_STANDARD_TARGET) == 0) &&
++				    t->verdict < -NF_MAX_VERDICT - 1) {
+ 					duprintf("mark_source_chains: bad "
+ 						"negative verdict (%i)\n",
+ 								t->verdict);
 
 
