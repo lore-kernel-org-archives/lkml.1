@@ -1,101 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbZD2GIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbZD2GJL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755856AbZD2GIu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 02:08:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZD2GIh
+	id S1756232AbZD2GJL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 02:09:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511AbZD2GIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 02:08:37 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40412 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752045AbZD2GIh (ORCPT
+	Wed, 29 Apr 2009 02:08:45 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53103
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755760AbZD2GIn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 02:08:37 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       seto.hidetoshi@jp.fujitsu.com
-In-Reply-To: <20090429054453.GA789@balbir.in.ibm.com>
-References: <20090429111558.4B0B.A69D9226@jp.fujitsu.com> <20090429054453.GA789@balbir.in.ibm.com>
-Message-Id: <20090429150116.4B1A.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Wed, 29 Apr 2009 02:08:43 -0400
+Date: Tue, 28 Apr 2009 23:08:37 -0700 (PDT)
+Message-Id: <20090428.230837.116369337.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Wed, 29 Apr 2009 15:08:34 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > This will make the end result very off the real value due to large
-> > > batch value per cpu. If we are going to go this route, we should
-> > > probably consider using __percpu_counter_sum so that the batch value
-> > > does not show data that is way off.
-> > 
-> > No problem.
-> > 
-> > end-user don't see cputime itself. they see converted time.
-> > cpuacct_stats_show() use cputime64_to_clock_t. it mean
-> > the value less than 10msec don't display.
-> >
-> 
-> Yes, I know, I reviewed Bharata's patch and suggested converting to
-> clock_t for consistency with other metrics.
 
-Oh, sorry.
-I didn't know this.
+Hopefully we can chip away at a couple regression list entries
+with this:
 
+1) Fix kexec with e100.
 
-> > --------------------------------------------------------
-> > static int cpuacct_stats_show(struct cgroup *cgrp, struct cftype *cft,
-> >                 struct cgroup_map_cb *cb)
-> > {
-> >         struct cpuacct *ca = cgroup_ca(cgrp);
-> >         int i;
-> > 
-> >         for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
-> >                 s64 val = percpu_counter_read(&ca->cpustat[i]);
-> 
-> My point is, this should probably be percpu_counter_sum(), but that
-> can be expensive and we were willing to tollerate some inaccuracy due
-> to batch value, I think your patch adds to the inaccuracy even more,
-> even though it fixes a genuine problem.
+2) Fix OOPS on veth destructor.
 
-Not expensive.
-cpuacct_stats_show() is only called when reading stat file.
-it definitely slow-path.
-I think we can use percpu_counter_sum().
+3) The infamous x_tables locking fix.
 
-However, I doubt its worth.
+4) Bluetooth fixes via Marcel Holtmann.
 
-before my patch:
-  VIRT_CPU_ACCOUNTING=y:  accuracy but slow
-  VIRT_CPU_ACCOUNTING=n:  inaccuracy few tick but fast
+5) ISDN documentation updates via Karsten Keil.
 
-my patch
-  VIRT_CPU_ACCOUNTING=y:  inaccuracy few tick but fast
-  VIRT_CPU_ACCOUNTING=n:  inaccuracy few tick but fast
+6) IPSEC rule hash values incorrectly calculated for temporary SAs.
 
-if my inaccuracy is wrong, current code is also crap when VIRT_CPU_ACCOUNTING=n.
-I only make const accuracy to VIRT_CPU_ACCOUNTING=y and n.
+7) An inet datagram socket blocked on receive wakes up on every
+   transmit, due to the global memory accounting added a few releases
+   ago, which hurts performance quite a bit.  Fix this by using the
+   keyed wakeup facility.
+   
+8) On machines with absurd amounts of memory, the ipv4 routing cache
+   hash table gets an equally absurd size.
 
-Thought?
-Although you still think percpu_counter_sum() is better, I can do it.
+Please pull, thanks a lot!
 
+The following changes since commit 27b1833279995e7c290a40cac4ef36ccea7e9283:
+  Tim Abbott (1):
+        Remove unused support code for refok sections.
 
-> 
-> 
-> >                 val = cputime64_to_clock_t(val);
-> >                 cb->fill(cb, cpuacct_stat_desc[i], val);
-> >         }
-> >         return 0;
-> > }
-> > --------------------------------------------------------
+are available in the git repository at:
 
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
 
+Adrian Bunk (1):
+      net: Fix LL_MAX_HEADER for CONFIG_TR_MODULE
+
+Anton Blanchard (1):
+      ipv4: Limit size of route cache hash table
+
+Ayaz Abdulla (1):
+      forcedeth: tx timeout fix
+
+David S. Miller (2):
+      Merge branch 'master' of git://git.kernel.org/.../kaber/nf-2.6
+      Merge branch 'master' of git://git.kernel.org/.../holtmann/bluetooth-2.6
+
+Eric Dumazet (1):
+      net: Avoid extra wakeups of threads blocked in wait_for_packet()
+
+Jan Engelhardt (1):
+      netfilter: xt_recent: fix stack overread in compat code
+
+Jay Vosburgh (1):
+      vlan: update vlan carrier state for admin up/down
+
+Karsten Keil (1):
+      Add reference to CAPI 2.0 standard
+
+Laszlo Attila Toth (1):
+      netfilter: Kconfig: TProxy doesn't depend on NF_CONNTRACK
+
+Marcel Holtmann (2):
+      Bluetooth: Add different pairing timeout for Legacy Pairing
+      Bluetooth: Fix connection establishment with low security requirement
+
+Mike Rapoport (1):
+      net: Fix typo in net_device_ops description.
+
+Nicolas Dichtel (1):
+      xfrm: wrong hash value for temporary SA
+
+Pablo Neira Ayuso (1):
+      netfilter: nf_ct_dccp: add missing role attributes for DCCP
+
+Patrick McHardy (1):
+      netfilter: nf_ct_dccp/udplite: fix protocol registration error
+
+Roger Quadros (1):
+      Bluetooth: Ensure that HCI sysfs add/del is preempt safe
+
+Stephen Hemminger (2):
+      veth: prevent oops caused by netdev destructor
+      netfilter: revised locking for x_tables
+
+Thadeu Lima de Souza Cascardo (1):
+      e100: do not go D3 in shutdown unless system is powering off
+
+Tilman Schmidt (2):
+      update Documentation/isdn/00-INDEX
+      Documentation/isdn/INTERFACE.CAPI
+
+Waskiewicz Jr, Peter P (1):
+      ixgbe: Fix WoL functionality for 82599 KX4 devices
+
+Yevgeny Petrilin (2):
+      mlx4_en: Fix cleanup flow on cq activation
+      mlx4_en: Handle page allocation failure during receive
+
+hummerbliss@gmail.com (1):
+      netfilter: bridge: allow fragmentation of VLAN packets traversing a bridge
+
+ Documentation/isdn/00-INDEX                   |   17 ++-
+ Documentation/isdn/INTERFACE.CAPI             |  213 +++++++++++++++++++++++++
+ drivers/isdn/capi/kcapi.c                     |  171 ++++++++++++++++++++
+ drivers/net/e100.c                            |   30 +++-
+ drivers/net/forcedeth.c                       |   31 +++--
+ drivers/net/ixgbe/ixgbe_common.c              |   51 +------
+ drivers/net/ixgbe/ixgbe_main.c                |   10 +-
+ drivers/net/mlx4/en_netdev.c                  |    2 +-
+ drivers/net/mlx4/en_rx.c                      |    4 +
+ drivers/net/veth.c                            |   41 ++---
+ include/linux/netdevice.h                     |    4 +-
+ include/linux/netfilter/nfnetlink_conntrack.h |    1 +
+ include/linux/netfilter/x_tables.h            |   73 ++++++++-
+ include/linux/wait.h                          |    6 +-
+ include/net/bluetooth/hci.h                   |    1 +
+ include/net/bluetooth/hci_core.h              |    8 +-
+ net/8021q/vlan.c                              |    2 +
+ net/8021q/vlan_dev.c                          |    5 +
+ net/bluetooth/hci_conn.c                      |   10 +-
+ net/bluetooth/hci_event.c                     |   36 ++++-
+ net/bluetooth/hci_sysfs.c                     |   37 ++---
+ net/bridge/br_netfilter.c                     |   10 +-
+ net/core/datagram.c                           |   14 ++-
+ net/ipv4/netfilter/arp_tables.c               |  125 ++++----------
+ net/ipv4/netfilter/ip_tables.c                |  126 ++++-----------
+ net/ipv4/route.c                              |    2 +-
+ net/ipv6/netfilter/ip6_tables.c               |  123 +++++----------
+ net/netfilter/Kconfig                         |    4 +-
+ net/netfilter/nf_conntrack_proto_dccp.c       |   16 ++-
+ net/netfilter/nf_conntrack_proto_udplite.c    |    1 +
+ net/netfilter/x_tables.c                      |   53 ++++---
+ net/netfilter/xt_recent.c                     |    9 +-
+ net/xfrm/xfrm_state.c                         |    6 +-
+ 33 files changed, 795 insertions(+), 447 deletions(-)
+ create mode 100644 Documentation/isdn/INTERFACE.CAPI
