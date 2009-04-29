@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761936AbZD2W1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762026AbZD2W1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761936AbZD2W1S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758298AbZD2WVY
+	id S1762026AbZD2W1z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758821AbZD2WVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:24 -0400
-Received: from kroah.org ([198.145.64.141]:40338 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:25 -0400
+Received: from kroah.org ([198.145.64.141]:40354 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758323AbZD2WVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:19 -0400
+	id S1754349AbZD2WVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:20 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:25 2009
-Message-Id: <20090429220925.292347131@mini.kroah.org>
+Message-Id: <20090429220925.606219157@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:15 -0700
+Date: Wed, 29 Apr 2009 15:07:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>,
-       Patrick McHardy <kaber@trash.net>
-Subject: [patch 16/58] netfilter: nf_conntrack_tcp: fix unaligned memory access in tcp_sack
+       alan@lxorguk.ukuu.org.uk,
+       Etienne Basset <etienne.basset@numericable.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 18/58] security/smack: fix oops when setting a size 0 SMACK64 xattr
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=netfilter-nf_conntrack_tcp-fix-unaligned-memory-access-in-tcp_sack.patch
+Content-Disposition: inline; filename=0001-security-smack-fix-oops-when-setting-a-size-0-SMACK.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,43 +41,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mark H. Weaver <mhw@netris.org>
+From: Etienne Basset <etienne.basset@numericable.fr>
 
-[ Upstream commit 534f81a5068799799e264fd162e9488a129f98d4 ]
+upstream commit: 4303154e86597885bc3cbc178a48ccbc8213875f
 
-This patch fixes an unaligned memory access in tcp_sack while reading
-sequence numbers from TCP selective acknowledgement options.  Prior to
-applying this patch, upstream linux-2.6.27.20 was occasionally
-generating messages like this on my sparc64 system:
+this patch fix an oops in smack when setting a size 0 SMACK64 xattr eg
+attr -S -s SMACK64  -V '' somefile
+This oops because smk_import_entry treats a 0 length as SMK_MAXLEN
 
-  [54678.532071] Kernel unaligned access at TPC[6b17d4] tcp_packet+0xcd4/0xd00
-
-Acked-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Etienne Basset <etienne.basset@numericable.fr>
+Reviewed-by: James Morris <jmorris@namei.org>
+Acked-by: Casey Schaufler <casey@schaufler-ca.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- net/netfilter/nf_conntrack_proto_tcp.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ security/smack/smack_lsm.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/net/netfilter/nf_conntrack_proto_tcp.c
-+++ b/net/netfilter/nf_conntrack_proto_tcp.c
-@@ -15,6 +15,7 @@
- #include <linux/skbuff.h>
- #include <linux/ipv6.h>
- #include <net/ip6_checksum.h>
-+#include <asm/unaligned.h>
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -604,6 +604,8 @@ static int smack_inode_setxattr(struct d
+ 	    strcmp(name, XATTR_NAME_SMACKIPOUT) == 0) {
+ 		if (!capable(CAP_MAC_ADMIN))
+ 			rc = -EPERM;
++		if (size == 0)
++			rc = -EINVAL;
+ 	} else
+ 		rc = cap_inode_setxattr(dentry, name, value, size, flags);
  
- #include <net/tcp.h>
+@@ -1360,7 +1362,7 @@ static int smack_inode_setsecurity(struc
+ 	struct socket *sock;
+ 	int rc = 0;
  
-@@ -466,7 +467,7 @@ static void tcp_sack(const struct sk_buf
- 				for (i = 0;
- 				     i < (opsize - TCPOLEN_SACK_BASE);
- 				     i += TCPOLEN_SACK_PERBLOCK) {
--					tmp = ntohl(*((__be32 *)(ptr+i)+1));
-+					tmp = get_unaligned_be32((__be32 *)(ptr+i)+1);
+-	if (value == NULL || size > SMK_LABELLEN)
++	if (value == NULL || size > SMK_LABELLEN || size == 0)
+ 		return -EACCES;
  
- 					if (after(tmp, *sack))
- 						*sack = tmp;
+ 	sp = smk_import(value, size);
 
 
