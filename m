@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759726AbZD2Q5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759350AbZD2Q4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759726AbZD2Q5g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 12:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344AbZD2Qzc
+	id S1759350AbZD2Q4x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 12:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757233AbZD2Qza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 12:55:32 -0400
-Received: from wa4ehsobe002.messaging.microsoft.com ([216.32.181.12]:38569
-	"EHLO WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757428AbZD2Qz2 (ORCPT
+	Wed, 29 Apr 2009 12:55:30 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:4478 "EHLO
+	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756993AbZD2Qz1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 12:55:28 -0400
-X-BigFish: VPS-6(zz936eQzz1202hzzz32i43j66h)
+	Wed, 29 Apr 2009 12:55:27 -0400
+X-BigFish: VPS3(zzzz1202hzzz32i43j66h)
 X-Spam-TCS-SCL: 5:0
 X-FB-SS: 5,
-X-WSS-ID: 0KIVGBZ-02-4P4-01
+X-WSS-ID: 0KIVGC1-01-3US-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: akpm@linux-foundation.org, greg@kroah.com
 CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
        dougthompson@xmission.com, <linux-kernel@vger.kernel.org>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 06/21] amd64_edac: add functionality to compute the DRAM hole
-Date: Wed, 29 Apr 2009 18:54:52 +0200
-Message-ID: <1241024107-14535-7-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 11/21] amd64_edac: add f10-and-later methods-p1
+Date: Wed, 29 Apr 2009 18:54:57 +0200
+Message-ID: <1241024107-14535-12-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
 References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 29 Apr 2009 16:55:15.0757 (UTC) FILETIME=[45049DD0:01C9C8EB]
+X-OriginalArrivalTime: 29 Apr 2009 16:55:18.0851 (UTC) FILETIME=[46DCB930:01C9C8EB]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,189 +37,251 @@ From: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |  172 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 172 insertions(+), 0 deletions(-)
+ drivers/edac/amd64_edac.c |  233 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 233 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 49c931f..2033dd4 100644
+index 813a1ab..2658852 100644
 --- a/drivers/edac/amd64_edac.c
 +++ b/drivers/edac/amd64_edac.c
-@@ -1279,3 +1279,175 @@ found:
- 
- 	return edac_mc_find(node_id);
+@@ -2254,4 +2254,237 @@ static int k8_dbam_map_to_pages(struct amd64_pvt *pvt, int dram_map)
+ 	return nr_pages;
  }
-+
+ 
 +/*
-+ * base_from_dct_base
++ * f10_early_channel_count
 + *
-+ *	Extract the DRAM CS base address from selected csrow register
-+ */
-+static u64 base_from_dct_base(struct amd64_pvt *pvt, int csrow)
-+{
-+	return ((u64) (amd64_get_dct_base(pvt, 0, csrow) & pvt->dcsb_base)) <<
-+				pvt->dcs_shift;
-+}
-+
-+/*
-+ * mask_from_dct_mask
++ * Get the number of DCT channels in use
 + *
-+ *	Extract the Mask from the dcsb0[csrow] entry
-+ *	Depends on CPU Revision on how to extract this information
++ * Return:
++ *	number of Memory Channels in operation
++ * Pass back:
++ *	contents of the DCL0_LOW register
 + */
-+static u64 mask_from_dct_mask(struct amd64_pvt *pvt, int csrow)
++static int f10_early_channel_count(struct amd64_pvt *pvt)
 +{
-+	u64 dcsm_bits, other_bits;
-+	u64 mask;
++	int err;
++	int channels = 0;
++	u32 dbam;
 +
-+	/* Extract bits bits 29-21 and 15-9 from DCSM (section 3.5.5). */
-+	dcsm_bits = amd64_get_dct_mask(pvt, 0, csrow) & pvt->dcsm_mask;
++	err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCLR_0, &pvt->dclr0);
++	if (err != 0)
++		debugf0("%s() Reading F10_DCLR_0 failed\n", __func__);
 +
-+	/* Set all bits except bits 33-25 and 19-13. */
-+	other_bits = pvt->dcsm_mask;
-+	other_bits = ~(other_bits << pvt->dcs_shift);
++	err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCLR_1, &pvt->dclr1);
++	if (err != 0)
++		debugf0("%s() Reading F10_DCLR_0 failed\n", __func__);
 +
-+	/* The extracted bits from DCSM belong in the spaces represented by
-+	 * the cleared bits in other_bits.
-+	 */
-+	mask = (dcsm_bits << pvt->dcs_shift) | other_bits;
-+
-+	return mask;
-+}
-+
-+/*
-+ * input_addr_to_csrow
-+ *
-+ * input_addr is an InputAddr associated with the node given by mci.  Return
-+ * the csrow that input_addr maps to, or -1 on failure (no csrow claims
-+ * input_addr).
-+ */
-+static int input_addr_to_csrow(struct mem_ctl_info *mci, u64 input_addr)
-+{
-+	struct amd64_pvt *pvt;
-+	int csrow;
-+	u64 base, mask;
-+
-+	pvt = mci->pvt_info;
-+
-+	/* Here we use the DRAM CS Base (section 3.5.4) and DRAM CS Mask
-+	 * (section 3.5.5) registers.  For each CS base/mask register pair,
-+	 * test the condition shown near the start of section 3.5.4 (p. 84).
-+	 */
-+	for (csrow = 0; csrow < CHIPSELECT_COUNT; csrow++) {
-+
-+		if ((pvt->dcsb0[csrow] & K8_DCSB_CS_ENABLE) == 0) {
-+			debugf2("input_addr_to_csrow: CSBE bit is cleared "
-+				"for csrow %d (node %d)\n",
-+				csrow, pvt->mc_node_id);
-+			continue;
-+		}
-+
-+		base = base_from_dct_base(pvt, csrow);
-+		mask = ~mask_from_dct_mask(pvt, csrow);
-+
-+		if ((input_addr & mask) == (base & mask)) {
-+			debugf2("InputAddr 0x%lx matches csrow %d "
-+				"(MC node %d)\n",
-+				(unsigned long)input_addr,
-+				csrow, pvt->mc_node_id);
-+			return csrow;
-+		}
++	/* If we are in 128 bit mode, then we are using 2 channels */
++	if (pvt->dclr0 & F10_WIDTH_128) {
++		debugf0("%s() Data WIDTH is 128 bits - 2 channels\n",
++			__func__);
++		channels = 2;
++		return channels;
 +	}
 +
-+	debugf2("no matching csrow for InputAddr 0x%lx (MC node %d)\n",
-+		(unsigned long)input_addr, pvt->mc_node_id);
-+	return -1;
-+}
-+
-+/* Return the base value defined by the DRAM Base register for the node
-+ * represented by mci.  This function returns the full 40-bit value despite
-+ * the fact that the register only stores bits 39-24 of the value.  See
-+ * section 3.4.4.1.
-+ */
-+static inline u64 get_dram_base(struct mem_ctl_info *mci)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return pvt->dram_base[pvt->mc_node_id];
-+}
-+
-+/*
-+ * Obtain info from the DRAM Hole Address Register (section 3.4.8, pub #26094)
-+ * for the node represented by mci.  Info is passed back in *hole_base,
-+ * *hole_offset, and *hole_size.  Function returns 0 if info is valid or 1 if
-+ * info is invalid. Info may be invalid for either of the following reasons:
-+ *
-+ *     - The revision of the node is not E or greater.  In this case, the DRAM
-+ *       Hole Address Register does not exist.
-+ *     - The DramHoleValid bit is cleared in the DRAM Hole Address Register,
-+ *       indicating that its contents are not valid.
-+ *
-+ * The values passed back in *hole_base, *hole_offset, and *hole_size are
-+ * complete 32-bit values despite the fact that the bitfields in the DHAR
-+ * only represent bits 31-24 of the base and offset values.
-+ */
-+static int amd64_get_dram_hole_info(struct mem_ctl_info *mci, u64 *hole_base,
-+				    u64 *hole_offset, u64 *hole_size)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	u64 base;
-+
-+	/* only revE and later have the DRAM Hole Address Register */
-+	if (boot_cpu_data.x86 == 0xf && pvt->ext_model < OPTERON_CPU_REV_E) {
-+		debugf1("  revision %d for node %d does not support DHAR\n",
-+			pvt->ext_model, pvt->mc_node_id);
-+		return 1;
-+	}
-+
-+	/* only valid for Fam10h */
-+	if (boot_cpu_data.x86 == 0x10 &&
-+	    (pvt->dhar & F10_DRAM_MEM_HOIST_VALID) == 0) {
-+		debugf1("  Dram Memory Hoisting is DISABLED on this system\n");
-+		return 1;
-+	}
-+
-+	if ((pvt->dhar & DHAR_VALID) == 0) {
-+		debugf1("  Dram Memory Hoisting is DISABLED on this node %d\n",
-+			pvt->mc_node_id);
-+		return 1;
-+	}
-+
-+	/* This node has Memory Hoisting */
-+
-+	/* +------------------+--------------------+--------------------+-----
-+	 * | memory           | DRAM hole          | relocated          |
-+	 * | [0, (x - 1)]     | [x, 0xffffffff]    | addresses from     |
-+	 * |                  |                    | DRAM hole          |
-+	 * |                  |                    | [0x100000000,      |
-+	 * |                  |                    |  (0x100000000+     |
-+	 * |                  |                    |   (0xffffffff-x))] |
-+	 * +------------------+--------------------+--------------------+-----
++	/* Need to check if in UN-ganged mode: In such, there are 2
++	 * channels, but they are NOT in 128 bit mode and thus the above
++	 * 'dcl0' status bit will be OFF, but there still are 2 channels
 +	 *
-+	 * Above is a diagram of physical memory showing the DRAM hole and the
-+	 * relocated addresses from the DRAM hole.  As shown, the DRAM hole
-+	 * starts at address x (the base address) and extends through address
-+	 * 0xffffffff.  The DRAM Hole Address Register (DHAR) relocates the
-+	 * addresses in the hole so that they start at 0x100000000.
++	 * Need to check DCT0[0] and DCT1[0] to see if only one of them
++	 * has their CSEnable bit on. If so, then SINGLE DIMM case.
 +	 */
++	debugf0("%s() Data WIDTH is NOT 128 bits - need more decoding\n",
++		__func__);
 +
-+	base = dhar_base(pvt->dhar);
++	/* Check DRAM Bank Address Mapping values for each DIMM
++	 * to see if there is more than just one DIMM present in an
++	 * unganged mode. Need to check both controllers sinc DIMMs
++	 * can be placed in either one
++	 */
++	channels = 0;
++	err = pci_read_config_dword(pvt->dram_f2_ctl, DBAM0, &dbam);
++	if (err != 0)
++		debugf0("%s() Reading DBAM0 failed\n", __func__);
 +
-+	*hole_base = base;
-+	*hole_size = (0x1ull << 32) - base;
++	if (DBAM_DIMM(0, dbam) > 0)
++		channels++;
++	if (DBAM_DIMM(1, dbam) > 0)
++		channels++;
++	if (DBAM_DIMM(2, dbam) > 0)
++		channels++;
++	if (DBAM_DIMM(3, dbam) > 0)
++		channels++;
 +
-+	if (boot_cpu_data.x86 > 0xf)
-+		*hole_offset = f10_dhar_offset(pvt->dhar);
-+	else
-+		*hole_offset = k8_dhar_offset(pvt->dhar);
++	/* If more than 2 DIMMs are present, then we have 2 channels */
++	if (channels > 2)
++		channels = 2;
++	else if (channels == 0) {
++		/* No DIMMs on DCT0, so look at DCT1 */
++		err = pci_read_config_dword(pvt->dram_f2_ctl, DBAM0, &dbam);
++		if (err != 0)
++			debugf0("%s() Reading DBAM1 failed\n", __func__);
 +
-+	debugf1("  DHAR info for node %d base 0x%lx offset 0x%lx size 0x%lx\n",
-+		pvt->mc_node_id, (unsigned long)*hole_base,
-+		(unsigned long)*hole_offset, (unsigned long)*hole_size);
++		if (DBAM_DIMM(0, dbam) > 0)
++			channels++;
++		if (DBAM_DIMM(1, dbam) > 0)
++			channels++;
++		if (DBAM_DIMM(2, dbam) > 0)
++			channels++;
++		if (DBAM_DIMM(3, dbam) > 0)
++			channels++;
 +
-+	return 0;
++		if (channels > 2)
++			channels = 2;
++	}
++
++	/* If we found ALL 0 values, then assume just ONE DIMM-ONE Channel */
++	if (channels == 0)
++		channels = 1;
++
++	debugf0("%s() DIMM count= %d\n", __func__, channels);
++
++	return channels;
 +}
 +
++/*
++ * f10_dbam_map_to_pages
++ */
++static int f10_dbam_map_to_pages(struct amd64_pvt *pvt, int dram_map)
++{
++	return 1 << (revf_quad_ddr2_shift[dram_map] - PAGE_SHIFT);
++}
 +
++/*
++ * amd64_setup
++ *
++ *	Perform needed operations on this NB thare are needed
++ *	for the duration of time that the module is operating
++ *
++ *	1) Enable "extended configuration access via 0xCF8" feature
++ */
++static void amd64_setup(struct amd64_pvt *pvt)
++{
++	u32 reg;
++	int err;
++
++	err = pci_read_config_dword(pvt->misc_f3_ctl, F10_NB_CFG_HIGH, &reg);
++	if (err != 0)
++		debugf0("%s() Reading F10_NB_CFG_HIGH failed\n",
++			__func__);
++
++	pvt->flags.cf8_extcfg = !!(reg & F10_NB_CFG_LOW_ENABLE_EXT_CFG);
++	reg |= F10_NB_CFG_LOW_ENABLE_EXT_CFG;
++	pci_write_config_dword(pvt->misc_f3_ctl, F10_NB_CFG_HIGH, reg);
++}
++
++/*
++ * amd64_teardown
++ *
++ *	teardown any items that were 'setup' in the setup func
++ *
++ *	1) Restore the "extended configuration access via 0xCF8" feature
++ */
++static void amd64_teardown(struct amd64_pvt *pvt)
++{
++	u32 reg;
++	int err;
++
++	err = pci_read_config_dword(pvt->misc_f3_ctl, F10_NB_CFG_HIGH, &reg);
++	if (err != 0)
++		debugf0("%s() Reading F10_NB_CFG_HIGH failed\n",
++			__func__);
++
++	reg &= ~F10_NB_CFG_LOW_ENABLE_EXT_CFG;
++	if (pvt->flags.cf8_extcfg)
++		reg |= F10_NB_CFG_LOW_ENABLE_EXT_CFG;
++	pci_write_config_dword(pvt->misc_f3_ctl, F10_NB_CFG_HIGH, reg);
++}
++
++/*
++ * f10_get_error_address
++ *	extract from the hardware copies of the error register
++ *	the ERROR ADDRESS for Family 10h CPUs
++ */
++static u64 f10_get_error_address(struct mem_ctl_info *mci,
++			struct amd64_error_info_regs *info)
++{
++	return (((u64) (info->nbeah & 0xffff)) << 32) +
++			(info->nbeal & ~0x01);
++}
++
++/*
++ * f10_read_dram_base_limit
++ *
++ *	Read the Base and Limit registers for F10 based Memory controllers
++ *	Extract fields from the 'raw' reg into separate data fields
++ *
++ *		Isolates: BASE, LIMIT, IntlvEn, IntlvSel, RW_EN
++ */
++static void f10_read_dram_base_limit(struct amd64_pvt *pvt, int dram)
++{
++	u32 high_offset;
++	u32 low_offset;
++	u32 high_base;
++	u32 low_base;
++	u32 high_limit;
++	u32 low_limit;
++	int err;
++
++	low_offset = K8_DRAM_BASE_LOW + (dram << 3);
++	high_offset = F10_DRAM_BASE_HIGH + (dram << 3);
++
++	/* read the 'raw' DRAM BASE Address register */
++	err = pci_read_config_dword(pvt->addr_f1_ctl, low_offset, &low_base);
++	if (err != 0)
++		debugf0("%s() Reading low_offset= 0x%x failed\n", __func__,
++			low_offset);
++
++	/* Read from the ECS data register */
++	err = pci_read_config_dword(pvt->addr_f1_ctl,
++					high_offset, &high_base);
++	if (err != 0)
++		debugf0("%s() Reading high_offset= 0x%x failed. Default=0\n",
++			__func__, high_offset);
++
++	/* Extract parts into separate data entries */
++	pvt->dram_rw_en[dram] = (low_base & 0x3);
++
++	if (pvt->dram_rw_en[dram] == 0)
++		return;
++
++	pvt->dram_IntlvEn[dram] = (low_base >> 8) & 0x7;
++
++	pvt->dram_base[dram] = (((((u64) high_base & 0x000000FF) << 32) |
++				((u64) low_base & 0xFFFF0000))) << 8;
+ 
++	low_offset = K8_DRAM_LIMIT_LOW + (dram << 3);
++	high_offset = F10_DRAM_LIMIT_HIGH + (dram << 3);
++
++	/* read the 'raw' LIMIT registers */
++	err = pci_read_config_dword(pvt->addr_f1_ctl, low_offset, &low_limit);
++	if (err != 0)
++		debugf0("%s() Reading low_offset= 0x%x failed\n", __func__,
++			low_offset);
++
++	/* Read from the ECS data register for the HIGH portion */
++	err = pci_read_config_dword(pvt->addr_f1_ctl,
++			high_offset, &high_limit);
++	if (err != 0)
++		debugf0("%s() Reading high_ofset= 0x%x failed\n", __func__,
++			high_offset);
++
++	debugf0("%s() on dram=%d\n", __func__, dram);
++	debugf0("  HW Regs: BASE=0x%08x-%08x      LIMIT=  0x%08x-%08x\n",
++		high_base, low_base, high_limit, low_limit);
++
++	pvt->dram_DstNode[dram] = (low_limit & 0x7);
++	pvt->dram_IntlvSel[dram] = (low_limit >> 8) & 0x7;
++
++	/* Extract address values and form a LIMIT address
++	 * Limit is the HIGHEST memory location of the region, so lower
++	 * 24-bit needs to be all ones
++	 */
++	low_limit |= 0x0000FFFF;
++	pvt->dram_limit[dram] =
++		((((u64) high_limit << 32) + (u64) low_limit) << 8) | (0xFF);
++}
 -- 
 1.6.2.4
 
