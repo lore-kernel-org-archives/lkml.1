@@ -1,128 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbZD2NLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbZD2NLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760016AbZD2NLU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 09:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757823AbZD2NHl
+	id S1758597AbZD2NLi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 09:11:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759094AbZD2NHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 09:07:41 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44641 "EHLO hera.kernel.org"
+	Wed, 29 Apr 2009 09:07:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44440 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758973AbZD2NHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 09:07:37 -0400
-Date: Wed, 29 Apr 2009 13:06:55 GMT
-From: tip-bot for Robert Richter <robert.richter@amd.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, robert.richter@amd.com, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, robert.richter@amd.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1241002046-8832-20-git-send-email-robert.richter@amd.com>
-References: <1241002046-8832-20-git-send-email-robert.richter@amd.com>
-Subject: [tip:perfcounters/core] perf_counter, x86: generic use of cpuc->active
-Message-ID: <tip-095342389e2ed8deed07b3076f990260ce3c7c9f@git.kernel.org>
-Git-Commit-ID: 095342389e2ed8deed07b3076f990260ce3c7c9f
-X-Mailer: tip-git-log-daemon
+	id S1759063AbZD2NHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 09:07:45 -0400
+Date: Wed, 29 Apr 2009 15:07:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: linux kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       cl@linux.com, jesse.brandeburg@intel.com, netdev@vger.kernel.org,
+       haoki@redhat.com, mchan@broadcom.com, davidel@xmailserver.org
+Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
+Message-ID: <20090429130706.GA22449@elte.hu>
+References: <alpine.DEB.1.10.0904241554100.29995@qirst.com> <49F3308B.1030507@cosmosbay.com> <20090426.020411.157511269.davem@davemloft.net> <49F43B8F.2050907@cosmosbay.com> <87ab60rh8t.fsf@basil.nowhere.org> <49F71B63.8010503@cosmosbay.com> <20090429091637.GA29874@elte.hu> <49F81FB9.50504@cosmosbay.com> <20090429102734.GC2373@elte.hu> <49F84833.5000908@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 13:06:57 +0000 (UTC)
+In-Reply-To: <49F84833.5000908@cosmosbay.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  095342389e2ed8deed07b3076f990260ce3c7c9f
-Gitweb:     http://git.kernel.org/tip/095342389e2ed8deed07b3076f990260ce3c7c9f
-Author:     Robert Richter <robert.richter@amd.com>
-AuthorDate: Wed, 29 Apr 2009 12:47:16 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 29 Apr 2009 14:51:10 +0200
 
-perf_counter, x86: generic use of cpuc->active
+* Eric Dumazet <dada1@cosmosbay.com> wrote:
 
-cpuc->active will now be used to indicate an enabled counter which
-implies also valid pointers of cpuc->counters[]. In contrast,
-cpuc->used only locks the counter, but it can be still uninitialized.
+> > should be inline perhaps?
+> 
+> Well, I thought current practice was not using inline for such 
+> trivial functions, as gcc already inlines them anyway.
 
-[ Impact: refactor and generalize code ]
+ok.
 
-Signed-off-by: Robert Richter <robert.richter@amd.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1241002046-8832-20-git-send-email-robert.richter@amd.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+how about:
 
+> > [ I'd still suggest to factor out the guts of do_select() as 
+> >   its nesting is excessive that hurts its reviewability quite a 
+> >   bit - but now your patch does not make the situation any 
+> >   worse. ]
 
----
- arch/x86/kernel/cpu/perf_counter.c |   20 +++++++++-----------
- 1 files changed, 9 insertions(+), 11 deletions(-)
+We tend to shop for drive-by cleanups in visibly ugly code whenever 
+someone wants to touch that code. Could go into a separate patch.
 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 9ec51a6..f7fd4a3 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -424,7 +424,6 @@ static void amd_pmu_enable_counter(int idx, u64 config)
- {
- 	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
- 
--	set_bit(idx, cpuc->active);
- 	if (cpuc->enabled)
- 		config |= ARCH_PERFMON_EVENTSEL0_ENABLE;
- 
-@@ -446,9 +445,6 @@ static void intel_pmu_disable_counter(int idx, u64 config)
- 
- static void amd_pmu_disable_counter(int idx, u64 config)
- {
--	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
--
--	clear_bit(idx, cpuc->active);
- 	wrmsrl(MSR_K7_EVNTSEL0 + idx, config);
- 
- }
-@@ -633,10 +629,7 @@ try_generic:
- 	__x86_pmu_disable(counter, hwc, idx);
- 
- 	cpuc->counters[idx] = counter;
--	/*
--	 * Make it visible before enabling the hw:
--	 */
--	barrier();
-+	set_bit(idx, cpuc->active);
- 
- 	x86_perf_counter_set_period(counter, hwc, idx);
- 	__x86_pmu_enable(counter, hwc, idx);
-@@ -700,10 +693,13 @@ static void x86_pmu_disable(struct perf_counter *counter)
- 	struct hw_perf_counter *hwc = &counter->hw;
- 	unsigned int idx = hwc->idx;
- 
-+	/*
-+	 * Must be done before we disable, otherwise the nmi handler
-+	 * could reenable again:
-+	 */
-+	clear_bit(idx, cpuc->active);
- 	__x86_pmu_disable(counter, hwc, idx);
- 
--	clear_bit(idx, cpuc->used);
--	cpuc->counters[idx] = NULL;
- 	/*
- 	 * Make sure the cleared pointer becomes visible before we
- 	 * (potentially) free the counter:
-@@ -715,6 +711,8 @@ static void x86_pmu_disable(struct perf_counter *counter)
- 	 * that we are disabling:
- 	 */
- 	x86_perf_counter_update(counter, hwc, idx);
-+	cpuc->counters[idx] = NULL;
-+	clear_bit(idx, cpuc->used);
- }
- 
- /*
-@@ -763,7 +761,7 @@ again:
- 		struct perf_counter *counter = cpuc->counters[bit];
- 
- 		clear_bit(bit, (unsigned long *) &status);
--		if (!counter)
-+		if (!test_bit(bit, cpuc->active))
- 			continue;
- 
- 		intel_pmu_save_and_restart(counter);
+	Ingo
