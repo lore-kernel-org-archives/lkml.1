@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759754AbZD2V46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760479AbZD2V5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759754AbZD2V46 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 17:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758821AbZD2V4p
+	id S1760479AbZD2V5U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 17:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759073AbZD2V44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 17:56:45 -0400
-Received: from trulit.net ([78.46.66.163]:38499 "EHLO mail.elenhost.org"
+	Wed, 29 Apr 2009 17:56:56 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39844 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755700AbZD2V4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 17:56:44 -0400
-X-Greylist: delayed 1463 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Apr 2009 17:56:44 EDT
+	id S1759654AbZD2V44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 17:56:56 -0400
+Message-ID: <49F8CCC4.8040903@kernel.org>
+Date: Wed, 29 Apr 2009 14:55:16 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Date: Wed, 29 Apr 2009 23:36:13 +0200
-From: <finarfin@dreamos.org>
-To: linux-kernel@vger.kernel.org
-Subject: =?UTF-8?Q?SCHED=5FEDF=20infos?=
-Message-ID: <164c92d827cbee86ba2c5621716309e6@localhost>
-User-Agent: RoundCube Webmail/0.2
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86/irq: using move_irq_desc
+References: <49E802CE.5030406@kernel.org> <49E804AD.9020702@kernel.org> <49F6559F.7070005@kernel.org> <20090428101448.GA28495@elte.hu> <49F70FED.3040903@kernel.org> <20090428143254.GA24351@elte.hu> <49F753DF.6040104@kernel.org> <20090429120056.GE11586@elte.hu> <49F87FF3.1090600@kernel.org> <20090429204135.GF21421@elte.hu> <20090429212317.GA30147@elte.hu>
+In-Reply-To: <20090429212317.GA30147@elte.hu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I'm new to this list,
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+>> * Yinghai Lu <yinghai@kernel.org> wrote:
+>>
+>>> move_irq_desc will try to move irq_desc to node wanted if allocated one is not correct.
+>>> (happen on device on different nodes that are using MSI, drivers are loaded and unloaded
+>>> randomly)
+>>>
+>>> [ Impact: make irq_desc go with device on node ]
+>>>
+>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>>
+>>> ---
+>>>  arch/x86/kernel/apic/io_apic.c |    6 +-----
+>>>  include/linux/irq.h            |    4 ++++
+>>>  2 files changed, 5 insertions(+), 5 deletions(-)
+>> applied, thanks. I'll look into merging it into the irq tree 
+>> tomorrow and testing it.
+> 
+> gave it a brief try and got:
+> 
+> kernel/irq/numa_migrate.c: In function ‘init_copy_one_irq_desc’:
+> kernel/irq/numa_migrate.c:46: error: ‘struct irq_desc’ has no member named ‘node’
+> kernel/irq/numa_migrate.c: In function ‘move_irq_desc’:
+> kernel/irq/numa_migrate.c:114: error: ‘struct irq_desc’ has no member named ‘node’
+> kernel/irq/numa_migrate.c:114: error: ‘struct irq_desc’ has no member named ‘node’
+> kernel/irq/numa_migrate.c:114: error: ‘struct irq_desc’ has no member named ‘node’
+> 
 
-Actually i'm near to BS degree in computer science, and for thesis my
-Operating System Professor suggested to complete (or begin?) SCHED_EDF for
-linux. 
+.config?
 
-Now i don't know if i'm able to do that, i'm new to linux-kernel
-development:
-1. Someone is already working on that? This task is still available?
-2. Now there was something implemented about sched_edf?
-3. Into sched-rt-groups.txt there was something that was not very clear (in
-my opinion): 
-   The next project will be SCHED_EDF (Earliest Deadline First scheduling)
-to bring
-   full deadline scheduling to the linux kernel. Deadline scheduling the
-above
-   groups and treating end of the period as a deadline will ensure that
-they both
-   get their allocated time.
-
-   Implementing SCHED_EDF might take a while to complete. Priority
-Inheritance is
-   the biggest challenge as the current linux PI infrastructure is geared
-towards
-   the limited static priority levels 0-139. With deadline scheduling you
-need to
-   do deadline inheritance (since priority is inversely proportional to the
-   deadline delta (deadline - now).
-   
-   Priority inheritance is a different task? 
-4. In your opinion three months will be sufficient for that task? (yeah
-probably this seems a silly question, but if working on that take me a too
-long time i think i have to find another thesis :D i wish to have my degree
-before the end of this year)  
-5. For implement that algorithm the general EDF documentation will be
-sufficient? There are some special requisites?
-6. if you have any suggestion i'll be glad to receive it :)
-
-I hope that this mail doesn't sound useless. 
-
-Thank you, 
-Ivan
-
-
+YH
