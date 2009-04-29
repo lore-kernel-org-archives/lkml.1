@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759265AbZD2TaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760738AbZD2Tav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759265AbZD2TaX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 15:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbZD2TaF
+	id S1760738AbZD2Tav (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 15:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbZD2Tak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 15:30:05 -0400
-Received: from kroah.org ([198.145.64.141]:42596 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753536AbZD2TaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 15:30:04 -0400
-Date: Wed, 29 Apr 2009 12:26:50 -0700
-From: Greg KH <greg@kroah.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Mike Frysinger <vapier.adi@gmail.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: usbutils 0.81 release
-Message-ID: <20090429192650.GB15604@kroah.com>
-References: <20090427193532.GA2948@kroah.com> <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com> <20090429180735.GA29812@kroah.com> <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com> <ac3eb2510904291159s14d7d532q33657eb73007fc4b@mail.gmail.com> <20090429191841.GA1598@khazad-dum.debian.net>
+	Wed, 29 Apr 2009 15:30:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:52562 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754152AbZD2Tak (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 15:30:40 -0400
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: akpm@linux-foundation.org, greg@kroah.com, <mingo@elte.hu>,
+       <tglx@linutronix.de>, <hpa@zytor.com>, <dougthompson@xmission.com>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 00/21 v2] amd64_edac: EDAC module for AMD64
+From: Andi Kleen <andi@firstfloor.org>
+References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
+Date: Wed, 29 Apr 2009 21:30:31 +0200
+In-Reply-To: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> (Borislav Petkov's message of "Wed, 29 Apr 2009 18:54:46 +0200")
+Message-ID: <87iqknp8a0.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090429191841.GA1598@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 04:18:41PM -0300, Henrique de Moraes Holschuh wrote:
-> On Wed, 29 Apr 2009, Kay Sievers wrote:
-> > >>> looks like update-usbids.sh was forgotten from EXTRA_DIST in
-> > >>> Makefile.am so the released tarball doesnt have the script ;(
-> > 
-> > > np, i'll send patches for both
-> > 
-> > Ah missed that, sorry. Sounds good if you add it to the tarball, but
-> > please don't add it to "make install", as packages should not ship
-> > scripts which change the installed package content, unless it's a
-> > config file.
-> 
-> Debian places it in /var/lib/usbids/ for a good reason.  So does Ubuntu.
-> Both have working "update-usbids" scripts (might be the one from upstream,
-> or something different).  They also have the original file in /usr/share, I
-> don't know if usbutils was changed to check /var first then /usr, or what.
+Borislav Petkov <borislav.petkov@amd.com> writes:
 
-Yeah, I was looking into doing some kind of "where to look first" type
-thing like lspci does.
+> Hi,
+>
+> thanks to all reviewers of the previous submission, here is the second
+> version of this series.
 
-Any suggestions?  Specific directory locations and hierarchy that
-distros are already using?
+The classic problem of the previous versions of these patches was that
+they consume the same error registers (even if using pci config versus
+msrs as access methods) as the kernel machine check poll/threshold
+interrupt code.  And with two logging agents racing on the same
+registers you will always get junk results. Typically with threshold 
+enabled the mce code wins the race. I suspect this patchkit has
+exactly the same fundamental design problem. EDAC really is not
+particularly fitting for integrated memory controllers that report
+their errors using standard machine check events.
 
-thanks,
+-Andi (who thinks all of this decoding should be in user space anyways)
 
-greg k-h
+-- 
+ak@linux.intel.com -- Speaking for myself only.
