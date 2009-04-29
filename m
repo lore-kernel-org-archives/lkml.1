@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761910AbZD2W0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761968AbZD2W1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761910AbZD2W0v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758233AbZD2WVX
+	id S1761968AbZD2W1j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757099AbZD2WVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:23 -0400
-Received: from kroah.org ([198.145.64.141]:40325 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:25 -0400
+Received: from kroah.org ([198.145.64.141]:40348 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758390AbZD2WVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:18 -0400
+	id S1758193AbZD2WVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:19 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:25 2009
-Message-Id: <20090429220925.111124389@mini.kroah.org>
+Message-Id: <20090429220925.448819883@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:14 -0700
+Date: Wed, 29 Apr 2009 15:07:16 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jesper Nilsson <jesper.nilsson@axis.com>,
+       alan@lxorguk.ukuu.org.uk, Al Viro <viro@zeniv.linux.org.uk>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 15/58] ipv6: Plug sk_buff leak in ipv6_rcv (net/ipv6/ip6_input.c)
+Subject: [patch 17/58] net: fix sctp breakage
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=ipv6-plug-sk_buff-leak-in-ipv6_rcv.patch
+Content-Disposition: inline; filename=net-fix-sctp-breakage.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,53 +39,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jesper Nilsson <jesper.nilsson@axis.com>
+From: Al Viro <viro@zeniv.linux.org.uk>
 
-[ Upstream commit 71f6f6dfdf7c7a67462386d9ea05c1095a89c555 ]
+[ Upstream commit cb0dc77de0d23615a845e45844a2e22fc224d7fe ]
 
-Commit 778d80be52699596bf70e0eb0761cf5e1e46088d
-(ipv6: Add disable_ipv6 sysctl to disable IPv6 operaion on specific interface)
-seems to have introduced a leak of sk_buff's for ipv6 traffic,
-at least in some configurations where idev is NULL, or when ipv6
-is disabled via sysctl.
+broken by commit 5e739d1752aca4e8f3e794d431503bfca3162df4; AFAICS should
+be -stable fodder as well...
 
-The problem is that if the first condition of the if-statement
-returns non-NULL, it returns an skb with only one reference,
-and when the other conditions apply, execution jumps to the "out"
-label, which does not call kfree_skb for it.
-
-To plug this leak, change to use the "drop" label instead.
-(this relies on it being ok to call kfree_skb on NULL)
-This also allows us to avoid calling rcu_read_unlock here,
-and removes the only user of the "out" label.
-
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Aced-by: Vlad Yasevich <vladislav.yasevich@hp.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv6/ip6_input.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ net/sctp/endpointola.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/net/ipv6/ip6_input.c
-+++ b/net/ipv6/ip6_input.c
-@@ -74,8 +74,7 @@ int ipv6_rcv(struct sk_buff *skb, struct
- 	if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL ||
- 	    !idev || unlikely(idev->cnf.disable_ipv6)) {
- 		IP6_INC_STATS_BH(idev, IPSTATS_MIB_INDISCARDS);
--		rcu_read_unlock();
--		goto out;
-+		goto drop;
+--- a/net/sctp/endpointola.c
++++ b/net/sctp/endpointola.c
+@@ -111,7 +111,8 @@ static struct sctp_endpoint *sctp_endpoi
+ 		if (sctp_addip_enable) {
+ 			auth_chunks->chunks[0] = SCTP_CID_ASCONF;
+ 			auth_chunks->chunks[1] = SCTP_CID_ASCONF_ACK;
+-			auth_chunks->param_hdr.length += htons(2);
++			auth_chunks->param_hdr.length =
++					htons(sizeof(sctp_paramhdr_t) + 2);
+ 		}
  	}
- 
- 	memset(IP6CB(skb), 0, sizeof(struct inet6_skb_parm));
-@@ -145,7 +144,6 @@ err:
- drop:
- 	rcu_read_unlock();
- 	kfree_skb(skb);
--out:
- 	return 0;
- }
  
 
 
