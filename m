@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbZD2Ori@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755660AbZD2OsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbZD2Ori (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 10:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbZD2Or3
+	id S1755660AbZD2OsN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 10:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZD2Or5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 10:47:29 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38095 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752151AbZD2Or2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 10:47:28 -0400
-Date: Wed, 29 Apr 2009 15:47:01 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: Oleg Nesterov <oleg@redhat.com>, James Morris <jmorris@namei.org>,
-       David Howells <dhowells@redhat.com>, Eric Paris <eparis@parisplace.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Q: selinux_bprm_committed_creds() && signals/do_wait
-Message-ID: <20090429154701.2e5b15f6@lxorguk.ukuu.org.uk>
-In-Reply-To: <1241011014.18249.192.camel@localhost.localdomain>
-References: <20090428223025.GA11997@redhat.com>
-	<alpine.LRH.2.00.0904291024001.5246@tundra.namei.org>
-	<20090429065809.GA477@redhat.com>
-	<1241007630.18249.141.camel@localhost.localdomain>
-	<20090429125606.GA27901@redhat.com>
-	<1241011014.18249.192.camel@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Apr 2009 10:47:57 -0400
+Received: from blaine.gmane.org ([80.91.229.8]:57927 "EHLO hugh.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752082AbZD2Or4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 10:47:56 -0400
+To: Alan Stern 
+	<public-stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@hugh.gmane.org>
+Cc: Greg KH <public-greg-U8xfFu+wG4EAvxtiuMwx3w@hugh.gmane.org>,
+       Kay Sievers <public-kay.sievers-tD+1rO4QERM@hugh.gmane.org>,
+       USB list <public-linux-usb-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>,
+       Kernel development list 
+	<public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>
+Subject: Re: usbutils 0.81 release
+References: <20090427210059.GA12446@kroah.com>
+	<Pine.LNX.4.44L0.0904271715470.17474-100000@netrider.rowland.org>
+From: Benny Amorsen <benny+usenet@amorsen.dk>
+Date: Wed, 29 Apr 2009 16:23:14 +0200
+In-Reply-To: <Pine.LNX.4.44L0.0904271715470.17474-100000@netrider.rowland.org> (Alan Stern's message of "Mon\, 27 Apr 2009 17\:21\:43 -0400 \(EDT\)")
+Message-ID: <m3ab5z35f1.fsf@ursa.amorsen.dk>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Spam-Score: -6.4 (------)
+X-Spam-Report: ALL_TRUSTED=-3.3, BAYES_00=-3.099
+X-Spam-Report: ALL_TRUSTED=-3.3, BAYES_00=-3.099
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > For example, a user does "nohup setuid_app". Now, why should we change
-> > SIG_IGN to SIG_DFL for SIGHUP? This makes setuid_app more "vulnerable"
-> > to SIGHUP, not more "protected". Confused.
-> 
-> Not if the app was depending on the default handler for SIGHUP to
-> correctly handle vhangup().  The point is that we don't necessarily
-> trust the caller to define the handling behavior for signals in the
-> callee.  If we trust the caller to do so, then we can grant the
-> corresponding permission.
 
-You are changing standards defined behaviour - so apps that rely on
-correct behaviour maybe misbehave or become vulnerable in ways not
-anticipated
 
-A classic example here is SIGPIPE. What you are doing by dropping to
-default signal behaviour is breaking various inetd style setups that know
-the child will inherit SIGPIPE as SIG_IGN and therefore will cleanly
-process network connection loss.
+Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+writes:
 
-Instead the child will now suffer immediate termination and not
-have a chance to clean up. 
+> Sure they do.  If you've got an RPM-based system, and you want to
+> install a package version that's more recent than the one bundled in
+> your distribution (or if your distribution doesn't include the package
+> at all), then you'd want to build your own RPM.
 
-So mucking with signal masks is actually not improving security - it's
-randomly changing things - and randomly changing things to disagree with
-the spec is a very very bad idea IMHO as you will harm correctly written
-code.
+In that case you grab the source package from the distribution, install
+it, bump the version number and add the tar file to the SOURCES
+directory. (And then you remove the patches which were upstreamed in the
+meantime).
 
-> But we still have the problem of the caller setting up the signal
-> handlers or blocked signal mask prior to exec'ing the privileged
-> program, right
+It isn't as easy as rpmbuild -ta, but it gets everything placed in the
+right location and it preserves the distro-specific patches.
 
-No.
 
-A signal handler function is cleared across a setuid exec so you can't
-set an address and jump to it in the new binary. K&R thought of that
-one ;)
+/Benny
 
-A signal mask is inherited and this is *required to be so*. Changing it
-breaks stuff and may itself introduce security problems.
-
-Any setuid app has to be reasonably robust because it may get very
-strange file handles, very strange signal masks, quotas, resource limits
-and other stuff. Signals are just one trivial detail.
-
-Clearing a lot of these is hard as you don't know what the resource
-limits etc for the setuid target are and you don't want a pair of setuid
-user A and user B apps co-operating to evade things.
-
-The correct way to do most of this is not to use setuid apps run by the
-user but to pass authority information to service daemons that run
-services within a known non-user influencable environment in the first
-place... the very daemons that randomly clearing the SIG_IGN on SIGPIPE
-will break !
-
-Alan
 
