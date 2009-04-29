@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbZD2Fq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbZD2Fsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754352AbZD2Fq6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 01:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbZD2Fqs
+	id S1755963AbZD2Fsx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 01:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbZD2Fso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 01:46:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41205 "EHLO
+	Wed, 29 Apr 2009 01:48:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34089 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751732AbZD2Fqs (ORCPT
+	by vger.kernel.org with ESMTP id S1750858AbZD2Fsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 01:46:48 -0400
-Date: Tue, 28 Apr 2009 22:44:31 -0700
+	Wed, 29 Apr 2009 01:48:43 -0400
+Date: Tue, 28 Apr 2009 22:46:25 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, john.williams@petalogix.com
-Subject: Re: [PATCH 08/30] microblaze_mmu_v1: mmu.h update
-Message-Id: <20090428224431.3cd75346.akpm@linux-foundation.org>
-In-Reply-To: <1240821139-7247-9-git-send-email-monstr@monstr.eu>
+Subject: Re: [PATCH 09/30] microblaze_mmu_v1: Page fault handling high level
+ - fault.c
+Message-Id: <20090428224625.b94c7787.akpm@linux-foundation.org>
+In-Reply-To: <1240821139-7247-10-git-send-email-monstr@monstr.eu>
 References: <1240821139-7247-1-git-send-email-monstr@monstr.eu>
 	<1240821139-7247-2-git-send-email-monstr@monstr.eu>
 	<1240821139-7247-3-git-send-email-monstr@monstr.eu>
@@ -26,6 +27,7 @@ References: <1240821139-7247-1-git-send-email-monstr@monstr.eu>
 	<1240821139-7247-7-git-send-email-monstr@monstr.eu>
 	<1240821139-7247-8-git-send-email-monstr@monstr.eu>
 	<1240821139-7247-9-git-send-email-monstr@monstr.eu>
+	<1240821139-7247-10-git-send-email-monstr@monstr.eu>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -34,12 +36,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Apr 2009 10:31:57 +0200 monstr@monstr.eu wrote:
+On Mon, 27 Apr 2009 10:31:58 +0200 monstr@monstr.eu wrote:
 
-> +extern PTE *Hash, *Hash_end;
-> +extern unsigned long Hash_size, Hash_mask;
+> +#if defined(CONFIG_XMON) || defined(CONFIG_KGDB)
 
-These are global symbols?
-
-There's some namespace collision risk here. `microblaze_mmu_hash' or
-whatever would be a safer change.
+Only powerpc can define CONFIG_XMON.  Confused.
