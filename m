@@ -1,46 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932394AbZD2CDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932351AbZD2CEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932394AbZD2CDt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 22:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932073AbZD2CDd
+	id S932351AbZD2CEW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 22:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932227AbZD2CEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 22:03:33 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:55400 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759379AbZD2CDd (ORCPT
+	Tue, 28 Apr 2009 22:04:01 -0400
+Received: from host2.marvell.com ([65.219.4.2]:44062 "EHLO maili.marvell.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932073AbZD2CEA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 22:03:33 -0400
-Date: Tue, 28 Apr 2009 20:03:31 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <gregkh@suse.de>,
+	Tue, 28 Apr 2009 22:04:00 -0400
+From: Bing Zhao <bzhao@marvell.com>
+To: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
+Cc: Marcel Holtmann <marcel@holtmann.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Linux-Scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH] scsi: ses check name in enclosure_component_register
-Message-ID: <20090429020331.GF21648@parisc-linux.org>
-References: <49F6678D.3080207@kernel.org> <1240957589.3380.67.camel@mulgrave.int.hansenpartnership.com> <49F7979A.8040302@kernel.org> <1240964289.3380.73.camel@mulgrave.int.hansenpartnership.com> <49F7A71F.5040709@kernel.org>
+       "linux-bluetooth@vger.kernel.org" <linux-bluetooth@vger.kernel.org>
+Date: Tue, 28 Apr 2009 19:13:15 -0700
+Subject: RE: BUG: sleeping function called from invalid context at
+ mm/slub.c:1595 --- "hcitool cc" or "l2ping"
+Thread-Topic: BUG: sleeping function called from invalid context at
+ mm/slub.c:1595 --- "hcitool cc" or "l2ping"
+Thread-Index: AcnIbc6+xZBfjVyhRfKZ1v5h+i3CiwAAC9iA
+Message-ID: <477F20668A386D41ADCC57781B1F704301E3F5C816@SC-VEXCH1.marvell.com>
+References: <477F20668A386D41ADCC57781B1F704301E3F5C7F5@SC-VEXCH1.marvell.com>
+	 <1240966565.997.65.camel@localhost.localdomain>
+	 <477F20668A386D41ADCC57781B1F704301E3F5C7FC@SC-VEXCH1.marvell.com>
+ <6b53b1990904281847i5c72770dif47b67366b7b9183@mail.gmail.com>
+In-Reply-To: <6b53b1990904281847i5c72770dif47b67366b7b9183@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49F7A71F.5040709@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 29 Apr 2009 02:03:59.0577 (UTC) FILETIME=[C2BB1C90:01C9C86E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 06:02:23PM -0700, Yinghai Lu wrote:
-> dev_set_name(cdev, name);
+> > Hi Marcel,
+> >
+> > "git log" shows the last commit was ad4751fcada51292bb2967748667b582281647d0.
+> > Bluetooth: Fix errors and warnings in L2CAP reported by checkpatch.pl
+> >
+> > Is it the latest one?
 > 
-> the name become fmt. 
+> yes, but make sure that you already have this patch:
+> d79c7b52d647153831c59c223a44015c2050ad67
+> 
 
-Yes, and what happens if 'name' is '%s'?
+Hi Gustavo,
 
-That's James's point.
+This is a list of last several commits. d79c7b52d647153831c59c223a44015c2050ad67 is one of them.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+
+commit ad4751fcada51292bb2967748667b582281647d0
+Author: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
+
+    Bluetooth: Fix errors and warnings in L2CAP reported by checkpatch.pl
+
+commit 35a26a237c126d6a3acabec3b1b3b6bd3a888b26
+Author: Marcel Holtmann <marcel@holtmann.org>
+
+    Bluetooth: Remove unnecessary variable initialization
+
+commit 140014e74f973103f567bc75fa009d07ab251d20
+Author: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
+
+    Bluetooth: Use macro for L2CAP hint mask on receiving config request
+
+commit 0b81fdb4e9256b2f517600c9d138bae306520e8c
+Author: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
+
+    Bluetooth: Use macros for L2CAP channels identifiers
+
+commit d79c7b52d647153831c59c223a44015c2050ad67
+Author: Marcel Holtmann <marcel@holtmann.org>
+
+    Bluetooth: Fix connection establishment with low security requirement
+
+commit 889d94df978869cce5405040acc558a1b4a1a510
+Author: Marcel Holtmann <marcel@holtmann.org>
+
+    Bluetooth: Add different pairing timeout for Legacy Pairing
+
+
+
+Should I try something to get more debug info?
+
+Thanks,
+
+Bing
+
