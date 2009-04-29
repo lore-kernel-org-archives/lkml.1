@@ -1,91 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbZD2JPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbZD2JRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbZD2JPt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 05:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbZD2JPk
+	id S1753992AbZD2JRt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 05:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbZD2JRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 05:15:40 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:65163 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751620AbZD2JPi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 05:15:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=lXoA3yxzSWX+vRyq54iIVYA//xt0cyhxy+Y2Zi3rbHZNYj26rW43ocuztf2vdEgIFK
-         HTFd9SCCViS53EKiWgqcY/h1F7VQzJoYFz0n6iJLBgmDiq0U/LewPFHc+o7Q0PkHRzsE
-         I+P1mlFcw4PT5IwcubDAMyijNmSDLi0c+9lso=
-From: Florian Fainelli <florian@openwrt.org>
-To: Thierry Reding <thierry.reding@avionic-design.de>
-Subject: Re: [spi-devel-general] [PATCH v2] spi: Add support for the OpenCores SPI controller.
-Date: Wed, 29 Apr 2009 11:15:34 +0200
-User-Agent: KMail/1.9.9
-Cc: David Brownell <david-b@pacbell.net>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <200904041227.54687.david-b@pacbell.net> <200904281354.12192.david-b@pacbell.net> <20090429063104.GB7784@avionic-design.de>
-In-Reply-To: <20090429063104.GB7784@avionic-design.de>
+	Wed, 29 Apr 2009 05:17:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49141 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751490AbZD2JRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 05:17:35 -0400
+Date: Wed, 29 Apr 2009 11:16:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: linux kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       cl@linux.com, jesse.brandeburg@intel.com, netdev@vger.kernel.org,
+       haoki@redhat.com, mchan@broadcom.com, davidel@xmailserver.org
+Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
+Message-ID: <20090429091637.GA29874@elte.hu>
+References: <alpine.DEB.1.10.0904241554100.29995@qirst.com> <49F3308B.1030507@cosmosbay.com> <20090426.020411.157511269.davem@davemloft.net> <49F43B8F.2050907@cosmosbay.com> <87ab60rh8t.fsf@basil.nowhere.org> <49F71B63.8010503@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904291115.34847.florian@openwrt.org>
+In-Reply-To: <49F71B63.8010503@cosmosbay.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Wednesday 29 April 2009 08:31:04 Thierry Reding, vous avez écrit :
-> * David Brownell wrote:
-> > On Tuesday 28 April 2009, Florian Fainelli wrote:
-> > > > > Is this the http://www.opencores.org/?do=project&who=spi core?
-> > > >
-> > > > Yes, it is.
-> > > >
-> > > > > Its summary says "Variable length of transfer word up to 32 bits";
-> > > > > does that mean "configurable when core is synthesized" instead of
-> > > > > truly "variable"?
-> > >
-> > > This is indeed configured at synthesis time.
-> >
-> > Now I'm confused again.  Thierry says (below) that the number of bits
-> > can be set per-"transfer".
-> >
-> > Now, I can easily understand that a *maximum* would be configured
-> > at synthesis time ... if there's a 32-bit CPU or DMA engine, it'd
-> > make very limited sense to interact using 128-bit I/O words.
 
-The maximum size of the FIFO is configured at synthesis time should have made 
-this clear before, sorry for the confusion.
+* Eric Dumazet <dada1@cosmosbay.com> wrote:
 
->
-> I can't really comment on the synthesis because I'm not involved with that
-> part. What I was saying that the core provides a field in the control
-> register which defines the number of bits to transfer from/to the
-> transmit/receive registers. The maximum number of bits that can be
-> specified in this way is 128.
+> @@ -418,8 +429,16 @@ int do_select(int n, fd_set_bits *fds, struct timespec *end_time)
+>  				if (file) {
+>  					f_op = file->f_op;
+>  					mask = DEFAULT_POLLMASK;
+> -					if (f_op && f_op->poll)
+> +					if (f_op && f_op->poll) {
+> +						if (wait) {
+> +							wait->key = POLLEX_SET;
+> +							if (in & bit)
+> +								wait->key |= POLLIN_SET;
+> +							if (out & bit)
+> +								wait->key |= POLLOUT_SET;
+> +						}
+>  						mask = (*f_op->poll)(file, retval ? NULL : wait);
+> +					}
+>  					fput_light(file, fput_needed);
+>  					if ((mask & POLLIN_SET) && (in & bit)) {
+>  						res_in |= bit;
 
-Yes, which matches the FIFO size configured in the IP at synthesis time.
+Please factor this whole 'if (file)' branch out into a helper. 
+Typical indentation levels go from 1 to 3 tabs - 4 should be avoided 
+if possible and 5 is pretty excessive already. This goes to eight.
 
->
-> > Is there both a configurable maximum, *and* a word-size setting that
-> > can be changed on the fly?  That's what I would expect; it's what
-> > most other designs do.  The only time I've seen fixed "you must use
-> > N-bit words" designs is on cost-eradicated 8-bit microcontrollers.
->
-> Perhaps that maximum number of bits that can be set through the control
-> register is what can be configured at synthesis time.
-
-Provided that your FIFO is 128-bits, you can of course ask the core to do up 
-to the FIFO-size transfers for instance provided that you do not exceed the 
-size of the FIFO. The later can obviously not be changed on-the-fly since 
-physical resources of the FPGA for this should be reserved at synthesis time. 
-Of course, one could use partial reconfiguration to increase the size, but 
-that's slightly off-topic ;)
--- 
-Best regards, Florian Fainelli
-Email : florian@openwrt.org
-http://openwrt.org
--------------------------------
+	Ingo
