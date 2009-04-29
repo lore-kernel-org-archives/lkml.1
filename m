@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867AbZD2MHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbZD2MHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752867AbZD2MHb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 08:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbZD2MHT
+	id S1757184AbZD2MHs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 08:07:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbZD2MHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 08:07:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60226 "EHLO hera.kernel.org"
+	Wed, 29 Apr 2009 08:07:25 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60229 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751019AbZD2MHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 08:07:18 -0400
-Date: Wed, 29 Apr 2009 12:06:31 GMT
+	id S1755550AbZD2MHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 08:07:24 -0400
+Date: Wed, 29 Apr 2009 12:06:42 GMT
 From: tip-bot for Tom Zanussi <tzanussi@gmail.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -18,352 +18,245 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        tzanussi@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1240905887.6416.119.camel@tropicana>
-References: <1240905887.6416.119.camel@tropicana>
-Subject: [tip:tracing/core] tracing/filters: move preds into event_filter object
-Message-ID: <tip-7161bb1b07b2236fc32745b548bb5c7f7153f9bc@git.kernel.org>
-Git-Commit-ID: 7161bb1b07b2236fc32745b548bb5c7f7153f9bc
+In-Reply-To: <1240905893.6416.120.camel@tropicana>
+References: <1240905893.6416.120.camel@tropicana>
+Subject: [tip:tracing/core] tracing/filters: distinguish between signed and unsigned fields
+Message-ID: <tip-2d7bd214b4fb1c6fff0307459badfc4632509eb9@git.kernel.org>
+Git-Commit-ID: 2d7bd214b4fb1c6fff0307459badfc4632509eb9
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 12:06:33 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 12:06:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7161bb1b07b2236fc32745b548bb5c7f7153f9bc
-Gitweb:     http://git.kernel.org/tip/7161bb1b07b2236fc32745b548bb5c7f7153f9bc
+Commit-ID:  2d7bd214b4fb1c6fff0307459badfc4632509eb9
+Gitweb:     http://git.kernel.org/tip/2d7bd214b4fb1c6fff0307459badfc4632509eb9
 Author:     Tom Zanussi <tzanussi@gmail.com>
-AuthorDate: Tue, 28 Apr 2009 03:04:47 -0500
+AuthorDate: Tue, 28 Apr 2009 03:04:53 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 29 Apr 2009 12:37:54 +0200
+CommitDate: Wed, 29 Apr 2009 12:37:55 +0200
 
-tracing/filters: move preds into event_filter object
+tracing/filters: distinguish between signed and unsigned fields
 
-Create a new event_filter object, and move the pred-related members
-out of the call and subsystem objects and into the filter object - the
-details of the filter implementation don't need to be exposed in the
-call and subsystem in any case, and it will also help make the new
-parser implementation a little cleaner.
+The new filter comparison ops need to be able to distinguish between
+signed and unsigned field types, so add an is_signed flag/param to the
+event field struct/trace_define_fields().  Also define a simple macro,
+is_signed_type() to determine the signedness at compile time, used in the
+trace macros.  If the is_signed_type() macro won't work with a specific
+type, a new slightly modified version of TRACE_FIELD() called
+TRACE_FIELD_SIGN(), allows the signedness to be set explicitly.
 
-[ Impact: refactor trace-filter code to prepare for new features ]
+[ Impact: extend trace-filter code for new feature ]
 
 Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: fweisbec@gmail.com
 Cc: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <1240905887.6416.119.camel@tropicana>
+LKML-Reference: <1240905893.6416.120.camel@tropicana>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/ftrace_event.h       |    4 +-
- kernel/trace/trace.h               |   10 ++-
- kernel/trace/trace_events.c        |    3 +-
- kernel/trace/trace_events_filter.c |  107 ++++++++++++++++++++++--------------
- 4 files changed, 76 insertions(+), 48 deletions(-)
+ include/linux/ftrace_event.h     |    7 ++++---
+ include/trace/ftrace.h           |   16 ++++++++--------
+ kernel/trace/trace.h             |    1 +
+ kernel/trace/trace_event_types.h |    4 ++--
+ kernel/trace/trace_events.c      |    3 ++-
+ kernel/trace/trace_export.c      |   29 ++++++++++++++++++++++-------
+ 6 files changed, 39 insertions(+), 21 deletions(-)
 
 diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index 78a9ba2..46a27f2 100644
+index 46a27f2..e61a740 100644
 --- a/include/linux/ftrace_event.h
 +++ b/include/linux/ftrace_event.h
-@@ -101,8 +101,8 @@ struct ftrace_event_call {
- 	int			(*show_format)(struct trace_seq *s);
- 	int			(*define_fields)(void);
- 	struct list_head	fields;
--	int			n_preds;
--	struct filter_pred	**preds;
-+	int			filter_active;
-+	void			*filter;
- 	void			*mod;
+@@ -122,8 +122,9 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
+ 					struct ring_buffer_event *event);
  
- #ifdef CONFIG_EVENT_PROFILE
+ extern int trace_define_field(struct ftrace_event_call *call, char *type,
+-			      char *name, int offset, int size);
++			      char *name, int offset, int size, int is_signed);
+ 
++#define is_signed_type(type)	(((type)(-1)) < 0)
+ 
+ /*
+  * The double __builtin_constant_p is because gcc will give us an error
+@@ -144,10 +145,10 @@ do {									\
+ 		__trace_printk(ip, fmt, ##args);			\
+ } while (0)
+ 
+-#define __common_field(type, item)					\
++#define __common_field(type, item, is_signed)				\
+ 	ret = trace_define_field(event_call, #type, "common_" #item,	\
+ 				 offsetof(typeof(field.ent), item),	\
+-				 sizeof(field.ent.item));		\
++				 sizeof(field.ent.item), is_signed);	\
+ 	if (ret)							\
+ 		return ret;
+ 
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index 1e68114..edb02bc 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -225,7 +225,7 @@ ftrace_format_##call(struct trace_seq *s)				\
+ #define __field(type, item)						\
+ 	ret = trace_define_field(event_call, #type, #item,		\
+ 				 offsetof(typeof(field), item),		\
+-				 sizeof(field.item));			\
++				 sizeof(field.item), is_signed_type(type));	\
+ 	if (ret)							\
+ 		return ret;
+ 
+@@ -234,7 +234,7 @@ ftrace_format_##call(struct trace_seq *s)				\
+ 	BUILD_BUG_ON(len > MAX_FILTER_STR_VAL);				\
+ 	ret = trace_define_field(event_call, #type "[" #len "]", #item,	\
+ 				 offsetof(typeof(field), item),		\
+-				 sizeof(field.item));			\
++				 sizeof(field.item), 0);		\
+ 	if (ret)							\
+ 		return ret;
+ 
+@@ -242,7 +242,7 @@ ftrace_format_##call(struct trace_seq *s)				\
+ #define __string(item, src)						       \
+ 	ret = trace_define_field(event_call, "__str_loc", #item,	       \
+ 				offsetof(typeof(field), __str_loc_##item),     \
+-				sizeof(field.__str_loc_##item));
++				 sizeof(field.__str_loc_##item), 0);
+ 
+ #undef TRACE_EVENT
+ #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
+@@ -253,11 +253,11 @@ ftrace_define_fields_##call(void)					\
+ 	struct ftrace_event_call *event_call = &event_##call;		\
+ 	int ret;							\
+ 									\
+-	__common_field(int, type);					\
+-	__common_field(unsigned char, flags);				\
+-	__common_field(unsigned char, preempt_count);			\
+-	__common_field(int, pid);					\
+-	__common_field(int, tgid);					\
++	__common_field(int, type, 1);					\
++	__common_field(unsigned char, flags, 0);			\
++	__common_field(unsigned char, preempt_count, 0);		\
++	__common_field(int, pid, 1);					\
++	__common_field(int, tgid, 1);					\
+ 									\
+ 	tstruct;							\
+ 									\
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 7d55bcf..1fb7d6c 100644
+index 1fb7d6c..866d010 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -731,12 +731,16 @@ struct ftrace_event_field {
+@@ -729,6 +729,7 @@ struct ftrace_event_field {
+ 	char			*type;
+ 	int			offset;
  	int			size;
++	int			is_signed;
  };
  
-+struct event_filter {
-+	int			n_preds;
-+	struct filter_pred	**preds;
-+};
-+
- struct event_subsystem {
- 	struct list_head	list;
- 	const char		*name;
- 	struct dentry		*entry;
--	int			n_preds;
--	struct filter_pred	**preds;
-+	void			*filter;
- };
+ struct event_filter {
+diff --git a/kernel/trace/trace_event_types.h b/kernel/trace/trace_event_types.h
+index cfcecc4..5e32e37 100644
+--- a/kernel/trace/trace_event_types.h
++++ b/kernel/trace/trace_event_types.h
+@@ -141,8 +141,8 @@ TRACE_EVENT_FORMAT(hw_branch, TRACE_HW_BRANCHES, hw_branch_entry, ignore,
  
- struct filter_pred;
-@@ -774,7 +778,7 @@ filter_check_discard(struct ftrace_event_call *call, void *rec,
- 		     struct ring_buffer *buffer,
- 		     struct ring_buffer_event *event)
- {
--	if (unlikely(call->n_preds) && !filter_match_preds(call, rec)) {
-+	if (unlikely(call->filter_active) && !filter_match_preds(call, rec)) {
- 		ring_buffer_discard_commit(buffer, event);
- 		return 1;
- 	}
+ TRACE_EVENT_FORMAT(power, TRACE_POWER, trace_power, ignore,
+ 	TRACE_STRUCT(
+-		TRACE_FIELD(ktime_t, state_data.stamp, stamp)
+-		TRACE_FIELD(ktime_t, state_data.end, end)
++		TRACE_FIELD_SIGN(ktime_t, state_data.stamp, stamp, 1)
++		TRACE_FIELD_SIGN(ktime_t, state_data.end, end, 1)
+ 		TRACE_FIELD(int, state_data.type, type)
+ 		TRACE_FIELD(int, state_data.state, state)
+ 	),
 diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index be4d3a4..1cd1f37 100644
+index 1cd1f37..bbbea74 100644
 --- a/kernel/trace/trace_events.c
 +++ b/kernel/trace/trace_events.c
-@@ -757,8 +757,7 @@ event_subsystem_dir(const char *name, struct dentry *d_events)
+@@ -26,7 +26,7 @@ static DEFINE_MUTEX(event_mutex);
+ LIST_HEAD(ftrace_events);
  
- 	list_add(&system->list, &event_subsystems);
- 
--	system->preds = NULL;
--	system->n_preds = 0;
-+	system->filter = NULL;
- 
- 	entry = debugfs_create_file("filter", 0644, system->entry, system,
- 				    &ftrace_subsystem_filter_fops);
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 6541828..1e861ec 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -93,11 +93,12 @@ static int filter_pred_none(struct filter_pred *pred, void *event)
- /* return 1 if event matches, 0 otherwise (discard) */
- int filter_match_preds(struct ftrace_event_call *call, void *rec)
+ int trace_define_field(struct ftrace_event_call *call, char *type,
+-		       char *name, int offset, int size)
++		       char *name, int offset, int size, int is_signed)
  {
-+	struct event_filter *filter = call->filter;
- 	int i, matched, and_failed = 0;
- 	struct filter_pred *pred;
+ 	struct ftrace_event_field *field;
  
--	for (i = 0; i < call->n_preds; i++) {
--		pred = call->preds[i];
-+	for (i = 0; i < filter->n_preds; i++) {
-+		pred = filter->preds[i];
- 		if (and_failed && !pred->or)
- 			continue;
- 		matched = pred->fn(pred, rec);
-@@ -115,20 +116,20 @@ int filter_match_preds(struct ftrace_event_call *call, void *rec)
- }
- EXPORT_SYMBOL_GPL(filter_match_preds);
+@@ -44,6 +44,7 @@ int trace_define_field(struct ftrace_event_call *call, char *type,
  
--static void __filter_print_preds(struct filter_pred **preds, int n_preds,
-+static void __filter_print_preds(struct event_filter *filter,
- 				 struct trace_seq *s)
- {
--	char *field_name;
- 	struct filter_pred *pred;
-+	char *field_name;
- 	int i;
- 
--	if (!n_preds) {
-+	if (!filter || !filter->n_preds) {
- 		trace_seq_printf(s, "none\n");
- 		return;
- 	}
- 
--	for (i = 0; i < n_preds; i++) {
--		pred = preds[i];
-+	for (i = 0; i < filter->n_preds; i++) {
-+		pred = filter->preds[i];
- 		field_name = pred->field_name;
- 		if (i)
- 			trace_seq_printf(s, pred->or ? "|| " : "&& ");
-@@ -144,7 +145,7 @@ static void __filter_print_preds(struct filter_pred **preds, int n_preds,
- void filter_print_preds(struct ftrace_event_call *call, struct trace_seq *s)
- {
- 	mutex_lock(&filter_mutex);
--	__filter_print_preds(call->preds, call->n_preds, s);
-+	__filter_print_preds(call->filter, s);
- 	mutex_unlock(&filter_mutex);
- }
- 
-@@ -152,7 +153,7 @@ void filter_print_subsystem_preds(struct event_subsystem *system,
- 				  struct trace_seq *s)
- {
- 	mutex_lock(&filter_mutex);
--	__filter_print_preds(system->preds, system->n_preds, s);
-+	__filter_print_preds(system->filter, s);
- 	mutex_unlock(&filter_mutex);
- }
- 
-@@ -200,12 +201,14 @@ static int filter_set_pred(struct filter_pred *dest,
- 
- static void __filter_disable_preds(struct ftrace_event_call *call)
- {
-+	struct event_filter *filter = call->filter;
- 	int i;
- 
--	call->n_preds = 0;
-+	call->filter_active = 0;
-+	filter->n_preds = 0;
- 
- 	for (i = 0; i < MAX_FILTER_PRED; i++)
--		call->preds[i]->fn = filter_pred_none;
-+		filter->preds[i]->fn = filter_pred_none;
- }
- 
- void filter_disable_preds(struct ftrace_event_call *call)
-@@ -217,32 +220,39 @@ void filter_disable_preds(struct ftrace_event_call *call)
- 
- int init_preds(struct ftrace_event_call *call)
- {
-+	struct event_filter *filter;
- 	struct filter_pred *pred;
- 	int i;
- 
--	call->n_preds = 0;
--
--	call->preds = kzalloc(MAX_FILTER_PRED * sizeof(pred), GFP_KERNEL);
--	if (!call->preds)
-+	filter = call->filter = kzalloc(sizeof(*filter), GFP_KERNEL);
-+	if (!call->filter)
- 		return -ENOMEM;
- 
-+	call->filter_active = 0;
-+	filter->n_preds = 0;
-+
-+	filter->preds = kzalloc(MAX_FILTER_PRED * sizeof(pred), GFP_KERNEL);
-+	if (!filter->preds)
-+		goto oom;
-+
- 	for (i = 0; i < MAX_FILTER_PRED; i++) {
- 		pred = kzalloc(sizeof(*pred), GFP_KERNEL);
- 		if (!pred)
- 			goto oom;
- 		pred->fn = filter_pred_none;
--		call->preds[i] = pred;
-+		filter->preds[i] = pred;
- 	}
+ 	field->offset = offset;
+ 	field->size = size;
++	field->is_signed = is_signed;
+ 	list_add(&field->link, &call->fields);
  
  	return 0;
+diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+index 0cb1a14..d06cf89 100644
+--- a/kernel/trace/trace_export.c
++++ b/kernel/trace/trace_export.c
+@@ -50,6 +50,9 @@ extern void __bad_type_size(void);
+ 	if (!ret)							\
+ 		return 0;
  
- oom:
- 	for (i = 0; i < MAX_FILTER_PRED; i++) {
--		if (call->preds[i])
--			filter_free_pred(call->preds[i]);
-+		if (filter->preds[i])
-+			filter_free_pred(filter->preds[i]);
- 	}
--	kfree(call->preds);
--	call->preds = NULL;
-+	kfree(filter->preds);
-+	kfree(call->filter);
-+	call->filter = NULL;
++#undef TRACE_FIELD_SIGN
++#define TRACE_FIELD_SIGN(type, item, assign, is_signed)	\
++	TRACE_FIELD(type, item, assign)
  
- 	return -ENOMEM;
- }
-@@ -250,15 +260,16 @@ EXPORT_SYMBOL_GPL(init_preds);
+ #undef TP_RAW_FMT
+ #define TP_RAW_FMT(args...) args
+@@ -98,6 +101,10 @@ ftrace_format_##call(struct trace_seq *s)				\
+ #define TRACE_FIELD(type, item, assign)\
+ 	entry->item = assign;
  
- static void __filter_free_subsystem_preds(struct event_subsystem *system)
- {
-+	struct event_filter *filter = system->filter;
- 	struct ftrace_event_call *call;
- 	int i;
- 
--	if (system->n_preds) {
--		for (i = 0; i < system->n_preds; i++)
--			filter_free_pred(system->preds[i]);
--		kfree(system->preds);
--		system->preds = NULL;
--		system->n_preds = 0;
-+	if (filter && filter->n_preds) {
-+		for (i = 0; i < filter->n_preds; i++)
-+			filter_free_pred(filter->preds[i]);
-+		kfree(filter->preds);
-+		kfree(filter);
-+		system->filter = NULL;
- 	}
- 
- 	list_for_each_entry(call, &ftrace_events, list) {
-@@ -281,21 +292,23 @@ static int filter_add_pred_fn(struct ftrace_event_call *call,
- 			      struct filter_pred *pred,
- 			      filter_pred_fn_t fn)
- {
-+	struct event_filter *filter = call->filter;
- 	int idx, err;
- 
--	if (call->n_preds && !pred->compound)
-+	if (filter->n_preds && !pred->compound)
- 		__filter_disable_preds(call);
- 
--	if (call->n_preds == MAX_FILTER_PRED)
-+	if (filter->n_preds == MAX_FILTER_PRED)
- 		return -ENOSPC;
- 
--	idx = call->n_preds;
--	filter_clear_pred(call->preds[idx]);
--	err = filter_set_pred(call->preds[idx], pred, fn);
-+	idx = filter->n_preds;
-+	filter_clear_pred(filter->preds[idx]);
-+	err = filter_set_pred(filter->preds[idx], pred, fn);
- 	if (err)
- 		return err;
- 
--	call->n_preds++;
-+	filter->n_preds++;
-+	call->filter_active = 1;
- 
- 	return 0;
- }
-@@ -366,29 +379,41 @@ int filter_add_pred(struct ftrace_event_call *call, struct filter_pred *pred)
- int filter_add_subsystem_pred(struct event_subsystem *system,
- 			      struct filter_pred *pred)
- {
-+	struct event_filter *filter = system->filter;
- 	struct ftrace_event_call *call;
- 
- 	mutex_lock(&filter_mutex);
- 
--	if (system->n_preds && !pred->compound)
-+	if (filter && filter->n_preds && !pred->compound) {
- 		__filter_free_subsystem_preds(system);
-+		filter = NULL;
-+	}
- 
--	if (!system->n_preds) {
--		system->preds = kzalloc(MAX_FILTER_PRED * sizeof(pred),
-+	if (!filter) {
-+		system->filter = kzalloc(sizeof(*filter), GFP_KERNEL);
-+		if (!system->filter) {
-+			mutex_unlock(&filter_mutex);
-+			return -ENOMEM;
-+		}
-+		filter = system->filter;
-+		filter->preds = kzalloc(MAX_FILTER_PRED * sizeof(pred),
- 					GFP_KERNEL);
--		if (!system->preds) {
++#undef TRACE_FIELD_SIGN
++#define TRACE_FIELD_SIGN(type, item, assign, is_signed)	\
++	TRACE_FIELD(type, item, assign)
 +
-+		if (!filter->preds) {
-+			kfree(system->filter);
-+			system->filter = NULL;
- 			mutex_unlock(&filter_mutex);
- 			return -ENOMEM;
- 		}
- 	}
+ #undef TP_CMD
+ #define TP_CMD(cmd...)	cmd
  
--	if (system->n_preds == MAX_FILTER_PRED) {
-+	if (filter->n_preds == MAX_FILTER_PRED) {
- 		mutex_unlock(&filter_mutex);
- 		return -ENOSPC;
- 	}
+@@ -149,7 +156,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ #define TRACE_FIELD(type, item, assign)					\
+ 	ret = trace_define_field(event_call, #type, #item,		\
+ 				 offsetof(typeof(field), item),		\
+-				 sizeof(field.item));			\
++				 sizeof(field.item), is_signed_type(type));	\
+ 	if (ret)							\
+ 		return ret;
  
--	system->preds[system->n_preds] = pred;
--	system->n_preds++;
-+	filter->preds[filter->n_preds] = pred;
-+	filter->n_preds++;
+@@ -157,7 +164,15 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ #define TRACE_FIELD_SPECIAL(type, item, len, cmd)			\
+ 	ret = trace_define_field(event_call, #type "[" #len "]", #item,	\
+ 				 offsetof(typeof(field), item),		\
+-				 sizeof(field.item));			\
++				 sizeof(field.item), 0);		\
++	if (ret)							\
++		return ret;
++
++#undef TRACE_FIELD_SIGN
++#define TRACE_FIELD_SIGN(type, item, assign, is_signed)			\
++	ret = trace_define_field(event_call, #type, #item,		\
++				 offsetof(typeof(field), item),		\
++				 sizeof(field.item), is_signed);	\
+ 	if (ret)							\
+ 		return ret;
  
- 	list_for_each_entry(call, &ftrace_events, list) {
- 		int err;
-@@ -401,8 +426,8 @@ int filter_add_subsystem_pred(struct event_subsystem *system,
- 
- 		err = __filter_add_pred(call, pred);
- 		if (err == -ENOMEM) {
--			system->preds[system->n_preds] = NULL;
--			system->n_preds--;
-+			filter->preds[filter->n_preds] = NULL;
-+			filter->n_preds--;
- 			mutex_unlock(&filter_mutex);
- 			return err;
- 		}
+@@ -173,11 +188,11 @@ ftrace_define_fields_##call(void)					\
+ 	struct args field;						\
+ 	int ret;							\
+ 									\
+-	__common_field(unsigned char, type);				\
+-	__common_field(unsigned char, flags);				\
+-	__common_field(unsigned char, preempt_count);			\
+-	__common_field(int, pid);					\
+-	__common_field(int, tgid);					\
++	__common_field(unsigned char, type, 0);				\
++	__common_field(unsigned char, flags, 0);			\
++	__common_field(unsigned char, preempt_count, 0);		\
++	__common_field(int, pid, 1);					\
++	__common_field(int, tgid, 1);					\
+ 									\
+ 	tstruct;							\
+ 									\
