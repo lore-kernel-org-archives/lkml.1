@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758447AbZD2LWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759073AbZD2LW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758447AbZD2LWA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 07:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755846AbZD2LVu
+	id S1759073AbZD2LW1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 07:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757387AbZD2LWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 07:21:50 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:24255 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753762AbZD2LVt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 07:21:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=DfjjzPT5NHWlBQ18NYigOLP7K/9Jz2B5xe2nKR6iwdqunD3tE2BfhtYn1IMPVNh2YY
-         NFX9h5HDW1U4Y9GqPBIM5H2Q6CK6GPLI1+PXJLoddTqgziWC4pmqnAoVmUa35B/FyTLO
-         i1RE0Xez4p2MXw0zyofWBt6iaBUYK3y8WPdtY=
+	Wed, 29 Apr 2009 07:22:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55880 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754930AbZD2LWJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 07:22:09 -0400
+Date: Wed, 29 Apr 2009 13:21:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Robert Richter <robert.richter@amd.com>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 01/29] x86: perfcounter: remove
+	X86_FEATURE_ARCH_PERFMON flag for AMD cpus
+Message-ID: <20090429112150.GB8298@elte.hu>
+References: <1241002046-8832-1-git-send-email-robert.richter@amd.com> <1241002046-8832-2-git-send-email-robert.richter@amd.com>
 MIME-Version: 1.0
-In-Reply-To: <7D4BD025A2554467AD77428C455E1FE0@avitech.sk>
-References: <7D4BD025A2554467AD77428C455E1FE0@avitech.sk>
-Date: Wed, 29 Apr 2009 13:21:47 +0200
-X-Google-Sender-Auth: 85ed1b4e7d818ae9
-Message-ID: <10f740e80904290421w3e914ebew94eb6081cbea1cdc@mail.gmail.com>
-Subject: Re: Intel KMS + fbcon + Mplayer
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Peter Hanzel <hanzelpeter@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       dri-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241002046-8832-2-git-send-email-robert.richter@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 12:04, Peter Hanzel <hanzelpeter@gmail.com> wrote:
-> I have tried Intel KMS in kernel 2.6.91.1 with fbcon. I am using only
-> framebuffer console.
-> Most fb apps works, but I have problem with mplayer.
-> The init works but the video is badly displayed.
-> I have investigated the problem and found, that for my laptop mode
-> 1280x800-32.
->
-> The ioctl on /dev/fb0 FBIOGET_VSCREENINFO returns.
-> var.bits_per_pixel=32
-> var.transp.length = 0.
->
-> So the mplayer thinks we are in 24 bit mode (maybe this is bug in mplayer,
-> because bits_per_pixel is 32).
->
-> But next I have checked it with kernel vesafb and for same mode
-> (1280x800-32, vga=0x362 )
-> The fb ioctl returns
-> var.bits_per_pixel=32
-> var.transp.length = 8.
->
-> So is this intentionally made so. Because I think this mode use only red,
-> green,blue and no transp. But for one pixel you must write 4 bytes. (so
-> transp is not used).
 
-That must be a bug in mplayer, as var.bits_per_pixel = 32. If there's
-no transparency, it's
-correct to hav var.transp.length = 0 . The additional 8 bits may be unused.
+* Robert Richter <robert.richter@amd.com> wrote:
 
-Gr{oetje,eeting}s,
+> X86_FEATURE_ARCH_PERFMON is an Intel hardware feature that does not
+> work on AMD CPUs. The flag is now only used in Intel specific code
+> (especially initialization).
+> 
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> ---
+>  arch/x86/kernel/cpu/amd.c          |    4 ----
+>  arch/x86/kernel/cpu/perf_counter.c |    6 +++---
+>  2 files changed, 3 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+> index fd69c51..7e4a459 100644
+> --- a/arch/x86/kernel/cpu/amd.c
+> +++ b/arch/x86/kernel/cpu/amd.c
+> @@ -420,10 +420,6 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+>  	if (c->x86 >= 6)
+>  		set_cpu_cap(c, X86_FEATURE_FXSAVE_LEAK);
+>  
+> -	/* Enable Performance counter for K7 and later */
+> -	if (c->x86 > 6 && c->x86 <= 0x11)
+> -		set_cpu_cap(c, X86_FEATURE_ARCH_PERFMON);
 
-						Geert
+might make sense to introduce a 'virtual CPU ID flag' for it like we 
+do it in other cases, to signal that we support perfcounters on this 
+CPU.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Ingo
