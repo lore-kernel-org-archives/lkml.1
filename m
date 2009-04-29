@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760667AbZD2UXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760962AbZD2UYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760667AbZD2UXm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 16:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757010AbZD2UXc
+	id S1760962AbZD2UYu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 16:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756351AbZD2UYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 16:23:32 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:49150 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755722AbZD2UXb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 16:23:31 -0400
-Date: Wed, 29 Apr 2009 16:23:29 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Benny Amorsen <benny+usenet@amorsen.dk>,
-       USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: usbutils 0.81 release
-In-Reply-To: <20090429174232.GA29026@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0904291612360.1234-100000@netrider.rowland.org>
+	Wed, 29 Apr 2009 16:24:41 -0400
+Received: from kroah.org ([198.145.64.141]:50406 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756693AbZD2UYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 16:24:40 -0400
+Date: Wed, 29 Apr 2009 13:19:47 -0700
+From: Greg KH <greg@kroah.com>
+To: Tim Gardner <timg@tpi.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: staging - mac80211 - unify config_interface and
+	bss_info_changed
+Message-ID: <20090429201947.GB20814@kroah.com>
+References: <20090429193821.305DAF88CE@sepang.rtg.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090429193821.305DAF88CE@sepang.rtg.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This thread is getting a bit ridiculous (especially with the annoying
-GMANE redirections and challenges), and it's not an important issue, so
-this will be my last word on the subject.
-
-On Wed, 29 Apr 2009, Greg KH wrote:
-
-> On Wed, Apr 29, 2009 at 11:51:12AM -0400, Alan Stern wrote:
-> > 
-> > 
-> > 
-> > On Wed, 29 Apr 2009, Benny Amorsen wrote:
-> > 
-> > > Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-> > > writes:
-> > > 
-> > > > Sure they do.  If you've got an RPM-based system, and you want to
-> > > > install a package version that's more recent than the one bundled in
-> > > > your distribution (or if your distribution doesn't include the package
-> > > > at all), then you'd want to build your own RPM.
-> > > 
-> > > In that case you grab the source package from the distribution, install
-> > > it, bump the version number and add the tar file to the SOURCES
-> > > directory. (And then you remove the patches which were upstreamed in the
-> > > meantime).
-> > 
-> > You didn't read all that I wrote.  What if the package isn't included 
-> > in the distribution at all?
+On Wed, Apr 29, 2009 at 01:38:21PM -0600, Tim Gardner wrote:
+> Greg,
 > 
-> What rpm based distro does not have usbutils?
+> I did a build test to make sure things at least compile. checkpatch is fine
+> with these patches, but the drivers clearly have other formatting issues.
+> 
+> Lemme know if you have any problems.
 
-As far as I know, all of them have it.
+Only thing that is a problem is that I can't pull 3 individual patches
+out of one email :)
 
-But that's not the point.  The point is this: The first quote above 
-("Sure they do...") was in response to Greg's question
+Care to use git send-email to send them to me?
 
-	Do people build rpms out of tarballs that aren't coming from
-	their distro anymore?
+thanks,
 
-Although it was asked in the context of a discussion about usbutils, it
-is a general question.  (Notice that Benny's comment doesn't mention
-usbutils either.)  Consequently I gave a general answer.
-
-Maybe this sounds like sophistry... and maybe it is.  That's just the 
-way my mind works -- very literally at times.
-
-Alan Stern
-
+greg k-h
