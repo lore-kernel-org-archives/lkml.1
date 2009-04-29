@@ -1,111 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758468AbZD2QHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbZD2QHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758468AbZD2QHN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 12:07:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbZD2QG6
+	id S1759553AbZD2QHh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 12:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758996AbZD2QHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 12:06:58 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:60020 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754055AbZD2QG5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 12:06:57 -0400
-Date: Wed, 29 Apr 2009 18:06:52 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
-Subject: Re: BUG: NULL pointer dereference in try_to_del_timer_sync()
-Message-ID: <20090429160652.GF6291@buzzloop.caiaq.de>
-References: <Pine.LNX.4.44L0.0904291147230.24643-100000@netrider.rowland.org> <Pine.LNX.4.44L0.0904291159240.24643-100000@netrider.rowland.org>
+	Wed, 29 Apr 2009 12:07:13 -0400
+Received: from mga11.intel.com ([192.55.52.93]:17360 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759415AbZD2QHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 12:07:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,266,1239001200"; 
+   d="scan'208";a="452609305"
+From: "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>
+To: "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Ma, Chinang" <chinang.ma@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
+       "Recalde, Luis F" <luis.f.recalde@intel.com>,
+       "Nelson, Doug" <doug.nelson@intel.com>,
+       "Cheng, Wu-sun" <wu-sun.cheng@intel.com>,
+       "Prickett, Terry O" <terry.o.prickett@intel.com>,
+       "Shunmuganathan, Rajalakshmi" <rajalakshmi.shunmuganathan@intel.com>,
+       "Garg, Anil K" <anil.k.garg@intel.com>,
+       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>
+Date: Wed, 29 Apr 2009 10:06:44 -0600
+Subject: RE: Mainline kernel OLTP performance update
+Thread-Topic: Mainline kernel OLTP performance update
+Thread-Index: AcnIpH2wYNuL0nVjSjitaku5DQLCvgAPXCLwAACgmSA=
+Message-ID: <CAC4B8726E86A142B27A9E9A2F2F1247AB6943CB@rrsmsx505.amr.corp.intel.com>
+References: <D7C42C27E6CB1E4D8CBDF2F81EA92A2603459F3D6A@azsmsx501.amr.corp.intel.com>
+	<20090429002930.b786348b.akpm@linux-foundation.org>
+ <871vrbrhhy.fsf@basil.nowhere.org>
+ <D7C42C27E6CB1E4D8CBDF2F81EA92A260345A63FAC@azsmsx501.amr.corp.intel.com>
+In-Reply-To: <D7C42C27E6CB1E4D8CBDF2F81EA92A260345A63FAC@azsmsx501.amr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0904291159240.24643-100000@netrider.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n3TG8Fqu015804
 
-On Wed, Apr 29, 2009 at 12:00:58PM -0400, Alan Stern wrote:
-> On Wed, 29 Apr 2009, Alan Stern wrote:
+Is it possible that's simply 'oprofile has a 4% overhead'?
+
+> -----Original Message-----
+> From: Styner, Douglas W
+> Sent: Wednesday, April 29, 2009 9:00 AM
+> To: Andi Kleen; Andrew Morton
+> Cc: linux-kernel@vger.kernel.org; Tripathi, Sharad C;
+> arjan@linux.intel.com; Wilcox, Matthew R; Kleen, Andi; Siddha, Suresh B;
+> Ma, Chinang; Wang, Peter Xihong; Nueckel, Hubert; Recalde, Luis F; Nelson,
+> Doug; Cheng, Wu-sun; Prickett, Terry O; Shunmuganathan, Rajalakshmi; Garg,
+> Anil K; Chilukuri, Harita; chris.mason@oracle.com
+> Subject: RE: Mainline kernel OLTP performance update
 > 
-> > Looks like the ftdi_sio driver doesn't use proper reference counting 
-> > for its private data structure.  Does this patch help?
+> What we showed was that vmstat and vtune agreed wrt system/user time.
+> Oprofile is off by ~4% (4% too low for user. 4% too high for system)
 > 
-> Oops, I forgot to initialize the kref.  Try this patch instead.
-
-Yep, that did it! Very good, thanks a lot.
-Feel free to add my 'Tested-by' :)
-
-Daniel
-
-
-> Index: 2.6.30-rc3/drivers/usb/serial/ftdi_sio.c
-> ===================================================================
-> --- 2.6.30-rc3.orig/drivers/usb/serial/ftdi_sio.c
-> +++ 2.6.30-rc3/drivers/usb/serial/ftdi_sio.c
-> @@ -56,6 +56,7 @@ static __u16 vendor = FTDI_VID;
->  static __u16 product;
->  
->  struct ftdi_private {
-> +	struct kref kref;
->  	ftdi_chip_type_t chip_type;
->  				/* type of device, either SIO or FT8U232AM */
->  	int baud_base;		/* baud base clock for divisor setting */
-> @@ -1352,6 +1353,7 @@ static int ftdi_sio_port_probe(struct us
->  		return -ENOMEM;
->  	}
->  
-> +	kref_init(&priv->kref);
->  	spin_lock_init(&priv->rx_lock);
->  	spin_lock_init(&priv->tx_lock);
->  	init_waitqueue_head(&priv->delta_msr_wait);
-> @@ -1468,6 +1470,13 @@ static void ftdi_shutdown(struct usb_ser
->  	dbg("%s", __func__);
->  }
->  
-> +static void ftdi_sio_priv_release(struct kref *k)
-> +{
-> +	struct ftdi_private *priv = container_of(k, struct ftdi_private, kref);
-> +
-> +	kfree(priv);
-> +}
-> +
->  static int ftdi_sio_port_remove(struct usb_serial_port *port)
->  {
->  	struct ftdi_private *priv = usb_get_serial_port_data(port);
-> @@ -1482,7 +1491,7 @@ static int ftdi_sio_port_remove(struct u
->  
->  	if (priv) {
->  		usb_set_serial_port_data(port, NULL);
-> -		kfree(priv);
-> +		kref_put(&priv->kref, ftdi_sio_priv_release);
->  	}
->  
->  	return 0;
-> @@ -1547,7 +1556,8 @@ static int ftdi_open(struct tty_struct *
->  		dev_err(&port->dev,
->  			"%s - failed submitting read urb, error %d\n",
->  			__func__, result);
-> -
-> +	else
-> +		kref_get(&priv->kref);
->  
->  	return result;
->  } /* ftdi_open */
-> @@ -1589,11 +1599,11 @@ static void ftdi_close(struct tty_struct
->  	mutex_unlock(&port->serial->disc_mutex);
->  
->  	/* cancel any scheduled reading */
-> -	cancel_delayed_work(&priv->rx_work);
-> -	flush_scheduled_work();
-> +	cancel_delayed_work_sync(&priv->rx_work);
->  
->  	/* shutdown our bulk read */
->  	usb_kill_urb(port->read_urb);
-> +	kref_put(&priv->kref, ftdi_sio_priv_release);
->  } /* ftdi_close */
->  
->  
-> 
+> >-----Original Message-----
+> >From: Andi Kleen [mailto:andi@firstfloor.org]
+> >Sent: Wednesday, April 29, 2009 1:28 AM
+> >To: Andrew Morton
+> >Cc: Styner, Douglas W; linux-kernel@vger.kernel.org; Tripathi, Sharad C;
+> >arjan@linux.intel.com; Wilcox, Matthew R; Kleen, Andi; Siddha, Suresh B;
+> >Ma, Chinang; Wang, Peter Xihong; Nueckel, Hubert; Recalde, Luis F;
+> Nelson,
+> >Doug; Cheng, Wu-sun; Prickett, Terry O; Shunmuganathan, Rajalakshmi;
+> Garg,
+> >Anil K; Chilukuri, Harita; chris.mason@oracle.com
+> >Subject: Re: Mainline kernel OLTP performance update
+> >
+> >Andrew Morton <akpm@linux-foundation.org> writes:
+> >
+> >>> ======oprofile CPU_CLK_UNHALTED for top 30 functions
+> >>> Cycles% 2.6.24.2                   Cycles% 2.6.30-rc3
+> >>> 74.8578 <database>                 69.1925 <database>
+> >>
+> >> ouch, that's a large drop in userspace CPU occupancy.  It seems
+> >> inconsistent with the 1.91% above.
+> >
+> >That was determined to be an oprofile artifact/regression (see Doug's
+> >other email+thread) The 2.6.30 oprofile seems to be less accurate than
+> >the one in 2.6.24. Of course the question is if it can't get
+> >the user space right, is the kernel data accurate. But I believe
+> >Doug verified with vtune that the kernel data is roughly correct,
+> >just user space profiling was slightly bogus (right, Doug, or
+> >do I misrepresent that?)
+> >
+> >-Andi
+> >
+> >--
+> >ak@linux.intel.com -- Speaking for myself only.
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
