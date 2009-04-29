@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbZD2RBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbZD2RC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760737AbZD2RBp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 13:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758567AbZD2Qzs
+	id S1760888AbZD2RC2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 13:02:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758472AbZD2Qzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 12:55:48 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:6507 "EHLO
-	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754966AbZD2Qzl (ORCPT
+	Wed, 29 Apr 2009 12:55:51 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:34134 "EHLO
+	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758324AbZD2Qzu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 12:55:41 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0KIVGC4-01-3V0-01
+	Wed, 29 Apr 2009 12:55:50 -0400
+X-BigFish: VPS-4(zz14c3Mzz1202hzzz32i63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0KIVGC3-02-4PE-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: akpm@linux-foundation.org, greg@kroah.com
 CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
        dougthompson@xmission.com, <linux-kernel@vger.kernel.org>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 18/21] amd64_edac: add ECC reporting initializers
-Date: Wed, 29 Apr 2009 18:55:04 +0200
-Message-ID: <1241024107-14535-19-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 17/21] amd64_edac: add EDAC core-related initializers
+Date: Wed, 29 Apr 2009 18:55:03 +0200
+Message-ID: <1241024107-14535-18-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
 References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 29 Apr 2009 16:55:22.0585 (UTC) FILETIME=[49167C90:01C9C8EB]
+X-OriginalArrivalTime: 29 Apr 2009 16:55:22.0148 (UTC) FILETIME=[48D3CE40:01C9C8EB]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,266 +36,354 @@ From: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |  242 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 242 insertions(+), 0 deletions(-)
+ drivers/edac/amd64_edac.c |  336 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 336 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 8cf8060..43f236d 100644
+index fee9ec4..8cf8060 100644
 --- a/drivers/edac/amd64_edac.c
 +++ b/drivers/edac/amd64_edac.c
-@@ -70,6 +70,7 @@
- #include <linux/slab.h>
- #include <linux/mmzone.h>
- #include <linux/edac.h>
-+#include <asm/msr.h>
- #include "edac_core.h"
- 
- #define amd64_printk(level, fmt, arg...) \
-@@ -4165,3 +4166,244 @@ static int amd64_init_csrows(struct mem_ctl_info *mci)
- 	return empty;
+@@ -3828,4 +3828,340 @@ static int amd64_process_error_info(struct mem_ctl_info *mci,
+ 	return 1;
  }
  
 +/*
-+ * amd64_enable_ecc_error_reporting
++ * amd64_check
 + *
-+ *	Only if 'ecc_enable_override' is set AND BIOS had ECC disabled,
-+ *	do "we" enable it.
-+ *
-+ *	On each NB we need to enable the hardware to
-+ *	generate and detect error events
-+ *
-+ *	1) NB Control Register
-+ *	2) Global MCE Reporting Control Reg (MCGCTL)
++ * The main polling 'check' function, called FROM the edac core to perform the
++ * error checking and if an error is encountered, error processing.
 + */
-+static void amd64_enable_ecc_error_reporting(struct mem_ctl_info *mci)
++static void amd64_check(struct mem_ctl_info *mci)
 +{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	const cpumask_t *cpumask = cpumask_of_node(pvt->mc_node_id);
-+	int idx = 0, cpu, err;
-+	int cpus_on_node = cpumask_weight(cpumask);
-+	u32 mcgctl_l[cpus_on_node], mcgctl_h[cpus_on_node];
-+	u32 value;
-+	u32 mask = K8_NBCTL_CECCEn | K8_NBCTL_UECCEn;
++	struct amd64_error_info_regs info;
 +
-+	if (!ecc_enable_override)
-+		return;
++	debugf3("%s()\n", __func__);
++	if (amd64_get_error_info(mci, &info))
++		amd64_process_error_info(mci, &info, 1);
++}
 +
-+	amd64_printk(KERN_WARNING,
-+		"'ecc_enable_override' parameter is active, "
-+		"Enabling AMD ECC hardware now: CAUTION\n");
++/*
++ * amd64_reserve_mc_sibling_devices
++ *
++ * Input:
++ *	1) struct amd64_pvt which contains pvt->dram_f2_ctl pointer
++ *	2) AMD Family index value
++ *
++ * Ouput:
++ *	Upon return of 0, the following filled in:
++ *
++ *		struct pvt->addr_f1_ctl
++ *		struct pvt->misc_f3_ctl
++ *
++ *	Filled in with related device funcitions of 'dram_f2_ctl'
++ *	These devices are "reserved" via the pci_get_device()
++ *
++ *	Upon return of 1 (error status):
++ *
++ *		Nothing reserved
++ */
++static int amd64_reserve_mc_sibling_devices(struct amd64_pvt *pvt,
++					 int mc_type_index)
++{
++	const struct amd64_family_type
++		*amd64_dev = &amd64_family_types[mc_type_index];
 +
-+	/* 1) read the NB Control register, and save old Enable bits */
-+	err = pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCTL, &value);
-+	if (err != 0)
-+		debugf0("%s() Reading K8_NBCTL failed\n", __func__);
-+
-+	/* save old value and then turn on UECCn and CECCEn bits
-+	 * and write it back out, thus turning ON ECC for sure
-+	 */
-+	pvt->old_nbctl = value & mask;
-+	pvt->nbctl_mcgctl_saved = 1;	/* Mark 'old' ECC values valid */
-+
-+	value |= mask;
-+	pci_write_config_dword(pvt->misc_f3_ctl, K8_NBCTL, value);
-+
-+	debugf0("%s() Old NBCTL 0x%x New NBCTL= 0x%x\n",
-+		__func__, pvt->old_nbctl, value);
-+
-+	/* 2) Read and save the NB Enable bit at entry. Enable the bit
-+	 * then write the enabled value back to hardware
-+	 */
-+	rdmsr_on_cpus(cpumask, K8_MSR_MCGCTL, mcgctl_l, mcgctl_h);
-+
-+	for_each_cpu(cpu, cpumask) {
-+		pvt->old_mcgctl[idx] = mcgctl_l[idx] & K8_MSR_MCGCTL_NBE;
-+		mcgctl_l[idx] |= K8_MSR_MCGCTL_NBE;
-+
-+		debugf0("%s(), cpu %d, Old MCGCTL[NBE] = 0x%x New MCGCTL=0x%x\n",
-+			__func__, cpu, (unsigned int) pvt->old_mcgctl[idx],
-+			(unsigned int) mcgctl_l[idx]);
-+
-+		idx++;
++	/* Reserve the ADDRESS MAP Device */
++	pvt->addr_f1_ctl = pci_get_related_function(pvt->dram_f2_ctl->vendor,
++						amd64_dev->addr_f1_ctl,
++						pvt->dram_f2_ctl);
++	if (pvt->addr_f1_ctl == NULL) {
++		amd64_printk(KERN_ERR, "error address map device not found: "
++			  "vendor %x device 0x%x (broken BIOS?)\n",
++			  PCI_VENDOR_ID_AMD, amd64_dev->addr_f1_ctl);
++		return 1;
 +	}
-+	wrmsr_on_cpus(cpumask, K8_MSR_MCGCTL, mcgctl_l, mcgctl_h);
 +
-+	/* 3) Read the NB CFG to ensure DRAM ECC is on and then
-+	 * keep a copy of the hw register in the control structure
++	/* Reserve the MISC Device */
++	pvt->misc_f3_ctl = pci_get_related_function(pvt->dram_f2_ctl->vendor,
++						amd64_dev->misc_f3_ctl,
++						pvt->dram_f2_ctl);
++	if (pvt->misc_f3_ctl == NULL) {
++		pci_dev_put(pvt->addr_f1_ctl);
++		pvt->addr_f1_ctl = NULL;
++
++		amd64_printk(KERN_ERR, "error miscellaneous device not found: "
++			  "vendor %x device 0x%x (broken BIOS?)\n",
++			  PCI_VENDOR_ID_AMD, amd64_dev->misc_f3_ctl);
++		return 1;
++	}
++
++	debugf1("    Addr Map device PCI Bus ID:\t%s\n",
++		pci_name(pvt->addr_f1_ctl));
++	debugf1("    DRAM MEM-CTL PCI Bus ID:\t%s\n",
++		pci_name(pvt->dram_f2_ctl));
++	debugf1("    Misc device PCI Bus ID:\t\t%s\n",
++		pci_name(pvt->misc_f3_ctl));
++
++	return 0;
++}
++
++/*
++ * amd64_read_mc_registers
++ *
++ * Retrieve the hardware registers of the memory controller (this includes the
++ * 'Address Map' and 'Misc' device regs)
++ */
++static void amd64_read_mc_registers(struct amd64_pvt *pvt)
++{
++	u64 msr_val;
++	int dram;
++	int err;
++
++	debugf0("%s(MC node-id=%d): (ExtModel=%d)\n",
++		__func__, pvt->mc_node_id, pvt->ext_model);
++
++	/*
++	 * Retrieve TOP_MEM and TOP_MEM2; no masking off of reserved
++	 * bits since those are Read-As-Zero
 +	 */
-+	err = pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCFG, &value);
++	rdmsrl(MSR_K8_TOP_MEM1, msr_val);
++	pvt->top_mem = msr_val >> 23;
++	debugf0("  TOP_MEM=0x%08llx\n", pvt->top_mem);
++
++	/* check first whether TOP_MEM2 is enabled */
++	rdmsrl(MSR_K8_SYSCFG, msr_val);
++	if (msr_val & (1U << 21)) {
++		rdmsrl(MSR_K8_TOP_MEM2, msr_val);
++		pvt->top_mem2 = msr_val >> 23;
++		debugf0("  TOP_MEM2=0x%08llx\n", pvt->top_mem2);
++	} else
++		debugf0("  TOP_MEM2 disabled.\n");
++
++	amd64_cpu_display_info(pvt);
++
++	err = pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCAP, &pvt->nbcap);
++	if (err != 0)
++		debugf0("%s() Reading K8_NBCAP failed\n", __func__);
++
++	if (pvt->ops->read_dram_ctl_register)
++		pvt->ops->read_dram_ctl_register(pvt);
++
++	for (dram = 0; dram < DRAM_REG_COUNT; dram++) {
++		/*
++		 * Call CPU specific READ function to get the DRAM Base and
++		 * Limit values from the DCT.
++		 */
++		pvt->ops->read_dram_base_limit(pvt, dram);
++
++		/* Only print out debug info on rows with both R and W
++		 * Enabled.  Normal processing, compiler should optimize
++		 * this whole 'if' debug output block away
++		 */
++		if (pvt->dram_rw_en[dram] != 0) {
++			debugf1("  DRAM_BASE[%d]: 0x%8.08x-%8.08x "
++				"DRAM_LIMIT:  0x%8.08x-%8.08x\n",
++				dram,
++				(u32)(pvt->dram_base[dram] >> 32),
++				(u32)(pvt->dram_base[dram] & 0xFFFFFFFF),
++				(u32)(pvt->dram_limit[dram] >> 32),
++				(u32)(pvt->dram_limit[dram] & 0xFFFFFFFF));
++			debugf1("        IntlvEn=%s %s %s "
++				"IntlvSel=%d DstNode=%d\n",
++				pvt->dram_IntlvEn[dram] ?
++					"Enabled" : "Disabled",
++				(pvt->dram_rw_en[dram] & 0x2) ? "W" : "!W",
++				(pvt->dram_rw_en[dram] & 0x1) ? "R" : "!R",
++				pvt->dram_IntlvSel[dram],
++				pvt->dram_DstNode[dram]);
++		}
++	}
++
++	amd64_read_dct_base_mask(pvt);
++
++	err = pci_read_config_dword(pvt->addr_f1_ctl, K8_DHAR, &pvt->dhar);
++	if (err != 0)
++		debugf0("%s() Reading K8_DHAR failed\n", __func__);
++
++	amd64_read_dbam_reg(pvt);
++
++	err = pci_read_config_dword(pvt->misc_f3_ctl,
++				F10_ONLINE_SPARE, &pvt->online_spare);
++	if (err != 0)
++		debugf0("%s() Reading ONLINE_SPARE failed\n", __func__);
++
++	err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCLR_0, &pvt->dclr0);
++	if (err != 0)
++		debugf0("%s() Reading F10_DCLR_0 failed\n", __func__);
++	err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCHR_0, &pvt->dchr0);
++	if (err != 0)
++		debugf0("%s() Reading F10_DCHR_0 failed\n", __func__);
++
++	if (!dct_ganging_enabled(pvt)) {
++		err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCLR_1,
++						&pvt->dclr1);
++		if (err != 0)
++			debugf0("%s() Reading F10_DCLR_1 failed\n", __func__);
++		err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCHR_1,
++						&pvt->dchr1);
++		if (err != 0)
++			debugf0("%s() Reading F10_DCHR_1 failed\n", __func__);
++	}
++
++	amd64_dump_misc_regs(pvt);
++}
++
++/*
++ * amd64_csrow_nr_pages
++ *
++ *	NOTE: CPU Revision Dependent code
++ *
++ *	Input:
++ *		csrow_nr  ChipSelect Row Number (0..CHIPSELECT_COUNT-1)
++ *		k8 private pointer to -->
++ *			DRAM Bank Address mapping register
++ *			node_id
++ *			DCL register where dual_channel_active is
++ *
++ *	The DBAM register consists of 4 sets of 4 bits each definitions:
++ *
++ *	Bits:		CSROWs
++ *	0-3		CSROWs 0 and 1
++ *	4-7		CSROWs 2 and 3
++ *	8-11		CSROWs 4 and 5
++ *	12-15		CSROWs 6 and 7
++ *
++ *	Values range from: 0 to 15
++ *	The meanings of the values depends on CPU REV and dual-channel state
++ *
++ *	Various CPU revisions have different size definitions for this
++ *	4 bit values.
++ *	Therefore, we need to examine which CPU we are running on to
++ *	extract meaning for these bits:
++ *
++ *	REV CG and earlier have a given DIMM size definition
++ *	REV D & REV E share another set of size definitions
++ *
++ *	REV CG, D and E all have a common beginning set of size definitions,
++ *	but change the meanings midway into the table.
++ *
++ *	REV F has yet another set of size definitions, which has a totally
++ *	different starting point.
++ *
++ *	REV ? future revs? We won't know till we get the specs
++ *
++ *	The memory controller provides for total of only 8 CSROWs in its
++ *	current architecture. Each "pair" of CSROWs normally represents
++ *	just one (1) *	DIMM in single channel or just two (2) DIMMs
++ *	in dual channel mode.
++ *
++ *	The following code logic collapses the various tables for CSROW
++ *	based on CPU Rev number.
++ *	See the tables/algorithms in the respective BKDG manuals.
++ *
++ *	return:
++ *		The number of PAGE_SIZE pages on the specified CSROW number
++ *		it encompasses
++ *
++ */
++static u32 amd64_csrow_nr_pages(int csrow_nr, struct amd64_pvt *pvt)
++{
++	u32 dram_map;
++	u32 nr_pages;
++
++	/* The math on this doesn't look right on the surface because x/2*4
++	 * can be simplified to x*2 but this expression makes use of the fact
++	 * that it is integral math where 1/2=0. This intermediate value
++	 * becomes the number of bits to shift the DBAM register to extract
++	 * the proper CSROW field.
++	 */
++	dram_map = (pvt->dbam0 >> ((csrow_nr / 2) * 4)) & 0xF;	/* PG88 */
++
++	nr_pages = pvt->ops->dbam_map_to_pages(pvt, dram_map);
++
++	/* If dual channel then double the memory size of single channel */
++	/* channel count is 1 or 2 */
++	nr_pages <<= (pvt->channel_count - 1);
++
++	debugf0("  %s(csrow=%d) DBAM map index= %d\n", __func__,
++		csrow_nr, dram_map);
++	debugf0("    nr_pages= %u  channel-count = %d\n",
++		nr_pages, pvt->channel_count);
++
++	return nr_pages;
++}
++
++/*
++ * amd64_init_csrows
++ *
++ *	perform initialization on the array of csrow attribute instances,
++ *	based on the values from pci config hardware registers
++ */
++static int amd64_init_csrows(struct mem_ctl_info *mci)
++{
++	struct csrow_info *csrow;
++	struct amd64_pvt *pvt;
++	int i;
++	int empty = 1;
++	u64 input_addr_min, input_addr_max, sys_addr;
++	int err;
++
++	pvt = mci->pvt_info;
++
++	err = pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCFG, &pvt->nbcfg);
 +	if (err != 0)
 +		debugf0("%s() Reading K8_NBCFG failed\n", __func__);
 +
-+	debugf0("%s() NBCFG(1)= 0x%x  CHIPKILL= %s ECC_ENABLE= %s\n",
-+		__func__, value,
-+		value & (K8_NBCFG_CHIPKILL) ? "Enabled" : "Disabled",
-+		value & (K8_NBCFG_ECC_ENABLE) ? "Enabled" : "Disabled"
++	debugf0("%s() NBCFG= 0x%x  CHIPKILL= %s DRAM ECC= %s\n",
++		__func__, pvt->nbcfg,
++		(pvt->nbcfg & K8_NBCFG_CHIPKILL) ? "Enabled" : "Disabled",
++		(pvt->nbcfg & K8_NBCFG_ECC_ENABLE) ? "Enabled" : "Disabled"
 +		);
 +
-+	if (!(value & K8_NBCFG_ECC_ENABLE)) {
-+		amd64_printk(KERN_WARNING,
-+			"This node reports that DRAM ECC is "
-+			"currently Disabled; ENABLING now\n");
++	for (i = 0; i < CHIPSELECT_COUNT; i++) {
++		csrow = &mci->csrows[i];
 +
-+		/* Attempt to turn on DRAM ECC Enable */
-+		value |= K8_NBCFG_ECC_ENABLE;
-+		pci_write_config_dword(pvt->misc_f3_ctl, K8_NBCFG, value);
-+
-+		err = pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCFG, &value);
-+		if (err != 0)
-+			debugf0("%s() Reading K8_NBCFG failed\n", __func__);
-+
-+		if (!(value & K8_NBCFG_ECC_ENABLE)) {
-+			amd64_printk(KERN_WARNING,
-+				"Hardware rejects Enabling DRAM ECC checking\n"
-+				"Check memory DIMM configuration\n");
-+		} else {
-+			amd64_printk(KERN_DEBUG,
-+				"Hardware accepted DRAM ECC Enable\n");
++		if ((pvt->dcsb0[i] & K8_DCSB_CS_ENABLE) == 0) {
++			debugf1("----CSROW %d EMPTY for node %d\n", i,
++				pvt->mc_node_id);
++			continue;
 +		}
-+	}
-+	debugf0("%s() NBCFG(2)= 0x%x  CHIPKILL= %s ECC_ENABLE= %s\n",
-+		__func__, value,
-+		(value & K8_NBCFG_CHIPKILL) ? "Enabled" : "Disabled",
-+		(value & K8_NBCFG_ECC_ENABLE) ? "Enabled" : "Disabled"
-+		);
 +
-+	pvt->ctl_error_info.nbcfg = value;
-+}
++		debugf1("----CSROW %d VALID for MC node %d\n",
++			i, pvt->mc_node_id);
 +
-+/*
-+ * amd64_restore_ecc_error_reporting
-+ *
-+ *	restore the hardware registers to their initial condition
-+ *	prior to when amd64_enable_ecc_error_reporting was called
-+ */
-+static void amd64_restore_ecc_error_reporting(struct amd64_pvt *pvt)
-+{
-+	const cpumask_t *cpumask = cpumask_of_node(pvt->mc_node_id);
-+	int cpus_on_node = cpumask_weight(cpumask), idx = 0, cpu;
-+	u32 mcgctl_l[cpus_on_node], mcgctl_h[cpus_on_node];
-+	u32 value;
-+	u32 mask = K8_NBCTL_CECCEn | K8_NBCTL_UECCEn;
-+	int err;
++		empty = 0;
++		csrow->nr_pages = amd64_csrow_nr_pages(i, pvt);
++		find_csrow_limits(mci, i, &input_addr_min, &input_addr_max);
++		sys_addr = input_addr_to_sys_addr(mci, input_addr_min);
++		csrow->first_page = (u32) (sys_addr >> PAGE_SHIFT);
++		sys_addr = input_addr_to_sys_addr(mci, input_addr_max);
++		csrow->last_page = (u32) (sys_addr >> PAGE_SHIFT);
++		csrow->page_mask = ~mask_from_dct_mask(pvt, i);
++		/* 8 bytes of resolution */
 +
-+	if (!pvt->nbctl_mcgctl_saved)
-+		return;
++		csrow->mtype = amd64_determine_memory_type(pvt);
 +
-+	err = pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCTL, &value);
-+	if (err != 0)
-+		debugf0("%s() Reading K8_NBCTL failed\n", __func__);
-+	value &= ~mask;
-+	value |= pvt->old_nbctl;
++		debugf1("  for MC node %d csrow %d:\n", pvt->mc_node_id, i);
++		debugf1("    input_addr_min: 0x%lx input_addr_max: 0x%lx\n",
++			(unsigned long)input_addr_min,
++			(unsigned long)input_addr_max);
++		debugf1("    sys_addr: 0x%lx  page_mask: 0x%lx\n",
++			(unsigned long)sys_addr, csrow->page_mask);
++		debugf1("    nr_pages: %u  first_page: 0x%lx "
++			"last_page: 0x%lx\n",
++			(unsigned)csrow->nr_pages,
++			csrow->first_page, csrow->last_page);
 +
-+	/* restore the NB Enable MCGCTL bit */
-+	pci_write_config_dword(pvt->misc_f3_ctl, K8_NBCTL, value);
-+
-+	rdmsr_on_cpus(cpumask, K8_MSR_MCGCTL, mcgctl_l, mcgctl_h);
-+
-+	for_each_cpu(cpu, cpumask) {
-+		mcgctl_l[idx] &= ~K8_MSR_MCGCTL_NBE;
-+		mcgctl_l[idx] |= pvt->old_mcgctl[idx];
-+		idx++;
++		/*
++		 * determine whether CHIPKILL or JUST ECC or NO ECC is operating
++		 */
++		if (pvt->nbcfg & K8_NBCFG_ECC_ENABLE)
++			csrow->edac_mode =
++			    (pvt->nbcfg & K8_NBCFG_CHIPKILL) ?
++			    EDAC_S4ECD4ED : EDAC_SECDED;
++		else
++			csrow->edac_mode = EDAC_NONE;
 +	}
 +
-+	wrmsr_on_cpus(cpumask, K8_MSR_MCGCTL, mcgctl_l, mcgctl_h);
++	return empty;
 +}
-+
-+static void check_mcg_ctl(void *ret)
-+{
-+	u64 msr_val = 0;
-+	u8 nbe;
-+
-+	rdmsrl(MSR_IA32_MCG_CTL, msr_val);
-+	nbe = msr_val & K8_MSR_MCGCTL_NBE;
-+
-+	debugf0("%s: core: %u, MCG_CTL: 0x%llx, NB MSR is %s\n",
-+		__func__, raw_smp_processor_id(), msr_val,
-+		(nbe ? "enabled" : "disabled"));
-+
-+	if (!nbe)
-+		*(int *)ret = 0;
-+}
-+
-+static int amd64_mcg_ctl_enabled_on_cpus(const cpumask_t *mask)
-+{
-+	int rc = 1;
-+	preempt_disable();
-+	smp_call_function_many(mask, check_mcg_ctl, &rc, 1);
-+	preempt_enable();
-+
-+	return rc;
-+}
-+
-+/*
-+ * amd64_check_ecc_enabled
-+ *
-+ *	EDAC requires that the BIOS have ECC enabled before taking over the
-+ *	processing of ECC errors. This is because the BIOS can properly
-+ *	initialize the memory system completely.
-+ *
-+ *	For development and other purposes, there is a command line option
-+ *	which allows for overriding this contraint. If supplied on the kernrel
-+ *	command line, hardware ECC is force-enabled later in
-+ *	amd64_enable_ecc_error_reporting().
-+ */
-+static int amd64_check_ecc_enabled(struct amd64_pvt *pvt)
-+{
-+	u32 value;
-+	int tmp;
-+	int rc = 0;
-+
-+	tmp = pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCFG, &value);
-+	if (tmp != 0)
-+		debugf0("%s() Reading K8_NBCTL failed\n", __func__);
-+
-+	/* check MCG_CTL on all the cpus on this node */
-+	rc = amd64_mcg_ctl_enabled_on_cpus(cpumask_of_node(pvt->mc_node_id));
-+
-+	debugf0("%s() K8_NBCFG=0x%x,  DRAM ECC is %s\n",
-+		__func__, value, (value & K8_NBCFG_ECC_ENABLE ? "enabled"
-+					: "disabled"));
-+	if (!tmp || !rc) {
-+		if (!tmp) {
-+			amd64_printk(KERN_WARNING, "This node reports that "
-+						   "Memory ECC is currently "
-+						   "disabled.\n");
-+
-+			amd64_printk(KERN_WARNING, "bit 0x%lx in register "
-+				"F3x%x of the MISC_CONTROL device (%s) "
-+				"should be enabled\n", K8_NBCFG_ECC_ENABLE,
-+				K8_NBCFG, pci_name(pvt->misc_f3_ctl));
-+		}
-+		if (!rc) {
-+			amd64_printk(KERN_WARNING, "bit 0x%016lx in MSR 0x%08x "
-+					"of node %d should be enabled\n",
-+					K8_MSR_MCGCTL_NBE, MSR_IA32_MCG_CTL,
-+					pvt->mc_node_id);
-+		}
-+		if (!ecc_enable_override) {
-+			amd64_printk(KERN_WARNING, "WARNING: ECC is NOT "
-+				"currently enabled by the BIOS. Module "
-+				"will NOT be loaded.\n"
-+				"    Either Enable ECC in the BIOS, "
-+				"or use the 'ecc_enable_override' "
-+				"parameter.\n"
-+				"    Might be a BIOS bug, if BIOS says "
-+				"ECC is enabled\n"
-+				"    Use of the override can cause "
-+				"unknown side effects.\n");
-+			rc = -ENODEV;
-+		}
-+	} else {
-+		amd64_printk(KERN_INFO,
-+			"ECC is enabled by BIOS, Proceeding "
-+			"with EDAC module initialization\n");
-+
-+		/* CLEAR the override, since BIOS controlled it */
-+		ecc_enable_override = 0;
-+	}
-+
-+	return rc;
-+}
-+
+ 
 -- 
 1.6.2.4
 
