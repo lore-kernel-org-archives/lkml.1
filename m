@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbZD2KhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZD2Kk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754623AbZD2KhW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 06:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbZD2KhG
+	id S1755842AbZD2Kk0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 06:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZD2KkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 06:37:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56397 "EHLO mx3.mail.elte.hu"
+	Wed, 29 Apr 2009 06:40:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35244 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752576AbZD2KhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 06:37:04 -0400
-Date: Wed, 29 Apr 2009 12:36:55 +0200
+	id S1751315AbZD2KkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 06:40:11 -0400
+Date: Wed, 29 Apr 2009 12:40:06 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 2/3] tracing/filters: distinguish between signed and
-	unsigned fields
-Message-ID: <20090429103655.GD2373@elte.hu>
-References: <1240905893.6416.120.camel@tropicana> <20090428234645.c1780736.akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: BUG: Function graph tracer hang
+Message-ID: <20090429104006.GE2373@elte.hu>
+References: <20090417144055.857407604@goodmis.org> <20090417151135.GG23493@elte.hu> <20090417151303.GA18267@elte.hu> <20090428111223.GA20526@elte.hu> <20090428203244.GE7337@nowhere> <alpine.DEB.2.00.0904281645020.8066@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090428234645.c1780736.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.0904281645020.8066@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,28 +34,44 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> On Tue, 28 Apr 2009 03:04:53 -0500 Tom Zanussi <tzanussi@gmail.com> wrote:
 > 
-> > +#define is_signed(t)	(((t)-1) < 0)
+> On Tue, 28 Apr 2009, Frederic Weisbecker wrote:
 > 
-> geeze that was confusing until I worked out that `t' is supposed to be
-> the name of a C type.
-
-good point, i've changed its name to is_signed_type().
-
-> 	is_signed(0) == true!
+> > 
+> > Note that the branch profiler does that:
+> > 
+> > ______f.miss_hit[______r]++;
+> > 
+> > Which is a read + write on the cacheline.
+> > If each "if" are profiled in the timer interrupt, we can
+> > have the cachelines doing a ping-pong of dirtifying since the above
+> > variable is shared.
+> > 
+> > Then the timer interrupt becomes slower. The function graph tracer itself makes
+> > it slower.
+> > Moreover it is traced itself. So not only the "if" in code are traced, but also
+> > each "if" processed by the function graph tracer on function calls and returns.
+> > 
+> > Which means a fair amount of cacheline dirtifying.
+> > 
+> > Then if the timer interrupt is slowed, and we have a lot of them (1000 Hz),
+> > the system spends all of its time inside it.
+> > 
+> > At least we need the branch tracing to be done per cpu, I guess.
 > 
-> whee.
+> This can be done by basically reimplementing what percpu does. 
+> This is because the data is saved off in its own section at every 
+> if statement. We could copy that section per cpu and add code to 
+> the incrementors to add only to their own CPU buffers.
 
-I also added parantheses around the -1 literal to make it clear that 
-this is a cast.
+Why not just make these variables regular percpu constructs?
 
-> Rename it to is_signed_type() or something, please?
+> This is low in my priority of things to do, but I'll at least add 
+> it to my "to do" list.
 
-done.
-
-Thanks,
+I think we should mark the branch tracer as CONFIG_BROKEN - there's 
+been too many problems with it. Thoughts?
 
 	Ingo
