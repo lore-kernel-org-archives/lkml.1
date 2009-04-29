@@ -1,73 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429AbZD2KYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbZD2KZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753429AbZD2KYi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 06:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbZD2KYZ
+	id S1755102AbZD2KZH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 06:25:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZD2KYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 06:24:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57595 "EHLO hera.kernel.org"
+	Wed, 29 Apr 2009 06:24:53 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48788 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752679AbZD2KYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 06:24:24 -0400
-Message-ID: <49F829C5.4080501@kernel.org>
-Date: Wed, 29 Apr 2009 19:19:49 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751490AbZD2KYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 06:24:53 -0400
+Date: Wed, 29 Apr 2009 12:24:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrew Gallatin <gallatin@myri.com>, linux-kernel@vger.kernel.org,
+       rick.jones2@hp.com, brice@myri.com, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] sched: account system time properly
+Message-ID: <20090429102409.GB2373@elte.hu>
+References: <49F078FA.6010507@myri.com> <20090428163004.46733752.akpm@linux-foundation.org> <49F7DF44.8090907@cosmosbay.com> <49F805C9.9070303@cosmosbay.com> <20090429100840.77359cae@skybase> <49F81BC3.2050805@cosmosbay.com> <20090429114801.09637e46@skybase>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-CC: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
-       sshtylyov@ru.mvista.com, mike.miller@hp.com, chirag.kantharia@hp.com,
-       Eric.Moore@lsi.com, stern@rowland.harvard.edu,
-       fujita.tomonori@lab.ntt.co.jp, zaitcev@redhat.com, sfr@canb.auug.org.au,
-       grant.likely@secretlab.ca, paul.clements@steeleye.com,
-       jesper.juhl@gmail.com, tim@cyberelk.net, jeremy@xensource.com,
-       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
-       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
-       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
-       bharrosh@panasas.com, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH 05/10] block: convert to pos and nr_sectors accessors
-References: <1240996428-10159-1-git-send-email-tj@kernel.org> <1240996428-10159-6-git-send-email-tj@kernel.org> <alpine.LRH.2.00.0904291136160.3531@vixen.sonytel.be>
-In-Reply-To: <alpine.LRH.2.00.0904291136160.3531@vixen.sonytel.be>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 10:19:53 +0000 (UTC)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090429114801.09637e46@skybase>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Geert Uytterhoeven wrote:
->> diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
->> index b66ad58..d4e6b71 100644
->> --- a/drivers/block/z2ram.c
->> +++ b/drivers/block/z2ram.c
->> @@ -71,12 +71,12 @@ static void do_z2_request(struct request_queue *q)
->>  {
->>  	struct request *req;
->>  	while ((req = elv_next_request(q)) != NULL) {
->> -		unsigned long start = req->sector << 9;
->> -		unsigned long len  = req->current_nr_sectors << 9;
->> +		unsigned long start = blk_rq_pos(req) << 9;
->> +		unsigned long len  = blk_rq_cur_sectors(req) << 9;
->                 ^^^^^^^^^^^^^
-> I guess this one can become `unsigned int' now, as:
+* Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+
+> On Wed, 29 Apr 2009 11:20:03 +0200
+> Eric Dumazet <dada1@cosmosbay.com> wrote:
 > 
-> static inline unsigned int blk_rq_cur_sectors(struct request *rq)
-> {
-> 	return blk_rq_cur_bytes(rq) >> 9;
-> }
+> > Martin Schwidefsky a écrit :
+> > > On Wed, 29 Apr 2009 09:46:17 +0200
+> > > Eric Dumazet <dada1@cosmosbay.com> wrote:
+> > > 
+> > >> Eric Dumazet a écrit :
+> > >>> Andrew Morton a écrit :
+> > >>>
+> > >>> So, if IRQs are interrupting idle task, I guess if (p != rq->idle) will be false.
+> > >>>
+> > > 
+> > > If an IRQ interrupts the idle task the tick is supposed to be accounted
+> > > as an idle tick. Only if the IRQ interrupted the system while it has
+> > > been in hardirq or softirq processing then it should be accounted as
+> > > system tick.
+> > > 
+> > >> Maybe following patch is needed ?
+> > >>
+> > >> [PATCH] sched: account system time properly
+> > >>
+> > >> When idle task is interrupted by an IRQ, time accounting considers CPU is idle,
+> > >> even while it should account for hard or softirq.
+> > >>
+> > >> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> > >>
+> > >> diff --git a/kernel/sched.c b/kernel/sched.c
+> > >> index b902e58..26efa47 100644
+> > >> --- a/kernel/sched.c
+> > >> +++ b/kernel/sched.c
+> > >> @@ -4732,7 +4732,7 @@ void account_process_tick(struct task_struct *p, int user_tick)
+> > >>  
+> > >>  	if (user_tick)
+> > >>  		account_user_time(p, one_jiffy, one_jiffy_scaled);
+> > >> -	else if (p != rq->idle)
+> > >> +	else if ((p != rq->idle) || (irq_count() != HARDIRQ_OFFSET))
+> > >>  		account_system_time(p, HARDIRQ_OFFSET, one_jiffy,
+> > >>  				    one_jiffy_scaled);
+> > >>  	else
+> > > 
+> > > That patch makes a lot of sense to me. Does it fix the problem?
+> > > 
+> > 
+> > Yes it does, on my machine at least :
+> > 
+> > 11:18:48 AM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest   %idle
+> > 11:18:58 AM  all    0.00    0.00    0.00    0.00    0.21    0.69    0.00    0.00   99.10
+> > 11:18:58 AM    0    0.00    0.00    0.00    0.00    1.70    5.50    0.00    0.00   92.80  << HERE >>
+> > 11:18:58 AM    1    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+> > 11:18:58 AM    2    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+> > 11:18:58 AM    3    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+> > 11:18:58 AM    4    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+> > 11:18:58 AM    5    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+> > 11:18:58 AM    6    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+> > 11:18:58 AM    7    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
 > 
-> and blk_rq_cur_bytes(rq) returns `int', so it must fit in an `int' anyway?
+> Very good. Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com> 
 
-Yeap, it should fit.  Given the way len is used there and the previous
-usage had the same type promotion there, I think it's better to leave
-the unsigned long alone there.
+Thanks.
 
-Acked-by added.  Thanks.
+Eric, mind (re-)sending the patch with Martin's ack included, and 
+with either a suitable impact-line footer or an extra paragraph that 
+describes the bug you found (and how it shows up in practice) and 
+how the patch fixed that problem.
 
--- 
-tejun
+Thanks,
+
+	Ingo
