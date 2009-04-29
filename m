@@ -1,308 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760018AbZD2RRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbZD2RWE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760018AbZD2RRq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 13:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758942AbZD2RRg
+	id S1757373AbZD2RWE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 13:22:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbZD2RVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 13:17:36 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:45181 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753312AbZD2RRf (ORCPT
+	Wed, 29 Apr 2009 13:21:53 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:7745 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751099AbZD2RVw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 13:17:35 -0400
-Date: Wed, 29 Apr 2009 10:17:19 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Gary Hade <garyhade@us.ibm.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       mingo@elte.hu, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
-       x86@kernel.org, linux-kernel@vger.kernel.org, lcm@us.ibm.com
-Subject: Re: [PATCH 3/3] [BUGFIX] x86/x86_64: fix IRQ migration triggered
-	active device IRQ interrruption
-Message-ID: <20090429171719.GA7385@us.ibm.com>
-References: <20090408210745.GE11159@us.ibm.com> <86802c440904081503k545bf7b4n3d44aa3c9d101e0d@mail.gmail.com> <20090408230820.GA14412@us.ibm.com> <86802c440904102346lfbc85f2w4508bded0572ec58@mail.gmail.com> <20090413193717.GB8393@us.ibm.com> <m1bpr0e2au.fsf@fess.ebiederm.org> <20090428000536.GA7347@us.ibm.com> <m1bpqhjco7.fsf@fess.ebiederm.org> <20090429004451.GA7329@us.ibm.com> <m1eivc9qsn.fsf@fess.ebiederm.org>
+	Wed, 29 Apr 2009 13:21:52 -0400
+X-IronPort-AV: E=Sophos;i="4.40,267,1238976000"; 
+   d="scan'208";a="73873494"
+From: Roland Dreier <rdreier@cisco.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
+       tglx@linutronix.de, h.mitake@gmail.com, rpjday@crashcourse.ca,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: Remove readq()/writeq() on 32-bit
+References: <49EE37AF.4020507@zytor.com>
+	<20090421.173123.191021055.davem@davemloft.net>
+	<adak55438gp.fsf_-_@cisco.com>
+	<20090428.221228.217954247.davem@davemloft.net>
+	<20090429115654.GC11586@elte.hu>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 29 Apr 2009 10:21:45 -0700
+In-Reply-To: <20090429115654.GC11586@elte.hu> (Ingo Molnar's message of "Wed,
+	29 Apr 2009 13:56:54 +0200")
+Message-ID: <adaljpj1il2.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1eivc9qsn.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-OriginalArrivalTime: 29 Apr 2009 17:21:45.0660 (UTC) FILETIME=[F8AC8FC0:01C9C8EE]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 06:44:56PM -0700, Eric W. Biederman wrote:
-> Gary Hade <garyhade@us.ibm.com> writes:
-> 
-> > On Tue, Apr 28, 2009 at 03:27:36AM -0700, Eric W. Biederman wrote:
-> >> Gary Hade <garyhade@us.ibm.com> writes:
-> >> 
-> >> > The I/O redirection table register write with the remote
-> >> > IRR set issue has reproduced on every IBM System x server
-> >> > I have tried including the x460, x3850, x3550 M2, and x3950 M2.
-> >> > Nobody has responded to my request to test for the presence
-> >> > of this issue on non-IBM systems but I think it is pretty safe
-> >> > to assume that the problem is not IBM specific.
-> >> 
-> >> There is no question.  The problem can be verified from a simple
-> >> code inspection.  It results from the brokenness of the current
-> >> fixup_irqs.
-> >> 
-> >> Your suggested change at the very least is likely to result in
-> >> dropped irqs at runtime.
-> >
-> > Which of the two patches (2/3 or 3/3) could cause the dropped IRQs
-> > and exactly how can this happen?  If you are possibly referring to
-> > the concerns about IRQs being migrated in process context during CPU
-> > offlining, that design pre-dates my patches.
-> 
-> I am referring to some of the side effects of a cpu being migrated in
-> process context during CPU offlining.  That code has been
-> fundamentally broken since it was merged in 2005.  Various changes
-> have changed the odds of how likely it is to fail, and how likely
-> people are to encounter problems.
+ > What caused 2c5643b1 was that right now we have ugly per driver
+ > #defines and inlines for readq/writeq. See:
 
-IMHO, my proposed fixes clearly reduce the odds of failure.
+but 2c5643b1 doesn't fix that situation -- a portable driver still needs
+the #defines for other 32-bit architectures.  And 2c5643b1 isn't really
+a particularly good step towards rectifying the situation, since if
+every 32-bit architecture follows suit and adds its own compatibility
+versions, then we'll want someone to go through and unify them into a
+generic implementation.  In other words removing the x86 private version
+will be part of the work in getting to a final solution.
 
-> 
-> The practice of masking an irq while it is actively being used and
-> we don't have that irq software pending means we will drop that
-> irq at some point, and that is what the code in irq_64.c:fixup_irqs
-> does today.
-> 
-> >From what I can tell your patches simply apply more code dubious
-> code to the fixup_irqs path.
+ > Atomicity of a 64-bit IO space access on 32-bit platforms, on an 
+ > unknown-bitness transport (it might even be a 64-bit PCI device 
+ > bridged over a 32-bit bridge) is obviously not guaranteed.
 
-Well, they also fix two insidious problems that can render
-the system unuseable.  
+Yes, some platforms may not be able to give true atomicity.  eg 32-bit
+PowerPC has no instructions that generate 64-bit cycles, even on the CPU
+bus.  I do think the 32-bit PCI thing is a bit of a red herring, since
+eg PCIe devices can rely on a 64-bit bus.
 
-> 
-> >>                           Something some drivers do not
-> >> tolerate well.
-> >> 
-> >> > After incorporating the fix that avoids writes to the 
-> >> > the I/O redirection table registers while the remote IRR
-> >> > bit is set, I have _not_ observed any other issues that 
-> >> > might be related to the ioapic fragility that you mentioned.
-> >> > This of course does not prove that you are wrong and that
-> >> > there is not a need for the changes you are suggesting.
-> >> > However, until someone has the bandwidth to tackle the difficult
-> >> > changes that you suggest, I propose that we continue to repair
-> >> > problems that are found in the current implementation with fixes
-> >> > such as those that I provided.
-> >> 
-> >> The changes I suggest are not difficult.
-> >> 
-> >> How is APIC routing setup on your hardware?
-> >> "Setting APIC routing to flat"  Is what my laptop reports.
-> >
-> > Oh, thats easy.  On the IBM x3550 M2 where I have confirmed that
-> > both bugs exist and where I did the below described testing of
-> > your patch, the APIC routing is shown as physical flat:
-> >   "Setting APIC routing to physical flat"
-> >
-> >> 
-> >> My apologies for asking it badly last time.
-> >
-> > No problem!  Badly probably depends on the audience and
-> > I'm probably not a particularily good one. :)
-> >
-> >> For understanding what
-> >> you are testing that is a critical piece of information.
-> >> 
-> >> Below is my draft patch that stops cpu shutdown when irqs can not be
-> >> migrated off.  The code to do that is trivial, and is guaranteed
-> >> to fix all of your lost irq problems.
-> >
-> > This didn't help.  Using 2.6.30-rc3 plus your patch both bugs
-> > are unfortunately still present.
-> 
-> You could offline the cpus?  I know when I tested it on my
-> laptop I could not offline the cpus.
+ > So trying to suggest that 64-bit readq/writeq when running on a 
+ > 64-bit kernel is somehow atomic (or can be made atomic) is really 
+ > wrong IMO. The 32-bit wrapper is simply the expression of how the 
+ > CPU would do a 64-bit access even in 64-bit mode anyway [if the 
+ > transport is 32-bit].
 
-Eric, I'm sorry!  This was due to my stupid mistake.  When I
-went to apply your patch I included --dry-run to test it but
-apparently got distracted and never actually ran patch(1)
-without --dry-run. <SIGH>
+As far as I know, all 64-bit CPUs doing 64-bit accesses to a PCIe device
+(eg the NIC driven by the niu driver) will generate 64-bit bus cycles.
 
-So, I just rebuilt after _really_ applying the patch and got
-the following result which probably to be what you intended.
+The issue for me is that the benefit of having this compatibility define
+is rather minimal, while the cost is potentially high: spending a long
+time debugging platform-specific bugs -- the symptoms will not point
+immediately to the IO define, of course.
 
-elm3b55:/home/garyh/kernel # cat ./cpus_offline_all.sh
-#!/bin/sh
-
-##
-#  Offline all offlineable CPUs
-##
-
-SYS_CPU_DIR=/sys/devices/system/cpu
-
-for d in $SYS_CPU_DIR/cpu[1-9] $SYS_CPU_DIR/cpu??; do
-    cpu="`basename $d`"
-    state=`cat $d/online`
-    if [ "$state" = 1 ]; then
-        echo $cpu: offlining
-        echo 0 > $d/online
-    else
-        echo $cpu: already offline
-    fi
-done
-elm3b55:/home/garyh/kernel # ./cpus_offline_all.sh 
-cpu1: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-cpu2: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-cpu3: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-cpu4: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-cpu5: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-cpu6: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-cpu7: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-cpu8: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-cpu9: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-cpu10: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-cpu11: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-cpu12: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-cpu13: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-cpu14: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-cpu15: offlining
-./cpus_offline_all.sh: line 14: echo: write error: Invalid argument
-
-> 
-> If you can offline cpus because your irqs have IRQ_MOVE_PCNT
-> set, then you must have an iommu and the work that needs to
-> be done to get things stable on your system is different.
-> 
-> > With respect to the race fixed by patch 2/3 that occurs when
-> > the device is not very active I have found that a printk in
-> > __assign_irq_vector() showing -EBUSY returns is a reliable
-> > indicator of when things go bad and the CPU handling the IRQ
-> > is offlined without the affinity being migrated to an online CPU.
-> > The following was logged during the failure. 
-> >   __assign_irq_vector: XXX irq=16 returning -EBUSY
-> >   __assign_irq_vector: XXX irq=16 returning -EBUSY
-> >   __assign_irq_vector: XXX irq=16 returning -EBUSY
-> >   __assign_irq_vector: XXX irq=16 returning -EBUSY
-> >   __assign_irq_vector: XXX irq=16 returning -EBUSY
-> >   __assign_irq_vector: XXX irq=16 returning -EBUSY
-> >   __assign_irq_vector: XXX irq=16 returning -EBUSY
-> >   __assign_irq_vector: XXX irq=16 returning -EBUSY
-> >   __assign_irq_vector: XXX irq=16 returning -EBUSY
-> >   __assign_irq_vector: XXX irq=16 returning -EBUSY
-> >   __assign_irq_vector: XXX irq=16 returning -EBUSY
-> 
-> I have not been looking closely at your reported bugs.  So
-> far everything seems to be related to the totally broken moving
-> irqs in process context code in fixup_irqs, and making the
-> races smaller does not interest me when it looks like we can
-> make the races go away.
-> 
-> > I am not sure if I totally understand what your new
-> > cleanup_pending_irqs() is doing but I *think* it is
-> > only broadcasting an IPI when the same IRQ is being
-> > handled on the IRQ move destination CPU.  
-> 
-> My new cleanup_pending_irqs() as written still has a number of bugs,
-> it is more of a placeholder than solid tested code at the moment.
-> 
-> cleanup_pending_irqs() is supposed to happen after a synchronous
-> irq migration (so no irqs should be hitting the cpu) and
-> as such it should be possible to cleanup any irq pending state
-> on the current cpu, and if an irq is pending to simply redirect
-> it to some other cpu that still has the irq active.
-> 
-> cleanup_pending_irqs() currently does not have the code to ack the
-> irqs that are pending in the irr, which could have a correctness
-> consequence with the hardware.  Beyond that it is just a matter of
-> reflecting the irq to a different cpu (so we don't miss one).
-> 
-> > If this understanding
-> > is correct, I don't think it covers the case where the device
-> > is generating IRQs at such an extremely slow rate that
-> > absolutely none are received between the time that the
-> > move_in_progress flag was set to 1 and the IRQ move
-> > destination CPU is offlined.  I actually played around with
-> > broadcasting an IPI every time the move_in_progress flag
-> > was set to 1 which repaired the problem but did not feel
-> > like a good solution especially after I discovered that there
-> > was no need to even set move_in_progress to 1 if all CPUs in
-> > the old domain were going to be offline when the cleanup code
-> > was run  i.e. cleanup code does nothing when it eventually runs.
-> 
-> That case should be handled simply by denying cpu down event.
-> And that code was working when I tested it on my laptop.
-> 
-> I am wondering how you managed to get the cpu to go down.
-> 
-> > I then incorporated my fix (patch 2/3) for the above issue
-> > plus a printk in __target_IO_APIC_irq() to display values
-> > written to the I/O redirection table register for the IRQ
-> > of interest and tried again.  With a low incoming IRQ rate
-> > the above problem no longer reproduced but after increasing
-> > the incoming IRQ rate I started seeing an increasing number
-> > of writes to the I/O redirection table register while the
-> > remote IRR bit was set (see below) before IRQs from the
-> > device were no longer being seen by the kernel.
-> >
-> >> 
-> >> Beyond that everything I am proposing is very localized.
-> >> 
-> >> You have proposed making interrupts behave like they can be migrated
-> >> in process context when in fact extensive testing over the years have
-> >> shown in the general case interrupts can only be migrated from the irq
-> >> handler, from a location where the irqs are naturally disabled.
-> >
-> > To be clear, IRQs were already being migrated in process
-> > context during CPU offlining before I even looked at the code.
-> > This was not my doing.  I believe it has been this way for
-> > quite some time. 
-> 
-> Yep.  It doesn't mean it has ever been correct, and I am trying
-> to development in ways so that we only take down a cpu when it
-> is possible to migrate all of it's irqs in process context.
-> 
-> >> I propose detecting thpe cases that we know are safe to migrate in
-> >> process context, aka logical deliver with less than 8 cpus aka "flat"
-> >> routing mode and modifying the code so that those work in process
-> >> context and simply deny cpu hotplug in all of the rest of the cases.
-> >
-> > Humm, are you suggesting that CPU offlining/onlining would not
-> > be possible at all on systems with >8 logical CPUs (i.e. most
-> > of our systems) or would this just force users to separately
-> > migrate IRQ affinities away from a CPU (e.g. by shutting down
-> > the irqbalance daemon and writing to /proc/irq/<irq>/smp_affinity)
-> > before attempting to offline it?
-> 
-> A separate migration, for those hard to handle irqs.
-> 
-> The newest systems have iommus that irqs go through or are using MSIs
-> for the important irqs, and as such can be migrated in process
-> context.  So this is not a restriction for future systems.
-
-I understand your concerns but we need a solution for the
-earlier systems that does NOT remove or cripple the existing
-CPU hotplug functionality.  If you can come up with a way to
-retain CPU hotplug function while doing all IRQ migration in
-interrupt context I would certainly be willing to try to find
-some time to help test and debug your changes on our systems.
-
-Thanks,
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
-
+ - R.
