@@ -1,108 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbZD2QHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbZD2QIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759553AbZD2QHh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 12:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758996AbZD2QHN
+	id S1759449AbZD2QIJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 12:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbZD2QHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 12:07:13 -0400
-Received: from mga11.intel.com ([192.55.52.93]:17360 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759415AbZD2QHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 12:07:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,266,1239001200"; 
-   d="scan'208";a="452609305"
-From: "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>
-To: "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Ma, Chinang" <chinang.ma@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
-       "Recalde, Luis F" <luis.f.recalde@intel.com>,
-       "Nelson, Doug" <doug.nelson@intel.com>,
-       "Cheng, Wu-sun" <wu-sun.cheng@intel.com>,
-       "Prickett, Terry O" <terry.o.prickett@intel.com>,
-       "Shunmuganathan, Rajalakshmi" <rajalakshmi.shunmuganathan@intel.com>,
-       "Garg, Anil K" <anil.k.garg@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>
-Date: Wed, 29 Apr 2009 10:06:44 -0600
-Subject: RE: Mainline kernel OLTP performance update
-Thread-Topic: Mainline kernel OLTP performance update
-Thread-Index: AcnIpH2wYNuL0nVjSjitaku5DQLCvgAPXCLwAACgmSA=
-Message-ID: <CAC4B8726E86A142B27A9E9A2F2F1247AB6943CB@rrsmsx505.amr.corp.intel.com>
-References: <D7C42C27E6CB1E4D8CBDF2F81EA92A2603459F3D6A@azsmsx501.amr.corp.intel.com>
-	<20090429002930.b786348b.akpm@linux-foundation.org>
- <871vrbrhhy.fsf@basil.nowhere.org>
- <D7C42C27E6CB1E4D8CBDF2F81EA92A260345A63FAC@azsmsx501.amr.corp.intel.com>
-In-Reply-To: <D7C42C27E6CB1E4D8CBDF2F81EA92A260345A63FAC@azsmsx501.amr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
+	Wed, 29 Apr 2009 12:07:53 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:60181 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754012AbZD2QHw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 12:07:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=fsmefQq7kx5P2NKa8k59aynEsssUgAdz2ziBAKVb63tQWgf6o8gEMZTkyEN1ANqygD
+         hQXeVztQmOnqWnOuGp3J4kxGPNV5bXtk2BQdWHziBicUZ0ydcSGV4DmOx3orJ/hBNgbW
+         oni+8AWu/zcJ9u1broDLx5B/yWgZ+KxgqK3Gg=
 MIME-Version: 1.0
+In-Reply-To: <20090429114708.66114c03@cuia.bos.redhat.com>
+References: <20090428044426.GA5035@eskimo.com>
+	 <20090428192907.556f3a34@bree.surriel.com>
+	 <1240987349.4512.18.camel@laptop>
+	 <20090429114708.66114c03@cuia.bos.redhat.com>
+Date: Thu, 30 Apr 2009 01:07:51 +0900
+X-Google-Sender-Auth: 13702ed1c39fa3f9
+Message-ID: <2f11576a0904290907g48e94e74ye97aae593f6ac519@mail.gmail.com>
+Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Elladan <elladan@eskimo.com>,
+       linux-kernel@vger.kernel.org, tytso@mit.edu, linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n3TG8Fqu015804
 
-Is it possible that's simply 'oprofile has a 4% overhead'?
+Hi
 
-> -----Original Message-----
-> From: Styner, Douglas W
-> Sent: Wednesday, April 29, 2009 9:00 AM
-> To: Andi Kleen; Andrew Morton
-> Cc: linux-kernel@vger.kernel.org; Tripathi, Sharad C;
-> arjan@linux.intel.com; Wilcox, Matthew R; Kleen, Andi; Siddha, Suresh B;
-> Ma, Chinang; Wang, Peter Xihong; Nueckel, Hubert; Recalde, Luis F; Nelson,
-> Doug; Cheng, Wu-sun; Prickett, Terry O; Shunmuganathan, Rajalakshmi; Garg,
-> Anil K; Chilukuri, Harita; chris.mason@oracle.com
-> Subject: RE: Mainline kernel OLTP performance update
-> 
-> What we showed was that vmstat and vtune agreed wrt system/user time.
-> Oprofile is off by ~4% (4% too low for user. 4% too high for system)
-> 
-> >-----Original Message-----
-> >From: Andi Kleen [mailto:andi@firstfloor.org]
-> >Sent: Wednesday, April 29, 2009 1:28 AM
-> >To: Andrew Morton
-> >Cc: Styner, Douglas W; linux-kernel@vger.kernel.org; Tripathi, Sharad C;
-> >arjan@linux.intel.com; Wilcox, Matthew R; Kleen, Andi; Siddha, Suresh B;
-> >Ma, Chinang; Wang, Peter Xihong; Nueckel, Hubert; Recalde, Luis F;
-> Nelson,
-> >Doug; Cheng, Wu-sun; Prickett, Terry O; Shunmuganathan, Rajalakshmi;
-> Garg,
-> >Anil K; Chilukuri, Harita; chris.mason@oracle.com
-> >Subject: Re: Mainline kernel OLTP performance update
-> >
-> >Andrew Morton <akpm@linux-foundation.org> writes:
-> >
-> >>> ======oprofile CPU_CLK_UNHALTED for top 30 functions
-> >>> Cycles% 2.6.24.2                   Cycles% 2.6.30-rc3
-> >>> 74.8578 <database>                 69.1925 <database>
-> >>
-> >> ouch, that's a large drop in userspace CPU occupancy.  It seems
-> >> inconsistent with the 1.91% above.
-> >
-> >That was determined to be an oprofile artifact/regression (see Doug's
-> >other email+thread) The 2.6.30 oprofile seems to be less accurate than
-> >the one in 2.6.24. Of course the question is if it can't get
-> >the user space right, is the kernel data accurate. But I believe
-> >Doug verified with vtune that the kernel data is roughly correct,
-> >just user space profiling was slightly bogus (right, Doug, or
-> >do I misrepresent that?)
-> >
-> >-Andi
-> >
-> >--
-> >ak@linux.intel.com -- Speaking for myself only.
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Looks good than previous version. but I have one question.
+
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index eac9577..4471dcb 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1489,6 +1489,18 @@ static void shrink_zone(int priority, struct zone *zone,
+>                        nr[l] = scan;
+>        }
+>
+> +       /*
+> +        * When the system is doing streaming IO, memory pressure here
+> +        * ensures that active file pages get deactivated, until more
+> +        * than half of the file pages are on the inactive list.
+> +        *
+> +        * Once we get to that situation, protect the system's working
+> +        * set from being evicted by disabling active file page aging.
+> +        * The logic in get_scan_ratio protects anonymous pages.
+> +        */
+> +       if (nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE])
+> +               nr[LRU_ACTIVE_FILE] = 0;
+> +
+>        while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
+>                                        nr[LRU_INACTIVE_FILE]) {
+>                for_each_evictable_lru(l) {
+
+we handle active_anon vs inactive_anon ratio by shrink_list().
+Why do you insert this logic insert shrink_zone() ?
