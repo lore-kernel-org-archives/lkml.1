@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbZD2S4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbZD2S6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759447AbZD2S4R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 14:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760022AbZD2Szv
+	id S1759907AbZD2S6b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 14:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbZD2S6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 14:55:51 -0400
-Received: from ns1.t0.or.at ([62.116.70.34]:55435 "EHLO mail.t0.or.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759593AbZD2Szu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 14:55:50 -0400
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Apr 2009 14:55:49 EDT
-MailScanner-NULL-Check: 1241635731.18285@PGrTdHKKl1PgkzH7Ve7+xA
-Subject: Re: 2.6.30-rc2 + xorg-intel-2.7.0 + DRM_I915_KMS = corruption
-From: Andreas Proschofsky <suka@gentoo.org>
-To: Mateusz Kaduk <mateusz.kaduk@gmail.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, xorg@freedesktop.org,
-       linux-kernel@vger.kernel.org, Alex Bennee <kernel-hacker@bennee.com>
-In-Reply-To: <b56f065e0904291118r7f008508s32852ccd1bb0b645@mail.gmail.com>
-References: <b2cdc9f30904182327w12a3ec32t90c7c6c34980577b@mail.gmail.com>
-	 <20090427234947.394f774f@schatten>
-	 <b2cdc9f30904272237h3a815282h7e6b932e1c252d17@mail.gmail.com>
-	 <20090428095338.3e7b2062@hobbes>
-	 <b2cdc9f30904290049k290a59bfh1265a66735b510e2@mail.gmail.com>
-	 <20090429090607.2d351545@hobbes>
-	 <b56f065e0904291118r7f008508s32852ccd1bb0b645@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-FbN+zNNnGzkXmGp1+euC"
-Date: Wed, 29 Apr 2009 20:46:48 +0200
-Message-Id: <1241030808.2987.0.camel@g-three>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
-X-t0-MailScanner-Information: Please contact the ISP for more information
-X-t0-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
-X-t0-MailScanner-SpamCheck: not spam,
-	SpamAssassin (nicht zwischen gespeichert, Wertung=-0.612,
-	benoetigt 5.4, BAYES_00 -2.60, RCVD_IN_SORBS_DUL 1.99)
-X-MailScanner-From: suka@gentoo.org
+	Wed, 29 Apr 2009 14:58:20 -0400
+Received: from mail00d.mail.t-online.hu ([84.2.42.5]:54208 "EHLO
+	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751104AbZD2S6U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 14:58:20 -0400
+Message-ID: <49F8A314.4000007@freemail.hu>
+Date: Wed, 29 Apr 2009 20:57:24 +0200
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+MIME-Version: 1.0
+To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] v4l2: modify return value of VIDIOC_REQBUFS ioctl
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail00d.mail.t-online.hu 32721; Body=3 Fuz1=3
+	Fuz2=3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The V4L2 ioctls usually return 0 when the operation was successful
+and -1 in case of error. Currently VIDIOC_REQBUFS returns the
+number of buffers which is redundant because this information is
+available in count field of struct v4l2_requestbuffers. The
+V4L2 API specification, revision 0.24 [1] explicitly specifies for
+VIDIOC_REQBUFS that the return value shall be 0 on success.
 
---=-FbN+zNNnGzkXmGp1+euC
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+The patch was tested with v4l-test 0.13 [2] with vivi driver.
 
-This is fixed with Kernel 2.6.30-rc3-git6 for me, so you might try this
-one.
+References:
+[1] V4L2 API specification, revision 0.24
+    http://v4l2spec.bytesex.org/spec/r13696.htm
 
-bye
-Andreas
+[2] v4l-test: Test environment for Video For Linux Two API
+    http://v4l-test.sourceforge.net/
 
-On Wed, 2009-04-29 at 20:18 +0200, Mateusz Kaduk wrote:
-> This is realy old issue now. Which I reported at begining of this
-> month but exist much longer.
->=20
-> https://bugs.freedesktop.org/show_bug.cgi?id=3D20896
->=20
-> Two more people also experience this. This only happens with KMS mode.
-> I am using 1.6.1 xorg/mesa master/ xf86-intel master and libdrm 2.4.9
-> kernel 2.6.30-rc3-git5.
->=20
-> I hope someone can soleve this some day.
-> _______________________________________________
-> xorg mailing list
-> xorg@lists.freedesktop.org
-> http://lists.freedesktop.org/mailman/listinfo/xorg
---=20
-Andreas Proschofsky
-Gentoo Developer / OpenOffice.org
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+--- linux-2.6.30-rc3/drivers/media/video/videobuf-core.c.orig	2009-04-22 05:07:00.000000000 +0200
++++ linux-2.6.30-rc3/drivers/media/video/videobuf-core.c	2009-04-29 18:30:15.000000000 +0200
+@@ -439,6 +439,7 @@ int videobuf_reqbufs(struct videobuf_que
+ 	}
 
---=-FbN+zNNnGzkXmGp1+euC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+ 	req->count = retval;
++	retval = 0;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEABECAAYFAkn4oJgACgkQauoogOee02Mz/ACZAZp98BM7vLkIQJ+8IPvIiS3E
-9lcAn3wfkk5L/xl49w3Eb49ygcc8pTNo
-=luLX
------END PGP SIGNATURE-----
-
---=-FbN+zNNnGzkXmGp1+euC--
-
+  done:
+ 	mutex_unlock(&q->vb_lock);
