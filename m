@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbZD2RYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758259AbZD2R0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759009AbZD2RYa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 13:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbZD2RYV
+	id S1758259AbZD2R0K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 13:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbZD2RZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 13:24:21 -0400
-Received: from web32602.mail.mud.yahoo.com ([68.142.207.229]:45089 "HELO
-	web32602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753189AbZD2RYV (ORCPT
+	Wed, 29 Apr 2009 13:25:56 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:48032 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753117AbZD2RZz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 13:24:21 -0400
-Message-ID: <884894.99151.qm@web32602.mail.mud.yahoo.com>
-X-YMail-OSG: zFxZ.f8VM1ldaOjnDDxhsdz3lIZNPB9mYUXXEiLfavEMoiQgv7FF_SB4yhyOLU43Hw4ezsghKM9z0BsgtSQHOuItGwGqtyTEu1pR8hB7VoHlJGKOD3pfYnC07GatGlsAmnbFLcW8e.AgHfbajnpq3mszj3O3AmWpgX8C_PooKDreHBFIosjBKjmOY940D6XYZB6N1QUTrCYD_INVnEoekAHfmrtT.YIFJEoFAclef2jiLbtxWRz_BTZ24J7CSbwc3pkUJGxxzYBZuVLyp1l.OHwdJ2IKeOq5S0IK9qhssvanSL_IkgEO.EbYxIyheJjhZoql.YJFHMJApAApi.zYEx0-
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1277.35 YahooMailWebService/0.7.289.1
-References: <409142.83316.qm@web32605.mail.mud.yahoo.com> <20090428182837.62c51f26.akpm@linux-foundation.org> <1240977096.5478.3.camel@marge.simson.net> <20090429011755.c141c599.akpm@linux-foundation.org> <20090429120827.GI8633@ZenIV.linux.org.uk>
-Date: Wed, 29 Apr 2009 10:24:20 -0700 (PDT)
-From: Martin Knoblauch <knobi@knobisoft.de>
-Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
-To: Al Viro <viro@ZenIV.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Mike Galbraith <efault@gmx.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org,
-       tigran aivazian <tigran@aivazian.fsnet.co.uk>
-In-Reply-To: <20090429120827.GI8633@ZenIV.linux.org.uk>
+	Wed, 29 Apr 2009 13:25:55 -0400
+X-IronPort-AV: E=Sophos;i="4.40,267,1238976000"; 
+   d="scan'208";a="295247240"
+From: Roland Dreier <rdreier@cisco.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
+       tglx@linutronix.de, h.mitake@gmail.com, rpjday@crashcourse.ca,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: Remove readq()/writeq() on 32-bit
+References: <49EE37AF.4020507@zytor.com>
+	<20090421.173123.191021055.davem@davemloft.net>
+	<adak55438gp.fsf_-_@cisco.com>
+	<20090428.221228.217954247.davem@davemloft.net>
+	<20090429115654.GC11586@elte.hu> <49F843BC.7020902@garzik.org>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 29 Apr 2009 10:25:55 -0700
+In-Reply-To: <49F843BC.7020902@garzik.org> (Jeff Garzik's message of "Wed, 29
+	Apr 2009 08:10:36 -0400")
+Message-ID: <adahc071ie4.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 29 Apr 2009 17:25:55.0190 (UTC) FILETIME=[8D67D160:01C9C8EF]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > This removal patch is completely pointless, because it moves us
+ > backwards to the point where we had a bunch of drivers defining it.
 
------ Original Message ----
+No, the current kernel still requires drivers to define it anyway,
+because there are tons of 32-bit architectures that are not x86.
 
-> From: Al Viro <viro@ZenIV.linux.org.uk>
-> To: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Mike Galbraith <efault@gmx.de>; Martin Knoblauch <knobi@knobisoft.de>; Rafael J. Wysocki <rjw@sisk.pl>; linux-kernel@vger.kernel.org; tigran aivazian <tigran@aivazian.fsnet.co.uk>
-> Sent: Wednesday, April 29, 2009 2:08:28 PM
-> Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
-> 
-> On Wed, Apr 29, 2009 at 01:17:55AM -0700, Andrew Morton wrote:
-> 
-> > > > > Questions remains: was this intentional? It breaks existing userspace 
-> and should therefore be considered a regression - right? On the other hand, it 
-> will never be a problem for RHEL-4/5 kernels, unless the change in 2.6.29 gets 
-> backported. Any ideas?
-> > > > 
-> > > > afaik that was unintentional and was probably a mistake.
-> > > > 
-> > > > I wonder how we did that.
-> > > 
-> > > 
-> > > > [hotplug]# grep sysfs /proc/mounts
-> > > > none /sys sysfs rw,relatime 0 0
-> > > > /sys /sys sysfs rw,relatime 0 0
-> > > 
-> > > ___(I wonder how the heck that is accomplished)
-> > 
-> > Beats me.  I'm not seeing likely changes in fs/proc/base.c or around
-> > show_mountinfo().  Maybe sysfs broke in an ingenious way.  (hopefully
-> > cc's viro).
-> 
-> Er...  Somebody mounting sysfs twice?  From some init script and from
-> /etc/fstab, perhaps?  That definitely looks like two mount(2) had to
-> have been done to cause that...
+And more than that, centralizing the definition makes the API much more
+dangerous for driver authors.
 
- One definitely comes from /etc/fstab, but I am not aware of any other script mounting sysfs in my userspace.
+ > At least the networking drivers I messed with (until 11/2008) were
+ > always fine with a non-atomic readq.
 
-Cheers
-Martin
+The commit to niu I keep citing (e23a59e1, "niu: Fix readq
+implementation when architecture does not provide one.") shows that
+drivers need to take care.  Now, the x86 implementation would happen to
+work for that hardware, but eg drivers/infiniband/hw/amso1100 defines
+readq with the opposite order -- whether that's required or just an
+arbitrary choice, I don't know.  And drivers/infiniband/hw/mthca has
+some uses of __raw_writeq() that only work if no other CPU accesses to
+the same page can happen between the two halves, so it adds a per-page
+spinlock for 32-bit architectures.  etc.
 
+ - R.
