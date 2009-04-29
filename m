@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759954AbZD2Q5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbZD2Q6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759954AbZD2Q5y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 12:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757428AbZD2Qzd
+	id S1760089AbZD2Q6i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 12:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756603AbZD2Qzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 12:55:33 -0400
-Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:16754
-	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756033AbZD2Qz3 (ORCPT
+	Wed, 29 Apr 2009 12:55:37 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:32673 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756160AbZD2Qzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 12:55:29 -0400
-X-BigFish: VPS-4(zz14ffOzz1202hzzz32i43j66h)
+	Wed, 29 Apr 2009 12:55:32 -0400
+X-BigFish: VPS3(zzzz1202hzzz32i43j66h)
 X-Spam-TCS-SCL: 5:0
-X-FB-SS: 5,
-X-WSS-ID: 0KIVGC2-01-3UT-01
+X-WSS-ID: 0KIVGC0-01-3UP-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: akpm@linux-foundation.org, greg@kroah.com
 CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
        dougthompson@xmission.com, <linux-kernel@vger.kernel.org>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 14/21] amd64_edac: add per-family descriptors
-Date: Wed, 29 Apr 2009 18:55:00 +0200
-Message-ID: <1241024107-14535-15-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 08/21] amd64_edac: add helper to dump relevant registers
+Date: Wed, 29 Apr 2009 18:54:54 +0200
+Message-ID: <1241024107-14535-9-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
 References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 29 Apr 2009 16:55:20.0398 (UTC) FILETIME=[47C8C6E0:01C9C8EB]
+X-OriginalArrivalTime: 29 Apr 2009 16:55:17.0117 (UTC) FILETIME=[45D422D0:01C9C8EB]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,90 +36,171 @@ From: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |   76 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 76 insertions(+), 0 deletions(-)
+ drivers/edac/amd64_edac.c |  157 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 157 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 84075c0..afdb60d 100644
+index 7c2f5fc..4e84ccf 100644
 --- a/drivers/edac/amd64_edac.c
 +++ b/drivers/edac/amd64_edac.c
-@@ -3045,3 +3045,79 @@ static int f10_probe_valid_hardware(struct amd64_pvt *pvt)
- 	return rc;
+@@ -1751,3 +1751,160 @@ static int sys_addr_to_csrow(struct mem_ctl_info *mci, u64 sys_addr)
+ 	return csrow;
  }
  
-+/*
-+ * There currently are 3 types type of MC devices for AMD
-+ * Athlon/Opterons (as per PCI DEVICE_IDs):
-+ *
-+ * Family K8: That is the Athlon64 and Opteron CPUs. They all have the
-+ * same PCI DEVICE ID, even though there is differences between
-+ * the different Revisions (CG,D,E,F).
-+ *
-+ * Family F10h.
-+ *
-+ * Family F11h.
-+ *
-+ */
-+static struct amd64_family_type amd64_family_types[] = {
-+	[K8_CPUS] = {
-+		.ctl_name = "RevF",
-+		.addr_f1_ctl = PCI_DEVICE_ID_AMD_K8_NB_ADDRMAP,
-+		.misc_f3_ctl = PCI_DEVICE_ID_AMD_K8_NB_MISC,
-+		.ops = {
-+			.early_channel_count = k8_early_channel_count,
-+			.get_error_address = k8_get_error_address,
-+			.read_dram_base_limit = k8_read_dram_base_limit,
-+			.map_sysaddr_to_csrow = k8_map_sysaddr_to_csrow,
-+			.dbam_map_to_pages = k8_dbam_map_to_pages,
-+		}
-+	},
-+	[F10_CPUS] = {
-+		.ctl_name = "Family 10h",
-+		.addr_f1_ctl = PCI_DEVICE_ID_AMD_10H_NB_MAP,
-+		.misc_f3_ctl = PCI_DEVICE_ID_AMD_10H_NB_MISC,
-+		.ops = {
-+			.probe_valid_hardware = f10_probe_valid_hardware,
-+			.early_channel_count = f10_early_channel_count,
-+			.get_error_address = f10_get_error_address,
-+			.read_dram_base_limit = f10_read_dram_base_limit,
-+			.read_dram_ctl_register = f10_read_dram_ctl_register,
-+			.map_sysaddr_to_csrow = f10_map_sysaddr_to_csrow,
-+			.dbam_map_to_pages = f10_dbam_map_to_pages,
-+		}
-+	},
-+	[F11_CPUS] = {
-+		.ctl_name = "Family 11h",
-+		.addr_f1_ctl = PCI_DEVICE_ID_AMD_11H_NB_MAP,
-+		.misc_f3_ctl = PCI_DEVICE_ID_AMD_11H_NB_MISC,
-+		.ops = {
-+			.probe_valid_hardware = f10_probe_valid_hardware,
-+			.early_channel_count = f10_early_channel_count,
-+			.get_error_address = f10_get_error_address,
-+			.read_dram_base_limit = f10_read_dram_base_limit,
-+			.read_dram_ctl_register = f10_read_dram_ctl_register,
-+			.map_sysaddr_to_csrow = f10_map_sysaddr_to_csrow,
-+			.dbam_map_to_pages = f10_dbam_map_to_pages,
-+		}
-+	},
-+};
++static int get_channel_from_x4_syndrome(unsigned short syndrome);
++static int get_channel_from_x8_syndrome(unsigned short syndrome);
 +
-+static struct pci_dev *pci_get_related_function(unsigned int vendor,
-+						unsigned int device,
-+						struct pci_dev *related)
++
++static void amd64_cpu_display_info(struct amd64_pvt *pvt)
 +{
-+	struct pci_dev *dev;
++	if (boot_cpu_data.x86 == 0x11)
++		edac_printk(KERN_DEBUG, EDAC_MC, "F11h CPU detected\n");
++	else if (boot_cpu_data.x86 == 0x10)
++		edac_printk(KERN_DEBUG, EDAC_MC, "F10h CPU detected\n");
++	else if (boot_cpu_data.x86 == 0xf)
++		edac_printk(KERN_DEBUG, EDAC_MC, "%s detected\n",
++			(pvt->ext_model >= OPTERON_CPU_REV_F) ?
++			"Rev F or later" : "Rev E or earlier");
++	else
++		/* we'll hardly ever ever get here */
++		edac_printk(KERN_ERR, EDAC_MC, "Unknown cpu!\n");
++}
 +
-+	dev = NULL;
++/*
++ * amd64_determine_edac_cap
++ *
++ *	Determine if the DIMMs have ECC enabled. ECC is enabled ONLY if all the
++ *	DIMMs are ECC capable.
++ */
++static enum edac_type amd64_determine_edac_cap(struct amd64_pvt *pvt)
++{
++	int bit;
++	enum dev_type edac_cap = EDAC_NONE;
 +
-+	dev = pci_get_device(vendor, device, dev);
-+	while (dev != NULL) {
-+		if ((dev->bus->number == related->bus->number) &&
-+		    (PCI_SLOT(dev->devfn) == PCI_SLOT(related->devfn)))
-+			break;
-+		dev = pci_get_device(vendor, device, dev);
++	bit = (boot_cpu_data.x86 > 0xf || pvt->ext_model >= OPTERON_CPU_REV_F)
++		? 19
++		: 17;
++
++	if (pvt->dclr0 >> BIT(bit)) {
++		debugf1("  edac_type is: EDAC_FLAG_SECDED\n");
++		edac_cap = EDAC_FLAG_SECDED;
 +	}
 +
-+	return dev;
++	return edac_cap;
++}
++
++
++static void f10_debug_display_dimm_sizes(int ctrl,
++					struct amd64_pvt *pvt, int ganged);
++
++/*
++ * amd64_dump_misc_regs
++ *
++ *	for debug purposes, display and decode various NB registers that
++ *	are for the f10 family.
++ *
++ *	This function become a no-op when DEBUG is disabled
++ */
++static void amd64_dump_misc_regs(struct amd64_pvt *pvt)
++{
++	int ganged;
++
++	debugf1("  nbcap:0x%8.08x DctDualCap=%s DualNode=%s 8-Node=%s\n",
++		pvt->nbcap,
++		(pvt->nbcap & K8_NBCAP_DCT_DUAL) ? "True" : "False",
++		(pvt->nbcap & K8_NBCAP_DUAL_NODE) ? "True" : "False",
++		(pvt->nbcap & K8_NBCAP_8_NODE) ? "True" : "False");
++	debugf1("    ECC Capable=%s   ChipKill Capable=%s\n",
++		(pvt->nbcap & K8_NBCAP_SECDED) ? "True" : "False",
++		(pvt->nbcap & K8_NBCAP_CHIPKILL) ? "True" : "False");
++	debugf1("  DramCfg0-low=0x%08x DIMM-ECC=%s Parity=%s Width=%s\n",
++		pvt->dclr0,
++		(pvt->dclr0 & BIT(19)) ?  "Enabled" : "Disabled",
++		(pvt->dclr0 & BIT(8)) ?  "Enabled" : "Disabled",
++		(pvt->dclr0 & BIT(11)) ?  "128b" : "64b");
++	debugf1("    DIMM x4 Present: L0=%s L1=%s L2=%s L3=%s  DIMM Type=%s\n",
++		(pvt->dclr0 & BIT(12)) ?  "Y" : "N",
++		(pvt->dclr0 & BIT(13)) ?  "Y" : "N",
++		(pvt->dclr0 & BIT(14)) ?  "Y" : "N",
++		(pvt->dclr0 & BIT(15)) ?  "Y" : "N",
++		(pvt->dclr0 & BIT(16)) ?  "UN-Buffered" : "Buffered");
++
++
++	debugf1("  online-spare: 0x%8.08x\n", pvt->online_spare);
++
++	if (boot_cpu_data.x86 == 0xf) {
++		/* K8 DHAR regiseter */
++		debugf1("  dhar: 0x%8.08x Base=0x%08x Offset=0x%08x\n",
++			pvt->dhar, dhar_base(pvt->dhar),
++			k8_dhar_offset(pvt->dhar));
++		debugf1("      DramHoleValid=%s\n",
++			(pvt->dhar & DHAR_VALID) ?  "True" : "False");
++
++		debugf1("  dbam-dkt: 0x%8.08x\n", pvt->dbam0);
++
++		/* everything below this point is Fam10h and above */
++		return;
++
++	} else {
++		/* F10 DHAR register */
++		debugf1("  dhar: 0x%8.08x Base=0x%08x Offset=0x%08x\n",
++			pvt->dhar, dhar_base(pvt->dhar),
++			f10_dhar_offset(pvt->dhar));
++		debugf1("    DramMemHoistValid=%s DramHoleValid=%s\n",
++			(pvt->dhar & F10_DRAM_MEM_HOIST_VALID) ?
++			"True" : "False",
++			(pvt->dhar & DHAR_VALID) ?
++			"True" : "False");
++	}
++
++	/* Only if NOT ganged does dcl1 have valid info */
++	if (!dct_ganging_enabled(pvt)) {
++		debugf1("  DramCfg1-low=0x%08x DIMM-ECC=%s Parity=%s "
++			"Width=%s\n", pvt->dclr1,
++			(pvt->dclr1 & BIT(19)) ?  "Enabled" : "Disabled",
++			(pvt->dclr1 & BIT(8)) ?  "Enabled" : "Disabled",
++			(pvt->dclr1 & BIT(11)) ?  "128b" : "64b");
++		debugf1("    DIMM x4 Present: L0=%s L1=%s L2=%s L3=%s  "
++			"DIMM Type=%s\n",
++			(pvt->dclr1 & BIT(12)) ?  "Y" : "N",
++			(pvt->dclr1 & BIT(13)) ?  "Y" : "N",
++			(pvt->dclr1 & BIT(14)) ?  "Y" : "N",
++			(pvt->dclr1 & BIT(15)) ?  "Y" : "N",
++			(pvt->dclr1 & BIT(16)) ?  "UN-Buffered" : "Buffered");
++	}
++
++	/*
++	 * Determine if ganged and then dump memory sizes for first controller,
++	 * and if NOT ganged dump info for 2nd controller.
++	 */
++	ganged = dct_ganging_enabled(pvt);
++
++	f10_debug_display_dimm_sizes(0, pvt, ganged);
++
++	if (!ganged)
++		f10_debug_display_dimm_sizes(1, pvt, ganged);
++}
++
++/*
++ * amd64_read_dbam_reg
++ *
++ * Read in both of DBAM registers
++ */
++static void amd64_read_dbam_reg(struct amd64_pvt *pvt)
++{
++	int err;
++
++	err = pci_read_config_dword(pvt->dram_f2_ctl, DBAM0, &pvt->dbam0);
++	if (err != 0)
++		debugf0("%s() Reading DBAM0 failed\n", __func__);
++
++	if (boot_cpu_data.x86 >= 0x10) {
++		err = pci_read_config_dword(pvt->dram_f2_ctl, DBAM1,
++					&pvt->dbam1);
++
++		if (err != 0)
++			debugf0("%s() Reading DBAM1 failed\n", __func__);
++	}
 +}
 +
 +
