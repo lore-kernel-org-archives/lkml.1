@@ -1,96 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932351AbZD2CEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932394AbZD2CMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932351AbZD2CEW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 22:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932227AbZD2CEB
+	id S932394AbZD2CMe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 22:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757713AbZD2CMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 22:04:01 -0400
-Received: from host2.marvell.com ([65.219.4.2]:44062 "EHLO maili.marvell.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932073AbZD2CEA convert rfc822-to-8bit (ORCPT
+	Tue, 28 Apr 2009 22:12:24 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36792 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755162AbZD2CMX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 22:04:00 -0400
-From: Bing Zhao <bzhao@marvell.com>
-To: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-Cc: Marcel Holtmann <marcel@holtmann.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-bluetooth@vger.kernel.org" <linux-bluetooth@vger.kernel.org>
-Date: Tue, 28 Apr 2009 19:13:15 -0700
-Subject: RE: BUG: sleeping function called from invalid context at
- mm/slub.c:1595 --- "hcitool cc" or "l2ping"
-Thread-Topic: BUG: sleeping function called from invalid context at
- mm/slub.c:1595 --- "hcitool cc" or "l2ping"
-Thread-Index: AcnIbc6+xZBfjVyhRfKZ1v5h+i3CiwAAC9iA
-Message-ID: <477F20668A386D41ADCC57781B1F704301E3F5C816@SC-VEXCH1.marvell.com>
-References: <477F20668A386D41ADCC57781B1F704301E3F5C7F5@SC-VEXCH1.marvell.com>
-	 <1240966565.997.65.camel@localhost.localdomain>
-	 <477F20668A386D41ADCC57781B1F704301E3F5C7FC@SC-VEXCH1.marvell.com>
- <6b53b1990904281847i5c72770dif47b67366b7b9183@mail.gmail.com>
-In-Reply-To: <6b53b1990904281847i5c72770dif47b67366b7b9183@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 28 Apr 2009 22:12:23 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Chris Mason <chris.mason@oracle.com>
+Subject: Re: [PATCH RFC] ext3 data=guarded v5
+Cc: kosaki.motohiro@jp.fujitsu.com, Jan Kara <jack@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>
+In-Reply-To: <1240941840.15136.44.camel@think.oraclecorp.com>
+References: <1240941840.15136.44.camel@think.oraclecorp.com>
+Message-Id: <20090429110828.4B08.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-X-OriginalArrivalTime: 29 Apr 2009 02:03:59.0577 (UTC) FILETIME=[C2BB1C90:01C9C86E]
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Wed, 29 Apr 2009 11:12:18 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Hi Marcel,
-> >
-> > "git log" shows the last commit was ad4751fcada51292bb2967748667b582281647d0.
-> > Bluetooth: Fix errors and warnings in L2CAP reported by checkpatch.pl
-> >
-> > Is it the latest one?
+Hi 
+
+> Hello everyone,
 > 
-> yes, but make sure that you already have this patch:
-> d79c7b52d647153831c59c223a44015c2050ad67
-> 
+> I've rediffed the ext3 data=guarded code against Linus' current git
+> tree, and worked in most of Jan's suggestions:
 
-Hi Gustavo,
+I'm not fs expert and I can't review it technically. but please don't
+use the name of "guarded". this word implies strong protection. 
 
-This is a list of last several commits. d79c7b52d647153831c59c223a44015c2050ad67 is one of them.
-
-
-commit ad4751fcada51292bb2967748667b582281647d0
-Author: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
-
-    Bluetooth: Fix errors and warnings in L2CAP reported by checkpatch.pl
-
-commit 35a26a237c126d6a3acabec3b1b3b6bd3a888b26
-Author: Marcel Holtmann <marcel@holtmann.org>
-
-    Bluetooth: Remove unnecessary variable initialization
-
-commit 140014e74f973103f567bc75fa009d07ab251d20
-Author: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
-
-    Bluetooth: Use macro for L2CAP hint mask on receiving config request
-
-commit 0b81fdb4e9256b2f517600c9d138bae306520e8c
-Author: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
-
-    Bluetooth: Use macros for L2CAP channels identifiers
-
-commit d79c7b52d647153831c59c223a44015c2050ad67
-Author: Marcel Holtmann <marcel@holtmann.org>
-
-    Bluetooth: Fix connection establishment with low security requirement
-
-commit 889d94df978869cce5405040acc558a1b4a1a510
-Author: Marcel Holtmann <marcel@holtmann.org>
-
-    Bluetooth: Add different pairing timeout for Legacy Pairing
+I think end-user can misunderstand this mode make slowness and strong protect
+much than "mode=journal".
 
 
-
-Should I try something to get more debug info?
-
-Thanks,
-
-Bing
 
