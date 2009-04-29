@@ -1,89 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbZD2Kw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757484AbZD2Kxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757057AbZD2Kw2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 06:52:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbZD2KvI
+	id S1757484AbZD2Kxa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 06:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbZD2KvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 06:51:08 -0400
-Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:23631
-	"EHLO WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754860AbZD2KvB (ORCPT
+	Wed, 29 Apr 2009 06:51:13 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:21216 "EHLO
+	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753753AbZD2KvE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 06:51:01 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j65h)
-X-Spam-TCS-SCL: 4:0
-X-FB-SS: 5,
-X-WSS-ID: 0KIUZGO-02-18N-01
+	Wed, 29 Apr 2009 06:51:04 -0400
+X-BigFish: VPS1(zzzz1202hzzz32i62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KIUZGQ-01-7AF-01
 From: Robert Richter <robert.richter@amd.com>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>
 CC: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
        LKML <linux-kernel@vger.kernel.org>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 04/29] x86/perfcounters: rework pmc_amd_save_disable_all() and pmc_amd_restore_all()
-Date: Wed, 29 Apr 2009 12:47:01 +0200
-Message-ID: <1241002046-8832-5-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 09/29] x86/perfcounters: remove get_status() from struct x86_pmu
+Date: Wed, 29 Apr 2009 12:47:06 +0200
+Message-ID: <1241002046-8832-10-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.1.3
 In-Reply-To: <1241002046-8832-1-git-send-email-robert.richter@amd.com>
 References: <1241002046-8832-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 29 Apr 2009 10:50:49.0039 (UTC) FILETIME=[5B703DF0:01C9C8B8]
+X-OriginalArrivalTime: 29 Apr 2009 10:50:49.0305 (UTC) FILETIME=[5B98D490:01C9C8B8]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MSR reads and writes are expensive. This patch adds checks to avoid
-its usage where possible.
+This function is Intel only and not necessary for AMD cpus.
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- arch/x86/kernel/cpu/perf_counter.c |   24 ++++++++++++++----------
- 1 files changed, 14 insertions(+), 10 deletions(-)
+ arch/x86/kernel/cpu/perf_counter.c |   39 ++++-------------------------------
+ 1 files changed, 5 insertions(+), 34 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index d6d6529..75a0903 100644
+index 9d90de0..d0bb029 100644
 --- a/arch/x86/kernel/cpu/perf_counter.c
 +++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -334,11 +334,13 @@ static u64 pmc_amd_save_disable_all(void)
- 	for (idx = 0; idx < nr_counters_generic; idx++) {
- 		u64 val;
+@@ -51,7 +51,6 @@ struct x86_pmu {
+ 	int		(*handle_irq)(struct pt_regs *, int);
+ 	u64		(*save_disable_all)(void);
+ 	void		(*restore_all)(u64);
+-	u64		(*get_status)(u64);
+ 	void		(*ack_status)(u64);
+ 	void		(*enable)(int, u64);
+ 	void		(*disable)(int, u64);
+@@ -405,41 +404,15 @@ void hw_perf_restore(u64 ctrl)
+  */
+ EXPORT_SYMBOL_GPL(hw_perf_restore);
  
-+		if (!test_bit(idx, cpuc->active_mask))
-+			continue;
- 		rdmsrl(MSR_K7_EVNTSEL0 + idx, val);
--		if (val & ARCH_PERFMON_EVENTSEL0_ENABLE) {
--			val &= ~ARCH_PERFMON_EVENTSEL0_ENABLE;
--			wrmsrl(MSR_K7_EVNTSEL0 + idx, val);
--		}
-+		if (!(val & ARCH_PERFMON_EVENTSEL0_ENABLE))
-+			continue;
-+		val &= ~ARCH_PERFMON_EVENTSEL0_ENABLE;
-+		wrmsrl(MSR_K7_EVNTSEL0 + idx, val);
- 	}
+-static u64 intel_pmu_get_status(u64 mask)
++static inline u64 intel_pmu_get_status(u64 mask)
+ {
+ 	u64 status;
  
- 	return enabled;
-@@ -372,13 +374,15 @@ static void pmc_amd_restore_all(u64 ctrl)
- 		return;
+-	rdmsrl(MSR_CORE_PERF_GLOBAL_STATUS, status);
+-
+-	return status;
+-}
+-
+-static u64 amd_pmu_get_status(u64 mask)
+-{
+-	u64 status = 0;
+-	int idx;
+-
+-	for (idx = 0; idx < nr_counters_generic; idx++) {
+-		s64 val;
+-
+-		if (!(mask & (1 << idx)))
+-			continue;
+-
+-		rdmsrl(MSR_K7_PERFCTR0 + idx, val);
+-		val <<= (64 - counter_value_bits);
+-		if (val >= 0)
+-			status |= (1 << idx);
+-	}
+-
+-	return status;
+-}
+-
+-static u64 hw_perf_get_status(u64 mask)
+-{
+ 	if (unlikely(!perf_counters_initialized))
+ 		return 0;
++	rdmsrl(MSR_CORE_PERF_GLOBAL_STATUS, status);
  
- 	for (idx = 0; idx < nr_counters_generic; idx++) {
--		if (test_bit(idx, cpuc->active_mask)) {
--			u64 val;
-+		u64 val;
- 
--			rdmsrl(MSR_K7_EVNTSEL0 + idx, val);
--			val |= ARCH_PERFMON_EVENTSEL0_ENABLE;
--			wrmsrl(MSR_K7_EVNTSEL0 + idx, val);
--		}
-+		if (!test_bit(idx, cpuc->active_mask))
-+			continue;
-+		rdmsrl(MSR_K7_EVNTSEL0 + idx, val);
-+		if (val & ARCH_PERFMON_EVENTSEL0_ENABLE)
-+			continue;
-+		val |= ARCH_PERFMON_EVENTSEL0_ENABLE;
-+		wrmsrl(MSR_K7_EVNTSEL0 + idx, val);
- 	}
+-	return x86_pmu->get_status(mask);
++	return status;
  }
  
+ static void intel_pmu_ack_status(u64 ack)
+@@ -795,7 +768,7 @@ static int intel_pmu_handle_irq(struct pt_regs *regs, int nmi)
+ 
+ 	cpuc->throttle_ctrl = hw_perf_save_disable();
+ 
+-	status = hw_perf_get_status(cpuc->throttle_ctrl);
++	status = intel_pmu_get_status(cpuc->throttle_ctrl);
+ 	if (!status)
+ 		goto out;
+ 
+@@ -820,7 +793,7 @@ again:
+ 	/*
+ 	 * Repeat if there is more work to be done:
+ 	 */
+-	status = hw_perf_get_status(cpuc->throttle_ctrl);
++	status = intel_pmu_get_status(cpuc->throttle_ctrl);
+ 	if (status)
+ 		goto again;
+ out:
+@@ -931,7 +904,6 @@ static struct x86_pmu intel_pmu = {
+ 	.handle_irq		= intel_pmu_handle_irq,
+ 	.save_disable_all	= intel_pmu_save_disable_all,
+ 	.restore_all		= intel_pmu_restore_all,
+-	.get_status		= intel_pmu_get_status,
+ 	.ack_status		= intel_pmu_ack_status,
+ 	.enable			= intel_pmu_enable_counter,
+ 	.disable		= intel_pmu_disable_counter,
+@@ -946,7 +918,6 @@ static struct x86_pmu amd_pmu = {
+ 	.handle_irq		= amd_pmu_handle_irq,
+ 	.save_disable_all	= amd_pmu_save_disable_all,
+ 	.restore_all		= amd_pmu_restore_all,
+-	.get_status		= amd_pmu_get_status,
+ 	.ack_status		= amd_pmu_ack_status,
+ 	.enable			= amd_pmu_enable_counter,
+ 	.disable		= amd_pmu_disable_counter,
 -- 
 1.6.1.3
 
