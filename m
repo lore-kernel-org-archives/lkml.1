@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755660AbZD2N0D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752354AbZD2NZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755660AbZD2N0D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 09:26:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760035AbZD2NZY
+	id S1752354AbZD2NZq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 09:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbZD2NZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 09:25:24 -0400
-Received: from mailbox2.myri.com ([64.172.73.26]:1880 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754580AbZD2NZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 09:25:23 -0400
-Message-ID: <49F854B6.9020700@myri.com>
-Date: Wed, 29 Apr 2009 09:23:02 -0400
-From: Andrew Gallatin <gallatin@myri.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Ingo Molnar <mingo@elte.hu>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       rick.jones2@hp.com, brice@myri.com, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] sched: account system time properly
-References: <49F078FA.6010507@myri.com> <20090428163004.46733752.akpm@linux-foundation.org> <49F7DF44.8090907@cosmosbay.com> <49F805C9.9070303@cosmosbay.com> <20090429100840.77359cae@skybase> <49F81BC3.2050805@cosmosbay.com> <20090429114801.09637e46@skybase> <20090429102409.GB2373@elte.hu> <49F84BC1.7080602@cosmosbay.com>
-In-Reply-To: <49F84BC1.7080602@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 29 Apr 2009 09:25:09 -0400
+Received: from msux-gh1-uea01.nsa.gov ([63.239.67.1]:64101 "EHLO
+	msux-gh1-uea01.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758853AbZD2NZI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 09:25:08 -0400
+Subject: Re: Q: selinux_bprm_committed_creds() && signals/do_wait
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: David Howells <dhowells@redhat.com>, Eric Paris <eparis@parisplace.org>,
+       James Morris <jmorris@namei.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090428223025.GA11997@redhat.com>
+References: <20090428223025.GA11997@redhat.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 29 Apr 2009 09:18:36 -0400
+Message-Id: <1241011116.18249.193.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-
-> On mostly idle cpu, irqs were thus not accounted and top or mpstat could tell
-> user/admin that cpu was 100 % idle, 0.00 % irq, 0.00 % softirq, while it was not.
+On Wed, 2009-04-29 at 00:30 +0200, Oleg Nesterov wrote:
+> selinux_bprm_committed_creds:
 > 
-> Reported-by: Andrew Gallatin <gallatin@myri.com>
-> Re-reported-by: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> Tested-by: Eric Dumazet <dada1@cosmosbay.com>
-> Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> 	rc = avc_has_perm()
+> 	if (rc) {
+> 		flush_signals(current);
 > 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index b902e58..26efa47 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -4732,7 +4732,7 @@ void account_process_tick(struct task_struct *p, int user_tick)
->  
->  	if (user_tick)
->  		account_user_time(p, one_jiffy, one_jiffy_scaled);
-> -	else if (p != rq->idle)
-> +	else if ((p != rq->idle) || (irq_count() != HARDIRQ_OFFSET))
->  		account_system_time(p, HARDIRQ_OFFSET, one_jiffy,
->  				    one_jiffy_scaled);
->  	else
+> This doesn't look right. If the task was SIGKILL'ed we must not proceed,
+> the task should die. The fix is simple, we should check SIGNAL_GROUP_EXIT
+> and do nothing in this case, the task will exit before return to user
+> space. If SIGNAL_GROUP_EXIT is set, it is just wrong to drop SIGKILL and
+> continue.
 > 
+> But, before fixing, I'd like to understand why we are doing
+> 
+> 		flush_signal_handlers(current, 1);
+> 		sigemptyset(&current->blocked);
+> 
+> later. Could someone explain ? This looks unneeded.
+> 
+> 
+> Another question,
+> 
+> 	wake_up_interruptible(&current->parent->signal->wait_chldexit);
+> 
+> Shouldn't we use ->real_parent ? Afaics, we shouldn't worry about the tracer
+> if current is ptraced, exec must not succeed if the tracer has no rights to
+> trace this task after cred changing. But we should notify ->real_parent which
+> is, well, real parent.
 
-I can confirm this fixes the issue for me.   Thank you, and I am
-sorry if my git-bisect fumble-fingers caused too much wasted time.
+That makes sense to me - yes, s/parent/real_parent/.
 
-Cheers,
+-- 
+Stephen Smalley
+National Security Agency
 
-Drew
