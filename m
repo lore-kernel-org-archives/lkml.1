@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758696AbZD2Hq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbZD2Hrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758696AbZD2Hq7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 03:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbZD2Hp2
+	id S1758655AbZD2Hrq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 03:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbZD2Hpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 03:45:28 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:57937 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754338AbZD2HpW (ORCPT
+	Wed, 29 Apr 2009 03:45:30 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:55958 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753836AbZD2HpW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 29 Apr 2009 03:45:22 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@MIT.EDU>,
        Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 04/13] x86, vmlinux.lds: unify start/end of SECTIONS
-Date: Wed, 29 Apr 2009 09:47:20 +0200
-Message-Id: <1240991249-27117-4-git-send-email-sam@ravnborg.org>
+Subject: [PATCH 13/13] x86, vmlinux.lds: unify remaining parts
+Date: Wed, 29 Apr 2009 09:47:29 +0200
+Message-Id: <1240991249-27117-13-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.0.2.GIT
 In-Reply-To: <20090429073510.GA26386@uranus.ravnborg.org>
 References: <20090429073510.GA26386@uranus.ravnborg.org>
@@ -24,90 +24,133 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No functional changes.
+32 bit:
+- explicit page align .bss
+- move ALING() out of .brk output section
+- discard *(.eh_frame)
+
+64 bit:
+- move ALIGN() out of .bss output section
+- move ALING() out of .brk output section
+- use a dedicated section to define _end
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Cc: Tim Abbott <tabbott@MIT.EDU>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>
 ---
- arch/x86/kernel/vmlinux.lds.S    |   14 ++++++++++++++
- arch/x86/kernel/vmlinux_32.lds.S |    9 ---------
- arch/x86/kernel/vmlinux_64.lds.S |    9 ---------
- 3 files changed, 14 insertions(+), 18 deletions(-)
+ arch/x86/kernel/vmlinux.lds.S    |   32 +++++++++++++++++++++++++++-----
+ arch/x86/kernel/vmlinux_32.lds.S |   26 --------------------------
+ arch/x86/kernel/vmlinux_64.lds.S |   24 ------------------------
+ 3 files changed, 27 insertions(+), 55 deletions(-)
+ delete mode 100644 arch/x86/kernel/vmlinux_32.lds.S
+ delete mode 100644 arch/x86/kernel/vmlinux_64.lds.S
 
 diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index fef1d8d..40f3439 100644
+index ea21e04..5e6e1cb 100644
 --- a/arch/x86/kernel/vmlinux.lds.S
 +++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -49,12 +49,26 @@ PHDRS {
- 	note PT_NOTE FLAGS(0);          /* ___ */
- }
- 
-+SECTIONS
-+{
-+#ifdef CONFIG_X86_32
-+        . = LOAD_OFFSET + LOAD_PHYSICAL_ADDR;
-+        phys_startup_32 = startup_32 - LOAD_OFFSET;
-+#else
-+        . = __START_KERNEL;
-+        phys_startup_64 = startup_64 - LOAD_OFFSET;
-+#endif
-+
- #ifdef CONFIG_X86_32
- # include "vmlinux_32.lds.S"
- #else
- # include "vmlinux_64.lds.S"
+@@ -354,12 +354,34 @@ SECTIONS
+ 	/* use another section data.init2, see PERCPU_VADDR() above */
  #endif
  
-+        STABS_DEBUG
-+        DWARF_DEBUG
-+}
-+
++	/* BSS */
++	. = ALIGN(PAGE_SIZE);
++	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {
++		__bss_start = .;
++		*(.bss.page_aligned)
++		*(.bss)
++		. = ALIGN(4);
++		__bss_stop = .;
++	}
  
- #ifdef CONFIG_X86_32
- ASSERT((_end - LOAD_OFFSET <= KERNEL_IMAGE_SIZE),
+-#ifdef CONFIG_X86_32
+-# include "vmlinux_32.lds.S"
+-#else
+-# include "vmlinux_64.lds.S"
+-#endif
++	. = ALIGN(PAGE_SIZE);
++	.brk : AT(ADDR(.brk) - LOAD_OFFSET) {
++		__brk_base = .;
++		. += 64 * 1024;		/* 64k alignment slop space */
++		*(.brk_reservation)	/* areas brk users have reserved */
++		__brk_limit = .;
++	}
++
++	.end : AT(ADDR(.end) - LOAD_OFFSET) {
++		_end = .;
++	}
++
++	/* Sections to be discarded */
++	/DISCARD/ : {
++		*(.exitcall.exit)
++		*(.eh_frame)
++		*(.discard)
++	}
+ 
+         STABS_DEBUG
+         DWARF_DEBUG
 diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
-index 4fd40dc..3d3d49c 100644
+deleted file mode 100644
+index d23ee2c..0000000
 --- a/arch/x86/kernel/vmlinux_32.lds.S
-+++ b/arch/x86/kernel/vmlinux_32.lds.S
-@@ -1,8 +1,3 @@
--SECTIONS
--{
--	. = LOAD_OFFSET + LOAD_PHYSICAL_ADDR;
--	phys_startup_32 = startup_32 - LOAD_OFFSET;
++++ /dev/null
+@@ -1,26 +0,0 @@
+-	/* BSS */
+-	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {
+-		__bss_start = .;
+-		*(.bss.page_aligned)
+-		*(.bss)
+-		. = ALIGN(4);
+-		__bss_stop = .;
+-	}
 -
- 	/* Text and read-only data */
- 	.text.head : AT(ADDR(.text.head) - LOAD_OFFSET) {
- 		_text = .;
-@@ -205,7 +200,3 @@ SECTIONS
- 		*(.exitcall.exit)
- 		*(.discard)
- 	}
+-	.brk : AT(ADDR(.brk) - LOAD_OFFSET) {
+-		. = ALIGN(PAGE_SIZE);
+-		__brk_base = .;
+-		. += 64 * 1024;		/* 64k alignment slop space */
+-		*(.brk_reservation)	/* areas brk users have reserved */
+-		__brk_limit = .;
+-	}
 -
--	STABS_DEBUG
--	DWARF_DEBUG
--}
+-	.end : AT(ADDR(.end) - LOAD_OFFSET) {
+-		_end = . ;
+-	}
+-
+-	/* Sections to be discarded */
+-	/DISCARD/ : {
+-		*(.exitcall.exit)
+-		*(.discard)
+-	}
 diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
-index 6e7cbee..2d7fa20 100644
+deleted file mode 100644
+index a539366..0000000
 --- a/arch/x86/kernel/vmlinux_64.lds.S
-+++ b/arch/x86/kernel/vmlinux_64.lds.S
-@@ -1,8 +1,3 @@
--SECTIONS
--{
--	. = __START_KERNEL;
--	phys_startup_64 = startup_64 - LOAD_OFFSET;
++++ /dev/null
+@@ -1,24 +0,0 @@
+-	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {
+-		. = ALIGN(PAGE_SIZE);
+-		__bss_start = .;		/* BSS */
+-		*(.bss.page_aligned)
+-		*(.bss)
+-		__bss_stop = .;
+-	}
 -
- 	/* Text and read-only data */
- 	.text :  AT(ADDR(.text) - LOAD_OFFSET) {
- 		_text = .;
-@@ -277,7 +272,3 @@ SECTIONS
- 		*(.eh_frame)
- 		*(.discard)
- 	}
+-	.brk : AT(ADDR(.brk) - LOAD_OFFSET) {
+-		. = ALIGN(PAGE_SIZE);
+-		__brk_base = .;
+-		. += 64 * 1024;		/* 64k alignment slop space */
+-		*(.brk_reservation)	/* areas brk users have reserved */
+-		__brk_limit = .;
+-	}
 -
--	STABS_DEBUG
--	DWARF_DEBUG
--}
+-	_end = . ;
+-
+-	/* Sections to be discarded */
+-	/DISCARD/ : {
+-		*(.exitcall.exit)
+-		*(.eh_frame)
+-		*(.discard)
+-	}
 -- 
 1.6.0.6
 
