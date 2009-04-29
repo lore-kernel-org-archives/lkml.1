@@ -1,81 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757099AbZD2PR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757287AbZD2PTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757099AbZD2PR7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 11:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbZD2PRu
+	id S1757287AbZD2PTu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 11:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZD2PTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 11:17:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54927 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754366AbZD2PRt (ORCPT
+	Wed, 29 Apr 2009 11:19:42 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:47536 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752693AbZD2PTl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 11:17:49 -0400
-Date: Wed, 29 Apr 2009 08:15:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nikanth Karthikesan <knikanth@novell.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] Handle improbable possibility of
- io_context->refcount overflow
-Message-Id: <20090429081558.acaa2a9a.akpm@linux-foundation.org>
-In-Reply-To: <200904291533.07377.knikanth@novell.com>
-References: <200904291221.40361.knikanth@novell.com>
-	<20090429005930.3752dd6d.akpm@linux-foundation.org>
-	<200904291533.07377.knikanth@novell.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 29 Apr 2009 11:19:41 -0400
+Message-ID: <49F87009.1000905@monstr.eu>
+Date: Wed, 29 Apr 2009 17:19:37 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       john.williams@petalogix.com
+Subject: Re: [PATCH 20/30] microblaze_mmu_v1: uaccess MMU update
+References: <1240821139-7247-1-git-send-email-monstr@monstr.eu> <20090428225352.4a54f277.akpm@linux-foundation.org> <49F827F1.8010308@monstr.eu> <200904291258.40667.arnd@arndb.de>
+In-Reply-To: <200904291258.40667.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Apr 2009 15:33:06 +0530 Nikanth Karthikesan <knikanth@novell.com> wrote:
-
-> On Wednesday 29 April 2009 13:29:30 Andrew Morton wrote:
-> > On Wed, 29 Apr 2009 12:21:39 +0530 Nikanth Karthikesan <knikanth@novell.com> wrote:
-> > > Hi Jens
-> > >
-> > > Currently io_context has an atomic_t(int) as refcount. In case of cfq,
-> > > for each device a task does I/O, a reference to the io_context would be
-> > > taken. And when there are multiple process sharing io_contexts(CLONE_IO)
-> > > would also have a reference to the same io_context. Theoretically the
-> > > possible maximum number of processes sharing the same io_context + the
-> > > number of disks/cfq_data referring to the same io_context can overflow
-> > > the 32-bit counter on a very high-end machine. Even though it is an
-> > > improbable case, let us make it difficult by changing the refcount to
-> > > atomic64_t(long).
-> >
-> > Sorry, atomic64_t isn't implemented on 32 bit architectures.
-> >
-> > Perhaps it should be, but I expect it'd be pretty slow.
+Arnd Bergmann wrote:
+> On Wednesday 29 April 2009, Michal Simek wrote:
+>> Here is that change which remove address space problem.
+>>
+>> #define __clear_user(addr, n)   (memset((__force void *)(addr), 0, (n)), 0)
+>>
+>> Am I right?
+>>
+>> The same mishmash is for memset_fromio/memset_toio and maybe some others which I want to fix too.
 > 
-> Oh! Sorry, I didn't notice the #ifdef earlier. I guess thats why there is only
-> a single in-tree user for atomic64_t!
-
-Yes, it's a bit irritating.
-
-> In this case, could we make it atomic64_t only on 64-bit architectures and
-> keep it as atomic_t on 32-bit machines?
-
-Sure.
-
-> Something like the attached patch.
-
-Check out atomic_long_t ;)
-
-> I wonder whether we should also add BUG_ON's whenever the refcount is about to
-> wrap? Or try to handle it gracefully. Another approach would be to impose an
-> artificial limit on the no of tasks that could share an io_context. Or resort
-> to lock protection. The problem is not very serious/common.
+> This will work, but a better fix would be to define an inline
+> function that explicitly takes a __user pointer. This would give
+> you warnings when code accidentally calls __clear_user on a
+> kernel pointer (this also adds the might_sleep()):
 > 
+> static inline unsigned long __must_check 
+> __clear_user(void __user *to, unsigned long n)
+> {
+> 	memset((__force void *)addr, 0, n);
+> 	return 0;
+> }
+> 
+> static inline unsigned long __must_check 
+> clear_user(void __user *to, unsigned long n)
+> {
+> 	might_sleep();
+> 	if (unlikely(!access_ok(VERIFY_WRITE, to, n)))
+> 		return n;
+> 
+> 	return __clear_user(to, n);
+> }
+> 
+> The above is just the nommu variant. For mmu, you need to
+> have exception handling in __clear_user to take care of the
+> case where the address is part of the user mapping (access_ok)
+> but not currently mapped.
 
-For a long time there was a debug patch in -mm which would warn if
-atomic_dec() ever took any atomic_t from zero to -1.  I don't think it
-ever triggered false positives and it did find a couple of bugs.
+Is it possible to do it for noMMU kernel too? I mean current MMU implementation of
+__clear_user in asm is faster than call memset for noMMU. I think I can use MMU implementation for
+noMMU too. Add two words to __ex_table
+just extend size of one section but not too much and won't be used for noMMU.
 
-I forget what happened to the patch - probably it died when the atomic
-code got altered.
+Michal
 
-It could well be that a similar kernel-wide check for atomic_inc()
-overflows would be similarly useful.
 
+> 
+> 	Arnd <><
+
+
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
