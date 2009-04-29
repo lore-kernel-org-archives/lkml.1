@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758804AbZD2FBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbZD2FAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758804AbZD2FBT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 01:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755803AbZD2E7P
+	id S1758640AbZD2FAx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 01:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755533AbZD2E7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 00:59:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59495 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755061AbZD2E7O (ORCPT
+	Wed, 29 Apr 2009 00:59:12 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46552 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752514AbZD2E7J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 00:59:14 -0400
-Date: Tue, 28 Apr 2009 21:50:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nathan Lynch <ntl@pobox.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kosaki.motohiro\@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "andi\@firstfloor.org" <andi@firstfloor.org>,
-       "mpm\@selenic.com" <mpm@selenic.com>,
-       "adobriyan\@gmail.com" <adobriyan@gmail.com>,
-       "linux-mm\@kvack.org" <linux-mm@kvack.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Chandra Seetharaman <sekharan@us.ibm.com>,
-       Olof Johansson <olof@lixom.net>, Helge Deller <deller@parisc-linux.org>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-Message-Id: <20090428215050.67b7b4db.akpm@linux-foundation.org>
-In-Reply-To: <m38wlkxe9b.fsf@pobox.com>
-References: <20090428010907.912554629@intel.com>
-	<20090428014920.769723618@intel.com>
-	<20090428143244.4e424d36.akpm@linux-foundation.org>
-	<20090429023842.GA10266@localhost>
-	<m38wlkxe9b.fsf@pobox.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Apr 2009 00:59:09 -0400
+Message-Id: <20090429045908.394874083@goodmis.org>
+References: <20090429044814.138790038@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 29 Apr 2009 00:48:19 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 5/5] ring-buffer: fix printk output
+Content-Disposition: inline; filename=0005-ring-buffer-fix-printk-output.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009 23:41:52 -0500 Nathan Lynch <ntl@pobox.com> wrote:
+From: Steven Rostedt <srostedt@redhat.com>
 
-> > CONFIG_DEBUG_KERNEL being enabled in distro kernels effectively means 
-> >
-> >         #ifdef CONFIG_DEBUG_KERNEL == #if 1
-> >
-> > as the following patch demos. Now it becomes obviously silly.
-> 
-> Sure, #if 1 is usually silly.  But if the point is that DEBUG_KERNEL is
-> not supposed to directly affect code generation, then I see two options
-> for powerpc:
-> 
-> - remove the #ifdef CONFIG_DEBUG_KERNEL guards from
->   arch/powerpc/kernel/sysfs.c, unconditionally enabling the hid/ima
->   sysfs attributes, or
-> 
-> - define a new config symbol which governs whether those attributes are
->   enabled, and make it depend on DEBUG_KERNEL
+The warning output in trace_recursive_lock uses %d for a long when
+it should be %ld.
 
-yup.
+[ Impact: fix compile warning ]
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/ring_buffer.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 9692f10..f4cc590 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -1491,7 +1491,7 @@ static int trace_recursive_lock(void)
+ 	/* Disable all tracing before we do anything else */
+ 	tracing_off_permanent();
+ 
+-	printk_once(KERN_WARNING "Tracing recursion: depth[%d]:"
++	printk_once(KERN_WARNING "Tracing recursion: depth[%ld]:"
+ 		    "HC[%lu]:SC[%lu]:NMI[%lu]\n",
+ 		    current->trace_recursion,
+ 		    hardirq_count() >> HARDIRQ_SHIFT,
+-- 
+1.6.2.1
+
+-- 
