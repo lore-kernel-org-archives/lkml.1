@@ -1,108 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758146AbZD2FUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbZD2FVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758146AbZD2FUG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 01:20:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbZD2FTy
+	id S1758976AbZD2FVj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 01:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbZD2FVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 01:19:54 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:34072 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751580AbZD2FTx (ORCPT
+	Wed, 29 Apr 2009 01:21:30 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49480 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751472AbZD2FV3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 01:19:53 -0400
-Message-ID: <49F7E374.7060103@gawab.com>
-Date: Tue, 28 Apr 2009 22:19:48 -0700
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+	Wed, 29 Apr 2009 01:21:29 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/4] workqueue_tracepoint: Add worklet tracepoints for worklet lifecycle tracing
+Cc: kosaki.motohiro@jp.fujitsu.com, fche@redhat.com (Frank Ch. Eigler),
+       zhaolei@cn.fujitsu.com, mingo@elte.hu, fweisbec@gmail.com,
+       rostedt@goodmis.org, tzanussi@gmail.com, linux-kernel@vger.kernel.org,
+       oleg@redhat.com
+In-Reply-To: <20090428212919.c1f6f4b4.akpm@linux-foundation.org>
+References: <20090429120953.4B0E.A69D9226@jp.fujitsu.com> <20090428212919.c1f6f4b4.akpm@linux-foundation.org>
+Message-Id: <20090429133813.4B14.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Eric Anholt <eric@anholt.net>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [.30-rc2 regression] garbled screen on video
-References: <49F10D49.5010604@gawab.com> <1240942714.13997.71.camel@gaiman.anholt.net>
-In-Reply-To: <1240942714.13997.71.camel@gaiman.anholt.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Wed, 29 Apr 2009 14:21:26 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Anholt wrote:
-> On Thu, 2009-04-23 at 17:52 -0700, Justin Madru wrote:
->   
->> Hi everyone,
->>
->> Summary:
->> After playing a video for a little bit, the screen gets garbled. The 
->> only way to fix it is to
->> switch to a virtual console and then back. The screen is fixed but 
->> unfortunately only for
->> less than a few minuets and the screen gets corrupted again.
->>
->> Effected Version: 2.6.30-rc2+
->> Picture showing a corrupt screen: 
->> http://ecs.fullerton.edu/~cs351a15/badscreen.jpg
->>
->> My System:
->> Ubuntu 9.4 with 943/940GML Express Integrated Graphics Controller 
->> [8086:27a2]
->> UXA/GEM/DRI2 enable. Full info at 
->> http://jdserver.homelinux.org/bugreports/004/
->>
->> Syslog Messages:
->> None, but switching virtual consoles gives
->> [drm:i915_get_vblank_counter] *ERROR* trying to get vblank count for 
->> disabled pipe 0
->> But I think that is another bug introduced with .30-rc1.
->>     
->
-> Interesting.  Could you open a bug at bugs.freedesktop.org against xorg,
-> driver/intel, to be sure this doesn't get lost?
->
-> However, I suspect that the commit in question isn't causing your issue,
-> but is just when tiling got reenabled on your platform so you got to see
-> other (likely userland) bugs.  To test, you could revert the patch you
-> bisected to and just apply one of the hunks with a little tweak:
->
-> diff --git a/drivers/gpu/drm/i915/i915_gem_tiling.c b/drivers/gpu/drm/i915/i915_gem_tiling.c
-> index 6be3f92..f27e523 100644
-> --- a/drivers/gpu/drm/i915/i915_gem_tiling.c
-> +++ b/drivers/gpu/drm/i915/i915_gem_tiling.c
-> @@ -127,8 +129,8 @@ i915_gem_detect_bit_6_swizzle(struct drm_device *dev)
->  				swizzle_y = I915_BIT_6_SWIZZLE_9_11;
->  			} else {
->  				/* Bit 17 swizzling by the CPU in addition. */
-> -				swizzle_x = I915_BIT_6_SWIZZLE_UNKNOWN;
-> -				swizzle_y = I915_BIT_6_SWIZZLE_UNKNOWN;
-> +				swizzle_x = I915_BIT_6_SWIZZLE_9_10;
-> +				swizzle_y = I915_BIT_6_SWIZZLE_9;
->  			}
->  			break;
->  		}
->
-> You'll get typical swizzling corruption if any tiled buffers get swapped
-> out, but that shouldn't happen because Ubuntu 9.04 is stuck with DRI1 so
-> all tiled buffers are pinned.  Note that DRI1 with compiz has many
-> graphical corruption and stability issues that are fixed with DRI2, but
-> I'm not sure that what you're seeing is one of those.
->
->   
-I had UXA enabled when I get the screen corruption. And kernels before 
-2.6.30-rc2
-don't have the screen corruption. Ubuntu 9.4 has intel 2.6.3 driver I think.
+> On Wed, 29 Apr 2009 13:03:51 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > > But in this case the approach is different - the problem statement is
+> > > "I need to add tracepoints to subsystem X".  It's not driven by any
+> > > particular development problem.  So there's no guarantee at all that the
+> > > end result will be _useful_ for anything!
+> > 
+> > May I explain my opinion? I am original patch author of latency enhancement of
+> > workqueue tracer.
+> > 
+> > In real world, desktop and server user use various the out of tree driver and kernel
+> > module (e.g. some graphics driver, DRBD, proprietery security software et.al).
+> > and poor quality driver often make bug in asynchronous processing place
+> > (e.g. timer, workqueue, irq).
+> > 
+> > the bug may not be easy fixable and analyzable. if kernel oops happend,
+> > it's easy. oops log point out suspector clearly in almost case.
+> > but if the poor driver makes large latency, the evidence often vanished
+> > before latency occured.
+> > 
+> > When trouble happend, An administrator get large bafflement. "Oh, which software
+> > is wrong? how do I divide good and wrong software?".
+> > In past days, We always say "hehe, you use proprietery module. can you 
+> > reproduce this bug on upstream kernel only?". this answer don't help
+> > nor solve end-user. it is one of escape of accountability.
+> > 
+> > The good well defined static tracepoint help its situation largely.
+> > 
+> > 
+> > In addition, As far as I know, typical DTrace user don't use dynamic 
+> > tracing feature at all.
+> > They think they don't know how choice proper probe point for dynamic tracing.
+> > They repeatedly strongly hope to increase well defined static probe point. they
+> > think dynamic trace feature is too hard to use.
+> > 
+> > I also strongly dislike random place tracepoint. but I don't think this patch
+> > series is random.
+> > and I think other asynchronous processing subsystem need static tracepoint.
+> 
+> OK.
+> 
+> It's quite unclear to me how we get from here to a situation where we
+> have something which your administrator can use.  Hopefully someone
+> some day will pull all this together into an overall integrated
+> toolset.  The fact that the kernel work is being done (afaict)
+> waaaaaaaay in advance of that development means that we'll probably
+> have to revist the kernel work.  So be it.
+> 
+> But your administrator wouldn't even know to go looking at workqueues! 
+> Unless the userspace support tools are very very good.  He might
+> instead spend hours poking at the sleep-tracer or the rwsem-tracer or
+> the slow-work-tracer or blah blah.
 
-> If that patch doesn't make things work, then to fix a giant pile of
-> userland bugs that might account for it, update to the 2.7.0 2D driver
-> and enable UXA, which will get you DRI2.
->
-> If the revert + small diff fixes things, I'm interested in seeing the
-> output of either reg_dumper from a compile of the 2D driver or a printk
-> of dcc in that function, combined with a screenshot of mesa's readpix
-> demo, on master (no reverts or anything).
->
->   
-So do I apply your patch with the current revert still inplace?
+Agreed. then I add latency list displaying feature to worktracer stastics.
+It display suspect workqueue (or no need doubt workqueue).
 
-And where do I find the reg_dumper, dcc printk and the mesa readpix demo?
+My expected use-case is:
+good sorted-out stastics narrow down suspector. and most detailed information
+can be get by event tracer.
 
-Justin Madru
+IOW, generally I agree with you. good userspace tools is very very important.
+but workqueue tracer latency view, I think current stastics is enough.
+
+
+> I expect that a generic function-entry tracer (which we already have)
+> would be the starting tool for diagnosing such a problem.  Probably it
+> would be the ending tool too.
+
+I think function tracer is control flow oriented tracer. event tracer is data flow
+oriented tracer.
+they see another aspect to one thing.
+
+example, if big latency is caused complex funny locking dependency, control
+flow analysis don't solve issue, we need data flow analysis.
+
+
+
+
+> What's the terminal state here?  The end result?  I see lots of random
+> somewhat-useless-looking tracers being added, but what are we actually
+> working towards?
+> 
+> Until we know that, how do we know that we're not adding stuff
+> which we won't need (as I suspect we are doing)?
+
+Oh well. I can't say the goal of ftrace framework itself.
+
+I only say:
+many issue and trouble in real world isn't kernel itself
+problem. but we aren't always white hands. There are various half gray
+issue.
+In past days, we always say "it isn't kernel bug, it's userland mis-use".
+but I don't think it's real solution. it makes game of cat and mouse.
+
+strong analysis helping feature seems right way of improve linux quality
+of end-user view (not kernel developer view).
+
+Fortunately, I'm working for big server vendor now and I can see
+past trouble log and I also have some userland development experience. 
+then, I think I know some frequently troubled place
+than pure kernel developer and I can help to discuss "which is proper 
+place of well known tracepoint".
+
+but it's only "I think". I need good discussion.
+
+
+
