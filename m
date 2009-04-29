@@ -1,314 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755626AbZD2F6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbZD2F7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755626AbZD2F6p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 01:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbZD2F6d
+	id S1756232AbZD2F7c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 01:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZD2F7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 01:58:33 -0400
-Received: from arroyo.ext.ti.com ([192.94.94.40]:40660 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753474AbZD2F6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 01:58:31 -0400
-Message-ID: <61255.192.168.10.89.1240984645.squirrel@dbdmail.itg.ti.com>
-Date: Wed, 29 Apr 2009 11:27:25 +0530 (IST)
-Subject: Re: [resending] [PATCH] [MTD] [NAND] Add OMAP2 / OMAP3 NAND driver
-From: "vimal singh" <vimalsingh@ti.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: linux-mtd@lists.infradead.org, dedekind@infradead.org,
-       linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
+	Wed, 29 Apr 2009 01:59:21 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:24328 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbZD2F7U convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 01:59:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=o7wblg2+gXDbOoK2wvPy74XHec0CS/nGlrLeshV+7C5d03ZN9QzPtqKg/rLnV7B7gu
+         ofxSLw7rM0Zie1Y9jN0xpOSY7w5eO3e8RHInPnS16w5HMWfQULGDf+wNLgn68wSqtBoO
+         9u30ud0Bx/+5XfC/1DQynZYok4Cp8nk0v1NAY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+In-Reply-To: <20090428223624.61e7b255.akpm@linux-foundation.org>
+References: <21d7e9970904270121s1c58365bqc8933f8a3ffc5f1a@mail.gmail.com>
+	 <20090427083935.GA20941@elte.hu>
+	 <21d7e9970904270156v54a6483fs20d5b31c97a1d482@mail.gmail.com>
+	 <20090428223624.61e7b255.akpm@linux-foundation.org>
+Date: Wed, 29 Apr 2009 15:59:19 +1000
+Message-ID: <21d7e9970904282259w367c6964ve6fbec9e37771bc0@mail.gmail.com>
+Subject: Re: kms in defconfig
+From: Dave Airlie <airlied@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
-Thanks for your valuable comments.
-
-On Wed, Apr 29, 2009 at 10:19 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Mon, 27 Apr 2009 12:40:26 +0530 (IST) "vimal singh" <vimalsingh@ti.com>
-wrote:
+On Wed, Apr 29, 2009 at 3:36 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Mon, 27 Apr 2009 18:56:27 +1000 Dave Airlie <airlied@gmail.com> wrote:
 >
->> I am sending this patch again, after Fixing Artem's comments. Also CC'ed to
-lkml.
+>> > KMS is the sane design for graphics and i'd go as far as to consider
+>> > user-space mode setting an outright _bug_. It look a long time to
+>> > fix but now lets look forward and fix all the bugs in KMS, ASAP ...
 >>
->> --
->> Best regards,
->> vimal
->>
->>
->> This driver is present in the OMAP tree, now pushing it to MTD.
->>
->> Original author(s):
->>       Jian Zhang <jzhang@ti.com>
+>> Its mainly for things like Andrews Vaio, people will not expect a new kernel
+>> to take out any current userspace, its a pain, but we assume distros + people
+>> who compile their own kernels will know what userspace exists on their
+>> machines and other will get the least surprise.
 >
-> That's not a particularly illuminating changelog.
+> My Vaio thanks you.
 >
->> +config MTD_NAND_OMAP2
->> +     tristate "NAND Flash device on OMAP2 and OMAP3"
->> +     depends on ARM && MTD_NAND && (ARCH_OMAP2 || ARCH_OMAP3)
->> +     help
->> +          Support for NAND flash on Texas Instruments OMAP2 and OMAP3
-platforms.
->
-> OK, that tells us more.
+> What is the expected user-visible failure mode when someone enables KMS
+> on naive userspace?  iow, how can bug report screeners recognise when this has
+> happened?
 >
 >
-> Please pass this (and all other) patches through scripts/checkpatch.pl.
-> checkpatch finds problem in this patch which you would have fixed, had
-> you known about them.
-I took this code from Linux-omap tree, so ignored to run checkpatch.pl.
-I'll do the same this time.
 
->
->> +#define TF(value)    (value ? 1 : 0)
->> +
->> +#define P2048e(a)    (TF(a & NAND_Ecc_P2048e)        << 0)
->> +#define P2048o(a)    (TF(a & NAND_Ecc_P2048o)        << 1)
->> +#define P1e(a)               (TF(a & NAND_Ecc_P1e)           << 2)
->> +#define P1o(a)               (TF(a & NAND_Ecc_P1o)           << 3)
->> +#define P2e(a)               (TF(a & NAND_Ecc_P2e)           << 4)
->> +#define P2o(a)               (TF(a & NAND_Ecc_P2o)           << 5)
->> +#define P4e(a)               (TF(a & NAND_Ecc_P4e)           << 6)
->> +#define P4o(a)               (TF(a & NAND_Ecc_P4o)           << 7)
->> +
->> +#define P8e(a)               (TF(a & NAND_Ecc_P8e)           << 0)
->> +#define P8o(a)               (TF(a & NAND_Ecc_P8o)           << 1)
->> +#define P16e(a)              (TF(a & NAND_Ecc_P16e)          << 2)
->> +#define P16o(a)              (TF(a & NAND_Ecc_P16o)          << 3)
->> +#define P32e(a)              (TF(a & NAND_Ecc_P32e)          << 4)
->> +#define P32o(a)              (TF(a & NAND_Ecc_P32o)          << 5)
->> +#define P64e(a)              (TF(a & NAND_Ecc_P64e)          << 6)
->> +#define P64o(a)              (TF(a & NAND_Ecc_P64o)          << 7)
->> +
->> +#define P128e(a)     (TF(a & NAND_Ecc_P128e)         << 0)
->> +#define P128o(a)     (TF(a & NAND_Ecc_P128o)         << 1)
->> +#define P256e(a)     (TF(a & NAND_Ecc_P256e)         << 2)
->> +#define P256o(a)     (TF(a & NAND_Ecc_P256o)         << 3)
->> +#define P512e(a)     (TF(a & NAND_Ecc_P512e)         << 4)
->> +#define P512o(a)     (TF(a & NAND_Ecc_P512o)         << 5)
->> +#define P1024e(a)    (TF(a & NAND_Ecc_P1024e)        << 6)
->> +#define P1024o(a)    (TF(a & NAND_Ecc_P1024o)        << 7)
->> +
->> +#define P8e_s(a)     (TF(a & NAND_Ecc_P8e)           << 0)
->> +#define P8o_s(a)     (TF(a & NAND_Ecc_P8o)           << 1)
->> +#define P16e_s(a)    (TF(a & NAND_Ecc_P16e)          << 2)
->> +#define P16o_s(a)    (TF(a & NAND_Ecc_P16o)          << 3)
->> +#define P1e_s(a)     (TF(a & NAND_Ecc_P1e)           << 4)
->> +#define P1o_s(a)     (TF(a & NAND_Ecc_P1o)           << 5)
->> +#define P2e_s(a)     (TF(a & NAND_Ecc_P2e)           << 6)
->> +#define P2o_s(a)     (TF(a & NAND_Ecc_P2o)           << 7)
->> +
->> +#define P4e_s(a)     (TF(a & NAND_Ecc_P4e)           << 0)
->> +#define P4o_s(a)     (TF(a & NAND_Ecc_P4o)           << 1)
->
-> (ick)
->
-> I suspect that the above will expand into quite large amounts of poor
-> code at the sites where they are invoked.
->
-> eg:
->
->        ecc_buf[2] = ~(P4o(tmp) | P4e(tmp) | P2o(tmp) | P2e(tmp) | P1o(tmp) |
->                        P1e(tmp) | P2048o(tmp) | P2048e(tmp));
->
-> this might cause the generation of eight test-n-branch operations,
-> whereas it could have been done with one.
-Actually I have plan to change HW ECC correction method, in a separate patch,
-where all these macros will get removed. So, I did not bother much at this.
+Generally X doesn't start, or X starts but dies soon after, so its
+fairly easy to nail down from
+xorg log file and dmesg.
 
-I can try to simplify these, if you still insist.
-
->
->> +/**
->> + * omap_nand_wp - This function enable or disable the Write Protect feature on
->> + * NAND device
->
-> Alas, kerneldoc doesn't support that.  The description ("This function
-> enable or disable the Write Protect feature on NAND device") must all
-> be on a single line.
-I'll fix this.
-
->
->> + * @mtd: MTD device structure
->> + * @mode: WP ON/OFF
->> + */
->> +static void omap_nand_wp(struct mtd_info *mtd, int mode)
->> +{
->> +     struct omap_nand_info *info = container_of(mtd,
->> +                                             struct omap_nand_info, mtd);
->> +
->> +     unsigned long config = __raw_readl(info->gpmc_baseaddr + GPMC_CONFIG);
->> +
->> +     if (mode)
->> +             config &= ~(NAND_WP_BIT);       /* WP is ON */
->> +     else
->> +             config |= (NAND_WP_BIT);        /* WP is OFF */
->> +
->> +     __raw_writel(config, (info->gpmc_baseaddr + GPMC_CONFIG));
->> +}
->> +
->> +/**
->> + * hardware specific access to control-lines
->> + * NOTE: boards may use different bits for these!!
->> + *
->> + * @ctrl:
->> + * NAND_NCE: bit 0 - don't care
->> + * NAND_CLE: bit 1 -> Command Latch
->> + * NAND_ALE: bit 2 -> Address Latch
->> + */
->
-> This comment purports to be a kerneldoc comment (it starts with /**) ,
-> but in fact it is not a kerneldoc comment.
->
-> Please review the comments in this patch.
-OK.
->
->> +                                             GPMC_CS_NAND_DATA;
->> +             break;
->> +
->> +     case NAND_CTRL_CHANGE | NAND_CTRL_ALE:
->> +             info->nand.IO_ADDR_W = info->gpmc_cs_baseaddr +
->> +                                             GPMC_CS_NAND_ADDRESS;
->> +             info->nand.IO_ADDR_R = info->gpmc_cs_baseaddr +
->> +                                             GPMC_CS_NAND_DATA;
->> +             break;
->> +
->> +     case NAND_CTRL_CHANGE | NAND_NCE:
->> +             info->nand.IO_ADDR_W = info->gpmc_cs_baseaddr +
->> +                                             GPMC_CS_NAND_DATA;
->> +             info->nand.IO_ADDR_R = info->gpmc_cs_baseaddr +
->> +                                             GPMC_CS_NAND_DATA;
->> +             break;
->> +     }
->> +
->> +     if (cmd != NAND_CMD_NONE)
->> +             __raw_writeb(cmd, info->nand.IO_ADDR_W);
->> +}
->> +
->>
->> ...
->>
->> +/**
->> + * omap_calcuate_ecc - Generate non-inverted ECC bytes.
->> + * Using noninverted ECC can be considered ugly since writing a blank
->> + * page ie. padding will clear the ECC bytes. This is no problem as long
->> + * nobody is trying to write data on the seemingly unused page. Reading
->> + * an erased page will produce an ECC mismatch between generated and read
->> + * ECC bytes that has to be dealt with separately.
->> + * @mtd: MTD device structure
->> + * @dat: The pointer to data on which ecc is computed
->> + * @ecc_code: The ecc_code buffer
->> + */
->
-> I believe the description of the function arguments must precede the
-> general discussion.
-Yes, I'll fix this.
-
->
->> +static int omap_calculate_ecc(struct mtd_info *mtd, const u_char *dat,
->> +                             u_char *ecc_code)
->> +{
->> +     struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
->> +                                                     mtd);
->> +     unsigned long val = 0x0;
->> +     unsigned long reg;
->> +
->> +     /* Start Reading from HW ECC1_Result = 0x200 */
->> +     reg = (unsigned long)(info->gpmc_baseaddr + GPMC_ECC1_RESULT);
->> +     val = __raw_readl(reg);
->> +     *ecc_code++ = val;          /* P128e, ..., P1e */
->> +     *ecc_code++ = val >> 16;    /* P128o, ..., P1o */
->> +     /* P2048o, P1024o, P512o, P256o, P2048e, P1024e, P512e, P256e */
->> +     *ecc_code++ = ((val >> 8) & 0x0f) | ((val >> 20) & 0xf0);
->> +     reg += 4;
->> +
->> +     return 0;
->> +}
->> +
->> +/**
->> + * omap_enable_hwecc - This function enables the hardware ecc functionality
->> + * @mtd: MTD device structure
->> + * @mode: Read/Write mode
->> + */
->> +static void omap_enable_hwecc(struct mtd_info *mtd, int mode)
->> +{
->> +     struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
->> +                                                     mtd);
->> +     register struct nand_chip *chip = mtd->priv;
->
-> gcc has ignored keyword `register' for a decade at least (unless
-> invoked with -O0).  Please zap.
-sure, I'll remove this.
->
->> +     unsigned int dev_width = (chip->options & NAND_BUSWIDTH_16) ? 1 : 0;
->> +     unsigned long val = __raw_readl(info->gpmc_baseaddr + GPMC_ECC_CONFIG);
->> +
->> +     switch (mode) {
->> +     case NAND_ECC_READ    :
->> +             __raw_writel(0x101, info->gpmc_baseaddr + GPMC_ECC_CONTROL);
->> +             /* (ECC 16 or 8 bit col) | ( CS  )  | ECC Enable */
->> +             val = (dev_width << 7) | (info->gpmc_cs << 1) | (0x1);
->> +             break;
->> +     case NAND_ECC_READSYN :
->> +              __raw_writel(0x100, info->gpmc_baseaddr + GPMC_ECC_CONTROL);
->> +             /* (ECC 16 or 8 bit col) | ( CS  )  | ECC Enable */
->> +             val = (dev_width << 7) | (info->gpmc_cs << 1) | (0x1);
->> +             break;
->> +     case NAND_ECC_WRITE   :
->> +             __raw_writel(0x101, info->gpmc_baseaddr + GPMC_ECC_CONTROL);
->> +             /* (ECC 16 or 8 bit col) | ( CS  )  | ECC Enable */
->> +             val = (dev_width << 7) | (info->gpmc_cs << 1) | (0x1);
->> +             break;
->> +     default:
->> +             DEBUG(MTD_DEBUG_LEVEL0, "Error: Unrecognized Mode[%d]!\n",
->> +                                     mode);
->> +             break;
->> +     }
->> +
->> +     __raw_writel(val, info->gpmc_baseaddr + GPMC_ECC_CONFIG);
->> +}
->> +#endif
->> +
->> +/**
->> + * omap_wait - Wait function is called during Program and erase
->> + * operations and the way it is called from MTD layer, we should wait
->> + * till the NAND chip is ready after the programming/erase operation
->> + * has completed.
->> + * @mtd: MTD device structure
->> + * @chip: NAND Chip structure
->> + */
->> +static int omap_wait(struct mtd_info *mtd, struct nand_chip *chip)
->> +{
->> +     register struct nand_chip *this = mtd->priv;
->> +     struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
->> +                                                     mtd);
->> +     int status = 0;
->> +
->> +     this->IO_ADDR_W = (void *) info->gpmc_cs_baseaddr +
->> +                                             GPMC_CS_NAND_COMMAND;
->> +     this->IO_ADDR_R = (void *) info->gpmc_cs_baseaddr + GPMC_CS_NAND_DATA;
->> +
->> +     while (!(status & 0x40)) {
->> +              __raw_writeb(NAND_CMD_STATUS & 0xFF, this->IO_ADDR_W);
->> +             status = __raw_readb(this->IO_ADDR_R);
->> +     }
->
-> This loop looks like it could consume rather a lot of energy.  Can it
-> be optimised?
-Well... here improvement could be to introduce a timeout. I'll do this.
-
-
-
-I'll fix all your comments and resend the patch.
-
----
-Best Regards,
-\/ | |\/| /-\ |_
-
-
+Dave.
