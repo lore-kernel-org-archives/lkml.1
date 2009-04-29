@@ -1,73 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbZD2LqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbZD2LwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753711AbZD2LqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 07:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbZD2LqI
+	id S1753229AbZD2LwD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 07:52:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbZD2Lvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 07:46:08 -0400
-Received: from mga03.intel.com ([143.182.124.21]:49714 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751019AbZD2LqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 07:46:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,266,1239001200"; 
-   d="scan'208";a="137209341"
-Date: Wed, 29 Apr 2009 19:45:26 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-btrfs@vger.kernel.org" <linux-btrfs@vger.kernel.org>
-Subject: Re: btrfs BUG on creating huge sparse file
-Message-ID: <20090429114526.GA24418@localhost>
-References: <20090407151010.E72A91D0471@basil.firstfloor.org> <1239210239.28688.15.camel@think.oraclecorp.com> <20090409072949.GF14687@one.firstfloor.org> <20090409075805.GG14687@one.firstfloor.org> <1239283829.23150.34.camel@think.oraclecorp.com> <20090409140257.GI14687@one.firstfloor.org> <1239287859.23150.57.camel@think.oraclecorp.com> <20090429081616.GA8339@localhost> <20090429082151.GA15170@localhost> <1241005222.19174.1.camel@think.oraclecorp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241005222.19174.1.camel@think.oraclecorp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 29 Apr 2009 07:51:51 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:51611 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751009AbZD2Lvu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 07:51:50 -0400
+Date: Wed, 29 Apr 2009 13:51:39 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Sachin Sant <sachinp@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       linux-s390@vger.kernel.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Next April 24: [S390] allmodconfig build failure (trace/events)
+Message-ID: <20090429135139.5fac79b8@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <49F8232B.4090007@in.ibm.com>
+References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
+	<49F16654.8040208@in.ibm.com>
+	<20090424072533.GE24912@elte.hu>
+	<20090424104108.0f2c0f05@osiris.boeblingen.de.ibm.com>
+	<49F8232B.4090007@in.ibm.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 07:40:22PM +0800, Chris Mason wrote:
-> On Wed, 2009-04-29 at 16:21 +0800, Wu Fengguang wrote:
-> > On Wed, Apr 29, 2009 at 04:16:16PM +0800, Wu Fengguang wrote:
-> > > On Thu, Apr 09, 2009 at 10:37:39AM -0400, Chris Mason wrote:
-> > [snip]
-> > > > PagePrivate is very common.  try_to_releasepage failing on a clean page
-> > > > without the writeback bit set and without dirty/locked buffers will be
-> > > > pretty rare.
-> > > 
-> > > Yup. btrfs seems to tag most(if not all) dirty pages with PG_private.
-> > > While ext4 won't.
-> > 
-> > Chris, I run into a btrfs BUG() when doing
-> > 
-> >         dd if=/dev/zero of=/b/sparse bs=1k count=1 seek=104857512345
-> > 
-> > The half created sparse file is
-> > 
-> >         -rw-r--r-- 1 root root 98T 2009-04-29 14:54 /b/sparse
-> >         Or
-> >         -rw-r--r-- 1 root root 107374092641280 2009-04-29 14:54 /b/sparse
-> > 
-> > Below is the kernel messages. I can test patches you throw at me :-)
-> > 
-> 
-> How big was the FS you were testing this on?  It works for me...
+On Wed, 29 Apr 2009 15:21:39 +0530
+Sachin Sant <sachinp@in.ibm.com> wrote:
+> Heiko Carstens wrote:
+> > On Fri, 24 Apr 2009 09:25:33 +0200
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> >> * Sachin Sant <sachinp@in.ibm.com> wrote:
+> >>> Today's next tree build(s390 allmodconfig) failed with
+> >>>
+> >>> kernel/built-in.o: In function `trace_softirq_entry'
+> >>> include/trace/events/irq.h:42: undefined reference to  
+> >>> `'
+> >>> include/trace/events/irq.h:42: undefined reference to  
+> >>> `__tracepoint_softirq_entry'
+> >>> kernel/built-in.o: In function `trace_softirq_exit':
+> >>> include/trace/events/irq.h:48: undefined reference to  
+> >>> `__tracepoint_softirq_exit'
+> >>> include/trace/events/irq.h:48: undefined reference to  
+> >>> `__tracepoint_softirq_exit'
+> >>>       
+> >> Hm, that's weird - s390 does not build kernel/softirq.o? Hm, it does 
+> >> - softirq.o is an obj-y object.
+> >
+> > s390 does build kernel/softirq.o. However it's anything but obvious to
+> > me how the tracepoint infrastructure works. Too many #ifdefs, #define's
+> > and #undefine's...
+> >
+> > I would expect that struct __tracepoint_softirq_entry somehow gets
+> > defined via one of the TRACE_FORMAT macros, no?
+> Today's next tree also has this failure. Any solution for this problem ?
 
-df says:
+Ingo, could you pick up the patch below please?
 
-/dev/sda3             4.3G   28K  4.3G   1% /b
+Subject: [PATCH] tracing: fix compile error
 
-Oh bad, I cannot reproduce it now..
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-Thanks,
-Fengguang
+"tracing: create automated trace defines" causes this compile error on s390:
+
+kernel/built-in.o: In function `__do_softirq':
+(.text+0x1c680): undefined reference to `__tracepoint_softirq_entry'
+
+This happens because the definitions of the softirq tracepoints were moved
+from kernel/softirq.c to kernel/irq/handle.c. Since s390 doesn't support
+generic hardirqs handle.c doesn't get compiled and the definitions are
+missing.
+So move the tracepoints to softirq.c again.
+
+Reported-by: Sachin Sant <sachinp@in.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ kernel/irq/handle.c |    2 --
+ kernel/softirq.c    |    2 ++
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-next/kernel/irq/handle.c
+===================================================================
+--- linux-next.orig/kernel/irq/handle.c
++++ linux-next/kernel/irq/handle.c
+@@ -18,8 +18,6 @@
+ #include <linux/rculist.h>
+ #include <linux/hash.h>
+ #include <linux/bootmem.h>
+-
+-#define CREATE_TRACE_POINTS
+ #include <trace/events/irq.h>
+ 
+ #include "internals.h"
+Index: linux-next/kernel/softirq.c
+===================================================================
+--- linux-next.orig/kernel/softirq.c
++++ linux-next/kernel/softirq.c
+@@ -24,6 +24,8 @@
+ #include <linux/ftrace.h>
+ #include <linux/smp.h>
+ #include <linux/tick.h>
++
++#define CREATE_TRACE_POINTS
+ #include <trace/events/irq.h>
+ 
+ #include <asm/irq.h>
