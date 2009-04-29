@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbZD2Fhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbZD2Fic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754545AbZD2Fhc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 01:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZD2FhR
+	id S1755308AbZD2Fic (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 01:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZD2FiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 01:37:17 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35917
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751939AbZD2FhP (ORCPT
+	Wed, 29 Apr 2009 01:38:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46399 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752339AbZD2FiW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 01:37:15 -0400
-Date: Tue, 28 Apr 2009 22:37:08 -0700 (PDT)
-Message-Id: <20090428.223708.168741998.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: shemminger@vyatta.com, mathieu.desnoyers@polymtl.ca, mingo@elte.hu,
-       dada1@cosmosbay.com, zbr@ioremap.net, peterz@infradead.org,
-       jarkao2@gmail.com, paulus@samba.org, paulmck@linux.vnet.ibm.com,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: revised locking for x_tables
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.00.0904280954500.22156@localhost.localdomain>
-References: <20090428092411.5331c4a1@nehalam>
-	<alpine.LFD.2.00.0904280931360.22156@localhost.localdomain>
-	<alpine.LFD.2.00.0904280954500.22156@localhost.localdomain>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 29 Apr 2009 01:38:22 -0400
+Date: Tue, 28 Apr 2009 22:36:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kms in defconfig
+Message-Id: <20090428223624.61e7b255.akpm@linux-foundation.org>
+In-Reply-To: <21d7e9970904270156v54a6483fs20d5b31c97a1d482@mail.gmail.com>
+References: <21d7e9970904270121s1c58365bqc8933f8a3ffc5f1a@mail.gmail.com>
+	<20090427083935.GA20941@elte.hu>
+	<21d7e9970904270156v54a6483fs20d5b31c97a1d482@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 28 Apr 2009 09:55:32 -0700 (PDT)
+On Mon, 27 Apr 2009 18:56:27 +1000 Dave Airlie <airlied@gmail.com> wrote:
 
-> On Tue, 28 Apr 2009, Linus Torvalds wrote:
->>
->> Ack. 
->> 
->> It could do with the update from Eric about how non-current CPU writelocks 
->> only require preemp-disable around get_counters() (and then the 
->> local_bh_disable() only around the current-CPU case).
+> > KMS is the sane design for graphics and i'd go as far as to consider
+> > user-space mode setting an outright _bug_. It look a long time to
+> > fix but now lets look forward and fix all the bugs in KMS, ASAP ...
 > 
-> Btw, regardless, that's an incremental improvement, and does not negate 
-> the "Ack" part.
+> Its mainly for things like Andrews Vaio, people will not expect a new kernel
+> to take out any current userspace, its a pain, but we assume distros + people
+> who compile their own kernels will know what userspace exists on their
+> machines and other will get the least surprise.
 
-I've applied this, thanks everyone!
+My Vaio thanks you.
+
+What is the expected user-visible failure mode when someone enables KMS
+on naive userspace?  iow, how can bug report screeners recognise when this has
+happened?
+
