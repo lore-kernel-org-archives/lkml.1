@@ -1,31 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbZD2PJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520AbZD2PNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbZD2PJM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 11:09:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZD2PI4
+	id S1754520AbZD2PNU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 11:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbZD2PNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 11:08:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59956 "EHLO
+	Wed, 29 Apr 2009 11:13:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39785 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752151AbZD2PI4 (ORCPT
+	by vger.kernel.org with ESMTP id S1752151AbZD2PNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 11:08:56 -0400
-Date: Wed, 29 Apr 2009 07:58:18 -0700
+	Wed, 29 Apr 2009 11:13:05 -0400
+Date: Wed, 29 Apr 2009 08:09:07 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
-       dada1@cosmosbay.com, benh@kernel.crashing.org, gallatin@myri.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Cc: tip-bot for Eric Dumazet <dada1@cosmosbay.com>,
-       linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       paulus@samba.org, hpa@zytor.com, mingo@redhat.com,
-       schwidefsky@de.ibm.com, benh@kernel.crashing.org, gallatin@myri.com,
-       tglx@linutronix.de, mingo@elte.hu, stable@kernel.org
-Subject: Re: [tip:sched/urgent] sched: account system time properly
-Message-Id: <20090429075818.5ca17efb.akpm@linux-foundation.org>
-In-Reply-To: <tip-f5f293a4e3d0a0c52cec31de6762c95050156516@git.kernel.org>
-References: <49F84BC1.7080602@cosmosbay.com>
-	<tip-f5f293a4e3d0a0c52cec31de6762c95050156516@git.kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 5/5] ring-buffer: fix printk output
+Message-Id: <20090429080907.efb8ba2f.akpm@linux-foundation.org>
+In-Reply-To: <20090429095625.GE31185@elte.hu>
+References: <20090429044814.138790038@goodmis.org>
+	<20090429045908.394874083@goodmis.org>
+	<20090428222024.8db50539.akpm@linux-foundation.org>
+	<20090429054359.GA6148@elte.hu>
+	<20090428225541.9ca61a12.akpm@linux-foundation.org>
+	<20090429060955.GD6148@elte.hu>
+	<20090428232000.6c3d4ce1.akpm@linux-foundation.org>
+	<20090429072208.GA22129@elte.hu>
+	<20090429004141.5f0565c9.akpm@linux-foundation.org>
+	<20090429095625.GE31185@elte.hu>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -34,30 +37,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Apr 2009 13:09:19 GMT tip-bot for Eric Dumazet <dada1@cosmosbay.com> wrote:
+On Wed, 29 Apr 2009 11:56:25 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-> Commit-ID:  f5f293a4e3d0a0c52cec31de6762c95050156516
-> Gitweb:     http://git.kernel.org/tip/f5f293a4e3d0a0c52cec31de6762c95050156516
-> Author:     Eric Dumazet <dada1@cosmosbay.com>
-> AuthorDate: Wed, 29 Apr 2009 14:44:49 +0200
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Wed, 29 Apr 2009 15:02:28 +0200
 > 
-> sched: account system time properly
+> > > My larger point remains, about possibly embedding linux-next 
+> > > into lkml. I couldnt think of a single linux-next mail that isnt 
+> > > relevant to lkml. It's all about commits that are destined for 
+> > > upstream in 0-2.5 months.
+> > 
+> > Sure, I'd be OK with zapping the linux-next list.
 > 
-> ...
-> 
-> Reported-by: Andrew Gallatin <gallatin@myri.com>
-> Re-reported-by: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Cc: rick.jones2@hp.com
-> Cc: brice@myri.com
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> LKML-Reference: <49F84BC1.7080602@cosmosbay.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Another, less drastic solution would be to keep it as an _alias_ 
+> list. All mails posted to it also go to lkml, but it would still be 
+> subscribe-able separately.
 
-The regression was present in 2.6.29, so a -stable backport (and cc!) is
-appropriate.
+That would work, although I wonder about the potential for duplicates
+turning up somewhere.
 
+> ( This has come up before and this would be useful for a number of 
+>   other things - such as tracing/instrumentation. Someone who is 
+>   only interested in instrumentation related discussions could 
+>   subscribe to that list. )
+> 
+> > > > printk_once() is racy on smp and preempt btw ;)
+> > > 
+> > > Like WARN_ONCE() and WARN_ON_ONCE(). It's really an "oh crap" 
+> > > facility, not for normal kernel messages.
+> > > 
+> > > Do we want to complicate them with locking and preemption - or 
+> > > should we just concentrate on getting the "oh crap" message out 
+> > > to the syslog (before it's possibly too late to get anything 
+> > > out)?
+> > > 
+> > > I have no strong opinion about it - but i tend to like the 
+> > > simpler method most. printk + stack dumps themselves arent 
+> > > atomic to begin with.
+> > 
+> > Well, it's hardly likely to be a problem.  otoh, if two CPUs _do_ 
+> > hit the thing at the same time, the resulting output will be all 
+> > messed up and we'd really like to see it.
+> > 
+> > Easily fixed with test_and_set_bit()?
+> 
+> but if two CPUs hit it at once then the printk+stack-dump itself is 
+> already mixed up. So if we do any atomicity it should be done for 
+> all the print-once APIs. (note, lockdep does such message-atomicity 
+> already, in its own facility)
+
+Confused.
+
+<gets distracted by FW_BUG and friends.  ytf are they in kernel.h?>
+
+#define printk_once(x...) ({				\
+	static unsigned long __print_once;		\
+							\
+	if (!test_and_set_bit(0, &__print_once))	\
+		printk(x);				\
+})
+
+How can	two CPUs do the printk(x)?
