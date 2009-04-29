@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758958AbZD2N1C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbZD2Nbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758958AbZD2N1C (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 09:27:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZD2N0u
+	id S1754621AbZD2Nbd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 09:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbZD2NbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 09:26:50 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:43702 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753109AbZD2N0t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 09:26:49 -0400
-Date: Wed, 29 Apr 2009 21:26:46 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jarod Wilson <jarod@redhat.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: [PATCH] crypto: catch base cipher self-test failures in fips
-	mode
-Message-ID: <20090429132646.GA17481@gondor.apana.org.au>
-References: <200904282111.52074.jarod@redhat.com> <20090429131506.GA17254@gondor.apana.org.au> <200904290918.37623.jarod@redhat.com>
+	Wed, 29 Apr 2009 09:31:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40016 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751341AbZD2NbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 09:31:22 -0400
+Message-ID: <49F8567F.4010703@redhat.com>
+Date: Wed, 29 Apr 2009 09:30:39 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904290918.37623.jarod@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org, tytso@mit.edu,
+       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
+Subject: Re: [PATCH] vmscan: evict use-once pages first
+References: <20090428044426.GA5035@eskimo.com>	 <20090428192907.556f3a34@bree.surriel.com> <1240987349.4512.18.camel@laptop>
+In-Reply-To: <1240987349.4512.18.camel@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 09:18:37AM -0400, Jarod Wilson wrote:
-> On Wednesday 29 April 2009 09:15:07 Herbert Xu wrote:
-> > On Tue, Apr 28, 2009 at 09:11:51PM -0400, Jarod Wilson wrote:
-> > >
-> > > +notest:
-> > > +	printk(KERN_INFO "alg: No test for %s (%s)\n", alg, driver);
-> > 
-> > Can notest ever get here with rc != 0?
+Peter Zijlstra wrote:
+> On Tue, 2009-04-28 at 19:29 -0400, Rik van Riel wrote:
 > 
-> Nope.
+>> diff --git a/mm/vmscan.c b/mm/vmscan.c
+>> index eac9577..4c0304e 100644
+>> --- a/mm/vmscan.c
+>> +++ b/mm/vmscan.c
+>> @@ -1489,6 +1489,21 @@ static void shrink_zone(int priority, struct zone *zone,
+>>  			nr[l] = scan;
+>>  	}
+>>  
+>> +	/*
+>> +	 * When the system is doing streaming IO, memory pressure here
+>> +	 * ensures that active file pages get deactivated, until more
+>> +	 * than half of the file pages are on the inactive list.
+>> +	 *
+>> +	 * Once we get to that situation, protect the system's working
+>> +	 * set from being evicted by disabling active file page aging
+>> +	 * and swapping of swap backed pages.  We still do background
+>> +	 * aging of anonymous pages.
+>> +	 */
+>> +	if (nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE]) {
+>> +		nr[LRU_ACTIVE_FILE] = 0;
+>> +		nr[LRU_INACTIVE_ANON] = 0;
+>> +	}
+>> +
+> 
+> Isn't there a hole where LRU_*_FILE << LRU_*_ANON and we now stop
+> shrinking INACTIVE_ANON even though it makes sense to.
 
-So why do we need to move it?
+Only temporarily, until the number of active file pages
+is larger than the number of inactive ones.
 
-Cheers,
+Think of it as reducing the frequency of shrinking anonymous
+pages while the system is near the threshold.
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+All rights reversed.
