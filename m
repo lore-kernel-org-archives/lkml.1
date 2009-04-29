@@ -1,43 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751631AbZD2Gup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbZD2GvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751631AbZD2Gup (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 02:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbZD2Gug
+	id S1754723AbZD2GvH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 02:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZD2Guw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 02:50:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43960 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750724AbZD2Guf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 02:50:35 -0400
-Date: Tue, 28 Apr 2009 23:46:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 2/3] tracing/filters: distinguish between signed and
- unsigned fields
-Message-Id: <20090428234645.c1780736.akpm@linux-foundation.org>
-In-Reply-To: <1240905893.6416.120.camel@tropicana>
-References: <1240905893.6416.120.camel@tropicana>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 29 Apr 2009 02:50:52 -0400
+Received: from mga09.intel.com ([134.134.136.24]:14820 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752305AbZD2Guv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 02:50:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,265,1239001200"; 
+   d="asc'?scan'208";a="407871122"
+Subject: Re: [PATCH -v2] x86: MCE: Re-implement MCE log ring buffer as
+ per-CPU ring buffer
+From: Huang Ying <ying.huang@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090429061148.GQ27382@one.firstfloor.org>
+References: <1240910841.6842.1163.camel@yhuang-dev.sh.intel.com>
+	 <87eivdqdsq.fsf@basil.nowhere.org>
+	 <1240968709.6842.1175.camel@yhuang-dev.sh.intel.com>
+	 <20090429061148.GQ27382@one.firstfloor.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-VmXW3zihm3cGd6xfNgac"
+Date: Wed, 29 Apr 2009 14:50:48 +0800
+Message-Id: <1240987849.6842.1209.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009 03:04:53 -0500 Tom Zanussi <tzanussi@gmail.com> wrote:
 
-> +#define is_signed(t)	(((t)-1) < 0)
+--=-VmXW3zihm3cGd6xfNgac
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-geeze that was confusing until I worked out that `t' is supposed to be
-the name of a C type.
+On Wed, 2009-04-29 at 14:11 +0800, Andi Kleen wrote:
+> > Maybe the comment is a little confusing. What we do is limit the size o=
+f
+> > user buffer size to prevent system from not response. If the user buffe=
+r
+>=20
+> Ah. The standard way to handle this is to add cond_resched()s where
+> appropiate. Maybe that would be an alternative or is that not
+> possible? You have to drop locks of course.
 
-	is_signed(0) == true!
+Yes, I will use cond_resched() instead.
 
-whee.
+Best Regards,
+Huang Ying
 
-Rename it to is_signed_type() or something, please?
+--=-VmXW3zihm3cGd6xfNgac
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkn3+MUACgkQKhFGF+eHlph2VACdEXc+sIUNoQ4wesP28g82Ckx0
+plgAnjY2Dyyf/4+7u/mmXTiYflp6MyN6
+=xpdE
+-----END PGP SIGNATURE-----
+
+--=-VmXW3zihm3cGd6xfNgac--
+
