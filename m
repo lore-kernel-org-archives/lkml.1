@@ -1,50 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbZD2Df0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbZD2Dh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755253AbZD2Df0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 23:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZD2DfN
+	id S1755067AbZD2Dh6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 23:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbZD2Dht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 23:35:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41696 "EHLO hera.kernel.org"
+	Tue, 28 Apr 2009 23:37:49 -0400
+Received: from ultra7.eskimo.com ([204.122.16.70]:1435 "EHLO ultra7.eskimo.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752055AbZD2DfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 23:35:11 -0400
-Message-ID: <49F7CA9A.5000701@kernel.org>
-Date: Tue, 28 Apr 2009 20:33:46 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751083AbZD2Dhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 23:37:48 -0400
+Date: Tue, 28 Apr 2009 20:36:51 -0700
+From: Elladan <elladan@eskimo.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, tytso@mit.edu, kosaki.motohiro@jp.fujitsu.com,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] vmscan: evict use-once pages first
+Message-ID: <20090429033650.GA4612@eskimo.com>
+References: <20090428044426.GA5035@eskimo.com> <20090428192907.556f3a34@bree.surriel.com>
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Linux-Scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH] scsi: ses check name in enclosure_component_register
-References: <49F6678D.3080207@kernel.org> <1240957589.3380.67.camel@mulgrave.int.hansenpartnership.com> <49F7979A.8040302@kernel.org> <1240964289.3380.73.camel@mulgrave.int.hansenpartnership.com> <49F7A71F.5040709@kernel.org> <20090429020331.GF21648@parisc-linux.org>
-In-Reply-To: <20090429020331.GF21648@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090428192907.556f3a34@bree.surriel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Tue, Apr 28, 2009 at 06:02:23PM -0700, Yinghai Lu wrote:
->> dev_set_name(cdev, name);
->>
->> the name become fmt. 
+Rik,
+
+This patch appears to significantly improve application latency while a large
+file copy runs.  I'm not seeing behavior that implies continuous bad page
+replacement.
+
+I'm still seeing some general lag, which I attribute to general filesystem
+slowness.  For example, latencytop sees many events like these:
+
+down xfs_buf_lock _xfs_buf_find xfs_buf_get_flags 1475.8 msec          5.9 %
+
+xfs_buf_iowait xfs_buf_iostart xfs_buf_read_flags 1740.9 msec          2.6 %
+
+Writing a page to disk                            1042.9 msec         43.7 %
+
+It also occasionally sees long page faults:
+
+Page fault                                        2068.3 msec         21.3 %
+
+I guess XFS (and the elevator) is just doing a poor job managing latency
+(particularly poor since all the IO on /usr/bin is on the reader disk).
+Notable:
+
+Creating block layer request                      451.4 msec         14.4 %
+
+Thank you,
+Elladan
+
+On Tue, Apr 28, 2009 at 07:29:07PM -0400, Rik van Riel wrote:
+> When the file LRU lists are dominated by streaming IO pages,
+> evict those pages first, before considering evicting other
+> pages.
 > 
-> Yes, and what happens if 'name' is '%s'?
+> This should be safe from deadlocks or performance problems
+> because only three things can happen to an inactive file page:
+> 1) referenced twice and promoted to the active list
+> 2) evicted by the pageout code
+> 3) under IO, after which it will get evicted or promoted
 > 
-
-change
-dev_set_name(cdev, name);
-to
-dev_set_name(cdev, "%s", name);
-
-didn't fix the problem.
-
-need to check name && name[0]
-
-YH
+> The pages freed in this way can either be reused for streaming
+> IO, or allocated for something else. If the pages are used for
+> streaming IO, this pageout pattern continues. Otherwise, we will
+> fall back to the normal pageout pattern.
+> 
+> Signed-off-by: Rik van Riel <riel@redhat.com>
+> 
+> --- 
+> Elladan, does this patch fix the issue you are seeing?
+> 
+> Peter, Kosaki, Ted, does this patch look good to you?
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index eac9577..4c0304e 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1489,6 +1489,21 @@ static void shrink_zone(int priority, struct zone *zone,
+>  			nr[l] = scan;
+>  	}
+>  
+> +	/*
+> +	 * When the system is doing streaming IO, memory pressure here
+> +	 * ensures that active file pages get deactivated, until more
+> +	 * than half of the file pages are on the inactive list.
+> +	 *
+> +	 * Once we get to that situation, protect the system's working
+> +	 * set from being evicted by disabling active file page aging
+> +	 * and swapping of swap backed pages.  We still do background
+> +	 * aging of anonymous pages.
+> +	 */
+> +	if (nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE]) {
+> +		nr[LRU_ACTIVE_FILE] = 0;
+> +		nr[LRU_INACTIVE_ANON] = 0;
+> +	}
+> +
+>  	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
+>  					nr[LRU_INACTIVE_FILE]) {
+>  		for_each_evictable_lru(l) {
