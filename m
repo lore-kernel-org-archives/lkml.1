@@ -1,81 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759507AbZD2U4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbZD2U6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759507AbZD2U4h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 16:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbZD2U42
+	id S1757422AbZD2U6W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 16:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbZD2U6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 16:56:28 -0400
-Received: from ppp-111-233.adsl.restena.lu ([158.64.111.233]:51683 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752191AbZD2U41 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 16:56:27 -0400
-Date: Wed, 29 Apr 2009 22:56:25 +0200
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+	Wed, 29 Apr 2009 16:58:13 -0400
+Received: from relay4.ptmail.sapo.pt ([212.55.154.24]:37581 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751538AbZD2U6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 16:58:12 -0400
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Wed, 29 Apr 2009 21:54:51 +0100
+From: Luis Henriques <henrix@sapo.pt>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] netconsole: take care of  NETDEV_UNREGISTER event
-Message-ID: <20090429225625.75a016ff@neptune.home>
-In-Reply-To: <20090429223722.62da9dcd@neptune.home>
-References: <20090429223722.62da9dcd@neptune.home>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-To: unlisted-recipients:; (no To-header on input)
+Subject: [[PATCH -tip] rtmutex.c: Documentation cleanup
+Message-ID: <20090429205451.GA23154@hades.domain.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(fix netdev CC)
+Two minor updates on functions documentation:
+ - Updated documentation for function rt_mutex_unlock(), which contained an
+   incorrect name
+ - Removed extra '*' from comment in function rt_mutex_destroy()
 
-The printk line is slightly over 80 though I have no better idea
-for the line-wrapping while keeping it searchable with grep.
+Signed-off-by: Luis Henriques <henrix@sapo.pt>
+---
+ kernel/rtmutex.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-Bruno
+diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
+index fec77e7..820c5af 100644
+--- a/kernel/rtmutex.c
++++ b/kernel/rtmutex.c
+@@ -891,9 +891,9 @@ int __sched rt_mutex_lock_interruptible(struct rt_mutex *lock,
+ EXPORT_SYMBOL_GPL(rt_mutex_lock_interruptible);
+ 
+ /**
+- * rt_mutex_lock_interruptible_ktime - lock a rt_mutex interruptible
+- *				       the timeout structure is provided
+- *				       by the caller
++ * rt_mutex_timed_lock - lock a rt_mutex interruptible
++ *			the timeout structure is provided
++ *			by the caller
+  *
+  * @lock: 		the rt_mutex to be locked
+  * @timeout:		timeout structure or NULL (no timeout)
+@@ -940,7 +940,7 @@ void __sched rt_mutex_unlock(struct rt_mutex *lock)
+ }
+ EXPORT_SYMBOL_GPL(rt_mutex_unlock);
+ 
+-/***
++/**
+  * rt_mutex_destroy - mark a mutex unusable
+  * @lock: the mutex to be destroyed
+  *
+-- 
+1.6.2.4
 
-On Wed, 29 April 2009 Bruno Prémont <bonbons@linux-vserver.org> wrote:
-> When netconsole is loaded and a network interface fades away (e.g. on
-> rmmod $interface_driver_module) the rmmod remains stuck and some locks
-> are taken that prevent any additional module loading/unloading as well
-> as interface up/down changes.
-> In addition kernel logs (and console) get flooded at 10s interval with
-> 
-> [  122.464065] unregister_netdevice: waiting for eth0 to become free.
-> Usage count = 1 [  132.704059] unregister_netdevice: waiting for eth0
-> to become free. Usage count = 1
-> 
-> This patch lets netconsole take NETDEV_UNREGISTER event into account
-> and release the affected interface if it was in use.
-> 
-> Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
-> ---
-> diff --git a/drivers/net/netconsole.c b/drivers/net/netconsole.c
-> index eceadf7..bf4af52 100644
-> --- a/drivers/net/netconsole.c
-> +++ b/drivers/net/netconsole.c
-> @@ -664,7 +664,7 @@ static int netconsole_netdev_event(struct
-> notifier_block *this, struct netconsole_target *nt;
->  	struct net_device *dev = ptr;
->  
-> -	if (!(event == NETDEV_CHANGENAME))
-> +	if (!(event == NETDEV_CHANGENAME || event == NETDEV_UNREGISTER))
->  		goto done;
->  
->  	spin_lock_irqsave(&target_list_lock, flags);
-> @@ -675,6 +675,15 @@ static int netconsole_netdev_event(struct
-> notifier_block *this, case NETDEV_CHANGENAME:
->  				strlcpy(nt->np.dev_name, dev->name,
-> IFNAMSIZ); break;
-> +			case NETDEV_UNREGISTER:
-> +				if (!nt->enabled)
-> +					break;
-> +				netpoll_cleanup(&nt->np);
-> +				nt->enabled = 0;
-> +				printk(KERN_INFO "netconsole: network logging stopped"
-> +					", interface %s unregistered\n",
-> +					dev->name);
-> +				break;
->  			}
->  		}
->  		netconsole_target_put(nt);
