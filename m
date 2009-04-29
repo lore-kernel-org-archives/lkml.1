@@ -1,68 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbZD2JLh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbZD2JL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757606AbZD2JLh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 05:11:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758926AbZD2JKQ
+	id S1756587AbZD2JL6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 05:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759245AbZD2JKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 05:10:16 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:50851 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759166AbZD2JKN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 05:10:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:x-mutt-references
-         :x-mutt-fcc:user-agent;
-        b=MOE8i4C8vAcAbDm6+lwrpjFFailvh9FePsPhWwiqy5AOHRFEoIqf8O7hxygTU8nZeK
-         oCrvHxaOgHW4V4SoqytD3OoIwDCX2Oa4xmPioe2qs1BuxZ2CPv+FQXWYjzIQyLteYthV
-         8Weitw4vap9gjDi8tqqMKdNpJFPBWmySOxRqU=
-Date: Wed, 29 Apr 2009 11:08:09 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: "Alexander V. Lukyanov" <lav@netis.ru>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.29.1: unregister_netdevice problem
-Message-ID: <20090429090809.GA2995@ami.dom.local>
-References: <20090422055735.GA4334@night.netis.ru> <20090427054103.GA27529@night.netis.ru> <20090428125755.GA5242@night.netis.ru> <49F76BF6.4040709@gmail.com> <20090429054510.GA8267@night.netis.ru>
+	Wed, 29 Apr 2009 05:10:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46628 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759248AbZD2JKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 05:10:40 -0400
+Date: Wed, 29 Apr 2009 11:06:54 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: kpm@redhat.com
+Cc: David Howells <dhowells@redhat.com>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] elf_core_dump: use rcu_read_lock() to access ->real_parent
+Message-ID: <20090429090654.GA8234@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090429054510.GA8267@night.netis.ru>
-X-Mutt-References: <20090429054510.GA8267@night.netis.ru>
-X-Mutt-Fcc: =outbox
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 09:45:10AM +0400, Alexander V. Lukyanov wrote:
-> On Tue, Apr 28, 2009 at 10:49:58PM +0200, Jarek Poplawski wrote:
-> > Do you mean if you wait a bit longer (until the first one is really removed)
-> 
-> The problem is that it is never removed. I waited for at least 30 minutes.
-> 
-> > before running another one, it doesn't s(t)uck? Is there a change e.g. wrt.
-> > 2.6.28?
-> 
-> I mean, 'vconfig rem' on another interface stucks if the previous vconfig
-> has not finished, and it never finishes. So I cannot check if other vlan
-> interfaces have the same 'refcnt' problem. So far I tried 'vconfig rem' on
-> two vlan interfaces and I have a dozen.
-> 
-> Again, the problem only happens after I notice surprisingly high LA (30
-> instead of 2-6) and interactive slowness. When it happens, I check network
-> usage, disk usage, cpu usage, mem usage - they are normal or even lower than
-> usual.
-> 
-> The server is running transparent squid and named. The last kernel version
-> was 2.6.27.21 and it did not have this problem.
+(on top of ptrace-s-parent-real_parent-in-binfmt_elf_fdpicc.patch)
 
-So looks like a regression. Alas this thing could be hard to debug and
-still more data is needed. For the beginning maybe: .config, dmesg,
-and a few SysRq logs while this happens e.g. Alt-PrtScr with t, d, w, q
-(gzipped or as attachments to a bugzilla report). (If it's not a big
-problem trying 2.6.28.9 could be helpful too.)
+In theory it is not safe to dereference ->parent/real_parent without
+tasklist or rcu lock, we can race with re-parenting.
 
-Thanks,
-Jarek P.
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+
+ fs/binfmt_elf.c       |    8 ++++++--
+ fs/binfmt_elf_fdpic.c |    8 ++++++--
+ 2 files changed, 12 insertions(+), 4 deletions(-)
+
+--- PTRACE/fs/binfmt_elf.c~RCU_PARENT	2009-04-06 00:03:40.000000000 +0200
++++ PTRACE/fs/binfmt_elf.c	2009-04-29 10:46:54.000000000 +0200
+@@ -1340,8 +1340,10 @@ static void fill_prstatus(struct elf_prs
+ 	prstatus->pr_info.si_signo = prstatus->pr_cursig = signr;
+ 	prstatus->pr_sigpend = p->pending.signal.sig[0];
+ 	prstatus->pr_sighold = p->blocked.sig[0];
++	rcu_read_lock();
++	prstatus->pr_ppid = task_pid_vnr(rcu_dereference(p->real_parent));
++	rcu_read_unlock();
+ 	prstatus->pr_pid = task_pid_vnr(p);
+-	prstatus->pr_ppid = task_pid_vnr(p->real_parent);
+ 	prstatus->pr_pgrp = task_pgrp_vnr(p);
+ 	prstatus->pr_sid = task_session_vnr(p);
+ 	if (thread_group_leader(p)) {
+@@ -1382,8 +1384,10 @@ static int fill_psinfo(struct elf_prpsin
+ 			psinfo->pr_psargs[i] = ' ';
+ 	psinfo->pr_psargs[len] = 0;
+ 
++	rcu_read_lock();
++	psinfo->pr_ppid = task_pid_vnr(rcu_dereference(p->real_parent));
++	rcu_read_unlock();
+ 	psinfo->pr_pid = task_pid_vnr(p);
+-	psinfo->pr_ppid = task_pid_vnr(p->real_parent);
+ 	psinfo->pr_pgrp = task_pgrp_vnr(p);
+ 	psinfo->pr_sid = task_session_vnr(p);
+ 
+--- PTRACE/fs/binfmt_elf_fdpic.c~RCU_PARENT	2009-04-28 21:40:49.000000000 +0200
++++ PTRACE/fs/binfmt_elf_fdpic.c	2009-04-29 10:52:31.000000000 +0200
+@@ -1387,8 +1387,10 @@ static void fill_prstatus(struct elf_prs
+ 	prstatus->pr_info.si_signo = prstatus->pr_cursig = signr;
+ 	prstatus->pr_sigpend = p->pending.signal.sig[0];
+ 	prstatus->pr_sighold = p->blocked.sig[0];
++	rcu_read_lock();
++	prstatus->pr_ppid = task_pid_vnr(rcu_dereference(p->real_parent));
++	rcu_read_unlock();
+ 	prstatus->pr_pid = task_pid_vnr(p);
+-	prstatus->pr_ppid = task_pid_vnr(p->real_parent);
+ 	prstatus->pr_pgrp = task_pgrp_vnr(p);
+ 	prstatus->pr_sid = task_session_vnr(p);
+ 	if (thread_group_leader(p)) {
+@@ -1432,8 +1434,10 @@ static int fill_psinfo(struct elf_prpsin
+ 			psinfo->pr_psargs[i] = ' ';
+ 	psinfo->pr_psargs[len] = 0;
+ 
++	rcu_read_lock();
++	psinfo->pr_ppid = task_pid_vnr(rcu_dereference(p->real_parent));
++	rcu_read_unlock();
+ 	psinfo->pr_pid = task_pid_vnr(p);
+-	psinfo->pr_ppid = task_pid_vnr(p->real_parent);
+ 	psinfo->pr_pgrp = task_pgrp_vnr(p);
+ 	psinfo->pr_sid = task_session_vnr(p);
+ 
+
