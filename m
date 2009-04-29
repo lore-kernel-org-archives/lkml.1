@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbZD2T6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761045AbZD2UAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759255AbZD2T6z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 15:58:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZD2T6q
+	id S1761045AbZD2UAr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 16:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZD2UAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 15:58:46 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39595 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754098AbZD2T6p (ORCPT
+	Wed, 29 Apr 2009 16:00:36 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:46220 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755365AbZD2UAf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 15:58:45 -0400
-Date: Wed, 29 Apr 2009 15:53:37 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>, chris@zankel.net, cooloney@kernel.org,
-       deller@gmx.de, geert@linux-m68k.org, gerg@uclinux.org,
-       hskinnemoen@atmel.com, jdike@addtoit.com, jesper.nilsson@axis.com,
-       kyle@mcmartin.ca, linux@arm.linux.org.uk, ralf@linux-mips.org,
-       rth@twiddle.net, starvik@axis.com, takata@linux-m32r.org,
-       ysato@users.sourceforge.jp, zippel@linux-m68k.org,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: Fwd: arch/ && tracehook_report_syscall_xxx()
-Message-ID: <20090429195337.GF5264@bombadil.infradead.org>
-References: <20090427180455.GA32509@redhat.com> <20090427182919.B923DFC3BF@magilla.sf.frob.com> <20090427183218.GA31596@lst.de> <20090429190852.GA14515@redhat.com>
+	Wed, 29 Apr 2009 16:00:35 -0400
+X-Sasl-enc: BkBxc2rBeHh4pkd95Sl3INhjFH0EPp/UPAyW0GP9PXRu 1241035234
+Date: Wed, 29 Apr 2009 17:00:32 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: usbutils 0.81 release
+Message-ID: <20090429200032.GD1598@khazad-dum.debian.net>
+References: <20090427193532.GA2948@kroah.com> <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com> <20090429180735.GA29812@kroah.com> <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com> <ac3eb2510904291159s14d7d532q33657eb73007fc4b@mail.gmail.com> <20090429191841.GA1598@khazad-dum.debian.net> <ac3eb2510904291227v48628c8j181dffc8fdfa1de6@mail.gmail.com> <20090429195037.GC1598@khazad-dum.debian.net> <ac3eb2510904291255j2aee527bx8e32b356ad0260d1@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090429190852.GA14515@redhat.com>
+In-Reply-To: <ac3eb2510904291255j2aee527bx8e32b356ad0260d1@mail.gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 09:08:52PM +0200, Oleg Nesterov wrote:
-> So. Dear maintainers of
-> 
-> 	parisc
-> 
-> . Could you please convert your syscall trace code to use
-> tracehook_report_syscall_entry/tracehook_report_syscall_exit ?
-> 
+On Wed, 29 Apr 2009, Kay Sievers wrote:
+> And if your distro updates the package, it overwrites the changes you
+> did to the file, and they are lost?
 
-I've got this mostly completed and working on parisc (at least, gdb
-and strace continue working, so I'm happy with that result... :)
+I suppose so, and not just for package updates: if you run update-usbids,
+the old one is overwritten AFAIK.  I didn't check the scripts, though.  But
+as a long time Debian Developer and user, that's what is implied by its
+location in /var.
 
-I'll probably push it for .30 since it seems harmless.
+If local admin changes are to be preserved, Debian policy mandates that it
+belongs on /etc.
 
---Kyle
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
