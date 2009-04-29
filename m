@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760146AbZD2Vnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758949AbZD2Vok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760146AbZD2Vnc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 17:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757368AbZD2VnR
+	id S1758949AbZD2Vok (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 17:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751104AbZD2Vo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 17:43:17 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:45523 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754356AbZD2VnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 17:43:15 -0400
-Date: Wed, 29 Apr 2009 14:43:12 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Thomas Renninger <trenn@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH v2] acpi: Fix regression where _PPC is not read at boot
-	even when ignore_ppc=0
-Message-ID: <20090429214312.GX7917@plum>
-Reply-To: djwong@us.ibm.com
-References: <20090415225348.GW8311@plum> <200904201113.31371.trenn@suse.de> <20090420104529.GB6670@elte.hu> <200904291519.29683.trenn@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904291519.29683.trenn@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 29 Apr 2009 17:44:27 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56200
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750799AbZD2Vo0 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 17:44:26 -0400
+Date: Wed, 29 Apr 2009 14:44:20 -0700 (PDT)
+Message-Id: <20090429.144420.262432582.davem@davemloft.net>
+To: bonbons@linux-vserver.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] netconsole: take care of NETDEV_UNREGISTER event
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090429225625.75a016ff@neptune.home>
+References: <20090429223722.62da9dcd@neptune.home>
+	<20090429225625.75a016ff@neptune.home>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 03:19:28PM +0200, Thomas Renninger wrote:
+From: Bruno Prémont <bonbons@linux-vserver.org>
+Date: Wed, 29 Apr 2009 22:56:25 +0200
 
-> Ingo, did you do a BIOS update in between?
-> The DSDT and SSDTs you added do not contain a _PPC function.
-> These ACPI tables definitely do not suffer from an initial _PPC
-> evaluation.
+> (fix netdev CC)
 
-P-state tables are probably loaded from separate SSDT tables "CPU0IST" and
-"CPU1IST".  You can download 'em with something like this:
+Please make a fresh submission with the correct netdev
+address so that your patch is properly tracked at:
 
-# dmesg | grep IST
-ACPI: SSDT BFD30566, 01FB (r1  PmRef    CPU0IST   3000 INTL 20030224)
-           ^addr     ^length
+	http://patchwork.ozlabs.org/project/netdev/list/
 
-# acpidump --addr 0xBFD30566 --length 0x1FB > cpu0ist
-# iasl -d cpu0ist
-
-Then paste cpu0ist.dsl somewhere.
-
---D
+Thank you.
