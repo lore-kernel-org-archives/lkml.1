@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762685AbZD2WeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762746AbZD2Wek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762685AbZD2WeT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757475AbZD2WVj
+	id S1762746AbZD2Wek (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759631AbZD2WVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:39 -0400
-Received: from kroah.org ([198.145.64.141]:40532 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:40 -0400
+Received: from kroah.org ([198.145.64.141]:40500 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758178AbZD2WVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:36 -0400
+	id S1759625AbZD2WVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:37 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:28 2009
-Message-Id: <20090429220928.132621395@mini.kroah.org>
+Message-Id: <20090429220928.280580763@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:33 -0700
+Date: Wed, 29 Apr 2009 15:07:34 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jonathan McDowell <noodles@earth.li>,
-       David Brownell <dbrownell@users.sourceforge.net>,
+       alan@lxorguk.ukuu.org.uk, Peter Korsgaard <jacmet@sunsite.dk>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 34/58] usb gadget: fix ethernet link reports to ethtool
+Subject: [patch 35/58] USB: ftdi_sio: add vendor/project id for JETI specbos 1201 spectrometer
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=0077-usb-gadget-fix-ethernet-link-reports-to-ethtool.patch
+Content-Disposition: inline; filename=0078-USB-ftdi_sio-add-vendor-project-id-for-JETI-specbo.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,48 +39,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jonathan McDowell <noodles@earth.li>
+From: Peter Korsgaard <jacmet@sunsite.dk>
 
-upstream commit: 237e75bf1e558f7330f8deb167fa3116405bef2c
+upstream commit: ae27d84351f1f3568118318a8c40ff3a154bd629
 
-The g_ether USB gadget driver currently decides whether or not there's a
-link to report back for eth_get_link based on if the USB link speed is
-set. The USB gadget speed is however often set even before the device is
-enumerated. It seems more sensible to only report a "link" if we're
-actually connected to a host that wants to talk to us. The patch below
-does this for me - tested with the PXA27x UDC driver.
-
-Signed-off-by: Jonathan McDowell <noodles@earth.li>
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/usb/gadget/u_ether.c |    8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+ drivers/usb/serial/ftdi_sio.c |    1 +
+ drivers/usb/serial/ftdi_sio.h |    7 +++++++
+ 2 files changed, 8 insertions(+)
 
---- a/drivers/usb/gadget/u_ether.c
-+++ b/drivers/usb/gadget/u_ether.c
-@@ -175,12 +175,6 @@ static void eth_get_drvinfo(struct net_d
- 	strlcpy(p->bus_info, dev_name(&dev->gadget->dev), sizeof p->bus_info);
- }
- 
--static u32 eth_get_link(struct net_device *net)
--{
--	struct eth_dev	*dev = netdev_priv(net);
--	return dev->gadget->speed != USB_SPEED_UNKNOWN;
--}
--
- /* REVISIT can also support:
-  *   - WOL (by tracking suspends and issuing remote wakeup)
-  *   - msglevel (implies updated messaging)
-@@ -189,7 +183,7 @@ static u32 eth_get_link(struct net_devic
- 
- static struct ethtool_ops ops = {
- 	.get_drvinfo = eth_get_drvinfo,
--	.get_link = eth_get_link
-+	.get_link = ethtool_op_get_link,
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -662,6 +662,7 @@ static struct usb_device_id id_table_com
+ 	{ USB_DEVICE(DE_VID, WHT_PID) },
+ 	{ USB_DEVICE(ADI_VID, ADI_GNICE_PID),
+ 		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
++	{ USB_DEVICE(JETI_VID, JETI_SPC1201_PID) },
+ 	{ },					/* Optional parameter entry */
+ 	{ }					/* Terminating entry */
  };
+--- a/drivers/usb/serial/ftdi_sio.h
++++ b/drivers/usb/serial/ftdi_sio.h
+@@ -890,6 +890,13 @@
+ #define ADI_GNICE_PID 		0xF000
  
- static void defer_kevent(struct eth_dev *dev, int flag)
+ /*
++ * JETI SPECTROMETER SPECBOS 1201
++ * http://www.jeti.com/products/sys/scb/scb1201.php
++ */
++#define JETI_VID		0x0c6c
++#define JETI_SPC1201_PID	0x04b2
++
++/*
+  *   BmRequestType:  1100 0000b
+  *   bRequest:       FTDI_E2_READ
+  *   wValue:         0
 
 
