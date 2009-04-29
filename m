@@ -1,104 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753314AbZD2Jt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbZD2Jvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753314AbZD2Jt6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 05:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbZD2Jtt
+	id S1753995AbZD2Jvz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 05:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbZD2Jvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 05:49:49 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:58081 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750858AbZD2Jts convert rfc822-to-8bit (ORCPT
+	Wed, 29 Apr 2009 05:51:41 -0400
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:58525 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751638AbZD2Jvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 05:49:48 -0400
-Date: Wed, 29 Apr 2009 11:48:01 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andrew Gallatin <gallatin@myri.com>, linux-kernel@vger.kernel.org,
-       rick.jones2@hp.com, brice@myri.com, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sched: account system time properly
-Message-ID: <20090429114801.09637e46@skybase>
-In-Reply-To: <49F81BC3.2050805@cosmosbay.com>
-References: <49F078FA.6010507@myri.com>
-	<20090428163004.46733752.akpm@linux-foundation.org>
-	<49F7DF44.8090907@cosmosbay.com>
-	<49F805C9.9070303@cosmosbay.com>
-	<20090429100840.77359cae@skybase>
-	<49F81BC3.2050805@cosmosbay.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 29 Apr 2009 05:51:39 -0400
+Message-ID: <49F8232B.4090007@in.ibm.com>
+Date: Wed, 29 Apr 2009 15:21:39 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+MIME-Version: 1.0
+To: Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric_W?= =?ISO-8859-1?Q?eisbecker?= 
+	<fweisbec@gmail.com>,
+       linux-s390@vger.kernel.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Next April 24: [S390] allmodconfig build failure (trace/events)
+References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au> <49F16654.8040208@in.ibm.com> <20090424072533.GE24912@elte.hu> <20090424104108.0f2c0f05@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20090424104108.0f2c0f05@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Apr 2009 11:20:03 +0200
-Eric Dumazet <dada1@cosmosbay.com> wrote:
+Heiko Carstens wrote:
+> On Fri, 24 Apr 2009 09:25:33 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+>
+>   
+>> * Sachin Sant <sachinp@in.ibm.com> wrote:
+>>
+>>     
+>>> Today's next tree build(s390 allmodconfig) failed with
+>>>
+>>> kernel/built-in.o: In function `trace_softirq_entry'
+>>> include/trace/events/irq.h:42: undefined reference to  
+>>> `'
+>>> include/trace/events/irq.h:42: undefined reference to  
+>>> `__tracepoint_softirq_entry'
+>>> kernel/built-in.o: In function `trace_softirq_exit':
+>>> include/trace/events/irq.h:48: undefined reference to  
+>>> `__tracepoint_softirq_exit'
+>>> include/trace/events/irq.h:48: undefined reference to  
+>>> `__tracepoint_softirq_exit'
+>>>       
+>> Hm, that's weird - s390 does not build kernel/softirq.o? Hm, it does 
+>> - softirq.o is an obj-y object.
+>>     
+>
+> s390 does build kernel/softirq.o. However it's anything but obvious to
+> me how the tracepoint infrastructure works. Too many #ifdefs, #define's
+> and #undefine's...
+>
+> I would expect that struct __tracepoint_softirq_entry somehow gets
+> defined via one of the TRACE_FORMAT macros, no?
+Today's next tree also has this failure. Any solution for this problem ?
 
-> Martin Schwidefsky a écrit :
-> > On Wed, 29 Apr 2009 09:46:17 +0200
-> > Eric Dumazet <dada1@cosmosbay.com> wrote:
-> > 
-> >> Eric Dumazet a écrit :
-> >>> Andrew Morton a écrit :
-> >>>
-> >>> So, if IRQs are interrupting idle task, I guess if (p != rq->idle) will be false.
-> >>>
-> > 
-> > If an IRQ interrupts the idle task the tick is supposed to be accounted
-> > as an idle tick. Only if the IRQ interrupted the system while it has
-> > been in hardirq or softirq processing then it should be accounted as
-> > system tick.
-> > 
-> >> Maybe following patch is needed ?
-> >>
-> >> [PATCH] sched: account system time properly
-> >>
-> >> When idle task is interrupted by an IRQ, time accounting considers CPU is idle,
-> >> even while it should account for hard or softirq.
-> >>
-> >> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> >>
-> >> diff --git a/kernel/sched.c b/kernel/sched.c
-> >> index b902e58..26efa47 100644
-> >> --- a/kernel/sched.c
-> >> +++ b/kernel/sched.c
-> >> @@ -4732,7 +4732,7 @@ void account_process_tick(struct task_struct *p, int user_tick)
-> >>  
-> >>  	if (user_tick)
-> >>  		account_user_time(p, one_jiffy, one_jiffy_scaled);
-> >> -	else if (p != rq->idle)
-> >> +	else if ((p != rq->idle) || (irq_count() != HARDIRQ_OFFSET))
-> >>  		account_system_time(p, HARDIRQ_OFFSET, one_jiffy,
-> >>  				    one_jiffy_scaled);
-> >>  	else
-> > 
-> > That patch makes a lot of sense to me. Does it fix the problem?
-> > 
-> 
-> Yes it does, on my machine at least :
-> 
-> 11:18:48 AM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest   %idle
-> 11:18:58 AM  all    0.00    0.00    0.00    0.00    0.21    0.69    0.00    0.00   99.10
-> 11:18:58 AM    0    0.00    0.00    0.00    0.00    1.70    5.50    0.00    0.00   92.80  << HERE >>
-> 11:18:58 AM    1    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
-> 11:18:58 AM    2    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
-> 11:18:58 AM    3    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
-> 11:18:58 AM    4    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
-> 11:18:58 AM    5    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
-> 11:18:58 AM    6    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
-> 11:18:58 AM    7    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
-
-Very good. Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com> 
-
+Thanks
+-Sachin
 
 -- 
-blue skies,
-   Martin.
 
-"Reality continues to ruin my life." - Calvin.
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
 
