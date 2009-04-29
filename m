@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760980AbZD2TsI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760040AbZD2Tso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760980AbZD2TsI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 15:48:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760880AbZD2Trp
+	id S1760040AbZD2Tso (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 15:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760912AbZD2Try
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 15:47:45 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42424 "EHLO ogre.sisk.pl"
+	Wed, 29 Apr 2009 15:47:54 -0400
+Received: from verein.lst.de ([213.95.11.210]:46948 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760871AbZD2Trp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 15:47:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alexey Klimov <klimov.linux@gmail.com>
-Subject: Re: [warn_once] warning: at kernel/hrtimer.c:625 hres_timers_resume+0x24/0x38()
-Date: Wed, 29 Apr 2009 21:47:01 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <208cbae30904190953t58105f13p6e11efca6d6f5322@mail.gmail.com> <200904272335.33060.rjw@sisk.pl> <208cbae30904290621m1fbf7bc5x27fa410a23ada3dc@mail.gmail.com>
-In-Reply-To: <208cbae30904290621m1fbf7bc5x27fa410a23ada3dc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1759738AbZD2Trx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 15:47:53 -0400
+Date: Wed, 29 Apr 2009 21:44:12 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>, chris@zankel.net, cooloney@kernel.org,
+       deller@gmx.de, geert@linux-m68k.org, gerg@uclinux.org,
+       hskinnemoen@atmel.com, jdike@addtoit.com, jesper.nilsson@axis.com,
+       kyle@mcmartin.ca, linux@arm.linux.org.uk, ralf@linux-mips.org,
+       rth@twiddle.net, starvik@axis.com, takata@linux-m32r.org,
+       ysato@users.sourceforge.jp, zippel@linux-m68k.org,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: Fwd: arch/ && tracehook_report_syscall_xxx()
+Message-ID: <20090429194412.GA3306@lst.de>
+References: <20090427180455.GA32509@redhat.com> <20090427182919.B923DFC3BF@magilla.sf.frob.com> <20090427183218.GA31596@lst.de> <20090429190852.GA14515@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904292147.02441.rjw@sisk.pl>
+In-Reply-To: <20090429190852.GA14515@redhat.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.127 () BAYES_20
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 April 2009, Alexey Klimov wrote:
-> Hello,
-> 
-> On Tue, Apr 28, 2009 at 1:35 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Sunday 19 April 2009, Alexey Klimov wrote:
-> >> Hello all
-> >> When testing behaviour of radio-mr800 drvier when doing suspend/resume
-> >> to disk, using echo disk > /sys/power/state i have such warning in
-> >> dmesg(see below please).
-> >> Kernel is 30-rc2, up-to-date. If you need more information, feel free to ask.
-> >
-> > Can you please retest with the appended patch applied and report back?
-> 
-> Of course. I applied your patch against up-to-date sources (30-rc3),
-> and have more messages after resume:
+On Wed, Apr 29, 2009 at 09:08:52PM +0200, Oleg Nesterov wrote:
+> . Could you please convert your syscall trace code to use
+> tracehook_report_syscall_entry/tracehook_report_syscall_exit ?
 
-Thanks!
- 
-> ACPI: Preparing to enter system sleep state S4
-> PM: Saving platform NVS memory
-> ------------[ cut here ]------------
-> WARNING: at drivers/base/sys.c:405 sysdev_suspend+0xb6/0x21c()
-> Hardware name: TravelMate 2350
-> Interrupts enabled after cpufreq_suspend+0x0/0x113
+This is part of Roland's step by step cookbook for new-style ptrace,
+so we should have most done.  Is there anything that makes this more
+urgent than the others steps for you?
 
-Well, it looks like cpufreq_suspend() left us with interrupts enabled and
-that caused the other warnings to be printed.  Not nice.
-
-What CPU is there in your box?
-
-Rafael
