@@ -1,100 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbZD2I3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758152AbZD2IaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755669AbZD2I3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 04:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbZD2I3Z
+	id S1758152AbZD2IaO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 04:30:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756110AbZD2I32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 04:29:25 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:57026 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753651AbZD2I3X (ORCPT
+	Wed, 29 Apr 2009 04:29:28 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:34996 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753756AbZD2I3Z convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 04:29:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=ZXklbDGqG2gRRkw0m6HLnlOpBKhwSNAtBqgqrPkJT/5QPRlYzMtYEe7NsZ2oUgL8X9
-         43EOB0kEHDOMkY6mcZZ4CklzGYOMbQUd3rd21ZbGxsJyIo8sfEtk8fGluRposCvUZGtc
-         ZyF+N35T8VYgKiRmaeDkGuxqMX4YB06POyVus=
-From: Andrea Righi <righi.andrea@gmail.com>
-To: David Rientjes <rientjes@google.com>, akpm@linux-foundation.org
-Cc: Peter Zijlstra <peterz@infradead.org>, Dave Chinner <david@fromorbit.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH] mm: prevent divide error for small values of vm_dirty_bytes
-Date: Wed, 29 Apr 2009 10:29:19 +0200
-Message-Id: <1240993759-30787-1-git-send-email-righi.andrea@gmail.com>
-X-Mailer: git-send-email 1.6.0.4
+	Wed, 29 Apr 2009 04:29:25 -0400
+Message-ID: <49F80F42.2010804@cosmosbay.com>
+Date: Wed, 29 Apr 2009 10:26:42 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       cl@linux.com, jesse.brandeburg@intel.com, netdev@vger.kernel.org,
+       haoki@redhat.com, mchan@broadcom.com, davidel@xmailserver.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
+References: <alpine.DEB.1.10.0904241554100.29995@qirst.com>	<49F3308B.1030507@cosmosbay.com>	<20090426.020411.157511269.davem@davemloft.net>	<49F43B8F.2050907@cosmosbay.com>	<87ab60rh8t.fsf@basil.nowhere.org>	<49F71B63.8010503@cosmosbay.com> <20090429002049.4bbc8105.akpm@linux-foundation.org> <49F8043C.8090100@cosmosbay.com>
+In-Reply-To: <49F8043C.8090100@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 29 Apr 2009 10:26:43 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avoid to set less than two pages for vm_dirty_byte: this is necessary to avoid
-potential division by 0 (like the following) in get_dirty_limits().
+Eric Dumazet a écrit :
+> Andrew Morton a écrit :
+>> On Tue, 28 Apr 2009 17:06:11 +0200 Eric Dumazet <dada1@cosmosbay.com> wrote:
+>>
+>>> [PATCH] poll: Avoid extra wakeups in select/poll
+>>>
+>>> After introduction of keyed wakeups Davide Libenzi did on epoll, we
+>>> are able to avoid spurious wakeups in poll()/select() code too.
+>>>
+>>> For example, typical use of poll()/select() is to wait for incoming
+>>> network frames on many sockets. But TX completion for UDP/TCP 
+>>> frames call sock_wfree() which in turn schedules thread.
+>>>
+>>> When scheduled, thread does a full scan of all polled fds and
+>>> can sleep again, because nothing is really available. If number
+>>> of fds is large, this cause significant load.
+>>>
+>>> This patch makes select()/poll() aware of keyed wakeups and
+>>> useless wakeups are avoided. This reduces number of context
+>>> switches by about 50% on some setups, and work performed
+>>> by sofirq handlers.
+>>>
+>> Seems that this is a virtuous patch even though Christoph is struggling
+>> a bit to test it?
+>>
+>>>  fs/select.c          |   28 +++++++++++++++++++++++++---
+>>>  include/linux/poll.h |    3 +++
+>>>  2 files changed, 28 insertions(+), 3 deletions(-)
+>>>
+>>> diff --git a/fs/select.c b/fs/select.c
+>>> index 0fe0e14..2708187 100644
+>>> --- a/fs/select.c
+>>> +++ b/fs/select.c
+>>> @@ -168,7 +168,7 @@ static struct poll_table_entry *poll_get_entry(struct poll_wqueues *p)
+>>>  	return table->entry++;
+>>>  }
+>>>  
+>>> -static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
+>>> +static int __pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
+>>>  {
+>>>  	struct poll_wqueues *pwq = wait->private;
+>>>  	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
+>>> @@ -194,6 +194,16 @@ static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
+>>>  	return default_wake_function(&dummy_wait, mode, sync, key);
+>>>  }
+>>>  
+>>> +static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
+>>> +{
+>>> +	struct poll_table_entry *entry;
+>>> +
+>>> +	entry = container_of(wait, struct poll_table_entry, wait);
+>>> +	if (key && !((unsigned long)key & entry->key))
+>>> +		return 0;
+>>> +	return __pollwake(wait, mode, sync, key);
+>>> +}
+>>> +
+>>>  /* Add a new entry */
+>>>  static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+>>>  				poll_table *p)
+>>> @@ -205,6 +215,7 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+>>>  	get_file(filp);
+>>>  	entry->filp = filp;
+>>>  	entry->wait_address = wait_address;
+>>> +	entry->key = p->key;
+>>>  	init_waitqueue_func_entry(&entry->wait, pollwake);
+>>>  	entry->wait.private = pwq;
+>>>  	add_wait_queue(wait_address, &entry->wait);
+>>> @@ -418,8 +429,16 @@ int do_select(int n, fd_set_bits *fds, struct timespec *end_time)
+>>>  				if (file) {
+>>>  					f_op = file->f_op;
+>>>  					mask = DEFAULT_POLLMASK;
+>>> -					if (f_op && f_op->poll)
+>>> +					if (f_op && f_op->poll) {
+>>> +						if (wait) {
+>>> +							wait->key = POLLEX_SET;
+>>> +							if (in & bit)
+>>> +								wait->key |= POLLIN_SET;
+>>> +							if (out & bit)
+>>> +								wait->key |= POLLOUT_SET;
+>>> +						}
+>>>  						mask = (*f_op->poll)(file, retval ? NULL : wait);
+>>> +					}
+>> <resizes xterm rather a lot>
+>>
+>> Can we (and should we) avoid all that manipulation of wait->key if
+>> `retval' is zero?
+> 
+> yes, we could set wait to NULL as soon as retval is incremented.
+> and also do :
+> 
+> mask = (*f_op->poll)(file, wait);
+> 
 
-[   49.951610] divide error: 0000 [#1] PREEMPT SMP
-[   49.952195] last sysfs file: /sys/devices/pci0000:00/0000:00:01.1/host0/target0:0:0/0:0:0:0/block/sda/uevent
-[   49.952195] CPU 1
-[   49.952195] Modules linked in: pcspkr
-[   49.952195] Pid: 3064, comm: dd Not tainted 2.6.30-rc3 #1
-[   49.952195] RIP: 0010:[<ffffffff802d39a9>]  [<ffffffff802d39a9>] get_dirty_limits+0xe9/0x2c0
-[   49.952195] RSP: 0018:ffff88001de03a98  EFLAGS: 00010202
-[   49.952195] RAX: 00000000000000c0 RBX: ffff88001de03b80 RCX: 28f5c28f5c28f5c3
-[   49.952195] RDX: 0000000000000000 RSI: 00000000000000c0 RDI: 0000000000000000
-[   49.952195] RBP: ffff88001de03ae8 R08: 0000000000000000 R09: 0000000000000000
-[   49.952195] R10: ffff88001ddda9a0 R11: 0000000000000001 R12: 0000000000000001
-[   49.952195] R13: ffff88001fbc8218 R14: ffff88001de03b70 R15: ffff88001de03b78
-[   49.952195] FS:  00007fe9a435b6f0(0000) GS:ffff8800025d9000(0000) knlGS:0000000000000000
-[   49.952195] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[   49.952195] CR2: 00007fe9a39ab000 CR3: 000000001de38000 CR4: 00000000000006e0
-[   49.952195] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[   49.952195] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[   49.952195] Process dd (pid: 3064, threadinfo ffff88001de02000, task ffff88001ddda250)
-[   49.952195] Stack:
-[   49.952195]  ffff88001fa0de00 ffff88001f2dbd70 ffff88001f9fe800 000080b900000000
-[   49.952195]  00000000000000c0 ffff8800027a6100 0000000000000400 ffff88001fbc8218
-[   49.952195]  0000000000000000 0000000000000600 ffff88001de03bb8 ffffffff802d3ed7
-[   49.952195] Call Trace:
-[   49.952195]  [<ffffffff802d3ed7>] balance_dirty_pages_ratelimited_nr+0x1d7/0x3f0
-[   49.952195]  [<ffffffff80368f8e>] ? ext3_writeback_write_end+0x9e/0x120
-[   49.952195]  [<ffffffff802cc7df>] generic_file_buffered_write+0x12f/0x330
-[   49.952195]  [<ffffffff802cce8d>] __generic_file_aio_write_nolock+0x26d/0x460
-[   49.952195]  [<ffffffff802cda32>] ? generic_file_aio_write+0x52/0xd0
-[   49.952195]  [<ffffffff802cda49>] generic_file_aio_write+0x69/0xd0
-[   49.952195]  [<ffffffff80365fa6>] ext3_file_write+0x26/0xc0
-[   49.952195]  [<ffffffff803034d1>] do_sync_write+0xf1/0x140
-[   49.952195]  [<ffffffff80290d1a>] ? get_lock_stats+0x2a/0x60
-[   49.952195]  [<ffffffff80280730>] ? autoremove_wake_function+0x0/0x40
-[   49.952195]  [<ffffffff8030411b>] vfs_write+0xcb/0x190
-[   49.952195]  [<ffffffff803042d0>] sys_write+0x50/0x90
-[   49.952195]  [<ffffffff8022ff6b>] system_call_fastpath+0x16/0x1b
-[   49.952195] Code: 00 00 00 2b 05 09 1c 17 01 48 89 c6 49 0f af f4 48 c1 ee 02 48 89 f0 48 f7 e1 48 89 d6 31 d2 48 c1 ee 02 48 0f af 75 d0 48 89 f0 <48> f7 f7 41 8b 95 ac 01 00 00 48 89 c7 49 0f af d4 48 c1 ea 02
-[   49.952195] RIP  [<ffffffff802d39a9>] get_dirty_limits+0xe9/0x2c0
-[   49.952195]  RSP <ffff88001de03a98>
-[   50.096523] ---[ end trace 008d7aa02f244d7b ]---
+[PATCH] poll: Avoid extra wakeups in select/poll
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+After introduction of keyed wakeups Davide Libenzi did on epoll, we
+are able to avoid spurious wakeups in poll()/select() code too.
+
+For example, typical use of poll()/select() is to wait for incoming
+network frames on many sockets. But TX completion for UDP/TCP 
+frames call sock_wfree() which in turn schedules thread.
+
+When scheduled, thread does a full scan of all polled fds and
+can sleep again, because nothing is really available. If number
+of fds is large, this cause significant load.
+
+This patch makes select()/poll() aware of keyed wakeups and
+useless wakeups are avoided. This reduces number of context
+switches by about 50% on some setups, and work performed
+by sofirq handlers.
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Acked-by: David S. Miller <davem@davemloft.net>
+Acked-by: Andi Kleen <ak@linux.intel.com>
 ---
- mm/page-writeback.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ fs/select.c          |   33 +++++++++++++++++++++++++++++----
+ include/linux/poll.h |    3 +++
+ 2 files changed, 32 insertions(+), 4 deletions(-)
 
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 30351f0..9d6c427 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -213,6 +213,12 @@ int dirty_bytes_handler(struct ctl_table *table, int write,
- 	int ret;
+
+diff --git a/fs/select.c b/fs/select.c
+index 0fe0e14..71377fd 100644
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -168,7 +168,7 @@ static struct poll_table_entry *poll_get_entry(struct poll_wqueues *p)
+ 	return table->entry++;
+ }
  
- 	ret = proc_doulongvec_minmax(table, write, filp, buffer, lenp, ppos);
-+	/*
-+	 * Do not allow to set less than two pages for vm_dirty_byte: this is
-+	 * necessary to avoid division by 0 in get_dirty_limits().
-+	 */
-+	vm_dirty_bytes = max_t(typeof(vm_dirty_bytes),
-+				vm_dirty_bytes, 2 * PAGE_SIZE);
- 	if (ret == 0 && write && vm_dirty_bytes != old_bytes) {
- 		update_completion_period();
- 		vm_dirty_ratio = 0;
--- 
-1.6.0.4
+-static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
++static int __pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
+ {
+ 	struct poll_wqueues *pwq = wait->private;
+ 	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
+@@ -194,6 +194,16 @@ static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
+ 	return default_wake_function(&dummy_wait, mode, sync, key);
+ }
+ 
++static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
++{
++	struct poll_table_entry *entry;
++
++	entry = container_of(wait, struct poll_table_entry, wait);
++	if (key && !((unsigned long)key & entry->key))
++		return 0;
++	return __pollwake(wait, mode, sync, key);
++}
++
+ /* Add a new entry */
+ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+ 				poll_table *p)
+@@ -205,6 +215,7 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+ 	get_file(filp);
+ 	entry->filp = filp;
+ 	entry->wait_address = wait_address;
++	entry->key = p->key;
+ 	init_waitqueue_func_entry(&entry->wait, pollwake);
+ 	entry->wait.private = pwq;
+ 	add_wait_queue(wait_address, &entry->wait);
+@@ -418,20 +429,31 @@ int do_select(int n, fd_set_bits *fds, struct timespec *end_time)
+ 				if (file) {
+ 					f_op = file->f_op;
+ 					mask = DEFAULT_POLLMASK;
+-					if (f_op && f_op->poll)
+-						mask = (*f_op->poll)(file, retval ? NULL : wait);
++					if (f_op && f_op->poll) {
++						if (wait) {
++							wait->key = POLLEX_SET;
++							if (in & bit)
++								wait->key |= POLLIN_SET;
++							if (out & bit)
++								wait->key |= POLLOUT_SET;
++						}
++						mask = (*f_op->poll)(file, wait);
++					}
+ 					fput_light(file, fput_needed);
+ 					if ((mask & POLLIN_SET) && (in & bit)) {
+ 						res_in |= bit;
+ 						retval++;
++						wait = NULL;
+ 					}
+ 					if ((mask & POLLOUT_SET) && (out & bit)) {
+ 						res_out |= bit;
+ 						retval++;
++						wait = NULL;
+ 					}
+ 					if ((mask & POLLEX_SET) && (ex & bit)) {
+ 						res_ex |= bit;
+ 						retval++;
++						wait = NULL;
+ 					}
+ 				}
+ 			}
+@@ -685,8 +707,11 @@ static inline unsigned int do_pollfd(struct pollfd *pollfd, poll_table *pwait)
+ 		mask = POLLNVAL;
+ 		if (file != NULL) {
+ 			mask = DEFAULT_POLLMASK;
+-			if (file->f_op && file->f_op->poll)
++			if (file->f_op && file->f_op->poll) {
++				if (pwait)
++					pwait->key = pollfd->events | POLLERR | POLLHUP;
+ 				mask = file->f_op->poll(file, pwait);
++			}
+ 			/* Mask out unneeded events. */
+ 			mask &= pollfd->events | POLLERR | POLLHUP;
+ 			fput_light(file, fput_needed);
+diff --git a/include/linux/poll.h b/include/linux/poll.h
+index 8c24ef8..3327389 100644
+--- a/include/linux/poll.h
++++ b/include/linux/poll.h
+@@ -32,6 +32,7 @@ typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_
+ 
+ typedef struct poll_table_struct {
+ 	poll_queue_proc qproc;
++	unsigned long key;
+ } poll_table;
+ 
+ static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
+@@ -43,10 +44,12 @@ static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_addres
+ static inline void init_poll_funcptr(poll_table *pt, poll_queue_proc qproc)
+ {
+ 	pt->qproc = qproc;
++	pt->key = ~0UL; /* all events enabled */
+ }
+ 
+ struct poll_table_entry {
+ 	struct file *filp;
++	unsigned long key;
+ 	wait_queue_t wait;
+ 	wait_queue_head_t *wait_address;
+ };
 
