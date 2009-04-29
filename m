@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762252AbZD2Wa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762369AbZD2Wb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762252AbZD2Wa6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759316AbZD2WVc
+	id S1762369AbZD2Wb2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbZD2WVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:32 -0400
-Received: from kroah.org ([198.145.64.141]:40458 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:33 -0400
+Received: from kroah.org ([198.145.64.141]:40469 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758251AbZD2WV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:28 -0400
+	id S1758981AbZD2WV3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:29 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:27 2009
-Message-Id: <20090429220926.934898140@mini.kroah.org>
+Message-Id: <20090429220927.114222967@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:25 -0700
+Date: Wed, 29 Apr 2009 15:07:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Akinobu Mita <akinobu.mita@gmail.com>,
-       Takashi Iwai <tiwai@suse.de>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 26/58] ALSA: hda - add missing comma in ad1884_slave_vols
+       alan@lxorguk.ukuu.org.uk, Jean Delvare <jdelvare@suse.de>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 27/58] SCSI: libiscsi: fix iscsi pool error path
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=0050-ALSA-hda-add-missing-comma-in-ad1884_slave_vols.patch
+Content-Disposition: inline; filename=0052-SCSI-libiscsi-fix-iscsi-pool-error-path.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,28 +41,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Akinobu Mita <akinobu.mita@gmail.com>
+From: Jean Delvare <jdelvare@suse.de>
 
-upstream commit: bca68467b59a24396554d8dd5979ee363c174854
+upstream commit: f474a37bc48667595b5653a983b635c95ed82a3b
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Memory freeing in iscsi_pool_free() looks wrong to me. Either q->pool
+can be NULL and this should be tested before dereferencing it, or it
+can't be NULL and it shouldn't be tested at all. As far as I can see,
+the only case where q->pool is NULL is on early error in
+iscsi_pool_init(). One possible way to fix the bug is thus to not
+call iscsi_pool_free() in this case (nothing needs to be freed anyway)
+and then we can get rid of the q->pool check.
+
+Signed-off-by: Jean Delvare <jdelvare@suse.de>
+Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- sound/pci/hda/patch_analog.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/libiscsi.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
---- a/sound/pci/hda/patch_analog.c
-+++ b/sound/pci/hda/patch_analog.c
-@@ -3220,7 +3220,7 @@ static const char *ad1884_slave_vols[] =
- 	"Mic Playback Volume",
- 	"CD Playback Volume",
- 	"Internal Mic Playback Volume",
--	"Docking Mic Playback Volume"
-+	"Docking Mic Playback Volume",
- 	"Beep Playback Volume",
- 	"IEC958 Playback Volume",
- 	NULL
+--- a/drivers/scsi/libiscsi.c
++++ b/drivers/scsi/libiscsi.c
+@@ -1807,7 +1807,7 @@ iscsi_pool_init(struct iscsi_pool *q, in
+ 		num_arrays++;
+ 	q->pool = kzalloc(num_arrays * max * sizeof(void*), GFP_KERNEL);
+ 	if (q->pool == NULL)
+-		goto enomem;
++		return -ENOMEM;
+ 
+ 	q->queue = kfifo_init((void*)q->pool, max * sizeof(void*),
+ 			      GFP_KERNEL, NULL);
+@@ -1842,8 +1842,7 @@ void iscsi_pool_free(struct iscsi_pool *
+ 
+ 	for (i = 0; i < q->max; i++)
+ 		kfree(q->pool[i]);
+-	if (q->pool)
+-		kfree(q->pool);
++	kfree(q->pool);
+ 	kfree(q->queue);
+ }
+ EXPORT_SYMBOL_GPL(iscsi_pool_free);
 
 
