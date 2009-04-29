@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756650AbZD2Ljj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755286AbZD2Loh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756650AbZD2Ljj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 07:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750918AbZD2Lj3
+	id S1755286AbZD2Loh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 07:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbZD2LoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 07:39:29 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:33568 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751379AbZD2Lj3 (ORCPT
+	Wed, 29 Apr 2009 07:44:23 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:28981 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751779AbZD2LoW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 07:39:29 -0400
-Message-ID: <49F83C6D.3090509@monstr.eu>
-Date: Wed, 29 Apr 2009 13:39:25 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linux-kernel@vger.kernel.org, john.williams@petalogix.com
-Subject: Re: [PATCH 22/30] microblaze_mmu_v1: Update linker script for MMU
-References: <1240821139-7247-1-git-send-email-monstr@monstr.eu> <1240821139-7247-22-git-send-email-monstr@monstr.eu> <1240821139-7247-23-git-send-email-monstr@monstr.eu> <200904291327.50092.arnd@arndb.de>
-In-Reply-To: <200904291327.50092.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-15
+	Wed, 29 Apr 2009 07:44:22 -0400
+Subject: Re: btrfs BUG on creating huge sparse file
+From: Chris Mason <chris.mason@oracle.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, hugh@veritas.com, npiggin@suse.de,
+       riel@redhat.com, lee.schermerhorn@hp.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
+       "linux-btrfs@vger.kernel.org" <linux-btrfs@vger.kernel.org>
+In-Reply-To: <20090429082151.GA15170@localhost>
+References: <20090407509.382219156@firstfloor.org>
+	 <20090407151010.E72A91D0471@basil.firstfloor.org>
+	 <1239210239.28688.15.camel@think.oraclecorp.com>
+	 <20090409072949.GF14687@one.firstfloor.org>
+	 <20090409075805.GG14687@one.firstfloor.org>
+	 <1239283829.23150.34.camel@think.oraclecorp.com>
+	 <20090409140257.GI14687@one.firstfloor.org>
+	 <1239287859.23150.57.camel@think.oraclecorp.com>
+	 <20090429081616.GA8339@localhost>  <20090429082151.GA15170@localhost>
+Content-Type: text/plain
+Date: Wed, 29 Apr 2009 07:40:22 -0400
+Message-Id: <1241005222.19174.1.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.49F83CAB.034B:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Monday 27 April 2009, monstr@monstr.eu wrote:
->> --- a/arch/microblaze/kernel/vmlinux.lds.S
->> +++ b/arch/microblaze/kernel/vmlinux.lds.S
->> @@ -17,8 +17,11 @@ ENTRY(_start)
->>  jiffies = jiffies_64 + 4;
->>  
->>  SECTIONS {
->> +#ifdef CONFIG_MMU
->> +       . = CONFIG_KERNEL_START;
->> +#else
->>         . = CONFIG_KERNEL_BASE_ADDR;
->> -
->> +#endif
->>         .text : {
->>                 _text = . ;
->>                 _stext = . ;
+On Wed, 2009-04-29 at 16:21 +0800, Wu Fengguang wrote:
+> On Wed, Apr 29, 2009 at 04:16:16PM +0800, Wu Fengguang wrote:
+> > On Thu, Apr 09, 2009 at 10:37:39AM -0400, Chris Mason wrote:
+> [snip]
+> > > PagePrivate is very common.  try_to_releasepage failing on a clean page
+> > > without the writeback bit set and without dirty/locked buffers will be
+> > > pretty rare.
+> > 
+> > Yup. btrfs seems to tag most(if not all) dirty pages with PG_private.
+> > While ext4 won't.
 > 
-> This change looks a bit bogus, can't you use the same symbol for
-> both? I guess either one would be fine, but I don't see a reason
-> for them to be different.
-
-It will be possible to set for noMMU kernel
-CONFIG_KERNEL_BASE_ADDR is CONFIG_KERNEL_START which can remove it.
-
-CONFIG_KERNEL_START is physical base memory address because of noMMU
-KERNEL_BASE_ADDR is 0xC0000000 buf of course could be change in menuconfig.
-
-I'll do some tests.
-
-Thanks,
-Michal
-
-
-
+> Chris, I run into a btrfs BUG() when doing
 > 
-> 	Arnd <><
+>         dd if=/dev/zero of=/b/sparse bs=1k count=1 seek=104857512345
+> 
+> The half created sparse file is
+> 
+>         -rw-r--r-- 1 root root 98T 2009-04-29 14:54 /b/sparse
+>         Or
+>         -rw-r--r-- 1 root root 107374092641280 2009-04-29 14:54 /b/sparse
+> 
+> Below is the kernel messages. I can test patches you throw at me :-)
+> 
+
+How big was the FS you were testing this on?  It works for me...
+
+-chris
 
 
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
