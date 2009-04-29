@@ -1,77 +1,451 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbZD2OHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbZD2OJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751962AbZD2OHX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 10:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZD2OHI
+	id S1754232AbZD2OJa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 10:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbZD2OJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 10:07:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50002 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750937AbZD2OHF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 10:07:05 -0400
-Date: Wed, 29 Apr 2009 16:02:24 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Stephen Smalley <sds@tycho.nsa.gov>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, Eric Paris <eparis@parisplace.org>,
-       James Morris <jmorris@namei.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: ptrace: selinux_bprm_committed_creds: simplify __wake_up_parent()
-	code and s/parent/real_parent/
-Message-ID: <20090429140224.GA31948@redhat.com>
-References: <20090428223025.GA11997@redhat.com> <1241011116.18249.193.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241011116.18249.193.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 29 Apr 2009 10:09:20 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:43879 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751260AbZD2OJS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 10:09:18 -0400
+Subject: Re: [PATCH RFC] ext3 data=guarded v5
+From: Chris Mason <chris.mason@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>
+In-Reply-To: <20090429085632.GA18273@duck.suse.cz>
+References: <1240941840.15136.44.camel@think.oraclecorp.com>
+	 <20090429085632.GA18273@duck.suse.cz>
+Content-Type: text/plain
+Date: Wed, 29 Apr 2009 10:08:13 -0400
+Message-Id: <1241014093.20099.28.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010203.49F85F57.001D:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(on top of David's "[PATCH] SELinux: Don't flush inherited SIGKILL during execve()",
- but can be applied independently).
+On Wed, 2009-04-29 at 10:56 +0200, Jan Kara wrote:
 
-selinux_bprm_committed_creds() should wake up ->real_parent, not ->parent.
+> > diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+> > index fcfa243..1e90107 100644
+> > --- a/fs/ext3/inode.c
+> > +++ b/fs/ext3/inode.c
+> > @@ -38,6 +38,7 @@
+> >  #include <linux/bio.h>
+> >  #include <linux/fiemap.h>
+> >  #include <linux/namei.h>
+> > +#include <linux/workqueue.h>
+> >  #include "xattr.h"
+> >  #include "acl.h"
+> >  
+> > @@ -179,6 +180,105 @@ static int ext3_journal_test_restart(handle_t *handle, struct inode *inode)
+> >  }
+> >  
+> >  /*
+> > + * after a data=guarded IO is done, we need to update the
+> > + * disk i_size to reflect the data we've written.  If there are
+> > + * no more ordered data extents left in the tree, we need to
+>                                            ^^^^^^^^ the list
+> > + * get rid of the orphan entry making sure the file's
+> > + * block pointers match the i_size after a crash
+> > + *
+> > + * When we aren't in data=guarded mode, this just does an ext3_orphan_del.
+> > + *
+> > + * It returns the result of ext3_orphan_del.
+> > + *
+> > + * handle may be null if we are just cleaning up the orphan list in
+> > + * memory.
+> > + *
+> > + * pass must_log == 1 when the inode must be logged in order to get
+> > + * an i_size update on disk
+> > + */
+> > +static int ordered_orphan_del(handle_t *handle, struct inode *inode,
+> > +			      int must_log)
+> > +{
+>   I'm afraid this function is racy.
+> 1) We probably need i_mutex to protect against unlink happening in parallel
+>    (after we check i_nlink but before we all ext3_orphan_del).
 
-We shouldn't worry about the tracer if current is ptraced, exec() must not
-succeed if the tracer has no rights to trace this task after cred changing.
-But we should notify ->real_parent which is, well, real parent.
+This would mean IO completion (clearing PG_writeback) would have to wait
+on the inode mutex, which we can't quite do in O_SYNC and O_DIRECT.
+But, what I can do is check i_nlink after the ext3_orphan_del call and
+put the inode back on the orphan list if it has gone to zero.
 
-Also, we don't need _irq to take tasklist, and we don't need parent's
-->siglock to wake_up_interruptible(real_parent->signal->wait_chldexit).
-Since we hold tasklist, real_parent->signal must be stable. Otherwise
-spin_lock(siglock) is not safe too and can't help anyway.
+> 2) We need superblock lock for the check list_empty(&EXT3_I(inode)->i_orphan).
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+How about I take the guarded spinlock when doing the list_add instead?
+I'm trying to avoid the superblock lock as much as I can.
 
---- PTRACE/security/selinux/hooks.c~SELINUX_PARENT	2009-04-29 15:45:28.000000000 +0200
-+++ PTRACE/security/selinux/hooks.c	2009-04-29 15:48:41.000000000 +0200
-@@ -2375,10 +2375,8 @@ static void selinux_bprm_committed_creds
- {
- 	const struct task_security_struct *tsec = current_security();
- 	struct itimerval itimer;
--	struct sighand_struct *psig;
- 	u32 osid, sid;
- 	int rc, i;
--	unsigned long flags;
- 
- 	osid = tsec->osid;
- 	sid = tsec->sid;
-@@ -2409,12 +2407,9 @@ static void selinux_bprm_committed_creds
- 
- 	/* Wake up the parent if it is waiting so that it can recheck
- 	 * wait permission to the new task SID. */
--	read_lock_irq(&tasklist_lock);
--	psig = current->parent->sighand;
--	spin_lock_irqsave(&psig->siglock, flags);
--	wake_up_interruptible(&current->parent->signal->wait_chldexit);
--	spin_unlock_irqrestore(&psig->siglock, flags);
--	read_unlock_irq(&tasklist_lock);
-+	read_lock(&tasklist_lock);
-+	wake_up_interruptible(&current->real_parent->signal->wait_chldexit);
-+	read_unlock(&tasklist_lock);
- }
- 
- /* superblock security operations */
+> 3) The function should rather have name ext3_guarded_orphan_del()... At
+>   least "ordered" is really confusing (that's the case for a few other
+>   structs / variables as well).
+
+My long term plan was to replaced ordered with guarded, but I can rename
+this one to guarded if you think it'll make it more clear.
+
+> > +/*
+> > + * Wrapper around ordered_orphan_del that starts a transaction
+> > + */
+> > +static void ordered_orphan_del_trans(struct inode *inode, int must_log)
+> > +{
+>   This function is going to be used only from one place, so consider
+> opencoding it. I don't have a strong opinions
+
+
+Yeah, I think it keeps the code a little more readable to have it
+separate....gcc will inline the thing for us anyway.
+
+> > +	 *
+> > +	 * extend_disksize is only called for directories, and so
+> > +	 * the are not using guarded buffer protection.
+>            ^^^ The sentence is strange...
+
+Thanks
+
+> >  	*/
+> > -	if (!err && extend_disksize && inode->i_size > ei->i_disksize)
+> > -		ei->i_disksize = inode->i_size;
+> > +	if (!err && extend_disksize)
+> > +		maybe_update_disk_isize(inode, inode->i_size);
+>   So do we really need to take the ordered lock for directories? We could
+> just leave above two lines as they were.
+
+Good point
+
+> 
+> >  	mutex_unlock(&ei->truncate_mutex);
+> >  	if (err)
+> >  		goto cleanup;
+> >  
+> >  	set_buffer_new(bh_result);
+> > +	set_buffer_datanew(bh_result);
+> >  got_it:
+> >  	map_bh(bh_result, inode->i_sb, le32_to_cpu(chain[depth-1].key));
+> >  	if (count > blocks_to_boundary)
+> > @@ -1079,6 +1210,77 @@ struct buffer_head *ext3_bread(handle_t *handle, struct inode *inode,
+> >  	return NULL;
+> >  }
+> >  
+> > +/*
+> > + * data=guarded updates are handled in a workqueue after the IO
+> > + * is done.  This runs through the list of buffer heads that are pending
+> > + * processing.
+> > + */
+> > +void ext3_run_guarded_work(struct work_struct *work)
+> > +{
+> > +	struct ext3_sb_info *sbi =
+> > +		container_of(work, struct ext3_sb_info, guarded_work);
+> > +	struct buffer_head *bh;
+> > +	struct ext3_ordered_extent *ordered;
+> > +	struct inode *inode;
+> > +	struct page *page;
+> > +	int must_log;
+> > +
+> > +	spin_lock_irq(&sbi->guarded_lock);
+> > +	while (!list_empty(&sbi->guarded_buffers)) {
+> > +		ordered = list_entry(sbi->guarded_buffers.next,
+> > +				     struct ext3_ordered_extent, work_list);
+> > +
+> > +		list_del(&ordered->work_list);
+> > +
+> > +		bh = ordered->end_io_bh;
+> > +		ordered->end_io_bh = NULL;
+> > +		must_log = 0;
+> > +
+> > +		/* we don't need a reference on the buffer head because
+> > +		 * it is locked until the end_io handler is called.
+> > +		 *
+> > +		 * This means the page can't go away, which means the
+> > +		 * inode can't go away
+> > +		 */
+> > +		spin_unlock_irq(&sbi->guarded_lock);
+> > +
+> > +		page = bh->b_page;
+> > +		inode = page->mapping->host;
+> > +
+> > +		ext3_ordered_lock(inode);
+> > +		if (ordered->bh) {
+> > +			/*
+> > +			 * someone might have decided this buffer didn't
+> > +			 * really need to be ordered and removed us from
+> > +			 * the list.  They set ordered->bh to null
+> > +			 * when that happens.
+> > +			 */
+> > +			ext3_remove_ordered_extent(inode, ordered);
+> > +			must_log = ext3_ordered_update_i_size(inode);
+> > +		}
+> > +		ext3_ordered_unlock(inode);
+> > +
+> > +		/*
+> > +		 * drop the reference taken when this ordered extent was
+> > +		 * put onto the guarded_buffers list
+> > +		 */
+> > +		ext3_put_ordered_extent(ordered);
+> > +
+> > +		/*
+> > +		 * maybe log the inode and/or cleanup the orphan entry
+> > +		 */
+> > +		ordered_orphan_del_trans(inode, must_log > 0);
+> > +
+> > +		/*
+> > +		 * finally, call the real bh end_io function to do
+> > +		 * all the hard work of maintaining page writeback.
+> > +		 */
+> > +		end_buffer_async_write(bh, buffer_uptodate(bh));
+> > +		spin_lock_irq(&sbi->guarded_lock);
+> > +	}
+> > +	spin_unlock_irq(&sbi->guarded_lock);
+> > +}
+> > +
+> >  static int walk_page_buffers(	handle_t *handle,
+> >  				struct buffer_head *head,
+> >  				unsigned from,
+> > @@ -1185,6 +1387,7 @@ retry:
+> >  		ret = walk_page_buffers(handle, page_buffers(page),
+> >  				from, to, NULL, do_journal_get_write_access);
+> >  	}
+> > +
+> >  write_begin_failed:
+> >  	if (ret) {
+> >  		/*
+> > @@ -1212,7 +1415,13 @@ out:
+> >  
+> >  int ext3_journal_dirty_data(handle_t *handle, struct buffer_head *bh)
+> >  {
+> > -	int err = journal_dirty_data(handle, bh);
+> > +	int err;
+> > +
+> > +	/* don't take buffers from the data=guarded list */
+> > +	if (buffer_dataguarded(bh))
+> > +		return 0;
+> > +
+> > +	err = journal_dirty_data(handle, bh);
+>   But this has a problem that if we do extending write (like from pos 1024
+> to pos 2048) and then do write from 0 to 1024 and we hit the window while
+> the buffer is on the work queue list, we won't order this write. Probably
+> we don't care but I wanted to note this...
+
+Yeah, in this case the guarded IO should protect i_size, and this write
+won't really be ordered.  The block could have zeros from 0-1024 if we
+crash.
+
+> 
+> >  	if (err)
+> >  		ext3_journal_abort_handle(__func__, __func__,
+> >  						bh, handle, err);
+> > @@ -1231,6 +1440,89 @@ static int journal_dirty_data_fn(handle_t *handle, struct buffer_head *bh)
+> >  	return 0;
+> >  }
+> >  
+> > +/*
+> > + * Walk the buffers in a page for data=guarded mode.  Buffers that
+> > + * are not marked as datanew are ignored.
+> > + *
+> > + * New buffers outside i_size are sent to the data guarded code
+> > + *
+> > + * We must do the old data=ordered mode when filling holes in the
+> > + * file, since i_size doesn't protect these at all.
+> > + */
+> > +static int journal_dirty_data_guarded_fn(handle_t *handle,
+> > +					 struct buffer_head *bh)
+> > +{
+> > +	u64 offset = page_offset(bh->b_page) + bh_offset(bh);
+> > +	struct inode *inode = bh->b_page->mapping->host;
+> > +	int ret = 0;
+> > +
+> > +	/*
+> > +	 * Write could have mapped the buffer but it didn't copy the data in
+> > +	 * yet. So avoid filing such buffer into a transaction.
+> > +	 */
+> > +	if (!buffer_mapped(bh) || !buffer_uptodate(bh))
+> > +		return 0;
+> > +
+> > +	if (test_clear_buffer_datanew(bh)) {
+>   Hmm, if we just extend the file inside the block (e.g. from 100 bytes to
+> 500 bytes), then we won't do the write guarded. But then if we crash before
+> the block really gets written, user will see zeros at the end of file
+> instead of data... 
+
+You see something like this:
+
+create(file)
+write(file, 100 bytes) # create guarded IO
+fsync(file)
+write(file, 400 more bytes) # buffer isn't guarded, i_size goes to 500
+
+
+> I don't think we should let this happen so I'd think we
+> have to guard all the extending writes regardless whether they allocate new
+> block or not. 
+
+My main concern was avoiding stale data from the disk after a crash,
+zeros from partially written blocks are not as big a problem.  But,
+you're right that we can easily avoid this, so I'll update the patch to
+do all extending writes as guarded.
+
+> Which probably makes the buffer_datanew() flag unnecessary
+> because we just guard all the buffers from max(start of write, i_size) to
+> end of write.
+
+But, we still want buffer_datanew to decide when writes that fill holes
+should go through data=ordered.
+
+> > +/*
+> > + * Walk the buffers in a page for data=guarded mode for writepage.
+> > + *
+> > + * We must do the old data=ordered mode when filling holes in the
+> > + * file, since i_size doesn't protect these at all.
+> > + *
+> > + * This is actually called after writepage is run and so we can't
+> > + * trust anything other than the buffer head (which we have pinned).
+> > + *
+> > + * Any datanew buffer at writepage time is filling a hole, so we don't need
+> > + * extra tests against the inode size.
+> > + */
+> > +static int journal_dirty_data_guarded_writepage_fn(handle_t *handle,
+> > +					 struct buffer_head *bh)
+> > +{
+> > +	int ret = 0;
+> > +
+> > +	/*
+> > +	 * Write could have mapped the buffer but it didn't copy the data in
+> > +	 * yet. So avoid filing such buffer into a transaction.
+> > +	 */
+> > +	if (!buffer_mapped(bh) || !buffer_uptodate(bh))
+> > +		return 0;
+> > +
+> > +	if (test_clear_buffer_datanew(bh))
+> > +		ret = ext3_journal_dirty_data(handle, bh);
+> > +	return ret;
+> > +}
+> > +
+>   Hmm, here we use the datanew flag as well. But it's probably not worth
+> keeping it just for this case. Ordering data in all cases when we get here
+> should be fine since if the block is already allocated we should not get
+> here (unless somebody managed to strip buffers from the page but kept the
+> page but that should be rare enough).
+> 
+
+I'd keep it for the common case of filling holes with write(), so then
+the code in writepage is gravy.
+
+> > @@ -1300,6 +1590,68 @@ static int ext3_ordered_write_end(struct file *file,
+> >  	return ret ? ret : copied;
+> >  }
+> >  
+> > +static int ext3_guarded_write_end(struct file *file,
+> > +				struct address_space *mapping,
+> > +				loff_t pos, unsigned len, unsigned copied,
+> > +				struct page *page, void *fsdata)
+> > +{
+> > +	handle_t *handle = ext3_journal_current_handle();
+> > +	struct inode *inode = file->f_mapping->host;
+> > +	unsigned from, to;
+> > +	int ret = 0, ret2;
+> > +
+> > +	copied = block_write_end(file, mapping, pos, len, copied,
+> > +				 page, fsdata);
+> > +
+> > +	from = pos & (PAGE_CACHE_SIZE - 1);
+> > +	to = from + copied;
+> > +	ret = walk_page_buffers(handle, page_buffers(page),
+> > +		from, to, NULL, journal_dirty_data_guarded_fn);
+> > +
+> > +	/*
+> > +	 * we only update the in-memory i_size.  The disk i_size is done
+> > +	 * by the end io handlers
+> > +	 */
+> > +	if (ret == 0 && pos + copied > inode->i_size) {
+> > +		int must_log;
+> > +
+> > +		/* updated i_size, but we may have raced with a
+> > +		 * data=guarded end_io handler.
+> > +		 *
+> > +		 * All the guarded IO could have ended while i_size was still
+> > +		 * small, and if we're just adding bytes into an existing block
+> > +		 * in the file, we may not be adding a new guarded IO with this
+> > +		 * write.  So, do a check on the disk i_size and make sure it
+> > +		 * is updated to the highest safe value.
+> > +		 *
+> > +		 * ext3_ordered_update_i_size tests inode->i_size, so we
+> > +		 * make sure to update it with the ordered lock held.
+> > +		 */
+>   This can go away if we guard all the extending writes...
+
+Yes, good point.
+
+> 
+> > +		ext3_ordered_lock(inode);
+> > +		i_size_write(inode, pos + copied);
+> > +
+> > +		must_log = ext3_ordered_update_i_size(inode);
+> > +		ext3_ordered_unlock(inode);
+> > +		ordered_orphan_del_trans(inode, must_log > 0);
+>   In case this needs to stay, here we have a transaction started so why not
+> just directly call ordered_orphan_del()?
+> 
+
+Thanks
+
+> > @@ -1747,7 +2238,14 @@ static ssize_t ext3_direct_IO(int rw, struct kiocb *iocb,
+> >  				goto out;
+> >  			}
+> >  			orphan = 1;
+> > -			ei->i_disksize = inode->i_size;
+> > +			/* in guarded mode, other code is responsible
+> > +			 * for updating i_disksize.  Actually in
+> > +			 * every mode, ei->i_disksize should be correct,
+> > +			 * so I don't understand why it is getting updated
+> > +			 * to i_size here.
+> > +			 */
+> > +			if (!ext3_should_guard_data(inode))
+> > +				ei->i_disksize = inode->i_size;
+>   Hmm, true. When we acquire i_mutex, i_size should be equal to i_disksize
+> so this seems rather pointless. Probably worth a separate patch to remove
+> it...
+
+Yeah, I didn't want to go around messing with O_DIRECT in this
+patchset ;)
+
+> 
+> >  			ext3_journal_stop(handle);
+> >  		}
+> >  	}
+> > @@ -1768,11 +2266,20 @@ static ssize_t ext3_direct_IO(int rw, struct kiocb *iocb,
+> >  			ret = PTR_ERR(handle);
+> >  			goto out;
+> >  		}
+> > +
+> >  		if (inode->i_nlink)
+> > -			ext3_orphan_del(handle, inode);
+> > +			ordered_orphan_del(handle, inode, 0);
+> > +
+> >  		if (ret > 0) {
+> >  			loff_t end = offset + ret;
+> >  			if (end > inode->i_size) {
+> > +				/* i_mutex keeps other file writes from
+> > +				 * hopping in at this time, and we
+> > +				 * know the O_DIRECT write just put all
+> > +				 * those blocks on disk.  So, we can
+> > +				 * safely update i_disksize here even
+> > +				 * in guarded mode
+> > +				 */
+>   Not quite - there could be guarded blocks before the place where we did
+> O_DIRECT write and we need to wait for them...
+
+Hmmm, O_DIRECT is only waiting on the blocks it actually wrote isn't it.
+Good point, will fix.
+
+-chris
+
 
