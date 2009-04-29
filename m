@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761322AbZD2UFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761254AbZD2UHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761322AbZD2UFY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 16:05:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbZD2UFI
+	id S1761254AbZD2UHw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 16:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbZD2UHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 16:05:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53140 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751713AbZD2UFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 16:05:06 -0400
-Message-ID: <49F8B2D9.3080903@kernel.org>
-Date: Wed, 29 Apr 2009 13:04:41 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 29 Apr 2009 16:07:43 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:42713 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753637AbZD2UHn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 16:07:43 -0400
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Len Brown <lenb@kernel.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: [PATCH] x86: don't print strange not connect ioapic
+In-Reply-To: <b56f065e0904291118r7f008508s32852ccd1bb0b645@mail.gmail.com>
+References: <b2cdc9f30904182327w12a3ec32t90c7c6c34980577b@mail.gmail.com>
+	 <20090427234947.394f774f@schatten>
+	 <b2cdc9f30904272237h3a815282h7e6b932e1c252d17@mail.gmail.com>
+	 <20090428095338.3e7b2062@hobbes>
+	 <b2cdc9f30904290049k290a59bfh1265a66735b510e2@mail.gmail.com>
+	 <20090429090607.2d351545@hobbes>
+	 <b56f065e0904291118r7f008508s32852ccd1bb0b645@mail.gmail.com>
+Date: Wed, 29 Apr 2009 21:07:42 +0100
+X-Google-Sender-Auth: 79df09b4bf76963f
+Message-ID: <b2cdc9f30904291307s622c4fe8sb4631e1f262d33bb@mail.gmail.com>
+Subject: Re: 2.6.30-rc2 + xorg-intel-2.7.0 + DRM_I915_KMS = corruption
+From: Alex Bennee <kernel-hacker@bennee.com>
+To: Mateusz Kaduk <mateusz.kaduk@gmail.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, xorg@freedesktop.org,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/4/29 Mateusz Kaduk <mateusz.kaduk@gmail.com>:
+> This is realy old issue now. Which I reported at begining of this month but
+> exist much longer.
+>
+> https://bugs.freedesktop.org/show_bug.cgi?id=20896
+>
+> Two more people also experience this. This only happens with KMS mode.
+> I am using 1.6.1 xorg/mesa master/ xf86-intel master and libdrm 2.4.9 kernel
+> 2.6.30-rc3-git5.
+>
+> I hope someone can soleve this some day.
 
-in setup_IO_APIC_irqs(), we only need to go with ioapic that handle legacy irqs,
-because at that points we only have those irq in mp_irqs[]
+I don't think this is the same issue I'm seeing so I shall file another bug
 
-will not print out those strange not connected pin warning.
 
-[ Impact: don't go with not used ioapic yet ]
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/kernel/apic/io_apic.c |   19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-@@ -1477,10 +1477,27 @@ static void __init setup_IO_APIC_irqs(vo
- 	struct irq_desc *desc;
- 	struct irq_cfg *cfg;
- 	int node = cpu_to_node(boot_cpu_id);
-+	int ioapic_start = 0, ioapic_end = nr_ioapics;
- 
- 	apic_printk(APIC_VERBOSE, KERN_DEBUG "init IO_APIC IRQs\n");
- 
--	for (apic_id = 0; apic_id < nr_ioapics; apic_id++) {
-+#ifdef CONFIG_ACPI
-+	/*
-+	 * when acpi is used, at this point, we only have legacy entries
-+	 * in mp_irqs[] by mp_config_acpi_legacy_irqs/mp_override_legacy_irq
-+	 * so only setup for that ioapic, and will not print out those strange
-+	 * not connected on other ioapic
-+	 */
-+	if (!acpi_disabled && acpi_ioapic) {
-+		ioapic_start = mp_find_ioapic(0);
-+		if (ioapic_start < 0)
-+			ioapic_start = 0;
-+		else
-+			ioapic_end = ioapic_start + 1;
-+	}
-+#endif
-+
-+	for (apic_id = ioapic_start; apic_id < ioapic_end; apic_id++) {
- 		for (pin = 0; pin < nr_ioapic_registers[apic_id]; pin++) {
- 
- 			idx = find_irq_entry(apic_id, pin, mp_INT);
+-- 
+Alex, homepage: http://www.bennee.com/~alex/
+CV: http://www.bennee.com/~alex/cv.php
