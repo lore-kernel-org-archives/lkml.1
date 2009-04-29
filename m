@@ -1,25 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbZD2IBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbZD2IDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755274AbZD2IBc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 04:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbZD2IBW
+	id S1754773AbZD2IDp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 04:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbZD2ID2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 04:01:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56735 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750892AbZD2IBW (ORCPT
+	Wed, 29 Apr 2009 04:03:28 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:56442 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751631AbZD2IDZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 04:01:22 -0400
-Date: Wed, 29 Apr 2009 00:59:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nikanth Karthikesan <knikanth@novell.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] Handle improbable possibility of
- io_context->refcount overflow
-Message-Id: <20090429005930.3752dd6d.akpm@linux-foundation.org>
-In-Reply-To: <200904291221.40361.knikanth@novell.com>
-References: <200904291221.40361.knikanth@novell.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 29 Apr 2009 04:03:25 -0400
+Date: Wed, 29 Apr 2009 10:02:06 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andrew Gallatin <gallatin@myri.com>, linux-kernel@vger.kernel.org,
+       rick.jones2@hp.com, brice@myri.com, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: IRQ / SoftIRQ CPU time accounting broken by
+ 457533a7d3402d1d91fbc125c8bd1bd16dcd3cd4
+Message-ID: <20090429100206.6371b093@skybase>
+In-Reply-To: <20090428163004.46733752.akpm@linux-foundation.org>
+References: <49F078FA.6010507@myri.com>
+	<20090428163004.46733752.akpm@linux-foundation.org>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,21 +32,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Apr 2009 12:21:39 +0530 Nikanth Karthikesan <knikanth@novell.com> wrote:
+On Tue, 28 Apr 2009 16:30:04 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> Hi Jens
+> (cc's added)
 > 
-> Currently io_context has an atomic_t(int) as refcount. In case of cfq, for
-> each device a task does I/O, a reference to the io_context would be taken. And
-> when there are multiple process sharing io_contexts(CLONE_IO) would also have
-> a reference to the same io_context. Theoretically the possible maximum number
-> of processes sharing the same io_context + the number of disks/cfq_data
-> referring to the same io_context can overflow the 32-bit counter on a very
-> high-end machine. Even though it is an improbable case, let us make it
-> difficult by changing the refcount to atomic64_t(long).
+> On Thu, 23 Apr 2009 10:19:38 -0400
+> Andrew Gallatin <gallatin@myri.com> wrote:
 > 
+> > When running netperf for some 10GbE tests, I noticed
+> > that  IRQ and SOFTIRQ CPU time is no longer reported for an
+> > otherwise idle CPU on recent kernels, at least for x86_64.
+> > 
+> > I spent a few hours git-bisecting until I finally got here:
+> > 
+> > % git-bisect bad
+> > Bisecting: 0 revisions left to test after this
+> > [457533a7d3402d1d91fbc125c8bd1bd16dcd3cd4] fix scaled & unscaled cputime 
+> > accounting
+> > 
+> > I have neither CONFIG_NO_HZ, CONFIG_VIRT_CPU_ACCOUNTING, or XEN configured.
+> > 
+> 
+> Thanks for doing the bisection.
+> 
+> 457533a7d3402d1d91fbc125c8bd1bd16dcd3cd4 was merged late last year, so
+> this regression has been around for a while.
+> 
+> We might have fixed it in more recent kernels - stranger things have
+> happened ;)
 
-Sorry, atomic64_t isn't implemented on 32 bit architectures.
+Hmm, are you sure that this commit caused the problem? I can't see how.
+In regard to the accounting of system ticks on x86_64 the only change
+is the bug fix that a system tick of a guest cpu has incorrectly been
+added to p->stimescaled instead of p->utimescaled.
+Without guest cpus in the picture nothing changes. For x86_64
+CONFIG_VIRT_CPU_ACCOUNTING=n so account_process_tick is used. Before
+the patch accout_process_tick accounted a system tick by calling
+account_system_time and account_system_time_scaled. The second function
+just added the cputime to p->stimescaled. That is now done in
+accout_system_time.
 
-Perhaps it should be, but I expect it'd be pretty slow.
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
