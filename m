@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbZD2JJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758836AbZD2JJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758758AbZD2JJU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 05:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756993AbZD2JGb
+	id S1758836AbZD2JJi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 05:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757037AbZD2JGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 05:06:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60515 "EHLO hera.kernel.org"
+	Wed, 29 Apr 2009 05:06:36 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60520 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757109AbZD2JG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 05:06:29 -0400
-Date: Wed, 29 Apr 2009 09:05:08 GMT
+	id S1757287AbZD2JGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 05:06:35 -0400
+Date: Wed, 29 Apr 2009 09:05:18 GMT
 From: tip-bot for Sam Ravnborg <sam@ravnborg.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -18,133 +18,130 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        sam@ravnborg.org, torvalds@linux-foundation.org, tabbott@MIT.EDU,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1240991249-27117-10-git-send-email-sam@ravnborg.org>
-References: <1240991249-27117-10-git-send-email-sam@ravnborg.org>
-Subject: [tip:x86/kbuild] x86, vmlinux.lds: unify parainstructions
-Message-ID: <tip-ae61836289a415351caa524d328110aaeae100d4@git.kernel.org>
-Git-Commit-ID: ae61836289a415351caa524d328110aaeae100d4
+In-Reply-To: <1240991249-27117-11-git-send-email-sam@ravnborg.org>
+References: <1240991249-27117-11-git-send-email-sam@ravnborg.org>
+Subject: [tip:x86/kbuild] x86, vmlinux.lds: unify .exit.* and .init.ramfs
+Message-ID: <tip-bf6a57418d5445c98047edbec022c9e54d1526e6@git.kernel.org>
+Git-Commit-ID: bf6a57418d5445c98047edbec022c9e54d1526e6
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 09:05:10 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 09:05:20 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ae61836289a415351caa524d328110aaeae100d4
-Gitweb:     http://git.kernel.org/tip/ae61836289a415351caa524d328110aaeae100d4
+Commit-ID:  bf6a57418d5445c98047edbec022c9e54d1526e6
+Gitweb:     http://git.kernel.org/tip/bf6a57418d5445c98047edbec022c9e54d1526e6
 Author:     Sam Ravnborg <sam@ravnborg.org>
-AuthorDate: Wed, 29 Apr 2009 09:47:26 +0200
+AuthorDate: Wed, 29 Apr 2009 09:47:27 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 29 Apr 2009 10:20:33 +0200
+CommitDate: Wed, 29 Apr 2009 10:20:34 +0200
 
-x86, vmlinux.lds: unify parainstructions
+x86, vmlinux.lds: unify .exit.* and .init.ramfs
 
-32 bit:
-
- - increase alignment from 4 to 8 for .parainstructions
- - increase alignment from 4 to 8 for .altinstructions
-
-64 bit:
-
- - move ALIGN() outside output section for .altinstructions
-
-None of the above should result in any functional change.
-
-[ Impact: refactor and unify linker script ]
+[ Impact: cleanup ]
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Cc: Tim Abbott <tabbott@MIT.EDU>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <1240991249-27117-10-git-send-email-sam@ravnborg.org>
+LKML-Reference: <1240991249-27117-11-git-send-email-sam@ravnborg.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/vmlinux.lds.S    |   18 ++++++++++++++++++
- arch/x86/kernel/vmlinux_32.lds.S |   18 ------------------
- arch/x86/kernel/vmlinux_64.lds.S |   18 ------------------
- 3 files changed, 18 insertions(+), 36 deletions(-)
+ arch/x86/kernel/vmlinux.lds.S    |   20 ++++++++++++++++++++
+ arch/x86/kernel/vmlinux_32.lds.S |   21 ---------------------
+ arch/x86/kernel/vmlinux_64.lds.S |   21 ---------------------
+ 3 files changed, 20 insertions(+), 42 deletions(-)
 
 diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index 8b203c4..c8dd71e 100644
+index c8dd71e..1ab62a5 100644
 --- a/arch/x86/kernel/vmlinux.lds.S
 +++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -291,6 +291,24 @@ SECTIONS
+@@ -309,6 +309,26 @@ SECTIONS
+ 		*(.altinstr_replacement)
+ 	}
  
- 	SECURITY_INIT
- 
-+	. = ALIGN(8);
-+	.parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
-+		__parainstructions = .;
-+		*(.parainstructions)
-+		__parainstructions_end = .;
++	/*
++	 * .exit.text is discard at runtime, not link time, to deal with
++	 *  references from .altinstructions and .eh_frame
++	 */
++	.exit.text : AT(ADDR(.exit.text) - LOAD_OFFSET) {
++		EXIT_TEXT
 +	}
 +
-+	. = ALIGN(8);
-+	.altinstructions : AT(ADDR(.altinstructions) - LOAD_OFFSET) {
-+		__alt_instructions = .;
-+		*(.altinstructions)
-+		__alt_instructions_end = .;
++	.exit.data : AT(ADDR(.exit.data) - LOAD_OFFSET) {
++		EXIT_DATA
 +	}
 +
-+	.altinstr_replacement : AT(ADDR(.altinstr_replacement) - LOAD_OFFSET) {
-+		*(.altinstr_replacement)
++#ifdef CONFIG_BLK_DEV_INITRD
++	. = ALIGN(PAGE_SIZE);
++	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
++		__initramfs_start = .;
++		*(.init.ramfs)
++		__initramfs_end = .;
 +	}
-+
++#endif
  
  #ifdef CONFIG_X86_32
  # include "vmlinux_32.lds.S"
 diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
-index d8ba539..5df9647 100644
+index 5df9647..36c8fbd 100644
 --- a/arch/x86/kernel/vmlinux_32.lds.S
 +++ b/arch/x86/kernel/vmlinux_32.lds.S
-@@ -1,21 +1,3 @@
--	. = ALIGN(4);
--	.altinstructions : AT(ADDR(.altinstructions) - LOAD_OFFSET) {
--		__alt_instructions = .;
--		*(.altinstructions)
--		__alt_instructions_end = .;
+@@ -1,24 +1,3 @@
+-	/*
+-	 * .exit.text is discard at runtime, not link time, to deal with
+-	 *  references from .altinstructions and .eh_frame
+-	 */
+-	.exit.text : AT(ADDR(.exit.text) - LOAD_OFFSET) {
+-		EXIT_TEXT
 -	}
 -
--	.altinstr_replacement : AT(ADDR(.altinstr_replacement) - LOAD_OFFSET) {
--		*(.altinstr_replacement)
+-	.exit.data : AT(ADDR(.exit.data) - LOAD_OFFSET) {
+-		EXIT_DATA
 -	}
 -
--	. = ALIGN(4);
--	.parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
--		__parainstructions = .;
--		*(.parainstructions)
--		__parainstructions_end = .;
+-#if defined(CONFIG_BLK_DEV_INITRD)
+-	. = ALIGN(PAGE_SIZE);
+-	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
+-		__initramfs_start = .;
+-		*(.init.ramfs)
+-		__initramfs_end = .;
 -	}
+-#endif
 -
- 	/*
- 	 * .exit.text is discard at runtime, not link time, to deal with
- 	 *  references from .altinstructions and .eh_frame
+ 	PERCPU(PAGE_SIZE)
+ 
+ 	. = ALIGN(PAGE_SIZE);
 diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
-index 0e8054e..9ef7096 100644
+index 9ef7096..1aa5362 100644
 --- a/arch/x86/kernel/vmlinux_64.lds.S
 +++ b/arch/x86/kernel/vmlinux_64.lds.S
-@@ -1,21 +1,3 @@
--	. = ALIGN(8);
--	.parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
--		__parainstructions = .;
--		*(.parainstructions)
--		__parainstructions_end = .;
+@@ -1,24 +1,3 @@
+-	/*
+-	 * .exit.text is discard at runtime, not link time, to deal with
+-	 *  references from .altinstructions and .eh_frame
+-	 */
+-	.exit.text : AT(ADDR(.exit.text) - LOAD_OFFSET) {
+-		EXIT_TEXT
 -	}
 -
--	.altinstructions : AT(ADDR(.altinstructions) - LOAD_OFFSET) {
--		. = ALIGN(8);
--		__alt_instructions = .;
--		*(.altinstructions)
--		__alt_instructions_end = .;
+-	.exit.data : AT(ADDR(.exit.data) - LOAD_OFFSET) {
+-		EXIT_DATA
 -	}
 -
--	.altinstr_replacement : AT(ADDR(.altinstr_replacement) - LOAD_OFFSET) {
--		*(.altinstr_replacement)
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	. = ALIGN(PAGE_SIZE);
+-	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
+-		__initramfs_start = .;
+-		*(.init.ramfs)
+-		__initramfs_end = .;
 -	}
+-#endif
 -
+ #ifdef CONFIG_SMP
  	/*
- 	 * .exit.text is discard at runtime, not link time, to deal with
- 	 *  references from .altinstructions and .eh_frame
+ 	 * percpu offsets are zero-based on SMP.  PERCPU_VADDR() changes the
