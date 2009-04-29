@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbZD2TIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbZD2TJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755328AbZD2TIW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 15:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbZD2TIE
+	id S1754386AbZD2TJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 15:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753153AbZD2TJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 15:08:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42559 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752191AbZD2TIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 15:08:02 -0400
-Date: Wed, 29 Apr 2009 21:06:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
-       dada1@cosmosbay.com, benh@kernel.crashing.org, gallatin@myri.com,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [tip:sched/urgent] sched: account system time properly
-Message-ID: <20090429190628.GC13139@elte.hu>
-References: <49F84BC1.7080602@cosmosbay.com> <tip-f5f293a4e3d0a0c52cec31de6762c95050156516@git.kernel.org> <20090429075818.5ca17efb.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090429075818.5ca17efb.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 29 Apr 2009 15:09:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45686 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753150AbZD2TJs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 15:09:48 -0400
+Date: Wed, 29 Apr 2009 12:05:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: borislav.petkov@amd.com, greg@kroah.com, tglx@linutronix.de, hpa@zytor.com,
+       dougthompson@xmission.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/21] amd64_edac: add f10-and-later methods-p3
+Message-Id: <20090429120501.ae005dc4.akpm@linux-foundation.org>
+In-Reply-To: <20090429182255.GD8321@elte.hu>
+References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
+	<1241024107-14535-14-git-send-email-borislav.petkov@amd.com>
+	<20090429182255.GD8321@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 29 Apr 2009 20:22:55 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 29 Apr 2009 13:09:19 GMT tip-bot for Eric Dumazet <dada1@cosmosbay.com> wrote:
+> > +		InputAddr = ChannelAddrLong >> 8;
+> > +
+> > +		debugf1("   (ChannelAddrLong=0x%llx) >> 8 becomes "
+> > +			"InputAddr=0x%x\n", ChannelAddrLong, InputAddr);
+> > +
+> > +		/* Iterate over the DRAM DCTs looking for a
+> > +		 * match for InputAddr on the selected NodeID
+> > +		 */
+> > +		CSFound = f10_lookup_addr_in_dct(InputAddr,
+> > +						NodeID, ChannelSelect);
+> > +
+> > +		if (CSFound >= 0) {
+> > +			*node_id = NodeID;
+> > +			*channel_select = ChannelSelect;
+> > +		}
+> > +	}
+> > +
+> > +	return CSFound;
+> > +}
 > 
-> > Commit-ID:  f5f293a4e3d0a0c52cec31de6762c95050156516
-> > Gitweb:     http://git.kernel.org/tip/f5f293a4e3d0a0c52cec31de6762c95050156516
-> > Author:     Eric Dumazet <dada1@cosmosbay.com>
-> > AuthorDate: Wed, 29 Apr 2009 14:44:49 +0200
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Wed, 29 Apr 2009 15:02:28 +0200
-> > 
-> > sched: account system time properly
-> > 
-> > ...
-> > 
-> > Reported-by: Andrew Gallatin <gallatin@myri.com>
-> > Re-reported-by: Andrew Morton <akpm@linux-foundation.org>
-> > Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> > Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > Cc: rick.jones2@hp.com
-> > Cc: brice@myri.com
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > LKML-Reference: <49F84BC1.7080602@cosmosbay.com>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> The regression was present in 2.6.29, so a -stable backport (and 
-> cc!) is appropriate.
+> this function is probably too large, and also it uses some weird 
+> hungarian notation coding style. Please dont do that! It's 
+> completely unacceptable.
 
-agreed, i've forwarded this info to stable@kernel.org.
+These identifers (or at least, DctSelBaseOffsetLong, which is the only
+one I googled for) come straight out of the AMD "BIOS and Kernel
+Developer's Guide".
 
-	Ingo
+Sucky though they are, there's value in making the kernel code match up
+with the documentation.
+
