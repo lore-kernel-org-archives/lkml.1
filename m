@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbZD2Prg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758311AbZD2PsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757653AbZD2Prg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 11:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZD2Pr1
+	id S1758311AbZD2PsS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 11:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344AbZD2PsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 11:47:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57366 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751957AbZD2Pr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 11:47:27 -0400
-Date: Wed, 29 Apr 2009 11:47:08 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org, tytso@mit.edu,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
-Subject: [PATCH] vmscan: evict use-once pages first (v2)
-Message-ID: <20090429114708.66114c03@cuia.bos.redhat.com>
-In-Reply-To: <1240987349.4512.18.camel@laptop>
-References: <20090428044426.GA5035@eskimo.com>
-	<20090428192907.556f3a34@bree.surriel.com>
-	<1240987349.4512.18.camel@laptop>
-Organization: Red Hat, Inc
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Apr 2009 11:48:03 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:46654 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753077AbZD2PsB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 11:48:01 -0400
+Date: Wed, 29 Apr 2009 11:46:59 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: "(unsigned long)__builtin_return_address(0)", _RET_IP_,
+ CALLER_ADDR0?
+Message-ID: <alpine.LFD.2.00.0904291137300.9262@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the file LRU lists are dominated by streaming IO pages,
-evict those pages first, before considering evicting other
-pages.
 
-This should be safe from deadlocks or performance problems
-because only three things can happen to an inactive file page:
-1) referenced twice and promoted to the active list
-2) evicted by the pageout code
-3) under IO, after which it will get evicted or promoted
+  as another possibility for standardizing code, is there a standard
+for the simplification mentioned in the subject and documented here:
 
-The pages freed in this way can either be reused for streaming
-IO, or allocated for something else. If the pages are used for
-streaming IO, this pageout pattern continues. Otherwise, we will
-fall back to the normal pageout pattern.
+http://www.crashcourse.ca/wiki/index.php/The_style_script#Testing_for_.22.28unsigned_long.29__builtin_return_address.280.29.22_simplification
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
----
-On Wed, 29 Apr 2009 08:42:29 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
+it's a bit confusing that, even within the kernel/ directory, all
+three constructs are used, even sometimes being mixed in the same
+source file, which is really more confusing than it has to be.
 
-> Isn't there a hole where LRU_*_FILE << LRU_*_ANON and we now stop
-> shrinking INACTIVE_ANON even though it makes sense to.
+  is there a standard?
 
-Peter, after looking at this again, I believe that the get_scan_ratio
-logic should take care of protecting the anonymous pages, so we can
-get away with this following, less intrusive patch.
+rday
+--
 
-Elladan, does this smaller patch still work as expected?
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
 
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index eac9577..4471dcb 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1489,6 +1489,18 @@ static void shrink_zone(int priority, struct zone *zone,
- 			nr[l] = scan;
- 	}
- 
-+	/*
-+	 * When the system is doing streaming IO, memory pressure here
-+	 * ensures that active file pages get deactivated, until more
-+	 * than half of the file pages are on the inactive list.
-+	 *
-+	 * Once we get to that situation, protect the system's working
-+	 * set from being evicted by disabling active file page aging.
-+	 * The logic in get_scan_ratio protects anonymous pages.
-+	 */
-+	if (nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE])
-+		nr[LRU_ACTIVE_FILE] = 0;
-+
- 	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
- 					nr[LRU_INACTIVE_FILE]) {
- 		for_each_evictable_lru(l) {
+        Linux Consulting, Training and Annoying Kernel Pedantry.
 
+Web page:                                          http://crashcourse.ca
+Linked In:                             http://www.linkedin.com/in/rpjday
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
