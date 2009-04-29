@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbZD2T2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760036AbZD2T2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756550AbZD2T2V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 15:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbZD2T2J
+	id S1760036AbZD2T2j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 15:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbZD2T2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 15:28:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46070 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751099AbZD2T2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 15:28:08 -0400
+	Wed, 29 Apr 2009 15:28:21 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:44371 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758017AbZD2T2U convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 15:28:20 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Christoph Hellwig <hch@lst.de>, chris@zankel.net, cooloney@kernel.org,
-       deller@gmx.de, geert@linux-m68k.org, gerg@uclinux.org,
-       hskinnemoen@atmel.com, jdike@addtoit.com, jesper.nilsson@axis.com,
-       kyle@mcmartin.ca, linux@arm.linux.org.uk, ralf@linux-mips.org,
-       rth@twiddle.net, starvik@axis.com, takata@linux-m32r.org,
-       ysato@users.sourceforge.jp, zippel@linux-m68k.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: Fwd: arch/ && tracehook_report_syscall_xxx()
-In-Reply-To: Oleg Nesterov's message of  Wednesday, 29 April 2009 21:08:52 +0200 <20090429190852.GA14515@redhat.com>
-References: <20090427180455.GA32509@redhat.com>
-	<20090427182919.B923DFC3BF@magilla.sf.frob.com>
-	<20090427183218.GA31596@lst.de>
-	<20090429190852.GA14515@redhat.com>
-X-Shopping-List: (1) Lingering inflammation fiction
-   (2) Enthusiastic contraptions
-   (3) Mathematical constant combustion
-   (4) Olympic Protrusion inflammations
-   (5) Despotic snooze condiments
-Message-Id: <20090429191744.DA422FC3BF@magilla.sf.frob.com>
-Date: Wed, 29 Apr 2009 12:17:44 -0700 (PDT)
+In-Reply-To: <20090429191841.GA1598@khazad-dum.debian.net>
+References: <20090427193532.GA2948@kroah.com> <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com> 
+	<20090429180735.GA29812@kroah.com> <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com> 
+	<ac3eb2510904291159s14d7d532q33657eb73007fc4b@mail.gmail.com> 
+	<20090429191841.GA1598@khazad-dum.debian.net>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Wed, 29 Apr 2009 21:27:59 +0200
+Message-ID: <ac3eb2510904291227v48628c8j181dffc8fdfa1de6@mail.gmail.com>
+Subject: Re: usbutils 0.81 release
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph has already poked everyone, I believe.
+On Wed, Apr 29, 2009 at 21:18, Henrique de Moraes Holschuh
+<hmh@hmh.eng.br> wrote:
+> On Wed, 29 Apr 2009, Kay Sievers wrote:
+>> >>> looks like update-usbids.sh was forgotten from EXTRA_DIST in
+>> >>> Makefile.am so the released tarball doesnt have the script ;(
+>>
+>> > np, i'll send patches for both
+>>
+>> Ah missed that, sorry. Sounds good if you add it to the tarball, but
+>> please don't add it to "make install", as packages should not ship
+>> scripts which change the installed package content, unless it's a
+>> config file.
+>
+> Debian places it in /var/lib/usbids/ for a good reason.  So does Ubuntu.
+> Both have working "update-usbids" scripts (might be the one from upstream,
+> or something different).  They also have the original file in /usr/share, I
+> don't know if usbutils was changed to check /var first then /usr, or what.
 
-> it would be really nice to turn it into something like
-> 
-> 	asmlinkage void
-> 	syscall_trace(int entryexit)
+Having several files on the same system sounds crazy from a distro
+standpoint. There needs to be only a single database by default. Users
+can do whatever they want anyway, but packages should not support such
+a thing.
 
-We recommend replacing this with separate entry/exit paths from the
-assembly code, if you are changing arch code anyway.
-
+If the user updates it, what does a new ids file do? Overwrite it
+unconditionally? Keep the old outdated hanging around, and lsusb does
+not pick the new one up? That sounds like total a mess.
 
 Thanks,
-Roland
+Kay
