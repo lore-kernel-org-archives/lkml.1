@@ -1,103 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZD2NuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbZD2NzC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753112AbZD2NuS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 09:50:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZD2NuE
+	id S1754194AbZD2NzC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 09:55:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbZD2Nyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 09:50:04 -0400
-Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:45649 "EHLO
-	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751481AbZD2NuC (ORCPT
+	Wed, 29 Apr 2009 09:54:52 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:58434 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752556AbZD2Nyv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 09:50:02 -0400
-Subject: Re: Q: selinux_bprm_committed_creds() && signals/do_wait
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>,
-       Eric Paris <eparis@parisplace.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090429134235.GA30585@redhat.com>
-References: <20090428223025.GA11997@redhat.com>
-	 <alpine.LRH.2.00.0904291024001.5246@tundra.namei.org>
-	 <20090429065809.GA477@redhat.com>
-	 <1241007630.18249.141.camel@localhost.localdomain>
-	 <20090429125606.GA27901@redhat.com>
-	 <1241011014.18249.192.camel@localhost.localdomain>
-	 <20090429134235.GA30585@redhat.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 29 Apr 2009 09:43:03 -0400
-Message-Id: <1241012583.18249.197.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Wed, 29 Apr 2009 09:54:51 -0400
+Message-ID: <49F85C27.9000308@monstr.eu>
+Date: Wed, 29 Apr 2009 15:54:47 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>, John Williams <john.williams@petalogix.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Memory limits - mm_segment_t - MAKE_MM_SEG
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-29 at 15:42 +0200, Oleg Nesterov wrote:
-> On 04/29, Stephen Smalley wrote:
-> >
-> > On Wed, 2009-04-29 at 14:56 +0200, Oleg Nesterov wrote:
-> > > On 04/29, Stephen Smalley wrote:
-> > > >
-> > > > On Wed, 2009-04-29 at 08:58 +0200, Oleg Nesterov wrote:
-> > > > >
-> > > > > Why do we need to s/IGN/DFL/ and why do we clear ->blocked ? How this can
-> > > > > help from the security pov?
-> > > >
-> > > > We don't want the caller to be able to arrange conditions that prevent
-> > > > correct handling of signals (e.g. SIGHUP) by the callee.  That was
-> > > > motivated by a specific attack against newrole, but was a general issue
-> > > > for any program that runs in a more trusted domain than its caller.
-> > >
-> > > Still can't understand...
-> > >
-> > > If the new image runs in a more trusted domain, then we should not change
-> > > SIG_IGN to SIG_DFL ?
-> > >
-> > > For example, a user does "nohup setuid_app". Now, why should we change
-> > > SIG_IGN to SIG_DFL for SIGHUP? This makes setuid_app more "vulnerable"
-> > > to SIGHUP, not more "protected". Confused.
-> >
-> > Not if the app was depending on the default handler for SIGHUP to
-> > correctly handle vhangup().  The point is that we don't necessarily
-> > trust the caller to define the handling behavior for signals in the
-> > callee.  If we trust the caller to do so, then we can grant the
-> > corresponding permission.
-> >
-> > newrole scenario was to run it nohup, logout, wait for other user to
-> > login on same tty, trigger termination of newrole'd child shell, and
-> > have newrole relabel other user's tty to attacker's sid.
-> >
-> > > OK. Since I don't understand the security magic, you can just ignore me.
-> > > But I will appreciate any explanation for dummies ;)
-> > >
-> > > > As I recall, I based the logic in part on existing logic in
-> > > > call_usermodehelper().
-> > >
-> > > ____call_usermodehelper() does this because we should not exec a user-space
-> > > application with SIGKILL/SIGSTOP ignored/blocked. We don't have this problem
-> > > when user-space execs.
-> >
-> > But we still have the problem of the caller setting up the signal
-> > handlers or blocked signal mask prior to exec'ing the privileged
-> > program, right?
-> 
-> The callee can never setup the signal handler. Note that flush_old_exec()
-> does flush_signal_handlers() too. But it uses force_default == F.
+Hi all,
 
-Right, but it can set it to SIG_IGN, which was the problem in the
-situation above.
+I look at some things which I need to clear for MMU Microblaze patches and
+I would like to know your opinion about.
 
-> OK, please forget this. I trust you even if can't understand ;)
-> 
-> My real concerns were SIGKILL and do_wait(), they were addressed.
-> 
-> Thanks!
-> 
-> Oleg.
+First of all I found that almost all archs use MAKE_MM_SEG macro which should be good
+to move to generic location (asm-generic/uaccess.h ? )
+#define MAKE_MM_SEG(s) ((mm_segment_t) { (s) })
+
+
+The second thing is about place where is stored limit for processes -> mm_segment_t structure
+
+Where is the proper location for storing mm_segment_t? Some arch use thread_info some of them
+thread_struct
+
+For microblaze case are used both -> that's definitely not correct.
+
+Here is the small table for cpus which are in linux kernel and location and type for them.
+The most of them uses thread_info structure for it and name is addr_limit.
+The location of mm_segment_t is different too -> we should move it to any generic location too.
+What do you think?
+
+        location                     name           location      struct mm_segment_t
+s390:   processor.h/thread_struct    mm_segment     processor.h   __u32 ar4
+alpha:  thread_info.h/thread_info    addr_limit     processor.h  unsigned long seg
+x86:    thread_info.h/thread_info    addr_limit     processor.h  unsigned long seg
+ia64:   thread_info.h/thread_info    addr_limit     processor.h  unsigned long seg
+mips:   thread_info.h/thread_info    addr_limit     processor.h  unsigned long seg
+um:     thread_info.h/thread_info    addr_limit     uaccess.h    unsigned long seg
+frv:    thread_info.h/thread_info    addr_limit     segment.h    unsigned long seg
+cris:   thread_info.h/thread_info    addr_limit     segment.h    unsigned long seg
+sh:     thread_info.h/thread_info    addr_limit     segment.h    unsigned long seg
+h8300:  not_used     not_used                       segment.h    unsigned long seg
+nm10300:thread_info.h/thread_info    addr_limit     processor.h  unsigned long seg
+arm:    thread_info.h/thread_info    addr_limit     thread_info.h  typedef unsigned long mm_segment_t;
+parisc: thread_info.h/thread_info    addr_limit     processor.h  int seq
+m32r:   thread_info.h/thread_info    addr_limit     processor.h  unsigned long seg
+xtensa: thread_info.h/thread_info    addr_limit     segment.h    unsigned long seg
+avr32:  not_used     not_used                       uaccess.h    unsigned int is_user_space;
+sparc:  processor_32.h/thread_struct  current_ds    processor_32.h  int seg
+m68k:   not_used     not_used                       segment.h    unsigned long seg
+blackfin:thread_info.h/thread_info    addr_limit    thread_info.h  typedef unsigned long mm_segment_t;
+powerpc: processor.h/thread_struct  current_ds     processor.h  unsigned long seg
+
+
+There is really mess in it and I would like to have good solution for Microblaze and I think
+that will be good to have any generic solution and remove code duplication.
+
+Thanks for your comments,
+Michal
+
+
 -- 
-Stephen Smalley
-National Security Agency
-
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
