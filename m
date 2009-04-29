@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760808AbZD2RCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760898AbZD2RDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760808AbZD2RCr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 13:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758355AbZD2Q4E
+	id S1760898AbZD2RDJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 13:03:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758953AbZD2Q4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 12:56:04 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:7568 "EHLO
-	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758949AbZD2Q4A (ORCPT
+	Wed, 29 Apr 2009 12:56:13 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:35819 "EHLO
+	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758981AbZD2Q4L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 12:56:00 -0400
-X-BigFish: VPS-3(zz936eQ14e1Jzz1202hzzz32i68o)
-X-Spam-TCS-SCL: 7:0
-X-WSS-ID: 0KIVGC3-02-4PD-01
+	Wed, 29 Apr 2009 12:56:11 -0400
+X-BigFish: VPS-8(zz936eQzz1202hzzz32i61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KIVGBZ-02-4P6-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: akpm@linux-foundation.org, greg@kroah.com
 CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
        dougthompson@xmission.com, <linux-kernel@vger.kernel.org>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 16/21] amd64_edac: add error decoding logic
-Date: Wed, 29 Apr 2009 18:55:02 +0200
-Message-ID: <1241024107-14535-17-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 07/21] amd64_edac: add DRAM address type conversion facilities
+Date: Wed, 29 Apr 2009 18:54:53 +0200
+Message-ID: <1241024107-14535-8-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
 References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 29 Apr 2009 16:55:21.0726 (UTC) FILETIME=[489369E0:01C9C8EB]
+X-OriginalArrivalTime: 29 Apr 2009 16:55:16.0445 (UTC) FILETIME=[456D98D0:01C9C8EB]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,586 +36,318 @@ From: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |  569 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 569 insertions(+), 0 deletions(-)
+ drivers/edac/amd64_edac.c |  300 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 300 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 88849a4..fee9ec4 100644
+index 2033dd4..7c2f5fc 100644
 --- a/drivers/edac/amd64_edac.c
 +++ b/drivers/edac/amd64_edac.c
-@@ -3260,3 +3260,572 @@ static int get_channel_from_ecc_syndrome(unsigned short syndrome)
- 	debugf0("%s(): syndrome(%x) not found\n", __func__, syndrome);
- 	return -1;
+@@ -1450,4 +1450,304 @@ static int amd64_get_dram_hole_info(struct mem_ctl_info *mci, u64 *hole_base,
+ 	return 0;
  }
-+
-+/*
-+ * toString tables for the various error decoding values
+ 
++/* Return the DramAddr that the SysAddr given by sys_addr maps to.  It is
++ * assumed that sys_addr maps to the node given by mci.
 + */
-+static const char *tt_msgs[] = {        /* transaction type */
-+	"instruction",
-+	"data",
-+	"generic",
-+	"reserved"
-+};
-+
-+static const char *ll_msgs[] = {	/* cache level */
-+	"L0",
-+	"L1",
-+	"L2",
-+	"L3/generic"
-+};
-+
-+static const char *rrrr_msgs[] = {
-+	"generic",
-+	"generic read",
-+	"generic write",
-+	"data read",
-+	"data write",
-+	"inst fetch",
-+	"prefetch",
-+	"evict",
-+	"snoop",
-+	"reserved RRRR= 9",
-+	"reserved RRRR= 10",
-+	"reserved RRRR= 11",
-+	"reserved RRRR= 12",
-+	"reserved RRRR= 13",
-+	"reserved RRRR= 14",
-+	"reserved RRRR= 15"
-+};
-+
-+static const char *pp_msgs[] = {	/* participating processor */
-+	"local node originated (SRC)",
-+	"local node responded to request (RES)",
-+	"local node observed as 3rd party (OBS)",
-+	"generic"
-+};
-+
-+static const char *to_msgs[] = {
-+	"no timeout",
-+	"timed out"
-+};
-+
-+static const char *ii_msgs[] = {	/* memory or i/o */
-+	"mem access",
-+	"reserved",
-+	"i/o access",
-+	"generic"
-+};
-+
-+/* Map the 5 bits of Extended Error code toString table
-+ *	enhanced to support the new F10 error codes
-+ *	esp, with L3 cache errors
-+ */
-+static const char *ext_msgs[] = {	/* extended error */
-+	"K8 ECC error/F10 reserved",	/* 0_0000b */
-+	"CRC error",			/* 0_0001b */
-+	"sync error",			/* 0_0010b */
-+	"mst abort",			/* 0_0011b */
-+	"tgt abort",			/* 0_0100b */
-+	"GART error",			/* 0_0101b */
-+	"RMW error",			/* 0_0110b */
-+	"Wdog timer error",		/* 0_0111b */
-+	"F10-ECC/K8-Chipkill error",	/* 0_1000b */
-+	"DEV Error",			/* 0_1001b */
-+	"Link Data error",		/* 0_1010b */
-+	"Link or L3 Protocol error",	/* 0_1011b */
-+	"NB Array error",		/* 0_1100b */
-+	"DRAM Parity error",		/* 0_1101b */
-+	"Link Retry/GART Table Walk/DEV Table Walk error", /* 0_1110b */
-+	"Res 0x0ff error",		/* 0_1111b */
-+	"Res 0x100 error",		/* 1_0000b */
-+	"Res 0x101 error",		/* 1_0001b */
-+	"Res 0x102 error",		/* 1_0010b */
-+	"Res 0x103 error",		/* 1_0011b */
-+	"Res 0x104 error",		/* 1_0100b */
-+	"Res 0x105 error",		/* 1_0101b */
-+	"Res 0x106 error",		/* 1_0110b */
-+	"Res 0x107 error",		/* 1_0111b */
-+	"Res 0x108 error",		/* 1_1000b */
-+	"Res 0x109 error",		/* 1_1001b */
-+	"Res 0x10A error",		/* 1_1010b */
-+	"Res 0x10B error",		/* 1_1011b */
-+	"L3 Cache Data error",		/* 1_1100b */
-+	"L3 CacheTag error",		/* 1_1101b */
-+	"L3 Cache LRU error",		/* 1_1110b */
-+	"Res 0x1FF error"		/* 1_1111b */
-+};
-+
-+static const char *htlink_msgs[] = {
-+	"none",
-+	"1",
-+	"2",
-+	"1 2",
-+	"3",
-+	"1 3",
-+	"2 3",
-+	"1 2 3"
-+};
-+
-+/*
-+ * amd64_error_info_valid
-+ *
-+ * Return 1 if hardware contains valid error information.
-+ * Else return 0, no valid error information.
-+ */
-+static inline int amd64_error_info_valid(struct amd64_error_info_regs *regs)
++static u64 sys_addr_to_dram_addr(struct mem_ctl_info *mci, u64 sys_addr)
 +{
-+	return ((regs->nbsh & K8_NBSH_VALID_BIT) != 0);
-+}
++	u64 dram_base, hole_base, hole_offset, hole_size, dram_addr;
++	int rc;
 +
-+/*
-+ * amd64_get_error_info_regs
-+ *
-+ *	read the North Bridge Status register HIGH and test the
-+ *	VALID ERROR status bit in that register.
-+ *
-+ *	If set, proceed to read:
-+ *		NBS Low
-+ *		NBEA LOW
-+ *		NBEA HIGH
-+ *
-+ *	and store data into error structure
-+ *
-+ * return 1: if hardware regs contains valid error info
-+ * return 0: if no valid error is indicated
-+ */
-+static int amd64_get_error_info_regs(struct mem_ctl_info *mci,
-+				  struct amd64_error_info_regs *regs)
-+{
-+	struct amd64_pvt *pvt;
-+	struct pci_dev *misc_f3_ctl;
-+	int err;
-+
-+	pvt = mci->pvt_info;
-+	misc_f3_ctl = pvt->misc_f3_ctl;
-+
-+	/* Read the NB Status Register High to get ERROR VALID bit */
-+	err = pci_read_config_dword(misc_f3_ctl, K8_NBSH, &regs->nbsh);
-+	if (err != 0)
-+		debugf0("%s() Reading K8_NBSH failed\n", __func__);
-+
-+	if (!amd64_error_info_valid(regs))
-+		return 0;
-+
-+	/* valid error, read remaining error information registers */
-+	err = pci_read_config_dword(misc_f3_ctl, K8_NBSL, &regs->nbsl);
-+	if (err != 0)
-+		debugf0("%s() Reading K8_NBSL failed\n", __func__);
-+	err = pci_read_config_dword(misc_f3_ctl, K8_NBEAL, &regs->nbeal);
-+	if (err != 0)
-+		debugf0("%s() Reading K8_NBEAL failed\n", __func__);
-+	err = pci_read_config_dword(misc_f3_ctl, K8_NBEAH, &regs->nbeah);
-+	if (err != 0)
-+		debugf0("%s() Reading K8_NBEAH failed\n", __func__);
-+	err = pci_read_config_dword(misc_f3_ctl, K8_NBCFG, &regs->nbcfg);
-+	if (err != 0)
-+		debugf0("%s() Reading K8_NBCFG failed\n", __func__);
-+
-+	return 1;
-+}
-+
-+/*
-+ * amd64_get_error_info
-+ *
-+ *	this function is called to retrieve the error data from hardware
-+ *	and store it in the info structure.
-+ *
-+ *	return:
-+ *		1 if a valid error is found
-+ *		0 if no error is found
-+ */
-+static int amd64_get_error_info(struct mem_ctl_info *mci,
-+			      struct amd64_error_info_regs *info)
-+{
-+	struct amd64_pvt *pvt;
-+	struct amd64_error_info_regs regs;
-+
-+	pvt = mci->pvt_info;
-+
-+	if (!amd64_get_error_info_regs(mci, info))
-+		return 0;
-+
-+	/*
-+	 * Here's the problem with the K8's EDAC reporting:
-+	 * There are four registers which report pieces of error
-+	 * information.  These four registers are shared between
-+	 * CEs and UEs.  Furthermore, contrary to what is stated in
-+	 * the OBKG, the overflow bit is never used!  Every error
-+	 * always updates the reporting registers.
++	/* The first part of section 3.4.4 (p. 70) shows how the DRAM Base
++	 * (section 3.4.4.1) and DRAM Limit (section 3.4.4.2) registers are
++	 * used to translate a SysAddr to a DramAddr.  If the DRAM Hole
++	 * Address Register (DHAR) is enabled, then it is also involved in
++	 * translating a SysAddr to a DramAddr.  Sections 3.4.8 and 3.5.8.2
++	 * describe the DHAR and how it is used for memory hoisting.  These
++	 * parts of the documentation are unclear.  I interpret them as
++	 * follows:
 +	 *
-+	 * Can you see the race condition?  All four error reporting
-+	 * registers must be read before a new error updates them!
-+	 * There is no way to read all four registers atomically.  The
-+	 * best than can be done is to detect that a race has occured
-+	 * and then report the error without any kind of precision.
++	 *     When node n receives a SysAddr, it processes the SysAddr as
++	 *     follows:
 +	 *
-+	 * What is still positive is that errors are
-+	 * still reported and thus problems can still be detected -
-+	 * just not localized because the syndrome and address are
-+	 * spread out across registers.
++	 *         1.  It extracts the DRAMBase and DRAMLimit values from the
++	 *             DRAM Base and DRAM Limit registers for node n.  If the
++	 *             SysAddr is not within the range specified by the base
++	 *             and limit values, then node n ignores the Sysaddr
++	 *             (since it does not map to node n).  Otherwise continue
++	 *             to step 2 below.
 +	 *
-+	 * Grrrrr!!!!!  Here's hoping that AMD fixes this in some
-+	 * future K8 rev. UEs and CEs should have separate
-+	 * register sets with proper overflow bits that are used!
-+	 * At very least the problem can be fixed by honoring the
-+	 * ErrValid bit in 'nbsh' and not updating registers - just
-+	 * set the overflow bit - unless the current error is CE
-+	 * and the new error is UE which would be the only situation
-+	 * for overwriting the current values.
++	 *         2.  If the DramHoleValid bit of the DHAR for node n is
++	 *             clear, the DHAR is disabled so skip to step 3 below.
++	 *             Otherwise see if the SysAddr is within the range of
++	 *             relocated addresses (starting at 0x100000000) from the
++	 *             DRAM hole.  If not, skip to step 3 below.  Else get the
++	 *             value of the DramHoleOffset field from the DHAR.  To
++	 *             obtain the DramAddr, subtract the offset defined by
++	 *             this value from the SysAddr.
++	 *
++	 *         3.  Obtain the base address for node n from the DRAMBase
++	 *             field of the DRAM Base register for node n.  To obtain
++	 *             the DramAddr, subtract the base address from the
++	 *             SysAddr, as shown near the start of section 3.4.4
++	 *             (p. 70).
 +	 */
 +
-+	regs = *info;
++	dram_base = get_dram_base(mci);
 +
-+	/* Use info from the second read - most current */
-+	if (unlikely(!amd64_get_error_info_regs(mci, info)))
-+		return 0;
-+
-+	/* clear the error bits in hardware */
-+	pci_write_bits32(pvt->misc_f3_ctl, K8_NBSH, 0, K8_NBSH_VALID_BIT);
-+
-+	/* Check for the possible race condition */
-+	if ((regs.nbsh != info->nbsh) ||
-+	     (regs.nbsl != info->nbsl) ||
-+	     (regs.nbeah != info->nbeah) ||
-+	     (regs.nbeal != info->nbeal)) {
-+		amd64_mc_printk(mci, KERN_WARNING,
-+			"hardware STATUS read access race "
-+			"condition detected!\n");
-+		return 0;
++	rc = amd64_get_dram_hole_info(mci, &hole_base, &hole_offset,
++				      &hole_size);
++	if (!rc) {
++		if ((sys_addr >= (1ull << 32)) &&
++		    (sys_addr < ((1ull << 32) + hole_size))) {
++			/* use DHAR to translate SysAddr to DramAddr */
++			dram_addr = sys_addr - hole_offset;
++			debugf2("using DHAR to translate SysAddr 0x%lx to "
++				"DramAddr 0x%lx\n",
++				(unsigned long)sys_addr,
++				(unsigned long)dram_addr);
++			return dram_addr;
++		}
 +	}
 +
-+	return 1;
++	/* Translate the SysAddr to a DramAddr as shown near the start of
++	 * section 3.4.4 (p. 70).  Although sys_addr is a 64-bit value, the k8
++	 * only deals with 40-bit values.  Therefore we discard bits 63-40 of
++	 * sys_addr below.  If bit 39 of sys_addr is 1 then the bits we
++	 * discard are all 1s.  Otherwise the bits we discard are all 0s.  See
++	 * section 3.4.2 of AMD publication 24592: AMD x86-64 Architecture
++	 * Programmer's Manual Volume 1 Application Programming.
++	 */
++	dram_addr = (sys_addr & 0xffffffffffull) - dram_base;
++
++	debugf2("using DRAM Base register to translate SysAddr 0x%lx to "
++		"DramAddr 0x%lx\n", (unsigned long)sys_addr,
++		(unsigned long)dram_addr);
++	return dram_addr;
 +}
 +
-+static inline void amd64_decode_gart_tlb_error(struct mem_ctl_info *mci,
-+					 struct amd64_error_info_regs *info)
-+{
-+	u32 err_code;
-+	u32 ec_tt;		/* error code transaction type (2b) */
-+	u32 ec_ll;		/* error code cache level (2b) */
-+
-+	err_code = EXTRACT_ERROR_CODE(info->nbsl);
-+	ec_ll = EXTRACT_LL_CODE(err_code);
-+	ec_tt = EXTRACT_TT_CODE(err_code);
-+
-+	amd64_mc_printk(mci, KERN_ERR,
-+		     "GART TLB event: transaction type(%s), "
-+		     "cache level(%s)\n", tt_msgs[ec_tt], ll_msgs[ec_ll]);
-+}
-+
-+static inline void amd64_decode_mem_cache_error(struct mem_ctl_info *mci,
-+				      struct amd64_error_info_regs *info)
-+{
-+	u32 err_code;
-+	u32 ec_rrrr;		/* error code memory transaction (4b) */
-+	u32 ec_tt;		/* error code transaction type (2b) */
-+	u32 ec_ll;		/* error code cache level (2b) */
-+
-+	err_code = EXTRACT_ERROR_CODE(info->nbsl);
-+	ec_ll = EXTRACT_LL_CODE(err_code);
-+	ec_tt = EXTRACT_TT_CODE(err_code);
-+	ec_rrrr = EXTRACT_RRRR_CODE(err_code);
-+
-+	amd64_mc_printk(mci, KERN_ERR,
-+		     "cache hierarchy error: memory transaction type(%s), "
-+		     "transaction type(%s), cache level(%s)\n",
-+		     rrrr_msgs[ec_rrrr], tt_msgs[ec_tt], ll_msgs[ec_ll]);
-+}
-+
-+
-+/*
-+ * amd64_handle_ce
-+ *
-+ *	this routine is called to handle any Correctable Errors (CEs)
-+ *	that have occurred. Check for valid ERROR ADDRESS and process
++/* Parameter intlv_en is the value of the IntlvEn field from a DRAM Base
++ * register (section 3.4.4.1).  Return the number of bits from a SysAddr that
++ * are used for node interleaving.
 + */
-+static void amd64_handle_ce(struct mem_ctl_info *mci,
-+				struct amd64_error_info_regs *info)
++static int num_node_interleave_bits(unsigned intlv_en)
++{
++	static const int intlv_shift_table[] = { 0, 1, 0, 2, 0, 0, 0, 3 };
++	int n;
++
++	BUG_ON(intlv_en > 7);
++	n = intlv_shift_table[intlv_en];
++	return n;
++}
++
++/* Translate the DramAddr given by dram_addr to an InputAddr and return the
++ * result.
++ */
++static u64 dram_addr_to_input_addr(struct mem_ctl_info *mci, u64 dram_addr)
++{
++	struct amd64_pvt *pvt;
++	int intlv_shift;
++	u64 input_addr;
++
++	pvt = mci->pvt_info;
++
++	/* See the start of section 3.4.4 (p. 70) in the k8 documentation
++	 * concerning translating a DramAddr to an InputAddr.
++	 */
++	intlv_shift = num_node_interleave_bits(pvt->dram_IntlvEn[0]);
++	input_addr = ((dram_addr >> intlv_shift) & 0xffffff000ull) +
++	    (dram_addr & 0xfff);
++
++	debugf2("  Intlv Shift=%d DramAddr=0x%lx maps to InputAddr=0x%lx\n",
++		intlv_shift,
++		(unsigned long)dram_addr, (unsigned long)input_addr);
++	return input_addr;
++}
++
++/* Translate the SysAddr represented by sys_addr to an InputAddr and return
++ * the result.  It is assumed that sys_addr maps to the node given by mci.
++ */
++static u64 sys_addr_to_input_addr(struct mem_ctl_info *mci, u64 sys_addr)
++{
++	u64 input_addr;
++
++	input_addr =
++	    dram_addr_to_input_addr(mci, sys_addr_to_dram_addr(mci, sys_addr));
++	debugf2("%s(): SysAdddr 0x%lx translates to InputAddr 0x%lx\n",
++		__func__, (unsigned long)sys_addr, (unsigned long)input_addr);
++	return input_addr;
++}
++
++
++/* input_addr is an InputAddr associated with the node represented by mci.
++ * Translate input_addr to a DramAddr and return the result.
++ */
++static u64 input_addr_to_dram_addr(struct mem_ctl_info *mci, u64 input_addr)
++{
++	struct amd64_pvt *pvt;
++	int node_id, intlv_shift;
++	u64 bits, dram_addr;
++	u32 intlv_sel;
++
++	/* Near the start of section 3.4.4 (p. 70), the k8 documentation shows
++	 * how to translate a DramAddr to an InputAddr.  Here we reverse this
++	 * procedure.  When translating from a DramAddr to an InputAddr, the
++	 * bits used for node interleaving are discarded.  Here we recover
++	 * these bits from the IntlvSel field of the DRAM Limit register
++	 * (section 3.4.4.2) for the node that input_addr is associated with.
++	 */
++
++	pvt = mci->pvt_info;
++	node_id = pvt->mc_node_id;
++	BUG_ON((node_id < 0) || (node_id > 7));
++
++	intlv_shift = num_node_interleave_bits(pvt->dram_IntlvEn[0]);
++
++	if (intlv_shift == 0) {
++		debugf1("  node interleaving disabled:\n");
++		debugf1("    InputAddr 0x%lx translates "
++			"to DramAddr of same value\n",
++			(unsigned long)input_addr);
++		return input_addr;
++	}
++
++	bits = ((input_addr & 0xffffff000ull) << intlv_shift) +
++	    (input_addr & 0xfff);
++
++	intlv_sel = pvt->dram_IntlvSel[node_id] & ((1 << intlv_shift) - 1);
++	dram_addr = bits + (intlv_sel << 12);
++
++	debugf1("InputAddr 0x%lx translates to DramAddr 0x%lx "
++		"(%d node interleave bits)\n", (unsigned long)input_addr,
++		(unsigned long)dram_addr, intlv_shift);
++	return dram_addr;
++}
++
++/* dram_addr is a DramAddr that maps to the node represented by mci.  Convert
++ * dram_addr to a SysAddr and return the result.
++ */
++static u64 dram_addr_to_sys_addr(struct mem_ctl_info *mci, u64 dram_addr)
 +{
 +	struct amd64_pvt *pvt = mci->pvt_info;
-+	u64 SystemAddress;
++	u64 hole_base, hole_offset, hole_size, base, limit, sys_addr;
++	int rc;
 +
-+	/* Ensure that the Error Address is VALID */
-+	if ((info->nbsh & K8_NBSH_VALID_ERROR_ADDR) == 0) {
-+		amd64_mc_printk(mci, KERN_ERR,
-+			"HW has no ERROR_ADDRESS available\n");
-+		edac_mc_handle_ce_no_info(mci, EDAC_MOD_STR);
-+		return;
++	rc = amd64_get_dram_hole_info(mci, &hole_base, &hole_offset,
++				      &hole_size);
++	if (!rc) {
++		if ((dram_addr >= hole_base) &&
++		    (dram_addr < (hole_base + hole_size))) {
++			/* use DHAR to translate DramAddr to SysAddr */
++			sys_addr = dram_addr + hole_offset;
++			debugf1("using DHAR to translate DramAddr 0x%lx to "
++				"SysAddr 0x%lx\n", (unsigned long)dram_addr,
++				(unsigned long)sys_addr);
++			return sys_addr;
++		}
 +	}
 +
-+	SystemAddress = extract_error_address(mci, info);
++	amd64_get_base_and_limit(pvt, pvt->mc_node_id, &base, &limit);
++	sys_addr = dram_addr + base;
 +
-+	amd64_mc_printk(mci, KERN_ERR,
-+		"CE ERROR_ADDRESS= 0x%llx\n", SystemAddress);
-+
-+	pvt->ops->map_sysaddr_to_csrow(mci, info, SystemAddress);
-+}
-+
-+/*
-+ * amd64_handle_ue
-+ *
-+ *	this routine is called to handle any Un-correctable Errors (UEs)
-+ */
-+static void amd64_handle_ue(struct mem_ctl_info *mci,
-+				struct amd64_error_info_regs *info)
-+{
-+	int csrow;
-+	u64 SystemAddress;
-+	u32 page, offset;
-+	struct mem_ctl_info *log_mci, *src_mci;
-+
-+	log_mci = mci;
-+
-+	/* Ensure that the Error Address is VALID */
-+	if ((info->nbsh & K8_NBSH_VALID_ERROR_ADDR) == 0) {
-+		amd64_mc_printk(mci, KERN_CRIT,
-+			"HW has no ERROR_ADDRESS available\n");
-+		edac_mc_handle_ue_no_info(log_mci, EDAC_MOD_STR);
-+		return;
-+	}
-+
-+	SystemAddress = extract_error_address(mci, info);
-+
-+	/* Find out which node the error address belongs to.  This may be
-+	 * different from the node that detected the error.
++	/* The sys_addr we have computed up to this point is a 40-bit value
++	 * because the k8 deals with 40-bit values.  However, the value we are
++	 * supposed to return is a full 64-bit physical address.  The AMD
++	 * x86-64 architecture specifies that the most significant implemented
++	 * address bit through bit 63 of a physical address must be either all
++	 * 0s or all 1s.  Therefore we sign-extend the 40-bit sys_addr to a
++	 * 64-bit value below.  See section 3.4.2 of AMD publication 24592:
++	 * AMD x86-64 Architecture Programmer's Manual Volume 1 Application
++	 * Programming.
 +	 */
-+	src_mci = find_mc_by_sys_addr(mci, SystemAddress);
-+	if (src_mci == NULL) {
-+		amd64_mc_printk(mci, KERN_CRIT,
-+			"ERROR ADDRESS (0x%lx) value NOT mapped to a MC\n",
-+			(unsigned long)SystemAddress);
-+		edac_mc_handle_ue_no_info(log_mci, EDAC_MOD_STR);
-+		return;
-+	}
++	sys_addr |= ~((sys_addr & (1ull << 39)) - 1);
 +
-+	log_mci = src_mci;
-+
-+	csrow = sys_addr_to_csrow(log_mci, SystemAddress);
-+	if (csrow < 0) {
-+		amd64_mc_printk(mci, KERN_CRIT,
-+			"ERROR_ADDRESS (0x%lx) value NOT mapped to 'csrow'\n",
-+			(unsigned long)SystemAddress);
-+		edac_mc_handle_ue_no_info(log_mci, EDAC_MOD_STR);
-+	} else {
-+		error_address_to_page_and_offset(SystemAddress, &page, &offset);
-+		edac_mc_handle_ue(log_mci, page, offset, csrow, EDAC_MOD_STR);
-+	}
++	debugf1("  Using DRAM Base reg on node %d to translate\n",
++		pvt->mc_node_id);
++	debugf1("    DramAddr 0x%lx to SysAddr 0x%lx\n",
++		(unsigned long)dram_addr, (unsigned long)sys_addr);
++	return sys_addr;
 +}
 +
-+/*
-+ * amd64_decode_bus_error
-+ *
-+ *	Perform decode of the AMD64 "BUS" error code
++/* input_addr is an InputAddr associated with the node given by mci.
++ * Translate input_addr to a SysAddr and return the result.
 + */
-+static void amd64_decode_bus_error(struct mem_ctl_info *mci,
-+			     struct amd64_error_info_regs *info)
++static inline u64 input_addr_to_sys_addr(struct mem_ctl_info *mci,
++					 u64 input_addr)
 +{
-+	u32 err_code, ext_ec;
-+	u32 ec_pp;		/* error code participating processor (2p) */
-+	u32 ec_to;		/* error code timed out (1b) */
-+	u32 ec_rrrr;		/* error code memory transaction (4b) */
-+	u32 ec_ii;		/* error code memory or I/O (2b) */
-+	u32 ec_ll;		/* error code cache level (2b) */
-+
-+	debugf0("MC%d: %s()\n", mci->mc_idx, __func__);
-+
-+	ext_ec = EXTRACT_EXT_ERROR_CODE(info->nbsl);
-+	err_code = EXTRACT_ERROR_CODE(info->nbsl);
-+
-+	ec_ll = EXTRACT_LL_CODE(err_code);
-+	ec_ii = EXTRACT_II_CODE(err_code);
-+	ec_rrrr = EXTRACT_RRRR_CODE(err_code);
-+	ec_to = EXTRACT_TO_CODE(err_code);
-+	ec_pp = EXTRACT_PP_CODE(err_code);
-+
-+	/* Log AMD Specific information */
-+	amd64_mc_printk(mci, KERN_ERR,
-+		"BUS ERROR:\n"
-+		"  time-out(%s) mem or i/o(%s)\n"
-+		"  participating processor(%s)\n"
-+		"  memory transaction type(%s)\n"
-+		"  cache level(%s) Error Found by: %s\n",
-+		to_msgs[ec_to],
-+		ii_msgs[ec_ii],
-+		pp_msgs[ec_pp],
-+		rrrr_msgs[ec_rrrr],
-+		ll_msgs[ec_ll],
-+		(info->nbsh & K8_NBSH_ERR_SCRUBER) ?
-+			"Scrubber" : "Normal Operation");
-+
-+	/* If this was an 'observed' error, early out */
-+	if (ec_pp == K8_NBSL_PP_OBS)
-+		return;		/* We aren't the node involved */
-+
-+	/* Parse out the extended error code for ECC events */
-+	switch (ext_ec) {
-+	/* F10 changed to one Extended ECC error code */
-+	case F10_NBSL_EXT_ERR_RES:		/* Reserved field */
-+	case F10_NBSL_EXT_ERR_ECC:		/* F10 ECC ext err code */
-+		break;
-+
-+	default:
-+		amd64_mc_printk(mci, KERN_ERR,
-+			"NOT ECC: no special error handling for this error\n");
-+		return;
-+	}
-+
-+	/* CE or UE event? */
-+	if (info->nbsh & K8_NBSH_CECC)
-+		amd64_handle_ce(mci, info);
-+	else if (info->nbsh & K8_NBSH_UECC)
-+		amd64_handle_ue(mci, info);
-+
-+	/* If main error is CE then overflow must be CE.  If main error is UE
-+	 * then overflow is unknown.  We'll call the overflow a CE - if
-+	 * panic_on_ue is set then we're already panic'ed and won't arrive
-+	 * here.  If panic_on_ue is not set then apparently someone doesn't
-+	 * think that UE's are catastrophic.
-+	 */
-+	if (info->nbsh & K8_NBSH_OVERFLOW)
-+		edac_mc_handle_ce_no_info(mci,
-+			EDAC_MOD_STR " Error Overflow set");
++	return dram_addr_to_sys_addr(mci,
++				     input_addr_to_dram_addr(mci, input_addr));
 +}
 +
 +/*
-+ * amd64_process_error_info
-+ *
-+ *	process the error information of the AMD64 chipset
-+ *
-+ *	return:
-+ *		1 if error found or
-+ *		0 if all ok
++ * Find the minimum and maximum InputAddr values that map to the given csrow.
++ * Pass back these values in *input_addr_min and *input_addr_max.
 + */
-+static int amd64_process_error_info(struct mem_ctl_info *mci,
-+					struct amd64_error_info_regs *info,
-+					int handle_errors)
++static void find_csrow_limits(struct mem_ctl_info *mci, int csrow,
++			      u64 *input_addr_min, u64 *input_addr_max)
 +{
 +	struct amd64_pvt *pvt;
-+	struct amd64_error_info_regs *regs;
-+	u32 err_code, ext_ec;
-+	int gart_tlb_error = 0;
++	u64 base, mask;
 +
 +	pvt = mci->pvt_info;
++	BUG_ON((csrow < 0) || (csrow >= CHIPSELECT_COUNT));
 +
-+	/* If caller doesn't want us to process the error, return */
-+	if (!handle_errors)
-+		return 1;
++	base = base_from_dct_base(pvt, csrow);
++	mask = mask_from_dct_mask(pvt, csrow);
 +
-+	regs = info;
-+
-+	debugf1("NorthBridge ERROR: mci(0x%p)\n", mci);
-+	debugf1("  MC node(%d) Error-Address(0x%.8x-%.8x)\n",
-+		pvt->mc_node_id, regs->nbeah, regs->nbeal);
-+	debugf1("  nbsh(0x%.8x) nbsl(0x%.8x)\n",
-+		regs->nbsh, regs->nbsl);
-+	debugf1("  Valid Error=%s Overflow=%s\n",
-+		(regs->nbsh & K8_NBSH_VALID_BIT) ? "True" : "False",
-+		(regs->nbsh & K8_NBSH_OVERFLOW) ? "True" : "False");
-+	debugf1("  Err Uncorrected=%s MCA Error Reporting=%s\n",
-+		(regs->nbsh & K8_NBSH_UNCORRECTED_ERR) ?
-+			"True" : "False",
-+		(regs->nbsh & K8_NBSH_ERR_ENABLE) ?
-+			"True" : "False");
-+	debugf1("  MiscErr Valid=%s ErrAddr Valid=%s PCC=%s\n",
-+		(regs->nbsh & K8_NBSH_MISC_ERR_VALID) ?
-+			"True" : "False",
-+		(regs->nbsh & K8_NBSH_VALID_ERROR_ADDR) ?
-+			"True" : "False",
-+		(regs->nbsh & K8_NBSH_PCC) ?
-+			"True" : "False");
-+	debugf1("  CECC=%s UECC=%s Found by Scruber=%s\n",
-+		(regs->nbsh & K8_NBSH_CECC) ?
-+			"True" : "False",
-+		(regs->nbsh & K8_NBSH_UECC) ?
-+			"True" : "False",
-+		(regs->nbsh & K8_NBSH_ERR_SCRUBER) ?
-+			"True" : "False");
-+	debugf1("  CORE0=%s CORE1=%s CORE2=%s CORE3=%s\n",
-+		(regs->nbsh & K8_NBSH_CORE0) ? "True" : "False",
-+		(regs->nbsh & K8_NBSH_CORE1) ? "True" : "False",
-+		(regs->nbsh & K8_NBSH_CORE2) ? "True" : "False",
-+		(regs->nbsh & K8_NBSH_CORE3) ? "True" : "False");
-+
-+
-+	err_code = EXTRACT_ERROR_CODE(regs->nbsl);
-+
-+	/* Determine which error type:
-+	 *	1) GART errors - non-fatal, developmental events
-+	 *	2) MEMORY errors
-+	 *	3) BUS errors
-+	 *	4) Unknown error
-+	 */
-+	if (TEST_TLB_ERROR(err_code)) {
-+		/*
-+		 * GART errors are intended to help graphics driver
-+		 * developers to detect bad GART PTEs. It is recommended by
-+		 * AMD to disable GART table walk error reporting by default[1]
-+		 * (currently being disabled in mce_cpu_quirks()) and according
-+		 * to the comment in mce_cpu_quirks(), such GART errors can be
-+		 * incorrectly triggered. We may see these errors anyway and
-+		 * unless requested by the user, they won't be reported.
-+		 *
-+		 * [1] section 13.10.1 on BIOS and Kernel Developers Guide for
-+		 *     AMD NPT family 0Fh processors
-+		 */
-+		if (report_gart_errors == 0)
-+			return 1;
-+
-+		/* Only if GART error reporting are requested should
-+		 * we generate any logs. If not requested, we left above.
-+		 */
-+		gart_tlb_error = 1;
-+
-+		debugf1("GART TLB error\n");
-+		amd64_decode_gart_tlb_error(mci, info);
-+	} else if (TEST_MEM_ERROR(err_code)) {
-+		debugf1("Memory/Cache error\n");
-+		amd64_decode_mem_cache_error(mci, info);
-+	} else if (TEST_BUS_ERROR(err_code)) {
-+		debugf1("Bus (Link/DRAM) error\n");
-+		amd64_decode_bus_error(mci, info);
-+	} else {
-+		/* shouldn't reach here! */
-+		amd64_mc_printk(mci, KERN_WARNING,
-+			     "%s(): unknown MCE error 0x%x\n", __func__,
-+			     err_code);
-+	}
-+
-+	ext_ec = EXTRACT_EXT_ERROR_CODE(regs->nbsl);
-+	amd64_mc_printk(mci, KERN_ERR,
-+		"ExtErr=(0x%x) %s\n", ext_ec, ext_msgs[ext_ec]);
-+
-+	if (((ext_ec >= F10_NBSL_EXT_ERR_CRC &&
-+			ext_ec <= F10_NBSL_EXT_ERR_TGT) ||
-+			(ext_ec == F10_NBSL_EXT_ERR_RMW)) &&
-+			EXTRACT_LDT_LINK(info->nbsh)) {
-+
-+		amd64_mc_printk(mci, KERN_ERR,
-+			"Error on hypertransport link: %s\n",
-+			htlink_msgs[
-+			EXTRACT_LDT_LINK(info->nbsh)]);
-+	}
-+
-+	/* Check the UE bit of the NB status high register, if set
-+	 * Generate some logs.
-+	 * If NOT a GART error, then process the event as a NO-INFO event.
-+	 * If it was a GART error, skip that process.
-+	 */
-+	if (regs->nbsh & K8_NBSH_UNCORRECTED_ERR) {
-+		amd64_mc_printk(mci, KERN_CRIT, "uncorrected error\n");
-+		if (!gart_tlb_error)
-+			edac_mc_handle_ue_no_info(mci, "UE bit is set\n");
-+	}
-+
-+	if (regs->nbsh & K8_NBSH_PCC)
-+		amd64_mc_printk(mci, KERN_CRIT,
-+			"PCC (processor context corrupt) set\n");
-+
-+	return 1;
++	*input_addr_min = base & ~mask;
++	*input_addr_max = base | mask | pvt->dcs_mask_notused;
 +}
 +
 +
++
++/*
++ * static u64 extract_error_address
++ *	Extract error address from MCA NB Address Low (section 3.6.4.5) and
++ *	MCA NB Address High (section 3.6.4.6) register values and return the
++ *	result. Address is located in the info structure (nbeah and nbeal)
++ *	the encoding is device specific.
++ */
++static u64 extract_error_address(struct mem_ctl_info *mci,
++			struct amd64_error_info_regs *info)
++{
++	struct amd64_pvt *pvt = mci->pvt_info;
++
++	return pvt->ops->get_error_address(mci, info);
++}
++
++
++/*
++ * error_address_to_page_and_offset
++ *
++ *	Map the Error address to a PAGE and PAGE OFFSET
++ */
++static inline void error_address_to_page_and_offset(u64 error_address,
++						    u32 *page, u32 *offset)
++{
++	*page = (u32) (error_address >> PAGE_SHIFT);
++	*offset = ((u32) error_address) & ~PAGE_MASK;
++}
++
++/*
++ * sys_addr_to_csrow
++ *
++ * 'sys_addr' is an error address (a SysAddr) extracted from the MCA NB Address
++ * Low (section 3.6.4.5) and MCA NB Address High (section 3.6.4.6) registers
++ * of a node that detected an ECC memory error.  mci represents the node that
++ * the error address maps to (possibly different from the node that detected
++ * the error).  Return the number of the csrow that sys_addr maps to, or -1 on
++ * error.
++ */
++static int sys_addr_to_csrow(struct mem_ctl_info *mci, u64 sys_addr)
++{
++	int csrow;
++
++	csrow = input_addr_to_csrow(mci, sys_addr_to_input_addr(mci, sys_addr));
++
++	if (csrow == -1)
++		amd64_mc_printk(mci, KERN_ERR,
++			     "Failed to translate InputAddr to csrow for "
++			     "address 0x%lx\n", (unsigned long)sys_addr);
++	return csrow;
++}
+ 
 -- 
 1.6.2.4
 
