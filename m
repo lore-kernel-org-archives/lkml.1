@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758628AbZD2Adw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbZD2Agp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758628AbZD2Adw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 20:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbZD2Adn
+	id S1758393AbZD2Agp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 20:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755716AbZD2Agd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 20:33:43 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45147 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754016AbZD2Adm (ORCPT
+	Tue, 28 Apr 2009 20:36:33 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:43049 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754677AbZD2Agc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 20:33:42 -0400
-Message-ID: <49F79FEF.80508@kernel.org>
-Date: Tue, 28 Apr 2009 17:31:43 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 28 Apr 2009 20:36:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=k53BYH/G4oF1E5jKg/6xXqUsE4A5cIRNwx4Lz5mlDD6uui3sdnmrvsolwQgTHaTgwk
+         W/L2o1xRUu+qidqzOxypUT8H69GWcaeXqjR2uOj7z64J0Idx3dzv0ctU1DuGWIcrSYvV
+         0iiKa1CN5BZLNwiJIDq4/jOo/8opQ2gWD/4oU=
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org
-Subject: Re: [x86] Strange 64-bit put_user ?
-References: <49F73D96.2090801@garzik.org>
-In-Reply-To: <49F73D96.2090801@garzik.org>
+In-Reply-To: <9b2b86520903270310x78193514l44b89ed6d3088cf8@mail.gmail.com>
+References: <4e5e476b0903260847m1de3e976ne20279df359176cf@mail.gmail.com>
+	 <9b2b86520903260958r790e5459r553308311522e88f@mail.gmail.com>
+	 <4e5e476b0903261454h1525c30chdc86dbcb1cf3cb5c@mail.gmail.com>
+	 <9b2b86520903270310x78193514l44b89ed6d3088cf8@mail.gmail.com>
+Date: Tue, 28 Apr 2009 20:36:30 -0400
+Message-ID: <48f7fe350904281736j5ecb6fa8l12426fc17f591551@mail.gmail.com>
+Subject: Re: "ACPI: EC: missing confirmations, switch off interrupt mode" 
+	wastes time on startup
+From: Ryan Hope <rmh3093@gmail.com>
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>, linux-kernel@vger.kernel.org,
+       linux acpi <linux-acpi@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> In arch/x86/include/asm/uaccess.h, if !CONFIG_X86_32, we see
-> 
->> #define __put_user_x8(x, ptr, __ret_pu) \
->>         ({ u64 __ret_pu; __put_user_x(8, x, ptr, __ret_pu);
->> (int)__ret_pu; })
-> 
-> which was preceded by
-> 
->> #define __put_user_x(size, x, ptr, __ret_pu)                    \
->>         asm volatile("call __put_user_" #size : "=a" (__ret_pu) \
->>                      :"0" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
-> 
-> 
-> My question, from an admitted inline asm newbie:
-> 
-> Why is 32-bit register 'ebx' being used for a 64-bit put_user?
-> 
-> And a dumb-question follow-up, probably easy, for any x86 expert:  why
-> are registers 'bl' and 'bx' not used for 8-bit and 16-bit put_user,
-> respectively?
-> 
+I am getting this on my Acer also...
 
-The answer is simply that gcc doesn't make a distinction between bl, bx,
-ebx, and rbx -- it considers it a single regioster which can contain an
-8-, 16-, 32- or 64-bit number.  In particular, gcc can't use ah, bh, ch,
-and dh as independent registers at all.
+-Ryan
 
-	-hpa
-
+On 3/27/09, Alan Jenkins <sourcejedi.lkml@googlemail.com> wrote:
+> On 3/26/09, Corrado Zoccolo <czoccolo@gmail.com> wrote:
+>> On Thu, Mar 26, 2009 at 5:58 PM, Alan Jenkins
+>> <sourcejedi.lkml@googlemail.com> wrote:
+>>> On 3/26/09, Corrado Zoccolo <czoccolo@gmail.com> wrote:
+>>>
+>>> Currently there is no option to force polling, sorry.  I'm _guessing_
+>>> this was a deliberate omission.  But I can sympathise that even 0.5s
+>>> boot delay is bad on a netbook.
+>>>
+>> Yes. Do you think that changing olpc_ec_timeout kernel parameter may
+>> help in getting the timeout sooner?
+>>
+>
+> No, that's something different.  There's no boot option to change the
+> timeout.
+>
+>>> Feel free to create a new bugzilla entry.  You can attach the full
+>>> output of dmesg, but acpidump is probably not required.  What would be
+>>> really helpful is if you could file on bugzilla, and attach a full
+>>> debug trace.  I.e. as well as the normal dmesg, attach the dmesg
+>>> output after recompiling with this change:
+>>>
+>>
+>> bug: http://bugzilla.kernel.org/show_bug.cgi?id=12949
+>> full debug dmesg: http://bugzilla.kernel.org/attachment.cgi?id=20695
+>
+> Great.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
