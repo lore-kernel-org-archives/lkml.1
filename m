@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760198AbZD2We7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762804AbZD2Wfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760198AbZD2We7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759749AbZD2WVl
+	id S1762804AbZD2Wfe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759810AbZD2WVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:41 -0400
-Received: from kroah.org ([198.145.64.141]:40532 "EHLO coco.kroah.org"
+	Wed, 29 Apr 2009 18:21:42 -0400
+Received: from kroah.org ([198.145.64.141]:40500 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759743AbZD2WVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:38 -0400
+	id S1758251AbZD2WVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:39 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:28 2009
-Message-Id: <20090429220928.432626483@mini.kroah.org>
+Message-Id: <20090429220928.583064537@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:35 -0700
+Date: Wed, 29 Apr 2009 15:07:36 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Oliver Neukum <oliver@neukum.org>,
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 36/58] USB: fix oops in cdc-wdm in case of malformed descriptors
+Subject: [patch 37/58] USB: usb-storage: augment unusual_devs entry for Simple Tech/Datafab
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=0079-USB-fix-oops-in-cdc-wdm-in-case-of-malformed-descri.patch
+Content-Disposition: inline; filename=0080-USB-usb-storage-augment-unusual_devs-entry-for-Sim.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,29 +39,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Oliver Neukum <oliver@neukum.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-upstream commit: e13c594f3a1fc2c78e7a20d1a07974f71e4b448f
+upstream commit: e4813eec8d47c8299d968bd5349dc881fa481c26
 
-cdc-wdm needs to ignore extremely malformed descriptors.
+This patch (as1227) adds the MAX_SECTORS_64 flag to the unusual_devs
+entry for the Simple Tech/Datafab controller.  This fixes Bugzilla
+#12882.
 
-Signed-off-by: Oliver Neukum <oliver@neukum.org>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Reported-and-tested-by: binbin <binbinsh@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/usb/class/cdc-wdm.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/usb/storage/unusual_devs.h |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/drivers/usb/class/cdc-wdm.c
-+++ b/drivers/usb/class/cdc-wdm.c
-@@ -641,7 +641,7 @@ next_desc:
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -1241,12 +1241,14 @@ UNUSUAL_DEV(  0x07c4, 0xa400, 0x0000, 0x
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_INQUIRY ),
  
- 	iface = &intf->altsetting[0];
- 	ep = &iface->endpoint[0].desc;
--	if (!usb_endpoint_is_int_in(ep)) {
-+	if (!ep || !usb_endpoint_is_int_in(ep)) {
- 		rv = -EINVAL;
- 		goto err;
- 	}
+-/* Reported by Rauch Wolke <rauchwolke@gmx.net> */
++/* Reported by Rauch Wolke <rauchwolke@gmx.net>
++ * and augmented by binbin <binbinsh@gmail.com> (Bugzilla #12882)
++ */
+ UNUSUAL_DEV(  0x07c4, 0xa4a5, 0x0000, 0xffff,
+ 		"Simple Tech/Datafab",
+ 		"CF+SM Reader",
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_IGNORE_RESIDUE ),
++		US_FL_IGNORE_RESIDUE | US_FL_MAX_SECTORS_64 ),
+ 
+ /* Casio QV 2x00/3x00/4000/8000 digital still cameras are not conformant
+  * to the USB storage specification in two ways:
 
 
