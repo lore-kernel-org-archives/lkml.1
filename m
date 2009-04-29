@@ -1,74 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758804AbZD2TPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbZD2TP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758804AbZD2TPo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 15:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757749AbZD2TP2
+	id S1759758AbZD2TP7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 15:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759051AbZD2TPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 15:15:28 -0400
-Received: from waste.org ([66.93.16.53]:34083 "EHLO waste.org"
+	Wed, 29 Apr 2009 15:15:39 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57515 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755861AbZD2TP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 15:15:27 -0400
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-From: Matt Mackall <mpm@selenic.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-In-Reply-To: <20090429080553.GA14838@localhost>
-References: <20090428010907.912554629@intel.com>
-	 <20090428014920.769723618@intel.com> <1240940961.938.451.camel@calx>
-	 <20090429080553.GA14838@localhost>
-Content-Type: text/plain
-Date: Wed, 29 Apr 2009 14:13:56 -0500
-Message-Id: <1241032436.938.1519.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
-Content-Transfer-Encoding: 7bit
+	id S1754410AbZD2TPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 15:15:37 -0400
+Date: Wed, 29 Apr 2009 21:15:33 +0200
+From: Jan Kara <jack@suse.cz>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH RFC] ext3 data=guarded v5
+Message-ID: <20090429191533.GB22936@duck.suse.cz>
+References: <1240941840.15136.44.camel@think.oraclecorp.com> <20090429085632.GA18273@duck.suse.cz> <1241014093.20099.28.camel@think.oraclecorp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241014093.20099.28.camel@think.oraclecorp.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-29 at 16:05 +0800, Wu Fengguang wrote:
-> On Wed, Apr 29, 2009 at 01:49:21AM +0800, Matt Mackall wrote:
-> > On Tue, 2009-04-28 at 09:09 +0800, Wu Fengguang wrote:
-> > > plain text document attachment (kpageflags-extending.patch)
-> > > Export 9 page flags in /proc/kpageflags, and 8 more for kernel developers.
+On Wed 29-04-09 10:08:13, Chris Mason wrote:
+> On Wed, 2009-04-29 at 10:56 +0200, Jan Kara wrote:
+> 
+> > > diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+> > > index fcfa243..1e90107 100644
+> > > --- a/fs/ext3/inode.c
+> > > +++ b/fs/ext3/inode.c
+> > > @@ -38,6 +38,7 @@
+> > >  #include <linux/bio.h>
+> > >  #include <linux/fiemap.h>
+> > >  #include <linux/namei.h>
+> > > +#include <linux/workqueue.h>
+> > >  #include "xattr.h"
+> > >  #include "acl.h"
+> > >  
+> > > @@ -179,6 +180,105 @@ static int ext3_journal_test_restart(handle_t *handle, struct inode *inode)
+> > >  }
+> > >  
+> > >  /*
+> > > + * after a data=guarded IO is done, we need to update the
+> > > + * disk i_size to reflect the data we've written.  If there are
+> > > + * no more ordered data extents left in the tree, we need to
+> >                                            ^^^^^^^^ the list
+> > > + * get rid of the orphan entry making sure the file's
+> > > + * block pointers match the i_size after a crash
+> > > + *
+> > > + * When we aren't in data=guarded mode, this just does an ext3_orphan_del.
+> > > + *
+> > > + * It returns the result of ext3_orphan_del.
+> > > + *
+> > > + * handle may be null if we are just cleaning up the orphan list in
+> > > + * memory.
+> > > + *
+> > > + * pass must_log == 1 when the inode must be logged in order to get
+> > > + * an i_size update on disk
+> > > + */
+> > > +static int ordered_orphan_del(handle_t *handle, struct inode *inode,
+> > > +			      int must_log)
+> > > +{
+> >   I'm afraid this function is racy.
+> > 1) We probably need i_mutex to protect against unlink happening in parallel
+> >    (after we check i_nlink but before we all ext3_orphan_del).
+> 
+> This would mean IO completion (clearing PG_writeback) would have to wait
+> on the inode mutex, which we can't quite do in O_SYNC and O_DIRECT.
+> But, what I can do is check i_nlink after the ext3_orphan_del call and
+> put the inode back on the orphan list if it has gone to zero.
+  Ah, good point. But doing it without i_mutex is icky. Strictly speaking
+you should have memory barriers in the code to make sure that you fetch
+a recent value of i_nlink (although other locking around those places
+probably does the work for you but *proving* the correctness is complex).
+  Hmm, I can't help but the idea of updating i_disksize and calling
+end_page_writeback() directly from end_io handler and doing just
+mark_inode_dirty() and orphan deletion from the workqueue still returns to
+me ;-) It would solve this problem as well. We just have to somehow pin the
+inode so that VFS cannot remove it before we manage to file i_disksize
+update into the transaction, which, I agree, has some issues as well as you
+wrote in some email... The main advantage of the current scheme probably is
+that PG_writeback bit naturally tells VM that we have still some pinned
+resources and so it throttles writers if needed... But still, I find my
+better ;).
+
+ 
+> > 2) We need superblock lock for the check
+> > list_empty(&EXT3_I(inode)->i_orphan).
+> 
+> How about I take the guarded spinlock when doing the list_add instead?
+> I'm trying to avoid the superblock lock as much as I can.
+  Well, ext3_orphan_del() takes it anyway so it's not like you introduce a
+new lock dependency. Actually in the code I wrote you have exactly as many
+superblock locking as there is now. So IMO this is not an issue if we
+somehow solve problem 1).
+
+> > 3) The function should rather have name ext3_guarded_orphan_del()... At
+> >   least "ordered" is really confusing (that's the case for a few other
+> >   structs / variables as well).
+> 
+> My long term plan was to replaced ordered with guarded, but I can rename
+> this one to guarded if you think it'll make it more clear.
+  Ah, OK. My feeling is that there's going to be at least some time of
+coexstence of these two modes (also because the perfomance numbers for
+ordered mode were considerably better in some loads) so I'd vote for
+clearly separating their names.
+
+> > >  	if (err)
+> > >  		ext3_journal_abort_handle(__func__, __func__,
+> > >  						bh, handle, err);
+> > > @@ -1231,6 +1440,89 @@ static int journal_dirty_data_fn(handle_t *handle, struct buffer_head *bh)
+> > >  	return 0;
+> > >  }
+> > >  
+> > > +/*
+> > > + * Walk the buffers in a page for data=guarded mode.  Buffers that
+> > > + * are not marked as datanew are ignored.
+> > > + *
+> > > + * New buffers outside i_size are sent to the data guarded code
+> > > + *
+> > > + * We must do the old data=ordered mode when filling holes in the
+> > > + * file, since i_size doesn't protect these at all.
+> > > + */
+> > > +static int journal_dirty_data_guarded_fn(handle_t *handle,
+> > > +					 struct buffer_head *bh)
+> > > +{
+> > > +	u64 offset = page_offset(bh->b_page) + bh_offset(bh);
+> > > +	struct inode *inode = bh->b_page->mapping->host;
+> > > +	int ret = 0;
+> > > +
+> > > +	/*
+> > > +	 * Write could have mapped the buffer but it didn't copy the data in
+> > > +	 * yet. So avoid filing such buffer into a transaction.
+> > > +	 */
+> > > +	if (!buffer_mapped(bh) || !buffer_uptodate(bh))
+> > > +		return 0;
+> > > +
+> > > +	if (test_clear_buffer_datanew(bh)) {
+> >   Hmm, if we just extend the file inside the block (e.g. from 100 bytes to
+> > 500 bytes), then we won't do the write guarded. But then if we crash before
+> > the block really gets written, user will see zeros at the end of file
+> > instead of data... 
+> 
+> You see something like this:
+> 
+> create(file)
+> write(file, 100 bytes) # create guarded IO
+> fsync(file)
+> write(file, 400 more bytes) # buffer isn't guarded, i_size goes to 500
+  Yes.
+
+> > I don't think we should let this happen so I'd think we
+> > have to guard all the extending writes regardless whether they allocate new
+> > block or not. 
+> 
+> My main concern was avoiding stale data from the disk after a crash,
+> zeros from partially written blocks are not as big a problem.  But,
+> you're right that we can easily avoid this, so I'll update the patch to
+> do all extending writes as guarded.
+  Yes, ext3 actually does some work to avoid exposing zeros at the
+end of file when we fail to copy in new data (source page was swapped out
+in the mean time) and we crash before we manage to swap the page in again.
+So it would be stupid to introduce the same problem here again...
+
+> > Which probably makes the buffer_datanew() flag unnecessary
+> > because we just guard all the buffers from max(start of write, i_size) to
+> > end of write.
+> 
+> But, we still want buffer_datanew to decide when writes that fill holes
+> should go through data=ordered.
+  See below.
+
+> > > +/*
+> > > + * Walk the buffers in a page for data=guarded mode for writepage.
+> > > + *
+> > > + * We must do the old data=ordered mode when filling holes in the
+> > > + * file, since i_size doesn't protect these at all.
+> > > + *
+> > > + * This is actually called after writepage is run and so we can't
+> > > + * trust anything other than the buffer head (which we have pinned).
+> > > + *
+> > > + * Any datanew buffer at writepage time is filling a hole, so we don't need
+> > > + * extra tests against the inode size.
+> > > + */
+> > > +static int journal_dirty_data_guarded_writepage_fn(handle_t *handle,
+> > > +					 struct buffer_head *bh)
+> > > +{
+> > > +	int ret = 0;
+> > > +
+> > > +	/*
+> > > +	 * Write could have mapped the buffer but it didn't copy the data in
+> > > +	 * yet. So avoid filing such buffer into a transaction.
+> > > +	 */
+> > > +	if (!buffer_mapped(bh) || !buffer_uptodate(bh))
+> > > +		return 0;
+> > > +
+> > > +	if (test_clear_buffer_datanew(bh))
+> > > +		ret = ext3_journal_dirty_data(handle, bh);
+> > > +	return ret;
+> > > +}
+> > > +
+> >   Hmm, here we use the datanew flag as well. But it's probably not worth
+> > keeping it just for this case. Ordering data in all cases when we get here
+> > should be fine since if the block is already allocated we should not get
+> > here (unless somebody managed to strip buffers from the page but kept the
+> > page but that should be rare enough).
 > > 
-> > My only concern with this patch is it knows a bit too much about SLUB
-> > internals (and perhaps not enough about SLOB, which also overloads
-> > flags). 
 > 
-> Yup. PG_private=PG_slob_free is not masked because SLOB actually does
-> not set PG_slab at all. I wonder if it's safe to do this change:
+> I'd keep it for the common case of filling holes with write(), so then
+> the code in writepage is gravy.
+  I'm not sure I understand. I wanted to suggest to change
+if (test_clear_buffer_datanew(bh))
+	ret = ext3_journal_dirty_data(handle, bh);
+  to
+ret = ext3_journal_dirty_data(handle, bh);
+
+So to always order the data. Actually the only case when we would get to
+journal_dirty_data_guarded_writepage_fn() and buffer_datanew() is not set
+would be when
+  a) blocksize < pagesize, page already has some blocks allocated and we
+   add more blocks to we fill the hole. Then with your code we would not order
+   all blocks in the page, with my code we would. But I don't think it makes a
+   big difference.
+  b) someone removed buffers from the page.
+In all other cases we should take the fast path in writepage and submit the
+IO without starting the transaction.
+  So IMO datanew can be removed...
+
+> > >  			ext3_journal_stop(handle);
+> > >  		}
+> > >  	}
+> > > @@ -1768,11 +2266,20 @@ static ssize_t ext3_direct_IO(int rw, struct kiocb *iocb,
+> > >  			ret = PTR_ERR(handle);
+> > >  			goto out;
+> > >  		}
+> > > +
+> > >  		if (inode->i_nlink)
+> > > -			ext3_orphan_del(handle, inode);
+> > > +			ordered_orphan_del(handle, inode, 0);
+> > > +
+> > >  		if (ret > 0) {
+> > >  			loff_t end = offset + ret;
+> > >  			if (end > inode->i_size) {
+> > > +				/* i_mutex keeps other file writes from
+> > > +				 * hopping in at this time, and we
+> > > +				 * know the O_DIRECT write just put all
+> > > +				 * those blocks on disk.  So, we can
+> > > +				 * safely update i_disksize here even
+> > > +				 * in guarded mode
+> > > +				 */
+> >   Not quite - there could be guarded blocks before the place where we did
+> > O_DIRECT write and we need to wait for them...
 > 
->         /* SLOB */
-> -       PG_slob_page = PG_active,
-> +       PG_slob_page = PG_slab,
->         PG_slob_free = PG_private,
+> Hmmm, O_DIRECT is only waiting on the blocks it actually wrote isn't it.
+> Good point, will fix.
+  Yes.
 
-Yep.
-
-> In the page-types output:
-> 
->          flags  page-count       MB  symbolic-flags                     long-symbolic-flags
-> 0x000800000040        7113       27  ______A_________________P____      active,private
-> 0x000000000040          66        0  ______A______________________      active
-> 
-> The above two lines are obviously for SLOB pages.  It indicates lots of
-> free SLOB pages. So my question is:
-
-Free here just means partially allocated.
-
-> - Do you have other means to get the nr_free_slobs info? (I found none in the code)
-> or
-> - Will exporting the SL*B overloaded flags going to help?
-
-Yes, it's useful.
-
+									Honza
 -- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
