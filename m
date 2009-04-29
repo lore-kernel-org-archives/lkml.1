@@ -1,155 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbZD2H3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbZD2H3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756510AbZD2H3A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 03:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbZD2H2r
+	id S1753285AbZD2H3W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 03:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755308AbZD2H2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 03:28:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53912 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752130AbZD2H2q (ORCPT
+	Wed, 29 Apr 2009 03:28:52 -0400
+Received: from mailrelay009.isp.belgacom.be ([195.238.6.176]:22319 "EHLO
+	mailrelay009.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754006AbZD2H2u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 03:28:46 -0400
-Date: Wed, 29 Apr 2009 00:20:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: linux kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       cl@linux.com, jesse.brandeburg@intel.com, netdev@vger.kernel.org,
-       haoki@redhat.com, mchan@broadcom.com, davidel@xmailserver.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
-Message-Id: <20090429002049.4bbc8105.akpm@linux-foundation.org>
-In-Reply-To: <49F71B63.8010503@cosmosbay.com>
-References: <alpine.DEB.1.10.0904241554100.29995@qirst.com>
-	<49F3308B.1030507@cosmosbay.com>
-	<20090426.020411.157511269.davem@davemloft.net>
-	<49F43B8F.2050907@cosmosbay.com>
-	<87ab60rh8t.fsf@basil.nowhere.org>
-	<49F71B63.8010503@cosmosbay.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 29 Apr 2009 03:28:50 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnMCAJue90nUpjDs/2dsb2JhbAAIzjCDdAU
+Message-ID: <49F801AF.1060404@246tNt.com>
+Date: Wed, 29 Apr 2009 09:28:47 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090118)
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc: Update MPC5xxx and Xilinx Virtex maintainer
+ entries
+References: <20090428165015.1410.47926.stgit@localhost.localdomain>
+In-Reply-To: <20090428165015.1410.47926.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009 17:06:11 +0200 Eric Dumazet <dada1@cosmosbay.com> wrote:
+Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> 
+> - Add git tree URLs
+> - Drop Sylvain from the 5xxx maintainers list.  He hasn't been active
+>   for a while now.
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-> [PATCH] poll: Avoid extra wakeups in select/poll
-> 
-> After introduction of keyed wakeups Davide Libenzi did on epoll, we
-> are able to avoid spurious wakeups in poll()/select() code too.
-> 
-> For example, typical use of poll()/select() is to wait for incoming
-> network frames on many sockets. But TX completion for UDP/TCP 
-> frames call sock_wfree() which in turn schedules thread.
-> 
-> When scheduled, thread does a full scan of all polled fds and
-> can sleep again, because nothing is really available. If number
-> of fds is large, this cause significant load.
-> 
-> This patch makes select()/poll() aware of keyed wakeups and
-> useless wakeups are avoided. This reduces number of context
-> switches by about 50% on some setups, and work performed
-> by sofirq handlers.
-> 
+Confirmed.
 
-Seems that this is a virtuous patch even though Christoph is struggling
-a bit to test it?
-
->  fs/select.c          |   28 +++++++++++++++++++++++++---
->  include/linux/poll.h |    3 +++
->  2 files changed, 28 insertions(+), 3 deletions(-)
+> ---
 > 
-> diff --git a/fs/select.c b/fs/select.c
-> index 0fe0e14..2708187 100644
-> --- a/fs/select.c
-> +++ b/fs/select.c
-> @@ -168,7 +168,7 @@ static struct poll_table_entry *poll_get_entry(struct poll_wqueues *p)
->  	return table->entry++;
->  }
+>  MAINTAINERS |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index ef03abe..4a8d367 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3434,11 +3434,10 @@ L:	linuxppc-dev@ozlabs.org
+>  S:	Maintained
 >  
-> -static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
-> +static int __pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
->  {
->  	struct poll_wqueues *pwq = wait->private;
->  	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
-> @@ -194,6 +194,16 @@ static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
->  	return default_wake_function(&dummy_wait, mode, sync, key);
->  }
+>  LINUX FOR POWERPC EMBEDDED MPC5XXX
+> -P:	Sylvain Munaut
+> -M:	tnt@246tNt.com
+>  P:	Grant Likely
+>  M:	grant.likely@secretlab.ca
+>  L:	linuxppc-dev@ozlabs.org
+> +T:	git git://git.secretlab.ca/git/linux-2.6.git
+>  S:	Maintained
 >  
-> +static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
-> +{
-> +	struct poll_table_entry *entry;
-> +
-> +	entry = container_of(wait, struct poll_table_entry, wait);
-> +	if (key && !((unsigned long)key & entry->key))
-> +		return 0;
-> +	return __pollwake(wait, mode, sync, key);
-> +}
-> +
->  /* Add a new entry */
->  static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
->  				poll_table *p)
-> @@ -205,6 +215,7 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
->  	get_file(filp);
->  	entry->filp = filp;
->  	entry->wait_address = wait_address;
-> +	entry->key = p->key;
->  	init_waitqueue_func_entry(&entry->wait, pollwake);
->  	entry->wait.private = pwq;
->  	add_wait_queue(wait_address, &entry->wait);
-> @@ -418,8 +429,16 @@ int do_select(int n, fd_set_bits *fds, struct timespec *end_time)
->  				if (file) {
->  					f_op = file->f_op;
->  					mask = DEFAULT_POLLMASK;
-> -					if (f_op && f_op->poll)
-> +					if (f_op && f_op->poll) {
-> +						if (wait) {
-> +							wait->key = POLLEX_SET;
-> +							if (in & bit)
-> +								wait->key |= POLLIN_SET;
-> +							if (out & bit)
-> +								wait->key |= POLLOUT_SET;
-> +						}
->  						mask = (*f_op->poll)(file, retval ? NULL : wait);
-> +					}
-
-<resizes xterm rather a lot>
-
-Can we (and should we) avoid all that manipulation of wait->key if
-`retval' is zero?
-
-> --- a/include/linux/poll.h
-> +++ b/include/linux/poll.h
-> @@ -32,6 +32,7 @@ typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_
+>  LINUX FOR POWERPC EMBEDDED PPC4XX
+> @@ -3456,6 +3455,7 @@ P:	Grant Likely
+>  M:	grant.likely@secretlab.ca
+>  W:	http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex
+>  L:	linuxppc-dev@ozlabs.org
+> +T:	git git://git.secretlab.ca/git/linux-2.6.git
+>  S:	Maintained
 >  
->  typedef struct poll_table_struct {
->  	poll_queue_proc qproc;
-> +	unsigned long key;
->  } poll_table;
->  
->  static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
-> @@ -43,10 +44,12 @@ static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_addres
->  static inline void init_poll_funcptr(poll_table *pt, poll_queue_proc qproc)
->  {
->  	pt->qproc = qproc;
-> +	pt->key   = ~0UL; /* all events enabled */
-
-I kind of prefer to use plain old -1 for the all-ones pattern.  Because
-it always just works, and doesn't send the reviewer off to check if the
-type was really u64 or something.
-
-It's a bit ugly though.
-
->  }
->  
->  struct poll_table_entry {
->  	struct file *filp;
-> +	unsigned long key;
->  	wait_queue_t wait;
->  	wait_queue_head_t *wait_address;
->  };
+>  LINUX FOR POWERPC EMBEDDED PPC8XX
+> 
 
