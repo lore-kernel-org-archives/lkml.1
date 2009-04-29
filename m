@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758403AbZD2FAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758804AbZD2FBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758403AbZD2FAi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 01:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755236AbZD2E7L
+	id S1758804AbZD2FBT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 01:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755803AbZD2E7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 00:59:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37643 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753090AbZD2E7I (ORCPT
+	Wed, 29 Apr 2009 00:59:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59495 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755061AbZD2E7O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 00:59:08 -0400
-Message-Id: <20090429045907.265491855@goodmis.org>
-References: <20090429044814.138790038@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 29 Apr 2009 00:48:18 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 4/5] tracing: have splice only copy full pages
-Content-Disposition: inline; filename=0004-tracing-have-splice-only-copy-full-pages.patch
+	Wed, 29 Apr 2009 00:59:14 -0400
+Date: Tue, 28 Apr 2009 21:50:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nathan Lynch <ntl@pobox.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kosaki.motohiro\@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "andi\@firstfloor.org" <andi@firstfloor.org>,
+       "mpm\@selenic.com" <mpm@selenic.com>,
+       "adobriyan\@gmail.com" <adobriyan@gmail.com>,
+       "linux-mm\@kvack.org" <linux-mm@kvack.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Chandra Seetharaman <sekharan@us.ibm.com>,
+       Olof Johansson <olof@lixom.net>, Helge Deller <deller@parisc-linux.org>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
+Message-Id: <20090428215050.67b7b4db.akpm@linux-foundation.org>
+In-Reply-To: <m38wlkxe9b.fsf@pobox.com>
+References: <20090428010907.912554629@intel.com>
+	<20090428014920.769723618@intel.com>
+	<20090428143244.4e424d36.akpm@linux-foundation.org>
+	<20090429023842.GA10266@localhost>
+	<m38wlkxe9b.fsf@pobox.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+On Tue, 28 Apr 2009 23:41:52 -0500 Nathan Lynch <ntl@pobox.com> wrote:
 
-Splice works with pages, it is much more effecient to use an entire
-page than to copy bits over several pages.
+> > CONFIG_DEBUG_KERNEL being enabled in distro kernels effectively means 
+> >
+> >         #ifdef CONFIG_DEBUG_KERNEL == #if 1
+> >
+> > as the following patch demos. Now it becomes obviously silly.
+> 
+> Sure, #if 1 is usually silly.  But if the point is that DEBUG_KERNEL is
+> not supposed to directly affect code generation, then I see two options
+> for powerpc:
+> 
+> - remove the #ifdef CONFIG_DEBUG_KERNEL guards from
+>   arch/powerpc/kernel/sysfs.c, unconditionally enabling the hid/ima
+>   sysfs attributes, or
+> 
+> - define a new config symbol which governs whether those attributes are
+>   enabled, and make it depend on DEBUG_KERNEL
 
-Using logdev to trace the internals of the splice mechanism, I was
-able to see that splice can be very aggressive. When tracing is
-occurring, and the reader caught up to the writer, and the writer
-is on the reader page, the reader will copy what is there into the
-splice page. Splice may iterate over several pages and if the
-writer is still writing to the page, the reader will keep copying
-bits to new pages to pass to userspace.
-
-This patch changes it to only pass data to userspace if the page
-is full (the writer has left the page). This has a small side effect
-that splice can not read a partial page, and must wait for the
-page to fill. This should not be an issue. If tracing has stopped,
-then a use of "read" will still read all of the page.
-
-[ Impact: better performance for ring buffer splice code ]
-
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 0aeb3b9..f5427e0 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3542,7 +3542,7 @@ tracing_buffers_splice_read(struct file *file, loff_t *ppos,
- 		}
- 
- 		r = ring_buffer_read_page(ref->buffer, &ref->page,
--					  len, info->cpu, 0);
-+					  len, info->cpu, 1);
- 		if (r < 0) {
- 			ring_buffer_free_read_page(ref->buffer,
- 						   ref->page);
--- 
-1.6.2.1
-
--- 
+yup.
