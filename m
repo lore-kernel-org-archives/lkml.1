@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbZD2IpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbZD2IuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbZD2IpK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 04:45:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZD2Io5
+	id S1752055AbZD2IuB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 04:50:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbZD2Itt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 04:44:57 -0400
-Received: from casper.infradead.org ([85.118.1.10]:33070 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751150AbZD2Io4 (ORCPT
+	Wed, 29 Apr 2009 04:49:49 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:36540 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750858AbZD2Itt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 04:44:56 -0400
-Subject: Re: [PATCH] mm: prevent divide error for small values of
- vm_dirty_bytes
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: David Rientjes <rientjes@google.com>, akpm@linux-foundation.org,
-       Dave Chinner <david@fromorbit.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1240993759-30787-1-git-send-email-righi.andrea@gmail.com>
-References: <1240993759-30787-1-git-send-email-righi.andrea@gmail.com>
-Content-Type: text/plain
-Date: Wed, 29 Apr 2009 10:44:36 +0200
-Message-Id: <1240994676.8021.83.camel@laptop>
+	Wed, 29 Apr 2009 04:49:49 -0400
+Date: Wed, 29 Apr 2009 10:51:57 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Tim Abbott <tabbott@MIT.EDU>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 02/13] x86, vmlinux.lds: unify header/footer
+Message-ID: <20090429085157.GA27820@uranus.ravnborg.org>
+References: <20090429073510.GA26386@uranus.ravnborg.org> <1240991249-27117-2-git-send-email-sam@ravnborg.org> <20090429080455.GE22129@elte.hu> <20090429081459.GA9369@elte.hu> <20090429082518.GB27386@uranus.ravnborg.org> <20090429083705.GB16680@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090429083705.GB16680@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-29 at 10:29 +0200, Andrea Righi wrote:
-> Avoid to set less than two pages for vm_dirty_byte: this is necessary to avoid
-> potential division by 0 (like the following) in get_dirty_limits().
-
-isn't changing the .extra1 in the sysctl table a better fix?
-
-> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-> ---
->  mm/page-writeback.c |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
+On Wed, Apr 29, 2009 at 10:37:05AM +0200, Ingo Molnar wrote:
 > 
-> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> index 30351f0..9d6c427 100644
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -213,6 +213,12 @@ int dirty_bytes_handler(struct ctl_table *table, int write,
->  	int ret;
->  
->  	ret = proc_doulongvec_minmax(table, write, filp, buffer, lenp, ppos);
-> +	/*
-> +	 * Do not allow to set less than two pages for vm_dirty_byte: this is
-> +	 * necessary to avoid division by 0 in get_dirty_limits().
-> +	 */
-> +	vm_dirty_bytes = max_t(typeof(vm_dirty_bytes),
-> +				vm_dirty_bytes, 2 * PAGE_SIZE);
->  	if (ret == 0 && write && vm_dirty_bytes != old_bytes) {
->  		update_completion_period();
->  		vm_dirty_ratio = 0;
+> * Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+> > On Wed, Apr 29, 2009 at 10:14:59AM +0200, Ingo Molnar wrote:
+> > > 
+> > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > 
+> > > > * Sam Ravnborg <sam@ravnborg.org> wrote:
+> > > > 
+> > > > > Merge everything except PHDRS and SECTIONS into
+> > > > > vmlinux.lds.S
+> > > > > No functional changes.
+> > > > > 
+> > > > > This include the removal of an ancient comment that
+> > > > > Martin Mares wrote this file.
+> > > > 
+> > > > > -/* ld script to make i386 Linux 
+> > > > > - * Written by Martin Mares <mj@atrey.karlin.mff.cuni.cz>;
+> > > > 
+> > > > That's a historic copyright notice in essence which we should not 
+> > > > remove - we should preserve that as:
+> > > > 
+> > > > > + Original 32-bit version written by Martin Mares <mj@atrey.karlin.mff.cuni.cz>
+> > > > 
+> > > > (preferably with a date-of-that-original-patch inserted as well)
+> > > 
+> > > I've added these credits:
+> > > 
+> > > +/*
+> > > + * ld script for the x86 kernel
+> > > + *
+> > > + * Historic 32-bit version written by Martin Mares <mj@atrey.karlin.mff.cuni.cz>
+> > > + *
+> > > + * Modernisation and unification done by Sam Ravnborg <sam@ravnborg.org>
+> > > 
+> > > is that fine to you?
+> > 
+> > OK.
+> > Albeit in general I do not add stuff like that myself.
+> 
+> You are too shy :) Can i also add:
+> 
+>   Portions Copyright (C) 2007-2009 Sam Ravnborg <sam@ravnborg.org>
+I really only did a unification - but if you think it is justified then OK.
+But this was not the simplest unification I have done.
 
+	Sam
