@@ -1,103 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbZD2HWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756283AbZD2HYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039AbZD2HWh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 03:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbZD2HW2
+	id S1756283AbZD2HYW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 03:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbZD2HYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 03:22:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55500 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750834AbZD2HW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 03:22:27 -0400
-Date: Wed, 29 Apr 2009 09:22:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 5/5] ring-buffer: fix printk output
-Message-ID: <20090429072208.GA22129@elte.hu>
-References: <20090429044814.138790038@goodmis.org> <20090429045908.394874083@goodmis.org> <20090428222024.8db50539.akpm@linux-foundation.org> <20090429054359.GA6148@elte.hu> <20090428225541.9ca61a12.akpm@linux-foundation.org> <20090429060955.GD6148@elte.hu> <20090428232000.6c3d4ce1.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090428232000.6c3d4ce1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 29 Apr 2009 03:24:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38535 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751294AbZD2HYL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 03:24:11 -0400
+Date: Wed, 29 Apr 2009 00:22:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
+Subject: Re: BUG: NULL pointer dereference in try_to_del_timer_sync()
+Message-Id: <20090429002204.2374a4bf.akpm@linux-foundation.org>
+In-Reply-To: <20090429070344.GA3019@buzzloop.caiaq.de>
+References: <20090428081416.GA22269@buzzloop.caiaq.de>
+	<20090428235551.862ee0d1.akpm@linux-foundation.org>
+	<20090429070344.GA3019@buzzloop.caiaq.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 29 Apr 2009 09:03:44 +0200 Daniel Mack <daniel@caiaq.de> wrote:
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 29 Apr 2009 08:09:55 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> On Tue, Apr 28, 2009 at 11:55:51PM -0700, Andrew Morton wrote:
+> > > [10982.240507] Call Trace:
+> > > [10982.240510]  [<c022f0b6>] ? try_to_del_timer_sync+0x15/0x4f
+> > > [10982.240516]  [<c022f515>] ? del_timer_sync+0x5c/0x6c
+> > > [10982.240521]  [<f86930c6>] ? ftdi_close+0xc5/0xe9 [ftdi_sio]
+> > > [10982.240540]  [<f85c0a32>] ? serial_close+0x86/0x12d [usbserial]
+> > > [10982.240553]  [<c03cb413>] ? tty_release_dev+0x176/0x3fa
+> > > [10982.240561]  [<c023aefb>] ? lock_hrtimer_base+0x18/0x33
+> > > [10982.240568]  [<c0244ca4>] ? trace_hardirqs_off+0xb/0xd
+> > > [10982.240576]  [<c051feed>] ? _spin_unlock_irqrestore+0x42/0x58
+> > > [10982.240582]  [<c028e4ff>] ? vfs_ioctl+0x22/0x69
+> > > [10982.240589]  [<c028e998>] ? do_vfs_ioctl+0x452/0x48b
+> > > [10982.240594]  [<c03cb6a9>] ? tty_release+0x12/0x1c
+> > > [10982.240598]  [<c02843ab>] ? __fput+0xca/0x175
+> > > [10982.240604]  [<c028446f>] ? fput+0x19/0x1b
+> > > [10982.240608]  [<c0281b1d>] ? filp_close+0x51/0x5b
+> > > [10982.240612]  [<c0281b91>] ? sys_close+0x6a/0xa4
+> > > [10982.240616]  [<c02029c8>] ? sysenter_do_call+0x12/0x36
+> > > [10982.240623] Code: 40 f7 d0 83 e0 f2 5b c9 c3 55 31 c9 31 d2 64 a1 00 f0 73 c0 89 e5 e8 05 6f 00 00 c9 c3 55 89 e5 57 89 c7 56 53 83 ec 04 89 55 f0 <8b> 5f 14 89 de 83 e6 fe 74 22 89 f0 e8 8b 11 2f 00 8b 55 f0 89 
+> > > [10982.240675] EIP: [<c022eefd>] lock_timer_base+0xe/0x3e SS:ESP 0068:ea10fe44
+> > > [10982.240681] CR2: 0000000000000090
+> > > [10982.240685] ---[ end trace ca8d2f0f6a72aeeb ]---
+> > 
+> > usb-serial went splat.
+> > 
+> > Do you think that this is a post-2.6.29 regression?
 > 
-> > 
-> > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > On Wed, 29 Apr 2009 07:43:59 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> > > 
-> > > > 
-> > > > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > > 
-> > > > > On Wed, 29 Apr 2009 00:48:19 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
-> > > > > 
-> > > > > > -	printk_once(KERN_WARNING "Tracing recursion: depth[%d]:"
-> > > > > > +	printk_once(KERN_WARNING "Tracing recursion: depth[%ld]:"
-> > > > > 
-> > > > > hrmph.  I didn't know that printk_once() existed, and I should 
-> > > > > have known.  I wonder how many other people don't know.
-> > > > 
-> > > > Was posted to linux-next@vger.kernel.org.
-> > > 
-> > > Well no wonder I didn't know about it.
-> > 
-> > I (too?) think it's counter-productive that the linux-next list is 
-> > split out of lkml. I constantly fall into that trap: i get a 
-> > bugreport against one of our trees, i see that there's vger in the 
-> > Cc: list and mistake it for being Cc:-ed to lkml (all our trees are 
-> > developed on lkml and most of the bugreports come Cc:-ed to lkml) 
-> > but in reality it's Cc:-ed to linux-next which has a much smaller 
-> > audience. (which audience apparently does not even include you)
-> > 
-> > If this email list fragmentation and the resoluting loss of 
-> > information bothers you too then please ask Stephen to move 
-> > linux-next mails to lkml (i've Cc:-ed Stephen) - it's not like it's 
-> > actually something separate ... today's linux-next messages are 
-> > tomorrow's lkml messages. Moving linux-next mails to lkml would 
-> > nicely improve the S/N ratio on lkml.
-> > 
+> Yes, I think so. usb-serial is used here very often for development, and
+> I never saw this particular problem.
 > 
-> eh.  Just auto-add lkml to tipbot-commit emails?
 
-Yeah - the tip-commits-bot already has such a feature and we are 
-making use of it - but this commit predates it. So it was posted to 
-linux-next and the tip-commits list.
-
-My larger point remains, about possibly embedding linux-next into 
-lkml. I couldnt think of a single linux-next mail that isnt relevant 
-to lkml. It's all about commits that are destined for upstream in 
-0-2.5 months.
-
-> printk_once() is racy on smp and preempt btw ;)
-
-Like WARN_ONCE() and WARN_ON_ONCE(). It's really an "oh crap" 
-facility, not for normal kernel messages.
-
-Do we want to complicate them with locking and preemption - or 
-should we just concentrate on getting the "oh crap" message out to 
-the syslog (before it's possibly too late to get anything out)?
-
-I have no strong opinion about it - but i tend to like the simpler 
-method most. printk + stack dumps themselves arent atomic to begin 
-with.
-
-	Ingo
+OK, thanks, I'll ask Rafael to add it to the list.
