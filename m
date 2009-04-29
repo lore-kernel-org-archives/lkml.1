@@ -1,89 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758500AbZD2JX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758836AbZD2JYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758500AbZD2JX3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 05:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756571AbZD2JWw
+	id S1758836AbZD2JYU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 05:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZD2JXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 05:22:52 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:46336 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758408AbZD2JWv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 05:22:51 -0400
-Message-ID: <49F81BC3.2050805@cosmosbay.com>
-Date: Wed, 29 Apr 2009 11:20:03 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Wed, 29 Apr 2009 05:23:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55946 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751633AbZD2JXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 05:23:53 -0400
+Date: Wed, 29 Apr 2009 11:22:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, cl@linux.com,
+       jesse.brandeburg@intel.com, netdev@vger.kernel.org, haoki@redhat.com,
+       mchan@broadcom.com, davidel@xmailserver.org
+Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
+Message-ID: <20090429092240.GA30403@elte.hu>
+References: <alpine.DEB.1.10.0904241554100.29995@qirst.com> <49F3308B.1030507@cosmosbay.com> <20090426.020411.157511269.davem@davemloft.net> <49F43B8F.2050907@cosmosbay.com> <87ab60rh8t.fsf@basil.nowhere.org> <49F71B63.8010503@cosmosbay.com> <20090429002049.4bbc8105.akpm@linux-foundation.org> <20090429073539.GR27382@one.firstfloor.org>
 MIME-Version: 1.0
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Andrew Gallatin <gallatin@myri.com>, linux-kernel@vger.kernel.org,
-       rick.jones2@hp.com, brice@myri.com, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sched: account system time properly
-References: <49F078FA.6010507@myri.com>	<20090428163004.46733752.akpm@linux-foundation.org>	<49F7DF44.8090907@cosmosbay.com>	<49F805C9.9070303@cosmosbay.com> <20090429100840.77359cae@skybase>
-In-Reply-To: <20090429100840.77359cae@skybase>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 29 Apr 2009 11:20:04 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090429073539.GR27382@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Schwidefsky a écrit :
-> On Wed, 29 Apr 2009 09:46:17 +0200
-> Eric Dumazet <dada1@cosmosbay.com> wrote:
-> 
->> Eric Dumazet a écrit :
->>> Andrew Morton a écrit :
->>>
->>> So, if IRQs are interrupting idle task, I guess if (p != rq->idle) will be false.
->>>
-> 
-> If an IRQ interrupts the idle task the tick is supposed to be accounted
-> as an idle tick. Only if the IRQ interrupted the system while it has
-> been in hardirq or softirq processing then it should be accounted as
-> system tick.
-> 
->> Maybe following patch is needed ?
->>
->> [PATCH] sched: account system time properly
->>
->> When idle task is interrupted by an IRQ, time accounting considers CPU is idle,
->> even while it should account for hard or softirq.
->>
->> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
->>
->> diff --git a/kernel/sched.c b/kernel/sched.c
->> index b902e58..26efa47 100644
->> --- a/kernel/sched.c
->> +++ b/kernel/sched.c
->> @@ -4732,7 +4732,7 @@ void account_process_tick(struct task_struct *p, int user_tick)
->>  
->>  	if (user_tick)
->>  		account_user_time(p, one_jiffy, one_jiffy_scaled);
->> -	else if (p != rq->idle)
->> +	else if ((p != rq->idle) || (irq_count() != HARDIRQ_OFFSET))
->>  		account_system_time(p, HARDIRQ_OFFSET, one_jiffy,
->>  				    one_jiffy_scaled);
->>  	else
-> 
-> That patch makes a lot of sense to me. Does it fix the problem?
-> 
 
-Yes it does, on my machine at least :
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-11:18:48 AM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest   %idle
-11:18:58 AM  all    0.00    0.00    0.00    0.00    0.21    0.69    0.00    0.00   99.10
-11:18:58 AM    0    0.00    0.00    0.00    0.00    1.70    5.50    0.00    0.00   92.80  << HERE >>
-11:18:58 AM    1    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
-11:18:58 AM    2    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
-11:18:58 AM    3    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
-11:18:58 AM    4    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
-11:18:58 AM    5    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
-11:18:58 AM    6    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
-11:18:58 AM    7    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+> > Seems that this is a virtuous patch even though Christoph is struggling
+> > a bit to test it?
+> 
+> The main drawback is that the select/poll data structures will get 
+> larger. That could cause regression in theory. [...]
 
+Current size of struct poll_table_entry is 0x38 on 64-bit kernels. 
+Adding the key will make it 0x40 - which is not only a power of two 
+but also matches cache line size on most modern CPUs.
 
+So the size of this structure is ideal now and arithmetics on the 
+poll table have become simpler as well.
 
+So the patch has my ack:
+
+  Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
