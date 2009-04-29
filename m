@@ -1,71 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbZD2IP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbZD2IRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755377AbZD2IP1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 04:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZD2IPJ
+	id S1756593AbZD2IRX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 04:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbZD2IRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 04:15:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44458 "EHLO mx3.mail.elte.hu"
+	Wed, 29 Apr 2009 04:17:09 -0400
+Received: from mga14.intel.com ([143.182.124.37]:43063 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751288AbZD2IPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 04:15:07 -0400
-Date: Wed, 29 Apr 2009 10:14:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Tim Abbott <tabbott@MIT.EDU>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 02/13] x86, vmlinux.lds: unify header/footer
-Message-ID: <20090429081459.GA9369@elte.hu>
-References: <20090429073510.GA26386@uranus.ravnborg.org> <1240991249-27117-2-git-send-email-sam@ravnborg.org> <20090429080455.GE22129@elte.hu>
+	id S1751396AbZD2IRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 04:17:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,265,1239001200"; 
+   d="scan'208";a="137154469"
+Date: Wed, 29 Apr 2009 16:16:16 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Andi Kleen <andi@firstfloor.org>, hugh@veritas.com, npiggin@suse.de,
+       riel@redhat.com, lee.schermerhorn@hp.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH] [13/16] POISON: The high level memory error handler in
+	the VM II
+Message-ID: <20090429081616.GA8339@localhost>
+References: <20090407509.382219156@firstfloor.org> <20090407151010.E72A91D0471@basil.firstfloor.org> <1239210239.28688.15.camel@think.oraclecorp.com> <20090409072949.GF14687@one.firstfloor.org> <20090409075805.GG14687@one.firstfloor.org> <1239283829.23150.34.camel@think.oraclecorp.com> <20090409140257.GI14687@one.firstfloor.org> <1239287859.23150.57.camel@think.oraclecorp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090429080455.GE22129@elte.hu>
+In-Reply-To: <1239287859.23150.57.camel@think.oraclecorp.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> 
-> * Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > Merge everything except PHDRS and SECTIONS into
-> > vmlinux.lds.S
-> > No functional changes.
+On Thu, Apr 09, 2009 at 10:37:39AM -0400, Chris Mason wrote:
+> On Thu, 2009-04-09 at 16:02 +0200, Andi Kleen wrote:
+> > On Thu, Apr 09, 2009 at 09:30:29AM -0400, Chris Mason wrote:
+> > > > Is that a correct assumption?
+> > > 
+> > > Yes, the page won't become writeback when you're holding the page lock.
+> > > But, the FS usually thinks of try_to_releasepage as a polite request.
+> > > It might fail internally for a bunch of reasons.
+> > > 
+> > > To make things even more fun, the page won't become writeback magically,
+> > > but ext3 and reiser maintain lists of buffer heads for data=ordered, and
+> > > they do the data=ordered IO on the buffer heads directly.  writepage is
+> > > never called and the page lock is never taken, but the buffer heads go
+> > > to disk.  I don't think any of the other filesystems do it this way.
 > > 
-> > This include the removal of an ancient comment that
-> > Martin Mares wrote this file.
+> > Ok, so do you think my code handles this correctly?
 > 
-> > -/* ld script to make i386 Linux 
-> > - * Written by Martin Mares <mj@atrey.karlin.mff.cuni.cz>;
+> Even though try_to_releasepage only checks page_writeback() the lower
+> filesystems all bail on dirty pages or dirty buffers (see the checks
+> done by try_to_free_buffers).
 > 
-> That's a historic copyright notice in essence which we should not 
-> remove - we should preserve that as:
+> It looks like the only way we have to clean a page and all the buffers
+> in it is the invalidatepage call.  But that doesn't return success or
+> failure, so maybe invalidatepage followed by releasepage?
 > 
-> > + Original 32-bit version written by Martin Mares <mj@atrey.karlin.mff.cuni.cz>
+> I'll have to read harder next week, the FS invalidatepage may expect
+> truncate to be the only caller.
+
+If direct de-dirty is hard for some pages, how about just ignore them?
+There are the PG_writeback pages anyway. We can inject code to
+intercept them at the last stage of IO request dispatching.
+
+Some perceivable problems and solutions are
+1) the intercepting overheads could be costly => inject code at runtime.
+2) there are cases that the dirty page could be copied for IO:
+   2.1) jbd2 has two copy-out cases => should be rare. just ignore them?
+     2.1.1) do_get_write_access(): buffer sits in two active commits
+     2.1.2) jbd2_journal_write_metadata_buffer(): buffer happens to start
+            with JBD2_MAGIC_NUMBER
+   2.2) btrfs have to read page for compress/encryption
+     Chris: is btrfs_zlib_compress_pages() a good place for detecting
+     poison pages? Or is it necessary at all for btrfs?(ie. it's
+     already relatively easy to de-dirty btrfs pages.)
+   2.3) maybe more cases...
+
+> > 
+> > > If we really want the page gone, we'll have to tell the FS
+> > > drop-this-or-else....sorry, its some ugly stuff.
+> > 
+> > I would like to give a very strong hint at least. If it fails
+> > we can still ignore it, but it will likely have negative consequences later.
+> > 
 > 
-> (preferably with a date-of-that-original-patch inserted as well)
+> Nod.
+> 
+> > > 
+> > > The good news is, it is pretty rare.  I wouldn't hold up the whole patch
+> > 
+> > You mean pages with Private bit are rare? Are you suggesting to just
+> > ignore those? How common is it to have Private pages which are not
+> > locked by someone else?
+> > 
+> 
+> PagePrivate is very common.  try_to_releasepage failing on a clean page
+> without the writeback bit set and without dirty/locked buffers will be
+> pretty rare.
 
-I've added these credits:
+Yup. btrfs seems to tag most(if not all) dirty pages with PG_private.
+While ext4 won't.
 
-+/*
-+ * ld script for the x86 kernel
-+ *
-+ * Historic 32-bit version written by Martin Mares <mj@atrey.karlin.mff.cuni.cz>
-+ *
-+ * Modernisation and unification done by Sam Ravnborg <sam@ravnborg.org>
+Thanks,
+Fengguang
 
-is that fine to you?
-
-	Ingo
