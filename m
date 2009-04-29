@@ -1,59 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbZD2NLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760092AbZD2NL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758597AbZD2NLi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 09:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759094AbZD2NHr
+	id S1760092AbZD2NL4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 09:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759123AbZD2NHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 09:07:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44440 "EHLO mx2.mail.elte.hu"
+	Wed, 29 Apr 2009 09:07:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44652 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759063AbZD2NHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 09:07:45 -0400
-Date: Wed, 29 Apr 2009 15:07:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: linux kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       cl@linux.com, jesse.brandeburg@intel.com, netdev@vger.kernel.org,
-       haoki@redhat.com, mchan@broadcom.com, davidel@xmailserver.org
-Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
-Message-ID: <20090429130706.GA22449@elte.hu>
-References: <alpine.DEB.1.10.0904241554100.29995@qirst.com> <49F3308B.1030507@cosmosbay.com> <20090426.020411.157511269.davem@davemloft.net> <49F43B8F.2050907@cosmosbay.com> <87ab60rh8t.fsf@basil.nowhere.org> <49F71B63.8010503@cosmosbay.com> <20090429091637.GA29874@elte.hu> <49F81FB9.50504@cosmosbay.com> <20090429102734.GC2373@elte.hu> <49F84833.5000908@cosmosbay.com>
+	id S1759093AbZD2NHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 09:07:47 -0400
+Date: Wed, 29 Apr 2009 13:07:06 GMT
+From: tip-bot for Robert Richter <robert.richter@amd.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, robert.richter@amd.com, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, robert.richter@amd.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1241002046-8832-21-git-send-email-robert.richter@amd.com>
+References: <1241002046-8832-21-git-send-email-robert.richter@amd.com>
+Subject: [tip:perfcounters/core] perf_counter, x86: consistent use of type int for counter index
+Message-ID: <tip-6f00cada07bb5da7f751929d3173494dcc5446cc@git.kernel.org>
+Git-Commit-ID: 6f00cada07bb5da7f751929d3173494dcc5446cc
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <49F84833.5000908@cosmosbay.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 13:07:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  6f00cada07bb5da7f751929d3173494dcc5446cc
+Gitweb:     http://git.kernel.org/tip/6f00cada07bb5da7f751929d3173494dcc5446cc
+Author:     Robert Richter <robert.richter@amd.com>
+AuthorDate: Wed, 29 Apr 2009 12:47:17 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 29 Apr 2009 14:51:10 +0200
 
-* Eric Dumazet <dada1@cosmosbay.com> wrote:
+perf_counter, x86: consistent use of type int for counter index
 
-> > should be inline perhaps?
-> 
-> Well, I thought current practice was not using inline for such 
-> trivial functions, as gcc already inlines them anyway.
+The type of counter index is sometimes implemented as unsigned
+int. This patch changes this to have a consistent usage of int.
 
-ok.
+[ Impact: cleanup ]
 
-how about:
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1241002046-8832-21-git-send-email-robert.richter@amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> > [ I'd still suggest to factor out the guts of do_select() as 
-> >   its nesting is excessive that hurts its reviewability quite a 
-> >   bit - but now your patch does not make the situation any 
-> >   worse. ]
 
-We tend to shop for drive-by cleanups in visibly ugly code whenever 
-someone wants to touch that code. Could go into a separate patch.
+---
+ arch/x86/kernel/cpu/perf_counter.c |    8 ++++----
+ include/linux/perf_counter.h       |    2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-	Ingo
+diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+index f7fd4a3..d8beebe 100644
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@ -459,7 +459,7 @@ static void hw_perf_disable(int idx, u64 config)
+ 
+ static inline void
+ __pmc_fixed_disable(struct perf_counter *counter,
+-		    struct hw_perf_counter *hwc, unsigned int __idx)
++		    struct hw_perf_counter *hwc, int __idx)
+ {
+ 	int idx = __idx - X86_PMC_IDX_FIXED;
+ 	u64 ctrl_val, mask;
+@@ -474,7 +474,7 @@ __pmc_fixed_disable(struct perf_counter *counter,
+ 
+ static inline void
+ __x86_pmu_disable(struct perf_counter *counter,
+-		  struct hw_perf_counter *hwc, unsigned int idx)
++		  struct hw_perf_counter *hwc, int idx)
+ {
+ 	if (unlikely(hwc->config_base == MSR_ARCH_PERFMON_FIXED_CTR_CTRL))
+ 		__pmc_fixed_disable(counter, hwc, idx);
+@@ -523,7 +523,7 @@ x86_perf_counter_set_period(struct perf_counter *counter,
+ 
+ static inline void
+ __pmc_fixed_enable(struct perf_counter *counter,
+-		   struct hw_perf_counter *hwc, unsigned int __idx)
++		   struct hw_perf_counter *hwc, int __idx)
+ {
+ 	int idx = __idx - X86_PMC_IDX_FIXED;
+ 	u64 ctrl_val, bits, mask;
+@@ -691,7 +691,7 @@ static void x86_pmu_disable(struct perf_counter *counter)
+ {
+ 	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
+ 	struct hw_perf_counter *hwc = &counter->hw;
+-	unsigned int idx = hwc->idx;
++	int idx = hwc->idx;
+ 
+ 	/*
+ 	 * Must be done before we disable, otherwise the nmi handler
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index c3db52d..41aed42 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -318,7 +318,7 @@ struct hw_perf_counter {
+ 			unsigned long			config_base;
+ 			unsigned long			counter_base;
+ 			int				nmi;
+-			unsigned int			idx;
++			int				idx;
+ 		};
+ 		union { /* software */
+ 			atomic64_t			count;
