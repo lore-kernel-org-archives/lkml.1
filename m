@@ -1,113 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbZD2Pq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbZD2Prg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754638AbZD2Pq3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 11:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZD2PqU
+	id S1757653AbZD2Prg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 11:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZD2Pr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 11:46:20 -0400
-Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:39735 "EHLO
-	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754410AbZD2PqT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 11:46:19 -0400
-Subject: Re: Q: selinux_bprm_committed_creds() && signals/do_wait
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Oleg Nesterov <oleg@redhat.com>, James Morris <jmorris@namei.org>,
-       David Howells <dhowells@redhat.com>, Eric Paris <eparis@parisplace.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090429154701.2e5b15f6@lxorguk.ukuu.org.uk>
-References: <20090428223025.GA11997@redhat.com>
-	 <alpine.LRH.2.00.0904291024001.5246@tundra.namei.org>
-	 <20090429065809.GA477@redhat.com>
-	 <1241007630.18249.141.camel@localhost.localdomain>
-	 <20090429125606.GA27901@redhat.com>
-	 <1241011014.18249.192.camel@localhost.localdomain>
-	 <20090429154701.2e5b15f6@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 29 Apr 2009 11:39:27 -0400
-Message-Id: <1241019567.18249.248.camel@localhost.localdomain>
+	Wed, 29 Apr 2009 11:47:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57366 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751957AbZD2Pr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 11:47:27 -0400
+Date: Wed, 29 Apr 2009 11:47:08 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org, tytso@mit.edu,
+       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
+Subject: [PATCH] vmscan: evict use-once pages first (v2)
+Message-ID: <20090429114708.66114c03@cuia.bos.redhat.com>
+In-Reply-To: <1240987349.4512.18.camel@laptop>
+References: <20090428044426.GA5035@eskimo.com>
+	<20090428192907.556f3a34@bree.surriel.com>
+	<1240987349.4512.18.camel@laptop>
+Organization: Red Hat, Inc
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-29 at 15:47 +0100, Alan Cox wrote:
-> > > For example, a user does "nohup setuid_app". Now, why should we change
-> > > SIG_IGN to SIG_DFL for SIGHUP? This makes setuid_app more "vulnerable"
-> > > to SIGHUP, not more "protected". Confused.
-> > 
-> > Not if the app was depending on the default handler for SIGHUP to
-> > correctly handle vhangup().  The point is that we don't necessarily
-> > trust the caller to define the handling behavior for signals in the
-> > callee.  If we trust the caller to do so, then we can grant the
-> > corresponding permission.
-> 
-> You are changing standards defined behaviour - so apps that rely on
-> correct behaviour maybe misbehave or become vulnerable in ways not
-> anticipated
-> 
-> A classic example here is SIGPIPE. What you are doing by dropping to
-> default signal behaviour is breaking various inetd style setups that know
-> the child will inherit SIGPIPE as SIG_IGN and therefore will cleanly
-> process network connection loss.
-> 
-> Instead the child will now suffer immediate termination and not
-> have a chance to clean up. 
-> 
-> So mucking with signal masks is actually not improving security - it's
-> randomly changing things - and randomly changing things to disagree with
-> the spec is a very very bad idea IMHO as you will harm correctly written
-> code.
-> 
-> > But we still have the problem of the caller setting up the signal
-> > handlers or blocked signal mask prior to exec'ing the privileged
-> > program, right
-> 
-> No.
-> 
-> A signal handler function is cleared across a setuid exec so you can't
-> set an address and jump to it in the new binary. K&R thought of that
-> one ;)
+When the file LRU lists are dominated by streaming IO pages,
+evict those pages first, before considering evicting other
+pages.
 
-Yes, I know - I was just referring to setting to SIG_IGN.
+This should be safe from deadlocks or performance problems
+because only three things can happen to an inactive file page:
+1) referenced twice and promoted to the active list
+2) evicted by the pageout code
+3) under IO, after which it will get evicted or promoted
 
-> A signal mask is inherited and this is *required to be so*. Changing it
-> breaks stuff and may itself introduce security problems.
+The pages freed in this way can either be reused for streaming
+IO, or allocated for something else. If the pages are used for
+streaming IO, this pageout pattern continues. Otherwise, we will
+fall back to the normal pageout pattern.
 
-Which is why it is subject to a permission check, so it can in fact be
-allowed when desired.
+Signed-off-by: Rik van Riel <riel@redhat.com>
+---
+On Wed, 29 Apr 2009 08:42:29 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-> Any setuid app has to be reasonably robust because it may get very
-> strange file handles, very strange signal masks, quotas, resource limits
-> and other stuff. Signals are just one trivial detail.
-> 
-> Clearing a lot of these is hard as you don't know what the resource
-> limits etc for the setuid target are and you don't want a pair of setuid
-> user A and user B apps co-operating to evade things.
+> Isn't there a hole where LRU_*_FILE << LRU_*_ANON and we now stop
+> shrinking INACTIVE_ANON even though it makes sense to.
 
-Control over inherited file descriptors was present in SELinux from the
-beginning.  Control over signal state and resource limits was introduced
-a little later (2.6.1, 2.6.2), partly in response to a specific attack,
-and based on consultations with Roland and others.  There was a review
-done of inherited state and what we could reasonably do to control it.
+Peter, after looking at this again, I believe that the get_scan_ratio
+logic should take care of protecting the anonymous pages, so we can
+get away with this following, less intrusive patch.
 
-> The correct way to do most of this is not to use setuid apps run by the
-> user but to pass authority information to service daemons that run
-> services within a known non-user influencable environment in the first
-> place... the very daemons that randomly clearing the SIG_IGN on SIGPIPE
-> will break !
+Elladan, does this smaller patch still work as expected?
 
-That has some advantages, yes, and in that situation you can allow the
-inheritance of state to occur between the caller and the callee domains
-in the policy.  But it carries its own set of challenges as well, and
-improving the boundaries in the exec-based model is nonetheless
-worthwhile.
-
--- 
-Stephen Smalley
-National Security Agency
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index eac9577..4471dcb 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1489,6 +1489,18 @@ static void shrink_zone(int priority, struct zone *zone,
+ 			nr[l] = scan;
+ 	}
+ 
++	/*
++	 * When the system is doing streaming IO, memory pressure here
++	 * ensures that active file pages get deactivated, until more
++	 * than half of the file pages are on the inactive list.
++	 *
++	 * Once we get to that situation, protect the system's working
++	 * set from being evicted by disabling active file page aging.
++	 * The logic in get_scan_ratio protects anonymous pages.
++	 */
++	if (nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE])
++		nr[LRU_ACTIVE_FILE] = 0;
++
+ 	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
+ 					nr[LRU_INACTIVE_FILE]) {
+ 		for_each_evictable_lru(l) {
 
