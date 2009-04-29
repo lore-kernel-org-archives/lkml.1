@@ -1,100 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbZD2Mrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbZD2MsJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753827AbZD2Mrq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 08:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZD2Mre
+	id S1754821AbZD2MsJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 08:48:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755064AbZD2Mrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 08:47:34 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58539 "EHLO mx2.redhat.com"
+	Wed, 29 Apr 2009 08:47:39 -0400
+Received: from gate.crashing.org ([63.228.1.57]:52622 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750834AbZD2Mrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 08:47:33 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: [PATCH] crypto: don't raise alarm for no ctr(aes*) tests in fips mode
-Date: Wed, 29 Apr 2009 08:46:47 -0400
-User-Agent: KMail/1.11.2 (Linux/2.6.29.1-102.fc11.x86_64; KDE/4.2.2; x86_64; ; )
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Herbert Xu <herbert@gondor.apana.org.au>
-References: <200904282118.22823.jarod@redhat.com> <20090429105035.GC7227@hmsreliant.think-freely.org>
-In-Reply-To: <20090429105035.GC7227@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S1754196AbZD2Mri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 08:47:38 -0400
+Cc: "Jeff Haran" <jharan@Brocade.COM>, <linux-kernel@vger.kernel.org>,
+       Dave Jiang <djiang@mvista.com>,
+       Doug Thompson <dougthompson@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Kumar Gala <galak@gate.crashing.org>, linuxppc-dev@ozlabs.org
+Message-Id: <66D3881A-A16D-4051-9073-1FF28C4F4742@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090429003704.1c37d6e1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904290846.48267.jarod@redhat.com>
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: bug in drivers/edac/mpc85xx_edac.c:mpc85xx_mc_check()
+Date: Wed, 29 Apr 2009 07:46:37 -0500
+References: <57AC2FA1761300418C7AB8F3EA493C9702E319DB@HQ-EXCH-5.corp.brocade.com> <20090429003704.1c37d6e1.akpm@linux-foundation.org>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 April 2009 06:50:35 Neil Horman wrote:
-> On Tue, Apr 28, 2009 at 09:18:22PM -0400, Jarod Wilson wrote:
-> > Per the NIST AESAVS document, Appendix A[1], it isn't possible to
-> > have automated self-tests for counter-mode AES, but people are
-> > misled to believe something is wrong by the message that says there
-> > is no test for ctr(aes). Simply suppress all 'no test for ctr(aes*'
-> > messages if fips_enabled is set to avoid confusion.
-> > 
-> > Dependent on earlier patch 'crypto: catch base cipher self-test
-> > failures in fips mode', which adds the test_done label.
-> > 
-> > [1] http://csrc.nist.gov/groups/STM/cavp/documents/aes/AESAVS.pdf
-> > 
-> > Signed-off-by: Jarod Wilson <jarod@redhat.com>
-> > 
-> > ---
-> >  crypto/testmgr.c |   11 +++++++++++
-> >  1 files changed, 11 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-> > index 5a50416..39ffa69 100644
-> > --- a/crypto/testmgr.c
-> > +++ b/crypto/testmgr.c
-> > @@ -2134,6 +2134,17 @@ int alg_test(const char *driver, const char *alg, u32 type, u32 mask)
-> >  				      type, mask);
-> >  	goto test_done;
-> >  notest:
-> > +	/*
-> > +	 * Per NIST AESAVS[1], it isn't possible to have automated self-tests
-> > +	 * for counter mode aes vectors, they have to be covered by ecb mode
-> > +	 * and code inspection. The ecb mode tests are trigger above in the
-> > +	 * CRYPTO_ALG_TYPE_CIPHER section. Suppress warnings about missing
-> > +	 * ctr tests if we're in fips mode to avoid confusion.
-> > +	 *
-> > +	 * [1] http://csrc.nist.gov/groups/STM/cavp/documents/aes/AESAVS.pdf
-> > +	 */
-> > +	if (fips_enabled && !strncmp(alg, "ctr(aes", 7))
-> > +		goto test_done;
-> >  	printk(KERN_INFO "alg: No test for %s (%s)\n", alg, driver);
-> >  test_done:
-> >  	if (fips_enabled && rc)
-> > 
-> From the way I read the document, anything operating in a counter mode will have
-> an unpredictable output (given the counter operation isn't specified).  While
-> the above works, I'm not sure that it fully covers the various ccm modes
-> available (ccm_base and rfc4309).
 
-I believe Appendix A only applies for straight up counter-mode aes,
-ccm_base and rfc4309 actually have well-defined counter operations.
-We've already got self-tests for ccm(aes) and a pending patch for
-rfc4309(ccm(aes), and since they don't start w/'ctr(aes', they
-wouldn't be caught by that (admittedly hacky) check even if we
-didn't have test vectors for them.
+On Apr 29, 2009, at 2:37 AM, Andrew Morton wrote:
 
-> Perhaps instead it would be better to add a
-> TFM mask flag indicating that the selected transform included a unpredictable
-> component or counter input (marking the alg as being unsuitable for automatic
-> testing without knoweldge of the inner workings of that counter.  Then you could
-> just test for that flag?
+> Let's cc the suitable people.
+>
+> On Tue, 28 Apr 2009 18:23:42 -0700 "Jeff Haran" <jharan@Brocade.COM>  
+> wrote:
+>
+>> Hi,
+>>
+>> Recent versions of this function contain the following snippets:
+>>
+>>    if (err_detect & DDR_EDE_SBE)
+>>        edac_mc_handle_ce(mci, pfn, err_addr & PAGE_MASK,
+>>                  syndrome, row_index, 0, mci->ctl_name);
+>>
+>>    if (err_detect & DDR_EDE_MBE)
+>>        edac_mc_handle_ue(mci, pfn, err_addr & PAGE_MASK,
+>>                  row_index, mci->ctl_name);
+>>
+>> I am pretty sure the references to PAGE_MASK should be proceeded by a
+>> tilda, as in:
+>>
+>>    if (err_detect & DDR_EDE_SBE)
+>>        edac_mc_handle_ce(mci, pfn, err_addr & ~PAGE_MASK,
+>>                  syndrome, row_index, 0, mci->ctl_name);
+>>
+>>    if (err_detect & DDR_EDE_MBE)
+>>        edac_mc_handle_ue(mci, pfn, err_addr & ~PAGE_MASK,
+>>                  row_index, mci->ctl_name);
+>>
+>
+> Could well be.  PAGE_MASK is very easy to get wrong.  I've _never_
+> trusted my own memory of it and I always have to go back to the
+> definition when reviewing code :(
 
-Yeah, I thought about a flag too, but it seemed potentially a lot of
-overhead for what might well be restricted to ctr(aes*). It might've
-been relevant for ctr(des3_ede) or ctr(des), but they're not on the
-fips approved algo/mode list, so I took the easy way out. I'm game to
-go the flag route if need be though.
+This should ~PAGE_MASK to get the offset into the page.
 
--- 
-Jarod Wilson
-jarod@redhat.com
+>> Much as I would like to submit a tested patch like the rest of the
+>> world, I find myself in the situation where the only Freescale target
+>> system I have to test on is running a 3 year old kernel (2.6.14),  
+>> which
+>> preceeds the introduction of EDAC driver support, at least for
+>> Freescale. So the best I can do is borrow from the new EDAC driver  
+>> and
+>> backport it to the old kernel.
+>>
+>> But I have learned a few things in this process and can thus share  
+>> what
+>> I've learned as it may be of help to the EDAC driver developers:
+>>
+>> 1) Before you read the Freescale 8548 CAPTURE_ADDRESS register, you  
+>> want
+>> to read CAPTURE_ATTRIBUTES first and make sure the VLD bit (least
+>> significant bit in the register) is set or else the data in
+>> CAPTURE_ADDRESS may not be yet valid.
+>>
+>> 2) When you are done scrubbing the memory with the single bit  
+>> error, you
+>> want to write 0 to CAPTURE_ATTRIBUTES so as to clear VLD and thus  
+>> setup
+>> the ECC capture logic to capture the next single bit error.
+
+This is a correct description based on how FSL error HW works.
+
+- k
+
