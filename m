@@ -1,86 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbZD2NiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753969AbZD2Nnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754253AbZD2NiU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 09:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbZD2NiK
+	id S1753969AbZD2Nnb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 09:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZD2NnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 09:38:10 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:50351 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbZD2NiJ convert rfc822-to-8bit (ORCPT
+	Wed, 29 Apr 2009 09:43:22 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:61710 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbZD2NnV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 09:38:09 -0400
+	Wed, 29 Apr 2009 09:43:21 -0400
+Date: Wed, 29 Apr 2009 09:43:19 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/4] workqueue_trace: Add max execution time mesurement
+ for per worklet
+In-Reply-To: <20090429133342.GA5987@nowhere>
+Message-ID: <alpine.DEB.2.00.0904290942000.8066@gandalf.stny.rr.com>
+References: <49F6DFB5.2040901@cn.fujitsu.com> <20090429000616.f7e72b73.akpm@linux-foundation.org> <20090429133342.GA5987@nowhere>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <49F801AF.1060404@246tNt.com>
-References: <20090428165015.1410.47926.stgit@localhost.localdomain> 
-	<49F801AF.1060404@246tNt.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 29 Apr 2009 07:37:48 -0600
-Message-ID: <fa686aa40904290637g6a28e941p806b35e919f65270@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Update MPC5xxx and Xilinx Virtex maintainer 
-	entries
-To: Sylvain Munaut <tnt@246tnt.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 1:28 AM, Sylvain Munaut <tnt@246tnt.com> wrote:
-> Grant Likely wrote:
->> From: Grant Likely <grant.likely@secretlab.ca>
->>
->> - Add git tree URLs
->> - Drop Sylvain from the 5xxx maintainers list.  He hasn't been active
->>   for a while now.
->>
->> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->
-> Confirmed.
 
-Thanks Sylvain.
+On Wed, 29 Apr 2009, Frederic Weisbecker wrote:
 
-g.
+> On Wed, Apr 29, 2009 at 12:06:16AM -0700, Andrew Morton wrote:
+> > What is the meaning of M_EXECus?  Mean execution time in microseconds,
+> > I assume?  I wonder if that is sufficiently high resolution nowadays.
+> 
+> 
+> It's the maximum execution time encountered for a given worklet.
+> I also have a small patch, about ready, to get the average.
+> 
+>  
+> > You'll note that all the functions are reported as "foo+0x0/0xN". 
+> > There is a way of suppressing the unneeded and unuseful "+0x0/0xN",
+> > but I forget what it is and the comments over lib/vsprintf.c:pointer()
+> > didn't help.  I think it's %pS.
+> 
+> 
+> I don't know any way to perform this.
+> %pF and %pS will act pretty much the same, except:
+> 
+> Extract from lib/vsprintf.c:
+> 
+>  * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
+>  * function pointers are really function descriptors, which contain a
+>  * pointer to the real address.
+> 
+> But the output formatting is the same: address, offset, size, modname.
 
->
->> ---
->>
->>  MAINTAINERS |    4 ++--
->>  1 files changed, 2 insertions(+), 2 deletions(-)
->>
->>
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index ef03abe..4a8d367 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -3434,11 +3434,10 @@ L:    linuxppc-dev@ozlabs.org
->>  S:   Maintained
->>
->>  LINUX FOR POWERPC EMBEDDED MPC5XXX
->> -P:   Sylvain Munaut
->> -M:   tnt@246tNt.com
->>  P:   Grant Likely
->>  M:   grant.likely@secretlab.ca
->>  L:   linuxppc-dev@ozlabs.org
->> +T:   git git://git.secretlab.ca/git/linux-2.6.git
->>  S:   Maintained
->>
->>  LINUX FOR POWERPC EMBEDDED PPC4XX
->> @@ -3456,6 +3455,7 @@ P:      Grant Likely
->>  M:   grant.likely@secretlab.ca
->>  W:   http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex
->>  L:   linuxppc-dev@ozlabs.org
->> +T:   git git://git.secretlab.ca/git/linux-2.6.git
->>  S:   Maintained
->>
->>  LINUX FOR POWERPC EMBEDDED PPC8XX
->>
->
->
+I could not find any way to remove it, thus I wrote my own version of %pF 
+to get rid of the +0x0/0xN notations in the output for ftrace.
 
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-- Steve
