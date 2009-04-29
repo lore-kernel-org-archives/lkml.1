@@ -1,121 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758836AbZD2SKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759530AbZD2SKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758836AbZD2SKW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 14:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbZD2SKH
+	id S1759530AbZD2SKl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 14:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756446AbZD2SKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 14:10:07 -0400
-Received: from mga14.intel.com ([143.182.124.37]:8570 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752866AbZD2SKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 14:10:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,267,1239001200"; 
-   d="scan'208";a="137377491"
-Subject: Re: Mainline kernel OLTP performance update
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Ma, Chinang" <chinang.ma@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
-       "Recalde, Luis F" <luis.f.recalde@intel.com>,
-       "Nelson, Doug" <doug.nelson@intel.com>,
-       "Cheng, Wu-sun" <wu-sun.cheng@intel.com>,
-       "Prickett, Terry O" <terry.o.prickett@intel.com>,
-       "Shunmuganathan, Rajalakshmi" <rajalakshmi.shunmuganathan@intel.com>,
-       "Garg, Anil K" <anil.k.garg@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1241027196.20099.42.camel@think.oraclecorp.com>
-References: <D7C42C27E6CB1E4D8CBDF2F81EA92A2603459F3D6A@azsmsx501.amr.corp.intel.com>
-	 <20090429002930.b786348b.akpm@linux-foundation.org>
-	 <D7C42C27E6CB1E4D8CBDF2F81EA92A260345A63F45@azsmsx501.amr.corp.intel.com>
-	 <20090429090706.bc5f462f.akpm@linux-foundation.org>
-	 <1241022336.8021.573.camel@laptop>
-	 <1241027196.20099.42.camel@think.oraclecorp.com>
-Content-Type: text/plain
-Date: Wed, 29 Apr 2009 11:06:53 -0700
-Message-Id: <1241028413.4529.9247.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	Wed, 29 Apr 2009 14:10:13 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:60128 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757346AbZD2SKM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 14:10:12 -0400
+Message-ID: <49F897F4.6080006@oracle.com>
+Date: Wed, 29 Apr 2009 11:09:56 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Jason Baron <jbaron@redhat.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       rostedt@goodmis.org, fweisbec@gmail.com, mathieu.desnoyers@polymtl.ca,
+       wcohen@redhat.com
+Subject: Re: [PATCH 2/3] add new tracepoints docbook
+References: <200904291745.n3THjTUe019540@ns3.rdu.redhat.com>
+In-Reply-To: <200904291745.n3THjTUe019540@ns3.rdu.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010205.49F897AB.000D:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-29 at 10:46 -0700, Chris Mason wrote:
-> On Wed, 2009-04-29 at 18:25 +0200, Peter Zijlstra wrote:
-> > On Wed, 2009-04-29 at 09:07 -0700, Andrew Morton wrote:
-> > > On Wed, 29 Apr 2009 08:48:19 -0700 "Styner, Douglas W" <douglas.w.styner@intel.com> wrote:
-> > > 
-> > > > >-----Original Message-----
-> > > > >From: Andrew Morton [mailto:akpm@linux-foundation.org]
-> > > > >Sent: Wednesday, April 29, 2009 12:30 AM
-> > > > >To: Styner, Douglas W
-> > > > >Cc: linux-kernel@vger.kernel.org; Tripathi, Sharad C;
-> > > > >arjan@linux.intel.com; Wilcox, Matthew R; Kleen, Andi; Siddha, Suresh B;
-> > > > >Ma, Chinang; Wang, Peter Xihong; Nueckel, Hubert; Recalde, Luis F; Nelson,
-> > > > >Doug; Cheng, Wu-sun; Prickett, Terry O; Shunmuganathan, Rajalakshmi; Garg,
-> > > > >Anil K; Chilukuri, Harita; chris.mason@oracle.com
-> > > > >Subject: Re: Mainline kernel OLTP performance update
-> > > > >
-> > > > >On Tue, 28 Apr 2009 10:08:22 -0700 "Styner, Douglas W"
-> > > > ><douglas.w.styner@intel.com> wrote:
-> > > > >
-> > > > >> Summary: Measured the mainline kernel from kernel.org (2.6.30-rc3).
-> > > > >>
-> > > > >> The regression for 2.6.30-rc3 against the baseline, 2.6.24.2 is 1.91%.
-> > > > >Oprofile reports 71.1626% user, 28.8295% system.
-> > > > >>
-> > > > >> Linux OLTP Performance summary
-> > > > >> Kernel#            Speedup(x)   Intr/s  CtxSw/s us%     sys%    idle%
-> > > > >iowait%
-> > > > >> 2.6.24.2                1.000   22106   43709   75      24      0       0
-> > > > >> 2.6.30-rc3              0.981   30645   43027   75      25      0       0
-> > > > >
-> > > > >The main difference there is the interrupt frequency.  Do we know which
-> > > > >interrupt source(s) caused this?
-> > > >
-> > > > Our analysis of the interrupts shows that rescheduling interrupts are
-> > > > up 2.2x from 2.6.24.2 --> 2.6.30-rc3.  Qla2xxx interrupts are roughly
-> > > > the same.
-> > > 
-> > > (top-posting repaired)
-> > > 
-> > > OK, thanks.  Seems odd that the rescheduling interrupt rate increased
-> > > while the context-switch rate actually fell a couple of percent.
-> > > 
-> > > This came up a few weeks ago and iirc Peter was mainly involved, and I
-> > > don't believe that anything conclusive ended up happening.  Peter,
-> > > could you please remind us of (and summarise) the story here?
-> > 
-> > I've had several reports about the resched-ipi going in overdrive, but
-> > nobody bothered to bisect it, nor have I yet done so -- no clear ideas
-> > on why it is doing so.
-> > 
-> > I'll put it somewhere higher on the todo list.
-> > 
+Jason Baron wrote:
+> Add tracepoint docbook. This will help us document and understand
+> what tracepoints are in the kernel. Since there are multiple
+> macros, and files that contain tracepoints.
 > 
-> One cause of them in the past was the ondemand cpufreq module.  It got
-> fixed up for my laptop workload at least starting w/2.6.29, but it might
-> make sense to try without ondemand if you're running it.
+> Signed-off-by: Jason Baron <jbaron@redhat.com>
 > 
+> ---
+>  Documentation/DocBook/Makefile        |    3 +-
+>  Documentation/DocBook/tracepoint.tmpl |   84 +++++++++++++++++++++++++++++++++
+>  2 files changed, 86 insertions(+), 1 deletions(-)
+>  create mode 100644 Documentation/DocBook/tracepoint.tmpl
+> 
+> diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
+> index 8918a32..4c8f4d6 100644
+> --- a/Documentation/DocBook/Makefile
+> +++ b/Documentation/DocBook/Makefile
+> @@ -13,7 +13,8 @@ DOCBOOKS := z8530book.xml mcabook.xml device-drivers.xml \
+>  	    gadget.xml libata.xml mtdnand.xml librs.xml rapidio.xml \
+>  	    genericirq.xml s390-drivers.xml uio-howto.xml scsi.xml \
+>  	    mac80211.xml debugobjects.xml sh.xml regulator.xml \
+> -	    alsa-driver-api.xml writing-an-alsa-driver.xml
+> +	    alsa-driver-api.xml writing-an-alsa-driver.xml \
+> +	    tracepoint.xml
+>  
+>  ###
+>  # The build process is as follows (targets):
+> diff --git a/Documentation/DocBook/tracepoint.tmpl b/Documentation/DocBook/tracepoint.tmpl
+> new file mode 100644
+> index 0000000..2639a8b
+> --- /dev/null
+> +++ b/Documentation/DocBook/tracepoint.tmpl
+> @@ -0,0 +1,84 @@
+> +<?xml version="1.0" encoding="UTF-8"?>
+> +<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+> +	"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" []>
+> +
+> +<book id="Tracepoints">
+> + <bookinfo>
+> +  <title>The Linux Kernel Tracepoint API</title>
+> +
+> +  <authorgroup>
+> +   <author>
+> +    <firstname>Jason</firstname>
+> +    <surname>Baron</surname>
+> +    <affiliation>
+> +     <address>
+> +      <email>jbaron@redhat.com</email>
+> +     </address>
+> +    </affiliation>
+> +   </author>
+> +  </authorgroup>
+> +
+> +  <legalnotice>
+> +   <para>
+> +     This documentation is free software; you can redistribute
+> +     it and/or modify it under the terms of the GNU General Public
+> +     License as published by the Free Software Foundation; either
+> +     version 2 of the License, or (at your option) any later
+> +     version.
+> +   </para>
+> +
+> +   <para>
+> +     This program is distributed in the hope that it will be
+> +     useful, but WITHOUT ANY WARRANTY; without even the implied
+> +     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> +     See the GNU General Public License for more details.
+> +   </para>
+> +
+> +   <para>
+> +     You should have received a copy of the GNU General Public
+> +     License along with this program; if not, write to the Free
+> +     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+> +     MA 02111-1307 USA
+> +   </para>
+> +
+> +   <para>
+> +     For more details see the file COPYING in the source
+> +     distribution of Linux.
+> +   </para>
+> +  </legalnotice>
+> + </bookinfo>
+> +
+> + <toc></toc>
+> +  <chapter id="intro">
+> +   <title>Introduction</title>
+> +   <para>
+> +     Tracepoints are static probe points that are located in strategic points
+> +     throughout the kernel. 'Probes' register/unregister with tracepoints
+> +     via a callback mechanism. The 'probes' are strictly typed functions that
+> +     are passed a unique set of parameters defined by each tracepoint.
+> +   </para>
+> +
+> +   <para>
+> +     From this simple callback mechanism, 'probes' can be used to profile, debug,
+> +     and understand kernel behavior. There are a number of tools that provide a
+> +     framework for using 'probes'. These tools include Systemtap, ftrace, and
+> +     LTTng.
+> +   </para>
+> +
+> +   <para>
+> +     Tracepoints are defined in a number of header files via various macros. Thus,
+> +     the purpose of this document is to provide a clear accounting of the available
+> +     tracepoints. The intention is to understand not only what tracepoints are
+> +     available but also to understand where future tracepoints might be added.
+> +   </para>
+> +
+> +   <para>
+> +     The api presented has functions of the form:
 
-Output of
-# grep . /sys/devices/system/cpu/cpu0/cpufreq/*
-can tell us whether P-state software coordination is the reason behind
-excessive resched IPIs. Look for ondemand being the current_governor and
-affected_cpus containing more than one CPU in it.
+	    API                  please
 
-Thanks,
-Venki
+otherwise, looks good.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
+
+> +     <function>trace_tracepointname(function parameters)</function>. These are the
+> +     tracepoints callbacks that are found throughout the code. Registering and
+> +     unregistering probes with these callback sites is covered in the
+> +     <filename>Documentation/trace/*</filename> directory.
+> +   </para>
+> +  </chapter>
+> +
+> +</book>
+
+
+-- 
+~Randy
