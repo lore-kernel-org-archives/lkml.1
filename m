@@ -1,149 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbZD2TK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbZD2TLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756769AbZD2TK5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 15:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZD2TKs
+	id S1758110AbZD2TLW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 15:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZD2TLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 15:10:48 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:23466 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753015AbZD2TKr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 15:10:47 -0400
-Message-ID: <49F8A5FE.9010305@oracle.com>
-Date: Wed, 29 Apr 2009 12:09:50 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 29 Apr 2009 15:11:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57287 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755094AbZD2TLH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 15:11:07 -0400
+Date: Wed, 29 Apr 2009 21:10:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/4] workqueue_trace: Add max execution time mesurement
+	for per worklet
+Message-ID: <20090429191027.GE13139@elte.hu>
+References: <49F6DFB5.2040901@cn.fujitsu.com> <20090429000616.f7e72b73.akpm@linux-foundation.org> <20090429133342.GA5987@nowhere> <alpine.DEB.2.00.0904290944290.8066@gandalf.stny.rr.com> <20090429083654.7ecf0100.akpm@linux-foundation.org> <20090429154913.GA6406@nowhere>
 MIME-Version: 1.0
-To: Jason Baron <jbaron@redhat.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       rostedt@goodmis.org, fweisbec@gmail.com, mathieu.desnoyers@polymtl.ca,
-       wcohen@redhat.com
-Subject: Re: [PATCH 3/3] add irq tracepoint documentation
-References: <200904291745.n3THjX3g019550@ns3.rdu.redhat.com>
-In-Reply-To: <200904291745.n3THjX3g019550@ns3.rdu.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010204.49F8A5B4.00F3:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090429154913.GA6406@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason Baron wrote:
-> Document irqs for the newly created docbook.
+
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> > > > And someone came with a better idea, IMO:
+> > > > 
+> > > > http://lkml.org/lkml/2009/4/17/105
+> > > 
+> > > Note,
+> > > 
+> > > If these ever do get merged, I would be happy to convert ftrace to use 
+> > > them to replace my version.
+> > 
+> > I spose I could use magic powers to sneak it into .30?
 > 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
-> 
-> ---
->  Documentation/DocBook/tracepoint.tmpl |    5 +++
->  include/trace/events/irq.h            |   46 ++++++++++++++++++++++++++++++---
->  2 files changed, 47 insertions(+), 4 deletions(-)
-> 
-> diff --git a/Documentation/DocBook/tracepoint.tmpl b/Documentation/DocBook/tracepoint.tmpl
-> index 2639a8b..8b7fb48 100644
-> --- a/Documentation/DocBook/tracepoint.tmpl
-> +++ b/Documentation/DocBook/tracepoint.tmpl
-> @@ -81,4 +81,9 @@
->     </para>
->    </chapter>
->  
-> +  <chapter id="irq">
-> +   <title>IRQ</title>
-> +!Iinclude/trace/events/irq.h
-> +  </chapter>
-> +
->  </book>
-> diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
-> index 7686864..bb5bbec 100644
-> --- a/include/trace/events/irq.h
-> +++ b/include/trace/events/irq.h
-> @@ -7,8 +7,16 @@
->  #undef TRACE_SYSTEM
->  #define TRACE_SYSTEM irq
->  
-> -/*
-> - * Tracepoint for entry of interrupt handler:
-> +/**
-> + * irq_handler_entry - called immediately before the irq action handler
-> + * @irq: irq number
-> + * @action: pointer to struct irqaction
-> + *
-> + * The struct irqaction pointed to by the 'action' parameter contains
+> Thanks :)
 
-Parameters are usually written as:           @action
-etc....
+Andrew: if you do that then please pick up the commit i queued up in 
+tip:core/printk.
 
-Otherwise looks good.  Thanks.
-
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-
-
-> + * various information about the handler, including the device name,
-> + * action->name, and the device id, action->dev_id. When used in
-> + * conjunction with the irq_handler_exit tracepoint, we can figure
-> + * out irq handler latencies.
->   */
->  TRACE_EVENT(irq_handler_entry,
->  
-> @@ -29,8 +37,16 @@ TRACE_EVENT(irq_handler_entry,
->  	TP_printk("irq=%d handler=%s", __entry->irq, __get_str(name))
->  );
->  
-> -/*
-> - * Tracepoint for return of an interrupt handler:
-> +/**
-> + * irq_handler_exit - called immediately after the irq action handler returns
-> + * @irq: irq number
-> + * @action: pointer to struct irqaction
-> + * @ret: return value
-> + *
-> + * If the 'ret' value is set to IRQ_HANDLED, then we know that the corresponding
-> + * action->handler scuccessully handled this irq. Otherwise, the irq might be
-> + * a shared irq line, or the irq was not handled successfully. Can be used in
-> + * conjunction with the irq_handler_entry to understand irq handler latencies.
->   */
->  TRACE_EVENT(irq_handler_exit,
->  
-> @@ -52,6 +68,17 @@ TRACE_EVENT(irq_handler_exit,
->  		  __entry->irq, __entry->ret ? "handled" : "unhandled")
->  );
->  
-> +/**
-> + * softirq_entry - called immediately before the softirq handler
-> + * @h: pointer to struct softirq_action
-> + * @vec: pointer to first struct softirq_action in softirq_vec array
-> + *
-> + * The 'h' parameter, contains a pointer to the struct softirq_action
-> + * which has a pointer to the action handler that is called. By subtracting
-> + * the 'vec' pointer from the 'h' pointer, we can determine the softirq
-> + * number. Also, when used in combination with the softirq_exit tracepoint
-> + * we can determine the softirq latency.
-> + */
->  TRACE_EVENT(softirq_entry,
->  
->  	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-> @@ -71,6 +98,17 @@ TRACE_EVENT(softirq_entry,
->  	TP_printk("softirq=%d action=%s", __entry->vec, __get_str(name))
->  );
->  
-> +/**
-> + * softirq_exit - called immediately after the softirq handler returns
-> + * @h: pointer to struct softirq_action
-> + * @vec: pointer to first struct softirq_action in softirq_vec array
-> + *
-> + * The 'h' parameter contains a pointer to the struct softirq_action
-> + * that has handled the softirq. By subtracting the 'vec' pointer from
-> + * the 'h' pointer, we can determine the softirq number. Also, when used in
-> + * combination with the softirq_exit tracepoint we can determine the softirq
-> + * latency.
-> + */
->  TRACE_EVENT(softirq_exit,
->  
->  	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-
-
--- 
-~Randy
+	Ingo
