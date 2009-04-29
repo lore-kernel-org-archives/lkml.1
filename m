@@ -1,204 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759460AbZD2B2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbZD2BcC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759460AbZD2B2a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 21:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758065AbZD2B2U
+	id S1759329AbZD2BcC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 21:32:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758826AbZD2Bbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 21:28:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60092 "EHLO mx2.redhat.com"
+	Tue, 28 Apr 2009 21:31:52 -0400
+Received: from mga02.intel.com ([134.134.136.20]:65192 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755990AbZD2B2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 21:28:19 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: linux-crypto@vger.kernel.org
-Subject: [PATCH 1/2] add infrastructure for ansi_cprng self-tests
-Date: Tue, 28 Apr 2009 21:28:13 -0400
-User-Agent: KMail/1.11.2 (Linux/2.6.27.21-170.2.56.fc10.x86_64; KDE/4.2.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
-       Neil Horman <nhorman@tuxdriver.com>
-References: <200904282127.33190.jarod@redhat.com>
-In-Reply-To: <200904282127.33190.jarod@redhat.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904282128.14153.jarod@redhat.com>
+	id S1758211AbZD2Bbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 21:31:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,263,1239001200"; 
+   d="asc'?scan'208";a="510791914"
+Subject: Re: [PATCH -v2] x86: MCE: Re-implement MCE log ring buffer as
+ per-CPU ring buffer
+From: Huang Ying <ying.huang@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <87eivdqdsq.fsf@basil.nowhere.org>
+References: <1240910841.6842.1163.camel@yhuang-dev.sh.intel.com>
+	 <87eivdqdsq.fsf@basil.nowhere.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-E5QJUR8RKy/Ee6Mbv28O"
+Date: Wed, 29 Apr 2009 09:31:49 +0800
+Message-Id: <1240968709.6842.1175.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add some necessary infrastructure to make it possible to run
-self-tests for ansi_cprng. The bits are likely very specific
-to the ANSI X9.31 CPRNG in AES mode, and thus perhaps should
-be named more specifically if/when we grow additional CPRNG
-support...
 
-Successfully tested against the cryptodev-2.6 tree and a
-Red Hat Enterprise Linux 5.x kernel with the follow-on
-patch that adds the actual test vectors.
+--=-E5QJUR8RKy/Ee6Mbv28O
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
+On Tue, 2009-04-28 at 18:21 +0800, Andi Kleen wrote:
+> Huang Ying <ying.huang@intel.com> writes:
+> >
+> > ChangeLog:
+> >
+> > v2:
+> >
+> > - Use alloc_percpu() to allocate per_cpu mcelog buffer
+>=20
+> Sorry, why didn't you just use DEFINE_PER_CPU ? That should work
+> as well and will be shorter.
 
----
- crypto/testmgr.c |   89 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- crypto/testmgr.h |   12 +++++++
- 2 files changed, 101 insertions(+), 0 deletions(-)
+OK. I can do that.
 
-diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-index d0cc85c..6330081 100644
---- a/crypto/testmgr.c
-+++ b/crypto/testmgr.c
-@@ -19,6 +19,7 @@
- #include <linux/scatterlist.h>
- #include <linux/slab.h>
- #include <linux/string.h>
-+#include <crypto/rng.h>
- 
- #include "internal.h"
- #include "testmgr.h"
-@@ -84,6 +85,11 @@ struct hash_test_suite {
- 	unsigned int count;
- };
- 
-+struct cprng_test_suite {
-+	struct cprng_testvec *vecs;
-+	unsigned int count;
-+};
-+
- struct alg_test_desc {
- 	const char *alg;
- 	int (*test)(const struct alg_test_desc *desc, const char *driver,
-@@ -95,6 +101,7 @@ struct alg_test_desc {
- 		struct comp_test_suite comp;
- 		struct pcomp_test_suite pcomp;
- 		struct hash_test_suite hash;
-+		struct cprng_test_suite cprng;
- 	} suite;
- };
- 
-@@ -1089,6 +1096,68 @@ static int test_pcomp(struct crypto_pcomp *tfm,
- 	return 0;
- }
- 
-+
-+static int test_cprng(struct crypto_rng *tfm, struct cprng_testvec *template,
-+		      unsigned int tcount)
-+{
-+	const char *algo = crypto_tfm_alg_driver_name(crypto_rng_tfm(tfm));
-+	int err, i, j, seedsize;
-+	u8 *seed;
-+	char result[32];
-+
-+	seedsize = crypto_rng_seedsize(tfm);
-+
-+	seed = kmalloc(seedsize, GFP_KERNEL);
-+	if (!seed) {
-+		printk(KERN_ERR "alg: cprng: Failed to allocate seed space "
-+		       "for %s\n", algo);
-+		return -ENOMEM;
-+	}
-+
-+	for (i = 0; i < tcount; i++) {
-+		memset(result, 0, 32);
-+
-+		memcpy(seed, template[i].v, template[i].vlen);
-+		memcpy(seed + template[i].vlen, template[i].key,
-+		       template[i].klen);
-+		memcpy(seed + template[i].vlen + template[i].klen,
-+		       template[i].dt, template[i].dtlen);
-+
-+		err = crypto_rng_reset(tfm, seed, seedsize);
-+		if (err) {
-+			printk(KERN_ERR "alg: cprng: Failed to reset rng "
-+			       "for %s\n", algo);
-+			goto out;
-+		}
-+
-+		for (j = 0; j < template[i].loops; j++) {
-+			err = crypto_rng_get_bytes(tfm, result,
-+						   template[i].rlen);
-+			if (err != template[i].rlen) {
-+				printk(KERN_ERR "alg: cprng: Failed to obtain "
-+				       "the correct amount of random data for "
-+				       "%s (requested %d, got %d)\n", algo,
-+				       template[i].rlen, err);
-+				goto out;
-+			}
-+		}
-+
-+		err = memcmp(result, template[i].result,
-+			     template[i].rlen);
-+		if (err) {
-+			printk(KERN_ERR "alg: cprng: Test %d failed for %s\n",
-+			       i, algo);
-+			hexdump(result, template[i].rlen);
-+			err = -EINVAL;
-+			goto out;
-+		}
-+	}
-+
-+out:
-+	kfree(seed);
-+	return err;
-+}
-+
- static int alg_test_aead(const struct alg_test_desc *desc, const char *driver,
- 			 u32 type, u32 mask)
- {
-@@ -1288,6 +1357,26 @@ out:
- 	return err;
- }
- 
-+static int alg_test_cprng(const struct alg_test_desc *desc, const char *driver,
-+			  u32 type, u32 mask)
-+{
-+	struct crypto_rng *rng;
-+	int err;
-+
-+	rng = crypto_alloc_rng(driver, type, mask);
-+	if (IS_ERR(rng)) {
-+		printk(KERN_ERR "alg: cprng: Failed to load transform for %s: "
-+		       "%ld\n", driver, PTR_ERR(rng));
-+		return PTR_ERR(rng);
-+	}
-+
-+	err = test_cprng(rng, desc->suite.cprng.vecs, desc->suite.cprng.count);
-+
-+	crypto_free_rng(rng);
-+
-+	return err;
-+}
-+
- /* Please keep this list sorted by algorithm name. */
- static const struct alg_test_desc alg_test_descs[] = {
- 	{
-diff --git a/crypto/testmgr.h b/crypto/testmgr.h
-index 5add651..13d5a61 100644
---- a/crypto/testmgr.h
-+++ b/crypto/testmgr.h
-@@ -70,6 +70,18 @@ struct aead_testvec {
- 	unsigned short rlen;
- };
- 
-+struct cprng_testvec {
-+	char *key;
-+	char *dt;
-+	char *v;
-+	char *result;
-+	unsigned char klen;
-+	unsigned short dtlen;
-+	unsigned short vlen;
-+	unsigned short rlen;
-+	unsigned short loops;
-+};
-+
- static char zeroed_string[48];
- 
- /*
+> Another thing I noticed. the "MACHINECHECK" signature was originally
+> for crash dump tools to find the log. If you change the format
+> you should change it to MACHINECHEC2 or so.
+
+Oh, thanks, I will change this.
+
+> > +	size_t usize_limit;
+> > +
+> > +	/* Too large user buffer size may cause system not response */
+> > +	usize_limit =3D num_possible_cpus() * MCE_LOG_LEN * sizeof(struct mce=
+);
+> > +	if (usize > usize_limit)
+> > +		usize =3D usize_limit;
+>=20
+> Did you ever track down what happens here? I still find it worrying
+
+Maybe the comment is a little confusing. What we do is limit the size of
+user buffer size to prevent system from not response. If the user buffer
+size is limited, the time taken by mce_read() can be reasonable, and
+will not cause system not to response.
+
+But maybe num_possible_cpus() * MCE_LOG_LEN is not a good upper limit,
+because possible cpus can be fairly large. Maybe we can add another
+limit, something as follow:
+
+#define MCE_READ_RECORD_LIMIT	512
+
+/*
+ * Too large user buffer size may cause system not response, so constrain
+ * the effective size of user buffer
+ */
+usize_limit =3D num_possible_cpus() * MCE_LOG_LEN * sizeof(struct mce);
+if (usize_limit > MCE_RECOARD_LIMIT * sizeof(struct mce))
+	usize_limit =3D MCE_RECOARD_LIMIT * sizeof(struct mce);
+if (usize > usize_limit)
+	usize =3D usize_limit;
+
+Best Regards,
+Huang Ying
 
 
--- 
-Jarod Wilson
-jarod@redhat.com
+--=-E5QJUR8RKy/Ee6Mbv28O
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkn3rf0ACgkQKhFGF+eHlpiZdACePchNYcmeyUca2rYK6GWagsz5
+RyIAn2bvyuVOGK1Tfvn5ZJlhL3QgsqYL
+=VYau
+-----END PGP SIGNATURE-----
+
+--=-E5QJUR8RKy/Ee6Mbv28O--
+
