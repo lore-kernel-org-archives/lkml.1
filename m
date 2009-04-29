@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbZD2Gmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751631AbZD2Gup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039AbZD2Gmr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 02:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbZD2Gmi
+	id S1751631AbZD2Gup (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 02:50:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbZD2Gug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 02:42:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49749 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752265AbZD2Gmh (ORCPT
+	Wed, 29 Apr 2009 02:50:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43960 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750724AbZD2Guf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 02:42:37 -0400
-Subject: Re: [PATCH] vmscan: evict use-once pages first
-From: Peter Zijlstra <peterz@infradead.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org, tytso@mit.edu,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
-In-Reply-To: <20090428192907.556f3a34@bree.surriel.com>
-References: <20090428044426.GA5035@eskimo.com>
-	 <20090428192907.556f3a34@bree.surriel.com>
-Content-Type: text/plain
-Date: Wed, 29 Apr 2009 08:42:29 +0200
-Message-Id: <1240987349.4512.18.camel@laptop>
+	Wed, 29 Apr 2009 02:50:35 -0400
+Date: Tue, 28 Apr 2009 23:46:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 2/3] tracing/filters: distinguish between signed and
+ unsigned fields
+Message-Id: <20090428234645.c1780736.akpm@linux-foundation.org>
+In-Reply-To: <1240905893.6416.120.camel@tropicana>
+References: <1240905893.6416.120.camel@tropicana>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-28 at 19:29 -0400, Rik van Riel wrote:
+On Tue, 28 Apr 2009 03:04:53 -0500 Tom Zanussi <tzanussi@gmail.com> wrote:
 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index eac9577..4c0304e 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1489,6 +1489,21 @@ static void shrink_zone(int priority, struct zone *zone,
->  			nr[l] = scan;
->  	}
->  
-> +	/*
-> +	 * When the system is doing streaming IO, memory pressure here
-> +	 * ensures that active file pages get deactivated, until more
-> +	 * than half of the file pages are on the inactive list.
-> +	 *
-> +	 * Once we get to that situation, protect the system's working
-> +	 * set from being evicted by disabling active file page aging
-> +	 * and swapping of swap backed pages.  We still do background
-> +	 * aging of anonymous pages.
-> +	 */
-> +	if (nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE]) {
-> +		nr[LRU_ACTIVE_FILE] = 0;
-> +		nr[LRU_INACTIVE_ANON] = 0;
-> +	}
-> +
+> +#define is_signed(t)	(((t)-1) < 0)
 
-Isn't there a hole where LRU_*_FILE << LRU_*_ANON and we now stop
-shrinking INACTIVE_ANON even though it makes sense to.
+geeze that was confusing until I worked out that `t' is supposed to be
+the name of a C type.
 
+	is_signed(0) == true!
+
+whee.
+
+Rename it to is_signed_type() or something, please?
