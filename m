@@ -1,92 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbZD2QKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbZD2QPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757185AbZD2QKh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 12:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbZD2QK1
+	id S1757456AbZD2QPZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 12:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbZD2QPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 12:10:27 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40298 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752280AbZD2QK1 (ORCPT
+	Wed, 29 Apr 2009 12:15:11 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59900 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754055AbZD2QPK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 12:10:27 -0400
-Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org, tytso@mit.edu,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
-In-Reply-To: <20090429114708.66114c03@cuia.bos.redhat.com>
-References: <20090428044426.GA5035@eskimo.com>
-	 <20090428192907.556f3a34@bree.surriel.com>
-	 <1240987349.4512.18.camel@laptop>
-	 <20090429114708.66114c03@cuia.bos.redhat.com>
-Content-Type: text/plain
-Date: Wed, 29 Apr 2009 18:10:10 +0200
-Message-Id: <1241021410.8021.556.camel@laptop>
+	Wed, 29 Apr 2009 12:15:10 -0400
+Date: Wed, 29 Apr 2009 18:19:18 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>
+Cc: "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Ma, Chinang" <chinang.ma@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
+       "Recalde, Luis F" <luis.f.recalde@intel.com>,
+       "Nelson, Doug" <doug.nelson@intel.com>,
+       "Cheng, Wu-sun" <wu-sun.cheng@intel.com>,
+       "Prickett, Terry O" <terry.o.prickett@intel.com>,
+       "Shunmuganathan, Rajalakshmi" <rajalakshmi.shunmuganathan@intel.com>,
+       "Garg, Anil K" <anil.k.garg@intel.com>,
+       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>
+Subject: Re: Mainline kernel OLTP performance update
+Message-ID: <20090429161918.GI23223@one.firstfloor.org>
+References: <D7C42C27E6CB1E4D8CBDF2F81EA92A2603459F3D6A@azsmsx501.amr.corp.intel.com> <20090429002930.b786348b.akpm@linux-foundation.org> <871vrbrhhy.fsf@basil.nowhere.org> <D7C42C27E6CB1E4D8CBDF2F81EA92A260345A63FAC@azsmsx501.amr.corp.intel.com> <CAC4B8726E86A142B27A9E9A2F2F1247AB6943CB@rrsmsx505.amr.corp.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAC4B8726E86A142B27A9E9A2F2F1247AB6943CB@rrsmsx505.amr.corp.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-29 at 11:47 -0400, Rik van Riel wrote:
-> When the file LRU lists are dominated by streaming IO pages,
-> evict those pages first, before considering evicting other
-> pages.
-> 
-> This should be safe from deadlocks or performance problems
-> because only three things can happen to an inactive file page:
-> 1) referenced twice and promoted to the active list
-> 2) evicted by the pageout code
-> 3) under IO, after which it will get evicted or promoted
-> 
-> The pages freed in this way can either be reused for streaming
-> IO, or allocated for something else. If the pages are used for
-> streaming IO, this pageout pattern continues. Otherwise, we will
-> fall back to the normal pageout pattern.
-> 
-> Signed-off-by: Rik van Riel <riel@redhat.com>
-> ---
-> On Wed, 29 Apr 2009 08:42:29 +0200
-> Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > Isn't there a hole where LRU_*_FILE << LRU_*_ANON and we now stop
-> > shrinking INACTIVE_ANON even though it makes sense to.
-> 
-> Peter, after looking at this again, I believe that the get_scan_ratio
-> logic should take care of protecting the anonymous pages, so we can
-> get away with this following, less intrusive patch.
-> 
-> Elladan, does this smaller patch still work as expected?
+On Wed, Apr 29, 2009 at 10:06:44AM -0600, Wilcox, Matthew R wrote:
+> Is it possible that's simply 'oprofile has a 4% overhead'?
 
-Provided of course that it actually fixes Elladan's issue, this looks
-good to me.
+We would expect that overhead to be spread between kernel and
+database then, not only database. Maybe it's partly, but it's
+probably not the complete answer.
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Also at least the user space/context part of oprofile is profiled by 
+oprofile too, just not the nmi handler, so if these parts are 
+expensive it should be visible.
 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index eac9577..4471dcb 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1489,6 +1489,18 @@ static void shrink_zone(int priority, struct zone *zone,
->  			nr[l] = scan;
->  	}
->  
-> +	/*
-> +	 * When the system is doing streaming IO, memory pressure here
-> +	 * ensures that active file pages get deactivated, until more
-> +	 * than half of the file pages are on the inactive list.
-> +	 *
-> +	 * Once we get to that situation, protect the system's working
-> +	 * set from being evicted by disabling active file page aging.
-> +	 * The logic in get_scan_ratio protects anonymous pages.
-> +	 */
-> +	if (nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE])
-> +		nr[LRU_ACTIVE_FILE] = 0;
-> +
->  	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
->  					nr[LRU_INACTIVE_FILE]) {
->  		for_each_evictable_lru(l) {
-> 
+That the lowering of the period made a difference was interesting.
+It might be that oprofile is just getting more and more inaccurate.
+
+-Andi
 
