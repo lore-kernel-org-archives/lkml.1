@@ -1,66 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbZD2KDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbZD2KFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756348AbZD2KDz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 06:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbZD2KDo
+	id S1756825AbZD2KFl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 06:05:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbZD2KFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 06:03:44 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:37151 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752842AbZD2KDn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 06:03:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:from:to:subject:date:mime-version:content-type
-         :content-transfer-encoding:x-priority:x-msmail-priority:x-mailer
-         :x-mimeole;
-        b=NoJgfpwNghnq/SLu2JgAGkGDpa786RlxedI/yl5cjaaGc7jLNCdB68vgc2mfsT7mj5
-         9gGVdZivsM3LwmfkHJcZfoZyJMkNFbDeh4pb45BhBaKwNgRVP7MlrItMjpsnG6W2f1fv
-         0ZjvYhwg2d9is0ObJDnZIsMb6zTGGFcxpSyr0=
-Message-ID: <7D4BD025A2554467AD77428C455E1FE0@avitech.sk>
-From: "Peter Hanzel" <hanzelpeter@gmail.com>
-To: <linux-kernel@vger.kernel.org>, <linux-fbdev-devel@lists.sourceforge.net>,
-       <dri-devel@lists.sourceforge.net>
-Subject: Intel KMS + fbcon + Mplayer
-Date: Wed, 29 Apr 2009 12:04:07 +0200
+	Wed, 29 Apr 2009 06:05:31 -0400
+Received: from cantor.suse.de ([195.135.220.2]:55175 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753026AbZD2KFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 06:05:30 -0400
+From: Nikanth Karthikesan <knikanth@novell.com>
+Organization: Novell
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH][RFC] Handle improbable possibility of io_context->refcount overflow
+Date: Wed, 29 Apr 2009 15:33:06 +0530
+User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <200904291221.40361.knikanth@novell.com> <20090429005930.3752dd6d.akpm@linux-foundation.org>
+In-Reply-To: <20090429005930.3752dd6d.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5512
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+Content-Disposition: inline
+Message-Id: <200904291533.07377.knikanth@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Wednesday 29 April 2009 13:29:30 Andrew Morton wrote:
+> On Wed, 29 Apr 2009 12:21:39 +0530 Nikanth Karthikesan <knikanth@novell.com> wrote:
+> > Hi Jens
+> >
+> > Currently io_context has an atomic_t(int) as refcount. In case of cfq,
+> > for each device a task does I/O, a reference to the io_context would be
+> > taken. And when there are multiple process sharing io_contexts(CLONE_IO)
+> > would also have a reference to the same io_context. Theoretically the
+> > possible maximum number of processes sharing the same io_context + the
+> > number of disks/cfq_data referring to the same io_context can overflow
+> > the 32-bit counter on a very high-end machine. Even though it is an
+> > improbable case, let us make it difficult by changing the refcount to
+> > atomic64_t(long).
+>
+> Sorry, atomic64_t isn't implemented on 32 bit architectures.
+>
+> Perhaps it should be, but I expect it'd be pretty slow.
 
-I have tried Intel KMS in kernel 2.6.91.1 with fbcon. I am using only 
-framebuffer console.
-Most fb apps works, but I have problem with mplayer.
-The init works but the video is badly displayed.
-I have investigated the problem and found, that for my laptop mode 
-1280x800-32.
+Oh! Sorry, I didn't notice the #ifdef earlier. I guess thats why there is only
+a single in-tree user for atomic64_t!
 
-The ioctl on /dev/fb0 FBIOGET_VSCREENINFO returns.
-var.bits_per_pixel=32
-var.transp.length = 0.
+In this case, could we make it atomic64_t only on 64-bit architectures and
+keep it as atomic_t on 32-bit machines? Something like the attached patch.
 
-So the mplayer thinks we are in 24 bit mode (maybe this is bug in mplayer, 
-because bits_per_pixel is 32).
+I wonder whether we should also add BUG_ON's whenever the refcount is about to
+wrap? Or try to handle it gracefully. Another approach would be to impose an
+artificial limit on the no of tasks that could share an io_context. Or resort
+to lock protection. The problem is not very serious/common.
 
-But next I have checked it with kernel vesafb and for same mode 
-(1280x800-32, vga=0x362 )
-The fb ioctl returns
-var.bits_per_pixel=32
-var.transp.length = 8.
+Thanks
+Nikanth
 
-So is this intentionally made so. Because I think this mode use only red, 
-green,blue and no transp. But for one pixel you must write 4 bytes. (so 
-transp is not used).
+diff --git a/block/blk-ioc.c b/block/blk-ioc.c
+index 012f065..5be4585 100644
+--- a/block/blk-ioc.c
++++ b/block/blk-ioc.c
+@@ -35,9 +35,9 @@ int put_io_context(struct io_context *ioc)
+ 	if (ioc == NULL)
+ 		return 1;
+ 
+-	BUG_ON(atomic_read(&ioc->refcount) == 0);
++	BUG_ON(atomic_read_ioc_refcount(ioc) == 0);
+ 
+-	if (atomic_dec_and_test(&ioc->refcount)) {
++	if (atomic_dec_and_test_ioc_refcount(ioc)) {
+ 		rcu_read_lock();
+ 		if (ioc->aic && ioc->aic->dtor)
+ 			ioc->aic->dtor(ioc->aic);
+@@ -151,7 +151,7 @@ struct io_context *get_io_context(gfp_t gfp_flags, int node)
+ 		ret = current_io_context(gfp_flags, node);
+ 		if (unlikely(!ret))
+ 			break;
+-	} while (!atomic_inc_not_zero(&ret->refcount));
++	} while (!atomic_inc_not_zero_ioc_refcount(ret));
+ 
+ 	return ret;
+ }
+@@ -163,8 +163,8 @@ void copy_io_context(struct io_context **pdst, struct io_context **psrc)
+ 	struct io_context *dst = *pdst;
+ 
+ 	if (src) {
+-		BUG_ON(atomic_read(&src->refcount) == 0);
+-		atomic_inc(&src->refcount);
++		BUG_ON(atomic_read_ioc_refcount(src) == 0);
++		atomic_inc_ioc_refcount(src);
+ 		put_io_context(dst);
+ 		*pdst = src;
+ 	}
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index a55a9bd..42d5018 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1282,7 +1282,7 @@ static void cfq_dispatch_request(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 	if (!cfqd->active_cic) {
+ 		struct cfq_io_context *cic = RQ_CIC(rq);
+ 
+-		atomic_inc(&cic->ioc->refcount);
++		atomic_inc_ioc_refcount(cic->ioc);
+ 		cfqd->active_cic = cic;
+ 	}
+ }
+diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
+index 08b987b..bdc7156 100644
+--- a/include/linux/iocontext.h
++++ b/include/linux/iocontext.h
+@@ -64,7 +64,11 @@ struct cfq_io_context {
+  * and kmalloc'ed. These could be shared between processes.
+  */
+ struct io_context {
++#ifdef CONFIG_64BIT
++	atomic64_t refcount;
++#else
+ 	atomic_t refcount;
++#endif
+ 	atomic_t nr_tasks;
+ 
+ 	/* all the fields below are protected by this lock */
+@@ -85,14 +89,30 @@ struct io_context {
+ 	void *ioc_data;
+ };
+ 
++#ifdef CONFIG_64BIT
++
++#define atomic_read_ioc_refcount(ioc)	atomic64_read(&ioc->refcount)
++#define atomic_inc_ioc_refcount(ioc)	atomic64_inc(&ioc->refcount)
++#define atomic_dec_and_test_ioc_refcount(ioc)	atomic64_dec_and_test(&ioc->refcount)
++#define atomic_inc_not_zero_ioc_refcount(ioc)	atomic64_inc_not_zero(&ioc->refcount)
++
++#else
++
++#define atomic_read_ioc_refcount(ioc)	atomic_read(&ioc->refcount)
++#define atomic_inc_ioc_refcount(ioc)	atomic_inc(&ioc->refcount)
++#define atomic_dec_and_test_ioc_refcount(ioc)	atomic_dec_and_test(&ioc->refcount)
++#define atomic_inc_not_zero_ioc_refcount(ioc)	atomic_inc_not_zero(&ioc->refcount)
++
++#endif
++
+ static inline struct io_context *ioc_task_link(struct io_context *ioc)
+ {
+ 	/*
+ 	 * if ref count is zero, don't allow sharing (ioc is going away, it's
+ 	 * a race).
+ 	 */
+-	if (ioc && atomic_inc_not_zero(&ioc->refcount)) {
+-		atomic_inc(&ioc->nr_tasks);
++	if (ioc && atomic_inc_not_zero_ioc_refcount(ioc)) {
++		atomic_inc_ioc_refcount(ioc);
+ 		return ioc;
+ 	}
+ 
 
