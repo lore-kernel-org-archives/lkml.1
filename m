@@ -1,102 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbZD2JhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbZD2Jib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758380AbZD2JhW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 05:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbZD2Jgl
+	id S1755955AbZD2Jib (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 05:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbZD2JiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 05:36:41 -0400
-Received: from web32608.mail.mud.yahoo.com ([68.142.207.235]:49066 "HELO
-	web32608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756308AbZD2Jgj (ORCPT
+	Wed, 29 Apr 2009 05:38:17 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:60023 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751061AbZD2JiQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 05:36:39 -0400
-Message-ID: <313906.21818.qm@web32608.mail.mud.yahoo.com>
-X-YMail-OSG: f6dwXPYVM1md7mfFB_p4vgoGWUst7pkep_23MpMJJN39tZUlETciBiV4E_cJqaFoGd8o0BKdMwO5Qwxo_NkAOLgqUvHTJa3smGJvuPjifixS8gOJ6MzalxPrwBsukAAPcwPRMUf6TYrl0GlvmvyE5pNlzwIjJ0SnCoJ5xqjQsFRKJ4sp6DAAo9xgmMJnQc.dWhZ60CtaF5xSWsdqLEvl2vvfE1JH_boRDak3PgbquZZXEjqBSdLD9c.cFyzkbmMPmpyh5CSRlwEgKcR3135Df1yO9XG4PlFWZRaHjWHQhhpztK8SblV.
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1277.35 YahooMailWebService/0.7.289.1
-References: <409142.83316.qm@web32605.mail.mud.yahoo.com> <20090428182837.62c51f26.akpm@linux-foundation.org> <1240977096.5478.3.camel@marge.simson.net> <20090429011755.c141c599.akpm@linux-foundation.org>
-Date: Wed, 29 Apr 2009 02:36:39 -0700 (PDT)
-From: Martin Knoblauch <knobi@knobisoft.de>
-Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
-To: Andrew Morton <akpm@linux-foundation.org>, Mike Galbraith <efault@gmx.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       tigran aivazian <tigran@aivazian.fsnet.co.uk>,
-       Al Viro <viro@zeniv.linux.org.uk>
-In-Reply-To: <20090429011755.c141c599.akpm@linux-foundation.org>
+	Wed, 29 Apr 2009 05:38:16 -0400
+Message-ID: <49F81FB9.50504@cosmosbay.com>
+Date: Wed, 29 Apr 2009 11:36:57 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       cl@linux.com, jesse.brandeburg@intel.com, netdev@vger.kernel.org,
+       haoki@redhat.com, mchan@broadcom.com, davidel@xmailserver.org
+Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
+References: <alpine.DEB.1.10.0904241554100.29995@qirst.com> <49F3308B.1030507@cosmosbay.com> <20090426.020411.157511269.davem@davemloft.net> <49F43B8F.2050907@cosmosbay.com> <87ab60rh8t.fsf@basil.nowhere.org> <49F71B63.8010503@cosmosbay.com> <20090429091637.GA29874@elte.hu>
+In-Reply-To: <20090429091637.GA29874@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 29 Apr 2009 11:36:58 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-
- ------------------------------------------------------
-Martin Knoblauch
-email: k n o b i AT knobisoft DOT de
-www:   http://www.knobisoft.de
-
-
-
------ Original Message ----
-> From: Andrew Morton <akpm@linux-foundation.org>
-> To: Mike Galbraith <efault@gmx.de>
-> Cc: Martin Knoblauch <knobi@knobisoft.de>; Rafael J. Wysocki <rjw@sisk.pl>; linux-kernel@vger.kernel.org; tigran aivazian <tigran@aivazian.fsnet.co.uk>; Al Viro <viro@zeniv.linux.org.uk>
-> Sent: Wednesday, April 29, 2009 10:17:55 AM
-> Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
+Ingo Molnar a écrit :
+> * Eric Dumazet <dada1@cosmosbay.com> wrote:
 > 
-> On Wed, 29 Apr 2009 05:51:36 +0200 Mike Galbraith wrote:
+>> @@ -418,8 +429,16 @@ int do_select(int n, fd_set_bits *fds, struct timespec *end_time)
+>>  				if (file) {
+>>  					f_op = file->f_op;
+>>  					mask = DEFAULT_POLLMASK;
+>> -					if (f_op && f_op->poll)
+>> +					if (f_op && f_op->poll) {
+>> +						if (wait) {
+>> +							wait->key = POLLEX_SET;
+>> +							if (in & bit)
+>> +								wait->key |= POLLIN_SET;
+>> +							if (out & bit)
+>> +								wait->key |= POLLOUT_SET;
+>> +						}
+>>  						mask = (*f_op->poll)(file, retval ? NULL : wait);
+>> +					}
+>>  					fput_light(file, fput_needed);
+>>  					if ((mask & POLLIN_SET) && (in & bit)) {
+>>  						res_in |= bit;
 > 
-> > On Tue, 2009-04-28 at 18:28 -0700, Andrew Morton wrote: 
-> > > On Fri, 24 Apr 2009 05:45:19 -0700 (PDT) Martin Knoblauch 
-> wrote:
-> > > 
-> > > > 
-> > > > 
-> > > >  OK, I just found the reason for both intel-ucode and tg3 failures. 
-> Apparently between 2.6.28 and 2.6.29 the mount of sysfs has subtely changed 
-> from:
-> > > > 
-> > > > /sys /sys sysfs rw 0 0
-> > > > 
-> > > > to:
-> > > > 
-> > > > none /sys sysfs rw,relatime 0 0
-> > > 
-> > > I assume that you're referring to the contents of /proc/mounts?
-> > > 
-> > > >  The "none" breaks the RHEL-4 provided hotplug script "firmware.agent" 
-> when it tries to parse the mount point for "/sys". As a result, the firmware 
-> loading is never properly finished and the driver(s) just timeout on the value  
-> in /sys/class/firmware/timeout. Bingo. Simple fix in user-pace possible - cool 
-> down Martin :-)
-> > > > 
-> > > > Questions remains: was this intentional? It breaks existing userspace and 
-> should therefore be considered a regression - right? On the other hand, it will 
-> never be a problem for RHEL-4/5 kernels, unless the change in 2.6.29 gets 
-> backported. Any ideas?
-> > > 
-> > > afaik that was unintentional and was probably a mistake.
-> > > 
-> > > I wonder how we did that.
-> > 
-> > 
-> > > [hotplug]# grep sysfs /proc/mounts
-> > > none /sys sysfs rw,relatime 0 0
-> > > /sys /sys sysfs rw,relatime 0 0
-> > 
-> > ___(I wonder how the heck that is accomplished)
-> > 
+> Please factor this whole 'if (file)' branch out into a helper. 
+> Typical indentation levels go from 1 to 3 tabs - 4 should be avoided 
+> if possible and 5 is pretty excessive already. This goes to eight.
 > 
-> Beats me.  I'm not seeing likely changes in fs/proc/base.c or around
-> show_mountinfo().  Maybe sysfs broke in an ingenious way.  (hopefully
-> cc's viro).
-> 
-> Displaying relatime seems a bit pointless too.
 
- Actually, relatime is added in 2.6.30. In 2.6.29 I only see the duplicate lines.
+Thanks Ingo,
 
-Cheers
-Martin
+Here is v3 of patch, with your Acked-by included :)
+
+This is IMHO clearer since helper immediatly follows POLLIN_SET / POLLOUT_SET /
+POLLEX_SET defines.
+
+[PATCH] poll: Avoid extra wakeups in select/poll
+
+After introduction of keyed wakeups Davide Libenzi did on epoll, we
+are able to avoid spurious wakeups in poll()/select() code too.
+
+For example, typical use of poll()/select() is to wait for incoming
+network frames on many sockets. But TX completion for UDP/TCP 
+frames call sock_wfree() which in turn schedules thread.
+
+When scheduled, thread does a full scan of all polled fds and
+can sleep again, because nothing is really available. If number
+of fds is large, this cause significant load.
+
+This patch makes select()/poll() aware of keyed wakeups and
+useless wakeups are avoided. This reduces number of context
+switches by about 50% on some setups, and work performed
+by sofirq handlers.
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Acked-by: David S. Miller <davem@davemloft.net>
+Acked-by: Andi Kleen <ak@linux.intel.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+---
+ fs/select.c          |   40 ++++++++++++++++++++++++++++++++++++----
+ include/linux/poll.h |    3 +++
+ 2 files changed, 39 insertions(+), 4 deletions(-)
+
+diff --git a/fs/select.c b/fs/select.c
+index 0fe0e14..ba068ad 100644
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -168,7 +168,7 @@ static struct poll_table_entry *poll_get_entry(struct poll_wqueues *p)
+ 	return table->entry++;
+ }
+ 
+-static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
++static int __pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
+ {
+ 	struct poll_wqueues *pwq = wait->private;
+ 	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
+@@ -194,6 +194,16 @@ static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
+ 	return default_wake_function(&dummy_wait, mode, sync, key);
+ }
+ 
++static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
++{
++	struct poll_table_entry *entry;
++
++	entry = container_of(wait, struct poll_table_entry, wait);
++	if (key && !((unsigned long)key & entry->key))
++		return 0;
++	return __pollwake(wait, mode, sync, key);
++}
++
+ /* Add a new entry */
+ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+ 				poll_table *p)
+@@ -205,6 +215,7 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+ 	get_file(filp);
+ 	entry->filp = filp;
+ 	entry->wait_address = wait_address;
++	entry->key = p->key;
+ 	init_waitqueue_func_entry(&entry->wait, pollwake);
+ 	entry->wait.private = pwq;
+ 	add_wait_queue(wait_address, &entry->wait);
+@@ -362,6 +373,18 @@ get_max:
+ #define POLLOUT_SET (POLLWRBAND | POLLWRNORM | POLLOUT | POLLERR)
+ #define POLLEX_SET (POLLPRI)
+ 
++static void wait_key_set(poll_table *wait, unsigned long in,
++			 unsigned long out, unsigned long bit)
++{
++	if (wait) {
++		wait->key = POLLEX_SET;
++		if (in & bit)
++			wait->key |= POLLIN_SET;
++		if (out & bit)
++			wait->key |= POLLOUT_SET;
++	}
++}
++
+ int do_select(int n, fd_set_bits *fds, struct timespec *end_time)
+ {
+ 	ktime_t expire, *to = NULL;
+@@ -418,20 +441,25 @@ int do_select(int n, fd_set_bits *fds, struct timespec *end_time)
+ 				if (file) {
+ 					f_op = file->f_op;
+ 					mask = DEFAULT_POLLMASK;
+-					if (f_op && f_op->poll)
+-						mask = (*f_op->poll)(file, retval ? NULL : wait);
++					if (f_op && f_op->poll) {
++						wait_key_set(wait, in, out, bit);
++						mask = (*f_op->poll)(file, wait);
++					}
+ 					fput_light(file, fput_needed);
+ 					if ((mask & POLLIN_SET) && (in & bit)) {
+ 						res_in |= bit;
+ 						retval++;
++						wait = NULL;
+ 					}
+ 					if ((mask & POLLOUT_SET) && (out & bit)) {
+ 						res_out |= bit;
+ 						retval++;
++						wait = NULL;
+ 					}
+ 					if ((mask & POLLEX_SET) && (ex & bit)) {
+ 						res_ex |= bit;
+ 						retval++;
++						wait = NULL;
+ 					}
+ 				}
+ 			}
+@@ -685,8 +713,12 @@ static inline unsigned int do_pollfd(struct pollfd *pollfd, poll_table *pwait)
+ 		mask = POLLNVAL;
+ 		if (file != NULL) {
+ 			mask = DEFAULT_POLLMASK;
+-			if (file->f_op && file->f_op->poll)
++			if (file->f_op && file->f_op->poll) {
++				if (pwait)
++					pwait->key = pollfd->events |
++							POLLERR | POLLHUP;
+ 				mask = file->f_op->poll(file, pwait);
++			}
+ 			/* Mask out unneeded events. */
+ 			mask &= pollfd->events | POLLERR | POLLHUP;
+ 			fput_light(file, fput_needed);
+diff --git a/include/linux/poll.h b/include/linux/poll.h
+index 8c24ef8..3327389 100644
+--- a/include/linux/poll.h
++++ b/include/linux/poll.h
+@@ -32,6 +32,7 @@ typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_
+ 
+ typedef struct poll_table_struct {
+ 	poll_queue_proc qproc;
++	unsigned long key;
+ } poll_table;
+ 
+ static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
+@@ -43,10 +44,12 @@ static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_addres
+ static inline void init_poll_funcptr(poll_table *pt, poll_queue_proc qproc)
+ {
+ 	pt->qproc = qproc;
++	pt->key   = ~0UL; /* all events enabled */
+ }
+ 
+ struct poll_table_entry {
+ 	struct file *filp;
++	unsigned long key;
+ 	wait_queue_t wait;
+ 	wait_queue_head_t *wait_address;
+ };
 
