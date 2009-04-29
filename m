@@ -1,158 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757089AbZD2GSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbZD2GWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757089AbZD2GSr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 02:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbZD2GSf
+	id S1756800AbZD2GWY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 02:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbZD2GWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 02:18:35 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58059 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753192AbZD2GSd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 02:18:33 -0400
-Date: Wed, 29 Apr 2009 06:17:58 GMT
-From: tip-bot for Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090428151346.GA31212@Krystal>
-References: <20090428151346.GA31212@Krystal>
-Subject: [tip:x86/asm] x86: clean up alternative.h
-Message-ID: <tip-edc953fa4ebc0265ef3b1754fe116a9fd4264e15@git.kernel.org>
-Git-Commit-ID: edc953fa4ebc0265ef3b1754fe116a9fd4264e15
-X-Mailer: tip-git-log-daemon
+	Wed, 29 Apr 2009 02:22:15 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:55590 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752366AbZD2GWO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 02:22:14 -0400
+Date: Wed, 29 Apr 2009 08:22:08 +0200
+From: Thierry Reding <thierry.reding@avionic-design.de>
+To: David Brownell <david-b@pacbell.net>
+Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [spi-devel-general] [PATCH v2] spi: Add support for the
+	OpenCores SPI controller.
+Message-ID: <20090429062208.GA7784@avionic-design.de>
+References: <200904041227.54687.david-b@pacbell.net> <200904280458.23018.david-b@pacbell.net> <20090428122011.GB6325@avionic-design.de> <200904281403.40757.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 29 Apr 2009 06:18:00 +0000 (UTC)
+In-Reply-To: <200904281403.40757.david-b@pacbell.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Provags-ID: V01U2FsdGVkX1+Bws46GQ9fOsWJesp1BTHZdsFiPxw/tHdY/vf
+ aTgTMzkQ7IAI+HCqNGqjcKBKIy83tHkw+896T1mWUGPzIFjCCm
+ h6wQzzwrJAxL7zvBH/ajQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  edc953fa4ebc0265ef3b1754fe116a9fd4264e15
-Gitweb:     http://git.kernel.org/tip/edc953fa4ebc0265ef3b1754fe116a9fd4264e15
-Author:     Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-AuthorDate: Tue, 28 Apr 2009 11:13:46 -0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 28 Apr 2009 17:42:08 +0200
+* David Brownell wrote:
+> On Tuesday 28 April 2009, Thierry Reding wrote:
+> > > > I couldn't really find a way to implement per-transfer overrides for the
+> > > > word size because the controller simply has no concept of word sizes. Is it
+> > > > in such cases still necessary to hardwire the word size to 8 bits?
+> > > 
+> > > Is this the http://www.opencores.org/?do=project&who=spi core?
+> > 
+> > Yes, it is.
+> > 
+> > > Its summary says "Variable length of transfer word up to 32 bits";
+> > > does that mean "configurable when core is synthesized" instead of
+> > > truly "variable"?
+> > 
+> > That summary seems out-dated. The variable length of transfer word is
+> > actually the maximum length of a single transfer and is 128 bits in the
+> > latest version.
+> 
+> So long as they don't couple "transfer" with chipselect activation
+> and then de-activation, that's normal.
+> 
+> 128 bits is pretty big, but it should make no difference to the slave
+> whether the host thinks of its data as one 128-bit word, sixteen 8-bit
+> words, one 9-bit word followed by a 119-bit one, or whatever.
+> 
+> Unless the design is broken, so that you can't send words without
+> flapping the chipselect.  That would surprise me.
 
-x86: clean up alternative.h
+So far, what I've been doing is just copy the transmission buffer in blocks
+of 16 bytes byte-by-byte to the transmission registers (concatenating groups
+of four bytes), then start the transfer. After the transfer I copy the bytes
+back in the same manner to the receive buffer. I was assuming that the
+buffers would be in the correct byte order at that point anyway.
 
-Alternative header duplicates assembly that could be merged in
-one single macro.  Merging this into this macro also allows to
-directly declare ALTERNATIVE() statements within assembly code.
+This core actually allows manually setting the chipselect. It also has a mode
+that automatically sets or clears the chipselect for each single "transfer"
+(meaning up to those 128 bits). But as you say, that wouldn't be normal
+behavior and breaks things.
 
-Uses a __stringify() of the feature bits rather than passing a
-"i" operand.  Leave the old %0 operand as-is (set to 0), unused
-to stay compatible with API.
+> > I'm not sure whether this is supposed to be the same as the word size. If it
+> > is it would mean that a single transfer can always only transfer one word.
+> > Which is kind of inefficient, I would think.
+> 
+> A "struct spi_transfer" should include a arbitrary number of
+> such words.  If the word size is over 8 bits, all the usual
+> byte ordering concerns come into play.  You may optimize the
+> register I/O however you like, so long as the bits on the
+> wire come out in the right sequence.
 
-(v2: tab alignment fixes)
+What byte ordering are the transmit and receive buffers supposed to be in,
+then? Native? Always big endian?
 
-[ Impact: cleanup ]
+> Ignoring clock options, the canonical SPI transfer starts by
+> activating a chip select, then clocking out an arbitrary number
+> of bits (clocking *in* one bit for each one clocked out), and
+> then de-activating chipselect.  Those bits are usually viewed
+> as a sequence of various-size words ... not necesarily all
+> the same size.  Example, some LCD controllers use 9-bit command
+> words followed by pixel data encoded in bytes.
+> 
+> Now, how the bits get to/from the controller is an area where
+> silicon can optimize.  For example, it's common to offload
+> that work to a DMA controller that can do burst operations
+> to keep the data bus efficiency high ... and to have a FIFO
+> in there, so those bursts can be bigger than the word size.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-LKML-Reference: <20090428151346.GA31212@Krystal>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+I haven't experimented with using DMA transfers to this particular core
+because there's currently no support for the generic DMA API on the CPU
+we use.
 
+> - Dave
 
----
- arch/x86/include/asm/alternative.h |   59 ++++++++++++++----------------------
- 1 files changed, 23 insertions(+), 36 deletions(-)
+Thierry
 
-diff --git a/arch/x86/include/asm/alternative.h b/arch/x86/include/asm/alternative.h
-index f6aa18e..1a37bcd 100644
---- a/arch/x86/include/asm/alternative.h
-+++ b/arch/x86/include/asm/alternative.h
-@@ -3,6 +3,7 @@
- 
- #include <linux/types.h>
- #include <linux/stddef.h>
-+#include <linux/stringify.h>
- #include <asm/asm.h>
- 
- /*
-@@ -74,6 +75,22 @@ static inline void alternatives_smp_switch(int smp) {}
- 
- const unsigned char *const *find_nop_table(void);
- 
-+/* alternative assembly primitive: */
-+#define ALTERNATIVE(oldinstr, newinstr, feature)			\
-+									\
-+      "661:\n\t" oldinstr "\n662:\n"					\
-+      ".section .altinstructions,\"a\"\n"				\
-+      _ASM_ALIGN "\n"							\
-+      _ASM_PTR "661b\n"				/* label           */	\
-+      _ASM_PTR "663f\n"				/* new instruction */	\
-+      "	 .byte " __stringify(feature) "\n"	/* feature bit     */	\
-+      "	 .byte 662b-661b\n"			/* sourcelen       */	\
-+      "	 .byte 664f-663f\n"			/* replacementlen  */	\
-+      ".previous\n"							\
-+      ".section .altinstr_replacement, \"ax\"\n"			\
-+      "663:\n\t" newinstr "\n664:\n"		/* replacement     */	\
-+      ".previous"
-+
- /*
-  * Alternative instructions for different CPU types or capabilities.
-  *
-@@ -87,18 +104,7 @@ const unsigned char *const *find_nop_table(void);
-  * without volatile and memory clobber.
-  */
- #define alternative(oldinstr, newinstr, feature)			\
--	asm volatile ("661:\n\t" oldinstr "\n662:\n"			\
--		      ".section .altinstructions,\"a\"\n"		\
--		      _ASM_ALIGN "\n"					\
--		      _ASM_PTR "661b\n"		/* label */		\
--		      _ASM_PTR "663f\n"		/* new instruction */	\
--		      "	 .byte %c0\n"		/* feature bit */	\
--		      "	 .byte 662b-661b\n"	/* sourcelen */		\
--		      "	 .byte 664f-663f\n"	/* replacementlen */	\
--		      ".previous\n"					\
--		      ".section .altinstr_replacement,\"ax\"\n"		\
--		      "663:\n\t" newinstr "\n664:\n"  /* replacement */	\
--		      ".previous" :: "i" (feature) : "memory")
-+	asm volatile (ALTERNATIVE(oldinstr, newinstr, feature) : : : "memory")
- 
- /*
-  * Alternative inline assembly with input.
-@@ -109,35 +115,16 @@ const unsigned char *const *find_nop_table(void);
-  * Best is to use constraints that are fixed size (like (%1) ... "r")
-  * If you use variable sized constraints like "m" or "g" in the
-  * replacement make sure to pad to the worst case length.
-+ * Leaving an unused argument 0 to keep API compatibility.
-  */
- #define alternative_input(oldinstr, newinstr, feature, input...)	\
--	asm volatile ("661:\n\t" oldinstr "\n662:\n"			\
--		      ".section .altinstructions,\"a\"\n"		\
--		      _ASM_ALIGN "\n"					\
--		      _ASM_PTR "661b\n"		/* label */		\
--		      _ASM_PTR "663f\n"		/* new instruction */	\
--		      "	 .byte %c0\n"		/* feature bit */	\
--		      "	 .byte 662b-661b\n"	/* sourcelen */		\
--		      "	 .byte 664f-663f\n"	/* replacementlen */	\
--		      ".previous\n"					\
--		      ".section .altinstr_replacement,\"ax\"\n"		\
--		      "663:\n\t" newinstr "\n664:\n"  /* replacement */	\
--		      ".previous" :: "i" (feature), ##input)
-+	asm volatile (ALTERNATIVE(oldinstr, newinstr, feature)		\
-+		: : "i" (0), ## input)
- 
- /* Like alternative_input, but with a single output argument */
- #define alternative_io(oldinstr, newinstr, feature, output, input...)	\
--	asm volatile ("661:\n\t" oldinstr "\n662:\n"			\
--		      ".section .altinstructions,\"a\"\n"		\
--		      _ASM_ALIGN "\n"					\
--		      _ASM_PTR "661b\n"		/* label */		\
--		      _ASM_PTR "663f\n"		/* new instruction */	\
--		      "	 .byte %c[feat]\n"	/* feature bit */	\
--		      "	 .byte 662b-661b\n"	/* sourcelen */		\
--		      "	 .byte 664f-663f\n"	/* replacementlen */	\
--		      ".previous\n"					\
--		      ".section .altinstr_replacement,\"ax\"\n"		\
--		      "663:\n\t" newinstr "\n664:\n"  /* replacement */ \
--		      ".previous" : output : [feat] "i" (feature), ##input)
-+	asm volatile (ALTERNATIVE(oldinstr, newinstr, feature)		\
-+		: output : "i" (0), ## input)
- 
- /*
-  * use this macro(s) if you need more than one output parameter
