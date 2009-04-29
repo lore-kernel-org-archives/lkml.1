@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbZD2P5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbZD2P6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758142AbZD2P5t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 11:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbZD2P5j
+	id S1757231AbZD2P6X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 11:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756518AbZD2P57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 11:57:39 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:54394 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752585AbZD2P5j convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 11:57:39 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@monstr.eu
-Subject: Re: [PATCH 20/30] microblaze_mmu_v1: uaccess MMU update
-Date: Wed, 29 Apr 2009 17:55:37 +0200
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       john.williams@petalogix.com
-References: <1240821139-7247-1-git-send-email-monstr@monstr.eu> <200904291735.28964.arnd@arndb.de> <49F875B1.2050502@monstr.eu>
-In-Reply-To: <49F875B1.2050502@monstr.eu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200904291755.38497.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/jvLPTefXiVZro0lSuZELqx5I9qnPf6t7tGFL
- xi+GtkwhI6fUPvamhhn1zLyhtXsfoNVECMMkaMnxvJ2CNQpHXy
- 3MSaR1YBLaShJtOP47HpQ==
+	Wed, 29 Apr 2009 11:57:59 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:33565 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753741AbZD2P56 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 11:57:58 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: reinette chatre <reinette.chatre@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "Zhu, Yi" <yi.zhu@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mm-commits@vger.kernel.org" <mm-commits@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+Subject: Re: mmotm 2009-04-27-15-45 uploaded - iwl3945 oops
+In-Reply-To: Your message of "Tue, 28 Apr 2009 13:39:44 PDT."
+             <1240951184.1207.11.camel@rc-desk>
+From: Valdis.Kletnieks@vt.edu
+References: <200904272305.n3RN51mu031395@imap1.linux-foundation.org> <25818.1240938876@turing-police.cc.vt.edu>
+            <1240951184.1207.11.camel@rc-desk>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1241020608_4397P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 29 Apr 2009 11:56:48 -0400
+Message-ID: <24133.1241020608@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 April 2009, Michal Simek wrote:
-> For powerpc I found these tree references. Where is the __get_user_bad definition?
+--==_Exmh_1241020608_4397P
+Content-Type: text/plain; charset=us-ascii
 
-> arch/powerpc/include/asm/uaccess.h:216:extern long __get_user_bad(void);
-> arch/powerpc/include/asm/uaccess.h:263:         (x) = __get_user_bad();                         \
-> arch/powerpc/include/asm/uaccess.h:269: default: (x) = __get_user_bad();                        \
+On Tue, 28 Apr 2009 13:39:44 PDT, reinette chatre said:
+
+> Could you please revert this and test again?
 > 
+> If this does not help, could you please bisect?
 
-As I tried to explain, the whole point is that there is no definition
-at all, just a declaration.
-Normally, the compiler will discard the 'default:' case of get_user,
-so the function is not called. However, if you pass a variable of
-a length other than 1, 2, or 4, the compiler will generate a function
-call to __get_user_bad in the object file. When you try to link
-the kernel afterwards, you will get an error message like
+Same kernel that oopsed 2 nights ago failed to do so in 8 or 9 hours last
+night - so it isn't a "fire up wpa_supplicant and know inside 20 or 30 seconds
+if the kernel tested is good" candidate for bisection.  Will collect what
+info I can.
 
-Unknown symbol __get_user_bad" for drivers/foo/bar.o
+--==_Exmh_1241020608_4397P
+Content-Type: application/pgp-signature
 
-which tells you that some function in drivers/foo/bar.c calls
-get_user with an invalid argument.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-	Arnd <><
+iD8DBQFJ+HjAcC3lWbTT17ARAoY2AJ9Mo5LJskC3QkgOuboLi91suvei8wCg8pDO
+9qMg0BEieIa5hB5sfpKcFFg=
+=v625
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1241020608_4397P--
