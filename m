@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761421AbZD2V3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761485AbZD2V3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761421AbZD2V3Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 17:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756233AbZD2V3M
+	id S1761485AbZD2V3o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 17:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756233AbZD2V3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 17:29:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56321 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755490AbZD2V3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 17:29:11 -0400
-From: Glauber Costa <glommer@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: [PATCH] fix apic_debug instances
-Date: Wed, 29 Apr 2009 17:29:09 -0400
-Message-Id: <1241040549-25963-1-git-send-email-glommer@redhat.com>
+	Wed, 29 Apr 2009 17:29:32 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:38808 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761275AbZD2V3b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 17:29:31 -0400
+Date: Wed, 29 Apr 2009 22:29:24 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Mario Limonciello <mario_limonciello@dell.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Add support for more dell-wmi hotkeys
+Message-ID: <20090429212924.GA7900@srcf.ucam.org>
+References: <49ECBAE2.2080308@dell.com> <49EE09D9.2060209@dell.com> <20090429165729.GB32619@srcf.ucam.org> <49F89981.10806@dell.com> <20090429183154.GC2325@srcf.ucam.org> <49F8C59F.2010603@dell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49F8C59F.2010603@dell.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Appearently nobody turned this on in a while...
-setting apic_debug to something compilable, generates
-some errors. This patch fixes it.
+On Wed, Apr 29, 2009 at 04:24:47PM -0500, Mario Limonciello wrote:
 
-Signed-off-by: Glauber Costa <glommer@redhat.com>
----
- arch/x86/kvm/lapic.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+> I've obtained one of these and taken a look at it with a copy of Win 7
+> and compared with dell-wmi and my patchset applied.  This platform's WMI
+> support was introduced before Win7's WMI spec was drafted, and so it
+> doesn't adhere to the spec.  I think the best thing to do will be create
+> a DMI table to match for keys that are only on a per system basis for
+> anything before this spec was ready.  I don't expect many other
+> platforms like this, but it will allow for additional granularity in
+> case something in the future ever deviates spec as well.
 
-diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-index 4d76bb6..15d9a96 100644
---- a/arch/x86/kvm/lapic.c
-+++ b/arch/x86/kvm/lapic.c
-@@ -48,8 +48,8 @@
- 
- #define APIC_BUS_CYCLE_NS 1
- 
--/* #define apic_debug(fmt,arg...) printk(KERN_WARNING fmt,##arg) */
--#define apic_debug(fmt, arg...)
-+#define apic_debug(fmt,arg...) printk(KERN_WARNING fmt,##arg) 
-+//#define apic_debug(fmt, arg...)
- 
- #define APIC_LVT_NUM			6
- /* 14 is the version for Xeon and Pentium 8.4.8*/
-@@ -445,7 +445,7 @@ static void apic_send_ipi(struct kvm_lapic *apic)
- 	apic_debug("icr_high 0x%x, icr_low 0x%x, "
- 		   "short_hand 0x%x, dest 0x%x, trig_mode 0x%x, level 0x%x, "
- 		   "dest_mode 0x%x, delivery_mode 0x%x, vector 0x%x\n",
--		   icr_high, icr_low, irq.shorthand, irq.dest,
-+		   icr_high, icr_low, irq.shorthand, irq.dest_id,
- 		   irq.trig_mode, irq.level, irq.dest_mode, irq.delivery_mode,
- 		   irq.vector);
- 
-@@ -560,7 +560,7 @@ static void update_divide_count(struct kvm_lapic *apic)
- 	apic->divide_count = 0x1 << (tmp2 & 0x7);
- 
- 	apic_debug("timer divide count is 0x%x\n",
--				   apic->lapic_timer.divide_count);
-+				   apic->divide_count);
- }
- 
- static void start_apic_timer(struct kvm_lapic *apic)
+Ok. Is there any programmatic way to determine whether a given Dell 
+complies with your WMI spec or not? I'd prefer not to use DMI tables 
+unless it's the only way to identify the machines - the risk is that 
+there'll be something else that also uses its own codes and will just 
+behave oddly until someone figures out why it's broken.
+
 -- 
-1.5.6.6
-
+Matthew Garrett | mjg59@srcf.ucam.org
