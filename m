@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbZD2GKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbZD2GOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756641AbZD2GKo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 02:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbZD2GKS
+	id S1754431AbZD2GOa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 02:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZD2GOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 02:10:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51385 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752867AbZD2GKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 02:10:16 -0400
-Date: Wed, 29 Apr 2009 08:09:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 5/5] ring-buffer: fix printk output
-Message-ID: <20090429060955.GD6148@elte.hu>
-References: <20090429044814.138790038@goodmis.org> <20090429045908.394874083@goodmis.org> <20090428222024.8db50539.akpm@linux-foundation.org> <20090429054359.GA6148@elte.hu> <20090428225541.9ca61a12.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090428225541.9ca61a12.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 29 Apr 2009 02:14:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47638 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752055AbZD2GOT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 02:14:19 -0400
+Date: Tue, 28 Apr 2009 23:10:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org
+Subject: Re: [KVM PATCH v3 0/2] irqfd
+Message-Id: <20090428231002.919419dd.akpm@linux-foundation.org>
+In-Reply-To: <20090427182540.6646.96740.stgit@dev.haskins.net>
+References: <20090427182540.6646.96740.stgit@dev.haskins.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 27 Apr 2009 14:33:24 -0400 Gregory Haskins <ghaskins@novell.com> wrote:
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 29 Apr 2009 07:43:59 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> (Applies to kvm.git 41b76d8d0487c26d6d4d3fe53c1ff59b3236f096)
 > 
-> > 
-> > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > On Wed, 29 Apr 2009 00:48:19 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
-> > > 
-> > > > -	printk_once(KERN_WARNING "Tracing recursion: depth[%d]:"
-> > > > +	printk_once(KERN_WARNING "Tracing recursion: depth[%ld]:"
-> > > 
-> > > hrmph.  I didn't know that printk_once() existed, and I should 
-> > > have known.  I wonder how many other people don't know.
-> > 
-> > Was posted to linux-next@vger.kernel.org.
-> 
-> Well no wonder I didn't know about it.
+> This series implements a mechanism called "irqfd".  It lets you create
+> an eventfd based file-desriptor to inject interrupts to a kvm guest.  We
+> associate one gsi per fd for fine-grained routing.
 
-I (too?) think it's counter-productive that the linux-next list is 
-split out of lkml. I constantly fall into that trap: i get a 
-bugreport against one of our trees, i see that there's vger in the 
-Cc: list and mistake it for being Cc:-ed to lkml (all our trees are 
-developed on lkml and most of the bugreports come Cc:-ed to lkml) 
-but in reality it's Cc:-ed to linux-next which has a much smaller 
-audience. (which audience apparently does not even include you)
+It'd be nice if the KVM weenies amongst us were to be told why one
+would want to inject interrupts into a KVM guest.  Monosyllabic words
+would be preferred ;)
 
-If this email list fragmentation and the resoluting loss of 
-information bothers you too then please ask Stephen to move 
-linux-next mails to lkml (i've Cc:-ed Stephen) - it's not like it's 
-actually something separate ... today's linux-next messages are 
-tomorrow's lkml messages. Moving linux-next mails to lkml would 
-nicely improve the S/N ratio on lkml.
+> We do not have a user of this interface in this series, though note
+> future version of virtual-bus (v4 and above) will be based on this.
 
-	Ingo
+So I assume that this patchset will be merged if/when a user of it is
+merged?
+
+> The first patch will require mainline buy-in, particularly from Davide
+> (cc'd).  The last patch is kvm specific.
+
+Three EXPORT_SYMBOL_GPL()s.  Once the shouting has subsided I'd suggest
+that this be merged via the KVM tree.
+
+
