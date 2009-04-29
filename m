@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762547AbZD2Wch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762597AbZD2WdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762547AbZD2Wch (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 18:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759558AbZD2WVg
+	id S1762597AbZD2WdA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 18:33:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759615AbZD2WVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 18:21:36 -0400
+	Wed, 29 Apr 2009 18:21:37 -0400
 Received: from kroah.org ([198.145.64.141]:40500 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758251AbZD2WVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 18:21:32 -0400
+	id S1758860AbZD2WVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 18:21:33 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Apr 29 15:09:27 2009
-Message-Id: <20090429220927.546987392@mini.kroah.org>
+Message-Id: <20090429220927.709990654@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 29 Apr 2009 15:07:29 -0700
+Date: Wed, 29 Apr 2009 15:07:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Serge E. Hallyn" <serue@us.ibm.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       alan@lxorguk.ukuu.org.uk, Paul Mackerras <paulus@samba.org>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 30/58] add some long-missing capabilities to fs_mask
+Subject: [patch 31/58] powerpc: Fix data-corrupting bug in __futex_atomic_op
 References: <20090429220659.339950874@mini.kroah.org>
-Content-Disposition: inline; filename=0063-add-some-long-missing-capabilities-to-fs_mask.patch
+Content-Disposition: inline; filename=0068-powerpc-Fix-data-corrupting-bug-in-__futex_atomic_o.patch
 In-Reply-To: <20090429221657.GA11765@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,80 +39,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Serge E. Hallyn <serue@us.ibm.com>
+From: Paul Mackerras <paulus@samba.org>
 
-upstream commit: 0ad30b8fd5fe798aae80df6344b415d8309342cc
+upstream commit: 306a82881b14d950d59e0b59a55093a07d82aa9a
 
-When POSIX capabilities were introduced during the 2.1 Linux
-cycle, the fs mask, which represents the capabilities which having
-fsuid==0 is supposed to grant, did not include CAP_MKNOD and
-CAP_LINUX_IMMUTABLE.  However, before capabilities the privilege
-to call these did in fact depend upon fsuid==0.
+Richard Henderson pointed out that the powerpc __futex_atomic_op has a
+bug: it will write the wrong value if the stwcx. fails and it has to
+retry the lwarx/stwcx. loop, since 'oparg' will have been overwritten
+by the result from the first time around the loop.  This happens
+because it uses the same register for 'oparg' (an input) as it uses
+for the result.
 
-This patch introduces those capabilities into the fsmask,
-restoring the old behavior.
+This fixes it by using separate registers for 'oparg' and 'ret'.
 
-See the thread starting at http://lkml.org/lkml/2009/3/11/157 for
-reference.
-
-Note that if this fix is deemed valid, then earlier kernel versions (2.4
-and 2.2) ought to be fixed too.
-
-Changelog:
-	[Mar 23] Actually delete old CAP_FS_SET definition...
-	[Mar 20] Updated against J. Bruce Fields's patch
-
-Reported-by: Igor Zhbanov <izh1979@gmail.com>
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
 Cc: stable@kernel.org
-Cc: J. Bruce Fields <bfields@citi.umich.edu>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- include/linux/capability.h |   23 +++++++++++++++++++----
- 1 file changed, 19 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/futex.h |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
---- a/include/linux/capability.h
-+++ b/include/linux/capability.h
-@@ -366,7 +366,21 @@ typedef struct kernel_cap_struct {
- #define CAP_FOR_EACH_U32(__capi)  \
- 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
+--- a/arch/powerpc/include/asm/futex.h
++++ b/arch/powerpc/include/asm/futex.h
+@@ -27,7 +27,7 @@
+ 	PPC_LONG "1b,4b,2b,4b\n" \
+ 	".previous" \
+ 	: "=&r" (oldval), "=&r" (ret) \
+-	: "b" (uaddr), "i" (-EFAULT), "1" (oparg) \
++	: "b" (uaddr), "i" (-EFAULT), "r" (oparg) \
+ 	: "cr0", "memory")
  
-+/*
-+ * CAP_FS_MASK and CAP_NFSD_MASKS:
-+ *
-+ * The fs mask is all the privileges that fsuid==0 historically meant.
-+ * At one time in the past, that included CAP_MKNOD and CAP_LINUX_IMMUTABLE.
-+ *
-+ * It has never meant setting security.* and trusted.* xattrs.
-+ *
-+ * We could also define fsmask as follows:
-+ *   1. CAP_FS_MASK is the privilege to bypass all fs-related DAC permissions
-+ *   2. The security.* and trusted.* xattrs are fs-related MAC permissions
-+ */
-+
- # define CAP_FS_MASK_B0     (CAP_TO_MASK(CAP_CHOWN)		\
-+			    | CAP_TO_MASK(CAP_MKNOD)		\
- 			    | CAP_TO_MASK(CAP_DAC_OVERRIDE)	\
- 			    | CAP_TO_MASK(CAP_DAC_READ_SEARCH)	\
- 			    | CAP_TO_MASK(CAP_FOWNER)		\
-@@ -381,11 +395,12 @@ typedef struct kernel_cap_struct {
- # define CAP_EMPTY_SET    ((kernel_cap_t){{ 0, 0 }})
- # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, ~0 }})
- # define CAP_INIT_EFF_SET ((kernel_cap_t){{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }})
--# define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } })
-+# define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0 \
-+				    | CAP_TO_MASK(CAP_LINUX_IMMUTABLE), \
-+				    CAP_FS_MASK_B1 } })
- # define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0 \
--					    | CAP_TO_MASK(CAP_SYS_RESOURCE) \
--					    | CAP_TO_MASK(CAP_MKNOD), \
--					    CAP_FS_MASK_B1 } })
-+				    | CAP_TO_MASK(CAP_SYS_RESOURCE), \
-+				    CAP_FS_MASK_B1 } })
+ static inline int futex_atomic_op_inuser (int encoded_op, int __user *uaddr)
+@@ -47,19 +47,19 @@ static inline int futex_atomic_op_inuser
  
- #endif /* _KERNEL_CAPABILITY_U32S != 2 */
- 
+ 	switch (op) {
+ 	case FUTEX_OP_SET:
+-		__futex_atomic_op("", ret, oldval, uaddr, oparg);
++		__futex_atomic_op("mr %1,%4\n", ret, oldval, uaddr, oparg);
+ 		break;
+ 	case FUTEX_OP_ADD:
+-		__futex_atomic_op("add %1,%0,%1\n", ret, oldval, uaddr, oparg);
++		__futex_atomic_op("add %1,%0,%4\n", ret, oldval, uaddr, oparg);
+ 		break;
+ 	case FUTEX_OP_OR:
+-		__futex_atomic_op("or %1,%0,%1\n", ret, oldval, uaddr, oparg);
++		__futex_atomic_op("or %1,%0,%4\n", ret, oldval, uaddr, oparg);
+ 		break;
+ 	case FUTEX_OP_ANDN:
+-		__futex_atomic_op("andc %1,%0,%1\n", ret, oldval, uaddr, oparg);
++		__futex_atomic_op("andc %1,%0,%4\n", ret, oldval, uaddr, oparg);
+ 		break;
+ 	case FUTEX_OP_XOR:
+-		__futex_atomic_op("xor %1,%0,%1\n", ret, oldval, uaddr, oparg);
++		__futex_atomic_op("xor %1,%0,%4\n", ret, oldval, uaddr, oparg);
+ 		break;
+ 	default:
+ 		ret = -ENOSYS;
 
 
