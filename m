@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758893AbZD2BDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbZD2BFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758893AbZD2BDZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Apr 2009 21:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbZD2BDN
+	id S932089AbZD2BFz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Apr 2009 21:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757802AbZD2BFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Apr 2009 21:03:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59581 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751294AbZD2BDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Apr 2009 21:03:12 -0400
-Message-ID: <49F7A71F.5040709@kernel.org>
-Date: Tue, 28 Apr 2009 18:02:23 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 28 Apr 2009 21:05:44 -0400
+Received: from host2.marvell.com ([65.219.4.2]:6099 "EHLO maili.marvell.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755311AbZD2BFo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Apr 2009 21:05:44 -0400
+From: Bing Zhao <bzhao@marvell.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-bluetooth@vger.kernel.org" <linux-bluetooth@vger.kernel.org>
+Date: Tue, 28 Apr 2009 18:14:59 -0700
+Subject: RE: BUG: sleeping function called from invalid context at
+ mm/slub.c:1595 --- "hcitool cc" or "l2ping"
+Thread-Topic: BUG: sleeping function called from invalid context at
+ mm/slub.c:1595 --- "hcitool cc" or "l2ping"
+Thread-Index: AcnIZpY7EbExf/2aSEacDZ40Vn3fwgAAJ2Iw
+Message-ID: <477F20668A386D41ADCC57781B1F704301E3F5C7FC@SC-VEXCH1.marvell.com>
+References: <477F20668A386D41ADCC57781B1F704301E3F5C7F5@SC-VEXCH1.marvell.com>
+ <1240966565.997.65.camel@localhost.localdomain>
+In-Reply-To: <1240966565.997.65.camel@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Linux-Scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH] scsi: ses check name in enclosure_component_register
-References: <49F6678D.3080207@kernel.org>	 <1240957589.3380.67.camel@mulgrave.int.hansenpartnership.com>	 <49F7979A.8040302@kernel.org> <1240964289.3380.73.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1240964289.3380.73.camel@mulgrave.int.hansenpartnership.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 Apr 2009 01:05:43.0840 (UTC) FILETIME=[9F1BFA00:01C9C866]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Tue, 2009-04-28 at 16:56 -0700, Yinghai Lu wrote:
->> James Bottomley wrote:
->>> On Mon, 2009-04-27 at 19:18 -0700, Yinghai Lu wrote:
->>>> dev_set_name will use sprintf to copy the name.
->>>> need to check if the name does valid.
->>>>
->>>> otherwise will error from device_add later.
->>> I think what you mean to say is that empty names aren't allowed in the
->>> device model.
->>>
->>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>>>
->>>> diff --git a/drivers/misc/enclosure.c b/drivers/misc/enclosure.c
->>>> index 3cf61ec..68743a9 100644
->>>> --- a/drivers/misc/enclosure.c
->>>> +++ b/drivers/misc/enclosure.c
->>>> @@ -255,7 +255,7 @@ enclosure_component_register(struct enclosure_device *edev,
->>>>  	ecomp->number = number;
->>>>  	cdev = &ecomp->cdev;
->>>>  	cdev->parent = get_device(&edev->edev);
->>>> -	if (name)
->>>> +	if (name && name[0])
->>>>  		dev_set_name(cdev, name);
->>> Actually, I think this should become
->>>
->>> dev_set_name(cdev, "%s", name);
->>>
->>> as well, otherwise any name with a percent in it will get interpreted in
->>> ways we're not expecting at all.
->> i tried that it still failed.
+> Hi Bing,
 > 
-> I didn't say it was the fix to your problem.  I said on looking at the
-> code it's another potential problem source.  Your problem is that
-> filesystems don't support empty file names.
+> > I'm getting this error whenever I use "hcitool cc" or "l2ping xx:xx:xx:xx:xx:xx"
+> command.
+> >
+> > Kernel: version 2.6.30-rc3 from bluetooth-testing tree
+> > HCI Tool: version 3.20
+> > Laptop: Lenovo X61s
+> 
+> can you rebase the bluetooth-testing.git tree from a few hours ago and
+> test again.
+> 
+> Regards
+> 
+> Marcel
+> 
 
-dev_set_name(cdev, name);
+Hi Marcel,
 
-the name become fmt. 
+"git log" shows the last commit was ad4751fcada51292bb2967748667b582281647d0.
+Bluetooth: Fix errors and warnings in L2CAP reported by checkpatch.pl
 
-YH
+Is it the latest one?
+
+Thanks,
+
+Bing
+
+
+
 
