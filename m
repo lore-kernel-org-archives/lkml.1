@@ -1,106 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbZD3AKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756436AbZD3AKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760904AbZD3AKA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 20:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756747AbZD3AJt
+	id S1756436AbZD3AKd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 20:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZD3AKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 20:09:49 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:38752 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751109AbZD3AJs (ORCPT
+	Wed, 29 Apr 2009 20:10:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43201 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753727AbZD3AKT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 20:09:48 -0400
-X-IronPort-AV: E=Sophos;i="4.40,269,1238976000"; 
-   d="scan'208";a="178788300"
-Date: Wed, 29 Apr 2009 17:09:48 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: linux-usb@vger.kernel.org
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/5] USB: Provide USB boot device availability notification
-Message-ID: <20090430000948.GA3408@cuplxvomd02.corp.sa.net>
+	Wed, 29 Apr 2009 20:10:19 -0400
+Date: Wed, 29 Apr 2009 17:06:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, thomas.pi@arcor.dea,
+       Yuriy Lalym <ylalym@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ltt-dev@lists.casi.polymtl.ca
+Subject: Re: [PATCH] Fix dirty page accounting in
+ redirty_page_for_writepage()
+In-Reply-To: <20090429232546.GB15782@Krystal>
+Message-ID: <alpine.LFD.2.00.0904291701450.22156@localhost.localdomain>
+References: <20090429232546.GB15782@Krystal>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-3; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Stern <stern@rowland.harvard.edu>
 
-Use boot device discovery infrastructure to report availability of USB
-devices.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: David VomLehn <dvomlehn@cisco.com>
----
- drivers/usb/core/hub.c |   26 ++++++++++++++++++++++++++
- 1 files changed, 26 insertions(+), 0 deletions(-)
+On Wed, 29 Apr 2009, Mathieu Desnoyers wrote:
+>
+> This patch adds missing dirty page accounting in redirty_page_for_writepage().
+> This should fix a _lot_ of issues involving machines becoming slow under heavy
+> write I/O. No surprise : eventually the system starts swapping.
 
-diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index be86ae3..01a9b76 100644
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -37,6 +37,20 @@
- #endif
- #endif
- 
-+/* The mask of possible USB boot devices depends on what drivers and
-+ * options have been configured into the kernel.  There are too many
-+ * USB network config options to list here, so just assume it is always
-+ * possible to have a USB network device.
-+ */
-+static int usb_bootdev_mask = 0
-+#ifdef CONFIG_USB_SERIAL_CONSOLE
-+				| BOOTDEV_CONSOLE_MASK
-+#endif
-+#if defined(CONFIG_USB_STORAGE) | defined(CONFIG_BLK_DEV_UB)
-+				| BOOTDEV_BLOCK_MASK
-+#endif
-+				| BOOTDEV_NETDEV_MASK;
-+
- struct usb_hub {
- 	struct device		*intfdev;	/* the "interface" device */
- 	struct usb_device	*hdev;
-@@ -73,6 +87,7 @@ struct usb_hub {
- 	unsigned		limited_power:1;
- 	unsigned		quiescing:1;
- 	unsigned		disconnected:1;
-+	unsigned		probing:1;
- 
- 	unsigned		has_indicators:1;
- 	u8			indicator[USB_MAXCHILDREN];
-@@ -1079,6 +1094,9 @@ static int hub_configure(struct usb_hub *hub,
- 	if (hub->has_indicators && blinkenlights)
- 		hub->indicator [0] = INDICATOR_CYCLE;
- 
-+	hub->probing = 1;
-+	bootdev_found(usb_bootdev_mask);
-+
- 	hub_activate(hub, HUB_INIT);
- 	return 0;
- 
-@@ -1124,6 +1142,9 @@ static void hub_disconnect(struct usb_interface *intf)
- 	usb_buffer_free(hub->hdev, sizeof(*hub->buffer), hub->buffer,
- 			hub->buffer_dma);
- 
-+	if (hub->probing)
-+		bootdev_probe_done(usb_bootdev_mask);
-+
- 	kref_put(&hub->kref, hub_release);
- }
- 
-@@ -3135,6 +3156,11 @@ static void hub_events(void)
- 						portstatus, portchange);
- 		} /* end for i */
- 
-+		if (hub->probing) {
-+			hub->probing = 0;
-+			bootdev_probe_done(usb_bootdev_mask);
-+		}
-+
- 		/* deal with hub status changes */
- 		if (test_and_clear_bit(0, hub->event_bits) == 0)
- 			;	/* do nothing */
+That patch (and description) is odd.
+
+The patch actually adds the dirty page accounting not to 
+redirty_page_for_writepage(), but to __set_page_dirty_nobuffers().
+
+And __set_page_dirty_nobuffers() will later (just a few lines down) call 
+down to account_page_dirtied(), which in turn does all that 
+same accounting (assuming the "mapping" is marked to account for dirty.
+
+So the description seems to be wrong, but so does the patch. 
+
+Did you attach the wrong patch (explaining both problems)?
+
+Or if the patch is what you really meant to do, then you need to fix your 
+explanation, and also explain why the double-dirty accounting is a good 
+idea.
+
+Or is the real problem perhaps that your /tmp is ramdisk, and not marked 
+to do dirty accounting?
+
+		Linus
