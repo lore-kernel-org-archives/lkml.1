@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763460AbZD3Ola@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763714AbZD3Ols@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763460AbZD3Ola (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 10:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbZD3OlV
+	id S1763714AbZD3Ols (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 10:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763477AbZD3Old
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 10:41:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55904 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752499AbZD3OlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 10:41:20 -0400
-Date: Thu, 30 Apr 2009 16:40:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Eric Lacombe <goretux@gmail.com>, linux-kernel@vger.kernel.org,
-       davej@redhat.com, tglx@linutronix.de
-Subject: Re: [unused symbol] need to use init_mm
-Message-ID: <20090430144057.GA14897@elte.hu>
-References: <200904301232.05302.goretux@gmail.com> <20090430140957.GD21997@csn.ul.ie>
+	Thu, 30 Apr 2009 10:41:33 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:53447 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763656AbZD3Olc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 10:41:32 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
+Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
+Date: Thu, 30 Apr 2009 16:40:32 +0200
+User-Agent: KMail/1.9.9
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       john.williams@petalogix.com
+References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <200904301553.47556.arnd@arndb.de> <49F9B13C.3060008@monstr.eu>
+In-Reply-To: <49F9B13C.3060008@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090430140957.GD21997@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200904301640.32769.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19wSpE92JrV+3gjqK1KX+fYzgGHyiZn1Kzj4gZ
+ K7nIL0DTKwkjt1fGISnpACdP8aEzgGJgKnT/5y5kRIwh6fxDzy
+ mzLjFkar0Xa7uC3eTKnNQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 30 April 2009, Michal Simek wrote:
 
-* Mel Gorman <mel@csn.ul.ie> wrote:
+> 2. header cleanup -> some of them is pain because I have to recompile toolchain
+> that's should be a big deal but after recompilation kernel, user apps I am getting some problems.
 
-> On Thu, Apr 30, 2009 at 12:32:04PM +0200, Eric Lacombe wrote:
-> > Hi,
-> > 
-> > Within a module I work on, I need to access to init_mm, but as it is marked 
-> > UNUSED, I wonder if there is another way (an API) to access to it.
-> > Otherwise, what can I do to have this mark removed from init_mm in the 
-> > mainline? as my module is really not yet ready for inclusion.
-> > 
-> > Thanks in advance for your response,
-> > 
-> 
-> It looks to be that it was removed already, somewhat behind schedule, in
-> commit 9470565579f29486f4ed0ffa50774268b64994b0 after an initial attempt
-> was made in commit 3abf024d2abb79614d8c4cb25a70d5596f77d0ad.  I don't know
-> if there is a procedure for bringing it back but I would guess it's a call
-> for the x86 maintainers. I imagine they will want to at least know;
-> 
-> 1. Why do you need init_mm exported?
-> 2. Is there an alternative approach to using init_mm?
-> 3. Assuming yes, what are the downsides?
-> 4. When do you think the module will be ready for posting?  i.e. is this
->    really something destined for mainline or some perma-out-of-tree?
+Yes, I understand that you have a circular dependency there, but fixing
+the ABI can only become harder with time, as more people start using
+the current kernel/toolchain combination.
 
-yes, those questions have to be answered.
+> 3. syscall cleanup -> we still have old libc and I can't simple remove ancient syscalls
 
-	Ingo
+I had hoped that the way I set __ARCH_WANT_SYSCALL_* in the microblaze
+unistd.h would provide an easy way to migrate, because this still defines
+almost all traditional system calls (I haven't double-checked if some more
+are currently used on microblaze, but they would be easy to add).
+This means that as a first step, rebuilding the tool chain (as above) should
+be sufficient and not require source-level changes to libc. From that point,
+you can remove the remaining __ARCH_WANT_SYSCALL_* defintions one by one,
+and change the libc accordingly.
+
+I could also try building uclibc with the generic headers if I find the
+time. Which version do you use, just upstream or do you have a private
+libc tree with more changes?
+
+	Arnd <><
