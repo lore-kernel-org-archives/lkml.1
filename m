@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933186AbZD3RdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932449AbZD3Rds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933186AbZD3RdZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764660AbZD3RIS
+	id S932449AbZD3Rds (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764630AbZD3RIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:08:18 -0400
-Received: from kroah.org ([198.145.64.141]:56713 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:08:19 -0400
+Received: from kroah.org ([198.145.64.141]:56697 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764628AbZD3RIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:08:04 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:46 2009
-Message-Id: <20090430165746.828420780@mini.kroah.org>
+	id S1764597AbZD3RIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:08:05 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:47 2009
+Message-Id: <20090430165746.984307915@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:46 -0700
+Date: Thu, 30 Apr 2009 09:56:47 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,9 +27,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, mtosatti@redhat.com, avi@redhat.com,
        Sheng Yang <sheng@linux.intel.com>
-Subject: [patch 57/88] KVM: MMU: Extend kvm_mmu_page->slot_bitmap size
+Subject: [patch 58/88] KVM: VMX: Move private memory slot position
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-mmu-extend-kvm_mmu_page-slot_bitmap-size.patch
+Content-Disposition: inline; filename=kvm-vmx-move-private-memory-slot-position.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -42,64 +42,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Sheng Yang <sheng@linux.intel.com>
 
-(cherry picked from 291f26bc0f89518ad7ee3207c09eb8a743ac8fcc)
+(cherry picked from 6fe639792c7b8e462baeaac39ecc33541fd5da6e)
 
-Otherwise set_bit() for private memory slot(above KVM_MEMORY_SLOTS) would
-corrupted memory in 32bit host.
+PCI device assignment would map guest MMIO spaces as separate slot, so it is
+possible that the device has more than 2 MMIO spaces and overwrite current
+private memslot.
+
+The patch move private memory slot to the top of userspace visible memory slots.
 
 Signed-off-by: Sheng Yang <sheng@linux.intel.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/include/asm/kvm_host.h |    8 +++++---
- arch/x86/kvm/mmu.c              |    6 +++---
- 2 files changed, 8 insertions(+), 6 deletions(-)
+ arch/x86/kvm/vmx.c |    2 +-
+ arch/x86/kvm/vmx.h |    5 +++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -190,9 +190,11 @@ struct kvm_mmu_page {
- 	u64 *spt;
- 	/* hold the gfn of each spte inside spt */
- 	gfn_t *gfns;
--	unsigned long slot_bitmap; /* One bit set per slot which has memory
--				    * in this shadow page.
--				    */
-+	/*
-+	 * One bit set per slot which has memory
-+	 * in this shadow page.
-+	 */
-+	DECLARE_BITMAP(slot_bitmap, KVM_MEMORY_SLOTS + KVM_PRIVATE_MEM_SLOTS);
- 	int multimapped;         /* More than one parent_pte? */
- 	int root_count;          /* Currently serving as active root */
- 	bool unsync;
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -787,7 +787,7 @@ static struct kvm_mmu_page *kvm_mmu_allo
- 	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
- 	list_add(&sp->link, &vcpu->kvm->arch.active_mmu_pages);
- 	ASSERT(is_empty_shadow_page(sp->spt));
--	sp->slot_bitmap = 0;
-+	bitmap_zero(sp->slot_bitmap, KVM_MEMORY_SLOTS + KVM_PRIVATE_MEM_SLOTS);
- 	sp->multimapped = 0;
- 	sp->parent_pte = parent_pte;
- 	--vcpu->kvm->arch.n_free_mmu_pages;
-@@ -1362,7 +1362,7 @@ static void page_header_update_slot(stru
- 	int slot = memslot_id(kvm, gfn_to_memslot(kvm, gfn));
- 	struct kvm_mmu_page *sp = page_header(__pa(pte));
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -2407,7 +2407,7 @@ static int vmx_set_tss_addr(struct kvm *
+ {
+ 	int ret;
+ 	struct kvm_userspace_memory_region tss_mem = {
+-		.slot = 8,
++		.slot = TSS_PRIVATE_MEMSLOT,
+ 		.guest_phys_addr = addr,
+ 		.memory_size = PAGE_SIZE * 3,
+ 		.flags = 0,
+--- a/arch/x86/kvm/vmx.h
++++ b/arch/x86/kvm/vmx.h
+@@ -331,8 +331,9 @@ enum vmcs_field {
  
--	__set_bit(slot, &sp->slot_bitmap);
-+	__set_bit(slot, sp->slot_bitmap);
- }
+ #define AR_RESERVD_MASK 0xfffe0f00
  
- static void mmu_convert_notrap(struct kvm_mmu_page *sp)
-@@ -2451,7 +2451,7 @@ void kvm_mmu_slot_remove_write_access(st
- 		int i;
- 		u64 *pt;
+-#define APIC_ACCESS_PAGE_PRIVATE_MEMSLOT	9
+-#define IDENTITY_PAGETABLE_PRIVATE_MEMSLOT	10
++#define TSS_PRIVATE_MEMSLOT			(KVM_MEMORY_SLOTS + 0)
++#define APIC_ACCESS_PAGE_PRIVATE_MEMSLOT	(KVM_MEMORY_SLOTS + 1)
++#define IDENTITY_PAGETABLE_PRIVATE_MEMSLOT	(KVM_MEMORY_SLOTS + 2)
  
--		if (!test_bit(slot, &sp->slot_bitmap))
-+		if (!test_bit(slot, sp->slot_bitmap))
- 			continue;
- 
- 		pt = sp->spt;
+ #define VMX_NR_VPIDS				(1 << 16)
+ #define VMX_VPID_EXTENT_SINGLE_CONTEXT		1
 
 
