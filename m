@@ -1,191 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762727AbZD3NUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762765AbZD3NVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762727AbZD3NUn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 09:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762329AbZD3NU2
+	id S1762765AbZD3NVX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 09:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761135AbZD3NVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 09:20:28 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40525 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762331AbZD3NU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 09:20:26 -0400
-Subject: Re: [PATCH] use GFP_NOFS in kernel_event()
-From: Eric Paris <eparis@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Matt Mackall <mpm@selenic.com>,
-       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Al Viro <viro@zeniv.linux.org.uk>
-In-Reply-To: <20090429191044.b6fceae2.akpm@linux-foundation.org>
-References: <20090430020004.GA1898@localhost>
-	 <20090429191044.b6fceae2.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 30 Apr 2009 09:19:33 -0400
-Message-Id: <1241097573.6020.7.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Thu, 30 Apr 2009 09:21:12 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:34875 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756355AbZD3NVL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 09:21:11 -0400
+Message-ID: <49F9A5BA.9030100@hp.com>
+Date: Thu, 30 Apr 2009 09:20:58 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+MIME-Version: 1.0
+To: Andrea Righi <righi.andrea@gmail.com>
+CC: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/9] cgroup: io-throttle controller (v13)
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>
+In-Reply-To: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-29 at 19:10 -0700, Andrew Morton wrote:
-> On Thu, 30 Apr 2009 10:00:04 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > Fix a possible deadlock on inotify_mutex, reported by lockdep.
-> > 
-> > inotify_inode_queue_event() => take inotify_mutex => kernel_event() =>
-> > kmalloc() => SLOB => alloc_pages_node() => page reclaim => slab reclaim =>
-> > dcache reclaim => inotify_inode_is_dead => take inotify_mutex => deadlock
-> > 
-> > The actual deadlock may not happen because the inode was grabbed at
-> > inotify_add_watch(). But the GFP_KERNEL here is unsound and not
-> > consistent with the other two GFP_NOFS inside the same function.
-> > 
-> > [ 2668.325318]
-> > [ 2668.325322] =================================
-> > [ 2668.327448] [ INFO: inconsistent lock state ]
-> > [ 2668.327448] 2.6.30-rc2-next-20090417 #203
-> > [ 2668.327448] ---------------------------------
-> > [ 2668.327448] inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W} usage.
-> > [ 2668.327448] kswapd0/380 [HC0[0]:SC0[0]:HE1:SE1] takes:
-> > [ 2668.327448]  (&inode->inotify_mutex){+.+.?.}, at: [<ffffffff8112f1b5>] inotify_inode_is_dead+0x35/0xb0
+Hi Andrea -
 
+FYI: I ran a simple test using this code to try and gauge the overhead
+incurred by enabling this technology. Using a single 400GB volume split
+into two 200GB partitions I ran two processes in parallel performing a
+mkfs (ext2) on each partition. First w/out cgroup io-throttle and then
+with it enabled (with each task having throttling enabled to
+400MB/second (much, much more than the device is actually capable of
+doing)). The idea here is to see the base overhead of just having the
+io-throttle code in the paths.
 
-> > [ 2668.327448] Pid: 380, comm: kswapd0 Not tainted 2.6.30-rc2-next-20090417 #203
-> > [ 2668.327448] Call Trace:
-> > [ 2668.327448]  [<ffffffff810789ef>] print_usage_bug+0x19f/0x200
-> > [ 2668.327448]  [<ffffffff81018bff>] ? save_stack_trace+0x2f/0x50
-> > [ 2668.327448]  [<ffffffff81078f0b>] mark_lock+0x4bb/0x6d0
-> > [ 2668.327448]  [<ffffffff810799e0>] ? check_usage_forwards+0x0/0xc0
-> > [ 2668.327448]  [<ffffffff8107b142>] __lock_acquire+0xc62/0x1ae0
-> > [ 2668.327448]  [<ffffffff810f478c>] ? slob_free+0x10c/0x370
-> > [ 2668.327448]  [<ffffffff8107c0a1>] lock_acquire+0xe1/0x120
-> > [ 2668.327448]  [<ffffffff8112f1b5>] ? inotify_inode_is_dead+0x35/0xb0
-> > [ 2668.327448]  [<ffffffff81562d43>] mutex_lock_nested+0x63/0x420
-> > [ 2668.327448]  [<ffffffff8112f1b5>] ? inotify_inode_is_dead+0x35/0xb0
-> > [ 2668.327448]  [<ffffffff8112f1b5>] ? inotify_inode_is_dead+0x35/0xb0
-> > [ 2668.327448]  [<ffffffff81012fe9>] ? sched_clock+0x9/0x10
-> > [ 2668.327448]  [<ffffffff81077165>] ? lock_release_holdtime+0x35/0x1c0
-> > [ 2668.327448]  [<ffffffff8112f1b5>] inotify_inode_is_dead+0x35/0xb0
-> > [ 2668.327448]  [<ffffffff8110c9dc>] dentry_iput+0xbc/0xe0
-> > [ 2668.327448]  [<ffffffff8110cb23>] d_kill+0x33/0x60
-> > [ 2668.327448]  [<ffffffff8110ce23>] __shrink_dcache_sb+0x2d3/0x350
-> > [ 2668.327448]  [<ffffffff8110cffa>] shrink_dcache_memory+0x15a/0x1e0
-> > [ 2668.327448]  [<ffffffff810d0cc5>] shrink_slab+0x125/0x180
-> > [ 2668.327448]  [<ffffffff810d1540>] kswapd+0x560/0x7a0
-> > [ 2668.327448]  [<ffffffff810ce160>] ? isolate_pages_global+0x0/0x2c0
-> > [ 2668.327448]  [<ffffffff81065a30>] ? autoremove_wake_function+0x0/0x40
-> > [ 2668.327448]  [<ffffffff8107953d>] ? trace_hardirqs_on+0xd/0x10
-> > [ 2668.327448]  [<ffffffff810d0fe0>] ? kswapd+0x0/0x7a0
-> > [ 2668.327448]  [<ffffffff8106555b>] kthread+0x5b/0xa0
-> > [ 2668.327448]  [<ffffffff8100d40a>] child_rip+0xa/0x20
-> > [ 2668.327448]  [<ffffffff8100cdd0>] ? restore_args+0x0/0x30
-> > [ 2668.327448]  [<ffffffff81065500>] ? kthread+0x0/0xa0
-> > [ 2668.327448]  [<ffffffff8100d400>] ? child_rip+0x0/0x20
-> > 
+Doing 30 runs of each (w/out & w/ io-throttle enabled) shows very little
+difference (time in seconds)
 
-> 
-> Somebody was going to fix this for us via lockdep annotation.
-> 
-> <adds randomly-chosen cc>
+w/out: min=80.196 avg=80.585 max=81.030 sdev=0.215 spread=0.834
+with:  min=80.402 avg=80.836 max=81.623 sdev=0.327 spread=1.221
 
-I really didn't forget this, but I can't figure out how to recreate it,
-so I don't know if my logic in the patch is sound.  The patch certainly
-will shut up the complaint.
+So only around 0.3% overhead - and that may not be conclusive with the
+standard deviations seen.
 
-We can only hit this inotify cleanup path if the i_nlink = 0.  I can't
-find a way to leave the dentry around for memory pressure to clean up
-later, but have the n_link = 0.  On ext* the inode is kicked out as soon
-as the last close on all open fds for an inode which has been unlinked.
-I tried attaching an inotify watch to an NFS or CIFS inode, deleting the
-inode on another node, and then putting the first machine under memory
-pressure.  I'm not sure why, but the dentry or inode in question were
-never evicted so I didn't hit this path either....
+--
 
-I know the patch will shut up the problem, but since I can't figure out
-by looking at the code a path to reproduce I don't really feel 100%
-confident that it is correct....
+FYI: The test was run on 2.6.30-rc1+your patches on a 16-way x86_64 box
+(128GB RAM) plus a single FC volume off of a 1Gb FC RAID controller.
 
--Eric
-
-inotify: lockdep annotation when watch being removed
-
-From: Eric Paris <eparis@redhat.com>
-
-When a dentry is being evicted from memory pressure, if the inode associated
-with that dentry has i_nlink == 0 we are going to drop all of the watches and
-kick everything out.  Lockdep complains that previously holding inotify_mutex
-we did a __GFP_FS allocation and now __GFP_FS reclaim is taking that lock.
-There is no deadlock or danger, since we know on this code path we are
-actually cleaning up and evicting everything.  So we move the lock into a new
-class for clean up.
-
-Signed-off-by: Eric Paris <eparis@redhat.com>
----
-
- fs/notify/inotify/inotify.c |   11 +++++++++++
- include/linux/fsnotify.h    |    6 ++++++
- include/linux/inotify.h     |    1 +
- 3 files changed, 18 insertions(+), 0 deletions(-)
-
-
-diff --git a/fs/notify/inotify/inotify.c b/fs/notify/inotify/inotify.c
-index 220c13f..a8844a1 100644
---- a/fs/notify/inotify/inotify.c
-+++ b/fs/notify/inotify/inotify.c
-@@ -34,6 +34,7 @@
- #include <linux/inotify.h>
- 
- static atomic_t inotify_cookie;
-+static struct lock_class_key inotify_mutex_free;
- 
- /*
-  * Lock ordering:
-@@ -445,6 +446,16 @@ void inotify_unmount_inodes(struct list_head *list)
- EXPORT_SYMBOL_GPL(inotify_unmount_inodes);
- 
- /**
-+ * Hello!
-+ */
-+void inotify_reclassify_lock(struct inode *inode)
-+{
-+	BUG_ON(inode->i_nlink);
-+
-+	lockdep_set_class(&inode->inotify_mutex, &inotify_mutex_free);
-+}
-+
-+/**
-  * inotify_inode_is_dead - an inode has been deleted, cleanup any watches
-  * @inode: inode that is about to be removed
-  */
-diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
-index f8e6728..beb8d82 100644
---- a/include/linux/fsnotify.h
-+++ b/include/linux/fsnotify.h
-@@ -83,6 +83,12 @@ static inline void fsnotify_nameremove(struct dentry *dentry, int isdir)
-  */
- static inline void fsnotify_inoderemove(struct inode *inode)
- {
-+	/*
-+	 * only called when an inode is being evicted from cache and the
-+	 * i_nlink is 0, so we know that nothing else is going to be
-+	 * joining it
-+	 */
-+	inotify_reclassify_lock(inode);
- 	inotify_inode_queue_event(inode, IN_DELETE_SELF, 0, NULL, NULL);
- 	inotify_inode_is_dead(inode);
- }
-diff --git a/include/linux/inotify.h b/include/linux/inotify.h
-index 37ea289..4313c9b 100644
---- a/include/linux/inotify.h
-+++ b/include/linux/inotify.h
-@@ -112,6 +112,7 @@ extern void inotify_inode_queue_event(struct inode *, __u32, __u32,
- extern void inotify_dentry_parent_queue_event(struct dentry *, __u32, __u32,
- 					      const char *);
- extern void inotify_unmount_inodes(struct list_head *);
-+extern void inotify_reclassify_lock(struct inode *inode);
- extern void inotify_inode_is_dead(struct inode *);
- extern u32 inotify_get_cookie(void);
- 
-
-
+Regards,
+Alan D. Brunelle
+Hewlett-Packard
