@@ -1,34 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764387AbZD3QEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763842AbZD3QHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764387AbZD3QEA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 12:04:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764076AbZD3QDp
+	id S1763842AbZD3QHa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 12:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbZD3QHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 12:03:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37776 "EHLO mx2.mail.elte.hu"
+	Thu, 30 Apr 2009 12:07:14 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45709 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762277AbZD3QDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 12:03:43 -0400
-Date: Thu, 30 Apr 2009 18:00:54 +0200
+	id S1758971AbZD3QHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 12:07:13 -0400
+Date: Thu, 30 Apr 2009 18:06:54 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux.com>, Eric Dumazet <dada1@cosmosbay.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, thomas.pi@arcor.dea,
-       Yuriy Lalym <ylalym@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ltt-dev@lists.casi.polymtl.ca, Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] Fix dirty page accounting in
-	redirty_page_for_writepage()
-Message-ID: <20090430160054.GB4723@elte.hu>
-References: <20090430024303.GB19875@Krystal> <alpine.DEB.1.10.0904300921290.22262@qirst.com> <20090430133859.GB8329@elte.hu> <alpine.DEB.1.10.0904300938220.22262@qirst.com> <20090430141446.GD14696@elte.hu> <alpine.DEB.1.10.0904301013110.14178@qirst.com> <20090430143819.GF14696@elte.hu> <alpine.DEB.1.10.0904301042170.4028@qirst.com> <20090430150142.GC20580@elte.hu> <alpine.DEB.1.10.0904301114440.4028@qirst.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: unlisted-recipients: no@elvis.elte.hu, To-header@elvis.elte.hu,
+       on@elvis.elte.hu, "input <"@elvis.elte.hu,
+       ;;;linux-arch@vger.kernel.org;, Michal Simek <monstr@monstr.eu>,
+       Remis Lima Baima <remis.developer@googlemail.com>,
+       linux-kernel@vger.kernel.org
+Illegal-Object: Syntax error in Cc: addresses found on vger.kernel.org:
+	Cc:	;linux-arch@vger.kernel.org
+			^-extraneous tokens in mailbox, missing end of mailbox
+Illegal-Object: Syntax error in Cc: addresses found on vger.kernel.org:
+	Cc:	;linux-arch@vger.kernel.org
+			^-extraneous tokens in mailbox, missing end of mailbox
+Subject: Re: [PATCH 01/27] asm-generic: rename atomic.h to atomic-long.h
+Message-ID: <20090430160654.GB5913@elte.hu>
+References: <cover.1241105648.git.arnd@arndb.de> <33862b856508b9a61f6644355d2c9a4b6a4109a6.1241105648.git.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904301114440.4028@qirst.com>
+In-Reply-To: <33862b856508b9a61f6644355d2c9a4b6a4109a6.1241105648.git.arnd@arndb.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -43,36 +44,39 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Christoph Lameter <cl@linux.com> wrote:
+* Arnd Bergmann <arnd@arndb.de> wrote:
 
-> http://article.gmane.org/gmane.linux.kernel.cross-arch/1128
-> http://article.gmane.org/gmane.linux.kernel.cross-arch/1132
-> http://article.gmane.org/gmane.linux.kernel.cross-arch/1134
-> http://article.gmane.org/gmane.linux.kernel.cross-arch/1138
-> http://article.gmane.org/gmane.linux.kernel.cross-arch/1139
-> http://article.gmane.org/gmane.linux.kernel.cross-arch/1145 VM stats
-> http://article.gmane.org/gmane.linux.kernel.cross-arch/1160 NFS stats
-> http://article.gmane.org/gmane.linux.kernel.cross-arch/1161 Genhd stats
-> http://article.gmane.org/gmane.linux.kernel.cross-arch/1164 SRCU
+> The existing asm-generic/atomic.h only defines the
+> atomic_long type. This renames it to atomic-long.h
+> so we have a place to add a truly generic atomic.h
+> that can be used on all non-SMP systems.
+> 
+> Signed-off-by: Remis Lima Baima <remis.developer@googlemail.com>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  arch/alpha/include/asm/atomic.h                 |    2 +-
+>  arch/arm/include/asm/atomic.h                   |    2 +-
+>  arch/avr32/include/asm/atomic.h                 |    2 +-
+>  arch/blackfin/include/asm/atomic.h              |    2 +-
+>  arch/cris/include/asm/atomic.h                  |    2 +-
+>  arch/frv/include/asm/atomic.h                   |    2 +-
+>  arch/h8300/include/asm/atomic.h                 |    2 +-
+>  arch/ia64/include/asm/atomic.h                  |    2 +-
+>  arch/m32r/include/asm/atomic.h                  |    2 +-
+>  arch/m68k/include/asm/atomic_mm.h               |    2 +-
+>  arch/m68k/include/asm/atomic_no.h               |    2 +-
+>  arch/microblaze/include/asm/atomic.h            |    2 +-
+>  arch/mips/include/asm/atomic.h                  |    2 +-
+>  arch/mn10300/include/asm/atomic.h               |    2 +-
+>  arch/parisc/include/asm/atomic.h                |    2 +-
+>  arch/powerpc/include/asm/atomic.h               |    2 +-
+>  arch/s390/include/asm/atomic.h                  |    2 +-
+>  arch/sh/include/asm/atomic.h                    |    2 +-
+>  arch/sparc/include/asm/atomic_32.h              |    2 +-
+>  arch/sparc/include/asm/atomic_64.h              |    2 +-
+>  arch/x86/include/asm/atomic_32.h                |    2 +-
+>  arch/x86/include/asm/atomic_64.h                |    2 +-
 
-The new percpu APIs could be used in most of these places already, 
-straight away. This is a really good TODO list for places to 
-enhance.
-
-Then a second set of patches could convert percpu_add() / etc. uses 
-to __percpu_add() ... but that should be done by those architectures 
-that need it (and to the extent they need it), because it's not 
-really testable on x86.
-
-I dont really like the PER_CPU / CPU_INC etc. type of all-capitals 
-APIs you introduced in the patches above:
-
-
-+		__CPU_INC(bt->sequence);
-+	CPU_FREE(bt->sequence);
-
-was there any strong reason to go outside the well-established 
-percpu_* name space and call these primitives as if they were 
-macros?
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
 	Ingo
