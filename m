@@ -1,98 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761301AbZD3BqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757714AbZD3Bsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761301AbZD3BqQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 21:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757227AbZD3Bp4
+	id S1757714AbZD3Bsq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 21:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbZD3Bsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 21:45:56 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38791 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752374AbZD3Bpz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 21:45:55 -0400
-Message-ID: <49F902CF.7080307@garzik.org>
-Date: Wed, 29 Apr 2009 21:45:51 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 29 Apr 2009 21:48:35 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:44849 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbZD3Bse (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 21:48:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=xSTD8uggR0quVTidD/w8PhQaDUe4mgrTQcBp6wmbZvAyWQu3XWIKlXyLp2SA7ZgN1R
+         Jvf0UGFi3s2kAkS0UBxPJ1yyO03NTT/OGNqFirCRc26fnHo8GBp2DNZXQL8NCMJhrJcT
+         KjlEiGXasDpW4eGsjnWr1grS/5HzCLlGGL2BQ=
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: linux-ide@vger.kernel.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, Mauelshagen@RedHat.com,
-       dm-devel@RedHat.com
-Subject: Re: [PATCHSET] block,scsi,libata: implement alt_size
-References: <1233456951-992-1-git-send-email-tj@kernel.org>
-In-Reply-To: <1233456951-992-1-git-send-email-tj@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+In-Reply-To: <ac3eb2510904291745j48220c12oe2a2b91e981ea403@mail.gmail.com>
+References: <20090427193532.GA2948@kroah.com>
+	 <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com>
+	 <20090429180735.GA29812@kroah.com>
+	 <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com>
+	 <20090429183012.GA28237@kroah.com>
+	 <8bd0f97a0904291638p398ad701j5dc0f8e96de2fb47@mail.gmail.com>
+	 <ac3eb2510904291745j48220c12oe2a2b91e981ea403@mail.gmail.com>
+Date: Wed, 29 Apr 2009 21:48:33 -0400
+Message-ID: <8bd0f97a0904291848le808891kff973b1677b7cd33@mail.gmail.com>
+Subject: Re: usbutils 0.81 release
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary=001e680f17accc59760468bbe49b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello,
-> 
-> This patchset implements alt_size, which is a size hint to the users
-> of a block device.  It's primarily to communicate the BIOS (HPA) size
-> on ATA devices to userland, so that dmraid can consider it when trying
-> to figure out BIOS raid layout.  This is critical as dmraid can be
-> tricked into assemblying the wrong raid when fed with the unlocked
-> size and if the disk content is right (or, rather, wrong) and good
-> number of distros are shipping with ignore_hpa=1 as default.
-> 
-> This patch contains the following three patches.
-> 
->   0001-block-add-alt_size.patch
->   0002-scsi-add-scsi_device-alt_capacity.patch
->   0003-libata-export-HPA-size-as-alt_size.patch
-> 
-> Without the above three patches, I get the following on my nv RAID-0
-> if HPA unlocking is turned on.
-> 
->   # ~/work/dmraid/tools/dmraid -a y
->   RAID set "nvidia_djgdjigi" was activated
->   # mount /dev/dm-0 /mnt/tmp
->   mount: wrong fs type, bad option, bad superblock on /dev/dm-0,
-> 	 missing codepage or helper program, or other error
-> 	 In some cases useful info is found in syslog - try
-> 	 dmesg | tail  or so
-> 
-> With the above three patches and modified dmraid,
-> 
->   ck804:~/os/work/build # ~/work/dmraid/tools/dmraid -a y -v -v -v
->   ...
->   NOTICE: /dev/sdb: using BIOS sectors 234439535
->   RAID set "nvidia_djgdjigi" was activated
->   ...
->   ck804:~/os/work/build # mount /dev/dm-0 /mnt/tmp
->   ck804:~/os/work/build # umount /dev/dm-0
-> 
-> Any ideas on through which tree this should be pushed?  I'll post
-> dmraid patches as a reply to this thread for reference.
-> 
-> Thanks.
-> 
-> This patchset is against the current linus#master[1] and contains the
-> following changes.
-> 
->  block/genhd.c              |   26 ++++++++++++++++++++++++++
->  drivers/ata/libata-core.c  |    2 ++
->  drivers/ata/libata-scsi.c  |    2 ++
->  drivers/scsi/sd.c          |    1 +
->  include/linux/genhd.h      |   13 ++++++++++++-
->  include/linux/libata.h     |    1 +
->  include/scsi/scsi_device.h |    1 +
->  7 files changed, 45 insertions(+), 1 deletion(-)
+--001e680f17accc59760468bbe49b
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-<shrug>  I suppose...
+On Wed, Apr 29, 2009 at 20:45, Kay Sievers wrote:
+> On Thu, Apr 30, 2009 at 01:38, Mike Frysinger wrote:
+>> On Wed, Apr 29, 2009 at 14:30, Greg KH wrote:
+>>> On Wed, Apr 29, 2009 at 02:17:12PM -0400, Mike Frysinger wrote:
+>>>> >> find being able to run `usbmodules` pretty useful ... i wrote a script
+>>>> >> for fun:
+>>>> >> http://sources.gentoo.org/sys-apps/usbutils/files/usbmodules.sh
+>>>> >
+>>>> > Did that work on any 2.6 kernel?
+>>>>
+>>>> it's the only version ive tested it with ... but it doesnt parse any
+>>>> kernel module directly, it reads the generated modules.usbmap file
+>>>>
+>>>> > There's no reason we can't add "-k" support to lsusb like lspci has to
+>>>> > show the modules assigned to different devices.
+>>>>
+>>>> the method i posted above only needs the module to be compiled, not loaded
+>>>
+>>> As the map files are depreciated, I wouldn't continue to rely on it, it
+>>> will break in the future when the kernel stops generating those files.
+>>
+>> guess i'll have to rewrite it to parse the .ko modules directly like
+>> the usbmap is generated now
+>
+> Can't you use the modules.aliases file? That should stay around and
+> there should be the same information contained.
 
-It just seems like a nasty hack, but unfortunately I don't see anyone 
-stepping up to do it properly -- with a DM device automatically layered 
-on top that splits the device into separate regions:  one block device 
-for the 'regular' area, and one for the HPA.
+should be fine if it's going to be sticking around
 
-	Jeff
+any comments on the attached file ?  in theory, it could be easily
+extended for pci and other busses ...
+-mike
 
+--001e680f17accc59760468bbe49b
+Content-Type: application/x-sh; name="usbmodules.sh"
+Content-Disposition: attachment; filename="usbmodules.sh"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fu4sr7uu0
 
+IyEvYmluL3NoCgplcnIoKSB7IGVjaG8gInVzYm1vZHVsZXM6IGVycm9yOiAkKiIgMT4mMiA7IH0K
+CnVzYWdlKCkgewoJY2F0IDw8LUVPRgoJTGlzdCByZWxldmFudCBrZXJuZWwgbW9kdWxlcyBmb3Ig
+VVNCIGRldmljZXMgY3VycmVudGx5IHBsdWdnZWQgaW4uICBUaGUKCW1vZHVsZSBsaXN0IGlzIHRh
+a2VuIGZyb20gdGhlIG1vZHVsZXMgaW5zdGFsbGVkIGluIC9saWIvbW9kdWxlcy88dmVyPi8uCgoJ
+VXNhZ2U6IHVzYm1vZHVsZXMgW29wdGlvbnNdIFtrZXJuZWwgdmVyc2lvbl0KCglPcHRpb25zOgoJ
+ICAtbSwgLS1tYXAgPG1hcD4gICBTcGVjaWZ5IHVzYm1hcCAoZGVmYXVsdDogL2xpYi9tb2R1bGVz
+Lzx2ZXI+L21vZHVsZXMudXNibWFwKQoJICAtaCwgLS1oZWxwICAgICAgICBUaGlzIGhlbHAgc2Ny
+ZWVuCglFT0YKCWlmIFsgLW4gIiQqIiBdIDsgdGhlbgoJCWVyciAiJCoiCgkJZXhpdCAxCgllbHNl
+CgkJZXhpdCAwCglmaQp9CgptYXA9IiIKCndoaWxlIFsgLW4gIiQxIiBdIDsgZG8KCWNhc2UgJDEg
+aW4KCQktbXwtLW1hcCkgIG1hcD0kMjsgc2hpZnQ7OwoJCS1ofC0taGVscCkgdXNhZ2U7OwoJCS0t
+KSAgICAgICAgYnJlYWs7OwoJCS0qKSAgICAgICAgdXNhZ2UgInVua25vd24gb3B0aW9uICckMSci
+OzsKCQkqKSAgICAgICAgIGJyZWFrOzsKCWVzYWMKCXNoaWZ0CmRvbmUKCnZlcj0kezE6LSQodW5h
+bWUgLXIpfQptYXA9JHttYXA6LS9saWIvbW9kdWxlcy8ke3Zlcn0vbW9kdWxlcy51c2JtYXB9Cgpp
+ZiBbICEgLXIgIiR7bWFwfSIgXSA7IHRoZW4KCWVyciAidW5hYmxlIHRvIHJlYWQgbWFwIGZpbGU6
+ICR7bWFwfSIKCWV4aXQgMQpmaQoKZm9yIGRldiBpbiAkKGxzdXNiIHwgYXdrICd7cHJpbnQgJDZ9
+JykgOyBkbwoJWyAiJHtkZXZ9IiA9ICIwMDAwOjAwMDAiIF0gJiYgY29udGludWUKCglJRlM9OgoJ
+c2V0IC0tICR7ZGV2fQoJdmVuZG9yPSQxCglwcm9kdWN0PSQyCgl1bnNldCBJRlMKCglhbGlhcz0i
+dXNiOnYke3ZlbmRvcn1wJHtwcm9kdWN0fSIKCWF3ayAnJDEgPT0gImFsaWFzIiAmJiAkMiB+IC9e
+JyR7YWxpYXN9Jy8ge3ByaW50ICRORn0nICR7bWFwfQpkb25lCgpleGl0IDAK
+--001e680f17accc59760468bbe49b--
