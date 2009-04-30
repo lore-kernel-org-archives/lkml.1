@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760191AbZD3IUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760798AbZD3IUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760191AbZD3IUQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 04:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbZD3ITo
+	id S1760798AbZD3IUr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 04:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760248AbZD3IUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 04:19:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50201 "EHLO hera.kernel.org"
+	Thu, 30 Apr 2009 04:20:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55957 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759229AbZD3ITm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 04:19:42 -0400
-Message-ID: <49F95EAE.2050903@kernel.org>
-Date: Thu, 30 Apr 2009 01:17:50 -0700
+	id S1760146AbZD3IUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 04:20:06 -0400
+Message-ID: <49F95F10.3060209@kernel.org>
+Date: Thu, 30 Apr 2009 01:19:28 -0700
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86/irq: using move_irq_desc -v3
-References: <49F6559F.7070005@kernel.org> <20090428101448.GA28495@elte.hu> <49F70FED.3040903@kernel.org> <20090428143254.GA24351@elte.hu> <49F753DF.6040104@kernel.org> <20090429120056.GE11586@elte.hu> <49F87FF3.1090600@kernel.org> <20090429204135.GF21421@elte.hu> <20090429212317.GA30147@elte.hu> <49F8E1DE.9010301@kernel.org> <20090430072930.GE16737@elte.hu>
-In-Reply-To: <20090430072930.GE16737@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Len Brown <lenb@kernel.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Subject: [PATCH 1/4] x86/acpi: move pin_programmed bit map to io_apic.c
+References: <49F8B2D9.3080903@kernel.org>
+In-Reply-To: <49F8B2D9.3080903@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,88 +28,113 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-move_irq_desc will try to move irq_desc to node wanted if allocated one is not correct.
-(happen on device on different nodes that are using MSI, drivers are loaded and unloaded
-randomly)
-
-v2: fix no smp compiling
-v3: add NUMA_IRQ_DESC to make MACRO simple
-
-[ Impact: make irq_desc go with device on node ]
+prepare to call setup_io_apic_routing in pcibios_irq_enable
+also remove not needed member apic_id.
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
 ---
- arch/x86/Kconfig               |    4 ++++
- arch/x86/kernel/apic/io_apic.c |    6 +-----
- include/linux/irq.h            |   11 +++++++++--
- kernel/irq/Makefile            |    2 +-
- 4 files changed, 15 insertions(+), 8 deletions(-)
+ arch/x86/kernel/acpi/boot.c    |   18 ++----------------
+ arch/x86/kernel/apic/io_apic.c |   25 ++++++++++++++++++++++++-
+ 2 files changed, 26 insertions(+), 17 deletions(-)
 
+Index: linux-2.6/arch/x86/kernel/acpi/boot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
++++ linux-2.6/arch/x86/kernel/acpi/boot.c
+@@ -904,10 +904,8 @@ extern int es7000_plat;
+ #endif
+ 
+ static struct {
+-	int apic_id;
+ 	int gsi_base;
+ 	int gsi_end;
+-	DECLARE_BITMAP(pin_programmed, MP_MAX_IOAPIC_PIN + 1);
+ } mp_ioapic_routing[MAX_IO_APICS];
+ 
+ int mp_find_ioapic(int gsi)
+@@ -996,7 +994,6 @@ void __init mp_register_ioapic(int id, u
+ 	 * Build basic GSI lookup table to facilitate gsi->io_apic lookups
+ 	 * and to prevent reprogramming of IOAPIC pins (PCI GSIs).
+ 	 */
+-	mp_ioapic_routing[idx].apic_id = mp_ioapics[idx].apicid;
+ 	mp_ioapic_routing[idx].gsi_base = gsi_base;
+ 	mp_ioapic_routing[idx].gsi_end = gsi_base +
+ 	    io_apic_get_redir_entries(idx);
+@@ -1189,7 +1186,7 @@ static int mp_config_acpi_gsi(struct dev
+ 	mp_irq.srcbus = number;
+ 	mp_irq.srcbusirq = (((devfn >> 3) & 0x1f) << 2) | ((pin - 1) & 3);
+ 	ioapic = mp_find_ioapic(gsi);
+-	mp_irq.dstapic = mp_ioapic_routing[ioapic].apic_id;
++	mp_irq.dstapic = mp_ioapics[ioapic].apicid;
+ 	mp_irq.dstirq = mp_find_ioapic_pin(ioapic, gsi);
+ 
+ 	save_mp_irq(&mp_irq);
+@@ -1224,23 +1221,12 @@ int mp_register_gsi(struct device *dev,
+ 
+ 	if (ioapic_pin > MP_MAX_IOAPIC_PIN) {
+ 		printk(KERN_ERR "Invalid reference to IOAPIC pin "
+-		       "%d-%d\n", mp_ioapic_routing[ioapic].apic_id,
++		       "%d-%d\n", mp_ioapics[ioapic].apicid,
+ 		       ioapic_pin);
+ 		return gsi;
+ 	}
+ 	mp_config_acpi_gsi(dev, gsi, triggering, polarity);
+ 
+-	/*
+-	 * Avoid pin reprogramming.  PRTs typically include entries
+-	 * with redundant pin->gsi mappings (but unique PCI devices);
+-	 * we only program the IOAPIC on the first.
+-	 */
+-	if (test_bit(ioapic_pin, mp_ioapic_routing[ioapic].pin_programmed)) {
+-		pr_debug("Pin %d-%d already programmed\n",
+-			 mp_ioapic_routing[ioapic].apic_id, ioapic_pin);
+-		return gsi;
+-	}
+-	set_bit(ioapic_pin, mp_ioapic_routing[ioapic].pin_programmed);
+ 	io_apic_set_pci_routing(dev, ioapic, ioapic_pin, gsi,
+ 				triggering == ACPI_EDGE_SENSITIVE ? 0 : 1,
+ 				polarity == ACPI_ACTIVE_HIGH ? 0 : 1);
 Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
 +++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-@@ -3155,11 +3155,7 @@ unsigned int create_irq_nr(unsigned int
- 		if (cfg_new->vector != 0)
- 			continue;
+@@ -3938,7 +3938,7 @@ int __init io_apic_get_version(int ioapi
+ }
+ #endif
  
--#ifdef CONFIG_NUMA_IRQ_DESC
--		/* different node ?*/
--		if (desc_new->node != node)
--			desc = move_irq_desc(desc, node);
--#endif
-+		desc_new = move_irq_desc(desc_new, node);
+-int io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
++static int __io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
+ 				 int triggering, int polarity)
+ {
+ 	struct irq_desc *desc;
+@@ -3975,6 +3975,29 @@ int io_apic_set_pci_routing(struct devic
+ 	return 0;
+ }
  
- 		if (__assign_irq_vector(new, cfg_new, apic->target_cpus()) == 0)
- 			irq = new;
-Index: linux-2.6/include/linux/irq.h
-===================================================================
---- linux-2.6.orig/include/linux/irq.h
-+++ linux-2.6/include/linux/irq.h
-@@ -206,9 +206,16 @@ extern void arch_free_chip_data(struct i
- 
- #ifndef CONFIG_SPARSE_IRQ
- extern struct irq_desc irq_desc[NR_IRQS];
--#else /* CONFIG_SPARSE_IRQ */
-+#endif
++static struct {
++	DECLARE_BITMAP(pin_programmed, MP_MAX_IOAPIC_PIN + 1);
++} mp_ioapic_routing[MAX_IO_APICS];
 +
-+#ifdef CONFIG_NUMA_IRQ_DESC
- extern struct irq_desc *move_irq_desc(struct irq_desc *old_desc, int node);
--#endif /* CONFIG_SPARSE_IRQ */
-+#else
-+static inline struct irq_desc *move_irq_desc(struct irq_desc *desc, int node)
++int io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
++				 int triggering, int polarity)
 +{
-+	return desc;
-+}
-+#endif
- 
- extern struct irq_desc *irq_to_desc_alloc_node(unsigned int irq, int node);
- 
-Index: linux-2.6/kernel/irq/Makefile
-===================================================================
---- linux-2.6.orig/kernel/irq/Makefile
-+++ linux-2.6/kernel/irq/Makefile
-@@ -3,5 +3,5 @@ obj-y := handle.o manage.o spurious.o re
- obj-$(CONFIG_GENERIC_IRQ_PROBE) += autoprobe.o
- obj-$(CONFIG_PROC_FS) += proc.o
- obj-$(CONFIG_GENERIC_PENDING_IRQ) += migration.o
--obj-$(CONFIG_SPARSE_IRQ) += numa_migrate.o
-+obj-$(CONFIG_NUMA_IRQ_DESC) += numa_migrate.o
- obj-$(CONFIG_PM_SLEEP) += pm.o
-Index: linux-2.6/arch/x86/Kconfig
-===================================================================
---- linux-2.6.orig/arch/x86/Kconfig
-+++ linux-2.6/arch/x86/Kconfig
-@@ -280,6 +280,10 @@ config SPARSE_IRQ
- 
- 	  If you don't know what to do here, say N.
- 
-+config NUMA_IRQ_DESC
-+	def_bool y
-+	depends on SPARSE_IRQ && NUMA
 +
- config X86_MPPARSE
- 	bool "Enable MPS table" if ACPI
- 	default y
++	/*
++	 * Avoid pin reprogramming.  PRTs typically include entries
++	 * with redundant pin->gsi mappings (but unique PCI devices);
++	 * we only program the IOAPIC on the first.
++	 */
++	if (test_bit(pin, mp_ioapic_routing[ioapic].pin_programmed)) {
++		pr_debug("Pin %d-%d already programmed\n",
++			 mp_ioapics[ioapic].apicid, pin);
++		return 0;
++	}
++	set_bit(pin, mp_ioapic_routing[ioapic].pin_programmed);
++
++	return __io_apic_set_pci_routing(dev, ioapic, pin, irq,
++					 triggering, polarity);
++}
+ 
+ int acpi_get_override_irq(int bus_irq, int *trigger, int *polarity)
+ {
