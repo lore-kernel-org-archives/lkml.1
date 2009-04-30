@@ -1,90 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763994AbZD3P4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764153AbZD3P5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763994AbZD3P4w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 11:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932965AbZD3Ps1
+	id S1764153AbZD3P5Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 11:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933079AbZD3Ptn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 11:48:27 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:26997 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932970AbZD3PsZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 11:48:25 -0400
-X-IronPort-AV: E=Sophos;i="4.40,273,1238976000"; 
-   d="scan'208";a="157991751"
-Date: Thu, 30 Apr 2009 08:48:20 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: linux-usb@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] USB: Wait for USB and SCSI block boot devices, v2
-Message-ID: <20090430154820.GA15170@cuplxvomd02.corp.sa.net>
+	Thu, 30 Apr 2009 11:49:43 -0400
+Received: from h155.mvista.com ([63.81.120.155]:46079 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933074AbZD3Ptk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 11:49:40 -0400
+Message-ID: <49F9C8E0.30808@ru.mvista.com>
+Date: Thu, 30 Apr 2009 19:50:56 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-4; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: David VomLehn <dvomlehn@cisco.com>, linux-usb@vger.kernel.org,
+       gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] USB: Provide USB boot device availability notification
+References: <Pine.LNX.4.44L0.0904301131530.20151-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0904301131530.20151-100000@netrider.rowland.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Stern <stern@rowland.harvard.edu
+Alan Stern wrote:
 
-Add synchronization for USB and SCSI block devices.
+>>>+/* The mask of possible USB boot devices depends on what drivers and
+>>>+ * options have been configured into the kernel.  There are too many
+>>>+ * USB network config options to list here, so just assume it is always
+>>>+ * possible to have a USB network device.
+>>>+ */
+>>>+static int usb_bootdev_mask = 0
+>>>+#ifdef CONFIG_USB_SERIAL_CONSOLE
+>>>+				| BOOTDEV_CONSOLE_MASK
+>>>+#endif
+>>>+#if defined(CONFIG_USB_STORAGE) | defined(CONFIG_BLK_DEV_UB)
 
-History
-v2	Correct location of call to bootdev_found
-v1	Initial version
+>>    It should be ||, not bitwise | here, no?
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu
-Signed-off-by: David VomLehn <dvomlehn@cisco.com>
----
- drivers/scsi/scsi_scan.c  |    2 ++
- drivers/usb/storage/usb.c |    3 +++
- 2 files changed, 5 insertions(+), 0 deletions(-)
+> No, it should be bitwise |.  The value being constructed is a union of 
+> disjoint mask bits.
 
-diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
-index 6f51ca4..735b061 100644
---- a/drivers/scsi/scsi_scan.c
-+++ b/drivers/scsi/scsi_scan.c
-@@ -1834,6 +1834,7 @@ static int do_scan_async(void *_data)
- 	struct async_scan_data *data = _data;
- 	do_scsi_scan_host(data->shost);
- 	scsi_finish_async_scan(data);
-+	bootdev_probe_done(BOOTDEV_BLOCK_MASK);
- 	return 0;
- }
- 
-@@ -1855,6 +1856,7 @@ void scsi_scan_host(struct Scsi_Host *shost)
- 		return;
- 	}
- 
-+	bootdev_found(BOOTDEV_BLOCK_MASK);
- 	p = kthread_run(do_scan_async, data, "scsi_scan_%d", shost->host_no);
- 	if (IS_ERR(p))
- 		do_scan_async(data);
-diff --git a/drivers/usb/storage/usb.c b/drivers/usb/storage/usb.c
-index 8060b85..ea7abab 100644
---- a/drivers/usb/storage/usb.c
-+++ b/drivers/usb/storage/usb.c
-@@ -837,6 +837,7 @@ static int usb_stor_scan_thread(void * __us)
- 		/* Should we unbind if no devices were detected? */
- 	}
- 
-+	bootdev_probe_done(BOOTDEV_BLOCK_MASK);
- 	complete_and_exit(&us->scanning_done, 0);
- }
- 
-@@ -937,10 +938,12 @@ int usb_stor_probe2(struct us_data *us)
- 	}
- 
- 	/* Start up the thread for delayed SCSI-device scanning */
-+	bootdev_found(BOOTDEV_BLOCK_MASK);
- 	th = kthread_create(usb_stor_scan_thread, us, "usb-stor-scan");
- 	if (IS_ERR(th)) {
- 		printk(KERN_WARNING USB_STORAGE 
- 		       "Unable to start the device-scanning thread\n");
-+		bootdev_probe_done(BOOTDEV_BLOCK_MASK);
- 		complete(&us->scanning_done);
- 		quiesce_and_remove_host(us);
- 		result = PTR_ERR(th);
+    I meant the #if line only. Although it shouldn't matter really...
+
+> Alan Stern
+
+WBR, Sergei
