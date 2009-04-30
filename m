@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765644AbZD3RTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765513AbZD3RTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765644AbZD3RTu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764587AbZD3RHp
+	id S1765513AbZD3RTY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764602AbZD3RHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:45 -0400
+	Thu, 30 Apr 2009 13:07:44 -0400
 Received: from kroah.org ([198.145.64.141]:56378 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764493AbZD3RHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:37 -0400
+	id S1764494AbZD3RHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:35 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:42 2009
-Message-Id: <20090430165742.474880529@mini.kroah.org>
+Message-Id: <20090430165742.157178847@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:17 -0700
+Date: Thu, 30 Apr 2009 09:56:15 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,13 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 28/88] kprobes: Fix locking imbalance in kretprobes
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 26/88] af_rose/x25: Sanity check the maximum user frame size
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=kprobes-fix-locking-imbalance-in-kretprobes.patch
+Content-Disposition: inline; filename=0043-af_rose-x25-Sanity-check-the-maximum-user-frame-siz.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,86 +39,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 
-commit f02b8624fedca39886b0eef770dca70c2f0749b3 upstream.
+upstream commit: 83e0bbcbe2145f160fbaa109b0439dae7f4a38a9
 
-Fix locking imbalance in kretprobes:
+CVE-2009-0795.
 
-=====================================
-[ BUG: bad unlock balance detected! ]
--------------------------------------
-kthreadd/2 is trying to release lock (&rp->lock) at:
-[<c06b3080>] pre_handler_kretprobe+0xea/0xf4
-but there are no more locks to release!
+Otherwise we can wrap the sizes and end up sending garbage.
 
-other info that might help us debug this:
-1 lock held by kthreadd/2:
- #0:  (rcu_read_lock){..--}, at: [<c06b2b24>] __atomic_notifier_call_chain+0x0/0x5a
+Closes #10423
 
-stack backtrace:
-Pid: 2, comm: kthreadd Not tainted 2.6.29-rc8 #1
-Call Trace:
- [<c06ae498>] ? printk+0xf/0x17
- [<c06b3080>] ? pre_handler_kretprobe+0xea/0xf4
- [<c044ce6c>] print_unlock_inbalance_bug+0xc3/0xce
- [<c0444d4b>] ? clocksource_read+0x7/0xa
- [<c04450a4>] ? getnstimeofday+0x5f/0xf6
- [<c044a9ca>] ? register_lock_class+0x17/0x293
- [<c044b72c>] ? mark_lock+0x1e/0x30b
- [<c0448956>] ? tick_dev_program_event+0x4a/0xbc
- [<c0498100>] ? __slab_alloc+0xa5/0x415
- [<c06b2fbe>] ? pre_handler_kretprobe+0x28/0xf4
- [<c06b3080>] ? pre_handler_kretprobe+0xea/0xf4
- [<c044cf1b>] lock_release_non_nested+0xa4/0x1a5
- [<c06b3080>] ? pre_handler_kretprobe+0xea/0xf4
- [<c044d15d>] lock_release+0x141/0x166
- [<c06b07dd>] _spin_unlock_irqrestore+0x19/0x50
- [<c06b3080>] pre_handler_kretprobe+0xea/0xf4
- [<c06b20b5>] kprobe_exceptions_notify+0x1c9/0x43e
- [<c06b2b02>] notifier_call_chain+0x26/0x48
- [<c06b2b5b>] __atomic_notifier_call_chain+0x37/0x5a
- [<c06b2b24>] ? __atomic_notifier_call_chain+0x0/0x5a
- [<c06b2b8a>] atomic_notifier_call_chain+0xc/0xe
- [<c0442d0d>] notify_die+0x2d/0x2f
- [<c06b0f9c>] do_int3+0x1f/0x71
- [<c06b0e84>] int3+0x2c/0x34
- [<c042d476>] ? do_fork+0x1/0x288
- [<c040221b>] ? kernel_thread+0x71/0x79
- [<c043ed1b>] ? kthread+0x0/0x60
- [<c043ed1b>] ? kthread+0x0/0x60
- [<c04040b8>] ? kernel_thread_helper+0x0/0x10
- [<c043ec7f>] kthreadd+0xac/0x148
- [<c043ebd3>] ? kthreadd+0x0/0x148
- [<c04040bf>] kernel_thread_helper+0x7/0x10
-
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Tested-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <20090318113621.GB4129@in.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- kernel/kprobes.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ net/netrom/af_netrom.c |    6 +++++-
+ net/rose/af_rose.c     |    4 ++++
+ net/x25/af_x25.c       |    6 ++++++
+ 3 files changed, 15 insertions(+), 1 deletion(-)
 
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -901,10 +901,8 @@ static int __kprobes pre_handler_kretpro
- 		ri->rp = rp;
- 		ri->task = current;
+--- a/net/netrom/af_netrom.c
++++ b/net/netrom/af_netrom.c
+@@ -1082,7 +1082,11 @@ static int nr_sendmsg(struct kiocb *iocb
  
--		if (rp->entry_handler && rp->entry_handler(ri, regs)) {
--			spin_unlock_irqrestore(&rp->lock, flags);
-+		if (rp->entry_handler && rp->entry_handler(ri, regs))
- 			return 0;
--		}
+ 	SOCK_DEBUG(sk, "NET/ROM: sendto: Addresses built.\n");
  
- 		arch_prepare_kretprobe(ri, regs);
+-	/* Build a packet */
++	/* Build a packet - the conventional user limit is 236 bytes. We can
++	   do ludicrously large NetROM frames but must not overflow */
++	if (len > 65536)
++		return -EMSGSIZE;
++
+ 	SOCK_DEBUG(sk, "NET/ROM: sendto: building packet.\n");
+ 	size = len + NR_NETWORK_LEN + NR_TRANSPORT_LEN;
  
+--- a/net/rose/af_rose.c
++++ b/net/rose/af_rose.c
+@@ -1124,6 +1124,10 @@ static int rose_sendmsg(struct kiocb *io
+ 
+ 	/* Build a packet */
+ 	SOCK_DEBUG(sk, "ROSE: sendto: building packet.\n");
++	/* Sanity check the packet size */
++	if (len > 65535)
++		return -EMSGSIZE;
++
+ 	size = len + AX25_BPQ_HEADER_LEN + AX25_MAX_HEADER_LEN + ROSE_MIN_LEN;
+ 
+ 	if ((skb = sock_alloc_send_skb(sk, size, msg->msg_flags & MSG_DONTWAIT, &err)) == NULL)
+--- a/net/x25/af_x25.c
++++ b/net/x25/af_x25.c
+@@ -1037,6 +1037,12 @@ static int x25_sendmsg(struct kiocb *ioc
+ 		sx25.sx25_addr   = x25->dest_addr;
+ 	}
+ 
++	/* Sanity check the packet size */
++	if (len > 65535) {
++		rc = -EMSGSIZE;
++		goto out;
++	}
++
+ 	SOCK_DEBUG(sk, "x25_sendmsg: sendto: Addresses built.\n");
+ 
+ 	/* Build a packet */
 
 
