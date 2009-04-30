@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761598AbZD3CDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761890AbZD3CHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761598AbZD3CDI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 22:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbZD3CCu
+	id S1761890AbZD3CHa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 22:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757193AbZD3CHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 22:02:50 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55271 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752400AbZD3CCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 22:02:49 -0400
-Message-ID: <49F905EE.2020407@kernel.org>
-Date: Thu, 30 Apr 2009 10:59:10 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 29 Apr 2009 22:07:15 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:42848 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755273AbZD3CHO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 22:07:14 -0400
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
-       mike.miller@hp.com, chirag.kantharia@hp.com, Eric.Moore@lsi.com,
-       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
-       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, jesper.juhl@gmail.com, tim@cyberelk.net,
-       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
-       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
-       davem@davemloft.net, rusty@rustcorp.com.au,
-       Markus.Lidel@shadowconnect.com, bharrosh@panasas.com,
-       Doug Gilbert <dgilbert@interlog.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: [PATCH 03/10] block: add rq->resid_len
-References: <1240996428-10159-1-git-send-email-tj@kernel.org>	 <1240996428-10159-4-git-send-email-tj@kernel.org> <1241016114.3369.9.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1241016114.3369.9.camel@mulgrave.int.hansenpartnership.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Apr 2009 01:59:34 +0000 (UTC)
+In-Reply-To: <8bd0f97a0904291856n66fef7d8sb879e9e02b13a311@mail.gmail.com>
+References: <20090427193532.GA2948@kroah.com> <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com> 
+	<20090429180735.GA29812@kroah.com> <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com> 
+	<ac3eb2510904291159s14d7d532q33657eb73007fc4b@mail.gmail.com> 
+	<20090429192309.GA15539@kroah.com> <44275.1241041373@turing-police.cc.vt.edu> 
+	<20090429215623.GA27319@kroah.com> <1241056121.18530.31.camel@poy> 
+	<8bd0f97a0904291856n66fef7d8sb879e9e02b13a311@mail.gmail.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Thu, 30 Apr 2009 04:06:53 +0200
+Message-ID: <ac3eb2510904291906v6b8524f7j5cb3afa43f6759b8@mail.gmail.com>
+Subject: Re: usbutils 0.81 release
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Greg KH <greg@kroah.com>, Valdis.Kletnieks@vt.edu,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, James.
+On Thu, Apr 30, 2009 at 03:56, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> On Wed, Apr 29, 2009 at 21:48, Kay Sievers wrote:
+>> On Wed, 2009-04-29 at 14:56 -0700, Greg KH wrote:
+>>> If youreally want it, you can grab it from the git tree, or wait a day
+>>> or so for me to implement Mike's changes he so nicely sent me, so I can
+>>> do a new release.
+>>
+>> How about this? It substitutes the script and the man page with the
+>> given --datadir=.
+>
+> i had pretty much the same changes locally, but i was going to let the
+> discussion on data/multiple paths finish first.  at any rate, comments
+> below ...
+>
+>> --- a/Makefile.am
+>> +++ b/Makefile.am
+>>
+>> +update-usbids.sh: update-usbids.sh.in
+>> +lsusb.8: lsusb.8.in
+>
+> need $(srcdir)/ in front of the dependency
+>
+>> +       sed 's|@usbids@|$(datadir)/usb.ids|' $< >$@
+>> +       sed 's|@usbids@|$(datadir)/usb.ids|' $< >$@
+>
+> should use the 'g' option to sed
+>
+> in theory you should use AC_PROG_SED in configure.ac and then $(SED)
+> in the Makefile.am
 
-James Bottomley wrote:
-> This looks good (although I'd like to test it first).
+Fine, if that works.
 
-Yeah, this will need quite a bit of testing.
+> $(datadir) too should die ... $(datarootdir) is the right variable name
 
-> Might it not be better to have an accessor setting resid_len?  All
-> the other patches in the series insulate users from the actual
-> members of struct request by accessors, so this is a bit the odd man
-> out.
+Then you want to specify man pages separately? I wouldn't do that.
 
-I actually think it's better to expose resid_len in this case as the
-semantics of the field is - initialized to zero on issue, contains
-residual count on completion and whatever it contains inbetween is
-upto the low level driver.  Request position or length are different
-as they must contain well defined values throughout request processing
-and both block layer and low level driver should agree on what they
-mean.
+>>  clean-local:
+>>        rm -f usb.ids.gz
+>> +       rm -f lsusb.8
+>> +       rm -f update-usbids.sh
+>
+> after Greg merges the patches i sent for usb.ids.gz, it should be
+> clear that clean-local should die and you should update DISTCLEANFILES
 
-Fancy words aside, it basically boils down to allowing llds to do
-either "rq->resid_len = blk_rq_bytes() - xferred" on completion or
-"rq->resid_len = blk_rq_bytes()" on issue and "rq->resid_len -=
-increments" while processing.
+Sure, no problem.
 
-It would be better to check that the value is sane on completion tho.
+>> --- a/configure.ac
+>> +++ b/configure.ac
+>>
+>> +       datadir:                ${datadir}
+>
+> we have datarootdir now, so no point in adding datadir
 
-Thanks.
+Only if you require to set the man dir.
 
--- 
-tejun
+Kay
