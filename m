@@ -1,103 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762858AbZD3V0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761161AbZD3VmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762858AbZD3V0V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 17:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757711AbZD3V0M
+	id S1761161AbZD3VmU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 17:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZD3VmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 17:26:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36414 "EHLO mx2.redhat.com"
+	Thu, 30 Apr 2009 17:42:10 -0400
+Received: from proxima.lp0.eu ([81.2.80.65]:47606 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754289AbZD3V0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 17:26:10 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [PATCH v2] crypto: print self-test pass notices in fips mode
-Date: Thu, 30 Apr 2009 17:25:05 -0400
-User-Agent: KMail/1.11.2 (Linux/2.6.29.1-102.fc11.x86_64; KDE/4.2.2; x86_64; ; )
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Neil Horman <nhorman@tuxdriver.com>
-References: <200904282121.35300.jarod@redhat.com> <200904290921.54483.jarod@redhat.com> <200904290924.11005.jarod@redhat.com>
-In-Reply-To: <200904290924.11005.jarod@redhat.com>
+	id S1751898AbZD3VmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 17:42:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	b=GS20nVLXh/Ew2pfFb6rbxYRxcL2U6ylGaP5OeA5D+7XVwBqKTCewahd9EJfA6ZY+ogCi0i7M7hadzABuP0yC4iEEERxVVv1PvpStv2GbsGJTWy5//LPVO/5K6GDminnD;
+Message-ID: <49FA1B2E.8030402@simon.arlott.org.uk>
+Date: Thu, 30 Apr 2009 22:42:06 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090328)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, mchehab@infradead.org,
+       linux-media@vger.kernel.org
+Subject: Re: [PATCH] dvb-core: Fix potential mutex_unlock without mutex_lock
+ in dvb_dvr_read
+References: <49F0A61D.1010002@simon.arlott.org.uk> <20090430131818.d8aded42.akpm@linux-foundation.org>
+In-Reply-To: <20090430131818.d8aded42.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904301725.06671.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 April 2009 09:24:10 Jarod Wilson wrote:
-> On Wednesday 29 April 2009 09:21:53 Jarod Wilson wrote:
-> > On Wednesday 29 April 2009 09:18:17 Herbert Xu wrote:
-> > > On Tue, Apr 28, 2009 at 09:21:35PM -0400, Jarod Wilson wrote:
-> > > >
-> > > > diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-> > > > index 39ffa69..d0cc85c 100644
-> > > > --- a/crypto/testmgr.c
-> > > > +++ b/crypto/testmgr.c
-> > > > @@ -2149,6 +2149,10 @@ notest:
-> > > >  test_done:
-> > > >  	if (fips_enabled && rc)
-> > > >  		panic("%s: %s alg self test failed in fips mode!\n", driver, alg);
-> > > > +	/* fips mode requires we print out self-test success notices */
-> > > > +	if (fips_enabled && !rc && strncmp(alg, "ctr(aes", 7))
-> > > > +		printk(KERN_INFO "alg: self-tests for %s (%s) passed\n",
-> > > > +		       driver, alg);
-> > > 
-> > > What is this strncmp crap for?
-> > 
-> > To avoid claiming we successfully self-tested ctr(aes) when its
-> > not actually directly testable. Was intended to go sort of hand
-> > in hand with the other patch to suppress 'no self test' messages
-> > for ctr(aes) when in fips mode. Of course, since at this point,
-> > we've run ecb(aes), and that's what's suggested as the way to
-> > test ctr(aes)[*], perhaps we don't need to
-> > suppress it.
-> > 
-> > [*] well, along with the sign-off from the lab that the counter
-> > code is acceptable
+On 30/04/09 21:18, Andrew Morton wrote:
+> On Thu, 23 Apr 2009 18:32:13 +0100
+> Simon Arlott <simon@fire.lp0.eu> wrote:
 > 
-> So this might actually be another argument in favor of adding a "this
-> algo isn't really testable" flag as Neil suggested...
+>> dvb_dvr_read may unlock the dmxdev mutex and return -ENODEV,
+>> except this function is a file op and will never be called
+>> with the mutex held.
+>> 
+>> There's existing mutex_lock and mutex_unlock around the actual
+>> read but it's commented out. These should probably be uncommented
+>> but the read blocks and this could block another non-blocking
+>> reader on the mutex instead.
+>> 
+>> This change comments out the extra mutex_unlock.
+>> 
+>> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+>> ---
+>> This has been on my TODO list for far too long... I did come
+>> up with a mutex_trylock/mutex_lock_interruptible version but
+>> claiming that it'll block when it may not doesn't make sense
+>> (and any blocking read would cause all non-blocking reads to
+>> continually return -EWOULDBLOCK until there is data).
+>> 
+>>  drivers/media/dvb/dvb-core/dmxdev.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>> 
+>> diff --git a/drivers/media/dvb/dvb-core/dmxdev.c b/drivers/media/dvb/dvb-core/dmxdev.c
+>> index c35fbb8..d6d098a 100644
+>> --- a/drivers/media/dvb/dvb-core/dmxdev.c
+>> +++ b/drivers/media/dvb/dvb-core/dmxdev.c
+>> @@ -247,7 +247,7 @@ static ssize_t dvb_dvr_read(struct file *file, char __user *buf, size_t count,
+>>  	int ret;
+>>  
+>>  	if (dmxdev->exit) {
+>> -		mutex_unlock(&dmxdev->mutex);
+>> +		//mutex_unlock(&dmxdev->mutex);
+>>  		return -ENODEV;
+>>  	}
+> 
+> Is there any value in retaining all the commented-out lock operations,
+> or can we zap 'em?
 
-According to our FIPS CAVS testing lab guru, when we're in fips mode,
-we must print out notices of successful self-test completion for
-every alg to be compliant.
-
-New and improved v2, without strncmp crap. Doesn't need to touch a flag
-though, due to not moving the notest label around anymore.
-
-Applies atop '[PATCH v2] crypto: catch base cipher self-test failures
-in fips mode'.
-
-Personally, I wouldn't mind seeing this info printed out regardless of
-whether or not we're in fips mode, I think its useful info, but will
-stick with only in fips mode for now.
-
----
- crypto/testmgr.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-index d410fad..b3ec7b9 100644
---- a/crypto/testmgr.c
-+++ b/crypto/testmgr.c
-@@ -2245,6 +2245,10 @@ test_done:
- 	if (fips_enabled && rc)
- 		panic("%s: %s alg self test failed in fips mode!\n", driver, alg);
+I'm assuming they should really be there - it's just not practical
+because the call to dvb_dmxdev_buffer_read is likely to block waiting
+for data.
  
-+	if (fips_enabled && !rc)
-+		printk(KERN_INFO "alg: self-tests for %s (%s) passed\n",
-+		       driver, alg);
-+
- 	return rc;
- 
- notest:
+> --- a/drivers/media/dvb/dvb-core/dmxdev.c~dvb-core-fix-potential-mutex_unlock-without-mutex_lock-in-dvb_dvr_read-fix
+> +++ a/drivers/media/dvb/dvb-core/dmxdev.c
+> @@ -244,19 +244,13 @@ static ssize_t dvb_dvr_read(struct file 
+>  {
+>  	struct dvb_device *dvbdev = file->private_data;
+>  	struct dmxdev *dmxdev = dvbdev->priv;
+> -	int ret;
+>  
+> -	if (dmxdev->exit) {
+> -		//mutex_unlock(&dmxdev->mutex);
+> +	if (dmxdev->exit)
+>  		return -ENODEV;
+> -	}
+>  
+> -	//mutex_lock(&dmxdev->mutex);
+> -	ret = dvb_dmxdev_buffer_read(&dmxdev->dvr_buffer,
+> -				     file->f_flags & O_NONBLOCK,
+> -				     buf, count, ppos);
+> -	//mutex_unlock(&dmxdev->mutex);
+> -	return ret;
+> +	return dvb_dmxdev_buffer_read(&dmxdev->dvr_buffer,
+> +				      file->f_flags & O_NONBLOCK,
+> +				      buf, count, ppos);
+>  }
+>  
+>  static int dvb_dvr_set_buffer_size(struct dmxdev *dmxdev,
+> _
+> 
 
 
 -- 
-Jarod Wilson
-jarod@redhat.com
+Simon Arlott
