@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751323AbZD3Hkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758821AbZD3Hqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751323AbZD3Hkd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 03:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbZD3HkY
+	id S1758821AbZD3Hqs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 03:46:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbZD3Hqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 03:40:24 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:57818 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751187AbZD3HkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 03:40:23 -0400
-Message-ID: <441077283.08393@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: ylmao@mail.ustc.edu.cn
-From: "Mao Yilu" <ylmao@mail.ustc.edu.cn>
-To: "'Henrique de Moraes Holschuh'" <hmh@hmh.eng.br>
-Cc: <linux-kernel@vger.kernel.org>
-References: <440758024.12507@ustc.edu.cn> <441049102.10204@ustc.edu.cn> <654E14825BCE4C9B94E5986000DC9BCE@xiaomao> <441061189.03958@ustc.edu.cn>
-Subject: RE: TSC unstable on Intel Pentium M processor 750
-Date: Thu, 30 Apr 2009 15:40:02 +0800
-Message-ID: <70DF5CB591F94B45BBC9BD2D41A047EF@xiaomao>
+	Thu, 30 Apr 2009 03:46:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49259 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750999AbZD3Hqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 03:46:37 -0400
+Message-ID: <49F95719.10701@kernel.org>
+Date: Thu, 30 Apr 2009 16:45:29 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
+To: Alex Buell <alex.buell@munted.org.uk>
+CC: Jeff Garzik <jeff@garzik.org>, "Theodore Ts'o" <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: No NCQ support on X61s Ultrabay?  (Intel ICH8 SATA controller
+ question)
+References: <E1LzLgA-0004j6-9W@closure.thunk.org>	<49F90CA2.4080602@garzik.org> <20090430083309.437f9248@lithium.local.net>
+In-Reply-To: <20090430083309.437f9248@lithium.local.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <441061189.03958@ustc.edu.cn>
-Thread-Index: AcnJQZZk2gU7R1ONQs+LH5d8kg7hsgAJJBXA
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Apr 2009 07:45:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: linux-kernel-owner@vger.kernel.org
-> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Henrique de Moraes
-> Holschuh
-> Sent: Thursday, April 30, 2009 11:12 AM
-> To: Mao Yilu
-> Cc: 'Robert Hancock'; linux-kernel@vger.kernel.org
-> Subject: Re: TSC unstable on Intel Pentium M processor 750
+Alex Buell wrote:
+> On Wed, 29 Apr 2009 22:27:46 -0400, I waved a wand and this message
+> magically appears in front of Jeff Garzik:
 > 
-> On Thu, 30 Apr 2009, Mao Yilu wrote:
-> > But I still don't know why the TSC is not correct in the C1 state (hlt
-> > instruction). Is there anything more to influence the TSC? What happened
-> > when the CPU is not running under hlt instruction?
+>> As Tejun noted, try switching to AHCI mode in BIOS.
 > 
-> SMIs?  Laptops love that crap...
+> But is there a way to switch modes without needing to go through the
+> BIOS? Some laptops won't let you do that through BIOS. 
 
-What is SMIs?
+There is and it isn't too difficult either in itself but the problem
+is that for ahci mode to work the ABAR (PCI BAR 5) needs to be
+allocated and enabled.  On x86, the kernel takes the PCI resources
+allocated by BIOS.  Doing it directly isn't necessarily difficult but
+is too dangerous as there can be areas which aren't described anywhere
+but still are used by something.
 
+Because ICHs don't enable ABAR in piix mode unless SCRAE is set and
+most BIOSen don't set SCRAE, ABAR don't get allocated nor its space
+get reserved in most cases if the controller is in piix mode.
 
+So, at the point of driver load, there just isn't much we can do about
+the missing ABAR.  It's sad.  Dunno why some laptop manufacturers
+still program the thing into piix mode.  :-(
+
+Thanks.
+
+-- 
+tejun
