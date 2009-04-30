@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbZD3VpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761915AbZD3Vsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754377AbZD3VpE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 17:45:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZD3Vox
+	id S1761915AbZD3Vsa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 17:48:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZD3VsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 17:44:53 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:42527 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751379AbZD3Vox (ORCPT
+	Thu, 30 Apr 2009 17:48:20 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:24078 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750909AbZD3VsT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 17:44:53 -0400
-X-Sasl-enc: ocHk7nhtR4OwNJ9ZIZ6ZGGK8n/RJK11esnVugyu/oQq2 1241127892
-Date: Thu, 30 Apr 2009 18:44:50 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/88] 2.6.28.10-stable review
-Message-ID: <20090430214450.GC7174@khazad-dum.debian.net>
-References: <20090430170122.GA16015@kroah.com>
+	Thu, 30 Apr 2009 17:48:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ve6ESoRadBPWrgh72qwMysGfHpOzcinCokd2NZXnMAByf70bzUE3vbiTkQjIoFjD9U
+         o8s1Rl64JT3s2JSPefK1/dVxPSSmHhJDc5YxO2tDNEHaFcDskNiLjWBdXiyu/C5ZTy1k
+         D7oYAV/Hu1SrzOpjgsbkO4gXNSIF72eyKHP3A=
+Date: Fri, 1 May 2009 03:18:01 +0530
+From: Rabin Vincent <rabin@rab.in>
+To: Meelis Roos <mroos@linux.ee>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       jaswinderrajput@gmail.com, linux-scsi@vger.kernel.org
+Subject: Re: lockdep warning from firmware loader
+Message-ID: <20090430214617.GA13109@debian>
+References: <Pine.SOC.4.64.0904241017380.219@math.ut.ee>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090430170122.GA16015@kroah.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
+In-Reply-To: <Pine.SOC.4.64.0904241017380.219@math.ut.ee>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Apr 2009, Greg KH wrote:
-> This is the start of the stable review cycle for the 2.6.28.10 release.
-> 
-> NOTE!  This is going to be the last release in the 2.6.28-stable series!
+(CCs added)
 
-Could you be convinced to keep 2.6.28-stable around for a little longer?
+On Fri, Apr 24, 2009 at 10:21:13AM +0300, Meelis Roos wrote:
+> This 2.6.30-rc3 running on SMP sparc64. Loading the qla1280 pci scsi 
+> driver causes a firmware load that in turn causes a lockdep warning like 
+> below. Firmware loading still seems to work fine.
+[..]
+> Apr 23 22:20:39 korvits kernel: [  143.912020] qla1280: QLA1040 found on PCI bus 0, dev 3
+> Apr 23 22:20:39 korvits kernel: [  143.971811] PCI: Enabling device: (0002:00:03.0), cmd 7
+> Apr 23 22:20:39 korvits kernel: [  143.972842] ------------[ cut here ]------------
+> Apr 23 22:20:39 korvits kernel: [  144.026699] WARNING: at kernel/lockdep.c:2280 lockdep_trace_alloc+0xbc/0x100()
+> Apr 23 22:20:39 korvits kernel: [  144.113197] Modules linked in:
+> Apr 23 22:20:39 korvits kernel: [  144.149622] Call Trace:
+> Apr 23 22:20:39 korvits kernel: [  144.178818]  [000000000045d7cc] warn_slowpath+0x6c/0xa0
+> Apr 23 22:20:39 korvits kernel: [  144.241329]  [00000000004886fc] lockdep_trace_alloc+0xbc/0x100
+> Apr 23 22:20:39 korvits kernel: [  144.311140]  [00000000004e67b8] kmem_cache_alloc+0x18/0x160
+> Apr 23 22:20:39 korvits kernel: [  144.377821]  [0000000000604d68] _request_firmware+0x28/0x520
+> Apr 23 22:20:39 korvits kernel: [  144.445533]  [000000000060531c] request_firmware+0x1c/0x40
+> Apr 23 22:20:39 korvits kernel: [  144.511180]  [000000000061ba98] qla1280_load_firmware+0x2f8/0x7e0
+> Apr 23 22:20:39 korvits kernel: [  144.584108]  [00000000006e1498] qla1280_probe_one+0x390/0x7a8
+> Apr 23 22:20:39 korvits kernel: [  144.652874]  [00000000005ce55c] local_pci_probe+0x1c/0x40
+> Apr 23 22:20:39 korvits kernel: [  144.717468]  [00000000005ce8e0] pci_device_probe+0x60/0xa0
+> Apr 23 22:20:39 korvits kernel: [  144.783106]  [00000000005fff78] driver_probe_device+0x78/0x1a0
+> Apr 23 22:20:39 korvits kernel: [  144.852911]  [000000000060012c] __driver_attach+0x8c/0xa0
+> Apr 23 22:20:39 korvits kernel: [  144.917505]  [00000000005ff6c8] bus_for_each_dev+0x68/0xa0
+> Apr 23 22:20:39 korvits kernel: [  144.983141]  [00000000005ffde0] driver_attach+0x20/0x40
+> Apr 23 22:20:39 korvits kernel: [  145.045657]  [00000000005fee64] bus_add_driver+0x104/0x280
+> Apr 23 22:20:39 korvits kernel: [  145.111292]  [0000000000600454] driver_register+0x74/0x180
+> Apr 23 22:20:39 korvits kernel: [  145.176928]  [00000000005cedb4] __pci_register_driver+0x54/0xe0
+> Apr 23 22:20:39 korvits kernel: [  145.247808] ---[ end trace 6edbdc497698d192 ]---
+> Apr 23 22:20:39 korvits kernel: [  145.302997] qla1280 0002:00:03.0: firmware: using built-in firmware qlogic/1040.bin
 
-2.6.29 is still much too young, as one can see from the size of 2.6.29.2,
-and the fact that the queue for 2.6.29 isn't even empty yet and there are
-already more patches waiting to get queued...
+This is because the driver calls request_firmware() with interrupts
+disabled.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Rabin
