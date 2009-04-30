@@ -1,107 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbZD3GqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752219AbZD3GsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756405AbZD3GqT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 02:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZD3Gp7
+	id S1752219AbZD3GsI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 02:48:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZD3Grz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 02:45:59 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:58924 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbZD3Gp6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 02:45:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        b=bMNR4CmNHg53BzvA8rxYfgdw3iNtQaROlAmnLalv12JkcuUs2Yfx03lM6zBrumwTrp
-         3kws9ZWgeDtz0WHphMzTZV/mhrWDFn+2Jn7OncAxLE/jEZfeYBWyNFFIDaRv8wRsnq8t
-         Su6QFFwceB1YBXr/l5hSwEAHSLCSGLpcZMeL4=
-Date: Thu, 30 Apr 2009 08:45:49 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, axboe@kernel.dk,
-       linux-kernel@vger.kernel.org, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
-       mike.miller@hp.com, chirag.kantharia@hp.com, Eric.Moore@lsi.com,
-       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
-       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, jesper.juhl@gmail.com, tim@cyberelk.net,
-       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
-       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
-       davem@davemloft.net, rusty@rustcorp.com.au,
-       Markus.Lidel@shadowconnect.com, bharrosh@panasas.com,
-       Doug Gilbert <dgilbert@interlog.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: [PATCH 03/10] block: add rq->resid_len
-Message-ID: <20090430064549.GC6725@liondog.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com, Tejun Heo <tj@kernel.org>,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
-	linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-	bzolnier@gmail.com, petkovbb@googlemail.com,
-	sshtylyov@ru.mvista.com, mike.miller@hp.com,
-	chirag.kantharia@hp.com, Eric.Moore@lsi.com,
-	stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
-	zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-	sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-	paul.clements@steeleye.com, jesper.juhl@gmail.com, tim@cyberelk.net,
-	jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
-	dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
-	davem@davemloft.net, rusty@rustcorp.com.au,
-	Markus.Lidel@shadowconnect.com, bharrosh@panasas.com,
-	Doug Gilbert <dgilbert@interlog.com>,
-	"Darrick J. Wong" <djwong@us.ibm.com>
-References: <1240996428-10159-1-git-send-email-tj@kernel.org> <1240996428-10159-4-git-send-email-tj@kernel.org> <1241016114.3369.9.camel@mulgrave.int.hansenpartnership.com> <49F905EE.2020407@kernel.org>
+	Thu, 30 Apr 2009 02:47:55 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60532 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751190AbZD3Gry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 02:47:54 -0400
+Date: Thu, 30 Apr 2009 08:47:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [PATCH] blktrace: swap arg name "from" and "to" of
+	blk_add_trace_remap
+Message-ID: <20090430064734.GE9559@elte.hu>
+References: <20090430133627.D217.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49F905EE.2020407@kernel.org>
+In-Reply-To: <20090430133627.D217.A69D9226@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 10:59:10AM +0900, Tejun Heo wrote:
-> Hello, James.
-> 
-> James Bottomley wrote:
-> > This looks good (although I'd like to test it first).
-> 
-> Yeah, this will need quite a bit of testing.
-> 
-> > Might it not be better to have an accessor setting resid_len?  All
-> > the other patches in the series insulate users from the actual
-> > members of struct request by accessors, so this is a bit the odd man
-> > out.
-> 
-> I actually think it's better to expose resid_len in this case as the
-> semantics of the field is - initialized to zero on issue, contains
-> residual count on completion and whatever it contains inbetween is
-> upto the low level driver.  Request position or length are different
-> as they must contain well defined values throughout request processing
-> and both block layer and low level driver should agree on what they
-> mean.
-> 
-> Fancy words aside, it basically boils down to allowing llds to do
-> either "rq->resid_len = blk_rq_bytes() - xferred" on completion or
-> "rq->resid_len = blk_rq_bytes()" on issue and "rq->resid_len -=
-> increments" while processing.
 
-Actually, the second one sounds more natural: resid_len == data_len on
-issue and decrementing while travelling through block layer and LLDD,
-while resid_len == 0 in issue might get confused somewhere.
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-And I like it too, we've been coming up with all sorts of hacks in
-ide-atapi wrt to residual completion and accounting of what got xferred
-already and rq->resid_len is much more cleaner, IMHO.
+> 
+> Subject: [PATCH] blktrace: swap arg name "from" and "to" of blk_add_trace_remap
+> 
+> Impact: cleanup for improve readability
+> 
+> Currently, blk_add_trace_remap has following prototype.
+> 
+> static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
+> 				       dev_t dev, sector_t from, sector_t to)
+> 
+> but caller pass "from" secter as 4th arg, "to" sector as 5th arg.
+> 
+> example,
+> --------------------------------------------------------
+> static inline void blk_partition_remap(struct bio *bio)
+> {
+> 	struct block_device *bdev = bio->bi_bdev;
+> 
+> 	if (bio_sectors(bio) && bdev != bdev->bd_contains) {
+> 		struct hd_struct *p = bdev->bd_part;
+> 
+> 		bio->bi_sector += p->start_sect;
+> 		bio->bi_bdev = bdev->bd_contains;
+> 
+> 		trace_block_remap(bdev_get_queue(bio->bi_bdev), bio,
+> 				    bdev->bd_dev, bio->bi_sector,
+> 				    bio->bi_sector - p->start_sect);
+> 	}
+> }
+> --------------------------------------------------------
+> 
+> Oh my god, it's reverse order.
+> Fortunately, print logic reverse again. the twice reversing hide problem.
 
-/me testing...
+heh ... well spotted.
 
--- 
-Regards/Gruss,
-    Boris.
+> but, but...
+> It repeatedly confuse reviewer (include me!).
+> Then, swapping argment name is better.
+
+Agreed. Li, Jens, what do you think?
+
+	Ingo
