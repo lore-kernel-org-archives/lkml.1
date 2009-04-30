@@ -1,15 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760949AbZD3RGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764174AbZD3RHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760949AbZD3RGy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756394AbZD3RGo
+	id S1764174AbZD3RHf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762985AbZD3RHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:06:44 -0400
-Received: from kroah.org ([198.145.64.141]:39053 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:07:13 -0400
+Received: from kroah.org ([198.145.64.141]:39078 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755995AbZD3RGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:06:43 -0400
-Date: Thu, 30 Apr 2009 10:01:22 -0700
+	id S1755995AbZD3RHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:12 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:38 2009
+Message-Id: <20090430165738.476519331@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Thu, 30 Apr 2009 09:55:50 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,147 +25,97 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/88] 2.6.28.10-stable review
-Message-ID: <20090430170122.GA16015@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+       alan@lxorguk.ukuu.org.uk, Jay Vosburgh <fubar@us.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 01/88] bonding: Fix updating of speed/duplex changes
+References: <20090430165549.117010404@mini.kroah.org>
+Content-Disposition: inline; filename=bonding-fix-updating-of-speed-duplex-changes.patch
+In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.28.10 release.
+2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
-NOTE!  This is going to be the last release in the 2.6.28-stable series!
+------------------
 
-There are 88 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+From: Jay Vosburgh <fubar@us.ibm.com>
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+[ Upstream commit 17d04500e2528217de5fe967599f98ee84348a9c ]
 
-Responses should be made by Saturday, May 2, 17:00:00 UTC.  Anything
-received after that time might be too late.
+	This patch corrects an omission from the following commit:
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.28.10-rc1.gz
-and the diffstat can be found below.
+commit f0c76d61779b153dbfb955db3f144c62d02173c2
+Author: Jay Vosburgh <fubar@us.ibm.com>
+Date:   Wed Jul 2 18:21:58 2008 -0700
+
+    bonding: refactor mii monitor
+
+	The un-refactored code checked the link speed and duplex of
+every slave on every pass; the refactored code did not do so.
+
+	The 802.3ad and balance-alb/tlb modes utilize the speed and
+duplex information, and require it to be kept up to date.  This patch
+adds a notifier check to perform the appropriate updating when the slave
+device speed changes.
+
+Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/net/bonding/bond_main.c |   25 ++++++++++++++++++++-----
+ drivers/net/bonding/bonding.h   |    6 ++++++
+ 2 files changed, 26 insertions(+), 5 deletions(-)
+
+--- a/drivers/net/bonding/bonding.h
++++ b/drivers/net/bonding/bonding.h
+@@ -248,6 +248,12 @@ static inline struct bonding *bond_get_b
+ 	return (struct bonding *)slave->dev->master->priv;
+ }
+ 
++static inline bool bond_is_lb(const struct bonding *bond)
++{
++        return bond->params.mode == BOND_MODE_TLB
++                || bond->params.mode == BOND_MODE_ALB;
++}
++
+ #define BOND_FOM_NONE			0
+ #define BOND_FOM_ACTIVE			1
+ #define BOND_FOM_FOLLOW			2
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -3536,11 +3536,26 @@ static int bond_slave_netdev_event(unsig
+ 		}
+ 		break;
+ 	case NETDEV_CHANGE:
+-		/*
+-		 * TODO: is this what we get if somebody
+-		 * sets up a hierarchical bond, then rmmod's
+-		 * one of the slave bonding devices?
+-		 */
++		if (bond->params.mode == BOND_MODE_8023AD || bond_is_lb(bond)) {
++			struct slave *slave;
++
++			slave = bond_get_slave_by_dev(bond, slave_dev);
++			if (slave) {
++				u16 old_speed = slave->speed;
++				u16 old_duplex = slave->duplex;
++
++				bond_update_speed_duplex(slave);
++
++				if (bond_is_lb(bond))
++					break;
++
++				if (old_speed != slave->speed)
++					bond_3ad_adapter_speed_changed(slave);
++				if (old_duplex != slave->duplex)
++					bond_3ad_adapter_duplex_changed(slave);
++			}
++		}
++
+ 		break;
+ 	case NETDEV_DOWN:
+ 		/*
 
 
-thanks,
-
-greg k-h
-
-
- Makefile                               |    2 +-
- arch/powerpc/include/asm/futex.h       |   12 +-
- arch/powerpc/include/asm/processor.h   |   19 ++
- arch/powerpc/kernel/signal.c           |    4 +-
- arch/powerpc/kernel/signal.h           |    2 +-
- arch/powerpc/kernel/signal_32.c        |    4 +-
- arch/powerpc/kernel/signal_64.c        |    2 +-
- arch/x86/boot/memory.c                 |    7 +-
- arch/x86/include/asm/kvm_host.h        |   10 +-
- arch/x86/kernel/cpu/mtrr/generic.c     |   51 ++--
- arch/x86/kvm/i8254.c                   |    2 +-
- arch/x86/kvm/irq.c                     |    7 -
- arch/x86/kvm/irq.h                     |    1 -
- arch/x86/kvm/lapic.c                   |   66 +----
- arch/x86/kvm/lapic.h                   |    2 -
- arch/x86/kvm/mmu.c                     |   24 ++-
- arch/x86/kvm/paging_tmpl.h             |    8 +-
- arch/x86/kvm/svm.c                     |   17 ++-
- arch/x86/kvm/vmx.c                     |    7 +-
- arch/x86/kvm/vmx.h                     |    5 +-
- arch/x86/kvm/x86.c                     |   14 +-
- arch/x86/kvm/x86_emulate.c             |    2 +-
- arch/x86/pci/i386.c                    |    3 +
- block/genhd.c                          |   12 +-
- drivers/acpi/dock.c                    |    3 +-
- drivers/ata/pata_hpt37x.c              |   22 +--
- drivers/char/agp/generic.c             |    4 +-
- drivers/char/raw.c                     |    1 +
- drivers/crypto/ixp4xx_crypto.c         |  182 +++++--------
- drivers/ide/hpt366.c                   |    4 +-
- drivers/input/gameport/gameport.c      |   14 +-
- drivers/isdn/gigaset/bas-gigaset.c     |   16 +-
- drivers/md/md.c                        |   27 ++-
- drivers/misc/thinkpad_acpi.c           |   41 ++--
- drivers/net/b44.c                      |    2 +-
- drivers/net/bonding/bond_main.c        |   25 ++-
- drivers/net/bonding/bonding.h          |    6 +
- drivers/net/r8169.c                    |    5 +-
- drivers/net/wireless/ath9k/ath9k.h     |    4 +-
- drivers/net/wireless/ath9k/core.c      |    1 +
- drivers/net/wireless/ath9k/core.h      |   33 +++
- drivers/net/wireless/ath9k/hw.c        |   22 ++-
- drivers/net/wireless/b43/xmit.c        |    2 +-
- drivers/scsi/libiscsi.c                |    9 +-
- drivers/scsi/sg.c                      |  466 +++++++++++++++-----------------
- drivers/spi/spi.c                      |   22 +-
- drivers/usb/class/cdc-wdm.c            |    2 +-
- drivers/usb/core/message.c             |    3 +-
- drivers/usb/core/quirks.c              |    4 +
- drivers/usb/core/sysfs.c               |    4 +-
- drivers/usb/gadget/f_rndis.c           |    2 +-
- drivers/usb/gadget/u_ether.c           |    8 +-
- drivers/usb/host/ehci-q.c              |   32 +++
- drivers/usb/host/ehci.h                |    3 +
- drivers/usb/serial/ftdi_sio.c          |    1 +
- drivers/usb/serial/ftdi_sio.h          |    7 +
- drivers/usb/storage/cypress_atacb.c    |   15 +-
- drivers/usb/storage/scsiglue.c         |    6 +
- drivers/usb/storage/unusual_devs.h     |    6 +-
- fs/anon_inodes.c                       |    7 +-
- fs/buffer.c                            |    2 +-
- fs/cifs/CHANGES                        |    3 +
- fs/cifs/cifssmb.c                      |    6 +-
- fs/cifs/connect.c                      |    2 +-
- fs/compat.c                            |   12 +-
- fs/dquot.c                             |    2 +-
- fs/drop_caches.c                       |    2 +-
- fs/exec.c                              |    4 +-
- fs/fs-writeback.c                      |    3 +-
- fs/hugetlbfs/inode.c                   |    3 +-
- fs/ocfs2/file.c                        |    8 +-
- fs/proc/base.c                         |   50 ++---
- fs/splice.c                            |   25 ++-
- include/linux/capability.h             |   23 ++-
- include/linux/genhd.h                  |    1 +
- include/linux/kvm.h                    |    2 +
- include/linux/pagemap.h                |   12 +-
- include/linux/pci_regs.h               |    2 +-
- include/linux/raid/md_k.h              |    2 +
- include/linux/sched.h                  |    3 +-
- include/linux/usb/quirks.h             |    3 +
- kernel/exit.c                          |    3 +-
- kernel/kprobes.c                       |    4 +-
- kernel/posix-cpu-timers.c              |    7 +-
- kernel/sched.c                         |   65 ++++-
- kernel/signal.c                        |    8 +
- mm/filemap_xip.c                       |    4 +-
- mm/mmap.c                              |    2 +-
- net/bridge/br_if.c                     |    1 -
- net/ipv4/netfilter/arp_tables.c        |    4 +-
- net/ipv4/netfilter/ip_tables.c         |    4 +-
- net/ipv6/inet6_hashtables.c            |    4 +-
- net/ipv6/ip6_input.c                   |    4 +-
- net/ipv6/netfilter/ip6_tables.c        |    4 +-
- net/netfilter/nf_conntrack_proto_tcp.c |    3 +-
- net/netrom/af_netrom.c                 |    8 +-
- net/rose/af_rose.c                     |    4 +
- net/sctp/endpointola.c                 |    3 +-
- net/x25/af_x25.c                       |    6 +
- net/xfrm/xfrm_state.c                  |    2 +-
- security/selinux/hooks.c               |    1 +
- security/smack/smack_lsm.c             |    4 +-
- sound/pci/hda/patch_analog.c           |    2 +-
- virt/kvm/kvm_main.c                    |   41 +++-
- virt/kvm/kvm_trace.c                   |    1 +
- 105 files changed, 952 insertions(+), 701 deletions(-)
