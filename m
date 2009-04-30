@@ -1,62 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763314AbZD3SMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764049AbZD3SNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763314AbZD3SMr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 14:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757614AbZD3SMg
+	id S1764049AbZD3SNL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 14:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757797AbZD3SMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 14:12:36 -0400
-Received: from blaine.gmane.org ([80.91.229.8]:37014 "EHLO hugh.gmane.org"
+	Thu, 30 Apr 2009 14:12:51 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:60377 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755588AbZD3SMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 14:12:35 -0400
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: reinette chatre 
-	<public-reinette.chatre-ral2JQCrhuEAvxtiuMwx3w@hugh.gmane.org>
-Cc: Andreas Schwab 
-	<public-schwab-Td1EMuHUCqxL1ZNQvxDV9g@hugh.gmane.org>,
-       "linux-wireless-u79uwXL29TY76Z2rM5mHXA\@public.gmane.org" 
-	<public-linux-wireless-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>,
-       "linux-kernel-u79uwXL29TY76Z2rM5mHXA\@public.gmane.org" 
-	<public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>,
-       "netdev-MogPR669STc76Z2rM5mHXA\@public.gmane.org" 
-	<public-netdev-MogPR669STc76Z2rM5mHXA@hugh.gmane.org>
-Subject: Re: iwlwifi: remove EXPORT_SYMBOL for static symbol
-References: <m24ow6vah1.fsf@igel.home> <1241112119.10498.11.camel@rc-desk>
-X-Yow: I want to so HAPPY, the VEINS in my neck STAND OUT!!
-Date: Thu, 30 Apr 2009 19:27:37 +0200
-In-Reply-To: <1241112119.10498.11.camel@rc-desk> (reinette chatre's message of
-	"Thu, 30 Apr 2009 10:21:59 -0700")
-Message-ID: <m24ow6xd9y.fsf@igel.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.92 (gnu/linux)
+	id S1763443AbZD3SMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 14:12:50 -0400
+Date: Thu, 30 Apr 2009 23:42:46 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hugh@veritas.com" <hugh@veritas.com>
+Subject: Re: [PATCH] memcg: fix stale swap cache leak v5
+Message-ID: <20090430181246.GM4430@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090430161627.0ccce565.kamezawa.hiroyu@jp.fujitsu.com> <20090430163539.7a882cef.kamezawa.hiroyu@jp.fujitsu.com> <20090430180426.25ae2fa6.kamezawa.hiroyu@jp.fujitsu.com> <20090430094252.GG4430@balbir.in.ibm.com> <20090430184738.752858ea.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090430184738.752858ea.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-30 18:47:38]:
 
-
-reinette chatre
-<reinette.chatre-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org> writes:
-
-> On Thu, 2009-04-30 at 00:58 -0700, Andreas Schwab wrote:
->> It does not make sense to apply EXPORT_SYMBOL to a static symbol.  Fixes
->> this build error:
->> 
->> drivers/net/wireless/iwlwifi/iwl3945-base.c:1697: error: __ksymtab_iwl3945_rx_queue_reset causes a section type conflict
->> 
->> Signed-off-by: Andreas Schwab <schwab-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
->> ---
->> This obsoletes 6269b731560d69c5eaa929909891edec39496d71, which was
+> On Thu, 30 Apr 2009 15:12:52 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-30 18:04:26]:
+> > 
+> > > On Thu, 30 Apr 2009 16:35:39 +0900
+> > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > 
+> > > > On Thu, 30 Apr 2009 16:16:27 +0900
+> > > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > > 
+> > > > > This is v5 but all codes are rewritten.
+> > > > > 
+> > > > > After this patch, when memcg is used,
+> > > > >  1. page's swapcount is checked after I/O (without locks). If the page is
+> > > > >     stale swap cache, freeing routine will be scheduled.
+> > > > >  2. vmscan.c calls try_to_free_swap() when __remove_mapping() fails.
+> > > > > 
+> > > > > Works well for me. no extra resources and no races.
+> > > > > 
+> > > > > Because my office will be closed until May/7, I'll not be able to make a
+> > > > > response. Posting this for showing what I think of now.
+> > > > > 
+> > > > I found a hole immediately after posted this...sorry. plz ignore this patch/
+> > > > see you again in the next month.
+> > > > 
+> > > I'm now wondering to disable "swapin readahed" completely when memcg is used...
+> > > Then, half of the problems will go away immediately.
+> > > And it's not so bad to try to free swapcache if swap writeback ends. Then, another
+> > > half will go away...
+> > >
+> > 
+> > Could you clarify? Will memcg not account for swapin readahead pages?
+> >  
+> swapin-readahead pages are _not_ accounted now. (And I think _never_)
+> But has race and leak swp_entry account until global LRU runs.
+> 
+> "Don't do swapin-readahead, at all" will remove following race completely.
+> ==
+>          CPU0                  CPU1
+>  free_swap_and_cache()
+>                         read_swapcache_async()
+> ==
+> swp_entry to be freed will not be read-in.
+> 
+> I think there will no performance regression in _usual_ case even if no readahead.
+> But has no number yet.
 >
->>From which repo is this commit id? 
 
-That's from davem/net-2.6 or linville/wireless-2.6.git
+Kamezawa, Daisuke,
 
-Andreas.
+Can't we just correct the accounting and leave the page on the global
+LRU?
+
+Daisuke in the race conditions mentioned is (2) significant? Since the
+accounting is already fixed during mem_cgroup_uncharge_page()?
+
+ 
 
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
-
+	Balbir
