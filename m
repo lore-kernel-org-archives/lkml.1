@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764933AbZD3RLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764538AbZD3RLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764933AbZD3RLk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764290AbZD3RHZ
+	id S1764538AbZD3RLQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764321AbZD3RHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:25 -0400
-Received: from kroah.org ([198.145.64.141]:56205 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:07:24 -0400
+Received: from kroah.org ([198.145.64.141]:56189 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764141AbZD3RHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:20 -0400
+	id S1764043AbZD3RHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:19 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:39 2009
-Message-Id: <20090430165739.807374880@mini.kroah.org>
+Message-Id: <20090430165739.660902364@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:55:59 -0700
+Date: Thu, 30 Apr 2009 09:55:58 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,14 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Boaz Harrosh <bharrosh@panasas.com>,
-       Matthieu CASTET <castet.matthieu@free.fr>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 10/88] USB: fix USB_STORAGE_CYPRESS_ATACB
+Subject: [patch 09/88] USB: EHCI: add software retry for transaction errors
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=0009-USB-fix-USB_STORAGE_CYPRESS_ATACB.patch
+Content-Disposition: inline; filename=0008-USB-EHCI-add-software-retry-for-transaction-errors.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -42,74 +40,103 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Boaz Harrosh <bharrosh@panasas.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-upstream commit: 1f4159c1620f74377e26d8a569d10ca5907ef475
+upstream commit: a2c2706e1043c17139c2dafd171c4a5cf008ef7e
 
-commit 64a87b24: [SCSI] Let scsi_cmnd->cmnd use request->cmd buffer
-changed the scsi_eh_prep_cmnd logic by making it clear
-the ->cmnd buffer. But the sat to cypress atacb translation supposed
-the ->cmnd buffer wasn't modified.
+This patch (as1204) adds a software retry mechanism to ehci-hcd.  It
+gets invoked when the driver encounters transaction errors on an
+asynchronous endpoint.  On many systems, hardware deficiencies cause
+such errors to occur if one device is unplugged while the host is
+communicating with another device.  With the patch, the failed
+transactions are retried and generally succeed the second or third
+time through.
 
-This patch makes it set the ->cmnd buffer after scsi_eh_prep_cmnd call.
-The problem and a fix was reported by Matthieu CASTET <castet.matthieu@free.fr>
+This is based on code originally written by Koichiro Saito.
 
-It also removes all the hackery fiddling of scsi_cmnd and scsi_eh_save by
-requesting from scsi_eh_prep_cmnd to prepare a read into ->sense_buffer,
-which is much more suitable a buffer for HW transfers, then after the command
-execution the regs read is copied into regs buffer before actual preparation
-of sense_buffer.
-
-Also fix an alien comment character to my utf-8 editor.
-
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-Signed-off-by: Matthieu CASTET <castet.matthieu@free.fr>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Tested by: Koichiro Saito <Saito.Koichiro@adniss.jp>
+CC: David Brownell <david-b@pacbell.net>
 Cc: stable <stable@kernel.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/usb/storage/cypress_atacb.c |   15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+ drivers/usb/host/ehci-q.c |   32 ++++++++++++++++++++++++++++++++
+ drivers/usb/host/ehci.h   |    3 +++
+ 2 files changed, 35 insertions(+)
 
---- a/drivers/usb/storage/cypress_atacb.c
-+++ b/drivers/usb/storage/cypress_atacb.c
-@@ -133,19 +133,18 @@ void cypress_atacb_passthrough(struct sc
+--- a/drivers/usb/host/ehci.h
++++ b/drivers/usb/host/ehci.h
+@@ -366,6 +366,9 @@ struct ehci_qh {
+ #define	QH_STATE_UNLINK_WAIT	4		/* LINKED and on reclaim q */
+ #define	QH_STATE_COMPLETING	5		/* don't touch token.HALT */
  
- 		/* build the command for
- 		 * reading the ATA registers */
--		scsi_eh_prep_cmnd(srb, &ses, NULL, 0, 0);
--		srb->sdb.length = sizeof(regs);
--		sg_init_one(&ses.sense_sgl, regs, srb->sdb.length);
--		srb->sdb.table.sgl = &ses.sense_sgl;
--		srb->sc_data_direction = DMA_FROM_DEVICE;
--		srb->sdb.table.nents = 1;
-+		scsi_eh_prep_cmnd(srb, &ses, NULL, 0, sizeof(regs));
++	u8			xacterrs;	/* XactErr retry counter */
++#define	QH_XACTERR_MAX		32		/* XactErr retry limit */
 +
- 		/* we use the same command as before, but we set
- 		 * the read taskfile bit, for not executing atacb command,
- 		 * but reading register selected in srb->cmnd[4]
- 		 */
-+		srb->cmd_len = 16;
-+		srb->cmnd = ses.cmnd;
- 		srb->cmnd[2] = 1;
+ 	/* periodic schedule info */
+ 	u8			usecs;		/* intr bandwidth */
+ 	u8			gap_uf;		/* uframes split/csplit gap */
+--- a/drivers/usb/host/ehci-q.c
++++ b/drivers/usb/host/ehci-q.c
+@@ -333,12 +333,40 @@ qh_completions (struct ehci_hcd *ehci, s
+ 		token = hc32_to_cpu(ehci, qtd->hw_token);
  
- 		usb_stor_transparent_scsi_command(srb, us);
-+		memcpy(regs, srb->sense_buffer, sizeof(regs));
- 		tmp_result = srb->result;
- 		scsi_eh_restore_cmnd(srb, &ses);
- 		/* we fail to get registers, report invalid command */
-@@ -162,8 +161,8 @@ void cypress_atacb_passthrough(struct sc
+ 		/* always clean up qtds the hc de-activated */
++ retry_xacterr:
+ 		if ((token & QTD_STS_ACTIVE) == 0) {
  
- 		/* XXX we should generate sk, asc, ascq from status and error
- 		 * regs
--		 * (see 11.1 Error translation ­ ATA device error to SCSI error map)
--		 * and ata_to_sense_error from libata.
-+		 * (see 11.1 Error translation ATA device error to SCSI error
-+		 *  map, and ata_to_sense_error from libata.)
- 		 */
+ 			/* on STALL, error, and short reads this urb must
+ 			 * complete and all its qtds must be recycled.
+ 			 */
+ 			if ((token & QTD_STS_HALT) != 0) {
++
++				/* retry transaction errors until we
++				 * reach the software xacterr limit
++				 */
++				if ((token & QTD_STS_XACT) &&
++						QTD_CERR(token) == 0 &&
++						--qh->xacterrs > 0 &&
++						!urb->unlinked) {
++					ehci_dbg(ehci,
++	"detected XactErr len %d/%d retry %d\n",
++	qtd->length - QTD_LENGTH(token), qtd->length,
++	QH_XACTERR_MAX - qh->xacterrs);
++
++					/* reset the token in the qtd and the
++					 * qh overlay (which still contains
++					 * the qtd) so that we pick up from
++					 * where we left off
++					 */
++					token &= ~QTD_STS_HALT;
++					token |= QTD_STS_ACTIVE |
++							(EHCI_TUNE_CERR << 10);
++					qtd->hw_token = cpu_to_hc32(ehci,
++							token);
++					wmb();
++					qh->hw_token = cpu_to_hc32(ehci, token);
++					goto retry_xacterr;
++				}
+ 				stopped = 1;
  
- 		/* Sense data is current and format is descriptor. */
+ 			/* magic dummy for some short reads; qh won't advance.
+@@ -421,6 +449,9 @@ halt:
+ 		/* remove qtd; it's recycled after possible urb completion */
+ 		list_del (&qtd->qtd_list);
+ 		last = qtd;
++
++		/* reinit the xacterr counter for the next qtd */
++		qh->xacterrs = QH_XACTERR_MAX;
+ 	}
+ 
+ 	/* last urb's completion might still need calling */
+@@ -862,6 +893,7 @@ static void qh_link_async (struct ehci_h
+ 	head->qh_next.qh = qh;
+ 	head->hw_next = dma;
+ 
++	qh->xacterrs = QH_XACTERR_MAX;
+ 	qh->qh_state = QH_STATE_LINKED;
+ 	/* qtd completions reported later by interrupt */
+ }
 
 
