@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764991AbZD3RM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764653AbZD3RJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764991AbZD3RM4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:12:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764226AbZD3RH3
+	id S1764653AbZD3RJA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764194AbZD3RHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:29 -0400
-Received: from kroah.org ([198.145.64.141]:56238 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:07:18 -0400
+Received: from kroah.org ([198.145.64.141]:39131 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763616AbZD3RHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:22 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:40 2009
-Message-Id: <20090430165740.211218395@mini.kroah.org>
+	id S1755995AbZD3RHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:14 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:39 2009
+Message-Id: <20090430165738.929323196@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:02 -0700
+Date: Thu, 30 Apr 2009 09:55:53 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 13/88] USB: add quirk to avoid config and interface strings
+       alan@lxorguk.ukuu.org.uk, Jesper Nilsson <jesper.nilsson@axis.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 04/88] ipv6: Plug sk_buff leak in ipv6_rcv (net/ipv6/ip6_input.c)
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=0012-USB-add-quirk-to-avoid-config-and-interface-strings.patch
+Content-Disposition: inline; filename=ipv6-plug-sk_buff-leak-in-ipv6_rcv.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,86 +39,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Jesper Nilsson <jesper.nilsson@axis.com>
 
-upstream commit: 1662e3a7f076e51e3073faf9ce77157b529c475b
+[ Upstream commit 71f6f6dfdf7c7a67462386d9ea05c1095a89c555 ]
 
-Apparently the Configuration and Interface strings aren't used as
-often as the Vendor, Product, and Serial strings.  In at least one
-device (a Saitek Cyborg Gold 3D joystick), attempts to read the
-Configuration string cause the device to stop responding to Control
-requests.
+Commit 778d80be52699596bf70e0eb0761cf5e1e46088d
+(ipv6: Add disable_ipv6 sysctl to disable IPv6 operaion on specific interface)
+seems to have introduced a leak of sk_buff's for ipv6 traffic,
+at least in some configurations where idev is NULL, or when ipv6
+is disabled via sysctl.
 
-This patch (as1226) adds a quirks flag, telling the kernel not to
-read a device's Configuration or Interface strings, together with a
-new quirk for the offending joystick.
+The problem is that if the first condition of the if-statement
+returns non-NULL, it returns an skb with only one reference,
+and when the other conditions apply, execution jumps to the "out"
+label, which does not call kfree_skb for it.
 
-Reported-by: Melchior FRANZ <melchior.franz@gmail.com>
-Tested-by: Melchior FRANZ <melchior.franz@gmail.com>
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+To plug this leak, change to use the "drop" label instead.
+(this relies on it being ok to call kfree_skb on NULL)
+This also allows us to avoid calling rcu_read_unlock here,
+and removes the only user of the "out" label.
+
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- drivers/usb/core/message.c |    3 ++-
- drivers/usb/core/quirks.c  |    4 ++++
- drivers/usb/core/sysfs.c   |    4 +++-
- include/linux/usb/quirks.h |    3 +++
- 4 files changed, 12 insertions(+), 2 deletions(-)
 
---- a/drivers/usb/core/message.c
-+++ b/drivers/usb/core/message.c
-@@ -1637,7 +1637,8 @@ free_interfaces:
+---
+ net/ipv6/ip6_input.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+--- a/net/ipv6/ip6_input.c
++++ b/net/ipv6/ip6_input.c
+@@ -75,8 +75,7 @@ int ipv6_rcv(struct sk_buff *skb, struct
+ 	if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL ||
+ 	    !idev || unlikely(idev->cnf.disable_ipv6)) {
+ 		IP6_INC_STATS_BH(net, idev, IPSTATS_MIB_INDISCARDS);
+-		rcu_read_unlock();
+-		goto out;
++		goto drop;
  	}
- 	kfree(new_interfaces);
  
--	if (cp->string == NULL)
-+	if (cp->string == NULL &&
-+			!(dev->quirks & USB_QUIRK_CONFIG_INTF_STRINGS))
- 		cp->string = usb_cache_string(dev, cp->desc.iConfiguration);
+ 	memset(IP6CB(skb), 0, sizeof(struct inet6_skb_parm));
+@@ -147,7 +146,6 @@ err:
+ drop:
+ 	rcu_read_unlock();
+ 	kfree_skb(skb);
+-out:
+ 	return 0;
+ }
  
- 	/* Now that all the interfaces are set up, register them
---- a/drivers/usb/core/quirks.c
-+++ b/drivers/usb/core/quirks.c
-@@ -54,6 +54,10 @@ static const struct usb_device_id usb_qu
- 	{ USB_DEVICE(0x0638, 0x0a13), .driver_info =
- 	  USB_QUIRK_STRING_FETCH_255 },
- 
-+	/* Saitek Cyborg Gold Joystick */
-+	{ USB_DEVICE(0x06a3, 0x0006), .driver_info =
-+			USB_QUIRK_CONFIG_INTF_STRINGS },
-+
- 	/* M-Systems Flash Disk Pioneers */
- 	{ USB_DEVICE(0x08ec, 0x1000), .driver_info = USB_QUIRK_RESET_RESUME },
- 
---- a/drivers/usb/core/sysfs.c
-+++ b/drivers/usb/core/sysfs.c
-@@ -13,6 +13,7 @@
- #include <linux/kernel.h>
- #include <linux/string.h>
- #include <linux/usb.h>
-+#include <linux/usb/quirks.h>
- #include "usb.h"
- 
- /* Active configuration fields */
-@@ -847,7 +848,8 @@ int usb_create_sysfs_intf_files(struct u
- 	 * and missing in others.  Hence its attribute cannot be created
- 	 * before the uevent is broadcast.
- 	 */
--	if (alt->string == NULL)
-+	if (alt->string == NULL &&
-+			!(udev->quirks & USB_QUIRK_CONFIG_INTF_STRINGS))
- 		alt->string = usb_cache_string(udev, alt->desc.iInterface);
- 	if (alt->string)
- 		retval = device_create_file(&intf->dev, &dev_attr_interface);
---- a/include/linux/usb/quirks.h
-+++ b/include/linux/usb/quirks.h
-@@ -16,4 +16,7 @@
- /* device can't handle Set-Interface requests */
- #define USB_QUIRK_NO_SET_INTF		0x00000004
- 
-+/* device can't handle its Configuration or Interface strings */
-+#define USB_QUIRK_CONFIG_INTF_STRINGS	0x00000008
-+
- #endif /* __LINUX_USB_QUIRKS_H */
 
 
