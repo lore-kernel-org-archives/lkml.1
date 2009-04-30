@@ -1,108 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752290AbZD3GL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770AbZD3GPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752290AbZD3GL2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 02:11:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZD3GLS
+	id S1754770AbZD3GPI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 02:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZD3GOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 02:11:18 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50189 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750995AbZD3GLS (ORCPT
+	Thu, 30 Apr 2009 02:14:50 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:57042 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbZD3GOs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 02:11:18 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [PATCH v2] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20090430151008.D21C.A69D9226@jp.fujitsu.com>
+	Thu, 30 Apr 2009 02:14:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :references:mime-version:content-type:content-disposition
+         :in-reply-to:user-agent;
+        b=XjWmEFI3k+snBo9aQWWN8u1ddNGxUDEzDQMobTzNxWs4VNELIFiWHuPwBzXiqizJuK
+         VJfLbtBtJN3CW3qk/z4YlQmXuI76USCnQmQlSaJSrOqiEVG0kcMP4Ty26ERVVWGg71op
+         P45DXStaqoZXl3yO1goE+oaDGW6vj5uu+MRfM=
+Date: Thu, 30 Apr 2009 08:14:38 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
+       sshtylyov@ru.mvista.com, mike.miller@hp.com, chirag.kantharia@hp.com,
+       Eric.Moore@lsi.com, stern@rowland.harvard.edu,
+       fujita.tomonori@lab.ntt.co.jp, zaitcev@redhat.com,
+       Geert.Uytterhoeven@sonycom.com, sfr@canb.auug.org.au,
+       grant.likely@secretlab.ca, paul.clements@steeleye.com,
+       jesper.juhl@gmail.com, tim@cyberelk.net, jeremy@xensource.com,
+       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
+       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
+       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
+       bharrosh@panasas.com
+Subject: Re: [PATCH 02/10] ide-tape: don't initialize rq->sector for rw
+	requests
+Message-ID: <20090430061438.GB6725@liondog.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, Tejun Heo <tj@kernel.org>,
+	axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+	linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+	linux-scsi@vger.kernel.org, bzolnier@gmail.com,
+	petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
+	mike.miller@hp.com, chirag.kantharia@hp.com, Eric.Moore@lsi.com,
+	stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
+	zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+	sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+	paul.clements@steeleye.com, jesper.juhl@gmail.com, tim@cyberelk.net,
+	jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
+	dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
+	davem@davemloft.net, rusty@rustcorp.com.au,
+	Markus.Lidel@shadowconnect.com, bharrosh@panasas.com
+References: <1240996428-10159-1-git-send-email-tj@kernel.org> <1240996428-10159-3-git-send-email-tj@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Thu, 30 Apr 2009 15:11:15 +0900 (JST)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1240996428-10159-3-git-send-email-tj@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 29, 2009 at 06:13:40PM +0900, Tejun Heo wrote:
+> rq->sector is set to the tape->first_frame but it's never actually
+> used and not even in the correct unit (512 byte sectors).  Don't set
+> it.
+> 
+> [ Impact: cleanup ]
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
 
-Changelog:
-  since v1
-  - use percpu_counter_sum() instead percpu_counter_read()
+Acked-by: Borislav Petkov <petkovbb@gmail.com>
 
-
--------------------------------------
-Subject: [PATCH v2] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
-
-cpuacct_update_stats() is called at every tick updating. and it use percpu_counter
-for avoiding performance degression.
-
-For archs which define VIRT_CPU_ACCOUNTING, every tick would result
-in >1000 units of cputime updates and since this is much much greater
-than percpu_batch_counter, we end up taking spinlock on every tick.
-
-This patch change batch rule. now, any cpu can store "percpu_counter_bach * jiffies"
-cputime in per-cpu cache.
-it mean this patch don't have behavior change if VIRT_CPU_ACCOUNTING=n.
-
-Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: Balaji Rao <balajirrao@gmail.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- kernel/sched.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-Index: b/kernel/sched.c
-===================================================================
---- a/kernel/sched.c	2009-04-30 11:37:47.000000000 +0900
-+++ b/kernel/sched.c	2009-04-30 14:17:00.000000000 +0900
-@@ -10221,6 +10221,7 @@ struct cpuacct {
- };
- 
- struct cgroup_subsys cpuacct_subsys;
-+static s32 cpuacct_batch;
- 
- /* return cpu accounting group corresponding to this container */
- static inline struct cpuacct *cgroup_ca(struct cgroup *cgrp)
-@@ -10250,6 +10251,9 @@ static struct cgroup_subsys_state *cpuac
- 	if (!ca->cpuusage)
- 		goto out_free_ca;
- 
-+	if (!cpuacct_batch)
-+		cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
-+
- 	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
- 		if (percpu_counter_init(&ca->cpustat[i], 0))
- 			goto out_free_counters;
-@@ -10376,7 +10380,7 @@ static int cpuacct_stats_show(struct cgr
- 	int i;
- 
- 	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
--		s64 val = percpu_counter_read(&ca->cpustat[i]);
-+		s64 val = percpu_counter_sum(&ca->cpustat[i]);
- 		val = cputime64_to_clock_t(val);
- 		cb->fill(cb, cpuacct_stat_desc[i], val);
- 	}
-@@ -10446,7 +10450,7 @@ static void cpuacct_update_stats(struct 
- 	ca = task_ca(tsk);
- 
- 	do {
--		percpu_counter_add(&ca->cpustat[idx], val);
-+		__percpu_counter_add(&ca->cpustat[idx], val, cpuacct_batch);
- 		ca = ca->parent;
- 	} while (ca);
- 	rcu_read_unlock();
-
-
+-- 
+Regards/Gruss,
+    Boris.
