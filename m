@@ -1,60 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758821AbZD3Hqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbZD3HxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758821AbZD3Hqs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 03:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbZD3Hqi
+	id S1756253AbZD3HxY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 03:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbZD3HxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 03:46:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49259 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750999AbZD3Hqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 03:46:37 -0400
-Message-ID: <49F95719.10701@kernel.org>
-Date: Thu, 30 Apr 2009 16:45:29 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Alex Buell <alex.buell@munted.org.uk>
-CC: Jeff Garzik <jeff@garzik.org>, "Theodore Ts'o" <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: No NCQ support on X61s Ultrabay?  (Intel ICH8 SATA controller
- question)
-References: <E1LzLgA-0004j6-9W@closure.thunk.org>	<49F90CA2.4080602@garzik.org> <20090430083309.437f9248@lithium.local.net>
-In-Reply-To: <20090430083309.437f9248@lithium.local.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Apr 2009 07:45:33 +0000 (UTC)
+	Thu, 30 Apr 2009 03:53:12 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:56743 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751112AbZD3HxL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 03:53:11 -0400
+Date: Thu, 30 Apr 2009 16:53:10 +0900 (JST)
+Message-Id: <20090430.165310.226796026.ryov@valinux.co.jp>
+To: baramsori72@gmail.com
+Cc: righi.andrea@gmail.com, menage@google.com, balbir@linux.vnet.ibm.com,
+       guijianfeng@cn.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com,
+       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
+       chlunde@ping.uio.no, dave@linux.vnet.ibm.com, dpshah@google.com,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, taka@valinux.co.jp,
+       lizf@cn.fujitsu.com, matt@bluehost.com, dradford@bluehost.com,
+       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, nauman@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, corsetproject@googlegroups.com
+Subject: Re: [PATCH] range-bw: Another I/O scheduling policy of dm-ioband
+ supporting the predicable I/O bandwidth (range bandwidth)
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <2891419e0904292215x240dfeeg71f3eed0066bc112@mail.gmail.com>
+References: <2891419e0904270158n71b25271p6094feba70d0555d@mail.gmail.com>
+	<20090427.201214.39166983.ryov@valinux.co.jp>
+	<2891419e0904292215x240dfeeg71f3eed0066bc112@mail.gmail.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Buell wrote:
-> On Wed, 29 Apr 2009 22:27:46 -0400, I waved a wand and this message
-> magically appears in front of Jeff Garzik:
+Hi Dong-Jae, 
+
+From: Dong-Jae Kang <baramsori72@gmail.com>
+Subject: Re: [PATCH] range-bw: Another I/O scheduling policy of dm-ioband supporting the predicable I/O bandwidth (range bandwidth)
+Date: Thu, 30 Apr 2009 14:15:24 +0900
+
+> Hi Ryo
 > 
->> As Tejun noted, try switching to AHCI mode in BIOS.
+> I am sorry for delayed reply.
+> I tested range-bw policy as you send me your configuration
+> and I found some logical bugs in range-bw including big scheduling overhead.
 > 
-> But is there a way to switch modes without needing to go through the
-> BIOS? Some laptops won't let you do that through BIOS. 
+> > I used fio 1.22. The below is a script which I actually ran.
+> >
+> >  #!/bin/sh
+> >  dev1=/dev/sdb4 # SATA disk
+> >  echo "0 $(sudo blockdev --getsize $dev1) ioband $dev1 share2 0 0
+> >    cgroup range-bw 0" | sudo dmsetup create ioband1
+> >
+> >  arg="--time_based --runtime=10 --ioengine=libaio --iodepth=50 \
+> >       --direct=1 --norandommap"
+> >
+> >  dmsetup message ioband1 0 attach 2
+> >  dmsetup message ioband1 0 attach 3
+> >  dmsetup message ioband1 0 min-bw 2:100
+> >  dmsetup message ioband1 0 max-bw 2:100
+> >  dmsetup message ioband1 0 min-bw 3:200
+> >  dmsetup message ioband1 0 max-bw 3:200
+> 
+> I recommend it is better to use different value in min-bw and max-bw
+> because its concept is to support range-bw with the minimum
+> guaranteeing and maximum limitation.
+> exampe - min-bw : 1024 / max-bw : 3072
+> 
+> >  echo $$ > /cgroup/grp1/tasks
+> >  fio $arg --rw=randread --name=grp1 --filename=/dev/mapper/ioband1 \
+> >          --output=r2-1.log &
+> >  echo $$ > /cgroup/grp2/tasks
+> >  fio $arg --rw=randread --name=grp2 --filename=/dev/mapper/ioband1 \
+> >          --output=r2-2.log &
+> >  wait
+> >
+> > Please feel free to ask me if you need more information.
+> >
+> >
+> > I'm look forward to seeing the results.
+> >
+> Thanks for your comments.
+> And I will fix the bugs and re-release it after several days
+> at that time, I inform you about that.
+> 
+> Ryo,
+> now, I am using bio-cgroup.....
+> but, Is there additional things I have to consider to support AIO or
+> dealyed I/O?
 
-There is and it isn't too difficult either in itself but the problem
-is that for ahci mode to work the ABAR (PCI BAR 5) needs to be
-allocated and enabled.  On x86, the kernel takes the PCI resources
-allocated by BIOS.  Doing it directly isn't necessarily difficult but
-is too dangerous as there can be areas which aren't described anywhere
-but still are used by something.
+bio-cgroup is renamed to bklio-cgroup. :)
+I don't clearly understand about range-bw but I think that you don't
+need to consider to support them and it should be taken care of by
+blkio-cgroup and the common part of dm-ioband, not the policy
+implementation. Do you have any problems with AIO or delayed write?  
 
-Because ICHs don't enable ABAR in piix mode unless SCRAE is set and
-most BIOSen don't set SCRAE, ABAR don't get allocated nor its space
-get reserved in most cases if the controller is in piix mode.
-
-So, at the point of driver load, there just isn't much we can do about
-the missing ABAR.  It's sad.  Dunno why some laptop manufacturers
-still program the thing into piix mode.  :-(
-
-Thanks.
-
--- 
-tejun
+> 
+> -- 
+> Best Regards,
+> Dong-Jae Kang
