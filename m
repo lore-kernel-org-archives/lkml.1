@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765096AbZD3Rlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765967AbZD3RmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765096AbZD3Rlr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764717AbZD3RIj
+	id S1765967AbZD3RmN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764720AbZD3RIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:08:39 -0400
-Received: from kroah.org ([198.145.64.141]:56886 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:08:40 -0400
+Received: from kroah.org ([198.145.64.141]:56895 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764597AbZD3RIU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:08:20 -0400
+	id S1764580AbZD3RIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:08:21 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:49 2009
-Message-Id: <20090430165749.285882065@mini.kroah.org>
+Message-Id: <20090430165749.430745380@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:57:03 -0700
+Date: Thu, 30 Apr 2009 09:57:04 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,211 +25,44 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, mtosatti@redhat.com, avi@redhat.com,
-       Alexander Graf <agraf@suse.de>
-Subject: [patch 74/88] KVM: x86: fix LAPIC pending count calculation
+       alan@lxorguk.ukuu.org.uk, mtosatti@redhat.com, avi@redhat.com
+Subject: [patch 75/88] KVM: VMX: Flush volatile msrs before emulating rdmsr
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-x86-fix-lapic-pending-count-calculation.patch
+Content-Disposition: inline; filename=kvm-vmx-flush-volatile-msrs-before-emulating-rdmsr.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
+From: Avi Kivity <avi@redhat.com>
 
-(cherry picked from b682b814e3cc340f905c14dff87ce8bdba7c5eba)
+(cherry picked from 516a1a7e9dc80358030fe01aabb3bedf882db9e2)
 
-Simplify LAPIC TMCCT calculation by using hrtimer provided
-function to query remaining time until expiration.
+Some msrs (notable MSR_KERNEL_GS_BASE) are held in the processor registers
+and need to be flushed to the vcpu struture before they can be read.
 
-Fixes host hang with nested ESX.
+This fixes cygwin longjmp() failure on Windows x64.
 
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
-Signed-off-by: Alexander Graf <agraf@suse.de>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/kvm/irq.c   |    7 -----
- arch/x86/kvm/irq.h   |    1 
- arch/x86/kvm/lapic.c |   66 +++++++++++----------------------------------------
- arch/x86/kvm/lapic.h |    2 -
- arch/x86/kvm/svm.c   |    1 
- arch/x86/kvm/vmx.c   |    4 ---
- 6 files changed, 16 insertions(+), 65 deletions(-)
+ arch/x86/kvm/vmx.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/arch/x86/kvm/irq.c
-+++ b/arch/x86/kvm/irq.c
-@@ -87,13 +87,6 @@ void kvm_inject_pending_timer_irqs(struc
- }
- EXPORT_SYMBOL_GPL(kvm_inject_pending_timer_irqs);
- 
--void kvm_timer_intr_post(struct kvm_vcpu *vcpu, int vec)
--{
--	kvm_apic_timer_intr_post(vcpu, vec);
--	/* TODO: PIT, RTC etc. */
--}
--EXPORT_SYMBOL_GPL(kvm_timer_intr_post);
--
- void __kvm_migrate_timers(struct kvm_vcpu *vcpu)
- {
- 	__kvm_migrate_apic_timer(vcpu);
---- a/arch/x86/kvm/irq.h
-+++ b/arch/x86/kvm/irq.h
-@@ -84,7 +84,6 @@ static inline int irqchip_in_kernel(stru
- 
- void kvm_pic_reset(struct kvm_kpic_state *s);
- 
--void kvm_timer_intr_post(struct kvm_vcpu *vcpu, int vec);
- void kvm_inject_pending_timer_irqs(struct kvm_vcpu *vcpu);
- void kvm_inject_apic_timer_irqs(struct kvm_vcpu *vcpu);
- void __kvm_migrate_apic_timer(struct kvm_vcpu *vcpu);
---- a/arch/x86/kvm/lapic.c
-+++ b/arch/x86/kvm/lapic.c
-@@ -35,6 +35,12 @@
- #include "kvm_cache_regs.h"
- #include "irq.h"
- 
-+#ifndef CONFIG_X86_64
-+#define mod_64(x, y) ((x) - (y) * div64_u64(x, y))
-+#else
-+#define mod_64(x, y) ((x) % (y))
-+#endif
-+
- #define PRId64 "d"
- #define PRIx64 "llx"
- #define PRIu64 "u"
-@@ -497,52 +503,22 @@ static void apic_send_ipi(struct kvm_lap
- 
- static u32 apic_get_tmcct(struct kvm_lapic *apic)
- {
--	u64 counter_passed;
--	ktime_t passed, now;
-+	ktime_t remaining;
-+	s64 ns;
- 	u32 tmcct;
- 
- 	ASSERT(apic != NULL);
- 
--	now = apic->timer.dev.base->get_time();
--	tmcct = apic_get_reg(apic, APIC_TMICT);
--
- 	/* if initial count is 0, current count should also be 0 */
--	if (tmcct == 0)
-+	if (apic_get_reg(apic, APIC_TMICT) == 0)
- 		return 0;
- 
--	if (unlikely(ktime_to_ns(now) <=
--		ktime_to_ns(apic->timer.last_update))) {
--		/* Wrap around */
--		passed = ktime_add(( {
--				    (ktime_t) {
--				    .tv64 = KTIME_MAX -
--				    (apic->timer.last_update).tv64}; }
--				   ), now);
--		apic_debug("time elapsed\n");
--	} else
--		passed = ktime_sub(now, apic->timer.last_update);
--
--	counter_passed = div64_u64(ktime_to_ns(passed),
--				   (APIC_BUS_CYCLE_NS * apic->timer.divide_count));
--
--	if (counter_passed > tmcct) {
--		if (unlikely(!apic_lvtt_period(apic))) {
--			/* one-shot timers stick at 0 until reset */
--			tmcct = 0;
--		} else {
--			/*
--			 * periodic timers reset to APIC_TMICT when they
--			 * hit 0. The while loop simulates this happening N
--			 * times. (counter_passed %= tmcct) would also work,
--			 * but might be slower or not work on 32-bit??
--			 */
--			while (counter_passed > tmcct)
--				counter_passed -= tmcct;
--			tmcct -= counter_passed;
--		}
--	} else {
--		tmcct -= counter_passed;
--	}
-+	remaining = hrtimer_expires_remaining(&apic->timer.dev);
-+	if (ktime_to_ns(remaining) < 0)
-+		remaining = ktime_set(0, 0);
-+
-+	ns = mod_64(ktime_to_ns(remaining), apic->timer.period);
-+	tmcct = div64_u64(ns, (APIC_BUS_CYCLE_NS * apic->timer.divide_count));
- 
- 	return tmcct;
- }
-@@ -639,8 +615,6 @@ static void start_apic_timer(struct kvm_
- {
- 	ktime_t now = apic->timer.dev.base->get_time();
- 
--	apic->timer.last_update = now;
--
- 	apic->timer.period = apic_get_reg(apic, APIC_TMICT) *
- 		    APIC_BUS_CYCLE_NS * apic->timer.divide_count;
- 	atomic_set(&apic->timer.pending, 0);
-@@ -1068,16 +1042,6 @@ void kvm_inject_apic_timer_irqs(struct k
- 	}
- }
- 
--void kvm_apic_timer_intr_post(struct kvm_vcpu *vcpu, int vec)
--{
--	struct kvm_lapic *apic = vcpu->arch.apic;
--
--	if (apic && apic_lvt_vector(apic, APIC_LVTT) == vec)
--		apic->timer.last_update = ktime_add_ns(
--				apic->timer.last_update,
--				apic->timer.period);
--}
--
- int kvm_get_apic_interrupt(struct kvm_vcpu *vcpu)
- {
- 	int vector = kvm_apic_has_interrupt(vcpu);
---- a/arch/x86/kvm/lapic.h
-+++ b/arch/x86/kvm/lapic.h
-@@ -12,7 +12,6 @@ struct kvm_lapic {
- 		atomic_t pending;
- 		s64 period;	/* unit: ns */
- 		u32 divide_count;
--		ktime_t last_update;
- 		struct hrtimer dev;
- 	} timer;
- 	struct kvm_vcpu *vcpu;
-@@ -42,7 +41,6 @@ void kvm_set_apic_base(struct kvm_vcpu *
- void kvm_apic_post_state_restore(struct kvm_vcpu *vcpu);
- int kvm_lapic_enabled(struct kvm_vcpu *vcpu);
- int kvm_lapic_find_highest_irr(struct kvm_vcpu *vcpu);
--void kvm_apic_timer_intr_post(struct kvm_vcpu *vcpu, int vec);
- 
- void kvm_lapic_set_vapic_addr(struct kvm_vcpu *vcpu, gpa_t vapic_addr);
- void kvm_lapic_sync_from_vapic(struct kvm_vcpu *vcpu);
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1612,7 +1612,6 @@ static void svm_intr_assist(struct kvm_v
- 	/* Okay, we can deliver the interrupt: grab it and update PIC state. */
- 	intr_vector = kvm_cpu_get_interrupt(vcpu);
- 	svm_inject_irq(svm, intr_vector);
--	kvm_timer_intr_post(vcpu, intr_vector);
- out:
- 	update_cr8_intercept(vcpu);
- }
 --- a/arch/x86/kvm/vmx.c
 +++ b/arch/x86/kvm/vmx.c
-@@ -3171,10 +3171,8 @@ static void vmx_intr_assist(struct kvm_v
- 		else
- 			enable_irq_window(vcpu);
- 	}
--	if (vcpu->arch.interrupt.pending) {
-+	if (vcpu->arch.interrupt.pending)
- 		vmx_inject_irq(vcpu, vcpu->arch.interrupt.nr);
--		kvm_timer_intr_post(vcpu, vcpu->arch.interrupt.nr);
--	}
- }
- 
- /*
+@@ -897,6 +897,7 @@ static int vmx_get_msr(struct kvm_vcpu *
+ 		data = vmcs_readl(GUEST_SYSENTER_ESP);
+ 		break;
+ 	default:
++		vmx_load_host_state(to_vmx(vcpu));
+ 		msr = find_msr_entry(to_vmx(vcpu), msr_index);
+ 		if (msr) {
+ 			data = msr->data;
 
 
