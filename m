@@ -1,83 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765818AbZEAAIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765984AbZEAAJN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765818AbZEAAIt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 20:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759448AbZEAABL
+	id S1765984AbZEAAJN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 20:09:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765090AbZEAABV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 20:01:11 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:61320 "EHLO
+	Thu, 30 Apr 2009 20:01:21 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:61391 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765005AbZEAABI (ORCPT
+	by vger.kernel.org with ESMTP id S1761212AbZEAABT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 20:01:08 -0400
+	Thu, 30 Apr 2009 20:01:19 -0400
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
        Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
        Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, "David S. Miller" <davem@davemloft.net>,
-       sparclinux@vger.kernel.org, Tim Abbott <tabbott@MIT.EDU>
-Subject: [PATCH 2/4] sparc: use new macros for .data.init_task.
-Date: Thu, 30 Apr 2009 19:58:51 -0400
-Message-Id: <1241135933-9913-3-git-send-email-tabbott@mit.edu>
+       Jeff Arnold <jbarnold@MIT.EDU>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
+       Tim Abbott <tabbott@MIT.EDU>
+Subject: [PATCH 3/6] s390: use new macro for .data.cacheline_aligned section.
+Date: Thu, 30 Apr 2009 19:57:18 -0400
+Message-Id: <1241135841-9619-4-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1241135933-9913-2-git-send-email-tabbott@mit.edu>
-References: <1241135933-9913-1-git-send-email-tabbott@mit.edu>
- <1241135933-9913-2-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1241135841-9619-3-git-send-email-tabbott@mit.edu>
+References: <1241135841-9619-1-git-send-email-tabbott@mit.edu>
+ <1241135841-9619-2-git-send-email-tabbott@mit.edu>
+ <1241135841-9619-3-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-.data.init_task should not need a separate output section; this change
-moves it into the .data section.
+.data.cacheline_aligned should not need a separate output section;
+this change moves it into the .data section.
 
 Signed-off-by: Tim Abbott <tabbott@mit.edu>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux-s390@vger.kernel.org
 ---
- arch/sparc/kernel/init_task.c   |    5 ++---
- arch/sparc/kernel/vmlinux.lds.S |    6 +-----
- 2 files changed, 3 insertions(+), 8 deletions(-)
+ arch/s390/kernel/vmlinux.lds.S |    6 +-----
+ 1 files changed, 1 insertions(+), 5 deletions(-)
 
-diff --git a/arch/sparc/kernel/init_task.c b/arch/sparc/kernel/init_task.c
-index f28cb82..7367984 100644
---- a/arch/sparc/kernel/init_task.c
-+++ b/arch/sparc/kernel/init_task.c
-@@ -21,6 +21,5 @@ EXPORT_SYMBOL(init_task);
-  * If this is not aligned on a 8k boundry, then you should change code
-  * in etrap.S which assumes it.
-  */
--union thread_union init_thread_union
--	__attribute__((section (".data.init_task")))
--	= { INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
-diff --git a/arch/sparc/kernel/vmlinux.lds.S b/arch/sparc/kernel/vmlinux.lds.S
-index 6587e03..3fbf650 100644
---- a/arch/sparc/kernel/vmlinux.lds.S
-+++ b/arch/sparc/kernel/vmlinux.lds.S
-@@ -52,6 +52,7 @@ SECTIONS
- 
- 	RO_DATA(PAGE_SIZE)
- 	.data :	{
-+		INIT_TASK_DATA(THREAD_SIZE)
- 		CACHELINE_ALIGNED_DATA(SMP_CACHE_BYTES)
+diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
+index 8900f98..c828398 100644
+--- a/arch/s390/kernel/vmlinux.lds.S
++++ b/arch/s390/kernel/vmlinux.lds.S
+@@ -61,16 +61,12 @@ SECTIONS
+ 	.data : {		/* Data */
+ 		PAGE_ALIGNED_DATA
+ 		NOSAVE_DATA
++		CACHELINE_ALIGNED_DATA(0x100)
  		DATA_DATA
  		CONSTRUCTORS
-@@ -66,11 +67,6 @@ SECTIONS
- 	/* End of data section */
- 	_edata = .;
+ 	}
  
--	/* init_task */
--	. = ALIGN(THREAD_SIZE);
--	.data.init_task : {
--		*(.data.init_task)
+ 	. = ALIGN(0x100);
+-	.data.cacheline_aligned : {
+-		*(.data.cacheline_aligned)
 -	}
- 	.fixup : {
- 		__start___fixup = .;
- 		*(.fixup)
+-
+-	. = ALIGN(0x100);
+ 	.data.read_mostly : {
+ 		*(.data.read_mostly)
+ 	}
 -- 
 1.6.2.1
 
