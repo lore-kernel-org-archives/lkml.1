@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762460AbZD3PdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763577AbZD3Pde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762460AbZD3PdM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 11:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762952AbZD3Pcj
+	id S1763577AbZD3Pde (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 11:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763234AbZD3Pcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 11:32:39 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:37929 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1762460AbZD3Pci (ORCPT
+	Thu, 30 Apr 2009 11:32:51 -0400
+Received: from mailgw2.hevs.ch ([153.109.6.17]:25741 "EHLO mailgw2.hevs.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762541AbZD3Pcu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 11:32:38 -0400
-Date: Thu, 30 Apr 2009 11:32:37 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-cc: David VomLehn <dvomlehn@cisco.com>, <linux-usb@vger.kernel.org>,
-       <gregkh@suse.de>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/5] USB: Provide USB boot device availability notification
-In-Reply-To: <49F9C305.9020103@ru.mvista.com>
-Message-ID: <Pine.LNX.4.44L0.0904301131530.20151-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 30 Apr 2009 11:32:50 -0400
+Message-Id: <49F9E0BA020000BF00029098@mailgw2.hevs.ch>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Thu, 30 Apr 2009 17:32:42 +0200
+From: "Marc Pignat" <Marc.Pignat@hevs.ch>
+To: <marcel@holtmann.org>, <jkosina@suse.cz>
+Cc: <ext-roger.quadros@nokia.com>, <linux-bluetooth@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] 2.6.30-rc4 hid bluetooth not working
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Apr 2009, Sergei Shtylyov wrote:
+>>> Marcel Holtmann <marcel@holtmann.org> 04/30/09 5:03 PM >>>
+>Hi Jiri,
 
-> > +/* The mask of possible USB boot devices depends on what drivers and
-> > + * options have been configured into the kernel.  There are too many
-> > + * USB network config options to list here, so just assume it is always
-> > + * possible to have a USB network device.
-> > + */
-> > +static int usb_bootdev_mask = 0
-> > +#ifdef CONFIG_USB_SERIAL_CONSOLE
-> > +				| BOOTDEV_CONSOLE_MASK
-> > +#endif
-> > +#if defined(CONFIG_USB_STORAGE) | defined(CONFIG_BLK_DEV_UB)
-> 
->     It should be ||, not bitwise | here, no?
+>> > My bluetooth keyboard is not working any more in rc4, but was working in 
+>> > rc3.
+>> > Here is the dmesg output, triggered by the first key press on the 
+>> > keyboard, fortunately, this is 100% reproductible (once per boot).
+>> 
+>> Does reverting f3784d834c7 fix the problem?
 
-No, it should be bitwise |.  The value being constructed is a union of 
-disjoint mask bits.
+>we have seen a similar report where reverting f3784d834c7 didn't fix it.
+It seems to fix it for me...
 
-Alan Stern
+>And I don't see anything wrong with that patch. Did something important
+>got changed in the work queue code that I am missing?
 
+Is this a good idea to flush the current queue? (add_con and del_con call flush_workqueue(bluetooth),
+but add_con and del_con are run by this queue).
+
+Best regards
+
+Marc
