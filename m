@@ -1,39 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbZD3CNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbZD3COD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755934AbZD3CNn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 22:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZD3CNe
+	id S1755934AbZD3COD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 22:14:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758708AbZD3CNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 22:13:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47894 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752374AbZD3CNe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 22:13:34 -0400
-Message-ID: <49F90941.2030405@kernel.org>
-Date: Thu, 30 Apr 2009 11:13:21 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 29 Apr 2009 22:13:49 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:64122 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752374AbZD3CNr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 22:13:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=VZ5J576DXb93TMM4Fl6HemoHGuHLBxm/oHudVVCqIzczDr3xrLbw00LYT/0Zenvho7
+         lomzC9g4PmCpezwaq0vzkBRDI4o1YkBuyrXDgETqmpK2BqKKScYN3jO2veSqSk/XNxD6
+         ONGxtU4s1LltJw9FW08BLiPuIE6mdQuOk1o24=
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net
-Subject: Re: [PATCHSET] CUSE: implement CUSE, take #3
-References: <1239674094-30894-1-git-send-email-tj@kernel.org> <E1Lwanr-00041r-RP@pomaz-ex.szeredi.hu> <49EFB1A9.3060503@kernel.org> <E1LwvrC-00068P-5r@pomaz-ex.szeredi.hu> <49F043A4.2060700@kernel.org> <E1LypSa-0004fR-J1@pomaz-ex.szeredi.hu> <49F908A1.70207@kernel.org>
-In-Reply-To: <49F908A1.70207@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Apr 2009 02:13:24 +0000 (UTC)
+In-Reply-To: <ac3eb2510904291906v6b8524f7j5cb3afa43f6759b8@mail.gmail.com>
+References: <20090427193532.GA2948@kroah.com>
+	 <20090429180735.GA29812@kroah.com>
+	 <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com>
+	 <ac3eb2510904291159s14d7d532q33657eb73007fc4b@mail.gmail.com>
+	 <20090429192309.GA15539@kroah.com>
+	 <44275.1241041373@turing-police.cc.vt.edu>
+	 <20090429215623.GA27319@kroah.com> <1241056121.18530.31.camel@poy>
+	 <8bd0f97a0904291856n66fef7d8sb879e9e02b13a311@mail.gmail.com>
+	 <ac3eb2510904291906v6b8524f7j5cb3afa43f6759b8@mail.gmail.com>
+Date: Wed, 29 Apr 2009 22:13:47 -0400
+Message-ID: <8bd0f97a0904291913v58a9b7e3l7f081782cea415cb@mail.gmail.com>
+Subject: Re: usbutils 0.81 release
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, Valdis.Kletnieks@vt.edu,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
->> I'll post the updated libfuse patch as well.  Please let me know if
->> you find anything wrong with the current patches.
-> 
-> Looks good to me.  Much prettier with two inits merged.
+On Wed, Apr 29, 2009 at 22:06, Kay Sievers wrote:
+> On Thu, Apr 30, 2009 at 03:56, Mike Frysinger wrote:
+>> On Wed, Apr 29, 2009 at 21:48, Kay Sievers wrote:
+>>> On Wed, 2009-04-29 at 14:56 -0700, Greg KH wrote:
+>>>> If youreally want it, you can grab it from the git tree, or wait a day
+>>>> or so for me to implement Mike's changes he so nicely sent me, so I can
+>>>> do a new release.
+>>>
+>>> How about this? It substitutes the script and the man page with the
+>>> given --datadir=.
+>>
+>> i had pretty much the same changes locally, but i was going to let the
+>> discussion on data/multiple paths finish first.  at any rate, comments
+>> below ...
+>>
+>>> --- a/Makefile.am
+>>> +++ b/Makefile.am
+>>>
+>>> +       sed 's|@usbids@|$(datadir)/usb.ids|' $< >$@
+>>> +       sed 's|@usbids@|$(datadir)/usb.ids|' $< >$@
+>>
+>> $(datadir) too should die ... $(datarootdir) is the right variable name
+>
+> Then you want to specify man pages separately? I wouldn't do that.
 
-Oh... what happened to CUSE_INIT_DONE?
-
--- 
-tejun
+nm me, i confused the stuff i was reading about the
+datadir/datarootdir changes with autoconf-2.60
+-mike
