@@ -1,63 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbZD3Xix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbZD3Xka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756232AbZD3Xix (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 19:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754429AbZD3XiD
+	id S1756053AbZD3Xka (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 19:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbZD3XkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 19:38:03 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53889 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754465AbZD3XiA (ORCPT
+	Thu, 30 Apr 2009 19:40:15 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:58161 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751243AbZD3XkN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 19:38:00 -0400
-Message-Id: <20090430233758.444232604@goodmis.org>
-References: <20090430233642.333097165@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 30 Apr 2009 19:36:44 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Subject: [PATCH 2/2] kconfig: test for /boot/config-uname after /proc/config.gz in localconfig
-Content-Disposition: inline; filename=0002-kconfig-test-for-boot-config-uname-after-proc-con.patch
+	Thu, 30 Apr 2009 19:40:13 -0400
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Tim Abbott <tabbott@MIT.EDU>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH 2/6] arm: convert to use __HEAD and HEAD_TEXT macros.
+Date: Thu, 30 Apr 2009 19:40:04 -0400
+Message-Id: <1241134808-7583-3-git-send-email-tabbott@mit.edu>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1241134808-7583-2-git-send-email-tabbott@mit.edu>
+References: <1241134808-7583-1-git-send-email-tabbott@mit.edu>
+ <1241134808-7583-2-git-send-email-tabbott@mit.edu>
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+This has the consequence of changing the section name used for head
+code from ".text.head" to ".head.text".  Since this commit changes all
+users in the architecture, this change should be harmless.
 
-Many distros put their config in /boot/config-`uname -r`, add a check
-for that right after /proc/config.gz
+The .text.head output section is eliminated and the head text code is
+included at the start of the .init output section.
 
-[ Impact: use distro config as default to streamline_config.pl ]
-
-Reported-by: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
 ---
- scripts/kconfig/streamline_config.pl |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ arch/arm/kernel/head-nommu.S  |    2 +-
+ arch/arm/kernel/head.S        |    2 +-
+ arch/arm/kernel/vmlinux.lds.S |    8 +++-----
+ 3 files changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/scripts/kconfig/streamline_config.pl b/scripts/kconfig/streamline_config.pl
-index 69b7c3f..46ca62d 100644
---- a/scripts/kconfig/streamline_config.pl
-+++ b/scripts/kconfig/streamline_config.pl
-@@ -54,6 +54,10 @@ my @searchconfigs = (
- 	    "exec" => "zcat",
- 	},
- 	{
-+	    "file" => "/boot/config-$uname",
-+	    "exec" => "cat",
-+	},
-+	{
- 	    "file" => "/boot/vmlinuz-$uname",
- 	    "exec" => "scripts/extract-ikconfig",
- 	    "test" => "scripts/extract-ikconfig",
+diff --git a/arch/arm/kernel/head-nommu.S b/arch/arm/kernel/head-nommu.S
+index cc87e17..4f10d1c 100644
+--- a/arch/arm/kernel/head-nommu.S
++++ b/arch/arm/kernel/head-nommu.S
+@@ -32,7 +32,7 @@
+  * numbers for r1.
+  *
+  */
+-	.section ".text.head", "ax"
++	__HEAD
+ ENTRY(stext)
+ 	msr	cpsr_c, #PSR_F_BIT | PSR_I_BIT | SVC_MODE @ ensure svc mode
+ 						@ and irqs disabled
+diff --git a/arch/arm/kernel/head.S b/arch/arm/kernel/head.S
+index 21e17dc..f1877a5 100644
+--- a/arch/arm/kernel/head.S
++++ b/arch/arm/kernel/head.S
+@@ -74,7 +74,7 @@
+  * crap here - that's what the boot loader (or in extreme, well justified
+  * circumstances, zImage) is for.
+  */
+-	.section ".text.head", "ax"
++	__HEAD
+ ENTRY(stext)
+ 	msr	cpsr_c, #PSR_F_BIT | PSR_I_BIT | SVC_MODE @ ensure svc mode
+ 						@ and irqs disabled
+diff --git a/arch/arm/kernel/vmlinux.lds.S b/arch/arm/kernel/vmlinux.lds.S
+index c90f272..15520be 100644
+--- a/arch/arm/kernel/vmlinux.lds.S
++++ b/arch/arm/kernel/vmlinux.lds.S
+@@ -23,13 +23,11 @@ SECTIONS
+ #else
+ 	. = PAGE_OFFSET + TEXT_OFFSET;
+ #endif
+-	.text.head : {
+-		_stext = .;
+-		_sinittext = .;
+-		*(.text.head)
+-	}
+ 
+ 	.init : {			/* Init code and data		*/
++		_stext = .;
++		_sinittext = .;
++			HEAD_TEXT
+ 			INIT_TEXT
+ 		_einittext = .;
+ 		__proc_info_begin = .;
 -- 
 1.6.2.1
 
--- 
