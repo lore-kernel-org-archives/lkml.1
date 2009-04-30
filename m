@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765295AbZD3Rqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765588AbZD3RrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765295AbZD3Rqo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764746AbZD3RIt
+	id S1765588AbZD3RrT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764744AbZD3RIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:08:49 -0400
-Received: from kroah.org ([198.145.64.141]:57011 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:08:50 -0400
+Received: from kroah.org ([198.145.64.141]:57022 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764691AbZD3RIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:08:31 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:50 2009
-Message-Id: <20090430165750.750784732@mini.kroah.org>
+	id S1764673AbZD3RIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:08:32 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:51 2009
+Message-Id: <20090430165750.904441408@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:57:13 -0700
+Date: Thu, 30 Apr 2009 09:57:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Yu Zhao <yu.zhao@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 84/88] PCI: fix incorrect mask of PM No_Soft_Reset bit
+       alan@lxorguk.ukuu.org.uk, Oleg Nesterov <oleg@redhat.com>,
+       Serge Hallyn <serue@us.ibm.com>, Roland McGrath <roland@redhat.com>
+Subject: [patch 85/88] exit_notify: kill the wrong capable(CAP_KILL) check (CVE-2009-1337)
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=pci-fix-incorrect-mask-of-pm-no_soft_reset-bit.patch
+Content-Disposition: inline; filename=exit_notify-kill-the-wrong-capable-check.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,29 +39,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Yu Zhao <yu.zhao@intel.com>
+From: Oleg Nesterov <oleg@redhat.com>
 
-commit 998dd7c719f62dcfa91d7bf7f4eb9c160e03d817 upstream.
+CVE-2009-1337
 
-Reviewed-by: Matthew Wilcox <matthew@wil.cx>
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+commit 432870dab85a2f69dc417022646cb9a70acf7f94 upstream.
+
+The CAP_KILL check in exit_notify() looks just wrong, kill it.
+
+Whatever logic we have to reset ->exit_signal, the malicious user
+can bypass it if it execs the setuid application before exiting.
+
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Acked-by: Roland McGrath <roland@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/pci_regs.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/exit.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/include/linux/pci_regs.h
-+++ b/include/linux/pci_regs.h
-@@ -234,7 +234,7 @@
- #define  PCI_PM_CAP_PME_SHIFT	11	/* Start of the PME Mask in PMC */
- #define PCI_PM_CTRL		4	/* PM control and status register */
- #define  PCI_PM_CTRL_STATE_MASK	0x0003	/* Current power state (D0 to D3) */
--#define  PCI_PM_CTRL_NO_SOFT_RESET	0x0004	/* No reset for D3hot->D0 */
-+#define  PCI_PM_CTRL_NO_SOFT_RESET	0x0008	/* No reset for D3hot->D0 */
- #define  PCI_PM_CTRL_PME_ENABLE	0x0100	/* PME pin enable */
- #define  PCI_PM_CTRL_DATA_SEL_MASK	0x1e00	/* Data select (??) */
- #define  PCI_PM_CTRL_DATA_SCALE_MASK	0x6000	/* Data scale (??) */
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -942,8 +942,7 @@ static void exit_notify(struct task_stru
+ 	 */
+ 	if (tsk->exit_signal != SIGCHLD && !task_detached(tsk) &&
+ 	    (tsk->parent_exec_id != tsk->real_parent->self_exec_id ||
+-	     tsk->self_exec_id != tsk->parent_exec_id) &&
+-	    !capable(CAP_KILL))
++	     tsk->self_exec_id != tsk->parent_exec_id))
+ 		tsk->exit_signal = SIGCHLD;
+ 
+ 	signal = tracehook_notify_death(tsk, &cookie, group_dead);
 
 
