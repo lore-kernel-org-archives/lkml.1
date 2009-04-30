@@ -1,155 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752251AbZD3GGD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752290AbZD3GL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752251AbZD3GGD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 02:06:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbZD3GFt
+	id S1752290AbZD3GL2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 02:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZD3GLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 02:05:49 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:20348 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751292AbZD3GFs (ORCPT
+	Thu, 30 Apr 2009 02:11:18 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50189 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995AbZD3GLS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 02:05:48 -0400
-X-IronPort-AV: E=Sophos;i="4.40,270,1238976000"; 
-   d="scan'208";a="160459942"
-Date: Wed, 29 Apr 2009 23:05:48 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 4/5] NETDEV: Wait for autoconfigurable network devices to
-	become available (resent)
-Message-ID: <20090430060548.GC28692@cuplxvomd02.corp.sa.net>
+	Thu, 30 Apr 2009 02:11:18 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Balaji Rao <balajirrao@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [PATCH v2] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20090430151008.D21C.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Thu, 30 Apr 2009 15:11:15 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Delay IP autoconfiguration until network boot devices have been initialized.
-This depends on the boot device discovery code and on the asynchronous
-function call infrastructure.
 
-Signed-off-by: David VomLehn <dvomlehn@cisco.com>
+Changelog:
+  since v1
+  - use percpu_counter_sum() instead percpu_counter_read()
+
+
+-------------------------------------
+Subject: [PATCH v2] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
+
+cpuacct_update_stats() is called at every tick updating. and it use percpu_counter
+for avoiding performance degression.
+
+For archs which define VIRT_CPU_ACCOUNTING, every tick would result
+in >1000 units of cputime updates and since this is much much greater
+than percpu_batch_counter, we end up taking spinlock on every tick.
+
+This patch change batch rule. now, any cpu can store "percpu_counter_bach * jiffies"
+cputime in per-cpu cache.
+it mean this patch don't have behavior change if VIRT_CPU_ACCOUNTING=n.
+
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: Balaji Rao <balajirrao@gmail.com>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 ---
- net/core/dev.c      |    2 +
- net/ipv4/ipconfig.c |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 57 insertions(+), 1 deletions(-)
+ kernel/sched.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 308a7d0..73cb282 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -93,6 +93,7 @@
- #include <linux/ethtool.h>
- #include <linux/notifier.h>
- #include <linux/skbuff.h>
-+#include <linux/device.h>
- #include <net/net_namespace.h>
- #include <net/sock.h>
- #include <linux/rtnetlink.h>
-@@ -4497,6 +4498,7 @@ int register_netdevice(struct net_device *dev)
- 		dev->reg_state = NETREG_UNREGISTERED;
+Index: b/kernel/sched.c
+===================================================================
+--- a/kernel/sched.c	2009-04-30 11:37:47.000000000 +0900
++++ b/kernel/sched.c	2009-04-30 14:17:00.000000000 +0900
+@@ -10221,6 +10221,7 @@ struct cpuacct {
+ };
+ 
+ struct cgroup_subsys cpuacct_subsys;
++static s32 cpuacct_batch;
+ 
+ /* return cpu accounting group corresponding to this container */
+ static inline struct cpuacct *cgroup_ca(struct cgroup *cgrp)
+@@ -10250,6 +10251,9 @@ static struct cgroup_subsys_state *cpuac
+ 	if (!ca->cpuusage)
+ 		goto out_free_ca;
+ 
++	if (!cpuacct_batch)
++		cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
++
+ 	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
+ 		if (percpu_counter_init(&ca->cpustat[i], 0))
+ 			goto out_free_counters;
+@@ -10376,7 +10380,7 @@ static int cpuacct_stats_show(struct cgr
+ 	int i;
+ 
+ 	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
+-		s64 val = percpu_counter_read(&ca->cpustat[i]);
++		s64 val = percpu_counter_sum(&ca->cpustat[i]);
+ 		val = cputime64_to_clock_t(val);
+ 		cb->fill(cb, cpuacct_stat_desc[i], val);
  	}
+@@ -10446,7 +10450,7 @@ static void cpuacct_update_stats(struct 
+ 	ca = task_ca(tsk);
  
-+	bootdev_registered(BOOTDEV_NETDEV);
- out:
- 	return ret;
- 
-diff --git a/net/ipv4/ipconfig.c b/net/ipv4/ipconfig.c
-index 90d22ae..65a7ecd 100644
---- a/net/ipv4/ipconfig.c
-+++ b/net/ipv4/ipconfig.c
-@@ -53,6 +53,7 @@
- #include <linux/root_dev.h>
- #include <linux/delay.h>
- #include <linux/nfs_fs.h>
-+#include <linux/async.h>
- #include <net/net_namespace.h>
- #include <net/arp.h>
- #include <net/ip.h>
-@@ -182,12 +183,48 @@ struct ic_device {
- static struct ic_device *ic_first_dev __initdata = NULL;/* List of open device */
- static struct net_device *ic_dev __initdata = NULL;	/* Selected device */
- 
-+/*
-+ * Wait for required network devices to come up
-+ * If the networking device name was specified on the kernel command line
-+ * and that device is now registered, we have the device we want to configure
-+ * and we return true. Otherwise, we return false. So, if no device was
-+ * specified on the command line, we wait for all possible network devices to
-+ * be initialized.
-+ */
-+static bool have_all_netdevs(void)
-+{
-+	struct net_device *dev;
-+	bool	result = false;
-+
-+	rtnl_lock();
-+
-+	for_each_netdev(&init_net, dev) {
-+		if (dev->flags & IFF_LOOPBACK)
-+			continue;
-+
-+		/* If a specific device name was specified and that name is
-+		 * registered, we have the device we need. */
-+		if (user_dev_name[0] && !strcmp(dev->name, user_dev_name)) {
-+			result = true;
-+			break;
-+		}
-+	}
-+
-+	rtnl_unlock();
-+
-+	return result;
-+
-+}
-+
- static int __init ic_open_devs(void)
- {
- 	struct ic_device *d, **last;
- 	struct net_device *dev;
- 	unsigned short oflags;
- 
-+	/* Wait for networking devices */
-+	bootdev_wait(BOOTDEV_NETDEV, have_all_netdevs);
-+
- 	last = &ic_first_dev;
- 	rtnl_lock();
- 
-@@ -1263,6 +1300,7 @@ __be32 __init root_nfs_parse_addr(char *name)
- 
- /*
-  *	IP Autoconfig dispatcher.
-+ *	Return zero on success, negative one on failure
-  */
- 
- static int __init ip_auto_config(void)
-@@ -1397,7 +1435,23 @@ static int __init ip_auto_config(void)
- 	return 0;
- }
- 
--late_initcall(ip_auto_config);
-+static void __init ip_auto_config_async(void *data, async_cookie_t cookie)
-+{
-+	ip_auto_config();
-+}
-+
-+static async_cookie_t ic_cookie;
-+/*
-+ * Start a thread to do IP autoconfiguration
-+ */
-+static int __init ip_auto_configurator(void)
-+{
-+	ic_cookie = async_schedule(ip_auto_config_async, NULL);
-+
-+	return 0;
-+}
-+
-+late_initcall(ip_auto_configurator);
- 
- 
- /*
+ 	do {
+-		percpu_counter_add(&ca->cpustat[idx], val);
++		__percpu_counter_add(&ca->cpustat[idx], val, cpuacct_batch);
+ 		ca = ca->parent;
+ 	} while (ca);
+ 	rcu_read_unlock();
+
+
