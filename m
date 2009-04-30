@@ -1,127 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760767AbZD3I27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761717AbZD3I3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760767AbZD3I27 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 04:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbZD3I2j
+	id S1761717AbZD3I3X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 04:29:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756351AbZD3I25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 04:28:39 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55842 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751112AbZD3I2h (ORCPT
+	Thu, 30 Apr 2009 04:28:57 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:32834 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759994AbZD3I2z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 04:28:37 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH v2] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-In-Reply-To: <20090430061806.GC4430@balbir.in.ibm.com>
-References: <20090430151008.D21C.A69D9226@jp.fujitsu.com> <20090430061806.GC4430@balbir.in.ibm.com>
-Message-Id: <20090430172512.D222.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Thu, 30 Apr 2009 04:28:55 -0400
+Message-Id: <1241080135.32735.1313058447@webmail.messagingengine.com>
+X-Sasl-Enc: drLBEIh5xNysn2nDZo0xg3E5bYMuzBU2NcqMVBehH3PT 1241080135
+From: "Jack Stone" <jwjstone@fastmail.fm>
+To: linux@arm.linux.org.uk
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Thu, 30 Apr 2009 17:28:34 +0900 (JST)
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+Subject: Arm and allyesconfig, allnoconfig, allmodconfig and randconfig
+Date: Thu, 30 Apr 2009 10:28:55 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-04-30 15:11:15]:
-> 
-> > 
-> > Changelog:
-> >   since v1
-> >   - use percpu_counter_sum() instead percpu_counter_read()
-> > 
-> > 
-> > -------------------------------------
-> > Subject: [PATCH v2] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
-> > 
-> > cpuacct_update_stats() is called at every tick updating. and it use percpu_counter
-> > for avoiding performance degression.
-> > 
-> > For archs which define VIRT_CPU_ACCOUNTING, every tick would result
-> > in >1000 units of cputime updates and since this is much much greater
-> > than percpu_batch_counter, we end up taking spinlock on every tick.
-> > 
-> > This patch change batch rule. now, any cpu can store "percpu_counter_bach * jiffies"
-> > cputime in per-cpu cache.
-> > it mean this patch don't have behavior change if VIRT_CPU_ACCOUNTING=n.
-> > 
-> > Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> > Cc: Balaji Rao <balajirrao@gmail.com>
-> > Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> > Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > ---
-> >  kernel/sched.c |    8 ++++++--
-> >  1 file changed, 6 insertions(+), 2 deletions(-)
-> > 
-> > Index: b/kernel/sched.c
-> > ===================================================================
-> > --- a/kernel/sched.c	2009-04-30 11:37:47.000000000 +0900
-> > +++ b/kernel/sched.c	2009-04-30 14:17:00.000000000 +0900
-> > @@ -10221,6 +10221,7 @@ struct cpuacct {
-> >  };
-> > 
-> >  struct cgroup_subsys cpuacct_subsys;
-> > +static s32 cpuacct_batch;
-> > 
-> >  /* return cpu accounting group corresponding to this container */
-> >  static inline struct cpuacct *cgroup_ca(struct cgroup *cgrp)
-> > @@ -10250,6 +10251,9 @@ static struct cgroup_subsys_state *cpuac
-> >  	if (!ca->cpuusage)
-> >  		goto out_free_ca;
-> > 
-> > +	if (!cpuacct_batch)
-> > +		cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
-> > +
-> >  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
-> >  		if (percpu_counter_init(&ca->cpustat[i], 0))
-> >  			goto out_free_counters;
-> > @@ -10376,7 +10380,7 @@ static int cpuacct_stats_show(struct cgr
-> >  	int i;
-> > 
-> >  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
-> > -		s64 val = percpu_counter_read(&ca->cpustat[i]);
-> > +		s64 val = percpu_counter_sum(&ca->cpustat[i]);
-> >  		val = cputime64_to_clock_t(val);
-> >  		cb->fill(cb, cpuacct_stat_desc[i], val);
-> >  	}
-> > @@ -10446,7 +10450,7 @@ static void cpuacct_update_stats(struct 
-> >  	ca = task_ca(tsk);
-> > 
-> >  	do {
-> > -		percpu_counter_add(&ca->cpustat[idx], val);
-> > +		__percpu_counter_add(&ca->cpustat[idx], val, cpuacct_batch);
-> >  		ca = ca->parent;
-> >  	} while (ca);
-> >  	rcu_read_unlock();
-> > 
-> >
-> 
-> What do the test results look like with this? I'll see if I can find
-> some time to test this patch. On a patch read level this seems much better
-> to me, Peter?
-> 
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Hi All,
 
-this patch decrease slow down risk on large server. but this patch
-doesn't have functional change. you can't make functional test.
-AFAIK, percpu_counter_sum() don't make any performance degression,
-but you have good stress test, please tell me it.
+I've been trying to compile the Arm port of the kernel and noticed that
+allyesconfig etc. and randconfig don't seem to compile on Arm - they all
+end up with build errors (mostly about missing preprocessor defines eg
+__LINUX_ARM_ARCH__). Is this a known problem and if so can it be
+documented somewhere?
 
+As another data point I can compile the defconfigs fine.
 
+I tried googling and greping the source for any reference to this but
+couldn't see anything. Sorry if this has already been answered.
 
+Thanks,
 
-
+Jack
