@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765984AbZEAAJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932181AbZEAAJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765984AbZEAAJN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 20:09:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765090AbZEAABV
+	id S932181AbZEAAJh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 20:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765099AbZEAABY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 20:01:21 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:61391 "EHLO
+	Thu, 30 Apr 2009 20:01:24 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:61405 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761212AbZEAABT (ORCPT
+	by vger.kernel.org with ESMTP id S1765068AbZEAABV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 20:01:19 -0400
+	Thu, 30 Apr 2009 20:01:21 -0400
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
@@ -19,22 +19,24 @@ Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>,
        Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
        Tim Abbott <tabbott@MIT.EDU>
-Subject: [PATCH 3/6] s390: use new macro for .data.cacheline_aligned section.
-Date: Thu, 30 Apr 2009 19:57:18 -0400
-Message-Id: <1241135841-9619-4-git-send-email-tabbott@mit.edu>
+Subject: [PATCH 5/6] s390: use new macro for .data.read_mostly section.
+Date: Thu, 30 Apr 2009 19:57:20 -0400
+Message-Id: <1241135841-9619-6-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1241135841-9619-3-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1241135841-9619-5-git-send-email-tabbott@mit.edu>
 References: <1241135841-9619-1-git-send-email-tabbott@mit.edu>
  <1241135841-9619-2-git-send-email-tabbott@mit.edu>
  <1241135841-9619-3-git-send-email-tabbott@mit.edu>
+ <1241135841-9619-4-git-send-email-tabbott@mit.edu>
+ <1241135841-9619-5-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-.data.cacheline_aligned should not need a separate output section;
-this change moves it into the .data section.
+.data.read_mostly should not need a separate output section; this
+change moves it into the .data section.
 
 Signed-off-by: Tim Abbott <tabbott@mit.edu>
 Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
@@ -45,27 +47,25 @@ Cc: linux-s390@vger.kernel.org
  1 files changed, 1 insertions(+), 5 deletions(-)
 
 diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
-index 8900f98..c828398 100644
+index b10a950..7e83e99 100644
 --- a/arch/s390/kernel/vmlinux.lds.S
 +++ b/arch/s390/kernel/vmlinux.lds.S
-@@ -61,16 +61,12 @@ SECTIONS
- 	.data : {		/* Data */
+@@ -63,14 +63,10 @@ SECTIONS
  		PAGE_ALIGNED_DATA
  		NOSAVE_DATA
-+		CACHELINE_ALIGNED_DATA(0x100)
+ 		CACHELINE_ALIGNED_DATA(0x100)
++		READ_MOSTLY_DATA(0x100)
  		DATA_DATA
  		CONSTRUCTORS
  	}
- 
- 	. = ALIGN(0x100);
--	.data.cacheline_aligned : {
--		*(.data.cacheline_aligned)
--	}
 -
 -	. = ALIGN(0x100);
- 	.data.read_mostly : {
- 		*(.data.read_mostly)
- 	}
+-	.data.read_mostly : {
+-		*(.data.read_mostly)
+-	}
+ 	_edata = .;		/* End of data section */
+ 
+ 	/* will be freed after init */
 -- 
 1.6.2.1
 
