@@ -1,68 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758629AbZEAAYF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763592AbZEAAYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758629AbZEAAYF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 20:24:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762572AbZEAAFQ
+	id S1763592AbZEAAYe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 20:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762533AbZEAAFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 20:05:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34586 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759863AbZEAAFN (ORCPT
+	Thu, 30 Apr 2009 20:05:20 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:62259 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762814AbZEAAFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 20:05:13 -0400
-Date: Thu, 30 Apr 2009 17:00:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: fenghua.yu@intel.com, dwmw2@infradead.org, mingo@elte.hu,
-       torvalds@linux-foundation.org, weidong.han@intel.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
-Subject: Re: [PATCH] Intel IOMMU Pass Through Support
-Message-Id: <20090430170034.1f8f8047.akpm@linux-foundation.org>
-In-Reply-To: <49FA3650.8030307@xenotime.net>
-References: <20090327212241.234500000@intel.com>
-	<20090327212321.070229000@intel.com>
-	<20090416001957.GA1527@linux-os.sc.intel.com>
-	<20090430162905.d232be29.akpm@linux-foundation.org>
-	<49FA3650.8030307@xenotime.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Apr 2009 20:05:18 -0400
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
+       Tim Abbott <tabbott@MIT.EDU>, linux-sh@vger.kernel.org
+Subject: [PATCH 6/7] sh: use new macro for .data.read_mostly section.
+Date: Thu, 30 Apr 2009 19:58:02 -0400
+Message-Id: <1241135883-9766-7-git-send-email-tabbott@mit.edu>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1241135883-9766-6-git-send-email-tabbott@mit.edu>
+References: <1241135883-9766-1-git-send-email-tabbott@mit.edu>
+ <1241135883-9766-2-git-send-email-tabbott@mit.edu>
+ <1241135883-9766-3-git-send-email-tabbott@mit.edu>
+ <1241135883-9766-4-git-send-email-tabbott@mit.edu>
+ <1241135883-9766-5-git-send-email-tabbott@mit.edu>
+ <1241135883-9766-6-git-send-email-tabbott@mit.edu>
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Apr 2009 16:37:52 -0700
-Randy Dunlap <rdunlap@xenotime.net> wrote:
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-sh@vger.kernel.org
+---
+ arch/sh/kernel/vmlinux_32.lds.S |    5 +----
+ arch/sh/kernel/vmlinux_64.lds.S |    5 +----
+ 2 files changed, 2 insertions(+), 8 deletions(-)
 
-> > 
-> > arch/x86/built-in.o: In function `iommu_setup':
-> > arch/x86/kernel/pci-dma.c:215: undefined reference to `iommu_pass_through'
-> > arch/x86/built-in.o: In function `pci_swiotlb_init':
-> > arch/x86/kernel/pci-swiotlb.c:74: undefined reference to `iommu_pass_through'
-> > 
-> > Because iommu_pass_through is defined in drivers/pci/intel-iommu.c and
-> > 
-> > # CONFIG_DMAR is not set
-> > 
-> > I'll need to cook up some local hack to work around that.
-> > 
-> 
-> Patch just went to linux-next mailing list (but should have also
-> gone to lkml):
-> 
-> http://marc.info/?l=linux-next&m=124113213400748&w=2
+diff --git a/arch/sh/kernel/vmlinux_32.lds.S b/arch/sh/kernel/vmlinux_32.lds.S
+index 7a0f3c4..de80e50 100644
+--- a/arch/sh/kernel/vmlinux_32.lds.S
++++ b/arch/sh/kernel/vmlinux_32.lds.S
+@@ -61,13 +61,10 @@ SECTIONS
+ 
+ 	.data : {			/* Data */
+ 		INIT_TASK_DATA(THREAD_SIZE)
+-
+-		. = ALIGN(L1_CACHE_BYTES);
+-		*(.data.read_mostly)
+-
+ 		PAGE_ALIGNED_DATA
+ 		NOSAVE_DATA
+ 		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
++		READ_MOSTLY_DATA(L1_CACHE_BYTES)
+ 		DATA_DATA
+ 		CONSTRUCTORS
+ 	}
+diff --git a/arch/sh/kernel/vmlinux_64.lds.S b/arch/sh/kernel/vmlinux_64.lds.S
+index 5cd3e78..72e856b 100644
+--- a/arch/sh/kernel/vmlinux_64.lds.S
++++ b/arch/sh/kernel/vmlinux_64.lds.S
+@@ -70,13 +70,10 @@ SECTIONS
+ 
+ 	.data : C_PHYS(.data) {			/* Data */
+ 		INIT_TASK_DATA(THREAD_SIZE)
+-
+-		. = ALIGN(L1_CACHE_BYTES);
+-		*(.data.read_mostly)
+-
+ 		PAGE_ALIGNED_DATA
+ 		NOSAVE_DATA
+ 		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
++		READ_MOSTLY_DATA(L1_CACHE_BYTES)
+ 		DATA_DATA
+ 		CONSTRUCTORS
+ 	}
+-- 
+1.6.2.1
 
-OK, thanks.  My linux-next feed seems to have broken.
-
-That patch modifies 
-
-	arch/ia64/kernel/dma-mapping.c
-	arch/x86/kernel/pci-dma.c
-
-but it would be more logical to modify
-
-	arch/ia64/kernel/pci-dma.c
-	arch/x86/kernel/pci-dma.c
-
-is there a reason why that cannot be done?
