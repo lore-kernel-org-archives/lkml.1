@@ -1,146 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbZD3EiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751584AbZD3ErJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751993AbZD3EiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 00:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbZD3EiF
+	id S1751584AbZD3ErJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 00:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbZD3Eqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 00:38:05 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46992 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750882AbZD3EiE (ORCPT
+	Thu, 30 Apr 2009 00:46:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39454 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751139AbZD3Eqy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 00:38:04 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH] blktrace: swap arg name "from" and "to" of blk_add_trace_remap
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20090430133627.D217.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Thu, 30 Apr 2009 00:46:54 -0400
+Date: Wed, 29 Apr 2009 21:43:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Elladan <elladan@eskimo.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Theodore Tso <tytso@mit.edu>, Wu Fengguang <fengguang.wu@intel.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>
+Subject: Re: Swappiness vs. mmap() and interactive response
+Message-Id: <20090429214332.a2b5b469.akpm@linux-foundation.org>
+In-Reply-To: <20090430041439.GA6110@eskimo.com>
+References: <20090428090916.GC17038@localhost>
+	<20090428120818.GH22104@mit.edu>
+	<20090429130430.4B11.A69D9226@jp.fujitsu.com>
+	<20090428233455.614dcf3a.akpm@linux-foundation.org>
+	<20090430041439.GA6110@eskimo.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Thu, 30 Apr 2009 13:37:59 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 29 Apr 2009 21:14:39 -0700 Elladan <elladan@eskimo.com> wrote:
 
-Subject: [PATCH] blktrace: swap arg name "from" and "to" of blk_add_trace_remap
+> > Elladan, have you checked to see whether the Mapped: number in
+> > /proc/meminfo is decreasing?
+> 
+> Yes, Mapped decreases while a large file copy is ongoing.  It increases again
+> if I use the GUI.
 
-Impact: cleanup for improve readability
+OK.  If that's still happening to an appreciable extent after you've
+increased /proc/sys/vm/swappiness then I'd wager that we have a
+bug/regression in that area.
 
-Currently, blk_add_trace_remap has following prototype.
+Local variable `scan' in shrink_zone() is vulnerable to multiplicative
+overflows on large zones, but I doubt if you have enough memory to
+trigger that bug.
 
-static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
-				       dev_t dev, sector_t from, sector_t to)
 
-but caller pass "from" secter as 4th arg, "to" sector as 5th arg.
+From: Andrew Morton <akpm@linux-foundation.org>
 
-example,
---------------------------------------------------------
-static inline void blk_partition_remap(struct bio *bio)
-{
-	struct block_device *bdev = bio->bi_bdev;
+Local variable `scan' can overflow on zones which are larger than
 
-	if (bio_sectors(bio) && bdev != bdev->bd_contains) {
-		struct hd_struct *p = bdev->bd_part;
+	(2G * 4k) / 100 = 80GB.
 
-		bio->bi_sector += p->start_sect;
-		bio->bi_bdev = bdev->bd_contains;
+Making it 64-bit on 64-bit will fix that up.
 
-		trace_block_remap(bdev_get_queue(bio->bi_bdev), bio,
-				    bdev->bd_dev, bio->bi_sector,
-				    bio->bi_sector - p->start_sect);
-	}
-}
---------------------------------------------------------
-
-Oh my god, it's reverse order.
-Fortunately, print logic reverse again. the twice reversing hide problem.
-
-but, but...
-It repeatedly confuse reviewer (include me!).
-Then, swapping argment name is better.
-
-this patch doesn't change any behavior and ABI.
-
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Rik van Riel <riel@redhat.com>
+Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- include/linux/blktrace_api.h |    2 +-
- kernel/trace/blktrace.c      |   17 ++++++++---------
- 2 files changed, 9 insertions(+), 10 deletions(-)
 
-Index: b/include/linux/blktrace_api.h
-===================================================================
---- a/include/linux/blktrace_api.h	2009-04-30 13:17:56.000000000 +0900
-+++ b/include/linux/blktrace_api.h	2009-04-30 13:18:12.000000000 +0900
-@@ -118,7 +118,7 @@ struct blk_io_trace {
- struct blk_io_trace_remap {
- 	__be32 device;
- 	__be32 device_from;
--	__be64 sector;
-+	__be64 sector_from;
- };
+ mm/vmscan.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -puN mm/vmscan.c~vmscan-avoid-multiplication-overflow-in-shrink_zone mm/vmscan.c
+--- a/mm/vmscan.c~vmscan-avoid-multiplication-overflow-in-shrink_zone
++++ a/mm/vmscan.c
+@@ -1479,7 +1479,7 @@ static void shrink_zone(int priority, st
  
- enum {
-Index: b/kernel/trace/blktrace.c
-===================================================================
---- a/kernel/trace/blktrace.c	2009-04-30 13:18:09.000000000 +0900
-+++ b/kernel/trace/blktrace.c	2009-04-30 13:18:12.000000000 +0900
-@@ -839,7 +839,7 @@ static void blk_add_trace_split(struct r
-  *
-  **/
- static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
--				       dev_t dev, sector_t from, sector_t to)
-+				       dev_t dev, sector_t to, sector_t from)
- {
- 	struct blk_trace *bt = q->blk_trace;
- 	struct blk_io_trace_remap r;
-@@ -847,11 +847,11 @@ static void blk_add_trace_remap(struct r
- 	if (likely(!bt))
- 		return;
+ 	for_each_evictable_lru(l) {
+ 		int file = is_file_lru(l);
+-		int scan;
++		unsigned long scan;
  
--	r.device = cpu_to_be32(dev);
-+	r.device      = cpu_to_be32(dev);
- 	r.device_from = cpu_to_be32(bio->bi_bdev->bd_dev);
--	r.sector = cpu_to_be64(to);
-+	r.sector_from = cpu_to_be64(from);
- 
--	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP,
-+	__blk_add_trace(bt, to, bio->bi_size, bio->bi_rw, BLK_TA_REMAP,
- 			!bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
- }
- 
-@@ -1028,11 +1028,10 @@ static void get_pdu_remap(const struct t
- 			  struct blk_io_trace_remap *r)
- {
- 	const struct blk_io_trace_remap *__r = pdu_start(ent);
--	__u64 sector = __r->sector;
- 
--	r->device = be32_to_cpu(__r->device);
--	r->device_from = be32_to_cpu(__r->device_from);
--	r->sector = be64_to_cpu(sector);
-+	r->device	= be32_to_cpu(__r->device);
-+	r->device_from	= be32_to_cpu(__r->device_from);
-+	r->sector_from	= be64_to_cpu(__r->sector_from);
- }
- 
- typedef int (blk_log_action_t) (struct trace_iterator *iter, const char *act);
-@@ -1154,7 +1153,7 @@ static int blk_log_remap(struct trace_se
- 	return trace_seq_printf(s, "%llu + %u <- (%d,%d) %llu\n",
- 			       t_sector(ent),
- 			       t_sec(ent), MAJOR(r.device), MINOR(r.device),
--			       (unsigned long long)r.sector);
-+			       (unsigned long long)r.sector_from);
- }
- 
- static int blk_log_plug(struct trace_seq *s, const struct trace_entry *ent)
+ 		scan = zone_nr_pages(zone, sc, l);
+ 		if (priority) {
+_
 
 
