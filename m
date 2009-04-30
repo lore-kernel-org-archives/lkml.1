@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762953AbZD3OZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932127AbZD3O0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762953AbZD3OZu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 10:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761492AbZD3OZk
+	id S932127AbZD3O0X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 10:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762497AbZD3O0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 10:25:40 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:46552 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757745AbZD3OZj (ORCPT
+	Thu, 30 Apr 2009 10:26:12 -0400
+Received: from mailout.ijneb.com ([212.13.201.26]:30503 "EHLO
+	metheny.ijneb.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761492AbZD3O0L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 10:25:39 -0400
-Date: Thu, 30 Apr 2009 10:15:58 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, thomas.pi@arcor.dea,
-       Yuriy Lalym <ylalym@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ltt-dev@lists.casi.polymtl.ca, Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] Fix dirty page accounting in
- redirty_page_for_writepage()
-In-Reply-To: <20090430141446.GD14696@elte.hu>
-Message-ID: <alpine.DEB.1.10.0904301013110.14178@qirst.com>
-References: <20090429232546.GB15782@Krystal> <alpine.LFD.2.00.0904291701450.22156@localhost.localdomain> <20090430024303.GB19875@Krystal> <alpine.DEB.1.10.0904300921290.22262@qirst.com> <20090430133859.GB8329@elte.hu> <alpine.DEB.1.10.0904300938220.22262@qirst.com>
- <20090430141446.GD14696@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 30 Apr 2009 10:26:11 -0400
+Date: Thu, 30 Apr 2009 15:26:08 +0100 (BST)
+From: Mark Hills <mark@pogo.org.uk>
+To: Willy Tarreau <w@1wt.eu>
+cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: splice() on two pipes
+In-Reply-To: <20090430045645.GF570@1wt.eu>
+Message-ID: <alpine.BSO.2.00.0904301452030.5232@zrgural.vwaro.pbz>
+References: <20090429103308.GA23684@squirrel.roonstrasse.net> <87my9zpjqe.fsf@basil.nowhere.org> <20090429194254.GA7956@squirrel.roonstrasse.net> <20090430045645.GF570@1wt.eu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: mark@pogo.org.uk
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Apr 2009, Ingo Molnar wrote:
+On Thu, 30 Apr 2009, Willy Tarreau wrote:
 
-> The patch below makes the fallback/slowpath irq safe.
+> BTW, I like your test program. Simple and easy. I have completed it to 
+> test tcp and udp, you can find it attached.
 
-Yes but sometimes you are already irq safe and such a fallback would
-create significant irq/enable/disable stack operations etc overhead for
-architectures that are using the fallback.
+I think the shown ability to splice to a unix socket may be misleading. 
+Can someone offer some insight to my previous post (22nd April, "splice() 
+on unix sockets")? Does splice to a unix socket actually result in zero 
+copy?
 
-I think we really need another __xxx op here. Especially since these
-operations are often in critical code paths.
+   $ ./test_splice
+   in\out  pipe    reg     chr     unix    tcp     udp
+   pipe    no      yes     yes     yes     yes     yes
+   reg     yes     no      no      no      no      no
+   chr     no      no      no      no      no      no
+   unix    no      no      no      no      no      no
+   tcp     yes     no      no      no      no      no
+   udp     no      no      no      no      no      no
 
+Thanks
 
+-- 
+Mark
