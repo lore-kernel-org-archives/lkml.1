@@ -1,104 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbZD3HVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbZD3HWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbZD3HVp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 03:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbZD3HVg
+	id S1756072AbZD3HWY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 03:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbZD3HWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 03:21:36 -0400
-Received: from ultra7.eskimo.com ([204.122.16.70]:2442 "EHLO ultra7.eskimo.com"
+	Thu, 30 Apr 2009 03:22:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46832 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751112AbZD3HVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 03:21:36 -0400
-Date: Thu, 30 Apr 2009 00:20:58 -0700
-From: Elladan <elladan@eskimo.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Elladan <elladan@eskimo.com>,
-       linux-kernel@vger.kernel.org, tytso@mit.edu,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
-Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
-Message-ID: <20090430072057.GA4663@eskimo.com>
-References: <20090428044426.GA5035@eskimo.com> <20090428192907.556f3a34@bree.surriel.com> <1240987349.4512.18.camel@laptop> <20090429114708.66114c03@cuia.bos.redhat.com>
+	id S1751115AbZD3HWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 03:22:10 -0400
+Message-ID: <49F95101.3010004@kernel.org>
+Date: Thu, 30 Apr 2009 16:19:29 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090429114708.66114c03@cuia.bos.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: petkovbb@gmail.com, Tejun Heo <tj@kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
+       mike.miller@hp.com, chirag.kantharia@hp.com, Eric.Moore@lsi.com,
+       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, jesper.juhl@gmail.com, tim@cyberelk.net,
+       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
+       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
+       davem@davemloft.net, rusty@rustcorp.com.au,
+       Markus.Lidel@shadowconnect.com, bharrosh@panasas.com,
+       Doug Gilbert <dgilbert@interlog.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH 03/10] block: add rq->resid_len
+References: <1240996428-10159-1-git-send-email-tj@kernel.org> <1240996428-10159-4-git-send-email-tj@kernel.org> <1241016114.3369.9.camel@mulgrave.int.hansenpartnership.com> <49F905EE.2020407@kernel.org> <20090430064549.GC6725@liondog.tnic>
+In-Reply-To: <20090430064549.GC6725@liondog.tnic>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Apr 2009 07:19:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 11:47:08AM -0400, Rik van Riel wrote:
-> When the file LRU lists are dominated by streaming IO pages,
-> evict those pages first, before considering evicting other
-> pages.
+Borislav Petkov wrote:
+>> Fancy words aside, it basically boils down to allowing llds to do
+>> either "rq->resid_len = blk_rq_bytes() - xferred" on completion or
+>> "rq->resid_len = blk_rq_bytes()" on issue and "rq->resid_len -=
+>> increments" while processing.
 > 
-> This should be safe from deadlocks or performance problems
-> because only three things can happen to an inactive file page:
-> 1) referenced twice and promoted to the active list
-> 2) evicted by the pageout code
-> 3) under IO, after which it will get evicted or promoted
+> Actually, the second one sounds more natural: resid_len == data_len on
+> issue and decrementing while travelling through block layer and LLDD,
+> while resid_len == 0 in issue might get confused somewhere.
+
+Yeap, it depends on how the specific low level driver is doing it.
+
+> And I like it too, we've been coming up with all sorts of hacks in
+> ide-atapi wrt to residual completion and accounting of what got xferred
+> already and rq->resid_len is much more cleaner, IMHO.
 > 
-> The pages freed in this way can either be reused for streaming
-> IO, or allocated for something else. If the pages are used for
-> streaming IO, this pageout pattern continues. Otherwise, we will
-> fall back to the normal pageout pattern.
-> 
-> Signed-off-by: Rik van Riel <riel@redhat.com>
-> ---
-> On Wed, 29 Apr 2009 08:42:29 +0200
-> Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > Isn't there a hole where LRU_*_FILE << LRU_*_ANON and we now stop
-> > shrinking INACTIVE_ANON even though it makes sense to.
-> 
-> Peter, after looking at this again, I believe that the get_scan_ratio
-> logic should take care of protecting the anonymous pages, so we can
-> get away with this following, less intrusive patch.
-> 
-> Elladan, does this smaller patch still work as expected?
+> /me testing...
 
-Rik, since the third patch doesn't work on 2.6.28 (without disabling a lot of
-code), I went ahead and tested this patch.
+AFAICT, residual count handling in ide was most broken.  This patch
+doesn't fix anything other than making it report 0 resid_len on SG_IO
+which is usually better than reporting full residual count.  The only
+place inside ide where residual count is used in the tape driver to
+determine actually transferred size.  That part works okay with the
+patch applied.
 
-The system does seem relatively responsive with this patch for the most part,
-with occasional lag.  I don't see much evidence at least over the course of a
-few minutes that it pages out applications significantly.  It seems about
-equivalent to the first patch.
+Hmmm... maybe it's about time to finally clean up residual count
+handling in ide and libata, which BTW doesn't do anything about it at
+the moment.
 
-Given Andrew Morton's request that I track the Mapped: field in /proc/meminfo,
-I went ahead and did that with this patch built into a kernel.  Compared to the
-standard Ubuntu kernel, this patch keeps significantly more Mapped memory
-around, and it shrinks at a slower rate after the test runs for a while.
-Eventually, it seems to reach a steady state.
+Thanks.
 
-For example, with your patch, Mapped will often go for 30 seconds without
-changing significantly.  Without your patch, it continuously lost about
-500-1000K every 5 seconds, and then jumped up again significantly when I
-touched Firefox or other applications.  I do see some of that behavior with
-your patch too, but it's much less significant.
-
-When I first initiated the background load, Mapped did rapidly decrease from
-about 85000K to 47000K.  It seems to have reached a fairly steady state since
-then.  I would guess this implies that the VM paged out parts of my executable
-set that aren't touched very often, but isn't applying further pressure to my
-active pages?  Also for example, after letting the test run for a while, I
-scrolled around some tabs in firefox I hadn't used since the test began, and
-experienced significant lag.
-
-This seems ok (not disastrous, anyway).  I suspect desktop users would
-generally prefer the VM were extremely aggressive about keeping their
-executables paged in though, much moreso than this patch provides (and note how
-popular swappiness=0 seems to be).  Paging applications back in seems to
-introduce a large amount of UI latency, even if the VM keeps it to a sane level
-as with this patch.  Also, I don't see many desktop workloads where paging out
-applications to grow the data cache is ever helpful -- practically all desktop
-workloads where you get a lot of IO involve streaming, not data that might
-possibly fit in ram.  If I'm just copying a bunch of files around, I'd prefer
-that even "worthless" pages such as eg. parts of Firefox that are only used
-during load time or during rare config requests (and would thus not appear to
-be part of my working set short-term) stay in cache, so I can get the maximum
-interactive performance from my application.
-
-Thank you,
-Elladan
-
+-- 
+tejun
