@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764976AbZD3RPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765712AbZD3RUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764976AbZD3RPe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764294AbZD3RHf
+	id S1765712AbZD3RUx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764610AbZD3RHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:35 -0400
-Received: from kroah.org ([198.145.64.141]:56294 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:07:47 -0400
+Received: from kroah.org ([198.145.64.141]:56378 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764174AbZD3RH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:28 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:41 2009
-Message-Id: <20090430165741.124450316@mini.kroah.org>
+	id S1764524AbZD3RHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:39 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:42 2009
+Message-Id: <20090430165742.755990282@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:08 -0700
+Date: Thu, 30 Apr 2009 09:56:19 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andreas Herrmann <andreas.herrmann3@amd.com>,
-       trenn@suse.de, Yinghai Lu <yinghai@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 19/88] x86: mtrr: dont modify RdDram/WrDram bits of fixed MTRRs
+       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
+       Mark Fasheh <mfasheh@suse.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 30/88] splice: fix deadlock in splicing to file
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=0037-x86-mtrr-don-t-modify-RdDram-WrDram-bits-of-fixed.patch
+Content-Disposition: inline; filename=0049-splice-fix-deadlock-in-splicing-to-file.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,166 +40,117 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-upstream commit: 3ff42da5048649503e343a32be37b14a6a4e8aaf
+upstream commit: 7bfac9ecf0585962fe13584f5cf526d8c8e76f17
 
-Impact: bug fix + BIOS workaround
+There's a possible deadlock in generic_file_splice_write(),
+splice_from_pipe() and ocfs2_file_splice_write():
 
-BIOS is expected to clear the SYSCFG[MtrrFixDramModEn] on AMD CPUs
-after fixed MTRRs are configured.
+ - task A calls generic_file_splice_write()
+ - this calls inode_double_lock(), which locks i_mutex on both
+   pipe->inode and target inode
+ - ordering depends on inode pointers, can happen that pipe->inode is
+   locked first
+ - __splice_from_pipe() needs more data, calls pipe_wait()
+ - this releases lock on pipe->inode, goes to interruptible sleep
+ - task B calls generic_file_splice_write(), similarly to the first
+ - this locks pipe->inode, then tries to lock inode, but that is
+   already held by task A
+ - task A is interrupted, it tries to lock pipe->inode, but fails, as
+   it is already held by task B
+ - ABBA deadlock
 
-Some BIOSes do not clear SYSCFG[MtrrFixDramModEn] on BP (and on APs).
+Fix this by explicitly ordering locks: the outer lock must be on
+target inode and the inner lock (which is later unlocked and relocked)
+must be on pipe->inode.  This is OK, pipe inodes and target inodes
+form two nonoverlapping sets, generic_file_splice_write() and friends
+are not called with a target which is a pipe.
 
-This can lead to obfuscation in Linux when this bit is not cleared on
-BP but cleared on APs. A consequence of this is that the saved
-fixed-MTRR state (from BP) differs from the fixed-MTRRs of APs --
-because RdDram/WrDram bits are read as zero when
-SYSCFG[MtrrFixDramModEn] is cleared -- and Linux tries to sync
-fixed-MTRR state from BP to AP. This implies that Linux sets
-SYSCFG[MtrrFixDramEn] and activates those bits.
-
-More important is that (some) systems change these bits in SMM when
-ACPI is enabled. Hence it is racy if Linux modifies RdMem/WrMem bits,
-too.
-
-(1) The patch modifies an old fix from Bernhard Kaindl to get
-    suspend/resume working on some Acer Laptops. Bernhard's patch
-    tried to sync RdMem/WrMem bits of fixed MTRR registers and that
-    helped on those old Laptops. (Don't ask me why -- can't test it
-    myself). But this old problem was not the motivation for the
-    patch. (See http://lkml.org/lkml/2007/4/3/110)
-
-(2) The more important effect is to fix issues on some more current systems.
-
-    On those systems Linux panics or just freezes, see
-
-    http://bugzilla.kernel.org/show_bug.cgi?id=11541
-    (and also duplicates of this bug:
-    http://bugzilla.kernel.org/show_bug.cgi?id=11737
-    http://bugzilla.kernel.org/show_bug.cgi?id=11714)
-
-    The affected systems boot only using acpi=ht, acpi=off or
-    when the kernel is built with CONFIG_MTRR=n.
-
-    The acpi options prevent full enablement of ACPI.  Obviously when
-    ACPI is enabled the BIOS/SMM modfies RdMem/WrMem bits.  When
-    CONFIG_MTRR=y Linux also accesses and modifies those bits when it
-    needs to sync fixed-MTRRs across cores (Bernhard's fix, see (1)).
-    How do you synchronize that? You can't. As a consequence Linux
-    shouldn't touch those bits at all (Rationale are AMD's BKDGs which
-    recommend to clear the bit that makes RdMem/WrMem accessible).
-    This is the purpose of this patch. And (so far) this suffices to
-    fix (1) and (2).
-
-I suggest not to touch RdDram/WrDram bits of fixed-MTRRs and
-SYSCFG[MtrrFixDramEn] and to clear SYSCFG[MtrrFixDramModEn] as
-suggested by AMD K8, and AMD family 10h/11h BKDGs.
-BIOS is expected to do this anyway. This should avoid that
-Linux and SMM tread on each other's toes ...
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: trenn@suse.de
-Cc: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <20090312163937.GH20716@alberich.amd.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Acked-by: Mark Fasheh <mfasheh@suse.com>
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/kernel/cpu/mtrr/generic.c |   51 +++++++++++++++++++++----------------
- 1 file changed, 30 insertions(+), 21 deletions(-)
+ fs/ocfs2/file.c |    8 ++++++--
+ fs/splice.c     |   25 ++++++++++++++++++++-----
+ 2 files changed, 26 insertions(+), 7 deletions(-)
 
---- a/arch/x86/kernel/cpu/mtrr/generic.c
-+++ b/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -45,6 +45,32 @@ u64 mtrr_tom2;
- static int mtrr_show;
- module_param_named(show, mtrr_show, bool, 0);
+--- a/fs/ocfs2/file.c
++++ b/fs/ocfs2/file.c
+@@ -1943,7 +1943,7 @@ static ssize_t ocfs2_file_splice_write(s
+ 		   out->f_path.dentry->d_name.len,
+ 		   out->f_path.dentry->d_name.name);
  
-+/**
-+ * BIOS is expected to clear MtrrFixDramModEn bit, see for example
-+ * "BIOS and Kernel Developer's Guide for the AMD Athlon 64 and AMD
-+ * Opteron Processors" (26094 Rev. 3.30 February 2006), section
-+ * "13.2.1.2 SYSCFG Register": "The MtrrFixDramModEn bit should be set
-+ * to 1 during BIOS initalization of the fixed MTRRs, then cleared to
-+ * 0 for operation."
-+ */
-+static inline void k8_check_syscfg_dram_mod_en(void)
-+{
-+	u32 lo, hi;
-+
-+	if (!((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) &&
-+	      (boot_cpu_data.x86 >= 0x0f)))
-+		return;
-+
-+	rdmsr(MSR_K8_SYSCFG, lo, hi);
-+	if (lo & K8_MTRRFIXRANGE_DRAM_MODIFY) {
-+		printk(KERN_ERR FW_WARN "MTRR: CPU %u: SYSCFG[MtrrFixDramModEn]"
-+		       " not cleared by BIOS, clearing this bit\n",
-+		       smp_processor_id());
-+		lo &= ~K8_MTRRFIXRANGE_DRAM_MODIFY;
-+		mtrr_wrmsr(MSR_K8_SYSCFG, lo, hi);
-+	}
-+}
-+
- /*
-  * Returns the effective MTRR type for the region
-  * Error returns:
-@@ -178,6 +204,8 @@ get_fixed_ranges(mtrr_type * frs)
- 	unsigned int *p = (unsigned int *) frs;
- 	int i;
+-	inode_double_lock(inode, pipe->inode);
++	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
  
-+	k8_check_syscfg_dram_mod_en();
-+
- 	rdmsr(MTRRfix64K_00000_MSR, p[0], p[1]);
- 
- 	for (i = 0; i < 2; i++)
-@@ -312,27 +340,10 @@ void mtrr_wrmsr(unsigned msr, unsigned a
- }
- 
- /**
-- * Enable and allow read/write of extended fixed-range MTRR bits on K8 CPUs
-- * see AMD publication no. 24593, chapter 3.2.1 for more information
-- */
--static inline void k8_enable_fixed_iorrs(void)
--{
--	unsigned lo, hi;
--
--	rdmsr(MSR_K8_SYSCFG, lo, hi);
--	mtrr_wrmsr(MSR_K8_SYSCFG, lo
--				| K8_MTRRFIXRANGE_DRAM_ENABLE
--				| K8_MTRRFIXRANGE_DRAM_MODIFY, hi);
--}
--
--/**
-  * set_fixed_range - checks & updates a fixed-range MTRR if it differs from the value it should have
-  * @msr: MSR address of the MTTR which should be checked and updated
-  * @changed: pointer which indicates whether the MTRR needed to be changed
-  * @msrwords: pointer to the MSR values which the MSR should have
-- *
-- * If K8 extentions are wanted, update the K8 SYSCFG MSR also.
-- * See AMD publication no. 24593, chapter 7.8.1, page 233 for more information.
-  */
- static void set_fixed_range(int msr, bool *changed, unsigned int *msrwords)
- {
-@@ -341,10 +352,6 @@ static void set_fixed_range(int msr, boo
- 	rdmsr(msr, lo, hi);
- 
- 	if (lo != msrwords[0] || hi != msrwords[1]) {
--		if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
--		    (boot_cpu_data.x86 >= 0x0f && boot_cpu_data.x86 <= 0x11) &&
--		    ((msrwords[0] | msrwords[1]) & K8_MTRR_RDMEM_WRMEM_MASK))
--			k8_enable_fixed_iorrs();
- 		mtrr_wrmsr(msr, msrwords[0], msrwords[1]);
- 		*changed = true;
+ 	ret = ocfs2_rw_lock(inode, 1);
+ 	if (ret < 0) {
+@@ -1958,12 +1958,16 @@ static ssize_t ocfs2_file_splice_write(s
+ 		goto out_unlock;
  	}
-@@ -423,6 +430,8 @@ static int set_fixed_ranges(mtrr_type * 
- 	bool changed = false;
- 	int block=-1, range;
  
-+	k8_check_syscfg_dram_mod_en();
-+
- 	while (fixed_range_blocks[++block].ranges)
- 	    for (range=0; range < fixed_range_blocks[block].ranges; range++)
- 		set_fixed_range(fixed_range_blocks[block].base_msr + range,
++	if (pipe->inode)
++		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
+ 	ret = generic_file_splice_write_nolock(pipe, out, ppos, len, flags);
++	if (pipe->inode)
++		mutex_unlock(&pipe->inode->i_mutex);
+ 
+ out_unlock:
+ 	ocfs2_rw_unlock(inode, 1);
+ out:
+-	inode_double_unlock(inode, pipe->inode);
++	mutex_unlock(&inode->i_mutex);
+ 
+ 	mlog_exit(ret);
+ 	return ret;
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -735,10 +735,19 @@ ssize_t splice_from_pipe(struct pipe_ino
+ 	 * ->write_end. Most of the time, these expect i_mutex to
+ 	 * be held. Since this may result in an ABBA deadlock with
+ 	 * pipe->inode, we have to order lock acquiry here.
++	 *
++	 * Outer lock must be inode->i_mutex, as pipe_wait() will
++	 * release and reacquire pipe->inode->i_mutex, AND inode must
++	 * never be a pipe.
+ 	 */
+-	inode_double_lock(inode, pipe->inode);
++	WARN_ON(S_ISFIFO(inode->i_mode));
++	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
++	if (pipe->inode)
++		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
+ 	ret = __splice_from_pipe(pipe, &sd, actor);
+-	inode_double_unlock(inode, pipe->inode);
++	if (pipe->inode)
++		mutex_unlock(&pipe->inode->i_mutex);
++	mutex_unlock(&inode->i_mutex);
+ 
+ 	return ret;
+ }
+@@ -829,11 +838,17 @@ generic_file_splice_write(struct pipe_in
+ 	};
+ 	ssize_t ret;
+ 
+-	inode_double_lock(inode, pipe->inode);
++	WARN_ON(S_ISFIFO(inode->i_mode));
++	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
+ 	ret = file_remove_suid(out);
+-	if (likely(!ret))
++	if (likely(!ret)) {
++		if (pipe->inode)
++			mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
+ 		ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
+-	inode_double_unlock(inode, pipe->inode);
++		if (pipe->inode)
++			mutex_unlock(&pipe->inode->i_mutex);
++	}
++	mutex_unlock(&inode->i_mutex);
+ 	if (ret > 0) {
+ 		unsigned long nr_pages;
+ 
 
 
