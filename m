@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761435AbZD3AiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761644AbZD3Ail@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761435AbZD3AiW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 20:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbZD3AiM
+	id S1761644AbZD3Ail (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 20:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbZD3Aia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 20:38:12 -0400
-Received: from tundra.namei.org ([65.99.196.166]:36436 "EHLO tundra.namei.org"
+	Wed, 29 Apr 2009 20:38:30 -0400
+Received: from kroah.org ([198.145.64.141]:60011 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753536AbZD3AiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 20:38:12 -0400
-Date: Thu, 30 Apr 2009 10:37:35 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Oleg Nesterov <oleg@redhat.com>
-cc: David Howells <dhowells@redhat.com>, Eric Paris <eparis@parisplace.org>,
-       Roland McGrath <roland@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Q: selinux_bprm_committed_creds() && signals/do_wait
-In-Reply-To: <20090429132844.GB29151@redhat.com>
-Message-ID: <alpine.LRH.2.00.0904301037160.17896@tundra.namei.org>
-References: <19024.1241008933@redhat.com> <20090429115550.GA25368@redhat.com> <20090429102511.GA10767@redhat.com> <20090429065809.GA477@redhat.com> <20090428223025.GA11997@redhat.com> <alpine.LRH.2.00.0904291024001.5246@tundra.namei.org> <7242.1240999370@redhat.com>
- <7150.1241003840@redhat.com> <19233.1241009105@redhat.com> <20090429132844.GB29151@redhat.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S1753257AbZD3Ai3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 20:38:29 -0400
+Date: Wed, 29 Apr 2009 17:02:06 -0700
+From: Greg KH <greg@kroah.com>
+To: Tim Gardner <timg@tpi.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: staging - mac80211 - unify config_interface and
+	bss_info_changed
+Message-ID: <20090430000206.GA13056@kroah.com>
+References: <20090429193821.305DAF88CE@sepang.rtg.net> <20090429201947.GB20814@kroah.com> <49F8C120.6080807@tpi.com> <20090429212146.GA5274@kroah.com> <49F8E8D1.8000202@tpi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49F8E8D1.8000202@tpi.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Apr 2009, Oleg Nesterov wrote:
-
-> On 04/29, David Howells wrote:
-> >
-> > From: David Howells <dhowells@redhat.com>
-> > Subject: [PATCH] SELinux: Don't flush inherited SIGKILL during execve()
-> >
-> > Don't flush inherited SIGKILL during execve() in SELinux's post cred commit
-> > hook.  This isn't really a security problem: if the SIGKILL came before the
-> > credentials were changed, then we were right to receive it at the time, and
-> > should honour it; if it came after the creds were changed, then we definitely
-> > should honour it; and in any case, all that will happen is that the process
-> > will be scrapped before it ever returns to userspace.
-> >
-> > Signed-off-by: David Howells <dhowells@redhat.com>
+On Wed, Apr 29, 2009 at 05:54:57PM -0600, Tim Gardner wrote:
+> It was in the original email:
 > 
-> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+> The following changes since commit 789a03102c542f34ae831a3aa8af37c6538449e3:
+>    Stephen Rothwell (1):
+>          Add linux-next specific files for 20090429
+> 
+> are available in the git repository at:
+> 
+>    git://kernel.ubuntu.com/rtg/linux-next staging-for-gregkh
 
-Applied to 
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+Oops, sorry, you are correct, my mistake.
 
+> Why do you want a pull request if you're using quilt?
 
--- 
-James Morris
-<jmorris@namei.org>
+I don't, it's a pain, that's why I want patches instead :)
+
+thanks,
+
+greg k-h
