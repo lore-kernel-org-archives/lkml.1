@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932363AbZD3R5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934274AbZD3R5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932363AbZD3R5R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933413AbZD3RgJ
+	id S934274AbZD3R5q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933593AbZD3RjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:36:09 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:62259 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933447AbZD3RgG convert rfc822-to-8bit (ORCPT
+	Thu, 30 Apr 2009 13:39:22 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42610
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933588AbZD3RjU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:36:06 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 08/27] asm-generic: add generic versions of common headers
-Date: Thu, 30 Apr 2009 19:34:58 +0200
-User-Agent: KMail/1.9.9
+	Thu, 30 Apr 2009 13:39:20 -0400
+Date: Thu, 30 Apr 2009 10:39:13 -0700 (PDT)
+Message-Id: <20090430.103913.173722554.davem@davemloft.net>
+To: arnd@arndb.de
 Cc: linux-arch@vger.kernel.org, monstr@monstr.eu,
        remis.developer@googlemail.com, linux-kernel@vger.kernel.org
-References: <200904301849.45543.arnd@arndb.de> <200904301907.46515.arnd@arndb.de> <20090430.101231.27030060.davem@davemloft.net>
-In-Reply-To: <20090430.101231.27030060.davem@davemloft.net>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200904301934.59415.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/IxwWxYeEYIIpY8QtEr2WrmMsfMvLbBKxek2q
- /ZbncjSHlRbpiGLKd0gH6QqyiNZdQFGXhxK0Oas/aPWD9x0JbO
- p1KVw6ziha+rNut0fYyEg==
+Subject: Re: [PATCH 08/27] asm-generic: add generic versions of common
+ headers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200904301934.59415.arnd@arndb.de>
+References: <200904301907.46515.arnd@arndb.de>
+	<20090430.101231.27030060.davem@davemloft.net>
+	<200904301934.59415.arnd@arndb.de>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 30 April 2009, David Miller wrote:
-> You didn't read what I said.
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 30 Apr 2009 19:34:58 +0200
+
+> On Thursday 30 April 2009, David Miller wrote:
+>> You didn't read what I said.
+>> 
+>> I extract the commit messages and patches using "git format-patch"
+>> merely as a formality, then I hand craft every aspect of the emails.
 > 
-> I extract the commit messages and patches using "git format-patch"
-> merely as a formality, then I hand craft every aspect of the emails.
+> Right, this is what I do for smaller sets of patches, but I was
+> hoping for something slightly simpler when sending out my 27 (plus
+> the previous 18) patches.
 
-Right, this is what I do for smaller sets of patches, but I was
-hoping for something slightly simpler when sending out my 27 (plus
-the previous 18) patches.
+You shouldn't be bombing the list with so many patches at once,
+another good reason to do it by hand :-)
 
-> I never put "Date:" fields into the message body, that's rediculiously
-> stupid.  And it confuses patchwork as well.  Just say NO.
-
-Right, fair enough. I figured it wouldn't hurt to have the date in the
-body because git-am can deal with it, but of course the problem was
-the wrong date in the header.
-
-	Arnd <><
+Either consolidate or send in multiple phases after the initial
+patches of infrastructure and examples are OK'd by everyone.
