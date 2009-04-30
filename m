@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764084AbZD3Q0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762696AbZD3QbC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764084AbZD3Q0O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 12:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763004AbZD3QZ5
+	id S1762696AbZD3QbC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 12:31:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754095AbZD3Qav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 12:25:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54197 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761570AbZD3QZ5 (ORCPT
+	Thu, 30 Apr 2009 12:30:51 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33781 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751940AbZD3Qau (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 12:25:57 -0400
-Date: Thu, 30 Apr 2009 09:16:31 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Christoph Lameter <cl@linux.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, thomas.pi@arcor.dea,
-       Yuriy Lalym <ylalym@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ltt-dev@lists.casi.polymtl.ca, Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] Fix dirty page accounting in
- redirty_page_for_writepage()
-In-Reply-To: <20090430160606.GA5913@elte.hu>
-Message-ID: <alpine.LFD.2.00.0904300914110.3395@localhost.localdomain>
-References: <20090430133859.GB8329@elte.hu> <alpine.DEB.1.10.0904300938220.22262@qirst.com> <20090430141446.GD14696@elte.hu> <alpine.DEB.1.10.0904301013110.14178@qirst.com> <20090430143819.GF14696@elte.hu> <alpine.DEB.1.10.0904301042170.4028@qirst.com>
- <20090430150142.GC20580@elte.hu> <alpine.DEB.1.10.0904301114440.4028@qirst.com> <20090430154255.GA3714@elte.hu> <alpine.DEB.1.10.0904301142140.4028@qirst.com> <20090430160606.GA5913@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 30 Apr 2009 12:30:50 -0400
+Message-ID: <49F9D1E5.2090805@zytor.com>
+Date: Thu, 30 Apr 2009 09:29:25 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: mingo@redhat.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, tglx@linutronix.de, jdb@comx.dk,
+       mingo@elte.hu, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/kbuild] x86: boot/compressed/vmlinux.lds.S: fix build
+ of bzImage with 64 bit compiler
+References: <alpine.LFD.2.00.0904260958190.3101@localhost.localdomain> <tip-83c4832683bc8ebcd1687b3c0bf3ba1ab253dd4f@git.kernel.org> <49F9BB47.7080806@zytor.com> <20090430150924.GA8656@uranus.ravnborg.org>
+In-Reply-To: <20090430150924.GA8656@uranus.ravnborg.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 30 Apr 2009, Ingo Molnar wrote:
+Sam Ravnborg wrote:
+>>>
+>> I'm wondering if we should build the *.lds.S with -ansi or some other
+>> gcc option which disables ALL non-underscore macros.
 > 
-> c0436275:   64 83 05 20 5f 6a c0    addl   $0x1,%fs:0xc06a5f20
+> I did not know that -ansi had this effect.
+> We are only seldomly hitting this issue and I wonder
+> if it could break something in out included headers.
+> Most likely not.
 > 
-> There's no atomic instructions at all - the counters here are only 
-> accessed locally. They are local-irq-atomic, but not 
-> cacheline-atomic.
 
-On other architectures, you need the whole "disable preemption, 
-load-locked, store-conditional, test-and-loop, enable preemption" thing. 
+The other thing to recognize is probably that lds files aren't assembly,
+they're something else entirely.  Rather than reusing the *.S rules,
+having specific rules for them probably would make sense.
 
-Or "disable interrupts, load, store, restore interrupts".
+	-hpa
 
-There really aren't very many architectures that can do almost 
-unrestricted ALU ops in a single instruction (and thus automatically safe 
-from preemption and interrupts).
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-			Linus
