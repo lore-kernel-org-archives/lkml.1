@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762793AbZD3MMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761173AbZD3MRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762793AbZD3MMm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 08:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756110AbZD3MLZ
+	id S1761173AbZD3MRp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 08:17:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbZD3MRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 08:11:25 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:41883 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755941AbZD3MLY (ORCPT
+	Thu, 30 Apr 2009 08:17:35 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:44058 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752649AbZD3MRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 08:11:24 -0400
-Date: Thu, 30 Apr 2009 13:11:18 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: "Li, Jiebing" <jiebing.li@intel.com>
-Cc: Pierre Ossman <drzeus@drzeus.cx>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Johnson, Charles F" <charles.f.johnson@intel.com>,
-       "Zhu, Daniel" <daniel.zhu@intel.com>,
-       "Yuan, Hang" <hang.yuan@intel.com>,
-       "Pasrija, Geeta" <geeta.pasrija@intel.com>
-Subject: Re: [PATCH 2/2] MMC: MMC/SD/CE-ATA/SDIO driver for Intel
-	Moorestown platform
-Message-ID: <20090430121118.GA22480@srcf.ucam.org>
-References: <95608CFE3D0C064B8468DB61F8403BE029D298B1F7@PDSMSX501.ccr.corp.intel.com> <95608CFE3D0C064B8468DB61F8403BE029D298B1FF@PDSMSX501.ccr.corp.intel.com>
+	Thu, 30 Apr 2009 08:17:35 -0400
+Message-Id: <1241093854.6754.1313086299@webmail.messagingengine.com>
+X-Sasl-Enc: 5W2hKAv7YWGIadi5QjdoyKXkG7IIR4nxhd9Wj45XY/1X 1241093854
+From: "Jack Stone" <jwjstone@fastmail.fm>
+To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <95608CFE3D0C064B8468DB61F8403BE029D298B1FF@PDSMSX501.ccr.corp.intel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+X-Mailer: MessagingEngine.com Webmail Interface
+In-Reply-To: <20090430083348.GA4313@n2100.arm.linux.org.uk>
+References: <1241080135.32735.1313058447@webmail.messagingengine.com>
+ <20090430083348.GA4313@n2100.arm.linux.org.uk>
+Subject: Re: Arm and allyesconfig, allnoconfig, allmodconfig and randconfig
+Date: Thu, 30 Apr 2009 14:17:34 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 05:19:06PM +0800, Li, Jiebing wrote:
-> 
-> This patch enables support of SDIO bus driver suspend/resume operation and supply sysfs interface for user
-> to call suspend/resume selectively.Remind that this function should work together with SDIO device driver's
-> suspend/resume function.
 
-We used to have similar functionality in the PCI layer, but it got 
-removed on the assumption that this kind of thing should be handled by 
-the drivers being sufficiently intelligent. What's the use case for 
-this?
 
-> And Moorestown's specific code is added into this patch to enable the second SDIO slot of the host controller.
+On Thu, 30 Apr 2009 09:33 +0100, "Russell King - ARM Linux"
+<linux@arm.linux.org.uk> wrote:
+> Patches welcome.
 
-That should probably be sent as a separate patch.
+Is this the sort of thing you meant? I don't know if the text or
+location is correct so comments are very welcome.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Thanks,
+
+Jack
+
+Document that ARM doesn't support all*config
+
+From: Jack Stone <jwjstone@fastmail.fm>
+
+ARM doesn't support all*config. This is because it does not make sense
+as
+there are so many different variants. Instead the defconfigs should be
+used.
+
+Signed-off-by: Jack Stone <jwjstone@fastmail.fm>
+---
+
+ Documentation/arm/README |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/arm/README b/Documentation/arm/README
+index d98783f..8239e5f 100644
+--- a/Documentation/arm/README
++++ b/Documentation/arm/README
+@@ -36,6 +36,9 @@ Compilation of kernel
+   (arch/arm/boot/Image).  A compressed image can be built by doing a
+   'make zImage' instead of 'make Image'.
+
++  NOTE: ARM Linux doesn't support the all*config targets. This is
+because of
++    the number of variants supported. The defconfig targets should be
+used
++    instead.
+
+ Bug reports etc
+ ---------------
