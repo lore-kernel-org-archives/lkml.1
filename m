@@ -1,332 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762719AbZD3VXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762584AbZD3VY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762719AbZD3VXS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 17:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756933AbZD3VXF
+	id S1762584AbZD3VY0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 17:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZD3VYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 17:23:05 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:47826 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755332AbZD3VXE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 17:23:04 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlkGALet+UlMQW1W/2dsb2JhbACBUM8wg38F
-Date: Thu, 30 Apr 2009 17:17:50 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Christoph Lameter <cl@linux.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Yuriy Lalym <ylalym@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ltt-dev@lists.casi.polymtl.ca, Tejun Heo <tj@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ltt-dev] [PATCH] Fix dirty page accounting in
-	redirty_page_for_writepage()
-Message-ID: <20090430211750.GA19933@Krystal>
-References: <alpine.LFD.2.00.0904291701450.22156@localhost.localdomain> <20090430024303.GB19875@Krystal> <20090430062140.GA9559@elte.hu> <20090430063306.GA27431@Krystal> <20090430065055.GA16277@elte.hu> <alpine.DEB.1.10.0904300926530.22262@qirst.com> <20090430141211.GB5922@Krystal> <alpine.DEB.1.10.0904301009530.14178@qirst.com> <20090430194158.GB12926@Krystal> <alpine.DEB.1.10.0904301559500.11923@qirst.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Apr 2009 17:24:13 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:32997 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753753AbZD3VYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 17:24:12 -0400
+Date: Thu, 30 Apr 2009 14:24:08 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <cl@linux.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       jesse.brandeburg@intel.com, netdev@vger.kernel.org, haoki@redhat.com,
+       mchan@broadcom.com, davidel@xmailserver.org
+Subject: Re: [PATCH] poll: Avoid extra wakeups in select/poll
+Message-ID: <20090430212408.GA15317@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <49F76174.6060009@cosmosbay.com> <alpine.DEB.1.10.0904281612560.13862@qirst.com> <49F767FD.2040205@cosmosbay.com> <alpine.DEB.1.10.0904281629090.15947@qirst.com> <49F76F6C.80005@cosmosbay.com> <49F77108.7060509@cosmosbay.com> <20090429091130.GA27857@elte.hu> <49F9821C.5010802@cosmosbay.com> <20090430115736.GA24349@elte.hu> <49F9B0F0.40306@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904301559500.11923@qirst.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:34:00 up 61 days, 17:00,  4 users,  load average: 0.04, 0.32,
-	0.42
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49F9B0F0.40306@cosmosbay.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (cl@linux.com) wrote:
-> On Thu, 30 Apr 2009, Mathieu Desnoyers wrote:
+On Thu, Apr 30, 2009 at 04:08:48PM +0200, Eric Dumazet wrote:
+> Ingo Molnar a écrit :
+> > * Eric Dumazet <dada1@cosmosbay.com> wrote:
+> > 
+> >> Ingo Molnar a écrit :
+> >>> * Eric Dumazet <dada1@cosmosbay.com> wrote:
+> >>>
+> >>>> On uddpping, I had prior to the patch about 49000 wakeups per 
+> >>>> second, and after patch about 26000 wakeups per second (matches 
+> >>>> number of incoming udp messages per second)
+> >>> very nice. It might not show up as a real performance difference if 
+> >>> the CPUs are not fully saturated during the test - but it could show 
+> >>> up as a decrease in CPU utilization.
+> >>>
+> >>> Also, if you run the test via 'perf stat -a ./test.sh' you should 
+> >>> see a reduction in instructions executed:
+> >>>
+> >>> aldebaran:~/linux/linux> perf stat -a sleep 1
+> >>>
+> >>>  Performance counter stats for 'sleep':
+> >>>
+> >>>    16128.045994  task clock ticks     (msecs)
+> >>>           12876  context switches     (events)
+> >>>             219  CPU migrations       (events)
+> >>>          186144  pagefaults           (events)
+> >>>     20911802763  CPU cycles           (events)
+> >>>     19309416815  instructions         (events)
+> >>>       199608554  cache references     (events)
+> >>>        19990754  cache misses         (events)
+> >>>
+> >>>  Wall-clock time elapsed:  1008.882282 msecs
+> >>>
+> >>> With -a it's measured system-wide, from start of test to end of test 
+> >>> - the results will be a lot more stable (and relevant) statistically 
+> >>> than wall-clock time or CPU usage measurements. (both of which are 
+> >>> rather imprecise in general)
+> >> I tried this perf stuff and got strange results on a cpu burning 
+> >> bench, saturating my 8 cpus with a "while (1) ;" loop
+> >>
+> >>
+> >> # perf stat -a sleep 10
+> >>
+> >>  Performance counter stats for 'sleep':
+> >>
+> >>    80334.709038  task clock ticks     (msecs)
+> >>           80638  context switches     (events)
+> >>               4  CPU migrations       (events)
+> >>             468  pagefaults           (events)
+> >>    160694681969  CPU cycles           (events)
+> >>    160127154810  instructions         (events)
+> >>          686393  cache references     (events)
+> >>          230117  cache misses         (events)
+> >>
+> >>  Wall-clock time elapsed: 10041.531644 msecs
+> >>
+> >> So its about 16069468196 cycles per second for 8 cpus
+> >> Divide by 8 to get 2008683524 cycles per second per cpu,
+> >> which is not       3000000000  (E5450  @ 3.00GHz)
+> > 
+> > What does "perf stat -l -a sleep 10" show? I suspect your counters 
+> > are scaled by about 67%, due to counter over-commit. -l will show 
+> > the scaling factor (and will scale up the results).
 > 
-> > On architectures with irq-safe percpu_add :
-> > - No need to disable interrupts at all
+> Only difference I see with '-l' is cache misses not counted.
 > 
-> They may have other options like fall back to classic atomic ops.
+> (tbench 8 running, so not one instruction per cycle)
 > 
-> > Let's assume we change the stat_threshold values in mm/vmstat.c so they
-> > become power of 2 (so we don't care when the u8 overflow occurs so it
-> > becomes a free running counter). This model does not support
-> > "overstep" (yet).
+> # perf stat -l -a sleep 10
 > 
-> The problem with such an approach is that the counters may wrap if
-> sufficiently many processors are in a ZVC update.
-
-By ZVC update, you mean Zone ... Counter update ? (which code exactly ?)
-
->  Lets say a new interrupt
-> is occuring while irq is held off that increments the same counter. When
-> interrupts are reenabled, we increment again from the new interrupt.
-> We then check for overflow only after the new interrupt that modified the
-> counter has completed. The differentials must be constant while the ZVC
-> update functions are running and with your modifications that is no longer
-> guaranteed.
+>  Performance counter stats for 'sleep':
 > 
-
-Hrm, I must admit I'm not sure I follow how your reasoning applies to my
-code. I am using a percpu_add_return_irq() exactly for this reason : it
-only ever touches the percpu variable once and atomically. The test for
-overflow is done on the value returned by percpu_add_return_irq().
-
-Therefore, an interrupt scenario that would be close to what I
-understand from your concerns would be :
-
-* Thread A
-
-inc_zone_page_state()
-  p_ret = percpu_add_return(p, 1); (let's suppose this increment
-                                    overflows the threshold, therefore
-                                    (p_ret & mask) == 0)
-
-----> interrupt comes in, preempts the current thread, execution in a
-      different thread context (* Thread B) :
-
-     inc_zone_page_state()
-       p_ret = percpu_add_return(p, 1);  ((p_ret & mask) == 1)
-       if (!(p_ret & mask))
-         increment global zone count. (not executed)
-
-----> interrupt comes in, preempts the current thread, execution back to
-      the original thread context (Thread A), on the same or on a
-      different CPU :
-
-  if (!(p_ret & mask))
-    increment global zone count.   -----> will therefore increment the
-                                          global zone count only after
-                                          scheduling back the original
-                                          thread.
-
-So I guess what you say here is that if Thread B is preempted for too
-long, we will have to wait until it gets scheduled back before the
-global count is incremented. Do we really need such degree of precision
-for those counters ?
-
-(I fear I'm not understanding your concern fully though)
-
-> > Note that all the fast-path would execute with preemption enabled if the
-> > architecture supports irqsave percpu atomic ops.
+>    80007.128844  task clock ticks     (msecs)
+>         6754642  context switches     (events)
+>               2  CPU migrations       (events)
+>             474  pagefaults           (events)
+>    160925719143  CPU cycles           (events)
+>    108482003620  instructions         (events)
+>      7584035056  cache references     (events)
+>   <not counted>  cache misses
 > 
-> What would work is to use a percpu cmpxchg for the ZVC updates.
-> I wrote a patch like that over a year ago. There is no percpu_cmpxchg
-> coming with the percpu ops as of today so we'd need to add that first.
+>  Wall-clock time elapsed: 10000.595448 msecs
 > 
-> Not sure if this is a performance win though. Complexity increases
-> somewhat.
+> # perf stat -a sleep 10
 > 
+>  Performance counter stats for 'sleep':
+> 
+>    80702.908287  task clock ticks     (msecs)
+>         6792588  context switches     (events)
+>              24  CPU migrations       (events)
+>            4867  pagefaults           (events)
+>    161957342744  CPU cycles           (events)
+>    109147553984  instructions         (events)
+>      7633190481  cache references     (events)
+>        22996234  cache misses         (events)
+> 
+>  Wall-clock time elapsed: 10087.502391 msecs
+> 
+> 
+> 
+> > 
+> > If so then i think this behavior is confusing, and i'll make -l 
+> > default-enabled. (in fact i just committed this change to latest 
+> > -tip and pushed it out)
+> > 
+> > To get only instructions and cycles, do:
+> > 
+> >    perf stat -e instructions -e cycles
+> > 
+> 
+> # perf stat -e instructions -e cycles -a sleep 10
+> 
+>  Performance counter stats for 'sleep':
+> 
+>    109469842392  instructions         (events)
+>    162012922122  CPU cycles           (events)
+> 
+>  Wall-clock time elapsed: 10124.943544 msecs
+> 
+> I am wondering if cpus are not running at 2 GHz ;)
+> 
+> 
+> >> It seems strange a "jmp myself" uses one unhalted cycle per 
+> >> instruction and 0.5 halted cycle ...
+> >>
+> >> Also, after using "perf stat", tbench results are 1778 MB/S 
+> >> instead of 2610 MB/s. Even if no perf stat running.
+> > 
+> > Hm, that would be a bug. Could you send the dmesg output of:
+> > 
+> >    echo p > /proc/sysrq-trigger 
+> >    echo p > /proc/sysrq-trigger 
+> > 
+> > with counters running it will show something like:
+> > 
+> > [  868.105712] SysRq : Show Regs
+> > [  868.106544] 
+> > [  868.106544] CPU#1: ctrl:       ffffffffffffffff
+> > [  868.106544] CPU#1: status:     0000000000000000
+> > [  868.106544] CPU#1: overflow:   0000000000000000
+> > [  868.106544] CPU#1: fixed:      0000000000000000
+> > [  868.106544] CPU#1: used:       0000000000000000
+> > [  868.106544] CPU#1:   gen-PMC0 ctrl:  00000000001300c0
+> > [  868.106544] CPU#1:   gen-PMC0 count: 000000ffee889194
+> > [  868.106544] CPU#1:   gen-PMC0 left:  0000000011e1791a
+> > [  868.106544] CPU#1:   gen-PMC1 ctrl:  000000000013003c
+> > [  868.106544] CPU#1:   gen-PMC1 count: 000000ffd2542438
+> > [  868.106544] CPU#1:   gen-PMC1 left:  000000002dd17a8e
+> 
+> They stay fix (but only CPU#0 is displayed)
+> 
+> Is perf able to display per cpu counters, and not aggregated values ?
+> 
+> [ 7894.426787] CPU#0: ctrl:       ffffffffffffffff
+> [ 7894.426788] CPU#0: status:     0000000000000000
+> [ 7894.426790] CPU#0: overflow:   0000000000000000
+> [ 7894.426792] CPU#0: fixed:      0000000000000000
+> [ 7894.426793] CPU#0: used:       0000000000000000
+> [ 7894.426796] CPU#0:   gen-PMC0 ctrl:  0000000000134f2e
+> [ 7894.426798] CPU#0:   gen-PMC0 count: 000000ffb91e31e1
+> [ 7894.426799] CPU#0:   gen-PMC0 left:  000000007fffffff
+> [ 7894.426802] CPU#0:   gen-PMC1 ctrl:  000000000013412e
+> [ 7894.426804] CPU#0:   gen-PMC1 count: 000000ff80312b23
+> [ 7894.426805] CPU#0:   gen-PMC1 left:  000000007fffffff
+> [ 7894.426807] CPU#0: fixed-PMC0 count: 000000ffacf54a68
+> [ 7894.426809] CPU#0: fixed-PMC1 count: 000000ffb71cfe02
+> [ 7894.426811] CPU#0: fixed-PMC2 count: 0000000000000000
+> [ 7905.522262] SysRq : Show Regs
+> [ 7905.522277]
+> [ 7905.522279] CPU#0: ctrl:       ffffffffffffffff
+> [ 7905.522281] CPU#0: status:     0000000000000000
+> [ 7905.522283] CPU#0: overflow:   0000000000000000
+> [ 7905.522284] CPU#0: fixed:      0000000000000000
+> [ 7905.522286] CPU#0: used:       0000000000000000
+> [ 7905.522288] CPU#0:   gen-PMC0 ctrl:  0000000000134f2e
+> [ 7905.522290] CPU#0:   gen-PMC0 count: 000000ffb91e31e1
+> [ 7905.522292] CPU#0:   gen-PMC0 left:  000000007fffffff
+> [ 7905.522294] CPU#0:   gen-PMC1 ctrl:  000000000013412e
+> [ 7905.522296] CPU#0:   gen-PMC1 count: 000000ff80312b23
+> [ 7905.522298] CPU#0:   gen-PMC1 left:  000000007fffffff
+> [ 7905.522299] CPU#0: fixed-PMC0 count: 000000ffacf54a68
+> [ 7905.522301] CPU#0: fixed-PMC1 count: 000000ffb71cfe02
+> [ 7905.522303] CPU#0: fixed-PMC2 count: 0000000000000000
+> 
+> 
+> > 
+> > the counts should stay put (i.e. all counters should be disabled). 
+> > If they move around - despite there being no 'perf stat -a' session 
+> > running, that would be a bug.
+> 
+> I rebooted my machine then got good results
+> 
+> # perf stat -e instructions -e cycles -a sleep 10
+> 
+>  Performance counter stats for 'sleep':
+> 
+>    240021659058  instructions         (events)
+>    240997984836  CPU cycles           (events) << OK >>
+> 
+>  Wall-clock time elapsed: 10041.499326 msecs
+> 
+> But if I use plain "perf stat -a sleep 10"
+> it seems I get wrong values again (16 G cycles/sec) for all next perf sessions
 
-hrm, yes, the patch below clearly does not win the low-complexity
-contest. :)
+I have to ask...
 
-Mathieu
+Is it possible that the machine runs at 3GHz initially, but slows down
+to 2GHz for cooling reasons?  One thing to try would be to run powertop, 
+which displays the frequencies.  I get the following if mostly idle:
 
-> ---
->  include/linux/vmstat.h |   17 ++++--
->  mm/vmstat.c            |  122 ++++++++++++++++++++++++++++++++++++++++++++++---
->  2 files changed, 127 insertions(+), 12 deletions(-)
-> 
-> Index: linux-2.6/include/linux/vmstat.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/vmstat.h	2007-11-07 18:36:03.000000000 -0800
-> +++ linux-2.6/include/linux/vmstat.h	2007-11-07 18:38:27.000000000 -0800
-> @@ -202,15 +202,22 @@ extern void inc_zone_state(struct zone *
->  void __mod_zone_page_state(struct zone *, enum zone_stat_item item, int);
->  void __inc_zone_page_state(struct page *, enum zone_stat_item);
->  void __dec_zone_page_state(struct page *, enum zone_stat_item);
-> +void __inc_zone_state(struct zone *, enum zone_stat_item);
-> +void __dec_zone_state(struct zone *, enum zone_stat_item);
-> 
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +#define inc_zone_page_state __inc_zone_page_state
-> +#define dec_zone_page_state __dec_zone_page_state
-> +#define mod_zone_page_state __mod_zone_page_state
-> +#define inc_zone_state __inc_zone_state
-> +#define dec_zone_state __dec_zone_state
-> +#else
->  void mod_zone_page_state(struct zone *, enum zone_stat_item, int);
->  void inc_zone_page_state(struct page *, enum zone_stat_item);
->  void dec_zone_page_state(struct page *, enum zone_stat_item);
-> -
-> -extern void inc_zone_state(struct zone *, enum zone_stat_item);
-> -extern void __inc_zone_state(struct zone *, enum zone_stat_item);
-> -extern void dec_zone_state(struct zone *, enum zone_stat_item);
-> -extern void __dec_zone_state(struct zone *, enum zone_stat_item);
-> +void inc_zone_state(struct zone *, enum zone_stat_item);
-> +void dec_zone_state(struct zone *, enum zone_stat_item);
-> +#endif
-> 
->  void refresh_cpu_vm_stats(int);
->  #else /* CONFIG_SMP */
-> Index: linux-2.6/mm/vmstat.c
-> ===================================================================
-> --- linux-2.6.orig/mm/vmstat.c	2007-11-07 17:20:16.000000000 -0800
-> +++ linux-2.6/mm/vmstat.c	2007-11-07 18:55:57.000000000 -0800
-> @@ -151,8 +151,109 @@ static void refresh_zone_stat_thresholds
->  	}
->  }
-> 
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
-> +				int delta)
-> +{
-> +	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
-> +	s8 *p = pcp->vm_stat_diff + item;
-> +	s8 old;
-> +	unsigned long new;
-> +	unsigned long add;
-> +
-> +	do {
-> +		add = 0;
-> +		old = *p;
-> +		new = old + delta;
-> +
-> +		if (unlikely(new > pcp->stat_threshold ||
-> +				new < -pcp->stat_threshold)) {
-> +			add = new;
-> +			new = 0;
-> +		}
-> +
-> +	} while (cmpxchg_local(p, old, new) != old);
-> +
-> +	if (add)
-> +		zone_page_state_add(add, zone, item);
-> +}
-> +EXPORT_SYMBOL(__mod_zone_page_state);
-> +
-> +/*
-> + * Optimized increment and decrement functions implemented using
-> + * cmpxchg_local. These do not require interrupts to be disabled
-> + * and enabled.
-> + */
-> +void __inc_zone_state(struct zone *zone, enum zone_stat_item item)
-> +{
-> +	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
-> +	s8 *p = pcp->vm_stat_diff + item;
-> +	int add;
-> +	unsigned long old;
-> +	unsigned long new;
-> +
-> +	do {
-> +		add = 0;
-> +		old = *p;
-> +		new = old + 1;
-> +
-> +		if (unlikely(new > pcp->stat_threshold)) {
-> +			add = new + pcp->stat_threshold / 2;
-> +			new = -(pcp->stat_threshold / 2);
-> +		}
-> +	} while (cmpxchg_local(p, old, new) != old);
-> +
-> +	if (add)
-> +		zone_page_state_add(add, zone, item);
-> +}
-> +
-> +void __inc_zone_page_state(struct page *page, enum zone_stat_item item)
-> +{
-> +	__inc_zone_state(page_zone(page), item);
-> +}
-> +EXPORT_SYMBOL(__inc_zone_page_state);
-> +
-> +void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
-> +{
-> +	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
-> +	s8 *p = pcp->vm_stat_diff + item;
-> +	int sub;
-> +	unsigned long old;
-> +	unsigned long new;
-> +
-> +	do {
-> +		sub = 0;
-> +		old = *p;
-> +		new = old - 1;
-> +
-> +		if (unlikely(new < - pcp->stat_threshold)) {
-> +			sub = new - pcp->stat_threshold / 2;
-> +			new = pcp->stat_threshold / 2;
-> +		}
-> +	} while (cmpxchg_local(p, old, new) != old);
-> +
-> +	if (sub)
-> +		zone_page_state_add(sub, zone, item);
-> +}
-> +
-> +void __dec_zone_page_state(struct page *page, enum zone_stat_item item)
-> +{
-> +	__dec_zone_state(page_zone(page), item);
-> +}
-> +EXPORT_SYMBOL(__dec_zone_page_state);
-> +
-> +static inline void sync_diff(struct zone *zone, struct per_cpu_pageset *p, int i)
-> +{
-> +	/*
-> +	 * xchg_local() would be useful here but that does not exist.
-> +	 */
-> +	zone_page_state_add(xchg(&p->vm_stat_diff[i], 0), zone, i);
-> +}
-> +
-> +#else /* CONFIG_FAST_CMPXCHG_LOCAL */
-> +
->  /*
-> - * For use when we know that interrupts are disabled.
-> + * Functions that do not rely on cmpxchg_local
->   */
->  void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
->  				int delta)
-> @@ -281,6 +382,17 @@ void dec_zone_page_state(struct page *pa
->  }
->  EXPORT_SYMBOL(dec_zone_page_state);
-> 
-> +static inline void sync_diff(struct zone *zone, struct per_cpu_pageset *p, int i)
-> +{
-> +	unsigned long flags;
-> +
-> +	local_irq_save(flags);
-> +	zone_page_state_add(p->vm_stat_diff[i], zone, i);
-> +	p->vm_stat_diff[i] = 0;
-> +	local_irq_restore(flags);
-> +}
-> +#endif /* !CONFIG_FAST_CMPXCHG_LOCAL */
-> +
->  /*
->   * Update the zone counters for one cpu.
->   *
-> @@ -299,7 +411,6 @@ void refresh_cpu_vm_stats(int cpu)
->  {
->  	struct zone *zone;
->  	int i;
-> -	unsigned long flags;
-> 
->  	for_each_zone(zone) {
->  		struct per_cpu_pageset *p;
-> @@ -311,15 +422,12 @@ void refresh_cpu_vm_stats(int cpu)
-> 
->  		for (i = 0; i < NR_VM_ZONE_STAT_ITEMS; i++)
->  			if (p->vm_stat_diff[i]) {
-> -				local_irq_save(flags);
-> -				zone_page_state_add(p->vm_stat_diff[i],
-> -					zone, i);
-> -				p->vm_stat_diff[i] = 0;
-> +				sync_diff(zone, p, i);
-> +
->  #ifdef CONFIG_NUMA
->  				/* 3 seconds idle till flush */
->  				p->expire = 3;
->  #endif
-> -				local_irq_restore(flags);
->  			}
->  #ifdef CONFIG_NUMA
->  		/*
-> 
-> _______________________________________________
-> ltt-dev mailing list
-> ltt-dev@lists.casi.polymtl.ca
-> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> 
+	     PowerTOP version 1.8       (C) 2007 Intel Corporation
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	Cn                Avg residency       P-states (frequencies)
+	C0 (cpu running)        (14.1%)         2.17 Ghz     4.3%
+	C1                0.0ms ( 0.0%)         1.67 Ghz     0.0%
+	C2                0.5ms (16.2%)         1333 Mhz     0.0%
+	C3                0.5ms (69.8%)         1000 Mhz    95.7%
+
+And the following with an infinite loop running:
+
+	     PowerTOP version 1.8       (C) 2007 Intel Corporation
+
+	Cn                Avg residency       P-states (frequencies)
+	C0 (cpu running)        (54.3%)         2.17 Ghz   100.0%
+	C1                0.0ms ( 0.0%)         1.67 Ghz     0.0%
+	C2                1.2ms ( 1.7%)         1333 Mhz     0.0%
+	C3                1.3ms (44.0%)         1000 Mhz     0.0%
+
+But I am probably missing the point here...
+
+							Thanx, Paul
+
+> # perf stat -a sleep 10
+> 
+>  Performance counter stats for 'sleep':
+> 
+>    80332.718661  task clock ticks     (msecs)
+>           80602  context switches     (events)
+>               4  CPU migrations       (events)
+>             473  pagefaults           (events)
+>    160665397757  CPU cycles           (events)  << bad >>
+>    160079277974  instructions         (events)
+>          793665  cache references     (events)
+>          226829  cache misses         (events)
+> 
+>  Wall-clock time elapsed: 10041.302969 msecs
+> 
+> # perf stat -e cycles -a sleep 10
+> 
+>  Performance counter stats for 'sleep':
+> 
+>    160665176575  CPU cycles           (events)  << bad >>
+> 
+>  Wall-clock time elapsed: 10041.491503 msecs
+> 
+> 
+> > 
+> > Also, the overhead might be profile-able, via:
+> > 
+> > 	perf record -m 1024 sleep 10
+> > 
+> > (this records the profile into output.perf.)
+> > 
+> > followed by:
+> > 
+> > 	./perf-report | tail -20
+> > 
+> > to display a histogram, with kernel-space and user-space symbols 
+> > mixed into a single profile.
+> > 
+> > (Pick up latest -tip to get perf-report built by default.)
+> 
+> Thanks, this is what I use currently
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
