@@ -1,128 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759543AbZD3CjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758903AbZD3CnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759543AbZD3CjY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 22:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbZD3CjO
+	id S1758903AbZD3CnU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 22:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZD3CnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 22:39:14 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:47330 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751516AbZD3CjN (ORCPT
+	Wed, 29 Apr 2009 22:43:08 -0400
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:42173 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750869AbZD3CnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 22:39:13 -0400
+	Wed, 29 Apr 2009 22:43:07 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhYFAJCp+ElMQW1W/2dsb2JhbACBULx8CJBdgiUWCIEyBQ
-Date: Wed, 29 Apr 2009 22:34:07 -0400
+X-IronPort-Anti-Spam-Result: AhYFAAaq+ElMQW1W/2dsb2JhbACBUL0DCJBdgiUWCIEyBQ
+Date: Wed, 29 Apr 2009 22:43:03 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, nickpiggin@yahoo.com.au, mingo@elte.hu,
-       kosaki.motohiro@jp.fujitsu.com, a.p.zijlstra@chello.nl,
-       thomas.pi@arcor.dea, ylalym@gmail.com, linux-kernel@vger.kernel.org,
-       ltt-dev@lists.casi.polymtl.ca
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, thomas.pi@arcor.dea,
+       Yuriy Lalym <ylalym@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ltt-dev@lists.casi.polymtl.ca, Christoph Lameter <cl@linux.com>
 Subject: Re: [PATCH] Fix dirty page accounting in
 	redirty_page_for_writepage()
-Message-ID: <20090430023407.GA19875@Krystal>
-References: <20090429232546.GB15782@Krystal> <20090429165940.094efd0a.akpm@linux-foundation.org>
+Message-ID: <20090430024303.GB19875@Krystal>
+References: <20090429232546.GB15782@Krystal> <alpine.LFD.2.00.0904291701450.22156@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090429165940.094efd0a.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0904291701450.22156@localhost.localdomain>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 22:25:33 up 60 days, 22:51,  1 user,  load average: 0.05, 0.25,
-	0.31
+X-Uptime: 22:34:10 up 60 days, 23:00,  1 user,  load average: 0.28, 0.50,
+	0.41
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton (akpm@linux-foundation.org) wrote:
-> On Wed, 29 Apr 2009 19:25:46 -0400
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+* Linus Torvalds (torvalds@linux-foundation.org) wrote:
 > 
-> > Basically, the following execution :
-> > 
-> > dd if=/dev/zero of=/tmp/testfile
-> > 
-> > will slowly fill _all_ ram available without taking into account memory
-> > pressure.
-> > 
-> > This is because the dirty page accounting is incorrect in
-> > redirty_page_for_writepage.
-> > 
+> 
+> On Wed, 29 Apr 2009, Mathieu Desnoyers wrote:
+> >
 > > This patch adds missing dirty page accounting in redirty_page_for_writepage().
+> > This should fix a _lot_ of issues involving machines becoming slow under heavy
+> > write I/O. No surprise : eventually the system starts swapping.
 > 
-> The patch changes __set_page_dirty_nobuffers(), not
-> redirty_page_for_writepage().
+> That patch (and description) is odd.
 > 
-> __set_page_dirty_nobuffers() has a huge number of callers.
+> The patch actually adds the dirty page accounting not to 
+> redirty_page_for_writepage(), but to __set_page_dirty_nobuffers().
 > 
-
-Right.
-
-> > --- linux-2.6-lttng.orig/mm/page-writeback.c	2009-04-29 18:14:48.000000000 -0400
-> > +++ linux-2.6-lttng/mm/page-writeback.c	2009-04-29 18:23:59.000000000 -0400
-> > @@ -1237,6 +1237,12 @@ int __set_page_dirty_nobuffers(struct pa
-> >  		if (!mapping)
-> >  			return 1;
-> >  
-> > +		/*
-> > +		 * Take care of setting back page accounting correctly.
-> > +		 */
-> > +		inc_zone_page_state(page, NR_FILE_DIRTY);
-> > +		inc_bdi_stat(mapping->backing_dev_info, BDI_RECLAIMABLE);
-> > +
-> >  		spin_lock_irq(&mapping->tree_lock);
-> >  		mapping2 = page_mapping(page);
-> >  		if (mapping2) { /* Race with truncate? */
-> > 
+> And __set_page_dirty_nobuffers() will later (just a few lines down) call 
+> down to account_page_dirtied(), which in turn does all that 
+> same accounting (assuming the "mapping" is marked to account for dirty.
 > 
-> But __set_page_dirty_nobuffers() calls account_page_dirtied(), which
-> already does the above two operations.  afacit we're now
-> double-accounting.
+> So the description seems to be wrong, but so does the patch. 
+> 
+> Did you attach the wrong patch (explaining both problems)?
 > 
 
-Yes, you are right.
+Nope, just tried to go back into the OOM problem I experienced when
+testing the "heavy I/O latency" bug. But it looks like I can't reproduce
+it anyway.
 
-> Now, it's possible that the accounting goes wrong very occasionally in
-> the "/* Race with truncate?  */" case.  If the truncate path clears the
-> page's dirty bit then it will decrement the dirty-page accounting, but
-> this code path will fail to perform the increment of the dirty-page
-> accounting.  IOW, once this function has set PG_Dirty, it is committed
-> to altering some or all of the page-dirty accounting.
+> Or if the patch is what you really meant to do, then you need to fix your 
+> explanation, and also explain why the double-dirty accounting is a good 
+> idea.
+
+Nope, I just "messed this one up" completely. :-)
+
 > 
-> But afacit your test case will not trigger the race-with-truncate anyway?
-> 
-> Can you determine at approximately what frequency (pages-per-second)
-> this accounting leak is occurring in your test?
-> 
+> Or is the real problem perhaps that your /tmp is ramdisk, and not marked 
+> to do dirty accounting?
 
-0 per minute actually. I've tried adding a printk when the
+Nope, I don't think so. /tmp is on a ext3 partition, on raid 1, sata
+disks.
 
-if (mapping2) {
-
-} else {
-  <--
-}
-
-case is hit, and it never triggered in my tests.
-
-I am currently trying to figure out if I can reproduce the OOM problems
-I had experienced with 2.6.29-rc3. I investigate memory accounting by
-turning the memory accounting code into a slow cache-line bouncing
-version and by adding some assertions about the fact that per-zone
-global counters must never go below zero. Having unbalanced accounting
-could have some nasty long-term effects on memory pressure accounting.
-
-But so far the memory accounting code looks solid. It's my bad then. I
-cannot reproduce the behavior I noticed with 2.6.29-rc3, so I guess we
-should we consider this a non-issue (or code 9 if you prefer). ;)
-
-Thanks for looking into this.
+And thanks for the review! This excercise only convinced me that the
+kernel memory accounting works as expected. All this gave me the chance
+to have a good look at the memory accounting code. We could probably
+benefit of Christoph Lameter's cpu ops (using segment registers to
+address per-cpu variables with atomic inc/dec) in there. Or at least
+removing interrupt disabling by using preempt disable and local_t
+variables for the per-cpu counters could bring some benefit.
 
 Mathieu
+
+> 
+> 		Linus
 
 -- 
 Mathieu Desnoyers
