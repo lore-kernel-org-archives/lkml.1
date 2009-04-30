@@ -1,104 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758157AbZD3I0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760767AbZD3I27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758157AbZD3I0d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 04:26:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754055AbZD3I0K
+	id S1760767AbZD3I27 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 04:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbZD3I2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 04:26:10 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:35895 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751292AbZD3I0G (ORCPT
+	Thu, 30 Apr 2009 04:28:39 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55842 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751112AbZD3I2h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 04:26:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=CGWnLJMl1kVrwY30MduNlO53EiypNAlELSQeyK0YRfpgYq1BZ6k7LufWXCyfUNvYuP
-         Pqk8LNI+72UK927qOZspC9yh03gSjFHLAepdeATjPfK1oC8bz7e6NM+FrILvl6JJKf7g
-         9m1b3WNptuzlN4nXrPc3MpNXG2KW0bOJ/HaGc=
-Date: Thu, 30 Apr 2009 16:27:11 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Renzo Davoli <renzo@cs.unibo.it>
-Cc: Am??rico Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
-       Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net, mtk.manpages@gmail.com,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH 0/2] ptrace_vm: ptrace for syscall emulation virtual
-	machines
-Message-ID: <20090430082711.GA24819@hack>
-References: <20090310214436.GC5213@cs.unibo.it> <20090316074520.GC3360@hack> <20090324234753.GH22695@cs.unibo.it> <20090329163228.GE7671@hack> <20090404101708.GG4203@cs.unibo.it> <20090407173646.GL12226@hack> <20090408121851.GE24173@cs.unibo.it> <20090413163603.GG2391@hack> <20090417081823.GA31897@hack> <20090425091928.GB18153@cs.unibo.it>
+	Thu, 30 Apr 2009 04:28:37 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH v2] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Balaji Rao <balajirrao@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+In-Reply-To: <20090430061806.GC4430@balbir.in.ibm.com>
+References: <20090430151008.D21C.A69D9226@jp.fujitsu.com> <20090430061806.GC4430@balbir.in.ibm.com>
+Message-Id: <20090430172512.D222.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090425091928.GB18153@cs.unibo.it>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Thu, 30 Apr 2009 17:28:34 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 25, 2009 at 11:19:28AM +0200, Renzo Davoli wrote:
->
->UML on UML stopped working long time ago, I wrote a note on it
->on March 8. See:
->http://article.gmane.org/gmane.linux.uml.devel/12085
->Here I am having the same behavior with and without my patches, thus
->(in my opinion) the bug is not related with the new tags.
+> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-04-30 15:11:15]:
+> 
+> > 
+> > Changelog:
+> >   since v1
+> >   - use percpu_counter_sum() instead percpu_counter_read()
+> > 
+> > 
+> > -------------------------------------
+> > Subject: [PATCH v2] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
+> > 
+> > cpuacct_update_stats() is called at every tick updating. and it use percpu_counter
+> > for avoiding performance degression.
+> > 
+> > For archs which define VIRT_CPU_ACCOUNTING, every tick would result
+> > in >1000 units of cputime updates and since this is much much greater
+> > than percpu_batch_counter, we end up taking spinlock on every tick.
+> > 
+> > This patch change batch rule. now, any cpu can store "percpu_counter_bach * jiffies"
+> > cputime in per-cpu cache.
+> > it mean this patch don't have behavior change if VIRT_CPU_ACCOUNTING=n.
+> > 
+> > Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> > Cc: Balaji Rao <balajirrao@gmail.com>
+> > Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> > Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > Cc: Ingo Molnar <mingo@elte.hu>
+> > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > ---
+> >  kernel/sched.c |    8 ++++++--
+> >  1 file changed, 6 insertions(+), 2 deletions(-)
+> > 
+> > Index: b/kernel/sched.c
+> > ===================================================================
+> > --- a/kernel/sched.c	2009-04-30 11:37:47.000000000 +0900
+> > +++ b/kernel/sched.c	2009-04-30 14:17:00.000000000 +0900
+> > @@ -10221,6 +10221,7 @@ struct cpuacct {
+> >  };
+> > 
+> >  struct cgroup_subsys cpuacct_subsys;
+> > +static s32 cpuacct_batch;
+> > 
+> >  /* return cpu accounting group corresponding to this container */
+> >  static inline struct cpuacct *cgroup_ca(struct cgroup *cgrp)
+> > @@ -10250,6 +10251,9 @@ static struct cgroup_subsys_state *cpuac
+> >  	if (!ca->cpuusage)
+> >  		goto out_free_ca;
+> > 
+> > +	if (!cpuacct_batch)
+> > +		cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
+> > +
+> >  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
+> >  		if (percpu_counter_init(&ca->cpustat[i], 0))
+> >  			goto out_free_counters;
+> > @@ -10376,7 +10380,7 @@ static int cpuacct_stats_show(struct cgr
+> >  	int i;
+> > 
+> >  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
+> > -		s64 val = percpu_counter_read(&ca->cpustat[i]);
+> > +		s64 val = percpu_counter_sum(&ca->cpustat[i]);
+> >  		val = cputime64_to_clock_t(val);
+> >  		cb->fill(cb, cpuacct_stat_desc[i], val);
+> >  	}
+> > @@ -10446,7 +10450,7 @@ static void cpuacct_update_stats(struct 
+> >  	ca = task_ca(tsk);
+> > 
+> >  	do {
+> > -		percpu_counter_add(&ca->cpustat[idx], val);
+> > +		__percpu_counter_add(&ca->cpustat[idx], val, cpuacct_batch);
+> >  		ca = ca->parent;
+> >  	} while (ca);
+> >  	rcu_read_unlock();
+> > 
+> >
+> 
+> What do the test results look like with this? I'll see if I can find
+> some time to test this patch. On a patch read level this seems much better
+> to me, Peter?
+> 
+> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-Hmm, I thought these two patches of you are aimed to solve this,
-but they are not, right?
+this patch decrease slow down risk on large server. but this patch
+doesn't have functional change. you can't make functional test.
+AFAIK, percpu_counter_sum() don't make any performance degression,
+but you have good stress test, please tell me it.
 
->
->It seems that there are some problems on the virtual memory
->when UML runs UML.
->With older kernels (<2.6.28.2) the error is:
->Eeek! page_mapcount(page) went negative! (-1)
->the error is still there now but the message I get is different:
->
->BUG: Bad page map in process linux.umlv2  pte:00164045 pmd:07b5e1e1
->page:08905c80 flags:00000400 count:-2 mapcount:-4 mapping:(null) index:0
->addr:00100000 vm_flags:00060055 anon_vma:(null) mapping:(null) index:100
->vma->vm_ops->fault: special_mapping_fault+0x0/0x47
->0fc01d64:  [<081a9c5a>] dump_stack+0x1c/0x20
->0fc01d7c:  [<080a233f>] print_bad_pte+0x16d/0x17d
->0fc01dac:  [<080a2c20>] unmap_vmas+0x273/0x46f
->0fc01e04:  [<080a5c69>] unmap_region+0x82/0xfe
->0fc01e3c:  [<080a68b1>] do_munmap+0x1f6/0x245
->0fc01e6c:  [<080a7118>] mmap_region+0xc4/0x3fd
->0fc01eb8:  [<080a765b>] do_mmap_pgoff+0x20a/0x253
->0fc01ef0:  [<08059b2f>] sys_mmap2+0x60/0x8e
->0fc01f28:  [<0805b0df>] handle_syscall+0x7f/0x9c
->0fc01f78:  [<0806a27a>] userspace+0x2d0/0x377
->0fc01fe0:  [<08058e38>] fork_handler+0x53/0x5b
->0fc01ffc:  [<00000000>] 0x0
->(and then many others)
->It seems that the page table of the UML process inside UML gets garbled:
->I think that neither "count" should never reach -2 nor "mapcount" -4. 
->
->The numbers of count and mapcount decrease at each faulty UML execution
->(the following are outputs of tests without my patch)
->$ ./linux ....
->0> page:08905d00 flags:00000400 count:1 mapcount:-1 mapping:(null) index:0
->$ ./linux ....
->1> page:08905d00 flags:00000400 count:0 mapcount:-2 mapping:(null) index:0
->2> page:08905d00 flags:00000400 count:-1 mapcount:-3 mapping:(null) index:0
->3> page:08905d00 flags:00000400 count:-2 mapcount:-4 mapping:(null) index:0
->
->It seems that a page gets released twice.
 
-I will take a look at this...
 
->
->I have successfully tested my paches in various configurations:
->- patched-kernel running patched-UML
->- patched-kernel running unpatched-UML
->- patched-kernel running umview
->- patched-UML running umview
->- UML on UML fails in the same way with and without the patch.
->I am currently running the patched kernel on my laptop.
 
-Thanks, I will give them another testing soon...
 
--- 
-Live like a child, think like the god.
- 
