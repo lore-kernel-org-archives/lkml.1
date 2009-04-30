@@ -1,154 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762295AbZD3VRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757863AbZD3VRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762295AbZD3VRX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 17:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759115AbZD3VRJ
+	id S1757863AbZD3VRs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 17:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762065AbZD3VRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 17:17:09 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:41779 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756056AbZD3VRI (ORCPT
+	Thu, 30 Apr 2009 17:17:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39291 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762271AbZD3VRd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 17:17:08 -0400
-Date: Thu, 30 Apr 2009 14:17:03 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, mingo@elte.hu, mingo@redhat.com,
-       tglx@linutronix.de, hpa@zytor.com, x86@kernel.org,
-       linux-kernel@vger.kernel.org, lcm@us.ibm.com
-Subject: Re: [PATCH 3/3] [BUGFIX] x86/x86_64: fix IRQ migration triggered
-	active device IRQ interrruption
-Message-ID: <20090430211703.GB7257@us.ibm.com>
-References: <86802c440904102346lfbc85f2w4508bded0572ec58@mail.gmail.com> <20090413193717.GB8393@us.ibm.com> <m1bpr0e2au.fsf@fess.ebiederm.org> <20090428000536.GA7347@us.ibm.com> <m1bpqhjco7.fsf@fess.ebiederm.org> <20090429004451.GA7329@us.ibm.com> <m1eivc9qsn.fsf@fess.ebiederm.org> <20090429171719.GA7385@us.ibm.com> <m13abr2w0a.fsf@fess.ebiederm.org> <20090430181546.GA7257@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090430181546.GA7257@us.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 30 Apr 2009 17:17:33 -0400
+Date: Thu, 30 Apr 2009 14:10:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Paris <eparis@redhat.com>
+Cc: fengguang.wu@intel.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       mpm@selenic.com, clameter@sgi.com, mingo@elte.hu,
+       viro@zeniv.linux.org.uk
+Subject: Re: [PATCH] use GFP_NOFS in kernel_event()
+Message-Id: <20090430141041.c167b4d4.akpm@linux-foundation.org>
+In-Reply-To: <1241097573.6020.7.camel@localhost.localdomain>
+References: <20090430020004.GA1898@localhost>
+	<20090429191044.b6fceae2.akpm@linux-foundation.org>
+	<1241097573.6020.7.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 11:15:46AM -0700, Gary Hade wrote:
-> On Wed, Apr 29, 2009 at 10:46:29AM -0700, Eric W. Biederman wrote:
-> > Gary Hade <garyhade@us.ibm.com> writes:
-> > 
-> > >> > This didn't help.  Using 2.6.30-rc3 plus your patch both bugs
-> > >> > are unfortunately still present.
-> > >> 
-> > >> You could offline the cpus?  I know when I tested it on my
-> > >> laptop I could not offline the cpus.
-> > >
-> > > Eric, I'm sorry!  This was due to my stupid mistake.  When I
-> > > went to apply your patch I included --dry-run to test it but
-> > > apparently got distracted and never actually ran patch(1)
-> > > without --dry-run. <SIGH>
-> > >
-> > > So, I just rebuilt after _really_ applying the patch and got
-> > > the following result which probably to be what you intended.
-> > 
-> > Ok.  Good to see.
-> > 
-> > >> >> I propose detecting thpe cases that we know are safe to migrate in
-> > >> >> process context, aka logical deliver with less than 8 cpus aka "flat"
-> > >> >> routing mode and modifying the code so that those work in process
-> > >> >> context and simply deny cpu hotplug in all of the rest of the cases.
-> > >> >
-> > >> > Humm, are you suggesting that CPU offlining/onlining would not
-> > >> > be possible at all on systems with >8 logical CPUs (i.e. most
-> > >> > of our systems) or would this just force users to separately
-> > >> > migrate IRQ affinities away from a CPU (e.g. by shutting down
-> > >> > the irqbalance daemon and writing to /proc/irq/<irq>/smp_affinity)
-> > >> > before attempting to offline it?
-> > >> 
-> > >> A separate migration, for those hard to handle irqs.
-> > >> 
-> > >> The newest systems have iommus that irqs go through or are using MSIs
-> > >> for the important irqs, and as such can be migrated in process
-> > >> context.  So this is not a restriction for future systems.
-> > >
-> > > I understand your concerns but we need a solution for the
-> > > earlier systems that does NOT remove or cripple the existing
-> > > CPU hotplug functionality.  If you can come up with a way to
-> > > retain CPU hotplug function while doing all IRQ migration in
-> > > interrupt context I would certainly be willing to try to find
-> > > some time to help test and debug your changes on our systems.
-> > 
-> > Well that is ultimately what I am looking towards.
-> > 
-> > How do we move to a system that works by design, instead of
-> > one with design goals that are completely conflicting.
-> > 
-> > Thinking about it, we should be able to preemptively migrate
-> > irqs in the hook I am using that denies cpu hotplug.
-> > 
-> > If they don't migrate after a short while I expect we should
-> > still fail but that would relieve some of the pain, and certainly
-> > prevent a non-working system.
-> > 
-> > There are little bits we can tweak like special casing irqs that
-> > no-one is using.
-> > 
-> > My preference here is that I would rather deny cpu hotplug unplug than
-> > have the non-working system problems that you have seen.
-> > 
-> > All of that said I have some questions about your hardware.
-> > - How many sockets and how many cores do you have?
-> 
-> The largest is the x3950 M2 with up to 16 sockets and
-> 96 cores in currently supported configurations and I
-> expect that there could be at least double those numbers
-> in the future.
-> http://www-03.ibm.com/systems/x/hardware/enterprise/x3950m2/index.html
-> 
-> > - How many irqs do you have?
-> 
-> On the single node x3950 M2 that I have been using with 
-> all of it's 7 PCIe slots vacant I see:
->   [root@elm3c160 ~]# cat /proc/interrupts | wc -l
->   21
-> Up to 4 nodes are currently supported and I expect
-> that there could be at least double that number in
-> the future.
-> 
-> > - Do you have an iommu that irqs can go through?
-> 
-> Only a subset of our systems (e.g. x460, x3850, x3950 
-> w/Calgary iommu) have this.
-> 
-> > 
-> > If you have <= 8 cores this problem is totally solvable.
-> 
-> Dreamer :-)
-> 
-> > 
-> > Other cases may be but I don't know what the tradeoffs are.
-> > For very large systems we don't have enough irqs without
-> > limiting running in physical flat mode which makes things
-> > even more of a challenge.
-> > 
-> > It may also be that your ioapics don't have the bugs that
-> > intel and amd ioapics have and we could have a way to recognize
-> > high quality ioapics.
-> 
-> I believe all our System x boxes have Intel and AMD ioapics.
+On Thu, 30 Apr 2009 09:19:33 -0400
+Eric Paris <eparis@redhat.com> wrote:
 
-Actually, I should have said that many System x boxes have
-Intel or AMD ioapics.  It is my understanding that the ioapic
-function on some of the high-end systems is integrated into
-the IBM chipset (e.g. Calgary and CalIOC2).  However, since
-I have also seen the I/O redirection table register write with
-remote IRR bit set issue on some of those systems it probably
-doesn't make sense treat them any differently.
+> > Somebody was going to fix this for us via lockdep annotation.
+> > 
+> > <adds randomly-chosen cc>
+> 
+> I really didn't forget this, but I can't figure out how to recreate it,
+> so I don't know if my logic in the patch is sound.  The patch certainly
+> will shut up the complaint.
 
-Gary
+Do you think we should merge the GFP_NOFS workaround for 2.6.30 and
+fix all up nicely for 2.6.31?
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+GFP_NOFS isn't all that bad, really - it will work sufficiently well. 
+Being able to switch it over to GFP_KERNEL later on is a pretty minor
+optimisation.  But it would be bad of us to simply forget about it, so I'd
+probably end up retaining a switch-back-to-GFP_KERNEL patch in -mm with
+which to periodically harrass you guys ;)
+
 
