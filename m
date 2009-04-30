@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763960AbZD3OKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932179AbZD3OLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763960AbZD3OKY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 10:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763487AbZD3OKC
+	id S932179AbZD3OLx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 10:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932089AbZD3OLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 10:10:02 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:34845 "EHLO gir.skynet.ie"
+	Thu, 30 Apr 2009 10:11:38 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52282 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762587AbZD3OKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 10:10:00 -0400
-Date: Thu, 30 Apr 2009 15:09:57 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Eric Lacombe <goretux@gmail.com>
-Cc: linux-kernel@vger.kernel.org, davej@redhat.com, tglx@linutronix.de,
-       mingo@elte.hu
-Subject: Re: [unused symbol] need to use init_mm
-Message-ID: <20090430140957.GD21997@csn.ul.ie>
-References: <200904301232.05302.goretux@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	id S932088AbZD3OLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 10:11:37 -0400
+Date: Thu, 30 Apr 2009 16:10:29 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Sachin Sant <sachinp@in.ibm.com>,
+       linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: Next April 28: boot failure on PowerPC with SLQB
+Message-ID: <20090430141029.GG6900@wotan.suse.de>
+References: <49F938E4.2030703@in.ibm.com> <20090430064127.GF23746@wotan.suse.de> <49F973A0.8070106@in.ibm.com> <20090430103528.GA6900@wotan.suse.de> <1241087884.19252.5.camel@penberg-laptop> <20090430210004.05a61841.sfr@canb.auug.org.au> <20090430111825.GC6900@wotan.suse.de> <1241090429.19252.7.camel@penberg-laptop> <20090430130542.GF6900@wotan.suse.de> <20090501000033.ecce9ed8.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200904301232.05302.goretux@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090501000033.ecce9ed8.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 12:32:04PM +0200, Eric Lacombe wrote:
-> Hi,
+On Fri, May 01, 2009 at 12:00:33AM +1000, Stephen Rothwell wrote:
+> Hi Nick,
 > 
-> Within a module I work on, I need to access to init_mm, but as it is marked 
-> UNUSED, I wonder if there is another way (an API) to access to it.
-> Otherwise, what can I do to have this mark removed from init_mm in the 
-> mainline? as my module is really not yet ready for inclusion.
+> On Thu, 30 Apr 2009 15:05:42 +0200 Nick Piggin <npiggin@suse.de> wrote:
+> >
+> > Hmm, this might do it. The following code now passes some stress testing
+> > in a userspace harness wheras before it did not (and was obviously wrong).
 > 
-> Thanks in advance for your response,
+> Indeed that allows it to boot fine.  Thanks.
 > 
+> Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-It looks to be that it was removed already, somewhat behind schedule, in
-commit 9470565579f29486f4ed0ffa50774268b64994b0 after an initial attempt
-was made in commit 3abf024d2abb79614d8c4cb25a70d5596f77d0ad.  I don't know
-if there is a procedure for bringing it back but I would guess it's a call
-for the x86 maintainers. I imagine they will want to at least know;
+Great, thanks for reporting and testing. This one is especially
+important because it is basically scribbling on random memory
+:( Pekka, please apply.
 
-1. Why do you need init_mm exported?
-2. Is there an alternative approach to using init_mm?
-3. Assuming yes, what are the downsides?
-4. When do you think the module will be ready for posting?  i.e. is this
-   really something destined for mainline or some perma-out-of-tree?
+Thanks,
+Nick
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+
