@@ -1,66 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761502AbZD3IXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761491AbZD3IXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761502AbZD3IXR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 04:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760098AbZD3IWa
+	id S1761491AbZD3IXp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 04:23:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761284AbZD3IXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 04:22:30 -0400
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:41207 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751336AbZD3IW0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 04:22:26 -0400
-Date: Thu, 30 Apr 2009 10:22:40 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH mmotm] memcg: fix mem_cgroup_update_mapped_file_stat
-	oops
-Message-ID: <20090430045240.GA4430@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <Pine.LNX.4.64.0904292209550.30874@blonde.anvils> <20090430090646.a1443096.kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 30 Apr 2009 04:23:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56021 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761552AbZD3IXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 04:23:09 -0400
+Message-ID: <49F95FCF.7040506@kernel.org>
+Date: Thu, 30 Apr 2009 01:22:39 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090430090646.a1443096.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Len Brown <lenb@kernel.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Subject: [PATCH 3/4] x86/acpi: move setup io apic routing out of ACPI macro
+ scope
+References: <49F8B2D9.3080903@kernel.org>
+In-Reply-To: <49F8B2D9.3080903@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-30 09:06:46]:
 
-> On Wed, 29 Apr 2009 22:13:33 +0100 (BST)
-> Hugh Dickins <hugh@veritas.com> wrote:
-> 
-> > CONFIG_SPARSEMEM=y CONFIG_CGROUP_MEM_RES_CTLR=y cgroup_disable=memory
-> > bootup is oopsing in mem_cgroup_update_mapped_file_stat().  !SPARSEMEM
-> > is fine because its lookup_page_cgroup() contains an explicit check for
-> > NULL node_page_cgroup, but the SPARSEMEM version was missing a check for
-> > NULL section->page_cgroup.
-> > 
-> Ouch, it's curious this bug alive now.. thank you.
-> 
-> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> I think this patch itself is sane but.. Balbir, could you see "caller" ?
-> It seems strange.
+so we could set io apic routing when ACPI is not set
 
-Ideally we need to have a disabled check in
-mem_cgroup_update_mapped_file_stat(), but it seems as if this fix is
-better and fixes a larger scenario and the root cause of
-lookup_page_cgroup() OOPSing. It would not hurt to check for
-mem_cgroup_disabled() though, but too many checks might spoil the
-party for frequent operations.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-Kame, do you mean you wanted me to check if I am using
-lookup_page_cgroup() correctly?
+---
+ arch/x86/include/asm/io_apic.h |    4 -
+ arch/x86/kernel/apic/io_apic.c |  122 ++++++++++++++++++++---------------------
+ 2 files changed, 63 insertions(+), 63 deletions(-)
 
-Hugh, Thank you very much for finding and fixing the problem!
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-2.6/arch/x86/kernel/apic/io_apic.c
+@@ -3855,6 +3855,67 @@ int __init arch_probe_nr_irqs(void)
+ }
+ #endif
  
-
--- 
-	Balbir
++static int __io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
++				 int triggering, int polarity)
++{
++	struct irq_desc *desc;
++	struct irq_cfg *cfg;
++	int node;
++
++	if (!IO_APIC_IRQ(irq)) {
++		apic_printk(APIC_QUIET,KERN_ERR "IOAPIC[%d]: Invalid reference to IRQ 0\n",
++			ioapic);
++		return -EINVAL;
++	}
++
++	if (dev)
++		node = dev_to_node(dev);
++	else
++		node = cpu_to_node(boot_cpu_id);
++
++	desc = irq_to_desc_alloc_node(irq, node);
++	if (!desc) {
++		printk(KERN_INFO "can not get irq_desc %d\n", irq);
++		return 0;
++	}
++
++	/*
++	 * IRQs < 16 are already in the irq_2_pin[] map
++	 */
++	if (irq >= NR_IRQS_LEGACY) {
++		cfg = desc->chip_data;
++		add_pin_to_irq_node(cfg, node, ioapic, pin);
++	}
++
++	setup_IO_APIC_irq(ioapic, pin, irq, desc, triggering, polarity);
++
++	return 0;
++}
++
++static struct {
++	DECLARE_BITMAP(pin_programmed, MP_MAX_IOAPIC_PIN + 1);
++} mp_ioapic_routing[MAX_IO_APICS];
++
++int io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
++				 int triggering, int polarity)
++{
++
++	/*
++	 * Avoid pin reprogramming.  PRTs typically include entries
++	 * with redundant pin->gsi mappings (but unique PCI devices);
++	 * we only program the IOAPIC on the first.
++	 */
++	if (test_bit(pin, mp_ioapic_routing[ioapic].pin_programmed)) {
++		pr_debug("Pin %d-%d already programmed\n",
++			 mp_ioapics[ioapic].apicid, pin);
++		return 0;
++	}
++	set_bit(pin, mp_ioapic_routing[ioapic].pin_programmed);
++
++	return __io_apic_set_pci_routing(dev, ioapic, pin, irq,
++					 triggering, polarity);
++}
++
+ /* --------------------------------------------------------------------------
+                           ACPI-based IOAPIC Configuration
+    -------------------------------------------------------------------------- */
+@@ -3949,67 +4010,6 @@ int __init io_apic_get_version(int ioapi
+ }
+ #endif
+ 
+-static int __io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
+-				 int triggering, int polarity)
+-{
+-	struct irq_desc *desc;
+-	struct irq_cfg *cfg;
+-	int node;
+-
+-	if (!IO_APIC_IRQ(irq)) {
+-		apic_printk(APIC_QUIET,KERN_ERR "IOAPIC[%d]: Invalid reference to IRQ 0\n",
+-			ioapic);
+-		return -EINVAL;
+-	}
+-
+-	if (dev)
+-		node = dev_to_node(dev);
+-	else
+-		node = cpu_to_node(boot_cpu_id);
+-
+-	desc = irq_to_desc_alloc_node(irq, node);
+-	if (!desc) {
+-		printk(KERN_INFO "can not get irq_desc %d\n", irq);
+-		return 0;
+-	}
+-
+-	/*
+-	 * IRQs < 16 are already in the irq_2_pin[] map
+-	 */
+-	if (irq >= NR_IRQS_LEGACY) {
+-		cfg = desc->chip_data;
+-		add_pin_to_irq_node(cfg, node, ioapic, pin);
+-	}
+-
+-	setup_IO_APIC_irq(ioapic, pin, irq, desc, triggering, polarity);
+-
+-	return 0;
+-}
+-
+-static struct {
+-	DECLARE_BITMAP(pin_programmed, MP_MAX_IOAPIC_PIN + 1);
+-} mp_ioapic_routing[MAX_IO_APICS];
+-
+-int io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
+-				 int triggering, int polarity)
+-{
+-
+-	/*
+-	 * Avoid pin reprogramming.  PRTs typically include entries
+-	 * with redundant pin->gsi mappings (but unique PCI devices);
+-	 * we only program the IOAPIC on the first.
+-	 */
+-	if (test_bit(pin, mp_ioapic_routing[ioapic].pin_programmed)) {
+-		pr_debug("Pin %d-%d already programmed\n",
+-			 mp_ioapics[ioapic].apicid, pin);
+-		return 0;
+-	}
+-	set_bit(pin, mp_ioapic_routing[ioapic].pin_programmed);
+-
+-	return __io_apic_set_pci_routing(dev, ioapic, pin, irq,
+-					 triggering, polarity);
+-}
+-
+ int acpi_get_override_irq(int bus_irq, int *trigger, int *polarity)
+ {
+ 	int i;
+Index: linux-2.6/arch/x86/include/asm/io_apic.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/io_apic.h
++++ linux-2.6/arch/x86/include/asm/io_apic.h
+@@ -154,10 +154,10 @@ extern int timer_through_8259;
+ extern int io_apic_get_unique_id(int ioapic, int apic_id);
+ extern int io_apic_get_version(int ioapic);
+ extern int io_apic_get_redir_entries(int ioapic);
+-extern int io_apic_set_pci_routing(struct device *dev, int ioapic, int pin,
+-				  int irq, int edge_level, int active_high_low);
+ #endif /* CONFIG_ACPI */
+ 
++extern int io_apic_set_pci_routing(struct device *dev, int ioapic, int pin,
++				  int irq, int edge_level, int active_high_low);
+ extern int (*ioapic_renumber_irq)(int ioapic, int irq);
+ extern void ioapic_init_mappings(void);
+ 
