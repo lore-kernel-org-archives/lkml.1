@@ -1,70 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbZD3H0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbZD3H3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754404AbZD3H0W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 03:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbZD3H0M
+	id S1757193AbZD3H3k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 03:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbZD3H3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 03:26:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58931 "EHLO mx3.mail.elte.hu"
+	Thu, 30 Apr 2009 03:29:30 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:42902 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750867AbZD3H0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 03:26:11 -0400
-Date: Thu, 30 Apr 2009 09:25:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "Darrick J. Wong" <djwong@us.ibm.com>, Thomas Renninger <trenn@suse.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH v2] acpi: Fix regression where _PPC is not read at boot
-	even when ignore_ppc=0
-Message-ID: <20090430072556.GD16737@elte.hu>
-References: <20090415225348.GW8311@plum> <20090416002712.GX8311@plum> <200904161201.13409.trenn@suse.de> <20090416174217.GY8311@plum> <20090416224507.GA31984@srcf.ucam.org> <20090428193303.GC6968@plum> <20090428195348.GA8376@srcf.ucam.org> <20090429213930.GE6968@plum> <20090429220037.GA8604@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090429220037.GA8604@srcf.ucam.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751292AbZD3H33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 03:29:29 -0400
+Date: Thu, 30 Apr 2009 17:29:23 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for April 30
+Message-Id: <20090430172923.bf9697c2.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__30_Apr_2009_17_29_23_+1000_QIIL0Zs_3wn7LWbb"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Thu__30_Apr_2009_17_29_23_+1000_QIIL0Zs_3wn7LWbb
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+[Resending due to cut and paste errors]
 
-> On Wed, Apr 29, 2009 at 02:39:31PM -0700, Darrick J. Wong wrote:
-> 
-> > I don't know about XP's copy of intelppm.sys, but this would seem to confirm
-> > that WS03 and WS08 check _PPC at boot time.
-> 
-> Ok, so that makes things interesting. From what we know about the 
-> T60 (and based on Ingo's report), _PPC may evaluate to 2 on 
-> bootup. However, if this is ignored then later notifications are 
-> correct. This implies that Windows either ignores the initial 
-> evaluation or does something that triggers a notification.
-> 
-> The only notifications appear to be sent from event methods, so 
-> there's nothing obvious there that we can trigger. I'm actually 
-> quite confused by this now. Ingo, if you re-add that block, does 
-> your system stop working again?
+Hi all,
 
-That box is working fine now doing ~100 bootup tests per day - so if 
-you send me a suitably changelogged patch (revert?) i can apply that 
-to tip:out-of-tree for testing and we'll find out quickly whether 
-the box stops working.
+Changes since 20090429:
 
-OTOH, if you rely on me figuring out which patch to revert and what 
-to do, it will take an indeterminate amount of time - together with 
-all the other items in my 'would be nice to hack on, given a bit of 
-free time' queue :)
+The net tree gained a conflict against the wireless-current tree.
 
-Thanks,
+The dwmw2-iommu tree gained a conflict against the x86 tree.
 
-	Ingo
+The usb tree lost its build failure.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 135 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging configfs/linux-next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging ubifs/linux-next
+Merging xfs/master
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging tracing/auto-tracing-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging kbuild/master
+Merging ide/for-next
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+CONFLICT (content): Merge conflict in include/Kbuild
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in Documentation/isdn/00-INDEX
+CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl-scan=
+.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/rndis_wlan.c
+CONFLICT (content): Merge conflict in include/linux/mmc/sdio_ids.h
+CONFLICT (content): Merge conflict in net/mac80211/main.c
+Merging wireless/master
+[master e806c8f] Revert "rfkill: remove user_claim stuff"
+Merging mtd/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
+req.c
+Merging cifs/master
+Merging mmc/next
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging lsm/for-next
+Merging block/for-next
+CONFLICT (content): Merge conflict in drivers/block/hd.c
+CONFLICT (content): Merge conflict in drivers/block/mg_disk.c
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging generic-ipi/auto-generic-ipi-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging suspend/linux-next
+Merging quilt/driver-core
+Merging quilt/usb
+CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
+Merging quilt/staging
+CONFLICT (content): Merge conflict in drivers/staging/rt2860/common/mlme.c
+CONFLICT (content): Merge conflict in drivers/staging/rt2870/common/mlme.c
+CONFLICT (content): Merge conflict in drivers/staging/rt3070/common/mlme.c
+Merging scsi-post-merge/master
+
+--Signature=_Thu__30_Apr_2009_17_29_23_+1000_QIIL0Zs_3wn7LWbb
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkn5U1MACgkQjjKRsyhoI8y3GgCgtm+xKumUWtlCFLhpIgmb0ZEB
+wLMAnRCplXaDoYDumdjJ8jg1tIZIocgh
+=eGLM
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__30_Apr_2009_17_29_23_+1000_QIIL0Zs_3wn7LWbb--
