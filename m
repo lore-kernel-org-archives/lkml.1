@@ -1,188 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761394AbZD3NRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762667AbZD3NSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761394AbZD3NRn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 09:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756351AbZD3NRd
+	id S1762667AbZD3NSr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 09:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761034AbZD3NSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 09:17:33 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:40907 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755465AbZD3NRc (ORCPT
+	Thu, 30 Apr 2009 09:18:36 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:29117 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760043AbZD3NSf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 09:17:32 -0400
-Date: Thu, 30 Apr 2009 09:17:29 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH 0/3] removing unwanted module configs
-In-Reply-To: <20090430071830.GC16737@elte.hu>
-Message-ID: <alpine.DEB.2.00.0904300908110.20374@gandalf.stny.rr.com>
-References: <20090430030821.523327994@goodmis.org> <20090430071830.GC16737@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 30 Apr 2009 09:18:35 -0400
+Subject: Re: [PATCH RFC] ext3 data=guarded v7
+From: Chris Mason <chris.mason@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>
+In-Reply-To: <20090430115207.GD29220@duck.suse.cz>
+References: <1240941840.15136.44.camel@think.oraclecorp.com>
+	 <1241034706.20099.65.camel@think.oraclecorp.com>
+	 <1241038424.20099.74.camel@think.oraclecorp.com>
+	 <20090430115207.GD29220@duck.suse.cz>
+Content-Type: text/plain
+Date: Thu, 30 Apr 2009 09:17:53 -0400
+Message-Id: <1241097473.4986.7.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A01020A.49F9A505.0051:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-04-30 at 13:52 +0200, Jan Kara wrote:
+> On Wed 29-04-09 16:53:44, Chris Mason wrote:
+> ...
+> > +static int ext3_guarded_write_end(struct file *file,
+> > +				struct address_space *mapping,
+> > +				loff_t pos, unsigned len, unsigned copied,
+> > +				struct page *page, void *fsdata)
+> > +{
+> > +	handle_t *handle = ext3_journal_current_handle();
+> > +	struct inode *inode = file->f_mapping->host;
+> > +	unsigned from, to;
+> > +	int ret = 0, ret2;
+> > +
+> > +	copied = block_write_end(file, mapping, pos, len, copied,
+> > +				 page, fsdata);
+> > +
+> > +	from = pos & (PAGE_CACHE_SIZE - 1);
+> > +	to = from + copied;
+> > +	ret = walk_page_buffers(handle, page_buffers(page),
+> > +		from, to, NULL, journal_dirty_data_guarded_fn);
+> > +
+> > +	/*
+> > +	 * we only update the in-memory i_size.  The disk i_size is done
+> > +	 * by the end io handlers
+> > +	 */
+> > +	if (ret == 0 && pos + copied > inode->i_size) {
+> > +		int must_log;
+> > +
+> > +		/* updated i_size, but we may have raced with a
+> > +		 * data=guarded end_io handler.
+> > +		 *
+> > +		 * All the guarded IO could have ended while i_size was still
+> > +		 * small, and if we're just adding bytes into an existing block
+> > +		 * in the file, we may not be adding a new guarded IO with this
+> > +		 * write.  So, do a check on the disk i_size and make sure it
+> > +		 * is updated to the highest safe value.
+> > +		 *
+> > +		 * This may also be required if the
+> > +		 * journal_dirty_data_guarded_fn chose to do an fully
+> > +		 * ordered write of this buffer instead of a guarded
+> > +		 * write.
+> > +		 *
+> > +		 * ext3_ordered_update_i_size tests inode->i_size, so we
+> > +		 * make sure to update it with the ordered lock held.
+> > +		 */
+> > +		ext3_ordered_lock(inode);
+> > +		i_size_write(inode, pos + copied);
+> > +		must_log = ext3_ordered_update_i_size(inode);
+> > +		ext3_ordered_unlock(inode);
+> > +
+> > +		orphan_del_trans(inode, must_log > 0);
+> > +	}
+>   Didn't we agree that only "i_size_write" should remain from the above
+> "if" after you changed journal_dirty_data_guarded_fn() function?
 
-On Thu, 30 Apr 2009, Ingo Molnar wrote:
+It sounded like a really good idea at the time ;) But it doesn't cover
+all the cases.  If journal_dirty_data_guarded_fn decided to do a full
+ordering of a buffer because the start of the buffer was inside of
+i_size, we might not have updated disk_i_size.
 
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > As it has been brought up last Kernel Summit, we want to make it easier
-> > for those that report bugs to build their own kernels, and maybe even
-> > bisect with git.  Some of these people are not programmers and do not
-> > understand the complexity of the configuration options. But to compile
-> > a distribution configured kernel on their boxes can take hours.
-> > 
-> > This patch series comes to the rescue. I wrote the first instance of
-> > streamline config when I bought a new box in 2005 and got frustrated
-> > with finding all the necessary configurations to boot it. It is a
-> > small (yet powerful) perl script.
-> > 
-> > Here's what it does:
-> > 
-> >  * Reads the modules that are load by using lsmod.
-> >  * Reads all Makefiles to map modules to CONFIG_* options
-> >  * Reads the Kconfig files to find dependencies and selects
-> >  * Figures out what CONFIGS are needed to compile the loaded modules
-> >  * Reads the .config and prints out a version with all module configurations
-> >     that not needed, disabled.
-> > 
-> > The next two patches add options to make.
-> > 
-> >  localmodconfig - this will run streamline_config.pl on the .config file
-> > 	and replace it at the end.
-> > 
-> >  localyesconfig - this will do the same as localmodconfig but will also
-> > 	sed -i s/=m/=y/  to turn all modules to core. It will also run
-> > 	the 'make oldcondfig' to fix it up and let the user handle
-> > 	andything that was changed by converting a module to core.
-> > 
-> > Anyway, this is now in git and as a series of patches here. My git 
-> > tree is based off of the latest Linus git tree.
-> > 
-> > Have fun!
-> 
-> Very nice and useful!
-> 
-> I have given it a try - it works to a certain degree, but does not 
-> seem to work fully. If i boot a Fedora distro kernel with this 
-> module setup:
-> 
-> aldebaran:~/linux/linux> lsmod
-> Module                  Size  Used by
-> sunrpc                253904  1 
-> ipv6                  349568  50 
-> cpufreq_ondemand       73248  0 
-> acpi_cpufreq           75408  0 
-> freq_table             70400  2 cpufreq_ondemand,acpi_cpufreq
-> dm_multipath           82256  0 
-> i2c_i801               75932  0 
-> i2c_core               87192  1 i2c_i801
-> serio_raw              71556  0 
-> pcspkr                 68352  0 
-> pata_jmicron           69504  0 
-> iTCO_wdt               78208  0 
-> shpchp                 99160  0 
-> iTCO_vendor_support    68868  1 iTCO_wdt
-> igb                   144412  0 
-> dca                    71976  1 igb
-> pata_acpi              70528  0 
-> ata_generic            71428  0 
-> 
-> note the 'igb' driver that is essential to be picked up. 'make 
-> localyesconfig' complains:
-> 
->   module igb did not have configs CONFIG_IGB
+Basically something like this:
 
-Did the original .config have it set. It will not enable any modules that 
-are not already set.
+dd if=/dev/zero of=foo bs=2k count=1 # makes an ordered buffer
+sync # disk_i_size is now 2k
+dd if=/dev/zero of=foo bs=3k count=1 conv=notrunc
 
-> 
-> But:
-> 
->   # CONFIG_IGB is not set
-> 
-> It did pick up other essential drivers - such as ext3. Why did it 
-> miss IGB? Here are all the missed drivers:
-> 
-> aldebaran:~/linux/linux> make localyesconfig
-> module ata_generic did not have configs CONFIG_ATA_GENERIC
-> module iTCO_vendor_support did not have configs CONFIG_ITCO_WDT
-> module shpchp did not have configs CONFIG_HOTPLUG_PCI_SHPC
-> module acpi_cpufreq did not have configs CONFIG_IA64_ACPI_CPUFREQ CONFIG_X86_ACPI_CPUFREQ
-> module pata_jmicron did not have configs CONFIG_PATA_JMICRON
-> module i2c_i801 did not have configs CONFIG_I2C_I801
-> module serio_raw did not have configs CONFIG_SERIO_RAW
-> module iTCO_wdt did not have configs CONFIG_ITCO_WDT
-> module freq_table did not have configs CONFIG_CPU_FREQ_TABLE
-> module igb did not have configs CONFIG_IGB
-> module ipv6 did not have configs CONFIG_IPV6
-> module dca did not have configs CONFIG_DCA
-> module sunrpc did not have configs CONFIG_SUNRPC
-> module pata_acpi did not have configs CONFIG_PATA_ACPI
-> module dm_multipath did not have configs CONFIG_DM_MULTIPATH
-> module cpufreq_ondemand did not have configs 
-> CONFIG_CPU_FREQ_GOV_ONDEMAND
-> module i2c_core did not have configs CONFIG_I2C
-> module pcspkr did not have configs CONFIG_INPUT_PCSPKR
+This will become an ordered write.  There isn't a really good way to do
+it as a guarded IO because that buffer head may already have a guarded
+IO attached.  I could add some complexity and cover all the cases where
+an ordered IO is in flight etc etc, but it doesn't seem worth it for the
+small append case.
 
-Hmm, I just added the "localyesconfig" and have not played with it much. I 
-need to change the integrity check of the script to test for modules that 
-are already compiled in (CONFIG_FOO=y). Right now it expects the modules 
-to be modules :-/
+Since it is an ordered write, there is no guarded IO to update the disk
+i_size later.  The update needs to happen during write_end().  I did try
+to update the comments to reflect that, but it might not be as clear as
+it should be.
 
+-chris
 
-> 
-> Of those drivers, igb is the only truly boot-critical one - the box 
-> wont be very useful if it has no network support.
-> 
-> Another comment: 'make localyesconfig' does not seem to be 
-> self-invariant. I.e. it does not handle the case well when we 
-> already have booted a localyesconfig kernel and do 'make 
-> localyesconfig' again. It will find no modules and will merrily 
-> create an almost empty .config.
-
-It should not touch CONFIG_FOO=y. It should only disable the modules that 
-are already set but not needed.
-
-I will update the script to not warn about modules that are compiled in.
-
-> 
-> This could be addressed the following way: i think the script should 
-> implicitly turn on CONFIG_IKCONFIG=y, and should also check for the 
-> presence of /proc/config.gz and use it as a starting point. This 
-> makes the whole concept nicely self-invariant.
-
-I really want to stay away from enabling anything in the .config scripts. 
-I can probably do it for the trivial cases. But there are cases where more 
-than one config will enable a module, or it takes several types of 
-dependencies to enable it. The script can not know which is the best set 
-of dependencies to enable, and I would not want to enable all of them.
-
-But if you have a simple linier script, or no "or" cases. If we have
-
-CONFIG_A depends on CONFIG_X && CONFIG_Y and CONFIG_X and CONFIG_Y do not 
-have any depends or needs to be selected, I could enable all of them if 
-that is the only way to enable a module. But this would come later.
-
-Right now the goal is to remove modules that are in .config but are not 
-used. If CONFIG_IGB above was set (CONFIG_IGB=m) and the script disabled 
-it, then that would be a bug.
-
-I will fix the warnings when the module is compiled in.
-
-Thanks!
-
--- Steve
 
