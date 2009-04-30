@@ -1,855 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759994AbZD3Je0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762111AbZD3JkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759994AbZD3Je0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 05:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbZD3JeQ
+	id S1762111AbZD3JkG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 05:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbZD3Jjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 05:34:16 -0400
-Received: from bear.ext.ti.com ([192.94.94.41]:58775 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751516AbZD3JeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 05:34:14 -0400
-Message-ID: <46851.192.168.10.89.1241083986.squirrel@dbdmail.itg.ti.com>
-In-Reply-To: <61255.192.168.10.89.1240984646.squirrel@dbdmail.itg.ti.com>
-References: <61255.192.168.10.89.1240984646.squirrel@dbdmail.itg.ti.com>
-Date: Thu, 30 Apr 2009 15:03:06 +0530 (IST)
-Subject: [resending-2] [PATCH] [MTD] [NAND] Add OMAP2 / OMAP3 NAND driver
-From: "vimal singh" <vimalsingh@ti.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: linux-mtd@lists.infradead.org, dedekind@infradead.org,
-       linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
+	Thu, 30 Apr 2009 05:39:48 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:23222 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754031AbZD3Jjq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 05:39:46 -0400
+Message-ID: <49F97157.4070901@panasas.com>
+Date: Thu, 30 Apr 2009 12:37:27 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+CC: linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Hannes Reinecke <hare@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Douglas Gilbert <dgilbert@interlog.com>, Christoph Hellwig <hch@lst.de>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vladislav Bolkhovitin <vst@vlnb.net>
+Subject: Re: [PATCH] [Target_Core_Mod/pSCSI]: Add	block/blk-map.c:blk_rq_map_kern_sg()
+ usage
+References: <1240965782.32740.309.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <1240965782.32740.309.camel@haakon2.linux-iscsi.org>
+Content-Type: multipart/mixed;
+ boundary="------------010107000305090505060104"
+X-OriginalArrivalTime: 30 Apr 2009 09:38:56.0260 (UTC) FILETIME=[7B3C2440:01C9C977]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This driver is present in the OMAP tree, now pushing it to MTD.
+This is a multi-part message in MIME format.
+--------------010107000305090505060104
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Original author(s):
-       Jian Zhang <jzhang@ti.com>
+On 04/29/2009 03:43 AM, Nicholas A. Bellinger wrote:
+> Greetings all,
+> 
+> This patch adds a new version of pscsi_map_task_SG() for the Linux/SCSI
+> passthrough subsystem plugin for target_core_mod v3.0 that uses Tejun's blk-map
+> patches on v2.6.30-rcX from git.kernel.org/pub/scm/linux/kernel/tj/misc.git blk-map.
+> This patch adds a LINUX_USE_NEW_BLK_MAP define to allow both blk_rq_map_kern_sg() and
+> legacy, non blk_rq_map_kern_sg() operation (with some limitiations with the latter) to
+> function.
+> 
+> Once Tejun's patches for block/blk-map.c:blk_rq_map_kern_sg() have been included
+> upstream, the legacy pscsi_map_task_SG() will be removed and blk-map will become
+> the preferred method for accessing struct scatterlist -> struct scsi_device for
+> SCSI target operations.  For now, I have created a blk-map branch in lio-core-2.6.git with
+> LINUX_USE_NEW_BLK_MAP=1 and left LINUX_USE_NEW_BLK_MAP=0 in branch master.
+> 
+> This patch also updates pscsi_map_task_non_SG()'s usage of blk_rq_map_kern(), whos
+> parameters have also been simplified in Tejun's patches.  It has been tested with
+> lio-core-2.6.git branch master and blk-map and tested on v2.6.30-rc3 x86 32-bit
+> HVM. The lio-core-2.6.git tree can be found at: 
+> 
+> http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
+> 
+> So far, using Tejun's new code with LINUX_USE_NEW_BLK_MAP=1 is passing badblocks from
+> target_core_Mod/pSCSI exported Vmware mpt-fusion virtual SCSI HBA of TYPE_DISK.  Both the
+> ConfigFS 'file-descriptor' method and 'SCSI HCTL reference' method for accessing
+> struct scsi_device have been tested and are working with lio-core-2.6.git blk-map.
+> 
+> Currently *without* the blk-map patches on v2.6.30-rc3, is target_core_mod/pSCSI export is
+> limited to TYPE_DISK and TYPE_ROM that reference a struct block_device using the ConfigFS
+> 'file descriptor' method.  This is because bio_add_page() expects struct block_device to be
 
-Signed-off-by: Vimal Singh <vimalsingh@ti.com>
----
- drivers/mtd/nand/Kconfig  |    6
- drivers/mtd/nand/Makefile |    1
- drivers/mtd/nand/omap2.c  |  776 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 783 insertions(+)
+Better use bio_add_pc_page(). bio_add_page is only meant for fs requests.
 
-Index: mtd-2.6/drivers/mtd/nand/Kconfig
-===================================================================
---- mtd-2.6.orig/drivers/mtd/nand/Kconfig	2009-04-29 11:31:43.000000000 +0530
-+++ mtd-2.6/drivers/mtd/nand/Kconfig	2009-04-29 11:33:11.000000000 +0530
-@@ -74,6 +74,12 @@ config MTD_NAND_AMS_DELTA
- 	help
- 	  Support for NAND flash on Amstrad E3 (Delta).
+> each struct bio associated with the struct request w/o Tejun's blk_rq_map_kern_sg().
+> 
+> Thanks Tejun for this patch series!  Things have been stable so far and I hope to try some
+> 'bare-metal' and IOV enabled Linux/SCSI target exports using this patch series, along with validating
+> blk-map on some non TYPE_DISK exports using target_core_mod/pSCSI.  I believe you intend this series for
+> v2.6.31 correct..? 
+> 
+> Boaz, have you had a chance to port your stuff over to this yet..?  Other comments..?
+> 
 
-+config MTD_NAND_OMAP2
-+	tristate "NAND Flash device on OMAP2 and OMAP3"
-+	depends on ARM && MTD_NAND && (ARCH_OMAP2 || ARCH_OMAP3)
-+	help
-+          Support for NAND flash on Texas Instruments OMAP2 and OMAP3 platforms.
-+
- config MTD_NAND_TS7250
- 	tristate "NAND Flash device on TS-7250 board"
- 	depends on MACH_TS72XX
-Index: mtd-2.6/drivers/mtd/nand/Makefile
-===================================================================
---- mtd-2.6.orig/drivers/mtd/nand/Makefile	2009-04-29 11:31:43.000000000 +0530
-+++ mtd-2.6/drivers/mtd/nand/Makefile	2009-04-29 11:33:11.000000000 +0530
-@@ -25,6 +25,7 @@ obj-$(CONFIG_MTD_NAND_CS553X)		+= cs553x
- obj-$(CONFIG_MTD_NAND_NDFC)		+= ndfc.o
- obj-$(CONFIG_MTD_NAND_ATMEL)		+= atmel_nand.o
- obj-$(CONFIG_MTD_NAND_GPIO)		+= gpio.o
-+obj-$(CONFIG_MTD_NAND_OMAP2) 		+= omap2.o
- obj-$(CONFIG_MTD_NAND_CM_X270)		+= cmx270_nand.o
- obj-$(CONFIG_MTD_NAND_BASLER_EXCITE)	+= excite_nandflash.o
- obj-$(CONFIG_MTD_NAND_PXA3xx)		+= pxa3xx_nand.o
-Index: mtd-2.6/drivers/mtd/nand/omap2.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ mtd-2.6/drivers/mtd/nand/omap2.c	2009-04-30 14:57:54.000000000 +0530
-@@ -0,0 +1,776 @@
-+/*
-+ * Copyright (c) 2004 Texas Instruments, Jian Zhang <jzhang@ti.com>
-+ * Copyright (c) 2004 Micron Technology Inc.
-+ * Copyright (c) 2004 David Brownell
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/platform_device.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/delay.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/nand.h>
-+#include <linux/mtd/partitions.h>
-+#include <linux/io.h>
-+
-+#include <asm/dma.h>
-+
-+#include <mach/gpmc.h>
-+#include <mach/nand.h>
-+
-+#define GPMC_IRQ_STATUS		0x18
-+#define GPMC_ECC_CONFIG		0x1F4
-+#define GPMC_ECC_CONTROL	0x1F8
-+#define GPMC_ECC_SIZE_CONFIG	0x1FC
-+#define GPMC_ECC1_RESULT	0x200
-+
-+#define	DRIVER_NAME	"omap2-nand"
-+
-+/* size (4 KB) for IO mapping */
-+#define	NAND_IO_SIZE	SZ_4K
-+
-+#define	NAND_WP_OFF	0
-+#define NAND_WP_BIT	0x00000010
-+#define WR_RD_PIN_MONITORING	0x00600000
-+
-+#define	GPMC_BUF_FULL	0x00000001
-+#define	GPMC_BUF_EMPTY	0x00000000
-+
-+#define NAND_Ecc_P1e		(1 << 0)
-+#define NAND_Ecc_P2e		(1 << 1)
-+#define NAND_Ecc_P4e		(1 << 2)
-+#define NAND_Ecc_P8e		(1 << 3)
-+#define NAND_Ecc_P16e		(1 << 4)
-+#define NAND_Ecc_P32e		(1 << 5)
-+#define NAND_Ecc_P64e		(1 << 6)
-+#define NAND_Ecc_P128e		(1 << 7)
-+#define NAND_Ecc_P256e		(1 << 8)
-+#define NAND_Ecc_P512e		(1 << 9)
-+#define NAND_Ecc_P1024e		(1 << 10)
-+#define NAND_Ecc_P2048e		(1 << 11)
-+
-+#define NAND_Ecc_P1o		(1 << 16)
-+#define NAND_Ecc_P2o		(1 << 17)
-+#define NAND_Ecc_P4o		(1 << 18)
-+#define NAND_Ecc_P8o		(1 << 19)
-+#define NAND_Ecc_P16o		(1 << 20)
-+#define NAND_Ecc_P32o		(1 << 21)
-+#define NAND_Ecc_P64o		(1 << 22)
-+#define NAND_Ecc_P128o		(1 << 23)
-+#define NAND_Ecc_P256o		(1 << 24)
-+#define NAND_Ecc_P512o		(1 << 25)
-+#define NAND_Ecc_P1024o		(1 << 26)
-+#define NAND_Ecc_P2048o		(1 << 27)
-+
-+#define TF(value)	(value ? 1 : 0)
-+
-+#define P2048e(a)	(TF(a & NAND_Ecc_P2048e)	<< 0)
-+#define P2048o(a)	(TF(a & NAND_Ecc_P2048o)	<< 1)
-+#define P1e(a)		(TF(a & NAND_Ecc_P1e)		<< 2)
-+#define P1o(a)		(TF(a & NAND_Ecc_P1o)		<< 3)
-+#define P2e(a)		(TF(a & NAND_Ecc_P2e)		<< 4)
-+#define P2o(a)		(TF(a & NAND_Ecc_P2o)		<< 5)
-+#define P4e(a)		(TF(a & NAND_Ecc_P4e)		<< 6)
-+#define P4o(a)		(TF(a & NAND_Ecc_P4o)		<< 7)
-+
-+#define P8e(a)		(TF(a & NAND_Ecc_P8e)		<< 0)
-+#define P8o(a)		(TF(a & NAND_Ecc_P8o)		<< 1)
-+#define P16e(a)		(TF(a & NAND_Ecc_P16e)		<< 2)
-+#define P16o(a)		(TF(a & NAND_Ecc_P16o)		<< 3)
-+#define P32e(a)		(TF(a & NAND_Ecc_P32e)		<< 4)
-+#define P32o(a)		(TF(a & NAND_Ecc_P32o)		<< 5)
-+#define P64e(a)		(TF(a & NAND_Ecc_P64e)		<< 6)
-+#define P64o(a)		(TF(a & NAND_Ecc_P64o)		<< 7)
-+
-+#define P128e(a)	(TF(a & NAND_Ecc_P128e)		<< 0)
-+#define P128o(a)	(TF(a & NAND_Ecc_P128o)		<< 1)
-+#define P256e(a)	(TF(a & NAND_Ecc_P256e)		<< 2)
-+#define P256o(a)	(TF(a & NAND_Ecc_P256o)		<< 3)
-+#define P512e(a)	(TF(a & NAND_Ecc_P512e)		<< 4)
-+#define P512o(a)	(TF(a & NAND_Ecc_P512o)		<< 5)
-+#define P1024e(a)	(TF(a & NAND_Ecc_P1024e)	<< 6)
-+#define P1024o(a)	(TF(a & NAND_Ecc_P1024o)	<< 7)
-+
-+#define P8e_s(a)	(TF(a & NAND_Ecc_P8e)		<< 0)
-+#define P8o_s(a)	(TF(a & NAND_Ecc_P8o)		<< 1)
-+#define P16e_s(a)	(TF(a & NAND_Ecc_P16e)		<< 2)
-+#define P16o_s(a)	(TF(a & NAND_Ecc_P16o)		<< 3)
-+#define P1e_s(a)	(TF(a & NAND_Ecc_P1e)		<< 4)
-+#define P1o_s(a)	(TF(a & NAND_Ecc_P1o)		<< 5)
-+#define P2e_s(a)	(TF(a & NAND_Ecc_P2e)		<< 6)
-+#define P2o_s(a)	(TF(a & NAND_Ecc_P2o)		<< 7)
-+
-+#define P4e_s(a)	(TF(a & NAND_Ecc_P4e)		<< 0)
-+#define P4o_s(a)	(TF(a & NAND_Ecc_P4o)		<< 1)
-+
-+#ifdef CONFIG_MTD_PARTITIONS
-+static const char *part_probes[] = { "cmdlinepart", NULL };
-+#endif
-+
-+struct omap_nand_info {
-+	struct nand_hw_control		controller;
-+	struct omap_nand_platform_data	*pdata;
-+	struct mtd_info			mtd;
-+	struct mtd_partition		*parts;
-+	struct nand_chip		nand;
-+	struct platform_device		*pdev;
-+
-+	int				gpmc_cs;
-+	unsigned long			phys_base;
-+	void __iomem			*gpmc_cs_baseaddr;
-+	void __iomem			*gpmc_baseaddr;
-+};
-+
-+/**
-+ * omap_nand_wp - This function enable or disable the Write Protect feature
-+ * @mtd: MTD device structure
-+ * @mode: WP ON/OFF
-+ */
-+static void omap_nand_wp(struct mtd_info *mtd, int mode)
-+{
-+	struct omap_nand_info *info = container_of(mtd,
-+						struct omap_nand_info, mtd);
-+
-+	unsigned long config = __raw_readl(info->gpmc_baseaddr + GPMC_CONFIG);
-+
-+	if (mode)
-+		config &= ~(NAND_WP_BIT);	/* WP is ON */
-+	else
-+		config |= (NAND_WP_BIT);	/* WP is OFF */
-+
-+	__raw_writel(config, (info->gpmc_baseaddr + GPMC_CONFIG));
-+}
-+
-+/**
-+ * omap_hwcontrol - hardware specific access to control-lines
-+ * @mtd: MTD device structure
-+ * @cmd: command to device
-+ * @ctrl:
-+ * NAND_NCE: bit 0 -> don't care
-+ * NAND_CLE: bit 1 -> Command Latch
-+ * NAND_ALE: bit 2 -> Address Latch
-+ *
-+ * NOTE: boards may use different bits for these!!
-+ */
-+static void omap_hwcontrol(struct mtd_info *mtd, int cmd, unsigned int ctrl)
-+{
-+	struct omap_nand_info *info = container_of(mtd,
-+					struct omap_nand_info, mtd);
-+	switch (ctrl) {
-+	case NAND_CTRL_CHANGE | NAND_CTRL_CLE:
-+		info->nand.IO_ADDR_W = info->gpmc_cs_baseaddr +
-+						GPMC_CS_NAND_COMMAND;
-+		info->nand.IO_ADDR_R = info->gpmc_cs_baseaddr +
-+						GPMC_CS_NAND_DATA;
-+		break;
-+
-+	case NAND_CTRL_CHANGE | NAND_CTRL_ALE:
-+		info->nand.IO_ADDR_W = info->gpmc_cs_baseaddr +
-+						GPMC_CS_NAND_ADDRESS;
-+		info->nand.IO_ADDR_R = info->gpmc_cs_baseaddr +
-+						GPMC_CS_NAND_DATA;
-+		break;
-+
-+	case NAND_CTRL_CHANGE | NAND_NCE:
-+		info->nand.IO_ADDR_W = info->gpmc_cs_baseaddr +
-+						GPMC_CS_NAND_DATA;
-+		info->nand.IO_ADDR_R = info->gpmc_cs_baseaddr +
-+						GPMC_CS_NAND_DATA;
-+		break;
-+	}
-+
-+	if (cmd != NAND_CMD_NONE)
-+		__raw_writeb(cmd, info->nand.IO_ADDR_W);
-+}
-+
-+/**
-+ * omap_read_buf16 - read data from NAND controller into buffer
-+ * @mtd: MTD device structure
-+ * @buf: buffer to store date
-+ * @len: number of bytes to read
-+ */
-+static void omap_read_buf16(struct mtd_info *mtd, u_char *buf, int len)
-+{
-+	struct nand_chip *nand = mtd->priv;
-+
-+	__raw_readsw(nand->IO_ADDR_R, buf, len / 2);
-+}
-+
-+/**
-+ * omap_write_buf16 - write buffer to NAND controller
-+ * @mtd: MTD device structure
-+ * @buf: data buffer
-+ * @len: number of bytes to write
-+ */
-+static void omap_write_buf16(struct mtd_info *mtd, const u_char * buf, int len)
-+{
-+	struct omap_nand_info *info = container_of(mtd,
-+						struct omap_nand_info, mtd);
-+	u16 *p = (u16 *) buf;
-+
-+	/* FIXME try bursts of writesw() or DMA ... */
-+	len >>= 1;
-+
-+	while (len--) {
-+		writew(*p++, info->nand.IO_ADDR_W);
-+
-+		while (GPMC_BUF_EMPTY == (readl(info->gpmc_baseaddr +
-+						GPMC_STATUS) & GPMC_BUF_FULL))
-+			;
-+	}
-+}
-+/**
-+ * omap_verify_buf - Verify chip data against buffer
-+ * @mtd: MTD device structure
-+ * @buf: buffer containing the data to compare
-+ * @len: number of bytes to compare
-+ */
-+static int omap_verify_buf(struct mtd_info *mtd, const u_char * buf, int len)
-+{
-+	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
-+							mtd);
-+	u16 *p = (u16 *) buf;
-+
-+	len >>= 1;
-+	while (len--) {
-+		if (*p++ != cpu_to_le16(readw(info->nand.IO_ADDR_R)))
-+			return -EFAULT;
-+	}
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_MTD_NAND_OMAP_HWECC
-+/**
-+ * omap_hwecc_init - Initialize the HW ECC for NAND flash in GPMC controller
-+ * @mtd: MTD device structure
-+ */
-+static void omap_hwecc_init(struct mtd_info *mtd)
-+{
-+	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
-+							mtd);
-+	struct nand_chip *chip = mtd->priv;
-+	unsigned long val = 0x0;
-+
-+	/* Read from ECC Control Register */
-+	val = __raw_readl(info->gpmc_baseaddr + GPMC_ECC_CONTROL);
-+	/* Clear all ECC | Enable Reg1 */
-+	val = ((0x00000001<<8) | 0x00000001);
-+	__raw_writel(val, info->gpmc_baseaddr + GPMC_ECC_CONTROL);
-+
-+	/* Read from ECC Size Config Register */
-+	val = __raw_readl(info->gpmc_baseaddr + GPMC_ECC_SIZE_CONFIG);
-+	/* ECCSIZE1=512 | Select eccResultsize[0-3] */
-+	val = ((((chip->ecc.size >> 1) - 1) << 22) | (0x0000000F));
-+	__raw_writel(val, info->gpmc_baseaddr + GPMC_ECC_SIZE_CONFIG);
-+}
-+
-+/**
-+ * gen_true_ecc - This function will generate true ECC value
-+ * @ecc_buf: buffer to store ecc code
-+ *
-+ * This generated true ECC value can be used when correcting
-+ * data read from NAND flash memory core
-+ */
-+static void gen_true_ecc(u8 *ecc_buf)
-+{
-+	u32 tmp = ecc_buf[0] | (ecc_buf[1] << 16) |
-+		((ecc_buf[2] & 0xF0) << 20) | ((ecc_buf[2] & 0x0F) << 8);
-+
-+	ecc_buf[0] = ~(P64o(tmp) | P64e(tmp) | P32o(tmp) | P32e(tmp) |
-+			P16o(tmp) | P16e(tmp) | P8o(tmp) | P8e(tmp));
-+	ecc_buf[1] = ~(P1024o(tmp) | P1024e(tmp) | P512o(tmp) | P512e(tmp) |
-+			P256o(tmp) | P256e(tmp) | P128o(tmp) | P128e(tmp));
-+	ecc_buf[2] = ~(P4o(tmp) | P4e(tmp) | P2o(tmp) | P2e(tmp) | P1o(tmp) |
-+			P1e(tmp) | P2048o(tmp) | P2048e(tmp));
-+}
-+
-+/**
-+ * omap_compare_ecc - Detect (2 bits) and correct (1 bit) error in data
-+ * @ecc_data1:  ecc code from nand spare area
-+ * @ecc_data2:  ecc code from hardware register obtained from hardware ecc
-+ * @page_data:  page data
-+ *
-+ * This function compares two ECC's and indicates if there is an error.
-+ * If the error can be corrected it will be corrected to the buffer.
-+ */
-+static int omap_compare_ecc(u8 *ecc_data1,	/* read from NAND memory */
-+			    u8 *ecc_data2,	/* read from register */
-+			    u8 *page_data)
-+{
-+	uint	i;
-+	u8	tmp0_bit[8], tmp1_bit[8], tmp2_bit[8];
-+	u8	comp0_bit[8], comp1_bit[8], comp2_bit[8];
-+	u8	ecc_bit[24];
-+	u8	ecc_sum = 0;
-+	u8	find_bit = 0;
-+	uint	find_byte = 0;
-+	int	isEccFF;
-+
-+	isEccFF = ((*(u32 *)ecc_data1 & 0xFFFFFF) == 0xFFFFFF);
-+
-+	gen_true_ecc(ecc_data1);
-+	gen_true_ecc(ecc_data2);
-+
-+	for (i = 0; i <= 2; i++) {
-+		*(ecc_data1 + i) = ~(*(ecc_data1 + i));
-+		*(ecc_data2 + i) = ~(*(ecc_data2 + i));
-+	}
-+
-+	for (i = 0; i < 8; i++) {
-+		tmp0_bit[i]     = *ecc_data1 % 2;
-+		*ecc_data1	= *ecc_data1 / 2;
-+	}
-+
-+	for (i = 0; i < 8; i++) {
-+		tmp1_bit[i]	 = *(ecc_data1 + 1) % 2;
-+		*(ecc_data1 + 1) = *(ecc_data1 + 1) / 2;
-+	}
-+
-+	for (i = 0; i < 8; i++) {
-+		tmp2_bit[i]	 = *(ecc_data1 + 2) % 2;
-+		*(ecc_data1 + 2) = *(ecc_data1 + 2) / 2;
-+	}
-+
-+	for (i = 0; i < 8; i++) {
-+		comp0_bit[i]     = *ecc_data2 % 2;
-+		*ecc_data2       = *ecc_data2 / 2;
-+	}
-+
-+	for (i = 0; i < 8; i++) {
-+		comp1_bit[i]     = *(ecc_data2 + 1) % 2;
-+		*(ecc_data2 + 1) = *(ecc_data2 + 1) / 2;
-+	}
-+
-+	for (i = 0; i < 8; i++) {
-+		comp2_bit[i]     = *(ecc_data2 + 2) % 2;
-+		*(ecc_data2 + 2) = *(ecc_data2 + 2) / 2;
-+	}
-+
-+	for (i = 0; i < 6; i++)
-+		ecc_bit[i] = tmp2_bit[i + 2] ^ comp2_bit[i + 2];
-+
-+	for (i = 0; i < 8; i++)
-+		ecc_bit[i + 6] = tmp0_bit[i] ^ comp0_bit[i];
-+
-+	for (i = 0; i < 8; i++)
-+		ecc_bit[i + 14] = tmp1_bit[i] ^ comp1_bit[i];
-+
-+	ecc_bit[22] = tmp2_bit[0] ^ comp2_bit[0];
-+	ecc_bit[23] = tmp2_bit[1] ^ comp2_bit[1];
-+
-+	for (i = 0; i < 24; i++)
-+		ecc_sum += ecc_bit[i];
-+
-+	switch (ecc_sum) {
-+	case 0:
-+		/* Not reached because this function is not called if
-+		 *  ECC values are equal
-+		 */
-+		return 0;
-+
-+	case 1:
-+		/* Uncorrectable error */
-+		DEBUG(MTD_DEBUG_LEVEL0, "ECC UNCORRECTED_ERROR 1\n");
-+		return -1;
-+
-+	case 11:
-+		/* UN-Correctable error */
-+		DEBUG(MTD_DEBUG_LEVEL0, "ECC UNCORRECTED_ERROR B\n");
-+		return -1;
-+
-+	case 12:
-+		/* Correctable error */
-+		find_byte = (ecc_bit[23] << 8) +
-+			    (ecc_bit[21] << 7) +
-+			    (ecc_bit[19] << 6) +
-+			    (ecc_bit[17] << 5) +
-+			    (ecc_bit[15] << 4) +
-+			    (ecc_bit[13] << 3) +
-+			    (ecc_bit[11] << 2) +
-+			    (ecc_bit[9]  << 1) +
-+			    ecc_bit[7];
-+
-+		find_bit = (ecc_bit[5] << 2) + (ecc_bit[3] << 1) + ecc_bit[1];
-+
-+		DEBUG(MTD_DEBUG_LEVEL0, "Correcting single bit ECC error at "
-+				"offset: %d, bit: %d\n", find_byte, find_bit);
-+
-+		page_data[find_byte] ^= (1 << find_bit);
-+
-+		return 0;
-+	default:
-+		if (isEccFF) {
-+			if (ecc_data2[0] == 0 &&
-+			    ecc_data2[1] == 0 &&
-+			    ecc_data2[2] == 0)
-+				return 0;
-+		}
-+		DEBUG(MTD_DEBUG_LEVEL0, "UNCORRECTED_ERROR default\n");
-+		return -1;
-+	}
-+}
-+
-+/**
-+ * omap_correct_data - Compares the ECC read with HW generated ECC
-+ * @mtd: MTD device structure
-+ * @dat: page data
-+ * @read_ecc: ecc read from nand flash
-+ * @calc_ecc: ecc read from HW ECC registers
-+ *
-+ * Compares the ecc read from nand spare area with ECC registers values
-+ * and if ECC's mismached, it will call 'omap_compare_ecc' for error detection
-+ * and correction.
-+ */
-+static int omap_correct_data(struct mtd_info *mtd, u_char *dat,
-+				u_char *read_ecc, u_char *calc_ecc)
-+{
-+	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
-+							mtd);
-+	int blockCnt = 0, i = 0, ret = 0;
-+
-+	/* Ex NAND_ECC_HW12_2048 */
-+	if ((info->nand.ecc.mode == NAND_ECC_HW) &&
-+			(info->nand.ecc.size  == 2048))
-+		blockCnt = 4;
-+	else
-+		blockCnt = 1;
-+
-+	for (i = 0; i < blockCnt; i++) {
-+		if (memcmp(read_ecc, calc_ecc, 3) != 0) {
-+			ret = omap_compare_ecc(read_ecc, calc_ecc, dat);
-+			if (ret < 0)
-+				return ret;
-+		}
-+		read_ecc += 3;
-+		calc_ecc += 3;
-+		dat      += 512;
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * omap_calcuate_ecc - Generate non-inverted ECC bytes.
-+ * @mtd: MTD device structure
-+ * @dat: The pointer to data on which ecc is computed
-+ * @ecc_code: The ecc_code buffer
-+ *
-+ * Using noninverted ECC can be considered ugly since writing a blank
-+ * page ie. padding will clear the ECC bytes. This is no problem as long
-+ * nobody is trying to write data on the seemingly unused page. Reading
-+ * an erased page will produce an ECC mismatch between generated and read
-+ * ECC bytes that has to be dealt with separately.
-+ */
-+static int omap_calculate_ecc(struct mtd_info *mtd, const u_char *dat,
-+				u_char *ecc_code)
-+{
-+	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
-+							mtd);
-+	unsigned long val = 0x0;
-+	unsigned long reg;
-+
-+	/* Start Reading from HW ECC1_Result = 0x200 */
-+	reg = (unsigned long)(info->gpmc_baseaddr + GPMC_ECC1_RESULT);
-+	val = __raw_readl(reg);
-+	*ecc_code++ = val;          /* P128e, ..., P1e */
-+	*ecc_code++ = val >> 16;    /* P128o, ..., P1o */
-+	/* P2048o, P1024o, P512o, P256o, P2048e, P1024e, P512e, P256e */
-+	*ecc_code++ = ((val >> 8) & 0x0f) | ((val >> 20) & 0xf0);
-+	reg += 4;
-+
-+	return 0;
-+}
-+
-+/**
-+ * omap_enable_hwecc - This function enables the hardware ecc functionality
-+ * @mtd: MTD device structure
-+ * @mode: Read/Write mode
-+ */
-+static void omap_enable_hwecc(struct mtd_info *mtd, int mode)
-+{
-+	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
-+							mtd);
-+	struct nand_chip *chip = mtd->priv;
-+	unsigned int dev_width = (chip->options & NAND_BUSWIDTH_16) ? 1 : 0;
-+	unsigned long val = __raw_readl(info->gpmc_baseaddr + GPMC_ECC_CONFIG);
-+
-+	switch (mode) {
-+	case NAND_ECC_READ:
-+		__raw_writel(0x101, info->gpmc_baseaddr + GPMC_ECC_CONTROL);
-+		/* (ECC 16 or 8 bit col) | ( CS  )  | ECC Enable */
-+		val = (dev_width << 7) | (info->gpmc_cs << 1) | (0x1);
-+		break;
-+	case NAND_ECC_READSYN:
-+		 __raw_writel(0x100, info->gpmc_baseaddr + GPMC_ECC_CONTROL);
-+		/* (ECC 16 or 8 bit col) | ( CS  )  | ECC Enable */
-+		val = (dev_width << 7) | (info->gpmc_cs << 1) | (0x1);
-+		break;
-+	case NAND_ECC_WRITE:
-+		__raw_writel(0x101, info->gpmc_baseaddr + GPMC_ECC_CONTROL);
-+		/* (ECC 16 or 8 bit col) | ( CS  )  | ECC Enable */
-+		val = (dev_width << 7) | (info->gpmc_cs << 1) | (0x1);
-+		break;
-+	default:
-+		DEBUG(MTD_DEBUG_LEVEL0, "Error: Unrecognized Mode[%d]!\n",
-+					mode);
-+		break;
-+	}
-+
-+	__raw_writel(val, info->gpmc_baseaddr + GPMC_ECC_CONFIG);
-+}
-+#endif
-+
-+/**
-+ * omap_wait - wait until the command is done
-+ * @mtd: MTD device structure
-+ * @chip: NAND Chip structure
-+ *
-+ * Wait function is called during Program and erase operations and
-+ * the way it is called from MTD layer, we should wait till the NAND
-+ * chip is ready after the programming/erase operation has completed.
-+ *
-+ * Erase can take up to 400ms and program up to 20ms according to
-+ * general NAND and SmartMedia specs
-+ */
-+static int omap_wait(struct mtd_info *mtd, struct nand_chip *chip)
-+{
-+	struct nand_chip *this = mtd->priv;
-+	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
-+							mtd);
-+	unsigned long timeo = jiffies;
-+	int status, state = this->state;
-+
-+	if (state == FL_ERASING)
-+		timeo += (HZ * 400) / 1000;
-+	else
-+		timeo += (HZ * 20) / 1000;
-+
-+	this->IO_ADDR_W = (void *) info->gpmc_cs_baseaddr +
-+						GPMC_CS_NAND_COMMAND;
-+	this->IO_ADDR_R = (void *) info->gpmc_cs_baseaddr + GPMC_CS_NAND_DATA;
-+
-+	__raw_writeb(NAND_CMD_STATUS & 0xFF, this->IO_ADDR_W);
-+
-+	while (time_before(jiffies, timeo)) {
-+		status = __raw_readb(this->IO_ADDR_R);
-+		if (!(status & 0x40))
-+			break;
-+	}
-+	return status;
-+}
-+
-+/**
-+ * omap_dev_ready - calls the platform specific dev_ready function
-+ * @mtd: MTD device structure
-+ */
-+static int omap_dev_ready(struct mtd_info *mtd)
-+{
-+	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
-+							mtd);
-+	unsigned int val = __raw_readl(info->gpmc_baseaddr + GPMC_IRQ_STATUS);
-+
-+	if ((val & 0x100) == 0x100) {
-+		/* Clear IRQ Interrupt */
-+		val |= 0x100;
-+		val &= ~(0x0);
-+		__raw_writel(val, info->gpmc_baseaddr + GPMC_IRQ_STATUS);
-+	} else {
-+		unsigned int cnt = 0;
-+		while (cnt++ < 0x1FF) {
-+			if  ((val & 0x100) == 0x100)
-+				return 0;
-+			val = __raw_readl(info->gpmc_baseaddr +
-+							GPMC_IRQ_STATUS);
-+		}
-+	}
-+
-+	return 1;
-+}
-+
-+static int __devinit omap_nand_probe(struct platform_device *pdev)
-+{
-+	struct omap_nand_info		*info;
-+	struct omap_nand_platform_data	*pdata;
-+	int				err;
-+	unsigned long 			val;
-+
-+
-+	pdata = pdev->dev.platform_data;
-+	if (pdata == NULL) {
-+		dev_err(&pdev->dev, "platform data missing\n");
-+		return -ENODEV;
-+	}
-+
-+	info = kzalloc(sizeof(struct omap_nand_info), GFP_KERNEL);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, info);
-+
-+	spin_lock_init(&info->controller.lock);
-+	init_waitqueue_head(&info->controller.wq);
-+
-+	info->pdev = pdev;
-+
-+	info->gpmc_cs		= pdata->cs;
-+	info->gpmc_baseaddr	= pdata->gpmc_baseaddr;
-+	info->gpmc_cs_baseaddr	= pdata->gpmc_cs_baseaddr;
-+
-+	info->mtd.priv		= &info->nand;
-+	info->mtd.name		= dev_name(&pdev->dev);
-+	info->mtd.owner		= THIS_MODULE;
-+
-+	err = gpmc_cs_request(info->gpmc_cs, NAND_IO_SIZE, &info->phys_base);
-+	if (err < 0) {
-+		dev_err(&pdev->dev, "Cannot request GPMC CS\n");
-+		goto out_free_info;
-+	}
-+
-+	/* Enable RD PIN Monitoring Reg */
-+	if (pdata->dev_ready) {
-+		val  = gpmc_cs_read_reg(info->gpmc_cs, GPMC_CS_CONFIG1);
-+		val |= WR_RD_PIN_MONITORING;
-+		gpmc_cs_write_reg(info->gpmc_cs, GPMC_CS_CONFIG1, val);
-+	}
-+
-+	val  = gpmc_cs_read_reg(info->gpmc_cs, GPMC_CS_CONFIG7);
-+	val &= ~(0xf << 8);
-+	val |=  (0xc & 0xf) << 8;
-+	gpmc_cs_write_reg(info->gpmc_cs, GPMC_CS_CONFIG7, val);
-+
-+	/* NAND write protect off */
-+	omap_nand_wp(&info->mtd, NAND_WP_OFF);
-+
-+	if (!request_mem_region(info->phys_base, NAND_IO_SIZE,
-+				pdev->dev.driver->name)) {
-+		err = -EBUSY;
-+		goto out_free_cs;
-+	}
-+
-+	info->nand.IO_ADDR_R = ioremap(info->phys_base, NAND_IO_SIZE);
-+	if (!info->nand.IO_ADDR_R) {
-+		err = -ENOMEM;
-+		goto out_release_mem_region;
-+	}
-+	info->nand.controller = &info->controller;
-+
-+	info->nand.IO_ADDR_W = info->nand.IO_ADDR_R;
-+	info->nand.cmd_ctrl  = omap_hwcontrol;
-+
-+	/* REVISIT:  only supports 16-bit NAND flash */
-+
-+	info->nand.read_buf   = omap_read_buf16;
-+	info->nand.write_buf  = omap_write_buf16;
-+	info->nand.verify_buf = omap_verify_buf;
-+
-+	/*
-+	 * If RDY/BSY line is connected to OMAP then use the omap ready
-+	 * funcrtion and the generic nand_wait function which reads the status
-+	 * register after monitoring the RDY/BSY line.Otherwise use a standard
-+	 * chip delay which is slightly more than tR (AC Timing) of the NAND
-+	 * device and read status register until you get a failure or success
-+	 */
-+	if (pdata->dev_ready) {
-+		info->nand.dev_ready = omap_dev_ready;
-+		info->nand.chip_delay = 0;
-+	} else {
-+		info->nand.waitfunc = omap_wait;
-+		info->nand.chip_delay = 50;
-+	}
-+
-+	info->nand.options  |= NAND_SKIP_BBTSCAN;
-+	if ((gpmc_cs_read_reg(info->gpmc_cs, GPMC_CS_CONFIG1) & 0x3000)
-+								== 0x1000)
-+		info->nand.options  |= NAND_BUSWIDTH_16;
-+
-+#ifdef CONFIG_MTD_NAND_OMAP_HWECC
-+	info->nand.ecc.bytes		= 3;
-+	info->nand.ecc.size		= 512;
-+	info->nand.ecc.calculate	= omap_calculate_ecc;
-+	info->nand.ecc.hwctl		= omap_enable_hwecc;
-+	info->nand.ecc.correct		= omap_correct_data;
-+	info->nand.ecc.mode		= NAND_ECC_HW;
-+
-+	/* init HW ECC */
-+	omap_hwecc_init(&info->mtd);
-+#else
-+	info->nand.ecc.mode = NAND_ECC_SOFT;
-+#endif
-+
-+	/* DIP switches on some boards change between 8 and 16 bit
-+	 * bus widths for flash.  Try the other width if the first try fails.
-+	 */
-+	if (nand_scan(&info->mtd, 1)) {
-+		info->nand.options ^= NAND_BUSWIDTH_16;
-+		if (nand_scan(&info->mtd, 1)) {
-+			err = -ENXIO;
-+			goto out_release_mem_region;
-+		}
-+	}
-+
-+#ifdef CONFIG_MTD_PARTITIONS
-+	err = parse_mtd_partitions(&info->mtd, part_probes, &info->parts, 0);
-+	if (err > 0)
-+		add_mtd_partitions(&info->mtd, info->parts, err);
-+	else if (pdata->parts)
-+		add_mtd_partitions(&info->mtd, pdata->parts, pdata->nr_parts);
-+	else
-+#endif
-+		add_mtd_device(&info->mtd);
-+
-+	platform_set_drvdata(pdev, &info->mtd);
-+
-+	return 0;
-+
-+out_release_mem_region:
-+	release_mem_region(info->phys_base, NAND_IO_SIZE);
-+out_free_cs:
-+	gpmc_cs_free(info->gpmc_cs);
-+out_free_info:
-+	kfree(info);
-+
-+	return err;
-+}
-+
-+static int omap_nand_remove(struct platform_device *pdev)
-+{
-+	struct mtd_info *mtd = platform_get_drvdata(pdev);
-+	struct omap_nand_info *info = mtd->priv;
-+
-+	platform_set_drvdata(pdev, NULL);
-+	/* Release NAND device, its internal structures and partitions */
-+	nand_release(&info->mtd);
-+	iounmap(info->nand.IO_ADDR_R);
-+	kfree(&info->mtd);
-+	return 0;
-+}
-+
-+static struct platform_driver omap_nand_driver = {
-+	.probe		= omap_nand_probe,
-+	.remove		= omap_nand_remove,
-+	.driver		= {
-+		.name	= DRIVER_NAME,
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init omap_nand_init(void)
-+{
-+	printk(KERN_INFO "%s driver initializing\n", DRIVER_NAME);
-+	return platform_driver_register(&omap_nand_driver);
-+}
-+
-+static void __exit omap_nand_exit(void)
-+{
-+	platform_driver_unregister(&omap_nand_driver);
-+}
-+
-+module_init(omap_nand_init);
-+module_exit(omap_nand_exit);
-+
-+MODULE_ALIAS(DRIVER_NAME);
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("Glue layer for NAND flash on TI OMAP boards");
+No. As I said, these patches were not good for me. I do not have scatterlist at all.
+I have a pre-made bio, both from filesystem and a block device. So my needs are different.
+
+Please note that the patches as last sent, were not good in my opinion, for regressing on
+some robustness and performance issues.
+
+There might be another solution for you, BTW. I'll be reposting a James Bottomley's
+patch in 1-2 days that makes blk_rq_map_kern() append the buffers it receives instead
+of only supporting a single call. So you can allocate the request and call blk_rq_map_kern()
+in a loop for-each-sg. The bad thing with this is that the biovec inside will be allocated
+multiple times, jumping from small pools to bigger ones. If only there was a way to specify
+a pre-allocated bio-size.
+
+Patch is attached for convenience
+
+> --nab
+> 
+> Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+> ---
+>  drivers/target/MCONFIG_TARGET      |    1 +
+>  drivers/target/Makefile            |    4 ++-
+>  drivers/target/target_core_pscsi.c |   49 ++++++++++++++++++++++++++++++++++-
+>  3 files changed, 51 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/target/MCONFIG_TARGET b/drivers/target/MCONFIG_TARGET
+> index 8023deb..96541c4 100644
+> --- a/drivers/target/MCONFIG_TARGET
+> +++ b/drivers/target/MCONFIG_TARGET
+> @@ -22,3 +22,4 @@ LINUX_FILEIO ?= 1
+>  LINUX_VPD_PAGE_CHECK?=1
+>  
+>  LIO_TARGET_CONFIGFS?=1
+> +LINUX_USE_NEW_BLK_MAP?=0
+> diff --git a/drivers/target/Makefile b/drivers/target/Makefile
+> index 47fef07..a19490d 100644
+> --- a/drivers/target/Makefile
+> +++ b/drivers/target/Makefile
+> @@ -73,7 +73,9 @@ endif
+>  ifeq ($(LINUX_SCSI_MEDIA_ROM), 1)
+>  EXTRA_CFLAGS += -DLINUX_SCSI_MEDIA_ROM
+>  endif
+> -
+> +ifeq ($(LINUX_USE_NEW_BLK_MAP), 1)
+> +EXTRA_CFLAGS += -DLINUX_USE_NEW_BLK_MAP
+> +endif
+>  ifeq ($(DEBUG_DEV), 1)
+>  EXTRA_CFLAGS += -DDEBUG_DEV
+>  endif
+> diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
+> index 0962563..0edcb9a 100644
+> --- a/drivers/target/target_core_pscsi.c
+> +++ b/drivers/target/target_core_pscsi.c
+> @@ -518,7 +518,12 @@ se_device_t *pscsi_create_virtdevice(
+>  				" parameter\n");
+>  		return NULL;
+>  	}
+> -
+> +#ifndef LINUX_USE_NEW_BLK_MAP
+> +	printk(KERN_ERR "Sorry, when running on >= v2.6.30 w/o blk-map branch"
+> +		" you need to use the ConfigFS file descriptor method for"
+> +		" accessing Linux/SCSI passthrough storage objects\n");
+> +	return -EINVAL;
+> +#endif
+>  	spin_lock_irq(sh->host_lock);
+>  	list_for_each_entry(sd, &sh->__devices, siblings) {
+>  		if (!(pdv->pdv_channel_id == sd->channel) ||
+> @@ -1269,6 +1274,39 @@ static inline struct bio *pscsi_get_bio(pscsi_dev_virt_t *pdv, int sg_num)
+>  #define DEBUG_PSCSI(x...)
+>  #endif
+>  
+> +#ifdef LINUX_USE_NEW_BLK_MAP
+
+As I understand, you have a full Linux tree, at the git above.
+The LINUX_USE_NEW_BLK_MAP define is not nice. And only causes more work
+for you.
+
+You leave master branch code based on current Kernel.
+
+Then at blk-map branch you apply the correct lio patches together with Tejun's
+at the proper places. After the fixture or change you are looking for. As if
+lio was in kernel and this is the proper propagation of patches.
+
+If you do this because of an out-of-tree compilation support, then here
+too, you keep two branches, easily rebase two chains of patches, and provide
+a tar-ball for the kernel in question. (git-web just does that for you
+automatically.)
+
+Because look, as long as you have LINUX_USE_NEW_BLK_MAP usage (in any branch)
+then the code is not acceptable into mainline, and is just an experiment.
+
+> +
+> +/*	pscsi_map_task_SG()
+> + *
+> + *	This function uses the new struct scatterlist-> struct request mapping
+> + *      from git.kernel.org/pub/scm/linux/kernel/tj/misc.git blk-map
+> + *
+> + *	This code is not upstream yet, so lio-core-2.6.git now has a blk-map
+> + *	branch until this happens..
+> + */
+> +int pscsi_map_task_SG(se_task_t *task)
+> +{
+> +	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
+> +	struct request *rq = pt->pscsi_req;
+> +	int ret;
+> +	/*
+> +	 * For SCF_SCSI_DATA_SG_IO_CDB, use block/blk-map.c:blk_rq_map_kern_sg()
+> +	 * for mapping struct scatterlist to struct request.  Thanks Tejun!
+> +	 */
+> +	ret = blk_rq_map_kern_sg(rq, task->task_sg, task->task_sg_num,
+> +			GFP_KERNEL);
+> +	if (ret != 0) {
+> +		printk(KERN_ERR "blk_rq_map_kern_sg() failed for rq: %p"
+> +				" task_sg: %p task_sg_num: %u\n",
+> +			rq, task->task_sg, task->task_sg_num);
+> +		return -1;
+> +	}
+> +
+> +	return task->task_sg_num;
+> +}
+> +
+> +#else
+> +
+>  /*      pscsi_map_task_SG():
+>   *
+>   *
+> @@ -1376,6 +1414,9 @@ fail:
+>  	return ret;
+>  }
+>  
+> +#endif /* LINUX_USE_NEW_BLK_MAP */
+> +
+> +
+>  /*	pscsi_map_task_non_SG():
+>   *
+>   *
+> @@ -1389,10 +1430,14 @@ int pscsi_map_task_non_SG(se_task_t *task)
+>  
+>  	if (!task->task_size)
+>  		return 0;
+> -
+> +#ifdef LINUX_USE_NEW_BLK_MAP
+
+source code is not a version management system, Use git for that
+
+> +	ret = blk_rq_map_kern(pt->pscsi_req, T_TASK(cmd)->t_task_buf,
+> +			task->task_size, GFP_KERNEL);
+> +#else
+>  	ret = blk_rq_map_kern(pdv->pdv_sd->request_queue,
+>  			pt->pscsi_req, T_TASK(cmd)->t_task_buf,
+>  			task->task_size, GFP_KERNEL);
+> +#endif
+>  	if (ret < 0) {
+>  		printk(KERN_ERR "PSCSI: blk_rq_map_kern() failed: %d\n", ret);
+>  		return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
 
 
+Cheers
+Boaz
+
+--------------010107000305090505060104
+Content-Type: text/plain;
+ name="0001-allow-blk_rq_map_kern-to-append-to-requests.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="0001-allow-blk_rq_map_kern-to-append-to-requests.patch"
+
+RnJvbSAyOTgxZjliNzNlNzA2NzlkNDczNzA2OTg0YWQxMjk1YzY3NDVjNGJkIE1vbiBTZXAg
+MTcgMDA6MDA6MDAgMjAwMQpGcm9tOiBKYW1lcyBCb3R0b21sZXkgPEphbWVzLkJvdHRvbWxl
+eUBIYW5zZW5QYXJ0bmVyc2hpcC5jb20+CkRhdGU6IE1vbiwgMTYgTWFyIDIwMDkgMTU6NDY6
+NTMgKzAyMDAKU3ViamVjdDogW1BBVENIXSBhbGxvdyBibGtfcnFfbWFwX2tlcm4gdG8gYXBw
+ZW5kIHRvIHJlcXVlc3RzCgpVc2UgYmxrX3JxX2FwcGVuZF9iaW8oKSBpbnRlcm5hbGx5IGlu
+c3RlYWQgb2YgYmxrX3JxX2Jpb19wcmVwKCkKc28gYmxrX3JxX21hcF9rZXJuIGNhbiBiZSBj
+YWxsZWQgbXVsdGlwbGUgdGltZXMsIHRvIG1hcCBtdWx0aXBsZQpidWZmZXJzLgoKVGhpcyBp
+cyBpbiB0aGUgZWZmb3J0IHRvIHVuLWV4cG9ydCBibGtfcnFfYXBwZW5kX2JpbygpCgpTaWdu
+ZWQtb2ZmLWJ5OiBCb2F6IEhhcnJvc2ggPGJoYXJyb3NoQHBhbmFzYXMuY29tPgotLS0KIGJs
+b2NrL2Jsay1tYXAuYyB8ICAgMTIgKysrKysrKysrKy0tCiAxIGZpbGVzIGNoYW5nZWQsIDEw
+IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvYmxvY2svYmxr
+LW1hcC5jIGIvYmxvY2svYmxrLW1hcC5jCmluZGV4IGYxMDM3MjkuLmFkYTM5OWUgMTAwNjQ0
+Ci0tLSBhL2Jsb2NrL2Jsay1tYXAuYworKysgYi9ibG9jay9ibGstbWFwLmMKQEAgLTI4Miw3
+ICsyODIsOCBAQCBFWFBPUlRfU1lNQk9MKGJsa19ycV91bm1hcF91c2VyKTsKICAqCiAgKiBE
+ZXNjcmlwdGlvbjoKICAqICAgIERhdGEgd2lsbCBiZSBtYXBwZWQgZGlyZWN0bHkgaWYgcG9z
+c2libGUuIE90aGVyd2lzZSBhIGJvdW5jZQotICogICAgYnVmZmVyIGlzIHVzZWQuCisgKiAg
+ICBidWZmZXIgaXMgdXNlZC4gQ2FuIGJlIGNhbGxlZCBtdWx0cGxlIHRpbWVzIHRvIGFwcGVu
+ZCBtdWx0cGxlCisgKiAgICBidWZmZXJzLgogICovCiBpbnQgYmxrX3JxX21hcF9rZXJuKHN0
+cnVjdCByZXF1ZXN0X3F1ZXVlICpxLCBzdHJ1Y3QgcmVxdWVzdCAqcnEsIHZvaWQgKmtidWYs
+CiAJCSAgICB1bnNpZ25lZCBpbnQgbGVuLCBnZnBfdCBnZnBfbWFzaykKQEAgLTI5MCw2ICsy
+OTEsNyBAQCBpbnQgYmxrX3JxX21hcF9rZXJuKHN0cnVjdCByZXF1ZXN0X3F1ZXVlICpxLCBz
+dHJ1Y3QgcmVxdWVzdCAqcnEsIHZvaWQgKmtidWYsCiAJaW50IHJlYWRpbmcgPSBycV9kYXRh
+X2RpcihycSkgPT0gUkVBRDsKIAlpbnQgZG9fY29weSA9IDA7CiAJc3RydWN0IGJpbyAqYmlv
+OworCWludCByZXQ7CiAKIAlpZiAobGVuID4gKHEtPm1heF9od19zZWN0b3JzIDw8IDkpKQog
+CQlyZXR1cm4gLUVJTlZBTDsKQEAgLTMxMSw3ICszMTMsMTMgQEAgaW50IGJsa19ycV9tYXBf
+a2VybihzdHJ1Y3QgcmVxdWVzdF9xdWV1ZSAqcSwgc3RydWN0IHJlcXVlc3QgKnJxLCB2b2lk
+ICprYnVmLAogCWlmIChkb19jb3B5KQogCQlycS0+Y21kX2ZsYWdzIHw9IFJFUV9DT1BZX1VT
+RVI7CiAKLQlibGtfcnFfYmlvX3ByZXAocSwgcnEsIGJpbyk7CisJcmV0ID0gYmxrX3JxX2Fw
+cGVuZF9iaW8ocSwgcnEsIGJpbyk7CisJaWYgKHVubGlrZWx5KHJldCkpIHsKKwkJLyogcmVx
+dWVzdCBpcyB0b28gYmlnICovCisJCWJpb19wdXQoYmlvKTsKKwkJcmV0dXJuIHJldDsKKwl9
+CisKIAlibGtfcXVldWVfYm91bmNlKHEsICZycS0+YmlvKTsKIAlycS0+YnVmZmVyID0gcnEt
+PmRhdGEgPSBOVUxMOwogCXJldHVybiAwOwotLSAKMS42LjIuMQoK
+--------------010107000305090505060104--
