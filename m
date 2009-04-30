@@ -1,92 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763583AbZD3PMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932171AbZD3POq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763583AbZD3PMX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 11:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932122AbZD3PLr
+	id S932171AbZD3POq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 11:14:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762324AbZD3POe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 11:11:47 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:60758 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932088AbZD3PLp convert rfc822-to-8bit (ORCPT
+	Thu, 30 Apr 2009 11:14:34 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:44026 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757801AbZD3POc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 11:11:45 -0400
+	Thu, 30 Apr 2009 11:14:32 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] x86/pci: do assign root bus res if _CRS is used
+Date: Thu, 30 Apr 2009 09:14:21 -0600
+User-Agent: KMail/1.9.10
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Gary Hade <garyhade@us.ibm.com>,
+       Alex Chiang <achiang@hp.com>, linux-acpi@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>
+References: <49ED22EC.2040204@kernel.org> <86802c440904271907r335f7834p8f03aa13bc6515e8@mail.gmail.com> <200904291708.52830.bjorn.helgaas@hp.com>
+In-Reply-To: <200904291708.52830.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-In-Reply-To: <f73f7ab80904300804j1f847b70ha0fe3cda07249110@mail.gmail.com>
-References: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com> 
-	<625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com> 
-	<f73f7ab80904201710m57472291yf7ff86760977b8e8@mail.gmail.com> 
-	<1240388476.17445.10.camel@pasglop> <f73f7ab80904300804j1f847b70ha0fe3cda07249110@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 30 Apr 2009 09:11:24 -0600
-Message-ID: <fa686aa40904300811u41e94972offfd75520636bb02@mail.gmail.com>
-Subject: Re: Porting the ibm_newemac driver to use phylib (and other PHY/MAC 
-	questions)
-To: Kyle Moffett <kyle@moffetthome.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       netdev <netdev@vger.kernel.org>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200904300914.22772.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 9:04 AM, Kyle Moffett <kyle@moffetthome.net> wrote:
-> On Wed, Apr 22, 2009 at 4:21 AM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
->> On Mon, 2009-04-20 at 20:10 -0400, Kyle Moffett wrote:
->>> > IIRC, Ben had some issues with how phylib and the EMAC would need to
->>> > interact.  Not sure if he has those written down somewhere or not.
->>> > (CC'd).
->>>
->>> Hmm, yeah, I'd be interested to see those.  There's enough similar
->>> between phylib and the EMAC and sungem drivers that I'm considering a
->>> series of somewhat-mechanical patches to make EMAC and sungem use the
->>> "struct phy_device" and "struct mii_bus" from phylib, possibly
->>> abstracting out some helper functions along the way.
->>
->> Yup, emac and sungem predate phylib.
->>
->> I had a quick look at what it would take to port at least emac over, the
->> main issue was that I want to be able to sleep (ie, take a mutex) in my
->> mdio read/write functions, and back then, phylib wouldn't let me do that
->> due to spinlock and timer/softirq usage.
->
-> Ok, I've made some progress in the port, but right now I'm trying to
-> puzzle out what the "gpcs" bits in the code are.  From the few
-> publicly available docs and some mailing list posts, the gpcs address
-> appears to be some kind of integrated virtual PHY used when 460GT-ish
-> chips are communicating via an SGMII bus.  My current plan of action
-> is to separate the "gpcs" out into a separate PHY device controlled by
-> the emac code.
->
-> I'm also curious about the intent of the "mdio_instance" pointer (IE:
-> the "mdio-device" property).  Is that used when all the PHY devices
-> are attached to the MDIO bus of only one of the (multiple) emac
-> devices?  Or is that for when two emac chipsets are connected to the
-> same MDIO bus wire?  (or both?)  What keeps the emac_instance pointed
-> to by the "mdio_instance" from going away while the other emac chipset
-> is using it?
->
-> In either case, I plan to have the device actually holding the MDIO
-> bus run the mdiobus_alloc() and mdiobus_register() functions, then the
-> other emac instance will simply take a reference to that MDIO bus
-> (which would also pin down the emac instance that owns it).
+On Wednesday 29 April 2009 05:08:51 pm Bjorn Helgaas wrote:
+> On Monday 27 April 2009 08:07:01 pm Yinghai Lu wrote:
+> > On Mon, Apr 27, 2009 at 3:24 PM, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> > > On Monday 27 April 2009 03:00:16 pm Yinghai Lu wrote:
+> > >> On Mon, Apr 27, 2009 at 1:39 PM, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> > >> >> other system may have broken _CRS.
+> > >> >
+> > >> > Do you have examples of problems here, or are you just worried that
+> > >> > there *may* be problems?
+> > >> one system with three chains... with pci=use_crs
+> > >> [    9.365669] pci_bus 0000:00: resource 0 io:  [0x00-0x3af]
+> > >> [    9.371065] pci_bus 0000:00: resource 1 io:  [0x3e0-0xcf7]
+> > >> [    9.376551] pci_bus 0000:00: resource 2 io:  [0x3b0-0x3bb]
+> > >> [    9.382028] pci_bus 0000:00: resource 3 io:  [0x3c0-0x3df]
+> > >> [    9.387513] pci_bus 0000:00: resource 4 io:  [0xd00-0xefff]
+> > >> [    9.393077] pci_bus 0000:00: resource 5 mem: [0x0a0000-0x0bffff]
+> > >> [    9.399084] pci_bus 0000:00: resource 6 mem: [0x0d0000-0x0dffff]
+> > >> [    9.405089] pci_bus 0000:00: resource 7 mem: [0xdd000000-0xdfffffff]
+> > >> [    9.505332] pci_bus 0000:40: resource 0 io:  [0x5000-0x8fff]
+> > >> [    9.510991] pci_bus 0000:40: resource 1 mem: [0xdb000000-0xdcffffff]
+> > >> [    9.553378] pci_bus 0000:80: resource 0 io:  [0x1000-0x4fff]
+> > >> [    9.559036] pci_bus 0000:80: resource 1 mem: [0xda000000-0xdaffffff]
+> > >>
+> > >> without that: amd_bus.c will read that from pci conf space
+> > >> [    9.310965] pci_bus 0000:00: resource 0 io:  [0x9000-0xefff]
+> > >> [    9.316621] pci_bus 0000:00: resource 1 io:  [0x00-0xfff]
+> > >> [    9.322020] pci_bus 0000:00: resource 2 mem: [0xdd000000-0xdfffffff]
+> > >> [    9.328373] pci_bus 0000:00: resource 3 mem: [0x0a0000-0x0bffff]
+> > >> [    9.334378] pci_bus 0000:00: resource 4 mem: [0xc0000000-0xd9ffffff]
+> > >> [    9.340731] pci_bus 0000:00: resource 5 mem: [0xf0000000-0xffffffff]
+> > >> [    9.347084] pci_bus 0000:00: resource 6 mem: [0x840000000-0xfcffffffff]
+> > >> [    9.444440] pci_bus 0000:40: resource 0 io:  [0x5000-0x8fff]
+> > >> [    9.450099] pci_bus 0000:40: resource 1 io:  [0xf000-0xffff]
+> > >> [    9.455757] pci_bus 0000:40: resource 2 mem: [0xdb000000-0xdcffffff]
+> > >> [    9.498118] pci_bus 0000:80: resource 0 io:  [0x1000-0x4fff]
+> > >> [    9.503777] pci_bus 0000:80: resource 1 mem: [0xda000000-0xdaffffff]
+> > >
+> > > It's interesting that many of the differences involve the legacy
+> > > VGA I/O ports in the 0x3b0-0x3df range.  My guess is that the AMD
+> > > chipset has special routing for those ranges.  If it didn't, it
+> > > would be difficult to support VGA devices under the other two
+> > > root bridges.  Maybe that VGA routing doesn't show up in the
+> > > bridge's PCI config space.  Can you tell from the ASL whether the
+> > > root bridge _SRS/_PRS/_CRS methods handle the VGA ranges specially?
+> > >
+> > > One of the differences is that PCI config space shows a 64-bit region
+> > > (bus 0000:00 mem 0x840000000-0xfcffffffff) that doesn't show up in
+> > > the _CRS info.  But the _CRS parsing depends on acpi_resource_to_address64(),
+> > > which doesn't know about the ACPI_RESOURCE_TYPE_EXTENDED_ADDRESS64
+> > > descriptors added in ACPI 3.0.  So this difference could be a result
+> > > of that Linux bug.  It'd be interesting to see whether the test patch
+> > > below makes a difference.
+> > will check it.
+> 
+> Did you learn anything about this?  I have a PNPACPI patch to parse
+> these new descriptors, but I don't have any machines where I can test
+> it.  If your box uses that descriptor, it'd be nice to test the patch
+> there.
 
-Just a heads up Kyle; there are changes queued in the netdev tree
-which add OF helpers for MDIO bus drivers and MAC drivers.  See here:
+Oops, I should have just attached the PNPACPI patch in case anybody
+has a box where it can be tested.  One way to test it would be to
+compare the output of "grep . /sys/devices/pnp*/*/{id,resources,options}"
+before and after the patch.  If a BIOS uses the new descriptors, we
+should see some new resources after the patch.
 
-http://git.kernel.org/?p=linux/kernel/git/davem/net-next-2.6.git;a=commit;h=8bc487d150b939e69830c39322df4ee486efe381
 
-and here is an example of a driver change:
+PNPACPI: parse Extended Address Space Descriptors
 
-http://git.kernel.org/?p=linux/kernel/git/davem/net-next-2.6.git;a=commit;h=1dd2d06c0459a2f1bffc56765e3cc57427818867
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Cheers,
-g.
+Extended Address Space Descriptors are new in ACPI 3.0 and allow the
+BIOS to communicate device resource cacheability attributes (write-back,
+write-through, uncacheable, etc) to the OS.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Previously, PNPACPI ignored these descriptors, so if a BIOS used them,
+a device could be responding at addresses the OS doesn't know about.
+This patch adds support for these descriptors in _CRS and _PRS.  We
+don't attempt to encode them for _SRS (just like we don't attempt to
+encode the existing 16-, 32-, and 64-bit Address Space Descriptors).
+
+Unfortunately, I don't have a way to test this.
+
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+---
+ drivers/pnp/pnpacpi/rsparser.c |   45 ++++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 43 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/pnp/pnpacpi/rsparser.c b/drivers/pnp/pnpacpi/rsparser.c
+index adf1785..0864242 100644
+--- a/drivers/pnp/pnpacpi/rsparser.c
++++ b/drivers/pnp/pnpacpi/rsparser.c
+@@ -287,6 +287,25 @@ static void pnpacpi_parse_allocated_address_space(struct pnp_dev *dev,
+ 				ACPI_DECODE_16);
+ }
+ 
++static void pnpacpi_parse_allocated_ext_address_space(struct pnp_dev *dev,
++						      struct acpi_resource *res)
++{
++	struct acpi_resource_extended_address64 *p = &res->data.ext_address64;
++
++	if (p->producer_consumer == ACPI_PRODUCER)
++		return;
++
++	if (p->resource_type == ACPI_MEMORY_RANGE)
++		pnpacpi_parse_allocated_memresource(dev,
++			p->minimum, p->address_length,
++			p->info.mem.write_protect);
++	else if (p->resource_type == ACPI_IO_RANGE)
++		pnpacpi_parse_allocated_ioresource(dev,
++			p->minimum, p->address_length,
++			p->granularity == 0xfff ? ACPI_DECODE_10 :
++				ACPI_DECODE_16);
++}
++
+ static acpi_status pnpacpi_allocated_resource(struct acpi_resource *res,
+ 					      void *data)
+ {
+@@ -400,8 +419,7 @@ static acpi_status pnpacpi_allocated_resource(struct acpi_resource *res,
+ 		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_EXTENDED_ADDRESS64:
+-		if (res->data.ext_address64.producer_consumer == ACPI_PRODUCER)
+-			return AE_OK;
++		pnpacpi_parse_allocated_ext_address_space(dev, res);
+ 		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_EXTENDED_IRQ:
+@@ -630,6 +648,28 @@ static __init void pnpacpi_parse_address_option(struct pnp_dev *dev,
+ 					   IORESOURCE_IO_FIXED);
+ }
+ 
++static __init void pnpacpi_parse_ext_address_option(struct pnp_dev *dev,
++						    unsigned int option_flags,
++						    struct acpi_resource *r)
++{
++	struct acpi_resource_extended_address64 *p = &r->data.ext_address64;
++	unsigned char flags = 0;
++
++	if (p->address_length == 0)
++		return;
++
++	if (p->resource_type == ACPI_MEMORY_RANGE) {
++		if (p->info.mem.write_protect == ACPI_READ_WRITE_MEMORY)
++			flags = IORESOURCE_MEM_WRITEABLE;
++		pnp_register_mem_resource(dev, option_flags, p->minimum,
++					  p->minimum, 0, p->address_length,
++					  flags);
++	} else if (p->resource_type == ACPI_IO_RANGE)
++		pnp_register_port_resource(dev, option_flags, p->minimum,
++					   p->minimum, 0, p->address_length,
++					   IORESOURCE_IO_FIXED);
++}
++
+ struct acpipnp_parse_option_s {
+ 	struct pnp_dev *dev;
+ 	unsigned int option_flags;
+@@ -711,6 +751,7 @@ static __init acpi_status pnpacpi_option_resource(struct acpi_resource *res,
+ 		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_EXTENDED_ADDRESS64:
++		pnpacpi_parse_ext_address_option(dev, option_flags, res);
+ 		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_EXTENDED_IRQ:
