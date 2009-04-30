@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764653AbZD3RJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765423AbZD3RQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764653AbZD3RJA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764194AbZD3RHS
+	id S1765423AbZD3RQq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764520AbZD3RHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:18 -0400
-Received: from kroah.org ([198.145.64.141]:39131 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:07:39 -0400
+Received: from kroah.org ([198.145.64.141]:56313 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755995AbZD3RHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:14 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:39 2009
-Message-Id: <20090430165738.929323196@mini.kroah.org>
+	id S1764203AbZD3RHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:30 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:41 2009
+Message-Id: <20090430165741.413883809@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:55:53 -0700
+Date: Thu, 30 Apr 2009 09:56:10 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jesper Nilsson <jesper.nilsson@axis.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 04/88] ipv6: Plug sk_buff leak in ipv6_rcv (net/ipv6/ip6_input.c)
+       alan@lxorguk.ukuu.org.uk, Michael K Johnson <johnsonm@rpath.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 21/88] x86, setup: mark %esi as clobbered in E820 BIOS call
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=ipv6-plug-sk_buff-leak-in-ipv6_rcv.patch
+Content-Disposition: inline; filename=0011-x86-setup-mark-esi-as-clobbered-in-E820-BIOS-call.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,53 +39,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jesper Nilsson <jesper.nilsson@axis.com>
+From: Michael K. Johnson <johnsonm@rpath.com>
 
-[ Upstream commit 71f6f6dfdf7c7a67462386d9ea05c1095a89c555 ]
+upstream commit: 01522df346f846906eaf6ca57148641476209909
 
-Commit 778d80be52699596bf70e0eb0761cf5e1e46088d
-(ipv6: Add disable_ipv6 sysctl to disable IPv6 operaion on specific interface)
-seems to have introduced a leak of sk_buff's for ipv6 traffic,
-at least in some configurations where idev is NULL, or when ipv6
-is disabled via sysctl.
+Jordan Hargrave diagnosed a BIOS clobbering %esi in the E820 call.
+That particular BIOS has been fixed, but there is a possibility that
+this is responsible for other occasional reports of early boot
+failure, and it does not hurt to add %esi to the clobbers.
 
-The problem is that if the first condition of the if-statement
-returns non-NULL, it returns an skb with only one reference,
-and when the other conditions apply, execution jumps to the "out"
-label, which does not call kfree_skb for it.
+-stable candidate patch.
 
-To plug this leak, change to use the "drop" label instead.
-(this relies on it being ok to call kfree_skb on NULL)
-This also allows us to avoid calling rcu_read_unlock here,
-and removes the only user of the "out" label.
-
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Cc: Justin Forbes <jmforbes@linuxtx.org>
+Signed-off-by: Michael K Johnson <johnsonm@rpath.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- net/ipv6/ip6_input.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ arch/x86/boot/memory.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
---- a/net/ipv6/ip6_input.c
-+++ b/net/ipv6/ip6_input.c
-@@ -75,8 +75,7 @@ int ipv6_rcv(struct sk_buff *skb, struct
- 	if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL ||
- 	    !idev || unlikely(idev->cnf.disable_ipv6)) {
- 		IP6_INC_STATS_BH(net, idev, IPSTATS_MIB_INDISCARDS);
--		rcu_read_unlock();
--		goto out;
-+		goto drop;
- 	}
+--- a/arch/x86/boot/memory.c
++++ b/arch/x86/boot/memory.c
+@@ -27,13 +27,14 @@ static int detect_memory_e820(void)
+ 	do {
+ 		size = sizeof(struct e820entry);
  
- 	memset(IP6CB(skb), 0, sizeof(struct inet6_skb_parm));
-@@ -147,7 +146,6 @@ err:
- drop:
- 	rcu_read_unlock();
- 	kfree_skb(skb);
--out:
- 	return 0;
- }
+-		/* Important: %edx is clobbered by some BIOSes,
+-		   so it must be either used for the error output
++		/* Important: %edx and %esi are clobbered by some BIOSes,
++		   so they must be either used for the error output
+ 		   or explicitly marked clobbered. */
+ 		asm("int $0x15; setc %0"
+ 		    : "=d" (err), "+b" (next), "=a" (id), "+c" (size),
+ 		      "=m" (*desc)
+-		    : "D" (desc), "d" (SMAP), "a" (0xe820));
++		    : "D" (desc), "d" (SMAP), "a" (0xe820)
++		    : "esi");
  
+ 		/* BIOSes which terminate the chain with CF = 1 as opposed
+ 		   to %ebx = 0 don't always report the SMAP signature on
 
 
