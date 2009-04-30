@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbZD3TnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759494AbZD3Tn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757959AbZD3TnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 15:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbZD3TnH
+	id S1759494AbZD3Tn6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 15:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbZD3Tnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 15:43:07 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:61154 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750981AbZD3TnE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 15:43:04 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "mark skuse" <mskuse@iname.com>
-Subject: Re: difference between ppc and powerpc branches....
-Date: Thu, 30 Apr 2009 21:42:56 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <20090430172803.A3EC41BF3DA@ws1-10.us4.outblaze.com>
-In-Reply-To: <20090430172803.A3EC41BF3DA@ws1-10.us4.outblaze.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 30 Apr 2009 15:43:49 -0400
+Received: from thunk.org ([69.25.196.29]:54841 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750797AbZD3Tns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 15:43:48 -0400
+Date: Thu, 30 Apr 2009 15:43:39 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [RFC PATCH 0/2] A new way of attaching information to inodes
+Message-ID: <20090430194339.GE19276@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Christoph Hellwig <hch@infradead.org>
+References: <1241112678-6615-1-git-send-email-jack@suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904302142.57124.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/7uz3CZaNQsKFYjTd41EBiRn24v8UYOrormsJ
- u+rK4eZ2olZAFcqyI5u0qAEPWSBi5ILmYh4oNvs1xv+0g3Jn5k
- e2It3RkOjS+aED1DuGiHA==
+In-Reply-To: <1241112678-6615-1-git-send-email-jack@suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 30 April 2009, mark skuse wrote:
-> Sorry if this is a stupid question.. but could someone please
-> give a brief description of the difference between the ppc and
-> powerpc branches?  Spent a fair amount of time (not enough?)
-> digging around but couldn't really find a clear answer...   
+On Thu, Apr 30, 2009 at 07:31:16PM +0200, Jan Kara wrote:
+> 
+>   currently our VFS inode structure is quite big. It contains quite some
+> members that are useful only in some cases (e.g. device pointers and list head
+> used only when the inode represents a block/character device, quota pointers
+> used only when the filesystem actually supports quota, etc.). And it would
+> be helpful to add some more so that we can handle ACL's in generic code, or
+> we can do some kind of block reservation for mmaped writes, and there are
+> other cases.
 
-Very easy: ppc was the old name for the now discontinued 32-bit
-PowerPC architecture, powerpc is the name for the merged 32 and
-64 bit PowerPC architectures.
+One of the things on my "round tuit" list was separating out those
+inode fields which are only needed when the inode is in use, and
+separating them out into a separate data structure, so that the 90+%
+of the inodes which are just being cached, and are not active, don't
+burn space in struct inode.  In particular, we can probably move out
+i_mutex, i_alloc_sem, i_size_seqcount, i_flock, and perhaps others.
 
-All recent kernel versions only have powerpc, and no active
-development had gone into the ppc tree for a few years before.
-The only reason for keeping ppc around was that some platforms
-had not yet been ported to powerpc.
+The same applies for the filesystem-specific portion of the in-core
+inode; and for some filesystems there might be even more opportunity
+for savings there.
 
-	Arnd <><
+Just a thought,
+
+						- Ted
