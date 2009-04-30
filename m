@@ -1,62 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbZD3G7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbZD3HEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755600AbZD3G7W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 02:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbZD3G7N
+	id S1754356AbZD3HEq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 03:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZD3HEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 02:59:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34170 "EHLO mx3.mail.elte.hu"
+	Thu, 30 Apr 2009 03:04:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50418 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750995AbZD3G7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 02:59:12 -0400
-Date: Thu, 30 Apr 2009 08:58:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Robert Richter <robert.richter@amd.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf_counter: powerpc: allow use of limited-function
-	counters
-Message-ID: <20090430065856.GA16737@elte.hu>
-References: <18936.19035.163066.892208@cargo.ozlabs.ibm.com> <20090429130915.GA23563@elte.hu> <18936.56613.479043.380867@cargo.ozlabs.ibm.com>
+	id S1751112AbZD3HEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 03:04:36 -0400
+Date: Thu, 30 Apr 2009 07:03:29 GMT
+From: tip-bot for Andrew Morton <akpm@linux-foundation.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, eparis@redhat.com,
+       viro@zeniv.linux.org.uk, akpm@linux-foundation.org, hch@lst.de,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, eparis@redhat.com, a.p.zijlstra@chello.nl,
+       viro@zeniv.linux.org.uk, hch@lst.de, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <200904292318.n3TNIsi6028340@imap1.linux-foundation.org>
+References: <200904292318.n3TNIsi6028340@imap1.linux-foundation.org>
+Subject: [tip:core/locking] mutex: add atomic_dec_and_mutex_lock(), fix
+Message-ID: <tip-a511e3f968c462a55ef58697257f5347c73d306e@git.kernel.org>
+Git-Commit-ID: a511e3f968c462a55ef58697257f5347c73d306e
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <18936.56613.479043.380867@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Apr 2009 07:03:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  a511e3f968c462a55ef58697257f5347c73d306e
+Gitweb:     http://git.kernel.org/tip/a511e3f968c462a55ef58697257f5347c73d306e
+Author:     Andrew Morton <akpm@linux-foundation.org>
+AuthorDate: Wed, 29 Apr 2009 15:59:58 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 30 Apr 2009 09:01:34 +0200
 
-* Paul Mackerras <paulus@samba.org> wrote:
+mutex: add atomic_dec_and_mutex_lock(), fix
 
-> Ingo Molnar wrote:
-> 
-> > [ Note, i saw some fuzz in those files. It applied fine but maybe 
-> >   you have some local changes in them that are not in 
-> >   tip:perfcounters/core yet? You might want to double check that. ]
-> 
-> I think it was just Robert Richter's changes that caused the fuzz. 
-> The end result seems to be OK.
+include/linux/mutex.h:136: warning: 'mutex_lock' declared inline after being called
+ include/linux/mutex.h:136: warning: previous declaration of 'mutex_lock' was here
 
-ah, indeed - the rename:
+uninline it.
 
-  4aeb0b4: perfcounters: rename struct hw_perf_counter_ops into struct pmu
+[ Impact: clean up and uninline, address compiler warning ]
 
-changed context lines in your patch causing the fuzz. The mechanic 
-rename changed quite a bit of stuff in the powerpc driver - we were 
-lucky that your rather large patch still merged cleanly.
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Eric Paris <eparis@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <200904292318.n3TNIsi6028340@imap1.linux-foundation.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Btw, if in the future such renames cause problems for any pending 
-patch of yours we can always pick up your patches first and then 
-re-do the rename.
 
-	Ingo
+---
+ include/linux/mutex.h |   24 +-----------------------
+ kernel/mutex.c        |   25 ++++++++++++++++++++++++-
+ 2 files changed, 25 insertions(+), 24 deletions(-)
+
+diff --git a/include/linux/mutex.h b/include/linux/mutex.h
+index 93054fc..878cab4 100644
+--- a/include/linux/mutex.h
++++ b/include/linux/mutex.h
+@@ -150,28 +150,6 @@ extern int __must_check mutex_lock_killable(struct mutex *lock);
+  */
+ extern int mutex_trylock(struct mutex *lock);
+ extern void mutex_unlock(struct mutex *lock);
+-
+-/**
+- * atomic_dec_and_mutex_lock - return holding mutex if we dec to 0
+- * @cnt: the atomic which we are to dec
+- * @lock: the mutex to return holding if we dec to 0
+- *
+- * return true and hold lock if we dec to 0, return false otherwise
+- */
+-static inline int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock)
+-{
+-	/* dec if we can't possibly hit 0 */
+-	if (atomic_add_unless(cnt, -1, 1))
+-		return 0;
+-	/* we might hit 0, so take the lock */
+-	mutex_lock(lock);
+-	if (!atomic_dec_and_test(cnt)) {
+-		/* when we actually did the dec, we didn't hit 0 */
+-		mutex_unlock(lock);
+-		return 0;
+-	}
+-	/* we hit 0, and we hold the lock */
+-	return 1;
+-}
++extern int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock);
+ 
+ #endif
+diff --git a/kernel/mutex.c b/kernel/mutex.c
+index 507cf2b..e2d25e9 100644
+--- a/kernel/mutex.c
++++ b/kernel/mutex.c
+@@ -471,5 +471,28 @@ int __sched mutex_trylock(struct mutex *lock)
+ 
+ 	return ret;
+ }
+-
+ EXPORT_SYMBOL(mutex_trylock);
++
++/**
++ * atomic_dec_and_mutex_lock - return holding mutex if we dec to 0
++ * @cnt: the atomic which we are to dec
++ * @lock: the mutex to return holding if we dec to 0
++ *
++ * return true and hold lock if we dec to 0, return false otherwise
++ */
++int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock)
++{
++	/* dec if we can't possibly hit 0 */
++	if (atomic_add_unless(cnt, -1, 1))
++		return 0;
++	/* we might hit 0, so take the lock */
++	mutex_lock(lock);
++	if (!atomic_dec_and_test(cnt)) {
++		/* when we actually did the dec, we didn't hit 0 */
++		mutex_unlock(lock);
++		return 0;
++	}
++	/* we hit 0, and we hold the lock */
++	return 1;
++}
++EXPORT_SYMBOL(atomic_dec_and_mutex_lock);
