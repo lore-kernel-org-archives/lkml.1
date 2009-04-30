@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932342AbZEAAUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933134AbZEAAVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932342AbZEAAUz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 20:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765418AbZEAADe
+	id S933134AbZEAAVv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 20:21:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765430AbZEAADf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 20:03:34 -0400
+	Thu, 30 Apr 2009 20:03:35 -0400
 Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:61966 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765178AbZEAADa (ORCPT
+	by vger.kernel.org with ESMTP id S1765335AbZEAADb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 20:03:30 -0400
+	Thu, 30 Apr 2009 20:03:31 -0400
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
@@ -17,14 +17,18 @@ Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
        Denys Vlasenko <vda.linux@googlemail.com>,
        Jeff Arnold <jbarnold@MIT.EDU>, Paul Mundt <lethal@linux-sh.org>,
        Tim Abbott <tabbott@MIT.EDU>, linux-sh@vger.kernel.org
-Subject: [PATCH 3/7] sh: use NOSAVE_DATA macro for .data.nosave section.
-Date: Thu, 30 Apr 2009 19:57:59 -0400
-Message-Id: <1241135883-9766-4-git-send-email-tabbott@mit.edu>
+Subject: [PATCH 7/7] sh: convert to new generic read_mostly support.
+Date: Thu, 30 Apr 2009 19:58:03 -0400
+Message-Id: <1241135883-9766-8-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1241135883-9766-3-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1241135883-9766-7-git-send-email-tabbott@mit.edu>
 References: <1241135883-9766-1-git-send-email-tabbott@mit.edu>
  <1241135883-9766-2-git-send-email-tabbott@mit.edu>
  <1241135883-9766-3-git-send-email-tabbott@mit.edu>
+ <1241135883-9766-4-git-send-email-tabbott@mit.edu>
+ <1241135883-9766-5-git-send-email-tabbott@mit.edu>
+ <1241135883-9766-6-git-send-email-tabbott@mit.edu>
+ <1241135883-9766-7-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,46 +39,37 @@ Signed-off-by: Tim Abbott <tabbott@mit.edu>
 Cc: Paul Mundt <lethal@linux-sh.org>
 Cc: linux-sh@vger.kernel.org
 ---
- arch/sh/kernel/vmlinux_32.lds.S |    7 +------
- arch/sh/kernel/vmlinux_64.lds.S |    7 +------
- 2 files changed, 2 insertions(+), 12 deletions(-)
+ arch/sh/Kconfig             |    3 +++
+ arch/sh/include/asm/cache.h |    2 --
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/sh/kernel/vmlinux_32.lds.S b/arch/sh/kernel/vmlinux_32.lds.S
-index 325af0b..5f5e190 100644
---- a/arch/sh/kernel/vmlinux_32.lds.S
-+++ b/arch/sh/kernel/vmlinux_32.lds.S
-@@ -70,12 +70,7 @@ SECTIONS
- 		*(.data.read_mostly)
+diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
+index e7390dd..efafd78 100644
+--- a/arch/sh/Kconfig
++++ b/arch/sh/Kconfig
+@@ -137,6 +137,9 @@ config ARCH_HAS_DEFAULT_IDLE
+ config IO_TRAPPED
+ 	bool
  
- 		PAGE_ALIGNED_DATA
--
--		__nosave_begin = .;
--		*(.data.nosave)
--		. = ALIGN(PAGE_SIZE);
--		__nosave_end = .;
--
-+		NOSAVE_DATA
- 		DATA_DATA
- 		CONSTRUCTORS
- 	}
-diff --git a/arch/sh/kernel/vmlinux_64.lds.S b/arch/sh/kernel/vmlinux_64.lds.S
-index b222700..9cccb3d 100644
---- a/arch/sh/kernel/vmlinux_64.lds.S
-+++ b/arch/sh/kernel/vmlinux_64.lds.S
-@@ -79,12 +79,7 @@ SECTIONS
- 		*(.data.read_mostly)
++config HAVE_READ_MOSTLY_DATA
++	def_bool y
++
+ source "init/Kconfig"
  
- 		PAGE_ALIGNED_DATA
+ source "kernel/Kconfig.freezer"
+diff --git a/arch/sh/include/asm/cache.h b/arch/sh/include/asm/cache.h
+index 02df18e..0d44279 100644
+--- a/arch/sh/include/asm/cache.h
++++ b/arch/sh/include/asm/cache.h
+@@ -14,8 +14,6 @@
+ 
+ #define L1_CACHE_BYTES		(1 << L1_CACHE_SHIFT)
+ 
+-#define __read_mostly __attribute__((__section__(".data.read_mostly")))
 -
--		__nosave_begin = .;
--		*(.data.nosave)
--		. = ALIGN(PAGE_SIZE);
--		__nosave_end = .;
--
-+		NOSAVE_DATA
- 		DATA_DATA
- 		CONSTRUCTORS
- 	}
+ #ifndef __ASSEMBLY__
+ struct cache_info {
+ 	unsigned int ways;		/* Number of cache ways */
 -- 
 1.6.2.1
 
