@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765437AbZD3RWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765757AbZD3RVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765437AbZD3RWI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:22:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764603AbZD3RHu
+	id S1765757AbZD3RVo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763428AbZD3RHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:50 -0400
-Received: from kroah.org ([198.145.64.141]:56384 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:07:49 -0400
+Received: from kroah.org ([198.145.64.141]:56378 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764567AbZD3RHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:42 -0400
+	id S1764560AbZD3RHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:41 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:43 2009
-Message-Id: <20090430165743.201057327@mini.kroah.org>
+Message-Id: <20090430165743.048913756@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:22 -0700
+Date: Thu, 30 Apr 2009 09:56:21 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mike Christie <michaelc@cs.wisc.edu>,
+       alan@lxorguk.ukuu.org.uk, Jean Delvare <jdelvare@suse.de>,
+       Mike Christie <michaelc@cs.wisc.edu>,
        James Bottomley <James.Bottomley@HansenPartnership.com>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 33/88] SCSI: libiscsi: fix iscsi pool error path again
+Subject: [patch 32/88] SCSI: libiscsi: fix iscsi pool error path
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=0053-SCSI-libiscsi-fix-iscsi-pool-error-path.patch
+Content-Disposition: inline; filename=0052-SCSI-libiscsi-fix-iscsi-pool-error-path.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -42,45 +43,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jean Delvare <jdelvare@suse.de>
 
-upstream commit: fd6e1c14b73dbab89cb76af895d5612e4a8b5522
+upstream commit: f474a37bc48667595b5653a983b635c95ed82a3b
 
-Le lundi 30 mars 2009, Chris Wright a écrit :
-> q->queue could be ERR_PTR(-ENOMEM) which will break unwinding
-> on error.  Make iscsi_pool_free more defensive.
->
+Memory freeing in iscsi_pool_free() looks wrong to me. Either q->pool
+can be NULL and this should be tested before dereferencing it, or it
+can't be NULL and it shouldn't be tested at all. As far as I can see,
+the only case where q->pool is NULL is on early error in
+iscsi_pool_init(). One possible way to fix the bug is thus to not
+call iscsi_pool_free() in this case (nothing needs to be freed anyway)
+and then we can get rid of the q->pool check.
 
-Making the freeing of q->queue dependent on q->pool being set looks
-really weird (although it is correct at the moment. But this seems
-to be fixable in a much simpler way.
-
-With the benefit that only the error case is slowed down. In both
-cases we have a problem if q->queue contains an error value but it's
-not -ENOMEM. Apparently this can't happen today, but it doesn't feel
-right to assume this will always be true. Maybe it's the right time
-to fix this as well.
-
+Signed-off-by: Jean Delvare <jdelvare@suse.de>
 Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
 Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-[chrisw: this is a fixlet to f474a37b, also in -stable]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/scsi/libiscsi.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/scsi/libiscsi.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
 --- a/drivers/scsi/libiscsi.c
 +++ b/drivers/scsi/libiscsi.c
-@@ -1866,8 +1866,10 @@ iscsi_pool_init(struct iscsi_pool *q, in
+@@ -1862,7 +1862,7 @@ iscsi_pool_init(struct iscsi_pool *q, in
+ 		num_arrays++;
+ 	q->pool = kzalloc(num_arrays * max * sizeof(void*), GFP_KERNEL);
+ 	if (q->pool == NULL)
+-		goto enomem;
++		return -ENOMEM;
  
  	q->queue = kfifo_init((void*)q->pool, max * sizeof(void*),
  			      GFP_KERNEL, NULL);
--	if (q->queue == ERR_PTR(-ENOMEM))
-+	if (IS_ERR(q->queue)) {
-+		q->queue = NULL;
- 		goto enomem;
-+	}
+@@ -1897,8 +1897,7 @@ void iscsi_pool_free(struct iscsi_pool *
  
- 	for (i = 0; i < max; i++) {
- 		q->pool[i] = kzalloc(item_size, GFP_KERNEL);
+ 	for (i = 0; i < q->max; i++)
+ 		kfree(q->pool[i]);
+-	if (q->pool)
+-		kfree(q->pool);
++	kfree(q->pool);
+ 	kfree(q->queue);
+ }
+ EXPORT_SYMBOL_GPL(iscsi_pool_free);
 
 
