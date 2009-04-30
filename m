@@ -1,89 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762106AbZD3LwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761801AbZD3L6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762106AbZD3LwZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 07:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbZD3LwL
+	id S1761801AbZD3L6a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 07:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757316AbZD3L6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 07:52:11 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47989 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753136AbZD3LwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 07:52:09 -0400
-Date: Thu, 30 Apr 2009 13:52:07 +0200
-From: Jan Kara <jack@suse.cz>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH RFC] ext3 data=guarded v7
-Message-ID: <20090430115207.GD29220@duck.suse.cz>
-References: <1240941840.15136.44.camel@think.oraclecorp.com> <1241034706.20099.65.camel@think.oraclecorp.com> <1241038424.20099.74.camel@think.oraclecorp.com>
+	Thu, 30 Apr 2009 07:58:17 -0400
+Received: from wa4ehsobe003.messaging.microsoft.com ([216.32.181.13]:56248
+	"EHLO WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755332AbZD3L6Q convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 07:58:16 -0400
+X-BigFish: VPS-27(zz1528M1432R1453M98dR1805M936fJzz1202hzzz32i6bh6di15fn43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KIWX8P-01-8W6-01
+Date: Thu, 30 Apr 2009 13:57:41 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Andi Kleen <andi@firstfloor.org>
+CC: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu,
+       tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 00/21 v2] amd64_edac: EDAC module for AMD64
+Message-ID: <20090430115741.GA23634@aftab>
+References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> <87iqknp8a0.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <1241038424.20099.74.camel@think.oraclecorp.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <87iqknp8a0.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 30 Apr 2009 11:57:46.0145 (UTC) FILETIME=[E03BB910:01C9C98A]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 29-04-09 16:53:44, Chris Mason wrote:
-...
-> +static int ext3_guarded_write_end(struct file *file,
-> +				struct address_space *mapping,
-> +				loff_t pos, unsigned len, unsigned copied,
-> +				struct page *page, void *fsdata)
-> +{
-> +	handle_t *handle = ext3_journal_current_handle();
-> +	struct inode *inode = file->f_mapping->host;
-> +	unsigned from, to;
-> +	int ret = 0, ret2;
-> +
-> +	copied = block_write_end(file, mapping, pos, len, copied,
-> +				 page, fsdata);
-> +
-> +	from = pos & (PAGE_CACHE_SIZE - 1);
-> +	to = from + copied;
-> +	ret = walk_page_buffers(handle, page_buffers(page),
-> +		from, to, NULL, journal_dirty_data_guarded_fn);
-> +
-> +	/*
-> +	 * we only update the in-memory i_size.  The disk i_size is done
-> +	 * by the end io handlers
-> +	 */
-> +	if (ret == 0 && pos + copied > inode->i_size) {
-> +		int must_log;
-> +
-> +		/* updated i_size, but we may have raced with a
-> +		 * data=guarded end_io handler.
-> +		 *
-> +		 * All the guarded IO could have ended while i_size was still
-> +		 * small, and if we're just adding bytes into an existing block
-> +		 * in the file, we may not be adding a new guarded IO with this
-> +		 * write.  So, do a check on the disk i_size and make sure it
-> +		 * is updated to the highest safe value.
-> +		 *
-> +		 * This may also be required if the
-> +		 * journal_dirty_data_guarded_fn chose to do an fully
-> +		 * ordered write of this buffer instead of a guarded
-> +		 * write.
-> +		 *
-> +		 * ext3_ordered_update_i_size tests inode->i_size, so we
-> +		 * make sure to update it with the ordered lock held.
-> +		 */
-> +		ext3_ordered_lock(inode);
-> +		i_size_write(inode, pos + copied);
-> +		must_log = ext3_ordered_update_i_size(inode);
-> +		ext3_ordered_unlock(inode);
-> +
-> +		orphan_del_trans(inode, must_log > 0);
-> +	}
-  Didn't we agree that only "i_size_write" should remain from the above
-"if" after you changed journal_dirty_data_guarded_fn() function?
+Hi,
 
-								Honza
+On Wed, Apr 29, 2009 at 09:30:31PM +0200, Andi Kleen wrote:
+> Borislav Petkov <borislav.petkov@amd.com> writes:
+> 
+> > Hi,
+> >
+> > thanks to all reviewers of the previous submission, here is the second
+> > version of this series.
+> 
+> The classic problem of the previous versions of these patches was that
+> they consume the same error registers (even if using pci config versus
+> msrs as access methods) as the kernel machine check poll/threshold
+> interrupt code.  And with two logging agents racing on the same
+> registers you will always get junk results. Typically with threshold 
+> enabled the mce code wins the race. I suspect this patchkit has
+> exactly the same fundamental design problem. EDAC really is not
+> particularly fitting for integrated memory controllers that report
+> their errors using standard machine check events.
+
+ok, how about we remove tha MSR/PCI cfg space reading bits and leave
+that task solely to the mce core. Then, iff you have edac turned on in
+Kconfig, mce code delivers needed error info to edac which, in turn,
+goes and decodes the error/does the mapping to DIMM blocks/supplies DRAM
+error injection facility for testing purposes and similar things. That
+way you have both and they don't overlap in functionality.
+
+By the way, I think there's a similar attempt/proposal of letting mce
+and edac talk to each other from Red Hat so I think this could be a
+viable thing to try.
+
+> -Andi (who thinks all of this decoding should be in user space anyways)
+
+Think of a big data center with a thousands of 2,4,8 socket blades
+and the admin collecting mce output and running around decoding the
+errors on his workstation. Even worse, the blades have different DIMM
+configurations due to hw upgrades/newer machines. I'd much rather have
+the complete decoding done in kernel, where all the information needed
+for proper decoding is present and with the error landing in syslog or
+some other monitored buffer instead of reconstructing it in userspace.
+
+Thanks.
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
