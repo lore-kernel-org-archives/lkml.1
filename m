@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932179AbZD3OLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764054AbZD3OKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932179AbZD3OLx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 10:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932089AbZD3OLi
+	id S1764054AbZD3OKk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 10:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763998AbZD3OKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 10:11:38 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52282 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932088AbZD3OLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 10:11:37 -0400
-Date: Thu, 30 Apr 2009 16:10:29 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Sachin Sant <sachinp@in.ibm.com>,
-       linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: Next April 28: boot failure on PowerPC with SLQB
-Message-ID: <20090430141029.GG6900@wotan.suse.de>
-References: <49F938E4.2030703@in.ibm.com> <20090430064127.GF23746@wotan.suse.de> <49F973A0.8070106@in.ibm.com> <20090430103528.GA6900@wotan.suse.de> <1241087884.19252.5.camel@penberg-laptop> <20090430210004.05a61841.sfr@canb.auug.org.au> <20090430111825.GC6900@wotan.suse.de> <1241090429.19252.7.camel@penberg-laptop> <20090430130542.GF6900@wotan.suse.de> <20090501000033.ecce9ed8.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090501000033.ecce9ed8.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.9i
+	Thu, 30 Apr 2009 10:10:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:20734 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763960AbZD3OKH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 10:10:07 -0400
+Message-ID: <49F9B13C.3060008@monstr.eu>
+Date: Thu, 30 Apr 2009 16:10:04 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       john.williams@petalogix.com
+Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
+References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <200904271447.40984.arnd@arndb.de> <49F5A9A8.8010306@monstr.eu> <200904301553.47556.arnd@arndb.de>
+In-Reply-To: <200904301553.47556.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 12:00:33AM +1000, Stephen Rothwell wrote:
-> Hi Nick,
+Arnd Bergmann wrote:
+> On Monday 27 April 2009, Michal Simek wrote:
+>> Arnd Bergmann wrote:
+>>> On Monday 27 April 2009, Michal Simek wrote:
+>>>>> st_size represents an off_t in user space, which is signed.
+>>>>> Just over half the existing architectures use signed types
+>>>>> for st_size, but for this (like Sam's suggestion for __u64),
+>>>>> I don't think it matters either way.
+>>>> OK. Is it mean that your structure is perfect? If yes,
+>>>> I'll recompile toolchain and do some more tests. 
+>>> Please wait for my full patches, which I am about to
+>>> post. I hope to get to the stage where literally none
+>>> of the ABI is defined in your own header files but
+>>> it all gets into the generic parts. I hope to get this
+>>> out within a few hours.
+>> OK.
 > 
-> On Thu, 30 Apr 2009 15:05:42 +0200 Nick Piggin <npiggin@suse.de> wrote:
-> >
-> > Hmm, this might do it. The following code now passes some stress testing
-> > in a userspace harness wheras before it did not (and was obviously wrong).
-> 
-> Indeed that allows it to boot fine.  Thanks.
-> 
-> Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Any success so far with the patches I posted? I guess you
+> need to apply just the first of the three microblaze patches
+> in the series first to see if that works, before changing
+> the signal handling and syscall table as well.
 
-Great, thanks for reporting and testing. This one is especially
-important because it is basically scribbling on random memory
-:( Pekka, please apply.
+I looked at there are two things together. Header cleanup and syscall cleanup.
+For both I have problems.
+1. header cleanup -> some of them is only moving to generic location -> that's no problem
+2. header cleanup -> some of them is pain because I have to recompile toolchain
+that's should be a big deal but after recompilation kernel, user apps I am getting some problems.
+3. syscall cleanup -> we still have old libc and I can't simple remove ancient syscalls
+
+I would like to test all of them but I can't do too fast.
+I am trying to cleanup uaccess.h troubles and I have some changes about context switch change
+but this work only on MMU and I haven't had a time to fix it on noMMU.
+I am fighting with old code where I don't have any information about.
+
+I have your changes in my queue and they inspired me to do things better and I hope that
+I will be able to use all of them.
 
 Thanks,
-Nick
+Michal
 
 
+> 	Arnd <><
+
+
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
