@@ -1,102 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761845AbZD3Iyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761641AbZD3I4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761845AbZD3Iyb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 04:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759434AbZD3IyV
+	id S1761641AbZD3I4T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 04:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbZD3I4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 04:54:21 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:1307 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756271AbZD3IyT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 04:54:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xjIjuiqP56XURCi/sNb0jjHbNSuVwyblLbVy5VWx5lQ/p5odOfxH4tzfqwOolQrOx4
-         Zv+EA7Ak4M4AsonxWZ2x24ImOrhk4pWTN8FHGza2oDeDhg38ZZiTQhhc/aQxlmB+7LP7
-         bHXM53HVbACTQRHHZY7wgoFBDbq5z0X1F4H2E=
+	Thu, 30 Apr 2009 04:56:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56619 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753640AbZD3I4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 04:56:02 -0400
+Date: Thu, 30 Apr 2009 10:55:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: balbir@linux.vnet.ibm.com,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Balaji Rao <balajirrao@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH v2] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu
+	cputime count
+Message-ID: <20090430085543.GA30495@elte.hu>
+References: <20090430151008.D21C.A69D9226@jp.fujitsu.com> <20090430061806.GC4430@balbir.in.ibm.com> <1241081240.4756.38.camel@laptop>
 MIME-Version: 1.0
-In-Reply-To: <200904292147.02441.rjw@sisk.pl>
-References: <208cbae30904190953t58105f13p6e11efca6d6f5322@mail.gmail.com>
-	 <200904272335.33060.rjw@sisk.pl>
-	 <208cbae30904290621m1fbf7bc5x27fa410a23ada3dc@mail.gmail.com>
-	 <200904292147.02441.rjw@sisk.pl>
-Date: Thu, 30 Apr 2009 12:54:18 +0400
-Message-ID: <208cbae30904300154n447deedbucbd7c56d2cc90079@mail.gmail.com>
-Subject: Re: [warn_once] warning: at kernel/hrtimer.c:625 hres_timers_resume+0x24/0x38()
-From: Alexey Klimov <klimov.linux@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241081240.4756.38.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Rafael
 
-On Wed, Apr 29, 2009 at 11:47 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Wednesday 29 April 2009, Alexey Klimov wrote:
->> Hello,
->>
->> On Tue, Apr 28, 2009 at 1:35 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > On Sunday 19 April 2009, Alexey Klimov wrote:
->> >> Hello all
->> >> When testing behaviour of radio-mr800 drvier when doing suspend/resume
->> >> to disk, using echo disk > /sys/power/state i have such warning in
->> >> dmesg(see below please).
->> >> Kernel is 30-rc2, up-to-date. If you need more information, feel free to ask.
->> >
->> > Can you please retest with the appended patch applied and report back?
->>
->> Of course. I applied your patch against up-to-date sources (30-rc3),
->> and have more messages after resume:
->
-> Thanks!
->
->> ACPI: Preparing to enter system sleep state S4
->> PM: Saving platform NVS memory
->> ------------[ cut here ]------------
->> WARNING: at drivers/base/sys.c:405 sysdev_suspend+0xb6/0x21c()
->> Hardware name: TravelMate 2350
->> Interrupts enabled after cpufreq_suspend+0x0/0x113
->
-> Well, it looks like cpufreq_suspend() left us with interrupts enabled and
-> that caused the other warnings to be printed.  Not nice.
->
-> What CPU is there in your box?
->
-> Rafael
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-Yes, cpufreq_ondemand enabled. It's 1.7 GHz pentium-m. The lowest
-frequency is 600 MHz.
-Here is my /proc/cpuinfo:
+> On Thu, 2009-04-30 at 11:48 +0530, Balbir Singh wrote:
+> 
+> > > Subject: [PATCH v2] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
+> > > 
+> > > cpuacct_update_stats() is called at every tick updating. and it use percpu_counter
+> > > for avoiding performance degression.
+> > > 
+> > > For archs which define VIRT_CPU_ACCOUNTING, every tick would result
+> > > in >1000 units of cputime updates and since this is much much greater
+> > > than percpu_batch_counter, we end up taking spinlock on every tick.
+> > > 
+> > > This patch change batch rule. now, any cpu can store "percpu_counter_bach * jiffies"
+> > > cputime in per-cpu cache.
+> > > it mean this patch don't have behavior change if VIRT_CPU_ACCOUNTING=n.
+> > > 
+> > > Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> > > Cc: Balaji Rao <balajirrao@gmail.com>
+> > > Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> > > Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > > Cc: Ingo Molnar <mingo@elte.hu>
+> > > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > ---
+> > >  kernel/sched.c |    8 ++++++--
+> > >  1 file changed, 6 insertions(+), 2 deletions(-)
+> > > 
+> > > Index: b/kernel/sched.c
+> > > ===================================================================
+> > > --- a/kernel/sched.c	2009-04-30 11:37:47.000000000 +0900
+> > > +++ b/kernel/sched.c	2009-04-30 14:17:00.000000000 +0900
+> > > @@ -10221,6 +10221,7 @@ struct cpuacct {
+> > >  };
+> > > 
+> > >  struct cgroup_subsys cpuacct_subsys;
+> > > +static s32 cpuacct_batch;
+> > > 
+> > >  /* return cpu accounting group corresponding to this container */
+> > >  static inline struct cpuacct *cgroup_ca(struct cgroup *cgrp)
+> > > @@ -10250,6 +10251,9 @@ static struct cgroup_subsys_state *cpuac
+> > >  	if (!ca->cpuusage)
+> > >  		goto out_free_ca;
+> > > 
+> > > +	if (!cpuacct_batch)
+> > > +		cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
+> > > +
+> > >  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
+> > >  		if (percpu_counter_init(&ca->cpustat[i], 0))
+> > >  			goto out_free_counters;
+> > > @@ -10376,7 +10380,7 @@ static int cpuacct_stats_show(struct cgr
+> > >  	int i;
+> > > 
+> > >  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
+> > > -		s64 val = percpu_counter_read(&ca->cpustat[i]);
+> > > +		s64 val = percpu_counter_sum(&ca->cpustat[i]);
+> > >  		val = cputime64_to_clock_t(val);
+> > >  		cb->fill(cb, cpuacct_stat_desc[i], val);
+> > >  	}
+> > > @@ -10446,7 +10450,7 @@ static void cpuacct_update_stats(struct 
+> > >  	ca = task_ca(tsk);
+> > > 
+> > >  	do {
+> > > -		percpu_counter_add(&ca->cpustat[idx], val);
+> > > +		__percpu_counter_add(&ca->cpustat[idx], val, cpuacct_batch);
+> > >  		ca = ca->parent;
+> > >  	} while (ca);
+> > >  	rcu_read_unlock();
+> > > 
+> > >
+> > 
+> > What do the test results look like with this? I'll see if I can 
+> > find some time to test this patch. On a patch read level this 
+> > seems much better to me, Peter?
+> 
+> I don't really fancy percpu_counter_sum() usage. I'm thinking its 
+> ok to degrate accuracy on larger machines and simply use 
+> percpu_counter_read().
 
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 13
-model name      : Intel(R) Pentium(R) M processor 1.70GHz
-stepping        : 6
-cpu MHz         : 600.000
-cache size      : 2048 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr mce cx8 apic sep mtrr pge mca
-cmov clflush dts acpi mmx fxsr sse sse2 ss tm pbe bts est tm2
-bogomips        : 1198.79
-clflush size    : 64
-power management:
+yes - and the values will converge anyway, right? So it's just a 
+small delay, not even any genuine loss of accuracy.
 
-
--- 
-Best regards, Klimov Alexey
+	Ingo
