@@ -1,409 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761777AbZD3IY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758157AbZD3I0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761777AbZD3IY4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 04:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761583AbZD3IYM
+	id S1758157AbZD3I0d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 04:26:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754055AbZD3I0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 04:24:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56049 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752125AbZD3IYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 04:24:08 -0400
-Message-ID: <49F9600A.7000705@kernel.org>
-Date: Thu, 30 Apr 2009 01:23:38 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 30 Apr 2009 04:26:10 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:35895 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751292AbZD3I0G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 04:26:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=CGWnLJMl1kVrwY30MduNlO53EiypNAlELSQeyK0YRfpgYq1BZ6k7LufWXCyfUNvYuP
+         Pqk8LNI+72UK927qOZspC9yh03gSjFHLAepdeATjPfK1oC8bz7e6NM+FrILvl6JJKf7g
+         9m1b3WNptuzlN4nXrPc3MpNXG2KW0bOJ/HaGc=
+Date: Thu, 30 Apr 2009 16:27:11 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Renzo Davoli <renzo@cs.unibo.it>
+Cc: Am??rico Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
+       Jeff Dike <jdike@addtoit.com>,
+       user-mode-linux-devel@lists.sourceforge.net, mtk.manpages@gmail.com,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 0/2] ptrace_vm: ptrace for syscall emulation virtual
+	machines
+Message-ID: <20090430082711.GA24819@hack>
+References: <20090310214436.GC5213@cs.unibo.it> <20090316074520.GC3360@hack> <20090324234753.GH22695@cs.unibo.it> <20090329163228.GE7671@hack> <20090404101708.GG4203@cs.unibo.it> <20090407173646.GL12226@hack> <20090408121851.GE24173@cs.unibo.it> <20090413163603.GG2391@hack> <20090417081823.GA31897@hack> <20090425091928.GB18153@cs.unibo.it>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: [PATCH 4/4] x86/pci: update pirq_enable_irq to setup io apic routing
-References: <49F8B2D9.3080903@kernel.org>
-In-Reply-To: <49F8B2D9.3080903@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090425091928.GB18153@cs.unibo.it>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Apr 25, 2009 at 11:19:28AM +0200, Renzo Davoli wrote:
+>
+>UML on UML stopped working long time ago, I wrote a note on it
+>on March 8. See:
+>http://article.gmane.org/gmane.linux.uml.devel/12085
+>Here I am having the same behavior with and without my patches, thus
+>(in my opinion) the bug is not related with the new tags.
 
-so we could set io apic routing only when enable device irq.
+Hmm, I thought these two patches of you are aimed to solve this,
+but they are not, right?
 
-also could make setup_IO_APIC_irqs and setup_ioapic_dest only handle
-first ioapic...
+>
+>It seems that there are some problems on the virtual memory
+>when UML runs UML.
+>With older kernels (<2.6.28.2) the error is:
+>Eeek! page_mapcount(page) went negative! (-1)
+>the error is still there now but the message I get is different:
+>
+>BUG: Bad page map in process linux.umlv2  pte:00164045 pmd:07b5e1e1
+>page:08905c80 flags:00000400 count:-2 mapcount:-4 mapping:(null) index:0
+>addr:00100000 vm_flags:00060055 anon_vma:(null) mapping:(null) index:100
+>vma->vm_ops->fault: special_mapping_fault+0x0/0x47
+>0fc01d64:  [<081a9c5a>] dump_stack+0x1c/0x20
+>0fc01d7c:  [<080a233f>] print_bad_pte+0x16d/0x17d
+>0fc01dac:  [<080a2c20>] unmap_vmas+0x273/0x46f
+>0fc01e04:  [<080a5c69>] unmap_region+0x82/0xfe
+>0fc01e3c:  [<080a68b1>] do_munmap+0x1f6/0x245
+>0fc01e6c:  [<080a7118>] mmap_region+0xc4/0x3fd
+>0fc01eb8:  [<080a765b>] do_mmap_pgoff+0x20a/0x253
+>0fc01ef0:  [<08059b2f>] sys_mmap2+0x60/0x8e
+>0fc01f28:  [<0805b0df>] handle_syscall+0x7f/0x9c
+>0fc01f78:  [<0806a27a>] userspace+0x2d0/0x377
+>0fc01fe0:  [<08058e38>] fork_handler+0x53/0x5b
+>0fc01ffc:  [<00000000>] 0x0
+>(and then many others)
+>It seems that the page table of the UML process inside UML gets garbled:
+>I think that neither "count" should never reach -2 nor "mapcount" -4. 
+>
+>The numbers of count and mapcount decrease at each faulty UML execution
+>(the following are outputs of tests without my patch)
+>$ ./linux ....
+>0> page:08905d00 flags:00000400 count:1 mapcount:-1 mapping:(null) index:0
+>$ ./linux ....
+>1> page:08905d00 flags:00000400 count:0 mapcount:-2 mapping:(null) index:0
+>2> page:08905d00 flags:00000400 count:-1 mapcount:-3 mapping:(null) index:0
+>3> page:08905d00 flags:00000400 count:-2 mapcount:-4 mapping:(null) index:0
+>
+>It seems that a page gets released twice.
 
-[ make mptable irq enable more like acpi is used ]
+I will take a look at this...
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>
+>I have successfully tested my paches in various configurations:
+>- patched-kernel running patched-UML
+>- patched-kernel running unpatched-UML
+>- patched-kernel running umview
+>- patched-UML running umview
+>- UML on UML fails in the same way with and without the patch.
+>I am currently running the patched kernel on my laptop.
 
----
- arch/x86/kernel/apic/io_apic.c |  157 ++++++++++++++++++-----------------------
- arch/x86/pci/irq.c             |   92 ++++++++----------------
- 2 files changed, 103 insertions(+), 146 deletions(-)
+Thanks, I will give them another testing soon...
 
-Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-@@ -1481,75 +1481,67 @@ static void setup_IO_APIC_irq(int apic_i
- 	ioapic_write_entry(apic_id, pin, entry);
- }
+-- 
+Live like a child, think like the god.
  
-+static struct {
-+	DECLARE_BITMAP(pin_programmed, MP_MAX_IOAPIC_PIN + 1);
-+} mp_ioapic_routing[MAX_IO_APICS];
-+
- static void __init setup_IO_APIC_irqs(void)
- {
--	int apic_id, pin, idx, irq;
-+	int apic_id = 0, pin, idx, irq;
- 	int notcon = 0;
- 	struct irq_desc *desc;
- 	struct irq_cfg *cfg;
- 	int node = cpu_to_node(boot_cpu_id);
--	int ioapic_start = 0, ioapic_end = nr_ioapics;
- 
- 	apic_printk(APIC_VERBOSE, KERN_DEBUG "init IO_APIC IRQs\n");
- 
- #ifdef CONFIG_ACPI
--	/*
--	 * when acpi is used, at this point, we only have legacy entries
--	 * in mp_irqs[] by mp_config_acpi_legacy_irqs/mp_override_legacy_irq
--	 * so only setup for that ioapic, and will not print out those strange
--	 * not connected on other ioapic
--	 */
- 	if (!acpi_disabled && acpi_ioapic) {
--		ioapic_start = mp_find_ioapic(0);
--		if (ioapic_start < 0)
--			ioapic_start = 0;
--		else
--			ioapic_end = ioapic_start + 1;
-+		apic_id = mp_find_ioapic(0);
-+		if (apic_id < 0)
-+			apic_id = 0;
- 	}
- #endif
- 
--	for (apic_id = ioapic_start; apic_id < ioapic_end; apic_id++) {
--		for (pin = 0; pin < nr_ioapic_registers[apic_id]; pin++) {
--
--			idx = find_irq_entry(apic_id, pin, mp_INT);
--			if (idx == -1) {
--				if (!notcon) {
--					notcon = 1;
--					apic_printk(APIC_VERBOSE,
--						KERN_DEBUG " %d-%d",
--						mp_ioapics[apic_id].apicid, pin);
--				} else
--					apic_printk(APIC_VERBOSE, " %d-%d",
--						mp_ioapics[apic_id].apicid, pin);
--				continue;
--			}
--			if (notcon) {
-+	for (pin = 0; pin < nr_ioapic_registers[apic_id]; pin++) {
-+		idx = find_irq_entry(apic_id, pin, mp_INT);
-+		if (idx == -1) {
-+			if (!notcon) {
-+				notcon = 1;
- 				apic_printk(APIC_VERBOSE,
--					" (apicid-pin) not connected\n");
--				notcon = 0;
--			}
-+					KERN_DEBUG " %d-%d",
-+					mp_ioapics[apic_id].apicid, pin);
-+			} else
-+				apic_printk(APIC_VERBOSE, " %d-%d",
-+					mp_ioapics[apic_id].apicid, pin);
-+			continue;
-+		}
-+		if (notcon) {
-+			apic_printk(APIC_VERBOSE,
-+				" (apicid-pin) not connected\n");
-+			notcon = 0;
-+		}
- 
--			irq = pin_2_irq(idx, apic_id, pin);
-+		irq = pin_2_irq(idx, apic_id, pin);
- 
--			/*
--			 * Skip the timer IRQ if there's a quirk handler
--			 * installed and if it returns 1:
--			 */
--			if (apic->multi_timer_check &&
--					apic->multi_timer_check(apic_id, irq))
--				continue;
--
--			desc = irq_to_desc_alloc_node(irq, node);
--			if (!desc) {
--				printk(KERN_INFO "can not get irq_desc for %d\n", irq);
--				continue;
--			}
--			cfg = desc->chip_data;
--			add_pin_to_irq_node(cfg, node, apic_id, pin);
-+		/*
-+		 * Skip the timer IRQ if there's a quirk handler
-+		 * installed and if it returns 1:
-+		 */
-+		if (apic->multi_timer_check &&
-+				apic->multi_timer_check(apic_id, irq))
-+			continue;
- 
--			setup_IO_APIC_irq(apic_id, pin, irq, desc,
--					irq_trigger(idx), irq_polarity(idx));
-+		desc = irq_to_desc_alloc_node(irq, node);
-+		if (!desc) {
-+			printk(KERN_INFO "can not get irq_desc for %d\n", irq);
-+			continue;
- 		}
-+		cfg = desc->chip_data;
-+		add_pin_to_irq_node(cfg, node, apic_id, pin);
-+		set_bit(pin, mp_ioapic_routing[apic_id].pin_programmed);
-+		setup_IO_APIC_irq(apic_id, pin, irq, desc,
-+				irq_trigger(idx), irq_polarity(idx));
- 	}
- 
- 	if (notcon)
-@@ -3892,10 +3884,6 @@ static int __io_apic_set_pci_routing(str
- 	return 0;
- }
- 
--static struct {
--	DECLARE_BITMAP(pin_programmed, MP_MAX_IOAPIC_PIN + 1);
--} mp_ioapic_routing[MAX_IO_APICS];
--
- int io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
- 				 int triggering, int polarity)
- {
-@@ -4039,51 +4027,44 @@ int acpi_get_override_irq(int bus_irq, i
- #ifdef CONFIG_SMP
- void __init setup_ioapic_dest(void)
- {
--	int pin, ioapic, irq, irq_entry;
-+	int pin, ioapic = 0, irq, irq_entry;
- 	struct irq_desc *desc;
--	struct irq_cfg *cfg;
- 	const struct cpumask *mask;
- 
- 	if (skip_ioapic_setup == 1)
- 		return;
- 
--	for (ioapic = 0; ioapic < nr_ioapics; ioapic++) {
--		for (pin = 0; pin < nr_ioapic_registers[ioapic]; pin++) {
--			irq_entry = find_irq_entry(ioapic, pin, mp_INT);
--			if (irq_entry == -1)
--				continue;
--			irq = pin_2_irq(irq_entry, ioapic, pin);
--
--			/* setup_IO_APIC_irqs could fail to get vector for some device
--			 * when you have too many devices, because at that time only boot
--			 * cpu is online.
--			 */
--			desc = irq_to_desc(irq);
--			cfg = desc->chip_data;
--			if (!cfg->vector) {
--				setup_IO_APIC_irq(ioapic, pin, irq, desc,
--						  irq_trigger(irq_entry),
--						  irq_polarity(irq_entry));
--				continue;
-+#ifdef CONFIG_ACPI
-+	if (!acpi_disabled && acpi_ioapic) {
-+		ioapic = mp_find_ioapic(0);
-+		if (ioapic < 0)
-+			ioapic = 0;
-+	}
-+#endif
- 
--			}
-+	for (pin = 0; pin < nr_ioapic_registers[ioapic]; pin++) {
-+		irq_entry = find_irq_entry(ioapic, pin, mp_INT);
-+		if (irq_entry == -1)
-+			continue;
-+		irq = pin_2_irq(irq_entry, ioapic, pin);
- 
--			/*
--			 * Honour affinities which have been set in early boot
--			 */
--			if (desc->status &
--			    (IRQ_NO_BALANCING | IRQ_AFFINITY_SET))
--				mask = desc->affinity;
--			else
--				mask = apic->target_cpus();
-+		desc = irq_to_desc(irq);
- 
--			if (intr_remapping_enabled)
--				set_ir_ioapic_affinity_irq_desc(desc, mask);
--			else
--				set_ioapic_affinity_irq_desc(desc, mask);
--		}
-+		/*
-+		 * Honour affinities which have been set in early boot
-+		 */
-+		if (desc->status &
-+		    (IRQ_NO_BALANCING | IRQ_AFFINITY_SET))
-+			mask = desc->affinity;
-+		else
-+			mask = apic->target_cpus();
- 
-+		if (intr_remapping_enabled)
-+			set_ir_ioapic_affinity_irq_desc(desc, mask);
-+		else
-+			set_ioapic_affinity_irq_desc(desc, mask);
- 	}
-+
- }
- #endif
- 
-Index: linux-2.6/arch/x86/pci/irq.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/irq.c
-+++ linux-2.6/arch/x86/pci/irq.c
-@@ -889,6 +889,9 @@ static int pcibios_lookup_irq(struct pci
- 		return 0;
- 	}
- 
-+	if (io_apic_assign_pci_irqs)
-+		return 0;
-+
- 	/* Find IRQ routing entry */
- 
- 	if (!pirq_table)
-@@ -1039,63 +1042,15 @@ static void __init pcibios_fixup_irqs(vo
- 		pirq_penalty[dev->irq]++;
- 	}
- 
-+	if (io_apic_assign_pci_irqs)
-+		return;
-+
- 	dev = NULL;
- 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
- 		pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &pin);
- 		if (!pin)
- 			continue;
- 
--#ifdef CONFIG_X86_IO_APIC
--		/*
--		 * Recalculate IRQ numbers if we use the I/O APIC.
--		 */
--		if (io_apic_assign_pci_irqs) {
--			int irq;
--			int ioapic = -1, ioapic_pin = -1;
--			int triggering, polarity;
--
--			/*
--			 * interrupt pins are numbered starting from 1
--			 */
--			irq = IO_APIC_get_PCI_irq_vector(dev->bus->number,
--						PCI_SLOT(dev->devfn), pin - 1,
--						&ioapic, &ioapic_pin,
--						&triggering, &polarity);
--			/*
--			 * Busses behind bridges are typically not listed in the
--			 * MP-table.  In this case we have to look up the IRQ
--			 * based on the parent bus, parent slot, and pin number.
--			 * The SMP code detects such bridged busses itself so we
--			 * should get into this branch reliably.
--			 */
--			if (irq < 0 && dev->bus->parent) {
--				/* go back to the bridge */
--				struct pci_dev *bridge = dev->bus->self;
--				int bus;
--
--				pin = pci_swizzle_interrupt_pin(dev, pin);
--				bus = bridge->bus->number;
--				irq = IO_APIC_get_PCI_irq_vector(bus,
--						PCI_SLOT(bridge->devfn),
--						pin - 1,
--						&ioapic, &ioapic_pin,
--						&triggering, &polarity);
--				if (irq >= 0)
--					dev_warn(&dev->dev,
--						"using bridge %s INT %c to "
--							"get IRQ %d\n",
--						 pci_name(bridge),
--						 'A' + pin - 1, irq);
--			}
--			if (irq >= 0) {
--				dev_info(&dev->dev,
--					"PCI->APIC IRQ transform: INT %c "
--						"-> IRQ %d\n",
--					'A' + pin - 1, irq);
--				dev->irq = irq;
--			}
--		}
--#endif
- 		/*
- 		 * Still no IRQ? Try to lookup one...
- 		 */
-@@ -1190,6 +1145,19 @@ int __init pcibios_irq_init(void)
- 	pcibios_enable_irq = pirq_enable_irq;
- 
- 	pcibios_fixup_irqs();
-+
-+	if (io_apic_assign_pci_irqs && pci_routeirq) {
-+		struct pci_dev *dev = NULL;
-+		/*
-+		 * PCI IRQ routing is set up by pci_enable_device(), but we
-+		 * also do it here in case there are still broken drivers that
-+		 * don't use pci_enable_device().
-+		 */
-+		printk(KERN_INFO "PCI: Routing PCI interrupts for all devices because \"pci=routeirq\" specified\n");
-+		for_each_pci_dev(dev)
-+			pirq_enable_irq(dev);
-+	}
-+
- 	return 0;
- }
- 
-@@ -1220,22 +1188,25 @@ void pcibios_penalize_isa_irq(int irq, i
- static int pirq_enable_irq(struct pci_dev *dev)
- {
- 	u8 pin;
--	struct pci_dev *temp_dev;
- 
- 	pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &pin);
--	if (pin && !pcibios_lookup_irq(dev, 1) && !dev->irq) {
-+	if (pin && !pcibios_lookup_irq(dev, 1)) {
- 		char *msg = "";
- 
-+		if (!io_apic_assign_pci_irqs && dev->irq)
-+			return 0;
-+
- 		if (io_apic_assign_pci_irqs) {
-+#ifdef CONFIG_X86_IO_APIC
-+			struct pci_dev *temp_dev;
- 			int irq;
- 			int ioapic = -1, ioapic_pin = -1;
- 			int triggering, polarity;
- 
- 			irq = IO_APIC_get_PCI_irq_vector(dev->bus->number,
--						PCI_SLOT(dev->devfn),
--						pin - 1,
--						&ioapic, &ioapic_pin,
--						&triggering, &polarity);
-+					 PCI_SLOT(dev->devfn), pin - 1,
-+					 &ioapic, &ioapic_pin,
-+					 &triggering, &polarity);
- 			/*
- 			 * Busses behind bridges are typically not listed in the MP-table.
- 			 * In this case we have to look up the IRQ based on the parent bus,
-@@ -1261,12 +1232,17 @@ static int pirq_enable_irq(struct pci_de
- 			}
- 			dev = temp_dev;
- 			if (irq >= 0) {
-+				dev->irq = irq;
-+				io_apic_set_pci_routing(&dev->dev, ioapic,
-+							ioapic_pin, irq,
-+							triggering, polarity);
-+
- 				dev_info(&dev->dev, "PCI->APIC IRQ transform: "
- 					 "INT %c -> IRQ %d\n", 'A' + pin - 1, irq);
--				dev->irq = irq;
- 				return 0;
- 			} else
- 				msg = "; probably buggy MP table";
-+#endif
- 		} else if (pci_probe & PCI_BIOS_IRQ_SCAN)
- 			msg = "";
- 		else
