@@ -1,80 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761244AbZD3Ihu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759098AbZD3Imq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761244AbZD3Ihu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 04:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760253AbZD3IhH
+	id S1759098AbZD3Imq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 04:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbZD3Img
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 04:37:07 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:39340 "EHLO
-	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756853AbZD3IhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 04:37:05 -0400
-From: monstr@monstr.eu
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH] fs: Remove sparse errors in proc_devtree.c
-Date: Thu, 30 Apr 2009 10:35:51 +0200
-Message-Id: <1241080551-18281-1-git-send-email-monstr@monstr.eu>
-X-Mailer: git-send-email 1.5.5.1
+	Thu, 30 Apr 2009 04:42:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45474 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751405AbZD3Imf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 04:42:35 -0400
+Message-ID: <49F96473.5070401@redhat.com>
+Date: Thu, 30 Apr 2009 10:42:27 +0200
+From: Jerome Marchand <jmarchan@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Nikanth K <nikanth@gmail.com>
+CC: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       Nikanth Karthikesan <knikanth@suse.de>
+Subject: Re: [PATCH] block: remove unused __REQ_NR_BITS
+References: <49F85D9C.4000405@redhat.com> <807b3a220904300112vf8e77e5g5075eeb8f63e029d@mail.gmail.com>
+In-Reply-To: <807b3a220904300112vf8e77e5g5075eeb8f63e029d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <monstr@monstr.eu>
+Hi Nikanth,
 
-  CHECK   fs/proc/proc_devtree.c
-fs/proc/proc_devtree.c:197:14: warning: Using plain integer as NULL pointer
-fs/proc/proc_devtree.c:203:34: warning: Using plain integer as NULL pointer
-fs/proc/proc_devtree.c:210:14: warning: Using plain integer as NULL pointer
-fs/proc/proc_devtree.c:223:26: warning: Using plain integer as NULL pointer
-fs/proc/proc_devtree.c:226:14: warning: Using plain integer as NULL pointer
+Never mind, I missed your patch.
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- fs/proc/proc_devtree.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+Jerome
 
-diff --git a/fs/proc/proc_devtree.c b/fs/proc/proc_devtree.c
-index de2bba5..9fe0e4b 100644
---- a/fs/proc/proc_devtree.c
-+++ b/fs/proc/proc_devtree.c
-@@ -194,20 +194,20 @@ void proc_device_tree_add_node(struct device_node *np,
- 			p = fixup_name(np, de, p);
- 
- 		ent = proc_mkdir(p, de);
--		if (ent == 0)
-+		if (ent == NULL)
- 			break;
- 		proc_device_tree_add_node(child, ent);
- 	}
- 	of_node_put(child);
- 
--	for (pp = np->properties; pp != 0; pp = pp->next) {
-+	for (pp = np->properties; pp != NULL; pp = pp->next) {
- 		p = pp->name;
- 
- 		if (duplicate_name(de, p))
- 			p = fixup_name(np, de, p);
- 
- 		ent = __proc_device_tree_add_prop(de, pp, p);
--		if (ent == 0)
-+		if (ent == NULL)
- 			break;
- 	}
- }
-@@ -220,10 +220,10 @@ void __init proc_device_tree_init(void)
- 	struct device_node *root;
- 
- 	proc_device_tree = proc_mkdir("device-tree", NULL);
--	if (proc_device_tree == 0)
-+	if (proc_device_tree == NULL)
- 		return;
- 	root = of_find_node_by_path("/");
--	if (root == 0) {
-+	if (root == NULL) {
- 		printk(KERN_ERR "/proc/device-tree: can't find root\n");
- 		return;
- 	}
--- 
-1.5.5.1
+Nikanth K wrote:
+> Hi Jerome
+> 
+> On Wed, Apr 29, 2009 at 7:31 PM, Jerome Marchand <jmarchan@redhat.com> wrote:
+>> Removes __REQ_NR_BITS which is not used since its only user
+>> (blk_dump_rq_flags()) stopped to use it.
+>>
+> 
+> See http://lkml.org/lkml/2009/4/27/140
+> 
+> A user for it is added by a patch in linux-2.6-block#for-2.6.31
+> see http://git.kernel.org/?p=linux/kernel/git/axboe/linux-2.6-block.git;a=commit;h=9eb55b030c4b3227334ee4482402096cd1d1a6fe
+> 
+> Thanks
+> Nikanth
+> 
+>> Signed-off-by: Jerome Marchand <jmarchan@redhat.com>
+>> ---
+>> diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+>> index 2755d5c..a101821 100644
+>> --- a/include/linux/blkdev.h
+>> +++ b/include/linux/blkdev.h
+>> @@ -119,7 +119,6 @@ enum rq_flag_bits {
+>>        __REQ_INTEGRITY,        /* integrity metadata has been remapped */
+>>        __REQ_NOIDLE,           /* Don't anticipate more IO after this one */
+>>        __REQ_IO_STAT,          /* account I/O stat */
+>> -       __REQ_NR_BITS,          /* stops here */
+>>  };
+>>
+>>  #define REQ_RW         (1 << __REQ_RW)
+>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
 
