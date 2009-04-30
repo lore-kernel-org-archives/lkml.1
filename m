@@ -1,122 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761161AbZD3IWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761502AbZD3IXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761161AbZD3IWu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 04:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbZD3IW3
+	id S1761502AbZD3IXR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 04:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760098AbZD3IWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 04:22:29 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:40805 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754234AbZD3IWZ (ORCPT
+	Thu, 30 Apr 2009 04:22:30 -0400
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:41207 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751336AbZD3IW0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 04:22:25 -0400
-Date: Thu, 30 Apr 2009 11:48:06 +0530
+	Thu, 30 Apr 2009 04:22:26 -0400
+Date: Thu, 30 Apr 2009 10:22:40 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH v2] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu
-	cputime count
-Message-ID: <20090430061806.GC4430@balbir.in.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH mmotm] memcg: fix mem_cgroup_update_mapped_file_stat
+	oops
+Message-ID: <20090430045240.GA4430@balbir.in.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
-References: <20090430151008.D21C.A69D9226@jp.fujitsu.com>
+References: <Pine.LNX.4.64.0904292209550.30874@blonde.anvils> <20090430090646.a1443096.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090430151008.D21C.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20090430090646.a1443096.kamezawa.hiroyu@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-04-30 15:11:15]:
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-30 09:06:46]:
 
+> On Wed, 29 Apr 2009 22:13:33 +0100 (BST)
+> Hugh Dickins <hugh@veritas.com> wrote:
 > 
-> Changelog:
->   since v1
->   - use percpu_counter_sum() instead percpu_counter_read()
+> > CONFIG_SPARSEMEM=y CONFIG_CGROUP_MEM_RES_CTLR=y cgroup_disable=memory
+> > bootup is oopsing in mem_cgroup_update_mapped_file_stat().  !SPARSEMEM
+> > is fine because its lookup_page_cgroup() contains an explicit check for
+> > NULL node_page_cgroup, but the SPARSEMEM version was missing a check for
+> > NULL section->page_cgroup.
+> > 
+> Ouch, it's curious this bug alive now.. thank you.
 > 
+> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > 
-> -------------------------------------
-> Subject: [PATCH v2] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
-> 
-> cpuacct_update_stats() is called at every tick updating. and it use percpu_counter
-> for avoiding performance degression.
-> 
-> For archs which define VIRT_CPU_ACCOUNTING, every tick would result
-> in >1000 units of cputime updates and since this is much much greater
-> than percpu_batch_counter, we end up taking spinlock on every tick.
-> 
-> This patch change batch rule. now, any cpu can store "percpu_counter_bach * jiffies"
-> cputime in per-cpu cache.
-> it mean this patch don't have behavior change if VIRT_CPU_ACCOUNTING=n.
-> 
-> Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> Cc: Balaji Rao <balajirrao@gmail.com>
-> Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  kernel/sched.c |    8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
-> 
-> Index: b/kernel/sched.c
-> ===================================================================
-> --- a/kernel/sched.c	2009-04-30 11:37:47.000000000 +0900
-> +++ b/kernel/sched.c	2009-04-30 14:17:00.000000000 +0900
-> @@ -10221,6 +10221,7 @@ struct cpuacct {
->  };
-> 
->  struct cgroup_subsys cpuacct_subsys;
-> +static s32 cpuacct_batch;
-> 
->  /* return cpu accounting group corresponding to this container */
->  static inline struct cpuacct *cgroup_ca(struct cgroup *cgrp)
-> @@ -10250,6 +10251,9 @@ static struct cgroup_subsys_state *cpuac
->  	if (!ca->cpuusage)
->  		goto out_free_ca;
-> 
-> +	if (!cpuacct_batch)
-> +		cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
-> +
->  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
->  		if (percpu_counter_init(&ca->cpustat[i], 0))
->  			goto out_free_counters;
-> @@ -10376,7 +10380,7 @@ static int cpuacct_stats_show(struct cgr
->  	int i;
-> 
->  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
-> -		s64 val = percpu_counter_read(&ca->cpustat[i]);
-> +		s64 val = percpu_counter_sum(&ca->cpustat[i]);
->  		val = cputime64_to_clock_t(val);
->  		cb->fill(cb, cpuacct_stat_desc[i], val);
->  	}
-> @@ -10446,7 +10450,7 @@ static void cpuacct_update_stats(struct 
->  	ca = task_ca(tsk);
-> 
->  	do {
-> -		percpu_counter_add(&ca->cpustat[idx], val);
-> +		__percpu_counter_add(&ca->cpustat[idx], val, cpuacct_batch);
->  		ca = ca->parent;
->  	} while (ca);
->  	rcu_read_unlock();
-> 
->
+> I think this patch itself is sane but.. Balbir, could you see "caller" ?
+> It seems strange.
 
-What do the test results look like with this? I'll see if I can find
-some time to test this patch. On a patch read level this seems much better
-to me, Peter?
+Ideally we need to have a disabled check in
+mem_cgroup_update_mapped_file_stat(), but it seems as if this fix is
+better and fixes a larger scenario and the root cause of
+lookup_page_cgroup() OOPSing. It would not hurt to check for
+mem_cgroup_disabled() though, but too many checks might spoil the
+party for frequent operations.
 
+Kame, do you mean you wanted me to check if I am using
+lookup_page_cgroup() correctly?
+
+Hugh, Thank you very much for finding and fixing the problem!
 Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+ 
 
 -- 
 	Balbir
