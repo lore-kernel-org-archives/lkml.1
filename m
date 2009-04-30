@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759489AbZD3AE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760243AbZD3AG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759489AbZD3AE5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 20:04:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbZD3AEr
+	id S1760243AbZD3AG0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 20:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbZD3AGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 20:04:47 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44035 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753391AbZD3AEr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 20:04:47 -0400
-Date: Thu, 30 Apr 2009 09:03:13 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fix leak of swap accounting as stale swap cache under
- memcg
-Message-Id: <20090430090313.24d14d52.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090428214606.GB12698@balbir.in.ibm.com>
-References: <20090427181259.6efec90b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090427101323.GK4454@balbir.in.ibm.com>
-	<20090427203535.4e3f970b.d-nishimura@mtf.biglobe.ne.jp>
-	<661de9470904271217t7ef9e300x1e40bbf0362ca14f@mail.gmail.com>
-	<20090428085753.a91b6007.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090428214606.GB12698@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Apr 2009 20:06:15 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:39303 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753140AbZD3AGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 20:06:14 -0400
+Date: Wed, 29 Apr 2009 17:06:11 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Gary Hade <garyhade@us.ibm.com>,
+       Alex Chiang <achiang@hp.com>, linux-acpi@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH] x86/pci: do assign root bus res if _CRS is used
+Message-ID: <20090430000611.GA22030@us.ibm.com>
+References: <49ED22EC.2040204@kernel.org> <200904271344.04099.bjorn.helgaas@hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904271344.04099.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Apr 2009 03:16:06 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-28 08:57:53]:
+On Mon, Apr 27, 2009 at 01:44:01PM -0600, Bjorn Helgaas wrote:
+> On Monday 20 April 2009 07:35:40 pm Yinghai Lu wrote:
+> > it wil be overwriten later if _CRS is used, so don't bother to set it.
+> > 
+> > [ Impact: cleanup ]
+> > 
+> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> > 
+> > ---
+> >  arch/x86/pci/amd_bus.c |    4 ++++
+> >  1 file changed, 4 insertions(+)
+> > 
+> > Index: linux-2.6/arch/x86/pci/amd_bus.c
+> > ===================================================================
+> > --- linux-2.6.orig/arch/x86/pci/amd_bus.c
+> > +++ linux-2.6/arch/x86/pci/amd_bus.c
+> > @@ -100,6 +100,10 @@ void x86_pci_root_bus_res_quirks(struct
+> >  	int j;
+> >  	struct pci_root_info *info;
+> >  
+> > +	/* don't go for it if _CRS is used */
+> > +	if (pci_probe & PCI_USE__CRS)
+> > +		return;
+> > +
+> >  	/* if only one root bus, don't need to anything */
+> >  	if (pci_root_num < 2)
+> >  		return;
 > 
-> > On Tue, 28 Apr 2009 00:47:31 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > Thanks for the detailed explanation of the possible race conditions. I
-> > > am beginning to wonder why we don't have any hooks in add_to_swap.*.
-> > > for charging a page. If the page is already charged and if it is a
-> > > context issue (charging it to the right cgroup) that is already
-> > > handled from what I see. Won't that help us solve the !PageCgroupUsed
-> > > issue?
-> > > 
-> > 
-> > For adding hook to add_to_swap_cache, we need to know which cgroup the swap cache
-> > should be charged. Then, we have to remove CONFIG_CGROUP_MEM_RES_CTRL_SWAP_EXT
-> > and enable memsw control always.
-> > 
-> > When using swap_cgroup, we'll know which cgroup the new swap cache should be charged.
-> > Then, the new page readed in will be charged to recorded cgroup in swap_cgroup.
-> > One bad thing of this method is a cgroup which swap_cgroup point to is different from
-> > a cgroup which the task calls do_swap_fault(). This means that a page-fault by a
-> > task can cause memory-reclaim under another cgroup and moreover, OOM.
-> > I don't think it's sane behavior. So, current design of swap accounting waits until the
-> > page is mapped.
-> >
->  
-> I know (that is why we removed the hooks from the original memcg at
-> some point). Why can't we mark the page here as swap pending to be
-> mapped, so that we don't lose them. As far as OOM is concerned, I
-> think they'll get relocated again when they are mapped (as per the
-> current implementation), the ones that don't are stale and can be
-> easily reclaimed.
+> This isn't a comment on this patch per se.
+> 
+> I am concerned about the fact that "pci=use_crs" is not the default.
+> >From the changelog of 62f420f8282, it sounds like you have to boot an
+> IBM x3850 with "pci=use_crs" to make hot-plug work, even though ACPI
+> tells us everything we need to know.  That's backwards.
+> 
+> We shouldn't need an option to tell Linux that the firmware is
+> trustworthy.  We should have an option to *ignore* it for the times
+> when we trip over something broken and haven't figured out a way to
+> work around it yet.
 
-My point is "we need a help of global LRU".
-To implement softlimit, we *have to* fix this without global LRU's help.
-I have much more simple patch. pls see it.
+Sorry, I am behind on my email and just noticed this.
 
+When I posted the patches to add "pci=use_crs" it was only
+needed to enable PCI hotplug on a subset of our systems.
+At that time it was not apparent that others were interested. 
+I was also concerned that real or anticipated breakage on
+on other systems might delay or prevent acceptance.
 
-Thanks,
--Kame
+As long as there is an option to disable it I am also in 
+favor of trying to make it the default.
+
+Thanks!
+
+Gary
+
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
 
