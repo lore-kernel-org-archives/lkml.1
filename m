@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759093AbZD3Xoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbZD3Xpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759093AbZD3Xoy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 19:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758361AbZD3XoN
+	id S1757197AbZD3Xpl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 19:45:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758871AbZD3Xom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 19:44:13 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:58862 "EHLO
+	Thu, 30 Apr 2009 19:44:42 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:58963 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758371AbZD3XoM (ORCPT
+	by vger.kernel.org with ESMTP id S1758645AbZD3Xol (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 19:44:12 -0400
+	Thu, 30 Apr 2009 19:44:41 -0400
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
        Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
        Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Mikael Starvik <starvik@axis.com>,
+       Jesper Nilsson <jesper.nilsson@axis.com>, dev-etrax@axis.com,
        Tim Abbott <tabbott@MIT.EDU>
-Subject: [PATCH 0/6] section name cleanup for arm
-Date: Thu, 30 Apr 2009 19:40:02 -0400
-Message-Id: <1241134808-7583-1-git-send-email-tabbott@mit.edu>
+Subject: [PATCH] cris: use new macros for .data.init_task.
+Date: Thu, 30 Apr 2009 19:44:37 -0400
+Message-Id: <1241135077-8001-2-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1241135077-8001-1-git-send-email-tabbott@mit.edu>
+References: <1241135077-8001-1-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch series cleans up the section names on the arm
-architecture.  It requires the architecture-independent macro
-definitions from this patch series:
+.data.init_task should not need a separate output section; this change
+moves it into the .data section.
 
-<http://www.spinics.net/lists/mips/msg33499.html>
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Cc: Mikael Starvik <starvik@axis.com>
+Cc: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: dev-etrax@axis.com
+---
+ arch/cris/kernel/process.c     |    3 +--
+ arch/cris/kernel/vmlinux.lds.S |    4 +---
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-The long-term goal here is to add support for building the kernel with
--ffunction-sections -fdata-sections.  This requires renaming all the
-magic section names in the kernel of the form .text.foo, .data.foo,
-.bss.foo, and .rodata.foo to not have collisions with sections
-generated for code like:
-
-static int nosave = 0; /* -fdata-sections places in .data.nosave */
-static void head(); /* -ffunction-sections places in .text.head */
-
-Note that these patches have not been boot-tested (aside from testing
-the analogous changes on x86), since I don't have access to the
-appropriate hardware.
-
-	-Tim Abbott
-
-
-Tim Abbott (6):
-  arm: use _AC(1, UL) when defining PAGE_SIZE.
-  arm: convert to use __HEAD and HEAD_TEXT macros.
-  arm: use NOSAVE_DATA macro for .data.nosave section.
-  arm: use new macro for .data.cacheline_aligned section.
-  arm: use new macros for .data.init_task.
-  arm: use PERCPU macro in linker script.
-
- arch/arm/include/asm/page.h   |    4 +++-
- arch/arm/kernel/head-nommu.S  |    2 +-
- arch/arm/kernel/head.S        |    2 +-
- arch/arm/kernel/init_task.c   |    3 +--
- arch/arm/kernel/vmlinux.lds.S |   29 +++++++++--------------------
- 5 files changed, 15 insertions(+), 25 deletions(-)
+diff --git a/arch/cris/kernel/process.c b/arch/cris/kernel/process.c
+index 4df0b32..7a270c6 100644
+--- a/arch/cris/kernel/process.c
++++ b/arch/cris/kernel/process.c
+@@ -49,8 +49,7 @@ EXPORT_SYMBOL(init_mm);
+  * way process stacks are handled. This is done by having a special
+  * "init_task" linker map entry..
+  */
+-union thread_union init_thread_union 
+-	__attribute__((__section__(".data.init_task"))) =
++union thread_union init_thread_union __init_task_data =
+ 		{ INIT_THREAD_INFO(init_task) };
+ 
+ /*
+diff --git a/arch/cris/kernel/vmlinux.lds.S b/arch/cris/kernel/vmlinux.lds.S
+index 0d2adfc..e4f7490 100644
+--- a/arch/cris/kernel/vmlinux.lds.S
++++ b/arch/cris/kernel/vmlinux.lds.S
+@@ -62,14 +62,12 @@ SECTIONS
+ 	___data_start = . ;
+ 	__Sdata = . ;
+ 	.data : {			/* Data */
++		INIT_TASK_DATA(PAGE_SIZE)
+ 		DATA_DATA
+ 	}
+ 	__edata = . ;			/* End of data section. */
+ 	_edata = . ;
+ 
+-	. = ALIGN(PAGE_SIZE);	/* init_task and stack, must be aligned. */
+-	.data.init_task : { *(.data.init_task) }
+-
+ 	. = ALIGN(PAGE_SIZE);		/* Init code and data. */
+ 	__init_begin = .;
+ 	.init.text : {
+-- 
+1.6.2.1
 
