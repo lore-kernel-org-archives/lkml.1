@@ -1,50 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761524AbZD3AMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761595AbZD3ANR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761524AbZD3AMh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 20:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbZD3AM1
+	id S1761595AbZD3ANR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 20:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761393AbZD3AM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 20:12:27 -0400
-Received: from ftp.linux-mips.org ([213.58.128.207]:37973 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754013AbZD3AM0 (ORCPT
+	Wed, 29 Apr 2009 20:12:57 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:14836 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759370AbZD3AMz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 20:12:26 -0400
-Date: Thu, 30 Apr 2009 02:12:14 +0200
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] Fix bogus modpost warnings
-Message-ID: <20090430001214.GA22242@linux-mips.org>
-References: <20090429123211.GA12874@linux-mips.org> <20090429204846.GA655@uranus.ravnborg.org>
+	Wed, 29 Apr 2009 20:12:55 -0400
+X-IronPort-AV: E=Sophos;i="4.40,269,1238976000"; 
+   d="scan'208";a="157827847"
+Date: Wed, 29 Apr 2009 17:12:55 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: linux-usb@vger.kernel.org
+Cc: gregkh@suse.de, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 5/5] USB: Wait for USB and SCSI block boot devices
+Message-ID: <20090430001255.GA3897@cuplxvomd02.corp.sa.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090429204846.GA655@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-1; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 10:48:46PM +0200, Sam Ravnborg wrote:
+From: Alan Stern <stern@rowland.harvard.edu
 
-> > this addition check there are still section names left for which the if
-> > condition would ever be true.  Data sections maybe?
-> 
-> Anders Kaseorg already wrote a better patch to fix this - appended below.
-> Could you please give it a try and let me know it it
-> works for you too.
+Add synchronization for USB and SCSI block devices.
 
-Works as advertised for me:
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu
+Signed-off-by: David VomLehn <dvomlehn@cisco.com>
+---
+ drivers/scsi/scsi_scan.c  |    2 ++
+ drivers/usb/storage/usb.c |    2 ++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
-Tested-by: Ralf Baechle <ralf@linux-mips.org>
-
-> It is about to be applied to kbuild-next - I have just been sidetracked
-> by other stuff.
-
-kbuild-next sounds like 2.6.31 stuff - I hope this will still go into
-2.6.30?
-
-Thanks,
-
-  Ralf
+diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+index 6f51ca4..735b061 100644
+--- a/drivers/scsi/scsi_scan.c
++++ b/drivers/scsi/scsi_scan.c
+@@ -1834,6 +1834,7 @@ static int do_scan_async(void *_data)
+ 	struct async_scan_data *data = _data;
+ 	do_scsi_scan_host(data->shost);
+ 	scsi_finish_async_scan(data);
++	bootdev_probe_done(BOOTDEV_BLOCK_MASK);
+ 	return 0;
+ }
+ 
+@@ -1855,6 +1856,7 @@ void scsi_scan_host(struct Scsi_Host *shost)
+ 		return;
+ 	}
+ 
++	bootdev_found(BOOTDEV_BLOCK_MASK);
+ 	p = kthread_run(do_scan_async, data, "scsi_scan_%d", shost->host_no);
+ 	if (IS_ERR(p))
+ 		do_scan_async(data);
+diff --git a/drivers/usb/storage/usb.c b/drivers/usb/storage/usb.c
+index 8060b85..c128c44 100644
+--- a/drivers/usb/storage/usb.c
++++ b/drivers/usb/storage/usb.c
+@@ -810,6 +810,7 @@ static int usb_stor_scan_thread(void * __us)
+ 
+ 	printk(KERN_DEBUG
+ 		"usb-storage: device found at %d\n", us->pusb_dev->devnum);
++	bootdev_found(BOOTDEV_BLOCK_MASK);
+ 
+ 	set_freezable();
+ 	/* Wait for the timeout to expire or for a disconnect */
+@@ -837,6 +838,7 @@ static int usb_stor_scan_thread(void * __us)
+ 		/* Should we unbind if no devices were detected? */
+ 	}
+ 
++	bootdev_probe_done(BOOTDEV_BLOCK_MASK);
+ 	complete_and_exit(&us->scanning_done, 0);
+ }
+ 
