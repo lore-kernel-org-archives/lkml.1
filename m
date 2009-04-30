@@ -1,158 +1,459 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934282AbZD3R6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934001AbZD3R6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934282AbZD3R6O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765054AbZD3RrI
+	id S934001AbZD3R6i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933304AbZD3Rs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:47:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42343 "EHLO mx2.redhat.com"
+	Thu, 30 Apr 2009 13:48:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42372 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753732AbZD3RrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:47:06 -0400
-From: Josef Bacik <jbacik@redhat.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, sandeen@redhat.com,
-       Josef Bacik <jbacik@redhat.com>
-Subject: [PATCH] fiemap: fix problem with setting FIEMAP_EXTENT_LAST
-Date: Thu, 30 Apr 2009 13:44:51 -0400
-Message-Id: <1241113491-9031-1-git-send-email-jbacik@redhat.com>
+	id S933246AbZD3Rs0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:48:26 -0400
+Date: Thu, 30 Apr 2009 20:46:24 +0300
+From: Izik Eidus <ieidus@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+       avi@redhat.com, aarcange@redhat.com, chrisw@redhat.com,
+       mtosatti@redhat.com, hugh@veritas.com
+Subject: Re: [PATCH 5/5] add ksm kernel shared memory driver.
+Message-ID: <20090430204624.358c4a2e@woof.tlv.redhat.com>
+In-Reply-To: <49F63BC0.9090804@redhat.com>
+References: <1240191366-10029-1-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-2-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-3-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-4-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-5-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-6-git-send-email-ieidus@redhat.com>
+	<20090427153421.2682291f.akpm@linux-foundation.org>
+	<49F63BC0.9090804@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a problem where the generic block based fiemap stuff would not
-properly set FIEMAP_EXTENT_LAST on the last extent.  I've reworked things to
-keep track if we go past the EOF, and mark the last extent properly.  The
-problem was reported by and tested by Eric Sandeen.
+On Tue, 28 Apr 2009 02:12:00 +0300
+Izik Eidus <ieidus@redhat.com> wrote:
 
-Tested-by: Eric Sandeen <sandeen@redhat.com>
-Signed-off-by: Josef Bacik <jbacik@redhat.com>
+> Andrew Morton wrote:
+
+> > Breaks sparc64 and probably lots of other architectures:
+> >
+> > mm/ksm.c: In function `try_to_merge_two_pages_alloc':
+> > mm/ksm.c:697: error: `_PAGE_RW' undeclared (first use in this
+> > function)
+> >
+> > there should be an official arch-independent way of manipulating
+> > vma->vm_page_prot, but I'm not immediately finding it.
+> >   
+> Hi,
+> 
+> vm_get_page_prot() will probably do the work.
+> 
+> I will send you patch that fix it,
+> but first i am waiting for Andrea and Chris to say they are happy
+> with small changes that i made to the api after conversation i had
+> with them (about checking if this api is robust enough so we wont
+> have to change it later)
+> 
+> When i will get their acks, i will send you patch against this
+> togather with the api (until then it is ok to just leave it only for
+> x86)
+> 
+> changes are:
+> 1) limiting the number of memory regions registered per file
+> descriptor 
+> - so while (1){ (ioctl(KSM_REGISTER_MEMORY_REGION()) ) wont omm the
+> host
+> 
+> 2) checking if memory is overlap in registration (more effective to 
+> ignore such cases)
+> 
+> 3) allow removing specific memoy regions inside fd.
+> 
+> Thanks.
+> 
+
+Hi,
+
+Following patchs change the api to be more robust, the result change of
+the api came after conversation i had with Andrea and Chris about how
+to make the api as stable as we can,
+
+In addition i hope this patchset fix the cross compilation problems, i
+compiled it on itanium (doesnt have _PAGE_RW) and it seems to work.
+
+Thanks.
+>From 108b720636d1e679e8d5378469fa1220ce1e6963 Mon Sep 17 00:00:00 2001
+From: Izik Eidus <ieidus@redhat.com>
+Date: Thu, 30 Apr 2009 20:36:57 +0300
+Subject: [PATCH 09/13] ksm: limiting the num of mem regions user can register per fd.
+
+Right now user can open /dev/ksm fd and register unlimited number of
+regions, such behavior may allocate unlimited amount of kernel memory
+and get the whole host into out of memory situation.
+
+Signed-off-by: Izik Eidus <ieidus@redhat.com>
 ---
- fs/ioctl.c |   75 ++++++++++++++++++++++++++++++++++++++++++++----------------
- 1 files changed, 55 insertions(+), 20 deletions(-)
+ mm/ksm.c |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ioctl.c b/fs/ioctl.c
-index ac2d47e..82d9c42 100644
---- a/fs/ioctl.c
-+++ b/fs/ioctl.c
-@@ -258,7 +258,7 @@ int __generic_block_fiemap(struct inode *inode,
- 	long long length = 0, map_len = 0;
- 	u64 logical = 0, phys = 0, size = 0;
- 	u32 flags = FIEMAP_EXTENT_MERGED;
--	int ret = 0;
-+	int ret = 0, past_eof = 0, whole_file = 0;
+diff --git a/mm/ksm.c b/mm/ksm.c
+index 6165276..d58db6b 100644
+--- a/mm/ksm.c
++++ b/mm/ksm.c
+@@ -48,6 +48,9 @@ static int rmap_hash_size;
+ module_param(rmap_hash_size, int, 0);
+ MODULE_PARM_DESC(rmap_hash_size, "Hash table size for the reverse mapping");
  
- 	if ((ret = fiemap_check_flags(fieinfo, FIEMAP_FLAG_SYNC)))
- 		return ret;
-@@ -266,6 +266,9 @@ int __generic_block_fiemap(struct inode *inode,
- 	start_blk = logical_to_blk(inode, start);
- 
- 	length = (long long)min_t(u64, len, i_size_read(inode));
-+	if (length < len)
-+		whole_file = 1;
++static int regions_per_fd;
++module_param(regions_per_fd, int, 0);
 +
- 	map_len = length;
+ /*
+  * ksm_mem_slot - hold information for an userspace scanning range
+  * (the scanning for this region will be from addr untill addr +
+@@ -67,6 +70,7 @@ struct ksm_mem_slot {
+  */
+ struct ksm_sma {
+ 	struct list_head sma_slots;
++	int nregions;
+ };
  
- 	do {
-@@ -282,11 +285,26 @@ int __generic_block_fiemap(struct inode *inode,
+ /**
+@@ -453,6 +457,11 @@ static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
+ 	struct ksm_mem_slot *slot;
+ 	int ret = -EPERM;
  
- 		/* HOLE */
- 		if (!buffer_mapped(&tmp)) {
-+			length -= blk_to_logical(inode, 1);
-+			start_blk++;
++	if ((ksm_sma->nregions + 1) > regions_per_fd) {
++		ret = -EBUSY;
++		goto out;
++	}
 +
-+			/*
-+			 * we want to handle the case where there is an
-+			 * allocated block at the front of the file, and then
-+			 * nothing but holes up to the end of the file properly,
-+			 * to make sure that extent at the front gets properly
-+			 * marked with FIEMAP_EXTENT_LAST
-+			 */
-+			if (!past_eof &&
-+			    blk_to_logical(inode, start_blk) >=
-+			    blk_to_logical(inode, 0)+i_size_read(inode))
-+				past_eof = 1;
-+
- 			/*
- 			 * first hole after going past the EOF, this is our
- 			 * last extent
- 			 */
--			if (length <= 0) {
-+			if (past_eof && size) {
- 				flags = FIEMAP_EXTENT_MERGED|FIEMAP_EXTENT_LAST;
- 				ret = fiemap_fill_next_extent(fieinfo, logical,
- 							      phys, size,
-@@ -294,15 +312,37 @@ int __generic_block_fiemap(struct inode *inode,
- 				break;
- 			}
+ 	slot = kzalloc(sizeof(struct ksm_mem_slot), GFP_KERNEL);
+ 	if (!slot) {
+ 		ret = -ENOMEM;
+@@ -473,6 +482,7 @@ static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
  
--			length -= blk_to_logical(inode, 1);
--
- 			/* if we have holes up to/past EOF then we're done */
--			if (length <= 0)
-+			if (length <= 0 || past_eof)
- 				break;
--
--			start_blk++;
- 		} else {
--			if (length <= 0 && size) {
-+			/*
-+			 * we have gone over the length of what we wanted to
-+			 * map, and it wasn't the entire file, so add the extent
-+			 * we got last time and exit.
-+			 *
-+			 * This is for the case where say we want to map all the
-+			 * way up to the second to the last block in a file, but
-+			 * the last block is a hole, making the second to last
-+			 * block FIEMAP_EXTENT_LAST.  In this case we want to
-+			 * see if there is a hole after the second to last block
-+			 * so we can mark it properly.  If we found data after
-+			 * we exceeded the length we were requesting, then we
-+			 * are good to go, just add the extent to the fieinfo
-+			 * and break
-+			 */
-+			if (length <= 0 && !whole_file) {
-+				ret = fiemap_fill_next_extent(fieinfo, logical,
-+							      phys, size,
-+							      flags);
-+				break;
-+			}
-+
-+			/*
-+			 * if size != 0 then we know we already have an extent
-+			 * to add, so add it.
-+			 */
-+			if (size) {
- 				ret = fiemap_fill_next_extent(fieinfo, logical,
- 							      phys, size,
- 							      flags);
-@@ -319,19 +359,14 @@ int __generic_block_fiemap(struct inode *inode,
- 			start_blk += logical_to_blk(inode, size);
+ 	list_add_tail(&slot->link, &slots);
+ 	list_add_tail(&slot->sma_link, &ksm_sma->sma_slots);
++	ksm_sma->nregions++;
  
- 			/*
--			 * if we are past the EOF we need to loop again to see
--			 * if there is a hole so we can mark this extent as the
--			 * last one, and if not keep mapping things until we
--			 * find a hole, or we run out of slots in the extent
--			 * array
-+			 * If we are past the EOF, then we need to make sure as
-+			 * soon as we find a hole that the last extent we found
-+			 * is marked with FIEMAP_EXTENT_LAST
- 			 */
--			if (length <= 0)
--				continue;
--
--			ret = fiemap_fill_next_extent(fieinfo, logical, phys,
--						      size, flags);
--			if (ret)
--				break;
-+			if (!past_eof &&
-+			    logical+size >=
-+			    blk_to_logical(inode, 0)+i_size_read(inode))
-+				past_eof = 1;
- 		}
- 		cond_resched();
- 	} while (1);
+ 	up_write(&slots_lock);
+ 	return 0;
+@@ -511,6 +521,7 @@ static int ksm_sma_ioctl_remove_memory_region(struct ksm_sma *ksm_sma)
+ 		mmput(slot->mm);
+ 		list_del(&slot->sma_link);
+ 		kfree(slot);
++		ksm_sma->nregions--;
+ 	}
+ 	up_write(&slots_lock);
+ 	return 0;
+@@ -1389,6 +1400,7 @@ static int ksm_dev_ioctl_create_shared_memory_area(void)
+ 	}
+ 
+ 	INIT_LIST_HEAD(&ksm_sma->sma_slots);
++	ksm_sma->nregions = 0;
+ 
+ 	fd = anon_inode_getfd("ksm-sma", &ksm_sma_fops, ksm_sma, 0);
+ 	if (fd < 0)
+@@ -1631,6 +1643,9 @@ static int __init ksm_init(void)
+ 	if (r)
+ 		goto out_free1;
+ 
++	if (!regions_per_fd)
++		regions_per_fd = 1024;
++
+ 	ksm_thread = kthread_run(ksm_scan_thread, NULL, "kksmd");
+ 	if (IS_ERR(ksm_thread)) {
+ 		printk(KERN_ERR "ksm: creating kthread failed\n");
 -- 
-1.6.0.6
+1.5.6.5
+
+>From f24a9aa8c049c951a33613909951d115be5f84cd Mon Sep 17 00:00:00 2001
+From: Izik Eidus <ieidus@redhat.com>
+Date: Thu, 30 Apr 2009 20:37:17 +0300
+Subject: [PATCH 10/13] ksm: dont allow overlap memory addresses registrations.
+
+subjects say it all.
+
+Signed-off-by: Izik Eidus <ieidus@redhat.com>
+---
+ mm/ksm.c |   58 ++++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 54 insertions(+), 4 deletions(-)
+
+diff --git a/mm/ksm.c b/mm/ksm.c
+index d58db6b..982dfff 100644
+--- a/mm/ksm.c
++++ b/mm/ksm.c
+@@ -451,21 +451,71 @@ static void remove_page_from_tree(struct mm_struct *mm,
+ 	remove_rmap_item_from_tree(rmap_item);
+ }
+ 
++static inline int is_intersecting_address(unsigned long addr,
++					  unsigned long begin,
++					  unsigned long end)
++{
++	if (addr >= begin && addr < end)
++		return 1;
++	return 0;
++}
++
++/*
++ * is_overlap_mem - check if there is overlapping with memory that was already
++ * registred.
++ *
++ * note - this function must to be called under slots_lock
++ */
++static int is_overlap_mem(struct ksm_memory_region *mem)
++{
++	struct ksm_mem_slot *slot;
++
++	list_for_each_entry(slot, &slots, link) {
++		unsigned long mem_end;
++		unsigned long slot_end;
++
++		cond_resched();
++
++		if (current->mm != slot->mm)
++			continue;
++
++		mem_end = mem->addr + (unsigned long)mem->npages * PAGE_SIZE;
++		slot_end = slot->addr + (unsigned long)slot->npages * PAGE_SIZE;
++
++		if (is_intersecting_address(mem->addr, slot->addr, slot_end) ||
++		    is_intersecting_address(mem_end - 1, slot->addr, slot_end))
++			return 1;
++		if (is_intersecting_address(slot->addr, mem->addr, mem_end) ||
++		    is_intersecting_address(slot_end - 1, mem->addr, mem_end))
++			return 1;
++	}
++
++	return 0;
++}
++
+ static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
+ 						struct ksm_memory_region *mem)
+ {
+ 	struct ksm_mem_slot *slot;
+ 	int ret = -EPERM;
+ 
++	if (!mem->npages)
++		goto out;
++
++	down_write(&slots_lock);
++
+ 	if ((ksm_sma->nregions + 1) > regions_per_fd) {
+ 		ret = -EBUSY;
+-		goto out;
++		goto out_unlock;
+ 	}
+ 
++	if (is_overlap_mem(mem))
++		goto out_unlock;
++
+ 	slot = kzalloc(sizeof(struct ksm_mem_slot), GFP_KERNEL);
+ 	if (!slot) {
+ 		ret = -ENOMEM;
+-		goto out;
++		goto out_unlock;
+ 	}
+ 
+ 	/*
+@@ -478,8 +528,6 @@ static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
+ 	slot->addr = mem->addr;
+ 	slot->npages = mem->npages;
+ 
+-	down_write(&slots_lock);
+-
+ 	list_add_tail(&slot->link, &slots);
+ 	list_add_tail(&slot->sma_link, &ksm_sma->sma_slots);
+ 	ksm_sma->nregions++;
+@@ -489,6 +537,8 @@ static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
+ 
+ out_free:
+ 	kfree(slot);
++out_unlock:
++	up_write(&slots_lock);
+ out:
+ 	return ret;
+ }
+-- 
+1.5.6.5
+
+>From 57807f89d1f2842de69511e10643a48976ebc22e Mon Sep 17 00:00:00 2001
+From: Izik Eidus <ieidus@redhat.com>
+Date: Thu, 30 Apr 2009 20:37:39 +0300
+Subject: [PATCH 11/13] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
+
+This patch change the KSM_REMOVE_MEMORY_REGION ioctl to be specific per
+memory region (instead of flushing all the registred memory regions inside
+the file descriptor like it happen now)
+
+The previoes api was:
+user register memory regions using KSM_REGISTER_MEMORY_REGION inside the fd,
+and then when he wanted to remove just one memory region, he had to remove them
+all using KSM_REMOVE_MEMORY_REGION.
+
+This patch change this beahivor by chaning the KSM_REMOVE_MEMORY_REGION
+ioctl to recive another paramter that it is the begining of the virtual
+address that is wanted to be removed.
+
+(user can still remove all the memory regions all at once, by just closing
+the file descriptor)
+
+Signed-off-by: Izik Eidus <ieidus@redhat.com>
+---
+ mm/ksm.c |   31 +++++++++++++++++++++----------
+ 1 files changed, 21 insertions(+), 10 deletions(-)
+
+diff --git a/mm/ksm.c b/mm/ksm.c
+index 982dfff..c14019f 100644
+--- a/mm/ksm.c
++++ b/mm/ksm.c
+@@ -561,17 +561,20 @@ static void remove_mm_from_hash_and_tree(struct mm_struct *mm)
+ 	list_del(&slot->link);
+ }
+ 
+-static int ksm_sma_ioctl_remove_memory_region(struct ksm_sma *ksm_sma)
++static int ksm_sma_ioctl_remove_memory_region(struct ksm_sma *ksm_sma,
++					      unsigned long addr)
+ {
+ 	struct ksm_mem_slot *slot, *node;
+ 
+ 	down_write(&slots_lock);
+ 	list_for_each_entry_safe(slot, node, &ksm_sma->sma_slots, sma_link) {
+-		remove_mm_from_hash_and_tree(slot->mm);
+-		mmput(slot->mm);
+-		list_del(&slot->sma_link);
+-		kfree(slot);
+-		ksm_sma->nregions--;
++		if (addr == slot->addr) {
++			remove_mm_from_hash_and_tree(slot->mm);
++			mmput(slot->mm);
++			list_del(&slot->sma_link);
++			kfree(slot);
++			ksm_sma->nregions--;
++		}
+ 	}
+ 	up_write(&slots_lock);
+ 	return 0;
+@@ -579,12 +582,20 @@ static int ksm_sma_ioctl_remove_memory_region(struct ksm_sma *ksm_sma)
+ 
+ static int ksm_sma_release(struct inode *inode, struct file *filp)
+ {
++	struct ksm_mem_slot *slot, *node;
+ 	struct ksm_sma *ksm_sma = filp->private_data;
+-	int r;
+ 
+-	r = ksm_sma_ioctl_remove_memory_region(ksm_sma);
++	down_write(&slots_lock);
++	list_for_each_entry_safe(slot, node, &ksm_sma->sma_slots, sma_link) {
++		remove_mm_from_hash_and_tree(slot->mm);
++		mmput(slot->mm);
++		list_del(&slot->sma_link);
++		kfree(slot);
++	}
++	up_write(&slots_lock);
++
+ 	kfree(ksm_sma);
+-	return r;
++	return 0;
+ }
+ 
+ static long ksm_sma_ioctl(struct file *filp,
+@@ -607,7 +618,7 @@ static long ksm_sma_ioctl(struct file *filp,
+ 		break;
+ 	}
+ 	case KSM_REMOVE_MEMORY_REGION:
+-		r = ksm_sma_ioctl_remove_memory_region(sma);
++		r = ksm_sma_ioctl_remove_memory_region(sma, arg);
+ 		break;
+ 	}
+ 
+-- 
+1.5.6.5
+
+>From 146ecd222f59460548dafbd3c322030251c33b8d Mon Sep 17 00:00:00 2001
+From: Izik Eidus <ieidus@redhat.com>
+Date: Thu, 30 Apr 2009 20:38:05 +0300
+Subject: [PATCH 12/13] ksm: change the prot handling to use the generic helper functions
+
+This is needed to avoid breaking some architectures.
+
+Signed-off-by: Izik Eidus <ieidus@redhat.com>
+---
+ mm/ksm.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/mm/ksm.c b/mm/ksm.c
+index c14019f..bfbbe1d 100644
+--- a/mm/ksm.c
++++ b/mm/ksm.c
+@@ -766,8 +766,8 @@ static int try_to_merge_two_pages_alloc(struct mm_struct *mm1,
+ 		up_read(&mm1->mmap_sem);
+ 		return ret;
+ 	}
+-	prot = vma->vm_page_prot;
+-	pgprot_val(prot) &= ~_PAGE_RW;
++
++	prot = vm_get_page_prot(vma->vm_flags & ~VM_WRITE);
+ 
+ 	copy_user_highpage(kpage, page1, addr1, vma);
+ 	ret = try_to_merge_one_page(mm1, vma, page1, kpage, prot);
+@@ -784,8 +784,7 @@ static int try_to_merge_two_pages_alloc(struct mm_struct *mm1,
+ 			return ret;
+ 		}
+ 
+-		prot = vma->vm_page_prot;
+-		pgprot_val(prot) &= ~_PAGE_RW;
++		prot = vm_get_page_prot(vma->vm_flags & ~VM_WRITE);
+ 
+ 		ret = try_to_merge_one_page(mm2, vma, page2, kpage,
+ 					    prot);
+@@ -831,8 +830,9 @@ static int try_to_merge_two_pages_noalloc(struct mm_struct *mm1,
+ 		up_read(&mm1->mmap_sem);
+ 		return ret;
+ 	}
+-	prot = vma->vm_page_prot;
+-	pgprot_val(prot) &= ~_PAGE_RW;
++
++	prot = vm_get_page_prot(vma->vm_flags & ~VM_WRITE);
++
+ 	ret = try_to_merge_one_page(mm1, vma, page1, page2, prot);
+ 	up_read(&mm1->mmap_sem);
+ 	if (!ret)
+-- 
+1.5.6.5
+
+>From 3b437cac1890999191cca6c76da5e71ceec487e4 Mon Sep 17 00:00:00 2001
+From: Izik Eidus <ieidus@redhat.com>
+Date: Thu, 30 Apr 2009 20:38:33 +0300
+Subject: [PATCH 13/13] ksm: build system make it compile for all archs
+
+The known issues with cross platform support were fixed,
+so we return it back to compile on all archs.
+
+Signed-off-by: Izik Eidus <ieidus@redhat.com>
+---
+ mm/Kconfig |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/mm/Kconfig b/mm/Kconfig
+index f59b1e4..fb8ac63 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -228,7 +228,6 @@ config MMU_NOTIFIER
+ 
+ config KSM
+ 	tristate "Enable KSM for page sharing"
+-	depends on X86
+ 	help
+ 	  Enable the KSM kernel module to allow page sharing of equal pages
+ 	  among different tasks.
+-- 
+1.5.6.5
+
+
 
