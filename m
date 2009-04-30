@@ -1,72 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761915AbZD3Vsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbZD3Vsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761915AbZD3Vsa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 17:48:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZD3VsU
+	id S1755393AbZD3Vsr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 17:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759287AbZD3Vs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 17:48:20 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:24078 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750909AbZD3VsT (ORCPT
+	Thu, 30 Apr 2009 17:48:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37431 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754423AbZD3Vs0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 17:48:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ve6ESoRadBPWrgh72qwMysGfHpOzcinCokd2NZXnMAByf70bzUE3vbiTkQjIoFjD9U
-         o8s1Rl64JT3s2JSPefK1/dVxPSSmHhJDc5YxO2tDNEHaFcDskNiLjWBdXiyu/C5ZTy1k
-         D7oYAV/Hu1SrzOpjgsbkO4gXNSIF72eyKHP3A=
-Date: Fri, 1 May 2009 03:18:01 +0530
-From: Rabin Vincent <rabin@rab.in>
-To: Meelis Roos <mroos@linux.ee>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       jaswinderrajput@gmail.com, linux-scsi@vger.kernel.org
-Subject: Re: lockdep warning from firmware loader
-Message-ID: <20090430214617.GA13109@debian>
-References: <Pine.SOC.4.64.0904241017380.219@math.ut.ee>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.SOC.4.64.0904241017380.219@math.ut.ee>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 30 Apr 2009 17:48:26 -0400
+Date: Thu, 30 Apr 2009 14:45:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nikanth Karthikesan <knikanth@novell.com>
+Cc: mingo@elte.hu, jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Detect and warn on atomic_inc/atomic_dec wrapping
+ around
+Message-Id: <20090430144526.10b3039a.akpm@linux-foundation.org>
+In-Reply-To: <200904301939.51022.knikanth@novell.com>
+References: <200904291221.40361.knikanth@novell.com>
+	<200904301921.44615.knikanth@novell.com>
+	<20090430140559.GA14696@elte.hu>
+	<200904301939.51022.knikanth@novell.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(CCs added)
+On Thu, 30 Apr 2009 19:39:50 +0530
+Nikanth Karthikesan <knikanth@novell.com> wrote:
 
-On Fri, Apr 24, 2009 at 10:21:13AM +0300, Meelis Roos wrote:
-> This 2.6.30-rc3 running on SMP sparc64. Loading the qla1280 pci scsi 
-> driver causes a firmware load that in turn causes a lockdep warning like 
-> below. Firmware loading still seems to work fine.
-[..]
-> Apr 23 22:20:39 korvits kernel: [  143.912020] qla1280: QLA1040 found on PCI bus 0, dev 3
-> Apr 23 22:20:39 korvits kernel: [  143.971811] PCI: Enabling device: (0002:00:03.0), cmd 7
-> Apr 23 22:20:39 korvits kernel: [  143.972842] ------------[ cut here ]------------
-> Apr 23 22:20:39 korvits kernel: [  144.026699] WARNING: at kernel/lockdep.c:2280 lockdep_trace_alloc+0xbc/0x100()
-> Apr 23 22:20:39 korvits kernel: [  144.113197] Modules linked in:
-> Apr 23 22:20:39 korvits kernel: [  144.149622] Call Trace:
-> Apr 23 22:20:39 korvits kernel: [  144.178818]  [000000000045d7cc] warn_slowpath+0x6c/0xa0
-> Apr 23 22:20:39 korvits kernel: [  144.241329]  [00000000004886fc] lockdep_trace_alloc+0xbc/0x100
-> Apr 23 22:20:39 korvits kernel: [  144.311140]  [00000000004e67b8] kmem_cache_alloc+0x18/0x160
-> Apr 23 22:20:39 korvits kernel: [  144.377821]  [0000000000604d68] _request_firmware+0x28/0x520
-> Apr 23 22:20:39 korvits kernel: [  144.445533]  [000000000060531c] request_firmware+0x1c/0x40
-> Apr 23 22:20:39 korvits kernel: [  144.511180]  [000000000061ba98] qla1280_load_firmware+0x2f8/0x7e0
-> Apr 23 22:20:39 korvits kernel: [  144.584108]  [00000000006e1498] qla1280_probe_one+0x390/0x7a8
-> Apr 23 22:20:39 korvits kernel: [  144.652874]  [00000000005ce55c] local_pci_probe+0x1c/0x40
-> Apr 23 22:20:39 korvits kernel: [  144.717468]  [00000000005ce8e0] pci_device_probe+0x60/0xa0
-> Apr 23 22:20:39 korvits kernel: [  144.783106]  [00000000005fff78] driver_probe_device+0x78/0x1a0
-> Apr 23 22:20:39 korvits kernel: [  144.852911]  [000000000060012c] __driver_attach+0x8c/0xa0
-> Apr 23 22:20:39 korvits kernel: [  144.917505]  [00000000005ff6c8] bus_for_each_dev+0x68/0xa0
-> Apr 23 22:20:39 korvits kernel: [  144.983141]  [00000000005ffde0] driver_attach+0x20/0x40
-> Apr 23 22:20:39 korvits kernel: [  145.045657]  [00000000005fee64] bus_add_driver+0x104/0x280
-> Apr 23 22:20:39 korvits kernel: [  145.111292]  [0000000000600454] driver_register+0x74/0x180
-> Apr 23 22:20:39 korvits kernel: [  145.176928]  [00000000005cedb4] __pci_register_driver+0x54/0xe0
-> Apr 23 22:20:39 korvits kernel: [  145.247808] ---[ end trace 6edbdc497698d192 ]---
-> Apr 23 22:20:39 korvits kernel: [  145.302997] qla1280 0002:00:03.0: firmware: using built-in firmware qlogic/1040.bin
+> 
 
-This is because the driver calls request_firmware() with interrupts
-disabled.
+If I had a dollar for each wordwrapped patch I get sent...
 
-Rabin
+> Detect and warn on atomic_inc/atomic_dec overflow.
+> 
+> Add a debug option to detect and warn when the 32-bit atomic_t overflows
+> during atomic_inc and atomic_dec.
+> 
+
+OK.  
+
+I'll beef the changelog up a bit - this one is wimpy.
+
+The question is: do we put this in mainline?  I guess we might as well
+give it a shot.  It may well find bugs and it might also trigger false
+positives.  We can then fix the bugs and decide whether the false
+positives warrant reverting it again, all very easy.
+
+> +#include <asm/bug.h>
+
+checkpatch says
+
+WARNING: Use #include <linux/bug.h> instead of <asm/bug.h>
+#215: FILE: include/asm-generic/atomic.h:11:
++#include <asm/bug.h>
+
+Was this an oversight, or did you try using linux/bug.h and discovered
+some problem?
+
+> index 812c282..773c1a4 100644
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -17,6 +17,17 @@ config ENABLE_WARN_DEPRECATED
+>  	  Disable this to suppress the "warning: 'foo' is deprecated
+>  	  (declared at kernel/power/somefile.c:1234)" messages.
+>  
+> +config HAVE_ARCH_DEBUG_ATOMIC
+> +	bool
+> +
+> +config ENABLE_WARN_ATOMIC_INC_WRAP
+> +	bool "Enable warning on atomic_inc()/atomic_dec() wrap"
+> +	depends on HAVE_ARCH_DEBUG_ATOMIC
+> +	default y
+> +	help
+> +	  Enable printing a warning when atomic_inc() or atomic_dec()
+> +	  operation wraps around the 32-bit value.
+> +
+
+Yes, I agree with `default y' for now.  But we might want to turn it
+off again later.  Adding that WARN to every atomic_inc/atomic_dec site
+must do terrible things to the kernel text footprint.
+
+Of course, if we make if `default y' for a while and then switch it to
+`default n', the `y' state will linger for a very long time in all the
+kernel developers' .configs.  Good!  Very sneaky.
