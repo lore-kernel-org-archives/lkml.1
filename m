@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763921AbZD3Ny6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763947AbZD3Nzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763921AbZD3Ny6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 09:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762501AbZD3Nyp
+	id S1763947AbZD3Nzf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 09:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762233AbZD3NzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 09:54:45 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:51894 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758195AbZD3Nyn (ORCPT
+	Thu, 30 Apr 2009 09:55:20 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:62343 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1762222AbZD3NzR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 09:54:43 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@monstr.eu
-Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
-Date: Thu, 30 Apr 2009 15:53:46 +0200
-User-Agent: KMail/1.9.9
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       john.williams@petalogix.com
-References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <200904271447.40984.arnd@arndb.de> <49F5A9A8.8010306@monstr.eu>
-In-Reply-To: <49F5A9A8.8010306@monstr.eu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 30 Apr 2009 09:55:17 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsFAD9E+UlMQW1W/2dsb2JhbACBUM4kg38F
+Date: Thu, 30 Apr 2009 09:50:05 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christoph Lameter <cl@linux.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, thomas.pi@arcor.dea,
+       Yuriy Lalym <ylalym@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ltt-dev@lists.casi.polymtl.ca
+Subject: Re: [PATCH] Fix dirty page accounting in
+	redirty_page_for_writepage()
+Message-ID: <20090430135005.GA5922@Krystal>
+References: <20090429232546.GB15782@Krystal> <alpine.LFD.2.00.0904291701450.22156@localhost.localdomain> <20090430024303.GB19875@Krystal> <alpine.DEB.1.10.0904300921290.22262@qirst.com> <20090430133859.GB8329@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200904301553.47556.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19ldyE4CZYnYWOYpvLcVxJSdqDusEKDmmAYWmU
- UutlCrxl2fxqx0GKVyV02ULF7f1VU11Ct8wIm9K3wDGvO4rRtw
- NZnWWLfNK1cqXDB+Yr4cQ==
+In-Reply-To: <20090430133859.GB8329@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:46:26 up 61 days, 10:12,  1 user,  load average: 0.62, 0.75,
+	0.58
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 April 2009, Michal Simek wrote:
-> Arnd Bergmann wrote:
-> > On Monday 27 April 2009, Michal Simek wrote:
-> >>> st_size represents an off_t in user space, which is signed.
-> >>> Just over half the existing architectures use signed types
-> >>> for st_size, but for this (like Sam's suggestion for __u64),
-> >>> I don't think it matters either way.
-> >> OK. Is it mean that your structure is perfect? If yes,
-> >> I'll recompile toolchain and do some more tests. 
-> > 
-> > Please wait for my full patches, which I am about to
-> > post. I hope to get to the stage where literally none
-> > of the ABI is defined in your own header files but
-> > it all gets into the generic parts. I hope to get this
-> > out within a few hours.
+* Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> OK.
+> * Christoph Lameter <cl@linux.com> wrote:
+> 
+> > On Wed, 29 Apr 2009, Mathieu Desnoyers wrote:
+> > 
+> > > to have a good look at the memory accounting code. We could 
+> > > probably benefit of Christoph Lameter's cpu ops (using segment 
+> > > registers to address per-cpu variables with atomic inc/dec) in 
+> > > there. Or at least removing interrupt disabling by using preempt 
+> > > disable and local_t variables for the per-cpu counters could 
+> > > bring some benefit.
+> > 
+> > Guess we are ready for atomic per cpu ops now that the new per cpu 
+> > allocator is in? Segment register issues with the PDA are also 
+> > solved right?
+> 
+> it's all done, implemented and upstream already. You are a bit late 
+> to the party ;-)
+> 
+> 	Ingo
 
-Any success so far with the patches I posted? I guess you
-need to apply just the first of the three microblaze patches
-in the series first to see if that works, before changing
-the signal handling and syscall table as well.
+Or way too early, depending on the point of view. :-)
 
-	Arnd <><
+e.g.
+http://lkml.org/lkml/2008/5/30/3
+
+I think Christoph deserves credits for pioneering this area with fresh
+ideas.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
