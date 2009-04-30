@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762727AbZD3XuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762866AbZD3Xug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762727AbZD3XuF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 19:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761616AbZD3Xsa
+	id S1762866AbZD3Xug (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 19:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761633AbZD3Xsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 19:48:30 -0400
-Received: from ru.mvista.com ([213.79.90.228]:5208 "EHLO
+	Thu, 30 Apr 2009 19:48:31 -0400
+Received: from ru.mvista.com ([213.79.90.228]:5213 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1761495AbZD3Xs2 (ORCPT
+	by vger.kernel.org with ESMTP id S1761501AbZD3Xsa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 19:48:28 -0400
-Date: Fri, 1 May 2009 03:48:27 +0400
+	Thu, 30 Apr 2009 19:48:30 -0400
+Date: Fri, 1 May 2009 03:48:29 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        David Brownell <dbrownell@users.sourceforge.net>,
        linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 5/9] spi_mpc83xx: Fix checkpatch issues
-Message-ID: <20090430234827.GE7901@oksana.dev.rtsoft.ru>
+Subject: [PATCH 6/9] spi_mpc83xx: Split mpc83xx_spi_work() into two routines
+Message-ID: <20090430234829.GF7901@oksana.dev.rtsoft.ru>
 References: <20090430234739.GA27709@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -29,117 +29,156 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Checkpatch is spitting errors when seeing the rename patch, so fix
-the errors prior to moving.
+mpc83xx_spi_work() is quite large, with up to five indentation
+levels and is quite difficult to read.
 
-Following errors and warnings were fixed:
+So, split the function in two parts:
+1. mpc83xx_spi_work() now only traverse queued spi messages;
+2. mpc83xx_spi_do_one_msg() only manages single messages.
 
-WARNING: Use #include <linux/io.h> instead of <asm/io.h>
-#1027: FILE: drivers/spi/spi_mpc8xxx.c:37:
-+#include <asm/io.h>
-
-ERROR: "foo * bar" should be "foo *bar"
-#1111: FILE: drivers/spi/spi_mpc8xxx.c:121:
-+static inline void mpc83xx_spi_write_reg(__be32 __iomem * reg, u32 val)
-
-ERROR: "foo * bar" should be "foo *bar"
-#1116: FILE: drivers/spi/spi_mpc8xxx.c:126:
-+static inline u32 mpc83xx_spi_read_reg(__be32 __iomem * reg)
-
-ERROR: "foo * bar" should be "foo *bar"
-#1125: FILE: drivers/spi/spi_mpc8xxx.c:135:
-+       type * rx = mpc83xx_spi->rx;                                      \
-
-ERROR: "foo * bar" should be "foo *bar"
-#1135: FILE: drivers/spi/spi_mpc8xxx.c:145:
-+       const type * tx = mpc83xx_spi->tx;                      \
-
-WARNING: suspect code indent for conditional statements (16, 25)
-#1504: FILE: drivers/spi/spi_mpc8xxx.c:514:
-+               while (((event =
-[...]
-+                        cpu_relax();
-
-Following warnings were left over, since fixing them will
-hurt the readability. We'd better fix them by lowering
-the indentation level by splitting mpc83xx_spi_work function
-into two parts.
-
-WARNING: line over 80 characters
-#1371: FILE: drivers/spi/spi_mpc8xxx.c:381:
-+                                       status = mpc83xx_spi_setup_transfer(spi, t);
-
-WARNING: line over 80 characters
-#1392: FILE: drivers/spi/spi_mpc8xxx.c:402:
-+                               mpc83xx_spi_chipselect(spi, BITBANG_CS_INACTIVE);
+There should be no functional changes.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/spi/spi_mpc83xx.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/spi/spi_mpc83xx.c |  115 +++++++++++++++++++++++---------------------
+ 1 files changed, 60 insertions(+), 55 deletions(-)
 
 diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
-index d378d5e..40f7448 100644
+index 40f7448..50112a5 100644
 --- a/drivers/spi/spi_mpc83xx.c
 +++ b/drivers/spi/spi_mpc83xx.c
-@@ -17,6 +17,7 @@
- #include <linux/bug.h>
- #include <linux/errno.h>
- #include <linux/err.h>
-+#include <linux/io.h>
- #include <linux/completion.h>
- #include <linux/interrupt.h>
- #include <linux/delay.h>
-@@ -34,7 +35,6 @@
+@@ -350,71 +350,76 @@ static int mpc83xx_spi_bufs(struct spi_device *spi, struct spi_transfer *t)
+ 	return mpc83xx_spi->count;
+ }
  
- #include <sysdev/fsl_soc.h>
- #include <asm/irq.h>
--#include <asm/io.h>
- 
- /* SPI Controller registers */
- struct mpc83xx_spi_reg {
-@@ -118,12 +118,12 @@ struct spi_mpc83xx_cs {
- 	u32 hw_mode;		/* Holds HW mode register settings */
- };
- 
--static inline void mpc83xx_spi_write_reg(__be32 __iomem * reg, u32 val)
-+static inline void mpc83xx_spi_write_reg(__be32 __iomem *reg, u32 val)
+-static void mpc83xx_spi_work(struct work_struct *work)
++static void mpc83xx_spi_do_one_msg(struct spi_message *m)
  {
- 	out_be32(reg, val);
- }
+-	struct mpc83xx_spi *mpc83xx_spi =
+-		container_of(work, struct mpc83xx_spi, work);
+-
+-	spin_lock_irq(&mpc83xx_spi->lock);
+-	mpc83xx_spi->busy = 1;
+-	while (!list_empty(&mpc83xx_spi->queue)) {
+-		struct spi_message *m;
+-		struct spi_device *spi;
+-		struct spi_transfer *t = NULL;
+-		unsigned cs_change;
+-		int status, nsecs = 50;
+-
+-		m = container_of(mpc83xx_spi->queue.next,
+-				struct spi_message, queue);
+-		list_del_init(&m->queue);
+-		spin_unlock_irq(&mpc83xx_spi->lock);
+-
+-		spi = m->spi;
+-		cs_change = 1;
+-		status = 0;
+-		list_for_each_entry(t, &m->transfers, transfer_list) {
+-			if (t->bits_per_word || t->speed_hz) {
+-				/* Don't allow changes if CS is active */
+-				status = -EINVAL;
+-
+-				if (cs_change)
+-					status = mpc83xx_spi_setup_transfer(spi, t);
+-				if (status < 0)
+-					break;
+-			}
+-
+-			if (cs_change) {
+-				mpc83xx_spi_chipselect(spi, BITBANG_CS_ACTIVE);
+-				ndelay(nsecs);
+-			}
+-			cs_change = t->cs_change;
+-			if (t->len)
+-				status = mpc83xx_spi_bufs(spi, t);
+-			if (status) {
+-				status = -EMSGSIZE;
++	struct spi_device *spi = m->spi;
++	struct spi_transfer *t;
++	unsigned int cs_change;
++	const int nsecs = 50;
++	int status;
++
++	cs_change = 1;
++	status = 0;
++	list_for_each_entry(t, &m->transfers, transfer_list) {
++		if (t->bits_per_word || t->speed_hz) {
++			/* Don't allow changes if CS is active */
++			status = -EINVAL;
++
++			if (cs_change)
++				status = mpc83xx_spi_setup_transfer(spi, t);
++			if (status < 0)
+ 				break;
+-			}
+-			m->actual_length += t->len;
+-
+-			if (t->delay_usecs)
+-				udelay(t->delay_usecs);
++		}
  
--static inline u32 mpc83xx_spi_read_reg(__be32 __iomem * reg)
-+static inline u32 mpc83xx_spi_read_reg(__be32 __iomem *reg)
- {
- 	return in_be32(reg);
- }
-@@ -132,7 +132,7 @@ static inline u32 mpc83xx_spi_read_reg(__be32 __iomem * reg)
- static									  \
- void mpc83xx_spi_rx_buf_##type(u32 data, struct mpc83xx_spi *mpc83xx_spi) \
- {									  \
--	type * rx = mpc83xx_spi->rx;					  \
-+	type *rx = mpc83xx_spi->rx;					  \
- 	*rx++ = (type)(data >> mpc83xx_spi->rx_shift);			  \
- 	mpc83xx_spi->rx = rx;						  \
- }
-@@ -142,7 +142,7 @@ static								\
- u32 mpc83xx_spi_tx_buf_##type(struct mpc83xx_spi *mpc83xx_spi)	\
- {								\
- 	u32 data;						\
--	const type * tx = mpc83xx_spi->tx;			\
-+	const type *tx = mpc83xx_spi->tx;			\
- 	if (!tx)						\
- 		return 0;					\
- 	data = *tx++ << mpc83xx_spi->tx_shift;			\
-@@ -516,7 +516,7 @@ static irqreturn_t mpc83xx_spi_irq(s32 irq, void *context_data)
- 		while (((event =
- 			 mpc83xx_spi_read_reg(&mpc83xx_spi->base->event)) &
- 						SPIE_NF) == 0)
--			 cpu_relax();
-+			cpu_relax();
+-			if (cs_change) {
+-				ndelay(nsecs);
+-				mpc83xx_spi_chipselect(spi, BITBANG_CS_INACTIVE);
+-				ndelay(nsecs);
+-			}
++		if (cs_change) {
++			mpc83xx_spi_chipselect(spi, BITBANG_CS_ACTIVE);
++			ndelay(nsecs);
++		}
++		cs_change = t->cs_change;
++		if (t->len)
++			status = mpc83xx_spi_bufs(spi, t);
++		if (status) {
++			status = -EMSGSIZE;
++			break;
+ 		}
++		m->actual_length += t->len;
  
- 	mpc83xx_spi->count -= 1;
- 	if (mpc83xx_spi->count) {
+-		m->status = status;
+-		m->complete(m->context);
++		if (t->delay_usecs)
++			udelay(t->delay_usecs);
+ 
+-		if (status || !cs_change) {
++		if (cs_change) {
+ 			ndelay(nsecs);
+ 			mpc83xx_spi_chipselect(spi, BITBANG_CS_INACTIVE);
++			ndelay(nsecs);
+ 		}
++	}
++
++	m->status = status;
++	m->complete(m->context);
++
++	if (status || !cs_change) {
++		ndelay(nsecs);
++		mpc83xx_spi_chipselect(spi, BITBANG_CS_INACTIVE);
++	}
++
++	mpc83xx_spi_setup_transfer(spi, NULL);
++}
++
++static void mpc83xx_spi_work(struct work_struct *work)
++{
++	struct mpc83xx_spi *mpc83xx_spi = container_of(work, struct mpc83xx_spi,
++						       work);
++
++	spin_lock_irq(&mpc83xx_spi->lock);
++	mpc83xx_spi->busy = 1;
++	while (!list_empty(&mpc83xx_spi->queue)) {
++		struct spi_message *m = container_of(mpc83xx_spi->queue.next,
++						   struct spi_message, queue);
++
++		list_del_init(&m->queue);
++		spin_unlock_irq(&mpc83xx_spi->lock);
+ 
+-		mpc83xx_spi_setup_transfer(spi, NULL);
++		mpc83xx_spi_do_one_msg(m);
+ 
+ 		spin_lock_irq(&mpc83xx_spi->lock);
+ 	}
 -- 
 1.6.2.2
 
