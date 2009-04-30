@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761927AbZD3AmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757475AbZD3AqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761927AbZD3AmU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 20:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbZD3AmI
+	id S1757475AbZD3AqL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 20:46:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbZD3Apz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 20:42:08 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:53047 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751104AbZD3AmH (ORCPT
+	Wed, 29 Apr 2009 20:45:55 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:57864 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751104AbZD3Apy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 20:42:07 -0400
-Date: Thu, 30 Apr 2009 01:42:05 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fs/super.c: fix sparse warning
-Message-ID: <20090430004205.GO8633@ZenIV.linux.org.uk>
-References: <BD79186B4FD85F4B8E60E381CAEE1909016C1B15@mi8nycmail19.Mi8.com>
+	Wed, 29 Apr 2009 20:45:54 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE1909016C1B15@mi8nycmail19.Mi8.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <8bd0f97a0904291638p398ad701j5dc0f8e96de2fb47@mail.gmail.com>
+References: <20090427193532.GA2948@kroah.com> <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com> 
+	<20090429180735.GA29812@kroah.com> <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com> 
+	<20090429183012.GA28237@kroah.com> <8bd0f97a0904291638p398ad701j5dc0f8e96de2fb47@mail.gmail.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Thu, 30 Apr 2009 02:45:33 +0200
+Message-ID: <ac3eb2510904291745j48220c12oe2a2b91e981ea403@mail.gmail.com>
+Subject: Re: usbutils 0.81 release
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 08:14:57PM -0400, H Hartley Sweeten wrote:
-> Sparse reports the following in fs/super.c:
-> 
->   warning: Using plain integer as NULL pointer
-> 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: Subrata Modak <subrata@linux.vnet.ibm.com>
+On Thu, Apr 30, 2009 at 01:38, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> On Wed, Apr 29, 2009 at 14:30, Greg KH wrote:
+>> On Wed, Apr 29, 2009 at 02:17:12PM -0400, Mike Frysinger wrote:
+>>> >> find being able to run `usbmodules` pretty useful ... i wrote a script
+>>> >> for fun:
+>>> >> http://sources.gentoo.org/sys-apps/usbutils/files/usbmodules.sh
+>>> >
+>>> > Did that work on any 2.6 kernel?
+>>>
+>>> it's the only version ive tested it with ... but it doesnt parse any
+>>> kernel module directly, it reads the generated modules.usbmap file
+>>>
+>>> > There's no reason we can't add "-k" support to lsusb like lspci has to
+>>> > show the modules assigned to different devices.
+>>>
+>>> the method i posted above only needs the module to be compiled, not loaded
+>>
+>> As the map files are depreciated, I wouldn't continue to rely on it, it
+>> will break in the future when the kernel stops generating those files.
+>
+> guess i'll have to rewrite it to parse the .ko modules directly like
+> the usbmap is generated now
 
-Applied.
+Can't you use the modules.aliases file? That should stay around and
+there should be the same information contained.
 
-However, I would *really* ask you to avoid that kind of subjects in
-the future.  Proper subject for that one is "NULL noise in <file>" (or
-<file>:<function>.  Sparse doesn't even need to be mentioned.
-
-sparse generates many kinds of warnings.  And they are neither equal
-nor equally interesting.
-
-Kindly use subjects that would tell what's going on; "$TOOL gives
-some warning in $FILE" is bloody useless.
+Kay
