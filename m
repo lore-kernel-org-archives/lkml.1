@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765214AbZD3RYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932396AbZD3RXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765214AbZD3RYV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764451AbZD3RHy
+	id S932396AbZD3RXt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764619AbZD3RHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 30 Apr 2009 13:07:54 -0400
-Received: from kroah.org ([198.145.64.141]:56378 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:56384 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764589AbZD3RHq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:46 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:44 2009
-Message-Id: <20090430165743.983264626@mini.kroah.org>
+	id S1764590AbZD3RHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:45 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:43 2009
+Message-Id: <20090430165743.827494475@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:27 -0700
+Date: Thu, 30 Apr 2009 09:56:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Paul Mackerras <paulus@samba.org>,
+       alan@lxorguk.ukuu.org.uk,
+       David Brownell <dbrownell@users.sourceforge.net>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 38/88] powerpc: Fix data-corrupting bug in __futex_atomic_op
+Subject: [patch 37/88] spi: spi_write_then_read() bugfixes
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=0068-powerpc-Fix-data-corrupting-bug-in-__futex_atomic_o.patch
+Content-Disposition: inline; filename=0064-spi-spi_write_then_read-bugfixes.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,62 +40,81 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Paul Mackerras <paulus@samba.org>
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-upstream commit: 306a82881b14d950d59e0b59a55093a07d82aa9a
+upstream commit: bdff549ebeff92b1a6952e5501caf16a6f8898c8
 
-Richard Henderson pointed out that the powerpc __futex_atomic_op has a
-bug: it will write the wrong value if the stwcx. fails and it has to
-retry the lwarx/stwcx. loop, since 'oparg' will have been overwritten
-by the result from the first time around the loop.  This happens
-because it uses the same register for 'oparg' (an input) as it uses
-for the result.
+The "simplify spi_write_then_read()" patch included two regressions from
+the 2.6.27 behaviors:
 
-This fixes it by using separate registers for 'oparg' and 'ret'.
+ - The data it wrote out during the (full duplex) read side
+   of the transfer was not zeroed.
 
-Cc: stable@kernel.org
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+ - It fails completely on half duplex hardware, such as
+   Microwire and most "3-wire" SPI variants.
+
+So, revert that patch.  A revised version should be submitted at some
+point, which can get the speedup on standard hardware (full duplex)
+without breaking on less-capable half-duplex stuff.
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/powerpc/include/asm/futex.h |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/spi/spi.c |   22 ++++++++++++++--------
+ 1 file changed, 14 insertions(+), 8 deletions(-)
 
---- a/arch/powerpc/include/asm/futex.h
-+++ b/arch/powerpc/include/asm/futex.h
-@@ -27,7 +27,7 @@
- 	PPC_LONG "1b,4b,2b,4b\n" \
- 	".previous" \
- 	: "=&r" (oldval), "=&r" (ret) \
--	: "b" (uaddr), "i" (-EFAULT), "1" (oparg) \
-+	: "b" (uaddr), "i" (-EFAULT), "r" (oparg) \
- 	: "cr0", "memory")
+--- a/drivers/spi/spi.c
++++ b/drivers/spi/spi.c
+@@ -660,7 +660,7 @@ int spi_write_then_read(struct spi_devic
  
- static inline int futex_atomic_op_inuser (int encoded_op, int __user *uaddr)
-@@ -47,19 +47,19 @@ static inline int futex_atomic_op_inuser
+ 	int			status;
+ 	struct spi_message	message;
+-	struct spi_transfer	x;
++	struct spi_transfer	x[2];
+ 	u8			*local_buf;
  
- 	switch (op) {
- 	case FUTEX_OP_SET:
--		__futex_atomic_op("", ret, oldval, uaddr, oparg);
-+		__futex_atomic_op("mr %1,%4\n", ret, oldval, uaddr, oparg);
- 		break;
- 	case FUTEX_OP_ADD:
--		__futex_atomic_op("add %1,%0,%1\n", ret, oldval, uaddr, oparg);
-+		__futex_atomic_op("add %1,%0,%4\n", ret, oldval, uaddr, oparg);
- 		break;
- 	case FUTEX_OP_OR:
--		__futex_atomic_op("or %1,%0,%1\n", ret, oldval, uaddr, oparg);
-+		__futex_atomic_op("or %1,%0,%4\n", ret, oldval, uaddr, oparg);
- 		break;
- 	case FUTEX_OP_ANDN:
--		__futex_atomic_op("andc %1,%0,%1\n", ret, oldval, uaddr, oparg);
-+		__futex_atomic_op("andc %1,%0,%4\n", ret, oldval, uaddr, oparg);
- 		break;
- 	case FUTEX_OP_XOR:
--		__futex_atomic_op("xor %1,%0,%1\n", ret, oldval, uaddr, oparg);
-+		__futex_atomic_op("xor %1,%0,%4\n", ret, oldval, uaddr, oparg);
- 		break;
- 	default:
- 		ret = -ENOSYS;
+ 	/* Use preallocated DMA-safe buffer.  We can't avoid copying here,
+@@ -671,9 +671,15 @@ int spi_write_then_read(struct spi_devic
+ 		return -EINVAL;
+ 
+ 	spi_message_init(&message);
+-	memset(&x, 0, sizeof x);
+-	x.len = n_tx + n_rx;
+-	spi_message_add_tail(&x, &message);
++	memset(x, 0, sizeof x);
++	if (n_tx) {
++		x[0].len = n_tx;
++		spi_message_add_tail(&x[0], &message);
++	}
++	if (n_rx) {
++		x[1].len = n_rx;
++		spi_message_add_tail(&x[1], &message);
++	}
+ 
+ 	/* ... unless someone else is using the pre-allocated buffer */
+ 	if (!mutex_trylock(&lock)) {
+@@ -684,15 +690,15 @@ int spi_write_then_read(struct spi_devic
+ 		local_buf = buf;
+ 
+ 	memcpy(local_buf, txbuf, n_tx);
+-	x.tx_buf = local_buf;
+-	x.rx_buf = local_buf;
++	x[0].tx_buf = local_buf;
++	x[1].rx_buf = local_buf + n_tx;
+ 
+ 	/* do the i/o */
+ 	status = spi_sync(spi, &message);
+ 	if (status == 0)
+-		memcpy(rxbuf, x.rx_buf + n_tx, n_rx);
++		memcpy(rxbuf, x[1].rx_buf, n_rx);
+ 
+-	if (x.tx_buf == buf)
++	if (x[0].tx_buf == buf)
+ 		mutex_unlock(&lock);
+ 	else
+ 		kfree(local_buf);
 
 
