@@ -1,103 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757714AbZD3Bsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761565AbZD3BtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757714AbZD3Bsq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 21:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbZD3Bsf
+	id S1761565AbZD3BtF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 21:49:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761455AbZD3Bsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 21:48:35 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:44849 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbZD3Bse (ORCPT
+	Wed, 29 Apr 2009 21:48:47 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:40422 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761526AbZD3Bsp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 21:48:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=xSTD8uggR0quVTidD/w8PhQaDUe4mgrTQcBp6wmbZvAyWQu3XWIKlXyLp2SA7ZgN1R
-         Jvf0UGFi3s2kAkS0UBxPJ1yyO03NTT/OGNqFirCRc26fnHo8GBp2DNZXQL8NCMJhrJcT
-         KjlEiGXasDpW4eGsjnWr1grS/5HzCLlGGL2BQ=
-MIME-Version: 1.0
-In-Reply-To: <ac3eb2510904291745j48220c12oe2a2b91e981ea403@mail.gmail.com>
+	Wed, 29 Apr 2009 21:48:45 -0400
+Subject: Re: usbutils 0.81 release
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Greg KH <greg@kroah.com>
+Cc: Valdis.Kletnieks@vt.edu, Mike Frysinger <vapier.adi@gmail.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090429215623.GA27319@kroah.com>
 References: <20090427193532.GA2948@kroah.com>
 	 <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com>
 	 <20090429180735.GA29812@kroah.com>
 	 <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com>
-	 <20090429183012.GA28237@kroah.com>
-	 <8bd0f97a0904291638p398ad701j5dc0f8e96de2fb47@mail.gmail.com>
-	 <ac3eb2510904291745j48220c12oe2a2b91e981ea403@mail.gmail.com>
-Date: Wed, 29 Apr 2009 21:48:33 -0400
-Message-ID: <8bd0f97a0904291848le808891kff973b1677b7cd33@mail.gmail.com>
-Subject: Re: usbutils 0.81 release
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary=001e680f17accc59760468bbe49b
+	 <ac3eb2510904291159s14d7d532q33657eb73007fc4b@mail.gmail.com>
+	 <20090429192309.GA15539@kroah.com>
+	 <44275.1241041373@turing-police.cc.vt.edu>
+	 <20090429215623.GA27319@kroah.com>
+Content-Type: text/plain
+Date: Thu, 30 Apr 2009 03:48:41 +0200
+Message-Id: <1241056121.18530.31.camel@poy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---001e680f17accc59760468bbe49b
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Wed, 2009-04-29 at 14:56 -0700, Greg KH wrote:
 
-On Wed, Apr 29, 2009 at 20:45, Kay Sievers wrote:
-> On Thu, Apr 30, 2009 at 01:38, Mike Frysinger wrote:
->> On Wed, Apr 29, 2009 at 14:30, Greg KH wrote:
->>> On Wed, Apr 29, 2009 at 02:17:12PM -0400, Mike Frysinger wrote:
->>>> >> find being able to run `usbmodules` pretty useful ... i wrote a script
->>>> >> for fun:
->>>> >> http://sources.gentoo.org/sys-apps/usbutils/files/usbmodules.sh
->>>> >
->>>> > Did that work on any 2.6 kernel?
->>>>
->>>> it's the only version ive tested it with ... but it doesnt parse any
->>>> kernel module directly, it reads the generated modules.usbmap file
->>>>
->>>> > There's no reason we can't add "-k" support to lsusb like lspci has to
->>>> > show the modules assigned to different devices.
->>>>
->>>> the method i posted above only needs the module to be compiled, not loaded
->>>
->>> As the map files are depreciated, I wouldn't continue to rely on it, it
->>> will break in the future when the kernel stops generating those files.
->>
->> guess i'll have to rewrite it to parse the .ko modules directly like
->> the usbmap is generated now
->
-> Can't you use the modules.aliases file? That should stay around and
-> there should be the same information contained.
+> If youreally want it, you can grab it from the git tree, or wait a day
+> or so for me to implement Mike's changes he so nicely sent me, so I can
+> do a new release.
 
-should be fine if it's going to be sticking around
+How about this? It substitutes the script and the man page with the
+given --datadir=.
 
-any comments on the attached file ?  in theory, it could be easily
-extended for pci and other busses ...
--mike
+Git is here:
+  git://git.kernel.org/pub/scm/linux/kernel/git/kay/usbutils.git
 
---001e680f17accc59760468bbe49b
-Content-Type: application/x-sh; name="usbmodules.sh"
-Content-Disposition: attachment; filename="usbmodules.sh"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fu4sr7uu0
+It installs the update script, which will overwrite the original
+location, so we don't need to put several files on the system, and avoid
+confusing other packages who look for them.
 
-IyEvYmluL3NoCgplcnIoKSB7IGVjaG8gInVzYm1vZHVsZXM6IGVycm9yOiAkKiIgMT4mMiA7IH0K
-CnVzYWdlKCkgewoJY2F0IDw8LUVPRgoJTGlzdCByZWxldmFudCBrZXJuZWwgbW9kdWxlcyBmb3Ig
-VVNCIGRldmljZXMgY3VycmVudGx5IHBsdWdnZWQgaW4uICBUaGUKCW1vZHVsZSBsaXN0IGlzIHRh
-a2VuIGZyb20gdGhlIG1vZHVsZXMgaW5zdGFsbGVkIGluIC9saWIvbW9kdWxlcy88dmVyPi8uCgoJ
-VXNhZ2U6IHVzYm1vZHVsZXMgW29wdGlvbnNdIFtrZXJuZWwgdmVyc2lvbl0KCglPcHRpb25zOgoJ
-ICAtbSwgLS1tYXAgPG1hcD4gICBTcGVjaWZ5IHVzYm1hcCAoZGVmYXVsdDogL2xpYi9tb2R1bGVz
-Lzx2ZXI+L21vZHVsZXMudXNibWFwKQoJICAtaCwgLS1oZWxwICAgICAgICBUaGlzIGhlbHAgc2Ny
-ZWVuCglFT0YKCWlmIFsgLW4gIiQqIiBdIDsgdGhlbgoJCWVyciAiJCoiCgkJZXhpdCAxCgllbHNl
-CgkJZXhpdCAwCglmaQp9CgptYXA9IiIKCndoaWxlIFsgLW4gIiQxIiBdIDsgZG8KCWNhc2UgJDEg
-aW4KCQktbXwtLW1hcCkgIG1hcD0kMjsgc2hpZnQ7OwoJCS1ofC0taGVscCkgdXNhZ2U7OwoJCS0t
-KSAgICAgICAgYnJlYWs7OwoJCS0qKSAgICAgICAgdXNhZ2UgInVua25vd24gb3B0aW9uICckMSci
-OzsKCQkqKSAgICAgICAgIGJyZWFrOzsKCWVzYWMKCXNoaWZ0CmRvbmUKCnZlcj0kezE6LSQodW5h
-bWUgLXIpfQptYXA9JHttYXA6LS9saWIvbW9kdWxlcy8ke3Zlcn0vbW9kdWxlcy51c2JtYXB9Cgpp
-ZiBbICEgLXIgIiR7bWFwfSIgXSA7IHRoZW4KCWVyciAidW5hYmxlIHRvIHJlYWQgbWFwIGZpbGU6
-ICR7bWFwfSIKCWV4aXQgMQpmaQoKZm9yIGRldiBpbiAkKGxzdXNiIHwgYXdrICd7cHJpbnQgJDZ9
-JykgOyBkbwoJWyAiJHtkZXZ9IiA9ICIwMDAwOjAwMDAiIF0gJiYgY29udGludWUKCglJRlM9OgoJ
-c2V0IC0tICR7ZGV2fQoJdmVuZG9yPSQxCglwcm9kdWN0PSQyCgl1bnNldCBJRlMKCglhbGlhcz0i
-dXNiOnYke3ZlbmRvcn1wJHtwcm9kdWN0fSIKCWF3ayAnJDEgPT0gImFsaWFzIiAmJiAkMiB+IC9e
-JyR7YWxpYXN9Jy8ge3ByaW50ICRORn0nICR7bWFwfQpkb25lCgpleGl0IDAK
---001e680f17accc59760468bbe49b--
+The right fix for the users of the ids file would probably be to drop a
+usbutils pkg-config file which can point users to the location of the
+database, so other packages could use that value without starting to
+search for the file.
+
+We already need do this silly search in the udev-extras build, and there
+seems not two known distros, who share the same location of that
+file. :(
+
+Thanks,
+Kay
+
+
+diff --git a/.gitignore b/.gitignore
+index fc743f1..cc378da 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -15,4 +15,5 @@ depcomp
+ install-sh
+ missing
+ lsusb
+-
++lsusb.8
++update-usbids.sh
+diff --git a/Makefile.am b/Makefile.am
+index 7c20acb..a88c3b4 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -10,6 +10,9 @@ endif
+ sbin_PROGRAMS = \
+ 	lsusb
+ 
++sbin_SCRIPTS = \
++	update-usbids.sh
++
+ lsusb_SOURCES = \
+ 	lsusb.c \
+ 	lsusb-t.c \
+@@ -25,17 +28,28 @@ lsusb_CPPFLAGS = \
+ lsusb_LDADD = \
+ 	$(LIBUSB_LIBS)
+ 
+-dist_man_MANS = \
++man_MANS = \
+ 	lsusb.8
+ 
+ EXTRA_DIST = \
+-	usb.ids
++	usb.ids \
++	update-usbids.sh.in \
++	lsusb.8.in
++
++update-usbids.sh: update-usbids.sh.in
++	sed 's|@usbids@|$(datadir)/usb.ids|' $< >$@
++	chmod 755 $@
++
++lsusb.8: lsusb.8.in
++	sed 's|@usbids@|$(datadir)/usb.ids|' $< >$@
+ 
+ usb.ids.gz: usb.ids
+ 	gzip -c -9 usb.ids > usb.ids.gz
+ 
+ clean-local:
+ 	rm -f usb.ids.gz
++	rm -f lsusb.8
++	rm -f update-usbids.sh
+ 
+ distclean-local:
+ 	rm -rf autom4te.cache
+diff --git a/configure.ac b/configure.ac
+index 9bf677c..8b6bd2f 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -39,6 +39,7 @@ echo "
+ 	=============
+ 
+ 	prefix:                 ${prefix}
++	datadir:                ${datadir}
+ 	datarootdir:            ${datarootdir}
+ 	mandir:                 ${mandir}
+ 
+diff --git a/lsusb.8 b/lsusb.8.in
+similarity index 98%
+rename from lsusb.8
+rename to lsusb.8.in
+index 14e662c..1922b0a 100644
+--- a/lsusb.8
++++ b/lsusb.8.in
+@@ -55,7 +55,7 @@ If the specified device is not found, a non-zero exit code is returned.
+ 
+ .SH FILES
+ .TP
+-.B /usr/share/usb.ids
++.B @usbids@
+ A list of all known USB ID's (vendors, products, classes, subclasses and protocols).
+ 
+ .SH SEE ALSO
+diff --git a/update-usbids.sh b/update-usbids.sh.in
+similarity index 98%
+rename from update-usbids.sh
+rename to update-usbids.sh.in
+index 3072f03..4a487ed 100755
+--- a/update-usbids.sh
++++ b/update-usbids.sh.in
+@@ -6,7 +6,7 @@
+ 
+ set -e
+ SRC="http://www.linux-usb.org/usb.ids"
+-DEST=usb.ids
++DEST=@usbids@
+ 
+ # if usb.ids is read-only (because the filesystem is read-only),
+ # then just skip this whole process.
+
