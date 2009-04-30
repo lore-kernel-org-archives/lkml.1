@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932647AbZD3R0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932374AbZD3R1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932647AbZD3R0k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764623AbZD3RH7
+	id S932374AbZD3R1N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:27:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764609AbZD3RIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:59 -0400
-Received: from kroah.org ([198.145.64.141]:56384 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:08:00 -0400
+Received: from kroah.org ([198.145.64.141]:56378 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764043AbZD3RHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1764591AbZD3RHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 30 Apr 2009 13:07:52 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:44 2009
-Message-Id: <20090430165744.729023380@mini.kroah.org>
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:45 2009
+Message-Id: <20090430165744.892174136@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:32 -0700
+Date: Thu, 30 Apr 2009 09:56:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,13 +25,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tony Battersby <tonyb@cybernetics.com>,
+       alan@lxorguk.ukuu.org.uk,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        Douglas Gilbert <dgilbert@interlog.com>,
        James Bottomley <James.Bottomley@HansenPartnership.com>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 43/88] SCSI: sg: fix races with ioctl(SG_IO)
+Subject: [patch 44/88] SCSI: sg: avoid blk_put_request/blk_rq_unmap_user in interrupt
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=0073-SCSI-sg-fix-races-with-ioctl-SG_IO.patch
+Content-Disposition: inline; filename=0074-SCSI-sg-avoid-blk_put_request-blk_rq_unmap_user-in.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,126 +42,81 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tony Battersby <tonyb@cybernetics.com>
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-upstream commit: a2dd3b4cea335713b58996bb07b3abcde1175f47
+upstream commit: c96952ed7031e7c576ecf90cf95b8ec099d5295a
 
-sg_io_owned needs to be set before the command is sent to the midlevel;
-otherwise, a quickly-completing command may cause a different CPU
-to see "srp->done == 1 && !srp->sg_io_owned", which would lead to
-incorrect behavior.
+This fixes the following oops:
 
-Check srp->done and set srp->orphan while holding rq_list_lock to
-prevent races with sg_rq_end_io().
+http://marc.info/?l=linux-kernel&m=123316111415677&w=2
 
-There is no need to check sfp->closed from read/write/ioctl/poll/etc.
-since the kernel guarantees that this won't happen.
+You can reproduce this bug by interrupting a program before a sg
+response completes. This leads to the special sg state (the orphan
+state), then sg calls blk_put_request in interrupt (rq->end_io).
 
-The usefulness of sg_srp_done() was questionable before; now it is
-definitely not needed.
+The above bug report shows the recursive lock problem because sg calls
+blk_put_request in interrupt. We could call __blk_put_request here
+instead however we also need to handle blk_rq_unmap_user here, which
+can't be called in interrupt too.
 
-Signed-off-by: Tony Battersby <tonyb@cybernetics.com>
+In the orphan state, we don't need to care about the data transfer
+(the program revoked the command) so adding 'just free the resource'
+mode to blk_rq_unmap_user is a possible option.
+
+I prefer to avoid complicating the blk mapping API when possible. I
+change the orphan state to call sg_finish_rem_req via
+execute_in_process_context. We hold sg_fd->kref so sg_fd doesn't go
+away until keventd_wq finishes our work. copy_from_user/to_user fails
+so blk_rq_unmap_user just frees the resource without the data
+transfer.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Acked-by: Douglas Gilbert <dgilbert@interlog.com>
 Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/scsi/sg.c |   39 ++++++++++++++-------------------------
- 1 file changed, 14 insertions(+), 25 deletions(-)
+ drivers/scsi/sg.c |   15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
 --- a/drivers/scsi/sg.c
 +++ b/drivers/scsi/sg.c
-@@ -189,7 +189,7 @@ static ssize_t sg_new_read(Sg_fd * sfp, 
- 			   Sg_request * srp);
- static ssize_t sg_new_write(Sg_fd *sfp, struct file *file,
- 			const char __user *buf, size_t count, int blocking,
--			int read_only, Sg_request **o_srp);
-+			int read_only, int sg_io_owned, Sg_request **o_srp);
- static int sg_common_write(Sg_fd * sfp, Sg_request * srp,
- 			   unsigned char *cmnd, int timeout, int blocking);
- static int sg_read_oxfer(Sg_request * srp, char __user *outp, int num_read_xfer);
-@@ -561,7 +561,8 @@ sg_write(struct file *filp, const char _
- 		return -EFAULT;
- 	blocking = !(filp->f_flags & O_NONBLOCK);
- 	if (old_hdr.reply_len < 0)
--		return sg_new_write(sfp, filp, buf, count, blocking, 0, NULL);
-+		return sg_new_write(sfp, filp, buf, count,
-+				    blocking, 0, 0, NULL);
- 	if (count < (SZ_SG_HEADER + 6))
- 		return -EIO;	/* The minimum scsi command length is 6 bytes. */
+@@ -138,6 +138,7 @@ typedef struct sg_request {	/* SG_MAX_QU
+ 	volatile char done;	/* 0->before bh, 1->before read, 2->read */
+ 	struct request *rq;
+ 	struct bio *bio;
++	struct execute_work ew;
+ } Sg_request;
  
-@@ -642,7 +643,7 @@ sg_write(struct file *filp, const char _
- 
- static ssize_t
- sg_new_write(Sg_fd *sfp, struct file *file, const char __user *buf,
--		 size_t count, int blocking, int read_only,
-+		 size_t count, int blocking, int read_only, int sg_io_owned,
- 		 Sg_request **o_srp)
- {
- 	int k;
-@@ -662,6 +663,7 @@ sg_new_write(Sg_fd *sfp, struct file *fi
- 		SCSI_LOG_TIMEOUT(1, printk("sg_new_write: queue full\n"));
- 		return -EDOM;
- 	}
-+	srp->sg_io_owned = sg_io_owned;
- 	hp = &srp->header;
- 	if (__copy_from_user(hp, buf, SZ_SG_IO_HDR)) {
- 		sg_remove_request(sfp, srp);
-@@ -766,18 +768,6 @@ sg_common_write(Sg_fd * sfp, Sg_request 
+ typedef struct sg_fd {		/* holds the state of a file descriptor */
+@@ -1234,6 +1235,15 @@ sg_mmap(struct file *filp, struct vm_are
+ 	return 0;
  }
  
- static int
--sg_srp_done(Sg_request *srp, Sg_fd *sfp)
--{
--	unsigned long iflags;
--	int done;
++static void sg_rq_end_io_usercontext(struct work_struct *work)
++{
++	struct sg_request *srp = container_of(work, struct sg_request, ew.work);
++	struct sg_fd *sfp = srp->parentfp;
++
++	sg_finish_rem_req(srp);
++	kref_put(&sfp->f_ref, sg_remove_sfp);
++}
++
+ /*
+  * This function is a "bottom half" handler that is called by the mid
+  * level when a command is completed (or has failed).
+@@ -1312,10 +1322,9 @@ static void sg_rq_end_io(struct request 
+ 		 */
+ 		wake_up_interruptible(&sfp->read_wait);
+ 		kill_fasync(&sfp->async_qp, SIGPOLL, POLL_IN);
++		kref_put(&sfp->f_ref, sg_remove_sfp);
+ 	} else
+-		sg_finish_rem_req(srp); /* call with srp->done == 0 */
 -
--	read_lock_irqsave(&sfp->rq_list_lock, iflags);
--	done = srp->done;
--	read_unlock_irqrestore(&sfp->rq_list_lock, iflags);
--	return done;
--}
--
--static int
- sg_ioctl(struct inode *inode, struct file *filp,
- 	 unsigned int cmd_in, unsigned long arg)
- {
-@@ -809,27 +799,26 @@ sg_ioctl(struct inode *inode, struct fil
- 				return -EFAULT;
- 			result =
- 			    sg_new_write(sfp, filp, p, SZ_SG_IO_HDR,
--					 blocking, read_only, &srp);
-+					 blocking, read_only, 1, &srp);
- 			if (result < 0)
- 				return result;
--			srp->sg_io_owned = 1;
- 			while (1) {
- 				result = 0;	/* following macro to beat race condition */
- 				__wait_event_interruptible(sfp->read_wait,
--					(sdp->detached || sfp->closed || sg_srp_done(srp, sfp)),
--							   result);
-+					(srp->done || sdp->detached),
-+					result);
- 				if (sdp->detached)
- 					return -ENODEV;
--				if (sfp->closed)
--					return 0;	/* request packet dropped already */
--				if (0 == result)
-+				write_lock_irq(&sfp->rq_list_lock);
-+				if (srp->done) {
-+					srp->done = 2;
-+					write_unlock_irq(&sfp->rq_list_lock);
- 					break;
-+				}
- 				srp->orphan = 1;
-+				write_unlock_irq(&sfp->rq_list_lock);
- 				return result;	/* -ERESTARTSYS because signal hit process */
- 			}
--			write_lock_irqsave(&sfp->rq_list_lock, iflags);
--			srp->done = 2;
--			write_unlock_irqrestore(&sfp->rq_list_lock, iflags);
- 			result = sg_new_read(sfp, p, SZ_SG_IO_HDR, srp);
- 			return (result < 0) ? result : 0;
- 		}
+-	kref_put(&sfp->f_ref, sg_remove_sfp);
++		execute_in_process_context(sg_rq_end_io_usercontext, &srp->ew);
+ }
+ 
+ static struct file_operations sg_fops = {
 
 
