@@ -1,87 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbZD3Xgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbZD3XhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbZD3Xgl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 19:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbZD3Xgc
+	id S1754033AbZD3XhU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 19:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbZD3XhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 19:36:32 -0400
-Received: from xenotime.net ([72.52.64.118]:56278 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751061AbZD3Xgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 19:36:32 -0400
-Message-ID: <49FA3650.8030307@xenotime.net>
-Date: Thu, 30 Apr 2009 16:37:52 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-Organization: YPO4
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 30 Apr 2009 19:37:05 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:49428 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751443AbZD3XhD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 19:37:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=sDJLfxH13RtC3FinKdwrt6n6PixvMuqk5c0OQyC6sUd9ltL0t72RqA99K7lY/Jn2ci
+         1UiTcMv3yqRDcpwG172VjUZB4uwFqaiSaTElfKm2QPF5JrHebl/kUnkOaN2HwT49UKN7
+         9k+1UQUx8RtTyaMkpacGkBs0SwMFXkYsMmVMA=
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Fenghua Yu <fenghua.yu@intel.com>, dwmw2@infradead.org, mingo@elte.hu,
-       torvalds@linux-foundation.org, weidong.han@intel.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
-Subject: Re: [PATCH] Intel IOMMU Pass Through Support
-References: <20090327212241.234500000@intel.com>	<20090327212321.070229000@intel.com>	<20090416001957.GA1527@linux-os.sc.intel.com> <20090430162905.d232be29.akpm@linux-foundation.org>
-In-Reply-To: <20090430162905.d232be29.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <alpine.LNX.2.00.0905010044450.5012@wotan.suse.de>
+References: <alpine.LNX.2.00.0903251742520.14346@wotan.suse.de>
+	 <3d8471ca0904301529s140339c5w4b39e83b31d4e9c0@mail.gmail.com>
+	 <alpine.LNX.2.00.0905010044450.5012@wotan.suse.de>
+Date: Fri, 1 May 2009 01:37:02 +0200
+Message-ID: <3d8471ca0904301637h4071a24bh7c59df54e1ccb977@mail.gmail.com>
+Subject: Re: What's in hid.git for 2.6.30
+From: Guillaume Chazarain <guichaz@gmail.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: oliver@neukum.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 15 Apr 2009 17:19:57 -0700
-> Fenghua Yu <fenghua.yu@intel.com> wrote:
-> 
->> The patch adds kernel parameter intel_iommu=pt to set up pass through mode in
->> context mapping entry. This disables DMAR in linux kernel; but KVM still runs on
->> VT-d and interrupt remapping still works.
->>
->> In this mode, kernel uses swiotlb for DMA API functions but other VT-d
->> functionalities are enabled for KVM. KVM always uses multi level translation
->> page table in VT-d. By default, pass though mode is disabled in kernel.
->>
->> This is useful when people don't want to enable VT-d DMAR in kernel but still
->> want to use KVM and interrupt remapping for reasons like DMAR performance
->> concern or debug purpose.
->>
-> 
-> The patch is now in linux-next and broke my build.
-> 
-> arch/x86/built-in.o: In function `iommu_setup':
-> arch/x86/kernel/pci-dma.c:215: undefined reference to `iommu_pass_through'
-> arch/x86/built-in.o: In function `pci_swiotlb_init':
-> arch/x86/kernel/pci-swiotlb.c:74: undefined reference to `iommu_pass_through'
-> 
-> Because iommu_pass_through is defined in drivers/pci/intel-iommu.c and
-> 
-> # CONFIG_DMAR is not set
-> 
-> I'll need to cook up some local hack to work around that.
-> 
+On Fri, May 1, 2009 at 12:45 AM, Jiri Kosina <jkosina@suse.cz> wrote:
+> Does the pathc below fix the problem for you?
 
-Patch just went to linux-next mailing list (but should have also
-gone to lkml):
+Yes, the remote control works fine now. Thanks for the awesomely fast response!
 
-http://marc.info/?l=linux-next&m=124113213400748&w=2
+Cheers.
 
-
-> 
-> Also, the patch in linux-next (but not the one which I'm replying to
-> here does:
-> 
-> : --- a/arch/x86/kernel/pci-dma.c
-> : +++ b/arch/x86/kernel/pci-dma.c
-> : @@ -160,6 +160,8 @@ again:
-> :         return page_address(page);
-> :  }
-> :  
-> : +extern int iommu_pass_through;
-> : +
-> 
-> Which is wrong and unnecessary - the variable was already declared in a
-> header file.
-> 
-> scripts/checkpatch.pl would have warned you about this error, but
-> apparently neither you nor the people who reviewed or merged the patch
-> bother to use it.
-
+-- 
+Guillaume
