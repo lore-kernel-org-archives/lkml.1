@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765513AbZD3RTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765125AbZD3RW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765513AbZD3RTY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764602AbZD3RHo
+	id S1765125AbZD3RW4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764585AbZD3RHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:44 -0400
-Received: from kroah.org ([198.145.64.141]:56378 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:07:52 -0400
+Received: from kroah.org ([198.145.64.141]:56384 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764494AbZD3RHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:35 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:42 2009
-Message-Id: <20090430165742.157178847@mini.kroah.org>
+	id S1764591AbZD3RHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:44 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:43 2009
+Message-Id: <20090430165743.524149922@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:15 -0700
+Date: Thu, 30 Apr 2009 09:56:24 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 26/88] af_rose/x25: Sanity check the maximum user frame size
+       alan@lxorguk.ukuu.org.uk, Nathan Lynch <ntl@pobox.com>,
+       Nigel Cunningham <nigel@tuxonice.net>,
+       containers@lists.linux-foundation.org,
+       linux-pm@lists.linux-foundation.org, Matt Helsley <matthltc@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 35/88] sched: do not count frozen tasks toward load
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=0043-af_rose-x25-Sanity-check-the-maximum-user-frame-siz.patch
+Content-Disposition: inline; filename=0060-sched-do-not-count-frozen-tasks-toward-load.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,68 +42,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Nathan Lynch <ntl@pobox.com>
 
-upstream commit: 83e0bbcbe2145f160fbaa109b0439dae7f4a38a9
+upstream commit: e3c8ca8336707062f3f7cb1cd7e6b3c753baccdd
 
-CVE-2009-0795.
+Freezing tasks via the cgroup freezer causes the load average to climb
+because the freezer's current implementation puts frozen tasks in
+uninterruptible sleep (D state).
 
-Otherwise we can wrap the sizes and end up sending garbage.
+Some applications which perform job-scheduling functions consult the
+load average when making decisions.  If a cgroup is frozen, the load
+average does not provide a useful measure of the system's utilization
+to such applications.  This is especially inconvenient if the job
+scheduler employs the cgroup freezer as a mechanism for preempting low
+priority jobs.  Contrast this with using SIGSTOP for the same purpose:
+the stopped tasks do not count toward system load.
 
-Closes #10423
+Change task_contributes_to_load() to return false if the task is
+frozen.  This results in /proc/loadavg behavior that better meets
+users' expectations.
 
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+Acked-by: Andrew Morton <akpm@linux-foundation.org>
+Acked-by: Nigel Cunningham <nigel@tuxonice.net>
+Tested-by: Nigel Cunningham <nigel@tuxonice.net>
+Cc: containers@lists.linux-foundation.org
+Cc: linux-pm@lists.linux-foundation.org
+Cc: Matt Helsley <matthltc@us.ibm.com>
+LKML-Reference: <20090408194512.47a99b95@manatee.lan>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/netrom/af_netrom.c |    6 +++++-
- net/rose/af_rose.c     |    4 ++++
- net/x25/af_x25.c       |    6 ++++++
- 3 files changed, 15 insertions(+), 1 deletion(-)
+ include/linux/sched.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/net/netrom/af_netrom.c
-+++ b/net/netrom/af_netrom.c
-@@ -1082,7 +1082,11 @@ static int nr_sendmsg(struct kiocb *iocb
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -201,7 +201,8 @@ extern unsigned long long time_sync_thre
+ #define task_is_stopped_or_traced(task)	\
+ 			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
+ #define task_contributes_to_load(task)	\
+-				((task->state & TASK_UNINTERRUPTIBLE) != 0)
++				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
++				 (task->flags & PF_FROZEN) == 0)
  
- 	SOCK_DEBUG(sk, "NET/ROM: sendto: Addresses built.\n");
- 
--	/* Build a packet */
-+	/* Build a packet - the conventional user limit is 236 bytes. We can
-+	   do ludicrously large NetROM frames but must not overflow */
-+	if (len > 65536)
-+		return -EMSGSIZE;
-+
- 	SOCK_DEBUG(sk, "NET/ROM: sendto: building packet.\n");
- 	size = len + NR_NETWORK_LEN + NR_TRANSPORT_LEN;
- 
---- a/net/rose/af_rose.c
-+++ b/net/rose/af_rose.c
-@@ -1124,6 +1124,10 @@ static int rose_sendmsg(struct kiocb *io
- 
- 	/* Build a packet */
- 	SOCK_DEBUG(sk, "ROSE: sendto: building packet.\n");
-+	/* Sanity check the packet size */
-+	if (len > 65535)
-+		return -EMSGSIZE;
-+
- 	size = len + AX25_BPQ_HEADER_LEN + AX25_MAX_HEADER_LEN + ROSE_MIN_LEN;
- 
- 	if ((skb = sock_alloc_send_skb(sk, size, msg->msg_flags & MSG_DONTWAIT, &err)) == NULL)
---- a/net/x25/af_x25.c
-+++ b/net/x25/af_x25.c
-@@ -1037,6 +1037,12 @@ static int x25_sendmsg(struct kiocb *ioc
- 		sx25.sx25_addr   = x25->dest_addr;
- 	}
- 
-+	/* Sanity check the packet size */
-+	if (len > 65535) {
-+		rc = -EMSGSIZE;
-+		goto out;
-+	}
-+
- 	SOCK_DEBUG(sk, "x25_sendmsg: sendto: Addresses built.\n");
- 
- 	/* Build a packet */
+ #define __set_task_state(tsk, state_value)		\
+ 	do { (tsk)->state = (state_value); } while (0)
 
 
