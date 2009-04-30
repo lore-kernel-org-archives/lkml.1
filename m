@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763230AbZD3LeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763291AbZD3Leg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763230AbZD3LeK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 07:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762612AbZD3L32
+	id S1763291AbZD3Leg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 07:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762124AbZD3L3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 07:29:28 -0400
-Received: from [212.69.161.110] ([212.69.161.110]:38550 "EHLO
+	Thu, 30 Apr 2009 07:29:31 -0400
+Received: from [212.69.161.110] ([212.69.161.110]:38553 "EHLO
 	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1762628AbZD3L2v (ORCPT
+	with ESMTP id S1762619AbZD3L3K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 07:28:51 -0400
+	Thu, 30 Apr 2009 07:29:10 -0400
 From: Philipp Reisner <philipp.reisner@linbit.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
@@ -23,11 +23,11 @@ Cc: Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
        Bart Van Assche <bart.vanassche@gmail.com>,
        Lars Ellenberg <lars.ellenberg@linbit.com>,
        Philipp Reisner <philipp.reisner@linbit.com>
-Subject: [PATCH 07/16] DRBD: internal_data_structures
-Date: Thu, 30 Apr 2009 13:26:43 +0200
-Message-Id: <1241090812-13516-8-git-send-email-philipp.reisner@linbit.com>
+Subject: [PATCH 15/16] DRBD: documentation
+Date: Thu, 30 Apr 2009 13:26:51 +0200
+Message-Id: <1241090812-13516-16-git-send-email-philipp.reisner@linbit.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1241090812-13516-7-git-send-email-philipp.reisner@linbit.com>
+In-Reply-To: <1241090812-13516-15-git-send-email-philipp.reisner@linbit.com>
 References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com>
  <1241090812-13516-2-git-send-email-philipp.reisner@linbit.com>
  <1241090812-13516-3-git-send-email-philipp.reisner@linbit.com>
@@ -35,2341 +35,1259 @@ References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com>
  <1241090812-13516-5-git-send-email-philipp.reisner@linbit.com>
  <1241090812-13516-6-git-send-email-philipp.reisner@linbit.com>
  <1241090812-13516-7-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-8-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-9-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-10-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-11-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-12-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-13-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-14-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-15-git-send-email-philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The big "struct drbd_conf". It actually describes one DRBD device.
+Some documentation about the implementation.
 
 Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
 Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
 
 ---
-diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
+diff --git a/Documentation/blockdev/drbd/README.txt b/Documentation/blockdev/drbd/README.txt
 new file mode 100644
-index 0000000..175de11
+index 0000000..627b0a1
 --- /dev/null
-+++ b/drivers/block/drbd/drbd_int.h
-@@ -0,0 +1,2219 @@
-+/*
-+  drbd_int.h
++++ b/Documentation/blockdev/drbd/README.txt
+@@ -0,0 +1,16 @@
++Description
 +
-+  This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
++  DRBD is a shared-nothing, synchronously replicated block device. It
++  is designed to serve as a building block for high availability
++  clusters and in this context, is a "drop-in" replacement for shared
++  storage. Simplistically, you could see it as a network RAID 1.
 +
-+  Copyright (C) 2001-2008, LINBIT Information Technologies GmbH.
-+  Copyright (C) 1999-2008, Philipp Reisner <philipp.reisner@linbit.com>.
-+  Copyright (C) 2002-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
++  Please visit http://www.drbd.org to find out more.
 +
-+  drbd is free software; you can redistribute it and/or modify
-+  it under the terms of the GNU General Public License as published by
-+  the Free Software Foundation; either version 2, or (at your option)
-+  any later version.
++The here included files are intended to help understand the implementation
 +
-+  drbd is distributed in the hope that it will be useful,
-+  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
-+  GNU General Public License for more details.
++DRBD-8.3-data-packets.svg, DRBD-data-packets.svg  
++  relates some functions, and write packets.
 +
-+  You should have received a copy of the GNU General Public License
-+  along with drbd; see the file COPYING.  If not, write to
-+  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-+
-+*/
-+
-+#ifndef _DRBD_INT_H
-+#define _DRBD_INT_H
-+
-+#include <linux/compiler.h>
-+#include <linux/types.h>
-+#include <linux/version.h>
-+#include <linux/list.h>
-+#include <linux/sched.h>
-+#include <linux/bitops.h>
-+#include <linux/slab.h>
-+#include <linux/crypto.h>
-+#include <linux/tcp.h>
-+#include <linux/mutex.h>
-+#include <linux/major.h>
-+#include <linux/blkdev.h>
-+#include <linux/bio.h>
-+#include <net/tcp.h>
-+#include "lru_cache.h"
-+
-+#ifdef __CHECKER__
-+# define __protected_by(x)       __attribute__((require_context(x,1,999,"rdwr")))
-+# define __protected_read_by(x)  __attribute__((require_context(x,1,999,"read")))
-+# define __protected_write_by(x) __attribute__((require_context(x,1,999,"write")))
-+# define __must_hold(x)       __attribute__((context(x,1,1), require_context(x,1,999,"call")))
-+#else
-+# define __protected_by(x)
-+# define __protected_read_by(x)
-+# define __protected_write_by(x)
-+# define __must_hold(x)
-+#endif
-+
-+#define __no_warn(lock, stmt) do { __acquire(lock); stmt; __release(lock); } while (0)
-+
-+/* module parameter, defined in drbd_main.c */
-+extern unsigned int minor_count;
-+extern int disable_sendpage;
-+extern int allow_oos;
-+extern unsigned int cn_idx;
-+
-+#ifdef DRBD_ENABLE_FAULTS
-+extern int enable_faults;
-+extern int fault_rate;
-+extern int fault_devs;
-+#endif
-+
-+extern char usermode_helper[];
-+
-+
-+#ifndef TRUE
-+#define TRUE 1
-+#endif
-+#ifndef FALSE
-+#define FALSE 0
-+#endif
-+
-+/* I don't remember why XCPU ...
-+ * This is used to wake the asender,
-+ * and to interrupt sending the sending task
-+ * on disconnect.
-+ */
-+#define DRBD_SIG SIGXCPU
-+
-+/* This is used to stop/restart our threads.
-+ * Cannot use SIGTERM nor SIGKILL, since these
-+ * are sent out by init on runlevel changes
-+ * I choose SIGHUP for now.
-+ */
-+#define DRBD_SIGKILL SIGHUP
-+
-+/* All EEs on the free list should have ID_VACANT (== 0)
-+ * freshly allocated EEs get !ID_VACANT (== 1)
-+ * so if it says "cannot dereference null pointer at adress 0x00000001",
-+ * it is most likely one of these :( */
-+
-+#define ID_IN_SYNC      (4711ULL)
-+#define ID_OUT_OF_SYNC  (4712ULL)
-+
-+#define ID_SYNCER (-1ULL)
-+#define ID_VACANT 0
-+#define is_syncer_block_id(id) ((id) == ID_SYNCER)
-+
-+struct drbd_conf;
-+
-+#ifdef DBG_ALL_SYMBOLS
-+# define STATIC
-+#else
-+# define STATIC static
-+#endif
-+
-+/*
-+ * Some Message Macros
-+ *************************/
-+
-+#define DUMPP(A)   dev_err(DEV, #A " = %p in %s:%d\n", (A), __FILE__, __LINE__);
-+#define DUMPLU(A)  dev_err(DEV, #A " = %lu in %s:%d\n", (unsigned long)(A), __FILE__, __LINE__);
-+#define DUMPLLU(A) dev_err(DEV, #A " = %llu in %s:%d\n", (unsigned long long)(A), __FILE__, __LINE__);
-+#define DUMPLX(A)  dev_err(DEV, #A " = %lx in %s:%d\n", (A), __FILE__, __LINE__);
-+#define DUMPI(A)   dev_err(DEV, #A " = %d in %s:%d\n", (int)(A), __FILE__, __LINE__);
-+
-+
-+/* to shorten dev_warn(DEV, "msg"); and relatives statements */
-+#define DEV (disk_to_dev(mdev->vdisk))
-+
-+#define D_ASSERT(exp)	if (!(exp)) \
-+	 dev_err(DEV, "ASSERT( " #exp " ) in %s:%d\n", __FILE__, __LINE__)
-+
-+#define ERR_IF(exp) if (({				\
-+	int _b = (exp) != 0;				\
-+	if (_b) dev_err(DEV, "%s: (%s) in %s:%d\n",		\
-+		__func__, #exp, __FILE__, __LINE__);	\
-+	 _b;						\
-+	}))
-+
-+/* Defines to control fault insertion */
-+enum {
-+    DRBD_FAULT_MD_WR = 0,	/* meta data write */
-+    DRBD_FAULT_MD_RD,		/*           read  */
-+    DRBD_FAULT_RS_WR,		/* resync          */
-+    DRBD_FAULT_RS_RD,
-+    DRBD_FAULT_DT_WR,		/* data            */
-+    DRBD_FAULT_DT_RD,
-+    DRBD_FAULT_DT_RA,		/* data read ahead */
-+    DRBD_FAULT_BM_ALLOC,        /* bitmap allocation */
-+    DRBD_FAULT_AL_EE,		/* alloc ee */
-+
-+    DRBD_FAULT_MAX,
-+};
-+
-+extern void trace_drbd_resync(struct drbd_conf *mdev, int level, const char *fmt, ...);
-+
-+#ifdef DRBD_ENABLE_FAULTS
-+extern unsigned int
-+_drbd_insert_fault(struct drbd_conf *mdev, unsigned int type);
-+static inline int
-+drbd_insert_fault(struct drbd_conf *mdev, unsigned int type) {
-+    return fault_rate &&
-+	    (enable_faults & (1<<type)) &&
-+	    _drbd_insert_fault(mdev, type);
-+}
-+#define FAULT_ACTIVE(_m, _t) (drbd_insert_fault((_m), (_t)))
-+
-+#else
-+#define FAULT_ACTIVE(_m, _t) (0)
-+#endif
-+
-+/* integer division, round _UP_ to the next integer */
-+#define div_ceil(A, B) ((A)/(B) + ((A)%(B) ? 1 : 0))
-+/* usual integer division */
-+#define div_floor(A, B) ((A)/(B))
-+
-+/* drbd_meta-data.c (still in drbd_main.c) */
-+/* 4th incarnation of the disk layout. */
-+#define DRBD_MD_MAGIC (DRBD_MAGIC+4)
-+
-+extern struct drbd_conf **minor_table;
-+extern struct ratelimit_state drbd_ratelimit_state;
-+
-+/***
-+ * on the wire
-+ *********************************************************************/
-+
-+enum drbd_packets {
-+	/* receiver (data socket) */
-+	P_DATA		      = 0x00,
-+	P_DATA_REPLY	      = 0x01, /* Response to P_DATA_REQUEST */
-+	P_RS_DATA_REPLY	      = 0x02, /* Response to P_RS_DATA_REQUEST */
-+	P_BARRIER	      = 0x03,
-+	P_BITMAP	      = 0x04,
-+	P_BECOME_SYNC_TARGET  = 0x05,
-+	P_BECOME_SYNC_SOURCE  = 0x06,
-+	P_UNPLUG_REMOTE	      = 0x07, /* Used at various times to hint the peer */
-+	P_DATA_REQUEST	      = 0x08, /* Used to ask for a data block */
-+	P_RS_DATA_REQUEST     = 0x09, /* Used to ask for a data block for resync */
-+	P_SYNC_PARAM	      = 0x0a,
-+	P_PROTOCOL	      = 0x0b,
-+	P_UUIDS		      = 0x0c,
-+	P_SIZES		      = 0x0d,
-+	P_STATE		      = 0x0e,
-+	P_SYNC_UUID	      = 0x0f,
-+	P_AUTH_CHALLENGE      = 0x10,
-+	P_AUTH_RESPONSE	      = 0x11,
-+	P_STATE_CHG_REQ	      = 0x12,
-+
-+	/* asender (meta socket */
-+	P_PING		      = 0x13,
-+	P_PING_ACK	      = 0x14,
-+	P_RECV_ACK	      = 0x15, /* Used in protocol B */
-+	P_WRITE_ACK	      = 0x16, /* Used in protocol C */
-+	P_RS_WRITE_ACK	      = 0x17, /* Is a P_WRITE_ACK, additionally call set_in_sync(). */
-+	P_DISCARD_ACK	      = 0x18, /* Used in proto C, two-primaries conflict detection */
-+	P_NEG_ACK	      = 0x19, /* Sent if local disk is unusable */
-+	P_NEG_DREPLY	      = 0x1a, /* Local disk is broken... */
-+	P_NEG_RS_DREPLY	      = 0x1b, /* Local disk is broken... */
-+	P_BARRIER_ACK	      = 0x1c,
-+	P_STATE_CHG_REPLY     = 0x1d,
-+
-+	/* "new" commands, no longer fitting into the ordering scheme above */
-+
-+	P_OV_REQUEST	      = 0x1e, /* data socket */
-+	P_OV_REPLY	      = 0x1f,
-+	P_OV_RESULT	      = 0x20, /* meta socket */
-+	P_CSUM_RS_REQUEST     = 0x21, /* data socket */
-+	P_RS_IS_IN_SYNC	      = 0x22, /* meta socket */
-+	P_SYNC_PARAM89	      = 0x23, /* data socket, protocol version 89 replacement for P_SYNC_PARAM */
-+	P_COMPRESSED_BITMAP   = 0x24, /* compressed or otherwise encoded bitmap transfer */
-+
-+	P_MAX_CMD	      = 0x25,
-+	P_MAY_IGNORE	      = 0x100, /* Flag to test if (cmd > P_MAY_IGNORE) ... */
-+	P_MAX_OPT_CMD	      = 0x101,
-+
-+	/* special command ids for handshake */
-+
-+	P_HAND_SHAKE_M	      = 0xfff1, /* First Packet on the MetaSock */
-+	P_HAND_SHAKE_S	      = 0xfff2, /* First Packet on the Socket */
-+
-+	P_HAND_SHAKE	      = 0xfffe	/* FIXED for the next century! */
-+};
-+
-+static inline const char *cmdname(enum drbd_packets cmd)
-+{
-+	/* THINK may need to become several global tables
-+	 * when we want to support more than
-+	 * one PRO_VERSION */
-+	static const char *cmdnames[] = {
-+		[P_DATA]	        = "Data",
-+		[P_DATA_REPLY]	        = "DataReply",
-+		[P_RS_DATA_REPLY]	= "RSDataReply",
-+		[P_BARRIER]	        = "Barrier",
-+		[P_BITMAP]	        = "ReportBitMap",
-+		[P_BECOME_SYNC_TARGET]  = "BecomeSyncTarget",
-+		[P_BECOME_SYNC_SOURCE]  = "BecomeSyncSource",
-+		[P_UNPLUG_REMOTE]	= "UnplugRemote",
-+		[P_DATA_REQUEST]	= "DataRequest",
-+		[P_RS_DATA_REQUEST]     = "RSDataRequest",
-+		[P_SYNC_PARAM]	        = "SyncParam",
-+		[P_SYNC_PARAM89]	= "SyncParam89",
-+		[P_PROTOCOL]            = "ReportProtocol",
-+		[P_UUIDS]	        = "ReportUUIDs",
-+		[P_SIZES]	        = "ReportSizes",
-+		[P_STATE]	        = "ReportState",
-+		[P_SYNC_UUID]           = "ReportSyncUUID",
-+		[P_AUTH_CHALLENGE]      = "AuthChallenge",
-+		[P_AUTH_RESPONSE]	= "AuthResponse",
-+		[P_PING]		= "Ping",
-+		[P_PING_ACK]	        = "PingAck",
-+		[P_RECV_ACK]	        = "RecvAck",
-+		[P_WRITE_ACK]	        = "WriteAck",
-+		[P_RS_WRITE_ACK]	= "RSWriteAck",
-+		[P_DISCARD_ACK]	        = "DiscardAck",
-+		[P_NEG_ACK]	        = "NegAck",
-+		[P_NEG_DREPLY]	        = "NegDReply",
-+		[P_NEG_RS_DREPLY]	= "NegRSDReply",
-+		[P_BARRIER_ACK]	        = "BarrierAck",
-+		[P_STATE_CHG_REQ]       = "StateChgRequest",
-+		[P_STATE_CHG_REPLY]     = "StateChgReply",
-+		[P_OV_REQUEST]          = "OVRequest",
-+		[P_OV_REPLY]            = "OVReply",
-+		[P_OV_RESULT]           = "OVResult",
-+		[P_MAX_CMD]	        = NULL,
-+	};
-+
-+	if (cmd == P_HAND_SHAKE_M)
-+		return "HandShakeM";
-+	if (cmd == P_HAND_SHAKE_S)
-+		return "HandShakeS";
-+	if (cmd == P_HAND_SHAKE)
-+		return "HandShake";
-+	if (cmd >= P_MAX_CMD)
-+		return "Unknown";
-+	return cmdnames[cmd];
-+}
-+
-+/* for sending/receiving the bitmap,
-+ * possibly in some encoding scheme */
-+struct bm_xfer_ctx {
-+	/* "const"
-+	 * stores total bits and long words
-+	 * of the bitmap, so we don't need to
-+	 * call the accessor functions over and again. */
-+	unsigned long bm_bits;
-+	unsigned long bm_words;
-+	/* during xfer, current position within the bitmap */
-+	unsigned long bit_offset;
-+	unsigned long word_offset;
-+
-+	/* statistics; index: (h->command == P_BITMAP) */
-+	unsigned packets[2];
-+	unsigned bytes[2];
-+};
-+
-+extern void INFO_bm_xfer_stats(struct drbd_conf *mdev,
-+		const char *direction, struct bm_xfer_ctx *c);
-+
-+static inline void bm_xfer_ctx_bit_to_word_offset(struct bm_xfer_ctx *c)
-+{
-+	/* word_offset counts "native long words" (32 or 64 bit),
-+	 * aligned at 64 bit.
-+	 * Encoded packet may end at an unaligned bit offset.
-+	 * In case a fallback clear text packet is transmitted in
-+	 * between, we adjust this offset back to the last 64bit
-+	 * aligned "native long word", which makes coding and decoding
-+	 * the plain text bitmap much more convenient.  */
-+#if BITS_PER_LONG == 64
-+	c->word_offset = c->bit_offset >> 6;
-+#elif BITS_PER_LONG == 32
-+	c->word_offset = c->bit_offset >> 5;
-+	c->word_offset &= ~(1UL);
-+#else
-+# error "unsupported BITS_PER_LONG"
-+#endif
-+}
-+
-+/* This is the layout for a packet on the wire.
-+ * The byteorder is the network byte order.
-+ *     (except block_id and barrier fields.
-+ *	these are pointers to local structs
-+ *	and have no relevance for the partner,
-+ *	which just echoes them as received.)
-+ *
-+ * NOTE that the payload starts at a long aligned offset,
-+ * regardless of 32 or 64 bit arch!
-+ */
-+struct p_header {
-+	u32	  magic;
-+	u16	  command;
-+	u16	  length;	/* bytes of data after this header */
-+	u8	  payload[0];
-+} __attribute((packed));
-+/* 8 bytes. packet FIXED for the next century! */
-+
-+/*
-+ * short commands, packets without payload, plain p_header:
-+ *   P_PING
-+ *   P_PING_ACK
-+ *   P_BECOME_SYNC_TARGET
-+ *   P_BECOME_SYNC_SOURCE
-+ *   P_UNPLUG_REMOTE
-+ */
-+
-+/*
-+ * commands with out-of-struct payload:
-+ *   P_BITMAP    (no additional fields)
-+ *   P_DATA, P_DATA_REPLY (see p_data)
-+ *   P_COMPRESSED_BITMAP (see receive_compressed_bitmap)
-+ */
-+
-+/* these defines must not be changed without changing the protocol version */
-+#define DP_HARDBARRIER	      1
-+#define DP_RW_SYNC	      2
-+#define DP_MAY_SET_IN_SYNC    4
-+
-+struct p_data {
-+	struct p_header head;
-+	u64	    sector;    /* 64 bits sector number */
-+	u64	    block_id;  /* to identify the request in protocol B&C */
-+	u32	    seq_num;
-+	u32	    dp_flags;
-+} __attribute((packed));
-+
-+/*
-+ * commands which share a struct:
-+ *  p_block_ack:
-+ *   P_RECV_ACK (proto B), P_WRITE_ACK (proto C),
-+ *   P_DISCARD_ACK (proto C, two-primaries conflict detection)
-+ *  p_block_req:
-+ *   P_DATA_REQUEST, P_RS_DATA_REQUEST
-+ */
-+struct p_block_ack {
-+	struct p_header head;
-+	u64	    sector;
-+	u64	    block_id;
-+	u32	    blksize;
-+	u32	    seq_num;
-+} __attribute((packed));
-+
-+
-+struct p_block_req {
-+	struct p_header head;
-+	u64 sector;
-+	u64 block_id;
-+	u32 blksize;
-+	u32 pad;	/* to multiple of 8 Byte */
-+} __attribute((packed));
-+
-+/*
-+ * commands with their own struct for additional fields:
-+ *   P_HAND_SHAKE
-+ *   P_BARRIER
-+ *   P_BARRIER_ACK
-+ *   P_SYNC_PARAM
-+ *   ReportParams
-+ */
-+
-+struct p_handshake {
-+	struct p_header head;	/* 8 bytes */
-+	u32 protocol_min;
-+	u32 feature_flags;
-+	u32 protocol_max;
-+
-+	/* should be more than enough for future enhancements
-+	 * for now, feature_flags and the reserverd array shall be zero.
-+	 */
-+
-+	u32 _pad;
-+	u64 reserverd[7];
-+} __attribute((packed));
-+/* 80 bytes, FIXED for the next century */
-+
-+struct p_barrier {
-+	struct p_header head;
-+	u32 barrier;	/* barrier number _handle_ only */
-+	u32 pad;	/* to multiple of 8 Byte */
-+} __attribute((packed));
-+
-+struct p_barrier_ack {
-+	struct p_header head;
-+	u32 barrier;
-+	u32 set_size;
-+} __attribute((packed));
-+
-+struct p_rs_param {
-+	struct p_header head;
-+	u32 rate;
-+
-+	      /* Since protocol version 88 and higher. */
-+	char verify_alg[0];
-+} __attribute((packed));
-+
-+struct p_rs_param_89 {
-+	struct p_header head;
-+	u32 rate;
-+        /* protocol version 89: */
-+	char verify_alg[SHARED_SECRET_MAX];
-+	char csums_alg[SHARED_SECRET_MAX];
-+} __attribute((packed));
-+
-+struct p_protocol {
-+	struct p_header head;
-+	u32 protocol;
-+	u32 after_sb_0p;
-+	u32 after_sb_1p;
-+	u32 after_sb_2p;
-+	u32 want_lose;
-+	u32 two_primaries;
-+
-+              /* Since protocol version 87 and higher. */
-+	char integrity_alg[0];
-+
-+} __attribute((packed));
-+
-+struct p_uuids {
-+	struct p_header head;
-+	u64 uuid[UI_EXTENDED_SIZE];
-+} __attribute((packed));
-+
-+struct p_rs_uuid {
-+	struct p_header head;
-+	u64	    uuid;
-+} __attribute((packed));
-+
-+struct p_sizes {
-+	struct p_header head;
-+	u64	    d_size;  /* size of disk */
-+	u64	    u_size;  /* user requested size */
-+	u64	    c_size;  /* current exported size */
-+	u32	    max_segment_size;  /* Maximal size of a BIO */
-+	u32	    queue_order_type;
-+} __attribute((packed));
-+
-+struct p_state {
-+	struct p_header head;
-+	u32	    state;
-+} __attribute((packed));
-+
-+struct p_req_state {
-+	struct p_header head;
-+	u32	    mask;
-+	u32	    val;
-+} __attribute((packed));
-+
-+struct p_req_state_reply {
-+	struct p_header head;
-+	u32	    retcode;
-+} __attribute((packed));
-+
-+struct p_drbd06_param {
-+	u64	  size;
-+	u32	  state;
-+	u32	  blksize;
-+	u32	  protocol;
-+	u32	  version;
-+	u32	  gen_cnt[5];
-+	u32	  bit_map_gen[5];
-+} __attribute((packed));
-+
-+struct p_discard {
-+	struct p_header head;
-+	u64	    block_id;
-+	u32	    seq_num;
-+	u32	    pad;
-+} __attribute((packed));
-+
-+/* Valid values for the encoding field.
-+ * Bump proto version when changing this. */
-+enum drbd_bitmap_code {
-+	/* RLE_VLI_Bytes = 0,
-+	 * and other bit variants had been defined during
-+	 * algorithm evaluation. */
-+	RLE_VLI_Bits = 2,
-+};
-+
-+struct p_compressed_bm {
-+	struct p_header head;
-+	/* (encoding & 0x0f): actual encoding, see enum drbd_bitmap_code
-+	 * (encoding & 0x80): polarity (set/unset) of first runlength
-+	 * ((encoding >> 4) & 0x07): pad_bits, number of trailing zero bits
-+	 * used to pad up to head.length bytes
-+	 */
-+	u8 encoding;
-+
-+	u8 code[0];
-+} __attribute((packed));
-+
-+static inline enum drbd_bitmap_code
-+DCBP_get_code(struct p_compressed_bm *p)
-+{
-+	return (enum drbd_bitmap_code)(p->encoding & 0x0f);
-+}
-+
-+static inline void
-+DCBP_set_code(struct p_compressed_bm *p, enum drbd_bitmap_code code)
-+{
-+	BUG_ON(code & ~0xf);
-+	p->encoding = (p->encoding & ~0xf) | code;
-+}
-+
-+static inline int
-+DCBP_get_start(struct p_compressed_bm *p)
-+{
-+	return (p->encoding & 0x80) != 0;
-+}
-+
-+static inline void
-+DCBP_set_start(struct p_compressed_bm *p, int set)
-+{
-+	p->encoding = (p->encoding & ~0x80) | (set ? 0x80 : 0);
-+}
-+
-+static inline int
-+DCBP_get_pad_bits(struct p_compressed_bm *p)
-+{
-+	return (p->encoding >> 4) & 0x7;
-+}
-+
-+static inline void
-+DCBP_set_pad_bits(struct p_compressed_bm *p, int n)
-+{
-+	BUG_ON(n & ~0x7);
-+	p->encoding = (p->encoding & (~0x7 << 4)) | (n << 4);
-+}
-+
-+/* one bitmap packet, including the p_header,
-+ * should fit within one _architecture independend_ page.
-+ * so we need to use the fixed size 4KiB page size
-+ * most architechtures have used for a long time.
-+ */
-+#define BM_PACKET_PAYLOAD_BYTES (4096 - sizeof(struct p_header))
-+#define BM_PACKET_WORDS (BM_PACKET_PAYLOAD_BYTES/sizeof(long))
-+#define BM_PACKET_VLI_BYTES_MAX (4096 - sizeof(struct p_compressed_bm))
-+#if (PAGE_SIZE < 4096)
-+/* drbd_send_bitmap / receive_bitmap would break horribly */
-+#error "PAGE_SIZE too small"
-+#endif
-+
-+union p_polymorph {
-+        struct p_header          header;
-+        struct p_handshake       handshake;
-+        struct p_data            data;
-+        struct p_block_ack       block_ack;
-+        struct p_barrier         barrier;
-+        struct p_barrier_ack     barrier_ack;
-+        struct p_rs_param_89     rs_param_89;
-+        struct p_protocol        protocol;
-+        struct p_sizes           sizes;
-+        struct p_uuids           uuids;
-+        struct p_state           state;
-+        struct p_req_state       req_state;
-+        struct p_req_state_reply req_state_reply;
-+        struct p_block_req       block_req;
-+} __attribute((packed));
-+
-+/**********************************************************************/
-+enum drbd_thread_state {
-+	None,
-+	Running,
-+	Exiting,
-+	Restarting
-+};
-+
-+struct drbd_thread {
-+	spinlock_t t_lock;
-+	struct task_struct *task;
-+	struct completion stop;
-+	enum drbd_thread_state t_state;
-+	int (*function) (struct drbd_thread *);
-+	struct drbd_conf *mdev;
-+	int reset_cpu_mask;
-+};
-+
-+static inline enum drbd_thread_state get_t_state(struct drbd_thread *thi)
-+{
-+	/* THINK testing the t_state seems to be uncritical in all cases
-+	 * (but thread_{start,stop}), so we can read it *without* the lock.
-+	 *	--lge */
-+
-+	smp_rmb();
-+	return thi->t_state;
-+}
-+
-+
-+/*
-+ * Having this as the first member of a struct provides sort of "inheritance".
-+ * "derived" structs can be "drbd_queue_work()"ed.
-+ * The callback should know and cast back to the descendant struct.
-+ * drbd_request and drbd_epoch_entry are descendants of drbd_work.
-+ */
-+struct drbd_work;
-+typedef int (*drbd_work_cb)(struct drbd_conf *, struct drbd_work *, int cancel);
-+struct drbd_work {
-+	struct list_head list;
-+	drbd_work_cb cb;
-+};
-+
-+struct drbd_tl_epoch;
-+struct drbd_request {
-+	struct drbd_work w;
-+	struct drbd_conf *mdev;
-+	struct bio *private_bio;
-+	struct hlist_node colision;
-+	sector_t sector;
-+	unsigned int size;
-+	unsigned int epoch; /* barrier_nr */
-+
-+	/* barrier_nr: used to check on "completion" whether this req was in
-+	 * the current epoch, and we therefore have to close it,
-+	 * starting a new epoch...
-+	 */
-+
-+	/* up to here, the struct layout is identical to drbd_epoch_entry;
-+	 * we might be able to use that to our advantage...  */
-+
-+	struct list_head tl_requests; /* ring list in the transfer log */
-+	struct bio *master_bio;       /* master bio pointer */
-+	unsigned long rq_state; /* see comments above _req_mod() */
-+	int seq_num;
-+	unsigned long start_time;
-+};
-+
-+struct drbd_tl_epoch {
-+	struct drbd_work w;
-+	struct list_head requests; /* requests before */
-+	struct drbd_tl_epoch *next; /* pointer to the next barrier */
-+	unsigned int br_number;  /* the barriers identifier. */
-+	int n_req;	/* number of requests attached before this barrier */
-+};
-+
-+struct drbd_request;
-+
-+/* These Tl_epoch_entries may be in one of 6 lists:
-+   active_ee .. data packet being written
-+   sync_ee   .. syncer block being written
-+   done_ee   .. block written, need to send P_WRITE_ACK
-+   read_ee   .. [RS]P_DATA_REQUEST being read
-+*/
-+
-+struct drbd_epoch {
-+	struct list_head list;
-+	unsigned int barrier_nr;
-+	atomic_t epoch_size; /* increased on every request added. */
-+	atomic_t active;     /* increased on every req. added, and dec on every finished. */
-+	unsigned long flags;
-+};
-+
-+/* drbd_epoch flag bits */
-+enum {
-+	DE_BARRIER_IN_NEXT_EPOCH_ISSUED,
-+	DE_BARRIER_IN_NEXT_EPOCH_DONE,
-+	DE_CONTAINS_A_BARRIER,
-+	DE_HAVE_BARRIER_NUMBER,
-+	DE_IS_FINISHING,
-+};
-+
-+enum epoch_event {
-+	EV_PUT,
-+	EV_GOT_BARRIER_NR,
-+	EV_BARRIER_DONE,
-+	EV_BECAME_LAST,
-+	EV_TRACE_FLUSH,       /* TRACE_ are not real events, only used for tracing */
-+	EV_TRACE_ADD_BARRIER, /* Doing the first write as a barrier write */
-+	EV_TRACE_SETTING_BI,  /* Barrier is expressed with the first write of the next epoch */
-+	EV_TRACE_ALLOC,
-+	EV_TRACE_FREE,
-+	EV_CLEANUP = 32, /* used as flag */
-+};
-+
-+struct drbd_epoch_entry {
-+	struct drbd_work    w;
-+	struct drbd_conf *mdev;
-+	struct bio *private_bio;
-+	struct hlist_node colision;
-+	sector_t sector;
-+	unsigned int size;
-+	struct drbd_epoch *epoch;
-+
-+	/* up to here, the struct layout is identical to drbd_request;
-+	 * we might be able to use that to our advantage...  */
-+
-+	unsigned int flags;
-+	u64    block_id;
-+};
-+
-+struct digest_info {
-+	int digest_size;
-+	void *digest;
-+};
-+
-+/* ee flag bits */
-+enum {
-+	__EE_CALL_AL_COMPLETE_IO,
-+	__EE_CONFLICT_PENDING,
-+	__EE_MAY_SET_IN_SYNC,
-+	__EE_IS_BARRIER,
-+};
-+#define EE_CALL_AL_COMPLETE_IO (1<<__EE_CALL_AL_COMPLETE_IO)
-+#define EE_CONFLICT_PENDING    (1<<__EE_CONFLICT_PENDING)
-+#define EE_MAY_SET_IN_SYNC     (1<<__EE_MAY_SET_IN_SYNC)
-+#define EE_IS_BARRIER          (1<<__EE_IS_BARRIER)
-+
-+/* global flag bits */
-+enum {
-+	CREATE_BARRIER,		/* next P_DATA is preceeded by a P_BARRIER */
-+	SIGNAL_ASENDER,		/* whether asender wants to be interrupted */
-+	SEND_PING,		/* whether asender should send a ping asap */
-+	WORK_PENDING,		/* completion flag for drbd_disconnect */
-+	STOP_SYNC_TIMER,	/* tell timer to cancel itself */
-+	UNPLUG_QUEUED,		/* only relevant with kernel 2.4 */
-+	UNPLUG_REMOTE,		/* sending a "UnplugRemote" could help */
-+	MD_DIRTY,		/* current uuids and flags not yet on disk */
-+	DISCARD_CONCURRENT,	/* Set on one node, cleared on the peer! */
-+	USE_DEGR_WFC_T,		/* degr-wfc-timeout instead of wfc-timeout. */
-+	CLUSTER_ST_CHANGE,	/* Cluster wide state change going on... */
-+	CL_ST_CHG_SUCCESS,
-+	CL_ST_CHG_FAIL,
-+	CRASHED_PRIMARY,	/* This node was a crashed primary.
-+				 * Gets cleared when the state.conn
-+				 * goes into C_CONNECTED state. */
-+	WRITE_BM_AFTER_RESYNC,	/* A kmalloc() during resync failed */
-+	NO_BARRIER_SUPP,	/* underlying block device doesn't implement barriers */
-+	CONSIDER_RESYNC,
-+
-+	MD_NO_BARRIER,		/* meta data device does not support barriers,
-+				   so don't even try */
-+	SUSPEND_IO,		/* suspend application io */
-+	BITMAP_IO,		/* suspend application io;
-+				   once no more io in flight, start bitmap io */
-+	BITMAP_IO_QUEUED,       /* Started bitmap IO */
-+	RESYNC_AFTER_NEG,       /* Resync after online grow after the attach&negotiate finished. */
-+	NET_CONGESTED,		/* The data socket is congested */
-+
-+	CONFIG_PENDING,		/* serialization of (re)configuration requests.
-+				 * if set, also prevents the device from dying */
-+	DEVICE_DYING,		/* device became unconfigured,
-+				 * but worker thread is still handling the cleanup.
-+				 * reconfiguring (nl_disk_conf, nl_net_conf) is dissalowed,
-+				 * while this is set. */
-+};
-+
-+struct drbd_bitmap; /* opaque for drbd_conf */
-+
-+/* TODO sort members for performance
-+ * MAYBE group them further */
-+
-+/* THINK maybe we actually want to use the default "event/%s" worker threads
-+ * or similar in linux 2.6, which uses per cpu data and threads.
-+ *
-+ * To be general, this might need a spin_lock member.
-+ * For now, please use the mdev->req_lock to protect list_head,
-+ * see drbd_queue_work below.
-+ */
-+struct drbd_work_queue {
-+	struct list_head q;
-+	struct semaphore s; /* producers up it, worker down()s it */
-+	spinlock_t q_lock;  /* to protect the list. */
-+};
-+
-+struct drbd_socket {
-+	struct drbd_work_queue work;
-+	struct mutex mutex;
-+	struct socket    *socket;
-+	/* this way we get our
-+	 * send/receive buffers off the stack */
-+	union p_polymorph sbuf;
-+	union p_polymorph rbuf;
-+};
-+
-+struct drbd_md {
-+	u64 md_offset;		/* sector offset to 'super' block */
-+
-+	u64 la_size_sect;	/* last agreed size, unit sectors */
-+	u64 uuid[UI_SIZE];
-+	u64 device_uuid;
-+	u32 flags;
-+	u32 md_size_sect;
-+
-+	s32 al_offset;	/* signed relative sector offset to al area */
-+	s32 bm_offset;	/* signed relative sector offset to bitmap */
-+
-+	/* u32 al_nr_extents;	   important for restoring the AL
-+	 * is stored into  sync_conf.al_extents, which in turn
-+	 * gets applied to act_log->nr_elements
-+	 */
-+};
-+
-+/* for sync_conf and other types... */
-+#define NL_PACKET(name, number, fields) struct name { fields };
-+#define NL_INTEGER(pn,pr,member) int member;
-+#define NL_INT64(pn,pr,member) __u64 member;
-+#define NL_BIT(pn,pr,member)   unsigned member:1;
-+#define NL_STRING(pn,pr,member,len) unsigned char member[len]; int member ## _len;
-+#include "linux/drbd_nl.h"
-+
-+struct drbd_backing_dev {
-+	struct block_device *backing_bdev;
-+	struct block_device *md_bdev;
-+	struct file *lo_file;
-+	struct file *md_file;
-+	struct drbd_md md;
-+	struct disk_conf dc; /* The user provided config... */
-+	sector_t known_size; /* last known size of that backing device */
-+};
-+
-+struct drbd_md_io {
-+	struct drbd_conf *mdev;
-+	struct completion event;
-+	int error;
-+};
-+
-+struct bm_io_work {
-+	struct drbd_work w;
-+	char *why;
-+	int (*io_fn)(struct drbd_conf *mdev);
-+	void (*done)(struct drbd_conf *mdev, int rv);
-+};
-+
-+enum write_ordering_e {
-+	WO_none,
-+	WO_drain_io,
-+	WO_bdev_flush,
-+	WO_bio_barrier
-+};
-+
-+struct drbd_conf {
-+	/* things that are stored as / read from meta data on disk */
-+	unsigned long flags;
-+
-+	/* configured by drbdsetup */
-+	struct net_conf *net_conf; /* protected by inc_net() and dec_net() */
-+	struct syncer_conf sync_conf;
-+	struct drbd_backing_dev *bc __protected_by(local);
-+
-+	sector_t p_size;     /* partner's disk size */
-+	struct request_queue *rq_queue;
-+	struct block_device *this_bdev;
-+	struct gendisk	    *vdisk;
-+
-+	struct drbd_socket data; /* data/barrier/cstate/parameter packets */
-+	struct drbd_socket meta; /* ping/ack (metadata) packets */
-+	int agreed_pro_version;  /* actually used protocol version */
-+	unsigned long last_received; /* in jiffies, either socket */
-+	unsigned int ko_count;
-+	struct drbd_work  resync_work,
-+			  unplug_work,
-+			  md_sync_work;
-+	struct timer_list resync_timer;
-+	struct timer_list md_sync_timer;
-+
-+	/* Used after attach while negotiating new disk state. */
-+	union drbd_state new_state_tmp;
-+
-+	union drbd_state state;
-+	wait_queue_head_t misc_wait;
-+	wait_queue_head_t state_wait;  /* upon each state change. */
-+	unsigned int send_cnt;
-+	unsigned int recv_cnt;
-+	unsigned int read_cnt;
-+	unsigned int writ_cnt;
-+	unsigned int al_writ_cnt;
-+	unsigned int bm_writ_cnt;
-+	atomic_t ap_bio_cnt;	 /* Requests we need to complete */
-+	atomic_t ap_pending_cnt; /* AP data packets on the wire, ack expected */
-+	atomic_t rs_pending_cnt; /* RS request/data packets on the wire */
-+	atomic_t unacked_cnt;	 /* Need to send replys for */
-+	atomic_t local_cnt;	 /* Waiting for local completion */
-+	atomic_t net_cnt;	 /* Users of net_conf */
-+	spinlock_t req_lock;
-+	struct drbd_tl_epoch *unused_spare_tle; /* for pre-allocation */
-+	struct drbd_tl_epoch *newest_tle;
-+	struct drbd_tl_epoch *oldest_tle;
-+	struct list_head out_of_sequence_requests;
-+	struct hlist_head *tl_hash;
-+	unsigned int tl_hash_s;
-+
-+	/* blocks to sync in this run [unit BM_BLOCK_SIZE] */
-+	unsigned long rs_total;
-+	/* number of sync IOs that failed in this run */
-+	unsigned long rs_failed;
-+	/* Syncer's start time [unit jiffies] */
-+	unsigned long rs_start;
-+	/* cumulated time in PausedSyncX state [unit jiffies] */
-+	unsigned long rs_paused;
-+	/* block not up-to-date at mark [unit BM_BLOCK_SIZE] */
-+	unsigned long rs_mark_left;
-+	/* marks's time [unit jiffies] */
-+	unsigned long rs_mark_time;
-+	/* skipped because csum was equeal [unit BM_BLOCK_SIZE] */
-+	unsigned long rs_same_csum;
-+	sector_t ov_position;
-+	/* Start sector of out of sync range. */
-+	sector_t ov_last_oos_start;
-+	/* size of out-of-sync range in sectors. */
-+	sector_t ov_last_oos_size;
-+	unsigned long ov_left;
-+	struct crypto_hash *csums_tfm;
-+	struct crypto_hash *verify_tfm;
-+
-+	struct drbd_thread receiver;
-+	struct drbd_thread worker;
-+	struct drbd_thread asender;
-+	struct drbd_bitmap *bitmap;
-+	unsigned long bm_resync_fo; /* bit offset for drbd_bm_find_next */
-+
-+	/* Used to track operations of resync... */
-+	struct lru_cache *resync;
-+	/* Number of locked elements in resync LRU */
-+	unsigned int resync_locked;
-+	/* resync extent number waiting for application requests */
-+	unsigned int resync_wenr;
-+
-+	int open_cnt;
-+	u64 *p_uuid;
-+	struct drbd_epoch *current_epoch;
-+	spinlock_t epoch_lock;
-+	unsigned int epochs;
-+	enum write_ordering_e write_ordering;
-+	struct list_head active_ee; /* IO in progress */
-+	struct list_head sync_ee;   /* IO in progress */
-+	struct list_head done_ee;   /* send ack */
-+	struct list_head read_ee;   /* IO in progress */
-+	struct list_head net_ee;    /* zero-copy network send in progress */
-+	struct hlist_head *ee_hash; /* is proteced by req_lock! */
-+	unsigned int ee_hash_s;
-+
-+	/* this one is protected by ee_lock, single thread */
-+	struct drbd_epoch_entry *last_write_w_barrier;
-+
-+	int next_barrier_nr;
-+	struct hlist_head *app_reads_hash; /* is proteced by req_lock */
-+	struct list_head resync_reads;
-+	atomic_t pp_in_use;
-+	wait_queue_head_t ee_wait;
-+	struct page *md_io_page;	/* one page buffer for md_io */
-+	struct page *md_io_tmpp;	/* for hardsect != 512 [s390 only?] */
-+	struct mutex md_io_mutex;	/* protects the md_io_buffer */
-+	spinlock_t al_lock;
-+	wait_queue_head_t al_wait;
-+	struct lru_cache *act_log;	/* activity log */
-+	unsigned int al_tr_number;
-+	int al_tr_cycle;
-+	int al_tr_pos;   /* position of the next transaction in the journal */
-+	struct crypto_hash *cram_hmac_tfm;
-+	struct crypto_hash *integrity_w_tfm; /* to be used by the worker thread */
-+	struct crypto_hash *integrity_r_tfm; /* to be used by the receiver thread */
-+	void *int_dig_out;
-+	void *int_dig_in;
-+	void *int_dig_vv;
-+	wait_queue_head_t seq_wait;
-+	atomic_t packet_seq;
-+	unsigned int peer_seq;
-+	spinlock_t peer_seq_lock;
-+	unsigned int minor;
-+	unsigned long comm_bm_set; /* communicated number of set bits. */
-+	cpumask_t cpu_mask;
-+	struct bm_io_work bm_io_work;
-+	u64 ed_uuid; /* UUID of the exposed data */
-+	struct mutex state_mutex;
-+	char congestion_reason;  /* Why we where congested... */
-+};
-+
-+static inline struct drbd_conf *minor_to_mdev(unsigned int minor)
-+{
-+	struct drbd_conf *mdev;
-+
-+	mdev = minor < minor_count ? minor_table[minor] : NULL;
-+
-+	return mdev;
-+}
-+
-+static inline unsigned int mdev_to_minor(struct drbd_conf *mdev)
-+{
-+	return mdev->minor;
-+}
-+
-+/* returns 1 if it was successfull,
-+ * returns 0 if there was no data socket.
-+ * so wherever you are going to use the data.socket, e.g. do
-+ * if (!drbd_get_data_sock(mdev))
-+ *	return 0;
-+ *	CODE();
-+ * drbd_put_data_sock(mdev);
-+ */
-+static inline int drbd_get_data_sock(struct drbd_conf *mdev)
-+{
-+	mutex_lock(&mdev->data.mutex);
-+	/* drbd_disconnect() could have called drbd_free_sock()
-+	 * while we were waiting in down()... */
-+	if (unlikely(mdev->data.socket == NULL)) {
-+		mutex_unlock(&mdev->data.mutex);
-+		return 0;
-+	}
-+	return 1;
-+}
-+
-+static inline void drbd_put_data_sock(struct drbd_conf *mdev)
-+{
-+	mutex_unlock(&mdev->data.mutex);
-+}
-+
-+/*
-+ * function declarations
-+ *************************/
-+
-+/* drbd_main.c */
-+
-+enum chg_state_flags {
-+	CS_HARD	= 1,
-+	CS_VERBOSE = 2,
-+	CS_WAIT_COMPLETE = 4,
-+	CS_SERIALIZE    = 8,
-+	CS_ORDERED      = CS_WAIT_COMPLETE + CS_SERIALIZE,
-+};
-+
-+extern void drbd_init_set_defaults(struct drbd_conf *mdev);
-+extern int drbd_change_state(struct drbd_conf *mdev, enum chg_state_flags f,
-+			union drbd_state mask, union drbd_state val);
-+extern void drbd_force_state(struct drbd_conf *, union drbd_state,
-+			union drbd_state);
-+extern int _drbd_request_state(struct drbd_conf *, union drbd_state,
-+			union drbd_state, enum chg_state_flags);
-+extern int __drbd_set_state(struct drbd_conf *, union drbd_state,
-+			    enum chg_state_flags, struct completion *done);
-+extern void print_st_err(struct drbd_conf *, union drbd_state,
-+			union drbd_state, int);
-+extern int  drbd_thread_start(struct drbd_thread *thi);
-+extern void _drbd_thread_stop(struct drbd_thread *thi, int restart, int wait);
-+#ifdef CONFIG_SMP
-+extern void drbd_thread_current_set_cpu(struct drbd_conf *mdev);
-+extern cpumask_t drbd_calc_cpu_mask(struct drbd_conf *mdev);
-+#else
-+#define drbd_thread_current_set_cpu(A) ({})
-+#define drbd_calc_cpu_mask(A) CPU_MASK_ALL
-+#endif
-+extern void drbd_free_resources(struct drbd_conf *mdev);
-+extern void tl_release(struct drbd_conf *mdev, unsigned int barrier_nr,
-+		       unsigned int set_size);
-+extern void tl_clear(struct drbd_conf *mdev);
-+extern void _tl_add_barrier(struct drbd_conf *, struct drbd_tl_epoch *);
-+extern void drbd_free_sock(struct drbd_conf *mdev);
-+extern int drbd_send(struct drbd_conf *mdev, struct socket *sock,
-+			void *buf, size_t size, unsigned msg_flags);
-+extern int drbd_send_protocol(struct drbd_conf *mdev);
-+extern int drbd_send_uuids(struct drbd_conf *mdev);
-+extern int drbd_send_uuids_skip_initial_sync(struct drbd_conf *mdev);
-+extern int drbd_send_sync_uuid(struct drbd_conf *mdev, u64 val);
-+extern int drbd_send_sizes(struct drbd_conf *mdev);
-+extern int _drbd_send_state(struct drbd_conf *mdev);
-+extern int drbd_send_state(struct drbd_conf *mdev);
-+extern int _drbd_send_cmd(struct drbd_conf *mdev, struct socket *sock,
-+			enum drbd_packets cmd, struct p_header *h,
-+			size_t size, unsigned msg_flags);
-+#define USE_DATA_SOCKET 1
-+#define USE_META_SOCKET 0
-+extern int drbd_send_cmd(struct drbd_conf *mdev, int use_data_socket,
-+			enum drbd_packets cmd, struct p_header *h,
-+			size_t size);
-+extern int drbd_send_cmd2(struct drbd_conf *mdev, enum drbd_packets cmd,
-+			char *data, size_t size);
-+extern int drbd_send_sync_param(struct drbd_conf *mdev, struct syncer_conf *sc);
-+extern int drbd_send_b_ack(struct drbd_conf *mdev, u32 barrier_nr,
-+			u32 set_size);
-+extern int drbd_send_ack(struct drbd_conf *mdev, enum drbd_packets cmd,
-+			struct drbd_epoch_entry *e);
-+extern int drbd_send_ack_rp(struct drbd_conf *mdev, enum drbd_packets cmd,
-+			struct p_block_req *rp);
-+extern int drbd_send_ack_dp(struct drbd_conf *mdev, enum drbd_packets cmd,
-+			struct p_data *dp);
-+extern int drbd_send_ack_ex(struct drbd_conf *mdev, enum drbd_packets cmd,
-+			    sector_t sector, int blksize, u64 block_id);
-+extern int _drbd_send_page(struct drbd_conf *mdev, struct page *page,
-+			int offset, size_t size);
-+extern int drbd_send_block(struct drbd_conf *mdev, enum drbd_packets cmd,
-+			   struct drbd_epoch_entry *e);
-+extern int drbd_send_dblock(struct drbd_conf *mdev, struct drbd_request *req);
-+extern int _drbd_send_barrier(struct drbd_conf *mdev,
-+			struct drbd_tl_epoch *barrier);
-+extern int drbd_send_drequest(struct drbd_conf *mdev, int cmd,
-+			      sector_t sector, int size, u64 block_id);
-+extern int drbd_send_drequest_csum(struct drbd_conf *mdev,
-+				   sector_t sector,int size,
-+				   void *digest, int digest_size,
-+				   enum drbd_packets cmd);
-+extern int drbd_send_ov_request(struct drbd_conf *mdev,sector_t sector,int size);
-+
-+extern int drbd_send_bitmap(struct drbd_conf *mdev);
-+extern int _drbd_send_bitmap(struct drbd_conf *mdev);
-+extern int drbd_send_sr_reply(struct drbd_conf *mdev, int retcode);
-+extern void drbd_free_bc(struct drbd_backing_dev *bc);
-+extern int drbd_io_error(struct drbd_conf *mdev, int forcedetach);
-+extern void drbd_mdev_cleanup(struct drbd_conf *mdev);
-+
-+/* drbd_meta-data.c (still in drbd_main.c) */
-+extern void drbd_md_sync(struct drbd_conf *mdev);
-+extern int  drbd_md_read(struct drbd_conf *mdev, struct drbd_backing_dev *bdev);
-+/* maybe define them below as inline? */
-+extern void drbd_uuid_set(struct drbd_conf *mdev, int idx, u64 val) __must_hold(local);
-+extern void _drbd_uuid_set(struct drbd_conf *mdev, int idx, u64 val) __must_hold(local);
-+extern void drbd_uuid_new_current(struct drbd_conf *mdev) __must_hold(local);
-+extern void _drbd_uuid_new_current(struct drbd_conf *mdev) __must_hold(local);
-+extern void drbd_uuid_set_bm(struct drbd_conf *mdev, u64 val) __must_hold(local);
-+extern void drbd_md_set_flag(struct drbd_conf *mdev, int flags) __must_hold(local);
-+extern void drbd_md_clear_flag(struct drbd_conf *mdev, int flags)__must_hold(local);
-+extern int drbd_md_test_flag(struct drbd_backing_dev *, int);
-+extern void drbd_md_mark_dirty(struct drbd_conf *mdev);
-+extern void drbd_queue_bitmap_io(struct drbd_conf *mdev,
-+				 int (*io_fn)(struct drbd_conf *),
-+				 void (*done)(struct drbd_conf *, int),
-+				 char *why);
-+extern int drbd_bmio_set_n_write(struct drbd_conf *mdev);
-+extern int drbd_bmio_clear_n_write(struct drbd_conf *mdev);
-+extern int drbd_bitmap_io(struct drbd_conf *mdev, int (*io_fn)(struct drbd_conf *), char *why);
-+
-+
-+/* Meta data layout
-+   We reserve a 128MB Block (4k aligned)
-+   * either at the end of the backing device
-+   * or on a seperate meta data device. */
-+
-+#define MD_RESERVED_SECT (128LU << 11)  /* 128 MB, unit sectors */
-+/* The following numbers are sectors */
-+#define MD_AL_OFFSET 8	    /* 8 Sectors after start of meta area */
-+#define MD_AL_MAX_SIZE 64   /* = 32 kb LOG  ~ 3776 extents ~ 14 GB Storage */
-+/* Allows up to about 3.8TB */
-+#define MD_BM_OFFSET (MD_AL_OFFSET + MD_AL_MAX_SIZE)
-+
-+/* Since the smalles IO unit is usually 512 byte */
-+#define MD_HARDSECT_B	 9
-+#define MD_HARDSECT	 (1<<MD_HARDSECT_B)
-+
-+/* activity log */
-+#define AL_EXTENTS_PT ((MD_HARDSECT-12)/8-1) /* 61 ; Extents per 512B sector */
-+#define AL_EXTENT_SIZE_B 22		 /* One extent represents 4M Storage */
-+#define AL_EXTENT_SIZE (1<<AL_EXTENT_SIZE_B)
-+
-+#if BITS_PER_LONG == 32
-+#define LN2_BPL 5
-+#define cpu_to_lel(A) cpu_to_le32(A)
-+#define lel_to_cpu(A) le32_to_cpu(A)
-+#elif BITS_PER_LONG == 64
-+#define LN2_BPL 6
-+#define cpu_to_lel(A) cpu_to_le64(A)
-+#define lel_to_cpu(A) le64_to_cpu(A)
-+#else
-+#error "LN2 of BITS_PER_LONG unknown!"
-+#endif
-+
-+/* resync bitmap */
-+/* 16MB sized 'bitmap extent' to track syncer usage */
-+struct bm_extent {
-+	struct lc_element lce;
-+	int rs_left; /* number of bits set (out of sync) in this extent. */
-+	int rs_failed; /* number of failed resync requests in this extent. */
-+	unsigned long flags;
-+};
-+
-+#define BME_NO_WRITES  0  /* bm_extent.flags: no more requests on this one! */
-+#define BME_LOCKED     1  /* bm_extent.flags: syncer active on this one. */
-+
-+/* drbd_bitmap.c */
-+/*
-+ * We need to store one bit for a block.
-+ * Example: 1GB disk @ 4096 byte blocks ==> we need 32 KB bitmap.
-+ * Bit 0 ==> local node thinks this block is binary identical on both nodes
-+ * Bit 1 ==> local node thinks this block needs to be synced.
-+ */
-+
-+#define BM_BLOCK_SIZE_B  12			 /* 4k per bit */
-+#define BM_BLOCK_SIZE	 (1<<BM_BLOCK_SIZE_B)
-+/* (9+3) : 512 bytes @ 8 bits; representing 16M storage
-+ * per sector of on disk bitmap */
-+#define BM_EXT_SIZE_B	 (BM_BLOCK_SIZE_B + MD_HARDSECT_B + 3)  /* = 24 */
-+#define BM_EXT_SIZE	 (1<<BM_EXT_SIZE_B)
-+
-+#if (BM_EXT_SIZE_B != 24) || (BM_BLOCK_SIZE_B != 12)
-+#error "HAVE YOU FIXED drbdmeta AS WELL??"
-+#endif
-+
-+/* thus many _storage_ sectors are described by one bit */
-+#define BM_SECT_TO_BIT(x)   ((x)>>(BM_BLOCK_SIZE_B-9))
-+#define BM_BIT_TO_SECT(x)   ((sector_t)(x)<<(BM_BLOCK_SIZE_B-9))
-+#define BM_SECT_PER_BIT     BM_BIT_TO_SECT(1)
-+
-+/* bit to represented kilo byte conversion */
-+#define Bit2KB(bits) ((bits)<<(BM_BLOCK_SIZE_B-10))
-+
-+/* in which _bitmap_ extent (resp. sector) the bit for a certain
-+ * _storage_ sector is located in */
-+#define BM_SECT_TO_EXT(x)   ((x)>>(BM_EXT_SIZE_B-9))
-+
-+/* how much _storage_ sectors we have per bitmap sector */
-+#define BM_EXT_TO_SECT(x)   ((sector_t)(x) << (BM_EXT_SIZE_B-9))
-+#define BM_SECT_PER_EXT     BM_EXT_TO_SECT(1)
-+
-+/* in one sector of the bitmap, we have this many activity_log extents. */
-+#define AL_EXT_PER_BM_SECT  (1 << (BM_EXT_SIZE_B - AL_EXTENT_SIZE_B))
-+#define BM_WORDS_PER_AL_EXT (1 << (AL_EXTENT_SIZE_B-BM_BLOCK_SIZE_B-LN2_BPL))
-+
-+#define BM_BLOCKS_PER_BM_EXT_B (BM_EXT_SIZE_B - BM_BLOCK_SIZE_B)
-+#define BM_BLOCKS_PER_BM_EXT_MASK  ((1<<BM_BLOCKS_PER_BM_EXT_B) - 1)
-+
-+/* the extent in "PER_EXTENT" below is an activity log extent
-+ * we need that many (long words/bytes) to store the bitmap
-+ *		     of one AL_EXTENT_SIZE chunk of storage.
-+ * we can store the bitmap for that many AL_EXTENTS within
-+ * one sector of the _on_disk_ bitmap:
-+ * bit	 0	  bit 37   bit 38	     bit (512*8)-1
-+ *	     ...|........|........|.. // ..|........|
-+ * sect. 0	 `296	  `304			   ^(512*8*8)-1
-+ *
-+#define BM_WORDS_PER_EXT    ( (AL_EXT_SIZE/BM_BLOCK_SIZE) / BITS_PER_LONG )
-+#define BM_BYTES_PER_EXT    ( (AL_EXT_SIZE/BM_BLOCK_SIZE) / 8 )  // 128
-+#define BM_EXT_PER_SECT	    ( 512 / BM_BYTES_PER_EXTENT )	 //   4
-+ */
-+
-+#define DRBD_MAX_SECTORS_32 (0xffffffffLU)
-+#define DRBD_MAX_SECTORS_BM \
-+	  ((MD_RESERVED_SECT - MD_BM_OFFSET) * (1LL<<(BM_EXT_SIZE_B-9)))
-+#if DRBD_MAX_SECTORS_BM < DRBD_MAX_SECTORS_32
-+#define DRBD_MAX_SECTORS      DRBD_MAX_SECTORS_BM
-+#define DRBD_MAX_SECTORS_FLEX DRBD_MAX_SECTORS_BM
-+#elif !defined(CONFIG_LBD) && BITS_PER_LONG == 32
-+#define DRBD_MAX_SECTORS      DRBD_MAX_SECTORS_32
-+#define DRBD_MAX_SECTORS_FLEX DRBD_MAX_SECTORS_32
-+#else
-+#define DRBD_MAX_SECTORS      DRBD_MAX_SECTORS_BM
-+/* 16 TB in units of sectors */
-+#if BITS_PER_LONG == 32
-+/* adjust by one page worth of bitmap,
-+ * so we won't wrap around in drbd_bm_find_next_bit.
-+ * you should use 64bit OS for that much storage, anyways. */
-+#define DRBD_MAX_SECTORS_FLEX BM_BIT_TO_SECT(0xffff7fff)
-+#else
-+#define DRBD_MAX_SECTORS_FLEX BM_BIT_TO_SECT(0x1LU << 32)
-+#endif
-+#endif
-+
-+/* Sector shift value for the "hash" functions of tl_hash and ee_hash tables.
-+ * With a value of 6 all IO in one 32K block make it to the same slot of the
-+ * hash table. */
-+#define HT_SHIFT 6
-+#define DRBD_MAX_SEGMENT_SIZE (1U<<(9+HT_SHIFT))
-+
-+/* Number of elements in the app_reads_hash */
-+#define APP_R_HSIZE 15
-+
-+extern int  drbd_bm_init(struct drbd_conf *mdev);
-+extern int  drbd_bm_resize(struct drbd_conf *mdev, sector_t sectors);
-+extern void drbd_bm_cleanup(struct drbd_conf *mdev);
-+extern void drbd_bm_set_all(struct drbd_conf *mdev);
-+extern void drbd_bm_clear_all(struct drbd_conf *mdev);
-+extern int  drbd_bm_set_bits(
-+		struct drbd_conf *mdev, unsigned long s, unsigned long e);
-+extern int  drbd_bm_clear_bits(
-+		struct drbd_conf *mdev, unsigned long s, unsigned long e);
-+/* bm_set_bits variant for use while holding drbd_bm_lock */
-+extern int _drbd_bm_set_bits(struct drbd_conf *mdev,
-+		const unsigned long s, const unsigned long e);
-+extern int  drbd_bm_test_bit(struct drbd_conf *mdev, unsigned long bitnr);
-+extern int  drbd_bm_e_weight(struct drbd_conf *mdev, unsigned long enr);
-+extern int  drbd_bm_write_sect(struct drbd_conf *mdev, unsigned long enr) __must_hold(local);
-+extern int  drbd_bm_read(struct drbd_conf *mdev) __must_hold(local);
-+extern int  drbd_bm_write(struct drbd_conf *mdev) __must_hold(local);
-+extern unsigned long drbd_bm_ALe_set_all(struct drbd_conf *mdev,
-+		unsigned long al_enr);
-+extern size_t	     drbd_bm_words(struct drbd_conf *mdev);
-+extern unsigned long drbd_bm_bits(struct drbd_conf *mdev);
-+extern sector_t      drbd_bm_capacity(struct drbd_conf *mdev);
-+extern unsigned long drbd_bm_find_next(struct drbd_conf *mdev, unsigned long bm_fo);
-+/* bm_find_next variants for use while you hold drbd_bm_lock() */
-+extern unsigned long _drbd_bm_find_next(struct drbd_conf *mdev, unsigned long bm_fo);
-+extern unsigned long _drbd_bm_find_next_zero(struct drbd_conf *mdev, unsigned long bm_fo);
-+extern unsigned long drbd_bm_total_weight(struct drbd_conf *mdev);
-+extern int drbd_bm_rs_done(struct drbd_conf *mdev);
-+/* for receive_bitmap */
-+extern void drbd_bm_merge_lel(struct drbd_conf *mdev, size_t offset,
-+		size_t number, unsigned long *buffer);
-+/* for _drbd_send_bitmap and drbd_bm_write_sect */
-+extern void drbd_bm_get_lel(struct drbd_conf *mdev, size_t offset,
-+		size_t number, unsigned long *buffer);
-+
-+extern void drbd_bm_lock(struct drbd_conf *mdev, char *why);
-+extern void drbd_bm_unlock(struct drbd_conf *mdev);
-+
-+extern void _drbd_bm_recount_bits(struct drbd_conf *mdev, char *file, int line);
-+#define drbd_bm_recount_bits(mdev) \
-+	_drbd_bm_recount_bits(mdev, __FILE__, __LINE__)
-+extern int drbd_bm_count_bits(struct drbd_conf *mdev, const unsigned long s, const unsigned long e);
-+/* drbd_main.c */
-+
-+extern struct kmem_cache *drbd_request_cache;
-+extern struct kmem_cache *drbd_ee_cache;
-+extern mempool_t *drbd_request_mempool;
-+extern mempool_t *drbd_ee_mempool;
-+
-+extern struct page *drbd_pp_pool; /* drbd's page pool */
-+extern spinlock_t   drbd_pp_lock;
-+extern int	    drbd_pp_vacant;
-+extern wait_queue_head_t drbd_pp_wait;
-+
-+extern rwlock_t global_state_lock;
-+
-+extern struct drbd_conf *drbd_new_device(unsigned int minor);
-+extern void drbd_free_mdev(struct drbd_conf *mdev);
-+
-+extern int proc_details;
-+
-+/* drbd_req */
-+extern int drbd_make_request_26(struct request_queue *q, struct bio *bio);
-+extern int drbd_read_remote(struct drbd_conf *mdev, struct drbd_request *req);
-+extern int drbd_merge_bvec(struct request_queue *q, struct bvec_merge_data *bvm, struct bio_vec *bvec);
-+extern int is_valid_ar_handle(struct drbd_request *, sector_t);
-+
-+
-+/* drbd_nl.c */
-+extern void drbd_suspend_io(struct drbd_conf *mdev);
-+extern void drbd_resume_io(struct drbd_conf *mdev);
-+extern char *ppsize(char *buf, unsigned long long size);
-+extern sector_t drbd_new_dev_size(struct drbd_conf *,
-+		struct drbd_backing_dev *);
-+enum determine_dev_size { dev_size_error = -1, unchanged = 0, shrunk = 1, grew = 2 };
-+extern enum determine_dev_size drbd_determin_dev_size(struct drbd_conf *) __must_hold(local);
-+extern void resync_after_online_grow(struct drbd_conf *);
-+extern void drbd_setup_queue_param(struct drbd_conf *mdev, unsigned int) __must_hold(local);
-+extern int drbd_set_role(struct drbd_conf *mdev, enum drbd_role new_role,
-+		int force);
-+enum drbd_disk_state drbd_try_outdate_peer(struct drbd_conf *mdev);
-+extern int drbd_khelper(struct drbd_conf *mdev, char *cmd);
-+
-+/* drbd_worker.c */
-+extern int drbd_worker(struct drbd_thread *thi);
-+extern void drbd_alter_sa(struct drbd_conf *mdev, int na);
-+extern void drbd_start_resync(struct drbd_conf *mdev, enum drbd_conns side);
-+extern void resume_next_sg(struct drbd_conf *mdev);
-+extern void suspend_other_sg(struct drbd_conf *mdev);
-+extern int drbd_resync_finished(struct drbd_conf *mdev);
-+/* maybe rather drbd_main.c ? */
-+extern int drbd_md_sync_page_io(struct drbd_conf *mdev,
-+		struct drbd_backing_dev *bdev, sector_t sector, int rw);
-+extern void drbd_ov_oos_found(struct drbd_conf*, sector_t, int);
-+
-+static inline void ov_oos_print(struct drbd_conf *mdev)
-+{
-+	if (mdev->ov_last_oos_size) {
-+		dev_err(DEV, "Out of sync: start=%llu, size=%lu (sectors)\n",
-+		     (unsigned long long)mdev->ov_last_oos_start,
-+		     (unsigned long)mdev->ov_last_oos_size);
-+	}
-+	mdev->ov_last_oos_size=0;
-+}
-+
-+
-+void drbd_csum(struct drbd_conf *, struct crypto_hash *, struct bio *, void *);
-+/* worker callbacks */
-+extern int w_req_cancel_conflict(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_read_retry_remote(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_e_end_data_req(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_e_end_rsdata_req(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_e_end_csum_rs_req(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_e_end_ov_reply(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_e_end_ov_req(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_ov_finished(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_resync_inactive(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_resume_next_sg(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_io_error(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_send_write_hint(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_make_resync_request(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_send_dblock(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_send_barrier(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_send_read_req(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_prev_work_done(struct drbd_conf *, struct drbd_work *, int);
-+extern int w_e_reissue(struct drbd_conf *, struct drbd_work *, int);
-+
-+extern void resync_timer_fn(unsigned long data);
-+
-+/* drbd_receiver.c */
-+extern int drbd_release_ee(struct drbd_conf *mdev, struct list_head *list);
-+extern struct drbd_epoch_entry *drbd_alloc_ee(struct drbd_conf *mdev,
-+					    u64 id,
-+					    sector_t sector,
-+					    unsigned int data_size,
-+					    gfp_t gfp_mask) __must_hold(local);
-+extern void drbd_free_ee(struct drbd_conf *mdev, struct drbd_epoch_entry *e);
-+extern void drbd_wait_ee_list_empty(struct drbd_conf *mdev,
-+		struct list_head *head);
-+extern void _drbd_wait_ee_list_empty(struct drbd_conf *mdev,
-+		struct list_head *head);
-+extern void drbd_set_recv_tcq(struct drbd_conf *mdev, int tcq_enabled);
-+extern void _drbd_clear_done_ee(struct drbd_conf *mdev);
-+
-+/* yes, there is kernel_setsockopt, but only since 2.6.18. we don't need to
-+ * mess with get_fs/set_fs, we know we are KERNEL_DS always. */
-+static inline int drbd_setsockopt(struct socket *sock, int level, int optname,
-+			char __user *optval, int optlen)
-+{
-+	int err;
-+	if (level == SOL_SOCKET)
-+		err = sock_setsockopt(sock, level, optname, optval, optlen);
-+	else
-+		err = sock->ops->setsockopt(sock, level, optname, optval,
-+					    optlen);
-+	return err;
-+}
-+
-+static inline void drbd_tcp_cork(struct socket *sock)
-+{
-+	int __user val = 1;
-+	(void) drbd_setsockopt(sock, SOL_TCP, TCP_CORK,
-+			(char __user *)&val, sizeof(val));
-+}
-+
-+static inline void drbd_tcp_uncork(struct socket *sock)
-+{
-+	int __user val = 0;
-+	(void) drbd_setsockopt(sock, SOL_TCP, TCP_CORK,
-+			(char __user *)&val, sizeof(val));
-+}
-+
-+static inline void drbd_tcp_nodelay(struct socket *sock)
-+{
-+	int __user val = 1;
-+	(void) drbd_setsockopt(sock, SOL_TCP, TCP_NODELAY,
-+			(char __user *)&val, sizeof(val));
-+}
-+
-+static inline void drbd_tcp_quickack(struct socket *sock)
-+{
-+	int __user val = 1;
-+	(void) drbd_setsockopt(sock, SOL_TCP, TCP_QUICKACK,
-+			(char __user *)&val, sizeof(val));
-+}
-+
-+void drbd_bump_write_ordering(struct drbd_conf *mdev, enum write_ordering_e wo);
-+
-+/* drbd_proc.c */
-+extern struct proc_dir_entry *drbd_proc;
-+extern struct file_operations drbd_proc_fops;
-+extern const char *conns_to_name(enum drbd_conns s);
-+extern const char *roles_to_name(enum drbd_role s);
-+
-+/* drbd_actlog.c */
-+extern void drbd_al_begin_io(struct drbd_conf *mdev, sector_t sector);
-+extern void drbd_al_complete_io(struct drbd_conf *mdev, sector_t sector);
-+extern void drbd_rs_complete_io(struct drbd_conf *mdev, sector_t sector);
-+extern int drbd_rs_begin_io(struct drbd_conf *mdev, sector_t sector);
-+extern int drbd_try_rs_begin_io(struct drbd_conf *mdev, sector_t sector);
-+extern void drbd_rs_cancel_all(struct drbd_conf *mdev);
-+extern int drbd_rs_del_all(struct drbd_conf *mdev);
-+extern void drbd_rs_failed_io(struct drbd_conf *mdev,
-+		sector_t sector, int size);
-+extern int drbd_al_read_log(struct drbd_conf *mdev, struct drbd_backing_dev *);
-+extern void __drbd_set_in_sync(struct drbd_conf *mdev, sector_t sector,
-+		int size, const char *file, const unsigned int line);
-+#define drbd_set_in_sync(mdev, sector, size) \
-+	__drbd_set_in_sync(mdev, sector, size, __FILE__, __LINE__)
-+extern void __drbd_set_out_of_sync(struct drbd_conf *mdev, sector_t sector,
-+		int size, const char *file, const unsigned int line);
-+#define drbd_set_out_of_sync(mdev, sector, size) \
-+	__drbd_set_out_of_sync(mdev, sector, size, __FILE__, __LINE__)
-+extern void drbd_al_apply_to_bm(struct drbd_conf *mdev);
-+extern void drbd_al_to_on_disk_bm(struct drbd_conf *mdev);
-+extern void drbd_al_shrink(struct drbd_conf *mdev);
-+
-+
-+/* drbd_nl.c */
-+
-+void drbd_nl_cleanup(void);
-+int __init drbd_nl_init(void);
-+void drbd_bcast_state(struct drbd_conf *mdev, union drbd_state);
-+void drbd_bcast_sync_progress(struct drbd_conf *mdev);
-+void drbd_bcast_ee(struct drbd_conf *mdev,
-+		const char *reason, const int dgs,
-+		const char* seen_hash, const char* calc_hash,
-+		const struct drbd_epoch_entry* e);
-+
-+
-+/** DRBD State macros:
-+ * These macros are used to express state changes in easily readable form.
-+ *
-+ * The NS macros expand to a mask and a value, that can be bit ored onto the
-+ * current state as soon as the spinlock (req_lock) was taken.
-+ *
-+ * The _NS macros are used for state functions that get called with the
-+ * spinlock. These macros expand directly to the new state value.
-+ *
-+ * Besides the basic forms NS() and _NS() additional _?NS[23] are defined
-+ * to express state changes that affect more than one aspect of the state.
-+ *
-+ * E.g. NS2(conn, C_CONNECTED, peer, R_SECONDARY)
-+ * Means that the network connection was established and that the peer
-+ * is in secondary role.
-+ */
-+#define role_MASK R_MASK
-+#define peer_MASK R_MASK
-+#define disk_MASK D_MASK
-+#define pdsk_MASK D_MASK
-+#define conn_MASK C_MASK
-+#define susp_MASK 1
-+#define user_isp_MASK 1
-+#define aftr_isp_MASK 1
-+
-+#define NS(T, S) \
-+	({ union drbd_state mask; mask.i = 0; mask.T = T##_MASK; mask; }), \
-+	({ union drbd_state val; val.i = 0; val.T = (S); val; })
-+#define NS2(T1, S1, T2, S2) \
-+	({ union drbd_state mask; mask.i = 0; mask.T1 = T1##_MASK; \
-+	  mask.T2 = T2##_MASK; mask; }), \
-+	({ union drbd_state val; val.i = 0; val.T1 = (S1); \
-+	  val.T2 = (S2); val; })
-+#define NS3(T1, S1, T2, S2, T3, S3) \
-+	({ union drbd_state mask; mask.i = 0; mask.T1 = T1##_MASK; \
-+	  mask.T2 = T2##_MASK; mask.T3 = T3##_MASK; mask; }), \
-+	({ union drbd_state val;  val.i = 0; val.T1 = (S1); \
-+	  val.T2 = (S2); val.T3 = (S3); val; })
-+
-+#define _NS(D, T, S) \
-+	D, ({ union drbd_state __ns; __ns.i = D->state.i; __ns.T = (S); __ns; })
-+#define _NS2(D, T1, S1, T2, S2) \
-+	D, ({ union drbd_state __ns; __ns.i = D->state.i; __ns.T1 = (S1); \
-+	__ns.T2 = (S2); __ns; })
-+#define _NS3(D, T1, S1, T2, S2, T3, S3) \
-+	D, ({ union drbd_state __ns; __ns.i = D->state.i; __ns.T1 = (S1); \
-+	__ns.T2 = (S2); __ns.T3 = (S3); __ns; })
-+
-+/*
-+ * inline helper functions
-+ *************************/
-+
-+static inline void drbd_state_lock(struct drbd_conf *mdev)
-+{
-+	wait_event(mdev->misc_wait,
-+		   !test_and_set_bit(CLUSTER_ST_CHANGE, &mdev->flags));
-+}
-+
-+static inline void drbd_state_unlock(struct drbd_conf *mdev)
-+{
-+	clear_bit(CLUSTER_ST_CHANGE, &mdev->flags);
-+	wake_up(&mdev->misc_wait);
-+}
-+
-+static inline int _drbd_set_state(struct drbd_conf *mdev,
-+				   union drbd_state ns, enum chg_state_flags flags,
-+				   struct completion *done)
-+{
-+	int rv;
-+
-+	read_lock(&global_state_lock);
-+	rv = __drbd_set_state(mdev, ns, flags, done);
-+	read_unlock(&global_state_lock);
-+
-+	return rv;
-+}
-+
-+static inline int drbd_request_state(struct drbd_conf *mdev,
-+				     union drbd_state mask,
-+				     union drbd_state val)
-+{
-+	return _drbd_request_state(mdev, mask, val, CS_VERBOSE + CS_ORDERED);
-+}
-+
-+/**
-+ * drbd_chk_io_error: Handles the on_io_error setting, should be called from
-+ * all io completion handlers. See also drbd_io_error().
-+ */
-+static inline void __drbd_chk_io_error(struct drbd_conf *mdev, int forcedetach)
-+{
-+	switch (mdev->bc->dc.on_io_error) {
-+	case EP_PASS_ON:
-+		if (!forcedetach) {
-+			if (printk_ratelimit())
-+				dev_err(DEV, "Local IO failed. Passing error on...\n");
-+			break;
-+		}
-+		/* NOTE fall through to detach case if forcedetach set */
-+	case EP_DETACH:
-+	case EP_CALL_HELPER:
-+		if (mdev->state.disk > D_FAILED) {
-+			_drbd_set_state(_NS(mdev, disk, D_FAILED), CS_HARD, NULL);
-+			dev_err(DEV, "Local IO failed. Detaching...\n");
-+		}
-+		break;
-+	}
-+}
-+
-+static inline void drbd_chk_io_error(struct drbd_conf *mdev,
-+	int error, int forcedetach)
-+{
-+	if (error) {
-+		unsigned long flags;
-+		spin_lock_irqsave(&mdev->req_lock, flags);
-+		__drbd_chk_io_error(mdev, forcedetach);
-+		spin_unlock_irqrestore(&mdev->req_lock, flags);
-+	}
-+}
-+
-+/* Returns the first sector number of our meta data,
-+ * which, for internal meta data, happens to be the maximum capacity
-+ * we could agree upon with our peer
-+ */
-+static inline sector_t drbd_md_first_sector(struct drbd_backing_dev *bdev)
-+{
-+	switch (bdev->dc.meta_dev_idx) {
-+	case DRBD_MD_INDEX_INTERNAL:
-+	case DRBD_MD_INDEX_FLEX_INT:
-+		return bdev->md.md_offset + bdev->md.bm_offset;
-+	case DRBD_MD_INDEX_FLEX_EXT:
-+	default:
-+		return bdev->md.md_offset;
-+	}
-+}
-+
-+/* returns the last sector number of our meta data,
-+ * to be able to catch out of band md access */
-+static inline sector_t drbd_md_last_sector(struct drbd_backing_dev *bdev)
-+{
-+	switch (bdev->dc.meta_dev_idx) {
-+	case DRBD_MD_INDEX_INTERNAL:
-+	case DRBD_MD_INDEX_FLEX_INT:
-+		return bdev->md.md_offset + MD_AL_OFFSET - 1;
-+	case DRBD_MD_INDEX_FLEX_EXT:
-+	default:
-+		return bdev->md.md_offset + bdev->md.md_size_sect;
-+	}
-+}
-+
-+/* Returns the number of 512 byte sectors of the device */
-+static inline sector_t drbd_get_capacity(struct block_device *bdev)
-+{
-+	/* return bdev ? get_capacity(bdev->bd_disk) : 0; */
-+	return bdev ? bdev->bd_inode->i_size >> 9 : 0;
-+}
-+
-+/* returns the capacity we announce to out peer.
-+ * we clip ourselves at the various MAX_SECTORS, because if we don't,
-+ * current implementation will oops sooner or later */
-+static inline sector_t drbd_get_max_capacity(struct drbd_backing_dev *bdev)
-+{
-+	sector_t s;
-+	switch (bdev->dc.meta_dev_idx) {
-+	case DRBD_MD_INDEX_INTERNAL:
-+	case DRBD_MD_INDEX_FLEX_INT:
-+		s = drbd_get_capacity(bdev->backing_bdev)
-+			? min_t(sector_t, DRBD_MAX_SECTORS_FLEX,
-+					drbd_md_first_sector(bdev))
-+			: 0;
-+		break;
-+	case DRBD_MD_INDEX_FLEX_EXT:
-+		s = min_t(sector_t, DRBD_MAX_SECTORS_FLEX,
-+				drbd_get_capacity(bdev->backing_bdev));
-+		/* clip at maximum size the meta device can support */
-+		s = min_t(sector_t, s,
-+			BM_EXT_TO_SECT(bdev->md.md_size_sect
-+				     - bdev->md.bm_offset));
-+		break;
-+	default:
-+		s = min_t(sector_t, DRBD_MAX_SECTORS,
-+				drbd_get_capacity(bdev->backing_bdev));
-+	}
-+	return s;
-+}
-+
-+/* returns the sector number of our meta data 'super' block */
-+static inline sector_t drbd_md_ss__(struct drbd_conf *mdev,
-+				    struct drbd_backing_dev *bdev)
-+{
-+	switch (bdev->dc.meta_dev_idx) {
-+	default: /* external, some index */
-+		return MD_RESERVED_SECT * bdev->dc.meta_dev_idx;
-+	case DRBD_MD_INDEX_INTERNAL:
-+		/* with drbd08, internal meta data is always "flexible" */
-+	case DRBD_MD_INDEX_FLEX_INT:
-+		/* sizeof(struct md_on_disk_07) == 4k
-+		 * position: last 4k aligned block of 4k size */
-+		if (!bdev->backing_bdev) {
-+			if (__ratelimit(&drbd_ratelimit_state)) {
-+				dev_err(DEV, "bdev->backing_bdev==NULL\n");
-+				dump_stack();
-+			}
-+			return 0;
-+		}
-+		return (drbd_get_capacity(bdev->backing_bdev) & ~7ULL)
-+			- MD_AL_OFFSET;
-+	case DRBD_MD_INDEX_FLEX_EXT:
-+		return 0;
-+	}
-+}
-+
-+static inline void
-+_drbd_queue_work(struct drbd_work_queue *q, struct drbd_work *w)
-+{
-+	list_add_tail(&w->list, &q->q);
-+	up(&q->s);
-+}
-+
-+static inline void
-+drbd_queue_work_front(struct drbd_work_queue *q, struct drbd_work *w)
-+{
-+	unsigned long flags;
-+	spin_lock_irqsave(&q->q_lock, flags);
-+	list_add(&w->list, &q->q);
-+	up(&q->s); /* within the spinlock,
-+		      see comment near end of drbd_worker() */
-+	spin_unlock_irqrestore(&q->q_lock, flags);
-+}
-+
-+static inline void
-+drbd_queue_work(struct drbd_work_queue *q, struct drbd_work *w)
-+{
-+	unsigned long flags;
-+	spin_lock_irqsave(&q->q_lock, flags);
-+	list_add_tail(&w->list, &q->q);
-+	up(&q->s); /* within the spinlock,
-+		      see comment near end of drbd_worker() */
-+	spin_unlock_irqrestore(&q->q_lock, flags);
-+}
-+
-+static inline void wake_asender(struct drbd_conf *mdev)
-+{
-+	if (test_bit(SIGNAL_ASENDER, &mdev->flags))
-+		force_sig(DRBD_SIG, mdev->asender.task);
-+}
-+
-+static inline void request_ping(struct drbd_conf *mdev)
-+{
-+	set_bit(SEND_PING, &mdev->flags);
-+	wake_asender(mdev);
-+}
-+
-+static inline int drbd_send_short_cmd(struct drbd_conf *mdev,
-+	enum drbd_packets cmd)
-+{
-+	struct p_header h;
-+	return drbd_send_cmd(mdev, USE_DATA_SOCKET, cmd, &h, sizeof(h));
-+}
-+
-+static inline int drbd_send_ping(struct drbd_conf *mdev)
-+{
-+	struct p_header h;
-+	return drbd_send_cmd(mdev, USE_META_SOCKET, P_PING, &h, sizeof(h));
-+}
-+
-+static inline int drbd_send_ping_ack(struct drbd_conf *mdev)
-+{
-+	struct p_header h;
-+	return drbd_send_cmd(mdev, USE_META_SOCKET, P_PING_ACK, &h, sizeof(h));
-+}
-+
-+static inline void drbd_thread_stop(struct drbd_thread *thi)
-+{
-+	_drbd_thread_stop(thi, FALSE, TRUE);
-+}
-+
-+static inline void drbd_thread_stop_nowait(struct drbd_thread *thi)
-+{
-+	_drbd_thread_stop(thi, FALSE, FALSE);
-+}
-+
-+static inline void drbd_thread_restart_nowait(struct drbd_thread *thi)
-+{
-+	_drbd_thread_stop(thi, TRUE, FALSE);
-+}
-+
-+/* counts how many answer packets packets we expect from our peer,
-+ * for either explicit application requests,
-+ * or implicit barrier packets as necessary.
-+ * increased:
-+ *  w_send_barrier
-+ *  _req_mod(req, queue_for_net_write or queue_for_net_read);
-+ *    it is much easier and equally valid to count what we queue for the
-+ *    worker, even before it actually was queued or send.
-+ *    (drbd_make_request_common; recovery path on read io-error)
-+ * decreased:
-+ *  got_BarrierAck (respective tl_clear, tl_clear_barrier)
-+ *  _req_mod(req, data_received)
-+ *     [from receive_DataReply]
-+ *  _req_mod(req, write_acked_by_peer or recv_acked_by_peer or neg_acked)
-+ *     [from got_BlockAck (P_WRITE_ACK, P_RECV_ACK)]
-+ *     for some reason it is NOT decreased in got_NegAck,
-+ *     but in the resulting cleanup code from report_params.
-+ *     we should try to remember the reason for that...
-+ *  _req_mod(req, send_failed or send_canceled)
-+ *  _req_mod(req, connection_lost_while_pending)
-+ *     [from tl_clear_barrier]
-+ */
-+static inline void inc_ap_pending(struct drbd_conf *mdev)
-+{
-+	atomic_inc(&mdev->ap_pending_cnt);
-+}
-+
-+#define ERR_IF_CNT_IS_NEGATIVE(which)				\
-+	if (atomic_read(&mdev->which) < 0)			\
-+		dev_err(DEV, "in %s:%d: " #which " = %d < 0 !\n",	\
-+		    __func__ , __LINE__ ,			\
-+		    atomic_read(&mdev->which))
-+
-+#define dec_ap_pending(mdev)	do {				\
-+	typecheck(struct drbd_conf *, mdev);			\
-+	if (atomic_dec_and_test(&mdev->ap_pending_cnt))		\
-+		wake_up(&mdev->misc_wait);			\
-+	ERR_IF_CNT_IS_NEGATIVE(ap_pending_cnt); } while (0)
-+
-+/* counts how many resync-related answers we still expect from the peer
-+ *		     increase			decrease
-+ * C_SYNC_TARGET sends P_RS_DATA_REQUEST (and expects P_RS_DATA_REPLY)
-+ * C_SYNC_SOURCE sends P_RS_DATA_REPLY   (and expects P_WRITE_ACK whith ID_SYNCER)
-+ *					   (or P_NEG_ACK with ID_SYNCER)
-+ */
-+static inline void inc_rs_pending(struct drbd_conf *mdev)
-+{
-+	atomic_inc(&mdev->rs_pending_cnt);
-+}
-+
-+#define dec_rs_pending(mdev)	do {				\
-+	typecheck(struct drbd_conf *, mdev);			\
-+	atomic_dec(&mdev->rs_pending_cnt);			\
-+	ERR_IF_CNT_IS_NEGATIVE(rs_pending_cnt); } while (0)
-+
-+/* counts how many answers we still need to send to the peer.
-+ * increased on
-+ *  receive_Data	unless protocol A;
-+ *			we need to send a P_RECV_ACK (proto B)
-+ *			or P_WRITE_ACK (proto C)
-+ *  receive_RSDataReply (recv_resync_read) we need to send a P_WRITE_ACK
-+ *  receive_DataRequest (receive_RSDataRequest) we need to send back P_DATA
-+ *  receive_Barrier_*	we need to send a P_BARRIER_ACK
-+ */
-+static inline void inc_unacked(struct drbd_conf *mdev)
-+{
-+	atomic_inc(&mdev->unacked_cnt);
-+}
-+
-+#define dec_unacked(mdev)	do {				\
-+	typecheck(struct drbd_conf *, mdev);			\
-+	atomic_dec(&mdev->unacked_cnt);				\
-+	ERR_IF_CNT_IS_NEGATIVE(unacked_cnt); } while (0)
-+
-+#define sub_unacked(mdev, n)	do {				\
-+	typecheck(struct drbd_conf *, mdev);			\
-+	atomic_sub(n, &mdev->unacked_cnt);			\
-+	ERR_IF_CNT_IS_NEGATIVE(unacked_cnt); } while (0)
-+
-+
-+static inline void dec_net(struct drbd_conf *mdev)
-+{
-+	if (atomic_dec_and_test(&mdev->net_cnt))
-+		wake_up(&mdev->misc_wait);
-+}
-+
-+/**
-+ * inc_net: Returns TRUE when it is ok to access mdev->net_conf. You
-+ * should call dec_net() when finished looking at mdev->net_conf.
-+ */
-+static inline int inc_net(struct drbd_conf *mdev)
-+{
-+	int have_net_conf;
-+
-+	atomic_inc(&mdev->net_cnt);
-+	have_net_conf = mdev->state.conn >= C_UNCONNECTED;
-+	if (!have_net_conf)
-+		dec_net(mdev);
-+	return have_net_conf;
-+}
-+
-+/**
-+ * inc_local: Returns TRUE when local IO is possible. If it returns
-+ * TRUE you should call dec_local() after IO is completed.
-+ */
-+#define inc_local_if_state(M,MINS) __cond_lock(local, _inc_local_if_state(M,MINS))
-+#define inc_local(M) __cond_lock(local, _inc_local_if_state(M,D_INCONSISTENT))
-+
-+static inline void dec_local(struct drbd_conf *mdev)
-+{
-+	__release(local);
-+	if (atomic_dec_and_test(&mdev->local_cnt))
-+		wake_up(&mdev->misc_wait);
-+	D_ASSERT(atomic_read(&mdev->local_cnt) >= 0);
-+}
-+
-+#ifndef __CHECKER__
-+static inline int _inc_local_if_state(struct drbd_conf *mdev, enum drbd_disk_state mins)
-+{
-+	int io_allowed;
-+
-+	atomic_inc(&mdev->local_cnt);
-+	io_allowed = (mdev->state.disk >= mins);
-+	if (!io_allowed)
-+		dec_local(mdev);
-+	return io_allowed;
-+}
-+#else
-+extern int _inc_local_if_state(struct drbd_conf *mdev, enum drbd_disk_state mins);
-+#endif
-+
-+/* you must have an "inc_local" reference */
-+static inline void drbd_get_syncer_progress(struct drbd_conf *mdev,
-+		unsigned long *bits_left, unsigned int *per_mil_done)
-+{
-+	/*
-+	 * this is to break it at compile time when we change that
-+	 * (we may feel 4TB maximum storage per drbd is not enough)
-+	 */
-+	typecheck(unsigned long, mdev->rs_total);
-+
-+	/* note: both rs_total and rs_left are in bits, i.e. in
-+	 * units of BM_BLOCK_SIZE.
-+	 * for the percentage, we don't care. */
-+
-+	*bits_left = drbd_bm_total_weight(mdev) - mdev->rs_failed;
-+	/* >> 10 to prevent overflow,
-+	 * +1 to prevent division by zero */
-+	if (*bits_left > mdev->rs_total) {
-+		/* doh. maybe a logic bug somewhere.
-+		 * may also be just a race condition
-+		 * between this and a disconnect during sync.
-+		 * for now, just prevent in-kernel buffer overflow.
-+		 */
-+		smp_rmb();
-+		dev_warn(DEV, "cs:%s rs_left=%lu > rs_total=%lu (rs_failed %lu)\n",
-+				conns_to_name(mdev->state.conn),
-+				*bits_left, mdev->rs_total, mdev->rs_failed);
-+		*per_mil_done = 0;
-+	} else {
-+		/* make sure the calculation happens in long context */
-+		unsigned long tmp = 1000UL -
-+				(*bits_left >> 10)*1000UL
-+				/ ((mdev->rs_total >> 10) + 1UL);
-+		*per_mil_done = tmp;
-+	}
-+}
-+
-+
-+/* this throttles on-the-fly application requests
-+ * according to max_buffers settings;
-+ * maybe re-implement using semaphores? */
-+static inline int drbd_get_max_buffers(struct drbd_conf *mdev)
-+{
-+	int mxb = 1000000; /* arbitrary limit on open requests */
-+	if (inc_net(mdev)) {
-+		mxb = mdev->net_conf->max_buffers;
-+		dec_net(mdev);
-+	}
-+	return mxb;
-+}
-+
-+static inline int drbd_state_is_stable(union drbd_state s)
-+{
-+
-+	/* DO NOT add a default clause, we want the compiler to warn us
-+	 * for any newly introduced state we may have forgotten to add here */
-+
-+	switch ((enum drbd_conns)s.conn) {
-+	/* new io only accepted when there is no connection, ... */
-+	case C_STANDALONE:
-+	case C_WF_CONNECTION:
-+	/* ... or there is a well established connection. */
-+	case C_CONNECTED:
-+	case C_SYNC_SOURCE:
-+	case C_SYNC_TARGET:
-+	case C_VERIFY_S:
-+	case C_VERIFY_T:
-+	case C_PAUSED_SYNC_S:
-+	case C_PAUSED_SYNC_T:
-+		/* maybe stable, look at the disk state */
-+		break;
-+
-+	/* no new io accepted during tansitional states
-+	 * like handshake or teardown */
-+	case C_DISCONNECTING:
-+	case C_UNCONNECTED:
-+	case C_TIMEOUT:
-+	case C_BROKEN_PIPE:
-+	case C_NETWORK_FAILURE:
-+	case C_PROTOCOL_ERROR:
-+	case C_TEAR_DOWN:
-+	case C_WF_REPORT_PARAMS:
-+	case C_STARTING_SYNC_S:
-+	case C_STARTING_SYNC_T:
-+	case C_WF_BITMAP_S:
-+	case C_WF_BITMAP_T:
-+	case C_WF_SYNC_UUID:
-+	case C_MASK:
-+		/* not "stable" */
-+		return 0;
-+	}
-+
-+	switch ((enum drbd_disk_state)s.disk) {
-+	case D_DISKLESS:
-+	case D_INCONSISTENT:
-+	case D_OUTDATED:
-+	case D_CONSISTENT:
-+	case D_UP_TO_DATE:
-+		/* disk state is stable as well. */
-+		break;
-+
-+	/* no new io accepted during tansitional states */
-+	case D_ATTACHING:
-+	case D_FAILED:
-+	case D_NEGOTIATING:
-+	case D_UNKNOWN:
-+	case D_MASK:
-+		/* not "stable" */
-+		return 0;
-+	}
-+
-+	return 1;
-+}
-+
-+static inline int __inc_ap_bio_cond(struct drbd_conf *mdev)
-+{
-+	int mxb = drbd_get_max_buffers(mdev);
-+
-+	if (mdev->state.susp)
-+		return 0;
-+	if (test_bit(SUSPEND_IO, &mdev->flags))
-+		return 0;
-+
-+	/* to avoid potential deadlock or bitmap corruption,
-+	 * in various places, we only allow new application io
-+	 * to start during "stable" states. */
-+
-+	/* no new io accepted when attaching or detaching the disk */
-+	if (!drbd_state_is_stable(mdev->state))
-+		return 0;
-+
-+	/* since some older kernels don't have atomic_add_unless,
-+	 * and we are within the spinlock anyways, we have this workaround.  */
-+	if (atomic_read(&mdev->ap_bio_cnt) > mxb)
-+		return 0;
-+	if (test_bit(BITMAP_IO, &mdev->flags))
-+		return 0;
-+	return 1;
-+}
-+
-+/* I'd like to use wait_event_lock_irq,
-+ * but I'm not sure when it got introduced,
-+ * and not sure when it has 3 or 4 arguments */
-+static inline void inc_ap_bio(struct drbd_conf *mdev, int one_or_two)
-+{
-+	/* compare with after_state_ch,
-+	 * os.conn != C_WF_BITMAP_S && ns.conn == C_WF_BITMAP_S */
-+	DEFINE_WAIT(wait);
-+
-+	/* we wait here
-+	 *    as long as the device is suspended
-+	 *    until the bitmap is no longer on the fly during connection
-+	 *    handshake as long as we would exeed the max_buffer limit.
-+	 *
-+	 * to avoid races with the reconnect code,
-+	 * we need to atomic_inc within the spinlock. */
-+
-+	spin_lock_irq(&mdev->req_lock);
-+	while (!__inc_ap_bio_cond(mdev)) {
-+		prepare_to_wait(&mdev->misc_wait, &wait, TASK_UNINTERRUPTIBLE);
-+		spin_unlock_irq(&mdev->req_lock);
-+		schedule();
-+		finish_wait(&mdev->misc_wait, &wait);
-+		spin_lock_irq(&mdev->req_lock);
-+	}
-+	atomic_add(one_or_two, &mdev->ap_bio_cnt);
-+	spin_unlock_irq(&mdev->req_lock);
-+}
-+
-+static inline void dec_ap_bio(struct drbd_conf *mdev)
-+{
-+	int mxb = drbd_get_max_buffers(mdev);
-+	int ap_bio = atomic_dec_return(&mdev->ap_bio_cnt);
-+
-+	D_ASSERT(ap_bio >= 0);
-+	/* this currently does wake_up for every dec_ap_bio!
-+	 * maybe rather introduce some type of hysteresis?
-+	 * e.g. (ap_bio == mxb/2 || ap_bio == 0) ? */
-+	if (ap_bio < mxb)
-+		wake_up(&mdev->misc_wait);
-+	if (ap_bio == 0 && test_bit(BITMAP_IO, &mdev->flags)) {
-+		if (!test_and_set_bit(BITMAP_IO_QUEUED, &mdev->flags))
-+			drbd_queue_work(&mdev->data.work, &mdev->bm_io_work.w);
-+	}
-+}
-+
-+static inline void drbd_set_ed_uuid(struct drbd_conf *mdev, u64 val)
-+{
-+	mdev->ed_uuid = val;
-+}
-+
-+static inline int seq_cmp(u32 a, u32 b)
-+{
-+	/* we assume wrap around at 32bit.
-+	 * for wrap around at 24bit (old atomic_t),
-+	 * we'd have to
-+	 *  a <<= 8; b <<= 8;
-+	 */
-+	return (s32)(a) - (s32)(b);
-+}
-+#define seq_lt(a, b) (seq_cmp((a), (b)) < 0)
-+#define seq_gt(a, b) (seq_cmp((a), (b)) > 0)
-+#define seq_ge(a, b) (seq_cmp((a), (b)) >= 0)
-+#define seq_le(a, b) (seq_cmp((a), (b)) <= 0)
-+/* CAUTION: please no side effects in arguments! */
-+#define seq_max(a, b) ((u32)(seq_gt((a), (b)) ? (a) : (b)))
-+
-+static inline void update_peer_seq(struct drbd_conf *mdev, unsigned int new_seq)
-+{
-+	unsigned int m;
-+	spin_lock(&mdev->peer_seq_lock);
-+	m = seq_max(mdev->peer_seq, new_seq);
-+	mdev->peer_seq = m;
-+	spin_unlock(&mdev->peer_seq_lock);
-+	if (m == new_seq)
-+		wake_up(&mdev->seq_wait);
-+}
-+
-+static inline void drbd_update_congested(struct drbd_conf *mdev)
-+{
-+	struct sock *sk = mdev->data.socket->sk;
-+	if (sk->sk_wmem_queued > sk->sk_sndbuf * 4 / 5)
-+		set_bit(NET_CONGESTED, &mdev->flags);
-+}
-+
-+static inline int drbd_queue_order_type(struct drbd_conf *mdev)
-+{
-+	/* sorry, we currently have no working implementation
-+	 * of distributed TCQ stuff */
-+#ifndef QUEUE_ORDERED_NONE
-+#define QUEUE_ORDERED_NONE 0
-+#endif
-+	return QUEUE_ORDERED_NONE;
-+}
-+
-+static inline void drbd_blk_run_queue(struct request_queue *q)
-+{
-+	if (q && q->unplug_fn)
-+		q->unplug_fn(q);
-+}
-+
-+static inline void drbd_kick_lo(struct drbd_conf *mdev)
-+{
-+	if (inc_local(mdev)) {
-+		drbd_blk_run_queue(bdev_get_queue(mdev->bc->backing_bdev));
-+		dec_local(mdev);
-+	}
-+}
-+
-+static inline void drbd_md_flush(struct drbd_conf *mdev)
-+{
-+	int r;
-+
-+	if (test_bit(MD_NO_BARRIER, &mdev->flags))
-+		return;
-+
-+	r = blkdev_issue_flush(mdev->bc->md_bdev, NULL);
-+	if (r) {
-+		set_bit(MD_NO_BARRIER, &mdev->flags);
-+		dev_err(DEV, "meta data flush failed with status %d, disabling md-flushes\n", r);
-+	}
-+}
-+
-+#endif
-diff --git a/drivers/block/drbd/drbd_wrappers.h b/drivers/block/drbd/drbd_wrappers.h
++conn-states-8.dot, disk-states-8.dot, node-states-8.dot
++  The sub graphs of DRBD's state transitions
+diff --git a/Documentation/blockdev/drbd/conn-states-8.dot b/Documentation/blockdev/drbd/conn-states-8.dot
 new file mode 100644
-index 0000000..b7ce5ac
+index 0000000..025e8cf
 --- /dev/null
-+++ b/drivers/block/drbd/drbd_wrappers.h
-@@ -0,0 +1,97 @@
-+#ifndef _DRBD_WRAPPERS_H
-+#define _DRBD_WRAPPERS_H
-+
-+#include <linux/ctype.h>
-+#include <linux/mm.h>
-+
-+
-+/* see get_sb_bdev and bd_claim */
-+extern char *drbd_sec_holder;
-+
-+static inline sector_t drbd_get_hardsect(struct block_device *bdev)
-+{
-+	return bdev->bd_disk->queue->hardsect_size;
++++ b/Documentation/blockdev/drbd/conn-states-8.dot
+@@ -0,0 +1,18 @@
++digraph conn_states {
++	StandAllone  -> WFConnection   [ label = "ioctl_set_net()" ]
++	WFConnection -> Unconnected    [ label = "unable to bind()" ]
++	WFConnection -> WFReportParams [ label = "in connect() after accept" ]
++	WFReportParams -> StandAllone  [ label = "checks in receive_param()" ]
++	WFReportParams -> Connected    [ label = "in receive_param()" ]
++	WFReportParams -> WFBitMapS    [ label = "sync_handshake()" ]
++	WFReportParams -> WFBitMapT    [ label = "sync_handshake()" ]
++	WFBitMapS -> SyncSource        [ label = "receive_bitmap()" ]
++	WFBitMapT -> SyncTarget        [ label = "receive_bitmap()" ]
++	SyncSource -> Connected
++	SyncTarget -> Connected
++	SyncSource -> PausedSyncS
++	SyncTarget -> PausedSyncT
++	PausedSyncS -> SyncSource
++	PausedSyncT -> SyncTarget
++	Connected   -> WFConnection    [ label = "* on network error" ]
++}
+diff --git a/Documentation/blockdev/drbd/disk-states-8.dot b/Documentation/blockdev/drbd/disk-states-8.dot
+new file mode 100644
+index 0000000..d06cfb4
+--- /dev/null
++++ b/Documentation/blockdev/drbd/disk-states-8.dot
+@@ -0,0 +1,16 @@
++digraph disk_states {
++	Diskless -> Inconsistent       [ label = "ioctl_set_disk()" ]
++	Diskless -> Consistent         [ label = "ioctl_set_disk()" ]
++	Diskless -> Outdated           [ label = "ioctl_set_disk()" ]
++	Consistent -> Outdated         [ label = "receive_param()" ]
++	Consistent -> UpToDate         [ label = "receive_param()" ]
++	Consistent -> Inconsistent     [ label = "start resync" ]
++	Outdated   -> Inconsistent     [ label = "start resync" ]
++	UpToDate   -> Inconsistent     [ label = "ioctl_replicate" ]
++	Inconsistent -> UpToDate       [ label = "resync completed" ]
++	Consistent -> Failed           [ label = "io completion error" ]
++	Outdated   -> Failed           [ label = "io completion error" ]
++	UpToDate   -> Failed           [ label = "io completion error" ]
++	Inconsistent -> Failed         [ label = "io completion error" ]
++	Failed -> Diskless             [ label = "sending notify to peer" ]
++}
+diff --git a/Documentation/blockdev/drbd/node-states-8.dot b/Documentation/blockdev/drbd/node-states-8.dot
+new file mode 100644
+index 0000000..4a2b00c
+--- /dev/null
++++ b/Documentation/blockdev/drbd/node-states-8.dot
+@@ -0,0 +1,14 @@
++digraph node_states {
++	Secondary -> Primary           [ label = "ioctl_set_state()" ]
++	Primary   -> Secondary 	       [ label = "ioctl_set_state()" ]
 +}
 +
-+/* sets the number of 512 byte sectors of our virtual device */
-+static inline void drbd_set_my_capacity(struct drbd_conf *mdev,
-+					sector_t size)
-+{
-+	/* set_capacity(mdev->this_bdev->bd_disk, size); */
-+	set_capacity(mdev->vdisk, size);
-+	mdev->this_bdev->bd_inode->i_size = (loff_t)size << 9;
++digraph peer_states {
++	Secondary -> Primary           [ label = "recv state packet" ]
++	Primary   -> Secondary 	       [ label = "recv state packet" ]
++	Primary   -> Unknown 	       [ label = "connection lost" ]
++	Secondary  -> Unknown  	       [ label = "connection lost" ]
++	Unknown   -> Primary           [ label = "connected" ]
++	Unknown   -> Secondary         [ label = "connected" ]
 +}
 +
-+#define drbd_bio_uptodate(bio) bio_flagged(bio, BIO_UPTODATE)
+diff --git a/Documentation/blockdev/drbd/DRBD-data-packets.svg b/Documentation/blockdev/drbd/DRBD-data-packets.svg
+new file mode 100644
+index 0000000..48a1e21
+--- /dev/null
++++ b/Documentation/blockdev/drbd/DRBD-data-packets.svg
+@@ -0,0 +1,459 @@
++<?xml version="1.0" encoding="UTF-8" standalone="no"?>
++<!-- Created with Inkscape (http://www.inkscape.org/) -->
++<svg
++   xmlns:svg="http://www.w3.org/2000/svg"
++   xmlns="http://www.w3.org/2000/svg"
++   version="1.0"
++   width="210mm"
++   height="297mm"
++   viewBox="0 0 21000 29700"
++   id="svg2"
++   style="fill-rule:evenodd">
++  <defs
++     id="defs4" />
++  <g
++     id="Default"
++     style="visibility:visible">
++    <desc
++       id="desc176">Master slide</desc>
++  </g>
++  <path
++     d="M 11999,19601 L 11899,19301 L 12099,19301 L 11999,19601 z"
++     id="path189"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 11999,18801 L 11999,19361"
++     id="path193"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <path
++     d="M 7999,21401 L 7899,21101 L 8099,21101 L 7999,21401 z"
++     id="path205"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 7999,20601 L 7999,21161"
++     id="path209"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <path
++     d="M 11999,18801 L 11685,18840 L 11724,18644 L 11999,18801 z"
++     id="path221"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 7999,18001 L 11764,18754"
++     id="path225"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <text
++     x="-3023.845"
++     y="1106.8124"
++     transform="matrix(0.9895258,-0.1443562,0.1443562,0.9895258,0,0)"
++     id="text243"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="6115.1553 6344.1553 6555.1553 6784.1553 6962.1553 7051.1553 7228.1553 7457.1553 7635.1553 7813.1553 7885.1553"
++       y="21390.812"
++       id="tspan245">RSDataReply</tspan>
++  </text>
++  <path
++     d="M 7999,20601 L 8281,20458 L 8311,20655 L 7999,20601 z"
++     id="path255"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 11999,20001 L 8236,20565"
++     id="path259"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <text
++     x="3502.5356"
++     y="-2184.6621"
++     transform="matrix(0.9788674,0.2044961,-0.2044961,0.9788674,0,0)"
++     id="text277"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12321.536 12550.536 12761.536 12990.536 13168.536 13257.536 13434.536 13663.536 13841.536 14019.536 14196.536 14374.536 14535.536"
++       y="15854.338"
++       id="tspan279">RSDataRequest</tspan>
++  </text>
++  <text
++     id="text293"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4034 4263 4440 4703 4881 5042 5219 5397 5503 5681 5842 6003 6180 6341 6519 6625 6803 6980 7158 7336 7497 7586 7692"
++       y="17807"
++       id="tspan295">w_make_resync_request()</tspan>
++  </text>
++  <text
++     id="text309"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12199 12305 12483 12644 12821 12893 13054 13232 13410 13638 13816 13905 14083 14311 14489 14667 14845 15023 15184 15272 15378"
++       y="18806"
++       id="tspan311">receive_DataRequest()</tspan>
++  </text>
++  <text
++     id="text325"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12199 12377 12483 12660 12838 13016 13194 13372 13549 13621 13799 13977 14083 14261 14438 14616 14794 14955 15133 15294 15399"
++       y="19606"
++       id="tspan327">drbd_endio_read_sec()</tspan>
++  </text>
++  <text
++     id="text341"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12191 12420 12597 12775 12953 13131 13309 13486 13664 13770 13931 14109 14287 14375 14553 14731 14837 15015 15192 15298"
++       y="20007"
++       id="tspan343">w_e_end_rsdata_req()</tspan>
++  </text>
++  <text
++     id="text357"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4444 4550 4728 4889 5066 5138 5299 5477 5655 5883 6095 6324 6501 6590 6768 6997 7175 7352 7424 7585 7691"
++       y="20507"
++       id="tspan359">receive_RSDataReply()</tspan>
++  </text>
++  <text
++     id="text373"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4457 4635 4741 4918 5096 5274 5452 5630 5807 5879 6057 6235 6464 6569 6641 6730 6908 7086 7247 7425 7585 7691"
++       y="21407"
++       id="tspan375">drbd_endio_write_sec()</tspan>
++  </text>
++  <text
++     id="text389"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4647 4825 5003 5180 5358 5536 5714 5820 5997 6158 6319 6497 6658 6836 7013 7085 7263 7424 7585 7691"
++       y="21907"
++       id="tspan391">e_end_resync_block()</tspan>
++  </text>
++  <path
++     d="M 11999,22601 L 11685,22640 L 11724,22444 L 11999,22601 z"
++     id="path401"
++     style="fill:#000080;visibility:visible" />
++  <path
++     d="M 7999,21801 L 11764,22554"
++     id="path405"
++     style="fill:none;stroke:#000080;visibility:visible" />
++  <text
++     x="4290.3008"
++     y="-2369.6162"
++     transform="matrix(0.9788674,0.2044961,-0.2044961,0.9788674,0,0)"
++     id="text423"
++     style="font-size:318px;font-weight:400;fill:#000080;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="13610.301 13911.301 14016.301 14088.301 14177.301 14355.301 14567.301 14728.301"
++       y="19573.385"
++       id="tspan425">WriteAck</tspan>
++  </text>
++  <text
++     id="text439"
++     style="font-size:318px;font-weight:400;fill:#000080;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12199 12377 12555 12644 12821 13033 13105 13283 13444 13604 13816 13977 14138 14244"
++       y="22559"
++       id="tspan441">got_BlockAck()</tspan>
++  </text>
++  <text
++     id="text455"
++     style="font-size:423px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="7999 8304 8541 8753 8964 9201 9413 9531 9769 9862 10099 10310 10522 10734 10852 10971 11208 11348 11585 11822"
++       y="16877"
++       id="tspan457">Resync blocks, 4-32K</tspan>
++  </text>
++  <path
++     d="M 12000,7601 L 11900,7301 L 12100,7301 L 12000,7601 z"
++     id="path467"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 12000,6801 L 12000,7361"
++     id="path471"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <path
++     d="M 12000,6801 L 11686,6840 L 11725,6644 L 12000,6801 z"
++     id="path483"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 8000,6001 L 11765,6754"
++     id="path487"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <text
++     x="-1288.1796"
++     y="1279.7666"
++     transform="matrix(0.9895258,-0.1443562,0.1443562,0.9895258,0,0)"
++     id="text505"
++     style="font-size:318px;font-weight:400;fill:#000080;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="8174.8208 8475.8203 8580.8203 8652.8203 8741.8203 8919.8203 9131.8203 9292.8203"
++       y="9516.7666"
++       id="tspan507">WriteAck</tspan>
++  </text>
++  <path
++     d="M 8000,8601 L 8282,8458 L 8312,8655 L 8000,8601 z"
++     id="path517"
++     style="fill:#000080;visibility:visible" />
++  <path
++     d="M 12000,8001 L 8237,8565"
++     id="path521"
++     style="fill:none;stroke:#000080;visibility:visible" />
++  <text
++     x="1065.6655"
++     y="-2097.7664"
++     transform="matrix(0.9788674,0.2044961,-0.2044961,0.9788674,0,0)"
++     id="text539"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="10682.666 10911.666 11088.666 11177.666"
++       y="4107.2339"
++       id="tspan541">Data</tspan>
++  </text>
++  <text
++     id="text555"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4746 4924 5030 5207 5385 5563 5826 6003 6164 6342 6520 6626 6803 6981 7159 7337 7498 7587 7692"
++       y="5505"
++       id="tspan557">drbd_make_request()</tspan>
++  </text>
++  <text
++     id="text571"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12200 12306 12484 12645 12822 12894 13055 13233 13411 13639 13817 13906 14084 14190"
++       y="6806"
++       id="tspan573">receive_Data()</tspan>
++  </text>
++  <text
++     id="text587"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12200 12378 12484 12661 12839 13017 13195 13373 13550 13622 13800 13978 14207 14312 14384 14473 14651 14829 14990 15168 15328 15434"
++       y="7606"
++       id="tspan589">drbd_endio_write_sec()</tspan>
++  </text>
++  <text
++     id="text603"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12192 12370 12548 12725 12903 13081 13259 13437 13509 13686 13847 14008 14114"
++       y="8007"
++       id="tspan605">e_end_block()</tspan>
++  </text>
++  <text
++     id="text619"
++     style="font-size:318px;font-weight:400;fill:#000080;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="5647 5825 6003 6092 6269 6481 6553 6731 6892 7052 7264 7425 7586 7692"
++       y="8606"
++       id="tspan621">got_BlockAck()</tspan>
++  </text>
++  <text
++     id="text635"
++     style="font-size:423px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="8000 8305 8542 8779 9016 9109 9346 9486 9604 9956 10049 10189 10328 10565 10705 10942 11179 11298 11603 11742 11835 11954 12191 12310 12428 12665 12902 13139 13279 13516 13753"
++       y="4877"
++       id="tspan637">Regular mirrored write, 512-32K</tspan>
++  </text>
++  <text
++     id="text651"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="5381 5610 5787 5948 6126 6304 6482 6659 6837 7015 7087 7265 7426 7587 7692"
++       y="6003"
++       id="tspan653">w_send_dblock()</tspan>
++  </text>
++  <path
++     d="M 8000,6800 L 7900,6500 L 8100,6500 L 8000,6800 z"
++     id="path663"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 8000,6000 L 8000,6560"
++     id="path667"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <text
++     id="text683"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4602 4780 4886 5063 5241 5419 5597 5775 5952 6024 6202 6380 6609 6714 6786 6875 7053 7231 7409 7515 7587 7692"
++       y="6905"
++       id="tspan685">drbd_endio_write_pri()</tspan>
++  </text>
++  <path
++     d="M 12000,13602 L 11900,13302 L 12100,13302 L 12000,13602 z"
++     id="path695"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 12000,12802 L 12000,13362"
++     id="path699"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <path
++     d="M 12000,12802 L 11686,12841 L 11725,12645 L 12000,12802 z"
++     id="path711"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 8000,12002 L 11765,12755"
++     id="path715"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <text
++     x="-2155.5266"
++     y="1201.5964"
++     transform="matrix(0.9895258,-0.1443562,0.1443562,0.9895258,0,0)"
++     id="text733"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="7202.4736 7431.4736 7608.4736 7697.4736 7875.4736 8104.4736 8282.4736 8459.4736 8531.4736"
++       y="15454.597"
++       id="tspan735">DataReply</tspan>
++  </text>
++  <path
++     d="M 8000,14602 L 8282,14459 L 8312,14656 L 8000,14602 z"
++     id="path745"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 12000,14002 L 8237,14566"
++     id="path749"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <text
++     x="2280.3804"
++     y="-2103.2141"
++     transform="matrix(0.9788674,0.2044961,-0.2044961,0.9788674,0,0)"
++     id="text767"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="11316.381 11545.381 11722.381 11811.381 11989.381 12218.381 12396.381 12573.381 12751.381 12929.381 13090.381"
++       y="9981.7861"
++       id="tspan769">DataRequest</tspan>
++  </text>
++  <text
++     id="text783"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4746 4924 5030 5207 5385 5563 5826 6003 6164 6342 6520 6626 6803 6981 7159 7337 7498 7587 7692"
++       y="11506"
++       id="tspan785">drbd_make_request()</tspan>
++  </text>
++  <text
++     id="text799"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12200 12306 12484 12645 12822 12894 13055 13233 13411 13639 13817 13906 14084 14312 14490 14668 14846 15024 15185 15273 15379"
++       y="12807"
++       id="tspan801">receive_DataRequest()</tspan>
++  </text>
++  <text
++     id="text815"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12200 12378 12484 12661 12839 13017 13195 13373 13550 13622 13800 13978 14084 14262 14439 14617 14795 14956 15134 15295 15400"
++       y="13607"
++       id="tspan817">drbd_endio_read_sec()</tspan>
++  </text>
++  <text
++     id="text831"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12192 12421 12598 12776 12954 13132 13310 13487 13665 13843 14021 14110 14288 14465 14571 14749 14927 15033"
++       y="14008"
++       id="tspan833">w_e_end_data_req()</tspan>
++  </text>
++  <g
++     id="g835"
++     style="visibility:visible">
++    <desc
++       id="desc837">Drawing</desc>
++    <text
++       id="text847"
++       style="font-size:318px;font-weight:400;fill:#008000;font-family:Helvetica embedded">
++      <tspan
++         x="4885 4991 5169 5330 5507 5579 5740 5918 6096 6324 6502 6591 6769 6997 7175 7353 7425 7586 7692"
++         y="14607"
++         id="tspan849">receive_DataReply()</tspan>
++    </text>
++  </g>
++  <text
++     id="text863"
++     style="font-size:423px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="8000 8305 8398 8610 8821 8914 9151 9363 9575 9693 9833 10070 10307 10544 10663 10781 11018 11255 11493 11632 11869 12106"
++       y="10878"
++       id="tspan865">Diskless read, 512-32K</tspan>
++  </text>
++  <text
++     id="text879"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="5029 5258 5435 5596 5774 5952 6130 6307 6413 6591 6769 6947 7125 7230 7408 7586 7692"
++       y="12004"
++       id="tspan881">w_send_read_req()</tspan>
++  </text>
++  <text
++     id="text895"
++     style="font-size:423px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="6961 7266 7571 7854 8159 8278 8515 8633 8870 9107 9226 9463 9581 9700 9793 10030"
++       y="2806"
++       id="tspan897">DRBD 8 data flow</tspan>
++  </text>
++  <path
++     d="M 3900,5300 L 3700,5300 L 3700,7000 L 3900,7000"
++     id="path907"
++     style="fill:none;stroke:#000000;visibility:visible" />
++  <path
++     d="M 3900,17600 L 3700,17600 L 3700,22000 L 3900,22000"
++     id="path919"
++     style="fill:none;stroke:#000000;visibility:visible" />
++  <path
++     d="M 16100,20000 L 16300,20000 L 16300,18500 L 16100,18500"
++     id="path931"
++     style="fill:none;stroke:#000000;visibility:visible" />
++  <text
++     id="text947"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="2126 2304 2376 2554 2731 2909 3087 3159 3337 3515 3587 3764 3870"
++       y="5202"
++       id="tspan949">al_begin_io()</tspan>
++  </text>
++  <text
++     id="text963"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="1632 1810 1882 2060 2220 2398 2661 2839 2910 3088 3177 3355 3533 3605 3783 3888"
++       y="7331"
++       id="tspan965">al_complete_io()</tspan>
++  </text>
++  <text
++     id="text979"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="2126 2232 2393 2571 2748 2926 3104 3176 3354 3531 3603 3781 3887"
++       y="17431"
++       id="tspan981">rs_begin_io()</tspan>
++  </text>
++  <text
++     id="text995"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="1626 1732 1893 2071 2231 2409 2672 2849 2921 3099 3188 3366 3544 3616 3793 3899"
++       y="22331"
++       id="tspan997">rs_complete_io()</tspan>
++  </text>
++  <text
++     id="text1011"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="16027 16133 16294 16472 16649 16827 17005 17077 17255 17432 17504 17682 17788"
++       y="18402"
++       id="tspan1013">rs_begin_io()</tspan>
++  </text>
++  <text
++     id="text1027"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="16115 16221 16382 16560 16720 16898 17161 17338 17410 17588 17677 17855 18033 18105 18282 18388"
++       y="20331"
++       id="tspan1029">rs_complete_io()</tspan>
++  </text>
++</svg>
+diff --git a/Documentation/blockdev/drbd/DRBD-8.3-data-packets.svg b/Documentation/blockdev/drbd/DRBD-8.3-data-packets.svg
+new file mode 100644
+index 0000000..f87cfa0
+--- /dev/null
++++ b/Documentation/blockdev/drbd/DRBD-8.3-data-packets.svg
+@@ -0,0 +1,588 @@
++<?xml version="1.0" encoding="UTF-8" standalone="no"?>
++<!-- Created with Inkscape (http://www.inkscape.org/) -->
++<svg
++   xmlns:svg="http://www.w3.org/2000/svg"
++   xmlns="http://www.w3.org/2000/svg"
++   version="1.0"
++   width="210mm"
++   height="297mm"
++   viewBox="0 0 21000 29700"
++   id="svg2"
++   style="fill-rule:evenodd">
++  <defs
++     id="defs4" />
++  <g
++     id="Default"
++     style="visibility:visible">
++    <desc
++       id="desc180">Master slide</desc>
++  </g>
++  <path
++     d="M 11999,8601 L 11899,8301 L 12099,8301 L 11999,8601 z"
++     id="path193"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 11999,7801 L 11999,8361"
++     id="path197"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <path
++     d="M 7999,10401 L 7899,10101 L 8099,10101 L 7999,10401 z"
++     id="path209"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 7999,9601 L 7999,10161"
++     id="path213"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <path
++     d="M 11999,7801 L 11685,7840 L 11724,7644 L 11999,7801 z"
++     id="path225"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 7999,7001 L 11764,7754"
++     id="path229"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <g
++     transform="matrix(0.9895258,-0.1443562,0.1443562,0.9895258,-1244.4792,1416.5139)"
++     id="g245"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <text
++       id="text247">
++      <tspan
++         x="9139 9368 9579 9808 9986 10075 10252 10481 10659 10837 10909"
++         y="9284"
++         id="tspan249">RSDataReply</tspan>
++    </text>
++  </g>
++  <path
++     d="M 7999,9601 L 8281,9458 L 8311,9655 L 7999,9601 z"
++     id="path259"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 11999,9001 L 8236,9565"
++     id="path263"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <g
++     transform="matrix(0.9788674,0.2044961,-0.2044961,0.9788674,1620.9382,-1639.4947)"
++     id="g279"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <text
++       id="text281">
++      <tspan
++         x="8743 8972 9132 9310 9573 9801 10013 10242 10419 10597 10775 10953 11114"
++         y="7023"
++         id="tspan283">CsumRSRequest</tspan>
++    </text>
++  </g>
++  <text
++     id="text297"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4034 4263 4440 4703 4881 5042 5219 5397 5503 5681 5842 6003 6180 6341 6519 6625 6803 6980 7158 7336 7497 7586 7692"
++       y="5707"
++       id="tspan299">w_make_resync_request()</tspan>
++  </text>
++  <text
++     id="text313"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12199 12305 12483 12644 12821 12893 13054 13232 13410 13638 13816 13905 14083 14311 14489 14667 14845 15023 15184 15272 15378"
++       y="7806"
++       id="tspan315">receive_DataRequest()</tspan>
++  </text>
++  <text
++     id="text329"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12199 12377 12483 12660 12838 13016 13194 13372 13549 13621 13799 13977 14083 14261 14438 14616 14794 14955 15133 15294 15399"
++       y="8606"
++       id="tspan331">drbd_endio_read_sec()</tspan>
++  </text>
++  <text
++     id="text345"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12191 12420 12597 12775 12953 13131 13309 13486 13664 13825 13986 14164 14426 14604 14710 14871 15049 15154 15332 15510 15616"
++       y="9007"
++       id="tspan347">w_e_end_csum_rs_req()</tspan>
++  </text>
++  <text
++     id="text361"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4444 4550 4728 4889 5066 5138 5299 5477 5655 5883 6095 6324 6501 6590 6768 6997 7175 7352 7424 7585 7691"
++       y="9507"
++       id="tspan363">receive_RSDataReply()</tspan>
++  </text>
++  <text
++     id="text377"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4457 4635 4741 4918 5096 5274 5452 5630 5807 5879 6057 6235 6464 6569 6641 6730 6908 7086 7247 7425 7585 7691"
++       y="10407"
++       id="tspan379">drbd_endio_write_sec()</tspan>
++  </text>
++  <text
++     id="text393"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4647 4825 5003 5180 5358 5536 5714 5820 5997 6158 6319 6497 6658 6836 7013 7085 7263 7424 7585 7691"
++       y="10907"
++       id="tspan395">e_end_resync_block()</tspan>
++  </text>
++  <path
++     d="M 11999,11601 L 11685,11640 L 11724,11444 L 11999,11601 z"
++     id="path405"
++     style="fill:#000080;visibility:visible" />
++  <path
++     d="M 7999,10801 L 11764,11554"
++     id="path409"
++     style="fill:none;stroke:#000080;visibility:visible" />
++  <g
++     transform="matrix(0.9788674,0.2044961,-0.2044961,0.9788674,2434.7562,-1674.649)"
++     id="g425"
++     style="font-size:318px;font-weight:400;fill:#000080;visibility:visible;font-family:Helvetica embedded">
++    <text
++       id="text427">
++      <tspan
++         x="9320 9621 9726 9798 9887 10065 10277 10438"
++         y="10943"
++         id="tspan429">WriteAck</tspan>
++    </text>
++  </g>
++  <text
++     id="text443"
++     style="font-size:318px;font-weight:400;fill:#000080;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12199 12377 12555 12644 12821 13033 13105 13283 13444 13604 13816 13977 14138 14244"
++       y="11559"
++       id="tspan445">got_BlockAck()</tspan>
++  </text>
++  <text
++     id="text459"
++     style="font-size:423px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="7999 8304 8541 8778 8990 9201 9413 9650 10001 10120 10357 10594 10806 11043 11280 11398 11703 11940 12152 12364 12601 12812 12931 13049 13261 13498 13710 13947 14065 14302 14540 14658 14777 14870 15107 15225 15437 15649 15886"
++       y="4877"
++       id="tspan461">Checksum based Resync, case not in sync</tspan>
++  </text>
++  <text
++     id="text475"
++     style="font-size:423px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="6961 7266 7571 7854 8159 8299 8536 8654 8891 9010 9247 9484 9603 9840 9958 10077 10170 10407"
++       y="2806"
++       id="tspan477">DRBD-8.3 data flow</tspan>
++  </text>
++  <text
++     id="text491"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="5190 5419 5596 5774 5952 6113 6291 6468 6646 6824 6985 7146 7324 7586 7692"
++       y="7005"
++       id="tspan493">w_e_send_csum()</tspan>
++  </text>
++  <path
++     d="M 11999,17601 L 11899,17301 L 12099,17301 L 11999,17601 z"
++     id="path503"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 11999,16801 L 11999,17361"
++     id="path507"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <path
++     d="M 11999,16801 L 11685,16840 L 11724,16644 L 11999,16801 z"
++     id="path519"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 7999,16001 L 11764,16754"
++     id="path523"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <g
++     transform="matrix(0.9895258,-0.1443562,0.1443562,0.9895258,-2539.5806,1529.3491)"
++     id="g539"
++     style="font-size:318px;font-weight:400;fill:#000080;visibility:visible;font-family:Helvetica embedded">
++    <text
++       id="text541">
++      <tspan
++         x="9269 9498 9709 9798 9959 10048 10226 10437 10598 10776"
++         y="18265"
++         id="tspan543">RSIsInSync</tspan>
++    </text>
++  </g>
++  <path
++     d="M 7999,18601 L 8281,18458 L 8311,18655 L 7999,18601 z"
++     id="path553"
++     style="fill:#000080;visibility:visible" />
++  <path
++     d="M 11999,18001 L 8236,18565"
++     id="path557"
++     style="fill:none;stroke:#000080;visibility:visible" />
++  <g
++     transform="matrix(0.9788674,0.2044961,-0.2044961,0.9788674,3461.4027,-1449.3012)"
++     id="g573"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <text
++       id="text575">
++      <tspan
++         x="8743 8972 9132 9310 9573 9801 10013 10242 10419 10597 10775 10953 11114"
++         y="16023"
++         id="tspan577">CsumRSRequest</tspan>
++    </text>
++  </g>
++  <text
++     id="text591"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12199 12305 12483 12644 12821 12893 13054 13232 13410 13638 13816 13905 14083 14311 14489 14667 14845 15023 15184 15272 15378"
++       y="16806"
++       id="tspan593">receive_DataRequest()</tspan>
++  </text>
++  <text
++     id="text607"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12199 12377 12483 12660 12838 13016 13194 13372 13549 13621 13799 13977 14083 14261 14438 14616 14794 14955 15133 15294 15399"
++       y="17606"
++       id="tspan609">drbd_endio_read_sec()</tspan>
++  </text>
++  <text
++     id="text623"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12191 12420 12597 12775 12953 13131 13309 13486 13664 13825 13986 14164 14426 14604 14710 14871 15049 15154 15332 15510 15616"
++       y="18007"
++       id="tspan625">w_e_end_csum_rs_req()</tspan>
++  </text>
++  <text
++     id="text639"
++     style="font-size:318px;font-weight:400;fill:#000080;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="5735 5913 6091 6180 6357 6446 6607 6696 6874 7085 7246 7424 7585 7691"
++       y="18507"
++       id="tspan641">got_IsInSync()</tspan>
++  </text>
++  <text
++     id="text655"
++     style="font-size:423px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="7999 8304 8541 8778 8990 9201 9413 9650 10001 10120 10357 10594 10806 11043 11280 11398 11703 11940 12152 12364 12601 12812 12931 13049 13261 13498 13710 13947 14065 14159 14396 14514 14726 14937 15175"
++       y="13877"
++       id="tspan657">Checksum based Resync, case in sync</tspan>
++  </text>
++  <path
++     d="M 12000,24601 L 11900,24301 L 12100,24301 L 12000,24601 z"
++     id="path667"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 12000,23801 L 12000,24361"
++     id="path671"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <path
++     d="M 8000,26401 L 7900,26101 L 8100,26101 L 8000,26401 z"
++     id="path683"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 8000,25601 L 8000,26161"
++     id="path687"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <path
++     d="M 12000,23801 L 11686,23840 L 11725,23644 L 12000,23801 z"
++     id="path699"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 8000,23001 L 11765,23754"
++     id="path703"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <g
++     transform="matrix(0.9895258,-0.1443562,0.1443562,0.9895258,-3543.8452,1630.5143)"
++     id="g719"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <text
++       id="text721">
++      <tspan
++         x="9464 9710 9921 10150 10328 10505 10577"
++         y="25236"
++         id="tspan723">OVReply</tspan>
++    </text>
++  </g>
++  <path
++     d="M 8000,25601 L 8282,25458 L 8312,25655 L 8000,25601 z"
++     id="path733"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 12000,25001 L 8237,25565"
++     id="path737"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <g
++     transform="matrix(0.9788674,0.2044961,-0.2044961,0.9788674,4918.2801,-1381.2128)"
++     id="g753"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <text
++       id="text755">
++      <tspan
++         x="9142 9388 9599 9828 10006 10183 10361 10539 10700"
++         y="23106"
++         id="tspan757">OVRequest</tspan>
++    </text>
++  </g>
++  <text
++     id="text771"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12200 12306 12484 12645 12822 12894 13055 13233 13411 13656 13868 14097 14274 14452 14630 14808 14969 15058 15163"
++       y="23806"
++       id="tspan773">receive_OVRequest()</tspan>
++  </text>
++  <text
++     id="text787"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12200 12378 12484 12661 12839 13017 13195 13373 13550 13622 13800 13978 14084 14262 14439 14617 14795 14956 15134 15295 15400"
++       y="24606"
++       id="tspan789">drbd_endio_read_sec()</tspan>
++  </text>
++  <text
++     id="text803"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12192 12421 12598 12776 12954 13132 13310 13487 13665 13843 14004 14182 14288 14465 14643 14749"
++       y="25007"
++       id="tspan805">w_e_end_ov_req()</tspan>
++  </text>
++  <text
++     id="text819"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="5101 5207 5385 5546 5723 5795 5956 6134 6312 6557 6769 6998 7175 7353 7425 7586 7692"
++       y="25507"
++       id="tspan821">receive_OVReply()</tspan>
++  </text>
++  <text
++     id="text835"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4492 4670 4776 4953 5131 5309 5487 5665 5842 5914 6092 6270 6376 6554 6731 6909 7087 7248 7426 7587 7692"
++       y="26407"
++       id="tspan837">drbd_endio_read_sec()</tspan>
++  </text>
++  <text
++     id="text851"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4902 5131 5308 5486 5664 5842 6020 6197 6375 6553 6714 6892 6998 7175 7353 7425 7586 7692"
++       y="26907"
++       id="tspan853">w_e_end_ov_reply()</tspan>
++  </text>
++  <path
++     d="M 12000,27601 L 11686,27640 L 11725,27444 L 12000,27601 z"
++     id="path863"
++     style="fill:#000080;visibility:visible" />
++  <path
++     d="M 8000,26801 L 11765,27554"
++     id="path867"
++     style="fill:none;stroke:#000080;visibility:visible" />
++  <g
++     transform="matrix(0.9788674,0.2044961,-0.2044961,0.9788674,5704.1907,-1328.312)"
++     id="g883"
++     style="font-size:318px;font-weight:400;fill:#000080;visibility:visible;font-family:Helvetica embedded">
++    <text
++       id="text885">
++      <tspan
++         x="9279 9525 9736 9965 10143 10303 10481 10553"
++         y="26935"
++         id="tspan887">OVResult</tspan>
++    </text>
++  </g>
++  <text
++     id="text901"
++     style="font-size:318px;font-weight:400;fill:#000080;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="12200 12378 12556 12645 12822 13068 13280 13508 13686 13847 14025 14097 14185 14291"
++       y="27559"
++       id="tspan903">got_OVResult()</tspan>
++  </text>
++  <text
++     id="text917"
++     style="font-size:423px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="8000 8330 8567 8660 8754 8991 9228 9346 9558 9795 9935 10028 10146"
++       y="21877"
++       id="tspan919">Online verify</tspan>
++  </text>
++  <text
++     id="text933"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4641 4870 5047 5310 5488 5649 5826 6004 6182 6343 6521 6626 6804 6982 7160 7338 7499 7587 7693"
++       y="23005"
++       id="tspan935">w_make_ov_request()</tspan>
++  </text>
++  <path
++     d="M 8000,6500 L 7900,6200 L 8100,6200 L 8000,6500 z"
++     id="path945"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 8000,5700 L 8000,6260"
++     id="path949"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <path
++     d="M 3900,5500 L 3700,5500 L 3700,11000 L 3900,11000"
++     id="path961"
++     style="fill:none;stroke:#000000;visibility:visible" />
++  <path
++     d="M 3900,14500 L 3700,14500 L 3700,18600 L 3900,18600"
++     id="path973"
++     style="fill:none;stroke:#000000;visibility:visible" />
++  <path
++     d="M 3900,22800 L 3700,22800 L 3700,26900 L 3900,26900"
++     id="path985"
++     style="fill:none;stroke:#000000;visibility:visible" />
++  <text
++     id="text1001"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4492 4670 4776 4953 5131 5309 5487 5665 5842 5914 6092 6270 6376 6554 6731 6909 7087 7248 7426 7587 7692"
++       y="6506"
++       id="tspan1003">drbd_endio_read_sec()</tspan>
++  </text>
++  <text
++     id="text1017"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4034 4263 4440 4703 4881 5042 5219 5397 5503 5681 5842 6003 6180 6341 6519 6625 6803 6980 7158 7336 7497 7586 7692"
++       y="14708"
++       id="tspan1019">w_make_resync_request()</tspan>
++  </text>
++  <text
++     id="text1033"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="5190 5419 5596 5774 5952 6113 6291 6468 6646 6824 6985 7146 7324 7586 7692"
++       y="16006"
++       id="tspan1035">w_e_send_csum()</tspan>
++  </text>
++  <path
++     d="M 8000,15501 L 7900,15201 L 8100,15201 L 8000,15501 z"
++     id="path1045"
++     style="fill:#008000;visibility:visible" />
++  <path
++     d="M 8000,14701 L 8000,15261"
++     id="path1049"
++     style="fill:none;stroke:#008000;visibility:visible" />
++  <text
++     id="text1065"
++     style="font-size:318px;font-weight:400;fill:#008000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="4492 4670 4776 4953 5131 5309 5487 5665 5842 5914 6092 6270 6376 6554 6731 6909 7087 7248 7426 7587 7692"
++       y="15507"
++       id="tspan1067">drbd_endio_read_sec()</tspan>
++  </text>
++  <path
++     d="M 16100,9000 L 16300,9000 L 16300,7500 L 16100,7500"
++     id="path1077"
++     style="fill:none;stroke:#000000;visibility:visible" />
++  <path
++     d="M 16100,18000 L 16300,18000 L 16300,16500 L 16100,16500"
++     id="path1089"
++     style="fill:none;stroke:#000000;visibility:visible" />
++  <path
++     d="M 16100,25000 L 16300,25000 L 16300,23500 L 16100,23500"
++     id="path1101"
++     style="fill:none;stroke:#000000;visibility:visible" />
++  <text
++     id="text1117"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="2026 2132 2293 2471 2648 2826 3004 3076 3254 3431 3503 3681 3787"
++       y="5402"
++       id="tspan1119">rs_begin_io()</tspan>
++  </text>
++  <text
++     id="text1133"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="2027 2133 2294 2472 2649 2827 3005 3077 3255 3432 3504 3682 3788"
++       y="14402"
++       id="tspan1135">rs_begin_io()</tspan>
++  </text>
++  <text
++     id="text1149"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="2026 2132 2293 2471 2648 2826 3004 3076 3254 3431 3503 3681 3787"
++       y="22602"
++       id="tspan1151">rs_begin_io()</tspan>
++  </text>
++  <text
++     id="text1165"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="1426 1532 1693 1871 2031 2209 2472 2649 2721 2899 2988 3166 3344 3416 3593 3699"
++       y="11302"
++       id="tspan1167">rs_complete_io()</tspan>
++  </text>
++  <text
++     id="text1181"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="1526 1632 1793 1971 2131 2309 2572 2749 2821 2999 3088 3266 3444 3516 3693 3799"
++       y="18931"
++       id="tspan1183">rs_complete_io()</tspan>
++  </text>
++  <text
++     id="text1197"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="1526 1632 1793 1971 2131 2309 2572 2749 2821 2999 3088 3266 3444 3516 3693 3799"
++       y="27231"
++       id="tspan1199">rs_complete_io()</tspan>
++  </text>
++  <text
++     id="text1213"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="16126 16232 16393 16571 16748 16926 17104 17176 17354 17531 17603 17781 17887"
++       y="7402"
++       id="tspan1215">rs_begin_io()</tspan>
++  </text>
++  <text
++     id="text1229"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="16127 16233 16394 16572 16749 16927 17105 17177 17355 17532 17604 17782 17888"
++       y="16331"
++       id="tspan1231">rs_begin_io()</tspan>
++  </text>
++  <text
++     id="text1245"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="16127 16233 16394 16572 16749 16927 17105 17177 17355 17532 17604 17782 17888"
++       y="23302"
++       id="tspan1247">rs_begin_io()</tspan>
++  </text>
++  <text
++     id="text1261"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="16115 16221 16382 16560 16720 16898 17161 17338 17410 17588 17677 17855 18033 18105 18282 18388"
++       y="9302"
++       id="tspan1263">rs_complete_io()</tspan>
++  </text>
++  <text
++     id="text1277"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="16115 16221 16382 16560 16720 16898 17161 17338 17410 17588 17677 17855 18033 18105 18282 18388"
++       y="18331"
++       id="tspan1279">rs_complete_io()</tspan>
++  </text>
++  <text
++     id="text1293"
++     style="font-size:318px;font-weight:400;fill:#000000;visibility:visible;font-family:Helvetica embedded">
++    <tspan
++       x="16126 16232 16393 16571 16731 16909 17172 17349 17421 17599 17688 17866 18044 18116 18293 18399"
++       y="25302"
++       id="tspan1295">rs_complete_io()</tspan>
++  </text>
++</svg>
+diff --git a/Documentation/blockdev/drbd/drbd-connection-state-overview.dot b/Documentation/blockdev/drbd/drbd-connection-state-overview.dot
+new file mode 100644
+index 0000000..6d9cf0a
+--- /dev/null
++++ b/Documentation/blockdev/drbd/drbd-connection-state-overview.dot
+@@ -0,0 +1,85 @@
++// vim: set sw=2 sts=2 :
++digraph {
++  rankdir=BT
++  bgcolor=white
 +
-+static inline int drbd_bio_has_active_page(struct bio *bio)
-+{
-+	struct bio_vec *bvec;
-+	int i;
++  node [shape=plaintext]
++  node [fontcolor=black]
 +
-+	__bio_for_each_segment(bvec, bio, i, 0) {
-+		if (page_count(bvec->bv_page) > 1)
-+			return 1;
-+	}
++  StandAlone     [ style=filled,fillcolor=gray,label=StandAlone ]
 +
-+	return 0;
++  node [fontcolor=lightgray]
++
++  Unconnected    [ label=Unconnected ]
++
++  CommTrouble [ shape=record,
++    label="{communication loss|{Timeout|BrokenPipe|NetworkFailure}}" ]
++
++  node [fontcolor=gray]
++
++  subgraph cluster_try_connect {
++    label="try to connect, handshake"
++    rank=max
++    WFConnection   [ label=WFConnection ]
++    WFReportParams [ label=WFReportParams ]
++  }
++
++  TearDown       [ label=TearDown ]
++
++  Connected      [ label=Connected,style=filled,fillcolor=green,fontcolor=black ]
++
++  node [fontcolor=lightblue]
++
++  StartingSyncS  [ label=StartingSyncS ]
++  StartingSyncT  [ label=StartingSyncT ]
++
++  subgraph cluster_bitmap_exchange {
++    node [fontcolor=red]
++    fontcolor=red
++    label="new application (WRITE?) requests blocked\lwhile bitmap is exchanged"
++
++    WFBitMapT      [ label=WFBitMapT ]
++    WFSyncUUID     [ label=WFSyncUUID ]
++    WFBitMapS      [ label=WFBitMapS ]
++  }
++
++  node [fontcolor=blue]
++
++  cluster_resync [ shape=record,label="{<any>resynchronisation process running\l'concurrent' application requests allowed|{{<T>PausedSyncT\nSyncTarget}|{<S>PausedSyncS\nSyncSource}}}" ]
++
++  node [shape=box,fontcolor=black]
++
++  // drbdadm [label="drbdadm connect"]
++  // handshake [label="drbd_connect()\ndrbd_do_handshake\ndrbd_sync_handshake() etc."]
++  // comm_error [label="communication trouble"]
++
++  //
++  // edges
++  // --------------------------------------
++
++  StandAlone -> Unconnected [ label="drbdadm connect" ]
++  Unconnected -> StandAlone  [ label="drbdadm disconnect\lor serious communication trouble" ]
++  Unconnected -> WFConnection [ label="receiver thread is started" ]
++  WFConnection -> WFReportParams [ headlabel="accept()\land/or                        \lconnect()\l" ]
++
++  WFReportParams -> StandAlone [ label="during handshake\lpeers do not agree\labout something essential" ]
++  WFReportParams -> Connected [ label="data identical\lno sync needed",color=green,fontcolor=green ]
++
++    WFReportParams -> WFBitMapS
++    WFReportParams -> WFBitMapT
++    WFBitMapT -> WFSyncUUID [minlen=0.1,constraint=false]
++
++      WFBitMapS -> cluster_resync:S
++      WFSyncUUID -> cluster_resync:T
++
++  edge [color=green]
++  cluster_resync:any -> Connected [ label="resnyc done",fontcolor=green ]
++
++  edge [color=red]
++  WFReportParams -> CommTrouble
++  Connected -> CommTrouble
++  cluster_resync:any -> CommTrouble
++  edge [color=black]
++  CommTrouble -> Unconnected [label="receiver thread is stopped" ]
++
 +}
-+
-+/* bi_end_io handlers */
-+extern void drbd_md_io_complete(struct bio *bio, int error);
-+extern void drbd_endio_read_sec(struct bio *bio, int error);
-+extern void drbd_endio_write_sec(struct bio *bio, int error);
-+extern void drbd_endio_pri(struct bio *bio, int error);
-+
-+/*
-+ * used to submit our private bio
-+ */
-+static inline void drbd_generic_make_request(struct drbd_conf *mdev,
-+					     int fault_type, struct bio *bio)
-+{
-+	__release(local);
-+	if (!bio->bi_bdev) {
-+		printk(KERN_ERR "drbd%d: drbd_generic_make_request: "
-+				"bio->bi_bdev == NULL\n",
-+		       mdev_to_minor(mdev));
-+		dump_stack();
-+		bio_endio(bio, -ENODEV);
-+		return;
-+	}
-+
-+	if (FAULT_ACTIVE(mdev, fault_type))
-+		bio_endio(bio, -EIO);
-+	else
-+		generic_make_request(bio);
-+}
-+
-+static inline void drbd_plug_device(struct drbd_conf *mdev)
-+{
-+	struct request_queue *q;
-+	q = bdev_get_queue(mdev->this_bdev);
-+
-+	spin_lock_irq(q->queue_lock);
-+
-+/* XXX the check on !blk_queue_plugged is redundant,
-+ * implicitly checked in blk_plug_device */
-+
-+	if (!blk_queue_plugged(q)) {
-+		blk_plug_device(q);
-+		del_timer(&q->unplug_timer);
-+		/* unplugging should not happen automatically... */
-+	}
-+	spin_unlock_irq(q->queue_lock);
-+}
-+
-+static inline int drbd_crypto_is_hash(struct crypto_tfm *tfm)
-+{
-+        return (crypto_tfm_alg_type(tfm) & CRYPTO_ALG_TYPE_HASH_MASK)
-+                == CRYPTO_ALG_TYPE_HASH;
-+}
-+
-+#ifndef __CHECKER__
-+# undef __cond_lock
-+# define __cond_lock(x,c) (c)
-+#endif
-+
-+#endif
