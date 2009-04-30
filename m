@@ -1,459 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934001AbZD3R6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934344AbZD3R7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934001AbZD3R6i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933304AbZD3Rs3
+	id S934344AbZD3R7G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:59:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762846AbZD3Ruw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:48:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42372 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933246AbZD3Rs0 convert rfc822-to-8bit (ORCPT
+	Thu, 30 Apr 2009 13:50:52 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:59433 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933966AbZD3Ruu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:48:26 -0400
-Date: Thu, 30 Apr 2009 20:46:24 +0300
-From: Izik Eidus <ieidus@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
-       avi@redhat.com, aarcange@redhat.com, chrisw@redhat.com,
-       mtosatti@redhat.com, hugh@veritas.com
-Subject: Re: [PATCH 5/5] add ksm kernel shared memory driver.
-Message-ID: <20090430204624.358c4a2e@woof.tlv.redhat.com>
-In-Reply-To: <49F63BC0.9090804@redhat.com>
-References: <1240191366-10029-1-git-send-email-ieidus@redhat.com>
-	<1240191366-10029-2-git-send-email-ieidus@redhat.com>
-	<1240191366-10029-3-git-send-email-ieidus@redhat.com>
-	<1240191366-10029-4-git-send-email-ieidus@redhat.com>
-	<1240191366-10029-5-git-send-email-ieidus@redhat.com>
-	<1240191366-10029-6-git-send-email-ieidus@redhat.com>
-	<20090427153421.2682291f.akpm@linux-foundation.org>
-	<49F63BC0.9090804@redhat.com>
+	Thu, 30 Apr 2009 13:50:50 -0400
+Date: Thu, 30 Apr 2009 19:52:59 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, tglx@linutronix.de, jdb@comx.dk,
+       mingo@elte.hu, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/kbuild] x86: boot/compressed/vmlinux.lds.S: fix build of bzImage with 64 bit compiler
+Message-ID: <20090430175259.GA9894@uranus.ravnborg.org>
+References: <alpine.LFD.2.00.0904260958190.3101@localhost.localdomain> <tip-83c4832683bc8ebcd1687b3c0bf3ba1ab253dd4f@git.kernel.org> <49F9BB47.7080806@zytor.com> <20090430150924.GA8656@uranus.ravnborg.org> <49F9D1E5.2090805@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49F9D1E5.2090805@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009 02:12:00 +0300
-Izik Eidus <ieidus@redhat.com> wrote:
-
-> Andrew Morton wrote:
-
-> > Breaks sparc64 and probably lots of other architectures:
-> >
-> > mm/ksm.c: In function `try_to_merge_two_pages_alloc':
-> > mm/ksm.c:697: error: `_PAGE_RW' undeclared (first use in this
-> > function)
-> >
-> > there should be an official arch-independent way of manipulating
-> > vma->vm_page_prot, but I'm not immediately finding it.
-> >   
-> Hi,
+On Thu, Apr 30, 2009 at 09:29:25AM -0700, H. Peter Anvin wrote:
+> Sam Ravnborg wrote:
+> >>>
+> >> I'm wondering if we should build the *.lds.S with -ansi or some other
+> >> gcc option which disables ALL non-underscore macros.
+> > 
+> > I did not know that -ansi had this effect.
+> > We are only seldomly hitting this issue and I wonder
+> > if it could break something in out included headers.
+> > Most likely not.
+> > 
 > 
-> vm_get_page_prot() will probably do the work.
-> 
-> I will send you patch that fix it,
-> but first i am waiting for Andrea and Chris to say they are happy
-> with small changes that i made to the api after conversation i had
-> with them (about checking if this api is robust enough so we wont
-> have to change it later)
-> 
-> When i will get their acks, i will send you patch against this
-> togather with the api (until then it is ok to just leave it only for
-> x86)
-> 
-> changes are:
-> 1) limiting the number of memory regions registered per file
-> descriptor 
-> - so while (1){ (ioctl(KSM_REGISTER_MEMORY_REGION()) ) wont omm the
-> host
-> 
-> 2) checking if memory is overlap in registration (more effective to 
-> ignore such cases)
-> 
-> 3) allow removing specific memoy regions inside fd.
-> 
-> Thanks.
-> 
+> The other thing to recognize is probably that lds files aren't assembly,
+> they're something else entirely.  Rather than reusing the *.S rules,
+> having specific rules for them probably would make sense.
 
-Hi,
+We already have that:
+(scripts/Makfile.build)
+# Linker scripts preprocessor (.lds.S -> .lds)
+# ---------------------------------------------------------------------------
+quiet_cmd_cpp_lds_S = LDS     $@
+      cmd_cpp_lds_S = $(CPP) $(cpp_flags) -D__ASSEMBLY__ -o $@ $<
 
-Following patchs change the api to be more robust, the result change of
-the api came after conversation i had with Andrea and Chris about how
-to make the api as stable as we can,
-
-In addition i hope this patchset fix the cross compilation problems, i
-compiled it on itanium (doesnt have _PAGE_RW) and it seems to work.
-
-Thanks.
->From 108b720636d1e679e8d5378469fa1220ce1e6963 Mon Sep 17 00:00:00 2001
-From: Izik Eidus <ieidus@redhat.com>
-Date: Thu, 30 Apr 2009 20:36:57 +0300
-Subject: [PATCH 09/13] ksm: limiting the num of mem regions user can register per fd.
-
-Right now user can open /dev/ksm fd and register unlimited number of
-regions, such behavior may allocate unlimited amount of kernel memory
-and get the whole host into out of memory situation.
-
-Signed-off-by: Izik Eidus <ieidus@redhat.com>
----
- mm/ksm.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
-
-diff --git a/mm/ksm.c b/mm/ksm.c
-index 6165276..d58db6b 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -48,6 +48,9 @@ static int rmap_hash_size;
- module_param(rmap_hash_size, int, 0);
- MODULE_PARM_DESC(rmap_hash_size, "Hash table size for the reverse mapping");
- 
-+static int regions_per_fd;
-+module_param(regions_per_fd, int, 0);
-+
- /*
-  * ksm_mem_slot - hold information for an userspace scanning range
-  * (the scanning for this region will be from addr untill addr +
-@@ -67,6 +70,7 @@ struct ksm_mem_slot {
-  */
- struct ksm_sma {
- 	struct list_head sma_slots;
-+	int nregions;
- };
- 
- /**
-@@ -453,6 +457,11 @@ static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
- 	struct ksm_mem_slot *slot;
- 	int ret = -EPERM;
- 
-+	if ((ksm_sma->nregions + 1) > regions_per_fd) {
-+		ret = -EBUSY;
-+		goto out;
-+	}
-+
- 	slot = kzalloc(sizeof(struct ksm_mem_slot), GFP_KERNEL);
- 	if (!slot) {
- 		ret = -ENOMEM;
-@@ -473,6 +482,7 @@ static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
- 
- 	list_add_tail(&slot->link, &slots);
- 	list_add_tail(&slot->sma_link, &ksm_sma->sma_slots);
-+	ksm_sma->nregions++;
- 
- 	up_write(&slots_lock);
- 	return 0;
-@@ -511,6 +521,7 @@ static int ksm_sma_ioctl_remove_memory_region(struct ksm_sma *ksm_sma)
- 		mmput(slot->mm);
- 		list_del(&slot->sma_link);
- 		kfree(slot);
-+		ksm_sma->nregions--;
- 	}
- 	up_write(&slots_lock);
- 	return 0;
-@@ -1389,6 +1400,7 @@ static int ksm_dev_ioctl_create_shared_memory_area(void)
- 	}
- 
- 	INIT_LIST_HEAD(&ksm_sma->sma_slots);
-+	ksm_sma->nregions = 0;
- 
- 	fd = anon_inode_getfd("ksm-sma", &ksm_sma_fops, ksm_sma, 0);
- 	if (fd < 0)
-@@ -1631,6 +1643,9 @@ static int __init ksm_init(void)
- 	if (r)
- 		goto out_free1;
- 
-+	if (!regions_per_fd)
-+		regions_per_fd = 1024;
-+
- 	ksm_thread = kthread_run(ksm_scan_thread, NULL, "kksmd");
- 	if (IS_ERR(ksm_thread)) {
- 		printk(KERN_ERR "ksm: creating kthread failed\n");
--- 
-1.5.6.5
-
->From f24a9aa8c049c951a33613909951d115be5f84cd Mon Sep 17 00:00:00 2001
-From: Izik Eidus <ieidus@redhat.com>
-Date: Thu, 30 Apr 2009 20:37:17 +0300
-Subject: [PATCH 10/13] ksm: dont allow overlap memory addresses registrations.
-
-subjects say it all.
-
-Signed-off-by: Izik Eidus <ieidus@redhat.com>
----
- mm/ksm.c |   58 ++++++++++++++++++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 54 insertions(+), 4 deletions(-)
-
-diff --git a/mm/ksm.c b/mm/ksm.c
-index d58db6b..982dfff 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -451,21 +451,71 @@ static void remove_page_from_tree(struct mm_struct *mm,
- 	remove_rmap_item_from_tree(rmap_item);
- }
- 
-+static inline int is_intersecting_address(unsigned long addr,
-+					  unsigned long begin,
-+					  unsigned long end)
-+{
-+	if (addr >= begin && addr < end)
-+		return 1;
-+	return 0;
-+}
-+
-+/*
-+ * is_overlap_mem - check if there is overlapping with memory that was already
-+ * registred.
-+ *
-+ * note - this function must to be called under slots_lock
-+ */
-+static int is_overlap_mem(struct ksm_memory_region *mem)
-+{
-+	struct ksm_mem_slot *slot;
-+
-+	list_for_each_entry(slot, &slots, link) {
-+		unsigned long mem_end;
-+		unsigned long slot_end;
-+
-+		cond_resched();
-+
-+		if (current->mm != slot->mm)
-+			continue;
-+
-+		mem_end = mem->addr + (unsigned long)mem->npages * PAGE_SIZE;
-+		slot_end = slot->addr + (unsigned long)slot->npages * PAGE_SIZE;
-+
-+		if (is_intersecting_address(mem->addr, slot->addr, slot_end) ||
-+		    is_intersecting_address(mem_end - 1, slot->addr, slot_end))
-+			return 1;
-+		if (is_intersecting_address(slot->addr, mem->addr, mem_end) ||
-+		    is_intersecting_address(slot_end - 1, mem->addr, mem_end))
-+			return 1;
-+	}
-+
-+	return 0;
-+}
-+
- static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
- 						struct ksm_memory_region *mem)
- {
- 	struct ksm_mem_slot *slot;
- 	int ret = -EPERM;
- 
-+	if (!mem->npages)
-+		goto out;
-+
-+	down_write(&slots_lock);
-+
- 	if ((ksm_sma->nregions + 1) > regions_per_fd) {
- 		ret = -EBUSY;
--		goto out;
-+		goto out_unlock;
- 	}
- 
-+	if (is_overlap_mem(mem))
-+		goto out_unlock;
-+
- 	slot = kzalloc(sizeof(struct ksm_mem_slot), GFP_KERNEL);
- 	if (!slot) {
- 		ret = -ENOMEM;
--		goto out;
-+		goto out_unlock;
- 	}
- 
- 	/*
-@@ -478,8 +528,6 @@ static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
- 	slot->addr = mem->addr;
- 	slot->npages = mem->npages;
- 
--	down_write(&slots_lock);
--
- 	list_add_tail(&slot->link, &slots);
- 	list_add_tail(&slot->sma_link, &ksm_sma->sma_slots);
- 	ksm_sma->nregions++;
-@@ -489,6 +537,8 @@ static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
- 
- out_free:
- 	kfree(slot);
-+out_unlock:
-+	up_write(&slots_lock);
- out:
- 	return ret;
- }
--- 
-1.5.6.5
-
->From 57807f89d1f2842de69511e10643a48976ebc22e Mon Sep 17 00:00:00 2001
-From: Izik Eidus <ieidus@redhat.com>
-Date: Thu, 30 Apr 2009 20:37:39 +0300
-Subject: [PATCH 11/13] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
-
-This patch change the KSM_REMOVE_MEMORY_REGION ioctl to be specific per
-memory region (instead of flushing all the registred memory regions inside
-the file descriptor like it happen now)
-
-The previoes api was:
-user register memory regions using KSM_REGISTER_MEMORY_REGION inside the fd,
-and then when he wanted to remove just one memory region, he had to remove them
-all using KSM_REMOVE_MEMORY_REGION.
-
-This patch change this beahivor by chaning the KSM_REMOVE_MEMORY_REGION
-ioctl to recive another paramter that it is the begining of the virtual
-address that is wanted to be removed.
-
-(user can still remove all the memory regions all at once, by just closing
-the file descriptor)
-
-Signed-off-by: Izik Eidus <ieidus@redhat.com>
----
- mm/ksm.c |   31 +++++++++++++++++++++----------
- 1 files changed, 21 insertions(+), 10 deletions(-)
-
-diff --git a/mm/ksm.c b/mm/ksm.c
-index 982dfff..c14019f 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -561,17 +561,20 @@ static void remove_mm_from_hash_and_tree(struct mm_struct *mm)
- 	list_del(&slot->link);
- }
- 
--static int ksm_sma_ioctl_remove_memory_region(struct ksm_sma *ksm_sma)
-+static int ksm_sma_ioctl_remove_memory_region(struct ksm_sma *ksm_sma,
-+					      unsigned long addr)
- {
- 	struct ksm_mem_slot *slot, *node;
- 
- 	down_write(&slots_lock);
- 	list_for_each_entry_safe(slot, node, &ksm_sma->sma_slots, sma_link) {
--		remove_mm_from_hash_and_tree(slot->mm);
--		mmput(slot->mm);
--		list_del(&slot->sma_link);
--		kfree(slot);
--		ksm_sma->nregions--;
-+		if (addr == slot->addr) {
-+			remove_mm_from_hash_and_tree(slot->mm);
-+			mmput(slot->mm);
-+			list_del(&slot->sma_link);
-+			kfree(slot);
-+			ksm_sma->nregions--;
-+		}
- 	}
- 	up_write(&slots_lock);
- 	return 0;
-@@ -579,12 +582,20 @@ static int ksm_sma_ioctl_remove_memory_region(struct ksm_sma *ksm_sma)
- 
- static int ksm_sma_release(struct inode *inode, struct file *filp)
- {
-+	struct ksm_mem_slot *slot, *node;
- 	struct ksm_sma *ksm_sma = filp->private_data;
--	int r;
- 
--	r = ksm_sma_ioctl_remove_memory_region(ksm_sma);
-+	down_write(&slots_lock);
-+	list_for_each_entry_safe(slot, node, &ksm_sma->sma_slots, sma_link) {
-+		remove_mm_from_hash_and_tree(slot->mm);
-+		mmput(slot->mm);
-+		list_del(&slot->sma_link);
-+		kfree(slot);
-+	}
-+	up_write(&slots_lock);
-+
- 	kfree(ksm_sma);
--	return r;
-+	return 0;
- }
- 
- static long ksm_sma_ioctl(struct file *filp,
-@@ -607,7 +618,7 @@ static long ksm_sma_ioctl(struct file *filp,
- 		break;
- 	}
- 	case KSM_REMOVE_MEMORY_REGION:
--		r = ksm_sma_ioctl_remove_memory_region(sma);
-+		r = ksm_sma_ioctl_remove_memory_region(sma, arg);
- 		break;
- 	}
- 
--- 
-1.5.6.5
-
->From 146ecd222f59460548dafbd3c322030251c33b8d Mon Sep 17 00:00:00 2001
-From: Izik Eidus <ieidus@redhat.com>
-Date: Thu, 30 Apr 2009 20:38:05 +0300
-Subject: [PATCH 12/13] ksm: change the prot handling to use the generic helper functions
-
-This is needed to avoid breaking some architectures.
-
-Signed-off-by: Izik Eidus <ieidus@redhat.com>
----
- mm/ksm.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/mm/ksm.c b/mm/ksm.c
-index c14019f..bfbbe1d 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -766,8 +766,8 @@ static int try_to_merge_two_pages_alloc(struct mm_struct *mm1,
- 		up_read(&mm1->mmap_sem);
- 		return ret;
- 	}
--	prot = vma->vm_page_prot;
--	pgprot_val(prot) &= ~_PAGE_RW;
-+
-+	prot = vm_get_page_prot(vma->vm_flags & ~VM_WRITE);
- 
- 	copy_user_highpage(kpage, page1, addr1, vma);
- 	ret = try_to_merge_one_page(mm1, vma, page1, kpage, prot);
-@@ -784,8 +784,7 @@ static int try_to_merge_two_pages_alloc(struct mm_struct *mm1,
- 			return ret;
- 		}
- 
--		prot = vma->vm_page_prot;
--		pgprot_val(prot) &= ~_PAGE_RW;
-+		prot = vm_get_page_prot(vma->vm_flags & ~VM_WRITE);
- 
- 		ret = try_to_merge_one_page(mm2, vma, page2, kpage,
- 					    prot);
-@@ -831,8 +830,9 @@ static int try_to_merge_two_pages_noalloc(struct mm_struct *mm1,
- 		up_read(&mm1->mmap_sem);
- 		return ret;
- 	}
--	prot = vma->vm_page_prot;
--	pgprot_val(prot) &= ~_PAGE_RW;
-+
-+	prot = vm_get_page_prot(vma->vm_flags & ~VM_WRITE);
-+
- 	ret = try_to_merge_one_page(mm1, vma, page1, page2, prot);
- 	up_read(&mm1->mmap_sem);
- 	if (!ret)
--- 
-1.5.6.5
-
->From 3b437cac1890999191cca6c76da5e71ceec487e4 Mon Sep 17 00:00:00 2001
-From: Izik Eidus <ieidus@redhat.com>
-Date: Thu, 30 Apr 2009 20:38:33 +0300
-Subject: [PATCH 13/13] ksm: build system make it compile for all archs
-
-The known issues with cross platform support were fixed,
-so we return it back to compile on all archs.
-
-Signed-off-by: Izik Eidus <ieidus@redhat.com>
----
- mm/Kconfig |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/mm/Kconfig b/mm/Kconfig
-index f59b1e4..fb8ac63 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -228,7 +228,6 @@ config MMU_NOTIFIER
- 
- config KSM
- 	tristate "Enable KSM for page sharing"
--	depends on X86
- 	help
- 	  Enable the KSM kernel module to allow page sharing of equal pages
- 	  among different tasks.
--- 
-1.5.6.5
+$(obj)/%.lds: $(src)/%.lds.S FORCE
+        $(call if_changed_dep,cpp_lds_S)
 
 
+So adding -ansi is trivial and will only hit .lds.S files.
 
+I assume the lds files are named .S is because we shared rules
+long time ago.
+
+	Sam
