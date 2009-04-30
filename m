@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763571AbZD3NuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763647AbZD3NvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763571AbZD3NuI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 09:50:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763458AbZD3Nsi
+	id S1763647AbZD3NvP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 09:51:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763472AbZD3Nsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 09:48:38 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:55929 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1763454AbZD3Nsh (ORCPT
+	Thu, 30 Apr 2009 09:48:47 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:41786 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763475AbZD3Nsq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 09:48:37 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 2.6.30 1/2] mfd: Correct readability of WM8350 register 227
-Date: Thu, 30 Apr 2009 14:48:35 +0100
-Message-Id: <1241099316-17948-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.2.4
+	Thu, 30 Apr 2009 09:48:46 -0400
+Subject: Re: [RFC] Replace the watermark-related union in struct zone with
+	a watermark[] array
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: David Rientjes <rientjes@google.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090430133524.GC21997@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
+	 <1240408407-21848-19-git-send-email-mel@csn.ul.ie>
+	 <alpine.DEB.2.00.0904221251350.14558@chino.kir.corp.google.com>
+	 <20090427170054.GE912@csn.ul.ie>
+	 <alpine.DEB.2.00.0904271340320.11972@chino.kir.corp.google.com>
+	 <20090427205400.GA23510@csn.ul.ie>
+	 <alpine.DEB.2.00.0904271400450.11972@chino.kir.corp.google.com>
+	 <20090430133524.GC21997@csn.ul.ie>
+Content-Type: text/plain
+Date: Thu, 30 Apr 2009 06:48:20 -0700
+Message-Id: <1241099300.29485.96.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This includes the USB current limit status override which is used in the
-power management driver.
+On Thu, 2009-04-30 at 14:35 +0100, Mel Gorman wrote:
+> I think what you're saying that you'd be ok with
+> 
+> zone_wmark_min(z)
+> zone_wmark_low(z)
+> zone_wmark_high(z)
+> 
+> and z->pages_mark[WMARK_MIN] =
+> and z->pages_mark[WMARK_LOW] =
+> and z->pages_mark[WMARK_HIGH] =
+> 
+> ?
+> 
+> Is that a significant improvement over what the patch currently does? To
+> me, it seems more verbose.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/mfd/wm8350-regmap.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Either way, there are _relatively_ few users.  From a quick cscope, it
+appears setup_per_zone_pages_min() is really the heaviest user assigning
+them.
 
-diff --git a/drivers/mfd/wm8350-regmap.c b/drivers/mfd/wm8350-regmap.c
-index 97d6aad..7ccc1ea 100644
---- a/drivers/mfd/wm8350-regmap.c
-+++ b/drivers/mfd/wm8350-regmap.c
-@@ -3411,7 +3411,7 @@ const struct wm8350_reg_access wm8350_reg_io_map[] = {
- 	{ 0x0000, 0x0000, 0x0000 }, /* R224 */
- 	{ 0x8F3F, 0x0000, 0xFFFF }, /* R225 - DCDC/LDO status */
- 	{ 0x0000, 0x0000, 0xFFFF }, /* R226 - Charger status */
--	{ 0x0000, 0x0000, 0xFFFF }, /* R227 */
-+	{ 0x34FE, 0x0000, 0xFFFF }, /* R227 */
- 	{ 0x0000, 0x0000, 0x0000 }, /* R228 */
- 	{ 0x0000, 0x0000, 0x0000 }, /* R229 */
- 	{ 0xFFFF, 0x1FFF, 0xFFFF }, /* R230 - GPIO Pin Status */
--- 
-1.6.2.4
+Personally, I do like having the 'wmark' or something similar in the
+function or structure member names.  But, I also like having the units
+in there as well.  There's probably not room for both, though.  I'm fine
+with the naming you have above.  The only thing I might consider is
+removing 'zone_' from the function names since it's implied from the
+variable name:
+
+	min_wmark_pages(z)
+
+The 'z->pages_mark[WMARK_*]' form is ugly, but it should be basically
+restricted to use in setup_per_zone_pages_min().  I think that means we
+don't need set_foo() functions because of a lack of use sites.
+
+-- Dave
 
