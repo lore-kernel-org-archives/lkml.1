@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764254AbZD3P6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764283AbZD3QAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764254AbZD3P6P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 11:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764019AbZD3P4P
+	id S1764283AbZD3QAe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 12:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbZD3QAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 11:56:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35614 "EHLO mx2.mail.elte.hu"
+	Thu, 30 Apr 2009 12:00:14 -0400
+Received: from emroute2.ornl.gov ([160.91.86.17]:65203 "EHLO emroute2.ornl.gov"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764030AbZD3P4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 11:56:13 -0400
-Date: Thu, 30 Apr 2009 17:54:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux.com>, Eric Dumazet <dada1@cosmosbay.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, thomas.pi@arcor.dea,
-       Yuriy Lalym <ylalym@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ltt-dev@lists.casi.polymtl.ca, Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] Fix dirty page accounting in
-	redirty_page_for_writepage()
-Message-ID: <20090430155411.GA4723@elte.hu>
-References: <20090430024303.GB19875@Krystal> <alpine.DEB.1.10.0904300921290.22262@qirst.com> <20090430133859.GB8329@elte.hu> <alpine.DEB.1.10.0904300938220.22262@qirst.com> <20090430141446.GD14696@elte.hu> <alpine.DEB.1.10.0904301013110.14178@qirst.com> <20090430143819.GF14696@elte.hu> <alpine.DEB.1.10.0904301042170.4028@qirst.com> <20090430150142.GC20580@elte.hu> <alpine.DEB.1.10.0904301114440.4028@qirst.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904301114440.4028@qirst.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1764215AbZD3QAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 12:00:09 -0400
+X-Greylist: delayed 2521 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Apr 2009 12:00:09 EDT
+Date: Thu, 30 Apr 2009 11:18:04 -0400
+From: David Dillow <dave@thedillows.org>
+Subject: Re: Class device namespaces
+In-reply-to: <ac3eb2510904291453p4c4ec456u1efd7bc6bbf8f3be@mail.gmail.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Michael Brown <mebrown@michaels-house.net>,
+       Doug Warzecha <Douglas_Warzecha@dell.com>,
+       Jean Delvare <khali@linux-fr.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Matt Domsch <Matt_Domsch@dell.com>
+Message-id: <1241104684.26576.4.camel@lap75545.ornl.gov>
+MIME-version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10)
+Content-type: text/plain
+Content-transfer-encoding: 7bit
+References: <ac3eb2510903290936tc80e904o2266108bd6c04cf2@mail.gmail.com>
+ <20090428173929.GA5006@sysman-doug.us.dell.com>
+ <ac3eb2510904281046i6e9899acg89f7606da783f72c@mail.gmail.com>
+ <20090428215844.GA1396@sysman-doug.us.dell.com>
+ <ac3eb2510904281842i785ee135h98502522f242f3f6@mail.gmail.com>
+ <437908170904282019h6a10ef9dg594002e22842b366@mail.gmail.com>
+ <ac3eb2510904290330r563f3717ue72029cbe24b39bb@mail.gmail.com>
+ <437908170904291000s10fe6a92q8a595e0bbbd159a6@mail.gmail.com>
+ <ac3eb2510904291210y6d0a4199gc1800d0d02d0d7c6@mail.gmail.com>
+ <437908170904291428k445fc8fdy9b3bb4e78ee91018@mail.gmail.com>
+ <ac3eb2510904291453p4c4ec456u1efd7bc6bbf8f3be@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-04-29 at 23:53 +0200, Kay Sievers wrote:
+> On Wed, Apr 29, 2009 at 23:28, Michael Brown <mebrown@michaels-house.net> wrote:
+> > I cant say that I've ever seen any problems due to udev
+> > cancelling a firmware request.  In fact, if I manually trigger a
+> > request using "echo" from the cmdline, I dont see udev take any action
+> > with the dell_rbu device. eg (Fedora 10, udev-127-5.fc10):
+> 
+> If you run:
+>   udevmonitor --udev --env
+> at the same time, what does it say?
+> 
+> > I dont see any of the behaviour that you have talked about. If I let
+> > it sit there for hours, it will stay at that state. It only closes up
+> > the request_firmware() request when I echo 0 > loading.
+> 
+> Udev will run in the moment this sysfs device is created, and it
+> should trigger the removal of the device, if it does not find the
+> requested firmware file.
 
-* Christoph Lameter <cl@linux.com> wrote:
+drivers/firmware/dell_rbu.c does this:
+req_firm_rc = request_firmware_nowait(THIS_MODULE,
+                                FW_ACTION_NOHOTPLUG, "dell_rbu",
+                                &rbu_device->dev, &context,
+                                callbackfn_rbu);
 
-> http://article.gmane.org/gmane.linux.kernel.cross-arch/1163 Socket inuse counter
+I've not gone looking to verify, but FW_ACTION_NOHOTPLUG implies to me
+that udev never sees a uevent for it.
 
-btw., this one is already converted upstream, via:
-
-  4e69489: socket: use percpu_add() while updating sockets_in_use
-
-done by Eric Dumazet.
-
-	Ingo
