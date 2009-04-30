@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764492AbZD3RRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765437AbZD3RWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764492AbZD3RRn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764542AbZD3RHk
+	id S1765437AbZD3RWI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764603AbZD3RHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:40 -0400
-Received: from kroah.org ([198.145.64.141]:56331 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:07:50 -0400
+Received: from kroah.org ([198.145.64.141]:56384 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764354AbZD3RHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:32 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:41 2009
-Message-Id: <20090430165741.705431835@mini.kroah.org>
+	id S1764567AbZD3RHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:42 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:43 2009
+Message-Id: <20090430165743.201057327@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:12 -0700
+Date: Thu, 30 Apr 2009 09:56:22 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       alan@lxorguk.ukuu.org.uk, Mike Christie <michaelc@cs.wisc.edu>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 23/88] mm: define a UNIQUE value for AS_UNEVICTABLE flag
+Subject: [patch 33/88] SCSI: libiscsi: fix iscsi pool error path again
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=0030-mm-define-a-UNIQUE-value-for-AS_UNEVICTABLE-flag.patch
+Content-Disposition: inline; filename=0053-SCSI-libiscsi-fix-iscsi-pool-error-path.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,58 +40,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+From: Jean Delvare <jdelvare@suse.de>
 
-upstream commit: 9a896c9a48ac6704c0ce8ee081b836644d0afe40
+upstream commit: fd6e1c14b73dbab89cb76af895d5612e4a8b5522
 
-A new "address_space flag"--AS_MM_ALL_LOCKS--was defined to use the next
-available AS flag while the Unevictable LRU was under development.  The
-Unevictable LRU was using the same flag and "no one" noticed.  Current
-mainline, since 2.6.28, has same value for two symbolic flag names.
+Le lundi 30 mars 2009, Chris Wright a écrit :
+> q->queue could be ERR_PTR(-ENOMEM) which will break unwinding
+> on error.  Make iscsi_pool_free more defensive.
+>
 
-So, define a unique flag value for AS_UNEVICTABLE--up close to the other
-flags, [at the cost of an additional #ifdef] so we'll notice next time.
-Note that #ifdef is not actually required, if we don't mind having the
-unused flag value defined.
+Making the freeing of q->queue dependent on q->pool being set looks
+really weird (although it is correct at the moment. But this seems
+to be fixable in a much simpler way.
 
-Replace #defines with an enum.
+With the benefit that only the error case is slowed down. In both
+cases we have a problem if q->queue contains an error value but it's
+not -ENOMEM. Apparently this can't happen today, but it doesn't feel
+right to assume this will always be true. Maybe it's the right time
+to fix this as well.
 
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+[chrisw: this is a fixlet to f474a37b, also in -stable]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- include/linux/pagemap.h |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/scsi/libiscsi.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -18,9 +18,14 @@
-  * Bits in mapping->flags.  The lower __GFP_BITS_SHIFT bits are the page
-  * allocation mode flags.
-  */
--#define	AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
--#define AS_ENOSPC	(__GFP_BITS_SHIFT + 1)	/* ENOSPC on async write */
--#define AS_MM_ALL_LOCKS	(__GFP_BITS_SHIFT + 2)	/* under mm_take_all_locks() */
-+enum mapping_flags {
-+	AS_EIO		= __GFP_BITS_SHIFT + 0,	/* IO error on async write */
-+	AS_ENOSPC	= __GFP_BITS_SHIFT + 1,	/* ENOSPC on async write */
-+	AS_MM_ALL_LOCKS	= __GFP_BITS_SHIFT + 2,	/* under mm_take_all_locks() */
-+#ifdef CONFIG_UNEVICTABLE_LRU
-+	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
-+#endif
-+};
+--- a/drivers/scsi/libiscsi.c
++++ b/drivers/scsi/libiscsi.c
+@@ -1866,8 +1866,10 @@ iscsi_pool_init(struct iscsi_pool *q, in
  
- static inline void mapping_set_error(struct address_space *mapping, int error)
- {
-@@ -33,7 +38,6 @@ static inline void mapping_set_error(str
- }
+ 	q->queue = kfifo_init((void*)q->pool, max * sizeof(void*),
+ 			      GFP_KERNEL, NULL);
+-	if (q->queue == ERR_PTR(-ENOMEM))
++	if (IS_ERR(q->queue)) {
++		q->queue = NULL;
+ 		goto enomem;
++	}
  
- #ifdef CONFIG_UNEVICTABLE_LRU
--#define AS_UNEVICTABLE	(__GFP_BITS_SHIFT + 2)	/* e.g., ramdisk, SHM_LOCK */
- 
- static inline void mapping_set_unevictable(struct address_space *mapping)
- {
+ 	for (i = 0; i < max; i++) {
+ 		q->pool[i] = kzalloc(item_size, GFP_KERNEL);
 
 
