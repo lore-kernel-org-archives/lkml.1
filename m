@@ -1,103 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbZD3KkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbZD3Kli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761477AbZD3KkZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 06:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbZD3KkL
+	id S1757922AbZD3Kli (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 06:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbZD3Kl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 06:40:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60396 "EHLO hera.kernel.org"
+	Thu, 30 Apr 2009 06:41:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60422 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753239AbZD3KkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 06:40:09 -0400
-Date: Thu, 30 Apr 2009 10:39:30 GMT
-From: tip-bot for John Wright <john.wright@hp.com>
+	id S1753319AbZD3Kl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 06:41:28 -0400
+Date: Thu, 30 Apr 2009 10:39:41 GMT
+From: tip-bot for Sam Ravnborg <sam@ravnborg.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       john.wright@hp.com, tglx@linutronix.de, ak@suse.de, mingo@elte.hu
+       torvalds@linux-foundation.org, sam@ravnborg.org, tglx@linutronix.de,
+       jdb@comx.dk, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       john.wright@hp.com, tglx@linutronix.de, ak@suse.de, mingo@elte.hu
-In-Reply-To: <1241037121-14805-1-git-send-email-john.wright@hp.com>
-References: <1241037121-14805-1-git-send-email-john.wright@hp.com>
-Subject: [tip:x86/urgent] x86: gettimeofday() vDSO: fix segfault when tv == NULL
-Message-ID: <tip-2f65dd475c6a8a997145ea83cc3d2d5e6dc55af1@git.kernel.org>
-Git-Commit-ID: 2f65dd475c6a8a997145ea83cc3d2d5e6dc55af1
+       sam@ravnborg.org, torvalds@linux-foundation.org, tglx@linutronix.de,
+       jdb@comx.dk, mingo@elte.hu
+In-Reply-To: <alpine.LFD.2.00.0904260958190.3101@localhost.localdomain>
+References: <alpine.LFD.2.00.0904260958190.3101@localhost.localdomain>
+Subject: [tip:x86/kbuild] x86: boot/compressed/vmlinux.lds.S: fix build of bzImage with 64 bit compiler
+Message-ID: <tip-83c4832683bc8ebcd1687b3c0bf3ba1ab253dd4f@git.kernel.org>
+Git-Commit-ID: 83c4832683bc8ebcd1687b3c0bf3ba1ab253dd4f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Apr 2009 10:39:32 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Apr 2009 10:39:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2f65dd475c6a8a997145ea83cc3d2d5e6dc55af1
-Gitweb:     http://git.kernel.org/tip/2f65dd475c6a8a997145ea83cc3d2d5e6dc55af1
-Author:     John Wright <john.wright@hp.com>
-AuthorDate: Wed, 29 Apr 2009 14:32:01 -0600
+Commit-ID:  83c4832683bc8ebcd1687b3c0bf3ba1ab253dd4f
+Gitweb:     http://git.kernel.org/tip/83c4832683bc8ebcd1687b3c0bf3ba1ab253dd4f
+Author:     Sam Ravnborg <sam@ravnborg.org>
+AuthorDate: Thu, 30 Apr 2009 12:03:16 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 30 Apr 2009 12:31:45 +0200
+CommitDate: Thu, 30 Apr 2009 12:36:50 +0200
 
-x86: gettimeofday() vDSO: fix segfault when tv == NULL
+x86: boot/compressed/vmlinux.lds.S: fix build of bzImage with 64 bit compiler
 
-According to the gettimeofday(2) manual:
+Jesper reported that he saw following build issue:
 
-       If either tv or tz is NULL, the corresponding structure is not
-       set or returned.
+ > ld:arch/x86/boot/compressed/vmlinux.lds:9: syntax error
+ > make[2]: *** [arch/x86/boot/compressed/vmlinux] Error 1
+ > make[1]: *** [arch/x86/boot/compressed/vmlinux] Error 2
+ > make: *** [bzImage] Error 2
 
-Since it is legal to give NULL as the tv argument, the code should make
-sure tv is not NULL before trying to dereference it.
+CPP defines the symbol "i386" to "1".
+Undefine this to fix it.
 
-This issue manifests itself on x86_64 when vdso=0 is not on the kernel
-command-line and libc uses the vDSO for gettimeofday() (e.g. glibc >=
-2.7).  A simple reproducer:
+[ Impact: build fix with certain tool chains ]
 
-  #include <stdio.h>
-  #include <sys/time.h>
-
-  int main(void)
-  {
-      struct timezone tz;
-
-      gettimeofday(NULL, &tz);
-
-      return 0;
-  }
-
-See http://bugs.debian.org/466491 for more details.
-
-[ Impact: fix gettimeofday(NULL, &tz) segfault ]
-
-Signed-off-by: John Wright <john.wright@hp.com>
-Cc: Andi Kleen <ak@suse.de>
-Cc: John Wright <john.wright@hp.com>
-LKML-Reference: <1241037121-14805-1-git-send-email-john.wright@hp.com>
+Reported-by: Jesper Dangaard Brouer <jdb@comx.dk>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+LKML-Reference: <alpine.LFD.2.00.0904260958190.3101@localhost.localdomain>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/vdso/vclock_gettime.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+ arch/x86/boot/compressed/vmlinux.lds.S |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/vdso/vclock_gettime.c b/arch/x86/vdso/vclock_gettime.c
-index d9d3582..6a40b78 100644
---- a/arch/x86/vdso/vclock_gettime.c
-+++ b/arch/x86/vdso/vclock_gettime.c
-@@ -104,11 +104,13 @@ notrace int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
- {
- 	long ret;
- 	if (likely(gtod->sysctl_enabled && gtod->clock.vread)) {
--		BUILD_BUG_ON(offsetof(struct timeval, tv_usec) !=
--			     offsetof(struct timespec, tv_nsec) ||
--			     sizeof(*tv) != sizeof(struct timespec));
--		do_realtime((struct timespec *)tv);
--		tv->tv_usec /= 1000;
-+		if (likely(tv != NULL)) {
-+			BUILD_BUG_ON(offsetof(struct timeval, tv_usec) !=
-+				     offsetof(struct timespec, tv_nsec) ||
-+				     sizeof(*tv) != sizeof(struct timespec));
-+			do_realtime((struct timespec *)tv);
-+			tv->tv_usec /= 1000;
-+		}
- 		if (unlikely(tz != NULL)) {
- 			/* Avoid memcpy. Some old compilers fail to inline it */
- 			tz->tz_minuteswest = gtod->sys_tz.tz_minuteswest;
+diff --git a/arch/x86/boot/compressed/vmlinux.lds.S b/arch/x86/boot/compressed/vmlinux.lds.S
+index ffcb191..0d26c92 100644
+--- a/arch/x86/boot/compressed/vmlinux.lds.S
++++ b/arch/x86/boot/compressed/vmlinux.lds.S
+@@ -1,5 +1,7 @@
+ OUTPUT_FORMAT(CONFIG_OUTPUT_FORMAT, CONFIG_OUTPUT_FORMAT, CONFIG_OUTPUT_FORMAT)
+ 
++#undef i386
++
+ #ifdef CONFIG_X86_64
+ OUTPUT_ARCH(i386:x86-64)
+ ENTRY(startup_64)
