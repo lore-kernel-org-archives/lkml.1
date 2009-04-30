@@ -1,88 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933966AbZD3RvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765108AbZD3Rvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933966AbZD3RvW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765989AbZD3RXF
+	id S1765108AbZD3Rvr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932571AbZD3RZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:23:05 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:42840 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765990AbZD3RXC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:23:02 -0400
-Date: Thu, 30 Apr 2009 10:20:14 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
-Subject: Re: [PATCH 2/2] configfs: Rework configfs_depend_item() locking
-	and make lockdep happy
-Message-ID: <20090430172014.GA2762@mail.oracle.com>
-Mail-Followup-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-	cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
-References: <1233166713-9668-1-git-send-email-louis.rilling@kerlabs.com> <1233166713-9668-3-git-send-email-louis.rilling@kerlabs.com> <20090429185231.GE4743@mail.oracle.com> <20090430091828.GB13896@hawkmoon.kerlabs.com>
+	Thu, 30 Apr 2009 13:25:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52366 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932542AbZD3RZg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:25:36 -0400
+Date: Thu, 30 Apr 2009 19:23:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christoph Lameter <cl@linux.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, thomas.pi@arcor.dea,
+       Yuriy Lalym <ylalym@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ltt-dev@lists.casi.polymtl.ca, Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH] Fix dirty page accounting in
+	redirty_page_for_writepage()
+Message-ID: <20090430172341.GA11865@elte.hu>
+References: <20090430141446.GD14696@elte.hu> <alpine.DEB.1.10.0904301013110.14178@qirst.com> <20090430143819.GF14696@elte.hu> <alpine.DEB.1.10.0904301042170.4028@qirst.com> <20090430150142.GC20580@elte.hu> <alpine.DEB.1.10.0904301114440.4028@qirst.com> <20090430154255.GA3714@elte.hu> <alpine.DEB.1.10.0904301142140.4028@qirst.com> <20090430160606.GA5913@elte.hu> <alpine.LFD.2.00.0904300914110.3395@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090430091828.GB13896@hawkmoon.kerlabs.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
+In-Reply-To: <alpine.LFD.2.00.0904300914110.3395@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A01020A.49F9DE13.01DC:SCFMA4539814,ss=1,fgs=0
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 11:18:28AM +0200, Louis Rilling wrote:
-> On 29/04/09 11:52 -0700, Joel Becker wrote:
-> > On Wed, Jan 28, 2009 at 07:18:33PM +0100, Louis Rilling wrote:
-> > > configfs_depend_item() recursively locks all inodes mutex from configfs root to
-> > > the target item, which makes lockdep unhappy. The purpose of this recursive
-> > > locking is to ensure that the item tree can be safely parsed and that the target
-> > > item, if found, is not about to leave.
-> > > 
-> > > This patch reworks configfs_depend_item() locking using configfs_dirent_lock.
-> > > Since configfs_dirent_lock protects all changes to the configfs_dirent tree, and
-> > > protects tagging of items to be removed, this lock can be used instead of the
-> > > inodes mutex lock chain.
-> > > This needs that the check for dependents be done atomically with
-> > > CONFIGFS_USET_DROPPING tagging.
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Thu, 30 Apr 2009, Ingo Molnar wrote:
 > > 
-> > 	These patches are now in the 'lockdep' branch of the configfs
-> > tree.  I'm planning to send them in the next merge window.  I've made
-> > one change.
+> > c0436275:   64 83 05 20 5f 6a c0    addl   $0x1,%fs:0xc06a5f20
 > > 
-> > > + * Note: items in the middle of attachment start with s_type = 0
-> > > + * (configfs_new_dirent()), and configfs_make_dirent() (called from
-> > > + * create_dir()) sets s_type = CONFIGFS_DIR|CONFIGFS_USET_CREATING. In both
-> > > + * cases the item is ignored. Since s_type is an int, we rely on the CPU to
-> > > + * atomically update the value, without making configfs_make_dirent() take
-> > > + * configfs_dirent_lock.
-> > 
-> > 	I've added configfs_dirent_lock in configfs_make_dirent(),
-> > because it is not safe at all to rely on the fact that s_type is an int.
-> > It's an atomic set on one CPU, but there's no guarantee that it's seen
-> > correctly on other CPUs.  Plus, there's no real need for speed here.  So
-> > we properly take configfs_dirent_lock around s_type in
-> > configfs_make_dirent(), and that ensures we see things correctly on SMP.
+> > There's no atomic instructions at all - the counters here are 
+> > only accessed locally. They are local-irq-atomic, but not 
+> > cacheline-atomic.
 > 
-> Agreed, I was going to suggest something like this. Actually I'd push the
-> initialization of s_type down to configfs_new_dirent(), so that s_type either
-> is always NULL, or always shows the correct type of object.
+> On other architectures, you need the whole "disable preemption, 
+> load-locked, store-conditional, test-and-loop, enable preemption" 
+> thing.
+> 
+> Or "disable interrupts, load, store, restore interrupts".
+> 
+> There really aren't very many architectures that can do almost 
+> unrestricted ALU ops in a single instruction (and thus 
+> automatically safe from preemption and interrupts).
 
-	0, not "NULL", but yeah I think that's a good plan.
+Maybe then what we should do is the very first version of commit 
+6dbde35308: declaredly make percpu_arith_op() non-irq-atomic (and 
+non-preempt-atomic) everywhere. The commit's internal changelog 
+still says:
 
-Joel
+        * made generic percpu ops atomic against preemption
 
--- 
+So we introduced preemption-safety in the v2 version of that commit.
 
-"If at first you don't succeed, cover all traces that you tried."
-                                                        -Unknown
+This non-atomicity will 1) either not matter 2) will be irq-atomic 
+by virtue of being within a critical section 3) can be made atomic 
+in the few remaining cases.
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+And maybe, at most, introduce an opt-in API: percpu_add_irqsafe().
+
+Right?
+
+	Ingo
