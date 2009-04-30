@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764706AbZD3RIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764827AbZD3RJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764706AbZD3RIg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762687AbZD3RHQ
+	id S1764827AbZD3RJx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764283AbZD3RHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:16 -0400
-Received: from kroah.org ([198.145.64.141]:39115 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:07:21 -0400
+Received: from kroah.org ([198.145.64.141]:56151 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762267AbZD3RHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:13 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:38 2009
-Message-Id: <20090430165738.774325351@mini.kroah.org>
+	id S1762241AbZD3RHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:16 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:39 2009
+Message-Id: <20090430165739.242208431@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:55:52 -0700
+Date: Thu, 30 Apr 2009 09:55:55 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Pavel Emelyanov <xemul@openvz.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 03/88] ipv6: dont use tw net when accounting for recycled tw
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 06/88] xfrm: spin_lock() should be spin_unlock() in xfrm_state.c
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=ipv6-don-t-use-tw-net-when-accounting-for-recycled-tw.patch
+Content-Disposition: inline; filename=xfrm-spin_lock-should-be-spin_unlock-in-xfrm_state.c.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,42 +38,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Pavel Emelyanov <xemul@openvz.org>
+From: Chuck Ebbert <cebbert@redhat.com>
 
-[ Upstream commit 3f53a38131a4e7a053c0aa060aba0411242fb6b9 ]
+[ Upstream commit 7d0b591c655ca0d72ebcbd242cf659a20a8995c5 ]
 
-We already have a valid net in that place, but this is not just a
-cleanup - the tw pointer can be NULL there sometimes, thus causing
-an oops in NET_NS=y case.
+spin_lock() should be spin_unlock() in xfrm_state_walk_done().
 
-The same place in ipv4 code already works correctly using existing
-net, rather than tw's one.
+caused by:
+commit 12a169e7d8f4b1c95252d8b04ed0f1033ed7cfe2
+"ipsec: Put dumpers on the dump list"
 
-The bug exists since 2.6.27.
-
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Reported-by: Marc Milgram <mmilgram@redhat.com>
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv6/inet6_hashtables.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/xfrm/xfrm_state.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/ipv6/inet6_hashtables.c
-+++ b/net/ipv6/inet6_hashtables.c
-@@ -210,11 +210,11 @@ unique:
+--- a/net/xfrm/xfrm_state.c
++++ b/net/xfrm/xfrm_state.c
+@@ -1601,7 +1601,7 @@ void xfrm_state_walk_done(struct xfrm_st
  
- 	if (twp != NULL) {
- 		*twp = tw;
--		NET_INC_STATS_BH(twsk_net(tw), LINUX_MIB_TIMEWAITRECYCLED);
-+		NET_INC_STATS_BH(net, LINUX_MIB_TIMEWAITRECYCLED);
- 	} else if (tw != NULL) {
- 		/* Silly. Should hash-dance instead... */
- 		inet_twsk_deschedule(tw, death_row);
--		NET_INC_STATS_BH(twsk_net(tw), LINUX_MIB_TIMEWAITRECYCLED);
-+		NET_INC_STATS_BH(net, LINUX_MIB_TIMEWAITRECYCLED);
+ 	spin_lock_bh(&xfrm_state_lock);
+ 	list_del(&walk->all);
+-	spin_lock_bh(&xfrm_state_lock);
++	spin_unlock_bh(&xfrm_state_lock);
+ }
+ EXPORT_SYMBOL(xfrm_state_walk_done);
  
- 		inet_twsk_put(tw);
- 	}
 
 
