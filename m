@@ -1,74 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762067AbZD3Iap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761734AbZD3Ibq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762067AbZD3Iap (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 04:30:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762024AbZD3IaK
+	id S1761734AbZD3Ibq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 04:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbZD3Ib0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 04:30:10 -0400
-Received: from main.gmane.org ([80.91.229.2]:45385 "EHLO ciao.gmane.org"
+	Thu, 30 Apr 2009 04:31:26 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54448 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762013AbZD3IaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 04:30:08 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-Subject: Re: usbutils 0.81 release
-Date: Thu, 30 Apr 2009 08:31:01 +0200
-Organization: m
-Message-ID: <871vrar6u2.fsf@nemi.mork.no>
-References: <20090427193532.GA2948@kroah.com>
-	<8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com>
-	<20090429180735.GA29812@kroah.com>
-	<8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com>
-	<ac3eb2510904291159s14d7d532q33657eb73007fc4b@mail.gmail.com>
-	<20090429191841.GA1598@khazad-dum.debian.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: nemi.mork.no
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/22.2 (gnu/linux)
-Cancel-Lock: sha1:Qb7KRPuMIOnigVnm4WW/D/a2xIk=
-Cc: linux-usb@vger.kernel.org
+	id S1751539AbZD3IbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 04:31:25 -0400
+Date: Thu, 30 Apr 2009 10:31:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] atomic: fix atomic_long_cmpxchg/xchg for 64 bit
+	architectures
+Message-ID: <20090430083102.GB21699@elte.hu>
+References: <20090429143601.1a79ab8f@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090429143601.1a79ab8f@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh
-<hmh@hmh.eng.br> writes:
 
-> Debian places it in /var/lib/usbids/ for a good reason.  So does Ubuntu.
-> Both have working "update-usbids" scripts (might be the one from upstream,
-> or something different).  They also have the original file in /usr/share, I
-> don't know if usbutils was changed to check /var first then /usr, or what.
+* Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 
-No.  They place a symlink from /usr/share to /var/lib:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> On a linux-next allyesconfig build:
+> 
+> kernel/trace/ring_buffer.c:1726:
+> 	warning: passing argument 1 of 'atomic_cmpxchg' from incompatible pointer type
+> linux-next/arch/s390/include/asm/atomic.h:112:
+> 	note: expected 'struct atomic_t *' but argument is of type 'struct atomic64_t *'
+> 
+> atomic_long_cmpxchg and atomic_long_xchg are incorrectly defined for
+> 64 bit architectures. They should be mapped to the atomic64_* variants.
+> 
+> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> ---
+>  include/asm-generic/atomic.h |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux-next/include/asm-generic/atomic.h
+> ===================================================================
+> --- linux-next.orig/include/asm-generic/atomic.h
+> +++ linux-next/include/asm-generic/atomic.h
+> @@ -132,9 +132,9 @@ static inline long atomic_long_add_unles
+>  #define atomic_long_inc_not_zero(l) atomic64_inc_not_zero((atomic64_t *)(l))
+>  
+>  #define atomic_long_cmpxchg(l, old, new) \
+> -	(atomic_cmpxchg((atomic64_t *)(l), (old), (new)))
+> +	(atomic64_cmpxchg((atomic64_t *)(l), (old), (new)))
+>  #define atomic_long_xchg(v, new) \
+> -	(atomic_xchg((atomic64_t *)(l), (new)))
+> +	(atomic64_xchg((atomic64_t *)(l), (new)))
 
-bjorn@nemi:~$ ls -l /usr/share/misc/usb.ids 
-lrwxrwxrwx 1 root root 25 2009-01-24 01:36 /usr/share/misc/usb.ids -> /var/lib/usbutils/usb.ids
-bjorn@nemi:~$ dpkg -S /usr/share/misc/usb.ids
-usbutils: /usr/share/misc/usb.ids
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-The symlink is probably there for compatibility with other (possibly
-non-Debian) utilities.  Debian usbutils does not use the /usr/share path
-itself:
+That's due to the local_cmpchg() use the tracing tree grew recently, 
+right? It appears it was never used in generic code before.
 
-bjorn@nemi:~$ strings /usr/sbin/lsusb |grep usb.ids
-./usb.ids
-./usb.ids.gz
-/var/lib/usbutils/usb.ids
-/var/lib/usbutils/usb.ids.gz
-
-However, looks like the Debian hal uses it.  That's probably the main
-reason for the symlink:
-
-bjorn@nemi:~$ strings /usr/sbin/hald |grep usb.ids
-/usr/share/misc/usb.ids
-Couldn't stat usb.ids file '%s', errno=%d: %s
-Couldn't open usb.ids file '%s', errno=%d: %s
-Couldn't mmap usb.ids file '%s', errno=%d: %s
-usb_ids_load
-
-
-Bjørn
-
+	Ingo
