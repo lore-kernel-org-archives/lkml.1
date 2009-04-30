@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765444AbZD3RRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765532AbZD3RSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765444AbZD3RRS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764540AbZD3RHk
+	id S1765532AbZD3RSc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764583AbZD3RHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:40 -0400
-Received: from kroah.org ([198.145.64.141]:56319 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:07:42 -0400
+Received: from kroah.org ([198.145.64.141]:56370 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764410AbZD3RHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:31 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:41 2009
-Message-Id: <20090430165741.547954347@mini.kroah.org>
+	id S1764419AbZD3RHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:34 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:42 2009
+Message-Id: <20090430165741.989119211@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:11 -0700
+Date: Thu, 30 Apr 2009 09:56:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dan Carpenter <error27@gmail.com>,
-       Len Brown <len.brown@intel.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 22/88] dock: fix dereference after kfree()
+       alan@lxorguk.ukuu.org.uk, Wu Fengguang <fengguang.wu@intel.com>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 25/88] vfs: skip I_CLEAR state inodes
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=0013-dock-fix-dereference-after-kfree.patch
+Content-Disposition: inline; filename=0034-vfs-skip-I_CLEAR-state-inodes.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,36 +39,94 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dan Carpenter <error27@gmail.com>
+From: Wu Fengguang <fengguang.wu@intel.com>
 
-upstream commit: f240729832dff3785104d950dad2d3ced4387f6d
+upstream commit: b6fac63cc1f52ec27f29fe6c6c8494a2ffac33fd
 
-dock_remove() calls kfree() on dock_station so we should use
-list_for_each_entry_safe() to avoid dereferencing freed memory.
+clear_inode() will switch inode state from I_FREEING to I_CLEAR, and do so
+_outside_ of inode_lock.  So any I_FREEING testing is incomplete without a
+coupled testing of I_CLEAR.
 
-Found by smatch (http://repo.or.cz/w/smatch.git/).  Compile tested.
+So add I_CLEAR tests to drop_pagecache_sb(), generic_sync_sb_inodes() and
+add_dquot_ref().
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Masayoshi MIZUMA discovered the bug in drop_pagecache_sb() and Jan Kara
+reminds fixing the other two cases.
+
+Masayoshi MIZUMA has a nice panic flow:
+
+=====================================================================
+            [process A]               |        [process B]
+ |                                    |
+ |    prune_icache()                  | drop_pagecache()
+ |      spin_lock(&inode_lock)        |   drop_pagecache_sb()
+ |      inode->i_state |= I_FREEING;  |       |
+ |      spin_unlock(&inode_lock)      |       V
+ |          |                         |     spin_lock(&inode_lock)
+ |          V                         |         |
+ |      dispose_list()                |         |
+ |        list_del()                  |         |
+ |        clear_inode()               |         |
+ |          inode->i_state = I_CLEAR  |         |
+ |            |                       |         V
+ |            |                       |      if (inode->i_state & (I_FREEING|I_WILL_FREE))
+ |            |                       |              continue;           <==== NOT MATCH
+ |            |                       |
+ |            |                       | (DANGER from here on! Accessing disposing inode!)
+ |            |                       |
+ |            |                       |      __iget()
+ |            |                       |        list_move() <===== PANIC on poisoned list !!
+ V            V                       |
+(time)
+=====================================================================
+
+Reported-by: Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>
+Reviewed-by: Jan Kara <jack@suse.cz>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+[chrisw: backport to 2.6.29]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/acpi/dock.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ fs/dquot.c        |    2 +-
+ fs/drop_caches.c  |    2 +-
+ fs/fs-writeback.c |    3 ++-
+ 3 files changed, 4 insertions(+), 3 deletions(-)
 
---- a/drivers/acpi/dock.c
-+++ b/drivers/acpi/dock.c
-@@ -1146,9 +1146,10 @@ static int __init dock_init(void)
- static void __exit dock_exit(void)
- {
- 	struct dock_station *dock_station;
-+	struct dock_station *tmp;
+--- a/fs/dquot.c
++++ b/fs/dquot.c
+@@ -724,7 +724,7 @@ static void add_dquot_ref(struct super_b
+ 			continue;
+ 		if (!dqinit_needed(inode, type))
+ 			continue;
+-		if (inode->i_state & (I_FREEING|I_WILL_FREE))
++		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
+ 			continue;
  
- 	unregister_acpi_bus_notifier(&dock_acpi_notifier);
--	list_for_each_entry(dock_station, &dock_stations, sibiling)
-+	list_for_each_entry_safe(dock_station, tmp, &dock_stations, sibiling)
- 		dock_remove(dock_station);
- }
+ 		__iget(inode);
+--- a/fs/drop_caches.c
++++ b/fs/drop_caches.c
+@@ -18,7 +18,7 @@ static void drop_pagecache_sb(struct sup
  
+ 	spin_lock(&inode_lock);
+ 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+-		if (inode->i_state & (I_FREEING|I_WILL_FREE))
++		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
+ 			continue;
+ 		if (inode->i_mapping->nrpages == 0)
+ 			continue;
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -538,7 +538,8 @@ void generic_sync_sb_inodes(struct super
+ 		list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+ 			struct address_space *mapping;
+ 
+-			if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
++			if (inode->i_state &
++					(I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
+ 				continue;
+ 			mapping = inode->i_mapping;
+ 			if (mapping->nrpages == 0)
 
 
