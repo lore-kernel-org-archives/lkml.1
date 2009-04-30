@@ -1,95 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758413AbZD3G3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbZD3Gda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758413AbZD3G3G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 02:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750714AbZD3G2x
+	id S1754502AbZD3Gda (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 02:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZD3GdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 02:28:53 -0400
-Received: from web50109.mail.re2.yahoo.com ([206.190.38.37]:43150 "HELO
-	web50109.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751140AbZD3G2w convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 02:28:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=U0KSN07kDD8QUnGuNOptUw1PFXZoZLHEVyjd1hLw3/iRdbKpKwKRcoKJeHqpVan0pZWOucfuskEy+dAww73TO4DlW8l//VHvy9cyxyysml27ATmq/PURPGYvNo1TL9SG9a1MLaaM2p6HJ6awKO70wbvRn5UjZ0OgqpJB6TFBTRI=;
-Message-ID: <20977.9082.qm@web50109.mail.re2.yahoo.com>
-X-YMail-OSG: 7od9BeYVM1n1iunsIFrploal0FYB0sK2M7C_APBBoTZ_ruIPVD8kuUiKAdsTUnPluLT8iyoWLLG2ujKbGMD.fKwCjxEpbnvwKe..4cdM3QebB67mxxfUmRcxvRvSBcvejSIxJRGi3zC9l9yh8Pw_aFBmIPfKAm4r6oP3BklOxTNHIo_jyqfw3fktBPbAuo8KNhnqZgr7sKLtW6mBBVZtcsAddwFAtPHkPYwZ7cIBALNl6Me9Bi_c8j8fSffr94slw18wWltkO4BIjcu9TRPe8pKCmENCZ6cmhvHc4BhTj6w3hm92Em0joumAA93U4OaG
-X-Mailer: YahooMailClassic/5.3.9 YahooMailWebService/0.7.289.10
-Date: Wed, 29 Apr 2009 23:28:51 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [PATCH 20/21] amd64_edac: add DRAM error injection logic using sysfs
-To: Borislav Petkov <borislav.petkov@amd.com>, Ingo Molnar <mingo@elte.hu>
-Cc: akpm@linux-foundation.org, greg@kroah.com, tglx@linutronix.de,
-       hpa@zytor.com, dougthompson@xmission.com, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 30 Apr 2009 02:33:19 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:48092 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751050AbZD3GdT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 02:33:19 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqgEAM7h+ElMQW1W/2dsb2JhbACBUM1Dg38F
+Date: Thu, 30 Apr 2009 02:33:06 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Yuriy Lalym <ylalym@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ltt-dev@lists.casi.polymtl.ca,
+       Andrew Morton <akpm@linux-foundation.org>, thomas.pi@arcor.dea,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Lameter <cl@linux.com>
+Subject: Re: [ltt-dev] [PATCH] Fix dirty page accounting in
+	redirty_page_for_writepage()
+Message-ID: <20090430063306.GA27431@Krystal>
+References: <20090429232546.GB15782@Krystal> <alpine.LFD.2.00.0904291701450.22156@localhost.localdomain> <20090430024303.GB19875@Krystal> <20090430062140.GA9559@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090430062140.GA9559@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 02:29:22 up 61 days,  2:55,  1 user,  load average: 1.05, 0.51,
+	0.62
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-I believe I failed to reply to ALL and replied only to the sender
-
-doug t
-
---- On Wed, 4/29/09, Ingo Molnar <mingo@elte.hu> wrote:
-
-> From: Ingo Molnar <mingo@elte.hu>
-> Subject: Re: [PATCH 20/21] amd64_edac: add DRAM error injection logic using sysfs
-> To: "Borislav Petkov" <borislav.petkov@amd.com>
-> Cc: akpm@linux-foundation.org, greg@kroah.com, tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com, linux-kernel@vger.kernel.org
-> Date: Wednesday, April 29, 2009, 12:17 PM
+* Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> * Borislav Petkov <borislav.petkov@amd.com>
-> wrote:
+> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 > 
-> > From: Doug Thompson <dougthompson@xmission.com>
-> > 
-> > Signed-off-by: Doug Thompson <dougthompson@xmission.com>
-> > Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-> > ---
-> >  drivers/edac/amd64_edac.c |  287
-> +++++++++++++++++++++++++++++++++++++++++++++
-> >  1 files changed, 287 insertions(+), 0
-> deletions(-)
-> > 
-> > diff --git a/drivers/edac/amd64_edac.c
-> b/drivers/edac/amd64_edac.c
-> > index b1a7e8c..4d1076f 100644
-> > --- a/drivers/edac/amd64_edac.c
-> > +++ b/drivers/edac/amd64_edac.c
-> > @@ -4621,3 +4621,290 @@ static ssize_t
-> amd64_hole_show(struct mem_ctl_info *mci, char *data)
-> >  
-> >  #endif    /* DEBUG */
-> >  
-> > +#ifdef CONFIG_EDAC_AMD64_OPTERON_ERROR_INJECTION
+> > And thanks for the review! This excercise only convinced me that 
+> > the kernel memory accounting works as expected. All this gave me 
+> > the chance to have a good look at the memory accounting code. We 
+> > could probably benefit of Christoph Lameter's cpu ops (using 
+> > segment registers to address per-cpu variables with atomic 
+> > inc/dec) in there. Or at least removing interrupt disabling by 
+> > using preempt disable and local_t variables for the per-cpu 
+> > counters could bring some benefit.
 > 
-> this should be in a separate .c file under
-> drivers/edac/amd64/. 
+> Note, optimized per cpu ops are already implemented upstream, by 
+> Tejun Heo's percpu patches in .30:
 > 
-> Introducing large #ifdef sections like that is not very
-> clean. The 
-> amd64_edac.c file is _way_ too large at more than 5000
-> lines of 
-> code.
+>  #define percpu_read(var)	percpu_from_op("mov", per_cpu__##var)
+>  #define percpu_write(var, val)	percpu_to_op("mov", per_cpu__##var, val)
+>  #define percpu_add(var, val)	percpu_to_op("add", per_cpu__##var, val)
+>  #define percpu_sub(var, val)	percpu_to_op("sub", per_cpu__##var, val)
+>  #define percpu_and(var, val)	percpu_to_op("and", per_cpu__##var, val)
+>  #define percpu_or(var, val)	percpu_to_op("or", per_cpu__##var, val)
+>  #define percpu_xor(var, val)	percpu_to_op("xor", per_cpu__##var, val)
 > 
->     Ingo
+> See:
+> 
+>   6dbde35: percpu: add optimized generic percpu accessors
+> 
+> From the changelog:
+> 
+>     [...]
+>     The advantage is that for example to read a local percpu variable,
+>     instead of this sequence:
+>     
+>      return __get_cpu_var(var);
+>     
+>      ffffffff8102ca2b:  48 8b 14 fd 80 09 74    mov    -0x7e8bf680(,%rdi,8),%rdx
+>      ffffffff8102ca32:  81
+>      ffffffff8102ca33:  48 c7 c0 d8 59 00 00    mov    $0x59d8,%rax
+>      ffffffff8102ca3a:  48 8b 04 10             mov    (%rax,%rdx,1),%rax
+>     
+>     We can get a single instruction by using the optimized variants:
+>     
+>      return percpu_read(var);
+>     
+>      ffffffff8102ca3f:  65 48 8b 05 91 8f fd    mov    %gs:0x7efd8f91(%rip),%rax
+>     [...]
+> 
+> So if you want to make use of it, percpu_add()/percpu_sub() would be 
+> the place to start.
+> 
 
-If we broke this into a separate files, then there would be TWO (2) files: 1 for the source code of the routines and a 1 for the table entries which reference those routines. Is that then acceptable as well?
+Great !
 
-Same pattern applies to the DEBUG functions Info refers to in another thread:  2 separate files would be required as well.
+I see however that it's only guaranteed to be atomic wrt preemption.
+What would be even better would be to have the atomic ops wrt local irqs
+(as local.h does) available in this percpu flavor. By doing this, we
+could have interrupt and nmi-safe per-cpu counters, without even the
+need to disable preemption.
 
-2 files for Error Injection code
-2 files for DEBUG controls
-1 files for text mapping
+In terms of counters, except maybe for tri-values for some
+architectures, I don't see how we could manage synchronization in a
+better way.
 
-and I assume all these would be included via an #include statement at their appropriate locations
+Mathieu
 
-thx
+> 	Ingo
+> 
+> _______________________________________________
+> ltt-dev mailing list
+> ltt-dev@lists.casi.polymtl.ca
+> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> 
 
-doug t
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
