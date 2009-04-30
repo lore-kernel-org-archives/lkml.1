@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763714AbZD3Ols@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763791AbZD3OoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763714AbZD3Ols (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 10:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763477AbZD3Old
+	id S1763791AbZD3OoZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 10:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761135AbZD3OoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 10:41:33 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:53447 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763656AbZD3Olc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 10:41:32 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@monstr.eu
-Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
-Date: Thu, 30 Apr 2009 16:40:32 +0200
-User-Agent: KMail/1.9.9
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       john.williams@petalogix.com
-References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <200904301553.47556.arnd@arndb.de> <49F9B13C.3060008@monstr.eu>
-In-Reply-To: <49F9B13C.3060008@monstr.eu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 30 Apr 2009 10:44:14 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48948 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756696AbZD3OoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 10:44:12 -0400
+Date: Thu, 30 Apr 2009 16:42:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH 0/3] removing unwanted module configs
+Message-ID: <20090430144220.GB14897@elte.hu>
+References: <20090430030821.523327994@goodmis.org> <20090430071830.GC16737@elte.hu> <alpine.DEB.2.00.0904300908110.20374@gandalf.stny.rr.com> <20090430132605.GA5289@elte.hu> <alpine.DEB.2.00.0904300932380.20374@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904301640.32769.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19wSpE92JrV+3gjqK1KX+fYzgGHyiZn1Kzj4gZ
- K7nIL0DTKwkjt1fGISnpACdP8aEzgGJgKnT/5y5kRIwh6fxDzy
- mzLjFkar0Xa7uC3eTKnNQ==
+In-Reply-To: <alpine.DEB.2.00.0904300932380.20374@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 30 April 2009, Michal Simek wrote:
 
-> 2. header cleanup -> some of them is pain because I have to recompile toolchain
-> that's should be a big deal but after recompilation kernel, user apps I am getting some problems.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Yes, I understand that you have a circular dependency there, but fixing
-the ABI can only become harder with time, as more people start using
-the current kernel/toolchain combination.
+> On Thu, 30 Apr 2009, Ingo Molnar wrote:
+> > 
+> > CONFIG_IKCONFIG=y would be a one-off thing, only to make the 
+> > whole concept self-hosting. If i boot a localyesconfig kernel, 
+> > how does the script figure out what is built in? It cannot, 
+> > unless i provide it the precise .config - but often that wont be 
+> > provided. The script should clone the environment it is running 
+> > in really.
+> 
+> Does IKCONFIG get loaded in the running kernel if IKCONFIG_PROC is 
+> not set, or does it just sit in the vmlinux file.
+> 
+> Since this option can also be used for helping embedded developers 
+> (I used it for that) I would not want to bloat the kernel with 
+> running a script that is suppose to minimize it. But if IKCONFIG 
+> && !IKCONFIG_PROC does not add more data to the kernel, then I 
+> would be happy to turn it on by default.
 
-> 3. syscall cleanup -> we still have old libc and I can't simple remove ancient syscalls
+this is a basic usability issue. The main goal is to help regular 
+Linux users.
 
-I had hoped that the way I set __ARCH_WANT_SYSCALL_* in the microblaze
-unistd.h would provide an easy way to migrate, because this still defines
-almost all traditional system calls (I haven't double-checked if some more
-are currently used on microblaze, but they would be easy to add).
-This means that as a first step, rebuilding the tool chain (as above) should
-be sufficient and not require source-level changes to libc. From that point,
-you can remove the remaining __ARCH_WANT_SYSCALL_* defintions one by one,
-and change the libc accordingly.
+> I see I can use scripts/extract-ikconfig to get the config from 
+> the current image. Now which image should it try?
 
-I could also try building uclibc with the generic headers if I find the
-time. Which version do you use, just upstream or do you have a private
-libc tree with more changes?
+no, enable IKCONFIG_PROC and it will be under /proc/config.gz.
 
-	Arnd <><
+> /boot/vmlinuz-`uname -r`
+> ./vmlinux
+> 
+> I could have it first try /proc/config.gz and if it does not find 
+> it then try the /boot kernel, if it does not find it or does not 
+> find a config file in it, it would then try ./vmlinux file. If it 
+> does not find the file or the config then it would just use the 
+> local .config.
+
+yeah, that sounds like a good plan.
+
+	Ingo
