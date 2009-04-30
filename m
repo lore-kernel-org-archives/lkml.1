@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764981AbZD3RL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764501AbZD3RKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764981AbZD3RL7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762917AbZD3RH0
+	id S1764501AbZD3RKt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764300AbZD3RHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:26 -0400
-Received: from kroah.org ([198.145.64.141]:56216 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:07:23 -0400
+Received: from kroah.org ([198.145.64.141]:56171 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764256AbZD3RHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:20 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:40 2009
-Message-Id: <20090430165739.931657438@mini.kroah.org>
+	id S1764203AbZD3RHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:18 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:39 2009
+Message-Id: <20090430165739.530025809@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:00 -0700
+Date: Thu, 30 Apr 2009 09:55:57 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 11/88] USB: usb-storage: increase max_sectors for tape drives
+       alan@lxorguk.ukuu.org.uk, Tilman Schmidt <tilman@imap.cc>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 08/88] bas_gigaset: correctly allocate USB interrupt transfer buffer
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=0010-USB-usb-storage-increase-max_sectors-for-tape-driv.patch
+Content-Disposition: inline; filename=bas_gigaset-correctly-allocate-usb-interrupt-transfer-buffer.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,41 +39,82 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alan Stern <stern@rowland.harvard.edu>
-'
-upstream commit: 5c16034d73da2c1b663aa25dedadbc533b3d811c
+From: Tilman Schmidt <tilman@imap.cc>
 
-This patch (as1203) increases the max_sector limit for USB tape
-drives.  By default usb-storage sets max_sectors to 240 (i.e., 120 KB)
-for all devices.  But tape drives need a higher limit, since tapes can
-and do have very large block sizes.  Without the ability to transfer
-an entire large block in a single command, such tapes can't be used.
+[ Upstream commit 170ebf85160dd128e1c4206cc197cce7d1424705 ]
 
-This fixes Bugzilla #12207.
+Every USB transfer buffer has to be allocated individually by kmalloc.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Reported-and-tested-by: Phil Mitchell <philipm@sybase.com>
-Cc: stable <stable@kernel.org>
+Impact: bugfix, no functional change
+
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+Tested-by: Kolja Waschk <kawk@users.sourceforge.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- drivers/usb/storage/scsiglue.c |    6 ++++++
- 1 file changed, 6 insertions(+)
 
---- a/drivers/usb/storage/scsiglue.c
-+++ b/drivers/usb/storage/scsiglue.c
-@@ -135,6 +135,12 @@ static int slave_configure(struct scsi_d
- 		if (sdev->request_queue->max_sectors > max_sectors)
- 			blk_queue_max_sectors(sdev->request_queue,
- 					      max_sectors);
-+	} else if (sdev->type == TYPE_TAPE) {
-+		/* Tapes need much higher max_sector limits, so just
-+		 * raise it to the maximum possible (4 GB / 512) and
-+		 * let the queue segment size sort out the real limit.
-+		 */
-+		blk_queue_max_sectors(sdev->request_queue, 0x7FFFFF);
+---
+ drivers/isdn/gigaset/bas-gigaset.c |   16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+--- a/drivers/isdn/gigaset/bas-gigaset.c
++++ b/drivers/isdn/gigaset/bas-gigaset.c
+@@ -46,6 +46,9 @@ MODULE_PARM_DESC(cidmode, "Call-ID mode"
+ /* length limit according to Siemens 3070usb-protokoll.doc ch. 2.1 */
+ #define IF_WRITEBUF 264
+ 
++/* interrupt pipe message size according to ibid. ch. 2.2 */
++#define IP_MSGSIZE 3
++
+ /* Values for the Gigaset 307x */
+ #define USB_GIGA_VENDOR_ID      0x0681
+ #define USB_3070_PRODUCT_ID     0x0001
+@@ -110,7 +113,7 @@ struct bas_cardstate {
+ 	unsigned char		*rcvbuf;	/* AT reply receive buffer */
+ 
+ 	struct urb		*urb_int_in;	/* URB for interrupt pipe */
+-	unsigned char		int_in_buf[3];
++	unsigned char		*int_in_buf;
+ 
+ 	spinlock_t		lock;		/* locks all following */
+ 	int			basstate;	/* bitmap (BS_*) */
+@@ -657,7 +660,7 @@ static void read_int_callback(struct urb
  	}
  
- 	/* We can't put these settings in slave_alloc() because that gets
+ 	/* drop incomplete packets even if the missing bytes wouldn't matter */
+-	if (unlikely(urb->actual_length < 3)) {
++	if (unlikely(urb->actual_length < IP_MSGSIZE)) {
+ 		dev_warn(cs->dev, "incomplete interrupt packet (%d bytes)\n",
+ 			 urb->actual_length);
+ 		goto resubmit;
+@@ -2127,6 +2130,7 @@ static void gigaset_reinitbcshw(struct b
+ static void gigaset_freecshw(struct cardstate *cs)
+ {
+ 	/* timers, URBs and rcvbuf are disposed of in disconnect */
++	kfree(cs->hw.bas->int_in_buf);
+ 	kfree(cs->hw.bas);
+ 	cs->hw.bas = NULL;
+ }
+@@ -2232,6 +2236,12 @@ static int gigaset_probe(struct usb_inte
+ 		}
+ 		hostif = interface->cur_altsetting;
+ 	}
++	ucs->int_in_buf = kmalloc(IP_MSGSIZE, GFP_KERNEL);
++	if (!ucs->int_in_buf) {
++		kfree(ucs);
++		pr_err("out of memory\n");
++		return 0;
++	}
+ 
+ 	/* Reject application specific interfaces
+ 	 */
+@@ -2290,7 +2300,7 @@ static int gigaset_probe(struct usb_inte
+ 	usb_fill_int_urb(ucs->urb_int_in, udev,
+ 			 usb_rcvintpipe(udev,
+ 					(endpoint->bEndpointAddress) & 0x0f),
+-			 ucs->int_in_buf, 3, read_int_callback, cs,
++			 ucs->int_in_buf, IP_MSGSIZE, read_int_callback, cs,
+ 			 endpoint->bInterval);
+ 	if ((rc = usb_submit_urb(ucs->urb_int_in, GFP_KERNEL)) != 0) {
+ 		dev_err(cs->dev, "could not submit interrupt URB: %s\n",
 
 
