@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933242AbZD3ReW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933294AbZD3Rep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933242AbZD3ReW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764684AbZD3RIU
+	id S933294AbZD3Rep (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764599AbZD3RIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:08:20 -0400
-Received: from kroah.org ([198.145.64.141]:56733 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:08:22 -0400
+Received: from kroah.org ([198.145.64.141]:56741 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764580AbZD3RIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:08:06 -0400
+	id S1764652AbZD3RIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:08:07 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:47 2009
-Message-Id: <20090430165747.144930573@mini.kroah.org>
+Message-Id: <20090430165747.291209348@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:48 -0700
+Date: Thu, 30 Apr 2009 09:56:49 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,9 +27,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Amit Shah <amit.shah@redhat.com>,
        mtosatti@redhat.com, avi@redhat.com
-Subject: [patch 59/88] KVM: SVM: Set the g bit of the cs selector for cross-vendor migration
+Subject: [patch 60/88] KVM: SVM: Set the busy flag of the TR selector
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-svm-set-the-g-bit-of-the-cs-selector-for-cross-vendor-migration.patch
+Content-Disposition: inline; filename=kvm-svm-set-the-busy-flag-of-the-tr-selector.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -42,33 +42,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Amit Shah <amit.shah@redhat.com>
 
-(cherry picked from 25022acc3dd5f0b54071c7ba7c371860f2971b52)
+(cherry picked from c0d09828c870f90c6bc72070ada281568f89c63b)
 
-The hardware does not set the 'g' bit of the cs selector and this breaks
-migration from amd hosts to intel hosts. Set this bit if the segment
-limit is beyond 1 MB.
+The busy flag of the TR selector is not set by the hardware. This breaks
+migration from amd hosts to intel hosts.
 
 Signed-off-by: Amit Shah <amit.shah@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/kvm/svm.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/x86/kvm/svm.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
 --- a/arch/x86/kvm/svm.c
 +++ b/arch/x86/kvm/svm.c
-@@ -772,6 +772,15 @@ static void svm_get_segment(struct kvm_v
- 	var->l = (s->attrib >> SVM_SELECTOR_L_SHIFT) & 1;
- 	var->db = (s->attrib >> SVM_SELECTOR_DB_SHIFT) & 1;
- 	var->g = (s->attrib >> SVM_SELECTOR_G_SHIFT) & 1;
-+
+@@ -781,6 +781,13 @@ static void svm_get_segment(struct kvm_v
+ 	if (seg == VCPU_SREG_CS)
+ 		var->g = s->limit > 0xfffff;
+ 
 +	/*
-+	 * SVM always stores 0 for the 'G' bit in the CS selector in
-+	 * the VMCB on a VMEXIT. This hurts cross-vendor migration:
-+	 * Intel's VMENTRY has a check on the 'G' bit.
++	 * Work around a bug where the busy flag in the tr selector
++	 * isn't exposed
 +	 */
-+	if (seg == VCPU_SREG_CS)
-+		var->g = s->limit > 0xfffff;
++	if (seg == VCPU_SREG_TR)
++		var->type |= 0x2;
 +
  	var->unusable = !var->present;
  }
