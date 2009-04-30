@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761998AbZD3VzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763154AbZD3V6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761998AbZD3VzN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 17:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760832AbZD3Vys
+	id S1763154AbZD3V6V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 17:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757959AbZD3V6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 17:54:48 -0400
-Received: from 1wt.eu ([62.212.114.60]:4196 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762875AbZD3Vyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 17:54:47 -0400
-Date: Thu, 30 Apr 2009 23:54:35 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/88] 2.6.28.10-stable review
-Message-ID: <20090430215433.GG570@1wt.eu>
-References: <20090430170122.GA16015@kroah.com> <20090430214450.GC7174@khazad-dum.debian.net>
+	Thu, 30 Apr 2009 17:58:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36348 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755003AbZD3V6F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 17:58:05 -0400
+Date: Thu, 30 Apr 2009 14:54:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: dvomlehn@cisco.com, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, linux-scsi@cuplxvomd02.corp.sa.net,
+       netdev@cuplxvomd02.corp.sa.net
+Subject: Re: [PATCH 1/5] KERNEL: Support asynchronously-discovered boot
+ devices, v4 (resend)
+Message-Id: <20090430145412.c1386cb2.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0904301712450.31375-100000@netrider.rowland.org>
+References: <20090430140559.a2343f7c.akpm@linux-foundation.org>
+	<Pine.LNX.4.44L0.0904301712450.31375-100000@netrider.rowland.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090430214450.GC7174@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 06:44:50PM -0300, Henrique de Moraes Holschuh wrote:
-> On Thu, 30 Apr 2009, Greg KH wrote:
-> > This is the start of the stable review cycle for the 2.6.28.10 release.
-> > 
-> > NOTE!  This is going to be the last release in the 2.6.28-stable series!
+On Thu, 30 Apr 2009 17:19:34 -0400 (EDT)
+Alan Stern <stern@rowland.harvard.edu> wrote:
+
+> > I wonder if we can think of something more new ad unique.  startupdev?  yuk.
 > 
-> Could you be convinced to keep 2.6.28-stable around for a little longer?
-> 
-> 2.6.29 is still much too young, as one can see from the size of 2.6.29.2,
-> and the fact that the queue for 2.6.29 isn't even empty yet and there are
-> already more patches waiting to get queued...
+> Initdev?  Or does that mean something else also?
 
-Why not stay on 2.6.27 if you need longer support ? I you really need some
-2.6.28-specific features, it should not be *that* hard to incrementally
-apply next 2.6.27.X patchsets to your latest 2.6.28.Y, and this will leave
-you with some time to see 2.6.29 getting ready for your usage.
+y:/usr/src/linux-2.6.30-rc4> grep -ril initdev . 
+./drivers/scsi/mpt2sas/mpi/mpi2_ioc.h
+./drivers/net/mac8390.c
+./drivers/video/kyro/Makefile
+./drivers/video/kyro/STG4000InitDevice.c
+./drivers/message/fusion/lsi/mpi_ioc.h
+./drivers/watchdog/i6300esb.c
+./drivers/media/video/cx88/cx88-alsa.c
+./drivers/media/video/cx88/cx88-video.c
+./drivers/media/video/saa7134/saa7134-core.c
+./drivers/media/video/cx23885/cx23885-core.c
 
-Just my 2 cents,
-Willy
+initdev sounds good to me.  Given that we're adding a new and distinct
+concept which will remain with us for a long time, we should name it
+with care.
 
+> Really, these are devices that we want to have working before starting
+> up any userspace processes.  These would be the console device(s) (so
+> that the first process has open files for its stdin, stdout, and
+> stderr) and the block device containing the root filesystem (if the
+> initramfs image doesn't make its own arrangements).
+
+OK, so "initdev" could be viewed as meaning "a device which /sbin/init
+needs"?  Even I can understand that.
+
+But /sbin/init isn't the first userspace we run, is it?  There's
+initramfs stuff, firmware loaders, etc.
+
+What's the story here?  Do we intend that all initdevs be up and
+running before _any_ userspace runs?  Or is /sbin/init the red line?
