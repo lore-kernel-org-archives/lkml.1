@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbZD3GPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbZD3GWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756104AbZD3GPd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 02:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbZD3GO4
+	id S1753538AbZD3GWJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 02:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbZD3GVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 02:14:56 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39955 "EHLO mx2.suse.de"
+	Thu, 30 Apr 2009 02:21:53 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:58212 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753416AbZD3GOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 02:14:55 -0400
-Date: Thu, 30 Apr 2009 08:14:54 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [patch 00/27] [rfc] vfs scalability patchset
-Message-ID: <20090430061454.GE23746@wotan.suse.de>
-References: <20090425012020.457460929@suse.de> <20090425041829.GX8633@ZenIV.linux.org.uk> <20090425080143.GA29033@infradead.org> <20090425080649.GA8633@ZenIV.linux.org.uk> <20090428090930.GA14638@infradead.org> <m1d4axggjm.fsf@fess.ebiederm.org>
-Mime-Version: 1.0
+	id S1750714AbZD3GVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 02:21:52 -0400
+Date: Thu, 30 Apr 2009 08:21:51 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Max Kellermann <max@duempel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: splice() on two pipes
+Message-ID: <20090430062151.GU4593@kernel.dk>
+References: <20090429103308.GA23684@squirrel.roonstrasse.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1d4axggjm.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090429103308.GA23684@squirrel.roonstrasse.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 04:32:13AM -0700, Eric W. Biederman wrote:
-> Christoph Hellwig <hch@infradead.org> writes:
+On Wed, Apr 29 2009, Max Kellermann wrote:
+> Hi,
 > 
-> > On Sat, Apr 25, 2009 at 09:06:49AM +0100, Al Viro wrote:
-> >> Maybe...  What Eric proposed is essentially a reuse of s_list for per-inode
-> >> list of struct file.  Presumably with something like i_lock for protection.
-> >> So that's not a conflict.
-> >
-> > But what do we actually want it for?  Right now it's only used for
-> > ttys, which Nick has split out, and for remount r/o.  For the normal
-> > remount r/o case it will go away once we have proper per-sb writer
-> > counts.  And the fource remount r/o from sysrq is completely broken.
+> when I read about the splice() system call, I thought it was obvious
+> that it could copy data between two pipes.  I was surprised that this
+> assumption is wrong, it's not possible on 2.6.29, I get EINVAL.  Can
+> anybody please explain this limitation?
 > 
-> The plan is to post my updated patches tomorrow after I have slept.
+> Background: I want to forward data between two subprocesses, which are
+> connected to me with a pipe().
 > 
-> What I am looking at is that the tty layer is not a special case.  Any
-> subsystem that wants any revoke kind of functionality starts wanting
-> the list of files that are open.  My current list where we have
-> something like this is: sysfs, proc, sysctl, tun, tty, sound.
+> I have attached a small test program which prints a table of supported
+> splice operations.  Here's the output on 2.6.29.1:
+> 
+>  in\out  pipe    sock    reg     chr
+>  pipe    no      yes     yes     yes
+>  sock    no      no      no      no
+>  reg     yes     no      no      no
+>  chr     no      no      no      no
 
-How's this coming along? It would be good to get this change out
-and reviewed ASAP, and ahead of the rest of your patchset IMO.
-Hopefully we can get it into Al's tree for 2.6.31 if it all falls
-out nicely.
+See sys_tee().
 
-BTW. I would just keep the single files_lock spinlock in the
-first patch that would move to per-inode lists, and then a 2nd
-patch could swap out the locking without making any other changes
-(or else you could just leave the locking global and we can
-evaluate it in the context of the rest of the vfs scalability
-work).
+-- 
+Jens Axboe
 
