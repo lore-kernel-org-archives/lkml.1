@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763881AbZD3Wlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762951AbZD3WpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763881AbZD3Wlx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 18:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763458AbZD3Wln
+	id S1762951AbZD3WpS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 18:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756022AbZD3WpC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 18:41:43 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34792 "EHLO mx2.suse.de"
+	Thu, 30 Apr 2009 18:45:02 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46177 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760204AbZD3Wlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 18:41:42 -0400
-Date: Thu, 30 Apr 2009 15:32:12 -0700
-From: Greg KH <gregkh@suse.de>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/88] 2.6.28.10-stable review
-Message-ID: <20090430223212.GA16341@suse.de>
-References: <20090430170122.GA16015@kroah.com> <20090430214450.GC7174@khazad-dum.debian.net>
+	id S1752054AbZD3WpA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 18:45:00 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090430214450.GC7174@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Stephen Smalley <sds@tycho.nsa.gov>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, Eric Paris <eparis@parisplace.org>,
+       James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org
+Subject: Re: ptrace: selinux_bprm_committed_creds: simplify
+	__wake_up_parent() code and s/parent/real_parent/
+In-Reply-To: Oleg Nesterov's message of  Wednesday, 29 April 2009 16:08:36 +0200 <20090429140836.GB31948@redhat.com>
+References: <20090428223025.GA11997@redhat.com>
+	<1241011116.18249.193.camel@localhost.localdomain>
+	<20090429140224.GA31948@redhat.com>
+	<20090429140836.GB31948@redhat.com>
+X-Shopping-List: (1) Fallacious contraception excitements
+   (2) Ancient component ants
+   (3) Abstinent briefs
+   (4) Ambivalent incautious toothpicks
+   (5) Expandable rendezvous
+Message-Id: <20090430224407.63B9DFC3BF@magilla.sf.frob.com>
+Date: Thu, 30 Apr 2009 15:44:07 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 06:44:50PM -0300, Henrique de Moraes Holschuh wrote:
-> On Thu, 30 Apr 2009, Greg KH wrote:
-> > This is the start of the stable review cycle for the 2.6.28.10 release.
-> > 
-> > NOTE!  This is going to be the last release in the 2.6.28-stable series!
-> 
-> Could you be convinced to keep 2.6.28-stable around for a little longer?
+> Afaics, with this patch the only user of ->parent outside of ptrace.c & co
+> is arch/ia64/kernel/mca.c:format_mca_init_stack(). Hopefully ->parent will
+> die soon.
 
-Not really.
+Woo!  Nice work.  That oddball ia64 case is obviously trivial, it just
+wants to avoid uninitialized stuff in its task_struct for a
+not-really-a-process.  With your fixes, it seems certain that ->parent
+should never be examined in those tasks.  Even so, the extra initialization
+doesn't hurt.  You could clean it up today with:
+	tracehook_finish_clone(p, 0, 0);
+at the end (in place of touching ->parent).  
+That will dtrt both now and later.
 
-> 2.6.29 is still much too young, as one can see from the size of 2.6.29.2,
 
-That is mostly because people are learning to submit more patches to the
--stable queue, not because of any implicit problems with the 2.6.29
-kernel series that I have seen.
-
-> and the fact that the queue for 2.6.29 isn't even empty yet and there are
-> already more patches waiting to get queued...
-
-Yes there are, I will work on that next.  But I don't see anything
-"serious" in there that should be in the .28 kernel, do you?
-
-Traditionally we've dropped the last -stable after the .2 release of the
-new series, why would we change that now?  We only have so much time to
-do this kind of work, and maintaining 3 -stable trees is a major pain,
-trust me...
-
-However, if you wish to take over 2.6.28 and maintain it after this
-release, I have no objection, just let me know.
-
-thanks,
-
-greg k-h
+Thanks,
+Roland
