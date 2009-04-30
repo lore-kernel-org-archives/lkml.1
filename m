@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933903AbZD3Rtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933934AbZD3RuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933903AbZD3Rtk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765036AbZD3RMj
+	id S933934AbZD3RuL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765153AbZD3RNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:12:39 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51136
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765049AbZD3RMh (ORCPT
+	Thu, 30 Apr 2009 13:13:45 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49906 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765179AbZD3RNo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:12:37 -0400
-Date: Thu, 30 Apr 2009 10:12:31 -0700 (PDT)
-Message-Id: <20090430.101231.27030060.davem@davemloft.net>
-To: arnd@arndb.de
-Cc: linux-arch@vger.kernel.org, monstr@monstr.eu,
-       remis.developer@googlemail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 08/27] asm-generic: add generic versions of common
- headers
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200904301907.46515.arnd@arndb.de>
-References: <200904301849.45543.arnd@arndb.de>
-	<20090430.095147.208962142.davem@davemloft.net>
-	<200904301907.46515.arnd@arndb.de>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 30 Apr 2009 13:13:44 -0400
+Message-ID: <49F9DB70.2050906@zytor.com>
+Date: Thu, 30 Apr 2009 10:10:08 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Tobias Doerffel <tobias.doerffel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Specific support for Intel Atom architecture
+References: <200904301408.09370.tobias.doerffel@gmail.com> <20090430154051.GA3346@elte.hu>
+In-Reply-To: <20090430154051.GA3346@elte.hu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 30 Apr 2009 19:07:45 +0200
+Ingo Molnar wrote:
+>> diff --git a/arch/x86/Makefile_32.cpu b/arch/x86/Makefile_32.cpu
+>> index 80177ec..07a11b0 100644
+>> --- a/arch/x86/Makefile_32.cpu
+>> +++ b/arch/x86/Makefile_32.cpu
+>> @@ -33,6 +33,7 @@ cflags-$(CONFIG_MCYRIXIII)	+= $(call cc-option,-march=c3,-march=i486) $(align)-f
+>>  cflags-$(CONFIG_MVIAC3_2)	+= $(call cc-option,-march=c3-2,-march=i686)
+>>  cflags-$(CONFIG_MVIAC7)		+= -march=i686
+>>  cflags-$(CONFIG_MCORE2)		+= -march=i686 $(call tune,core2)
+>> +cflags-$(CONFIG_MATOM)		+= -march=atom $(call tune,atom)
+>>  
 
-> On Thursday 30 April 2009, David Miller wrote:
->> I use "git format-patch" and send the postings by hand.
-> 
-> That's what I tried as well,
+There should be a fallback option used here rather than requiring a new
+gcc, e.g. something like:
 
-You didn't read what I said.
+$(call cc-option,-march=atom,-march=i686)
 
-I extract the commit messages and patches using "git format-patch"
-merely as a formality, then I hand craft every aspect of the emails.
+	-hpa
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-I never put "Date:" fields into the message body, that's rediculiously
-stupid.  And it confuses patchwork as well.  Just say NO.
-
-If necessary I put the From: field in there to specify the author, or
-leave it out when it's me (which is %99.9999 of the time).
