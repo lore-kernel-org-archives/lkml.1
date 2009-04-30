@@ -1,60 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765817AbZEAAIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765818AbZEAAIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765817AbZEAAIa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 20:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765036AbZEAAAy
+	id S1765818AbZEAAIt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 20:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759448AbZEAABL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 20:00:54 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:61230 "EHLO
+	Thu, 30 Apr 2009 20:01:11 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:61320 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765011AbZEAAAx (ORCPT
+	by vger.kernel.org with ESMTP id S1765005AbZEAABI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 20:00:53 -0400
+	Thu, 30 Apr 2009 20:01:08 -0400
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
        Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
        Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       Tim Abbott <tabbott@MIT.EDU>
-Subject: [PATCH] section name cleanup for um
-Date: Thu, 30 Apr 2009 19:59:45 -0400
-Message-Id: <1241135986-10051-1-git-send-email-tabbott@mit.edu>
+       Jeff Arnold <jbarnold@MIT.EDU>, "David S. Miller" <davem@davemloft.net>,
+       sparclinux@vger.kernel.org, Tim Abbott <tabbott@MIT.EDU>
+Subject: [PATCH 2/4] sparc: use new macros for .data.init_task.
+Date: Thu, 30 Apr 2009 19:58:51 -0400
+Message-Id: <1241135933-9913-3-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1241135933-9913-2-git-send-email-tabbott@mit.edu>
+References: <1241135933-9913-1-git-send-email-tabbott@mit.edu>
+ <1241135933-9913-2-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch series cleans up the section names on the um
-architecture.  It requires the architecture-independent macro
-definitions from this patch series:
+.data.init_task should not need a separate output section; this change
+moves it into the .data section.
 
-<http://www.spinics.net/lists/mips/msg33499.html>
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org
+---
+ arch/sparc/kernel/init_task.c   |    5 ++---
+ arch/sparc/kernel/vmlinux.lds.S |    6 +-----
+ 2 files changed, 3 insertions(+), 8 deletions(-)
 
-The long-term goal here is to add support for building the kernel with
--ffunction-sections -fdata-sections.  This requires renaming all the
-magic section names in the kernel of the form .text.foo, .data.foo,
-.bss.foo, and .rodata.foo to not have collisions with sections
-generated for code like:
-
-static int nosave = 0; /* -fdata-sections places in .data.nosave */
-static void head(); /* -ffunction-sections places in .text.head */
-
-Note that these patches have not been boot-tested (aside from testing
-the analogous changes on x86), since I don't have access to the
-appropriate hardware.
-
-	-Tim Abbott
-
-
-Tim Abbott (1):
-  um: use new macros for .data.init_task.
-
- arch/um/kernel/dyn.lds.S   |    3 +--
- arch/um/kernel/init_task.c |    3 +--
- arch/um/kernel/uml.lds.S   |    3 +--
- 3 files changed, 3 insertions(+), 6 deletions(-)
+diff --git a/arch/sparc/kernel/init_task.c b/arch/sparc/kernel/init_task.c
+index f28cb82..7367984 100644
+--- a/arch/sparc/kernel/init_task.c
++++ b/arch/sparc/kernel/init_task.c
+@@ -21,6 +21,5 @@ EXPORT_SYMBOL(init_task);
+  * If this is not aligned on a 8k boundry, then you should change code
+  * in etrap.S which assumes it.
+  */
+-union thread_union init_thread_union
+-	__attribute__((section (".data.init_task")))
+-	= { INIT_THREAD_INFO(init_task) };
++union thread_union init_thread_union __init_task_data =
++	{ INIT_THREAD_INFO(init_task) };
+diff --git a/arch/sparc/kernel/vmlinux.lds.S b/arch/sparc/kernel/vmlinux.lds.S
+index 6587e03..3fbf650 100644
+--- a/arch/sparc/kernel/vmlinux.lds.S
++++ b/arch/sparc/kernel/vmlinux.lds.S
+@@ -52,6 +52,7 @@ SECTIONS
+ 
+ 	RO_DATA(PAGE_SIZE)
+ 	.data :	{
++		INIT_TASK_DATA(THREAD_SIZE)
+ 		CACHELINE_ALIGNED_DATA(SMP_CACHE_BYTES)
+ 		DATA_DATA
+ 		CONSTRUCTORS
+@@ -66,11 +67,6 @@ SECTIONS
+ 	/* End of data section */
+ 	_edata = .;
+ 
+-	/* init_task */
+-	. = ALIGN(THREAD_SIZE);
+-	.data.init_task : {
+-		*(.data.init_task)
+-	}
+ 	.fixup : {
+ 		__start___fixup = .;
+ 		*(.fixup)
+-- 
+1.6.2.1
 
