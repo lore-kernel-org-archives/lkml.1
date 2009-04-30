@@ -1,88 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761380AbZD3KiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbZD3KkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761380AbZD3KiU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 06:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbZD3KiJ
+	id S1761477AbZD3KkZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 06:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbZD3KkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 06:38:09 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45655 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752140AbZD3KiI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 06:38:08 -0400
-Subject: Re: Next April 28: boot failure on PowerPC with SLQB
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Sachin Sant <sachinp@in.ibm.com>, linuxppc-dev@ozlabs.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <20090430103528.GA6900@wotan.suse.de>
-References: <20090428165343.2e357d7a.sfr@canb.auug.org.au>
-	 <49F6E421.401@in.ibm.com>
-	 <84144f020904280422s6a9a277fjc4619c904f37e5ca@mail.gmail.com>
-	 <20090429113604.GE3398@wotan.suse.de> <49F87FAB.9050408@in.ibm.com>
-	 <20090430041146.GB23746@wotan.suse.de> <49F938E4.2030703@in.ibm.com>
-	 <20090430064127.GF23746@wotan.suse.de> <49F973A0.8070106@in.ibm.com>
-	 <20090430103528.GA6900@wotan.suse.de>
-Date: Thu, 30 Apr 2009 13:38:04 +0300
-Message-Id: <1241087884.19252.5.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Thu, 30 Apr 2009 06:40:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60396 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753239AbZD3KkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 06:40:09 -0400
+Date: Thu, 30 Apr 2009 10:39:30 GMT
+From: tip-bot for John Wright <john.wright@hp.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       john.wright@hp.com, tglx@linutronix.de, ak@suse.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       john.wright@hp.com, tglx@linutronix.de, ak@suse.de, mingo@elte.hu
+In-Reply-To: <1241037121-14805-1-git-send-email-john.wright@hp.com>
+References: <1241037121-14805-1-git-send-email-john.wright@hp.com>
+Subject: [tip:x86/urgent] x86: gettimeofday() vDSO: fix segfault when tv == NULL
+Message-ID: <tip-2f65dd475c6a8a997145ea83cc3d2d5e6dc55af1@git.kernel.org>
+Git-Commit-ID: 2f65dd475c6a8a997145ea83cc3d2d5e6dc55af1
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Apr 2009 10:39:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-30 at 12:35 +0200, Nick Piggin wrote:
-> On Thu, Apr 30, 2009 at 03:17:12PM +0530, Sachin Sant wrote:
-> > Nick Piggin wrote:
-> > >Hmm, forget that. Actually my last patch had a silly mistake because I
-> > >forgot MAX_ORDER shift is applied to PAGE_SIZE, rather than 1. So
-> > >kmalloc(PAGE_SIZE) was failing as too large.
-> > >
-> > >This patch should do the trick I hope.
-> > >  
-> > Yes this patch fixed the issue for me. Thanks Nick.
-> 
-> Thanks very much for reporting and testing.
-> 
-> Pekka, can you apply this patch please?
+Commit-ID:  2f65dd475c6a8a997145ea83cc3d2d5e6dc55af1
+Gitweb:     http://git.kernel.org/tip/2f65dd475c6a8a997145ea83cc3d2d5e6dc55af1
+Author:     John Wright <john.wright@hp.com>
+AuthorDate: Wed, 29 Apr 2009 14:32:01 -0600
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 30 Apr 2009 12:31:45 +0200
 
-Sure. Sachin, can I add a "Reported-by" and "Tested-by" tags from you to
-the patch description?
+x86: gettimeofday() vDSO: fix segfault when tv == NULL
 
-Stephen, does this patch fix all the boot problems for you as well?
+According to the gettimeofday(2) manual:
 
-> --
-> SLQB: fix slab calculation
-> 
-> SLQB didn't consider MAX_ORDER when defining which sizes of kmalloc
-> slabs to create. It panics at boot if it tries to create a cache
-> which exceeds MAX_ORDER-1.
+       If either tv or tz is NULL, the corresponding structure is not
+       set or returned.
 
-Nit: this _really_ needs a pointer to the discussion or bit more details
-on the issue. But I can fix that when I merge the patch.
+Since it is legal to give NULL as the tv argument, the code should make
+sure tv is not NULL before trying to dereference it.
 
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> ---
->  include/linux/slqb_def.h |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/include/linux/slqb_def.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/slqb_def.h
-> +++ linux-2.6/include/linux/slqb_def.h
-> @@ -172,7 +172,8 @@ struct kmem_cache {
->  #endif
->  
->  #define KMALLOC_SHIFT_LOW ilog2(KMALLOC_MIN_SIZE)
-> -#define KMALLOC_SHIFT_SLQB_HIGH (PAGE_SHIFT + 9)
-> +#define KMALLOC_SHIFT_SLQB_HIGH (PAGE_SHIFT + 			\
-> +				 ((9 <= (MAX_ORDER - 1)) ? 9 : (MAX_ORDER - 1)))
->  
->  extern struct kmem_cache kmalloc_caches[KMALLOC_SHIFT_SLQB_HIGH + 1];
->  extern struct kmem_cache kmalloc_caches_dma[KMALLOC_SHIFT_SLQB_HIGH + 1];
+This issue manifests itself on x86_64 when vdso=0 is not on the kernel
+command-line and libc uses the vDSO for gettimeofday() (e.g. glibc >=
+2.7).  A simple reproducer:
 
+  #include <stdio.h>
+  #include <sys/time.h>
+
+  int main(void)
+  {
+      struct timezone tz;
+
+      gettimeofday(NULL, &tz);
+
+      return 0;
+  }
+
+See http://bugs.debian.org/466491 for more details.
+
+[ Impact: fix gettimeofday(NULL, &tz) segfault ]
+
+Signed-off-by: John Wright <john.wright@hp.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: John Wright <john.wright@hp.com>
+LKML-Reference: <1241037121-14805-1-git-send-email-john.wright@hp.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/vdso/vclock_gettime.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86/vdso/vclock_gettime.c b/arch/x86/vdso/vclock_gettime.c
+index d9d3582..6a40b78 100644
+--- a/arch/x86/vdso/vclock_gettime.c
++++ b/arch/x86/vdso/vclock_gettime.c
+@@ -104,11 +104,13 @@ notrace int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
+ {
+ 	long ret;
+ 	if (likely(gtod->sysctl_enabled && gtod->clock.vread)) {
+-		BUILD_BUG_ON(offsetof(struct timeval, tv_usec) !=
+-			     offsetof(struct timespec, tv_nsec) ||
+-			     sizeof(*tv) != sizeof(struct timespec));
+-		do_realtime((struct timespec *)tv);
+-		tv->tv_usec /= 1000;
++		if (likely(tv != NULL)) {
++			BUILD_BUG_ON(offsetof(struct timeval, tv_usec) !=
++				     offsetof(struct timespec, tv_nsec) ||
++				     sizeof(*tv) != sizeof(struct timespec));
++			do_realtime((struct timespec *)tv);
++			tv->tv_usec /= 1000;
++		}
+ 		if (unlikely(tz != NULL)) {
+ 			/* Avoid memcpy. Some old compilers fail to inline it */
+ 			tz->tz_minuteswest = gtod->sys_tz.tz_minuteswest;
