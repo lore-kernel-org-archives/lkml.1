@@ -1,73 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759098AbZD3Imq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760363AbZD3Iq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759098AbZD3Imq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 04:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbZD3Img
+	id S1760363AbZD3Iq3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 04:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbZD3IqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 04:42:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45474 "EHLO mx2.redhat.com"
+	Thu, 30 Apr 2009 04:46:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53535 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751405AbZD3Imf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 04:42:35 -0400
-Message-ID: <49F96473.5070401@redhat.com>
-Date: Thu, 30 Apr 2009 10:42:27 +0200
-From: Jerome Marchand <jmarchan@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1751280AbZD3IqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 04:46:16 -0400
+Date: Thu, 30 Apr 2009 10:45:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Zhao Lei <zhaolei@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Tom Zanussi <tzanussi@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH 00/19] tracing/workqueue: events support/enhancements,
+	worklets tracing, fixes
+Message-ID: <20090430084529.GA27479@elte.hu>
+References: <1241051240-4280-1-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
-To: Nikanth K <nikanth@gmail.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       Nikanth Karthikesan <knikanth@suse.de>
-Subject: Re: [PATCH] block: remove unused __REQ_NR_BITS
-References: <49F85D9C.4000405@redhat.com> <807b3a220904300112vf8e77e5g5075eeb8f63e029d@mail.gmail.com>
-In-Reply-To: <807b3a220904300112vf8e77e5g5075eeb8f63e029d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241051240-4280-1-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nikanth,
 
-Never mind, I missed your patch.
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-Jerome
+> Hi,
+> 
+> This patchset brings various features for the workqueue tracer.
+> 
+> The support of events tracing (tracepoint expanding):
+> 	- workqueue_creation
+> 	- workqueue_flush
+> 	- workqueue_destruction
+> 
+>     Also for the worklets:
+> 	- worklet_enqueue
+> 	- worklet_enqueue_delayed
+> 	- worklet_execute
+> 	- worklet_complete
+> 	- worklet_cancel
+> 
+> Now, most of the lifecycle of worklets and workqueues is available.
+> 
+> The histogram tracing now also supports the worklets. You can
+> measure the max and average execution time of a worklet.
+> 
+> A good bunch of Oleg's comments have been addressed, at least the
+> critical ones (races which can cause freed pointer dereferences, memory
+> leak, etc...). The rest is more about the design itself, such as using
+> the workqueue as the identifier instead of the thread and other things
+> that are in discussion.
+> 
+> Thanks!
+> 
+> Frederic.
+> 
+> The following changes since commit a0e39ed378fb6ba916522764cd508fa7d42ad495:
+>   Heiko Carstens (1):
+>         tracing: fix build failure on s390
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git tracing/workqueue
+> 
+> Frederic Weisbecker (6):
+>       tracing/workqueue: turn cpu_workqueue_stats::inserted into unsigned int
+>       tracing/workqueue: add execution time average column
+>       tracing/workqueue: add open/release file handlers
+>       tracing/workqueue: defer workqueue stat release if needed
+>       tracing/workqueue: use the original cpu affinity on probe_workqueue_destruction
+>       tracing/workqueue: provide documentation for the workqueue tracer
+> 
+> KOSAKI Motohiro (2):
+>       workqueue_tracepoint: introduce workqueue_handler_exit tracepoint and rename workqueue_execution to workqueue_handler_entry
+>       tracing/workqueue: add max execution time mesurement for per worklet
+> 
+> Zhaolei (11):
+>       ftrace, workqueuetrace: make workqueue tracepoints use TRACE_EVENT macro
+>       trace_workqueue: use list_for_each_entry() instead of list_for_each_entry_safe()
+>       trace_workqueue: remove cpu_workqueue_stats->first_entry
+>       trace_workqueue: remove blank line between each cpu
+>       trace_workqueue: add worklet information
+>       workqueue_tracepoint: add workqueue_flush and worklet_cancel tracepoint
+>       workqueue_tracepoint: change tracepoint name to fit worklet and workqueue lifecycle
+>       workqueue_trace: separate worklet_insertion into worklet_enqueue and worklet_enqueue_delayed
+>       tracing/workqueue: turn workfunc_stats::inserted into unsigned int
+>       tracing/workqueue: avoid accessing task_struct's member variable in stat file read
+>       tracing/workqueue: use list_for_each_entry instead of list_for_each_entry_safe in probe_workqueue_destruction()
+> 
+>  Documentation/trace/workqueue.txt |  114 ++++++++++
+>  include/trace/events/workqueue.h  |  200 +++++++++++++++++
+>  include/trace/workqueue.h         |   25 --
+>  kernel/trace/trace_stat.c         |    8 +
+>  kernel/trace/trace_stat.h         |    3 +
+>  kernel/trace/trace_workqueue.c    |  444 +++++++++++++++++++++++++++++--------
+>  kernel/workqueue.c                |   45 +++--
+>  7 files changed, 697 insertions(+), 142 deletions(-)
+>  create mode 100644 Documentation/trace/workqueue.txt
+>  create mode 100644 include/trace/events/workqueue.h
+>  delete mode 100644 include/trace/workqueue.h
 
-Nikanth K wrote:
-> Hi Jerome
-> 
-> On Wed, Apr 29, 2009 at 7:31 PM, Jerome Marchand <jmarchan@redhat.com> wrote:
->> Removes __REQ_NR_BITS which is not used since its only user
->> (blk_dump_rq_flags()) stopped to use it.
->>
-> 
-> See http://lkml.org/lkml/2009/4/27/140
-> 
-> A user for it is added by a patch in linux-2.6-block#for-2.6.31
-> see http://git.kernel.org/?p=linux/kernel/git/axboe/linux-2.6-block.git;a=commit;h=9eb55b030c4b3227334ee4482402096cd1d1a6fe
-> 
-> Thanks
-> Nikanth
-> 
->> Signed-off-by: Jerome Marchand <jmarchan@redhat.com>
->> ---
->> diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
->> index 2755d5c..a101821 100644
->> --- a/include/linux/blkdev.h
->> +++ b/include/linux/blkdev.h
->> @@ -119,7 +119,6 @@ enum rq_flag_bits {
->>        __REQ_INTEGRITY,        /* integrity metadata has been remapped */
->>        __REQ_NOIDLE,           /* Don't anticipate more IO after this one */
->>        __REQ_IO_STAT,          /* account I/O stat */
->> -       __REQ_NR_BITS,          /* stops here */
->>  };
->>
->>  #define REQ_RW         (1 << __REQ_RW)
->>
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
+I think one worry here - and this mirrors some of Andrew's concerns 
+- is the debug code to instrumented code ratio. There's 500 lines of 
+instrumentation for 1000 lines of code.
 
+Is there a chance we can reduce that ratio, by factoring out bits of 
+kernel/trace/trace_workqueue.c and perhaps compressing 
+include/trace/events/workqueue.h some more?
+
+Also, it would be nice to check how intuitive it is to visualize 
+workqueue related details using the user-space ftrace-analyzer tool. 
+
+Kernel developers are one thing - but most of the Linux developers 
+are user-space developers so any workqueue tracing details have to 
+be intuitive (and useful) to them. (even though workqueues are a 
+fundamentally in-kernel abstraction)
+
+	Ingo
