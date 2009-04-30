@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762019AbZD3L2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762417AbZD3L2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762019AbZD3L2E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 07:28:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757997AbZD3L1t
+	id S1762417AbZD3L2Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 07:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759195AbZD3L1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 07:27:49 -0400
-Received: from [212.69.161.110] ([212.69.161.110]:38285 "EHLO
+	Thu, 30 Apr 2009 07:27:50 -0400
+Received: from [212.69.161.110] ([212.69.161.110]:38269 "EHLO
 	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1753837AbZD3L1s (ORCPT
+	with ESMTP id S1753728AbZD3L1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 07:27:48 -0400
+	Thu, 30 Apr 2009 07:27:49 -0400
 From: Philipp Reisner <philipp.reisner@linbit.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
@@ -23,32 +23,122 @@ Cc: Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
        Bart Van Assche <bart.vanassche@gmail.com>,
        Lars Ellenberg <lars.ellenberg@linbit.com>,
        Philipp Reisner <philipp.reisner@linbit.com>
-Subject: [PATCH 01/16] DRBD: major.h
-Date: Thu, 30 Apr 2009 13:26:37 +0200
-Message-Id: <1241090812-13516-2-git-send-email-philipp.reisner@linbit.com>
+Subject: [PATCH 00/16] DRBD: a block device for HA clusters
+Date: Thu, 30 Apr 2009 13:26:36 +0200
+Message-Id: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com>
-References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since we have had a LANANA major number for years, and it is documented in devices.txt,
-I think that this first patch can go upstream without further changes.
+Hi,
 
-Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
-Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
+This is a repost of DRBD, to keep you updated about the ongoing
+cleanups and improvements.
 
----
-diff --git a/include/linux/major.h b/include/linux/major.h
-index 058ec15..6a8ca98 100644
---- a/include/linux/major.h
-+++ b/include/linux/major.h
-@@ -145,6 +145,7 @@
- #define UNIX98_PTY_MAJOR_COUNT	8
- #define UNIX98_PTY_SLAVE_MAJOR	(UNIX98_PTY_MASTER_MAJOR+UNIX98_PTY_MAJOR_COUNT)
- 
-+#define DRBD_MAJOR		147
- #define RTF_MAJOR		150
- #define RAW_MAJOR		162
- 
+Patch set attached. Git tree available:
+git pull git://git.drbd.org/linux-2.6-drbd.git drbd
+
+We are looking for reviews!
+
+Description
+
+  DRBD is a shared-nothing, synchronously replicated block device. It
+  is designed to serve as a building block for high availability
+  clusters and in this context, is a "drop-in" replacement for shared
+  storage. Simplistically, you could see it as a network RAID 1.
+
+  Although I use the "RAID1+NBD" metaphor myself, recent discussion
+  unveiled that one needs to understand the differences as well.
+  Here are just two examples of that:
+
+   1) Think of a two node HA cluster. Node A is active ('primary' in DRBD
+    speak) has the filesystem mounted and the application running. Node B is
+    in standby mode ('secondary' in DRBD speak).
+
+    We loose network connectivity, the primary node continues to run, the
+    secondary no longer gets updates.
+
+    Then we have a complete power failure, both nodes are down. Then they
+    power up the data center again, but at first the get only the power
+    circuit of node B up and running again.
+
+    Should node B offer the service right now ?
+      ( DRBD has configurable policies for that )
+
+    Later on they manage to get node A up and running again, now lets assume
+    node B was chosen to be the new primary node. What needs to be done ?
+
+    Modifications on B since it became primary needs to be resynced to A.
+    Modifications on A sind it lost contact to B needs to be taken out.
+
+    DRBD does that.
+
+    How do you fit that into a RAID1+NBD model ? NBD is just a block
+    transport, it does not offer the ability to exchange dirty bitmaps or
+    data generation identifiers, nor does the RAID1 code has a concept of
+    that.
+
+   2) When using DRBD over small bandwidth links, one has to run a resync,
+    DRBD offers the option to do a "checksum based resync". Similar to rsync
+    it at first only exchanges a checksum, and transmits the whole data
+    block only if the checksums differ.
+
+    That again is something that does not fit into the concepts of NBD or RAID1.
+
+  DRBD can also be used in dual-Primary mode (device writable on both
+  nodes), which means it can exhibit shared disk semantics in a
+  shared-nothing cluster.  Needless to say, on top of dual-Primary
+  DRBD utilizing a cluster file system is necessary to maintain for
+  cache coherency.
+
+  More background on this can be found in this paper:
+    http://www.drbd.org/fileadmin/drbd/publications/drbd8.pdf
+
+  Beyond that, DRBD addresses various issues of cluster partitioning,
+  which the MD/NBD stack, to the best of our knowledge, does not
+  solve. The above-mentioned paper goes into some detail about that as
+  well.
+
+  DRBD can operate in synchronous mode, or in asynchronous mode. I want
+  to point out that we guarantee not to violate a single possible write
+  after write dependency when writing on the standby node. More on that
+  can be found in this paper:
+    http://www.drbd.org/fileadmin/drbd/publications/drbd_lk9.pdf
+
+  Last not least DRBD offers background resynchronisation and keeps
+  a on disk representation of the dirty bitmap up-to-date. A reasonable
+  tradeoff between number of updates, and resyncing more than needed
+  is implemented with the activity log.
+  More on that:
+    http://www.drbd.org/fileadmin/drbd/publications/drbd-activity-logging_v6.pdf
+
+Changes since 2009-04-10
+
+  * Cleanup: Removed all CamelCase
+  * Cleanup: Replaced DRBD's own tracing stuff with regular tracepoints
+  * Cleanup: Removed ERR/INFO/ALERT ... macros, using dev_err/dev_info/... now
+  * Cleanup: Minor stuff, as suggested in feedback on LKML
+  * DRBD:    Bitmap compression feature was finalised
+  * DRBD:    new disable_sendpage parameter
+
+Changes since the post on 2009-03-30, all triggered by reviews
+
+  * Improvements to Makefile and Kconfig
+  * Simplified definitions of bm_flags' bitnumbers
+  * Removed debugging aid
+
+Changes since the post on 2009-03-23, from drbd-mainline
+
+  * Updated to the final drbd-8.3.1 code
+  * Optionally run-length encode bitmap transfers
+
+Changes since the post on 2009-03-23, triggered by reviews
+
+  * Using the latest proc_create() now
+  * Moved the allocation of md_io_tmpp to attach/detach out of drbd_md_sync_page_io()
+  * Removing the mode selection comments for emacs
+  * Removed DRBD_ratelimit()
+
+cheers,
+  Phil
