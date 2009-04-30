@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762132AbZD3Aj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761927AbZD3AmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762132AbZD3Aj5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 20:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZD3Ajp
+	id S1761927AbZD3AmU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 20:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbZD3AmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 20:39:45 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54683 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758942AbZD3Ajo (ORCPT
+	Wed, 29 Apr 2009 20:42:08 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:53047 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751104AbZD3AmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 20:39:44 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH] vmscan: evict use-once pages first (v3)
-Cc: kosaki.motohiro@jp.fujitsu.com, Peter Zijlstra <peterz@infradead.org>,
-       Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org,
-       tytso@mit.edu, linux-mm@kvack.org
-In-Reply-To: <20090429131436.640f09ab@cuia.bos.redhat.com>
-References: <2f11576a0904290907g48e94e74ye97aae593f6ac519@mail.gmail.com> <20090429131436.640f09ab@cuia.bos.redhat.com>
-Message-Id: <20090430093733.D20C.A69D9226@jp.fujitsu.com>
+	Wed, 29 Apr 2009 20:42:07 -0400
+Date: Thu, 30 Apr 2009 01:42:05 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fs/super.c: fix sparse warning
+Message-ID: <20090430004205.GO8633@ZenIV.linux.org.uk>
+References: <BD79186B4FD85F4B8E60E381CAEE1909016C1B15@mi8nycmail19.Mi8.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Thu, 30 Apr 2009 09:39:38 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE1909016C1B15@mi8nycmail19.Mi8.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> When the file LRU lists are dominated by streaming IO pages,
-> evict those pages first, before considering evicting other
-> pages.
+On Wed, Apr 29, 2009 at 08:14:57PM -0400, H Hartley Sweeten wrote:
+> Sparse reports the following in fs/super.c:
 > 
-> This should be safe from deadlocks or performance problems
-> because only three things can happen to an inactive file page:
-> 1) referenced twice and promoted to the active list
-> 2) evicted by the pageout code
-> 3) under IO, after which it will get evicted or promoted
+>   warning: Using plain integer as NULL pointer
 > 
-> The pages freed in this way can either be reused for streaming
-> IO, or allocated for something else. If the pages are used for
-> streaming IO, this pageout pattern continues. Otherwise, we will
-> fall back to the normal pageout pattern.
-> 
-> Signed-off-by: Rik van Riel <riel@redhat.com>
-> 
-> ---
-> On Thu, 30 Apr 2009 01:07:51 +0900
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > we handle active_anon vs inactive_anon ratio by shrink_list().
-> > Why do you insert this logic insert shrink_zone() ?
-> 
-> Kosaki, this implementation mirrors the anon side of things precisely.
-> Does this look good?
-> 
-> Elladan, this patch should work just like the second version. Please
-> let me know how it works for you.
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> Cc: Subrata Modak <subrata@linux.vnet.ibm.com>
 
-Looks good to me. thanks.
-but I don't hit Rik's explained issue, I hope Elladan report his test result.
+Applied.
 
+However, I would *really* ask you to avoid that kind of subjects in
+the future.  Proper subject for that one is "NULL noise in <file>" (or
+<file>:<function>.  Sparse doesn't even need to be mentioned.
 
+sparse generates many kinds of warnings.  And they are neither equal
+nor equally interesting.
 
+Kindly use subjects that would tell what's going on; "$TOOL gives
+some warning in $FILE" is bloody useless.
