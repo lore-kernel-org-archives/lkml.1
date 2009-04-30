@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764742AbZD3RZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932583AbZD3RZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764742AbZD3RZT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764629AbZD3RH4
+	id S932583AbZD3RZr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764635AbZD3RH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:56 -0400
-Received: from kroah.org ([198.145.64.141]:56378 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:07:57 -0400
+Received: from kroah.org ([198.145.64.141]:56384 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764614AbZD3RHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:48 -0400
+	id S1764560AbZD3RHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:50 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:44 2009
-Message-Id: <20090430165744.294049024@mini.kroah.org>
+Message-Id: <20090430165744.429966231@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:29 -0700
+Date: Thu, 30 Apr 2009 09:56:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Jeff Garzik <jgarzik@redhat.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 40/88] pata_hpt37x: fix HPT370 DMA timeouts
+       alan@lxorguk.ukuu.org.uk, Hugh Dickins <hugh@veritas.com>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 41/88] mm: pass correct mm when growing stack
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=0070-pata_hpt37x-fix-HPT370-DMA-timeouts.patch
+Content-Disposition: inline; filename=0071-mm-pass-correct-mm-when-growing-stack.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,73 +39,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+From: Hugh Dickins <hugh@veritas.com>
 
-upstream commit: 265b7215aed36941620b65ecfff516200fb190c1
+upstream commit: 05fa199d45c54a9bda7aa3ae6537253d6f097aa9
 
-The libata driver has copied the code from the IDE driver which caused a post
-2.4.18 regression on many HPT370[A] chips -- DMA stopped to work completely,
-only causing timeouts.  Now remove hpt370_bmdma_start() for good...
+Tetsuo Handa reports seeing the WARN_ON(current->mm == NULL) in
+security_vm_enough_memory(), when do_execve() is touching the
+target mm's stack, to set up its args and environment.
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Yes, a UMH_NO_WAIT or UMH_WAIT_PROC call_usermodehelper() spawns
+an mm-less kernel thread to do the exec.  And in any case, that
+vm_enough_memory check when growing stack ought to be done on the
+target mm, not on the execer's mm (though apart from the warning,
+it only makes a slight tweak to OVERCOMMIT_NEVER behaviour).
+
+Reported-by: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/ata/pata_hpt37x.c |   22 ++--------------------
- 1 file changed, 2 insertions(+), 20 deletions(-)
+ mm/mmap.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/ata/pata_hpt37x.c
-+++ b/drivers/ata/pata_hpt37x.c
-@@ -8,7 +8,7 @@
-  * Copyright (C) 1999-2003		Andre Hedrick <andre@linux-ide.org>
-  * Portions Copyright (C) 2001	        Sun Microsystems, Inc.
-  * Portions Copyright (C) 2003		Red Hat Inc
-- * Portions Copyright (C) 2005-2007	MontaVista Software, Inc.
-+ * Portions Copyright (C) 2005-2009	MontaVista Software, Inc.
-  *
-  * TODO
-  *	Look into engine reset on timeout errors. Should not be	required.
-@@ -24,7 +24,7 @@
- #include <linux/libata.h>
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1580,7 +1580,7 @@ static int acct_stack_growth(struct vm_a
+ 	 * Overcommit..  This must be the final test, as it will
+ 	 * update security statistics.
+ 	 */
+-	if (security_vm_enough_memory(grow))
++	if (security_vm_enough_memory_mm(mm, grow))
+ 		return -ENOMEM;
  
- #define DRV_NAME	"pata_hpt37x"
--#define DRV_VERSION	"0.6.11"
-+#define DRV_VERSION	"0.6.12"
- 
- struct hpt_clock {
- 	u8	xfer_speed;
-@@ -445,23 +445,6 @@ static void hpt370_set_dmamode(struct at
- }
- 
- /**
-- *	hpt370_bmdma_start		-	DMA engine begin
-- *	@qc: ATA command
-- *
-- *	The 370 and 370A want us to reset the DMA engine each time we
-- *	use it. The 372 and later are fine.
-- */
--
--static void hpt370_bmdma_start(struct ata_queued_cmd *qc)
--{
--	struct ata_port *ap = qc->ap;
--	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
--	pci_write_config_byte(pdev, 0x50 + 4 * ap->port_no, 0x37);
--	udelay(10);
--	ata_bmdma_start(qc);
--}
--
--/**
-  *	hpt370_bmdma_end		-	DMA engine stop
-  *	@qc: ATA command
-  *
-@@ -598,7 +581,6 @@ static struct scsi_host_template hpt37x_
- static struct ata_port_operations hpt370_port_ops = {
- 	.inherits	= &ata_bmdma_port_ops,
- 
--	.bmdma_start 	= hpt370_bmdma_start,
- 	.bmdma_stop	= hpt370_bmdma_stop,
- 
- 	.mode_filter	= hpt370_filter,
+ 	/* Ok, everything looks good - let it rip */
 
 
