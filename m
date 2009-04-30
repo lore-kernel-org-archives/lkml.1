@@ -1,46 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765417AbZD3S7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765040AbZD3TDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765417AbZD3S7b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 14:59:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764502AbZD3S7A
+	id S1765040AbZD3TDX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 15:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763009AbZD3TC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 14:59:00 -0400
-Received: from cantor.suse.de ([195.135.220.2]:45707 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764694AbZD3S67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 14:58:59 -0400
-Date: Thu, 30 Apr 2009 20:58:57 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Marc Pignat <Marc.Pignat@hevs.ch>,
-       Roger Quadros <ext-roger.quadros@nokia.com>,
-       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.30-rc4 hid bluetooth not working
-In-Reply-To: <1241103783.3389.35.camel@localhost.localdomain>
-Message-ID: <alpine.LNX.2.00.0904302056270.5012@wotan.suse.de>
-References: <49F9C1AD020000BF00029086@mailgw2.hevs.ch>  <alpine.LRH.2.00.0904301556310.2050@twin.jikos.cz> <1241103783.3389.35.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 30 Apr 2009 15:02:57 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:58140 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755256AbZD3TC4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 15:02:56 -0400
+Message-Id: <20090430185628.866082445@arndb.de>
+User-Agent: quilt/0.46-1
+Date: Thu, 30 Apr 2009 20:56:28 +0200
+From: Arnd Bergmann <arnd@arndb.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
+       Remis Lima Baima <remis.developer@googlemail.com>
+Subject: [PATCH v2 0/9] more non-ABI asm-generic headers
+X-Provags-ID: V01U2FsdGVkX18Prgvahtl4qsAJ42s5mCY2UN4U5dqRestntRy
+ S7DVJj06PCTTtSRWZMCcC5zXZskxQPN/mPaBvtYmnyM6yk/viK
+ +E7gn+wn7NDC5642DM+xQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Apr 2009, Marcel Holtmann wrote:
+I reviewed my patches again after input from David Miller and
+others, hopefully I have found a way to send out patches again.
+This series is much smaller now, I consolidated some patches
+according to logic grouping, and left out the microblaze
+stuff, which is probably just boring everyone except Michal.
 
-> > > My bluetooth keyboard is not working any more in rc4, but was 
-> > > working in rc3. Here is the dmesg output, triggered by the first key 
-> > > press on the keyboard, fortunately, this is 100% reproductible (once 
-> > > per boot).
-> > Does reverting f3784d834c7 fix the problem?
-> we have seen a similar report where reverting f3784d834c7 didn't fix it. 
-> And I don't see anything wrong with that patch. Did something important 
-> got changed in the work queue code that I am missing?
+This should fix the broken From: and Date: headers in the
+mail, which caused problems, while the contents are unchanged
+from my earlier submission.
 
-Calling flush() from work->func() is not safe. That's what the WARN_ON() 
-in flush_cpu_workqueue() is there for, right?
+	Arnd <><
 
--- 
-Jiri Kosina
-SUSE Labs
+
