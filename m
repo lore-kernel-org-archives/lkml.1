@@ -1,363 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbZD3HSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbZD3HUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755159AbZD3HSW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 03:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbZD3HSD
+	id S1752631AbZD3HUB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 03:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbZD3HTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 03:18:03 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:32827 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751115AbZD3HSA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 03:18:00 -0400
-Date: Thu, 30 Apr 2009 16:16:27 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hugh@veritas.com" <hugh@veritas.com>
-Subject: [PATCH] memcg: fix stale swap cache leak v5
-Message-Id: <20090430161627.0ccce565.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Apr 2009 03:19:51 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52765 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751112AbZD3HTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 03:19:50 -0400
+Date: Thu, 30 Apr 2009 09:18:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH 0/3] removing unwanted module configs
+Message-ID: <20090430071830.GC16737@elte.hu>
+References: <20090430030821.523327994@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090430030821.523327994@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is v5 but all codes are rewritten.
 
-After this patch, when memcg is used,
- 1. page's swapcount is checked after I/O (without locks). If the page is
-    stale swap cache, freeing routine will be scheduled.
- 2. vmscan.c calls try_to_free_swap() when __remove_mapping() fails.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Works well for me. no extra resources and no races.
+> As it has been brought up last Kernel Summit, we want to make it easier
+> for those that report bugs to build their own kernels, and maybe even
+> bisect with git.  Some of these people are not programmers and do not
+> understand the complexity of the configuration options. But to compile
+> a distribution configured kernel on their boxes can take hours.
+> 
+> This patch series comes to the rescue. I wrote the first instance of
+> streamline config when I bought a new box in 2005 and got frustrated
+> with finding all the necessary configurations to boot it. It is a
+> small (yet powerful) perl script.
+> 
+> Here's what it does:
+> 
+>  * Reads the modules that are load by using lsmod.
+>  * Reads all Makefiles to map modules to CONFIG_* options
+>  * Reads the Kconfig files to find dependencies and selects
+>  * Figures out what CONFIGS are needed to compile the loaded modules
+>  * Reads the .config and prints out a version with all module configurations
+>     that not needed, disabled.
+> 
+> The next two patches add options to make.
+> 
+>  localmodconfig - this will run streamline_config.pl on the .config file
+> 	and replace it at the end.
+> 
+>  localyesconfig - this will do the same as localmodconfig but will also
+> 	sed -i s/=m/=y/  to turn all modules to core. It will also run
+> 	the 'make oldcondfig' to fix it up and let the user handle
+> 	andything that was changed by converting a module to core.
+> 
+> Anyway, this is now in git and as a series of patches here. My git 
+> tree is based off of the latest Linus git tree.
+> 
+> Have fun!
 
-Because my office will be closed until May/7, I'll not be able to make a
-response. Posting this for showing what I think of now.
+Very nice and useful!
 
-This should be fixed before posting softlimit etc...
-==
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+I have given it a try - it works to a certain degree, but does not 
+seem to work fully. If i boot a Fedora distro kernel with this 
+module setup:
 
-In general, Linux's swp_entry handling is done by combination of lazy techniques
-and global LRU. It works well but when we use mem+swap controller, some more
-strict cotroll is appropriate. Otherwise, swp_entry used by a cgroup will be
-never freed until global LRU works. In a system where memcg is well-configured,
-global LRU doesn't work frequently.
+aldebaran:~/linux/linux> lsmod
+Module                  Size  Used by
+sunrpc                253904  1 
+ipv6                  349568  50 
+cpufreq_ondemand       73248  0 
+acpi_cpufreq           75408  0 
+freq_table             70400  2 cpufreq_ondemand,acpi_cpufreq
+dm_multipath           82256  0 
+i2c_i801               75932  0 
+i2c_core               87192  1 i2c_i801
+serio_raw              71556  0 
+pcspkr                 68352  0 
+pata_jmicron           69504  0 
+iTCO_wdt               78208  0 
+shpchp                 99160  0 
+iTCO_vendor_support    68868  1 iTCO_wdt
+igb                   144412  0 
+dca                    71976  1 igb
+pata_acpi              70528  0 
+ata_generic            71428  0 
 
-  Example A) Assume a swap cache which is not mapped.
-              CPU0                            CPU1
-	   zap_pte()....                  shrink_page_list()
-	    free_swap_and_cache()           lock_page()
-		page seems busy.
+note the 'igb' driver that is essential to be picked up. 'make 
+localyesconfig' complains:
 
-  Example B) Assume swapin-readahed.
-	      CPU0			      CPU1
-	   zap_pte()			  read_swap_cache_async()
-					  swap_duplicate().
-           swap_entry_free() = 1
-	   find_get_page()=> NULL.
-					  add_to_swap_cache().
-					  issue swap I/O. 
+  module igb did not have configs CONFIG_IGB
 
-There are many patterns of this kind of race (but no problems).
+But:
 
-free_swap_and_cache() is called for freeing swp_entry. But it is a best-effort
-function. If the swp_entry/page seems busy, swp_entry is not freed.
-This is not a problem because global-LRU will find SwapCache at page reclaim.
-But...
+  # CONFIG_IGB is not set
 
-If memcg is used, on the other hand, global LRU may not work. Then, above
-unused SwapCache will not be freed.
-(unmapped SwapCache occupy swp_entry but never be freed if not on memcg's LRU)
+It did pick up other essential drivers - such as ext3. Why did it 
+miss IGB? Here are all the missed drivers:
 
-So, even if there are no tasks in a cgroup, swp_entry usage still remains.
-In bad case, OOM by mem+swap controller is triggerred by this "leak" of
-swp_entry as Nishimura repoted.
+aldebaran:~/linux/linux> make localyesconfig
+module ata_generic did not have configs CONFIG_ATA_GENERIC
+module iTCO_vendor_support did not have configs CONFIG_ITCO_WDT
+module shpchp did not have configs CONFIG_HOTPLUG_PCI_SHPC
+module acpi_cpufreq did not have configs CONFIG_IA64_ACPI_CPUFREQ CONFIG_X86_ACPI_CPUFREQ
+module pata_jmicron did not have configs CONFIG_PATA_JMICRON
+module i2c_i801 did not have configs CONFIG_I2C_I801
+module serio_raw did not have configs CONFIG_SERIO_RAW
+module iTCO_wdt did not have configs CONFIG_ITCO_WDT
+module freq_table did not have configs CONFIG_CPU_FREQ_TABLE
+module igb did not have configs CONFIG_IGB
+module ipv6 did not have configs CONFIG_IPV6
+module dca did not have configs CONFIG_DCA
+module sunrpc did not have configs CONFIG_SUNRPC
+module pata_acpi did not have configs CONFIG_PATA_ACPI
+module dm_multipath did not have configs CONFIG_DM_MULTIPATH
+module cpufreq_ondemand did not have configs 
+CONFIG_CPU_FREQ_GOV_ONDEMAND
+module i2c_core did not have configs CONFIG_I2C
+module pcspkr did not have configs CONFIG_INPUT_PCSPKR
 
-This patch tries to fix racy case of free_swap_and_cache() and I/O by checking
-swap's refnct again after I/O. And add a hook to vmscan.c.
-After this patch applied, follwoing test works well.
+Of those drivers, igb is the only truly boot-critical one - the box 
+wont be very useful if it has no network support.
 
-  # echo 1-2M > ../memory.limit_in_bytes
-  # run tasks under memcg.
-  # kill all tasks and make memory.tasks empty
-  # check memory.memsw.usage_in_bytes == memory.usage_in_bytes and
-    there is no _used_ swp_entry.
+Another comment: 'make localyesconfig' does not seem to be 
+self-invariant. I.e. it does not handle the case well when we 
+already have booted a localyesconfig kernel and do 'make 
+localyesconfig' again. It will find no modules and will merrily 
+create an almost empty .config.
 
-Changelog: v4->v5
- - completely new design.
- - added nolock page_swapcount.
- - checks all swap I/O.
+This could be addressed the following way: i think the script should 
+implicitly turn on CONFIG_IKCONFIG=y, and should also check for the 
+presence of /proc/config.gz and use it as a starting point. This 
+makes the whole concept nicely self-invariant.
 
-Reported-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- include/linux/swap.h |    1 
- mm/page_io.c         |  120 +++++++++++++++++++++++++++++++++++++++++++++++++++
- mm/swapfile.c        |   37 +++++++++++++++
- mm/vmscan.c          |   31 ++++++++++++-
- 4 files changed, 187 insertions(+), 2 deletions(-)
-
-Index: mmotm-2.6.30-Apr24/mm/page_io.c
-===================================================================
---- mmotm-2.6.30-Apr24.orig/mm/page_io.c
-+++ mmotm-2.6.30-Apr24/mm/page_io.c
-@@ -19,6 +19,123 @@
- #include <linux/writeback.h>
- #include <asm/pgtable.h>
- 
-+#ifdef CONFIG_CGROUP_MEM_RES_CTLR
-+/*
-+ * When memory cgroup is used, race between read/write-swap and zap-swap can
-+ * be a leak of swp_entry accounted. So we have to check the status at
-+ * the end of swap-io. If memory cgroup is not used, Global LRU will find
-+ * unused swap-cache finally. (But this is too lazy for memcg.)
-+ */
-+
-+struct swapio_check {
-+	spinlock_t	lock;
-+	void		*swap_bio_list;
-+	struct delayed_work work;
-+} stale_swap_check;
-+
-+
-+static void mem_cgroup_check_stale_swap(struct work_struct *work)
-+{
-+	struct bio *bio;
-+	struct page *page;
-+	struct swapio_check *sc;
-+	int nr = SWAP_CLUSTER_MAX;
-+	swp_entry_t entry;
-+
-+	sc = &stale_swap_check;
-+
-+	while (nr--) {
-+		cond_resched();
-+		spin_lock_irq(&sc->lock);
-+		bio = sc->swap_bio_list;
-+		if (bio)
-+			sc->swap_bio_list = bio->bi_next;
-+		spin_unlock_irq(&sc->lock);
-+		if (!bio)
-+			break;
-+		entry.val = (unsigned long)bio->bi_private;
-+		bio_put(bio);
-+
-+		page = find_get_page(&swapper_space, entry.val);
-+		if (!page || page_mapped(page))
-+			continue;
-+		lock_page(page);
-+		/*
-+		 * When it's mapped, this page passed checks in do_swap_page()
-+		 * and we don't have to do any more. All other necessary checks
-+		 * will be done in try_to_free_swap().
-+		 */
-+		if (!page_mapped(page))
-+			try_to_free_swap(page);
-+		unlock_page(page);
-+		put_page(page);
-+	}
-+	if (sc->swap_bio_list)
-+		schedule_delayed_work(&sc->work, HZ/10);
-+}
-+
-+/*
-+ * We can't call try_to_free_swap directly here because of caller's context.
-+ */
-+static void mem_cgroup_swapio_check_again(struct bio *bio, struct page *page)
-+{
-+	unsigned long flags;
-+	struct swapio_check *sc;
-+	swp_entry_t entry;
-+	int ret;
-+
-+	/* check swap count here. If swp_entry is stable, nothing to do.*/
-+	if (likely(mem_cgroup_staleswap_hint(page)))
-+		return;
-+	/* reuse bio if this bio is ready to be freed. */
-+	ret = atomic_inc_return(&bio->bi_cnt);
-+	/* Any other reference other than us ? */
-+	if (unlikely(ret > 2)) {
-+		bio_put(bio);
-+		return;
-+	}
-+	/*
-+	 * We don't want to grab this page....record swp_entry instead of page.
-+	 */
-+	entry.val = page_private(page);
-+	bio->bi_private = (void *)entry.val;
-+
-+	sc = &stale_swap_check;
-+	spin_lock_irqsave(&sc->lock, flags);
-+	/* link bio */
-+	bio->bi_next = sc->swap_bio_list;
-+	sc->swap_bio_list = bio;
-+	spin_unlock_irqrestore(&sc->lock, flags);
-+	/*
-+	 * Swap I/O is tend to be countinous. Do check in batched manner.
-+	 */
-+	if (!delayed_work_pending(&sc->work))
-+		schedule_delayed_work(&sc->work, HZ/10);
-+}
-+
-+static int __init setup_stale_swap_check(void)
-+{
-+	struct swapio_check *sc;
-+
-+	sc = &stale_swap_check;
-+	spin_lock_init(&sc->lock);
-+	sc->swap_bio_list = NULL;
-+	INIT_DELAYED_WORK(&sc->work, mem_cgroup_check_stale_swap);
-+	return 0;
-+}
-+late_initcall(setup_stale_swap_check);
-+
-+
-+#else /* CONFIG_CGROUP_MEM_RES_CTRL */
-+
-+static inline
-+void mem_cgroup_swapio_check_again(struct bio *bio, struct page *page)
-+{
-+}
-+#endif
-+
-+
-+
- static struct bio *get_swap_bio(gfp_t gfp_flags, pgoff_t index,
- 				struct page *page, bio_end_io_t end_io)
- {
-@@ -66,6 +183,8 @@ static void end_swap_bio_write(struct bi
- 				(unsigned long long)bio->bi_sector);
- 		ClearPageReclaim(page);
- 	}
-+	/* While PG_writeback, this page is stable ...then, call this here */
-+	mem_cgroup_swapio_check_again(bio, page);
- 	end_page_writeback(page);
- 	bio_put(bio);
- }
-@@ -85,6 +204,7 @@ void end_swap_bio_read(struct bio *bio, 
- 	} else {
- 		SetPageUptodate(page);
- 	}
-+	mem_cgroup_swapio_check_again(bio, page);
- 	unlock_page(page);
- 	bio_put(bio);
- }
-Index: mmotm-2.6.30-Apr24/mm/vmscan.c
-===================================================================
---- mmotm-2.6.30-Apr24.orig/mm/vmscan.c
-+++ mmotm-2.6.30-Apr24/mm/vmscan.c
-@@ -586,6 +586,30 @@ void putback_lru_page(struct page *page)
- }
- #endif /* CONFIG_UNEVICTABLE_LRU */
- 
-+#ifdef CONFIG_CGROUP_MEM_RES_CTRL
-+/*
-+ * Even if we don't call this, global LRU will finally find this SwapCache and
-+ * free swap entry in the next loop. But, when memcg is used, we may have
-+ * smaller chance to call global LRU's memory reclaim code.
-+ * Freeing unused swap entry in aggresive way is good for avoid "leak" of swap
-+ * entry accounting.
-+ */
-+static inline void unuse_swapcache_check_again(struct page *page)
-+{
-+	/*
-+	 * The page is locked, but have extra reference from somewhere.
-+	 * In typical case, rotate_reclaimable_page()'s extra refcnt makes
-+	 * __remove_mapping fail. (see mm/swap.c)
-+	 */
-+	if (PageSwapCache(page))
-+		try_to_free_swap(page);
-+}
-+#else
-+static inline void unuse_swapcache_check_again(struct page *page)
-+{
-+}
-+#endif
-+
- 
- /*
-  * shrink_page_list() returns the number of reclaimed pages
-@@ -758,9 +782,12 @@ static unsigned long shrink_page_list(st
- 			}
- 		}
- 
--		if (!mapping || !__remove_mapping(mapping, page))
-+		if (!mapping)
- 			goto keep_locked;
--
-+		if (!__remove_mapping(mapping, page)) {
-+			unuse_swapcache_check_again(page);
-+			goto keep_locked;
-+		}
- 		/*
- 		 * At this point, we have no other references and there is
- 		 * no way to pick any more up (removed from LRU, removed
-Index: mmotm-2.6.30-Apr24/mm/swapfile.c
-===================================================================
---- mmotm-2.6.30-Apr24.orig/mm/swapfile.c
-+++ mmotm-2.6.30-Apr24/mm/swapfile.c
-@@ -528,6 +528,43 @@ static inline int page_swapcount(struct 
- 	return count;
- }
- 
-+#ifdef CONFIG_CGROUP_MEM_RES_CTLR
-+static inline int page_swapused_nolock(struct page *page)
-+{
-+	swp_entry_t entry;
-+	unsigned long type, offset;
-+	struct swap_info_struct *p;
-+
-+	entry.val = page_private(page);
-+	type = swp_type(entry);
-+	VM_BUG_ON(type >= nr_swapfiles);
-+
-+	offset = swp_offset(entry);
-+	p = &swap_info[type];
-+	VM_BUG_ON(!(p->flags & SWP_USED));
-+	VM_BUG_ON(!(p->swap_map[offset]));
-+
-+	smp_rmb();
-+	return p->swap_map[offset] != 1;
-+}
-+/*
-+ * Use a lapping function not to allow reuse this function other than memcg.
-+ */
-+int mem_cgroup_staleswap_hint(struct page *page)
-+{
-+	/*
-+	 * The page may not under lock_page() but Writeback is set in that case.
-+	 * Then, swap_map is stable when this is called.
-+	 * Very terrible troube will not occur even if page_swapused_nolock()
-+	 * returns wrong value.
-+	 * Because this can be called via interrupt context, we use nolock
-+	 * version of swap's refcnt check.
-+	 */
-+	if (!PageSwapCache(page) || page_mapped(page))
-+		return 1;
-+	return page_swapused_nolock(page);
-+}
-+#endif
- /*
-  * We can write to an anon page without COW if there are no other references
-  * to it.  And as a side-effect, free up its swap: because the old content
-Index: mmotm-2.6.30-Apr24/include/linux/swap.h
-===================================================================
---- mmotm-2.6.30-Apr24.orig/include/linux/swap.h
-+++ mmotm-2.6.30-Apr24/include/linux/swap.h
-@@ -336,6 +336,7 @@ static inline void disable_swap_token(vo
- 
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR
- extern void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent);
-+extern int mem_cgroup_staleswap_hint(struct page *page);
- #else
- static inline void
- mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
-
+	Ingo
