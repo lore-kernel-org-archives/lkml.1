@@ -1,131 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762090AbZD3COZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761592AbZD3CT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762090AbZD3COZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 22:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755273AbZD3COJ
+	id S1761592AbZD3CT7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 22:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbZD3CTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 22:14:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59404 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762055AbZD3COH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 22:14:07 -0400
-Date: Wed, 29 Apr 2009 19:10:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Matt Mackall <mpm@selenic.com>, Christoph Lameter <clameter@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>, Al Viro <viro@zeniv.linux.org.uk>,
-       Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH] use GFP_NOFS in kernel_event()
-Message-Id: <20090429191044.b6fceae2.akpm@linux-foundation.org>
-In-Reply-To: <20090430020004.GA1898@localhost>
-References: <20090430020004.GA1898@localhost>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 29 Apr 2009 22:19:49 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34199 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753488AbZD3CTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 22:19:48 -0400
+Message-ID: <49F90ABE.4040607@kernel.org>
+Date: Thu, 30 Apr 2009 11:19:42 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: "Theodore Ts'o" <tytso@mit.edu>
+CC: linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: No NCQ support on X61s Ultrabay?  (Intel ICH8 SATA controller
+ question)
+References: <E1LzLgA-0004j6-9W@closure.thunk.org>
+In-Reply-To: <E1LzLgA-0004j6-9W@closure.thunk.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Apr 2009 02:19:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Apr 2009 10:00:04 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
+Hello,
 
-> Fix a possible deadlock on inotify_mutex, reported by lockdep.
+Theodore Ts'o wrote:
+> [ 4563.614247] ata4.00: 390721968 sectors, multi 16: LBA48 NCQ (depth 0/32)
 > 
-> inotify_inode_queue_event() => take inotify_mutex => kernel_event() =>
-> kmalloc() => SLOB => alloc_pages_node() => page reclaim => slab reclaim =>
-> dcache reclaim => inotify_inode_is_dead => take inotify_mutex => deadlock
+> which as near as I can tell is because ATA_FLAG_NCQ isn't set in struct
+> ata_port->flag.  This looks like it should be set to ata_piix.c if the
+> controller supports NCQ --- but ata_piix.c doesn't set ATA_FLAG_NCQ at
+> all.  However, this web page:
 > 
-> The actual deadlock may not happen because the inode was grabbed at
-> inotify_add_watch(). But the GFP_KERNEL here is unsound and not
-> consistent with the other two GFP_NOFS inside the same function.
+> 	http://www.intel.com/support/chipsets/imst/sb/CS-012304.htm
 > 
-> [ 2668.325318]
-> [ 2668.325322] =================================
-> [ 2668.327448] [ INFO: inconsistent lock state ]
-> [ 2668.327448] 2.6.30-rc2-next-20090417 #203
-> [ 2668.327448] ---------------------------------
-> [ 2668.327448] inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W} usage.
-> [ 2668.327448] kswapd0/380 [HC0[0]:SC0[0]:HE1:SE1] takes:
-> [ 2668.327448]  (&inode->inotify_mutex){+.+.?.}, at: [<ffffffff8112f1b5>] inotify_inode_is_dead+0x35/0xb0
-> [ 2668.327448] {RECLAIM_FS-ON-W} state was registered at:
-> [ 2668.327448]   [<ffffffff81079188>] mark_held_locks+0x68/0x90
-> [ 2668.327448]   [<ffffffff810792a5>] lockdep_trace_alloc+0xf5/0x100
-> [ 2668.327448]   [<ffffffff810f5261>] __kmalloc_node+0x31/0x1e0
-> [ 2668.327448]   [<ffffffff81130652>] kernel_event+0xe2/0x190
-> [ 2668.327448]   [<ffffffff81130826>] inotify_dev_queue_event+0x126/0x230
-> [ 2668.327448]   [<ffffffff8112f096>] inotify_inode_queue_event+0xc6/0x110
-> [ 2668.327448]   [<ffffffff8110444d>] vfs_create+0xcd/0x140
-> [ 2668.327448]   [<ffffffff8110825d>] do_filp_open+0x88d/0xa20
-> [ 2668.327448]   [<ffffffff810f6b68>] do_sys_open+0x98/0x140
-> [ 2668.327448]   [<ffffffff810f6c50>] sys_open+0x20/0x30
-> [ 2668.327448]   [<ffffffff8100c272>] system_call_fastpath+0x16/0x1b
-> [ 2668.327448]   [<ffffffffffffffff>] 0xffffffffffffffff
-> [ 2668.327448] irq event stamp: 690455
-> [ 2668.327448] hardirqs last  enabled at (690455): [<ffffffff81564fe4>] _spin_unlock_irqrestore+0x44/0x80
-> [ 2668.327448] hardirqs last disabled at (690454): [<ffffffff81565372>] _spin_lock_irqsave+0x32/0xa0
-> [ 2668.327448] softirqs last  enabled at (690178): [<ffffffff81052282>] __do_softirq+0x202/0x220
-> [ 2668.327448] softirqs last disabled at (690157): [<ffffffff8100d50c>] call_softirq+0x1c/0x50
-> [ 2668.327448]
-> [ 2668.327448] other info that might help us debug this:
-> [ 2668.327448] 2 locks held by kswapd0/380:
-> [ 2668.327448]  #0:  (shrinker_rwsem){++++..}, at: [<ffffffff810d0bd7>] shrink_slab+0x37/0x180
-> [ 2668.327448]  #1:  (&type->s_umount_key#17){++++..}, at: [<ffffffff8110cfbf>] shrink_dcache_memory+0x11f/0x1e0
-> [ 2668.327448]
-> [ 2668.327448] stack backtrace:
-> [ 2668.327448] Pid: 380, comm: kswapd0 Not tainted 2.6.30-rc2-next-20090417 #203
-> [ 2668.327448] Call Trace:
-> [ 2668.327448]  [<ffffffff810789ef>] print_usage_bug+0x19f/0x200
-> [ 2668.327448]  [<ffffffff81018bff>] ? save_stack_trace+0x2f/0x50
-> [ 2668.327448]  [<ffffffff81078f0b>] mark_lock+0x4bb/0x6d0
-> [ 2668.327448]  [<ffffffff810799e0>] ? check_usage_forwards+0x0/0xc0
-> [ 2668.327448]  [<ffffffff8107b142>] __lock_acquire+0xc62/0x1ae0
-> [ 2668.327448]  [<ffffffff810f478c>] ? slob_free+0x10c/0x370
-> [ 2668.327448]  [<ffffffff8107c0a1>] lock_acquire+0xe1/0x120
-> [ 2668.327448]  [<ffffffff8112f1b5>] ? inotify_inode_is_dead+0x35/0xb0
-> [ 2668.327448]  [<ffffffff81562d43>] mutex_lock_nested+0x63/0x420
-> [ 2668.327448]  [<ffffffff8112f1b5>] ? inotify_inode_is_dead+0x35/0xb0
-> [ 2668.327448]  [<ffffffff8112f1b5>] ? inotify_inode_is_dead+0x35/0xb0
-> [ 2668.327448]  [<ffffffff81012fe9>] ? sched_clock+0x9/0x10
-> [ 2668.327448]  [<ffffffff81077165>] ? lock_release_holdtime+0x35/0x1c0
-> [ 2668.327448]  [<ffffffff8112f1b5>] inotify_inode_is_dead+0x35/0xb0
-> [ 2668.327448]  [<ffffffff8110c9dc>] dentry_iput+0xbc/0xe0
-> [ 2668.327448]  [<ffffffff8110cb23>] d_kill+0x33/0x60
-> [ 2668.327448]  [<ffffffff8110ce23>] __shrink_dcache_sb+0x2d3/0x350
-> [ 2668.327448]  [<ffffffff8110cffa>] shrink_dcache_memory+0x15a/0x1e0
-> [ 2668.327448]  [<ffffffff810d0cc5>] shrink_slab+0x125/0x180
-> [ 2668.327448]  [<ffffffff810d1540>] kswapd+0x560/0x7a0
-> [ 2668.327448]  [<ffffffff810ce160>] ? isolate_pages_global+0x0/0x2c0
-> [ 2668.327448]  [<ffffffff81065a30>] ? autoremove_wake_function+0x0/0x40
-> [ 2668.327448]  [<ffffffff8107953d>] ? trace_hardirqs_on+0xd/0x10
-> [ 2668.327448]  [<ffffffff810d0fe0>] ? kswapd+0x0/0x7a0
-> [ 2668.327448]  [<ffffffff8106555b>] kthread+0x5b/0xa0
-> [ 2668.327448]  [<ffffffff8100d40a>] child_rip+0xa/0x20
-> [ 2668.327448]  [<ffffffff8100cdd0>] ? restore_args+0x0/0x30
-> [ 2668.327448]  [<ffffffff81065500>] ? kthread+0x0/0xa0
-> [ 2668.327448]  [<ffffffff8100d400>] ? child_rip+0x0/0x20
-> 
-> cc: Al Viro <viro@zeniv.linux.org.uk>
-> cc: Matt Mackall <mpm@selenic.com>
-> cc: Christoph Lameter <clameter@sgi.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  fs/notify/inotify/inotify_user.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- mm.orig/fs/notify/inotify/inotify_user.c
-> +++ mm/fs/notify/inotify/inotify_user.c
-> @@ -220,7 +220,7 @@ static struct inotify_kernel_event * ker
->  				rem = 0;
->  		}
->  
-> -		kevent->name = kmalloc(len + rem, GFP_KERNEL);
-> +		kevent->name = kmalloc(len + rem, GFP_NOFS);
->  		if (unlikely(!kevent->name)) {
->  			kmem_cache_free(event_cachep, kevent);
->  			return NULL;
+> Seems to imply the 82801HBM/HEM SATA controller from the ICH8M/ICHM8-E
+> supports AHCI and NCQ, and this is the controller which is in the X61s
+> laptop.
 
-Somebody was going to fix this for us via lockdep annotation.
+The controller can be drive in two different modes - piix and ahci.
+In piix mode, it behaves like good old IDE controller from 15 years
+back and can't do NCQ.  Looks like your controller is in piix mode.
 
-<adds randomly-chosen cc>
+> So I wonder if it's safe to simply add ATA_FLAG_NCQ to ata_piix.c or
+> not?  Can someone who's more familiar with Intel's ICH8 SATA controller
+> comment on whether this would be a safe thing to do?
+
+Oh... please don't that.  It won't work.  On ICHs, whether the
+controller is put in piix or ahci mode is determined by the BIOS.
+Most desktop BIOSen have option to put the controller in different
+modes but most laptops don't seem to have such option.
+
+Thanks.
+
+-- 
+tejun
