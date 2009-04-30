@@ -1,154 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbZD3HUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbZD3HVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752631AbZD3HUB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 03:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbZD3HTv
+	id S1756579AbZD3HVp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 03:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbZD3HVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 03:19:51 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52765 "EHLO mx2.mail.elte.hu"
+	Thu, 30 Apr 2009 03:21:36 -0400
+Received: from ultra7.eskimo.com ([204.122.16.70]:2442 "EHLO ultra7.eskimo.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751112AbZD3HTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 03:19:50 -0400
-Date: Thu, 30 Apr 2009 09:18:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH 0/3] removing unwanted module configs
-Message-ID: <20090430071830.GC16737@elte.hu>
-References: <20090430030821.523327994@goodmis.org>
+	id S1751112AbZD3HVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 03:21:36 -0400
+Date: Thu, 30 Apr 2009 00:20:58 -0700
+From: Elladan <elladan@eskimo.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Elladan <elladan@eskimo.com>,
+       linux-kernel@vger.kernel.org, tytso@mit.edu,
+       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
+Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
+Message-ID: <20090430072057.GA4663@eskimo.com>
+References: <20090428044426.GA5035@eskimo.com> <20090428192907.556f3a34@bree.surriel.com> <1240987349.4512.18.camel@laptop> <20090429114708.66114c03@cuia.bos.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090430030821.523327994@goodmis.org>
+In-Reply-To: <20090429114708.66114c03@cuia.bos.redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> As it has been brought up last Kernel Summit, we want to make it easier
-> for those that report bugs to build their own kernels, and maybe even
-> bisect with git.  Some of these people are not programmers and do not
-> understand the complexity of the configuration options. But to compile
-> a distribution configured kernel on their boxes can take hours.
+On Wed, Apr 29, 2009 at 11:47:08AM -0400, Rik van Riel wrote:
+> When the file LRU lists are dominated by streaming IO pages,
+> evict those pages first, before considering evicting other
+> pages.
 > 
-> This patch series comes to the rescue. I wrote the first instance of
-> streamline config when I bought a new box in 2005 and got frustrated
-> with finding all the necessary configurations to boot it. It is a
-> small (yet powerful) perl script.
+> This should be safe from deadlocks or performance problems
+> because only three things can happen to an inactive file page:
+> 1) referenced twice and promoted to the active list
+> 2) evicted by the pageout code
+> 3) under IO, after which it will get evicted or promoted
 > 
-> Here's what it does:
+> The pages freed in this way can either be reused for streaming
+> IO, or allocated for something else. If the pages are used for
+> streaming IO, this pageout pattern continues. Otherwise, we will
+> fall back to the normal pageout pattern.
 > 
->  * Reads the modules that are load by using lsmod.
->  * Reads all Makefiles to map modules to CONFIG_* options
->  * Reads the Kconfig files to find dependencies and selects
->  * Figures out what CONFIGS are needed to compile the loaded modules
->  * Reads the .config and prints out a version with all module configurations
->     that not needed, disabled.
+> Signed-off-by: Rik van Riel <riel@redhat.com>
+> ---
+> On Wed, 29 Apr 2009 08:42:29 +0200
+> Peter Zijlstra <peterz@infradead.org> wrote:
 > 
-> The next two patches add options to make.
+> > Isn't there a hole where LRU_*_FILE << LRU_*_ANON and we now stop
+> > shrinking INACTIVE_ANON even though it makes sense to.
 > 
->  localmodconfig - this will run streamline_config.pl on the .config file
-> 	and replace it at the end.
+> Peter, after looking at this again, I believe that the get_scan_ratio
+> logic should take care of protecting the anonymous pages, so we can
+> get away with this following, less intrusive patch.
 > 
->  localyesconfig - this will do the same as localmodconfig but will also
-> 	sed -i s/=m/=y/  to turn all modules to core. It will also run
-> 	the 'make oldcondfig' to fix it up and let the user handle
-> 	andything that was changed by converting a module to core.
-> 
-> Anyway, this is now in git and as a series of patches here. My git 
-> tree is based off of the latest Linus git tree.
-> 
-> Have fun!
+> Elladan, does this smaller patch still work as expected?
 
-Very nice and useful!
+Rik, since the third patch doesn't work on 2.6.28 (without disabling a lot of
+code), I went ahead and tested this patch.
 
-I have given it a try - it works to a certain degree, but does not 
-seem to work fully. If i boot a Fedora distro kernel with this 
-module setup:
+The system does seem relatively responsive with this patch for the most part,
+with occasional lag.  I don't see much evidence at least over the course of a
+few minutes that it pages out applications significantly.  It seems about
+equivalent to the first patch.
 
-aldebaran:~/linux/linux> lsmod
-Module                  Size  Used by
-sunrpc                253904  1 
-ipv6                  349568  50 
-cpufreq_ondemand       73248  0 
-acpi_cpufreq           75408  0 
-freq_table             70400  2 cpufreq_ondemand,acpi_cpufreq
-dm_multipath           82256  0 
-i2c_i801               75932  0 
-i2c_core               87192  1 i2c_i801
-serio_raw              71556  0 
-pcspkr                 68352  0 
-pata_jmicron           69504  0 
-iTCO_wdt               78208  0 
-shpchp                 99160  0 
-iTCO_vendor_support    68868  1 iTCO_wdt
-igb                   144412  0 
-dca                    71976  1 igb
-pata_acpi              70528  0 
-ata_generic            71428  0 
+Given Andrew Morton's request that I track the Mapped: field in /proc/meminfo,
+I went ahead and did that with this patch built into a kernel.  Compared to the
+standard Ubuntu kernel, this patch keeps significantly more Mapped memory
+around, and it shrinks at a slower rate after the test runs for a while.
+Eventually, it seems to reach a steady state.
 
-note the 'igb' driver that is essential to be picked up. 'make 
-localyesconfig' complains:
+For example, with your patch, Mapped will often go for 30 seconds without
+changing significantly.  Without your patch, it continuously lost about
+500-1000K every 5 seconds, and then jumped up again significantly when I
+touched Firefox or other applications.  I do see some of that behavior with
+your patch too, but it's much less significant.
 
-  module igb did not have configs CONFIG_IGB
+When I first initiated the background load, Mapped did rapidly decrease from
+about 85000K to 47000K.  It seems to have reached a fairly steady state since
+then.  I would guess this implies that the VM paged out parts of my executable
+set that aren't touched very often, but isn't applying further pressure to my
+active pages?  Also for example, after letting the test run for a while, I
+scrolled around some tabs in firefox I hadn't used since the test began, and
+experienced significant lag.
 
-But:
+This seems ok (not disastrous, anyway).  I suspect desktop users would
+generally prefer the VM were extremely aggressive about keeping their
+executables paged in though, much moreso than this patch provides (and note how
+popular swappiness=0 seems to be).  Paging applications back in seems to
+introduce a large amount of UI latency, even if the VM keeps it to a sane level
+as with this patch.  Also, I don't see many desktop workloads where paging out
+applications to grow the data cache is ever helpful -- practically all desktop
+workloads where you get a lot of IO involve streaming, not data that might
+possibly fit in ram.  If I'm just copying a bunch of files around, I'd prefer
+that even "worthless" pages such as eg. parts of Firefox that are only used
+during load time or during rare config requests (and would thus not appear to
+be part of my working set short-term) stay in cache, so I can get the maximum
+interactive performance from my application.
 
-  # CONFIG_IGB is not set
+Thank you,
+Elladan
 
-It did pick up other essential drivers - such as ext3. Why did it 
-miss IGB? Here are all the missed drivers:
-
-aldebaran:~/linux/linux> make localyesconfig
-module ata_generic did not have configs CONFIG_ATA_GENERIC
-module iTCO_vendor_support did not have configs CONFIG_ITCO_WDT
-module shpchp did not have configs CONFIG_HOTPLUG_PCI_SHPC
-module acpi_cpufreq did not have configs CONFIG_IA64_ACPI_CPUFREQ CONFIG_X86_ACPI_CPUFREQ
-module pata_jmicron did not have configs CONFIG_PATA_JMICRON
-module i2c_i801 did not have configs CONFIG_I2C_I801
-module serio_raw did not have configs CONFIG_SERIO_RAW
-module iTCO_wdt did not have configs CONFIG_ITCO_WDT
-module freq_table did not have configs CONFIG_CPU_FREQ_TABLE
-module igb did not have configs CONFIG_IGB
-module ipv6 did not have configs CONFIG_IPV6
-module dca did not have configs CONFIG_DCA
-module sunrpc did not have configs CONFIG_SUNRPC
-module pata_acpi did not have configs CONFIG_PATA_ACPI
-module dm_multipath did not have configs CONFIG_DM_MULTIPATH
-module cpufreq_ondemand did not have configs 
-CONFIG_CPU_FREQ_GOV_ONDEMAND
-module i2c_core did not have configs CONFIG_I2C
-module pcspkr did not have configs CONFIG_INPUT_PCSPKR
-
-Of those drivers, igb is the only truly boot-critical one - the box 
-wont be very useful if it has no network support.
-
-Another comment: 'make localyesconfig' does not seem to be 
-self-invariant. I.e. it does not handle the case well when we 
-already have booted a localyesconfig kernel and do 'make 
-localyesconfig' again. It will find no modules and will merrily 
-create an almost empty .config.
-
-This could be addressed the following way: i think the script should 
-implicitly turn on CONFIG_IKCONFIG=y, and should also check for the 
-presence of /proc/config.gz and use it as a starting point. This 
-makes the whole concept nicely self-invariant.
-
-	Ingo
