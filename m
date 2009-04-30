@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763665AbZD3PD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763735AbZD3PEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763665AbZD3PD4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 11:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762803AbZD3PDp
+	id S1763735AbZD3PEh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 11:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760190AbZD3PEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 11:03:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60627 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762696AbZD3PDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 11:03:42 -0400
-Date: Thu, 30 Apr 2009 17:01:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, thomas.pi@arcor.dea,
-       Yuriy Lalym <ylalym@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ltt-dev@lists.casi.polymtl.ca, Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] Fix dirty page accounting in
-	redirty_page_for_writepage()
-Message-ID: <20090430150142.GC20580@elte.hu>
-References: <20090429232546.GB15782@Krystal> <alpine.LFD.2.00.0904291701450.22156@localhost.localdomain> <20090430024303.GB19875@Krystal> <alpine.DEB.1.10.0904300921290.22262@qirst.com> <20090430133859.GB8329@elte.hu> <alpine.DEB.1.10.0904300938220.22262@qirst.com> <20090430141446.GD14696@elte.hu> <alpine.DEB.1.10.0904301013110.14178@qirst.com> <20090430143819.GF14696@elte.hu> <alpine.DEB.1.10.0904301042170.4028@qirst.com>
+	Thu, 30 Apr 2009 11:04:24 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:42886 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758629AbZD3PEX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 11:04:23 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904301042170.4028@qirst.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1240388476.17445.10.camel@pasglop>
+References: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
+	 <625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
+	 <f73f7ab80904201710m57472291yf7ff86760977b8e8@mail.gmail.com>
+	 <1240388476.17445.10.camel@pasglop>
+Date: Thu, 30 Apr 2009 11:04:22 -0400
+Message-ID: <f73f7ab80904300804j1f847b70ha0fe3cda07249110@mail.gmail.com>
+Subject: Re: Porting the ibm_newemac driver to use phylib (and other PHY/MAC 
+	questions)
+From: Kyle Moffett <kyle@moffetthome.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, netdev <netdev@vger.kernel.org>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 22, 2009 at 4:21 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Mon, 2009-04-20 at 20:10 -0400, Kyle Moffett wrote:
+>> > IIRC, Ben had some issues with how phylib and the EMAC would need to
+>> > interact.  Not sure if he has those written down somewhere or not.
+>> > (CC'd).
+>>
+>> Hmm, yeah, I'd be interested to see those.  There's enough similar
+>> between phylib and the EMAC and sungem drivers that I'm considering a
+>> series of somewhat-mechanical patches to make EMAC and sungem use the
+>> "struct phy_device" and "struct mii_bus" from phylib, possibly
+>> abstracting out some helper functions along the way.
+>
+> Yup, emac and sungem predate phylib.
+>
+> I had a quick look at what it would take to port at least emac over, the
+> main issue was that I want to be able to sleep (ie, take a mutex) in my
+> mdio read/write functions, and back then, phylib wouldn't let me do that
+> due to spinlock and timer/softirq usage.
 
-* Christoph Lameter <cl@linux.com> wrote:
+Ok, I've made some progress in the port, but right now I'm trying to
+puzzle out what the "gpcs" bits in the code are.  From the few
+publicly available docs and some mailing list posts, the gpcs address
+appears to be some kind of integrated virtual PHY used when 460GT-ish
+chips are communicating via an SGMII bus.  My current plan of action
+is to separate the "gpcs" out into a separate PHY device controlled by
+the emac code.
 
-> On Thu, 30 Apr 2009, Ingo Molnar wrote:
-> 
-> > > Yes but sometimes you are already irq safe and such a fallback
-> > > would create significant irq/enable/disable stack operations etc
-> > > overhead for architectures that are using the fallback.
-> >
-> > It's a fallback slowpath - non-x86 architectures should still fill
-> > in a real implementation of course.
-> 
-> Arch code cannot provide an effective implementation since they
-> always have to assume that interupts need to be disabled if we stay with
-> the current implementation.
-> 
-> > So we first have to see the list of architectures that _cannot_
-> > implement an irq-safe op here via a single machine instruction.
-> > x86, ia64 and powerpc should be fine.
-> 
-> Look at Ia64, sparc, s/390, powerpc. They can fall back to atomic 
-> ops but those are very ineffective on some of these platforms. 
-> Since these are performance critical they will need to be 
-> optimized depending on the context of their use in the core.
+I'm also curious about the intent of the "mdio_instance" pointer (IE:
+the "mdio-device" property).  Is that used when all the PHY devices
+are attached to the MDIO bus of only one of the (multiple) emac
+devices?  Or is that for when two emac chipsets are connected to the
+same MDIO bus wire?  (or both?)  What keeps the emac_instance pointed
+to by the "mdio_instance" from going away while the other emac chipset
+is using it?
 
-Could you cite a specific example / situation where you'd use __xxx 
-ops?
+In either case, I plan to have the device actually holding the MDIO
+bus run the mdiobus_alloc() and mdiobus_register() functions, then the
+other emac instance will simply take a reference to that MDIO bus
+(which would also pin down the emac instance that owns it).
 
-	Ingo
+Cheers,
+Kyle Moffett
