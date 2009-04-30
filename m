@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765588AbZD3RrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932501AbZD3Rrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765588AbZD3RrT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764744AbZD3RIu
+	id S932501AbZD3Rrn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764659AbZD3RIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:08:50 -0400
+	Thu, 30 Apr 2009 13:08:51 -0400
 Received: from kroah.org ([198.145.64.141]:57022 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764673AbZD3RIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:08:32 -0400
+	id S1764683AbZD3RId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:08:33 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:51 2009
-Message-Id: <20090430165750.904441408@mini.kroah.org>
+Message-Id: <20090430165751.060525429@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:57:14 -0700
+Date: Thu, 30 Apr 2009 09:57:15 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Oleg Nesterov <oleg@redhat.com>,
-       Serge Hallyn <serue@us.ibm.com>, Roland McGrath <roland@redhat.com>
-Subject: [patch 85/88] exit_notify: kill the wrong capable(CAP_KILL) check (CVE-2009-1337)
+       alan@lxorguk.ukuu.org.uk, Michael Buesch <mb@bu3sch.de>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 86/88] b44: Use kernel DMA addresses for the kernel DMA API
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=exit_notify-kill-the-wrong-capable-check.patch
+Content-Disposition: inline; filename=b44-use-kernel-dma-addresses-for-the-kernel-dma-api.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,38 +39,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Oleg Nesterov <oleg@redhat.com>
+From: Michael Buesch <mb@bu3sch.de>
 
-CVE-2009-1337
+commit 37efa239901493694a48f1d6f59f8de17c2c4509 upstream.
 
-commit 432870dab85a2f69dc417022646cb9a70acf7f94 upstream.
+We must not use the device DMA addresses for the kernel DMA API, because
+device DMA addresses have an additional offset added for the SSB translation.
 
-The CAP_KILL check in exit_notify() looks just wrong, kill it.
+Use the original dma_addr_t for the sync operation.
 
-Whatever logic we have to reset ->exit_signal, the malicious user
-can bypass it if it execs the setuid application before exiting.
-
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Acked-by: Roland McGrath <roland@redhat.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: stable@kernel.org
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/exit.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/net/b44.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -942,8 +942,7 @@ static void exit_notify(struct task_stru
- 	 */
- 	if (tsk->exit_signal != SIGCHLD && !task_detached(tsk) &&
- 	    (tsk->parent_exec_id != tsk->real_parent->self_exec_id ||
--	     tsk->self_exec_id != tsk->parent_exec_id) &&
--	    !capable(CAP_KILL))
-+	     tsk->self_exec_id != tsk->parent_exec_id))
- 		tsk->exit_signal = SIGCHLD;
+--- a/drivers/net/b44.c
++++ b/drivers/net/b44.c
+@@ -750,7 +750,7 @@ static void b44_recycle_rx(struct b44 *b
+ 					     dest_idx * sizeof(dest_desc),
+ 					     DMA_BIDIRECTIONAL);
  
- 	signal = tracehook_notify_death(tsk, &cookie, group_dead);
+-	ssb_dma_sync_single_for_device(bp->sdev, le32_to_cpu(src_desc->addr),
++	ssb_dma_sync_single_for_device(bp->sdev, dest_map->mapping,
+ 				       RX_PKT_BUF_SZ,
+ 				       DMA_FROM_DEVICE);
+ }
 
 
