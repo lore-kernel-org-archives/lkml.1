@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761119AbZEAACU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765338AbZEAAC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761119AbZEAACU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 20:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764424AbZD3X6l
+	id S1765338AbZEAAC6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 20:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764420AbZD3X7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 19:58:41 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:61085 "EHLO
+	Thu, 30 Apr 2009 19:59:10 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:61105 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764214AbZD3X6k (ORCPT
+	by vger.kernel.org with ESMTP id S1758313AbZD3X7H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 19:58:40 -0400
+	Thu, 30 Apr 2009 19:59:07 -0400
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
        Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
        Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Greg Ungerer <gerg@uclinux.org>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Kyle McMartin <kyle@mcmartin.ca>,
+       Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
        Tim Abbott <tabbott@MIT.EDU>
-Subject: [PATCH 1/2] m68knommu: use new macro for .data.cacheline_aligned section.
-Date: Thu, 30 Apr 2009 19:50:11 -0400
-Message-Id: <1241135412-8636-2-git-send-email-tabbott@mit.edu>
+Subject: [PATCH 0/5] section name cleanup for parisc
+Date: Thu, 30 Apr 2009 19:55:14 -0400
+Message-Id: <1241135719-9286-1-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1241135412-8636-1-git-send-email-tabbott@mit.edu>
-References: <1241135412-8636-1-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Tim Abbott <tabbott@mit.edu>
-Cc: Greg Ungerer <gerg@uclinux.org>
----
- arch/m68knommu/kernel/vmlinux.lds.S |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+This patch series cleans up the section names on the parisc
+architecture.  It requires the architecture-independent macro
+definitions from this patch series:
 
-diff --git a/arch/m68knommu/kernel/vmlinux.lds.S b/arch/m68knommu/kernel/vmlinux.lds.S
-index b7fe505..f5154d9 100644
---- a/arch/m68knommu/kernel/vmlinux.lds.S
-+++ b/arch/m68knommu/kernel/vmlinux.lds.S
-@@ -147,8 +147,7 @@ SECTIONS {
- 		. = ALIGN(4);
- 		_sdata = . ;
- 		DATA_DATA
--		. = ALIGN(32);
--		*(.data.cacheline_aligned)
-+		CACHELINE_ALIGNED_DATA(32)
- 		. = ALIGN(8192) ;
- 		*(.data.init_task)
- 		_edata = . ;
--- 
-1.6.2.1
+<http://www.spinics.net/lists/mips/msg33499.html>
+
+The long-term goal here is to add support for building the kernel with
+-ffunction-sections -fdata-sections.  This requires renaming all the
+magic section names in the kernel of the form .text.foo, .data.foo,
+.bss.foo, and .rodata.foo to not have collisions with sections
+generated for code like:
+
+static int nosave = 0; /* -fdata-sections places in .data.nosave */
+static void head(); /* -ffunction-sections places in .text.head */
+
+Note that these patches have not been boot-tested (aside from testing
+the analogous changes on x86), since I don't have access to the
+appropriate hardware.
+
+	-Tim Abbott
+
+
+Tim Abbott (5):
+  parisc: use NOSAVE_DATA macro for .data.nosave section.
+  parisc: use new macro for .data.cacheline_aligned section.
+  parisc: use new macros for .data.init_task.
+  parisc: use new macro for .data.read_mostly section.
+  parisc: convert to new generic read_mostly support.
+
+ arch/parisc/Kconfig              |    3 +++
+ arch/parisc/include/asm/cache.h  |    2 --
+ arch/parisc/kernel/head.S        |    3 ++-
+ arch/parisc/kernel/init_task.c   |    2 +-
+ arch/parisc/kernel/vmlinux.lds.S |   36 +++++-------------------------------
+ 5 files changed, 11 insertions(+), 35 deletions(-)
 
