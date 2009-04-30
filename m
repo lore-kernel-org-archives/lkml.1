@@ -1,182 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750867AbZD3EME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751039AbZD3EPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750867AbZD3EME (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 00:12:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbZD3ELw
+	id S1751039AbZD3EPk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 00:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763AbZD3EPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 00:11:52 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52770 "EHLO mx1.suse.de"
+	Thu, 30 Apr 2009 00:15:31 -0400
+Received: from ultra7.eskimo.com ([204.122.16.70]:1360 "EHLO ultra7.eskimo.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750706AbZD3ELv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 00:11:51 -0400
-Date: Thu, 30 Apr 2009 06:11:46 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Sachin Sant <sachinp@in.ibm.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linuxppc-dev@ozlabs.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: Next April 28: boot failure on PowerPC with SLQB
-Message-ID: <20090430041146.GB23746@wotan.suse.de>
-References: <20090428165343.2e357d7a.sfr@canb.auug.org.au> <49F6E421.401@in.ibm.com> <84144f020904280422s6a9a277fjc4619c904f37e5ca@mail.gmail.com> <20090429113604.GE3398@wotan.suse.de> <49F87FAB.9050408@in.ibm.com>
-Mime-Version: 1.0
+	id S1750745AbZD3EPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 00:15:30 -0400
+Date: Wed, 29 Apr 2009 21:14:39 -0700
+From: Elladan <elladan@eskimo.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Theodore Tso <tytso@mit.edu>, Wu Fengguang <fengguang.wu@intel.com>,
+       Peter Zijlstra <peterz@infradead.org>, Elladan <elladan@eskimo.com>,
+       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: Swappiness vs. mmap() and interactive response
+Message-ID: <20090430041439.GA6110@eskimo.com>
+References: <20090428090916.GC17038@localhost> <20090428120818.GH22104@mit.edu> <20090429130430.4B11.A69D9226@jp.fujitsu.com> <20090428233455.614dcf3a.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49F87FAB.9050408@in.ibm.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090428233455.614dcf3a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 09:56:19PM +0530, Sachin Sant wrote:
-> Nick Piggin wrote:
-> >Does this help?
-> >---
-> With the patch the machine boots past the failure point, but panics
-> immediately with the following trace...
+On Tue, Apr 28, 2009 at 11:34:55PM -0700, Andrew Morton wrote:
+> On Wed, 29 Apr 2009 14:51:07 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > Hi
+> > 
+> > > On Tue, Apr 28, 2009 at 05:09:16PM +0800, Wu Fengguang wrote:
+> > > > The semi-drop-behind is a great idea for the desktop - to put just
+> > > > accessed pages to end of LRU. However I'm still afraid it vastly
+> > > > changes the caching behavior and wont work well as expected in server
+> > > > workloads - shall we verify this?
+> > > > 
+> > > > Back to this big-cp-hurts-responsibility issue. Background write
+> > > > requests can easily pass the io scheduler's obstacles and fill up
+> > > > the disk queue. Now every read request will have to wait 10+ writes
+> > > > - leading to 10x slow down of major page faults.
+> > > > 
+> > > > I reach this conclusion based on recent CFQ code reviews. Will bring up
+> > > > a queue depth limiting patch for more exercises..
+> > > 
+> > > We can muck with the I/O scheduler, but another thing to consider is
+> > > whether the VM should be more aggressively throttling writes in this
+> > > case; it sounds like the big cp in this case may be dirtying pages so
+> > > aggressively that it's driving other (more useful) pages out of the
+> > > page cache --- if the target disk is slower than the source disk (for
+> > > example, backing up a SATA primary disk to a USB-attached backup disk)
+> > > no amount of drop-behind is going to help the situation.
+> > > 
+> > > So that leaves three areas for exploration:
+> > > 
+> > > * Write-throttling
+> > > * Drop-behind
+> > > * background writes pushing aside foreground reads
+> > > 
+> > > Hmm, note that although the original bug reporter is running Ubuntu
+> > > Jaunty, and hence 2.6.28, this problem is going to get *worse* with
+> > > 2.6.30, since we have the ext3 data=ordered latency fixes which will
+> > > write out the any journal activity, and worse, any synchornous commits
+> > > (i.e., caused by fsync) will force out all of the dirty pages with
+> > > WRITE_SYNC priority.  So with a heavy load, I suspect this is going to
+> > > be more of a VM issue, and especially figuring out how to tune more
+> > > aggressive write-throttling may be key here.
+> > 
+> > firstly, I'd like to report my reproduce test result.
+> > 
+> > test environment: no lvm, copy ext3 to ext3 (not mv), no change swappiness, 
+> >                   CFQ is used, userland is Fedora10, mmotm(2.6.30-rc1 + mm patch),
+> >                   CPU opteronx4, mem 4G
+> > 
+> > mouse move lag:               not happend
+> > window move lag:              not happend
+> > Mapped page decrease rapidly: not happend (I guess, these page stay in 
+> >                                           active list on my system)
+> > page fault large latency:     happend (latencytop display >200ms)
+> 
+> hm.  The last two observations appear to be inconsistent.
+> 
+> Elladan, have you checked to see whether the Mapped: number in
+> /proc/meminfo is decreasing?
 
-OK good, that solves one problem.
+Yes, Mapped decreases while a large file copy is ongoing.  It increases again
+if I use the GUI.
 
- 
-> Unable to handle kernel paging request for data at address 0x00000010
-> Faulting instruction address: 0xc0000000007d03ec
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> SMP NR_CPUS=1024 DEBUG_PAGEALLOC NUMA pSeries
-> Modules linked in:
-> NIP: c0000000007d03ec LR: c0000000007b0bbc CTR: 0000000000136f8c
-> REGS: c000000000a23bd0 TRAP: 0300   Not tainted  (2.6.30-rc3-next-20090429)
-> MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 28000084  XER: 00000010
-> DAR: 0000000000000010, DSISR: 0000000040000000
-> TASK = c000000000955fc0[0] 'swapper' THREAD: c000000000a20000 CPU: 0
-> GPR00: 0000000000000001 c000000000a23e50 c000000000a17650 000000000000001f
-> GPR04: 0000000000000000 ffffffffffffffff 000000000077a4b9 800000000c9b2cc0
-> GPR08: 0000000000000000 0000000000000010 0000000000000000 c00000000095b0f8
-> GPR12: 0000000028000082 c000000000af2400 c0000000007f3200 c000000000705c32
-> GPR16: 00000000014f3138 0000000000000000 c0000000007f3138 0000000002f1fc90
-> GPR20: c0000000007f3150 c000000000725d11 00000000007bb8e4 0000000002f1fc90
-> GPR24: 0000000002f1fc90 c0000000007f31f0 0000000000d00000 c000000000b73b10
-> GPR28: c0000000007f0440 c00000000095db00 c00000000098d5f0 0000000003c90000
-> NIP [c0000000007d03ec] .pidmap_init+0x28/0x88
+> > Then, I don't doubt vm replacement logic now.
+> > but I need more investigate.
+> > I plan to try following thing today and tommorow.
+> > 
+> >  - XFS
+> >  - LVM
+> >  - another io scheduler (thanks Ted, good view point)
+> >  - Rik's new patch
+> 
+> It's not clear that we know what's happening yet, is it?  It's such a
+> gross problem that you'd think that even our testing would have found
+> it by now :(
+> 
+> Elladan, do you know if earlier kernels (2.6.26 or thereabouts) had
+> this severe a problem?
 
-Well kmalloc is failing. It should not be though, even if the
-current node is offline, it should be able to fall back to other
-nodes. Stephen's trace indicates the same thing.
+No, I don't know about older kernels.
 
-Could you try the following patch please, and capture the output
-it generates?
+Also, just to add a bit: I'm having some difficulty reproducing the extremely
+severe latency I was seeing right off.  It's not difficult for me to reproduce
+latencies that are painful, but not on the order of 10 second response.  Maybe
+3 or 4 seconds at most.  I didn't have a stopwatch handy originally though, so
+it's somewhat subjective, but I wonder if there's some element of the load that
+I'm missing.
 
-Thanks,
-Nick
----
- mm/slqb.c |   40 ++++++++++++++++++++++++++++++++++------
- 1 file changed, 34 insertions(+), 6 deletions(-)
+I had a theory about why this might be: my original repro was copying data
+which I believe had been written once, but never read.  Plus, I was using
+relatime.  However, on second thought this doesn't work -- there's only 8000
+files, and a re-test with atime turned on isn't much different than with
+relatime.
 
-Index: linux-2.6/mm/slqb.c
-===================================================================
---- linux-2.6.orig/mm/slqb.c
-+++ linux-2.6/mm/slqb.c
-@@ -1456,7 +1456,7 @@ static void *__remote_slab_alloc_node(st
- }
- 
- static noinline void *__remote_slab_alloc(struct kmem_cache *s,
--				gfp_t gfpflags, int node)
-+				gfp_t gfpflags, int node, int trace)
- {
- 	void *object;
- 	struct zonelist *zonelist;
-@@ -1465,19 +1465,32 @@ static noinline void *__remote_slab_allo
- 	enum zone_type high_zoneidx = gfp_zone(gfpflags);
- 
- 	object = __remote_slab_alloc_node(s, gfpflags, node);
-+	if (trace && !object)
-+		printk("__remote_slab_alloc_node(node:%d) failed\n", node);
- 	if (likely(object || (gfpflags & __GFP_THISNODE)))
- 		return object;
- 
--	zonelist = node_zonelist(slab_node(current->mempolicy), gfpflags);
-+	node = slab_node(current->mempolicy);
-+	if (trace)
-+		printk("slab_node(current->mempolicy) = %d\n", node);
-+
-+	zonelist = node_zonelist(node, gfpflags);
- 	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
--		if (!cpuset_zone_allowed_hardwall(zone, gfpflags))
-+		if (!cpuset_zone_allowed_hardwall(zone, gfpflags)) {
-+			if (trace)
-+				printk("cpuset not allowed node:%d\n", zone_to_nid(zone));
- 			continue;
-+		}
- 
- 		node = zone_to_nid(zone);
- 		object = __remote_slab_alloc_node(s, gfpflags, node);
- 		if (likely(object))
- 			return object;
-+		if (trace)
-+			printk("__remote_slab_alloc_node(node:%d) failed\n", node);
- 	}
-+	if (trace)
-+		printk("__remote_slab_alloc failed\n");
- 	return NULL;
- }
- #endif
-@@ -1488,7 +1501,7 @@ static noinline void *__remote_slab_allo
-  * Must be called with interrupts disabled.
-  */
- static __always_inline void *__slab_alloc(struct kmem_cache *s,
--				gfp_t gfpflags, int node)
-+				gfp_t gfpflags, int node, int trace)
- {
- 	void *object;
- 	struct kmem_cache_cpu *c;
-@@ -1497,7 +1510,7 @@ static __always_inline void *__slab_allo
- #ifdef CONFIG_NUMA
- 	if (unlikely(node != -1) && unlikely(node != numa_node_id())) {
- try_remote:
--		return __remote_slab_alloc(s, gfpflags, node);
-+		return __remote_slab_alloc(s, gfpflags, node, trace);
- 	}
- #endif
- 
-@@ -1509,6 +1522,8 @@ try_remote:
- 		object = cache_list_get_page(s, l);
- 		if (unlikely(!object)) {
- 			object = __slab_alloc_page(s, gfpflags, node);
-+			if (trace && !object)
-+				printk("__slab_alloc_page(node:%d) failed\n", node);
- #ifdef CONFIG_NUMA
- 			if (unlikely(!object)) {
- 				node = numa_node_id();
-@@ -1532,10 +1547,11 @@ static __always_inline void *slab_alloc(
- {
- 	void *object;
- 	unsigned long flags;
-+	int trace = 0;
- 
- again:
- 	local_irq_save(flags);
--	object = __slab_alloc(s, gfpflags, node);
-+	object = __slab_alloc(s, gfpflags, node, trace);
- 	local_irq_restore(flags);
- 
- 	if (unlikely(slab_debug(s)) && likely(object)) {
-@@ -1546,6 +1562,18 @@ again:
- 	if (unlikely(gfpflags & __GFP_ZERO) && likely(object))
- 		memset(object, 0, s->objsize);
- 
-+	if (!object && !trace) {
-+		trace = 1;
-+		dump_stack();
-+		printk("slab_alloc allocation failed\n");
-+		printk("slab:%s flags:%x node:%d\n", s->name, gfpflags, node);
-+		goto again;
-+	}
-+	if (trace) {
-+		if (object)
-+			printk("slab_alloc allocation worked when being traced, bugger\n");
-+	}
-+
- 	return object;
- }
- 
+The other possibility is that there was some other background IO load spike,
+which I didn't notice at the time.  I don't know what that would be though,
+unless it was one of gnome's indexing jobs (I didn't see one, though).
 
+-Elladan
 
