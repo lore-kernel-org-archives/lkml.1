@@ -1,80 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763947AbZD3Nzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763996AbZD3Nz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763947AbZD3Nzf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 09:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762233AbZD3NzU
+	id S1763996AbZD3Nz7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 09:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763946AbZD3Nzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 09:55:20 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:62343 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1762222AbZD3NzR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 09:55:17 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsFAD9E+UlMQW1W/2dsb2JhbACBUM4kg38F
-Date: Thu, 30 Apr 2009 09:50:05 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+	Thu, 30 Apr 2009 09:55:35 -0400
+Received: from web50105.mail.re2.yahoo.com ([206.190.38.33]:23075 "HELO
+	web50105.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1763841AbZD3Nze convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 09:55:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=3Rv4JE+zvUr0veSmVmABdPh3u6Li9LaBfcmR4rNOgVwmn/M5Q1iZRBltmB+k2GhGu+Fwc+/sMfU6240HCOPKEJ3OucurDDphqIX3YzVRNjozqnCXsnsshCgP4nHQ3v7s9rFihzsEv6HH5vTsG690eW9VDx9br2dCc8Gpfx0vcQA=;
+Message-ID: <37726.64726.qm@web50105.mail.re2.yahoo.com>
+X-YMail-OSG: GJLJ9uAVM1kKiNG0Em.dw0Erokb1_0aW1ppv2DjIs34Zci9x4p4evTUg5Ag6qu4MIqDoR5pIqSHLkbae_Scn.pCZ_rGdu65NGLukjgGZyEB6FBLb.43N84Y00OG1ZtliNFW8aqo.kFwEH08kTHuEBSmqebOFhUHq9F6ZHKfzJopGXRiY3HbXl2xHmFV1O3SvJJM2hduZXwDfob8cI1ItrwrtWBw9GoETNm6rLUsQgjSLd74D5.HtlFXiEXLWiLz.d.EDpaJ7HKe2AcfmhlrxNZiHJ.u9GPh8kzgyG_wwean.KngFoaOCmQoBtgRyzl6G
+X-Mailer: YahooMailClassic/5.3.9 YahooMailWebService/0.7.289.10
+Date: Thu, 30 Apr 2009 06:55:32 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Subject: Re: [PATCH 20/21] amd64_edac: add DRAM error injection logic using sysfs
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Lameter <cl@linux.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, thomas.pi@arcor.dea,
-       Yuriy Lalym <ylalym@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ltt-dev@lists.casi.polymtl.ca
-Subject: Re: [PATCH] Fix dirty page accounting in
-	redirty_page_for_writepage()
-Message-ID: <20090430135005.GA5922@Krystal>
-References: <20090429232546.GB15782@Krystal> <alpine.LFD.2.00.0904291701450.22156@localhost.localdomain> <20090430024303.GB19875@Krystal> <alpine.DEB.1.10.0904300921290.22262@qirst.com> <20090430133859.GB8329@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090430133859.GB8329@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:46:26 up 61 days, 10:12,  1 user,  load average: 0.62, 0.75,
-	0.58
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Cc: Borislav Petkov <borislav.petkov@amd.com>, akpm@linux-foundation.org,
+       greg@kroah.com, tglx@linutronix.de, hpa@zytor.com,
+       dougthompson@xmission.com, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
+
+--- On Thu, 4/30/09, Ingo Molnar <mingo@elte.hu> wrote:
+
+> From: Ingo Molnar <mingo@elte.hu>
+> Subject: Re: [PATCH 20/21] amd64_edac: add DRAM error injection logic using sysfs
+> To: "Doug Thompson" <norsk5@yahoo.com>
+> Cc: "Borislav Petkov" <borislav.petkov@amd.com>, akpm@linux-foundation.org, greg@kroah.com, tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com, linux-kernel@vger.kernel.org
+> Date: Thursday, April 30, 2009, 2:34 AM
 > 
-> * Christoph Lameter <cl@linux.com> wrote:
+> * Doug Thompson <norsk5@yahoo.com>
+> wrote:
 > 
-> > On Wed, 29 Apr 2009, Mathieu Desnoyers wrote:
 > > 
-> > > to have a good look at the memory accounting code. We could 
-> > > probably benefit of Christoph Lameter's cpu ops (using segment 
-> > > registers to address per-cpu variables with atomic inc/dec) in 
-> > > there. Or at least removing interrupt disabling by using preempt 
-> > > disable and local_t variables for the per-cpu counters could 
-> > > bring some benefit.
+> > I believe I failed to reply to ALL and replied only to
+> the sender
 > > 
-> > Guess we are ready for atomic per cpu ops now that the new per cpu 
-> > allocator is in? Segment register issues with the PDA are also 
-> > solved right?
+> > doug t
+> > 
+> > --- On Wed, 4/29/09, Ingo Molnar <mingo@elte.hu>
+> wrote:
+> > 
+> > > From: Ingo Molnar <mingo@elte.hu>
+> > > Subject: Re: [PATCH 20/21] amd64_edac: add DRAM
+> error injection logic using sysfs
+> > > To: "Borislav Petkov" <borislav.petkov@amd.com>
+> > > Cc: akpm@linux-foundation.org,
+> greg@kroah.com, tglx@linutronix.de,
+> hpa@zytor.com, dougthompson@xmission.com,
+> linux-kernel@vger.kernel.org
+> > > Date: Wednesday, April 29, 2009, 12:17 PM
+> > > 
+> > > * Borislav Petkov <borislav.petkov@amd.com>
+> > > wrote:
+> > > 
+> > > > From: Doug Thompson <dougthompson@xmission.com>
+> > > > 
+> > > > Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+> > > > Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+> > > > ---
+> > > >  drivers/edac/amd64_edac.c |  287
+> > > +++++++++++++++++++++++++++++++++++++++++++++
+> > > >  1 files changed, 287 insertions(+), 0
+> > > deletions(-)
+> > > > 
+> > > > diff --git a/drivers/edac/amd64_edac.c
+> > > b/drivers/edac/amd64_edac.c
+> > > > index b1a7e8c..4d1076f 100644
+> > > > --- a/drivers/edac/amd64_edac.c
+> > > > +++ b/drivers/edac/amd64_edac.c
+> > > > @@ -4621,3 +4621,290 @@ static ssize_t
+> > > amd64_hole_show(struct mem_ctl_info *mci, char
+> *data)
+> > > >  
+> > > >  #endif    /* DEBUG */
+> > > >  
+> > > > +#ifdef
+> CONFIG_EDAC_AMD64_OPTERON_ERROR_INJECTION
+> > > 
+> > > this should be in a separate .c file under
+> > > drivers/edac/amd64/. 
+> > > 
+> > > Introducing large #ifdef sections like that is
+> not very
+> > > clean. The 
+> > > amd64_edac.c file is _way_ too large at more than
+> 5000
+> > > lines of 
+> > > code.
+> > > 
+> > >     Ingo
+> > 
+> > If we broke this into a separate files, then there
+> would be TWO 
+> > (2) files: 1 for the source code of the routines and a
+> 1 for the 
+> > table entries which reference those routines. Is that
+> then 
+> > acceptable as well?
+> > 
+> > Same pattern applies to the DEBUG functions Info
+> refers to in 
+> > another thread: 2 separate files would be required as
+> well.
+> > 
+> > 2 files for Error Injection code
+> > 2 files for DEBUG controls
+> > 1 files for text mapping
+> > 
+> > and I assume all these would be included via an
+> #include statement 
+> > at their appropriate locations
 > 
-> it's all done, implemented and upstream already. You are a bit late 
-> to the party ;-)
+> A Makefile might be more natural i think - that way the
+> #ifdef turns 
+> into a makefile rule?
 > 
-> 	Ingo
+>     Ingo
+> 
 
-Or way too early, depending on the point of view. :-)
+OK, yes for the separate and standalone functions themselves, but NOT for the function pointer table entries, which also share the table with the DEBUG function pointers and possibly function pointers to code that is not bracketed by #ifdefs 
 
-e.g.
-http://lkml.org/lkml/2008/5/30/3
+The function pointer table itself is/can be composed of several entries, not just of the injection or debug kind. In this instance, that is what is there, but I would prefer to allow for future additions not tied to injection and/or debug origins nor of #ifdef bracketing
 
-I think Christoph deserves credits for pioneering this area with fresh
-ideas.
+doug t
 
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
