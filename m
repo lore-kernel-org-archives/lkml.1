@@ -1,110 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbZD3Iem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760958AbZD3IhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbZD3Iem (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 04:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbZD3IeY
+	id S1760958AbZD3IhT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 04:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbZD3Ig5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 04:34:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38208 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751329AbZD3IeX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 04:34:23 -0400
-Date: Thu, 30 Apr 2009 10:34:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Doug Thompson <norsk5@yahoo.com>
-Cc: Borislav Petkov <borislav.petkov@amd.com>, akpm@linux-foundation.org,
-       greg@kroah.com, tglx@linutronix.de, hpa@zytor.com,
-       dougthompson@xmission.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 20/21] amd64_edac: add DRAM error injection logic using
-	sysfs
-Message-ID: <20090430083411.GC21699@elte.hu>
-References: <20977.9082.qm@web50109.mail.re2.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20977.9082.qm@web50109.mail.re2.yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 30 Apr 2009 04:36:57 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:47920 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751539AbZD3Ig4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 04:36:56 -0400
+Subject: Re: iwlwifi: remove EXPORT_SYMBOL for static symbol
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <m28wlih7sw.fsf@igel.home>
+References: <m24ow6vah1.fsf@igel.home>
+	 <1241078967.25477.8.camel@johannes.local>  <m28wlih7sw.fsf@igel.home>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-/2AfDCD0oDCL+HnpjFPI"
+Date: Thu, 30 Apr 2009 10:36:23 +0200
+Message-Id: <1241080583.27290.0.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Doug Thompson <norsk5@yahoo.com> wrote:
+--=-/2AfDCD0oDCL+HnpjFPI
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> I believe I failed to reply to ALL and replied only to the sender
-> 
-> doug t
-> 
-> --- On Wed, 4/29/09, Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > From: Ingo Molnar <mingo@elte.hu>
-> > Subject: Re: [PATCH 20/21] amd64_edac: add DRAM error injection logic using sysfs
-> > To: "Borislav Petkov" <borislav.petkov@amd.com>
-> > Cc: akpm@linux-foundation.org, greg@kroah.com, tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com, linux-kernel@vger.kernel.org
-> > Date: Wednesday, April 29, 2009, 12:17 PM
-> > 
-> > * Borislav Petkov <borislav.petkov@amd.com>
-> > wrote:
-> > 
-> > > From: Doug Thompson <dougthompson@xmission.com>
-> > > 
-> > > Signed-off-by: Doug Thompson <dougthompson@xmission.com>
-> > > Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-> > > ---
-> > >  drivers/edac/amd64_edac.c |  287
-> > +++++++++++++++++++++++++++++++++++++++++++++
-> > >  1 files changed, 287 insertions(+), 0
-> > deletions(-)
-> > > 
-> > > diff --git a/drivers/edac/amd64_edac.c
-> > b/drivers/edac/amd64_edac.c
-> > > index b1a7e8c..4d1076f 100644
-> > > --- a/drivers/edac/amd64_edac.c
-> > > +++ b/drivers/edac/amd64_edac.c
-> > > @@ -4621,3 +4621,290 @@ static ssize_t
-> > amd64_hole_show(struct mem_ctl_info *mci, char *data)
-> > >  
-> > >  #endif    /* DEBUG */
-> > >  
-> > > +#ifdef CONFIG_EDAC_AMD64_OPTERON_ERROR_INJECTION
-> > 
-> > this should be in a separate .c file under
-> > drivers/edac/amd64/. 
-> > 
-> > Introducing large #ifdef sections like that is not very
-> > clean. The 
-> > amd64_edac.c file is _way_ too large at more than 5000
-> > lines of 
-> > code.
-> > 
-> >     Ingo
-> 
-> If we broke this into a separate files, then there would be TWO 
-> (2) files: 1 for the source code of the routines and a 1 for the 
-> table entries which reference those routines. Is that then 
-> acceptable as well?
-> 
-> Same pattern applies to the DEBUG functions Info refers to in 
-> another thread: 2 separate files would be required as well.
-> 
-> 2 files for Error Injection code
-> 2 files for DEBUG controls
-> 1 files for text mapping
-> 
-> and I assume all these would be included via an #include statement 
-> at their appropriate locations
+On Thu, 2009-04-30 at 10:20 +0200, Andreas Schwab wrote:
 
-A Makefile might be more natural i think - that way the #ifdef turns 
-into a makefile rule?
+> >> drivers/net/wireless/iwlwifi/iwl3945-base.c:1697: error:
+> >> __ksymtab_iwl3945_rx_queue_reset causes a section type conflict
 
-	Ingo
+> > At least in my tree the function isn't static...(yet I still got the
+> > compiler error)?
+>=20
+> The static function is iwl3945_rx_queue_free.
+
+Oh. I have to admit to not looking that far, thanks.
+
+johannes
+
+--=-/2AfDCD0oDCL+HnpjFPI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJ+WMEAAoJEKVg1VMiehFYR8sP/A3IjvGGG4zfsYiO1IfYl2ge
+meZxn4Ami5wm/DbPU9Rud1Lt7QanbAkqPstBg0ymB0pM+8lgO4XObTxSi6j8x8Mn
+cOw/9McTZXha5bbWJOTgzXGDeyw/LJl1+bEtYvzLbwPVJe1nWs0aa8qasH+nthB1
+gBkh2/qAQrsPTsCSovr4u3zzJMAdfaEZFy6kKUBuN2no8qW15mg72lapTRi14+di
+myY7CekMdelANQ1E5M3JG3PM/wqa5QZTdJ+SjbEtE951jCDeN7jLmn5YSGEE4mPH
+kVSs2BmXcxiTzwvwWywCpNjhXbrApM3Qs7YNdA1RPc6f0cJHMWQO2+Jsz2WSZ1GA
+05HLW+KYm3nRe9EXip2ko9HDZCrRqMN1/9V1E9xbKnGTvvn1f4SKCdmEHe+UAiUt
+W+sW+kHGqDiZ6L51iNt2mZo8XiWsAhdcWbIboGxyPq6k08PxVrszYU//RMOTG3SR
+2gaVIEGh9qgATxN+5WkCbjUfijMa7Q6a6lo+EjfwgjPLPZNqu1+W7mkijpXFgho0
+warGupBcJFcfoHLlmM/JTMuVpQ8CQn+FD69CSCH1MlMGhcUQ/AoTShAs78rZPLBx
+YMWftKPoqBrUrsET3k2zsFAAQYM3U+qa+ol6VSJh+kGgZzXzygi2Ug8uV0X+i+wz
+WgLiCsT3XWpZM8c8k+gQ
+=0Zt/
+-----END PGP SIGNATURE-----
+
+--=-/2AfDCD0oDCL+HnpjFPI--
+
