@@ -1,322 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761368AbZD3IWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761161AbZD3IWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761368AbZD3IWO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 04:22:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZD3IV4
+	id S1761161AbZD3IWu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 04:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbZD3IW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 04:21:56 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55990 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751292AbZD3IVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 04:21:54 -0400
-Message-ID: <49F95F84.1030901@kernel.org>
-Date: Thu, 30 Apr 2009 01:21:24 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 30 Apr 2009 04:22:29 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:40805 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754234AbZD3IWZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 04:22:25 -0400
+Date: Thu, 30 Apr 2009 11:48:06 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Balaji Rao <balajirrao@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH v2] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu
+	cputime count
+Message-ID: <20090430061806.GC4430@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090430151008.D21C.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org
-Subject: [PATCH 2/4] x86/pci: add 4 more return param in IO_APIC_get_PCI_irq_vector
-References: <49F8B2D9.3080903@kernel.org>
-In-Reply-To: <49F8B2D9.3080903@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090430151008.D21C.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-04-30 15:11:15]:
 
+> 
+> Changelog:
+>   since v1
+>   - use percpu_counter_sum() instead percpu_counter_read()
+> 
+> 
+> -------------------------------------
+> Subject: [PATCH v2] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
+> 
+> cpuacct_update_stats() is called at every tick updating. and it use percpu_counter
+> for avoiding performance degression.
+> 
+> For archs which define VIRT_CPU_ACCOUNTING, every tick would result
+> in >1000 units of cputime updates and since this is much much greater
+> than percpu_batch_counter, we end up taking spinlock on every tick.
+> 
+> This patch change batch rule. now, any cpu can store "percpu_counter_bach * jiffies"
+> cputime in per-cpu cache.
+> it mean this patch don't have behavior change if VIRT_CPU_ACCOUNTING=n.
+> 
+> Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> Cc: Balaji Rao <balajirrao@gmail.com>
+> Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  kernel/sched.c |    8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+> 
+> Index: b/kernel/sched.c
+> ===================================================================
+> --- a/kernel/sched.c	2009-04-30 11:37:47.000000000 +0900
+> +++ b/kernel/sched.c	2009-04-30 14:17:00.000000000 +0900
+> @@ -10221,6 +10221,7 @@ struct cpuacct {
+>  };
+> 
+>  struct cgroup_subsys cpuacct_subsys;
+> +static s32 cpuacct_batch;
+> 
+>  /* return cpu accounting group corresponding to this container */
+>  static inline struct cpuacct *cgroup_ca(struct cgroup *cgrp)
+> @@ -10250,6 +10251,9 @@ static struct cgroup_subsys_state *cpuac
+>  	if (!ca->cpuusage)
+>  		goto out_free_ca;
+> 
+> +	if (!cpuacct_batch)
+> +		cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
+> +
+>  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
+>  		if (percpu_counter_init(&ca->cpustat[i], 0))
+>  			goto out_free_counters;
+> @@ -10376,7 +10380,7 @@ static int cpuacct_stats_show(struct cgr
+>  	int i;
+> 
+>  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
+> -		s64 val = percpu_counter_read(&ca->cpustat[i]);
+> +		s64 val = percpu_counter_sum(&ca->cpustat[i]);
+>  		val = cputime64_to_clock_t(val);
+>  		cb->fill(cb, cpuacct_stat_desc[i], val);
+>  	}
+> @@ -10446,7 +10450,7 @@ static void cpuacct_update_stats(struct 
+>  	ca = task_ca(tsk);
+> 
+>  	do {
+> -		percpu_counter_add(&ca->cpustat[idx], val);
+> +		__percpu_counter_add(&ca->cpustat[idx], val, cpuacct_batch);
+>  		ca = ca->parent;
+>  	} while (ca);
+>  	rcu_read_unlock();
+> 
+>
 
-so prepare those params for pcibios_irq_enable to call setup_io_apic_routing
+What do the test results look like with this? I'll see if I can find
+some time to test this patch. On a patch read level this seems much better
+to me, Peter?
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
----
- arch/x86/include/asm/hw_irq.h     |    4 +
- arch/x86/kernel/apic/io_apic.c    |  107 ++++++++++++++++++++------------------
- arch/x86/pci/irq.c                |   24 +++++++-
- drivers/pci/hotplug/ibmphp_core.c |   52 +++++++++---------
- 4 files changed, 110 insertions(+), 77 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-@@ -874,54 +874,6 @@ static int __init find_isa_irq_apic(int
- 	return -1;
- }
- 
--/*
-- * Find a specific PCI IRQ entry.
-- * Not an __init, possibly needed by modules
-- */
--static int pin_2_irq(int idx, int apic, int pin);
--
--int IO_APIC_get_PCI_irq_vector(int bus, int slot, int pin)
--{
--	int apic, i, best_guess = -1;
--
--	apic_printk(APIC_DEBUG, "querying PCI -> IRQ mapping bus:%d, slot:%d, pin:%d.\n",
--		bus, slot, pin);
--	if (test_bit(bus, mp_bus_not_pci)) {
--		apic_printk(APIC_VERBOSE, "PCI BIOS passed nonexistent PCI bus %d!\n", bus);
--		return -1;
--	}
--	for (i = 0; i < mp_irq_entries; i++) {
--		int lbus = mp_irqs[i].srcbus;
--
--		for (apic = 0; apic < nr_ioapics; apic++)
--			if (mp_ioapics[apic].apicid == mp_irqs[i].dstapic ||
--			    mp_irqs[i].dstapic == MP_APIC_ALL)
--				break;
--
--		if (!test_bit(lbus, mp_bus_not_pci) &&
--		    !mp_irqs[i].irqtype &&
--		    (bus == lbus) &&
--		    (slot == ((mp_irqs[i].srcbusirq >> 2) & 0x1f))) {
--			int irq = pin_2_irq(i, apic, mp_irqs[i].dstirq);
--
--			if (!(apic || IO_APIC_IRQ(irq)))
--				continue;
--
--			if (pin == (mp_irqs[i].srcbusirq & 3))
--				return irq;
--			/*
--			 * Use the first all-but-pin matching entry as a
--			 * best-guess fuzzy result for broken mptables.
--			 */
--			if (best_guess < 0)
--				best_guess = irq;
--		}
--	}
--	return best_guess;
--}
--
--EXPORT_SYMBOL(IO_APIC_get_PCI_irq_vector);
--
- #if defined(CONFIG_EISA) || defined(CONFIG_MCA)
- /*
-  * EISA Edge/Level control register, ELCR
-@@ -1140,6 +1092,65 @@ static int pin_2_irq(int idx, int apic,
- 	return irq;
- }
- 
-+/*
-+ * Find a specific PCI IRQ entry.
-+ * Not an __init, possibly needed by modules
-+ */
-+int IO_APIC_get_PCI_irq_vector(int bus, int slot, int pin,
-+				int *ioapic, int *ioapic_pin,
-+				int *trigger, int *polarity)
-+{
-+	int apic, i, best_guess = -1;
-+
-+	apic_printk(APIC_DEBUG,
-+		    "querying PCI -> IRQ mapping bus:%d, slot:%d, pin:%d.\n",
-+		    bus, slot, pin);
-+	if (test_bit(bus, mp_bus_not_pci)) {
-+		apic_printk(APIC_VERBOSE,
-+			    "PCI BIOS passed nonexistent PCI bus %d!\n", bus);
-+		return -1;
-+	}
-+	for (i = 0; i < mp_irq_entries; i++) {
-+		int lbus = mp_irqs[i].srcbus;
-+
-+		for (apic = 0; apic < nr_ioapics; apic++)
-+			if (mp_ioapics[apic].apicid == mp_irqs[i].dstapic ||
-+			    mp_irqs[i].dstapic == MP_APIC_ALL)
-+				break;
-+
-+		if (!test_bit(lbus, mp_bus_not_pci) &&
-+		    !mp_irqs[i].irqtype &&
-+		    (bus == lbus) &&
-+		    (slot == ((mp_irqs[i].srcbusirq >> 2) & 0x1f))) {
-+			int irq = pin_2_irq(i, apic, mp_irqs[i].dstirq);
-+
-+			if (!(apic || IO_APIC_IRQ(irq)))
-+				continue;
-+
-+			if (pin == (mp_irqs[i].srcbusirq & 3)) {
-+				*ioapic = apic;
-+				*ioapic_pin = mp_irqs[i].dstirq;
-+				*trigger = irq_trigger(i);
-+				*polarity = irq_polarity(i);
-+				return irq;
-+			}
-+			/*
-+			 * Use the first all-but-pin matching entry as a
-+			 * best-guess fuzzy result for broken mptables.
-+			 */
-+			if (best_guess < 0) {
-+				*ioapic = apic;
-+				*ioapic_pin = mp_irqs[i].dstirq;
-+				*trigger = irq_trigger(i);
-+				*polarity = irq_polarity(i);
-+				best_guess = irq;
-+			}
-+		}
-+	}
-+	return best_guess;
-+}
-+EXPORT_SYMBOL(IO_APIC_get_PCI_irq_vector);
-+
- void lock_vector_lock(void)
- {
- 	/* Used to the online set of cpus does not change
-Index: linux-2.6/arch/x86/include/asm/hw_irq.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/hw_irq.h
-+++ linux-2.6/arch/x86/include/asm/hw_irq.h
-@@ -66,7 +66,9 @@ extern unsigned long io_apic_irqs;
- extern void init_VISWS_APIC_irqs(void);
- extern void setup_IO_APIC(void);
- extern void disable_IO_APIC(void);
--extern int IO_APIC_get_PCI_irq_vector(int bus, int slot, int fn);
-+extern int IO_APIC_get_PCI_irq_vector(int bus, int devfn, int pin,
-+					int *ioapic, int *ioapic_pin,
-+					int *trigger, int *polarity);
- extern void setup_ioapic_dest(void);
- 
- extern void enable_IO_APIC(void);
-Index: linux-2.6/drivers/pci/hotplug/ibmphp_core.c
-===================================================================
---- linux-2.6.orig/drivers/pci/hotplug/ibmphp_core.c
-+++ linux-2.6/drivers/pci/hotplug/ibmphp_core.c
-@@ -153,45 +153,49 @@ int ibmphp_init_devno(struct slot **cur_
- 		return -1;
- 	}
- 	for (loop = 0; loop < len; loop++) {
--		if ((*cur_slot)->number == rtable->slots[loop].slot) {
--		if ((*cur_slot)->bus == rtable->slots[loop].bus) {
-+		if ((*cur_slot)->number == rtable->slots[loop].slot &&
-+		    (*cur_slot)->bus == rtable->slots[loop].bus) {
-+			int ioapic = -1, ioapic_pin = -1;
-+			int triggering, polarity;
-+
- 			(*cur_slot)->device = PCI_SLOT(rtable->slots[loop].devfn);
- 			for (i = 0; i < 4; i++)
- 				(*cur_slot)->irq[i] = IO_APIC_get_PCI_irq_vector((int) (*cur_slot)->bus,
--						(int) (*cur_slot)->device, i);
-+						(int) (*cur_slot)->device, i.
-+						&ioapic, &ioapic_pin,
-+						&triggering, &polarity);
- 
--				debug("(*cur_slot)->irq[0] = %x\n",
--						(*cur_slot)->irq[0]);
--				debug("(*cur_slot)->irq[1] = %x\n",
--						(*cur_slot)->irq[1]);
--				debug("(*cur_slot)->irq[2] = %x\n",
--						(*cur_slot)->irq[2]);
--				debug("(*cur_slot)->irq[3] = %x\n",
--						(*cur_slot)->irq[3]);
-+			debug("(*cur_slot)->irq[0] = %x\n",
-+					(*cur_slot)->irq[0]);
-+			debug("(*cur_slot)->irq[1] = %x\n",
-+					(*cur_slot)->irq[1]);
-+			debug("(*cur_slot)->irq[2] = %x\n",
-+					(*cur_slot)->irq[2]);
-+			debug("(*cur_slot)->irq[3] = %x\n",
-+					(*cur_slot)->irq[3]);
- 
--				debug("rtable->exlusive_irqs = %x\n",
-+			debug("rtable->exlusive_irqs = %x\n",
- 					rtable->exclusive_irqs);
--				debug("rtable->slots[loop].irq[0].bitmap = %x\n",
-+			debug("rtable->slots[loop].irq[0].bitmap = %x\n",
- 					rtable->slots[loop].irq[0].bitmap);
--				debug("rtable->slots[loop].irq[1].bitmap = %x\n",
-+			debug("rtable->slots[loop].irq[1].bitmap = %x\n",
- 					rtable->slots[loop].irq[1].bitmap);
--				debug("rtable->slots[loop].irq[2].bitmap = %x\n",
-+			debug("rtable->slots[loop].irq[2].bitmap = %x\n",
- 					rtable->slots[loop].irq[2].bitmap);
--				debug("rtable->slots[loop].irq[3].bitmap = %x\n",
-+			debug("rtable->slots[loop].irq[3].bitmap = %x\n",
- 					rtable->slots[loop].irq[3].bitmap);
- 
--				debug("rtable->slots[loop].irq[0].link = %x\n",
-+			debug("rtable->slots[loop].irq[0].link = %x\n",
- 					rtable->slots[loop].irq[0].link);
--				debug("rtable->slots[loop].irq[1].link = %x\n",
-+			debug("rtable->slots[loop].irq[1].link = %x\n",
- 					rtable->slots[loop].irq[1].link);
--				debug("rtable->slots[loop].irq[2].link = %x\n",
-+			debug("rtable->slots[loop].irq[2].link = %x\n",
- 					rtable->slots[loop].irq[2].link);
--				debug("rtable->slots[loop].irq[3].link = %x\n",
-+			debug("rtable->slots[loop].irq[3].link = %x\n",
- 					rtable->slots[loop].irq[3].link);
--				debug("end of init_devno\n");
--				kfree(rtable);
--				return 0;
--			}
-+			debug("end of init_devno\n");
-+			kfree(rtable);
-+			return 0;
- 		}
- 	}
- 
-Index: linux-2.6/arch/x86/pci/irq.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/irq.c
-+++ linux-2.6/arch/x86/pci/irq.c
-@@ -1051,12 +1051,16 @@ static void __init pcibios_fixup_irqs(vo
- 		 */
- 		if (io_apic_assign_pci_irqs) {
- 			int irq;
-+			int ioapic = -1, ioapic_pin = -1;
-+			int triggering, polarity;
- 
- 			/*
- 			 * interrupt pins are numbered starting from 1
- 			 */
- 			irq = IO_APIC_get_PCI_irq_vector(dev->bus->number,
--				PCI_SLOT(dev->devfn), pin - 1);
-+						PCI_SLOT(dev->devfn), pin - 1,
-+						&ioapic, &ioapic_pin,
-+						&triggering, &polarity);
- 			/*
- 			 * Busses behind bridges are typically not listed in the
- 			 * MP-table.  In this case we have to look up the IRQ
-@@ -1072,7 +1076,10 @@ static void __init pcibios_fixup_irqs(vo
- 				pin = pci_swizzle_interrupt_pin(dev, pin);
- 				bus = bridge->bus->number;
- 				irq = IO_APIC_get_PCI_irq_vector(bus,
--						PCI_SLOT(bridge->devfn), pin - 1);
-+						PCI_SLOT(bridge->devfn),
-+						pin - 1,
-+						&ioapic, &ioapic_pin,
-+						&triggering, &polarity);
- 				if (irq >= 0)
- 					dev_warn(&dev->dev,
- 						"using bridge %s INT %c to "
-@@ -1221,8 +1228,14 @@ static int pirq_enable_irq(struct pci_de
- 
- 		if (io_apic_assign_pci_irqs) {
- 			int irq;
-+			int ioapic = -1, ioapic_pin = -1;
-+			int triggering, polarity;
- 
--			irq = IO_APIC_get_PCI_irq_vector(dev->bus->number, PCI_SLOT(dev->devfn), pin - 1);
-+			irq = IO_APIC_get_PCI_irq_vector(dev->bus->number,
-+						PCI_SLOT(dev->devfn),
-+						pin - 1,
-+						&ioapic, &ioapic_pin,
-+						&triggering, &polarity);
- 			/*
- 			 * Busses behind bridges are typically not listed in the MP-table.
- 			 * In this case we have to look up the IRQ based on the parent bus,
-@@ -1235,7 +1248,10 @@ static int pirq_enable_irq(struct pci_de
- 
- 				pin = pci_swizzle_interrupt_pin(dev, pin);
- 				irq = IO_APIC_get_PCI_irq_vector(bridge->bus->number,
--						PCI_SLOT(bridge->devfn), pin - 1);
-+						PCI_SLOT(bridge->devfn),
-+						pin - 1,
-+						&ioapic, &ioapic_pin,
-+						&triggering, &polarity);
- 				if (irq >= 0)
- 					dev_warn(&dev->dev, "using bridge %s "
- 						 "INT %c to get IRQ %d\n",
+-- 
+	Balbir
