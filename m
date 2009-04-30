@@ -1,46 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757705AbZD3BO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbZD3BP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757705AbZD3BO6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 21:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZD3BOr
+	id S1757922AbZD3BP5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 21:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZD3BPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 21:14:47 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51167 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750898AbZD3BOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 21:14:46 -0400
-Message-ID: <49F8FB33.8020803@kernel.org>
-Date: Thu, 30 Apr 2009 10:13:23 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 29 Apr 2009 21:15:47 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61995 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751524AbZD3BPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 21:15:47 -0400
+Message-ID: <49F8FB97.7050504@cn.fujitsu.com>
+Date: Thu, 30 Apr 2009 09:15:03 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: jeff@garzik.org, linux-ide@vger.kernel.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, Mauelshagen@RedHat.com,
-       dm-devel@RedHat.com
-Subject: Re: [PATCHSET] block,scsi,libata: implement alt_size
-References: <1233456951-992-1-git-send-email-tj@kernel.org>
-In-Reply-To: <1233456951-992-1-git-send-email-tj@kernel.org>
-X-Enigmail-Version: 0.95.7
+To: Oleg Nesterov <oleg@redhat.com>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Re: [PATCH 4/4] tracing/workqueue: Add max execution time	mesurement
+ for per worklet
+References: <49F6DFB5.2040901@cn.fujitsu.com> <49F6E10A.5050203@cn.fujitsu.com> <20090428171444.GC27584@redhat.com>
+In-Reply-To: <20090428171444.GC27584@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Apr 2009 01:13:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello,
+Oleg Nesterov wrote:
+> I have no idea how the code actually looks with these patches applied,
+> so please don't take my words seriously, but
 > 
-> This patchset implements alt_size, which is a size hint to the users
-> of a block device.  It's primarily to communicate the BIOS (HPA) size
-> on ATA devices to userland, so that dmraid can consider it when trying
-> to figure out BIOS raid layout.  This is critical as dmraid can be
-> tricked into assemblying the wrong raid when fed with the unlocked
-> size and if the disk content is right (or, rather, wrong) and good
-> number of distros are shipping with ignore_hpa=1 as default.
+> On 04/28, Zhaolei wrote:
+>> @@ -24,6 +24,17 @@ struct workfunc_stats {
+>>  	/* Protected by cpu workqueue lock */
+>>  	unsigned int			inserted;
+>>  	unsigned int			executed;
+>> +
+>> +	/*
+>> +	 * save latest work_struct's pointer to use as identifier in
+>> +	 * probe_worklet_complete, because we can't use work_struct->...
+>> +	 * after worklet got executed
+>> +	 */
+>> +	void				*work;
+> 
+> Do we really need it ?
+> 
+>> @@ -143,6 +154,8 @@ found_wq:
+>>  	list_for_each_entry(wfnode, &node->workfunclist, list)
+>>  		if (wfnode->func == work->func) {
+>>  			wfnode->executed++;
+>> +			wfnode->start_time = trace_clock_global();
+>> +			wfnode->work = work;
+>>  			goto found_wf;
+>>  		}
+>>  	pr_debug("trace_workqueue: worklet not found\n");
+>> @@ -153,6 +166,43 @@ end:
+>>  	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+>>  }
+>>
+>> +/* Complete of a work */
+>> +static void
+>> +probe_worklet_complete(struct task_struct *wq_thread, void *work)
+>> +{
+>> +	int cpu = cpumask_first(&wq_thread->cpus_allowed);
+>> +	struct cpu_workqueue_stats *node;
+>> +	struct workfunc_stats *wfnode;
+>> +	unsigned long flags;
+>> +
+>> +	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
+>> +
+>> +	list_for_each_entry(node, &workqueue_cpu_stat(cpu)->list, list)
+>> +		if (node->task == wq_thread)
+>> +			goto found_wq;
+>> +	pr_debug("trace_workqueue: workqueue not found\n");
+>> +	goto end;
+>> +
+>> +found_wq:
+>> +	list_for_each_entry(wfnode, &node->workfunclist, list) {
+>> +		u64 executed_time;
+>> +
+>> +		if (wfnode->work != work)
+>> +			continue;
+> 
+> Perhaps we can add node->last_work (or whatever) instead? It should be
+> recorded by the "entry" handler. In this case probe_worklet_complete()
+> doesn't need to search for this work (and it doesn't need the argument).
+> We know that wfnode == node->last_work.
+Hello, Oleg
 
-PING.
+Sorry for reply late.
 
--- 
-tejun
+Thanks for review of this patch.
+This is indeed a good idea, I will change to this way
+
+Thanks
+Zhaolei
+
+> 
+> Oleg.
+> 
+> 
+
+
