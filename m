@@ -1,81 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761595AbZD3ANR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761450AbZD3APR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761595AbZD3ANR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 20:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761393AbZD3AM5
+	id S1761450AbZD3APR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 20:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZD3APB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 20:12:57 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:14836 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759370AbZD3AMz (ORCPT
+	Wed, 29 Apr 2009 20:15:01 -0400
+Received: from exprod6ob113.obsmtp.com ([64.18.1.30]:47221 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752347AbZD3APA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 20:12:55 -0400
-X-IronPort-AV: E=Sophos;i="4.40,269,1238976000"; 
-   d="scan'208";a="157827847"
-Date: Wed, 29 Apr 2009 17:12:55 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: linux-usb@vger.kernel.org
-Cc: gregkh@suse.de, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] USB: Wait for USB and SCSI block boot devices
-Message-ID: <20090430001255.GA3897@cuplxvomd02.corp.sa.net>
+	Wed, 29 Apr 2009 20:15:00 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-1; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] fs/super.c: fix sparse warning
+Date: Wed, 29 Apr 2009 20:14:57 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909016C1B15@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] fs/super.c: fix sparse warning
+Thread-Index: AcnJKLHdVgSQngg4Q4OJHbTv97AxZQ==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 30 Apr 2009 00:14:58.0493 (UTC) FILETIME=[B25AA6D0:01C9C928]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Stern <stern@rowland.harvard.edu
+Sparse reports the following in fs/super.c:
 
-Add synchronization for USB and SCSI block devices.
+  warning: Using plain integer as NULL pointer
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu
-Signed-off-by: David VomLehn <dvomlehn@cisco.com>
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Subrata Modak <subrata@linux.vnet.ibm.com>
+
 ---
- drivers/scsi/scsi_scan.c  |    2 ++
- drivers/usb/storage/usb.c |    2 ++
- 2 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
-index 6f51ca4..735b061 100644
---- a/drivers/scsi/scsi_scan.c
-+++ b/drivers/scsi/scsi_scan.c
-@@ -1834,6 +1834,7 @@ static int do_scan_async(void *_data)
- 	struct async_scan_data *data = _data;
- 	do_scsi_scan_host(data->shost);
- 	scsi_finish_async_scan(data);
-+	bootdev_probe_done(BOOTDEV_BLOCK_MASK);
- 	return 0;
- }
+diff --git a/fs/super.c b/fs/super.c
+index 786fe7d..14e59bc 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -897,7 +897,7 @@ void kill_block_super(struct super_block *sb)
+ 	struct block_device *bdev = sb->s_bdev;
+ 	fmode_t mode = sb->s_mode;
  
-@@ -1855,6 +1856,7 @@ void scsi_scan_host(struct Scsi_Host *shost)
- 		return;
- 	}
- 
-+	bootdev_found(BOOTDEV_BLOCK_MASK);
- 	p = kthread_run(do_scan_async, data, "scsi_scan_%d", shost->host_no);
- 	if (IS_ERR(p))
- 		do_scan_async(data);
-diff --git a/drivers/usb/storage/usb.c b/drivers/usb/storage/usb.c
-index 8060b85..c128c44 100644
---- a/drivers/usb/storage/usb.c
-+++ b/drivers/usb/storage/usb.c
-@@ -810,6 +810,7 @@ static int usb_stor_scan_thread(void * __us)
- 
- 	printk(KERN_DEBUG
- 		"usb-storage: device found at %d\n", us->pusb_dev->devnum);
-+	bootdev_found(BOOTDEV_BLOCK_MASK);
- 
- 	set_freezable();
- 	/* Wait for the timeout to expire or for a disconnect */
-@@ -837,6 +838,7 @@ static int usb_stor_scan_thread(void * __us)
- 		/* Should we unbind if no devices were detected? */
- 	}
- 
-+	bootdev_probe_done(BOOTDEV_BLOCK_MASK);
- 	complete_and_exit(&us->scanning_done, 0);
- }
- 
+-	bdev->bd_super = 0;
++	bdev->bd_super = NULL;
+ 	generic_shutdown_super(sb);
+ 	sync_blockdev(bdev);
+ 	close_bdev_exclusive(bdev, mode); 
