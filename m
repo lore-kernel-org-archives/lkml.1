@@ -1,61 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763595AbZD3PHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbZD3PL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763595AbZD3PHf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 11:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762446AbZD3PHS
+	id S932178AbZD3PL7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 11:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763325AbZD3PLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 11:07:18 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:55525 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761813AbZD3PHQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 11:07:16 -0400
-Date: Thu, 30 Apr 2009 17:09:24 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, tglx@linutronix.de, jdb@comx.dk,
-       mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/kbuild] x86: boot/compressed/vmlinux.lds.S: fix build of bzImage with 64 bit compiler
-Message-ID: <20090430150924.GA8656@uranus.ravnborg.org>
-References: <alpine.LFD.2.00.0904260958190.3101@localhost.localdomain> <tip-83c4832683bc8ebcd1687b3c0bf3ba1ab253dd4f@git.kernel.org> <49F9BB47.7080806@zytor.com>
+	Thu, 30 Apr 2009 11:11:44 -0400
+Received: from vena.lwn.net ([206.168.112.25]:41825 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763015AbZD3PLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 11:11:43 -0400
+Date: Thu, 30 Apr 2009 09:11:40 -0600
+From: Jake Edge <jake@lwn.net>
+To: linux-kernel@vger.kernel.org
+Cc: security@kernel.org, stable@kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [PATCH] proc: avoid leaking eip, esp, or wchan to non-privileged
+ processes
+Message-ID: <20090430091140.4b97b4f8@chukar>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49F9BB47.7080806@zytor.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 07:52:55AM -0700, H. Peter Anvin wrote:
-> tip-bot for Sam Ravnborg wrote:
-> > Commit-ID:  83c4832683bc8ebcd1687b3c0bf3ba1ab253dd4f
-> > Gitweb:     http://git.kernel.org/tip/83c4832683bc8ebcd1687b3c0bf3ba1ab253dd4f
-> > Author:     Sam Ravnborg <sam@ravnborg.org>
-> > AuthorDate: Thu, 30 Apr 2009 12:03:16 +0200
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Thu, 30 Apr 2009 12:36:50 +0200
-> > 
-> > x86: boot/compressed/vmlinux.lds.S: fix build of bzImage with 64 bit compiler
-> > 
-> > Jesper reported that he saw following build issue:
-> > 
-> >  > ld:arch/x86/boot/compressed/vmlinux.lds:9: syntax error
-> >  > make[2]: *** [arch/x86/boot/compressed/vmlinux] Error 1
-> >  > make[1]: *** [arch/x86/boot/compressed/vmlinux] Error 2
-> >  > make: *** [bzImage] Error 2
-> > 
-> > CPP defines the symbol "i386" to "1".
-> > Undefine this to fix it.
-> > 
-> 
-> I'm wondering if we should build the *.lds.S with -ansi or some other
-> gcc option which disables ALL non-underscore macros.
 
-I did not know that -ansi had this effect.
-We are only seldomly hitting this issue and I wonder
-if it could break something in out included headers.
-Most likely not.
+proc: avoid leaking eip, esp, or wchan to non-privileged processes
 
-	Sam
+Using the same test as is used for /proc/pid/maps and smaps, only allow
+processes that can ptrace() a given process to access its /proc/pid/wchan and
+get eip and esp from /proc/pid/stat.
+
+ASLR can be bypassed by sampling eip as shown by the proof-of-concept code
+at http://code.google.com/p/fuzzyaslr/  As part of a presentation
+(http://www.cr0.org/paper/to-jt-linux-alsr-leak.pdf) esp and wchan were also
+noted as possibly usable information leaks as well.
+
+Signed-off-by: Jake Edge <jake@lwn.net>
+---
+ fs/proc/array.c |   11 ++++++++---
+ fs/proc/base.c  |    3 +++
+ 2 files changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index 7e4877d..e96d508 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -80,6 +80,7 @@
+ #include <linux/delayacct.h>
+ #include <linux/seq_file.h>
+ #include <linux/pid_namespace.h>
++#include <linux/ptrace.h>
+ #include <linux/tracehook.h>
+ 
+ #include <asm/pgtable.h>
+@@ -352,6 +353,7 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
+ 	char state;
+ 	pid_t ppid = 0, pgid = -1, sid = -1;
+ 	int num_threads = 0;
++	int permitted;
+ 	struct mm_struct *mm;
+ 	unsigned long long start_time;
+ 	unsigned long cmin_flt = 0, cmaj_flt = 0;
+@@ -364,11 +366,14 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
+ 
+ 	state = *get_task_state(task);
+ 	vsize = eip = esp = 0;
++	permitted = ptrace_may_access(task, PTRACE_MODE_READ);
+ 	mm = get_task_mm(task);
+ 	if (mm) {
+ 		vsize = task_vsize(mm);
+-		eip = KSTK_EIP(task);
+-		esp = KSTK_ESP(task);
++		if (permitted) {
++			eip = KSTK_EIP(task);
++			esp = KSTK_ESP(task);
++		}
+ 	}
+ 
+ 	get_task_comm(tcomm, task);
+@@ -424,7 +429,7 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
+ 		unlock_task_sighand(task, &flags);
+ 	}
+ 
+-	if (!whole || num_threads < 2)
++	if (permitted && (!whole || num_threads < 2))
+ 		wchan = get_wchan(task);
+ 	if (!whole) {
+ 		min_flt = task->min_flt;
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index aa763ab..cd3c0d7 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -319,6 +319,9 @@ static int proc_pid_wchan(struct task_struct *task, char *buffer)
+ 	unsigned long wchan;
+ 	char symname[KSYM_NAME_LEN];
+ 
++	if (!ptrace_may_access(task, PTRACE_MODE_READ))
++		return 0;
++
+ 	wchan = get_wchan(task);
+ 
+ 	if (lookup_symbol_name(wchan, symname) < 0)
+-- 
+1.6.2.2
+
+
+-- 
+Jake Edge - LWN - jake@lwn.net - http://lwn.net
