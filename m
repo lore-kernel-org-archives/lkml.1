@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932326AbZD3RsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933406AbZD3Rsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932326AbZD3RsQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764733AbZD3RIx
+	id S933406AbZD3Rsq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764735AbZD3RIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:08:53 -0400
+	Thu, 30 Apr 2009 13:08:54 -0400
 Received: from kroah.org ([198.145.64.141]:57022 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764696AbZD3RIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:08:34 -0400
+	id S1764596AbZD3RIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:08:36 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:51 2009
-Message-Id: <20090430165751.207754407@mini.kroah.org>
+Message-Id: <20090430165751.364931216@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:57:16 -0700
+Date: Thu, 30 Apr 2009 09:57:17 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, paul.moore@hp.com
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 87/88] thinkpad-acpi: fix LED blinking through timer trigger
+       alan@lxorguk.ukuu.org.uk, jmorris@namei.org, greg@kroah.com,
+       chrisw@redhat.com, error27@gmail.com, Eugene Teo <eugeneteo@kernel.sg>
+Subject: [patch 88/88] unreached code in selinux_ip_postroute_iptables_compat() (CVE-2009-1184)
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=thinkpad-acpi-fix-led-blinking-through-timer-trigger.patch
+Content-Disposition: inline; filename=unreached-code-in-selinux_ip_postroute_iptables_compat.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,132 +39,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+From: Eugene Teo <eteo@redhat.com>
 
-commit 75bd3bf2ade9d548be0d2bde60b5ee0fdce0b127 upstream.
+Not upstream in 2.6.30, as the function was removed there, making this a
+non-issue.
 
-The set_blink hook code in the LED subdriver would never manage to get
-a LED to blink, and instead it would just turn it on.  The consequence
-of this is that the "timer" trigger would not cause the LED to blink
-if given default parameters.
+Node and port send checks can skip in the compat_net=1 case. This bug
+was introduced in commit effad8d.
 
-This problem exists since 2.6.26-rc1.
-
-To fix it, switch the deferred LED work handling to use the
-thinkpad-acpi-specific LED status (off/on/blink) directly.
-
-This also makes the code easier to read, and to extend later.
-
-Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: stable@kernel.org
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+Reported-by: Dan Carpenter <error27@gmail.com>
+Acked-by: James Morris <jmorris@namei.org>
+Acked-by: Paul Moore <paul.moore@hp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/misc/thinkpad_acpi.c |   41 +++++++++++++++++++----------------------
- 1 file changed, 19 insertions(+), 22 deletions(-)
+ security/selinux/hooks.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/misc/thinkpad_acpi.c
-+++ b/drivers/misc/thinkpad_acpi.c
-@@ -281,11 +281,17 @@ static u32 dbg_level;
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -4550,6 +4550,7 @@ static int selinux_ip_postroute_iptables
+ 	if (err)
+ 		return err;
+ 	err = avc_has_perm(sk_sid, if_sid, SECCLASS_NETIF, netif_perm, ad);
++	if (err)
+ 		return err;
  
- static struct workqueue_struct *tpacpi_wq;
- 
-+enum led_status_t {
-+	TPACPI_LED_OFF = 0,
-+	TPACPI_LED_ON,
-+	TPACPI_LED_BLINK,
-+};
-+
- /* Special LED class that can defer work */
- struct tpacpi_led_classdev {
- 	struct led_classdev led_classdev;
- 	struct work_struct work;
--	enum led_brightness new_brightness;
-+	enum led_status_t new_state;
- 	unsigned int led;
- };
- 
-@@ -3489,7 +3495,7 @@ static void light_set_status_worker(stru
- 			container_of(work, struct tpacpi_led_classdev, work);
- 
- 	if (likely(tpacpi_lifecycle == TPACPI_LIFE_RUNNING))
--		light_set_status((data->new_brightness != LED_OFF));
-+		light_set_status((data->new_state != TPACPI_LED_OFF));
- }
- 
- static void light_sysfs_set(struct led_classdev *led_cdev,
-@@ -3499,7 +3505,8 @@ static void light_sysfs_set(struct led_c
- 		container_of(led_cdev,
- 			     struct tpacpi_led_classdev,
- 			     led_classdev);
--	data->new_brightness = brightness;
-+	data->new_state = (brightness != LED_OFF) ?
-+				TPACPI_LED_ON : TPACPI_LED_OFF;
- 	queue_work(tpacpi_wq, &data->work);
- }
- 
-@@ -4006,12 +4013,6 @@ enum {	/* For TPACPI_LED_OLD */
- 	TPACPI_LED_EC_HLMS = 0x0e,	/* EC reg to select led to command */
- };
- 
--enum led_status_t {
--	TPACPI_LED_OFF = 0,
--	TPACPI_LED_ON,
--	TPACPI_LED_BLINK,
--};
--
- static enum led_access_mode led_supported;
- 
- TPACPI_HANDLE(led, ec, "SLED",	/* 570 */
-@@ -4105,23 +4106,13 @@ static int led_set_status(const unsigned
- 	return rc;
- }
- 
--static void led_sysfs_set_status(unsigned int led,
--				 enum led_brightness brightness)
--{
--	led_set_status(led,
--			(brightness == LED_OFF) ?
--			TPACPI_LED_OFF :
--			(tpacpi_led_state_cache[led] == TPACPI_LED_BLINK) ?
--				TPACPI_LED_BLINK : TPACPI_LED_ON);
--}
--
- static void led_set_status_worker(struct work_struct *work)
- {
- 	struct tpacpi_led_classdev *data =
- 		container_of(work, struct tpacpi_led_classdev, work);
- 
- 	if (likely(tpacpi_lifecycle == TPACPI_LIFE_RUNNING))
--		led_sysfs_set_status(data->led, data->new_brightness);
-+		led_set_status(data->led, data->new_state);
- }
- 
- static void led_sysfs_set(struct led_classdev *led_cdev,
-@@ -4130,7 +4121,13 @@ static void led_sysfs_set(struct led_cla
- 	struct tpacpi_led_classdev *data = container_of(led_cdev,
- 			     struct tpacpi_led_classdev, led_classdev);
- 
--	data->new_brightness = brightness;
-+	if (brightness == LED_OFF)
-+		data->new_state = TPACPI_LED_OFF;
-+	else if (tpacpi_led_state_cache[data->led] != TPACPI_LED_BLINK)
-+		data->new_state = TPACPI_LED_ON;
-+	else
-+		data->new_state = TPACPI_LED_BLINK;
-+
- 	queue_work(tpacpi_wq, &data->work);
- }
- 
-@@ -4148,7 +4145,7 @@ static int led_sysfs_blink_set(struct le
- 	} else if ((*delay_on != 500) || (*delay_off != 500))
- 		return -EINVAL;
- 
--	data->new_brightness = TPACPI_LED_BLINK;
-+	data->new_state = TPACPI_LED_BLINK;
- 	queue_work(tpacpi_wq, &data->work);
- 
- 	return 0;
+ 	err = sel_netnode_sid(addrp, family, &node_sid);
 
 
