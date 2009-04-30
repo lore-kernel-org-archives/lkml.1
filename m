@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764538AbZD3RLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764981AbZD3RL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764538AbZD3RLQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764321AbZD3RHY
+	id S1764981AbZD3RL7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762917AbZD3RH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:24 -0400
-Received: from kroah.org ([198.145.64.141]:56189 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:07:26 -0400
+Received: from kroah.org ([198.145.64.141]:56216 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764043AbZD3RHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:19 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:39 2009
-Message-Id: <20090430165739.660902364@mini.kroah.org>
+	id S1764256AbZD3RHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:20 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:40 2009
+Message-Id: <20090430165739.931657438@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:55:58 -0700
+Date: Thu, 30 Apr 2009 09:56:00 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,11 +26,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 09/88] USB: EHCI: add software retry for transaction errors
+Subject: [patch 11/88] USB: usb-storage: increase max_sectors for tape drives
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=0008-USB-EHCI-add-software-retry-for-transaction-errors.patch
+Content-Disposition: inline; filename=0010-USB-usb-storage-increase-max_sectors-for-tape-driv.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,102 +40,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 
 From: Alan Stern <stern@rowland.harvard.edu>
+'
+upstream commit: 5c16034d73da2c1b663aa25dedadbc533b3d811c
 
-upstream commit: a2c2706e1043c17139c2dafd171c4a5cf008ef7e
+This patch (as1203) increases the max_sector limit for USB tape
+drives.  By default usb-storage sets max_sectors to 240 (i.e., 120 KB)
+for all devices.  But tape drives need a higher limit, since tapes can
+and do have very large block sizes.  Without the ability to transfer
+an entire large block in a single command, such tapes can't be used.
 
-This patch (as1204) adds a software retry mechanism to ehci-hcd.  It
-gets invoked when the driver encounters transaction errors on an
-asynchronous endpoint.  On many systems, hardware deficiencies cause
-such errors to occur if one device is unplugged while the host is
-communicating with another device.  With the patch, the failed
-transactions are retried and generally succeed the second or third
-time through.
-
-This is based on code originally written by Koichiro Saito.
+This fixes Bugzilla #12207.
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Tested by: Koichiro Saito <Saito.Koichiro@adniss.jp>
-CC: David Brownell <david-b@pacbell.net>
+Reported-and-tested-by: Phil Mitchell <philipm@sybase.com>
 Cc: stable <stable@kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/usb/host/ehci-q.c |   32 ++++++++++++++++++++++++++++++++
- drivers/usb/host/ehci.h   |    3 +++
- 2 files changed, 35 insertions(+)
+ drivers/usb/storage/scsiglue.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/drivers/usb/host/ehci.h
-+++ b/drivers/usb/host/ehci.h
-@@ -366,6 +366,9 @@ struct ehci_qh {
- #define	QH_STATE_UNLINK_WAIT	4		/* LINKED and on reclaim q */
- #define	QH_STATE_COMPLETING	5		/* don't touch token.HALT */
- 
-+	u8			xacterrs;	/* XactErr retry counter */
-+#define	QH_XACTERR_MAX		32		/* XactErr retry limit */
-+
- 	/* periodic schedule info */
- 	u8			usecs;		/* intr bandwidth */
- 	u8			gap_uf;		/* uframes split/csplit gap */
---- a/drivers/usb/host/ehci-q.c
-+++ b/drivers/usb/host/ehci-q.c
-@@ -333,12 +333,40 @@ qh_completions (struct ehci_hcd *ehci, s
- 		token = hc32_to_cpu(ehci, qtd->hw_token);
- 
- 		/* always clean up qtds the hc de-activated */
-+ retry_xacterr:
- 		if ((token & QTD_STS_ACTIVE) == 0) {
- 
- 			/* on STALL, error, and short reads this urb must
- 			 * complete and all its qtds must be recycled.
- 			 */
- 			if ((token & QTD_STS_HALT) != 0) {
-+
-+				/* retry transaction errors until we
-+				 * reach the software xacterr limit
-+				 */
-+				if ((token & QTD_STS_XACT) &&
-+						QTD_CERR(token) == 0 &&
-+						--qh->xacterrs > 0 &&
-+						!urb->unlinked) {
-+					ehci_dbg(ehci,
-+	"detected XactErr len %d/%d retry %d\n",
-+	qtd->length - QTD_LENGTH(token), qtd->length,
-+	QH_XACTERR_MAX - qh->xacterrs);
-+
-+					/* reset the token in the qtd and the
-+					 * qh overlay (which still contains
-+					 * the qtd) so that we pick up from
-+					 * where we left off
-+					 */
-+					token &= ~QTD_STS_HALT;
-+					token |= QTD_STS_ACTIVE |
-+							(EHCI_TUNE_CERR << 10);
-+					qtd->hw_token = cpu_to_hc32(ehci,
-+							token);
-+					wmb();
-+					qh->hw_token = cpu_to_hc32(ehci, token);
-+					goto retry_xacterr;
-+				}
- 				stopped = 1;
- 
- 			/* magic dummy for some short reads; qh won't advance.
-@@ -421,6 +449,9 @@ halt:
- 		/* remove qtd; it's recycled after possible urb completion */
- 		list_del (&qtd->qtd_list);
- 		last = qtd;
-+
-+		/* reinit the xacterr counter for the next qtd */
-+		qh->xacterrs = QH_XACTERR_MAX;
+--- a/drivers/usb/storage/scsiglue.c
++++ b/drivers/usb/storage/scsiglue.c
+@@ -135,6 +135,12 @@ static int slave_configure(struct scsi_d
+ 		if (sdev->request_queue->max_sectors > max_sectors)
+ 			blk_queue_max_sectors(sdev->request_queue,
+ 					      max_sectors);
++	} else if (sdev->type == TYPE_TAPE) {
++		/* Tapes need much higher max_sector limits, so just
++		 * raise it to the maximum possible (4 GB / 512) and
++		 * let the queue segment size sort out the real limit.
++		 */
++		blk_queue_max_sectors(sdev->request_queue, 0x7FFFFF);
  	}
  
- 	/* last urb's completion might still need calling */
-@@ -862,6 +893,7 @@ static void qh_link_async (struct ehci_h
- 	head->qh_next.qh = qh;
- 	head->hw_next = dma;
- 
-+	qh->xacterrs = QH_XACTERR_MAX;
- 	qh->qh_state = QH_STATE_LINKED;
- 	/* qtd completions reported later by interrupt */
- }
+ 	/* We can't put these settings in slave_alloc() because that gets
 
 
