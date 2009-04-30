@@ -1,135 +1,363 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbZD3HEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbZD3HSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754356AbZD3HEq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 03:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZD3HEh
+	id S1755159AbZD3HSW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 03:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbZD3HSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 03:04:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50418 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751112AbZD3HEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 03:04:36 -0400
-Date: Thu, 30 Apr 2009 07:03:29 GMT
-From: tip-bot for Andrew Morton <akpm@linux-foundation.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, eparis@redhat.com,
-       viro@zeniv.linux.org.uk, akpm@linux-foundation.org, hch@lst.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, eparis@redhat.com, a.p.zijlstra@chello.nl,
-       viro@zeniv.linux.org.uk, hch@lst.de, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <200904292318.n3TNIsi6028340@imap1.linux-foundation.org>
-References: <200904292318.n3TNIsi6028340@imap1.linux-foundation.org>
-Subject: [tip:core/locking] mutex: add atomic_dec_and_mutex_lock(), fix
-Message-ID: <tip-a511e3f968c462a55ef58697257f5347c73d306e@git.kernel.org>
-Git-Commit-ID: a511e3f968c462a55ef58697257f5347c73d306e
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Apr 2009 07:03:32 +0000 (UTC)
+	Thu, 30 Apr 2009 03:18:03 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:32827 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751115AbZD3HSA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 03:18:00 -0400
+Date: Thu, 30 Apr 2009 16:16:27 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hugh@veritas.com" <hugh@veritas.com>
+Subject: [PATCH] memcg: fix stale swap cache leak v5
+Message-Id: <20090430161627.0ccce565.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a511e3f968c462a55ef58697257f5347c73d306e
-Gitweb:     http://git.kernel.org/tip/a511e3f968c462a55ef58697257f5347c73d306e
-Author:     Andrew Morton <akpm@linux-foundation.org>
-AuthorDate: Wed, 29 Apr 2009 15:59:58 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 30 Apr 2009 09:01:34 +0200
+This is v5 but all codes are rewritten.
 
-mutex: add atomic_dec_and_mutex_lock(), fix
+After this patch, when memcg is used,
+ 1. page's swapcount is checked after I/O (without locks). If the page is
+    stale swap cache, freeing routine will be scheduled.
+ 2. vmscan.c calls try_to_free_swap() when __remove_mapping() fails.
 
-include/linux/mutex.h:136: warning: 'mutex_lock' declared inline after being called
- include/linux/mutex.h:136: warning: previous declaration of 'mutex_lock' was here
+Works well for me. no extra resources and no races.
 
-uninline it.
+Because my office will be closed until May/7, I'll not be able to make a
+response. Posting this for showing what I think of now.
 
-[ Impact: clean up and uninline, address compiler warning ]
+This should be fixed before posting softlimit etc...
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Eric Paris <eparis@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <200904292318.n3TNIsi6028340@imap1.linux-foundation.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+In general, Linux's swp_entry handling is done by combination of lazy techniques
+and global LRU. It works well but when we use mem+swap controller, some more
+strict cotroll is appropriate. Otherwise, swp_entry used by a cgroup will be
+never freed until global LRU works. In a system where memcg is well-configured,
+global LRU doesn't work frequently.
 
+  Example A) Assume a swap cache which is not mapped.
+              CPU0                            CPU1
+	   zap_pte()....                  shrink_page_list()
+	    free_swap_and_cache()           lock_page()
+		page seems busy.
 
+  Example B) Assume swapin-readahed.
+	      CPU0			      CPU1
+	   zap_pte()			  read_swap_cache_async()
+					  swap_duplicate().
+           swap_entry_free() = 1
+	   find_get_page()=> NULL.
+					  add_to_swap_cache().
+					  issue swap I/O. 
+
+There are many patterns of this kind of race (but no problems).
+
+free_swap_and_cache() is called for freeing swp_entry. But it is a best-effort
+function. If the swp_entry/page seems busy, swp_entry is not freed.
+This is not a problem because global-LRU will find SwapCache at page reclaim.
+But...
+
+If memcg is used, on the other hand, global LRU may not work. Then, above
+unused SwapCache will not be freed.
+(unmapped SwapCache occupy swp_entry but never be freed if not on memcg's LRU)
+
+So, even if there are no tasks in a cgroup, swp_entry usage still remains.
+In bad case, OOM by mem+swap controller is triggerred by this "leak" of
+swp_entry as Nishimura repoted.
+
+This patch tries to fix racy case of free_swap_and_cache() and I/O by checking
+swap's refnct again after I/O. And add a hook to vmscan.c.
+After this patch applied, follwoing test works well.
+
+  # echo 1-2M > ../memory.limit_in_bytes
+  # run tasks under memcg.
+  # kill all tasks and make memory.tasks empty
+  # check memory.memsw.usage_in_bytes == memory.usage_in_bytes and
+    there is no _used_ swp_entry.
+
+Changelog: v4->v5
+ - completely new design.
+ - added nolock page_swapcount.
+ - checks all swap I/O.
+
+Reported-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
- include/linux/mutex.h |   24 +-----------------------
- kernel/mutex.c        |   25 ++++++++++++++++++++++++-
- 2 files changed, 25 insertions(+), 24 deletions(-)
+ include/linux/swap.h |    1 
+ mm/page_io.c         |  120 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ mm/swapfile.c        |   37 +++++++++++++++
+ mm/vmscan.c          |   31 ++++++++++++-
+ 4 files changed, 187 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/mutex.h b/include/linux/mutex.h
-index 93054fc..878cab4 100644
---- a/include/linux/mutex.h
-+++ b/include/linux/mutex.h
-@@ -150,28 +150,6 @@ extern int __must_check mutex_lock_killable(struct mutex *lock);
-  */
- extern int mutex_trylock(struct mutex *lock);
- extern void mutex_unlock(struct mutex *lock);
--
--/**
-- * atomic_dec_and_mutex_lock - return holding mutex if we dec to 0
-- * @cnt: the atomic which we are to dec
-- * @lock: the mutex to return holding if we dec to 0
-- *
-- * return true and hold lock if we dec to 0, return false otherwise
-- */
--static inline int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock)
--{
--	/* dec if we can't possibly hit 0 */
--	if (atomic_add_unless(cnt, -1, 1))
--		return 0;
--	/* we might hit 0, so take the lock */
--	mutex_lock(lock);
--	if (!atomic_dec_and_test(cnt)) {
--		/* when we actually did the dec, we didn't hit 0 */
--		mutex_unlock(lock);
--		return 0;
--	}
--	/* we hit 0, and we hold the lock */
--	return 1;
--}
-+extern int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock);
+Index: mmotm-2.6.30-Apr24/mm/page_io.c
+===================================================================
+--- mmotm-2.6.30-Apr24.orig/mm/page_io.c
++++ mmotm-2.6.30-Apr24/mm/page_io.c
+@@ -19,6 +19,123 @@
+ #include <linux/writeback.h>
+ #include <asm/pgtable.h>
  
- #endif
-diff --git a/kernel/mutex.c b/kernel/mutex.c
-index 507cf2b..e2d25e9 100644
---- a/kernel/mutex.c
-+++ b/kernel/mutex.c
-@@ -471,5 +471,28 @@ int __sched mutex_trylock(struct mutex *lock)
- 
- 	return ret;
- }
--
- EXPORT_SYMBOL(mutex_trylock);
-+
-+/**
-+ * atomic_dec_and_mutex_lock - return holding mutex if we dec to 0
-+ * @cnt: the atomic which we are to dec
-+ * @lock: the mutex to return holding if we dec to 0
-+ *
-+ * return true and hold lock if we dec to 0, return false otherwise
++#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++/*
++ * When memory cgroup is used, race between read/write-swap and zap-swap can
++ * be a leak of swp_entry accounted. So we have to check the status at
++ * the end of swap-io. If memory cgroup is not used, Global LRU will find
++ * unused swap-cache finally. (But this is too lazy for memcg.)
 + */
-+int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock)
++
++struct swapio_check {
++	spinlock_t	lock;
++	void		*swap_bio_list;
++	struct delayed_work work;
++} stale_swap_check;
++
++
++static void mem_cgroup_check_stale_swap(struct work_struct *work)
 +{
-+	/* dec if we can't possibly hit 0 */
-+	if (atomic_add_unless(cnt, -1, 1))
-+		return 0;
-+	/* we might hit 0, so take the lock */
-+	mutex_lock(lock);
-+	if (!atomic_dec_and_test(cnt)) {
-+		/* when we actually did the dec, we didn't hit 0 */
-+		mutex_unlock(lock);
-+		return 0;
++	struct bio *bio;
++	struct page *page;
++	struct swapio_check *sc;
++	int nr = SWAP_CLUSTER_MAX;
++	swp_entry_t entry;
++
++	sc = &stale_swap_check;
++
++	while (nr--) {
++		cond_resched();
++		spin_lock_irq(&sc->lock);
++		bio = sc->swap_bio_list;
++		if (bio)
++			sc->swap_bio_list = bio->bi_next;
++		spin_unlock_irq(&sc->lock);
++		if (!bio)
++			break;
++		entry.val = (unsigned long)bio->bi_private;
++		bio_put(bio);
++
++		page = find_get_page(&swapper_space, entry.val);
++		if (!page || page_mapped(page))
++			continue;
++		lock_page(page);
++		/*
++		 * When it's mapped, this page passed checks in do_swap_page()
++		 * and we don't have to do any more. All other necessary checks
++		 * will be done in try_to_free_swap().
++		 */
++		if (!page_mapped(page))
++			try_to_free_swap(page);
++		unlock_page(page);
++		put_page(page);
 +	}
-+	/* we hit 0, and we hold the lock */
-+	return 1;
++	if (sc->swap_bio_list)
++		schedule_delayed_work(&sc->work, HZ/10);
 +}
-+EXPORT_SYMBOL(atomic_dec_and_mutex_lock);
++
++/*
++ * We can't call try_to_free_swap directly here because of caller's context.
++ */
++static void mem_cgroup_swapio_check_again(struct bio *bio, struct page *page)
++{
++	unsigned long flags;
++	struct swapio_check *sc;
++	swp_entry_t entry;
++	int ret;
++
++	/* check swap count here. If swp_entry is stable, nothing to do.*/
++	if (likely(mem_cgroup_staleswap_hint(page)))
++		return;
++	/* reuse bio if this bio is ready to be freed. */
++	ret = atomic_inc_return(&bio->bi_cnt);
++	/* Any other reference other than us ? */
++	if (unlikely(ret > 2)) {
++		bio_put(bio);
++		return;
++	}
++	/*
++	 * We don't want to grab this page....record swp_entry instead of page.
++	 */
++	entry.val = page_private(page);
++	bio->bi_private = (void *)entry.val;
++
++	sc = &stale_swap_check;
++	spin_lock_irqsave(&sc->lock, flags);
++	/* link bio */
++	bio->bi_next = sc->swap_bio_list;
++	sc->swap_bio_list = bio;
++	spin_unlock_irqrestore(&sc->lock, flags);
++	/*
++	 * Swap I/O is tend to be countinous. Do check in batched manner.
++	 */
++	if (!delayed_work_pending(&sc->work))
++		schedule_delayed_work(&sc->work, HZ/10);
++}
++
++static int __init setup_stale_swap_check(void)
++{
++	struct swapio_check *sc;
++
++	sc = &stale_swap_check;
++	spin_lock_init(&sc->lock);
++	sc->swap_bio_list = NULL;
++	INIT_DELAYED_WORK(&sc->work, mem_cgroup_check_stale_swap);
++	return 0;
++}
++late_initcall(setup_stale_swap_check);
++
++
++#else /* CONFIG_CGROUP_MEM_RES_CTRL */
++
++static inline
++void mem_cgroup_swapio_check_again(struct bio *bio, struct page *page)
++{
++}
++#endif
++
++
++
+ static struct bio *get_swap_bio(gfp_t gfp_flags, pgoff_t index,
+ 				struct page *page, bio_end_io_t end_io)
+ {
+@@ -66,6 +183,8 @@ static void end_swap_bio_write(struct bi
+ 				(unsigned long long)bio->bi_sector);
+ 		ClearPageReclaim(page);
+ 	}
++	/* While PG_writeback, this page is stable ...then, call this here */
++	mem_cgroup_swapio_check_again(bio, page);
+ 	end_page_writeback(page);
+ 	bio_put(bio);
+ }
+@@ -85,6 +204,7 @@ void end_swap_bio_read(struct bio *bio, 
+ 	} else {
+ 		SetPageUptodate(page);
+ 	}
++	mem_cgroup_swapio_check_again(bio, page);
+ 	unlock_page(page);
+ 	bio_put(bio);
+ }
+Index: mmotm-2.6.30-Apr24/mm/vmscan.c
+===================================================================
+--- mmotm-2.6.30-Apr24.orig/mm/vmscan.c
++++ mmotm-2.6.30-Apr24/mm/vmscan.c
+@@ -586,6 +586,30 @@ void putback_lru_page(struct page *page)
+ }
+ #endif /* CONFIG_UNEVICTABLE_LRU */
+ 
++#ifdef CONFIG_CGROUP_MEM_RES_CTRL
++/*
++ * Even if we don't call this, global LRU will finally find this SwapCache and
++ * free swap entry in the next loop. But, when memcg is used, we may have
++ * smaller chance to call global LRU's memory reclaim code.
++ * Freeing unused swap entry in aggresive way is good for avoid "leak" of swap
++ * entry accounting.
++ */
++static inline void unuse_swapcache_check_again(struct page *page)
++{
++	/*
++	 * The page is locked, but have extra reference from somewhere.
++	 * In typical case, rotate_reclaimable_page()'s extra refcnt makes
++	 * __remove_mapping fail. (see mm/swap.c)
++	 */
++	if (PageSwapCache(page))
++		try_to_free_swap(page);
++}
++#else
++static inline void unuse_swapcache_check_again(struct page *page)
++{
++}
++#endif
++
+ 
+ /*
+  * shrink_page_list() returns the number of reclaimed pages
+@@ -758,9 +782,12 @@ static unsigned long shrink_page_list(st
+ 			}
+ 		}
+ 
+-		if (!mapping || !__remove_mapping(mapping, page))
++		if (!mapping)
+ 			goto keep_locked;
+-
++		if (!__remove_mapping(mapping, page)) {
++			unuse_swapcache_check_again(page);
++			goto keep_locked;
++		}
+ 		/*
+ 		 * At this point, we have no other references and there is
+ 		 * no way to pick any more up (removed from LRU, removed
+Index: mmotm-2.6.30-Apr24/mm/swapfile.c
+===================================================================
+--- mmotm-2.6.30-Apr24.orig/mm/swapfile.c
++++ mmotm-2.6.30-Apr24/mm/swapfile.c
+@@ -528,6 +528,43 @@ static inline int page_swapcount(struct 
+ 	return count;
+ }
+ 
++#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++static inline int page_swapused_nolock(struct page *page)
++{
++	swp_entry_t entry;
++	unsigned long type, offset;
++	struct swap_info_struct *p;
++
++	entry.val = page_private(page);
++	type = swp_type(entry);
++	VM_BUG_ON(type >= nr_swapfiles);
++
++	offset = swp_offset(entry);
++	p = &swap_info[type];
++	VM_BUG_ON(!(p->flags & SWP_USED));
++	VM_BUG_ON(!(p->swap_map[offset]));
++
++	smp_rmb();
++	return p->swap_map[offset] != 1;
++}
++/*
++ * Use a lapping function not to allow reuse this function other than memcg.
++ */
++int mem_cgroup_staleswap_hint(struct page *page)
++{
++	/*
++	 * The page may not under lock_page() but Writeback is set in that case.
++	 * Then, swap_map is stable when this is called.
++	 * Very terrible troube will not occur even if page_swapused_nolock()
++	 * returns wrong value.
++	 * Because this can be called via interrupt context, we use nolock
++	 * version of swap's refcnt check.
++	 */
++	if (!PageSwapCache(page) || page_mapped(page))
++		return 1;
++	return page_swapused_nolock(page);
++}
++#endif
+ /*
+  * We can write to an anon page without COW if there are no other references
+  * to it.  And as a side-effect, free up its swap: because the old content
+Index: mmotm-2.6.30-Apr24/include/linux/swap.h
+===================================================================
+--- mmotm-2.6.30-Apr24.orig/include/linux/swap.h
++++ mmotm-2.6.30-Apr24/include/linux/swap.h
+@@ -336,6 +336,7 @@ static inline void disable_swap_token(vo
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+ extern void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent);
++extern int mem_cgroup_staleswap_hint(struct page *page);
+ #else
+ static inline void
+ mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+
