@@ -1,129 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbZD3JSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762160AbZD3JSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757922AbZD3JSU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 05:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbZD3JSF
+	id S1762160AbZD3JSp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 05:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbZD3JSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 05:18:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52899 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752125AbZD3JSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 05:18:04 -0400
-Date: Thu, 30 Apr 2009 11:17:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Renninger <trenn@suse.de>
-Cc: djwong@us.ibm.com, Len Brown <lenb@kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH v2] acpi: Fix regression where _PPC is not read at boot
-	even when ignore_ppc=0
-Message-ID: <20090430091746.GA2839@elte.hu>
-References: <20090415225348.GW8311@plum> <200904291519.29683.trenn@suse.de> <20090429214312.GX7917@plum> <200904301107.45753.trenn@suse.de>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="sdtB3X0nJg68CQEu"
+	Thu, 30 Apr 2009 05:18:32 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:51622 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753904AbZD3JSb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 05:18:31 -0400
+Date: Thu, 30 Apr 2009 11:18:28 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
+Subject: Re: [PATCH 2/2] configfs: Rework configfs_depend_item() locking
+	and make lockdep happy
+Message-ID: <20090430091828.GB13896@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+Mail-Followup-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+	cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
+References: <1233166713-9668-1-git-send-email-louis.rilling@kerlabs.com> <1233166713-9668-3-git-send-email-louis.rilling@kerlabs.com> <20090429185231.GE4743@mail.oracle.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-2007-1241083095-0001-2"
 Content-Disposition: inline
-In-Reply-To: <200904301107.45753.trenn@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090429185231.GE4743@mail.oracle.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
---sdtB3X0nJg68CQEu
+--=_bohort-2007-1241083095-0001-2
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On 29/04/09 11:52 -0700, Joel Becker wrote:
+> On Wed, Jan 28, 2009 at 07:18:33PM +0100, Louis Rilling wrote:
+> > configfs_depend_item() recursively locks all inodes mutex from configfs=
+ root to
+> > the target item, which makes lockdep unhappy. The purpose of this recur=
+sive
+> > locking is to ensure that the item tree can be safely parsed and that t=
+he target
+> > item, if found, is not about to leave.
+> >=20
+> > This patch reworks configfs_depend_item() locking using configfs_dirent=
+_lock.
+> > Since configfs_dirent_lock protects all changes to the configfs_dirent =
+tree, and
+> > protects tagging of items to be removed, this lock can be used instead =
+of the
+> > inodes mutex lock chain.
+> > This needs that the check for dependents be done atomically with
+> > CONFIGFS_USET_DROPPING tagging.
+>=20
+> 	These patches are now in the 'lockdep' branch of the configfs
+> tree.  I'm planning to send them in the next merge window.  I've made
+> one change.
+>=20
+> > + * Note: items in the middle of attachment start with s_type =3D 0
+> > + * (configfs_new_dirent()), and configfs_make_dirent() (called from
+> > + * create_dir()) sets s_type =3D CONFIGFS_DIR|CONFIGFS_USET_CREATING. =
+In both
+> > + * cases the item is ignored. Since s_type is an int, we rely on the C=
+PU to
+> > + * atomically update the value, without making configfs_make_dirent() =
+take
+> > + * configfs_dirent_lock.
+>=20
+> 	I've added configfs_dirent_lock in configfs_make_dirent(),
+> because it is not safe at all to rely on the fact that s_type is an int.
+> It's an atomic set on one CPU, but there's no guarantee that it's seen
+> correctly on other CPUs.  Plus, there's no real need for speed here.  So
+> we properly take configfs_dirent_lock around s_type in
+> configfs_make_dirent(), and that ensures we see things correctly on SMP.
 
-* Thomas Renninger <trenn@suse.de> wrote:
+Agreed, I was going to suggest something like this. Actually I'd push the
+initialization of s_type down to configfs_new_dirent(), so that s_type eith=
+er
+is always NULL, or always shows the correct type of object.
 
-> On Wednesday 29 April 2009 11:43:12 pm Darrick J. Wong wrote:
-> > On Wed, Apr 29, 2009 at 03:19:28PM +0200, Thomas Renninger wrote:
-> > > Ingo, did you do a BIOS update in between?
-> > > The DSDT and SSDTs you added do not contain a _PPC function.
-> > > These ACPI tables definitely do not suffer from an initial _PPC
-> > > evaluation.
-> >
-> > P-state tables are probably loaded from separate SSDT tables "CPU0IST" and
-> > "CPU1IST".  You can download 'em with something like this:
-> >
-> > # dmesg | grep IST
-> > ACPI: SSDT BFD30566, 01FB (r1  PmRef    CPU0IST   3000 INTL 20030224)
-> >            ^addr     ^length
-> >
-> > # acpidump --addr 0xBFD30566 --length 0x1FB > cpu0ist
-> > # iasl -d cpu0ist
-> >
-> > Then paste cpu0ist.dsl somewhere.
-> 
-> Oops forgot about the tables loaded at runtime, I take back the definitely :)
-> Ingo, can you also do:
-> acpidump --addr 0x7F6E609E --length 0x1ED >cpu0ist
-> acpidump --addr 0x7F6E628B --length 0x94 >cpu1ist
-> acpidump --addr 0x7F6E5DE1 --length 0x238 >cpu0cst
-> acpidump --addr 0x7F6E6019 --length 0x85 >cpu1cst
+Thanks,
 
-sure - attached.
+Louis
 
-	Ingo
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
 
---sdtB3X0nJg68CQEu
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename=cpu0ist
-Content-Transfer-Encoding: base64
+--=_bohort-2007-1241083095-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
 
-U1NEVO0BAAABdVBtUmVmAENwdTBJc3QAAAEAAElOVEwTBQUgEEgcXC5fUFJfQ1BVMBRABV9Q
-UEMAcAoAYHBcLwVfU0JfUENJMExQQ19FQ19fTFBNRGCgKZJgoCWRXERUMDBcLwVfU0JfUENJ
-MExQQ19FQ19fSFQxMHBcTFdTVGCkYBRHB19QQ1QAoEEEkHtDRkdECgEAe1BEQzAKAQCkEiwC
-ERQKEYIMAH9AAACZAQAAAAAAAHkAERQKEYIMAH8QAACYAQAAAAAAAHkApBIsAhEUChGCDAAB
-EAAAsgAAAAAAAAB5ABEUChGCDAABCAAAswAAAAAAAAB5ABQaWFBTUwCgDntQREMwCgEApE5Q
-U1OkU1BTUwhTUFNTEkYGAxIgBgwpBwAADBh5AAAMbgAAAAwKAAAADIMAAAAMAAAAABIgBgw1
-BQAADCBOAAAMbgAAAAwKAAAADIMBAAAMAQAAABIgBgzoAwAADMgyAAAMbgAAAAwKAAAADIMC
-AAAMAgAAAAhfUFNTEkYGAxIgBgwpBwAADBh5AAAMCgAAAAwKAAAADCwLAAAMLAsAABIgBgw1
-BQAADCBOAAAMCgAAAAwKAAAADB0IAAAMHQgAABIgBgzoAwAADMgyAAAMCgAAAAwKAAAADBMG
-AAAMEwYAAA==
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
---sdtB3X0nJg68CQEu
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename=cpu1ist
-Content-Transfer-Encoding: base64
+iD8DBQFJ+WzkVKcRuvQ9Q1QRAmAQAJ44tboX+Py2+ubfeJtRhoSSYj8r2ACdEeCi
+3SSJY2WUHkzwFELyH+ytmrA=
+=OU2t
+-----END PGP SIGNATURE-----
 
-U1NEVJQAAAABllBtUmVmAENwdTFJc3QAAAEAAElOVEwTBQUgEE8GXC5fUFJfQ1BVMRQWX1BQ
-QwCkXC8DX1BSX0NQVTBfUFBDFDRfUENUAKQSLAIRFAoRggwAf0AAAJkBAAAAAAAAeQARFAoR
-ggwAfxAAAJgBAAAAAAAAeQAUFl9QU1MApFwvA19QUl9DUFUwX1BTUw==
-
---sdtB3X0nJg68CQEu
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename=cpu0cst
-Content-Transfer-Encoding: base64
-
-U1NEVDgCAAABolBtUmVmAENwdTBDc3QAAAEAAElOVEwTBQUgEEMhXC5fUFJfQ1BVMAhDU1Qx
-EiMCCgESHgQRFAoRggwAfwAAAAAAAAAAAAAAeQAKAQoBC+gDCENTVDISQwQDCgISHgQRFAoR
-ggwAfwAAAAAAAAAAAAAAeQAKAQoBC+gDEh4EERQKEYIMAAEIAAAUEAAAAAAAAHkACgIKAQv0
-AQhDU1QzEkEGBAoDEh4EERQKEYIMAH8AAAAAAAAAAAAAAHkACgEKAQvoAxIeBBEUChGCDAAB
-CAAAFBAAAAAAAAB5AAoCCgEL9AESHQQRFAoRggwAAQgAABUQAAAAAAAAeQAKAwoRCmQIQ1NU
-NBJBBgQKAxIeBBEUChGCDAB/AAAAAAAAAAAAAAB5AAoBCgEL6AMSHgQRFAoRggwAAQgAABQQ
-AAAAAAAAeQAKAgoBC/QBEh0EERQKEYIMAAEIAAAWEAAAAAAAAHkACgMKOQpkFEYMX0NTVACg
-O5B7Q0ZHRAwAAAABAJJ7UERDMAoQAKQSIwIKARIeBBEUChGCDAB/AAAAAAAAAAAAAAB5AAoB
-Cp0L6AOgRQV7Q0ZHRAqAAKALXEMyTkGkQ1NUMaALXEMzTkGkQ1NUMqAhXC8GX1NCX1BDSTBM
-UENfRUNfX0FDX19fUFNSpENTVDOgC1xDNE5BpENTVDOkQ1NUNKAYkJJ7Q0ZHRAqAAHtDRkdE
-CkAApENTVDOgDntDRkdECiAApENTVDKkQ1NUMQ==
-
---sdtB3X0nJg68CQEu
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename=cpu1cst
-Content-Transfer-Encoding: base64
-
-U1NEVIUAAAABu1BtUmVmAENwdTFDc3QAAAEAAElOVEwTBQUgEEAGXC5fUFJfQ1BVMRRDBV9D
-U1QAoDuQe0NGR0QMAAAAAQCSe1BEQzEKEACkEiMCCgESHgQRFAoRggwAfwAAAAAAAAAAAAAA
-eQAKAQqdC+gDpFwvA19QUl9DUFUwX0NTVA==
-
---sdtB3X0nJg68CQEu--
+--=_bohort-2007-1241083095-0001-2--
