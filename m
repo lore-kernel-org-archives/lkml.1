@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762253AbZD3AjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762132AbZD3Aj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762253AbZD3AjZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 20:39:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZD3AjP
+	id S1762132AbZD3Aj5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 20:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZD3Ajp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 20:39:15 -0400
-Received: from tundra.namei.org ([65.99.196.166]:36442 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752631AbZD3AjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 20:39:14 -0400
-Date: Thu, 30 Apr 2009 10:38:30 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Oleg Nesterov <oleg@redhat.com>
-cc: Stephen Smalley <sds@tycho.nsa.gov>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, Eric Paris <eparis@parisplace.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: ptrace: selinux_bprm_committed_creds: simplify __wake_up_parent()
- code and s/parent/real_parent/
-In-Reply-To: <20090429140224.GA31948@redhat.com>
-Message-ID: <alpine.LRH.2.00.0904301038150.17896@tundra.namei.org>
-References: <20090428223025.GA11997@redhat.com> <1241011116.18249.193.camel@localhost.localdomain> <20090429140224.GA31948@redhat.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Wed, 29 Apr 2009 20:39:45 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54683 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758942AbZD3Ajo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 20:39:44 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH] vmscan: evict use-once pages first (v3)
+Cc: kosaki.motohiro@jp.fujitsu.com, Peter Zijlstra <peterz@infradead.org>,
+       Elladan <elladan@eskimo.com>, linux-kernel@vger.kernel.org,
+       tytso@mit.edu, linux-mm@kvack.org
+In-Reply-To: <20090429131436.640f09ab@cuia.bos.redhat.com>
+References: <2f11576a0904290907g48e94e74ye97aae593f6ac519@mail.gmail.com> <20090429131436.640f09ab@cuia.bos.redhat.com>
+Message-Id: <20090430093733.D20C.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Thu, 30 Apr 2009 09:39:38 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Apr 2009, Oleg Nesterov wrote:
+> When the file LRU lists are dominated by streaming IO pages,
+> evict those pages first, before considering evicting other
+> pages.
+> 
+> This should be safe from deadlocks or performance problems
+> because only three things can happen to an inactive file page:
+> 1) referenced twice and promoted to the active list
+> 2) evicted by the pageout code
+> 3) under IO, after which it will get evicted or promoted
+> 
+> The pages freed in this way can either be reused for streaming
+> IO, or allocated for something else. If the pages are used for
+> streaming IO, this pageout pattern continues. Otherwise, we will
+> fall back to the normal pageout pattern.
+> 
+> Signed-off-by: Rik van Riel <riel@redhat.com>
+> 
+> ---
+> On Thu, 30 Apr 2009 01:07:51 +0900
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > we handle active_anon vs inactive_anon ratio by shrink_list().
+> > Why do you insert this logic insert shrink_zone() ?
+> 
+> Kosaki, this implementation mirrors the anon side of things precisely.
+> Does this look good?
+> 
+> Elladan, this patch should work just like the second version. Please
+> let me know how it works for you.
 
-> (on top of David's "[PATCH] SELinux: Don't flush inherited SIGKILL during execve()",
->  but can be applied independently).
-> 
-> selinux_bprm_committed_creds() should wake up ->real_parent, not ->parent.
-> 
-> We shouldn't worry about the tracer if current is ptraced, exec() must not
-> succeed if the tracer has no rights to trace this task after cred changing.
-> But we should notify ->real_parent which is, well, real parent.
-> 
-> Also, we don't need _irq to take tasklist, and we don't need parent's
-> ->siglock to wake_up_interruptible(real_parent->signal->wait_chldexit).
-> Since we hold tasklist, real_parent->signal must be stable. Otherwise
-> spin_lock(siglock) is not safe too and can't help anyway.
-> 
-> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Looks good to me. thanks.
+but I don't hit Rik's explained issue, I hope Elladan report his test result.
 
-Applied to 
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
 
--- 
-James Morris
-<jmorris@namei.org>
+
