@@ -1,50 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934274AbZD3R5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934282AbZD3R6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934274AbZD3R5q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933593AbZD3RjW
+	id S934282AbZD3R6O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:58:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765054AbZD3RrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:39:22 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42610
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933588AbZD3RjU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:39:20 -0400
-Date: Thu, 30 Apr 2009 10:39:13 -0700 (PDT)
-Message-Id: <20090430.103913.173722554.davem@davemloft.net>
-To: arnd@arndb.de
-Cc: linux-arch@vger.kernel.org, monstr@monstr.eu,
-       remis.developer@googlemail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 08/27] asm-generic: add generic versions of common
- headers
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200904301934.59415.arnd@arndb.de>
-References: <200904301907.46515.arnd@arndb.de>
-	<20090430.101231.27030060.davem@davemloft.net>
-	<200904301934.59415.arnd@arndb.de>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Apr 2009 13:47:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42343 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753732AbZD3RrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:47:06 -0400
+From: Josef Bacik <jbacik@redhat.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, sandeen@redhat.com,
+       Josef Bacik <jbacik@redhat.com>
+Subject: [PATCH] fiemap: fix problem with setting FIEMAP_EXTENT_LAST
+Date: Thu, 30 Apr 2009 13:44:51 -0400
+Message-Id: <1241113491-9031-1-git-send-email-jbacik@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 30 Apr 2009 19:34:58 +0200
+This patch fixes a problem where the generic block based fiemap stuff would not
+properly set FIEMAP_EXTENT_LAST on the last extent.  I've reworked things to
+keep track if we go past the EOF, and mark the last extent properly.  The
+problem was reported by and tested by Eric Sandeen.
 
-> On Thursday 30 April 2009, David Miller wrote:
->> You didn't read what I said.
->> 
->> I extract the commit messages and patches using "git format-patch"
->> merely as a formality, then I hand craft every aspect of the emails.
-> 
-> Right, this is what I do for smaller sets of patches, but I was
-> hoping for something slightly simpler when sending out my 27 (plus
-> the previous 18) patches.
+Tested-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: Josef Bacik <jbacik@redhat.com>
+---
+ fs/ioctl.c |   75 ++++++++++++++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 55 insertions(+), 20 deletions(-)
 
-You shouldn't be bombing the list with so many patches at once,
-another good reason to do it by hand :-)
+diff --git a/fs/ioctl.c b/fs/ioctl.c
+index ac2d47e..82d9c42 100644
+--- a/fs/ioctl.c
++++ b/fs/ioctl.c
+@@ -258,7 +258,7 @@ int __generic_block_fiemap(struct inode *inode,
+ 	long long length = 0, map_len = 0;
+ 	u64 logical = 0, phys = 0, size = 0;
+ 	u32 flags = FIEMAP_EXTENT_MERGED;
+-	int ret = 0;
++	int ret = 0, past_eof = 0, whole_file = 0;
+ 
+ 	if ((ret = fiemap_check_flags(fieinfo, FIEMAP_FLAG_SYNC)))
+ 		return ret;
+@@ -266,6 +266,9 @@ int __generic_block_fiemap(struct inode *inode,
+ 	start_blk = logical_to_blk(inode, start);
+ 
+ 	length = (long long)min_t(u64, len, i_size_read(inode));
++	if (length < len)
++		whole_file = 1;
++
+ 	map_len = length;
+ 
+ 	do {
+@@ -282,11 +285,26 @@ int __generic_block_fiemap(struct inode *inode,
+ 
+ 		/* HOLE */
+ 		if (!buffer_mapped(&tmp)) {
++			length -= blk_to_logical(inode, 1);
++			start_blk++;
++
++			/*
++			 * we want to handle the case where there is an
++			 * allocated block at the front of the file, and then
++			 * nothing but holes up to the end of the file properly,
++			 * to make sure that extent at the front gets properly
++			 * marked with FIEMAP_EXTENT_LAST
++			 */
++			if (!past_eof &&
++			    blk_to_logical(inode, start_blk) >=
++			    blk_to_logical(inode, 0)+i_size_read(inode))
++				past_eof = 1;
++
+ 			/*
+ 			 * first hole after going past the EOF, this is our
+ 			 * last extent
+ 			 */
+-			if (length <= 0) {
++			if (past_eof && size) {
+ 				flags = FIEMAP_EXTENT_MERGED|FIEMAP_EXTENT_LAST;
+ 				ret = fiemap_fill_next_extent(fieinfo, logical,
+ 							      phys, size,
+@@ -294,15 +312,37 @@ int __generic_block_fiemap(struct inode *inode,
+ 				break;
+ 			}
+ 
+-			length -= blk_to_logical(inode, 1);
+-
+ 			/* if we have holes up to/past EOF then we're done */
+-			if (length <= 0)
++			if (length <= 0 || past_eof)
+ 				break;
+-
+-			start_blk++;
+ 		} else {
+-			if (length <= 0 && size) {
++			/*
++			 * we have gone over the length of what we wanted to
++			 * map, and it wasn't the entire file, so add the extent
++			 * we got last time and exit.
++			 *
++			 * This is for the case where say we want to map all the
++			 * way up to the second to the last block in a file, but
++			 * the last block is a hole, making the second to last
++			 * block FIEMAP_EXTENT_LAST.  In this case we want to
++			 * see if there is a hole after the second to last block
++			 * so we can mark it properly.  If we found data after
++			 * we exceeded the length we were requesting, then we
++			 * are good to go, just add the extent to the fieinfo
++			 * and break
++			 */
++			if (length <= 0 && !whole_file) {
++				ret = fiemap_fill_next_extent(fieinfo, logical,
++							      phys, size,
++							      flags);
++				break;
++			}
++
++			/*
++			 * if size != 0 then we know we already have an extent
++			 * to add, so add it.
++			 */
++			if (size) {
+ 				ret = fiemap_fill_next_extent(fieinfo, logical,
+ 							      phys, size,
+ 							      flags);
+@@ -319,19 +359,14 @@ int __generic_block_fiemap(struct inode *inode,
+ 			start_blk += logical_to_blk(inode, size);
+ 
+ 			/*
+-			 * if we are past the EOF we need to loop again to see
+-			 * if there is a hole so we can mark this extent as the
+-			 * last one, and if not keep mapping things until we
+-			 * find a hole, or we run out of slots in the extent
+-			 * array
++			 * If we are past the EOF, then we need to make sure as
++			 * soon as we find a hole that the last extent we found
++			 * is marked with FIEMAP_EXTENT_LAST
+ 			 */
+-			if (length <= 0)
+-				continue;
+-
+-			ret = fiemap_fill_next_extent(fieinfo, logical, phys,
+-						      size, flags);
+-			if (ret)
+-				break;
++			if (!past_eof &&
++			    logical+size >=
++			    blk_to_logical(inode, 0)+i_size_read(inode))
++				past_eof = 1;
+ 		}
+ 		cond_resched();
+ 	} while (1);
+-- 
+1.6.0.6
 
-Either consolidate or send in multiple phases after the initial
-patches of infrastructure and examples are OK'd by everyone.
