@@ -1,189 +1,338 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762856AbZD3N1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762324AbZD3Nb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762856AbZD3N1X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 09:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761801AbZD3N1M
+	id S1762324AbZD3Nb4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 09:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbZD3Nbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 09:27:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59433 "EHLO mx3.mail.elte.hu"
+	Thu, 30 Apr 2009 09:31:47 -0400
+Received: from cantor.suse.de ([195.135.220.2]:37649 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761188AbZD3N1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 09:27:11 -0400
-Date: Thu, 30 Apr 2009 15:26:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH 0/3] removing unwanted module configs
-Message-ID: <20090430132605.GA5289@elte.hu>
-References: <20090430030821.523327994@goodmis.org> <20090430071830.GC16737@elte.hu> <alpine.DEB.2.00.0904300908110.20374@gandalf.stny.rr.com>
+	id S1752486AbZD3Nbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 09:31:46 -0400
+From: Nikanth Karthikesan <knikanth@novell.com>
+Organization: Novell
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Detect and warn on atomic_inc/atomic_dec wrapping around
+Date: Thu, 30 Apr 2009 18:59:25 +0530
+User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+References: <200904291221.40361.knikanth@novell.com> <200904301756.42210.knikanth@novell.com> <20090430125004.GA20047@elte.hu>
+In-Reply-To: <20090430125004.GA20047@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904300908110.20374@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200904301859.27199.knikanth@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 30 April 2009 18:20:04 Ingo Molnar wrote:
+> * Nikanth Karthikesan <knikanth@novell.com> wrote:
+> > diff --git a/include/asm-generic/atomic.h b/include/asm-generic/atomic.h
+> > index 7abdaa9..edf5619 100644
+> > --- a/include/asm-generic/atomic.h
+> > +++ b/include/asm-generic/atomic.h
+> > @@ -4,15 +4,71 @@
+> >   * Copyright (C) 2005 Silicon Graphics, Inc.
+> >   *	Christoph Lameter
+> >   *
+> > - * Allows to provide arch independent atomic definitions without the
+> > need to - * edit all arch specific atomic.h files.
+> >   */
+> >
+> > +#include <linux/kernel.h>
+> >  #include <asm/types.h>
+> > +#include <asm/bug.h>
+> > +
+> > +#ifdef CONFIG_ENABLE_WARN_ATOMIC_INC_WRAP
+> > +
+> > +/**
+> > + * atomic_inc - increment atomic variable
+> > + * @v: pointer of type atomic_t
+> > + *
+> > + * Atomically increments @v by 1.
+> > + * Prints a warning if it wraps around.
+> > + */
+> > +static inline void atomic_inc(atomic_t *v)
+> > +{
+> > +	WARN_ON(atomic_add_unless(v, 1, INT_MAX) == 0);
+> > +}
+> > +
+> > +/**
+> > + * atomic_dec - decrement atomic variable
+> > + * @v: pointer of type atomic_t
+> > + *
+> > + * Atomically decrements @v by 1.
+> > + * Prints a warning if it wraps around.
+> > + */
+> > +static inline void atomic_dec(atomic_t *v)
+> > +{
+> > +	WARN_ON(atomic_add_unless(v, -1, INT_MIN) == 0);
+> > +}
+> > +
+> > +#else
+> > +
+> > +/**
+> > + * atomic_inc - increment atomic variable
+> > + * @v: pointer of type atomic_t
+> > + *
+> > + * Atomically increments @v by 1.
+> > + */
+> > +static inline void atomic_inc(atomic_t *v)
+> > +{
+> > +	raw_atomic_inc(v);
+> > +}
+> > +
+> > +/**
+> > + * atomic_dec - increment atomic variable
+> > + * @v: pointer of type atomic_t
+> > + *
+> > + * Atomically decrements @v by 1.
+> > + */
+> > +static inline void atomic_dec(atomic_t *v)
+> > +{
+> > +	raw_atomic_dec(v);
+> > +}
+> > +
+> > +#endif
+>
+> Here i think it makes sense to have a single definition:
+>
+> static inline void atomic_inc(atomic_t *v)
+> {
+> #ifdef CONFIG_ENABLE_WARN_ATOMIC_INC_WRAP
+> 	WARN_ON(atomic_add_unless(v, 1, INT_MAX) == 0);
+> #else
+> 	raw_atomic_inc(v);
+> #endif
+> }
+>
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Ok, done.
 
-> 
-> On Thu, 30 Apr 2009, Ingo Molnar wrote:
-> 
-> > 
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > > As it has been brought up last Kernel Summit, we want to make it easier
-> > > for those that report bugs to build their own kernels, and maybe even
-> > > bisect with git.  Some of these people are not programmers and do not
-> > > understand the complexity of the configuration options. But to compile
-> > > a distribution configured kernel on their boxes can take hours.
-> > > 
-> > > This patch series comes to the rescue. I wrote the first instance of
-> > > streamline config when I bought a new box in 2005 and got frustrated
-> > > with finding all the necessary configurations to boot it. It is a
-> > > small (yet powerful) perl script.
-> > > 
-> > > Here's what it does:
-> > > 
-> > >  * Reads the modules that are load by using lsmod.
-> > >  * Reads all Makefiles to map modules to CONFIG_* options
-> > >  * Reads the Kconfig files to find dependencies and selects
-> > >  * Figures out what CONFIGS are needed to compile the loaded modules
-> > >  * Reads the .config and prints out a version with all module configurations
-> > >     that not needed, disabled.
-> > > 
-> > > The next two patches add options to make.
-> > > 
-> > >  localmodconfig - this will run streamline_config.pl on the .config file
-> > > 	and replace it at the end.
-> > > 
-> > >  localyesconfig - this will do the same as localmodconfig but will also
-> > > 	sed -i s/=m/=y/  to turn all modules to core. It will also run
-> > > 	the 'make oldcondfig' to fix it up and let the user handle
-> > > 	andything that was changed by converting a module to core.
-> > > 
-> > > Anyway, this is now in git and as a series of patches here. My git 
-> > > tree is based off of the latest Linus git tree.
-> > > 
-> > > Have fun!
-> > 
-> > Very nice and useful!
-> > 
-> > I have given it a try - it works to a certain degree, but does not 
-> > seem to work fully. If i boot a Fedora distro kernel with this 
-> > module setup:
-> > 
-> > aldebaran:~/linux/linux> lsmod
-> > Module                  Size  Used by
-> > sunrpc                253904  1 
-> > ipv6                  349568  50 
-> > cpufreq_ondemand       73248  0 
-> > acpi_cpufreq           75408  0 
-> > freq_table             70400  2 cpufreq_ondemand,acpi_cpufreq
-> > dm_multipath           82256  0 
-> > i2c_i801               75932  0 
-> > i2c_core               87192  1 i2c_i801
-> > serio_raw              71556  0 
-> > pcspkr                 68352  0 
-> > pata_jmicron           69504  0 
-> > iTCO_wdt               78208  0 
-> > shpchp                 99160  0 
-> > iTCO_vendor_support    68868  1 iTCO_wdt
-> > igb                   144412  0 
-> > dca                    71976  1 igb
-> > pata_acpi              70528  0 
-> > ata_generic            71428  0 
-> > 
-> > note the 'igb' driver that is essential to be picked up. 'make 
-> > localyesconfig' complains:
-> > 
-> >   module igb did not have configs CONFIG_IGB
-> 
-> Did the original .config have it set. It will not enable any 
-> modules that are not already set.
+> Or, better yet, i'd suggest to define an 'invalid value' range for
+> atomic integer types - not restricted to the single value of
+> INT_MAX, but in the range of: [ UINT_MAX/4 ... INT_MAX/4*3 ].
+>
 
-no, it wasnt enabled. 
+atomic_t is defined an int, why use UINT_MAX?
 
-> > But:
-> > 
-> >   # CONFIG_IGB is not set
-> > 
-> > It did pick up other essential drivers - such as ext3. Why did it 
-> > miss IGB? Here are all the missed drivers:
-> > 
-> > aldebaran:~/linux/linux> make localyesconfig
-> > module ata_generic did not have configs CONFIG_ATA_GENERIC
-> > module iTCO_vendor_support did not have configs CONFIG_ITCO_WDT
-> > module shpchp did not have configs CONFIG_HOTPLUG_PCI_SHPC
-> > module acpi_cpufreq did not have configs CONFIG_IA64_ACPI_CPUFREQ CONFIG_X86_ACPI_CPUFREQ
-> > module pata_jmicron did not have configs CONFIG_PATA_JMICRON
-> > module i2c_i801 did not have configs CONFIG_I2C_I801
-> > module serio_raw did not have configs CONFIG_SERIO_RAW
-> > module iTCO_wdt did not have configs CONFIG_ITCO_WDT
-> > module freq_table did not have configs CONFIG_CPU_FREQ_TABLE
-> > module igb did not have configs CONFIG_IGB
-> > module ipv6 did not have configs CONFIG_IPV6
-> > module dca did not have configs CONFIG_DCA
-> > module sunrpc did not have configs CONFIG_SUNRPC
-> > module pata_acpi did not have configs CONFIG_PATA_ACPI
-> > module dm_multipath did not have configs CONFIG_DM_MULTIPATH
-> > module cpufreq_ondemand did not have configs 
-> > CONFIG_CPU_FREQ_GOV_ONDEMAND
-> > module i2c_core did not have configs CONFIG_I2C
-> > module pcspkr did not have configs CONFIG_INPUT_PCSPKR
-> 
-> Hmm, I just added the "localyesconfig" and have not played with it 
-> much. I need to change the integrity check of the script to test 
-> for modules that are already compiled in (CONFIG_FOO=y). Right now 
-> it expects the modules to be modules :-/
-> 
-> > Of those drivers, igb is the only truly boot-critical one - the 
-> > box wont be very useful if it has no network support.
-> > 
-> > Another comment: 'make localyesconfig' does not seem to be 
-> > self-invariant. I.e. it does not handle the case well when we 
-> > already have booted a localyesconfig kernel and do 'make 
-> > localyesconfig' again. It will find no modules and will merrily 
-> > create an almost empty .config.
-> 
-> It should not touch CONFIG_FOO=y. It should only disable the modules that 
-> are already set but not needed.
-> 
-> I will update the script to not warn about modules that are compiled in.
-> 
-> > This could be addressed the following way: i think the script 
-> > should implicitly turn on CONFIG_IKCONFIG=y, and should also 
-> > check for the presence of /proc/config.gz and use it as a 
-> > starting point. This makes the whole concept nicely 
-> > self-invariant.
-> 
-> I really want to stay away from enabling anything in the .config 
-> scripts. I can probably do it for the trivial cases. But there are 
-> cases where more than one config will enable a module, or it takes 
-> several types of dependencies to enable it. The script can not 
-> know which is the best set of dependencies to enable, and I would 
-> not want to enable all of them.
+> Then there could be a single, straightforward value check:
+>
+> static inline void atomic_inc(atomic_t *v)
+> {
+> 	debug_atomic_check_value(v);
+> 	raw_atomic_inc(v);
+> }
+>
+> Where debug_atomic_check_value() is just an atomic_read():
+>
+> static inline void debug_atomic_check_value(atomic_t *v)
+> {
+> 	WARN_ONCE(in_range(atomic_read(v), UINT_MAX/4, UINT_MAX/4*3),
+> 		  KERN_ERR "atomic counter check failure!");
+> }
+>
 
-CONFIG_IKCONFIG=y would be a one-off thing, only to make the whole 
-concept self-hosting. If i boot a localyesconfig kernel, how does 
-the script figure out what is built in? It cannot, unless i provide 
-it the precise .config - but often that wont be provided. The script 
-should clone the environment it is running in really.
+I do not understand, why UINT_MAX/4 to UINT_MAX/4*3?
+Roughly,
+UINT_MAX/4 = INT_MAX/2 
+UINT_MAX/4*3 = INT_MAX/2*3 which we will never reach with an int.
 
-	Ingo
+> It's a constant check.
+>
+> If are overflowing on such a massive rate, it doesnt matter how
+> early or late we check the value.
+>
+
+UINT_MAX/4 early, might be too early. And if it doesn't matter how early or
+late, why try to be over-cautious and produce false warnings. ;-)
+
+> Agreed?
+>
+
+Hmm.. partly yes, but not the range. Could the range be made as INT_MAX/4*3 to
+INT_MAX? But even then, this might trigger false-positives, when atomic_t is
+used in places where it was meant to exercise the full int range with the
+assumption it would never go above INT_MAX.
+
+If you still think that, it would be better to catch it early, I would send
+you another patch with the range checking incorporated.
+
+Thanks
+Nikanth
+
+Detect and warn on atomic_inc/atomic_dec overflow.
+
+Add a debug option to detect and warn when the 32-bit atomic_t overflows
+during atomic_inc and atomic_dec.
+
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+---
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index df9e885..dd49be3 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -46,6 +46,7 @@ config X86
+ 	select HAVE_KERNEL_GZIP
+ 	select HAVE_KERNEL_BZIP2
+ 	select HAVE_KERNEL_LZMA
++	select HAVE_ARCH_DEBUG_ATOMIC
+ 
+ config ARCH_DEFCONFIG
+ 	string
+diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
+index 85b46fb..c6a17bb 100644
+--- a/arch/x86/include/asm/atomic_32.h
++++ b/arch/x86/include/asm/atomic_32.h
+@@ -78,24 +78,24 @@ static inline int atomic_sub_and_test(int i, atomic_t *v)
+ }
+ 
+ /**
+- * atomic_inc - increment atomic variable
++ * raw_atomic_inc - increment atomic variable
+  * @v: pointer of type atomic_t
+  *
+  * Atomically increments @v by 1.
+  */
+-static inline void atomic_inc(atomic_t *v)
++static inline void raw_atomic_inc(atomic_t *v)
+ {
+ 	asm volatile(LOCK_PREFIX "incl %0"
+ 		     : "+m" (v->counter));
+ }
+ 
+ /**
+- * atomic_dec - decrement atomic variable
++ * raw_atomic_dec - decrement atomic variable
+  * @v: pointer of type atomic_t
+  *
+  * Atomically decrements @v by 1.
+  */
+-static inline void atomic_dec(atomic_t *v)
++static inline void raw_atomic_dec(atomic_t *v)
+ {
+ 	asm volatile(LOCK_PREFIX "decl %0"
+ 		     : "+m" (v->counter));
+diff --git a/arch/x86/include/asm/atomic_64.h b/arch/x86/include/asm/atomic_64.h
+index 8c21731..1183b85 100644
+--- a/arch/x86/include/asm/atomic_64.h
++++ b/arch/x86/include/asm/atomic_64.h
+@@ -77,12 +77,12 @@ static inline int atomic_sub_and_test(int i, atomic_t *v)
+ }
+ 
+ /**
+- * atomic_inc - increment atomic variable
++ * raw_atomic_inc - increment atomic variable
+  * @v: pointer of type atomic_t
+  *
+  * Atomically increments @v by 1.
+  */
+-static inline void atomic_inc(atomic_t *v)
++static inline void raw_atomic_inc(atomic_t *v)
+ {
+ 	asm volatile(LOCK_PREFIX "incl %0"
+ 		     : "=m" (v->counter)
+@@ -90,12 +90,12 @@ static inline void atomic_inc(atomic_t *v)
+ }
+ 
+ /**
+- * atomic_dec - decrement atomic variable
++ * raw_atomic_dec - decrement atomic variable
+  * @v: pointer of type atomic_t
+  *
+  * Atomically decrements @v by 1.
+  */
+-static inline void atomic_dec(atomic_t *v)
++static inline void raw_atomic_dec(atomic_t *v)
+ {
+ 	asm volatile(LOCK_PREFIX "decl %0"
+ 		     : "=m" (v->counter)
+diff --git a/include/asm-generic/atomic.h b/include/asm-generic/atomic.h
+index 7abdaa9..ca47932 100644
+--- a/include/asm-generic/atomic.h
++++ b/include/asm-generic/atomic.h
+@@ -4,15 +4,52 @@
+  * Copyright (C) 2005 Silicon Graphics, Inc.
+  *	Christoph Lameter
+  *
+- * Allows to provide arch independent atomic definitions without the need to
+- * edit all arch specific atomic.h files.
+  */
+ 
++#include <linux/kernel.h>
+ #include <asm/types.h>
++#include <asm/bug.h>
++
++
++/**
++ * atomic_inc - increment atomic variable
++ * @v: pointer of type atomic_t
++ *
++ * Atomically increments @v by 1.
++ */
++static inline void atomic_inc(atomic_t *v)
++{
++#ifdef CONFIG_ENABLE_WARN_ATOMIC_INC_WRAP
++	WARN_ON(atomic_add_unless(v, 1, INT_MAX) == 0);
++#else
++	raw_atomic_inc(v);
++#endif
++}
++
++/**
++ * atomic_dec - decrement atomic variable
++ * @v: pointer of type atomic_t
++ *
++ * Atomically decrements @v by 1.
++ * Prints a warning if it wraps around.
++ */
++static inline void atomic_dec(atomic_t *v)
++{
++#ifdef CONFIG_ENABLE_WARN_ATOMIC_INC_WRAP
++	WARN_ON(atomic_add_unless(v, -1, INT_MIN) == 0);
++#else
++	raw_atomic_dec(v);
++#endif
++
++}
++
+ 
+ /*
+  * Suppport for atomic_long_t
+  *
++ * Allows to provide arch independent atomic definitions without the need to
++ * edit all arch specific atomic.h files.
++ *
+  * Casts for parameters are avoided for existing atomic functions in order to
+  * avoid issues with cast-as-lval under gcc 4.x and other limitations that the
+  * macros of a platform may have.
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 812c282..773c1a4 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -17,6 +17,17 @@ config ENABLE_WARN_DEPRECATED
+ 	  Disable this to suppress the "warning: 'foo' is deprecated
+ 	  (declared at kernel/power/somefile.c:1234)" messages.
+ 
++config HAVE_ARCH_DEBUG_ATOMIC
++	bool
++
++config ENABLE_WARN_ATOMIC_INC_WRAP
++	bool "Enable warning on atomic_inc()/atomic_dec() wrap"
++	depends on HAVE_ARCH_DEBUG_ATOMIC
++	default y
++	help
++	  Enable printing a warning when atomic_inc() or atomic_dec()
++	  operation wraps around the 32-bit value.
++
+ config ENABLE_MUST_CHECK
+ 	bool "Enable __must_check logic"
+ 	default y
+
