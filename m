@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760171AbZD3BnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758791AbZD3Bn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760171AbZD3BnI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 21:43:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbZD3Bmz
+	id S1758791AbZD3Bn3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 21:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbZD3BnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 21:42:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44523 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753140AbZD3Bmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 21:42:54 -0400
-Message-ID: <49F900F3.2060009@kernel.org>
-Date: Thu, 30 Apr 2009 10:37:55 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 29 Apr 2009 21:43:14 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:15755 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752631AbZD3BnM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 21:43:12 -0400
+X-IronPort-AV: E=Sophos;i="4.40,269,1238976000"; 
+   d="scan'208";a="295495092"
+Date: Wed, 29 Apr 2009 18:43:11 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-usb@vger.kernel.org, gregkh@suse.de, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] USB: Wait for USB and SCSI block boot devices
+Message-ID: <20090430014311.GA30287@cuplxvomd02.corp.sa.net>
+References: <20090430001255.GA3897@cuplxvomd02.corp.sa.net> <20090430013526.GD8822@parisc-linux.org>
 MIME-Version: 1.0
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-CC: linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Hannes Reinecke <hare@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Douglas Gilbert <dgilbert@interlog.com>, Christoph Hellwig <hch@lst.de>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vladislav Bolkhovitin <vst@vlnb.net>
-Subject: Re: [PATCH] [Target_Core_Mod/pSCSI]: Add	block/blk-map.c:blk_rq_map_kern_sg()
- usage
-References: <1240965782.32740.309.camel@haakon2.linux-iscsi.org>
-In-Reply-To: <1240965782.32740.309.camel@haakon2.linux-iscsi.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Apr 2009 01:38:01 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090430013526.GD8822@parisc-linux.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-1; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Nicholas.
+On Wed, Apr 29, 2009 at 07:35:26PM -0600, Matthew Wilcox wrote:
+> On Wed, Apr 29, 2009 at 05:12:55PM -0700, David VomLehn wrote:
+> >  	scsi_finish_async_scan(data);
+> > +	bootdev_probe_done(BOOTDEV_BLOCK_MASK);
+> >  	return 0;
+> >  }
+> >  
+> > @@ -1855,6 +1856,7 @@ void scsi_scan_host(struct Scsi_Host *shost)
+> >  		return;
+> >  	}
+> >  
+> > +	bootdev_found(BOOTDEV_BLOCK_MASK);
+> >  	p = kthread_run(do_scan_async, data, "scsi_scan_%d", shost->host_no);
+> >  	if (IS_ERR(p))
+> 
+> Where are the definitions of these functions to be found?
 
-Nicholas A. Bellinger wrote:
-...
-> Once Tejun's patches for block/blk-map.c:blk_rq_map_kern_sg() have
-> been included upstream, the legacy pscsi_map_task_SG() will be
-> removed and blk-map will become the preferred method for accessing
-> struct scatterlist -> struct scsi_device for SCSI target operations.
-> For now, I have created a blk-map branch in lio-core-2.6.git with
-> LINUX_USE_NEW_BLK_MAP=1 and left LINUX_USE_NEW_BLK_MAP=0 in branch
-> master.
+My email has been on the flaky side and I may not have sent them to all the
+right places. I'll resend.
 
-Hmm... I don't think the patch will go in as-is although there seem to
-be some places which can make use of sg mapping interface (including
-OSD).  Currently there are following problems.
-
-* Single kmalloc()ing the whole bio has higher chance of failing if
-  the bvec becomes very large.
-
-* Boaz is worried about performance implications with going back and
-  forth between sgl and bvec.
-
-In longer term, I think where we should be headed is...
-
-* Expand sgl( or t) such that 1. it uses separate list for cpu and dma
-  addresses so that it doesn't take up twice as much space
-  unnecessarily, 2. sgl's can be easily chained (alerady somewhat
-  there) and thus we don't have to worry about chaining in higher
-  layer.
-
-* Replace bvec with sgl in bio.
-
-Dunno what we should do in the meantime tho.
-
-Thanks.
-
--- 
-tejun
+> Matthew Wilcox				Intel Open Source Technology Centre
