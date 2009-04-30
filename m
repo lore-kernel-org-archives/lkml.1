@@ -1,130 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751039AbZD3EPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbZD3EiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751039AbZD3EPk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 00:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763AbZD3EPb
+	id S1751993AbZD3EiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 00:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbZD3EiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 00:15:31 -0400
-Received: from ultra7.eskimo.com ([204.122.16.70]:1360 "EHLO ultra7.eskimo.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750745AbZD3EPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 00:15:30 -0400
-Date: Wed, 29 Apr 2009 21:14:39 -0700
-From: Elladan <elladan@eskimo.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Theodore Tso <tytso@mit.edu>, Wu Fengguang <fengguang.wu@intel.com>,
-       Peter Zijlstra <peterz@infradead.org>, Elladan <elladan@eskimo.com>,
-       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: Swappiness vs. mmap() and interactive response
-Message-ID: <20090430041439.GA6110@eskimo.com>
-References: <20090428090916.GC17038@localhost> <20090428120818.GH22104@mit.edu> <20090429130430.4B11.A69D9226@jp.fujitsu.com> <20090428233455.614dcf3a.akpm@linux-foundation.org>
+	Thu, 30 Apr 2009 00:38:05 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46992 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750882AbZD3EiE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 00:38:04 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [PATCH] blktrace: swap arg name "from" and "to" of blk_add_trace_remap
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20090430133627.D217.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090428233455.614dcf3a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Thu, 30 Apr 2009 13:37:59 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 11:34:55PM -0700, Andrew Morton wrote:
-> On Wed, 29 Apr 2009 14:51:07 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > Hi
-> > 
-> > > On Tue, Apr 28, 2009 at 05:09:16PM +0800, Wu Fengguang wrote:
-> > > > The semi-drop-behind is a great idea for the desktop - to put just
-> > > > accessed pages to end of LRU. However I'm still afraid it vastly
-> > > > changes the caching behavior and wont work well as expected in server
-> > > > workloads - shall we verify this?
-> > > > 
-> > > > Back to this big-cp-hurts-responsibility issue. Background write
-> > > > requests can easily pass the io scheduler's obstacles and fill up
-> > > > the disk queue. Now every read request will have to wait 10+ writes
-> > > > - leading to 10x slow down of major page faults.
-> > > > 
-> > > > I reach this conclusion based on recent CFQ code reviews. Will bring up
-> > > > a queue depth limiting patch for more exercises..
-> > > 
-> > > We can muck with the I/O scheduler, but another thing to consider is
-> > > whether the VM should be more aggressively throttling writes in this
-> > > case; it sounds like the big cp in this case may be dirtying pages so
-> > > aggressively that it's driving other (more useful) pages out of the
-> > > page cache --- if the target disk is slower than the source disk (for
-> > > example, backing up a SATA primary disk to a USB-attached backup disk)
-> > > no amount of drop-behind is going to help the situation.
-> > > 
-> > > So that leaves three areas for exploration:
-> > > 
-> > > * Write-throttling
-> > > * Drop-behind
-> > > * background writes pushing aside foreground reads
-> > > 
-> > > Hmm, note that although the original bug reporter is running Ubuntu
-> > > Jaunty, and hence 2.6.28, this problem is going to get *worse* with
-> > > 2.6.30, since we have the ext3 data=ordered latency fixes which will
-> > > write out the any journal activity, and worse, any synchornous commits
-> > > (i.e., caused by fsync) will force out all of the dirty pages with
-> > > WRITE_SYNC priority.  So with a heavy load, I suspect this is going to
-> > > be more of a VM issue, and especially figuring out how to tune more
-> > > aggressive write-throttling may be key here.
-> > 
-> > firstly, I'd like to report my reproduce test result.
-> > 
-> > test environment: no lvm, copy ext3 to ext3 (not mv), no change swappiness, 
-> >                   CFQ is used, userland is Fedora10, mmotm(2.6.30-rc1 + mm patch),
-> >                   CPU opteronx4, mem 4G
-> > 
-> > mouse move lag:               not happend
-> > window move lag:              not happend
-> > Mapped page decrease rapidly: not happend (I guess, these page stay in 
-> >                                           active list on my system)
-> > page fault large latency:     happend (latencytop display >200ms)
-> 
-> hm.  The last two observations appear to be inconsistent.
-> 
-> Elladan, have you checked to see whether the Mapped: number in
-> /proc/meminfo is decreasing?
 
-Yes, Mapped decreases while a large file copy is ongoing.  It increases again
-if I use the GUI.
+Subject: [PATCH] blktrace: swap arg name "from" and "to" of blk_add_trace_remap
 
-> > Then, I don't doubt vm replacement logic now.
-> > but I need more investigate.
-> > I plan to try following thing today and tommorow.
-> > 
-> >  - XFS
-> >  - LVM
-> >  - another io scheduler (thanks Ted, good view point)
-> >  - Rik's new patch
-> 
-> It's not clear that we know what's happening yet, is it?  It's such a
-> gross problem that you'd think that even our testing would have found
-> it by now :(
-> 
-> Elladan, do you know if earlier kernels (2.6.26 or thereabouts) had
-> this severe a problem?
+Impact: cleanup for improve readability
 
-No, I don't know about older kernels.
+Currently, blk_add_trace_remap has following prototype.
 
-Also, just to add a bit: I'm having some difficulty reproducing the extremely
-severe latency I was seeing right off.  It's not difficult for me to reproduce
-latencies that are painful, but not on the order of 10 second response.  Maybe
-3 or 4 seconds at most.  I didn't have a stopwatch handy originally though, so
-it's somewhat subjective, but I wonder if there's some element of the load that
-I'm missing.
+static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
+				       dev_t dev, sector_t from, sector_t to)
 
-I had a theory about why this might be: my original repro was copying data
-which I believe had been written once, but never read.  Plus, I was using
-relatime.  However, on second thought this doesn't work -- there's only 8000
-files, and a re-test with atime turned on isn't much different than with
-relatime.
+but caller pass "from" secter as 4th arg, "to" sector as 5th arg.
 
-The other possibility is that there was some other background IO load spike,
-which I didn't notice at the time.  I don't know what that would be though,
-unless it was one of gnome's indexing jobs (I didn't see one, though).
+example,
+--------------------------------------------------------
+static inline void blk_partition_remap(struct bio *bio)
+{
+	struct block_device *bdev = bio->bi_bdev;
 
--Elladan
+	if (bio_sectors(bio) && bdev != bdev->bd_contains) {
+		struct hd_struct *p = bdev->bd_part;
+
+		bio->bi_sector += p->start_sect;
+		bio->bi_bdev = bdev->bd_contains;
+
+		trace_block_remap(bdev_get_queue(bio->bi_bdev), bio,
+				    bdev->bd_dev, bio->bi_sector,
+				    bio->bi_sector - p->start_sect);
+	}
+}
+--------------------------------------------------------
+
+Oh my god, it's reverse order.
+Fortunately, print logic reverse again. the twice reversing hide problem.
+
+but, but...
+It repeatedly confuse reviewer (include me!).
+Then, swapping argment name is better.
+
+this patch doesn't change any behavior and ABI.
+
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ include/linux/blktrace_api.h |    2 +-
+ kernel/trace/blktrace.c      |   17 ++++++++---------
+ 2 files changed, 9 insertions(+), 10 deletions(-)
+
+Index: b/include/linux/blktrace_api.h
+===================================================================
+--- a/include/linux/blktrace_api.h	2009-04-30 13:17:56.000000000 +0900
++++ b/include/linux/blktrace_api.h	2009-04-30 13:18:12.000000000 +0900
+@@ -118,7 +118,7 @@ struct blk_io_trace {
+ struct blk_io_trace_remap {
+ 	__be32 device;
+ 	__be32 device_from;
+-	__be64 sector;
++	__be64 sector_from;
+ };
+ 
+ enum {
+Index: b/kernel/trace/blktrace.c
+===================================================================
+--- a/kernel/trace/blktrace.c	2009-04-30 13:18:09.000000000 +0900
++++ b/kernel/trace/blktrace.c	2009-04-30 13:18:12.000000000 +0900
+@@ -839,7 +839,7 @@ static void blk_add_trace_split(struct r
+  *
+  **/
+ static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
+-				       dev_t dev, sector_t from, sector_t to)
++				       dev_t dev, sector_t to, sector_t from)
+ {
+ 	struct blk_trace *bt = q->blk_trace;
+ 	struct blk_io_trace_remap r;
+@@ -847,11 +847,11 @@ static void blk_add_trace_remap(struct r
+ 	if (likely(!bt))
+ 		return;
+ 
+-	r.device = cpu_to_be32(dev);
++	r.device      = cpu_to_be32(dev);
+ 	r.device_from = cpu_to_be32(bio->bi_bdev->bd_dev);
+-	r.sector = cpu_to_be64(to);
++	r.sector_from = cpu_to_be64(from);
+ 
+-	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP,
++	__blk_add_trace(bt, to, bio->bi_size, bio->bi_rw, BLK_TA_REMAP,
+ 			!bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
+ }
+ 
+@@ -1028,11 +1028,10 @@ static void get_pdu_remap(const struct t
+ 			  struct blk_io_trace_remap *r)
+ {
+ 	const struct blk_io_trace_remap *__r = pdu_start(ent);
+-	__u64 sector = __r->sector;
+ 
+-	r->device = be32_to_cpu(__r->device);
+-	r->device_from = be32_to_cpu(__r->device_from);
+-	r->sector = be64_to_cpu(sector);
++	r->device	= be32_to_cpu(__r->device);
++	r->device_from	= be32_to_cpu(__r->device_from);
++	r->sector_from	= be64_to_cpu(__r->sector_from);
+ }
+ 
+ typedef int (blk_log_action_t) (struct trace_iterator *iter, const char *act);
+@@ -1154,7 +1153,7 @@ static int blk_log_remap(struct trace_se
+ 	return trace_seq_printf(s, "%llu + %u <- (%d,%d) %llu\n",
+ 			       t_sector(ent),
+ 			       t_sec(ent), MAJOR(r.device), MINOR(r.device),
+-			       (unsigned long long)r.sector);
++			       (unsigned long long)r.sector_from);
+ }
+ 
+ static int blk_log_plug(struct trace_seq *s, const struct trace_entry *ent)
+
 
