@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933625AbZD3Rjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765669AbZD3RkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933625AbZD3Rjt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764700AbZD3RIf
+	id S1765669AbZD3RkW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764705AbZD3RIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:08:35 -0400
-Received: from kroah.org ([198.145.64.141]:56846 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:08:36 -0400
+Received: from kroah.org ([198.145.64.141]:56859 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764582AbZD3RIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:08:16 -0400
+	id S1764401AbZD3RIR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:08:17 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:48 2009
-Message-Id: <20090430165748.704564477@mini.kroah.org>
+Message-Id: <20090430165748.851313284@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:59 -0700
+Date: Thu, 30 Apr 2009 09:57:00 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,9 +26,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, mtosatti@redhat.com, avi@redhat.com
-Subject: [patch 70/88] KVM: MMU: handle large host sptes on invlpg/resync
+Subject: [patch 71/88] KVM: mmu_notifiers release method
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-mmu-handle-large-host-sptes-on-invlpg-resync.patch
+Content-Disposition: inline; filename=kvm-mmu_notifiers-release-method.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,51 +39,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 
 
-(cherry picked from 87917239204d67a316cb89751750f86c9ed3640b)
+(cherry picked from 85db06e514422ae429b5f85742d8111b70bd56f3)
 
-The invlpg and sync walkers lack knowledge of large host sptes,
-descending to non-existant pagetable level.
+The destructor for huge pages uses the backing inode for adjusting
+hugetlbfs accounting.
 
-Stop at directory level in such case.
+Hugepage mappings are destroyed by exit_mmap, after
+mmu_notifier_release, so there are no notifications through
+unmap_hugepage_range at this point.
 
-Fixes SMP Windows XP with hugepages.
+The hugetlbfs inode can be freed with pages backed by it referenced
+by the shadow. When the shadow releases its reference, the huge page
+destructor will access a now freed inode.
+
+Implement the release operation for kvm mmu notifiers to release page
+refs before the hugetlbfs inode is gone.
 
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/kvm/mmu.c         |    2 +-
- arch/x86/kvm/paging_tmpl.h |    8 ++++++--
- 2 files changed, 7 insertions(+), 3 deletions(-)
+ virt/kvm/kvm_main.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -981,7 +981,7 @@ static int mmu_unsync_walk(struct kvm_mm
- 	for_each_unsync_children(sp->unsync_child_bitmap, i) {
- 		u64 ent = sp->spt[i];
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -553,11 +553,19 @@ static int kvm_mmu_notifier_clear_flush_
+ 	return young;
+ }
  
--		if (is_shadow_present_pte(ent)) {
-+		if (is_shadow_present_pte(ent) && !is_large_pte(ent)) {
- 			struct kvm_mmu_page *child;
- 			child = page_header(ent & PT64_BASE_ADDR_MASK);
++static void kvm_mmu_notifier_release(struct mmu_notifier *mn,
++				     struct mm_struct *mm)
++{
++	struct kvm *kvm = mmu_notifier_to_kvm(mn);
++	kvm_arch_flush_shadow(kvm);
++}
++
+ static const struct mmu_notifier_ops kvm_mmu_notifier_ops = {
+ 	.invalidate_page	= kvm_mmu_notifier_invalidate_page,
+ 	.invalidate_range_start	= kvm_mmu_notifier_invalidate_range_start,
+ 	.invalidate_range_end	= kvm_mmu_notifier_invalidate_range_end,
+ 	.clear_flush_young	= kvm_mmu_notifier_clear_flush_young,
++	.release		= kvm_mmu_notifier_release,
+ };
+ #endif /* CONFIG_MMU_NOTIFIER && KVM_ARCH_WANT_MMU_NOTIFIER */
  
---- a/arch/x86/kvm/paging_tmpl.h
-+++ b/arch/x86/kvm/paging_tmpl.h
-@@ -467,9 +467,13 @@ static int FNAME(shadow_invlpg_entry)(st
- 				      u64 *sptep, int level)
- {
- 
--	if (level == PT_PAGE_TABLE_LEVEL) {
--		if (is_shadow_present_pte(*sptep))
-+	if (level == PT_PAGE_TABLE_LEVEL ||
-+	    ((level == PT_DIRECTORY_LEVEL) && is_large_pte(*sptep))) {
-+		if (is_shadow_present_pte(*sptep)) {
- 			rmap_remove(vcpu->kvm, sptep);
-+			if (is_large_pte(*sptep))
-+				--vcpu->kvm->stat.lpages;
-+		}
- 		set_shadow_pte(sptep, shadow_trap_nonpresent_pte);
- 		return 1;
- 	}
 
 
