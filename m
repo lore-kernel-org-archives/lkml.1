@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764135AbZD3X4C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753812AbZD3X4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764135AbZD3X4C (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 19:56:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764367AbZD3XyE
+	id S1753812AbZD3X4h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 19:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764380AbZD3XyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 19:54:04 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60490 "EHLO
+	Thu, 30 Apr 2009 19:54:09 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60504 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764405AbZD3XyB (ORCPT
+	by vger.kernel.org with ESMTP id S1764386AbZD3XyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 19:54:01 -0400
+	Thu, 30 Apr 2009 19:54:08 -0400
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
        Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
        Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Ralf Baechle <ralf@linux-mips.org>,
-       linux-mips@linux-mips.org, Tim Abbott <tabbott@MIT.EDU>
-Subject: [PATCH 1/4] mips: use NOSAVE_DATA macro for .data.nosave section.
-Date: Thu, 30 Apr 2009 19:53:27 -0400
-Message-Id: <1241135610-9012-2-git-send-email-tabbott@mit.edu>
+       Jeff Arnold <jbarnold@MIT.EDU>, Hirokazu Takata <takata@linux-m32r.org>,
+       Tim Abbott <tabbott@MIT.EDU>
+Subject: [PATCH 3/3] m32r: use new macros for .data.init_task.
+Date: Thu, 30 Apr 2009 19:48:00 -0400
+Message-Id: <1241135280-8333-4-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1241135610-9012-1-git-send-email-tabbott@mit.edu>
-References: <1241135610-9012-1-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1241135280-8333-3-git-send-email-tabbott@mit.edu>
+References: <1241135280-8333-1-git-send-email-tabbott@mit.edu>
+ <1241135280-8333-2-git-send-email-tabbott@mit.edu>
+ <1241135280-8333-3-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This has the consequence of replacing the alignment of _PAGE_SIZE with
-an alignment of PAGE_SIZE.  I believe these have the same value.
-
-.data.nosave should not need a separate output section; this change
-moves it into the .data section.
-
 Signed-off-by: Tim Abbott <tabbott@mit.edu>
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-mips@linux-mips.org
+Cc: Hirokazu Takata <takata@linux-m32r.org>
 ---
- arch/mips/kernel/vmlinux.lds.S |   10 +---------
- 1 files changed, 1 insertions(+), 9 deletions(-)
+ arch/m32r/kernel/init_task.c   |    3 +--
+ arch/m32r/kernel/vmlinux.lds.S |    4 +---
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/arch/mips/kernel/vmlinux.lds.S b/arch/mips/kernel/vmlinux.lds.S
-index 58738c8..2a6a995 100644
---- a/arch/mips/kernel/vmlinux.lds.S
-+++ b/arch/mips/kernel/vmlinux.lds.S
-@@ -78,7 +78,7 @@ SECTIONS
- 		 */
- 		. = ALIGN(_PAGE_SIZE);
- 		*(.data.init_task)
--
-+		NOSAVE_DATA
- 		DATA_DATA
- 		CONSTRUCTORS
- 	}
-@@ -96,14 +96,6 @@ SECTIONS
- 		*(.sdata)
- 	}
+diff --git a/arch/m32r/kernel/init_task.c b/arch/m32r/kernel/init_task.c
+index 016885c..a57c1e3 100644
+--- a/arch/m32r/kernel/init_task.c
++++ b/arch/m32r/kernel/init_task.c
+@@ -24,8 +24,7 @@ EXPORT_SYMBOL(init_mm);
+  * way process stacks are handled. This is done by having a special
+  * "init_task" linker map entry..
+  */
+-union thread_union init_thread_union
+-	__attribute__((__section__(".data.init_task"))) =
++union thread_union init_thread_union __init_task_data =
+ 		{ INIT_THREAD_INFO(init_task) };
  
--	. = ALIGN(_PAGE_SIZE);
--	.data_nosave : {
--		__nosave_begin = .;
--		*(.data.nosave)
--	}
--	. = ALIGN(_PAGE_SIZE);
--	__nosave_end = .;
+ /*
+diff --git a/arch/m32r/kernel/vmlinux.lds.S b/arch/m32r/kernel/vmlinux.lds.S
+index 3e2de1f..655eaf1 100644
+--- a/arch/m32r/kernel/vmlinux.lds.S
++++ b/arch/m32r/kernel/vmlinux.lds.S
+@@ -51,6 +51,7 @@ SECTIONS
+   .data : {			/* Data */
+ 	*(.spu)
+ 	*(.spi)
++	INIT_TASK_DATA(8192)
+ 	NOSAVE_DATA
+ 	CACHELINE_ALIGNED_DATA(32)
+ 	DATA_DATA
+@@ -58,9 +59,6 @@ SECTIONS
+ 	}
+   _edata = .;			/* End of data section */
+ 
+-  . = ALIGN(8192);		/* init_task */
+-  .data.init_task : { *(.data.init_task) }
 -
- 	. = ALIGN(1 << CONFIG_MIPS_L1_CACHE_SHIFT);
- 	.data.cacheline_aligned : {
- 		*(.data.cacheline_aligned)
+   /* will be freed after init */
+   . = ALIGN(4096);		/* Init code and data */
+   __init_begin = .;
 -- 
 1.6.2.1
 
