@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933812AbZD3Rog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764941AbZD3RpE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933812AbZD3Rog (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:44:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764737AbZD3RIp
+	id S1764941AbZD3RpE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:45:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764741AbZD3RIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:08:45 -0400
-Received: from kroah.org ([198.145.64.141]:56968 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:08:46 -0400
+Received: from kroah.org ([198.145.64.141]:56956 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764667AbZD3RI1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:08:27 -0400
+	id S1764702AbZD3RI2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:08:28 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:50 2009
-Message-Id: <20090430165750.170288962@mini.kroah.org>
+Message-Id: <20090430165750.307931445@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:57:09 -0700
+Date: Thu, 30 Apr 2009 09:57:10 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Chris Wright <chrisw@sous-sol.org>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -25,11 +26,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, benh@kernel.crashing.org,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: [patch 80/88] powerpc: Sanitize stack pointer in signal handling code
+       alan@lxorguk.ukuu.org.uk, Hugh Dickins <hugh@veritas.com>
+Subject: [patch 81/88] fs core fixes
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=powerpc-sanitize-stack-pointer-in-signal-handling-code.patch
+Content-Disposition: inline; filename=fs-core-fixes.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,122 +39,207 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+From: Hugh Dickins <hugh@veritas.com>
 
-This has been backported to 2.6.28.x from commit efbda86098 in Linus' tree
+Please add the following 4 commits to 2.6.27-stable and 2.6.28-stable.
+However, there has been a lot of change here between 2.6.28 and 2.6.29:
+in particular, fs/exec.c's unsafe_exec() grew into the more complicated
+check_unsafe_exec().  So applying the original patches gives too many
+rejects: at the bottom is the diffstat and the combined patch required.
 
-On powerpc64 machines running 32-bit userspace, we can get garbage bits in the
-stack pointer passed into the kernel.  Most places handle this correctly, but
-the signal handling code uses the passed value directly for allocating signal
-stack frames.
+1
+Commit: 53e9309e01277ec99c38e84e0ca16921287cf470
+Author: Hugh Dickins <hugh@veritas.com>
+Date: Sat, 28 Mar 2009 23:16:03 +0000 (+0000)
+Subject: [patch 81/88] compat_do_execve should unshare_files
 
-This fixes the issue by introducing a get_clean_sp function that returns a
-sanitized stack pointer.  For 32-bit tasks on a 64-bit kernel, the stack
-pointer is masked correctly.  In all other cases, the stack pointer is simply
-returned.
+2
+Commit: e426b64c412aaa3e9eb3e4b261dc5be0d5a83e78
+Author: Hugh Dickins <hugh@veritas.com>
+Date: Sat, 28 Mar 2009 23:20:19 +0000 (+0000)
+Subject: [patch 81/88] fix setuid sometimes doesn't
 
-Additionally, we pass an 'is_32' parameter to get_sigframe now in order to
-get the properly sanitized stack.  The callers are know to be 32 or 64-bit
-statically.
+3
+Commit: 7c2c7d993044cddc5010f6f429b100c63bc7dffb
+Author: Hugh Dickins <hugh@veritas.com>
+Date: Sat, 28 Mar 2009 23:21:27 +0000 (+0000)
+Subject: [patch 81/88] fix setuid sometimes wouldn't
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+4
+Commit: f1191b50ec11c8e2ca766d6d99eb5bb9d2c084a3
+Author: Al Viro <viro@zeniv.linux.org.uk>
+Date: Mon, 30 Mar 2009 11:35:18 +0000 (-0400)
+Subject: [patch 81/88] check_unsafe_exec() doesn't care about signal handlers sharing
+
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/include/asm/processor.h |   19 +++++++++++++++++++
- arch/powerpc/kernel/signal.c         |    4 ++--
- arch/powerpc/kernel/signal.h         |    2 +-
- arch/powerpc/kernel/signal_32.c      |    4 ++--
- arch/powerpc/kernel/signal_64.c      |    2 +-
- 5 files changed, 25 insertions(+), 6 deletions(-)
+ fs/compat.c    |   12 +++++++++++-
+ fs/exec.c      |    4 +---
+ fs/proc/base.c |   50 ++++++++++++++++----------------------------------
+ 3 files changed, 28 insertions(+), 38 deletions(-)
 
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -309,6 +309,25 @@ static inline void prefetchw(const void 
- #define HAVE_ARCH_PICK_MMAP_LAYOUT
- #endif
- 
-+#ifdef CONFIG_PPC64
-+static inline unsigned long get_clean_sp(struct pt_regs *regs, int is_32)
-+{
-+	unsigned long sp;
-+
-+	if (is_32)
-+		sp = regs->gpr[1] & 0x0ffffffffUL;
-+	else
-+		sp = regs->gpr[1];
-+
-+	return sp;
-+}
-+#else
-+static inline unsigned long get_clean_sp(struct pt_regs *regs, int is_32)
-+{
-+	return regs->gpr[1];
-+}
-+#endif
-+
- #endif /* __KERNEL__ */
- #endif /* __ASSEMBLY__ */
- #endif /* _ASM_POWERPC_PROCESSOR_H */
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -836,7 +836,7 @@ int handle_rt_signal32(unsigned long sig
- 
- 	/* Set up Signal Frame */
- 	/* Put a Real Time Context onto stack */
--	rt_sf = get_sigframe(ka, regs, sizeof(*rt_sf));
-+	rt_sf = get_sigframe(ka, regs, sizeof(*rt_sf), 1);
- 	addr = rt_sf;
- 	if (unlikely(rt_sf == NULL))
- 		goto badframe;
-@@ -1182,7 +1182,7 @@ int handle_signal32(unsigned long sig, s
- 	unsigned long newsp = 0;
- 
- 	/* Set up Signal Frame */
--	frame = get_sigframe(ka, regs, sizeof(*frame));
-+	frame = get_sigframe(ka, regs, sizeof(*frame), 1);
- 	if (unlikely(frame == NULL))
- 		goto badframe;
- 	sc = (struct sigcontext __user *) &frame->sctx;
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -402,7 +402,7 @@ int handle_rt_signal64(int signr, struct
- 	unsigned long newsp = 0;
- 	long err = 0;
- 
--	frame = get_sigframe(ka, regs, sizeof(*frame));
-+	frame = get_sigframe(ka, regs, sizeof(*frame), 0);
- 	if (unlikely(frame == NULL))
- 		goto badframe;
- 
---- a/arch/powerpc/kernel/signal.c
-+++ b/arch/powerpc/kernel/signal.c
-@@ -26,12 +26,12 @@ int show_unhandled_signals = 0;
-  * Allocate space for the signal frame
-  */
- void __user * get_sigframe(struct k_sigaction *ka, struct pt_regs *regs,
--			   size_t frame_size)
-+			   size_t frame_size, int is_32)
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -1386,12 +1386,17 @@ int compat_do_execve(char * filename,
  {
-         unsigned long oldsp, newsp;
+ 	struct linux_binprm *bprm;
+ 	struct file *file;
++	struct files_struct *displaced;
+ 	int retval;
  
-         /* Default to using normal stack */
--        oldsp = regs->gpr[1];
-+        oldsp = get_clean_sp(regs, is_32);
++	retval = unshare_files(&displaced);
++	if (retval)
++		goto out_ret;
++
+ 	retval = -ENOMEM;
+ 	bprm = kzalloc(sizeof(*bprm), GFP_KERNEL);
+ 	if (!bprm)
+-		goto out_ret;
++		goto out_files;
  
- 	/* Check for alt stack */
- 	if ((ka->sa.sa_flags & SA_ONSTACK) &&
---- a/arch/powerpc/kernel/signal.h
-+++ b/arch/powerpc/kernel/signal.h
-@@ -15,7 +15,7 @@
- extern void do_signal(struct pt_regs *regs, unsigned long thread_info_flags);
+ 	file = open_exec(filename);
+ 	retval = PTR_ERR(file);
+@@ -1443,6 +1448,8 @@ int compat_do_execve(char * filename,
+ 		security_bprm_free(bprm);
+ 		acct_update_integrals(current);
+ 		free_bprm(bprm);
++		if (displaced)
++			put_files_struct(displaced);
+ 		return retval;
+ 	}
  
- extern void __user * get_sigframe(struct k_sigaction *ka, struct pt_regs *regs,
--				  size_t frame_size);
-+				  size_t frame_size, int is_32);
- extern void restore_sigmask(sigset_t *set);
+@@ -1463,6 +1470,9 @@ out_file:
+ out_kfree:
+ 	free_bprm(bprm);
  
- extern int handle_signal32(unsigned long sig, struct k_sigaction *ka,
++out_files:
++	if (displaced)
++		reset_files_struct(displaced);
+ out_ret:
+ 	return retval;
+ }
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1084,9 +1084,7 @@ static int unsafe_exec(struct task_struc
+ {
+ 	int unsafe = tracehook_unsafe_exec(p);
+ 
+-	if (atomic_read(&p->fs->count) > 1 ||
+-	    atomic_read(&p->files->count) > 1 ||
+-	    atomic_read(&p->sighand->count) > 1)
++	if (atomic_read(&p->fs->count) > 1)
+ 		unsafe |= LSM_UNSAFE_SHARE;
+ 
+ 	return unsafe;
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -148,15 +148,22 @@ static unsigned int pid_entry_count_dirs
+ 	return count;
+ }
+ 
+-static struct fs_struct *get_fs_struct(struct task_struct *task)
++static int get_fs_path(struct task_struct *task, struct path *path, bool root)
+ {
+ 	struct fs_struct *fs;
++	int result = -ENOENT;
++
+ 	task_lock(task);
+ 	fs = task->fs;
+-	if(fs)
+-		atomic_inc(&fs->count);
++	if (fs) {
++		read_lock(&fs->lock);
++		*path = root ? fs->root : fs->pwd;
++		path_get(path);
++		read_unlock(&fs->lock);
++		result = 0;
++	}
+ 	task_unlock(task);
+-	return fs;
++	return result;
+ }
+ 
+ static int get_nr_threads(struct task_struct *tsk)
+@@ -174,42 +181,24 @@ static int get_nr_threads(struct task_st
+ static int proc_cwd_link(struct inode *inode, struct path *path)
+ {
+ 	struct task_struct *task = get_proc_task(inode);
+-	struct fs_struct *fs = NULL;
+ 	int result = -ENOENT;
+ 
+ 	if (task) {
+-		fs = get_fs_struct(task);
++		result = get_fs_path(task, path, 0);
+ 		put_task_struct(task);
+ 	}
+-	if (fs) {
+-		read_lock(&fs->lock);
+-		*path = fs->pwd;
+-		path_get(&fs->pwd);
+-		read_unlock(&fs->lock);
+-		result = 0;
+-		put_fs_struct(fs);
+-	}
+ 	return result;
+ }
+ 
+ static int proc_root_link(struct inode *inode, struct path *path)
+ {
+ 	struct task_struct *task = get_proc_task(inode);
+-	struct fs_struct *fs = NULL;
+ 	int result = -ENOENT;
+ 
+ 	if (task) {
+-		fs = get_fs_struct(task);
++		result = get_fs_path(task, path, 1);
+ 		put_task_struct(task);
+ 	}
+-	if (fs) {
+-		read_lock(&fs->lock);
+-		*path = fs->root;
+-		path_get(&fs->root);
+-		read_unlock(&fs->lock);
+-		result = 0;
+-		put_fs_struct(fs);
+-	}
+ 	return result;
+ }
+ 
+@@ -567,7 +556,6 @@ static int mounts_open_common(struct ino
+ 	struct task_struct *task = get_proc_task(inode);
+ 	struct nsproxy *nsp;
+ 	struct mnt_namespace *ns = NULL;
+-	struct fs_struct *fs = NULL;
+ 	struct path root;
+ 	struct proc_mounts *p;
+ 	int ret = -EINVAL;
+@@ -581,22 +569,16 @@ static int mounts_open_common(struct ino
+ 				get_mnt_ns(ns);
+ 		}
+ 		rcu_read_unlock();
+-		if (ns)
+-			fs = get_fs_struct(task);
++		if (ns && get_fs_path(task, &root, 1) == 0)
++			ret = 0;
+ 		put_task_struct(task);
+ 	}
+ 
+ 	if (!ns)
+ 		goto err;
+-	if (!fs)
++	if (ret)
+ 		goto err_put_ns;
+ 
+-	read_lock(&fs->lock);
+-	root = fs->root;
+-	path_get(&root);
+-	read_unlock(&fs->lock);
+-	put_fs_struct(fs);
+-
+ 	ret = -ENOMEM;
+ 	p = kmalloc(sizeof(struct proc_mounts), GFP_KERNEL);
+ 	if (!p)
 
 
