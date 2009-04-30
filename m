@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758265AbZD3TLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbZD3TQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758265AbZD3TLw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 15:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbZD3TLm
+	id S1754323AbZD3TQV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 15:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZD3TQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 15:11:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59194 "EHLO mx2.mail.elte.hu"
+	Thu, 30 Apr 2009 15:16:06 -0400
+Received: from blaine.gmane.org ([80.91.229.8]:51551 "EHLO hugh.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750716AbZD3TLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 15:11:41 -0400
-Date: Thu, 30 Apr 2009 21:10:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 0/7] kconfig: more featured minimum module configs
-Message-ID: <20090430191001.GA14108@elte.hu>
-References: <20090430185022.122124349@goodmis.org>
+	id S1751254AbZD3TQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 15:16:04 -0400
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: reinette chatre 
+	<public-reinette.chatre-ral2JQCrhuEAvxtiuMwx3w@hugh.gmane.org>
+Cc: Andreas Schwab 
+	<public-schwab-Td1EMuHUCqxL1ZNQvxDV9g@hugh.gmane.org>,
+       "linux-wireless-u79uwXL29TY76Z2rM5mHXA\@public.gmane.org" 
+	<public-linux-wireless-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>,
+       "linux-kernel-u79uwXL29TY76Z2rM5mHXA\@public.gmane.org" 
+	<public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>
+Subject: Re: iwlwifi: remove EXPORT_SYMBOL for static symbol
+References: <m24ow6vah1.fsf@igel.home> <1241112119.10498.11.camel@rc-desk>
+	<m24ow6xd9y.fsf@igel.home> <1241116390.10498.50.camel@rc-desk>
+X-Yow: ..Wait 'til those  ITALIAN TEENAGERS get back to their HONDAS &
+ discover them to be FILLED to the BRIM with MAZOLA!!
+Date: Thu, 30 Apr 2009 20:33:23 +0200
+In-Reply-To: <1241116390.10498.50.camel@rc-desk> (reinette chatre's message of
+	"Thu, 30 Apr 2009 11:33:10 -0700")
+Message-ID: <m2zldyvvnw.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.92 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090430185022.122124349@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> This set of patches adds on top of my previous post.
-> 
-> It fixes CONFIG_IKCONFIG when CONFIG_IKCONFIG_PROC is not set.
->  (gcc optimizes the config out!)
-> 
-> As a request from Ingo, it now enables IKCONFIG and will also use 
-> various locations to find a config to base against.
+reinette chatre
+<reinette.chatre-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org> writes:
 
-hm, now 'make localyesconfig' done on a Fedora distro kernel 
-produces something very close to an allyesconfig:
+> Thanks. Even though this patch obsoletes
+> 6269b731560d69c5eaa929909891edec39496d71 it still makes sense to have
+> that patch in the repo as it removes another unnecessary EXPORT_SYMBOL.
+> I would thus prefer that both patches are included.
 
- -rw-rw-r-- 1 mingo mingo 91930 2009-04-30 20:03 .config
- aldebaran:~/linux/linux> grep =y .config | wc -l
- 3398
+I agree.
 
-is that expected?
+Andreas.
 
-	Ingo
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
+
