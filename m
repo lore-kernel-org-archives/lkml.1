@@ -1,96 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760243AbZD3AG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760243AbZD3AI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760243AbZD3AG0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 20:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbZD3AGP
+	id S1760243AbZD3AI2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 20:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZD3AIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 20:06:15 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:39303 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753140AbZD3AGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 20:06:14 -0400
-Date: Wed, 29 Apr 2009 17:06:11 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, Gary Hade <garyhade@us.ibm.com>,
-       Alex Chiang <achiang@hp.com>, linux-acpi@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH] x86/pci: do assign root bus res if _CRS is used
-Message-ID: <20090430000611.GA22030@us.ibm.com>
-References: <49ED22EC.2040204@kernel.org> <200904271344.04099.bjorn.helgaas@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904271344.04099.bjorn.helgaas@hp.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 29 Apr 2009 20:08:19 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44154 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751465AbZD3AIS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 20:08:18 -0400
+Date: Thu, 30 Apr 2009 09:06:46 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH mmotm] memcg: fix mem_cgroup_update_mapped_file_stat
+ oops
+Message-Id: <20090430090646.a1443096.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0904292209550.30874@blonde.anvils>
+References: <Pine.LNX.4.64.0904292209550.30874@blonde.anvils>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 27, 2009 at 01:44:01PM -0600, Bjorn Helgaas wrote:
-> On Monday 20 April 2009 07:35:40 pm Yinghai Lu wrote:
-> > it wil be overwriten later if _CRS is used, so don't bother to set it.
-> > 
-> > [ Impact: cleanup ]
-> > 
-> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> > 
-> > ---
-> >  arch/x86/pci/amd_bus.c |    4 ++++
-> >  1 file changed, 4 insertions(+)
-> > 
-> > Index: linux-2.6/arch/x86/pci/amd_bus.c
-> > ===================================================================
-> > --- linux-2.6.orig/arch/x86/pci/amd_bus.c
-> > +++ linux-2.6/arch/x86/pci/amd_bus.c
-> > @@ -100,6 +100,10 @@ void x86_pci_root_bus_res_quirks(struct
-> >  	int j;
-> >  	struct pci_root_info *info;
-> >  
-> > +	/* don't go for it if _CRS is used */
-> > +	if (pci_probe & PCI_USE__CRS)
-> > +		return;
-> > +
-> >  	/* if only one root bus, don't need to anything */
-> >  	if (pci_root_num < 2)
-> >  		return;
+On Wed, 29 Apr 2009 22:13:33 +0100 (BST)
+Hugh Dickins <hugh@veritas.com> wrote:
+
+> CONFIG_SPARSEMEM=y CONFIG_CGROUP_MEM_RES_CTLR=y cgroup_disable=memory
+> bootup is oopsing in mem_cgroup_update_mapped_file_stat().  !SPARSEMEM
+> is fine because its lookup_page_cgroup() contains an explicit check for
+> NULL node_page_cgroup, but the SPARSEMEM version was missing a check for
+> NULL section->page_cgroup.
 > 
-> This isn't a comment on this patch per se.
+Ouch, it's curious this bug alive now.. thank you.
+
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+I think this patch itself is sane but.. Balbir, could you see "caller" ?
+It seems strange.
+
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> ---
+> Should go in as a fix to
+> memcg-add-file-based-rss-accounting.patch
+> but it's curious that's the first thing to suffer from this divergence.
 > 
-> I am concerned about the fact that "pci=use_crs" is not the default.
-> >From the changelog of 62f420f8282, it sounds like you have to boot an
-> IBM x3850 with "pci=use_crs" to make hot-plug work, even though ACPI
-> tells us everything we need to know.  That's backwards.
+> Perhaps this is the wrong fix, and there should be an explicit
+> mem_cgroup_disable() check somewhere else; but it would then seem
+> dangerous that SPARSEMEM and !SPARSEMEM diverge in this way,
+> and there are lots of lookup_page_cgroup NULL tests around.
 > 
-> We shouldn't need an option to tell Linux that the firmware is
-> trustworthy.  We should have an option to *ignore* it for the times
-> when we trip over something broken and haven't figured out a way to
-> work around it yet.
-
-Sorry, I am behind on my email and just noticed this.
-
-When I posted the patches to add "pci=use_crs" it was only
-needed to enable PCI hotplug on a subset of our systems.
-At that time it was not apparent that others were interested. 
-I was also concerned that real or anticipated breakage on
-on other systems might delay or prevent acceptance.
-
-As long as there is an option to disable it I am also in 
-favor of trying to make it the default.
-
-Thanks!
-
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+>  mm/page_cgroup.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> --- 2.6.30-rc3-mm1/mm/page_cgroup.c	2009-04-29 21:01:06.000000000 +0100
+> +++ mmotm/mm/page_cgroup.c	2009-04-29 21:12:04.000000000 +0100
+> @@ -99,6 +99,8 @@ struct page_cgroup *lookup_page_cgroup(s
+>  	unsigned long pfn = page_to_pfn(page);
+>  	struct mem_section *section = __pfn_to_section(pfn);
+>  
+> +	if (!section->page_cgroup)
+> +		return NULL;
+>  	return section->page_cgroup + pfn;
+>  }
+>  
+> 
 
