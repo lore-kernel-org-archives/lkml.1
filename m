@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762257AbZD3NkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761954AbZD3NmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762257AbZD3NkQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 09:40:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761157AbZD3NkA
+	id S1761954AbZD3NmY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 09:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbZD3NmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 09:40:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39532 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751868AbZD3NkA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 09:40:00 -0400
-Date: Thu, 30 Apr 2009 15:38:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	Thu, 30 Apr 2009 09:42:14 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37054 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751868AbZD3NmN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 09:42:13 -0400
+Date: Thu, 30 Apr 2009 09:42:12 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, thomas.pi@arcor.dea,
-       Yuriy Lalym <ylalym@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ltt-dev@lists.casi.polymtl.ca
-Subject: Re: [PATCH] Fix dirty page accounting in
-	redirty_page_for_writepage()
-Message-ID: <20090430133859.GB8329@elte.hu>
-References: <20090429232546.GB15782@Krystal> <alpine.LFD.2.00.0904291701450.22156@localhost.localdomain> <20090430024303.GB19875@Krystal> <alpine.DEB.1.10.0904300921290.22262@qirst.com>
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH 0/3] removing unwanted module configs
+In-Reply-To: <20090430132605.GA5289@elte.hu>
+Message-ID: <alpine.DEB.2.00.0904300932380.20374@gandalf.stny.rr.com>
+References: <20090430030821.523327994@goodmis.org> <20090430071830.GC16737@elte.hu> <alpine.DEB.2.00.0904300908110.20374@gandalf.stny.rr.com> <20090430132605.GA5289@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904300921290.22262@qirst.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Christoph Lameter <cl@linux.com> wrote:
-
-> On Wed, 29 Apr 2009, Mathieu Desnoyers wrote:
+On Thu, 30 Apr 2009, Ingo Molnar wrote:
 > 
-> > to have a good look at the memory accounting code. We could 
-> > probably benefit of Christoph Lameter's cpu ops (using segment 
-> > registers to address per-cpu variables with atomic inc/dec) in 
-> > there. Or at least removing interrupt disabling by using preempt 
-> > disable and local_t variables for the per-cpu counters could 
-> > bring some benefit.
-> 
-> Guess we are ready for atomic per cpu ops now that the new per cpu 
-> allocator is in? Segment register issues with the PDA are also 
-> solved right?
+> CONFIG_IKCONFIG=y would be a one-off thing, only to make the whole 
+> concept self-hosting. If i boot a localyesconfig kernel, how does 
+> the script figure out what is built in? It cannot, unless i provide 
+> it the precise .config - but often that wont be provided. The script 
+> should clone the environment it is running in really.
 
-it's all done, implemented and upstream already. You are a bit late 
-to the party ;-)
+Does IKCONFIG get loaded in the running kernel if IKCONFIG_PROC is not 
+set, or does it just sit in the vmlinux file.
 
-	Ingo
+Since this option can also be used for helping embedded developers (I used 
+it for that) I would not want to bloat the kernel with running a script 
+that is suppose to minimize it. But if IKCONFIG && !IKCONFIG_PROC does not 
+add more data to the kernel, then I would be happy to turn it on by 
+default.
+
+I see I can use scripts/extract-ikconfig to get the config from the 
+current image. Now which image should it try?
+
+/boot/vmlinuz-`uname -r`
+./vmlinux
+
+I could have it first try /proc/config.gz and if it does not find it then
+try the /boot kernel, if it does not find it or does not find a config 
+file in it, it would then try ./vmlinux file. If it does not find the file 
+or the config then it would just use the local .config.
+
+-- Steve
+
