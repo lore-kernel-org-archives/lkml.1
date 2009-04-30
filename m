@@ -1,140 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760798AbZD3IUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761058AbZD3IVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760798AbZD3IUr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 04:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760248AbZD3IUK
+	id S1761058AbZD3IVM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 04:21:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760426AbZD3IUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 04:20:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55957 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760146AbZD3IUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 04:20:06 -0400
-Message-ID: <49F95F10.3060209@kernel.org>
-Date: Thu, 30 Apr 2009 01:19:28 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 30 Apr 2009 04:20:21 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:46296 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760235AbZD3IUS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 04:20:18 -0400
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: iwlwifi: remove EXPORT_SYMBOL for static symbol
+References: <m24ow6vah1.fsf@igel.home>
+	<1241078967.25477.8.camel@johannes.local>
+X-Yow: YOW!!  The land of the rising SONY!!
+Date: Thu, 30 Apr 2009 10:20:15 +0200
+In-Reply-To: <1241078967.25477.8.camel@johannes.local> (Johannes Berg's
+	message of "Thu, 30 Apr 2009 10:09:26 +0200")
+Message-ID: <m28wlih7sw.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.92 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Len Brown <lenb@kernel.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: [PATCH 1/4] x86/acpi: move pin_programmed bit map to io_apic.c
-References: <49F8B2D9.3080903@kernel.org>
-In-Reply-To: <49F8B2D9.3080903@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Johannes Berg <johannes@sipsolutions.net> writes:
 
-prepare to call setup_io_apic_routing in pcibios_irq_enable
-also remove not needed member apic_id.
+> On Thu, 2009-04-30 at 09:58 +0200, Andreas Schwab wrote:
+>> It does not make sense to apply EXPORT_SYMBOL to a static symbol.  Fixes
+>> this build error:
+>> 
+>> drivers/net/wireless/iwlwifi/iwl3945-base.c:1697: error:
+>> __ksymtab_iwl3945_rx_queue_reset causes a section type conflict
+>> 
+>> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+>> ---
+>> This obsoletes 6269b731560d69c5eaa929909891edec39496d71, which was
+>> misattributed as a compiler bug.
+>
+> At least in my tree the function isn't static...(yet I still got the
+> compiler error)?
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+The static function is iwl3945_rx_queue_free.
 
----
- arch/x86/kernel/acpi/boot.c    |   18 ++----------------
- arch/x86/kernel/apic/io_apic.c |   25 ++++++++++++++++++++++++-
- 2 files changed, 26 insertions(+), 17 deletions(-)
+Andreas.
 
-Index: linux-2.6/arch/x86/kernel/acpi/boot.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
-+++ linux-2.6/arch/x86/kernel/acpi/boot.c
-@@ -904,10 +904,8 @@ extern int es7000_plat;
- #endif
- 
- static struct {
--	int apic_id;
- 	int gsi_base;
- 	int gsi_end;
--	DECLARE_BITMAP(pin_programmed, MP_MAX_IOAPIC_PIN + 1);
- } mp_ioapic_routing[MAX_IO_APICS];
- 
- int mp_find_ioapic(int gsi)
-@@ -996,7 +994,6 @@ void __init mp_register_ioapic(int id, u
- 	 * Build basic GSI lookup table to facilitate gsi->io_apic lookups
- 	 * and to prevent reprogramming of IOAPIC pins (PCI GSIs).
- 	 */
--	mp_ioapic_routing[idx].apic_id = mp_ioapics[idx].apicid;
- 	mp_ioapic_routing[idx].gsi_base = gsi_base;
- 	mp_ioapic_routing[idx].gsi_end = gsi_base +
- 	    io_apic_get_redir_entries(idx);
-@@ -1189,7 +1186,7 @@ static int mp_config_acpi_gsi(struct dev
- 	mp_irq.srcbus = number;
- 	mp_irq.srcbusirq = (((devfn >> 3) & 0x1f) << 2) | ((pin - 1) & 3);
- 	ioapic = mp_find_ioapic(gsi);
--	mp_irq.dstapic = mp_ioapic_routing[ioapic].apic_id;
-+	mp_irq.dstapic = mp_ioapics[ioapic].apicid;
- 	mp_irq.dstirq = mp_find_ioapic_pin(ioapic, gsi);
- 
- 	save_mp_irq(&mp_irq);
-@@ -1224,23 +1221,12 @@ int mp_register_gsi(struct device *dev,
- 
- 	if (ioapic_pin > MP_MAX_IOAPIC_PIN) {
- 		printk(KERN_ERR "Invalid reference to IOAPIC pin "
--		       "%d-%d\n", mp_ioapic_routing[ioapic].apic_id,
-+		       "%d-%d\n", mp_ioapics[ioapic].apicid,
- 		       ioapic_pin);
- 		return gsi;
- 	}
- 	mp_config_acpi_gsi(dev, gsi, triggering, polarity);
- 
--	/*
--	 * Avoid pin reprogramming.  PRTs typically include entries
--	 * with redundant pin->gsi mappings (but unique PCI devices);
--	 * we only program the IOAPIC on the first.
--	 */
--	if (test_bit(ioapic_pin, mp_ioapic_routing[ioapic].pin_programmed)) {
--		pr_debug("Pin %d-%d already programmed\n",
--			 mp_ioapic_routing[ioapic].apic_id, ioapic_pin);
--		return gsi;
--	}
--	set_bit(ioapic_pin, mp_ioapic_routing[ioapic].pin_programmed);
- 	io_apic_set_pci_routing(dev, ioapic, ioapic_pin, gsi,
- 				triggering == ACPI_EDGE_SENSITIVE ? 0 : 1,
- 				polarity == ACPI_ACTIVE_HIGH ? 0 : 1);
-Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-@@ -3938,7 +3938,7 @@ int __init io_apic_get_version(int ioapi
- }
- #endif
- 
--int io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
-+static int __io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
- 				 int triggering, int polarity)
- {
- 	struct irq_desc *desc;
-@@ -3975,6 +3975,29 @@ int io_apic_set_pci_routing(struct devic
- 	return 0;
- }
- 
-+static struct {
-+	DECLARE_BITMAP(pin_programmed, MP_MAX_IOAPIC_PIN + 1);
-+} mp_ioapic_routing[MAX_IO_APICS];
-+
-+int io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
-+				 int triggering, int polarity)
-+{
-+
-+	/*
-+	 * Avoid pin reprogramming.  PRTs typically include entries
-+	 * with redundant pin->gsi mappings (but unique PCI devices);
-+	 * we only program the IOAPIC on the first.
-+	 */
-+	if (test_bit(pin, mp_ioapic_routing[ioapic].pin_programmed)) {
-+		pr_debug("Pin %d-%d already programmed\n",
-+			 mp_ioapics[ioapic].apicid, pin);
-+		return 0;
-+	}
-+	set_bit(pin, mp_ioapic_routing[ioapic].pin_programmed);
-+
-+	return __io_apic_set_pci_routing(dev, ioapic, pin, irq,
-+					 triggering, polarity);
-+}
- 
- int acpi_get_override_irq(int bus_irq, int *trigger, int *polarity)
- {
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
