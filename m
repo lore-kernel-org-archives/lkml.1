@@ -1,84 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbZD3Wa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbZD3Web@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755438AbZD3Wa4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 18:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762065AbZD3W3o
+	id S1758683AbZD3Web (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 18:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbZD3WeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 18:29:44 -0400
-Received: from kroah.org ([198.145.64.141]:55462 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760832AbZD3W3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 18:29:42 -0400
-Date: Thu, 30 Apr 2009 15:23:26 -0700
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Greg KH <greg@kroah.com>
-Subject: [PATCH] eisa: remove driver_data direct access of struct device
-Message-ID: <20090430222326.GA18659@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 30 Apr 2009 18:34:22 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:55306 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755533AbZD3WeV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 18:34:21 -0400
+Subject: Re: [BUG] 2.6.30-rc4 hid bluetooth not working
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Marc Pignat <Marc.Pignat@hevs.ch>,
+       Roger Quadros <ext-roger.quadros@nokia.com>,
+       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LNX.2.00.0904302056270.5012@wotan.suse.de>
+References: <49F9C1AD020000BF00029086@mailgw2.hevs.ch>
+	 <alpine.LRH.2.00.0904301556310.2050@twin.jikos.cz>
+	 <1241103783.3389.35.camel@localhost.localdomain>
+	 <alpine.LNX.2.00.0904302056270.5012@wotan.suse.de>
+Content-Type: text/plain
+Date: Thu, 30 Apr 2009 15:34:14 -0700
+Message-Id: <1241130854.3197.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
+Hi Jiri,
 
-In the near future, the driver core is going to not allow direct access
-to the driver_data pointer in struct device.  Instead, the functions
-dev_get_drvdata() and dev_set_drvdata() should be used.  These functions
-have been around since the beginning, so are backwards compatible with
-all older kernel versions.
+> > > > My bluetooth keyboard is not working any more in rc4, but was 
+> > > > working in rc3. Here is the dmesg output, triggered by the first key 
+> > > > press on the keyboard, fortunately, this is 100% reproductible (once 
+> > > > per boot).
+> > > Does reverting f3784d834c7 fix the problem?
+> > we have seen a similar report where reverting f3784d834c7 didn't fix it. 
+> > And I don't see anything wrong with that patch. Did something important 
+> > got changed in the work queue code that I am missing?
+> 
+> Calling flush() from work->func() is not safe. That's what the WARN_ON() 
+> in flush_cpu_workqueue() is there for, right?
+
+I don't know since this got changed in 2.6.30-rc1. I do have this kernel
+running and I have seen the WARN_ON() only once. However I have never
+seen a NULL pointer because of this patch.
+
+Regards
+
+Marcel
 
 
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/eisa/pci_eisa.c     |    2 +-
- drivers/eisa/virtual_root.c |    2 +-
- include/linux/eisa.h        |    4 ++--
- 3 files changed, 4 insertions(+), 4 deletions(-)
-
---- a/drivers/eisa/pci_eisa.c
-+++ b/drivers/eisa/pci_eisa.c
-@@ -31,11 +31,11 @@ static int __init pci_eisa_init(struct p
- 	}
- 
- 	pci_eisa_root.dev              = &pdev->dev;
--	pci_eisa_root.dev->driver_data = &pci_eisa_root;
- 	pci_eisa_root.res	       = pdev->bus->resource[0];
- 	pci_eisa_root.bus_base_addr    = pdev->bus->resource[0]->start;
- 	pci_eisa_root.slots	       = EISA_MAX_SLOTS;
- 	pci_eisa_root.dma_mask         = pdev->dma_mask;
-+	dev_set_drvdata(pci_eisa_root.dev, &pci_eisa_root);
- 
- 	if (eisa_root_register (&pci_eisa_root)) {
- 		printk (KERN_ERR "pci_eisa : Could not register EISA root\n");
---- a/drivers/eisa/virtual_root.c
-+++ b/drivers/eisa/virtual_root.c
-@@ -57,7 +57,7 @@ static int __init virtual_eisa_root_init
- 
- 	eisa_bus_root.force_probe = force_probe;
- 	
--	eisa_root_dev.dev.driver_data = &eisa_bus_root;
-+	dev_set_drvdata(&eisa_root_dev.dev, &eisa_bus_root);
- 
- 	if (eisa_root_register (&eisa_bus_root)) {
- 		/* A real bridge may have been registered before
---- a/include/linux/eisa.h
-+++ b/include/linux/eisa.h
-@@ -78,12 +78,12 @@ static inline void eisa_driver_unregiste
- /* Mimics pci.h... */
- static inline void *eisa_get_drvdata (struct eisa_device *edev)
- {
--        return edev->dev.driver_data;
-+        return dev_get_drvdata(&edev->dev);
- }
- 
- static inline void eisa_set_drvdata (struct eisa_device *edev, void *data)
- {
--        edev->dev.driver_data = data;
-+        dev_set_drvdata(&edev->dev, data);
- }
- 
- /* The EISA root device. There's rumours about machines with multiple
