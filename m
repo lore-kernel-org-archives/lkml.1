@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757475AbZD3AqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbZD3AuD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757475AbZD3AqL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 20:46:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbZD3Apz
+	id S1757193AbZD3AuD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 20:50:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbZD3Atu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 20:45:55 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:57864 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751104AbZD3Apy (ORCPT
+	Wed, 29 Apr 2009 20:49:50 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48185
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751109AbZD3Att (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 20:45:54 -0400
-MIME-Version: 1.0
-In-Reply-To: <8bd0f97a0904291638p398ad701j5dc0f8e96de2fb47@mail.gmail.com>
-References: <20090427193532.GA2948@kroah.com> <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com> 
-	<20090429180735.GA29812@kroah.com> <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com> 
-	<20090429183012.GA28237@kroah.com> <8bd0f97a0904291638p398ad701j5dc0f8e96de2fb47@mail.gmail.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Thu, 30 Apr 2009 02:45:33 +0200
-Message-ID: <ac3eb2510904291745j48220c12oe2a2b91e981ea403@mail.gmail.com>
-Subject: Re: usbutils 0.81 release
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Wed, 29 Apr 2009 20:49:49 -0400
+Date: Wed, 29 Apr 2009 17:49:43 -0700 (PDT)
+Message-Id: <20090429.174943.133929746.davem@davemloft.net>
+To: grant.likely@secretlab.ca
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCH] virtio: add missing include to virtio_net.h
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090428154654.19053.92829.stgit@localhost.localdomain>
+References: <20090428154654.19053.92829.stgit@localhost.localdomain>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 01:38, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On Wed, Apr 29, 2009 at 14:30, Greg KH wrote:
->> On Wed, Apr 29, 2009 at 02:17:12PM -0400, Mike Frysinger wrote:
->>> >> find being able to run `usbmodules` pretty useful ... i wrote a script
->>> >> for fun:
->>> >> http://sources.gentoo.org/sys-apps/usbutils/files/usbmodules.sh
->>> >
->>> > Did that work on any 2.6 kernel?
->>>
->>> it's the only version ive tested it with ... but it doesnt parse any
->>> kernel module directly, it reads the generated modules.usbmap file
->>>
->>> > There's no reason we can't add "-k" support to lsusb like lspci has to
->>> > show the modules assigned to different devices.
->>>
->>> the method i posted above only needs the module to be compiled, not loaded
->>
->> As the map files are depreciated, I wouldn't continue to rely on it, it
->> will break in the future when the kernel stops generating those files.
->
-> guess i'll have to rewrite it to parse the .ko modules directly like
-> the usbmap is generated now
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 28 Apr 2009 09:46:54 -0600
 
-Can't you use the modules.aliases file? That should stay around and
-there should be the same information contained.
+[ Grant, please CC: netdev on networking patches, thanks. ]
 
-Kay
+> virtio_net.h uses the macro ETH_ALEN which is defined in linux/if_ether.h.
+> Discovered when hacking on virtio-over-pci patches.
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+
+Rusty, ACK?
+
+I haven't been able to get responses from Rusty on virtio net
+patches, so if he doesn't start responding soon I'm going to
+integrates the fixes I've seen lately as they all look
+reasonable to me.
+
+> ---
+> 
+>  include/linux/virtio_net.h |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> 
+> diff --git a/include/linux/virtio_net.h b/include/linux/virtio_net.h
+> index 242348b..cec79ad 100644
+> --- a/include/linux/virtio_net.h
+> +++ b/include/linux/virtio_net.h
+> @@ -4,6 +4,7 @@
+>   * compatible drivers/servers. */
+>  #include <linux/types.h>
+>  #include <linux/virtio_config.h>
+> +#include <linux/if_ether.h>
+>  
+>  /* The ID for virtio_net */
+>  #define VIRTIO_ID_NET	1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
