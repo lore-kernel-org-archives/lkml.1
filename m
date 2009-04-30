@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933060AbZD3Rb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765629AbZD3Rcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933060AbZD3Rb5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764670AbZD3RIP
+	id S1765629AbZD3Rcb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764671AbZD3RIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:08:15 -0400
-Received: from kroah.org ([198.145.64.141]:56683 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:08:16 -0400
+Received: from kroah.org ([198.145.64.141]:56697 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764611AbZD3RIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:08:01 -0400
+	id S1764401AbZD3RID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:08:03 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:46 2009
-Message-Id: <20090430165746.385280871@mini.kroah.org>
+Message-Id: <20090430165746.524583497@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:43 -0700
+Date: Thu, 30 Apr 2009 09:56:44 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Christian Borntraeger <borntraeger@de.ibm.com>, mtosatti@redhat.com,
-       avi@redhat.com
-Subject: [patch 54/88] anon_inodes: use fops->owner for module refcount
+       alan@lxorguk.ukuu.org.uk, Jan Kiszka <jan.kiszka@siemens.com>,
+       mtosatti@redhat.com, avi@redhat.com, Gleb Natapov <gleb@redhat.com>
+Subject: [patch 55/88] KVM: x86: Reset pending/inject NMI state on CPU reset
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=anon_inodes-use-fops-owner-for-module-refcount.patch
+Content-Disposition: inline; filename=kvm-x86-reset-pending-inject-nmi-state-on-cpu-reset.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,59 +40,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Christian Borntraeger <borntraeger@de.ibm.com>
+From: Jan Kiszka <jan.kiszka@siemens.com>
 
-There is an imbalance for anonymous inodes. If the fops->owner field is set,
-the module reference count of owner is decreases on release.
-("filp_close" --> "__fput" ---> "fops_put")
+(cherry picked from 448fa4a9c5dbc6941dd19ed09692c588d815bb06)
 
-On the other hand, anon_inode_getfd does not increase the module reference
-count of owner. This causes two problems:
+CPU reset invalidates pending or already injected NMIs, therefore reset
+the related state variables.
 
-- if owner is set, the module refcount goes negative
-- if owner is not set, the module can be unloaded while code is running
+Based on original patch by Gleb Natapov.
 
-This patch changes anon_inode_getfd to be symmetric regarding fops->owner
-handling.
-
-I have checked all existing users of anon_inode_getfd. Noone sets fops->owner,
-thats why nobody has seen the module refcount negative. The refcounting was
-tested with a patched and unpatched KVM module.(see patch 2/2) I also did an
-epoll_open/close test.
-
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Reviewed-by: Davide Libenzi <davidel@xmailserver.org>
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
-(cherry picked from commit e3a2a0d4e5ace731e60e2eff4fb7056ecb34adc1)
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/anon_inodes.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/x86/kvm/x86.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/fs/anon_inodes.c
-+++ b/fs/anon_inodes.c
-@@ -79,9 +79,12 @@ int anon_inode_getfd(const char *name, c
- 	if (IS_ERR(anon_inode_inode))
- 		return -ENODEV;
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -3925,6 +3925,9 @@ void kvm_arch_vcpu_destroy(struct kvm_vc
  
-+	if (fops->owner && !try_module_get(fops->owner))
-+		return -ENOENT;
+ int kvm_arch_vcpu_reset(struct kvm_vcpu *vcpu)
+ {
++	vcpu->arch.nmi_pending = false;
++	vcpu->arch.nmi_injected = false;
 +
- 	error = get_unused_fd_flags(flags);
- 	if (error < 0)
--		return error;
-+		goto err_module;
- 	fd = error;
- 
- 	/*
-@@ -128,6 +131,8 @@ err_dput:
- 	dput(dentry);
- err_put_unused_fd:
- 	put_unused_fd(fd);
-+err_module:
-+	module_put(fops->owner);
- 	return error;
+ 	return kvm_x86_ops->vcpu_reset(vcpu);
  }
- EXPORT_SYMBOL_GPL(anon_inode_getfd);
+ 
 
 
