@@ -1,67 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761745AbZD3B6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761093AbZD3CAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761745AbZD3B6Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 21:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZD3B6O
+	id S1761093AbZD3CAb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 22:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZD3CAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 21:58:14 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:56943 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751897AbZD3B6N convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 21:58:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=BaiL0lHs3P0qHb7Tp3WInPDc17u3wqpYN6Ufk2wJFLw3Fa8wBptuXjTxan2mQTTo/N
-         TCUq3F7NYY9AItRf1IuWoQEjBTiY6IF92AeOGJgQm3IR/+VR96TYJr5fIX4tVX2ehz0b
-         6mGDXma4t4v3Xxg1AE4EyuDG2DOrmM5nXW7Kg=
+	Wed, 29 Apr 2009 22:00:23 -0400
+Received: from mga03.intel.com ([143.182.124.21]:50756 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751524AbZD3CAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Apr 2009 22:00:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,269,1239001200"; 
+   d="scan'208";a="137538073"
+Date: Thu, 30 Apr 2009 10:00:04 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Matt Mackall <mpm@selenic.com>, Christoph Lameter <clameter@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>, Al Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH] use GFP_NOFS in kernel_event()
+Message-ID: <20090430020004.GA1898@localhost>
 MIME-Version: 1.0
-In-Reply-To: <ac3eb2510904291854v6f669b80l56f66fb230ae3e2c@mail.gmail.com>
-References: <20090427193532.GA2948@kroah.com>
-	 <8bd0f97a0904291053g3aa71decpd33f6621ad0bf9f8@mail.gmail.com>
-	 <20090429180735.GA29812@kroah.com>
-	 <8bd0f97a0904291117ic07fadcs2a02fca3dcfefcf0@mail.gmail.com>
-	 <20090429183012.GA28237@kroah.com>
-	 <8bd0f97a0904291638p398ad701j5dc0f8e96de2fb47@mail.gmail.com>
-	 <ac3eb2510904291745j48220c12oe2a2b91e981ea403@mail.gmail.com>
-	 <8bd0f97a0904291848le808891kff973b1677b7cd33@mail.gmail.com>
-	 <ac3eb2510904291854v6f669b80l56f66fb230ae3e2c@mail.gmail.com>
-Date: Wed, 29 Apr 2009 21:58:12 -0400
-Message-ID: <8bd0f97a0904291858s1c3550b5xe9ec3e1b291d8547@mail.gmail.com>
-Subject: Re: usbutils 0.81 release
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29, 2009 at 21:54, Kay Sievers wrote:
-> On Thu, Apr 30, 2009 at 03:48, Mike Frysinger wrote:
->> On Wed, Apr 29, 2009 at 20:45, Kay Sievers wrote:
->>> On Thu, Apr 30, 2009 at 01:38, Mike Frysinger wrote:
->>>> guess i'll have to rewrite it to parse the .ko modules directly like
->>>> the usbmap is generated now
->>>
->>> Can't you use the modules.aliases file? That should stay around and
->>> there should be the same information contained.
->>
->> should be fine if it's going to be sticking around
->>
->> any comments on the attached file ?  in theory, it could be easily
->> extended for pci and other busses ...
->
-> Hmm, you still use the map files? I meant if you could use:
->  /lib/modules/$(uname -r)/modules.alias
+Fix a possible deadlock on inotify_mutex, reported by lockdep.
 
-yes, i got what you mean, i just forgot to update the map= setting.  i
-updated the important part (the awk parsing) so that it uses the
-modules.alias format.
+inotify_inode_queue_event() => take inotify_mutex => kernel_event() =>
+kmalloc() => SLOB => alloc_pages_node() => page reclaim => slab reclaim =>
+dcache reclaim => inotify_inode_is_dead => take inotify_mutex => deadlock
 
-if the rest is fine i can send a git patch along to the usb lists.
--mike
+The actual deadlock may not happen because the inode was grabbed at
+inotify_add_watch(). But the GFP_KERNEL here is unsound and not
+consistent with the other two GFP_NOFS inside the same function.
+
+[ 2668.325318]
+[ 2668.325322] =================================
+[ 2668.327448] [ INFO: inconsistent lock state ]
+[ 2668.327448] 2.6.30-rc2-next-20090417 #203
+[ 2668.327448] ---------------------------------
+[ 2668.327448] inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W} usage.
+[ 2668.327448] kswapd0/380 [HC0[0]:SC0[0]:HE1:SE1] takes:
+[ 2668.327448]  (&inode->inotify_mutex){+.+.?.}, at: [<ffffffff8112f1b5>] inotify_inode_is_dead+0x35/0xb0
+[ 2668.327448] {RECLAIM_FS-ON-W} state was registered at:
+[ 2668.327448]   [<ffffffff81079188>] mark_held_locks+0x68/0x90
+[ 2668.327448]   [<ffffffff810792a5>] lockdep_trace_alloc+0xf5/0x100
+[ 2668.327448]   [<ffffffff810f5261>] __kmalloc_node+0x31/0x1e0
+[ 2668.327448]   [<ffffffff81130652>] kernel_event+0xe2/0x190
+[ 2668.327448]   [<ffffffff81130826>] inotify_dev_queue_event+0x126/0x230
+[ 2668.327448]   [<ffffffff8112f096>] inotify_inode_queue_event+0xc6/0x110
+[ 2668.327448]   [<ffffffff8110444d>] vfs_create+0xcd/0x140
+[ 2668.327448]   [<ffffffff8110825d>] do_filp_open+0x88d/0xa20
+[ 2668.327448]   [<ffffffff810f6b68>] do_sys_open+0x98/0x140
+[ 2668.327448]   [<ffffffff810f6c50>] sys_open+0x20/0x30
+[ 2668.327448]   [<ffffffff8100c272>] system_call_fastpath+0x16/0x1b
+[ 2668.327448]   [<ffffffffffffffff>] 0xffffffffffffffff
+[ 2668.327448] irq event stamp: 690455
+[ 2668.327448] hardirqs last  enabled at (690455): [<ffffffff81564fe4>] _spin_unlock_irqrestore+0x44/0x80
+[ 2668.327448] hardirqs last disabled at (690454): [<ffffffff81565372>] _spin_lock_irqsave+0x32/0xa0
+[ 2668.327448] softirqs last  enabled at (690178): [<ffffffff81052282>] __do_softirq+0x202/0x220
+[ 2668.327448] softirqs last disabled at (690157): [<ffffffff8100d50c>] call_softirq+0x1c/0x50
+[ 2668.327448]
+[ 2668.327448] other info that might help us debug this:
+[ 2668.327448] 2 locks held by kswapd0/380:
+[ 2668.327448]  #0:  (shrinker_rwsem){++++..}, at: [<ffffffff810d0bd7>] shrink_slab+0x37/0x180
+[ 2668.327448]  #1:  (&type->s_umount_key#17){++++..}, at: [<ffffffff8110cfbf>] shrink_dcache_memory+0x11f/0x1e0
+[ 2668.327448]
+[ 2668.327448] stack backtrace:
+[ 2668.327448] Pid: 380, comm: kswapd0 Not tainted 2.6.30-rc2-next-20090417 #203
+[ 2668.327448] Call Trace:
+[ 2668.327448]  [<ffffffff810789ef>] print_usage_bug+0x19f/0x200
+[ 2668.327448]  [<ffffffff81018bff>] ? save_stack_trace+0x2f/0x50
+[ 2668.327448]  [<ffffffff81078f0b>] mark_lock+0x4bb/0x6d0
+[ 2668.327448]  [<ffffffff810799e0>] ? check_usage_forwards+0x0/0xc0
+[ 2668.327448]  [<ffffffff8107b142>] __lock_acquire+0xc62/0x1ae0
+[ 2668.327448]  [<ffffffff810f478c>] ? slob_free+0x10c/0x370
+[ 2668.327448]  [<ffffffff8107c0a1>] lock_acquire+0xe1/0x120
+[ 2668.327448]  [<ffffffff8112f1b5>] ? inotify_inode_is_dead+0x35/0xb0
+[ 2668.327448]  [<ffffffff81562d43>] mutex_lock_nested+0x63/0x420
+[ 2668.327448]  [<ffffffff8112f1b5>] ? inotify_inode_is_dead+0x35/0xb0
+[ 2668.327448]  [<ffffffff8112f1b5>] ? inotify_inode_is_dead+0x35/0xb0
+[ 2668.327448]  [<ffffffff81012fe9>] ? sched_clock+0x9/0x10
+[ 2668.327448]  [<ffffffff81077165>] ? lock_release_holdtime+0x35/0x1c0
+[ 2668.327448]  [<ffffffff8112f1b5>] inotify_inode_is_dead+0x35/0xb0
+[ 2668.327448]  [<ffffffff8110c9dc>] dentry_iput+0xbc/0xe0
+[ 2668.327448]  [<ffffffff8110cb23>] d_kill+0x33/0x60
+[ 2668.327448]  [<ffffffff8110ce23>] __shrink_dcache_sb+0x2d3/0x350
+[ 2668.327448]  [<ffffffff8110cffa>] shrink_dcache_memory+0x15a/0x1e0
+[ 2668.327448]  [<ffffffff810d0cc5>] shrink_slab+0x125/0x180
+[ 2668.327448]  [<ffffffff810d1540>] kswapd+0x560/0x7a0
+[ 2668.327448]  [<ffffffff810ce160>] ? isolate_pages_global+0x0/0x2c0
+[ 2668.327448]  [<ffffffff81065a30>] ? autoremove_wake_function+0x0/0x40
+[ 2668.327448]  [<ffffffff8107953d>] ? trace_hardirqs_on+0xd/0x10
+[ 2668.327448]  [<ffffffff810d0fe0>] ? kswapd+0x0/0x7a0
+[ 2668.327448]  [<ffffffff8106555b>] kthread+0x5b/0xa0
+[ 2668.327448]  [<ffffffff8100d40a>] child_rip+0xa/0x20
+[ 2668.327448]  [<ffffffff8100cdd0>] ? restore_args+0x0/0x30
+[ 2668.327448]  [<ffffffff81065500>] ? kthread+0x0/0xa0
+[ 2668.327448]  [<ffffffff8100d400>] ? child_rip+0x0/0x20
+
+cc: Al Viro <viro@zeniv.linux.org.uk>
+cc: Matt Mackall <mpm@selenic.com>
+cc: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ fs/notify/inotify/inotify_user.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- mm.orig/fs/notify/inotify/inotify_user.c
++++ mm/fs/notify/inotify/inotify_user.c
+@@ -220,7 +220,7 @@ static struct inotify_kernel_event * ker
+ 				rem = 0;
+ 		}
+ 
+-		kevent->name = kmalloc(len + rem, GFP_KERNEL);
++		kevent->name = kmalloc(len + rem, GFP_NOFS);
+ 		if (unlikely(!kevent->name)) {
+ 			kmem_cache_free(event_cachep, kevent);
+ 			return NULL;
