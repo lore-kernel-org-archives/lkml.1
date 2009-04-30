@@ -1,139 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbZD3GEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752251AbZD3GGD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336AbZD3GEi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 02:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbZD3GE2
+	id S1752251AbZD3GGD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 02:06:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbZD3GFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 02:04:28 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:44319 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751292AbZD3GE2 (ORCPT
+	Thu, 30 Apr 2009 02:05:49 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:20348 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751292AbZD3GFs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 02:04:28 -0400
+	Thu, 30 Apr 2009 02:05:48 -0400
 X-IronPort-AV: E=Sophos;i="4.40,270,1238976000"; 
-   d="scan'208";a="157867214"
-Date: Wed, 29 Apr 2009 23:04:28 -0700
+   d="scan'208";a="160459942"
+Date: Wed, 29 Apr 2009 23:05:48 -0700
 From: David VomLehn <dvomlehn@cisco.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/5] KERNEL: Wait for console to become available, v4
-	(resend)
-Message-ID: <20090430060428.GB28692@cuplxvomd02.corp.sa.net>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 4/5] NETDEV: Wait for autoconfigurable network devices to
+	become available (resent)
+Message-ID: <20090430060548.GC28692@cuplxvomd02.corp.sa.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-4; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch has been re-written to use the boot device synchronization
-infrastructure. This ensures that we can detect that there is no console
-attached as early as possible.
-
-History
-v4	Use new hotplug synchronization infrastructure. Include Braille
-	console support.
-v3.2	Use only a single new command line parameter by adding the possible
-	value "forever".  Add message specifying the parameter to modify to
-	increase the delay for console initialization
-v3.1	Correct the abbreviation for milliseconds in
-	Documentation/kernel-parameters.txt to be "ms", not "mS". Thanks to
-	Peter Anvin for this.
-v3	Increase the default delay to 1 second and add kernel command line
-	parameters to override the default delay. Thanks to David Brownell for
-	his helpful suggestions.
-v2	Wait for the preferred console rather than any console. Make the
-	delay interval a tunable.
-v1	Initial version
+Delay IP autoconfiguration until network boot devices have been initialized.
+This depends on the boot device discovery code and on the asynchronous
+function call infrastructure.
 
 Signed-off-by: David VomLehn <dvomlehn@cisco.com>
 ---
- drivers/accessibility/braille/braille_console.c |    3 ++
- kernel/printk.c                                 |   29 ++++++++++++++++++++++-
- 2 files changed, 31 insertions(+), 1 deletions(-)
+ net/core/dev.c      |    2 +
+ net/ipv4/ipconfig.c |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 57 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/accessibility/braille/braille_console.c b/drivers/accessibility/braille/braille_console.c
-index d672cfe..4420ac3 100644
---- a/drivers/accessibility/braille/braille_console.c
-+++ b/drivers/accessibility/braille/braille_console.c
-@@ -35,6 +35,7 @@
- #include <linux/keyboard.h>
- #include <linux/kbd_kern.h>
- #include <linux/input.h>
-+#include <linux/bootdev.h>
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 308a7d0..73cb282 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -93,6 +93,7 @@
+ #include <linux/ethtool.h>
+ #include <linux/notifier.h>
+ #include <linux/skbuff.h>
++#include <linux/device.h>
+ #include <net/net_namespace.h>
+ #include <net/sock.h>
+ #include <linux/rtnetlink.h>
+@@ -4497,6 +4498,7 @@ int register_netdevice(struct net_device *dev)
+ 		dev->reg_state = NETREG_UNREGISTERED;
+ 	}
  
- MODULE_AUTHOR("samuel.thibault@ens-lyon.org");
- MODULE_DESCRIPTION("braille device");
-@@ -378,6 +379,8 @@ int braille_register_console(struct console *console, int index,
- 	braille_co = console;
- 	register_keyboard_notifier(&keyboard_notifier_block);
- 	register_vt_notifier(&vt_notifier_block);
++	bootdev_registered(BOOTDEV_NETDEV);
+ out:
+ 	return ret;
+ 
+diff --git a/net/ipv4/ipconfig.c b/net/ipv4/ipconfig.c
+index 90d22ae..65a7ecd 100644
+--- a/net/ipv4/ipconfig.c
++++ b/net/ipv4/ipconfig.c
+@@ -53,6 +53,7 @@
+ #include <linux/root_dev.h>
+ #include <linux/delay.h>
+ #include <linux/nfs_fs.h>
++#include <linux/async.h>
+ #include <net/net_namespace.h>
+ #include <net/arp.h>
+ #include <net/ip.h>
+@@ -182,12 +183,48 @@ struct ic_device {
+ static struct ic_device *ic_first_dev __initdata = NULL;/* List of open device */
+ static struct net_device *ic_dev __initdata = NULL;	/* Selected device */
+ 
++/*
++ * Wait for required network devices to come up
++ * If the networking device name was specified on the kernel command line
++ * and that device is now registered, we have the device we want to configure
++ * and we return true. Otherwise, we return false. So, if no device was
++ * specified on the command line, we wait for all possible network devices to
++ * be initialized.
++ */
++static bool have_all_netdevs(void)
++{
++	struct net_device *dev;
++	bool	result = false;
 +
-+	bootdev_register(BOOTDEV_CONSOLE);
++	rtnl_lock();
++
++	for_each_netdev(&init_net, dev) {
++		if (dev->flags & IFF_LOOPBACK)
++			continue;
++
++		/* If a specific device name was specified and that name is
++		 * registered, we have the device we need. */
++		if (user_dev_name[0] && !strcmp(dev->name, user_dev_name)) {
++			result = true;
++			break;
++		}
++	}
++
++	rtnl_unlock();
++
++	return result;
++
++}
++
+ static int __init ic_open_devs(void)
+ {
+ 	struct ic_device *d, **last;
+ 	struct net_device *dev;
+ 	unsigned short oflags;
+ 
++	/* Wait for networking devices */
++	bootdev_wait(BOOTDEV_NETDEV, have_all_netdevs);
++
+ 	last = &ic_first_dev;
+ 	rtnl_lock();
+ 
+@@ -1263,6 +1300,7 @@ __be32 __init root_nfs_parse_addr(char *name)
+ 
+ /*
+  *	IP Autoconfig dispatcher.
++ *	Return zero on success, negative one on failure
+  */
+ 
+ static int __init ip_auto_config(void)
+@@ -1397,7 +1435,23 @@ static int __init ip_auto_config(void)
  	return 0;
  }
  
-diff --git a/kernel/printk.c b/kernel/printk.c
-index 5052b54..e6a9379 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -33,6 +33,7 @@
- #include <linux/bootmem.h>
- #include <linux/syscalls.h>
- #include <linux/kexec.h>
-+#include <linux/device.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -1075,8 +1076,10 @@ void console_unblank(void)
- 
- /*
-  * Return the console tty driver structure and its associated index
-+ * @index:	Pointer to the device index
-+ * Returns NULL if no driver available, otherwise a pointer to the TTY driver.
-  */
--struct tty_driver *console_device(int *index)
-+struct tty_driver *_console_device(int *index)
- {
- 	struct console *c;
- 	struct tty_driver *driver = NULL;
-@@ -1094,6 +1097,29 @@ struct tty_driver *console_device(int *index)
- }
- 
- /*
-+ * Returns true if all specific consoles are registered, false otherwise
-+ */
-+static bool have_all_consoles(void)
+-late_initcall(ip_auto_config);
++static void __init ip_auto_config_async(void *data, async_cookie_t cookie)
 +{
-+	struct tty_driver *driver;
-+	int		index;
-+
-+	driver = _console_device(&index);
-+
-+	return driver != NULL;
++	ip_auto_config();
 +}
 +
-+struct tty_driver *console_device(int *index)
-+{
-+	struct tty_driver *driver;
-+	bootdev_wait(BOOTDEV_CONSOLE, have_all_consoles);
-+
-+	driver = _console_device(index);
-+
-+	return driver;
-+}
-+
++static async_cookie_t ic_cookie;
 +/*
-  * Prevent further output on the passed console device so that (for example)
-  * serial drivers can disable console output before suspending a port, and can
-  * re-enable output afterwards.
-@@ -1230,6 +1256,7 @@ void register_console(struct console *console)
- 		spin_unlock_irqrestore(&logbuf_lock, flags);
- 	}
- 	release_console_sem();
-+	bootdev_registered(BOOTDEV_CONSOLE);
- }
- EXPORT_SYMBOL(register_console);
++ * Start a thread to do IP autoconfiguration
++ */
++static int __init ip_auto_configurator(void)
++{
++	ic_cookie = async_schedule(ip_auto_config_async, NULL);
++
++	return 0;
++}
++
++late_initcall(ip_auto_configurator);
  
+ 
+ /*
