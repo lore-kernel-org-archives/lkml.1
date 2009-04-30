@@ -1,155 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761490AbZD3AMF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761524AbZD3AMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761490AbZD3AMF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 20:12:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbZD3ALy
+	id S1761524AbZD3AMh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 20:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbZD3AM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 20:11:54 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:43597 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752548AbZD3ALx (ORCPT
+	Wed, 29 Apr 2009 20:12:27 -0400
+Received: from ftp.linux-mips.org ([213.58.128.207]:37973 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754013AbZD3AM0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 20:11:53 -0400
-X-IronPort-AV: E=Sophos;i="4.40,269,1238976000"; 
-   d="scan'208";a="295453555"
-Date: Wed, 29 Apr 2009 17:11:53 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: netdev@vger.kernel.org
+	Wed, 29 Apr 2009 20:12:26 -0400
+Date: Thu, 30 Apr 2009 02:12:14 +0200
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Sam Ravnborg <sam@ravnborg.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 4/5] NETDEV: Wait for autoconfigurable network devices to
-	become available
-Message-ID: <20090430001153.GA3751@cuplxvomd02.corp.sa.net>
+Subject: Re: [PATCH, RFC] Fix bogus modpost warnings
+Message-ID: <20090430001214.GA22242@linux-mips.org>
+References: <20090429123211.GA12874@linux-mips.org> <20090429204846.GA655@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090429204846.GA655@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Delay IP autoconfiguration until network boot devices have been initialized.
-This depends on the boot device discovery code and on the asynchronous
-function call infrastructure.
+On Wed, Apr 29, 2009 at 10:48:46PM +0200, Sam Ravnborg wrote:
 
-Signed-off-by: David VomLehn <dvomlehn@cisco.com>
----
- net/core/dev.c      |    2 +
- net/ipv4/ipconfig.c |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 57 insertions(+), 1 deletions(-)
+> > this addition check there are still section names left for which the if
+> > condition would ever be true.  Data sections maybe?
+> 
+> Anders Kaseorg already wrote a better patch to fix this - appended below.
+> Could you please give it a try and let me know it it
+> works for you too.
 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 308a7d0..73cb282 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -93,6 +93,7 @@
- #include <linux/ethtool.h>
- #include <linux/notifier.h>
- #include <linux/skbuff.h>
-+#include <linux/device.h>
- #include <net/net_namespace.h>
- #include <net/sock.h>
- #include <linux/rtnetlink.h>
-@@ -4497,6 +4498,7 @@ int register_netdevice(struct net_device *dev)
- 		dev->reg_state = NETREG_UNREGISTERED;
- 	}
- 
-+	bootdev_registered(BOOTDEV_NETDEV);
- out:
- 	return ret;
- 
-diff --git a/net/ipv4/ipconfig.c b/net/ipv4/ipconfig.c
-index 90d22ae..65a7ecd 100644
---- a/net/ipv4/ipconfig.c
-+++ b/net/ipv4/ipconfig.c
-@@ -53,6 +53,7 @@
- #include <linux/root_dev.h>
- #include <linux/delay.h>
- #include <linux/nfs_fs.h>
-+#include <linux/async.h>
- #include <net/net_namespace.h>
- #include <net/arp.h>
- #include <net/ip.h>
-@@ -182,12 +183,48 @@ struct ic_device {
- static struct ic_device *ic_first_dev __initdata = NULL;/* List of open device */
- static struct net_device *ic_dev __initdata = NULL;	/* Selected device */
- 
-+/*
-+ * Wait for required network devices to come up
-+ * If the networking device name was specified on the kernel command line
-+ * and that device is now registered, we have the device we want to configure
-+ * and we return true. Otherwise, we return false. So, if no device was
-+ * specified on the command line, we wait for all possible network devices to
-+ * be initialized.
-+ */
-+static bool have_all_netdevs(void)
-+{
-+	struct net_device *dev;
-+	bool	result = false;
-+
-+	rtnl_lock();
-+
-+	for_each_netdev(&init_net, dev) {
-+		if (dev->flags & IFF_LOOPBACK)
-+			continue;
-+
-+		/* If a specific device name was specified and that name is
-+		 * registered, we have the device we need. */
-+		if (user_dev_name[0] && !strcmp(dev->name, user_dev_name)) {
-+			result = true;
-+			break;
-+		}
-+	}
-+
-+	rtnl_unlock();
-+
-+	return result;
-+
-+}
-+
- static int __init ic_open_devs(void)
- {
- 	struct ic_device *d, **last;
- 	struct net_device *dev;
- 	unsigned short oflags;
- 
-+	/* Wait for networking devices */
-+	bootdev_wait(BOOTDEV_NETDEV, have_all_netdevs);
-+
- 	last = &ic_first_dev;
- 	rtnl_lock();
- 
-@@ -1263,6 +1300,7 @@ __be32 __init root_nfs_parse_addr(char *name)
- 
- /*
-  *	IP Autoconfig dispatcher.
-+ *	Return zero on success, negative one on failure
-  */
- 
- static int __init ip_auto_config(void)
-@@ -1397,7 +1435,23 @@ static int __init ip_auto_config(void)
- 	return 0;
- }
- 
--late_initcall(ip_auto_config);
-+static void __init ip_auto_config_async(void *data, async_cookie_t cookie)
-+{
-+	ip_auto_config();
-+}
-+
-+static async_cookie_t ic_cookie;
-+/*
-+ * Start a thread to do IP autoconfiguration
-+ */
-+static int __init ip_auto_configurator(void)
-+{
-+	ic_cookie = async_schedule(ip_auto_config_async, NULL);
-+
-+	return 0;
-+}
-+
-+late_initcall(ip_auto_configurator);
- 
- 
- /*
+Works as advertised for me:
+
+Tested-by: Ralf Baechle <ralf@linux-mips.org>
+
+> It is about to be applied to kbuild-next - I have just been sidetracked
+> by other stuff.
+
+kbuild-next sounds like 2.6.31 stuff - I hope this will still go into
+2.6.30?
+
+Thanks,
+
+  Ralf
