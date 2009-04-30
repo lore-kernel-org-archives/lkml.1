@@ -1,120 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbZD3LvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762106AbZD3LwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760864AbZD3LvA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 07:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbZD3Lut
+	id S1762106AbZD3LwZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 07:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbZD3LwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 07:50:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57927 "EHLO mx2.redhat.com"
+	Thu, 30 Apr 2009 07:52:11 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47989 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751187AbZD3Lus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 07:50:48 -0400
-Message-ID: <49F99095.7060503@redhat.com>
-Date: Thu, 30 Apr 2009 14:50:45 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1753136AbZD3LwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 07:52:09 -0400
+Date: Thu, 30 Apr 2009 13:52:07 +0200
+From: Jan Kara <jack@suse.cz>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH RFC] ext3 data=guarded v7
+Message-ID: <20090430115207.GD29220@duck.suse.cz>
+References: <1240941840.15136.44.camel@think.oraclecorp.com> <1241034706.20099.65.camel@think.oraclecorp.com> <1241038424.20099.74.camel@think.oraclecorp.com>
 MIME-Version: 1.0
-To: Glauber Costa <glommer@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] deal with interrupt shadow state for emulated instruction
-References: <1240929045-6970-1-git-send-email-glommer@redhat.com>
-In-Reply-To: <1240929045-6970-1-git-send-email-glommer@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241038424.20099.74.camel@think.oraclecorp.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber Costa wrote:
-> we currently unblock shadow interrupt state when we skip an instruction,
-> but failing to do so when we actually emulate one. This blocks interrupts
-> in key instruction blocks, in particular sti; hlt; sequences
->
-> If the instruction emulated is an sti, we have to block shadow interrupts.
-> The same goes for mov ss. pop ss also needs it, but we don't currently
-> emulate it.
->
-> Without this patch, I cannot boot gpxe option roms at vmx machines.
-> This is described at https://bugzilla.redhat.com/show_bug.cgi?id=494469
->
-> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-> index cb306cf..9455a30 100644
-> --- a/arch/x86/include/asm/kvm_host.h
-> +++ b/arch/x86/include/asm/kvm_host.h
-> @@ -510,6 +510,8 @@ struct kvm_x86_ops {
->  	void (*run)(struct kvm_vcpu *vcpu, struct kvm_run *run);
->  	int (*handle_exit)(struct kvm_run *run, struct kvm_vcpu *vcpu);
->  	void (*skip_emulated_instruction)(struct kvm_vcpu *vcpu);
-> +	void (*interrupt_shadow_mask)(struct kvm_vcpu *vcpu, int mask);
->   
-
-Can you verb this function?  set_interrupt_shadow would make it nicely 
-complement get_interrupt_shadow.
-
-> +	u32 (*get_interrupt_shadow)(struct kvm_vcpu *vcpu);
->  	void (*patch_hypercall)(struct kvm_vcpu *vcpu,
->  				unsigned char *hypercall_addr);
->  	int (*get_irq)(struct kvm_vcpu *vcpu);
->  
-> +static u32 svm_get_interrupt_shadow(struct kvm_vcpu *vcpu)
+On Wed 29-04-09 16:53:44, Chris Mason wrote:
+...
+> +static int ext3_guarded_write_end(struct file *file,
+> +				struct address_space *mapping,
+> +				loff_t pos, unsigned len, unsigned copied,
+> +				struct page *page, void *fsdata)
 > +{
-> +	struct vcpu_svm *svm = to_svm(vcpu);
-> +	u32 ret = 0;
+> +	handle_t *handle = ext3_journal_current_handle();
+> +	struct inode *inode = file->f_mapping->host;
+> +	unsigned from, to;
+> +	int ret = 0, ret2;
 > +
-> +	if (svm->vmcb->control.int_state & SVM_INTERRUPT_SHADOW_MASK)
-> +		ret |= (X86_SHADOW_INT_STI && X86_SHADOW_INT_MOV_SS);
-> +	return ret;
-> +}
->   
-
-Hmm, if the guest runs an infinite emulated 'mov ss', it will keep 
-toggling the MOV_SS bit, but STI will remain set, so we'll never allow 
-an interrupt into the guest kernel.
-
-> diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
-> index d2664fc..797d41f 100644
-> --- a/arch/x86/kvm/x86_emulate.c
-> +++ b/arch/x86/kvm/x86_emulate.c
-> @@ -1618,6 +1618,16 @@ special_insn:
->  		int err;
->  
->  		sel = c->src.val;
-> +		if (c->modrm_reg == VCPU_SREG_SS) {
-> +			u32 int_shadow =
-> +				kvm_x86_ops->get_interrupt_shadow(ctxt->vcpu);
-> +			/* See sti emulation for an explanation of this */
-> +			if ((int_shadow & X86_SHADOW_INT_MOV_SS))
-> +				ctxt->interruptibility &= ~X86_SHADOW_INT_MOV_SS;
-> +			else
-> +				ctxt->interruptibility |= X86_SHADOW_INT_MOV_SS;
-> +		}
->   
-
-^=
-
-> @@ -1846,10 +1856,23 @@ special_insn:
->  		ctxt->eflags &= ~X86_EFLAGS_IF;
->  		c->dst.type = OP_NONE;	/* Disable writeback. */
->  		break;
-> -	case 0xfb: /* sti */
-> +	case 0xfb: { /* sti */
-> +		u32 int_shadow = kvm_x86_ops->get_interrupt_shadow(ctxt->vcpu);
-> +		/*
-> +		 * an sti; sti; sequence only disable interrupts for the first
-> +		 * instruction. So, if the last instruction, be it emulated or
-> +		 * not, left the system with the INT_STI flag enabled, it
-> +		 * means that the last instruction is an sti. We should not
-> +		 * leave the flag on in this case
+> +	copied = block_write_end(file, mapping, pos, len, copied,
+> +				 page, fsdata);
+> +
+> +	from = pos & (PAGE_CACHE_SIZE - 1);
+> +	to = from + copied;
+> +	ret = walk_page_buffers(handle, page_buffers(page),
+> +		from, to, NULL, journal_dirty_data_guarded_fn);
+> +
+> +	/*
+> +	 * we only update the in-memory i_size.  The disk i_size is done
+> +	 * by the end io handlers
+> +	 */
+> +	if (ret == 0 && pos + copied > inode->i_size) {
+> +		int must_log;
+> +
+> +		/* updated i_size, but we may have raced with a
+> +		 * data=guarded end_io handler.
+> +		 *
+> +		 * All the guarded IO could have ended while i_size was still
+> +		 * small, and if we're just adding bytes into an existing block
+> +		 * in the file, we may not be adding a new guarded IO with this
+> +		 * write.  So, do a check on the disk i_size and make sure it
+> +		 * is updated to the highest safe value.
+> +		 *
+> +		 * This may also be required if the
+> +		 * journal_dirty_data_guarded_fn chose to do an fully
+> +		 * ordered write of this buffer instead of a guarded
+> +		 * write.
+> +		 *
+> +		 * ext3_ordered_update_i_size tests inode->i_size, so we
+> +		 * make sure to update it with the ordered lock held.
 > +		 */
-> +		if ((int_shadow & X86_SHADOW_INT_STI))
-> +			ctxt->interruptibility &= ~X86_SHADOW_INT_STI;
-> +		else
-> +			ctxt->interruptibility |= X86_SHADOW_INT_STI;
->   
+> +		ext3_ordered_lock(inode);
+> +		i_size_write(inode, pos + copied);
+> +		must_log = ext3_ordered_update_i_size(inode);
+> +		ext3_ordered_unlock(inode);
+> +
+> +		orphan_del_trans(inode, must_log > 0);
+> +	}
+  Didn't we agree that only "i_size_write" should remain from the above
+"if" after you changed journal_dirty_data_guarded_fn() function?
 
-^=
-
+								Honza
 -- 
-error compiling committee.c: too many arguments to function
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
