@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933054AbZD3Rbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933060AbZD3Rb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933054AbZD3Rbf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764663AbZD3RIN
+	id S933060AbZD3Rb5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764670AbZD3RIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:08:13 -0400
-Received: from kroah.org ([198.145.64.141]:56675 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:08:15 -0400
+Received: from kroah.org ([198.145.64.141]:56683 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764356AbZD3RIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1764611AbZD3RIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 30 Apr 2009 13:08:01 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:46 2009
-Message-Id: <20090430165746.230091532@mini.kroah.org>
+Message-Id: <20090430165746.385280871@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:42 -0700
+Date: Thu, 30 Apr 2009 09:56:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,83 +25,75 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 53/88] block: revert part of 18ce3751ccd488c78d3827e9f6bf54e6322676fb
+       alan@lxorguk.ukuu.org.uk,
+       Christian Borntraeger <borntraeger@de.ibm.com>, mtosatti@redhat.com,
+       avi@redhat.com
+Subject: [patch 54/88] anon_inodes: use fops->owner for module refcount
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=block-revert-part-of-18ce3751ccd488c78d3827e9f6bf54e6322676fb.patch
+Content-Disposition: inline; filename=anon_inodes-use-fops-owner-for-module-refcount.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Jens Axboe <jens.axboe@oracle.com>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-commit 78f707bfc723552e8309b7c38a8d0cc51012e813 upstream.
+There is an imbalance for anonymous inodes. If the fops->owner field is set,
+the module reference count of owner is decreases on release.
+("filp_close" --> "__fput" ---> "fops_put")
 
-The above commit added WRITE_SYNC and switched various places to using
-that for committing writes that will be waited upon immediately after
-submission. However, this causes a performance regression with AS and CFQ
-for ext3 at least, since sync_dirty_buffer() will submit some writes with
-WRITE_SYNC while ext3 has sumitted others dependent writes without the sync
-flag set. This causes excessive anticipation/idling in the IO scheduler
-because sync and async writes get interleaved, causing a big performance
-regression for the below test case (which is meant to simulate sqlite
-like behaviour).
+On the other hand, anon_inode_getfd does not increase the module reference
+count of owner. This causes two problems:
 
----- test case ----
+- if owner is set, the module refcount goes negative
+- if owner is not set, the module can be unloaded while code is running
 
-int main(int argc, char **argv)
-{
+This patch changes anon_inode_getfd to be symmetric regarding fops->owner
+handling.
 
-	int fdes, i;
-	FILE *fp;
-	struct timeval start;
-	struct timeval end;
-	struct timeval res;
+I have checked all existing users of anon_inode_getfd. Noone sets fops->owner,
+thats why nobody has seen the module refcount negative. The refcounting was
+tested with a patched and unpatched KVM module.(see patch 2/2) I also did an
+epoll_open/close test.
 
-	gettimeofday(&start, NULL);
-	for (i=0; i<ROWS; i++) {
-		fp = fopen("test_file", "a");
-		fprintf(fp, "Some Text Data\n");
-		fdes = fileno(fp);
-		fsync(fdes);
-		fclose(fp);
-	}
-	gettimeofday(&end, NULL);
-
-	timersub(&end, &start, &res);
-	fprintf(stdout, "time to write %d lines is %ld(msec)\n", ROWS,
-			(res.tv_sec*1000000 + res.tv_usec)/1000);
-
-	return 0;
-}
-
--------------------
-
-Thanks to Sean.White@APCC.com for tracking down this performance
-regression and providing a test case.
-
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Reviewed-by: Davide Libenzi <davidel@xmailserver.org>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+(cherry picked from commit e3a2a0d4e5ace731e60e2eff4fb7056ecb34adc1)
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- fs/buffer.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/anon_inodes.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -3042,7 +3042,7 @@ int sync_dirty_buffer(struct buffer_head
- 	if (test_clear_buffer_dirty(bh)) {
- 		get_bh(bh);
- 		bh->b_end_io = end_buffer_write_sync;
--		ret = submit_bh(WRITE_SYNC, bh);
-+		ret = submit_bh(WRITE, bh);
- 		wait_on_buffer(bh);
- 		if (buffer_eopnotsupp(bh)) {
- 			clear_buffer_eopnotsupp(bh);
+--- a/fs/anon_inodes.c
++++ b/fs/anon_inodes.c
+@@ -79,9 +79,12 @@ int anon_inode_getfd(const char *name, c
+ 	if (IS_ERR(anon_inode_inode))
+ 		return -ENODEV;
+ 
++	if (fops->owner && !try_module_get(fops->owner))
++		return -ENOENT;
++
+ 	error = get_unused_fd_flags(flags);
+ 	if (error < 0)
+-		return error;
++		goto err_module;
+ 	fd = error;
+ 
+ 	/*
+@@ -128,6 +131,8 @@ err_dput:
+ 	dput(dentry);
+ err_put_unused_fd:
+ 	put_unused_fd(fd);
++err_module:
++	module_put(fops->owner);
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(anon_inode_getfd);
 
 
