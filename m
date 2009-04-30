@@ -1,193 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762317AbZD3Jtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762374AbZD3Jye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762317AbZD3Jtk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 05:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761765AbZD3JtX
+	id S1762374AbZD3Jye (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 05:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbZD3JyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 05:49:23 -0400
-Received: from mailrelay004.isp.belgacom.be ([195.238.6.170]:17122 "EHLO
-	mailrelay004.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758647AbZD3JtU (ORCPT
+	Thu, 30 Apr 2009 05:54:24 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:55798 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753316AbZD3JyW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 05:49:20 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAGMR+UlR9Rtd/2dsb2JhbADPSgeDeAU
-Date: Thu, 30 Apr 2009 11:49:18 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Stephen Clark <sclark46@earthlink.net>,
-       Denys Fedoryschenko <denys@visp.net.lb>,
-       Johannes Dewender <arch@jonnyjd.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Frans Pop <elendil@planet.nl>,
-       Rutger Nijlunsing <bugzilla.kernel@tux.tmfweb.nl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Cc: Andriy Gapon <avg@icyb.net.ua>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [WATCHDOG] iTCO_wdt.c - ICH9 reboot issue - testing wanted
-Message-ID: <20090430094918.GC4141@infomag.iguana.be>
+	Thu, 30 Apr 2009 05:54:22 -0400
+Date: Thu, 30 Apr 2009 10:54:14 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Darrick J. Wong" <djwong@us.ibm.com>, Thomas Renninger <trenn@suse.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v2] acpi: Fix regression where _PPC is not read at boot
+	even when ignore_ppc=0
+Message-ID: <20090430095414.GA19462@srcf.ucam.org>
+References: <20090415225348.GW8311@plum> <20090416002712.GX8311@plum> <200904161201.13409.trenn@suse.de> <20090416174217.GY8311@plum> <20090416224507.GA31984@srcf.ucam.org> <20090428193303.GC6968@plum> <20090428195348.GA8376@srcf.ucam.org> <20090429213930.GE6968@plum> <20090429220037.GA8604@srcf.ucam.org> <20090430072556.GD16737@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090430072556.GD16737@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+On Thu, Apr 30, 2009 at 09:25:56AM +0200, Ingo Molnar wrote:
 
-I'm looking for people that can test the below patch(es).
-I'm mainly interested in knowing if you experience any side-effects when using this patch.
-(See also bugzilla 9868, 10195, 12363 & 12162).
+> OTOH, if you rely on me figuring out which patch to revert and what 
+> to do, it will take an indeterminate amount of time - together with 
+> all the other items in my 'would be nice to hack on, given a bit of 
+> free time' queue :)
 
-For people not using the watchdog or without any reboot problems the driver should
-work as normal after compilation/installation/...
+Here's Darrick's patch:
 
-For people that have the ICH9 reboot problems: load the module with module-parameter
-gbl_smi_en=0 and test the watchdog functionality again.
+Earlier, Ingo Molnar posted a patch to make it so that the kernel would avoid
+reading _PPC on his broken T60.  Unfortunately, it seems that with Thomas
+Renninger's patch last July to eliminate _PPC evaluations when the processor
+driver loads, the kernel never actually reads _PPC at all!  This is problematic
+if you happen to boot your non-T60 computer in a state where the BIOS _wants_
+_PPC to be something other than zero.
 
-Thanks in advance,
-Wim.
+So, put the _PPC evaluation back into acpi_processor_get_performance_info if
+ignore_ppc isn't 1.
 
-The Changes are:
+This second version restores the correct function call, which simplifies
+the patch.  I apologize for the churn and the poor eyesight.
 
-Author: Wim Van Sebroeck <wim@iguana.be>
-Date:   Thu Apr 30 09:13:33 2009 +0000
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+---
 
-    [WATCHDOG] iTCO_wdt: Fix ICH9 reboot issue.
-    
-    Bugzilla: 9868 & 10195.
-    There seems to be a bug into the SMM code that handles TCO Timeout SMI.
-    Andriy Gapon found that the code on his DG33TL system does the following:
-    > The handler is quite simple - it tests value in TCO1_CNT against 0x800, i.e.
-    > checks TCO_TMR_HLT. If the bit is set the handler goes into an infinite loop,
-    > apparently to allow the second timeout and reboot. Otherwise it simply clears
-    > TIMEOUT bit in TCO1_STS and that's it.
-    > So the logic seems to be reversed, because it is hard to see how TIMEOUT can
-    > get set to 1 and SMI generated when TCO_TMR_HLT is set (other than a
-    > transitional effect).
-    
-    The only trick we have is to bypass the SMM code by turning of the generation
-    of the SMI#. The trick can only be enabled by setting the gbl_smi_en module
-    parameter to 0.
-    
-    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+ drivers/acpi/processor_perflib.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-Author: Wim Van Sebroeck <wim@iguana.be>
-Date:   Tue Apr 14 20:20:07 2009 +0000
 
-    [WATCHDOG] iTCO_wdt: Cleanup code
-    
-    Clean-up the iTCO_wdt code so that checkpatch.pl get's happy...
-    
-    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
-
-The Changes can also be looked at on:
-	http://www.kernel.org/git/?p=linux/kernel/git/wim/linux-2.6-watchdog.git;a=summary
-
-For completeness, I added the overal diff below.
-
-Greetings,
-Wim.
-
-================================================================================
-diff --git a/drivers/watchdog/iTCO_vendor_support.c b/drivers/watchdog/iTCO_vendor_support.c
-index d3c0f6d..843ef62 100644
---- a/drivers/watchdog/iTCO_vendor_support.c
-+++ b/drivers/watchdog/iTCO_vendor_support.c
-@@ -35,9 +35,9 @@
- #include "iTCO_vendor.h"
+diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+index cafb410..85af717 100644
+--- a/drivers/acpi/processor_perflib.c
++++ b/drivers/acpi/processor_perflib.c
+@@ -348,7 +348,11 @@ static int acpi_processor_get_performance_info(struct acpi_processor *pr)
+ 	if (result)
+ 		goto update_bios;
  
- /* iTCO defines */
--#define	SMI_EN		acpibase + 0x30	/* SMI Control and Enable Register */
--#define	TCOBASE		acpibase + 0x60	/* TCO base address */
--#define	TCO1_STS	TCOBASE + 0x04	/* TCO1 Status Register */
-+#define	SMI_EN		(acpibase + 0x30) /* SMI Control and Enable Register */
-+#define	TCOBASE		(acpibase + 0x60) /* TCO base address */
-+#define	TCO1_STS	(TCOBASE + 0x04)  /* TCO1 Status Register */
- 
- /* List of vendor support modes */
- /* SuperMicro Pentium 3 Era 370SSE+-OEM1/P3TSSE */
-diff --git a/drivers/watchdog/iTCO_wdt.c b/drivers/watchdog/iTCO_wdt.c
-index 648250b..b76d1ec 100644
---- a/drivers/watchdog/iTCO_wdt.c
-+++ b/drivers/watchdog/iTCO_wdt.c
-@@ -63,7 +63,7 @@
- 
- /* Module and version information */
- #define DRV_NAME	"iTCO_wdt"
--#define DRV_VERSION	"1.05"
-+#define DRV_VERSION	"1.06"
- #define PFX		DRV_NAME ": "
- 
- /* Includes */
-@@ -236,19 +236,19 @@ MODULE_DEVICE_TABLE(pci, iTCO_wdt_pci_tbl);
- 
- /* Address definitions for the TCO */
- /* TCO base address */
--#define TCOBASE		iTCO_wdt_private.ACPIBASE + 0x60
-+#define TCOBASE		(iTCO_wdt_private.ACPIBASE + 0x60)
- /* SMI Control and Enable Register */
--#define SMI_EN		iTCO_wdt_private.ACPIBASE + 0x30
--
--#define TCO_RLD		TCOBASE + 0x00	/* TCO Timer Reload and Curr. Value */
--#define TCOv1_TMR	TCOBASE + 0x01	/* TCOv1 Timer Initial Value	*/
--#define TCO_DAT_IN	TCOBASE + 0x02	/* TCO Data In Register		*/
--#define TCO_DAT_OUT	TCOBASE + 0x03	/* TCO Data Out Register	*/
--#define TCO1_STS	TCOBASE + 0x04	/* TCO1 Status Register		*/
--#define TCO2_STS	TCOBASE + 0x06	/* TCO2 Status Register		*/
--#define TCO1_CNT	TCOBASE + 0x08	/* TCO1 Control Register	*/
--#define TCO2_CNT	TCOBASE + 0x0a	/* TCO2 Control Register	*/
--#define TCOv2_TMR	TCOBASE + 0x12	/* TCOv2 Timer Initial Value	*/
-+#define SMI_EN		(iTCO_wdt_private.ACPIBASE + 0x30)
+-	return 0;
++	/* We need to call _PPC once when cpufreq starts */
++	if (ignore_ppc != 1)
++		result = acpi_processor_get_platform_limit(pr);
 +
-+#define TCO_RLD		(TCOBASE + 0x00) /* TCO Timer Reload and Curr. Value */
-+#define TCOv1_TMR	(TCOBASE + 0x01) /* TCOv1 Timer Initial Value	*/
-+#define TCO_DAT_IN	(TCOBASE + 0x02) /* TCO Data In Register	*/
-+#define TCO_DAT_OUT	(TCOBASE + 0x03) /* TCO Data Out Register	*/
-+#define TCO1_STS	(TCOBASE + 0x04) /* TCO1 Status Register	*/
-+#define TCO2_STS	(TCOBASE + 0x06) /* TCO2 Status Register	*/
-+#define TCO1_CNT	(TCOBASE + 0x08) /* TCO1 Control Register	*/
-+#define TCO2_CNT	(TCOBASE + 0x0a) /* TCO2 Control Register	*/
-+#define TCOv2_TMR	(TCOBASE + 0x12) /* TCOv2 Timer Initial Value	*/
++	return result;
  
- /* internal variables */
- static unsigned long is_active;
-@@ -277,6 +277,13 @@ MODULE_PARM_DESC(heartbeat, "Watchdog heartbeat in seconds. "
- 	"(2<heartbeat<39 (TCO v1) or 613 (TCO v2), default="
- 				__MODULE_STRING(WATCHDOG_HEARTBEAT) ")");
- 
-+#define GBL_SMI_EN_DEFAULT 1	/* 1 = don't turn GBL_SMI_EN off */
-+static int gbl_smi_en = GBL_SMI_EN_DEFAULT;
-+module_param(gbl_smi_en, int, 0);
-+MODULE_PARM_DESC(gbl_smi_en,
-+	"Turn GBL_SMI_EN off to fix reboot issues on ICH9..., default="
-+				__MODULE_STRING(GBL_SMI_EN_DEFAULT) ")");
-+
- static int nowayout = WATCHDOG_NOWAYOUT;
- module_param(nowayout, int, 0);
- MODULE_PARM_DESC(nowayout,
-@@ -688,9 +695,12 @@ static int __devinit iTCO_wdt_init(struct pci_dev *pdev,
- 		ret = -EIO;
- 		goto out;
- 	}
--	/* Bit 13: TCO_EN -> 0 = Disables TCO logic generating an SMI# */
- 	val32 = inl(SMI_EN);
-+	/* Bit 13: TCO_EN     -> 0 = Disables TCO logic generating an SMI#
-+	   Bit  0: GBL_SMI_EN -> 0 = No SMI# will be generated by ICH9. */
- 	val32 &= 0xffffdfff;	/* Turn off SMI clearing watchdog */
-+	if (gbl_smi_en == 0)
-+		val32 &= 0xfffffffe;	/* Turn off GBL_SMI_EN */
- 	outl(val32, SMI_EN);
- 
- 	/* The TCO I/O registers reside in a 32-byte range pointed to
-@@ -733,8 +743,8 @@ static int __devinit iTCO_wdt_init(struct pci_dev *pdev,
- 		goto unreg_region;
- 	}
- 
--	printk(KERN_INFO PFX "initialized. heartbeat=%d sec (nowayout=%d)\n",
--							heartbeat, nowayout);
-+	printk(KERN_INFO PFX "initialized. heartbeat=%d sec, gbl_smi_en=%d "
-+		"(nowayout=%d)\n", heartbeat, gbl_smi_en, nowayout);
- 
- 	return 0;
- 
+ 	/*
+ 	 * Having _PPC but missing frequencies (_PSS, _PCT) is a very good hint that
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
