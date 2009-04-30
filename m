@@ -1,33 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761886AbZD3A2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761954AbZD3A3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761886AbZD3A2v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Apr 2009 20:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759679AbZD3A1c
+	id S1761954AbZD3A3e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Apr 2009 20:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757578AbZD3A1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Apr 2009 20:27:32 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:49710 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758518AbZD3A1b (ORCPT
+	Wed, 29 Apr 2009 20:27:35 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:48086 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760190AbZD3A1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Apr 2009 20:27:31 -0400
+	Wed, 29 Apr 2009 20:27:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=jG1AT0hoB2yWZeLoAxFw6103a8qdoLOW5x9VN2QIZBz89nF22R3fwibdyM2LlzCPMc
-         eI+Q3U765nxDiOwveEdga35wY3eZYrTmoEDHIHUNuO5N8S550SWjEegxJ5ml2L217cgU
-         3gD35UZQKQmDw+sf6xvXtz5ZfzmLqmqQaSe9g=
+        b=EtDU/J+SQZ9cS1ZQPA8KEu1QhoAdMDUqC0XPt22QgxzU00dHLGgqhWHGffq4y1l6iR
+         /bLkg1gkXYfbJMbuIpw1xkkLzi+mSwpf7YCs4apNwPOoh8P13lM/lBTFcupqrMIaUcbz
+         wndX+ZFPWjh4rF+GSahUVMlv0RwU7wueaoz4I=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Zhao Lei <zhaolei@cn.fujitsu.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
        Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 04/19] trace_workqueue: remove blank line between each cpu
-Date: Thu, 30 Apr 2009 02:27:05 +0200
-Message-Id: <1241051240-4280-5-git-send-email-fweisbec@gmail.com>
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 06/19] tracing/workqueue: turn cpu_workqueue_stats::inserted into unsigned int
+Date: Thu, 30 Apr 2009 02:27:07 +0200
+Message-Id: <1241051240-4280-7-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1241051240-4280-1-git-send-email-fweisbec@gmail.com>
 References: <1241051240-4280-1-git-send-email-fweisbec@gmail.com>
@@ -35,70 +35,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Zhaolei <zhaolei@cn.fujitsu.com>
+struct cpu_workqueue_stats used an atomic_t to protect against
+concurrent incrementation of inserted worklets. But
+trace_workqueue_insertion() is already inside a section protected
+by the cpu workqueue lock.
 
-The blankline between each cpu's workqueue stat is not necessary, because
-the cpu number is enough to part them by eye.
-Old style also caused a blankline below headline, and made code complex
-by using lock, disableirq and get cpu var.
+Then we can safely convert it into an unsigned int.
 
-Old style:
- # CPU  INSERTED  EXECUTED   NAME
- # |      |         |          |
+[ Impact: cleanup ]
 
-   0   8644       8644       events/0
-   0      0          0       cpuset
-   ...
-   0      1          1       kdmflush
-
-   1  35365      35365       events/1
-   ...
-
-New style:
- # CPU  INSERTED  EXECUTED   NAME
- # |      |         |          |
-
-   0   8644       8644       events/0
-   0      0          0       cpuset
-   ...
-   0      1          1       kdmflush
-   1  35365      35365       events/1
-   ...
-
-[ Impact: provide more readable code ]
-
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+Reported-by: Oleg Nesterov <oleg@redhat.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Zhao Lei <zhaolei@cn.fujitsu.com>
 Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Tom Zanussi <tzanussi@gmail.com>
 Cc: Oleg Nesterov <oleg@redhat.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- kernel/trace/trace_workqueue.c |    7 -------
- 1 files changed, 0 insertions(+), 7 deletions(-)
+ kernel/trace/trace_workqueue.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
-index 890974a..97fcea4 100644
+index 1a68b5a..7c632b9 100644
 --- a/kernel/trace/trace_workqueue.c
 +++ b/kernel/trace/trace_workqueue.c
-@@ -185,16 +185,9 @@ static void *workqueue_stat_next(void *prev, int idx)
- static int workqueue_stat_show(struct seq_file *s, void *p)
- {
- 	struct cpu_workqueue_stats *cws = p;
--	unsigned long flags;
--	int cpu = cws->cpu;
- 	struct pid *pid;
- 	struct task_struct *tsk;
+@@ -20,7 +20,7 @@ struct workfunc_stats {
  
--	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
--	if (&cws->list == workqueue_cpu_stat(cpu)->list.next)
--		seq_printf(s, "\n");
--	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
--
- 	pid = find_get_pid(cws->pid);
- 	if (pid) {
- 		tsk = get_pid_task(pid, PIDTYPE_PID);
+ 	/* Addr of worklet's callback function */
+ 	work_func_t			func;
+-	/* Can be inserted from interrupt or user context, need to be atomic */
++	/* Can be inserted on different workqueues, need to be atomic */
+ 	atomic_t			inserted;
+ 	/*
+ 	 * Don't need to be atomic, works are serialized in a single workqueue
+@@ -34,8 +34,8 @@ struct cpu_workqueue_stats {
+ 	struct list_head            list;
+ 	int		            cpu;
+ 	pid_t			    pid;
+-	/* Refer to comments of struct workfunc_stats for detail */
+-	atomic_t	            inserted;
++	/* Protected by cpu workqueue lock */
++	unsigned int	            inserted;
+ 	unsigned int		    executed;
+ 	/* list of struct workfunc_stats in this workqueue */
+ 	struct list_head            workfunclist;
+@@ -62,7 +62,7 @@ int do_workqueue_insertion(struct cpu_workqueue_stats *cws,
+ {
+ 	struct workfunc_stats *wfstat;
+ 
+-	atomic_inc(&cws->inserted);
++	cws->inserted++;
+ 
+ 	list_for_each_entry(wfstat, &cws->workfunclist, list)
+ 		if (wfstat->func == work->func)
+@@ -311,7 +311,7 @@ static int workqueue_stat_show(struct seq_file *s, void *p)
+ 			if (tsk) {
+ 				seq_printf(s, "%3d %6d     %6u       %s:%d\n",
+ 					   cws->cpu,
+-					   atomic_read(&cws->inserted),
++					   cws->inserted,
+ 					   cws->executed,
+ 					   tsk->comm,
+ 					   cws->pid);
 -- 
 1.6.2.3
 
