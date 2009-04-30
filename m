@@ -1,81 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbZD3XRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528AbZD3XdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757967AbZD3XRz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 19:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbZD3XRq
+	id S1751528AbZD3XdT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 19:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbZD3XdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 19:17:46 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:46662 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbZD3XRp convert rfc822-to-8bit (ORCPT
+	Thu, 30 Apr 2009 19:33:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50965 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750799AbZD3XdB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 19:17:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=NO2Wrs2jQqmBCTgoHKit3M6T2W/jB5teJh6W5USh4/yD2vQ5UgAw9DjEDDtL79d3OD
-         A46tkdJQjZouBQdZh1xGuAa2iOn5KoMOGGptZuCbiuzk72fD/Z7NKzfWGPjSCpvzhbbs
-         FaP9huR7lKGMpKiG3ascUpAOgIHMwJJAi8aEE=
-MIME-Version: 1.0
-In-Reply-To: <72dbd3150904241845q5ed1fe15ob4fa2ba06e96ea72@mail.gmail.com>
-References: <874ozu2hcl.fsf@divinity.mikat.iki.fi> <20090310101807.GD20716@alberich.amd.com> 
-	<20090311100525.GE20716@alberich.amd.com> <49B7A79A.6090008@msgid.tls.msk.ru> 
-	<87ocw8qfwg.fsf@divinity.mikat.iki.fi> <49C919B9.70302@msgid.tls.msk.ru> 
-	<72dbd3150904241845q5ed1fe15ob4fa2ba06e96ea72@mail.gmail.com>
-From: David Rees <drees76@gmail.com>
-Date: Thu, 30 Apr 2009 16:17:23 -0700
-Message-ID: <72dbd3150904301617i1fb69083u301162bbcd4bf5b6@mail.gmail.com>
-Subject: Re: Slow clock on AMD 740G chipset
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Mika Tiainen <mikat@iki.fi>, Andreas Herrmann <andreas.herrmann3@amd.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 30 Apr 2009 19:33:01 -0400
+Date: Thu, 30 Apr 2009 16:29:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Fenghua Yu <fenghua.yu@intel.com>
+Cc: dwmw2@infradead.org, mingo@elte.hu, torvalds@linux-foundation.org,
+       weidong.han@intel.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH] Intel IOMMU Pass Through Support
+Message-Id: <20090430162905.d232be29.akpm@linux-foundation.org>
+In-Reply-To: <20090416001957.GA1527@linux-os.sc.intel.com>
+References: <20090327212241.234500000@intel.com>
+	<20090327212321.070229000@intel.com>
+	<20090416001957.GA1527@linux-os.sc.intel.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 6:45 PM, David Rees <drees76@gmail.com> wrote:
-> On Tue, Mar 24, 2009 at 10:34 AM, Michael Tokarev <mjt@tls.msk.ru> wrote:
->> To refresh what has been said.  Several people observed slow clock
->> on their - mostly AMD 780g, 740g and 690g-based systems with 2.6.28
->> 2.6.27 kernels.  Slow to a point when ntpd wasn't successful to
->> keep up with the drift.  It has been said that the motherboards are
->> flaky or something and that the clocks has to be calibrated, for
->> which there are known procedures available (adjtimex).  Which helped.
->> Before the "calibration" the clock were off by ~15 minutes per day.
->
-> This is really weird.  I earlier posted to the thread saying things
-> were fine on a Fedora 10 2.6.27.9-159.fc10.x86_64 kernel.
->
-> Then mysteriously after a machine reboot to install new hardware[1] on
-> March 27th on kernel 2.6.27.19-170.2.35.fc10.x86_64 (previous running
-> kernel was the same), the clock started running slow to the tune of
-> ntpd resetting the time every 15-18 minutes forward about 2.3 seconds.
->
-> Fast forward to today (now running 2.6.29.1-30.fc10.x86_64) and the
-> clock is still running slow.
->
-> I don't know - my system (GA-MA74GM-S2 mobo) is still broken.
->
-> [1] So the hardware I installed was a SATA SSD (OCZ Vertex). Ever
-> since then, the clock has been running fast.  Previously, the only
-> thing on the SATA bus was a DVD drive - it has two IDE drives, one
-> plugged in on board and the other into a Promise IDE card.
->
-> When doing so, the sata ports are now running in AHCI mode instead of
-> native mode.  I'll have to try switching later.
+On Wed, 15 Apr 2009 17:19:57 -0700
+Fenghua Yu <fenghua.yu@intel.com> wrote:
 
-Another update.  Two nights ago I set the SATA ports in IDE mode to
-try to flash the OCZ Vertex to the latest firmware 1370, previously
-running 1275 (The flash failed as the flashing utility could not
-detect the drives in the system).  Clock still ran slow.  Last night,
-I succeeded in flashing the drive after putting it in another system.
+> The patch adds kernel parameter intel_iommu=pt to set up pass through mode in
+> context mapping entry. This disables DMAR in linux kernel; but KVM still runs on
+> VT-d and interrupt remapping still works.
+> 
+> In this mode, kernel uses swiotlb for DMA API functions but other VT-d
+> functionalities are enabled for KVM. KVM always uses multi level translation
+> page table in VT-d. By default, pass though mode is disabled in kernel.
+> 
+> This is useful when people don't want to enable VT-d DMAR in kernel but still
+> want to use KVM and interrupt remapping for reasons like DMAR performance
+> concern or debug purpose.
+> 
 
-Since then, the clock has been keeping time very well - at least it's
-not losing 2-3 seconds every 15 minutes.
+The patch is now in linux-next and broke my build.
 
-So is it possible for a SATA drive to somehow affect the speed of the clock?
+arch/x86/built-in.o: In function `iommu_setup':
+arch/x86/kernel/pci-dma.c:215: undefined reference to `iommu_pass_through'
+arch/x86/built-in.o: In function `pci_swiotlb_init':
+arch/x86/kernel/pci-swiotlb.c:74: undefined reference to `iommu_pass_through'
 
--Dave
+Because iommu_pass_through is defined in drivers/pci/intel-iommu.c and
+
+# CONFIG_DMAR is not set
+
+I'll need to cook up some local hack to work around that.
+
+
+
+Also, the patch in linux-next (but not the one which I'm replying to
+here does:
+
+: --- a/arch/x86/kernel/pci-dma.c
+: +++ b/arch/x86/kernel/pci-dma.c
+: @@ -160,6 +160,8 @@ again:
+:         return page_address(page);
+:  }
+:  
+: +extern int iommu_pass_through;
+: +
+
+Which is wrong and unnecessary - the variable was already declared in a
+header file.
+
+scripts/checkpatch.pl would have warned you about this error, but
+apparently neither you nor the people who reviewed or merged the patch
+bother to use it.
+
