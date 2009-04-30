@@ -1,77 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764054AbZD3OKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763725AbZD3OMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764054AbZD3OKk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 10:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763998AbZD3OKI
+	id S1763725AbZD3OMd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 10:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932117AbZD3OMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 10:10:08 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:20734 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763960AbZD3OKH (ORCPT
+	Thu, 30 Apr 2009 10:12:07 -0400
+Received: from ru.mvista.com ([213.79.90.228]:4179 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932123AbZD3OMG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 10:10:07 -0400
-Message-ID: <49F9B13C.3060008@monstr.eu>
-Date: Thu, 30 Apr 2009 16:10:04 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Thu, 30 Apr 2009 10:12:06 -0400
+Date: Thu, 30 Apr 2009 18:10:13 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       linux-next@vger.kernel.org
+Subject: Re: Next April 28: boot failure on PowerPC with SLQB
+Message-ID: <20090430141013.GA17480@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090430041146.GB23746@wotan.suse.de> <49F938E4.2030703@in.ibm.com> <20090430064127.GF23746@wotan.suse.de> <49F973A0.8070106@in.ibm.com> <20090430103528.GA6900@wotan.suse.de> <1241087884.19252.5.camel@penberg-laptop> <20090430210004.05a61841.sfr@canb.auug.org.au> <20090430111825.GC6900@wotan.suse.de> <1241090429.19252.7.camel@penberg-laptop> <20090430130542.GF6900@wotan.suse.de>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       john.williams@petalogix.com
-Subject: Re: [PATCH 29/30] microblaze_mmu_v1: stat.h MMU update
-References: <1240821139-7247-23-git-send-email-monstr@monstr.eu> <200904271447.40984.arnd@arndb.de> <49F5A9A8.8010306@monstr.eu> <200904301553.47556.arnd@arndb.de>
-In-Reply-To: <200904301553.47556.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20090430130542.GF6900@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Monday 27 April 2009, Michal Simek wrote:
->> Arnd Bergmann wrote:
->>> On Monday 27 April 2009, Michal Simek wrote:
->>>>> st_size represents an off_t in user space, which is signed.
->>>>> Just over half the existing architectures use signed types
->>>>> for st_size, but for this (like Sam's suggestion for __u64),
->>>>> I don't think it matters either way.
->>>> OK. Is it mean that your structure is perfect? If yes,
->>>> I'll recompile toolchain and do some more tests. 
->>> Please wait for my full patches, which I am about to
->>> post. I hope to get to the stage where literally none
->>> of the ABI is defined in your own header files but
->>> it all gets into the generic parts. I hope to get this
->>> out within a few hours.
->> OK.
+On Thu, Apr 30, 2009 at 03:05:42PM +0200, Nick Piggin wrote:
+[...]
+> ---
+> SLQB: fix dumb early allocation cache
 > 
-> Any success so far with the patches I posted? I guess you
-> need to apply just the first of the three microblaze patches
-> in the series first to see if that works, before changing
-> the signal handling and syscall table as well.
+> The dumb early allocation cache had a bug where it could allow allocation
+> to go past the end of a page, which could cause crashes or random memory
+> corruption. Fix this and simplify the logic.
+> 
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> ---
+>  mm/slqb.c |   19 +++++++++++--------
+>  1 file changed, 11 insertions(+), 8 deletions(-)
+> 
+> Index: linux-2.6/mm/slqb.c
+> ===================================================================
+> --- linux-2.6.orig/mm/slqb.c
+> +++ linux-2.6/mm/slqb.c
+> @@ -2185,8 +2185,11 @@ static void *kmem_cache_dyn_array_alloc(
+>  {
+>  	size_t size = sizeof(void *) * ids;
+>  
+> +	BUG_ON(!size);
+> +
+>  	if (unlikely(!slab_is_available())) {
+>  		static void *nextmem;
+> +		static size_t nextleft;
+>  		void *ret;
+>  
+>  		/*
+> @@ -2194,16 +2197,16 @@ static void *kmem_cache_dyn_array_alloc(
+>  		 * never get freed by definition so we can do it rather
+>  		 * simply.
+>  		 */
+> -		if (!nextmem) {
+> -			nextmem = alloc_pages_exact(size, GFP_KERNEL);
+> -			if (!nextmem)
+> -				return NULL;
+> +		if (size > nextleft) {
+> +                        nextmem = alloc_pages_exact(size, GFP_KERNEL);
+> +                        if (!nextmem)
+> +                                return NULL;
 
-I looked at there are two things together. Header cleanup and syscall cleanup.
-For both I have problems.
-1. header cleanup -> some of them is only moving to generic location -> that's no problem
-2. header cleanup -> some of them is pain because I have to recompile toolchain
-that's should be a big deal but after recompilation kernel, user apps I am getting some problems.
-3. syscall cleanup -> we still have old libc and I can't simple remove ancient syscalls
+Cosmetic issue: spaces instead of tabs are used on these
+three lines.
 
-I would like to test all of them but I can't do too fast.
-I am trying to cleanup uaccess.h troubles and I have some changes about context switch change
-but this work only on MMU and I haven't had a time to fix it on noMMU.
-I am fighting with old code where I don't have any information about.
-
-I have your changes in my queue and they inspired me to do things better and I hope that
-I will be able to use all of them.
-
-Thanks,
-Michal
-
-
-> 	Arnd <><
-
+> +			nextleft = roundup(size, PAGE_SIZE);
+>  		}
+> +
+>  		ret = nextmem;
+> -		nextmem = (void *)((unsigned long)ret + size);
+> -		if ((unsigned long)ret >> PAGE_SHIFT !=
+> -				(unsigned long)nextmem >> PAGE_SHIFT)
+> -			nextmem = NULL;
+> +		nextleft -= size;
+> +		nextmem += size;
+>  		memset(ret, 0, size);
+>  		return ret;
+>  	} else {
 
 -- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
