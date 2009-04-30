@@ -1,89 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756992AbZD3UXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbZD3UXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756992AbZD3UXI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 16:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbZD3UWy
+	id S1758873AbZD3UXf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 16:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbZD3UX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 16:22:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54176 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753344AbZD3UWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 16:22:53 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [PATCH v2] crypto: catch base cipher self-test failures in fips mode
-Date: Thu, 30 Apr 2009 16:21:56 -0400
-User-Agent: KMail/1.11.2 (Linux/2.6.29.1-102.fc11.x86_64; KDE/4.2.2; x86_64; ; )
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Neil Horman <nhorman@tuxdriver.com>
-References: <200904282111.52074.jarod@redhat.com> <20090429132646.GA17481@gondor.apana.org.au> <200904290934.32404.jarod@redhat.com>
-In-Reply-To: <200904290934.32404.jarod@redhat.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Thu, 30 Apr 2009 16:23:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53505 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754539AbZD3UXZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 16:23:25 -0400
+Date: Thu, 30 Apr 2009 13:18:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: linux-kernel@vger.kernel.org, mchehab@infradead.org, linux-dvb@linuxtv.org
+Subject: Re: [PATCH] dvb-core: Fix potential mutex_unlock without mutex_lock
+ in dvb_dvr_read
+Message-Id: <20090430131818.d8aded42.akpm@linux-foundation.org>
+In-Reply-To: <49F0A61D.1010002@simon.arlott.org.uk>
+References: <49F0A61D.1010002@simon.arlott.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904301621.57298.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 April 2009 09:34:31 Jarod Wilson wrote:
-> On Wednesday 29 April 2009 09:26:46 Herbert Xu wrote:
-> > On Wed, Apr 29, 2009 at 09:18:37AM -0400, Jarod Wilson wrote:
-> > > On Wednesday 29 April 2009 09:15:07 Herbert Xu wrote:
-> > > > On Tue, Apr 28, 2009 at 09:11:51PM -0400, Jarod Wilson wrote:
-> > > > >
-> > > > > +notest:
-> > > > > +	printk(KERN_INFO "alg: No test for %s (%s)\n", alg, driver);
-> > > > 
-> > > > Can notest ever get here with rc != 0?
-> > > 
-> > > Nope.
-> > 
-> > So why do we need to move it?
+On Thu, 23 Apr 2009 18:32:13 +0100
+Simon Arlott <simon@fire.lp0.eu> wrote:
+
+> dvb_dvr_read may unlock the dmxdev mutex and return -ENODEV,
+> except this function is a file op and will never be called
+> with the mutex held.
 > 
-> Oh. Hrm. Upon looking a bit harder at it, I think the only reason
-> would be if we wanted to print out a message claiming success in
-> testing ctr(aes).
+> There's existing mutex_lock and mutex_unlock around the actual
+> read but it's commented out. These should probably be uncommented
+> but the read blocks and this could block another non-blocking
+> reader on the mutex instead.
 > 
-> There's also a devious ulterior motive for this patch, which is
-> to make the cryptodev tree look identical(er) to the Red Hat
-> Enterprise Linux 5.x kernel tree w/in alg_test()...
+> This change comments out the extra mutex_unlock.
+> 
+> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+> ---
+> This has been on my TODO list for far too long... I did come
+> up with a mutex_trylock/mutex_lock_interruptible version but
+> claiming that it'll block when it may not doesn't make sense
+> (and any blocking read would cause all non-blocking reads to
+> continually return -EWOULDBLOCK until there is data).
+> 
+>  drivers/media/dvb/dvb-core/dmxdev.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/media/dvb/dvb-core/dmxdev.c b/drivers/media/dvb/dvb-core/dmxdev.c
+> index c35fbb8..d6d098a 100644
+> --- a/drivers/media/dvb/dvb-core/dmxdev.c
+> +++ b/drivers/media/dvb/dvb-core/dmxdev.c
+> @@ -247,7 +247,7 @@ static ssize_t dvb_dvr_read(struct file *file, char __user *buf, size_t count,
+>  	int ret;
+>  
+>  	if (dmxdev->exit) {
+> -		mutex_unlock(&dmxdev->mutex);
+> +		//mutex_unlock(&dmxdev->mutex);
+>  		return -ENODEV;
+>  	}
 
-Version 2, streamlined and simplified, RHEL5 be damned.
+Is there any value in retaining all the commented-out lock operations,
+or can we zap 'em?
 
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
-
----
- crypto/testmgr.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-index 0161cc2..f39c148 100644
---- a/crypto/testmgr.c
-+++ b/crypto/testmgr.c
-@@ -2220,7 +2220,8 @@ int alg_test(const char *driver, const char *alg, u32 type, u32 mask)
- 		if (i < 0)
- 			goto notest;
+--- a/drivers/media/dvb/dvb-core/dmxdev.c~dvb-core-fix-potential-mutex_unlock-without-mutex_lock-in-dvb_dvr_read-fix
++++ a/drivers/media/dvb/dvb-core/dmxdev.c
+@@ -244,19 +244,13 @@ static ssize_t dvb_dvr_read(struct file 
+ {
+ 	struct dvb_device *dvbdev = file->private_data;
+ 	struct dmxdev *dmxdev = dvbdev->priv;
+-	int ret;
  
--		return alg_test_cipher(alg_test_descs + i, driver, type, mask);
-+		rc = alg_test_cipher(alg_test_descs + i, driver, type, mask);
-+		goto test_done;
- 	}
+-	if (dmxdev->exit) {
+-		//mutex_unlock(&dmxdev->mutex);
++	if (dmxdev->exit)
+ 		return -ENODEV;
+-	}
  
- 	i = alg_find_test(alg);
-@@ -2229,6 +2230,7 @@ int alg_test(const char *driver, const char *alg, u32 type, u32 mask)
+-	//mutex_lock(&dmxdev->mutex);
+-	ret = dvb_dmxdev_buffer_read(&dmxdev->dvr_buffer,
+-				     file->f_flags & O_NONBLOCK,
+-				     buf, count, ppos);
+-	//mutex_unlock(&dmxdev->mutex);
+-	return ret;
++	return dvb_dmxdev_buffer_read(&dmxdev->dvr_buffer,
++				      file->f_flags & O_NONBLOCK,
++				      buf, count, ppos);
+ }
  
- 	rc = alg_test_descs[i].test(alg_test_descs + i, driver,
- 				      type, mask);
-+test_done:
- 	if (fips_enabled && rc)
- 		panic("%s: %s alg self test failed in fips mode!\n", driver, alg);
- 
+ static int dvb_dvr_set_buffer_size(struct dmxdev *dmxdev,
+_
 
-
--- 
-Jarod Wilson
-jarod@redhat.com
