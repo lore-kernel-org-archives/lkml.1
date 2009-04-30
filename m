@@ -1,69 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763706AbZD3OBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763112AbZD3OEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763706AbZD3OBf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 10:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763407AbZD3OA7
+	id S1763112AbZD3OEU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 10:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZD3OEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 10:00:59 -0400
-Received: from ultra7.eskimo.com ([204.122.16.70]:4496 "EHLO ultra7.eskimo.com"
+	Thu, 30 Apr 2009 10:04:01 -0400
+Received: from mga03.intel.com ([143.182.124.21]:6268 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763351AbZD3OA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 10:00:58 -0400
-Date: Thu, 30 Apr 2009 07:00:16 -0700
-From: Elladan <elladan@eskimo.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Elladan <elladan@eskimo.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, tytso@mit.edu,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
-Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
-Message-ID: <20090430140016.GB31807@eskimo.com>
-References: <20090428044426.GA5035@eskimo.com> <20090428192907.556f3a34@bree.surriel.com> <1240987349.4512.18.camel@laptop> <20090429114708.66114c03@cuia.bos.redhat.com> <20090430072057.GA4663@eskimo.com> <49F9A2B6.6070801@redhat.com>
+	id S1752593AbZD3OEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 10:04:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,273,1239001200"; 
+   d="scan'208";a="137733466"
+Date: Thu, 30 Apr 2009 22:03:24 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Matt Mackall <mpm@selenic.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] use GFP_NOFS in kernel_event()
+Message-ID: <20090430140324.GA12033@localhost>
+References: <20090430020004.GA1898@localhost> <20090429191044.b6fceae2.akpm@linux-foundation.org> <1241097573.6020.7.camel@localhost.localdomain> <20090430134821.GB8644@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49F9A2B6.6070801@redhat.com>
+In-Reply-To: <20090430134821.GB8644@localhost>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 09:08:06AM -0400, Rik van Riel wrote:
-> Elladan wrote:
->
->>> Elladan, does this smaller patch still work as expected?
->
->> The system does seem relatively responsive with this patch for the most part,
->> with occasional lag.  I don't see much evidence at least over the course of a
->> few minutes that it pages out applications significantly.  It seems about
->> equivalent to the first patch.
->
-> OK, good to hear that.
->
->> This seems ok (not disastrous, anyway).  I suspect desktop users would
->> generally prefer the VM were extremely aggressive about keeping their
->> executables paged in though, 
->
-> I agree that desktop users would probably prefer something even
-> more aggressive.  However, we do need to balance this against
-> other workloads, where inactive file pages need to be given a
-> fair chance to be referenced twice and promoted to the active
-> file list.
->
-> Because of that, I have chosen a patch with a minimal risk of
-> regressions on any workload.
+On Thu, Apr 30, 2009 at 09:48:21PM +0800, Wu Fengguang wrote:
+> On Thu, Apr 30, 2009 at 09:19:33PM +0800, Eric Paris wrote:
+> > inotify: lockdep annotation when watch being removed
+> > 
+> > From: Eric Paris <eparis@redhat.com>
+> > 
+> > When a dentry is being evicted from memory pressure, if the inode associated
+> > with that dentry has i_nlink == 0 we are going to drop all of the watches and
+> > kick everything out.  Lockdep complains that previously holding inotify_mutex
+> > we did a __GFP_FS allocation and now __GFP_FS reclaim is taking that lock.
+> > There is no deadlock or danger, since we know on this code path we are
+> > actually cleaning up and evicting everything.  So we move the lock into a new
+> > class for clean up.
+> 
+> I can reproduce the bug and hence confirm that this patch works, so
+> 
+> Tested-by: Wu Fengguang <fengguang.wu@intel.com>
 
-I agree, this seems to work well as a bugfix, for a general purpose system.
+btw, I really see no point to have one GFP_KERNEL and one GFP_NOFS
+sitting side by side inside kernel_event(). So this patch?
 
-I'm just not sure that a general-purpose page replacement algorithm actually
-serves most desktop users well.  I remember using some kludges back in the
-2.2/2.4 days to try to force eviction of application pages when my system was
-low on ram on occasion, but for desktop use that naive VM actually seemed
-to generally have fewer latency problems.
+---
+inotify: use consistent GFP_KERNEL in kernel_event()
 
-Plus, since hard disks haven't been improving in speed (except for the surge in
-SSDs), but RAM and CPU have been increasing dramatically, any paging or
-swapping activity just becomes more and more noticeable.
+kernel_event() has side by side kmem_cache_alloc(GFP_NOFS)
+and kmalloc(GFP_KERNEL). Change to consistent GFP_KERNELs.
 
-Thanks,
-Elladan
+cc: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ fs/notify/inotify/inotify_user.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+--- mm.orig/fs/notify/inotify/inotify_user.c
++++ mm/fs/notify/inotify/inotify_user.c
+@@ -189,7 +189,7 @@ static struct inotify_kernel_event * ker
+ {
+ 	struct inotify_kernel_event *kevent;
+ 
+-	kevent = kmem_cache_alloc(event_cachep, GFP_NOFS);
++	kevent = kmem_cache_alloc(event_cachep, GFP_KERNEL);
+ 	if (unlikely(!kevent))
+ 		return NULL;
+ 
