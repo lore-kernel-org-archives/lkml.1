@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762743AbZD3VSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762980AbZD3VTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762743AbZD3VSn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 17:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759154AbZD3VSa
+	id S1762980AbZD3VTp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 17:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759520AbZD3VTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 17:18:30 -0400
-Received: from gate.crashing.org ([63.228.1.57]:39071 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756670AbZD3VS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 17:18:29 -0400
-Subject: Re: Porting the ibm_newemac driver to use phylib (and other
- PHY/MAC questions)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kyle Moffett <kyle@moffetthome.net>
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, netdev <netdev@vger.kernel.org>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <f73f7ab80904300804j1f847b70ha0fe3cda07249110@mail.gmail.com>
-References: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
-	 <625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
-	 <f73f7ab80904201710m57472291yf7ff86760977b8e8@mail.gmail.com>
-	 <1240388476.17445.10.camel@pasglop>
-	 <f73f7ab80904300804j1f847b70ha0fe3cda07249110@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 01 May 2009 07:18:11 +1000
-Message-Id: <1241126291.29501.41.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Apr 2009 17:19:35 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:59620 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758808AbZD3VTe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 17:19:34 -0400
+Date: Thu, 30 Apr 2009 17:19:34 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: David VomLehn <dvomlehn@cisco.com>, <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>, <linux-scsi@cuplxvomd02.corp.sa.net>,
+       <netdev@cuplxvomd02.corp.sa.net>
+Subject: Re: [PATCH 1/5] KERNEL: Support asynchronously-discovered boot
+ devices, v4 (resend)
+In-Reply-To: <20090430140559.a2343f7c.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0904301712450.31375-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 30 Apr 2009, Andrew Morton wrote:
 
-> Ok, I've made some progress in the port, but right now I'm trying to
-> puzzle out what the "gpcs" bits in the code are.  From the few
-> publicly available docs and some mailing list posts, the gpcs address
-> appears to be some kind of integrated virtual PHY used when 460GT-ish
-> chips are communicating via an SGMII bus.  My current plan of action
-> is to separate the "gpcs" out into a separate PHY device controlled by
-> the emac code.
+> Please do sort out your email issues - this patchset came dribbled out
+> over a many-hour period with somewhat random cc's on each one, making
+> it all quite hard to discuss in any sensible way.
 
-Well... GPCS is indeed some kind of internal PHY if you like but it's
-not MDIO controlled and I don't really see a need to move it to the
-phylib as it's so specific to the NIC itself. But if you think it cleans
-the code up significantly... There are also some subtle differences in
-how the NIC is programmed when using GPCS vs. xMII
+David, my email works fine.  If you want, you can send the patches to 
+me and I'll relay them to everyone else.
 
-> I'm also curious about the intent of the "mdio_instance" pointer (IE:
-> the "mdio-device" property).  Is that used when all the PHY devices
-> are attached to the MDIO bus of only one of the (multiple) emac
-> devices? 
+> On Wed, 29 Apr 2009 18:45:30 -0700
+> David VomLehn <dvomlehn@cisco.com> wrote:
+> 
+> > This patch adds synchronization infrastructure between asynchronous device
+> > discovery and code that uses possibly asynchronous discovered devices at
+> > boot time. It provides the framework to fix race conditions, such as for
+> > the console, that have arisen as a result of quite successful work that has
+> > been done to reduce boot times.
+> 
+> Although I haven't read them yet, the patches themselves look very
+> nice - cleanly coded, carefully explained and well documented.  Easy to merge.
+> 
+> Unfortunately I don't know who you should have sent them to - nobody
+> really owns this stuff and it agglomerates over time as a result of
+> drive-by bandaiding by whoever happens to have a problem at the time.
+> 
+> I guess that means you should send them to me ;)
+> 
+> What would help things along here would be if you were to better
+> provide a description of what problem this all solves.  Presumably
+> there are scenarios where the kernel does something bad, and this
+> patchset fixes it.  Well, please describe some of these scenarios in
+> sufficient detail, and explain to us how the patch fixes them?
+> 
+> I'm a bit queazy over the whole "bootdev" name.  To me, a bootdev is
+> the storage device which we boot off: usually a spinning disk
+> containing grub.conf, bzImage, etc.    So I need to remember that
+> 
+> > +Boot devices are those devices that must be used or configured during the
+> > +boot process.
+> 
+> I wonder if we can think of something more new ad unique.  startupdev?  yuk.
 
-It's common especially on older SoCs using EMAC to have only one of
-the EMAC instance with an MDIO bus for configuring the PHYs. This is one
-of the reasons why I have the mutex in the low level MDIO access
-routines since 2 EMACs can try to talk to the same MDIO, and this is the
-problem I had with phylib back then which was doing everything in atomic
-contexts.
+Initdev?  Or does that mean something else also?
 
-> What keeps the emac_instance pointed
-> to by the "mdio_instance" from going away while the other emac chipset
-> is using it?
+Really, these are devices that we want to have working before starting
+up any userspace processes.  These would be the console device(s) (so
+that the first process has open files for its stdin, stdout, and
+stderr) and the block device containing the root filesystem (if the
+initramfs image doesn't make its own arrangements).
 
-Nothing other than those are all in a SoC and so generally don't do
-hotplug, but I suppose that with things like kvm which could potentially
-hotplug devices between partitions, one would have to get a bit more
-careful.
- 
-> In either case, I plan to have the device actually holding the MDIO
-> bus run the mdiobus_alloc() and mdiobus_register() functions, then the
-> other emac instance will simply take a reference to that MDIO bus
-> (which would also pin down the emac instance that owns it).
-
-Sounds good at first.
-
-Cheers,
-Ben.
-
+Alan Stern
 
