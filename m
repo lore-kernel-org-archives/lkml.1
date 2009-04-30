@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765004AbZD3RMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765382AbZD3RQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765004AbZD3RMa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 13:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764288AbZD3RH2
+	id S1765382AbZD3RQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 13:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764499AbZD3RHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 13:07:28 -0400
-Received: from kroah.org ([198.145.64.141]:56226 "EHLO coco.kroah.org"
+	Thu, 30 Apr 2009 13:07:37 -0400
+Received: from kroah.org ([198.145.64.141]:56302 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764174AbZD3RHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 13:07:21 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:40 2009
-Message-Id: <20090430165740.067797234@mini.kroah.org>
+	id S1764043AbZD3RH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 13:07:29 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Apr 30 09:57:41 2009
+Message-Id: <20090430165741.283209659@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 30 Apr 2009 09:56:01 -0700
+Date: Thu, 30 Apr 2009 09:56:09 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,11 +26,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
-       David Brownell <dbrownell@users.sourceforge.net>,
+       Etienne Basset <etienne.basset@numericable.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 12/88] USB: gadget: fix rndis regression
+Subject: [patch 20/88] security/smack: fix oops when setting a size 0 SMACK64 xattr
 References: <20090430165549.117010404@mini.kroah.org>
-Content-Disposition: inline; filename=0011-USB-gadget-fix-rndis-regression.patch
+Content-Disposition: inline; filename=0001-security-smack-fix-oops-when-setting-a-size-0-SMACK.patch
 In-Reply-To: <20090430170122.GA16015@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,41 +41,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+From: Etienne Basset <etienne.basset@numericable.fr>
 
-upstream commit: 090b90118207e786d2990310d063fda5d52cce6e
+upstream commit: 4303154e86597885bc3cbc178a48ccbc8213875f
 
-Restore some code that was wrongly dropped from the RNDIS
-driver, and caused interop problems observed with OpenMoko.
+this patch fix an oops in smack when setting a size 0 SMACK64 xattr eg
+attr -S -s SMACK64  -V '' somefile
+This oops because smk_import_entry treats a 0 length as SMK_MAXLEN
 
-The issue is with hardware which needs help conforming to part
-of the USB 2.0 spec (section 8.5.3.2); some can automagically
-send a ZLP in response to an unexpected IN, but not all chips
-will do that.  We don't need to check the packet length ourselves
-the way earlier code did, since the UDC must already check it.
-But we do need to tell the UDC when it must force a short packet
-termination of the data stage.
-
-(Based on a patch from Aric D. Blumer <aric at sdgsystems.com>)
-
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Cc: stable <stable@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Etienne Basset <etienne.basset@numericable.fr>
+Reviewed-by: James Morris <jmorris@namei.org>
+Acked-by: Casey Schaufler <casey@schaufler-ca.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/gadget/f_rndis.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ security/smack/smack_lsm.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/drivers/usb/gadget/f_rndis.c
-+++ b/drivers/usb/gadget/f_rndis.c
-@@ -437,7 +437,7 @@ invalid:
- 		DBG(cdev, "rndis req%02x.%02x v%04x i%04x l%d\n",
- 			ctrl->bRequestType, ctrl->bRequest,
- 			w_value, w_index, w_length);
--		req->zero = 0;
-+		req->zero = (value < w_length);
- 		req->length = value;
- 		value = usb_ep_queue(cdev->gadget->ep0, req, GFP_ATOMIC);
- 		if (value < 0)
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -604,6 +604,8 @@ static int smack_inode_setxattr(struct d
+ 	    strcmp(name, XATTR_NAME_SMACKIPOUT) == 0) {
+ 		if (!capable(CAP_MAC_ADMIN))
+ 			rc = -EPERM;
++		if (size == 0)
++			rc = -EINVAL;
+ 	} else
+ 		rc = cap_inode_setxattr(dentry, name, value, size, flags);
+ 
+@@ -1360,7 +1362,7 @@ static int smack_inode_setsecurity(struc
+ 	struct socket *sock;
+ 	int rc = 0;
+ 
+-	if (value == NULL || size > SMK_LABELLEN)
++	if (value == NULL || size > SMK_LABELLEN || size == 0)
+ 		return -EACCES;
+ 
+ 	sp = smk_import(value, size);
 
 
