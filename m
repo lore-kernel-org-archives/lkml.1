@@ -1,55 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759935AbZD3UAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756992AbZD3UXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759935AbZD3UAb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 16:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbZD3UAO
+	id S1756992AbZD3UXI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 16:23:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbZD3UWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 16:00:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:40477 "EHLO mail.dvmed.net"
+	Thu, 30 Apr 2009 16:22:54 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54176 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750981AbZD3UAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 16:00:13 -0400
-Message-ID: <49FA0349.3090706@garzik.org>
-Date: Thu, 30 Apr 2009 16:00:09 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1753344AbZD3UWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 16:22:53 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [PATCH v2] crypto: catch base cipher self-test failures in fips mode
+Date: Thu, 30 Apr 2009 16:21:56 -0400
+User-Agent: KMail/1.11.2 (Linux/2.6.29.1-102.fc11.x86_64; KDE/4.2.2; x86_64; ; )
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Neil Horman <nhorman@tuxdriver.com>
+References: <200904282111.52074.jarod@redhat.com> <20090429132646.GA17481@gondor.apana.org.au> <200904290934.32404.jarod@redhat.com>
+In-Reply-To: <200904290934.32404.jarod@redhat.com>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: linux-ide@vger.kernel.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, Mauelshagen@RedHat.com,
-       dm-devel@RedHat.com
-Subject: Re: [PATCHSET] block,scsi,libata: implement alt_size
-References: <1233456951-992-1-git-send-email-tj@kernel.org> <49F902CF.7080307@garzik.org> <49F903DD.8040707@kernel.org>
-In-Reply-To: <49F903DD.8040707@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200904301621.57298.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello,
+On Wednesday 29 April 2009 09:34:31 Jarod Wilson wrote:
+> On Wednesday 29 April 2009 09:26:46 Herbert Xu wrote:
+> > On Wed, Apr 29, 2009 at 09:18:37AM -0400, Jarod Wilson wrote:
+> > > On Wednesday 29 April 2009 09:15:07 Herbert Xu wrote:
+> > > > On Tue, Apr 28, 2009 at 09:11:51PM -0400, Jarod Wilson wrote:
+> > > > >
+> > > > > +notest:
+> > > > > +	printk(KERN_INFO "alg: No test for %s (%s)\n", alg, driver);
+> > > > 
+> > > > Can notest ever get here with rc != 0?
+> > > 
+> > > Nope.
+> > 
+> > So why do we need to move it?
 > 
-> Jeff Garzik wrote:
->> <shrug>  I suppose...
->>
->> It just seems like a nasty hack, but unfortunately I don't see
->> anyone stepping up to do it properly -- with a DM device
->> automatically layered on top that splits the device into separate
->> regions: one block device for the 'regular' area, and one for the
->> HPA.
+> Oh. Hrm. Upon looking a bit harder at it, I think the only reason
+> would be if we wanted to print out a message claiming success in
+> testing ctr(aes).
 > 
-> Isn't that more hacky?  I don't know.  All that dm needs to know is
-> the location of the metadata which is located w.r.t. the end of the
-> device which might be at a different location if BIOS tried to pull
-> silly stunts.  So, exporting the size BIOS might have used seems like
-> a straight forward solution to me.
+> There's also a devious ulterior motive for this patch, which is
+> to make the cryptodev tree look identical(er) to the Red Hat
+> Enterprise Linux 5.x kernel tree w/in alg_test()...
 
-"<shrug> I suppose" is basically a reluctant ack, in the absence of 
-other solutions :)
+Version 2, streamlined and simplified, RHEL5 be damned.
+
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+
+---
+ crypto/testmgr.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index 0161cc2..f39c148 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -2220,7 +2220,8 @@ int alg_test(const char *driver, const char *alg, u32 type, u32 mask)
+ 		if (i < 0)
+ 			goto notest;
+ 
+-		return alg_test_cipher(alg_test_descs + i, driver, type, mask);
++		rc = alg_test_cipher(alg_test_descs + i, driver, type, mask);
++		goto test_done;
+ 	}
+ 
+ 	i = alg_find_test(alg);
+@@ -2229,6 +2230,7 @@ int alg_test(const char *driver, const char *alg, u32 type, u32 mask)
+ 
+ 	rc = alg_test_descs[i].test(alg_test_descs + i, driver,
+ 				      type, mask);
++test_done:
+ 	if (fips_enabled && rc)
+ 		panic("%s: %s alg self test failed in fips mode!\n", driver, alg);
+ 
 
 
+-- 
+Jarod Wilson
+jarod@redhat.com
