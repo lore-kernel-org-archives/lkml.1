@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762453AbZD3L3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762774AbZD3Lag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762453AbZD3L3h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 07:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762289AbZD3L14
+	id S1762774AbZD3Lag (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 07:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762607AbZD3L2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 07:27:56 -0400
-Received: from [212.69.161.110] ([212.69.161.110]:38320 "EHLO
+	Thu, 30 Apr 2009 07:28:55 -0400
+Received: from [212.69.161.110] ([212.69.161.110]:38558 "EHLO
 	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1753837AbZD3L1v (ORCPT
+	with ESMTP id S1762615AbZD3L2t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 07:27:51 -0400
+	Thu, 30 Apr 2009 07:28:49 -0400
 From: Philipp Reisner <philipp.reisner@linbit.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
@@ -23,42 +23,49 @@ Cc: Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
        Bart Van Assche <bart.vanassche@gmail.com>,
        Lars Ellenberg <lars.ellenberg@linbit.com>,
        Philipp Reisner <philipp.reisner@linbit.com>
-Subject: [PATCH 04/16] DRBD: bitmap
-Date: Thu, 30 Apr 2009 13:26:40 +0200
-Message-Id: <1241090812-13516-5-git-send-email-philipp.reisner@linbit.com>
+Subject: [PATCH 14/16] DRBD: tracepoint_probes
+Date: Thu, 30 Apr 2009 13:26:50 +0200
+Message-Id: <1241090812-13516-15-git-send-email-philipp.reisner@linbit.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1241090812-13516-4-git-send-email-philipp.reisner@linbit.com>
+In-Reply-To: <1241090812-13516-14-git-send-email-philipp.reisner@linbit.com>
 References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com>
  <1241090812-13516-2-git-send-email-philipp.reisner@linbit.com>
  <1241090812-13516-3-git-send-email-philipp.reisner@linbit.com>
  <1241090812-13516-4-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-5-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-6-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-7-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-8-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-9-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-10-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-11-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-12-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-13-git-send-email-philipp.reisner@linbit.com>
+ <1241090812-13516-14-git-send-email-philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DRBD maintains a dirty bitmap in case it has to run without peer node or
-without local disk. Writes to the on disk dirty bitmap are minimized by the
-activity log (=AL). Each time an extent is evicted from the AL the part of
-the bitmap no longer covered by the AL is written to disk.
+There are a number of static tracepoints, mainly for debugging purposis.
 
 Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
 Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
 
 ---
-diff --git a/drivers/block/drbd/drbd_bitmap.c b/drivers/block/drbd/drbd_bitmap.c
+diff --git a/drivers/block/drbd/drbd_tracing.h b/drivers/block/drbd/drbd_tracing.h
 new file mode 100644
-index 0000000..c160f7a
+index 0000000..c4531a1
 --- /dev/null
-+++ b/drivers/block/drbd/drbd_bitmap.c
-@@ -0,0 +1,1263 @@
++++ b/drivers/block/drbd/drbd_tracing.h
+@@ -0,0 +1,87 @@
 +/*
-+   drbd_bitmap.c
++   drbd_tracing.h
 +
 +   This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
 +
-+   Copyright (C) 2004-2008, LINBIT Information Technologies GmbH.
-+   Copyright (C) 2004-2008, Philipp Reisner <philipp.reisner@linbit.com>.
-+   Copyright (C) 2004-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
++   Copyright (C) 2003-2008, LINBIT Information Technologies GmbH.
++   Copyright (C) 2003-2008, Philipp Reisner <philipp.reisner@linbit.com>.
++   Copyright (C) 2003-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
 +
 +   drbd is free software; you can redistribute it and/or modify
 +   it under the terms of the GNU General Public License as published by
@@ -73,1244 +80,836 @@ index 0000000..c160f7a
 +   You should have received a copy of the GNU General Public License
 +   along with drbd; see the file COPYING.  If not, write to
 +   the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
++
 + */
 +
-+#include <linux/bitops.h>
-+#include <linux/vmalloc.h>
-+#include <linux/string.h>
-+#include <linux/drbd.h>
++#ifndef DRBD_TRACING_H
++#define DRBD_TRACING_H
++
++#include <linux/tracepoint.h>
 +#include "drbd_int.h"
++#include "drbd_req.h"
 +
-+/* OPAQUE outside this file!
-+ * interface defined in drbd_int.h
-+
-+ * convetion:
-+ * function name drbd_bm_... => used elsewhere, "public".
-+ * function name      bm_... => internal to implementation, "private".
-+
-+ * Note that since find_first_bit returns int, at the current granularity of
-+ * the bitmap (4KB per byte), this implementation "only" supports up to
-+ * 1<<(32+12) == 16 TB...
-+ */
-+
-+/*
-+ * NOTE
-+ *  Access to the *bm_pages is protected by bm_lock.
-+ *  It is safe to read the other members within the lock.
-+ *
-+ *  drbd_bm_set_bits is called from bio_endio callbacks,
-+ *  We may be called with irq already disabled,
-+ *  so we need spin_lock_irqsave().
-+ *  And we need the kmap_atomic.
-+ */
-+struct drbd_bitmap {
-+	struct page **bm_pages;
-+	spinlock_t bm_lock;
-+	/* WARNING unsigned long bm_*:
-+	 * 32bit number of bit offset is just enough for 512 MB bitmap.
-+	 * it will blow up if we make the bitmap bigger...
-+	 * not that it makes much sense to have a bitmap that large,
-+	 * rather change the granularity to 16k or 64k or something.
-+	 * (that implies other problems, however...)
-+	 */
-+	unsigned long bm_set;       /* nr of set bits; THINK maybe atomic_t? */
-+	unsigned long bm_bits;
-+	size_t   bm_words;
-+	size_t   bm_number_of_pages;
-+	sector_t bm_dev_capacity;
-+	struct semaphore bm_change; /* serializes resize operations */
-+
-+	atomic_t bm_async_io;
-+	wait_queue_head_t bm_io_wait;
-+
-+	unsigned long  bm_flags;
-+
-+	/* debugging aid, in case we are still racy somewhere */
-+	char          *bm_why;
-+	struct task_struct *bm_task;
++enum {
++	TRACE_LVL_ALWAYS = 0,
++	TRACE_LVL_SUMMARY,
++	TRACE_LVL_METRICS,
++	TRACE_LVL_ALL,
++	TRACE_LVL_MAX
 +};
 +
-+/* definition of bits in bm_flags */
-+#define BM_LOCKED       0
-+#define BM_MD_IO_ERROR  1
++DECLARE_TRACE(drbd_unplug,
++	TP_PROTO(struct drbd_conf *mdev, char* msg),
++	TP_ARGS(mdev, msg));
 +
-+static inline int bm_is_locked(struct drbd_bitmap *b)
-+{
-+	return test_bit(BM_LOCKED, &b->bm_flags);
-+}
++DECLARE_TRACE(drbd_uuid,
++	TP_PROTO(struct drbd_conf *mdev, enum drbd_uuid_index index),
++	TP_ARGS(mdev, index));
 +
-+#define bm_print_lock_info(m) __bm_print_lock_info(m, __func__)
-+static void __bm_print_lock_info(struct drbd_conf *mdev, const char *func)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	if (!__ratelimit(&drbd_ratelimit_state))
-+		return;
-+	dev_err(DEV, "FIXME %s in %s, bitmap locked for '%s' by %s\n",
-+	    current == mdev->receiver.task ? "receiver" :
-+	    current == mdev->asender.task  ? "asender"  :
-+	    current == mdev->worker.task   ? "worker"   : current->comm,
-+	    func, b->bm_why ?: "?",
-+	    b->bm_task == mdev->receiver.task ? "receiver" :
-+	    b->bm_task == mdev->asender.task  ? "asender"  :
-+	    b->bm_task == mdev->worker.task   ? "worker"   : "?");
-+}
++DECLARE_TRACE(drbd_ee,
++	TP_PROTO(struct drbd_conf *mdev, struct drbd_epoch_entry *e, char* msg),
++	TP_ARGS(mdev, e, msg));
 +
-+void drbd_bm_lock(struct drbd_conf *mdev, char *why)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	int trylock_failed;
++DECLARE_TRACE(drbd_md_io,
++	TP_PROTO(struct drbd_conf *mdev, int rw, struct drbd_backing_dev *bdev),
++	TP_ARGS(mdev, rw, bdev));
 +
-+	if (!b) {
-+		dev_err(DEV, "FIXME no bitmap in drbd_bm_lock!?\n");
-+		return;
-+	}
++DECLARE_TRACE(drbd_epoch,
++	TP_PROTO(struct drbd_conf *mdev, struct drbd_epoch *epoch, enum epoch_event ev),
++	TP_ARGS(mdev, epoch, ev));
 +
-+	trylock_failed = down_trylock(&b->bm_change);
++DECLARE_TRACE(drbd_netlink,
++	TP_PROTO(void *data, int is_req),
++	TP_ARGS(data, is_req));
 +
-+	if (trylock_failed) {
-+		dev_warn(DEV, "%s going to '%s' but bitmap already locked for '%s' by %s\n",
-+		    current == mdev->receiver.task ? "receiver" :
-+		    current == mdev->asender.task  ? "asender"  :
-+		    current == mdev->worker.task   ? "worker"   : current->comm,
-+		    why, b->bm_why ?: "?",
-+		    b->bm_task == mdev->receiver.task ? "receiver" :
-+		    b->bm_task == mdev->asender.task  ? "asender"  :
-+		    b->bm_task == mdev->worker.task   ? "worker"   : "?");
-+		down(&b->bm_change);
-+	}
-+	if (__test_and_set_bit(BM_LOCKED, &b->bm_flags))
-+		dev_err(DEV, "FIXME bitmap already locked in bm_lock\n");
++DECLARE_TRACE(drbd_actlog,
++	TP_PROTO(struct drbd_conf *mdev, sector_t sector, char* msg),
++	TP_ARGS(mdev, sector, msg));
 +
-+	b->bm_why  = why;
-+	b->bm_task = current;
-+}
++DECLARE_TRACE(drbd_bio,
++	TP_PROTO(struct drbd_conf *mdev, const char *pfx, struct bio *bio, int complete,
++		 struct drbd_request *r),
++	TP_ARGS(mdev, pfx, bio, complete, r));
 +
-+void drbd_bm_unlock(struct drbd_conf *mdev)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	if (!b) {
-+		dev_err(DEV, "FIXME no bitmap in drbd_bm_unlock!?\n");
-+		return;
-+	}
++DECLARE_TRACE(drbd_req,
++	TP_PROTO(struct drbd_request *req, enum drbd_req_event what, char *msg),
++	      TP_ARGS(req, what, msg));
 +
-+	if (!__test_and_clear_bit(BM_LOCKED, &mdev->bitmap->bm_flags))
-+		dev_err(DEV, "FIXME bitmap not locked in bm_unlock\n");
++DECLARE_TRACE(drbd_packet,
++	TP_PROTO(struct drbd_conf *mdev, struct socket *sock,
++		 int recv, union p_polymorph *p, char *file, int line),
++	TP_ARGS(mdev, sock, recv, p, file, line));
 +
-+	b->bm_why  = NULL;
-+	b->bm_task = NULL;
-+	up(&b->bm_change);
-+}
++DECLARE_TRACE(_drbd_resync,
++	TP_PROTO(struct drbd_conf *mdev, int level, const char *fmt, va_list args),
++	TP_ARGS(mdev, level, fmt, args));
 +
-+/* word offset to long pointer */
-+STATIC unsigned long *__bm_map_paddr(struct drbd_bitmap *b, unsigned long offset, const enum km_type km)
-+{
-+	struct page *page;
-+	unsigned long page_nr;
++#endif
+diff --git a/drivers/block/drbd/drbd_tracing.c b/drivers/block/drbd/drbd_tracing.c
+new file mode 100644
+index 0000000..2eff178
+--- /dev/null
++++ b/drivers/block/drbd/drbd_tracing.c
+@@ -0,0 +1,762 @@
++/*
++   drbd_tracing.c
 +
-+	/* page_nr = (word*sizeof(long)) >> PAGE_SHIFT; */
-+	page_nr = offset >> (PAGE_SHIFT - LN2_BPL + 3);
-+	BUG_ON(page_nr >= b->bm_number_of_pages);
-+	page = b->bm_pages[page_nr];
++   This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
 +
-+	return (unsigned long *) kmap_atomic(page, km);
-+}
++   Copyright (C) 2003-2008, LINBIT Information Technologies GmbH.
++   Copyright (C) 2003-2008, Philipp Reisner <philipp.reisner@linbit.com>.
++   Copyright (C) 2003-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
 +
-+unsigned long * bm_map_paddr(struct drbd_bitmap *b, unsigned long offset)
-+{
-+	return __bm_map_paddr(b, offset, KM_IRQ1);
-+}
++   drbd is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 2, or (at your option)
++   any later version.
 +
-+void __bm_unmap(unsigned long *p_addr, const enum km_type km)
-+{
-+	kunmap_atomic(p_addr, km);
++   drbd is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with drbd; see the file COPYING.  If not, write to
++   the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
++
++ */
++
++#include <linux/module.h>
++#include <linux/drbd.h>
++#include <linux/ctype.h>
++#include <linux/marker.h>
++#include "drbd_int.h"
++#include "drbd_tracing.h"
++#include <linux/drbd_tag_magic.h>
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Philipp Reisner, Lars Ellenberg");
++MODULE_DESCRIPTION("DRBD tracepoint probes");
++MODULE_PARM_DESC(trace_mask, "Bitmap of events to trace see drbd_tracing.c");
++MODULE_PARM_DESC(trace_level, "Current tracing level (changeable in /sys)");
++MODULE_PARM_DESC(trace_devs, "Bitmap of devices to trace (changeable in /sys)");
++
++unsigned int trace_mask = 0;  /* Bitmap of events to trace */
++int trace_level;              /* Current trace level */
++int trace_devs;		      /* Bitmap of devices to trace */
++
++module_param(trace_mask, uint, 0444);
++module_param(trace_level, int, 0644);
++module_param(trace_devs, int, 0644);
++
++enum {
++	TRACE_PACKET  = 0x0001,
++	TRACE_RQ      = 0x0002,
++	TRACE_UUID    = 0x0004,
++	TRACE_RESYNC  = 0x0008,
++	TRACE_EE      = 0x0010,
++	TRACE_UNPLUG  = 0x0020,
++	TRACE_NL      = 0x0040,
++	TRACE_AL_EXT  = 0x0080,
++	TRACE_INT_RQ  = 0x0100,
++	TRACE_MD_IO   = 0x0200,
++	TRACE_EPOCH   = 0x0400,
 +};
 +
-+void bm_unmap(unsigned long *p_addr)
++/* Buffer printing support
++ * dbg_print_flags: used for Flags arg to drbd_print_buffer
++ * - DBGPRINT_BUFFADDR; if set, each line starts with the
++ *	 virtual address of the line being output. If clear,
++ *	 each line starts with the offset from the beginning
++ *	 of the buffer. */
++enum dbg_print_flags {
++    DBGPRINT_BUFFADDR = 0x0001,
++};
++
++/* Macro stuff */
++STATIC char *nl_packet_name(int packet_type)
 +{
-+	return __bm_unmap(p_addr, KM_IRQ1);
++/* Generate packet type strings */
++#define NL_PACKET(name, number, fields) \
++	[P_ ## name] = # name,
++#define NL_INTEGER Argh!
++#define NL_BIT Argh!
++#define NL_INT64 Argh!
++#define NL_STRING Argh!
++
++	static char *nl_tag_name[P_nl_after_last_packet] = {
++#include "linux/drbd_nl.h"
++	};
++
++	return (packet_type < sizeof(nl_tag_name)/sizeof(nl_tag_name[0])) ?
++	    nl_tag_name[packet_type] : "*Unknown*";
++}
++/* /Macro stuff */
++
++static inline int is_mdev_trace(struct drbd_conf *mdev, unsigned int level)
++{
++	return trace_level >= level && ((1 << mdev_to_minor(mdev)) & trace_devs);
 +}
 +
-+/* long word offset of _bitmap_ sector */
-+#define S2W(s)	((s)<<(BM_EXT_SIZE_B-BM_BLOCK_SIZE_B-LN2_BPL))
-+/* word offset from start of bitmap to word number _in_page_
-+ * modulo longs per page
-+#define MLPP(X) ((X) % (PAGE_SIZE/sizeof(long))
-+ hm, well, Philipp thinks gcc might not optimze the % into & (... - 1)
-+ so do it explicitly:
-+ */
-+#define MLPP(X) ((X) & ((PAGE_SIZE/sizeof(long))-1))
-+
-+/* Long words per page */
-+#define LWPP (PAGE_SIZE/sizeof(long))
-+
-+/*
-+ * actually most functions herein should take a struct drbd_bitmap*, not a
-+ * struct drbd_conf*, but for the debug macros I like to have the mdev around
-+ * to be able to report device specific.
-+ */
-+
-+STATIC void bm_free_pages(struct page **pages, unsigned long number)
++static void probe_drbd_unplug(struct drbd_conf *mdev, char *msg)
 +{
-+	unsigned long i;
-+	if (!pages)
++	if (!is_mdev_trace(mdev, TRACE_LVL_ALWAYS))
 +		return;
 +
-+	for (i = 0; i < number; i++) {
-+		if (!pages[i]) {
-+			printk(KERN_ALERT "drbd: bm_free_pages tried to free "
-+					  "a NULL pointer; i=%lu n=%lu\n",
-+					  i, number);
-+			continue;
-+		}
-+		__free_page(pages[i]);
-+		pages[i] = NULL;
++	dev_info(DEV, "%s, ap_bio_count=%d\n", msg, atomic_read(&mdev->ap_bio_cnt));
++}
++
++static void probe_drbd_uuid(struct drbd_conf *mdev, enum drbd_uuid_index index)
++{
++	static char *uuid_str[UI_EXTENDED_SIZE] = {
++		[UI_CURRENT] = "CURRENT",
++		[UI_BITMAP] = "BITMAP",
++		[UI_HISTORY_START] = "HISTORY_START",
++		[UI_HISTORY_END] = "HISTORY_END",
++		[UI_SIZE] = "SIZE",
++		[UI_FLAGS] = "FLAGS",
++	};
++
++	if (!is_mdev_trace(mdev, TRACE_LVL_ALWAYS))
++		return;
++
++	if (index >= UI_EXTENDED_SIZE) {
++		dev_warn(DEV, " uuid_index >= EXTENDED_SIZE\n");
++		return;
++	}
++
++	dev_info(DEV, " uuid[%s] now %016llX\n",
++		 uuid_str[index],
++		 (unsigned long long)mdev->bc->md.uuid[index]);
++}
++
++static void probe_drbd_md_io(struct drbd_conf *mdev, int rw,
++			     struct drbd_backing_dev *bdev)
++{
++	if (!is_mdev_trace(mdev, TRACE_LVL_ALWAYS))
++		return;
++
++	dev_info(DEV, " %s metadata superblock now\n",
++		 rw == READ ? "Reading" : "Writing");
++}
++
++static void probe_drbd_ee(struct drbd_conf *mdev, struct drbd_epoch_entry *e, char* msg)
++{
++	if (!is_mdev_trace(mdev, TRACE_LVL_ALWAYS))
++		return;
++
++	dev_info(DEV, "EE %s sec=%llus size=%u e=%p\n",
++		 msg, (unsigned long long)e->sector, e->size, e);
++}
++
++static void probe_drbd_epoch(struct drbd_conf *mdev, struct drbd_epoch *epoch,
++			     enum epoch_event ev)
++{
++	static char *epoch_event_str[] = {
++		[EV_PUT] = "put",
++		[EV_GOT_BARRIER_NR] = "got_barrier_nr",
++		[EV_BARRIER_DONE] = "barrier_done",
++		[EV_BECAME_LAST] = "became_last",
++		[EV_TRACE_FLUSH] = "issuing_flush",
++		[EV_TRACE_ADD_BARRIER] = "added_barrier",
++		[EV_TRACE_SETTING_BI] = "just set barrier_in_next_epoch",
++	};
++
++	if (!is_mdev_trace(mdev, TRACE_LVL_ALWAYS))
++		return;
++
++	ev &= ~EV_CLEANUP;
++
++	switch (ev) {
++	case EV_TRACE_ALLOC:
++		dev_info(DEV, "Allocat epoch %p/xxxx { } nr_epochs=%d\n", epoch, mdev->epochs);
++		break;
++	case EV_TRACE_FREE:
++		dev_info(DEV, "Freeing epoch %p/%d { size=%d } nr_epochs=%d\n",
++			 epoch, epoch->barrier_nr, atomic_read(&epoch->epoch_size),
++			 mdev->epochs);
++		break;
++	default:
++		dev_info(DEV, "Update epoch  %p/%d { size=%d active=%d %c%c n%c%c } ev=%s\n",
++			 epoch, epoch->barrier_nr, atomic_read(&epoch->epoch_size),
++			 atomic_read(&epoch->active),
++			 test_bit(DE_HAVE_BARRIER_NUMBER, &epoch->flags) ? 'n' : '-',
++			 test_bit(DE_CONTAINS_A_BARRIER, &epoch->flags) ? 'b' : '-',
++			 test_bit(DE_BARRIER_IN_NEXT_EPOCH_ISSUED, &epoch->flags) ? 'i' : '-',
++			 test_bit(DE_BARRIER_IN_NEXT_EPOCH_DONE, &epoch->flags) ? 'd' : '-',
++			 epoch_event_str[ev]);
 +	}
 +}
 +
-+/*
-+ * "have" and "want" are NUMBER OF PAGES.
-+ */
-+STATIC struct page **bm_realloc_pages(struct page **old_pages,
-+				       unsigned long have,
-+				       unsigned long want)
++static void probe_drbd_netlink(void *data, int is_req)
 +{
-+	struct page **new_pages, *page;
-+	unsigned int i, bytes;
++	struct cn_msg *msg = data;
 +
-+	BUG_ON(have == 0 && old_pages != NULL);
-+	BUG_ON(have != 0 && old_pages == NULL);
++	if (is_req) {
++		struct drbd_nl_cfg_req *nlp = (struct drbd_nl_cfg_req *)msg->data;
 +
-+	if (have == want)
-+		return old_pages;
-+
-+	/* To use kmalloc here is ok, as long as we support 4TB at max...
-+	 * otherwise this might become bigger than 128KB, which is
-+	 * the maximum for kmalloc.
-+	 *
-+	 * no, it is not: on 64bit boxes, sizeof(void*) == 8,
-+	 * 128MB bitmap @ 4K pages -> 256K of page pointers.
-+	 * ==> use vmalloc for now again.
-+	 * then again, we could do something like
-+	 *   if (nr_pages > watermark) vmalloc else kmalloc :*> ...
-+	 * or do cascading page arrays:
-+	 *   one page for the page array of the page array,
-+	 *   those pages for the real bitmap pages.
-+	 *   there we could even add some optimization members,
-+	 *   so we won't need to kmap_atomic in bm_find_next_bit just to see
-+	 *   that the page has no bits set ...
-+	 * or we can try a "huge" page ;-)
-+	 */
-+	bytes = sizeof(struct page *)*want;
-+	new_pages = vmalloc(bytes);
-+	if (!new_pages)
-+		return NULL;
-+
-+	memset(new_pages, 0, bytes);
-+	if (want >= have) {
-+		for (i = 0; i < have; i++)
-+			new_pages[i] = old_pages[i];
-+		for (; i < want; i++) {
-+			page = alloc_page(GFP_HIGHUSER);
-+			if (!page) {
-+				bm_free_pages(new_pages + have, i - have);
-+				vfree(new_pages);
-+				return NULL;
-+			}
-+			new_pages[i] = page;
-+		}
++		printk(KERN_INFO "drbd%d: "
++			 "Netlink: << %s (%d) - seq: %x, ack: %x, len: %x\n",
++			 nlp->drbd_minor,
++			 nl_packet_name(nlp->packet_type),
++			 nlp->packet_type,
++			 msg->seq, msg->ack, msg->len);
 +	} else {
-+		for (i = 0; i < want; i++)
-+			new_pages[i] = old_pages[i];
-+		/* NOT HERE, we are outside the spinlock!
-+		bm_free_pages(old_pages + want, have - want);
-+		*/
-+	}
++		struct drbd_nl_cfg_reply *nlp = (struct drbd_nl_cfg_reply *)msg->data;
 +
-+	return new_pages;
++		printk(KERN_INFO "drbd%d: "
++		       "Netlink: >> %s (%d) - seq: %x, ack: %x, len: %x\n",
++		       nlp->minor,
++		       nlp->packet_type == P_nl_after_last_packet ?
++		       "Empty-Reply" : nl_packet_name(nlp->packet_type),
++		       nlp->packet_type,
++		       msg->seq, msg->ack, msg->len);
++	}
++}
++
++static void probe_drbd_actlog(struct drbd_conf *mdev, sector_t sector, char* msg)
++{
++	unsigned int enr = (sector >> (AL_EXTENT_SIZE_B-9));
++
++	if (!is_mdev_trace(mdev, TRACE_LVL_ALWAYS))
++		return;
++
++	dev_info(DEV, "%s (sec=%llus, al_enr=%u, rs_enr=%d)\n",
++		 msg, (unsigned long long) sector, enr,
++		 (int)BM_SECT_TO_EXT(sector));
 +}
 +
 +/*
-+ * called on driver init only. TODO call when a device is created.
-+ * allocates the drbd_bitmap, and stores it in mdev->bitmap.
++ *
++ * drbd_print_buffer
++ *
++ * This routine dumps binary data to the debugging output. Can be
++ * called at interrupt level.
++ *
++ * Arguments:
++ *
++ *     prefix      - String is output at the beginning of each line output
++ *     flags       - Control operation of the routine. Currently defined
++ *                   Flags are:
++ *                   DBGPRINT_BUFFADDR; if set, each line starts with the
++ *                       virtual address of the line being outupt. If clear,
++ *                       each line starts with the offset from the beginning
++ *                       of the buffer.
++ *     size        - Indicates the size of each entry in the buffer. Supported
++ *                   values are sizeof(char), sizeof(short) and sizeof(int)
++ *     buffer      - Start address of buffer
++ *     buffer_va   - Virtual address of start of buffer (normally the same
++ *                   as Buffer, but having it separate allows it to hold
++ *                   file address for example)
++ *     length      - length of buffer
++ *
 + */
-+int drbd_bm_init(struct drbd_conf *mdev)
++static void drbd_print_buffer(const char *prefix, unsigned int flags, int size,
++			      const void *buffer, const void *buffer_va,
++			      unsigned int length)
++
++#define LINE_SIZE       16
++#define LINE_ENTRIES    (int)(LINE_SIZE/size)
 +{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	WARN_ON(b != NULL);
-+	b = kzalloc(sizeof(struct drbd_bitmap), GFP_KERNEL);
-+	if (!b)
-+		return -ENOMEM;
-+	spin_lock_init(&b->bm_lock);
-+	init_MUTEX(&b->bm_change);
-+	init_waitqueue_head(&b->bm_io_wait);
++	const unsigned char *pstart;
++	const unsigned char *pstart_va;
++	const unsigned char *pend;
++	char bytes_str[LINE_SIZE*3+8], ascii_str[LINE_SIZE+8];
++	char *pbytes = bytes_str, *pascii = ascii_str;
++	int  offset = 0;
++	long sizemask;
++	int  field_width;
++	int  index;
++	const unsigned char *pend_str;
++	const unsigned char *p;
++	int count;
 +
-+	mdev->bitmap = b;
++	/* verify size parameter */
++	if (size != sizeof(char) &&
++	    size != sizeof(short) &&
++	    size != sizeof(int)) {
++		printk(KERN_DEBUG "drbd_print_buffer: "
++			"ERROR invalid size %d\n", size);
++		return;
++	}
 +
++	sizemask = size-1;
++	field_width = size*2;
++
++	/* Adjust start/end to be on appropriate boundary for size */
++	buffer = (const char *)((long)buffer & ~sizemask);
++	pend   = (const unsigned char *)
++		(((long)buffer + length + sizemask) & ~sizemask);
++
++	if (flags & DBGPRINT_BUFFADDR) {
++		/* Move start back to nearest multiple of line size,
++		 * if printing address. This results in nicely formatted output
++		 * with addresses being on line size (16) byte boundaries */
++		pstart = (const unsigned char *)((long)buffer & ~(LINE_SIZE-1));
++	} else {
++		pstart = (const unsigned char *)buffer;
++	}
++
++	/* Set value of start VA to print if addresses asked for */
++	pstart_va = (const unsigned char *)buffer_va
++		 - ((const unsigned char *)buffer-pstart);
++
++	/* Calculate end position to nicely align right hand side */
++	pend_str = pstart + (((pend-pstart) + LINE_SIZE-1) & ~(LINE_SIZE-1));
++
++	/* Init strings */
++	*pbytes = *pascii = '\0';
++
++	/* Start at beginning of first line */
++	p = pstart;
++	count = 0;
++
++	while (p < pend_str) {
++		if (p < (const unsigned char *)buffer || p >= pend) {
++			/* Before start of buffer or after end- print spaces */
++			pbytes += sprintf(pbytes, "%*c ", field_width, ' ');
++			pascii += sprintf(pascii, "%*c", size, ' ');
++			p += size;
++		} else {
++			/* Add hex and ascii to strings */
++			int val;
++			switch (size) {
++			default:
++			case 1:
++				val = *(unsigned char *)p;
++				break;
++			case 2:
++				val = *(unsigned short *)p;
++				break;
++			case 4:
++				val = *(unsigned int *)p;
++				break;
++			}
++
++			pbytes += sprintf(pbytes, "%0*x ", field_width, val);
++
++			for (index = size; index; index--) {
++				*pascii++ = isprint(*p) ? *p : '.';
++				p++;
++			}
++		}
++
++		count++;
++
++		if (count == LINE_ENTRIES || p >= pend_str) {
++			/* Null terminate and print record */
++			*pascii = '\0';
++			printk(KERN_DEBUG "%s%8.8lx: %*s|%*s|\n",
++			       prefix,
++			       (flags & DBGPRINT_BUFFADDR)
++			       ? (long)pstart_va:(long)offset,
++			       LINE_ENTRIES*(field_width+1), bytes_str,
++			       LINE_SIZE, ascii_str);
++
++			/* Move onto next line */
++			pstart_va += (p-pstart);
++			pstart = p;
++			count  = 0;
++			offset += LINE_SIZE;
++
++			/* Re-init strings */
++			pbytes = bytes_str;
++			pascii = ascii_str;
++			*pbytes = *pascii = '\0';
++		}
++	}
++}
++
++static void probe_drbd_resync(struct drbd_conf *mdev, int level, const char *fmt, va_list args)
++{
++	char str[256];
++
++	if (!is_mdev_trace(mdev, level))
++		return;
++
++	if (vsnprintf(str, 256, fmt, args) >= 256)
++		str[255] = 0;
++
++	printk(KERN_INFO "%s %s: %s", dev_driver_string(disk_to_dev(mdev->vdisk)),
++	       dev_name(disk_to_dev(mdev->vdisk)), str);
++}
++
++static void probe_drbd_bio(struct drbd_conf *mdev, const char *pfx, struct bio *bio, int complete,
++			   struct drbd_request *r)
++{
++#ifdef CONFIG_LBD
++#define SECTOR_FORMAT "%Lx"
++#else
++#define SECTOR_FORMAT "%lx"
++#endif
++#define SECTOR_SHIFT 9
++
++	unsigned long lowaddr = (unsigned long)(bio->bi_sector << SECTOR_SHIFT);
++	char *faddr = (char *)(lowaddr);
++	char rb[sizeof(void *)*2+6] = { 0, };
++	struct bio_vec *bvec;
++	int segno;
++
++	const int rw = bio->bi_rw;
++	const int biorw      = (rw & (RW_MASK|RWA_MASK));
++	const int biobarrier = (rw & (1<<BIO_RW_BARRIER));
++	const int biosync    = (rw & ((1<<BIO_RW_UNPLUG) | (1<<BIO_RW_SYNCIO)));
++
++	if (!is_mdev_trace(mdev, TRACE_LVL_ALWAYS))
++		return;
++
++	if (r)
++		sprintf(rb, "Req:%p ", r);
++
++	dev_info(DEV, "%s %s:%s%s%s Bio:%p %s- %soffset " SECTOR_FORMAT ", size %x\n",
++		 complete ? "<<<" : ">>>",
++		 pfx,
++		 biorw == WRITE ? "Write" : "Read",
++		 biobarrier ? " : B" : "",
++		 biosync ? " : S" : "",
++		 bio,
++		 rb,
++		 complete ? (bio_flagged(bio, BIO_UPTODATE) ? "Success, " : "Failed, ") : "",
++		 bio->bi_sector << SECTOR_SHIFT,
++		 bio->bi_size);
++
++	if (trace_level >= TRACE_LVL_METRICS &&
++	    ((biorw == WRITE) ^ complete)) {
++		printk(KERN_DEBUG "  ind     page   offset   length\n");
++		__bio_for_each_segment(bvec, bio, segno, 0) {
++			printk(KERN_DEBUG "  [%d] %p %8.8x %8.8x\n", segno,
++			       bvec->bv_page, bvec->bv_offset, bvec->bv_len);
++
++			if (trace_level >= TRACE_LVL_ALL) {
++				char *bvec_buf;
++				unsigned long flags;
++
++				bvec_buf = bvec_kmap_irq(bvec, &flags);
++
++				drbd_print_buffer("    ", DBGPRINT_BUFFADDR, 1,
++						  bvec_buf,
++						  faddr,
++						  (bvec->bv_len <= 0x80)
++						  ? bvec->bv_len : 0x80);
++
++				bvec_kunmap_irq(bvec_buf, &flags);
++
++				if (bvec->bv_len > 0x40)
++					printk(KERN_DEBUG "    ....\n");
++
++				faddr += bvec->bv_len;
++			}
++		}
++	}
++}
++
++static void probe_drbd_req(struct drbd_request *req, enum drbd_req_event what, char *msg)
++{
++	static const char *rq_event_names[] = {
++		[created] = "created",
++		[to_be_send] = "to_be_send",
++		[to_be_submitted] = "to_be_submitted",
++		[queue_for_net_write] = "queue_for_net_write",
++		[queue_for_net_read] = "queue_for_net_read",
++		[send_canceled] = "send_canceled",
++		[send_failed] = "send_failed",
++		[handed_over_to_network] = "handed_over_to_network",
++		[connection_lost_while_pending] =
++					"connection_lost_while_pending",
++		[recv_acked_by_peer] = "recv_acked_by_peer",
++		[write_acked_by_peer] = "write_acked_by_peer",
++		[neg_acked] = "neg_acked",
++		[conflict_discarded_by_peer] = "conflict_discarded_by_peer",
++		[barrier_acked] = "barrier_acked",
++		[data_received] = "data_received",
++		[read_completed_with_error] = "read_completed_with_error",
++		[write_completed_with_error] = "write_completed_with_error",
++		[completed_ok] = "completed_ok",
++	};
++
++	struct drbd_conf *mdev = req->mdev;
++
++	const int rw = (req->master_bio == NULL ||
++			bio_data_dir(req->master_bio) == WRITE) ?
++		'W' : 'R';
++	const unsigned long s = req->rq_state;
++
++	if (what != nothing) {
++		dev_info(DEV, "_req_mod(%p %c ,%s)\n", req, rw, rq_event_names[what]);
++	} else {
++		dev_info(DEV, "%s %p %c L%c%c%cN%c%c%c%c%c %u (%llus +%u) %s\n",
++			 msg, req, rw,
++			 s & RQ_LOCAL_PENDING ? 'p' : '-',
++			 s & RQ_LOCAL_COMPLETED ? 'c' : '-',
++			 s & RQ_LOCAL_OK ? 'o' : '-',
++			 s & RQ_NET_PENDING ? 'p' : '-',
++			 s & RQ_NET_QUEUED ? 'q' : '-',
++			 s & RQ_NET_SENT ? 's' : '-',
++			 s & RQ_NET_DONE ? 'd' : '-',
++			 s & RQ_NET_OK ? 'o' : '-',
++			 req->epoch,
++			 (unsigned long long)req->sector,
++			 req->size,
++			 conns_to_name(mdev->state.conn));
++	}
++}
++
++
++#define peers_to_name roles_to_name
++#define pdsks_to_name disks_to_name
++
++#define PSM(A)							\
++do {								\
++	if (mask.A) {						\
++		int i = snprintf(p, len, " " #A "( %s )",	\
++				A##s_to_name(val.A));		\
++		if (i >= len)					\
++			return op;				\
++		p += i;						\
++		len -= i;					\
++	}							\
++} while (0)
++
++STATIC char *dump_st(char *p, int len, union drbd_state mask, union drbd_state val)
++{
++	char *op = p;
++	*p = '\0';
++	PSM(role);
++	PSM(peer);
++	PSM(conn);
++	PSM(disk);
++	PSM(pdsk);
++
++	return op;
++}
++
++#define INFOP(fmt, args...) \
++do { \
++	if (trace_level >= TRACE_LVL_ALL) { \
++		dev_info(DEV, "%s:%d: %s [%d] %s %s " fmt , \
++		     file, line, current->comm, current->pid, \
++		     sockname, recv ? "<<<" : ">>>" , \
++		     ## args); \
++	} else { \
++		dev_info(DEV, "%s %s " fmt, sockname, \
++		     recv ? "<<<" : ">>>" , \
++		     ## args); \
++	} \
++} while (0)
++
++STATIC char *_dump_block_id(u64 block_id, char *buff)
++{
++	if (is_syncer_block_id(block_id))
++		strcpy(buff, "SyncerId");
++	else
++		sprintf(buff, "%llx", (unsigned long long)block_id);
++
++	return buff;
++}
++
++static void probe_drbd_packet(struct drbd_conf *mdev, struct socket *sock,
++			      int recv, union p_polymorph *p, char *file, int line)
++{
++	char *sockname = sock == mdev->meta.socket ? "meta" : "data";
++	int cmd = (recv == 2) ? p->header.command : be16_to_cpu(p->header.command);
++	char tmp[300];
++	union drbd_state m, v;
++
++	switch (cmd) {
++	case P_HAND_SHAKE:
++		INFOP("%s (protocol %u-%u)\n", cmdname(cmd),
++			be32_to_cpu(p->handshake.protocol_min),
++			be32_to_cpu(p->handshake.protocol_max));
++		break;
++
++	case P_BITMAP: /* don't report this */
++	case P_COMPRESSED_BITMAP: /* don't report this */
++		break;
++
++	case P_DATA:
++		INFOP("%s (sector %llus, id %s, seq %u, f %x)\n", cmdname(cmd),
++		      (unsigned long long)be64_to_cpu(p->data.sector),
++		      _dump_block_id(p->data.block_id, tmp),
++		      be32_to_cpu(p->data.seq_num),
++		      be32_to_cpu(p->data.dp_flags)
++			);
++		break;
++
++	case P_DATA_REPLY:
++	case P_RS_DATA_REPLY:
++		INFOP("%s (sector %llus, id %s)\n", cmdname(cmd),
++		      (unsigned long long)be64_to_cpu(p->data.sector),
++		      _dump_block_id(p->data.block_id, tmp)
++			);
++		break;
++
++	case P_RECV_ACK:
++	case P_WRITE_ACK:
++	case P_RS_WRITE_ACK:
++	case P_DISCARD_ACK:
++	case P_NEG_ACK:
++	case P_NEG_RS_DREPLY:
++		INFOP("%s (sector %llus, size %u, id %s, seq %u)\n",
++			cmdname(cmd),
++		      (long long)be64_to_cpu(p->block_ack.sector),
++		      be32_to_cpu(p->block_ack.blksize),
++		      _dump_block_id(p->block_ack.block_id, tmp),
++		      be32_to_cpu(p->block_ack.seq_num)
++			);
++		break;
++
++	case P_DATA_REQUEST:
++	case P_RS_DATA_REQUEST:
++		INFOP("%s (sector %llus, size %u, id %s)\n", cmdname(cmd),
++		      (long long)be64_to_cpu(p->block_req.sector),
++		      be32_to_cpu(p->block_req.blksize),
++		      _dump_block_id(p->block_req.block_id, tmp)
++			);
++		break;
++
++	case P_BARRIER:
++	case P_BARRIER_ACK:
++		INFOP("%s (barrier %u)\n", cmdname(cmd), p->barrier.barrier);
++		break;
++
++	case P_SYNC_PARAM:
++	case P_SYNC_PARAM89:
++		INFOP("%s (rate %u, verify-alg \"%.64s\", csums-alg \"%.64s\")\n",
++			cmdname(cmd), be32_to_cpu(p->rs_param_89.rate),
++			p->rs_param_89.verify_alg, p->rs_param_89.csums_alg);
++		break;
++
++	case P_UUIDS:
++		INFOP("%s Curr:%016llX, Bitmap:%016llX, "
++		      "HisSt:%016llX, HisEnd:%016llX\n",
++		      cmdname(cmd),
++		      (unsigned long long)be64_to_cpu(p->uuids.uuid[UI_CURRENT]),
++		      (unsigned long long)be64_to_cpu(p->uuids.uuid[UI_BITMAP]),
++		      (unsigned long long)be64_to_cpu(p->uuids.uuid[UI_HISTORY_START]),
++		      (unsigned long long)be64_to_cpu(p->uuids.uuid[UI_HISTORY_END]));
++		break;
++
++	case P_SIZES:
++		INFOP("%s (d %lluMiB, u %lluMiB, c %lldMiB, "
++		      "max bio %x, q order %x)\n",
++		      cmdname(cmd),
++		      (long long)(be64_to_cpu(p->sizes.d_size)>>(20-9)),
++		      (long long)(be64_to_cpu(p->sizes.u_size)>>(20-9)),
++		      (long long)(be64_to_cpu(p->sizes.c_size)>>(20-9)),
++		      be32_to_cpu(p->sizes.max_segment_size),
++		      be32_to_cpu(p->sizes.queue_order_type));
++		break;
++
++	case P_STATE:
++		v.i = be32_to_cpu(p->state.state);
++		m.i = 0xffffffff;
++		dump_st(tmp, sizeof(tmp), m, v);
++		INFOP("%s (s %x {%s})\n", cmdname(cmd), v.i, tmp);
++		break;
++
++	case P_STATE_CHG_REQ:
++		m.i = be32_to_cpu(p->req_state.mask);
++		v.i = be32_to_cpu(p->req_state.val);
++		dump_st(tmp, sizeof(tmp), m, v);
++		INFOP("%s (m %x v %x {%s})\n", cmdname(cmd), m.i, v.i, tmp);
++		break;
++
++	case P_STATE_CHG_REPLY:
++		INFOP("%s (ret %x)\n", cmdname(cmd),
++		      be32_to_cpu(p->req_state_reply.retcode));
++		break;
++
++	case P_PING:
++	case P_PING_ACK:
++		/*
++		 * Dont trace pings at summary level
++		 */
++		if (trace_level < TRACE_LVL_ALL)
++			break;
++		/* fall through... */
++	default:
++		INFOP("%s (%u)\n", cmdname(cmd), cmd);
++		break;
++	}
++}
++
++
++static int __init drbd_trace_init(void)
++{
++	int ret;
++
++	if (trace_mask & TRACE_UNPLUG) {
++		ret = register_trace_drbd_unplug(probe_drbd_unplug);
++		WARN_ON(ret);
++	}
++	if (trace_mask & TRACE_UUID) {
++		ret = register_trace_drbd_uuid(probe_drbd_uuid);
++		WARN_ON(ret);
++	}
++	if (trace_mask & TRACE_EE) {
++		ret = register_trace_drbd_ee(probe_drbd_ee);
++		WARN_ON(ret);
++	}
++	if (trace_mask & TRACE_PACKET) {
++		ret = register_trace_drbd_packet(probe_drbd_packet);
++		WARN_ON(ret);
++	}
++	if (trace_mask & TRACE_MD_IO) {
++		ret = register_trace_drbd_md_io(probe_drbd_md_io);
++		WARN_ON(ret);
++	}
++	if (trace_mask & TRACE_EPOCH) {
++		ret = register_trace_drbd_epoch(probe_drbd_epoch);
++		WARN_ON(ret);
++	}
++	if (trace_mask & TRACE_NL) {
++		ret = register_trace_drbd_netlink(probe_drbd_netlink);
++		WARN_ON(ret);
++	}
++	if (trace_mask & TRACE_AL_EXT) {
++		ret = register_trace_drbd_actlog(probe_drbd_actlog);
++		WARN_ON(ret);
++	}
++	if (trace_mask & TRACE_RQ) {
++		ret = register_trace_drbd_bio(probe_drbd_bio);
++		WARN_ON(ret);
++	}
++	if (trace_mask & TRACE_INT_RQ) {
++		ret = register_trace_drbd_req(probe_drbd_req);
++		WARN_ON(ret);
++	}
++	if (trace_mask & TRACE_RESYNC) {
++		ret = register_trace__drbd_resync(probe_drbd_resync);
++		WARN_ON(ret);
++	}
 +	return 0;
 +}
 +
-+sector_t drbd_bm_capacity(struct drbd_conf *mdev)
++module_init(drbd_trace_init);
++
++static void __exit drbd_trace_exit(void)
 +{
-+	ERR_IF(!mdev->bitmap) return 0;
-+	return mdev->bitmap->bm_dev_capacity;
++	if (trace_mask & TRACE_UNPLUG)
++		unregister_trace_drbd_unplug(probe_drbd_unplug);
++	if (trace_mask & TRACE_UUID)
++		unregister_trace_drbd_uuid(probe_drbd_uuid);
++	if (trace_mask & TRACE_EE)
++		unregister_trace_drbd_ee(probe_drbd_ee);
++	if (trace_mask & TRACE_PACKET)
++		unregister_trace_drbd_packet(probe_drbd_packet);
++	if (trace_mask & TRACE_MD_IO)
++		unregister_trace_drbd_md_io(probe_drbd_md_io);
++	if (trace_mask & TRACE_EPOCH)
++		unregister_trace_drbd_epoch(probe_drbd_epoch);
++	if (trace_mask & TRACE_NL)
++		unregister_trace_drbd_netlink(probe_drbd_netlink);
++	if (trace_mask & TRACE_AL_EXT)
++		unregister_trace_drbd_actlog(probe_drbd_actlog);
++	if (trace_mask & TRACE_RQ)
++		unregister_trace_drbd_bio(probe_drbd_bio);
++	if (trace_mask & TRACE_INT_RQ)
++		unregister_trace_drbd_req(probe_drbd_req);
++	if (trace_mask & TRACE_RESYNC)
++		unregister_trace__drbd_resync(probe_drbd_resync);
++
++	tracepoint_synchronize_unregister();
 +}
 +
-+/* called on driver unload. TODO: call when a device is destroyed.
-+ */
-+void drbd_bm_cleanup(struct drbd_conf *mdev)
-+{
-+	ERR_IF (!mdev->bitmap) return;
-+	bm_free_pages(mdev->bitmap->bm_pages, mdev->bitmap->bm_number_of_pages);
-+	vfree(mdev->bitmap->bm_pages);
-+	kfree(mdev->bitmap);
-+	mdev->bitmap = NULL;
-+}
-+
-+/*
-+ * since (b->bm_bits % BITS_PER_LONG) != 0,
-+ * this masks out the remaining bits.
-+ * Rerturns the number of bits cleared.
-+ */
-+STATIC int bm_clear_surplus(struct drbd_bitmap *b)
-+{
-+	const unsigned long mask = (1UL << (b->bm_bits & (BITS_PER_LONG-1))) - 1;
-+	size_t w = b->bm_bits >> LN2_BPL;
-+	int cleared = 0;
-+	unsigned long *p_addr, *bm;
-+
-+	p_addr = bm_map_paddr(b, w);
-+	bm = p_addr + MLPP(w);
-+	if (w < b->bm_words) {
-+		cleared = hweight_long(*bm & ~mask);
-+		*bm &= mask;
-+		w++; bm++;
-+	}
-+
-+	if (w < b->bm_words) {
-+		cleared += hweight_long(*bm);
-+		*bm = 0;
-+	}
-+	bm_unmap(p_addr);
-+	return cleared;
-+}
-+
-+STATIC void bm_set_surplus(struct drbd_bitmap *b)
-+{
-+	const unsigned long mask = (1UL << (b->bm_bits & (BITS_PER_LONG-1))) - 1;
-+	size_t w = b->bm_bits >> LN2_BPL;
-+	unsigned long *p_addr, *bm;
-+
-+	p_addr = bm_map_paddr(b, w);
-+	bm = p_addr + MLPP(w);
-+	if (w < b->bm_words) {
-+		*bm |= ~mask;
-+		bm++; w++;
-+	}
-+
-+	if (w < b->bm_words) {
-+		*bm = ~(0UL);
-+	}
-+	bm_unmap(p_addr);
-+}
-+
-+STATIC unsigned long __bm_count_bits(struct drbd_bitmap *b, const int swap_endian)
-+{
-+	unsigned long *p_addr, *bm, offset = 0;
-+	unsigned long bits = 0;
-+	unsigned long i, do_now;
-+
-+	while (offset < b->bm_words) {
-+		i = do_now = min_t(size_t, b->bm_words-offset, LWPP);
-+		p_addr = bm_map_paddr(b, offset);
-+		bm = p_addr + MLPP(offset);
-+		while (i--) {
-+#ifndef __LITTLE_ENDIAN
-+			if (swap_endian)
-+				*bm = lel_to_cpu(*bm);
-+#endif
-+			bits += hweight_long(*bm++);
-+		}
-+		bm_unmap(p_addr);
-+		offset += do_now;
-+	}
-+
-+	return bits;
-+}
-+
-+static inline unsigned long bm_count_bits(struct drbd_bitmap *b)
-+{
-+	return __bm_count_bits(b, 0);
-+}
-+
-+static inline unsigned long bm_count_bits_swap_endian(struct drbd_bitmap *b)
-+{
-+	return __bm_count_bits(b, 1);
-+}
-+
-+void _drbd_bm_recount_bits(struct drbd_conf *mdev, char *file, int line)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	unsigned long flags, bits;
-+
-+	ERR_IF(!b) return;
-+
-+	/* IMO this should be inside drbd_bm_lock/unlock.
-+	 * Unfortunately it is used outside of the locks.
-+	 * And I'm not yet sure where we need to place the
-+	 * lock/unlock correctly.
-+	 */
-+
-+	spin_lock_irqsave(&b->bm_lock, flags);
-+	bits = bm_count_bits(b);
-+	if (bits != b->bm_set) {
-+		dev_err(DEV, "bm_set was %lu, corrected to %lu. %s:%d\n",
-+		    b->bm_set, bits, file, line);
-+		b->bm_set = bits;
-+	}
-+	spin_unlock_irqrestore(&b->bm_lock, flags);
-+}
-+
-+/* offset and len in long words.*/
-+STATIC void bm_memset(struct drbd_bitmap *b, size_t offset, int c, size_t len)
-+{
-+	unsigned long *p_addr, *bm;
-+	size_t do_now, end;
-+
-+#define BM_SECTORS_PER_BIT (BM_BLOCK_SIZE/512)
-+
-+	end = offset + len;
-+
-+	if (end > b->bm_words) {
-+		printk(KERN_ALERT "drbd: bm_memset end > bm_words\n");
-+		return;
-+	}
-+
-+	while (offset < end) {
-+		do_now = min_t(size_t, ALIGN(offset + 1, LWPP), end) - offset;
-+		p_addr = bm_map_paddr(b, offset);
-+		bm = p_addr + MLPP(offset);
-+		if (bm+do_now > p_addr + LWPP) {
-+			printk(KERN_ALERT "drbd: BUG BUG BUG! p_addr:%p bm:%p do_now:%d\n",
-+			       p_addr, bm, (int)do_now);
-+			break; /* breaks to after catch_oob_access_end() only! */
-+		}
-+		memset(bm, c, do_now * sizeof(long));
-+		bm_unmap(p_addr);
-+		offset += do_now;
-+	}
-+}
-+
-+/*
-+ * make sure the bitmap has enough room for the attached storage,
-+ * if neccessary, resize.
-+ * called whenever we may have changed the device size.
-+ * returns -ENOMEM if we could not allocate enough memory, 0 on success.
-+ * In case this is actually a resize, we copy the old bitmap into the new one.
-+ * Otherwise, the bitmap is initiallized to all bits set.
-+ */
-+int drbd_bm_resize(struct drbd_conf *mdev, sector_t capacity)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	unsigned long bits, words, owords, obits, *p_addr, *bm;
-+	unsigned long want, have, onpages; /* number of pages */
-+	struct page **npages, **opages = NULL;
-+	int err = 0, growing;
-+
-+	ERR_IF(!b) return -ENOMEM;
-+
-+	drbd_bm_lock(mdev, "resize");
-+
-+	dev_info(DEV, "drbd_bm_resize called with capacity == %llu\n",
-+			(unsigned long long)capacity);
-+
-+	if (capacity == b->bm_dev_capacity)
-+		goto out;
-+
-+	if (capacity == 0) {
-+		spin_lock_irq(&b->bm_lock);
-+		opages = b->bm_pages;
-+		onpages = b->bm_number_of_pages;
-+		owords = b->bm_words;
-+		b->bm_pages = NULL;
-+		b->bm_number_of_pages =
-+		b->bm_set   =
-+		b->bm_bits  =
-+		b->bm_words =
-+		b->bm_dev_capacity = 0;
-+		spin_unlock_irq(&b->bm_lock);
-+		bm_free_pages(opages, onpages);
-+		vfree(opages);
-+		goto out;
-+	}
-+	bits  = BM_SECT_TO_BIT(ALIGN(capacity, BM_SECT_PER_BIT));
-+
-+	/* if we would use
-+	   words = ALIGN(bits,BITS_PER_LONG) >> LN2_BPL;
-+	   a 32bit host could present the wrong number of words
-+	   to a 64bit host.
-+	*/
-+	words = ALIGN(bits, 64) >> LN2_BPL;
-+
-+	if (inc_local(mdev)) {
-+		D_ASSERT((u64)bits <= (((u64)mdev->bc->md.md_size_sect-MD_BM_OFFSET) << 12));
-+		dec_local(mdev);
-+	}
-+
-+	/* one extra long to catch off by one errors */
-+	want = ALIGN((words+1)*sizeof(long), PAGE_SIZE) >> PAGE_SHIFT;
-+	have = b->bm_number_of_pages;
-+	if (want == have) {
-+		D_ASSERT(b->bm_pages != NULL);
-+		npages = b->bm_pages;
-+	} else {
-+		if (FAULT_ACTIVE(mdev, DRBD_FAULT_BM_ALLOC))
-+			npages = NULL;
-+		else
-+			npages = bm_realloc_pages(b->bm_pages, have, want);
-+	}
-+
-+	if (!npages) {
-+		err = -ENOMEM;
-+		goto out;
-+	}
-+
-+	spin_lock_irq(&b->bm_lock);
-+	opages = b->bm_pages;
-+	owords = b->bm_words;
-+	obits  = b->bm_bits;
-+
-+	growing = bits > obits;
-+	if (opages)
-+		bm_set_surplus(b);
-+
-+	b->bm_pages = npages;
-+	b->bm_number_of_pages = want;
-+	b->bm_bits  = bits;
-+	b->bm_words = words;
-+	b->bm_dev_capacity = capacity;
-+
-+	if (growing) {
-+		bm_memset(b, owords, 0xff, words-owords);
-+		b->bm_set += bits - obits;
-+	}
-+
-+	if (want < have) {
-+		/* implicit: (opages != NULL) && (opages != npages) */
-+		bm_free_pages(opages + want, have - want);
-+	}
-+
-+	p_addr = bm_map_paddr(b, words);
-+	bm = p_addr + MLPP(words);
-+	*bm = DRBD_MAGIC;
-+	bm_unmap(p_addr);
-+
-+	(void)bm_clear_surplus(b);
-+	if (!growing)
-+		b->bm_set = bm_count_bits(b);
-+
-+	spin_unlock_irq(&b->bm_lock);
-+	if (opages != npages)
-+		vfree(opages);
-+	dev_info(DEV, "resync bitmap: bits=%lu words=%lu\n", bits, words);
-+
-+ out:
-+	drbd_bm_unlock(mdev);
-+	return err;
-+}
-+
-+/* inherently racy:
-+ * if not protected by other means, return value may be out of date when
-+ * leaving this function...
-+ * we still need to lock it, since it is important that this returns
-+ * bm_set == 0 precisely.
-+ *
-+ * maybe bm_set should be atomic_t ?
-+ */
-+unsigned long drbd_bm_total_weight(struct drbd_conf *mdev)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	unsigned long s;
-+	unsigned long flags;
-+
-+	/* if I don't have a disk, I don't know about out-of-sync status */
-+	if (!inc_local_if_state(mdev, D_NEGOTIATING))
-+		return 0;
-+
-+	ERR_IF(!b) return 0;
-+	ERR_IF(!b->bm_pages) return 0;
-+
-+	spin_lock_irqsave(&b->bm_lock, flags);
-+	s = b->bm_set;
-+	spin_unlock_irqrestore(&b->bm_lock, flags);
-+
-+	dec_local(mdev);
-+
-+	return s;
-+}
-+
-+size_t drbd_bm_words(struct drbd_conf *mdev)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	ERR_IF(!b) return 0;
-+	ERR_IF(!b->bm_pages) return 0;
-+
-+	return b->bm_words;
-+}
-+
-+unsigned long drbd_bm_bits(struct drbd_conf *mdev)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	ERR_IF(!b) return 0;
-+
-+	return b->bm_bits;
-+}
-+
-+/* merge number words from buffer into the bitmap starting at offset.
-+ * buffer[i] is expected to be little endian unsigned long.
-+ * bitmap must be locked by drbd_bm_lock.
-+ * currently only used from receive_bitmap.
-+ */
-+void drbd_bm_merge_lel(struct drbd_conf *mdev, size_t offset, size_t number,
-+			unsigned long *buffer)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	unsigned long *p_addr, *bm;
-+	unsigned long word, bits;
-+	size_t end, do_now;
-+
-+	end = offset + number;
-+
-+	ERR_IF(!b) return;
-+	ERR_IF(!b->bm_pages) return;
-+	if (number == 0)
-+		return;
-+	WARN_ON(offset >= b->bm_words);
-+	WARN_ON(end    >  b->bm_words);
-+
-+	spin_lock_irq(&b->bm_lock);
-+	while (offset < end) {
-+		do_now = min_t(size_t, ALIGN(offset+1, LWPP), end) - offset;
-+		p_addr = bm_map_paddr(b, offset);
-+		bm = p_addr + MLPP(offset);
-+		offset += do_now;
-+		while (do_now--) {
-+			bits = hweight_long(*bm);
-+			word = *bm | lel_to_cpu(*buffer++);
-+			*bm++ = word;
-+			b->bm_set += hweight_long(word) - bits;
-+		}
-+		bm_unmap(p_addr);
-+	}
-+	/* with 32bit <-> 64bit cross-platform connect
-+	 * this is only correct for current usage,
-+	 * where we _know_ that we are 64 bit aligned,
-+	 * and know that this function is used in this way, too...
-+	 */
-+	if (end == b->bm_words)
-+		b->bm_set -= bm_clear_surplus(b);
-+
-+	spin_unlock_irq(&b->bm_lock);
-+}
-+
-+/* copy number words from the bitmap starting at offset into the buffer.
-+ * buffer[i] will be little endian unsigned long.
-+ */
-+void drbd_bm_get_lel(struct drbd_conf *mdev, size_t offset, size_t number,
-+		     unsigned long *buffer)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	unsigned long *p_addr, *bm;
-+	size_t end, do_now;
-+
-+	end = offset + number;
-+
-+	ERR_IF(!b) return;
-+	ERR_IF(!b->bm_pages) return;
-+
-+	spin_lock_irq(&b->bm_lock);
-+	if ((offset >= b->bm_words) ||
-+	    (end    >  b->bm_words) ||
-+	    (number <= 0))
-+		dev_err(DEV, "offset=%lu number=%lu bm_words=%lu\n",
-+			(unsigned long)	offset,
-+			(unsigned long)	number,
-+			(unsigned long) b->bm_words);
-+	else {
-+		while (offset < end) {
-+			do_now = min_t(size_t, ALIGN(offset+1, LWPP), end) - offset;
-+			p_addr = bm_map_paddr(b, offset);
-+			bm = p_addr + MLPP(offset);
-+			offset += do_now;
-+			while (do_now--)
-+				*buffer++ = cpu_to_lel(*bm++);
-+			bm_unmap(p_addr);
-+		}
-+	}
-+	spin_unlock_irq(&b->bm_lock);
-+}
-+
-+/* set all bits in the bitmap */
-+void drbd_bm_set_all(struct drbd_conf *mdev)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	ERR_IF(!b) return;
-+	ERR_IF(!b->bm_pages) return;
-+
-+	spin_lock_irq(&b->bm_lock);
-+	bm_memset(b, 0, 0xff, b->bm_words);
-+	(void)bm_clear_surplus(b);
-+	b->bm_set = b->bm_bits;
-+	spin_unlock_irq(&b->bm_lock);
-+}
-+
-+/* clear all bits in the bitmap */
-+void drbd_bm_clear_all(struct drbd_conf *mdev)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	ERR_IF(!b) return;
-+	ERR_IF(!b->bm_pages) return;
-+
-+	spin_lock_irq(&b->bm_lock);
-+	bm_memset(b, 0, 0, b->bm_words);
-+	b->bm_set = 0;
-+	spin_unlock_irq(&b->bm_lock);
-+}
-+
-+static void bm_async_io_complete(struct bio *bio, int error)
-+{
-+	struct drbd_bitmap *b = bio->bi_private;
-+	int uptodate = bio_flagged(bio, BIO_UPTODATE);
-+
-+
-+	/* strange behaviour of some lower level drivers...
-+	 * fail the request by clearing the uptodate flag,
-+	 * but do not return any error?!
-+	 * do we want to WARN() on this? */
-+	if (!error && !uptodate)
-+		error = -EIO;
-+
-+	if (error) {
-+		/* doh. what now?
-+		 * for now, set all bits, and flag MD_IO_ERROR */
-+		__set_bit(BM_MD_IO_ERROR, &b->bm_flags);
-+	}
-+	if (atomic_dec_and_test(&b->bm_async_io))
-+		wake_up(&b->bm_io_wait);
-+
-+	bio_put(bio);
-+}
-+
-+STATIC void bm_page_io_async(struct drbd_conf *mdev, struct drbd_bitmap *b, int page_nr, int rw) __must_hold(local)
-+{
-+	/* we are process context. we always get a bio */
-+	struct bio *bio = bio_alloc(GFP_KERNEL, 1);
-+	unsigned int len;
-+	sector_t on_disk_sector =
-+		mdev->bc->md.md_offset + mdev->bc->md.bm_offset;
-+	on_disk_sector += ((sector_t)page_nr) << (PAGE_SHIFT-9);
-+
-+	/* this might happen with very small
-+	 * flexible external meta data device */
-+	len = min_t(unsigned int, PAGE_SIZE,
-+		(drbd_md_last_sector(mdev->bc) - on_disk_sector + 1)<<9);
-+
-+	bio->bi_bdev = mdev->bc->md_bdev;
-+	bio->bi_sector = on_disk_sector;
-+	bio_add_page(bio, b->bm_pages[page_nr], len, 0);
-+	bio->bi_private = b;
-+	bio->bi_end_io = bm_async_io_complete;
-+
-+	if (FAULT_ACTIVE(mdev, (rw & WRITE) ? DRBD_FAULT_MD_WR : DRBD_FAULT_MD_RD)) {
-+		bio->bi_rw |= rw;
-+		bio_endio(bio, -EIO);
-+	} else {
-+		submit_bio(rw, bio);
-+	}
-+}
-+
-+# if defined(__LITTLE_ENDIAN)
-+	/* nothing to do, on disk == in memory */
-+# define bm_cpu_to_lel(x) ((void)0)
-+# else
-+void bm_cpu_to_lel(struct drbd_bitmap *b)
-+{
-+	/* need to cpu_to_lel all the pages ...
-+	 * this may be optimized by using
-+	 * cpu_to_lel(-1) == -1 and cpu_to_lel(0) == 0;
-+	 * the following is still not optimal, but better than nothing */
-+	if (b->bm_set == 0) {
-+		/* no page at all; avoid swap if all is 0 */
-+		i = b->bm_number_of_pages;
-+	} else if (b->bm_set == b->bm_bits) {
-+		/* only the last page */
-+		i = b->bm_number_of_pages - 1;
-+	} else {
-+		/* all pages */
-+		i = 0;
-+	}
-+	for (; i < b->bm_number_of_pages; i++) {
-+		unsigned long *bm;
-+		/* if you'd want to use kmap_atomic, you'd have to disable irq! */
-+		p_addr = kmap(b->bm_pages[i]);
-+		for (bm = p_addr; bm < p_addr + PAGE_SIZE/sizeof(long); bm++)
-+			*bm = cpu_to_lel(*bm);
-+		kunmap(p_addr);
-+	}
-+}
-+# endif
-+/* lel_to_cpu == cpu_to_lel */
-+# define bm_lel_to_cpu(x) bm_cpu_to_lel(x)
-+
-+/*
-+ * bm_rw: read/write the whole bitmap from/to its on disk location.
-+ */
-+STATIC int bm_rw(struct drbd_conf *mdev, int rw) __must_hold(local)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	/* sector_t sector; */
-+	int bm_words, num_pages, i;
-+	unsigned long now;
-+	char ppb[10];
-+	int err = 0;
-+
-+	WARN_ON(!bm_is_locked(b));
-+
-+	/* no spinlock here, the drbd_bm_lock should be enough! */
-+
-+	bm_words  = drbd_bm_words(mdev);
-+	num_pages = (bm_words*sizeof(long) + PAGE_SIZE-1) >> PAGE_SHIFT;
-+
-+	/* on disk bitmap is little endian */
-+	if (rw == WRITE)
-+		bm_cpu_to_lel(b);
-+
-+	now = jiffies;
-+	atomic_set(&b->bm_async_io, num_pages);
-+	__clear_bit(BM_MD_IO_ERROR, &b->bm_flags);
-+
-+	/* let the layers below us try to merge these bios... */
-+	for (i = 0; i < num_pages; i++)
-+		bm_page_io_async(mdev, b, i, rw);
-+
-+	drbd_blk_run_queue(bdev_get_queue(mdev->bc->md_bdev));
-+	wait_event(b->bm_io_wait, atomic_read(&b->bm_async_io) == 0);
-+
-+	if (test_bit(BM_MD_IO_ERROR, &b->bm_flags)) {
-+		dev_alert(DEV, "we had at least one MD IO ERROR during bitmap IO\n");
-+		drbd_chk_io_error(mdev, 1, TRUE);
-+		drbd_io_error(mdev, TRUE);
-+		err = -EIO;
-+	}
-+
-+	now = jiffies;
-+	if (rw == WRITE) {
-+		/* swap back endianness */
-+		bm_lel_to_cpu(b);
-+		/* flush bitmap to stable storage */
-+		drbd_md_flush(mdev);
-+	} else /* rw == READ */ {
-+		/* just read, if neccessary adjust endianness */
-+		b->bm_set = bm_count_bits_swap_endian(b);
-+		dev_info(DEV, "recounting of set bits took additional %lu jiffies\n",
-+		     jiffies - now);
-+	}
-+	now = b->bm_set;
-+
-+	dev_info(DEV, "%s (%lu bits) marked out-of-sync by on disk bit-map.\n",
-+	     ppsize(ppb, now << (BM_BLOCK_SIZE_B-10)), now);
-+
-+	return err;
-+}
-+
-+/**
-+ * drbd_bm_read: Read the whole bitmap from its on disk location.
-+ *
-+ * currently only called from "drbd_nl_disk_conf"
-+ */
-+int drbd_bm_read(struct drbd_conf *mdev) __must_hold(local)
-+{
-+	return bm_rw(mdev, READ);
-+}
-+
-+/**
-+ * drbd_bm_write: Write the whole bitmap to its on disk location.
-+ *
-+ * called at various occasions.
-+ */
-+int drbd_bm_write(struct drbd_conf *mdev) __must_hold(local)
-+{
-+	return bm_rw(mdev, WRITE);
-+}
-+
-+/**
-+ * drbd_bm_write_sect: Writes a 512 byte piece of the bitmap to its
-+ * on disk location. On disk bitmap is little endian.
-+ *
-+ * @enr: The _sector_ offset from the start of the bitmap.
-+ *
-+ */
-+int drbd_bm_write_sect(struct drbd_conf *mdev, unsigned long enr) __must_hold(local)
-+{
-+	sector_t on_disk_sector = enr + mdev->bc->md.md_offset
-+				      + mdev->bc->md.bm_offset;
-+	int bm_words, num_words, offset;
-+	int err = 0;
-+
-+	mutex_lock(&mdev->md_io_mutex);
-+	bm_words  = drbd_bm_words(mdev);
-+	offset    = S2W(enr);	/* word offset into bitmap */
-+	num_words = min(S2W(1), bm_words - offset);
-+	if (num_words < S2W(1))
-+		memset(page_address(mdev->md_io_page), 0, MD_HARDSECT);
-+	drbd_bm_get_lel(mdev, offset, num_words,
-+			page_address(mdev->md_io_page));
-+	if (!drbd_md_sync_page_io(mdev, mdev->bc, on_disk_sector, WRITE)) {
-+		int i;
-+		err = -EIO;
-+		dev_err(DEV, "IO ERROR writing bitmap sector %lu "
-+		    "(meta-disk sector %llus)\n",
-+		    enr, (unsigned long long)on_disk_sector);
-+		drbd_chk_io_error(mdev, 1, TRUE);
-+		drbd_io_error(mdev, TRUE);
-+		for (i = 0; i < AL_EXT_PER_BM_SECT; i++)
-+			drbd_bm_ALe_set_all(mdev, enr*AL_EXT_PER_BM_SECT+i);
-+	}
-+	mdev->bm_writ_cnt++;
-+	mutex_unlock(&mdev->md_io_mutex);
-+	return err;
-+}
-+
-+/* NOTE
-+ * find_first_bit returns int, we return unsigned long.
-+ * should not make much difference anyways, but ...
-+ *
-+ * this returns a bit number, NOT a sector!
-+ */
-+#define BPP_MASK ((1UL << (PAGE_SHIFT+3)) - 1)
-+static unsigned long __bm_find_next(struct drbd_conf *mdev, unsigned long bm_fo,
-+	const int find_zero_bit, const enum km_type km)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	unsigned long i = -1UL;
-+	unsigned long *p_addr;
-+	unsigned long bit_offset; /* bit offset of the mapped page. */
-+
-+	if (bm_fo > b->bm_bits) {
-+		dev_err(DEV, "bm_fo=%lu bm_bits=%lu\n", bm_fo, b->bm_bits);
-+	} else {
-+		while (bm_fo < b->bm_bits) {
-+			unsigned long offset;
-+			bit_offset = bm_fo & ~BPP_MASK; /* bit offset of the page */
-+			offset = bit_offset >> LN2_BPL;    /* word offset of the page */
-+			p_addr = __bm_map_paddr(b, offset, km);
-+
-+			if (find_zero_bit)
-+				i = find_next_zero_bit(p_addr, PAGE_SIZE*8, bm_fo & BPP_MASK);
-+			else
-+				i = find_next_bit(p_addr, PAGE_SIZE*8, bm_fo & BPP_MASK);
-+
-+			__bm_unmap(p_addr, km);
-+			if (i < PAGE_SIZE*8) {
-+				i = bit_offset + i;
-+				if (i >= b->bm_bits)
-+					break;
-+				goto found;
-+			}
-+			bm_fo = bit_offset + PAGE_SIZE*8;
-+		}
-+		i = -1UL;
-+	}
-+ found:
-+	return i;
-+}
-+
-+static unsigned long bm_find_next(struct drbd_conf *mdev,
-+	unsigned long bm_fo, const int find_zero_bit)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	unsigned long i = -1UL;
-+
-+	ERR_IF(!b) return i;
-+	ERR_IF(!b->bm_pages) return i;
-+
-+	spin_lock_irq(&b->bm_lock);
-+	if (bm_is_locked(b))
-+		bm_print_lock_info(mdev);
-+
-+	i = __bm_find_next(mdev, bm_fo, find_zero_bit, KM_IRQ1);
-+
-+	spin_unlock_irq(&b->bm_lock);
-+	return i;
-+}
-+
-+unsigned long drbd_bm_find_next(struct drbd_conf *mdev, unsigned long bm_fo)
-+{
-+	return bm_find_next(mdev, bm_fo, 0);
-+}
-+
-+#if 0
-+/* not yet needed for anything. */
-+unsigned long drbd_bm_find_next_zero(struct drbd_conf *mdev, unsigned long bm_fo)
-+{
-+	return bm_find_next(mdev, bm_fo, 1);
-+}
-+#endif
-+
-+/* does not spin_lock_irqsave.
-+ * you must take drbd_bm_lock() first */
-+unsigned long _drbd_bm_find_next(struct drbd_conf *mdev, unsigned long bm_fo)
-+{
-+	/* WARN_ON(!bm_is_locked(mdev)); */
-+	return __bm_find_next(mdev, bm_fo, 0, KM_USER1);
-+}
-+
-+unsigned long _drbd_bm_find_next_zero(struct drbd_conf *mdev, unsigned long bm_fo)
-+{
-+	/* WARN_ON(!bm_is_locked(mdev)); */
-+	return __bm_find_next(mdev, bm_fo, 1, KM_USER1);
-+}
-+
-+/* returns number of bits actually changed.
-+ * for val != 0, we change 0 -> 1, return code positiv
-+ * for val == 0, we change 1 -> 0, return code negative
-+ * wants bitnr, not sector.
-+ * Must hold bitmap lock already. */
-+
-+int __bm_change_bits_to(struct drbd_conf *mdev, const unsigned long s,
-+	const unsigned long e, int val, const enum km_type km)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	unsigned long *p_addr = NULL;
-+	unsigned long bitnr;
-+	unsigned long last_page_nr = -1UL;
-+	int c = 0;
-+
-+	for (bitnr = s; bitnr <= e; bitnr++) {
-+		ERR_IF (bitnr >= b->bm_bits) {
-+			dev_err(DEV, "bitnr=%lu bm_bits=%lu\n", bitnr, b->bm_bits);
-+		} else {
-+			unsigned long offset = bitnr>>LN2_BPL;
-+			unsigned long page_nr = offset >> (PAGE_SHIFT - LN2_BPL + 3);
-+			if (page_nr != last_page_nr) {
-+				if (p_addr)
-+					__bm_unmap(p_addr, km);
-+				p_addr = __bm_map_paddr(b, offset, km);
-+				last_page_nr = page_nr;
-+			}
-+			if (val)
-+				c += (0 == __test_and_set_bit(bitnr & BPP_MASK, p_addr));
-+			else
-+				c -= (0 != __test_and_clear_bit(bitnr & BPP_MASK, p_addr));
-+		}
-+	}
-+	if (p_addr)
-+		__bm_unmap(p_addr, km);
-+	b->bm_set += c;
-+	return c;
-+}
-+
-+/* returns number of bits actually changed.
-+ * for val != 0, we change 0 -> 1, return code positiv
-+ * for val == 0, we change 1 -> 0, return code negative
-+ * wants bitnr, not sector */
-+int bm_change_bits_to(struct drbd_conf *mdev, const unsigned long s,
-+	const unsigned long e, int val)
-+{
-+	unsigned long flags;
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	int c = 0;
-+
-+	ERR_IF(!b) return 1;
-+	ERR_IF(!b->bm_pages) return 0;
-+
-+	spin_lock_irqsave(&b->bm_lock, flags);
-+	if (bm_is_locked(b))
-+		bm_print_lock_info(mdev);
-+
-+	c = __bm_change_bits_to(mdev, s, e, val, KM_IRQ1);
-+
-+	spin_unlock_irqrestore(&b->bm_lock, flags);
-+	return c;
-+}
-+
-+/* returns number of bits changed 0 -> 1 */
-+int drbd_bm_set_bits(struct drbd_conf *mdev, const unsigned long s, const unsigned long e)
-+{
-+	return bm_change_bits_to(mdev, s, e, 1);
-+}
-+
-+/* returns number of bits changed 1 -> 0 */
-+int drbd_bm_clear_bits(struct drbd_conf *mdev, const unsigned long s, const unsigned long e)
-+{
-+	return -bm_change_bits_to(mdev, s, e, 0);
-+}
-+
-+/* the same thing, but without taking the spin_lock_irqsave.
-+ * you must first drbd_bm_lock(). */
-+int _drbd_bm_set_bits(struct drbd_conf *mdev, const unsigned long s, const unsigned long e)
-+{
-+       /* WARN_ON(!bm_is_locked(b)); */
-+       return __bm_change_bits_to(mdev, s, e, 1, KM_USER0);
-+}
-+
-+/* returns bit state
-+ * wants bitnr, NOT sector.
-+ * inherently racy... area needs to be locked by means of {al,rs}_lru
-+ *  1 ... bit set
-+ *  0 ... bit not set
-+ * -1 ... first out of bounds access, stop testing for bits!
-+ */
-+int drbd_bm_test_bit(struct drbd_conf *mdev, const unsigned long bitnr)
-+{
-+	unsigned long flags;
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	unsigned long *p_addr;
-+	int i;
-+
-+	ERR_IF(!b) return 0;
-+	ERR_IF(!b->bm_pages) return 0;
-+
-+	spin_lock_irqsave(&b->bm_lock, flags);
-+	if (bm_is_locked(b))
-+		bm_print_lock_info(mdev);
-+	if (bitnr < b->bm_bits) {
-+		unsigned long offset = bitnr>>LN2_BPL;
-+		p_addr = bm_map_paddr(b, offset);
-+		i = test_bit(bitnr & BPP_MASK, p_addr) ? 1 : 0;
-+		bm_unmap(p_addr);
-+	} else if (bitnr == b->bm_bits) {
-+		i = -1;
-+	} else { /* (bitnr > b->bm_bits) */
-+		dev_err(DEV, "bitnr=%lu > bm_bits=%lu\n", bitnr, b->bm_bits);
-+		i = 0;
-+	}
-+
-+	spin_unlock_irqrestore(&b->bm_lock, flags);
-+	return i;
-+}
-+
-+/* returns number of bits set */
-+int drbd_bm_count_bits(struct drbd_conf *mdev, const unsigned long s, const unsigned long e)
-+{
-+	unsigned long flags;
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	unsigned long *p_addr = NULL, page_nr = -1;
-+	unsigned long bitnr;
-+	int c = 0;
-+	size_t w;
-+
-+	/* If this is called without a bitmap, that is a bug.  But just to be
-+	 * robust in case we screwed up elsewhere, in that case pretend there
-+	 * was one dirty bit in the requested area, so we won't try to do a
-+	 * local read there (no bitmap probably implies no disk) */
-+	ERR_IF(!b) return 1;
-+	ERR_IF(!b->bm_pages) return 1;
-+
-+	spin_lock_irqsave(&b->bm_lock, flags);
-+	for (bitnr = s; bitnr <= e; bitnr++) {
-+		w = bitnr >> LN2_BPL;
-+		if (page_nr != w >> (PAGE_SHIFT - LN2_BPL + 3)) {
-+			page_nr = w >> (PAGE_SHIFT - LN2_BPL + 3);
-+			if (p_addr)
-+				bm_unmap(p_addr);
-+			p_addr = bm_map_paddr(b, w);
-+		}
-+		ERR_IF (bitnr >= b->bm_bits) {
-+			dev_err(DEV, "bitnr=%lu bm_bits=%lu\n", bitnr, b->bm_bits);
-+		} else {
-+			c += (0 != test_bit(bitnr - (page_nr << (PAGE_SHIFT+3)), p_addr));
-+		}
-+	}
-+	if (p_addr)
-+		bm_unmap(p_addr);
-+	spin_unlock_irqrestore(&b->bm_lock, flags);
-+	return c;
-+}
-+
-+
-+/* inherently racy...
-+ * return value may be already out-of-date when this function returns.
-+ * but the general usage is that this is only use during a cstate when bits are
-+ * only cleared, not set, and typically only care for the case when the return
-+ * value is zero, or we already "locked" this "bitmap extent" by other means.
-+ *
-+ * enr is bm-extent number, since we chose to name one sector (512 bytes)
-+ * worth of the bitmap a "bitmap extent".
-+ *
-+ * TODO
-+ * I think since we use it like a reference count, we should use the real
-+ * reference count of some bitmap extent element from some lru instead...
-+ *
-+ */
-+int drbd_bm_e_weight(struct drbd_conf *mdev, unsigned long enr)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	int count, s, e;
-+	unsigned long flags;
-+	unsigned long *p_addr, *bm;
-+
-+	ERR_IF(!b) return 0;
-+	ERR_IF(!b->bm_pages) return 0;
-+
-+	spin_lock_irqsave(&b->bm_lock, flags);
-+	if (bm_is_locked(b))
-+		bm_print_lock_info(mdev);
-+
-+	s = S2W(enr);
-+	e = min((size_t)S2W(enr+1), b->bm_words);
-+	count = 0;
-+	if (s < b->bm_words) {
-+		int n = e-s;
-+		p_addr = bm_map_paddr(b, s);
-+		bm = p_addr + MLPP(s);
-+		while (n--)
-+			count += hweight_long(*bm++);
-+		bm_unmap(p_addr);
-+	} else {
-+		dev_err(DEV, "start offset (%d) too large in drbd_bm_e_weight\n", s);
-+	}
-+	spin_unlock_irqrestore(&b->bm_lock, flags);
-+	return count;
-+}
-+
-+/* set all bits covered by the AL-extent al_enr */
-+unsigned long drbd_bm_ALe_set_all(struct drbd_conf *mdev, unsigned long al_enr)
-+{
-+	struct drbd_bitmap *b = mdev->bitmap;
-+	unsigned long *p_addr, *bm;
-+	unsigned long weight;
-+	int count, s, e, i, do_now;
-+	ERR_IF(!b) return 0;
-+	ERR_IF(!b->bm_pages) return 0;
-+
-+	spin_lock_irq(&b->bm_lock);
-+	if (bm_is_locked(b))
-+		bm_print_lock_info(mdev);
-+	weight = b->bm_set;
-+
-+	s = al_enr * BM_WORDS_PER_AL_EXT;
-+	e = min_t(size_t, s + BM_WORDS_PER_AL_EXT, b->bm_words);
-+	/* assert that s and e are on the same page */
-+	D_ASSERT((e-1) >> (PAGE_SHIFT - LN2_BPL + 3)
-+	      ==  s    >> (PAGE_SHIFT - LN2_BPL + 3));
-+	count = 0;
-+	if (s < b->bm_words) {
-+		i = do_now = e-s;
-+		p_addr = bm_map_paddr(b, s);
-+		bm = p_addr + MLPP(s);
-+		while (i--) {
-+			count += hweight_long(*bm);
-+			*bm = -1UL;
-+			bm++;
-+		}
-+		bm_unmap(p_addr);
-+		b->bm_set += do_now*BITS_PER_LONG - count;
-+		if (e == b->bm_words)
-+			b->bm_set -= bm_clear_surplus(b);
-+	} else {
-+		dev_err(DEV, "start offset (%d) too large in drbd_bm_ALe_set_all\n", s);
-+	}
-+	weight = b->bm_set - weight;
-+	spin_unlock_irq(&b->bm_lock);
-+	return weight;
-+}
++module_exit(drbd_trace_exit);
