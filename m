@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764586AbZD3XEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764683AbZD3XEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764586AbZD3XEb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 19:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764194AbZD3XDq
+	id S1764683AbZD3XEs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 19:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764442AbZD3XEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 19:03:46 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:52411 "EHLO
+	Thu, 30 Apr 2009 19:04:01 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:52474 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763886AbZD3XDo (ORCPT
+	by vger.kernel.org with ESMTP id S1764552AbZD3XEA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 19:03:44 -0400
+	Thu, 30 Apr 2009 19:04:00 -0400
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
@@ -17,45 +17,76 @@ Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
        Denys Vlasenko <vda.linux@googlemail.com>,
        Jeff Arnold <jbarnold@MIT.EDU>, Richard Henderson <rth@twiddle.net>,
        linux-alpha@vger.kernel.org, Tim Abbott <tabbott@MIT.EDU>
-Subject: [PATCH 0/4] section name cleanup for alpha
-Date: Thu, 30 Apr 2009 19:00:12 -0400
-Message-Id: <1241132416-7055-1-git-send-email-tabbott@mit.edu>
+Subject: [PATCH 4/4] alpha: use .data.init_task instead of .data.init_thread
+Date: Thu, 30 Apr 2009 19:00:16 -0400
+Message-Id: <1241132416-7055-5-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1241132416-7055-4-git-send-email-tabbott@mit.edu>
+References: <1241132416-7055-1-git-send-email-tabbott@mit.edu>
+ <1241132416-7055-2-git-send-email-tabbott@mit.edu>
+ <1241132416-7055-3-git-send-email-tabbott@mit.edu>
+ <1241132416-7055-4-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch series cleans up the section names on the alpha
-architecture.  It requires the architecture-independent macro
-definitions from this patch series:
+alpha is the only architecture that uses the section name
+.data.init_thread instead of .data.init_task.  So convert alpha to use
+.data.init_task like everything else.
 
-<http://www.spinics.net/lists/mips/msg33499.html>
+.data.init_task should not need a separate output section; this change
+also moves it into the .data output section.
 
-The long-term goal here is to add support for building the kernel with
--ffunction-sections -fdata-sections.  This requires renaming all the
-magic section names in the kernel of the form .text.foo, .data.foo,
-.bss.foo, and .rodata.foo to not have collisions with sections
-generated for code like:
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: linux-alpha@vger.kernel.org
+---
+ arch/alpha/kernel/init_task.c   |    5 ++---
+ arch/alpha/kernel/vmlinux.lds.S |    7 ++-----
+ 2 files changed, 4 insertions(+), 8 deletions(-)
 
-static int nosave = 0; /* -fdata-sections places in .data.nosave */
-static void head(); /* -ffunction-sections places in .text.head */
-
-Note that these patches have not been boot-tested (aside from testing
-the analogous changes on x86), since I don't have access to the
-appropriate hardware.
-
-	-Tim Abbott
-
-Tim Abbott (4):
-  alpha: Use macros for .data.page_aligned.
-  alpha: use new macro for .data.cacheline_aligned section.
-  alpha: make THREAD_SIZE available to assembly files.
-  alpha: use .data.init_task instead of .data.init_thread
-
- arch/alpha/include/asm/thread_info.h |    4 ++--
- arch/alpha/kernel/init_task.c        |    5 ++---
- arch/alpha/kernel/vmlinux.lds.S      |   19 ++++---------------
- 3 files changed, 8 insertions(+), 20 deletions(-)
+diff --git a/arch/alpha/kernel/init_task.c b/arch/alpha/kernel/init_task.c
+index c2938e5..475d46a 100644
+--- a/arch/alpha/kernel/init_task.c
++++ b/arch/alpha/kernel/init_task.c
+@@ -16,6 +16,5 @@ struct task_struct init_task = INIT_TASK(init_task);
+ EXPORT_SYMBOL(init_mm);
+ EXPORT_SYMBOL(init_task);
+ 
+-union thread_union init_thread_union
+-	__attribute__((section(".data.init_thread")))
+-	= { INIT_THREAD_INFO(init_task) };
++union thread_union init_thread_union __init_task_data =
++	{ INIT_THREAD_INFO(init_task) };
+diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
+index 7acd1eb..caca724 100644
+--- a/arch/alpha/kernel/vmlinux.lds.S
++++ b/arch/alpha/kernel/vmlinux.lds.S
+@@ -1,5 +1,6 @@
+ #include <asm-generic/vmlinux.lds.h>
+ #include <asm/page.h>
++#include <asm/thread_info.h>
+ 
+ OUTPUT_FORMAT("elf64-alpha")
+ OUTPUT_ARCH(alpha)
+@@ -92,14 +93,10 @@ SECTIONS
+ 	__init_end = .;
+ 	/* Freed after init ends here */
+ 
+-	/* Note 2 page alignment above.  */
+-	.data.init_thread : {
+-		*(.data.init_thread)
+-	}
+-
+ 	_data = .;
+ 	/* Data */
+ 	.data : {
++		INIT_TASK_DATA(THREAD_SIZE)
+ 		PAGE_ALIGNED_DATA
+ 		CACHELINE_ALIGNED_DATA(64)
+ 		DATA_DATA
+-- 
+1.6.2.1
 
