@@ -1,54 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757035AbZEANUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755779AbZEANUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757035AbZEANUA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755802AbZEANTt
+	id S1755779AbZEANUb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760055AbZEANUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:19:49 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37595 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755882AbZEANTs convert rfc822-to-8bit (ORCPT
+	Fri, 1 May 2009 09:20:04 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:37698 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759263AbZEANUA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:19:48 -0400
-Date: Fri, 1 May 2009 14:16:40 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: =?ISO-8859-14?B?Um9n6XJpbw==?= Brito <rbrito@ime.usp.br>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, Michael Tokarev <mjt@tls.msk.ru>,
-       Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org
-Subject: Re: Quick question about libata and hdparm
-Message-ID: <20090501141640.36eeecf1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090501115048.GA2001@ime.usp.br>
-References: <E693AEE4-7895-4650-A1DC-1FB16D409D5B@ime.usp.br>
-	<200904211459.26965.bzolnier@gmail.com>
-	<20090423055618.GA23042@ime.usp.br>
-	<200904232331.13729.bzolnier@gmail.com>
-	<6540c930904232000t76aa4954l4f5cee5bad64aacb@mail.gmail.com>
-	<20090501091804.GB29466@ime.usp.br>
-	<20090501113129.3f11d4f5@lxorguk.ukuu.org.uk>
-	<20090501115048.GA2001@ime.usp.br>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-14
-Content-Transfer-Encoding: 8BIT
+	Fri, 1 May 2009 09:20:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xF83Q7lnwJfM/KEVS6+U92r5hElxLrgX3CiGPK/6jBE/P+n98TNw1sCGc1jNQzjuwf
+         KglaiKEPaBSMQtEMgw7Ynb3LAxf5F3DdVyCgv4CcgIr+gz3SM4sFOHD4q9kyPkrHt7Fl
+         R31GYaJzF9aP9ZCi42GvjLn9sLIPZzwR8ksLc=
+Date: Fri, 1 May 2009 15:19:55 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 5/6] kill-the-BKL/reiserfs: release the write lock
+	inside reiserfs_read_bitmap_block()
+Message-ID: <20090501131955.GC6011@nowhere>
+References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com> <1241145862-21700-6-git-send-email-fweisbec@gmail.com> <20090501054734.GE5983@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090501054734.GE5983@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 May 2009 08:50:48 -0300
-Rogério Brito <rbrito@ime.usp.br> wrote:
-
-> Hi, Alan.
+On Fri, May 01, 2009 at 07:47:34AM +0200, Ingo Molnar wrote:
 > 
-> On May 01 2009, Alan Cox wrote:
-> > At the moment I've not found a way to duplicate your specific problem.
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 > 
-> Would a remote access be useful in any way, Alan? I can give you access
-> here without any problems.
+> > reiserfs_read_bitmap_block() uses sb_bread() to read the bitmap block. This
+> > helper might sleep.
+> > 
+> > Then, when the bkl was used, it was released at this point. We can then
+> > relax the write lock too here.
+> > 
+> > [ Impact: release the reiserfs write lock when it is not needed ]
+> > 
+> > Cc: Jeff Mahoney <jeffm@suse.com>
+> > Cc: Chris Mason <chris.mason@oracle.com>
+> > Cc: Alexander Beregalov <a.beregalov@gmail.com>
+> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > ---
+> >  fs/reiserfs/bitmap.c |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/fs/reiserfs/bitmap.c b/fs/reiserfs/bitmap.c
+> > index 1470334..6854957 100644
+> > --- a/fs/reiserfs/bitmap.c
+> > +++ b/fs/reiserfs/bitmap.c
+> > @@ -1249,7 +1249,9 @@ struct buffer_head *reiserfs_read_bitmap_block(struct super_block *sb,
+> >  	else if (bitmap == 0)
+> >  		block = (REISERFS_DISK_OFFSET_IN_BYTES >> sb->s_blocksize_bits) + 1;
+> >  
+> > +	reiserfs_write_unlock(sb);
+> >  	bh = sb_bread(sb, block);
+> > +	reiserfs_write_lock(sb);
+> >  	if (bh == NULL)
+> >  		reiserfs_warning(sb, "sh-2029: %s: bitmap block (#%u) "
+> >  		                 "reading failed", __func__, block);
+> 
+> Note, there's a side-effect here: the access to sb->b_blocksize is 
+> moved outside of the lock. Previously it was accessed via the BKL. 
+> On a mounted filesystem sb->b_blocksize is not supposed to change, 
+> so it's probably not an issue - but wanted to mention it.
+> 
+> 	Ingo
 
-Possibly yes when I have a bit of time to look at it. Especially if the
-box can be set up so its booting off another device to the one that is a
-problem and has the build tree for the kernel it is using on it so it can
-be rebuilt with small tweaks to test stuff.
 
-Alan
+Indeed. Well I guess it can't be dynamically changed.
+This is something that can be chosen with mkfs on filesystem creation
+but I guess it can't be changed, at least not while the filesystem
+is mounted. I hope...
+
+Frederic.
+
