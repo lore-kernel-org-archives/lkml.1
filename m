@@ -1,96 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765426AbZEAUYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932217AbZEAUZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765426AbZEAUYR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 16:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757449AbZEAUYF
+	id S932217AbZEAUZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 16:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757790AbZEAUZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 16:24:05 -0400
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:60853 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752922AbZEAUYE (ORCPT
+	Fri, 1 May 2009 16:25:15 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:27395 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757449AbZEAUZN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 16:24:04 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AugEAOvw+klMQW1W/2dsb2JhbACBUM4eg30F
-Date: Fri, 1 May 2009 16:24:00 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Christoph Lameter <cl@linux.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Yuriy Lalym <ylalym@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
-       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ltt-dev] [PATCH] Fix dirty page accounting in
-	redirty_page_for_writepage()
-Message-ID: <20090501202400.GA20280@Krystal>
-References: <20090430065055.GA16277@elte.hu> <alpine.DEB.1.10.0904300926530.22262@qirst.com> <20090430141211.GB5922@Krystal> <alpine.DEB.1.10.0904301009530.14178@qirst.com> <20090430194158.GB12926@Krystal> <alpine.DEB.1.10.0904301559500.11923@qirst.com> <20090430211750.GA19933@Krystal> <alpine.DEB.1.10.0905010939090.18324@qirst.com> <20090501192142.GA18339@Krystal> <alpine.DEB.1.10.0905011527260.7795@qirst.com>
-Mime-Version: 1.0
+	Fri, 1 May 2009 16:25:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=EUSqwN4pAf5//SZe3DeotQsTjkY+qbBJ/xxzFf8E2SrzGGSREN4LEvP/kZx79Tpc+w
+         fcOBWhRo0W+7UAuzsvSIpJm/KTIfLCqgN2dtvhrMmN4t2erRmm4Q0fH3SBfFS+bIw8jG
+         c/Kobl5rh+NNYuXYnhqExMd+GiViSJIQwfWV0=
+Date: Sat, 2 May 2009 00:25:11 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Jack Steiner <steiner@sgi.com>
+Subject: Re: [PATCH -tip] x86: uv - prevent NULL dereference in
+	uv_system_init
+Message-ID: <20090501202511.GE4633@lenovo>
+References: <20090501195638.GC4633@lenovo> <20090501200331.GA2645@elte.hu> <20090501200937.GD4633@lenovo>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0905011527260.7795@qirst.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:16:03 up 62 days, 16:42,  2 users,  load average: 0.63, 0.87,
-	0.67
+In-Reply-To: <20090501200937.GD4633@lenovo>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (cl@linux.com) wrote:
-> On Fri, 1 May 2009, Mathieu Desnoyers wrote:
-> 
-> > What I do here is to let those u8 counters increment as free-running
-> > counters. Yes, they will periodically overflow the 8 bits. But I don't
-> > rely on this for counting the number of increments we need between
-> > global counter updates : I use the bitmask taken from the threshold
-> > value (which is now required to be a power of two) to detect 0, 1, 2, 3,
-> > 4, 5, 6 or 7-bit counter overflow. Therefore we can still have the kind
-> > of granularity currently provided. The only limitation is that we have
-> > to use powers of two for the threshold, so we end up counting in power
-> > of two modulo, which will be unaffected by the u8 overflow.
-> 
-> Ack. Got it. Looks good.
-> 
+[Cyrill Gorcunov - Sat, May 02, 2009 at 12:09:37AM +0400]
+| [Ingo Molnar - Fri, May 01, 2009 at 10:03:31PM +0200]
+| | 
+| | * Cyrill Gorcunov <gorcunov@openvz.org> wrote:
+| | 
+| | > We may reach NULL dereference oops if kmalloc failed.
+| | > Lets do panic better with sensible message.
+| | > 
+| | > Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+| | > ---
+| | > 
+| | > Actually there is a dubious place as well at early_get_nodeid.
+| | > Is there a guarantee that we _never_ fail in early_ioremap?
+| | > 
+| | >  arch/x86/kernel/apic/x2apic_uv_x.c |    9 +++++++++
+| | >  1 file changed, 9 insertions(+)
+| | > 
+| | > Index: linux-2.6.git/arch/x86/kernel/apic/x2apic_uv_x.c
+| | > =====================================================================
+| | > --- linux-2.6.git.orig/arch/x86/kernel/apic/x2apic_uv_x.c
+| | > +++ linux-2.6.git/arch/x86/kernel/apic/x2apic_uv_x.c
+| | > @@ -584,15 +584,21 @@ void __init uv_system_init(void)
+| | >  
+| | >  	bytes = sizeof(struct uv_blade_info) * uv_num_possible_blades();
+| | >  	uv_blade_info = kmalloc(bytes, GFP_KERNEL);
+| | > +	if (!uv_blade_info)
+| | > +		goto err_nomem;
+| | 
+| | hm, i think a BUG_ON() might be shorter and more appropriate here. 
+| | We really shouldnt be running out of memory during system init.
+| | 
+| | 	Ingo
+| | 
+| 
+| Yeah, indeed! I was thinking of __GPF_NOFAIL here as well with
+| message on top like pr_debug("UV: allocating memory\n") or something
+| like that. It would make it even cleaner I guess. Hmm?
+| 
+| 	-- Cyrill
 
-Super ! :)
+Here is an updated one.
 
-So, back to my original point : do you agree on the usefulness of
-separating fallback irq-disabling from the per-cpu atomic construct ?
+	-- Cyrill
+---
+From: Cyrill Gorcunov <gorcunov@openvz.org>
+Subject: [PATCH -tip] x86: uv - prevent NULL dereference in uv_system_init
 
-e.g. :
+We may reach NULL dereference oops if kmalloc failed.
+Prevent it with explisit BUG_ON.
 
-__inc_zone_state
-  percpu_add_return_irq(var);
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
+ arch/x86/kernel/apic/x2apic_uv_x.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-inc_zone_state
-  percpu_irqsave(flags);
-  __inc_zone_state()
-  percpu_irqrestore(flags);
-
-This would require that percpu_add_return_irq should always be called
-either in :
-  - irq disabled code paths
-  - in code paths surrounded by percpu_irqsave/restore.
-
-In this example :
-
-x86 would map :
-
-percpu_irqsave/restore to "nothing".
-percpu_add_return_irq to xadd instruction. It is irq-safe by design.
-
-Other architectures (fallback) would map
-
-percpu_irqsave/restore to local_irq_save/restore.
-percpu_add_return_irq to var += value; return var;
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Index: linux-2.6.git/arch/x86/kernel/apic/x2apic_uv_x.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic/x2apic_uv_x.c
++++ linux-2.6.git/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -584,15 +584,18 @@ void __init uv_system_init(void)
+ 
+ 	bytes = sizeof(struct uv_blade_info) * uv_num_possible_blades();
+ 	uv_blade_info = kmalloc(bytes, GFP_KERNEL);
++	BUG_ON(!uv_blade_info);
+ 
+ 	get_lowmem_redirect(&lowmem_redir_base, &lowmem_redir_size);
+ 
+ 	bytes = sizeof(uv_node_to_blade[0]) * num_possible_nodes();
+ 	uv_node_to_blade = kmalloc(bytes, GFP_KERNEL);
++	BUG_ON(!uv_node_to_blade);
+ 	memset(uv_node_to_blade, 255, bytes);
+ 
+ 	bytes = sizeof(uv_cpu_to_blade[0]) * num_possible_cpus();
+ 	uv_cpu_to_blade = kmalloc(bytes, GFP_KERNEL);
++	BUG_ON(!uv_cpu_to_blade);
+ 	memset(uv_cpu_to_blade, 255, bytes);
+ 
+ 	blade = 0;
