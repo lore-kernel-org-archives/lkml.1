@@ -1,81 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759105AbZEAMhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759851AbZEAMi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759105AbZEAMhy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 08:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZEAMhp
+	id S1759851AbZEAMi0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 08:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758213AbZEAMiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 08:37:45 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58467 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754591AbZEAMho (ORCPT
+	Fri, 1 May 2009 08:38:15 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:53461 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755262AbZEAMiO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 08:37:44 -0400
-Date: Fri, 1 May 2009 13:37:28 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Michal Simek <monstr@monstr.eu>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
-       Remis Lima Baima <remis.developer@googlemail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 04/27] asm-generic: add legacy I/O header files
-Message-ID: <20090501123728.GC27799@flint.arm.linux.org.uk>
-Mail-Followup-To: Michal Simek <monstr@monstr.eu>,
-	Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
-	Remis Lima Baima <remis.developer@googlemail.com>,
-	linux-kernel@vger.kernel.org
-References: <cover.1241105648.git.arnd@arndb.de> <10b3a32656e5552458db7412ef9ff8530d5f92aa.1241105648.git.arnd@arndb.de> <c1a198be0904302309w4154f97dqddd0b2df1924a821@mail.gmail.com> <200905011422.29753.arnd@arndb.de> <49FAEA2A.50504@monstr.eu>
+	Fri, 1 May 2009 08:38:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Wg0H2NkArzihAPPL+frmmTUKzzhgIo8PhbdZ7k9CLSbDWKfaxnTZtDARDLNAvDjMLN
+         UuOySaQLtAqEHkzsmizcNVFNiDKcJTTwQ2HcHfIpAdcNzfGHBEc+rqgHtHlkkcDo+XUJ
+         bbGTcnZkbQtMkJiweAvYxkEO/DL28zdqOYAvo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49FAEA2A.50504@monstr.eu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <ac3eb2510905010413y6b35e817nf948cedbe076cd4d@mail.gmail.com>
+References: <1241097822.2516.3.camel@poy>
+	 <9b2b86520905010319g4b1e915ejc5c17baa519f3d35@mail.gmail.com>
+	 <ac3eb2510905010413y6b35e817nf948cedbe076cd4d@mail.gmail.com>
+Date: Fri, 1 May 2009 13:38:13 +0100
+Message-ID: <9b2b86520905010538p2d781eedhd7bed86ab908c990@mail.gmail.com>
+Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Jan Blunck <jblunck@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 02:25:14PM +0200, Michal Simek wrote:
-> Arnd Bergmann wrote:
-> > On Friday 01 May 2009, Michal Simek wrote:
-> >>> +/*
-> >>> + * CLOCK_TICK_RATE is highly PC-specific and should not
-> >>> + * be used in portable code. 1193182 is the value for the
-> >>> + * original i8253 PIC.
-> >>> + */
-> >>> +#ifndef CLOCK_TICK_RATE
-> >>> +#define CLOCK_TICK_RATE                1193182
-> >>> +#endif
-> >>
-> >> Why is this in generic code?
-> > 
-> > CLOCK_TICK_RATE is only used in a few places:
-> > 
-> > drivers/char/vt_ioctl.c:                        arg = CLOCK_TICK_RATE / arg;
-> > drivers/char/vt_ioctl.c:                        count = CLOCK_TICK_RATE / count;
-> > drivers/clocksource/acpi_pm.c:  ((CALIBRATE_LATCH * (PMTMR_TICKS_PER_SEC >> 10)) / (CLOCK_TICK_RATE>>10))
-> > drivers/input/joystick/analog.c:#define DELTA(x,y)      (cpu_has_tsc ? ((y) - (x)) : ((x) - (y) + ((x) < (y) ? CLOCK_TICK_RATE / HZ : 0
-> > drivers/rtc/rtc-pxa.c:#define TIMER_FREQ                CLOCK_TICK_RATE
-> > drivers/serial/serial_ks8695.c:         .uartclk        = CLOCK_TICK_RATE * 16,
-> > drivers/watchdog/davinci_wdt.c: timer_margin = (((u64)heartbeat * CLOCK_TICK_RATE) & 0xffffffff);
-> > drivers/watchdog/davinci_wdt.c: timer_margin = (((u64)heartbeat * CLOCK_TICK_RATE) >> 32);
-> > drivers/watchdog/ks8695_wdt.c:  unsigned long tval = wdt_time * CLOCK_TICK_RATE;
-> > include/linux/jiffies.h:#define LATCH  ((CLOCK_TICK_RATE + HZ/2) / HZ)  /* For divider */
-> > include/linux/jiffies.h:#define ACTHZ (SH_DIV (CLOCK_TICK_RATE, LATCH, 8))
-> > include/linux/timex.h: *        Moved CLOCK_TICK_RATE, CLOCK_TICK_FACTOR and FINETUNE to asm/timex.h
-> > sound/oss/pas2_pcm.c:           foo = ((CLOCK_TICK_RATE / 2) + (arg / 2)) / arg;
-> > sound/oss/pas2_pcm.c:           arg = ((CLOCK_TICK_RATE / 2) + (foo / 2)) / foo;
-> > sound/oss/pas2_pcm.c:           foo = (CLOCK_TICK_RATE + (arg / 2)) / arg;
-> > sound/oss/pas2_pcm.c:           arg = (CLOCK_TICK_RATE + (foo / 2)) / foo;
-> > 
-> > All of these are either PC-specific, or they don't actually care
-> > about the specific value. Most architectures just use the
-> > value from the IBM PC, so we might as well make that the generic
-> > default.
-> 
-> ok. Let's move out from arch to generic location.
+On 5/1/09, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> On Fri, May 1, 2009 at 12:19, Alan Jenkins
+> <sourcejedi.lkml@googlemail.com> wrote:
+>> On 4/30/09, Kay Sievers <kay.sievers@vrfy.org> wrote:
+>
+>>> With the kernel populated /dev, existing initramfs or kernel-mount
+>>> bootup logic can be optimized to be more efficient, and not to require a
+>>> full coldplug run, which is currently needed to bootstrap the inital
+>>> /dev directory content, before continuing bringing up the rest of
+>>> the system. There will be no missed events to replay, because /dev is
+>>> available before the first kernel device is registered with the core.
+>>> A coldplug run can take, depending on the speed of the system and the
+>>> amount of devices which need to be handled, from one to several seconds.
+>>
+>> Aren't you overeaching in your claims here?  I'm sure you can't avoid
+>> at least one coldplug run on a contemporary general purpose system,
+>
+> You still need coldplug, sure. But distros have 2 full coldplugs
+> today, one in initramfs, one in the rootfs.
+>
+>> because you lose so much of the functionality provided by udev.
+>
+> No, udev will do the same thing as it does today, it will not be
+> different, it's just that the colplug can run in parallel with other
+> stuff, and the initramfs coldplug can be much simplified, or even
+> avoided.
 
-That's only possible once the users have been fixed - otherwise the ARM
-stuff listed above _will_ break.
+Ok, I can see there's no problem there, given that coldplug still
+happens eventually.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+>> I'm
+>> sure of that, but it would be nice if you could address it in the
+>> changelog.  And modern initramfs' require udev RUN rules to read UUIDs
+>> and set up LVM.
+>
+> A simple uuid/label lookup will not need a full coldplug run in
+> initramfs. You just need to start udev, and wait for the links to show
+> up.Possibly running triggering block events, but not the hundreds of
+> other devices.
+
+Assuming you have all the necessary modules loaded!  I guess that's
+easy enough though
+
+find /sys -name modalias -exec cat \{\} \; | xargs -n 1 modprobe -Qa
+
+bonus: increase "-n" for reduced modprobe fork overhead.
+
+>> I'm loving this for embedded, init=/bin/sh, and rescue floppies :-).
+>> But I can't understand how you plan to use this as an optimisation.
+>>
+>> And - I'm sure you must have considered this in a moment of madness -
+>> do you know why we couldn't just start _udev_ "before the first kernel
+>> device is registered with the core"?
+>
+> I think it's pretty obvious, that this is the fastest you can get for
+> /dev. And it's not about the time when udev is started, its about
+> doing the stuff when the devices are created, and not to need to redo
+> it at bootup, or do it even twice.
+
+Ok, yes.  I can see that cutting initramfs coldplug down to size is a win.
+
+I thought it was a useful comparison.  Start udev early enough, and
+you could avoid re-doing absolutely anything.  Thinking about, the
+reasons it doesn't work are
+
+a) running before /dev/null and /dev/console requires hacks
+b) it requires an initramfs
+c) it pulls everything that hooks into or otherwise affects udev into
+the initramfs; that's much more than we have at present, and a bigger
+initramfs' can only make bootup _slower_.
+
+Regards
+Alan
