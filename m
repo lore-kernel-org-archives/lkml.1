@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763194AbZEAVy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760488AbZEAV76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763194AbZEAVy1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 17:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbZEAVyR
+	id S1760488AbZEAV76 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 17:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbZEAV7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 17:54:17 -0400
-Received: from www.tglx.de ([62.245.132.106]:35878 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751848AbZEAVyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 17:54:16 -0400
-Date: Fri, 1 May 2009 23:53:17 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>
-Subject: Re: [Announce] 2.6.29.2-rt10
-In-Reply-To: <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain> <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain> <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>
- <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain> <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain> <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain> <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>
- <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain> <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain> <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain> <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain>
- <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain> <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 1 May 2009 17:59:48 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:56751 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753875AbZEAV7s convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 17:59:48 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090501122625.a60ccbbe.akpm@linux-foundation.org>
+References: <1241097822.2516.3.camel@poy> <20090430222900.c13b63d5.akpm@linux-foundation.org> 
+	<ac3eb2510905010416q36c9e155ya4131cf82dfd13bc@mail.gmail.com> 
+	<20090501122625.a60ccbbe.akpm@linux-foundation.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Fri, 1 May 2009 23:59:32 +0200
+Message-ID: <ac3eb2510905011459i6cbf1199ua0670b82097a0309@mail.gmail.com>
+Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, greg@kroah.com, jblunck@suse.de
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the next update to our new preempt-rt
-series.
- 
-     - ioperm fix for x86/32bit
-     - hrtimer fix for !highres
-     - futex updates (Darren Hart)
-     - sys_rt_tgsigqueueinfo added for testing
+On Fri, May 1, 2009 at 21:26, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Fri, 1 May 2009 13:16:22 +0200
+> Kay Sievers <kay.sievers@vrfy.org> wrote:
+>
+>> On Fri, May 1, 2009 at 07:29, Andrew Morton <akpm@linux-foundation.org> wrote:
+>>
+>> > dev->type->nodename() might have failed due to -ENOMEM, in which case
+>> > it seems wrong to assume that it returned NULL for <whatever reason you
+>> > thought it might want to return NULL>.
+>> >
+>> > It's all a bit confused.
+>>
+>> This logic is only for providing a custom name hint. Only a few
+>> devices need that at all. If the allocation fails, the default name
+>> will be used, not the custom name.
+>
+> But that's bad, isn't it?  It means that the kernel will come up with
+> one name if the memory allocation succeeded, and a different name if
+> the allocation failed.
 
-The MIPS support is still work in progress, but I expect that it will
-hit -rt12.
+Yeah, sure, it's bad. But I think we have pretty much lost anyway, if
+we run into oom at this stage.
 
-Download locations:
+What should we do instead? If we, for some reason, can not get a
+possible custom name?
 
-    http://rt.et.redhat.com/download/
-    http://www.kernel.org/pub/linux/kernel/projects/rt/
-
-Information on the RT patch can be found at:
-
-    http://rt.wiki.kernel.org/index.php/Main_Page
-
-to build the 2.6.29.2-rt11 tree, the following patches should be
-applied:
-
-    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.2.tar.bz2
-    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29.2-rt11.bz2
-
-The broken out patches are also available at the same download
-locations.
-
-Enjoy !
-
-       tglx
+Thanks,
+Kay
