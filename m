@@ -1,55 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764924AbZEAUWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765426AbZEAUYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764924AbZEAUWU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 16:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZEAUWJ
+	id S1765426AbZEAUYR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 16:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757449AbZEAUYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 16:22:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46592 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750940AbZEAUWG (ORCPT
+	Fri, 1 May 2009 16:24:05 -0400
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:60853 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752922AbZEAUYE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 16:22:06 -0400
-Date: Fri, 1 May 2009 13:10:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: john stultz <johnstul@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, rmk+lkml@arm.linux.org.uk,
-       cooloney@kernel.org, starvik@axis.com, takata@linux-m32r.org,
-       geert@linux-m68k.org, zippel@linux-m68k.org, lethal@linux-sh.org,
-       magnus.damm@gmail.com, wli@holomorphy.com, rth@twiddle.net
-Subject: Re: [RESEND][PATCH 2/2] Convert sh to use arch_getoffset()
- infrastructure.
-Message-Id: <20090501131006.fa631417.akpm@linux-foundation.org>
-In-Reply-To: <1239759393.6064.30.camel@localhost>
-References: <1239759163.6064.25.camel@localhost>
-	<1239759251.6064.27.camel@localhost>
-	<1239759393.6064.30.camel@localhost>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 1 May 2009 16:24:04 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AugEAOvw+klMQW1W/2dsb2JhbACBUM4eg30F
+Date: Fri, 1 May 2009 16:24:00 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Christoph Lameter <cl@linux.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yuriy Lalym <ylalym@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
+       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [ltt-dev] [PATCH] Fix dirty page accounting in
+	redirty_page_for_writepage()
+Message-ID: <20090501202400.GA20280@Krystal>
+References: <20090430065055.GA16277@elte.hu> <alpine.DEB.1.10.0904300926530.22262@qirst.com> <20090430141211.GB5922@Krystal> <alpine.DEB.1.10.0904301009530.14178@qirst.com> <20090430194158.GB12926@Krystal> <alpine.DEB.1.10.0904301559500.11923@qirst.com> <20090430211750.GA19933@Krystal> <alpine.DEB.1.10.0905010939090.18324@qirst.com> <20090501192142.GA18339@Krystal> <alpine.DEB.1.10.0905011527260.7795@qirst.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0905011527260.7795@qirst.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:16:03 up 62 days, 16:42,  2 users,  load average: 0.63, 0.87,
+	0.67
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Apr 2009 18:36:33 -0700
-john stultz <johnstul@us.ibm.com> wrote:
-
-> This patch converts sh to use GENERIC_TIME via the arch_getoffset()
-> infrastructure 
+* Christoph Lameter (cl@linux.com) wrote:
+> On Fri, 1 May 2009, Mathieu Desnoyers wrote:
 > 
-> I have tried cross-compiling this for sh3 and sh4. Also little has
-> changed since my last submission where it was acked. So I've taken my
-> best swing at converting this, but I'm not 100% confident I got it
-> right. Any assistance from arch maintainers or testers would be great.
+> > What I do here is to let those u8 counters increment as free-running
+> > counters. Yes, they will periodically overflow the 8 bits. But I don't
+> > rely on this for counting the number of increments we need between
+> > global counter updates : I use the bitmask taken from the threshold
+> > value (which is now required to be a power of two) to detect 0, 1, 2, 3,
+> > 4, 5, 6 or 7-bit counter overflow. Therefore we can still have the kind
+> > of granularity currently provided. The only limitation is that we have
+> > to use powers of two for the threshold, so we end up counting in power
+> > of two modulo, which will be unaffected by the u8 overflow.
+> 
+> Ack. Got it. Looks good.
+> 
 
-arch/sh/kernel/timers/timer-cmt.c has just vanished from linux-next and
-I didn't find it popping up anywhere else, so I simply dropped that hunk
-from the patch.
+Super ! :)
 
-I'll send these patches at Thomas before they bitrot any further.
+So, back to my original point : do you agree on the usefulness of
+separating fallback irq-disabling from the per-cpu atomic construct ?
 
-What's the status of
-clocksource-sanity-check-sysfs-clocksource-changes.patch, btw?  I have
-it marked as "still an RFC", but it's been sitting here since January?
+e.g. :
 
+__inc_zone_state
+  percpu_add_return_irq(var);
+
+inc_zone_state
+  percpu_irqsave(flags);
+  __inc_zone_state()
+  percpu_irqrestore(flags);
+
+This would require that percpu_add_return_irq should always be called
+either in :
+  - irq disabled code paths
+  - in code paths surrounded by percpu_irqsave/restore.
+
+In this example :
+
+x86 would map :
+
+percpu_irqsave/restore to "nothing".
+percpu_add_return_irq to xadd instruction. It is irq-safe by design.
+
+Other architectures (fallback) would map
+
+percpu_irqsave/restore to local_irq_save/restore.
+percpu_add_return_irq to var += value; return var;
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
