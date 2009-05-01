@@ -1,222 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765397AbZEAWyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765057AbZEAW4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765397AbZEAWyT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 18:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755737AbZEAWyH
+	id S1765057AbZEAW4v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 18:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760988AbZEAW4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 18:54:07 -0400
-Received: from wa4ehsobe003.messaging.microsoft.com ([216.32.181.13]:16697
-	"EHLO WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758660AbZEAWyF (ORCPT
+	Fri, 1 May 2009 18:56:42 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:52662 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757754AbZEAW4l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 18:54:05 -0400
-X-Greylist: delayed 904 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 May 2009 18:54:05 EDT
-X-BigFish: VPS-14(zz14c3M936eQ655Nzz1202hzzz2fh6bh15fn61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-Message-ID: <49FB79CF.3020101@am.sony.com>
-Date: Fri, 1 May 2009 15:38:07 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: linux kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: [PATCH 2/2] ftrace: add function-graph tracer support for ARM v2
-Content-Type: text/plain; charset="ISO-8859-1"
+	Fri, 1 May 2009 18:56:41 -0400
+Subject: Re: [BUG] 2.6.30-rc4 hid bluetooth not working
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Marc Pignat <Marc.Pignat@hevs.ch>, ext-roger.quadros@nokia.com,
+       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LNX.2.00.0905020019360.22532@wotan.suse.de>
+References: <49FA604C020000BF000290B6@mailgw2.hevs.ch>
+	 <alpine.LNX.2.00.0905020019360.22532@wotan.suse.de>
+Content-Type: text/plain
+Date: Fri, 01 May 2009 15:56:34 -0700
+Message-Id: <1241218594.3156.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 May 2009 22:38:08.0132 (UTC) FILETIME=[7FEF6C40:01C9CAAD]
-X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add ftrace function-graph tracer support for ARM.
+Hi Jiri,
 
-This includes adding code in mcount to check for
-(and call) a registered function graph trace entry
-routine, and adding infrastructure to support a return
-trampoline to the threadinfo structure.
+> > Subject: bluetooth: Fix serialization when adding/deleting connections in hci_sysfs
+> > 
+> > add_conn and del_conn should be serialized, but flush_workqueue can't be used
+> > by the worker thread on it's own queue, so use flush_work to serialize add_conn
+> > and del_conn against each other.
+> > 
+> > Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
+> 
+> Acked-by: Jiri Kosina <jkosina@suse.cz>
+> 
+> FWIW.
 
-The code in arch/arm/kernel/ftrace_return.c was
-cloned from arch/x86/kernel/ftrace.c
+nak from my side since I think it is the wrong fix. We really wanna wait
+for all works to finish here. This includes work from other connection
+attempts or terminations.
 
-IRQENTRY_TEXT was added to vmlinux.lds.S (to eliminate
-a compiler error on kernel/trace/trace_functions_graph.c),
-although no routines were marked as __irq_entry.
+Regards
 
-This works for me with a gcc 4.1.1 compiler on an
-OMAP OSK board.  This is against -tip (or at least,
--tip a few weeks ago - 2.6.30-rc3)
+Marcel
 
-This (v2) patch addresses previously received feedback,
-except for one issue.  In this version of the code,
-a function_graph tracer overrides regular function
-tracers.  I'll try to address that in a subsequent
-patch, but I didn't want to go too long without posting
-something.
-
-Note: this code is much cleaner now that much of the
-common return-handling code was moved into
-kernel/trace_functions_graph.c
-
-Signed-off-by: Tim Bird <tim.bird@am.sony.com>
----
- arch/arm/Kconfig                |    1
- arch/arm/kernel/Makefile        |    4 +--
- arch/arm/kernel/entry-common.S  |   34 ++++++++++++++++++++++++++++++
- arch/arm/kernel/ftrace_return.c |   44 ++++++++++++++++++++++++++++++++++++++++
- arch/arm/kernel/vmlinux.lds.S   |    1
- 5 files changed, 81 insertions(+), 3 deletions(-)
-
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -17,6 +17,7 @@ config ARM
- 	select HAVE_KPROBES if (!XIP_KERNEL)
- 	select HAVE_KRETPROBES if (HAVE_KPROBES)
- 	select HAVE_FUNCTION_TRACER if (!XIP_KERNEL)
-+	select HAVE_FUNCTION_GRAPH_TRACER if (!XIP_KERNEL)
- 	select HAVE_GENERIC_DMA_COHERENT
- 	help
- 	  The ARM series is a line of low-power-consumption RISC chip designs
---- a/arch/arm/kernel/Makefile
-+++ b/arch/arm/kernel/Makefile
-@@ -4,9 +4,8 @@
-
- AFLAGS_head.o := -DTEXT_OFFSET=$(TEXT_OFFSET)
-
--ifdef CONFIG_DYNAMIC_FTRACE
- CFLAGS_REMOVE_ftrace.o = -pg
--endif
-+CFLAGS_REMOVE_ftrace_return.o = -pg
-
- # Object file lists.
-
-@@ -23,6 +22,7 @@ obj-$(CONFIG_ISA_DMA)		+= dma-isa.o
- obj-$(CONFIG_PCI)		+= bios32.o isa.o
- obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
-+obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace_return.o
- obj-$(CONFIG_KEXEC)		+= machine_kexec.o relocate_kernel.o
- obj-$(CONFIG_KPROBES)		+= kprobes.o kprobes-decode.o
- obj-$(CONFIG_ATAGS_PROC)	+= atags.o
---- a/arch/arm/kernel/entry-common.S
-+++ b/arch/arm/kernel/entry-common.S
-@@ -112,6 +112,11 @@ ENTRY(mcount)
- 	mov r0, lr
- 	sub r0, r0, #MCOUNT_INSN_SIZE
-
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+	@ FIXTHIS - DYNAMIC_FTRACE does not support function graph tracing
-+	@ when the dynamic work is revived, this should be supported as well
-+#endif
-+
- 	.globl mcount_call
- mcount_call:
- 	bl ftrace_stub
-@@ -139,8 +144,16 @@ ENTRY(mcount)
- 	adr r0, ftrace_stub
- 	cmp r0, r2
- 	bne trace
-+
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+	ldr r1, =ftrace_graph_return
-+	ldr r2, [r1]
-+	cmp r0, r2		@ if *ftrace_graph_return != ftrace_stub
-+	bne ftrace_graph_caller
-+#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
-+
- 	ldr lr, [fp, #-4]			@ restore lr
--	ldmia sp!, {r0-r3, pc}
-+	ldmia sp!, {r0-r3, pc}			@ return doing nothing
-
- trace:
- 	ldr r1, [fp, #-4]			@ lr of instrumented routine
-@@ -151,6 +164,25 @@ trace:
- 	mov lr, r1				@ restore lr
- 	ldmia sp!, {r0-r3, pc}
-
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+ENTRY(ftrace_graph_caller)
-+	sub r0, fp, #4			@ &lr of instrumented routine (&parent)
-+	mov r1, lr			@ instrumented routine (func)
-+	sub r1, r1, #MCOUNT_INSN_SIZE
-+	bl prepare_ftrace_return
-+	ldr lr, [fp, #-4]		@ restore lr
-+	ldmia sp!, {r0-r3, pc}
-+
-+	.globl return_to_handler
-+return_to_handler:
-+	stmdb sp!, {r0-r3}
-+	bl ftrace_return_to_handler
-+	mov lr, r0			@ r0 has real ret addr
-+	ldmia sp!, {r0-r3}
-+	mov pc, lr
-+
-+#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
-+
- #endif /* CONFIG_DYNAMIC_FTRACE */
-
- 	.globl ftrace_stub
---- /dev/null
-+++ b/arch/arm/kernel/ftrace_return.c
-@@ -0,0 +1,44 @@
-+/*
-+ * function return tracing support.
-+ *
-+ * Copyright (C) 2009 Tim Bird <tim.bird@am.sony.com>
-+ *
-+ * For licencing details, see COPYING.
-+ *
-+ * Defines routine needed for ARM return trampoline for tracing
-+ * function exits.
-+ */
-+
-+#include <linux/ftrace.h>
-+
-+/*
-+ * Hook the return address and push it in the stack of return addrs
-+ * in current thread info.
-+ */
-+void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
-+{
-+	unsigned long old;
-+
-+	struct ftrace_graph_ent trace;
-+	unsigned long return_hooker = (unsigned long)
-+				&return_to_handler;
-+
-+	if (unlikely(atomic_read(&current->tracing_graph_pause)))
-+		return;
-+
-+	old = *parent;
-+	*parent = return_hooker;
-+
-+	if (ftrace_push_return_trace(old, self_addr, &trace.depth) == -EBUSY) {
-+		*parent = old;
-+		return;
-+	}
-+
-+	trace.func = self_addr;
-+
-+	/* Only trace if the calling function expects to */
-+	if (!ftrace_graph_entry(&trace)) {
-+		current->curr_ret_stack--;
-+		*parent = old;
-+	}
-+}
---- a/arch/arm/kernel/vmlinux.lds.S
-+++ b/arch/arm/kernel/vmlinux.lds.S
-@@ -99,6 +99,7 @@ SECTIONS
- 			SCHED_TEXT
- 			LOCK_TEXT
- 			KPROBES_TEXT
-+			IRQENTRY_TEXT
- #ifdef CONFIG_MMU
- 			*(.fixup)
- #endif
 
