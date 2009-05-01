@@ -1,216 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764858AbZEATiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764894AbZEATlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764858AbZEATiS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 15:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756152AbZEATiF
+	id S1764894AbZEATlT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 15:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbZEATlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 15:38:05 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:57539 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753039AbZEATiB (ORCPT
+	Fri, 1 May 2009 15:41:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57205 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753017AbZEATlI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 15:38:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=nIxLCC6JllVPdGFwozgNPXTSwtqpAUCGOly+A3WN99pD4tmx7VnBlxik1lgsQIzKG5
-         2L56W/achGzu4/n3CbF7W5cs2ReKSpr8UP+9WzGX9cloJWgdETOPTXGCrvIBfMZb0OAh
-         TlX/5aZd9z/NcR9d5jj213zqqqAZqFpTD3nOI=
-MIME-Version: 1.0
-In-Reply-To: <4e5e476b0904260543r589be3a4k96884cd079641a7@mail.gmail.com>
-References: <4e5e476b0904221407v7f43c058l8fc61198a2e4bb6e@mail.gmail.com>
-	 <49F05699.2070006@cse.unsw.edu.au>
-	 <4e5e476b0904230910r685e8300oa2323e8985c97a00@mail.gmail.com>
-	 <20090424063944.GA4593@kernel.dk>
-	 <4e5e476b0904240907h61efc0ej93d04488003ec104@mail.gmail.com>
-	 <4e5e476b0904241437h2da4371fmf6e24ac543a257d3@mail.gmail.com>
-	 <4e5e476b0904260543r589be3a4k96884cd079641a7@mail.gmail.com>
-Date: Fri, 1 May 2009 21:30:59 +0200
-Message-ID: <4e5e476b0905011230x32ffcbffq388354327710b1a8@mail.gmail.com>
-Subject: Re: Reduce latencies for syncronous writes and high I/O priority 
-	requests in deadline IO scheduler
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Aaron Carroll <aaronc@cse.unsw.edu.au>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Content-Type: multipart/mixed; boundary=0016e6de00293185aa0468dedae0
+	Fri, 1 May 2009 15:41:08 -0400
+Date: Fri, 1 May 2009 12:35:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: elladan@eskimo.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
+       tytso@mit.edu, kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
+Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
+Message-Id: <20090501123541.7983a8ae.akpm@linux-foundation.org>
+In-Reply-To: <49FB01C1.6050204@redhat.com>
+References: <20090428044426.GA5035@eskimo.com>
+	<20090428192907.556f3a34@bree.surriel.com>
+	<1240987349.4512.18.camel@laptop>
+	<20090429114708.66114c03@cuia.bos.redhat.com>
+	<20090430072057.GA4663@eskimo.com>
+	<20090430174536.d0f438dd.akpm@linux-foundation.org>
+	<20090430205936.0f8b29fc@riellaptop.surriel.com>
+	<20090430181340.6f07421d.akpm@linux-foundation.org>
+	<20090430215034.4748e615@riellaptop.surriel.com>
+	<20090430195439.e02edc26.akpm@linux-foundation.org>
+	<49FB01C1.6050204@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016e6de00293185aa0468dedae0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Fri, 01 May 2009 10:05:53 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
-On Sun, Apr 26, 2009 at 2:43 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
-> * on my machine, there is a regression on sequential write
+> Andrew Morton wrote:
+> 
+> >> When we implement working set protection, we might as well
+> >> do it for frequently accessed unmapped pages too.  There is
+> >> no reason to restrict this protection to mapped pages.
+> > 
+> > Well.  Except for empirical observation, which tells us that biasing
+> > reclaim to prefer to retain mapped memory produces a better result.
+> 
+> That used to be the case because file-backed and
+> swap-backed pages shared the same set of LRUs,
+> while each following a different page reclaim
+> heuristic!
 
-I found that the regression was just an artifact of my testing (the
-test partition was almost full, and the written files were re-created
-at each test, resulting in non-uniform fragmentation across tests).
-Changing the test to preallocate also the write file made the test
-more repeateable, with the result that patched deadline and original
-perform equal.
+No, I think it still _is_ the case.  When reclaim is treating mapped
+and non-mapped pages equally, the end result sucks.  Applications get
+all laggy and humans get irritated.  It may be that the system was
+optimised from an overall throughput POV, but the result was
+*irritating*.
 
-Here is the last patch of the series, that add I/O priority support to
-deadline. All requests are sorted into 3 levels of priorities :
-* 0: async reads/writes, and all Idle class requests
-* 1: sync Best Effort reads/writes, and sync Real Time writes
-* 2: Real Time reads.
+Which led us to prefer to retain mapped pages.  This had nothing at all
+to do with internal impementation details - it was a design objective
+based upon empirical observation of system behaviour.
 
-Aaron, I found your previous attempt at modifying deadline to use
-sync/async instead of read/write.
-My approach is slightly different, since I changed only the fifos to
-respect the new scheme, while the RB trees are still partitioned as
-reads vs writes.
-Since the RB trees are used for merging and for batch formation,
-having the RB trees as in original deadline should guarantee the same
-success rate for merging, and allow to create longer batches that span
-across priority levels, when requests on a given priority level are
-too few to fully utilize the disk bandwidth (this is usually the case
-for writes, where we have few sync writes to the journal, mixed with
-lots of async writes to the data).
+> Today:
+> 1) file-backed and swap-backed pages are separated,
+> 2) the majority of mapped pages are on the swap-backed LRUs
+> 3) the accessed bit on active pages no longer means much,
+>     for good scalability reasons, and
+> 4) because of (3), we cannot really provide special treatment
+>     to any individual page any more, however
+> 
+> This means we need to provide our working set protection
+> on a per-list basis, by tweaking the scan rate or avoiding
+> scanning of the active file list alltogether under certain
+> conditions.
+> 
+> As a side effect, this will help protect frequently accessed
+> file pages (good for ftp and nfs servers), indirect blocks,
+> inode buffers and other frequently used metadata.
 
-Corrado
+Yeah, but that's all internal-implementation-of-the-day details.  It
+just doesn't matter how the sausages are made.  What we have learned is
+that the policy of retaining mapped pages over unmapped pages, *all
+other things being equal* leads to a more pleasing system.
 
--- 
-__________________________________________________________________________
 
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
-
---0016e6de00293185aa0468dedae0
-Content-Type: application/octet-stream; name=deadline-patch-rt
-Content-Disposition: attachment; filename=deadline-patch-rt
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fu79qmpd1
-
-RGVhZGxpbmUgSU9zY2hlZHVsZXIgcnQgcGF0Y2gKClRoaXMgaXMgdGhlIHRoaXJkIChhbmQgbGFz
-dCkgcGF0Y2ggb2YgdGhlIHNlcmllcywgYW5kIGNvbnRhaW5zIHRoZSBjaGFuZ2VzCnRvIHByb3Bh
-Z2F0ZSBJL08gcHJpb3JpdHkgZnJvbSBwcm9jZXNzIHRvIHJlcXVlc3RzLCBhbmQgdXNlIHRoaXMg
-aW5mbwp0byBzY2hlZHVsZSByZXF1ZXN0cy4KClJlcXVlc3RzIGFyZSBjbGFzc2lmaWVkIGluIDMg
-cHJpb3JpdHkgbGV2ZWxzLCBmcm9tIGxvd2VzdCB0byBoaWdoZXN0OgoqIDA6IGFzeW5jIHJlYWRz
-L3dyaXRlcywgYW5kIGFsbCBJZGxlIGNsYXNzIHJlcXVlc3RzCiogMTogc3luYyBCZXN0IEVmZm9y
-dCByZWFkcy93cml0ZXMsIGFuZCBzeW5jIFJlYWwgVGltZSB3cml0ZXMKKiAyOiBzeW5jIFJlYWwg
-VGltZSByZWFkcy4KClNpZ25lZC1vZmYtYnk6IENvcnJhZG8gWm9jY29sbyA8Y3pvY2NvbG9AZ21h
-aWwuY29tPgoKZGlmZiAtLWdpdCBhL2Jsb2NrL2RlYWRsaW5lLWlvc2NoZWQuYyBiL2Jsb2NrL2Rl
-YWRsaW5lLWlvc2NoZWQuYwppbmRleCA1N2U2N2M4Li4xYjlmZDUxIDEwMDY0NAotLS0gYS9ibG9j
-ay9kZWFkbGluZS1pb3NjaGVkLmMKKysrIGIvYmxvY2svZGVhZGxpbmUtaW9zY2hlZC5jCkBAIC0x
-Nyw5ICsxNywxMCBAQAogLyoKICAqIFNlZSBEb2N1bWVudGF0aW9uL2Jsb2NrL2RlYWRsaW5lLWlv
-c2NoZWQudHh0CiAgKi8KK3N0YXRpYyBjb25zdCBpbnQgcnRfc3luY19leHBpcmUgPSBIWiAvIDg7
-ICAvKiBtYXggdGltZSBiZWZvcmUgYSByZWFsLXRpbWUgc3luYyBvcGVyYXRpb24gaXMgc3VibWl0
-dGVkLiAqLwogc3RhdGljIGNvbnN0IGludCBzeW5jX2V4cGlyZSA9IEhaIC8gMjsgICAgIC8qIG1h
-eCB0aW1lIGJlZm9yZSBhIHN5bmMgb3BlcmF0aW9uIGlzIHN1Ym1pdHRlZC4gKi8KIHN0YXRpYyBj
-b25zdCBpbnQgYXN5bmNfZXhwaXJlID0gNSAqIEhaOyAgICAvKiBkaXR0byBmb3IgYXN5bmMgb3Bl
-cmF0aW9ucywgdGhlc2UgbGltaXRzIGFyZSBTT0ZUISAqLwotc3RhdGljIGNvbnN0IGludCBhc3lu
-Y19zdGFydmVkID0gMjsgICAgICAgIC8qIG1heCB0aW1lcyBTWU5DIGNhbiBzdGFydmUgQVNZTkMg
-cmVxdWVzdHMgKi8KK3N0YXRpYyBjb25zdCBpbnQgYXN5bmNfc3RhcnZlZCA9IDM7ICAgICAgICAv
-KiBtYXggdGltZXMgU1lOQyBjYW4gc3RhcnZlIEFTWU5DIHJlcXVlc3RzICovCiBzdGF0aWMgY29u
-c3QgaW50IGZpZm9fYmF0Y2ggPSAxNjsgICAgICAgLyogIyBvZiBzZXF1ZW50aWFsIHJlcXVlc3Rz
-IHRyZWF0ZWQgYXMgb25lCiAJCQkJICAgICBieSB0aGUgYWJvdmUgcGFyYW1ldGVycy4gRm9yIHRo
-cm91Z2hwdXQuICovCiAKQEAgLTMyLDcgKzMzLDcgQEAgc3RydWN0IGRlYWRsaW5lX2RhdGEgewog
-CSAqIHJlcXVlc3RzIChkZWFkbGluZV9ycSBzKSBhcmUgcHJlc2VudCBvbiBib3RoIHNvcnRfbGlz
-dCBhbmQgZmlmb19saXN0CiAJICovCiAJc3RydWN0IHJiX3Jvb3Qgc29ydF9saXN0WzJdOyAvKiBS
-RUFELCBXUklURSAqLwotCXN0cnVjdCBsaXN0X2hlYWQgZmlmb19saXN0WzJdOyAvKiAwPUFTWU5D
-LCAxPVNZTkMgKi8KKwlzdHJ1Y3QgbGlzdF9oZWFkIGZpZm9fbGlzdFszXTsgLyogMD1BU1lOQyAo
-b3IgSURMRSksIDE9U1lOQyAob3IgUlQgQVNZTkMpLCAyPVJUIFNZTkMgKi8KIAogCS8qCiAJICog
-bmV4dCBpbiBzb3J0IG9yZGVyLgpAQCAtNDQsNyArNDUsNyBAQCBzdHJ1Y3QgZGVhZGxpbmVfZGF0
-YSB7CiAJLyoKIAkgKiBzZXR0aW5ncyB0aGF0IGNoYW5nZSBob3cgdGhlIGkvbyBzY2hlZHVsZXIg
-YmVoYXZlcwogCSAqLwotCWludCBmaWZvX2V4cGlyZVsyXTsKKwlpbnQgZmlmb19leHBpcmVbM107
-CiAJaW50IGZpZm9fYmF0Y2g7CiAJaW50IGFzeW5jX3N0YXJ2ZWQ7CiAJaW50IGZyb250X21lcmdl
-czsKQEAgLTk2LDEwICs5Nyw2NSBAQCBkZWFkbGluZV9kZWxfcnFfcmIoc3RydWN0IGRlYWRsaW5l
-X2RhdGEgKmRkLCBzdHJ1Y3QgcmVxdWVzdCAqcnEpCiAJZWx2X3JiX2RlbChkZWFkbGluZV9yYl9y
-b290KGRkLCBycSksIHJxKTsKIH0KIAorc3RhdGljIGludCBpb3ByaW9fbHViKHVuc2lnbmVkIHNo
-b3J0IGFwcmlvLCB1bnNpZ25lZCBzaG9ydCBicHJpbykKK3sKKwl1bnNpZ25lZCBzaG9ydCBhY2xh
-c3MgPSBJT1BSSU9fUFJJT19DTEFTUyhhcHJpbyk7CisJdW5zaWduZWQgc2hvcnQgYmNsYXNzID0g
-SU9QUklPX1BSSU9fQ0xBU1MoYnByaW8pOworCisJaWYgKGFjbGFzcyA9PSBJT1BSSU9fQ0xBU1Nf
-Tk9ORSkKKwkJcmV0dXJuIGJwcmlvOworCWlmIChiY2xhc3MgPT0gSU9QUklPX0NMQVNTX05PTkUp
-CisJCXJldHVybiBhcHJpbzsKKworCWlmIChhY2xhc3MgPT0gYmNsYXNzKQorCQlyZXR1cm4gbWlu
-KGFwcmlvLCBicHJpbyk7CisJaWYgKGFjbGFzcyA+IGJjbGFzcykKKwkJcmV0dXJuIGJwcmlvOwor
-CWVsc2UKKwkJcmV0dXJuIGFwcmlvOworfQorCitzdGF0aWMgdm9pZAorZGVhZGxpbmVfbWVyZ2Vf
-cHJpb19kYXRhKHN0cnVjdCByZXF1ZXN0X3F1ZXVlICpxLCBzdHJ1Y3QgcmVxdWVzdCAqcnEpCit7
-CisJc3RydWN0IHRhc2tfc3RydWN0ICp0c2sgPSBjdXJyZW50OworCXN0cnVjdCBpb19jb250ZXh0
-ICppb2MgPSBnZXRfaW9fY29udGV4dChHRlBfQVRPTUlDLHEtPm5vZGUpOworCWludCBpb3ByaW9f
-Y2xhc3MgPSBJT1BSSU9fQ0xBU1NfTk9ORTsKKwlpbnQgaW9wcmlvID0gSU9QUklPX05PUk07CisK
-KwlpZihpb2MpIHsKKwkJaW9wcmlvX2NsYXNzID0gdGFza19pb3ByaW9fY2xhc3MoaW9jKTsKKwl9
-CisKKwlzd2l0Y2ggKGlvcHJpb19jbGFzcykgeworCWRlZmF1bHQ6CisJCXByaW50ayhLRVJOX0VS
-UiAiZGVhZGxpbmU6IGJhZCBwcmlvICV4XG4iLCBpb3ByaW9fY2xhc3MpOworCWNhc2UgSU9QUklP
-X0NMQVNTX05PTkU6CisJCS8qCisJCSAqIG5vIHByaW8gc2V0LCBpbmhlcml0IENQVSBzY2hlZHVs
-aW5nIHNldHRpbmdzCisJCSAqLworCQlpb3ByaW8gPSB0YXNrX25pY2VfaW9wcmlvKHRzayk7CisJ
-CWlvcHJpb19jbGFzcyA9IHRhc2tfbmljZV9pb2NsYXNzKHRzayk7CisJCWJyZWFrOworCWNhc2Ug
-SU9QUklPX0NMQVNTX1JUOgorCWNhc2UgSU9QUklPX0NMQVNTX0JFOgorCQlpb3ByaW8gPSB0YXNr
-X2lvcHJpbyhpb2MpOworCQlicmVhazsKKwljYXNlIElPUFJJT19DTEFTU19JRExFOgorCQlpb3By
-aW8gPSA3OworCQlicmVhazsKKwl9CisKKwlpb3ByaW89SU9QUklPX1BSSU9fVkFMVUUoaW9wcmlv
-X2NsYXNzLGlvcHJpbyk7CisJcnEtPmlvcHJpbz1pb3ByaW9fbHViKHJxLT5pb3ByaW8saW9wcmlv
-KTsKK30KKwogc3RhdGljIGludAogZGVhZGxpbmVfY29tcHV0ZV9yZXFfcHJpb3JpdHkoc3RydWN0
-IHJlcXVlc3QgKnJlcSkKIHsKLQlyZXR1cm4gISFycV9pc19zeW5jKHJlcSk7CisJdW5zaWduZWQg
-c2hvcnQgaW9wcmlvX2NsYXNzPUlPUFJJT19QUklPX0NMQVNTKHJlcV9nZXRfaW9wcmlvKHJlcSkp
-OworCXJldHVybiAoaW9wcmlvX2NsYXNzIT1JT1BSSU9fQ0xBU1NfSURMRSkqCisJCSghIXJxX2lz
-X3N5bmMocmVxKSArIChycV9kYXRhX2RpcihyZXEpPT1SRUFEKSooaW9wcmlvX2NsYXNzPT1JT1BS
-SU9fQ0xBU1NfUlQpKTsKIH0KIAogLyoKQEAgLTExMCw2ICsxNjYsNyBAQCBkZWFkbGluZV9hZGRf
-cmVxdWVzdChzdHJ1Y3QgcmVxdWVzdF9xdWV1ZSAqcSwgc3RydWN0IHJlcXVlc3QgKnJxKQogewog
-CXN0cnVjdCBkZWFkbGluZV9kYXRhICpkZCA9IHEtPmVsZXZhdG9yLT5lbGV2YXRvcl9kYXRhOwog
-CisJZGVhZGxpbmVfbWVyZ2VfcHJpb19kYXRhKHEscnEpOwogCWRlYWRsaW5lX2FkZF9ycV9yYihk
-ZCwgcnEpOwogCiAJLyoKQEAgLTE3Myw2ICsyMzAsOCBAQCBzdGF0aWMgdm9pZCBkZWFkbGluZV9t
-ZXJnZWRfcmVxdWVzdChzdHJ1Y3QgcmVxdWVzdF9xdWV1ZSAqcSwKIAkJZWx2X3JiX2RlbChkZWFk
-bGluZV9yYl9yb290KGRkLCByZXEpLCByZXEpOwogCQlkZWFkbGluZV9hZGRfcnFfcmIoZGQsIHJl
-cSk7CiAJfQorCisJZGVhZGxpbmVfbWVyZ2VfcHJpb19kYXRhKHEscmVxKTsKIH0KIAogc3RhdGlj
-IHZvaWQKQEAgLTI2Miw2ICszMjEsNyBAQCBzdGF0aWMgaW5saW5lIGludCBkZWFkbGluZV9jaGVj
-a19maWZvKHN0cnVjdCBkZWFkbGluZV9kYXRhICpkZCwgdW5zaWduZWQgcHJpbykKIHN0YXRpYyBp
-bnQgZGVhZGxpbmVfZGlzcGF0Y2hfcmVxdWVzdHMoc3RydWN0IHJlcXVlc3RfcXVldWUgKnEsIGlu
-dCBmb3JjZSkKIHsKIAlzdHJ1Y3QgZGVhZGxpbmVfZGF0YSAqZGQgPSBxLT5lbGV2YXRvci0+ZWxl
-dmF0b3JfZGF0YTsKKwljb25zdCBpbnQgcnRfcmVxcyA9ICFsaXN0X2VtcHR5KCZkZC0+Zmlmb19s
-aXN0WzJdKTsKIAljb25zdCBpbnQgc3luY19yZXFzID0gIWxpc3RfZW1wdHkoJmRkLT5maWZvX2xp
-c3RbMV0pOwogCWNvbnN0IGludCBhc3luY19yZXFzID0gIWxpc3RfZW1wdHkoJmRkLT5maWZvX2xp
-c3RbMF0pOwogCXN0cnVjdCByZXF1ZXN0ICpycSA9IGRkLT5uZXh0X3JxOwpAQCAtMjc3LDYgKzMz
-NywxMSBAQCBzdGF0aWMgaW50IGRlYWRsaW5lX2Rpc3BhdGNoX3JlcXVlc3RzKHN0cnVjdCByZXF1
-ZXN0X3F1ZXVlICpxLCBpbnQgZm9yY2UpCiAJICogZGF0YSBkaXJlY3Rpb24gKHJlYWQgLyB3cml0
-ZSkKIAkgKi8KIAorCWlmIChydF9yZXFzKSB7CisJCXJlcXVlc3RfcHJpbyA9IDI7CisJCWdvdG8g
-ZGlzcGF0Y2hfZmluZF9yZXF1ZXN0OworCX0KKwogCWlmIChzeW5jX3JlcXMpIHsKIAkJaWYgKGFz
-eW5jX3JlcXMgJiYgKGRkLT5zdGFydmVkKysgPj0gZGQtPmFzeW5jX3N0YXJ2ZWQpKQogCQkJZ290
-byBkaXNwYXRjaF9hc3luYzsKQEAgLTMzOCw3ICs0MDMsOCBAQCBzdGF0aWMgaW50IGRlYWRsaW5l
-X3F1ZXVlX2VtcHR5KHN0cnVjdCByZXF1ZXN0X3F1ZXVlICpxKQogCXN0cnVjdCBkZWFkbGluZV9k
-YXRhICpkZCA9IHEtPmVsZXZhdG9yLT5lbGV2YXRvcl9kYXRhOwogCiAJcmV0dXJuIGxpc3RfZW1w
-dHkoJmRkLT5maWZvX2xpc3RbMF0pCi0JCSYmIGxpc3RfZW1wdHkoJmRkLT5maWZvX2xpc3RbMV0p
-OworCQkmJiBsaXN0X2VtcHR5KCZkZC0+Zmlmb19saXN0WzFdKQorCQkmJiBsaXN0X2VtcHR5KCZk
-ZC0+Zmlmb19saXN0WzJdKTsKIH0KIAogc3RhdGljIHZvaWQgZGVhZGxpbmVfZXhpdF9xdWV1ZShz
-dHJ1Y3QgZWxldmF0b3JfcXVldWUgKmUpCkBAIC0zNDcsNiArNDEzLDcgQEAgc3RhdGljIHZvaWQg
-ZGVhZGxpbmVfZXhpdF9xdWV1ZShzdHJ1Y3QgZWxldmF0b3JfcXVldWUgKmUpCiAKIAlCVUdfT04o
-IWxpc3RfZW1wdHkoJmRkLT5maWZvX2xpc3RbMF0pKTsKIAlCVUdfT04oIWxpc3RfZW1wdHkoJmRk
-LT5maWZvX2xpc3RbMV0pKTsKKwlCVUdfT04oIWxpc3RfZW1wdHkoJmRkLT5maWZvX2xpc3RbMl0p
-KTsKIAogCWtmcmVlKGRkKTsKIH0KQEAgLTM2NCwxMCArNDMxLDEyIEBAIHN0YXRpYyB2b2lkICpk
-ZWFkbGluZV9pbml0X3F1ZXVlKHN0cnVjdCByZXF1ZXN0X3F1ZXVlICpxKQogCiAJSU5JVF9MSVNU
-X0hFQUQoJmRkLT5maWZvX2xpc3RbMF0pOwogCUlOSVRfTElTVF9IRUFEKCZkZC0+Zmlmb19saXN0
-WzFdKTsKKwlJTklUX0xJU1RfSEVBRCgmZGQtPmZpZm9fbGlzdFsyXSk7CiAJZGQtPnNvcnRfbGlz
-dFtSRUFEXSA9IFJCX1JPT1Q7CiAJZGQtPnNvcnRfbGlzdFtXUklURV0gPSBSQl9ST09UOwogCWRk
-LT5maWZvX2V4cGlyZVswXSA9IGFzeW5jX2V4cGlyZTsKIAlkZC0+Zmlmb19leHBpcmVbMV0gPSBz
-eW5jX2V4cGlyZTsKKwlkZC0+Zmlmb19leHBpcmVbMl0gPSBydF9zeW5jX2V4cGlyZTsKIAlkZC0+
-YXN5bmNfc3RhcnZlZCA9IGFzeW5jX3N0YXJ2ZWQ7CiAJZGQtPmZyb250X21lcmdlcyA9IDE7CiAJ
-ZGQtPmZpZm9fYmF0Y2ggPSBmaWZvX2JhdGNoOwpAQCAtNDA0LDYgKzQ3Myw3IEBAIHN0YXRpYyBz
-c2l6ZV90IF9fRlVOQyhzdHJ1Y3QgZWxldmF0b3JfcXVldWUgKmUsIGNoYXIgKnBhZ2UpCQlcCiB9
-CiBTSE9XX0ZVTkNUSU9OKGRlYWRsaW5lX2FzeW5jX2V4cGlyZV9zaG93LCBkZC0+Zmlmb19leHBp
-cmVbMF0sIDEpOwogU0hPV19GVU5DVElPTihkZWFkbGluZV9zeW5jX2V4cGlyZV9zaG93LCBkZC0+
-Zmlmb19leHBpcmVbMV0sIDEpOworU0hPV19GVU5DVElPTihkZWFkbGluZV9ydF9zeW5jX2V4cGly
-ZV9zaG93LCBkZC0+Zmlmb19leHBpcmVbMl0sIDEpOwogU0hPV19GVU5DVElPTihkZWFkbGluZV9h
-c3luY19zdGFydmVkX3Nob3csIGRkLT5hc3luY19zdGFydmVkLCAwKTsKIFNIT1dfRlVOQ1RJT04o
-ZGVhZGxpbmVfZnJvbnRfbWVyZ2VzX3Nob3csIGRkLT5mcm9udF9tZXJnZXMsIDApOwogU0hPV19G
-VU5DVElPTihkZWFkbGluZV9maWZvX2JhdGNoX3Nob3csIGRkLT5maWZvX2JhdGNoLCAwKTsKQEAg
-LTQyNyw2ICs0OTcsNyBAQCBzdGF0aWMgc3NpemVfdCBfX0ZVTkMoc3RydWN0IGVsZXZhdG9yX3F1
-ZXVlICplLCBjb25zdCBjaGFyICpwYWdlLCBzaXplX3QgY291bnQpCiB9CiBTVE9SRV9GVU5DVElP
-TihkZWFkbGluZV9hc3luY19leHBpcmVfc3RvcmUsICZkZC0+Zmlmb19leHBpcmVbMF0sIDAsIElO
-VF9NQVgsIDEpOwogU1RPUkVfRlVOQ1RJT04oZGVhZGxpbmVfc3luY19leHBpcmVfc3RvcmUsICZk
-ZC0+Zmlmb19leHBpcmVbMV0sIDAsIElOVF9NQVgsIDEpOworU1RPUkVfRlVOQ1RJT04oZGVhZGxp
-bmVfcnRfc3luY19leHBpcmVfc3RvcmUsICZkZC0+Zmlmb19leHBpcmVbMl0sIDAsIElOVF9NQVgs
-IDEpOwogU1RPUkVfRlVOQ1RJT04oZGVhZGxpbmVfYXN5bmNfc3RhcnZlZF9zdG9yZSwgJmRkLT5h
-c3luY19zdGFydmVkLCBJTlRfTUlOLCBJTlRfTUFYLCAwKTsKIFNUT1JFX0ZVTkNUSU9OKGRlYWRs
-aW5lX2Zyb250X21lcmdlc19zdG9yZSwgJmRkLT5mcm9udF9tZXJnZXMsIDAsIDEsIDApOwogU1RP
-UkVfRlVOQ1RJT04oZGVhZGxpbmVfZmlmb19iYXRjaF9zdG9yZSwgJmRkLT5maWZvX2JhdGNoLCAw
-LCBJTlRfTUFYLCAwKTsKQEAgLTQzOSw2ICs1MTAsNyBAQCBTVE9SRV9GVU5DVElPTihkZWFkbGlu
-ZV9maWZvX2JhdGNoX3N0b3JlLCAmZGQtPmZpZm9fYmF0Y2gsIDAsIElOVF9NQVgsIDApOwogc3Rh
-dGljIHN0cnVjdCBlbHZfZnNfZW50cnkgZGVhZGxpbmVfYXR0cnNbXSA9IHsKIAlERF9BVFRSKGFz
-eW5jX2V4cGlyZSksCiAJRERfQVRUUihzeW5jX2V4cGlyZSksCisJRERfQVRUUihydF9zeW5jX2V4
-cGlyZSksCiAJRERfQVRUUihhc3luY19zdGFydmVkKSwKIAlERF9BVFRSKGZyb250X21lcmdlcyks
-CiAJRERfQVRUUihmaWZvX2JhdGNoKSwK
---0016e6de00293185aa0468dedae0--
