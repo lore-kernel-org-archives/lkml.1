@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbZEANHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759339AbZEANId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757215AbZEANHo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbZEANHf
+	id S1759339AbZEANId (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbZEANIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:07:35 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:53404 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752620AbZEANHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:07:34 -0400
-To: pavel@ucw.cz
-Cc: jmorris@namei.org, linux-security-module@vger.kernel.org,
+	Fri, 1 May 2009 09:08:24 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38036 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754194AbZEANIX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 09:08:23 -0400
+Date: Fri, 1 May 2009 14:09:04 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Michal Simek <monstr@monstr.eu>, Arnd Bergmann <arnd@arndb.de>,
+       linux-arch@vger.kernel.org,
+       Remis Lima Baima <remis.developer@googlemail.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [TOMOYO 1/2] tomoyo: add Documentation/tomoyo.txt
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20090408133126.180521064@I-love.SAKURA.ne.jp>
-	<20090408133524.395437925@I-love.SAKURA.ne.jp>
-	<20090410171001.GA26156@elf.ucw.cz>
-	<200904130204.n3D24JNk095583@www262.sakura.ne.jp>
-	<20090501102438.GA7470@elf.ucw.cz>
-In-Reply-To: <20090501102438.GA7470@elf.ucw.cz>
-Message-Id: <200905012207.BFC60616.QStOHOMJFOLFFV@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Fri, 1 May 2009 22:07:31 +0900
+Subject: Re: [PATCH 04/27] asm-generic: add legacy I/O header files
+Message-ID: <20090501140904.69f44406@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090501123728.GC27799@flint.arm.linux.org.uk>
+References: <cover.1241105648.git.arnd@arndb.de>
+	<10b3a32656e5552458db7412ef9ff8530d5f92aa.1241105648.git.arnd@arndb.de>
+	<c1a198be0904302309w4154f97dqddd0b2df1924a821@mail.gmail.com>
+	<200905011422.29753.arnd@arndb.de>
+	<49FAEA2A.50504@monstr.eu>
+	<20090501123728.GC27799@flint.arm.linux.org.uk>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for delayed response.
+On Fri, 1 May 2009 13:37:28 +0100
+Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-Pavel Machek wrote:
-> 2.5 Memory Allocation Rules
-> 
-> In TOMOYO Linux, memory allocated for holding access permissions and
-> words are never freed. There is no way except rebooting the system
-> that can free unneeded memory.
-> 
-> But don't worry. The policy seldom changes after you start production
-> mode. By tuning policy before starting production mode, you can reduce
-> memory usage to (usually) less than 1 MB.
-> 
-> ....does that mean that it leaks memory by design?
+> On Fri, May 01, 2009 at 02:25:14PM +0200, Michal Simek wrote:
+> > Arnd Bergmann wrote:
+> > > On Friday 01 May 2009, Michal Simek wrote:
+> > >>> +/*
+> > >>> + * CLOCK_TICK_RATE is highly PC-specific and should not
+> > >>> + * be used in portable code. 1193182 is the value for the
+> > >>> + * original i8253 PIC.
+> > >>> + */
+> > >>> +#ifndef CLOCK_TICK_RATE
+> > >>> +#define CLOCK_TICK_RATE                1193182
+> > >>> +#endif
+> > >>
+> > >> Why is this in generic code?
+> > > 
+> > > CLOCK_TICK_RATE is only used in a few places:
 
-This is memory leak, but *controlled* memory allocation with a strategy for
-avoiding memory fragmentation and reducing memory usage. kstrdup()ing string
-data produces partially unused memory block since string data's length is
-unlikely power of two. Therefore, TOMOYO allocates memory in PAGE_SIZE bytes
-block and embeds string data as much as possible.
-TOMOYO does not continue allocating forever.
+Joining in late but its not at all highly PC specific. The same frequency
+is used for a whole pile of setups (Alpha etc). It's not well named but
+there are good sound reasons the PC chose 1193182 and while those reasons
+have long lapsed its a good frequency for other reasons nowdays.
+
+The clock isn't for the PIC either - its for the PIT (although its used
+to clock various other things).
+
+We actually have a define of PIT_TICK_RATE internal to the x86 port for
+those x86 cases that can use it.
+
+
+
+
+
+Alan
