@@ -1,65 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763299AbZEAOJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761763AbZEAOLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763299AbZEAOJZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 10:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbZEAOJQ
+	id S1761763AbZEAOLk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 10:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbZEAOLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 10:09:16 -0400
-Received: from mga05.intel.com ([192.55.52.89]:50091 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751223AbZEAOJP (ORCPT
+	Fri, 1 May 2009 10:11:31 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:43599 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751539AbZEAOLa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 10:09:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,278,1239001200"; 
-   d="scan'208";a="686667783"
-Date: Fri, 1 May 2009 07:09:14 -0700
-From: Matthew Wilcox <willy@linux.intel.com>
-To: Theodore Tso <tytso@mit.edu>, Robert Hancock <hancockrwd@gmail.com>,
-       Alex Buell <alex.buell@munted.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: No NCQ support on X61s Ultrabay?  (Intel ICH8 SATA controller
-	question)
-Message-ID: <20090501140914.GD10704@linux.intel.com>
-References: <E1LzLgA-0004j6-9W@closure.thunk.org> <49F90CA2.4080602@garzik.org> <20090430083309.437f9248@lithium.local.net> <20090430113445.GA4809@mit.edu> <20090430113814.GB4809@mit.edu> <49FA55A0.8080303@gmail.com> <20090501025132.GA7275@mit.edu> <49FA78B4.2070900@gmail.com> <20090501113533.GB10704@linux.intel.com> <20090501131459.GA7681@mit.edu>
+	Fri, 1 May 2009 10:11:30 -0400
+Message-ID: <49FB030F.8060300@monstr.eu>
+Date: Fri, 01 May 2009 16:11:27 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090501131459.GA7681@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Arnd Bergmann <arnd@arndb.de>
+CC: linux-arch@vger.kernel.org,
+       Remis Lima Baima <remis.developer@googlemail.com>,
+       linux-kernel@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [PATCH V3] asm-generic: add a generic uaccess.h
+References: <cover.1241105648.git.arnd@arndb.de> <200905011513.25344.arnd@arndb.de> <49FAFD63.2080102@monstr.eu> <200905011606.05319.arnd@arndb.de>
+In-Reply-To: <200905011606.05319.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 09:14:59AM -0400, Theodore Tso wrote:
-> Gaah.... so basically a SATA device (the X25-M) is talking to a
-> SATA-PATA bridge chip, which is then talking the IDE port in the ICH8
-> chipset, which shows up as piix, which we're then pretending is SATA
-> at the OS level via the ata_piix driver.  Did I get that right?
-> (Excuse me while I go find a barf bag....)
-
-Well ... libata doesn't pretend that everything is SATA; it uses
-taskfiles which work for both PATA and SATA.  Other than that, I think
-you've got it right.
-
-> Oh.... and I suspect I know why they did it; I'm guessing they wanted
-> to support PATA Ultrabay devices for backwards compatibility on the
-> X60, and perhaps they were running out of connector pins on the
-> docking station (the Ultrabay slot is on the X61's "media slice"), and
-> they didn't have enough wires to run both PATA and SATA interfaces to
-> the docking station, *and* they wanted to use the same docking station
-> for the X60 and X61 Thinkpads.
+Arnd Bergmann wrote:
+> On Friday 01 May 2009, Michal Simek wrote:
+>> Arnd Bergmann wrote:
+>>> +
+>>> +#include <asm/segment.h>
+>>> +
+>>> +#ifndef get_fs
+>>> +#define MAKE_MM_SEG(s)	((mm_segment_t) { (s) })
+>> one line above -> get_fs could be defined in different space
+>> and this arch could use MAKE_MM_SEG too -> for example powerpc.
 > 
-> Ah, well.  I hope it made sense to *someone* at Lenovo...  It would be
-> interesting to see if they fixed this in the X200 or not.
+> I don't think I understand what you are trying to tell me.
+> How do you think this should look?
 
-Backwards compatibility is a pain.  It looks like from this lspci:
-https://bugzilla.redhat.com/attachment.cgi?id=317327 that the X200 uses
-ICH9M which doesn't appear to have an IDE port on the chip (document
-316972-004).  So it must be fixed in the X200 ... unless they've put in
-a SATA-PATA bridge in the base, and a PATA-SATA bridge in the ultrabay
+I meant move MAKE_MM_SEG macro to this position because this macro could be use
+with arch which define different get_fs.
+
+#define MAKE_MM_SEG(s)	((mm_segment_t) { (s) })
+#ifndef get_fs
 ...
 
-Even then, it might work.  I don't know enough about the PATA protocol
-to say.
+
+> 
+>>> +
+>>> +#define VERIFY_READ	0
+>>> +#define VERIFY_WRITE	1
+>>> +
+>>
+>> Not sure if any arch do READ/WRITE check but if yes.
+> 
+> I could not find any architecture using it either, but the
+> API is defined this way.
+> 
+>> #ifndef access_ok
+>>
+>>> +#define access_ok(type, addr, size) __access_ok((unsigned long)(addr),(size))
+>> #endif
+> 
+> right, will change.
+> 
+>>> +
+>>> +/*
+>>> + * The architecture should really override this if possible, at least
+>>> + * doing a check on the get_fs()
+>>> + */
+>> If they should really override it but why write it here.
+> 
+> Mostly for documentation purposes, so that an architecture maintainer
+> can copy the prototype. I see the asm-generic headers as both fallbacks
+> for architectures and as templates of what should be implemented.
+> 
+>>> +#define get_user(x, ptr)					\
+>>> +({								\
+>>> +	might_sleep();						\
+>>> +	__access_ok(ptr, sizeof (*ptr)) ?			\
+>>> +		__get_user(x, ptr) :				\
+>>> +		-EFAULT;					\
+>>> +})
+>> I am getting here (for put_user macro too) any error on noMMU. :-(
+> 
+> What kind of error do you see?
+
+System is getting crazy with -> I am debugging it.
+
+
+>  
+>>> +static inline long
+>>> +strncpy_from_user(char *dst, const char __user *src, long count)
+>>> +{
+>>> +	if (!__access_ok(src, 1))
+>>> +		return -EFAULT;
+>>> +	return __strncpy_from_user(dst, src, count);
+>>> +}
+>> Is it a good place to add might_sleep() and unlikely(+ some other cases) too?
+>> We have almost the same code.
+> 
+> Yes, I think so. The unlikely() can probably go into __access_ok() though,
+> so we don't have to write it every time.
+
+ok
+
+Michal
+
+
+> 
+> 	Arnd <><
+
+
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
