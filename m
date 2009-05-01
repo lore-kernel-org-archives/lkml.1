@@ -1,76 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765586AbZEAUdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765756AbZEAUeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765586AbZEAUdp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 16:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762555AbZEAUde
+	id S1765756AbZEAUeF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 16:34:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765286AbZEAUdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 16:33:34 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:53482 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756084AbZEAUdd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 16:33:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=Bd1/sHwz+SVNMuA34U1LyYV0iKzuyun09knNND+rjw+1KhRAkC5ntXayt6oIJeeSUy
-         MdWBL6P8g6FI072RpT2SWX60KI2Bw2CRvIi3Nl4NDcKXKIadJKzPUxKgRaz2PaK/x4qa
-         KTurTZ2bRJzs/qcRzp/P8MZhQV4BlPoUHygac=
+	Fri, 1 May 2009 16:33:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46684 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764501AbZEAUdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 16:33:36 -0400
+Date: Fri, 1 May 2009 22:33:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 0/6] kill-the-BKL/reiserfs3: performance improvements,
+	faster than Bkl based scheme
+Message-ID: <20090501203309.GA6243@elte.hu>
+References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com> <alpine.LFD.2.00.0905011236530.5379@localhost.localdomain>
 MIME-Version: 1.0
-Date: Sat, 2 May 2009 00:33:30 +0400
-Message-ID: <a4423d670905011333s664115bdh1d72392897567c1d@mail.gmail.com>
-Subject: 2.6.30-rc4: xfs_fsr hangs
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>, xfs@oss.sgi.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0905011236530.5379@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-# xfs_db -r /dev/sdc1
-xfs_db> frag
-actual 23805, ideal 22890, fragmentation factor 3.84%
-# xfs_fsr -v /dev/sdc1
-/mnt/c start inode=0
-ino=158
-extents before:3 after:1 DONE ino=158
 
- then it hangs
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
+> On Fri, 1 May 2009, Frederic Weisbecker wrote:
+> > 
+> > This reiserfs patchset applies against latest 
+> > tip:core/kill-the-BKL It adds various explicit write lock 
+> > releases on specific sleeping sections.
+> 
+> Btw, is there any reason why it cannot just be re-based on top of 
+> standard -rc4?
+> 
+> I'd love to pull a "reiserfs: remove bkl" branch when the next 
+> merge window opens, but there's no way I'll pull the kill-bkl 
+> thing with all the odd random tty stuff etc that is totally 
+> unrelated.
+> 
+> And as far as I can tell, all your reiserfs patches are totally 
+> unrelated to all other changes, and it would be _much_ nicer to 
+> just merge the reiserfs ones.
 
-INFO: task xfs_fsr:2403 blocked for more than 120 seconds.
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-xfs_fsr       D 00000000  4492  2403   1928
- f3cc9dec 00000046 00000001 00000000 f3cc9de8 ec976680 ec976900 f2d06a50
- ec976680 00000001 f2d06a50 f2d06a4c ffffffff f2d06a4c ec976680 f3cc9df4
- c0447892 f3cc9e20 c04498ad f3cc9e28 f2d06a50 f2d06a74 f3cc9e44 00000246
-Call Trace:
- [<c0447892>] schedule+0x12/0x30
- [<c04498ad>] rwsem_down_failed_common+0x6d/0x180
- [<c04499dd>] rwsem_down_write_failed+0x1d/0x30
- [<c0449a2a>] call_rwsem_down_write_failed+0x6/0x8
- [<c026bfce>] ? xfs_ilock+0xee/0x100
- [<c013fcd6>] ? down_write_nested+0x76/0x90
- [<c026bfce>] ? xfs_ilock+0xee/0x100
- [<c026bfce>] xfs_ilock+0xee/0x100
- [<c0290fb4>] xfs_inactive+0x334/0x540
- [<c01b382b>] ? inotify_inode_is_dead+0x1b/0x80
- [<c029d4ef>] xfs_fs_clear_inode+0x1f/0x30
- [<c019b7bb>] clear_inode+0x8b/0x110
- [<c019bf06>] generic_delete_inode+0xe6/0x120
- [<c0449d86>] ? _spin_lock+0x66/0x70
- [<c019c09f>] generic_drop_inode+0x15f/0x230
- [<c02c0958>] ? _atomic_dec_and_lock+0x18/0x40
- [<c019b477>] iput+0x47/0x50
- [<c0198a4f>] dentry_iput+0x6f/0xc0
- [<c0198b74>] d_kill+0x24/0x50
- [<c019a03b>] dput+0x5b/0x120
- [<c018a892>] __fput+0x162/0x240
- [<c018a98f>] fput+0x1f/0x30
- [<c01873f7>] filp_close+0x47/0x70
- [<c018748c>] sys_close+0x6c/0xd0
- [<c0102e48>] sysenter_do_call+0x12/0x36
-INFO: lockdep is turned off.
+Sure, that's sensible. Perhaps the patches could show up in the VFS 
+tree once they are stable enough and are acceptable to Al. It will 
+take quite a long time for the complete BKL elimination to be 
+finished in our tree.
+
+> So there's
+>  - the filesystem mount bkl pushdown
+> 
+>  - the reiserfs series
+> 
+> and quite frankly, I'll happily take the straightforward BKL 
+> pushdown, but I do _not_ want to see this mix-up with all the tty 
+> stuff, or even the NFS and RPC changes.
+> 
+> In fact, if it makes it easier for people to merge, I can take the 
+> pure VFS push-down that was already Ack'ed by Al. But the rest of 
+> the stuff really isn't appropriate.
+> 
+> For example, every single
+> 
+> 	remove the BKL: remove "BKL auto-drop" assumption from xyz
+> 
+> patch in that series is pure and utter crap. I'm not going to take 
+> things like that. But it looks like your reiserfs patches really 
+> are totally independent of everything else, and should be merged 
+> as such.
+
+Yeah, we dont need that upstream.
+
+It would obviously be a basic act of honesty and fairness to admit 
+that that "crazy thing" was the thing that spurred and enabled the 
+"good" patches to begin with.
+
+We can whitewash that piece of embarrasing history out of existence 
+of course, but i think it is axiomatic that if the only demonstrated 
+way to achieve a good end result is over a messy middle step, that 
+messy middle step shouldnt really be declared non-existent - even if 
+we can.
+
+The BKL is clearly removed at a faster reate with such debugging 
+measures in place. With such measures the BKL _really_ hurts, and 
+very visibly so - and that results in active removal.
+
+	Ingo
