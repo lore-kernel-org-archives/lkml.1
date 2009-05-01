@@ -1,88 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760653AbZEABwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758388AbZEAB4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760653AbZEABwM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 21:52:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759270AbZEABv4
+	id S1758388AbZEAB4g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 21:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZEAB41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 21:51:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45187 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759263AbZEABvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 21:51:55 -0400
-Date: Thu, 30 Apr 2009 21:50:34 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: elladan@eskimo.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
-       tytso@mit.edu, kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
-Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
-Message-ID: <20090430215034.4748e615@riellaptop.surriel.com>
-In-Reply-To: <20090430181340.6f07421d.akpm@linux-foundation.org>
-References: <20090428044426.GA5035@eskimo.com>
-	<20090428192907.556f3a34@bree.surriel.com>
-	<1240987349.4512.18.camel@laptop>
-	<20090429114708.66114c03@cuia.bos.redhat.com>
-	<20090430072057.GA4663@eskimo.com>
-	<20090430174536.d0f438dd.akpm@linux-foundation.org>
-	<20090430205936.0f8b29fc@riellaptop.surriel.com>
-	<20090430181340.6f07421d.akpm@linux-foundation.org>
-Organization: Red Hat, Inc
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Apr 2009 21:56:27 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:45471 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752042AbZEAB41 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 21:56:27 -0400
+Date: Thu, 30 Apr 2009 21:56:20 -0400 (EDT)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Michael Ellerman <michael@ellerman.id.au>
+cc: Sam Ravnborg <sam@ravnborg.org>, Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, Waseem Daher <wdaher@MIT.EDU>
+Subject: Re: [PATCH 2/8] powerpc: share .data output section definition
+ between 32 and 64 bits.
+In-Reply-To: <1241142402.6928.7.camel@concordia>
+Message-ID: <alpine.DEB.1.10.0904302153260.3955@vinegar-pot.mit.edu>
+References: <1241135777-9462-1-git-send-email-tabbott@mit.edu>  <1241135777-9462-2-git-send-email-tabbott@mit.edu>  <1241135777-9462-3-git-send-email-tabbott@mit.edu> <1241142402.6928.7.camel@concordia>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Apr 2009 18:13:40 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Fri, 1 May 2009, Michael Ellerman wrote:
 
-> On Thu, 30 Apr 2009 20:59:36 -0400
-> Rik van Riel <riel@redhat.com> wrote:
+> On Thu, 2009-04-30 at 19:56 -0400, Tim Abbott wrote:
+> > +#ifndef CONFIG_PPC32
 > 
-> > On Thu, 30 Apr 2009 17:45:36 -0700
-> > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > Were you able to tell whether altering /proc/sys/vm/swappiness
-> > > appropriately regulated the rate at which the mapped page count
-> > > decreased?
-> > 
-> > That should not make a difference at all for mapped file
-> > pages, after the change was merged that makes the VM ignores
-> > the referenced bit of mapped active file pages.
-> > 
-> > Ever since the split LRU code was merged, all that the
-> > swappiness controls is the aggressiveness of file vs
-> > anonymous LRU scanning.
-> 
-> Which would cause exactly the problem Elladan saw?
+> This would be clearer in the positive, as in #ifdef CONFIG_PPC64.
 
-Yes.  It was not noticable in the initial split LRU code,
-but after we decided to ignore the referenced bit on active
-file pages and deactivate pages regardless, it has gotten
-exacerbated.
+Good point.  New version below.
 
-That change was very good for scalability, so we should not
-undo it.  However, we do need to put something in place to
-protect the working set from streaming IO.
+	-Tim Abbott
 
-> > Currently the kernel has no effective code to protect the 
-> > page cache working set from streaming IO.  Elladan's bug
-> > report shows that we do need some kind of protection...
-> 
-> Seems to me that reclaim should treat swapcache-backed mapped mages in
-> a similar fashion to file-backed mapped pages?
+powerpc: share .data output section definition between 32 and 64 bits.
 
-Swapcache-backed pages are not on the same set of LRUs as
-file-backed mapped pages.
+Since upcoming changes will add several more common pieces of code
+between the 32-bit and 64-bit powerpc architectures, it seems best to
+unify these two blocks.
 
-Furthermore, there is no streaming IO on the anon LRUs like
-there is on the file LRUs. Only the file LRUs need (and want)
-use-once replacement, which means that we only need special
-protection of the working set for file-backed pages.
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
+---
+ arch/powerpc/kernel/vmlinux.lds.S |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-When we implement working set protection, we might as well
-do it for frequently accessed unmapped pages too.  There is
-no reason to restrict this protection to mapped pages.
-
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index b9ef164..de80f89 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -219,20 +219,19 @@ SECTIONS
+ 	. = ALIGN(PAGE_SIZE);
+ 	_sdata = .;
+ 
+-#ifdef CONFIG_PPC32
+ 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+ 		DATA_DATA
++#ifdef CONFIG_PPC32
+ 		*(.sdata)
+ 		*(.got.plt) *(.got)
+-	}
+ #else
+-	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+-		DATA_DATA
+ 		*(.data.rel*)
+ 		*(.toc1)
+ 		*(.branch_lt)
++#endif
+ 	}
+ 
++#ifdef CONFIG_PPC64
+ 	.opd : AT(ADDR(.opd) - LOAD_OFFSET) {
+ 		*(.opd)
+ 	}
 -- 
-All rights reversed.
+1.6.2.1
+
