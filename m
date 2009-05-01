@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754462AbZEAJDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbZEAJDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754462AbZEAJDV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 05:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbZEAJDF
+	id S1755020AbZEAJDq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 05:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbZEAJDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 05:03:05 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59418 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752985AbZEAJDE (ORCPT
+	Fri, 1 May 2009 05:03:36 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:51836 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753118AbZEAJDf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 05:03:04 -0400
-Subject: Re: [PATCH 0/2] kconfig: updates to streamline_config.pl
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-In-Reply-To: <9b2b86520905010147l702e5129i1aa24c1eeefced27@mail.gmail.com>
-References: <20090430233642.333097165@goodmis.org>
-	 <9b2b86520905010147l702e5129i1aa24c1eeefced27@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 01 May 2009 11:01:14 +0200
-Message-Id: <1241168474.7620.222.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 1 May 2009 05:03:35 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: What's in hid.git for 2.6.30
+Date: Fri, 1 May 2009 11:02:18 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+References: <alpine.LNX.2.00.0903251742520.14346@wotan.suse.de> <200905010102.34272.oliver@neukum.org> <alpine.LNX.2.00.0905010103550.5012@wotan.suse.de>
+In-Reply-To: <alpine.LNX.2.00.0905010103550.5012@wotan.suse.de>
+Cc: Guillaume Chazarain <guichaz@gmail.com>, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200905011102.18945.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-01 at 09:47 +0100, Alan Jenkins wrote:
-> On 5/1/09, Steven Rostedt <rostedt@goodmis.org> wrote:
-> > Thanks to Alan Jenkins for suggesting these cleanups/fixes/enhancements.
-> 
-> And thanks to you for pushing this script!  It should be handy for
-> speeding up bisection builds, without accidentally disabling a config
-> that caused the regression.
-> 
-> Though I'm wary of it for _general_ usage, because of hotplug.  I
-> think it would be even more useful if there was some way to preserve
-> all the currently selected USB drivers.
+Am Friday 01 May 2009 01:09:12 schrieben Sie:
+> On Fri, 1 May 2009, Oliver Neukum wrote:
+> > > --- a/drivers/hid/hid-core.c
+> > > +++ b/drivers/hid/hid-core.c
+> > > @@ -1824,6 +1824,9 @@ int hid_check_keys_pressed(struct hid_device
+> > > *hid) struct hid_input *hidinput;
+> > >         int i;
+> > >  
+> > > +       if (!(hid->claimed & HID_CLAIMED_INPUT))
+> > > +               return 0;
+> > > +
+> >
+> > is there a guarantee all keyboards will be claimed as input devices?
+>
+> Hi Oliver,
+>
+> do you see any way how hid->inputs could currently be initialized other
+> than the device being claimed by hid-input?
 
-While we're on feature requests...
+No, but I am worried about a false return of 0 here, not the other way
+round. This method is necessary because keyboards don't wake up
+if a key is released. Suspending a keyboard with a key pressed will lead
+to an endless repetition of that key.
+So I wonder whether it is possible to have a keyboard not claimed as an
+input device.
 
- - the same for things like netfilter etc..
-
- - the ability to generate permutation configs, I've had the need to
-   build test code that had like way to many CONFIG options:
-
-GROUP_SCHED * {USER_SCHED, CGROUP_SCHED} * FAIR_GROUP_SCHED * RT_GROUP_SCHED
-
-   comes to mind. With a streamlined .config changing the configuration
-   takes more time than actually building a bzImage.
-
+	Regards
+		Oliver
 
