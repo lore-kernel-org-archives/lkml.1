@@ -1,147 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbZEAVNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762094AbZEAVSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757788AbZEAVNy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 17:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbZEAVNp
+	id S1762094AbZEAVSK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 17:18:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756042AbZEAVRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 17:13:45 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:38164 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751713AbZEAVNo convert rfc822-to-8bit (ORCPT
+	Fri, 1 May 2009 17:17:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48965 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753240AbZEAVRy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 17:13:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bWPqbeCD4U2baeACM53H6vrJPi3l9PZw9ly48Vd3+fDodTNkYsbdOk4JgwAJ6aNMiL
-         cX3mr9GU1OC864lB4KfuMkYivh9fNgYMd73m/ggB3vj9YObysDN14huJXN/04EhWDp7V
-         iOlA0uPzMElxeH/K7SZ1YEAhfBatvmW/pr8pY=
+	Fri, 1 May 2009 17:17:54 -0400
+Date: Fri, 1 May 2009 14:11:31 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 0/6] kill-the-BKL/reiserfs3: performance improvements,
+ faster than Bkl based scheme
+In-Reply-To: <20090501203639.GA9396@elte.hu>
+Message-ID: <alpine.LFD.2.00.0905011350500.5379@localhost.localdomain>
+References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com> <alpine.LFD.2.00.0905011236530.5379@localhost.localdomain> <20090501203309.GA6243@elte.hu> <20090501203639.GA9396@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20090501160444.GA17325@kroah.com>
-References: <1241097822.2516.3.camel@poy>
-	 <20090501065754.GA30626@puku.stupidest.org>
-	 <20090501140108.GA20846@kroah.com>
-	 <9b2b86520905010843p63daf856pd537adcb439cbaed@mail.gmail.com>
-	 <20090501160444.GA17325@kroah.com>
-Date: Fri, 1 May 2009 22:13:42 +0100
-Message-ID: <9b2b86520905011413y21195335mbaaf08feb49f6bee@mail.gmail.com>
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Chris Wedgwood <cw@f00f.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jan Blunck <jblunck@suse.de>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/1/09, Greg KH <greg@kroah.com> wrote:
-> On Fri, May 01, 2009 at 04:43:49PM +0100, Alan Jenkins wrote:
->> On 5/1/09, Greg KH <greg@kroah.com> wrote:
->> > On Thu, Apr 30, 2009 at 11:57:54PM -0700, Chris Wedgwood wrote:
->> >> On Thu, Apr 30, 2009 at 03:23:42PM +0200, Kay Sievers wrote:
->> >>
->> >> > Devtmpfs lets the kernel create a tmpfs very early at kernel
->> >> > initialization, before any driver core device is registered. Every
->> >> > device with a major/minor will have a device node created in this
->> >> > tmpfs instance. After the rootfs is mounted by the kernel, the
->> >> > populated tmpfs is mounted at /dev. In initramfs, it can be moved to
->> >> > the manually mounted root filesystem before /sbin/init is executed.
->> >>
->> >> Why can't the initramfs create /dev and populate it?
->> >
->> > Right now it does, and it takes about 1-2 seconds to do so depending on
->> > the hardware.
->> >
->> > Which is over double the time it takes to boot the kernel entirely these
->> > days, so it is quite noticable.
->>
->> Please, this argument is pants.
->
-> Is that short pants?  Jeans?  Khakis?  What color? :)
 
-Damned international communication :-).
+On Fri, 1 May 2009, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > The BKL is clearly removed at a faster reate with such debugging 
+> > measures in place. With such measures the BKL _really_ hurts, and 
+> > very visibly so - and that results in active removal.
+> 
+> Btw., if you can think of any way to create a cleaner debug tool 
+> here i'd be glad to start a new tree that adds only _that_ tool - 
+> and that could perhaps be dealt with independently and possibly 
+> pulled upstream too, if clean enough.
 
-   Adjective
-    pants (comparative more pants, superlative most pants)
+Quite frankly, for something as clearly defined as as a filesystem, I 
+would literally suggest starting out with a few trivial stages:
 
-    (British, slang) Of inferior quality, rubbish
-    Your mobile is pants — why don’t you get one like mine?
+ Stage 1:
+ - raw search-and-replace of [un]lock_kernel()
 
-And - apologies, for raising my voice for something which doesn't deserve it.
+	sed 's/unlock_kernel()/reiserfs_unlock(sb)/g'
+	sed 's/lock_kernel()/reiserfs_lock(sb)/g'
 
->> The initramfs _could_  create /dev and populate it.
->
-> How?  With a bash script like Android does?  Do you want to maintain two
-> different code streams for this kind of thing?
+   and then obviously fix it up so that 'sb' always exists (ie you would 
+   need to add a a few
 
-I hypothesized a small, "obviously correct", C program.  It would make
-sense to maintain it as part of udev.  Seeing as most initramfs' will
-still use udev, and just ask it to do less.
+	struct super_block *sb = inode->i_sb;
 
->> Neither crawling /sys or creating device nodes is horribly expensive.
->
-> No, but it is measurable.
->
->> It's udev that adds overhead which is not needed at this point.
->> If the initramfs was optimised to do the same as devtmpfs, it needn't
->> take more than 50ms on my eeepc.
->
-> It would take longer than 50ms.
+   lines manually to make the end result work.
 
-> But first, time it with an initramfs with the load time of your script
-> and the rest of the stuff you need to do there to get it running.  And
-> also drop your caches before doing such a test as well to make it
-> "real".
+ - add that 'reiserfs_[un]lock()' pair around every single VFS entry-point 
+   that currently gets called with lock_kernel(). They'd _still_ get 
+   called with lock-kernel too (you're not fixing that), but now they'd 
+   _also_ take the new lock.
 
-I was trying to measure the system calls required.  I'm all too aware
-of the overhead of fork() even without exec(), so I wouldn't write it
-in shell.  And I was comparing initramfs w/"makedev.c" to initramfs
-w/devtmpfs.
+ - make reiserfs_unlock(sb) just do [un]lock_kernel(), and use that as a 
+   known good starting point. Nothing has really changed (and you in fact 
+   _increased_ the nesting on the BKL, since now the BKL is gotten twice 
+   in those areas that were called from the VFS with the BKL held), but 
+   you now have a mindless and pretty trivial conversion where you still 
+   have a working system, and nothing really changed - except you now have 
+   the beginnings of a nice abstraction.
 
->> If this deserves to live in the kernel, let's not pretend that it is
->> because it works dramatically faster.
->
-> But it does.
->
-> And it's also a solution for the embedded people, and the rescue disk
-> users, and the others of us that have to drop down to init=/bin/bash at
-> times.
->
-> If you don't like it,
+IOW, "stage 1" is all totally mindless, and never breaks anything. It's 
+very much designed to be "obviously correct".
 
-I said upthread that I would love it for all of those reasons.
-Seriously, I've done all three in the past, this sounds pretty
-attractive.
+ Stage 2:
+ - switch over reiserfs_[un]lock() to a per-superblock mutex, and enable 
+   lockdep, and start looking for nesting problems.
 
-I'm trying to gain an honest understanding of the idea, and what it
-will mean, in part by comparing it to the alternatives.  I am very
-confused when you answer "why put this in the kernel" with "it's too
-slow at the moment", because there is no _direct_ connection between
-the two.
+IOW, "stage 2" is when you make a _minimal_ change to now enable all the 
+good lockdep infrastructure. But it's also designed to just do _one_ 
+thing: look at nesting. Nothing else.
 
-I think what your answer missed is that you're making the process much
-_simpler_, which explains both why it can be faster, and why it should
-be considered as a legitimate role for the kernel.
+ Stage 3:
+ - once you've fixed all nesting problems (well, most of them - enable a 
+   swapfile on that filesystem and I bet you'll find a few more), you 
+   might want to look at performance issues. In particular, you want to 
+   drop the lock over at least the most _common_ blocking operations, if 
+   at all possible.
 
-<deleted comprehensive notes which explain the nature of the
-simplification among other things, but probably aren't worth restating
-here>.
+And stage 3 is where it would make absolutely _tons_ of sense to just add 
+some very simple infrastructure for having a per-thread "IO warning 
+counter", and then simply increment/decrement that counter in 
+reiserfs_[un]lock().
 
-The problem is that the simplification is the important part of the
-change, it has tradeoffs, and glossing over tradeoffs can come over
-all suspicious.  But I'm happy  that Kay's taken the time to answer
-all the questions I had now.
+But exactly because we do NOT want to get warnings about BKL use in all 
+the _other_ subsystems, we don't want to mix this up with the BKL counter 
+that we already have. You could probably even use the tracing 
+infrastructure to do this: enable tracing in reiserfs_lock(), disable it 
+in reiserfs_unlock(), and look at what you catch in between.
 
-> don't build it into your kernel, it's only 300
-> lines of code to keep away from your machine.
+I dunno. That's how I would go about it if I just wanted to clean up a 
+specific subsystem, and didn't want to tie it together with getting 
+everything else right too.
 
-I refuse to rise to that :).  I think on the contrary, it will become
-difficult to disable when future initramfs' rely on it.  But I won't
-want to at that point.
-
-Thanks
-Alan
+			Linus
