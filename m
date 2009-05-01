@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbZEACpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbZEACpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755556AbZEACpA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 22:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755309AbZEACo3
+	id S1756570AbZEACpb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 22:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756229AbZEACoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 22:44:29 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:28508 "EHLO
+	Thu, 30 Apr 2009 22:44:30 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:34532 "EHLO
 	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752265AbZEACo2 (ORCPT
+	with ESMTP id S1754376AbZEACo3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 22:44:28 -0400
+	Thu, 30 Apr 2009 22:44:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=P7yZQ73XER3xO5TryrRtVU34z3pMzlirbrr5kCLEhJO8zH6W2n6POWyKdTte55mO2v
-         bzlxwB5P9247UXTh5dxZtT0vxGRwqOqGiZmMjX4LExz8HNMNCOzyY4Xg+LPfSmldzBg5
-         UNHcpCsd/j40MJSS+jKKLLDv9SjMrMdEXMTH0=
+        b=bG0ERc3DThFICn1VCs6C4aYsvOURFbnKquorNdjhW/uDhaqsQJtbmQ3eIVQD+JHTFy
+         A2wxDycxVTsvtFzvPaKrgmTusoSHCfswSKgzvQ5X7ZH8/CH/tIn0pTZprrZ+L0aojqao
+         iYkXmA9x2oRb+O1fKIEPYa9FLswSItKdbrR0Y=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -26,9 +26,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Alessio Igor Bogani <abogani@texware.it>,
        Jonathan Corbet <corbet@lwn.net>,
        Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 1/6] kill-the-BKL/reiserfs: release write lock on fs_changed()
-Date: Fri,  1 May 2009 04:44:17 +0200
-Message-Id: <1241145862-21700-2-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 2/6] kill-the-BKL/reiserfs: release the write lock before rescheduling on do_journal_end()
+Date: Fri,  1 May 2009 04:44:18 +0200
+Message-Id: <1241145862-21700-3-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1241145862-21700-1-git-send-email-fweisbec@gmail.com>
 References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com>
@@ -36,17 +36,11 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs_changed() is a macro used by reiserfs to check whether its tree has been
-rebalanced. It has been designed to check parallel changes on the tree after
-calling a sleeping function, which released the Bkl.
+When do_journal_end() copies data to the journal blocks buffers in memory,
+it reschedules if needed between each block copied and dirtyfied.
 
-fs_changed() also calls cond_resched(), so that if rescheduling is needed,
-we are in the best place to do that, since we check if the tree has changed
-just after (because of the bkl release on schedule()).
-
-Even if we are not anymore using the Bkl, we still want to release the lock
-while we reschedule, so that other waiters for the lock can acquire it safely,
-because of the following __fs_changed() check.
+We can also release the write lock at this rescheduling stage,
+like did the bkl implicitly.
 
 [ Impact: release the reiserfs write lock when it is not needed ]
 
@@ -55,28 +49,23 @@ Cc: Chris Mason <chris.mason@oracle.com>
 Cc: Alexander Beregalov <a.beregalov@gmail.com>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- include/linux/reiserfs_fs.h |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+ fs/reiserfs/journal.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/reiserfs_fs.h b/include/linux/reiserfs_fs.h
-index 6587b4e..397d281 100644
---- a/include/linux/reiserfs_fs.h
-+++ b/include/linux/reiserfs_fs.h
-@@ -1302,7 +1302,13 @@ static inline loff_t max_reiserfs_offset(struct inode *inode)
- #define get_generation(s) atomic_read (&fs_generation(s))
- #define FILESYSTEM_CHANGED_TB(tb)  (get_generation((tb)->tb_sb) != (tb)->fs_gen)
- #define __fs_changed(gen,s) (gen != get_generation (s))
--#define fs_changed(gen,s) ({cond_resched(); __fs_changed(gen, s);})
-+#define fs_changed(gen,s)		\
-+({					\
-+	reiserfs_write_unlock(s);	\
-+	cond_resched();			\
-+	reiserfs_write_lock(s);		\
-+	__fs_changed(gen, s);		\
-+})
+diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
+index 7976d7d..373d080 100644
+--- a/fs/reiserfs/journal.c
++++ b/fs/reiserfs/journal.c
+@@ -4232,7 +4232,9 @@ static int do_journal_end(struct reiserfs_transaction_handle *th,
+ 		next = cn->next;
+ 		free_cnode(sb, cn);
+ 		cn = next;
++		reiserfs_write_unlock(sb);
+ 		cond_resched();
++		reiserfs_write_lock(sb);
+ 	}
  
- /***************************************************************************/
- /*                  FIXATE NODES                                           */
+ 	/* we are done  with both the c_bh and d_bh, but
 -- 
 1.6.2.3
 
