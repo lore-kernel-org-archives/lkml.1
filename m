@@ -1,26 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbZEARq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763934AbZEARsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087AbZEARq1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 13:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZEARqS
+	id S1763934AbZEARsR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 13:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZEARsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 13:46:18 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48783 "EHLO
+	Fri, 1 May 2009 13:48:00 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48814 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752499AbZEARqR (ORCPT
+	with ESMTP id S1750940AbZEARr7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 13:46:17 -0400
-Date: Fri, 1 May 2009 13:46:18 -0400
+	Fri, 1 May 2009 13:47:59 -0400
+Date: Fri, 1 May 2009 13:47:57 -0400
 From: Christoph Hellwig <hch@infradead.org>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 34/35] powerpc use generic ptemap.h
-Message-ID: <20090501174617.GB8104@infradead.org>
-References: <20090501144201.D31EF417@kernel> <20090501144254.52127677@kernel>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Andrew Tridgell <tridge@samba.org>, Steve French <sfrench@us.ibm.com>,
+       Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
+Message-ID: <20090501174757.GC8104@infradead.org>
+References: <1241199689.13073.6.camel@norville.austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090501144254.52127677@kernel>
+In-Reply-To: <1241199689.13073.6.camel@norville.austin.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -28,31 +33,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 07:42:54AM -0700, Dave Hansen wrote:
+On Fri, May 01, 2009 at 12:41:29PM -0500, Dave Kleikamp wrote:
+> From: Andrew Tridgell <tridge@samba.org>
+> Subject: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
 > 
-> powerpc is a bid of an oddball here.  It seems to have CONFIG_HIGHPTE
-> behavior at all times when compiled as 32-bit.  There's even an
-> #ifdef CONFIG_HIGHPTE in arch/powerpc/mm/pgtable_32.c, but there's no
-> trace of HIGHPTE in Kconfig anywhere.
+> When this option is enabled the VFAT filesystem will refuse to create
+> new files with long names. Accessing existing files with long names
+> will continue to work.
 > 
-> This gives ppc32 an explicit HIGHPTE in Kconfig so that we can use
-> the #ifdef in asm-generic/ptemap.h and let ppc use the generic code
-> with x86 and frv.
+> File names to be created must conform to the 8.3 format.  Mixed case is
+> not allowed in either the prefix or the suffix.
 
-But if you enabled HIGHPTE you need to remove that ifdef in pgtable_32.c
-because it didn't get triggered before.
-
->  #define _POWERPC_ASM_PTEMAP_H
->  
->  #ifndef __powerpc64__
-> +/*
-> + * This lets us use the x86 implementation
-> + * in the generic ptemap.h
-> + */
-> +#define kmap_atomic_pte(page, type) kmap_atomic(page, type)
-> +#endif
-
-That comment doesn't make any sense to me, x86 should have nothing to do
-with it.  Also the comment would comfortably fit into a single line
-instead of two.
+This doesn't make any sense as a compile time option. Might make sense
+as a mount option, but I'd like to hear a rationale for it first.
 
