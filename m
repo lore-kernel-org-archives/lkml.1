@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZECBtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751282AbZEAEVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbZECBtT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 21:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbZECBtF
+	id S1751282AbZEAEVq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 00:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbZEAEVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 21:49:05 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:62762 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751323AbZECBtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 21:49:04 -0400
-X-IronPort-AV: E=Sophos;i="4.40,284,1239001200"; 
-   d="scan'208";a="165675975"
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Fri, 24 Apr 2009 17:32:22 -0400
-Subject: [PATCH] NFS: Close page_mkwrite() races
-Message-Id: <1241315252.15825.0.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-X-OriginalArrivalTime: 03 May 2009 01:48:41.0076 (UTC) FILETIME=[48E9FB40:01C9CB91]
+	Fri, 1 May 2009 00:21:35 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:20905 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750772AbZEAEVf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 00:21:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=iPgSNFtipZL/Th2rFwv6pQOoEIf6yTQ5Z4mBYf7l1OCODH2tHQPsKVCyB+y6C7uvbd
+         6VSc6MhJMUEeNDAHw9XmgdLf1MdTeRgMR3g/wAIZ5DMLnfU92bNgXops0mg9sRhikt36
+         +aoNBtKJu+p+4s0ZoiU3aOckTIFEKQuuflA1g=
+Message-ID: <49FA78B4.2070900@gmail.com>
+Date: Thu, 30 Apr 2009 22:21:08 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>
+CC: Alex Buell <alex.buell@munted.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: No NCQ support on X61s Ultrabay?  (Intel ICH8 SATA controller
+ question)
+References: <E1LzLgA-0004j6-9W@closure.thunk.org> <49F90CA2.4080602@garzik.org> <20090430083309.437f9248@lithium.local.net> <20090430113445.GA4809@mit.edu> <20090430113814.GB4809@mit.edu> <49FA55A0.8080303@gmail.com> <20090501025132.GA7275@mit.edu>
+In-Reply-To: <20090501025132.GA7275@mit.edu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Follow up to Nick Piggin's patches to ensure that nfs_vm_page_mkwrite
-returns with the page lock held, and sets the VM_FAULT_LOCKED flag.
+Theodore Tso wrote:
+> On Thu, Apr 30, 2009 at 07:51:28PM -0600, Robert Hancock wrote:
+>>> Thinking about this a bit more, I'll bet the problem is the BIOS
+>>> setting is only affecting the primary SATA ports (which are being
+>>> grabed by ahci) and not the SATA port in the Ultrabay slot (which is
+>>> being picked up by either the ata_piix or piix driver).  Sigh...
+>> dmesg and lspci -vv output might be useful..
+> 
+> Here you go...
 
-See http://bugzilla.kernel.org/show_bug.cgi?id=12913
+I'm suspecting that that Ultrabay slot might be using the PATA ports on 
+the chipset, with a PATA-SATA bridge chip or something. I haven't seen 
+an Intel chipset with some SATA ports using AHCI and some in PIIX mode 
+before, the ones I've seen with both had the PIIX mode driving PATA 
+ports. If it is indeed bridged through PATA on that laptop, there's no 
+way you're going to get any NCQ support on that slot.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
- fs/nfs/file.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-index 5a97bcf..ec7e27d 100644
---- a/fs/nfs/file.c
-+++ b/fs/nfs/file.c
-@@ -517,10 +517,10 @@ static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
- 
- 	ret = nfs_updatepage(filp, page, 0, pagelen);
- out_unlock:
-+	if (!ret)
-+		return VM_FAULT_LOCKED;
- 	unlock_page(page);
--	if (ret)
--		ret = VM_FAULT_SIGBUS;
--	return ret;
-+	return VM_FAULT_SIGBUS;
- }
- 
- static struct vm_operations_struct nfs_file_vm_ops = {
--- 
-1.6.0.6
+I don't know why Lenovo would do that, as it would kind of cripple SATA 
+drives in that slot, but hardware people do some bizarre things sometimes..
