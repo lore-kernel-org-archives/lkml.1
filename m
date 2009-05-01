@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763934AbZEARsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763424AbZEARwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763934AbZEARsR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 13:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZEARsA
+	id S1763424AbZEARwQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 13:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZEARv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 13:48:00 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48814 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750940AbZEARr7 (ORCPT
+	Fri, 1 May 2009 13:51:59 -0400
+Received: from mga11.intel.com ([192.55.52.93]:7699 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753395AbZEARv6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 13:47:59 -0400
-Date: Fri, 1 May 2009 13:47:57 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Andrew Tridgell <tridge@samba.org>, Steve French <sfrench@us.ibm.com>,
-       Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090501174757.GC8104@infradead.org>
-References: <1241199689.13073.6.camel@norville.austin.ibm.com>
+	Fri, 1 May 2009 13:51:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,280,1239001200"; 
+   d="scan'208";a="686727406"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Fri, 1 May 2009 10:51:57 -0700
+Subject: RE: [RFC][PATCH 33/35] asm-generic/ptemap.h for HIGHPTE users
+Thread-Topic: [RFC][PATCH 33/35] asm-generic/ptemap.h for HIGHPTE users
+Thread-Index: AcnKa5perj1MKvsyQm+Ay1OOHmucbwAGZliQ
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA39EF467E5@orsmsx505.amr.corp.intel.com>
+References: <20090501144201.D31EF417@kernel> <20090501144252.A2BDDE6B@kernel>
+In-Reply-To: <20090501144252.A2BDDE6B@kernel>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241199689.13073.6.camel@norville.austin.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 12:41:29PM -0500, Dave Kleikamp wrote:
-> From: Andrew Tridgell <tridge@samba.org>
-> Subject: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-> 
-> When this option is enabled the VFAT filesystem will refuse to create
-> new files with long names. Accessing existing files with long names
-> will continue to work.
-> 
-> File names to be created must conform to the 8.3 format.  Mixed case is
-> not allowed in either the prefix or the suffix.
 
-This doesn't make any sense as a compile time option. Might make sense
-as a mount option, but I'd like to hear a rationale for it first.
+> diff -puN include/asm-generic/ptemap.h~asm-generic-ptemap-h-highpte include/asm-generic/ptemap.h
+> +#ifdef CONFIG_HIGHPTE
+> +#include <asm/highmem.h>
+> +#define pte_offset_map(dir, address) \
+> +     ((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE0) + pte_index(address))
+> +#define pte_offset_map_nested(dir, address) \
+> +     ((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE1) + pte_index(address))
+> +#define pte_unmap(pte) kunmap_atomic(pte, KM_PTE0)
+> +#define pte_unmap_nested(pte) kunmap_atomic((pte), KM_PTE1)
+> +
+> +#else /* !CONFIG_HIGHPTE */
+> +
+> #define pte_offset_map(dir,addr)      pte_offset_kernel((dir),(addr))
+> #define pte_offset_map_nested(dir,addr)       pte_offset_kernel((dir),(addr))
+> #define pte_unmap(pte)                        do { } while (0)
 
+You need to add a closing #endif here.
+
+-Tony
