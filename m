@@ -1,89 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764894AbZEATlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765122AbZEATli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764894AbZEATlT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 15:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbZEATlJ
+	id S1765122AbZEATli (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 15:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbZEATlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 15:41:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57205 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753017AbZEATlI (ORCPT
+	Fri, 1 May 2009 15:41:11 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:51994 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755756AbZEATlJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 15:41:08 -0400
-Date: Fri, 1 May 2009 12:35:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: elladan@eskimo.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
-       tytso@mit.edu, kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
-Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
-Message-Id: <20090501123541.7983a8ae.akpm@linux-foundation.org>
-In-Reply-To: <49FB01C1.6050204@redhat.com>
-References: <20090428044426.GA5035@eskimo.com>
-	<20090428192907.556f3a34@bree.surriel.com>
-	<1240987349.4512.18.camel@laptop>
-	<20090429114708.66114c03@cuia.bos.redhat.com>
-	<20090430072057.GA4663@eskimo.com>
-	<20090430174536.d0f438dd.akpm@linux-foundation.org>
-	<20090430205936.0f8b29fc@riellaptop.surriel.com>
-	<20090430181340.6f07421d.akpm@linux-foundation.org>
-	<20090430215034.4748e615@riellaptop.surriel.com>
-	<20090430195439.e02edc26.akpm@linux-foundation.org>
-	<49FB01C1.6050204@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 1 May 2009 15:41:09 -0400
+Date: Fri, 1 May 2009 15:31:11 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Yuriy Lalym <ylalym@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ltt-dev@lists.casi.polymtl.ca, Tejun Heo <tj@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [ltt-dev] [PATCH] Fix dirty page accounting in
+ redirty_page_for_writepage()
+In-Reply-To: <20090501192142.GA18339@Krystal>
+Message-ID: <alpine.DEB.1.10.0905011527260.7795@qirst.com>
+References: <20090430062140.GA9559@elte.hu> <20090430063306.GA27431@Krystal> <20090430065055.GA16277@elte.hu> <alpine.DEB.1.10.0904300926530.22262@qirst.com> <20090430141211.GB5922@Krystal> <alpine.DEB.1.10.0904301009530.14178@qirst.com> <20090430194158.GB12926@Krystal>
+ <alpine.DEB.1.10.0904301559500.11923@qirst.com> <20090430211750.GA19933@Krystal> <alpine.DEB.1.10.0905010939090.18324@qirst.com> <20090501192142.GA18339@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 01 May 2009 10:05:53 -0400
-Rik van Riel <riel@redhat.com> wrote:
+On Fri, 1 May 2009, Mathieu Desnoyers wrote:
 
-> Andrew Morton wrote:
-> 
-> >> When we implement working set protection, we might as well
-> >> do it for frequently accessed unmapped pages too.  There is
-> >> no reason to restrict this protection to mapped pages.
-> > 
-> > Well.  Except for empirical observation, which tells us that biasing
-> > reclaim to prefer to retain mapped memory produces a better result.
-> 
-> That used to be the case because file-backed and
-> swap-backed pages shared the same set of LRUs,
-> while each following a different page reclaim
-> heuristic!
+> What I do here is to let those u8 counters increment as free-running
+> counters. Yes, they will periodically overflow the 8 bits. But I don't
+> rely on this for counting the number of increments we need between
+> global counter updates : I use the bitmask taken from the threshold
+> value (which is now required to be a power of two) to detect 0, 1, 2, 3,
+> 4, 5, 6 or 7-bit counter overflow. Therefore we can still have the kind
+> of granularity currently provided. The only limitation is that we have
+> to use powers of two for the threshold, so we end up counting in power
+> of two modulo, which will be unaffected by the u8 overflow.
 
-No, I think it still _is_ the case.  When reclaim is treating mapped
-and non-mapped pages equally, the end result sucks.  Applications get
-all laggy and humans get irritated.  It may be that the system was
-optimised from an overall throughput POV, but the result was
-*irritating*.
-
-Which led us to prefer to retain mapped pages.  This had nothing at all
-to do with internal impementation details - it was a design objective
-based upon empirical observation of system behaviour.
-
-> Today:
-> 1) file-backed and swap-backed pages are separated,
-> 2) the majority of mapped pages are on the swap-backed LRUs
-> 3) the accessed bit on active pages no longer means much,
->     for good scalability reasons, and
-> 4) because of (3), we cannot really provide special treatment
->     to any individual page any more, however
-> 
-> This means we need to provide our working set protection
-> on a per-list basis, by tweaking the scan rate or avoiding
-> scanning of the active file list alltogether under certain
-> conditions.
-> 
-> As a side effect, this will help protect frequently accessed
-> file pages (good for ftp and nfs servers), indirect blocks,
-> inode buffers and other frequently used metadata.
-
-Yeah, but that's all internal-implementation-of-the-day details.  It
-just doesn't matter how the sausages are made.  What we have learned is
-that the policy of retaining mapped pages over unmapped pages, *all
-other things being equal* leads to a more pleasing system.
-
+Ack. Got it. Looks good.
 
