@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762963AbZEAQQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763556AbZEAQRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762963AbZEAQQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 12:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbZEAQQT
+	id S1763556AbZEAQRy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 12:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754392AbZEAQRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 12:16:19 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50015 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751539AbZEAQQS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 12:16:18 -0400
-Date: Fri, 1 May 2009 18:16:11 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Guillaume Chazarain <guichaz@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: What's in hid.git for 2.6.30
-In-Reply-To: <200905011809.19971.oliver@neukum.org>
-Message-ID: <alpine.LNX.2.00.0905011812330.22532@wotan.suse.de>
-References: <alpine.LNX.2.00.0903251742520.14346@wotan.suse.de> <200905011102.18945.oliver@neukum.org> <alpine.LNX.2.00.0905011751180.5012@wotan.suse.de> <200905011809.19971.oliver@neukum.org>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 1 May 2009 12:17:46 -0400
+Received: from parsec.stupidest.org ([71.6.196.126]:44103 "EHLO
+	parsec.stupidest.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753029AbZEAQRp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 12:17:45 -0400
+Date: Fri, 1 May 2009 09:17:45 -0700
+From: Chris Wedgwood <cw@f00f.org>
+To: Greg KH <greg@kroah.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jan Blunck <jblunck@suse.de>
+Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev
+	tmpfs
+Message-ID: <20090501161745.GA29627@puku.stupidest.org>
+References: <1241097822.2516.3.camel@poy> <20090501065754.GA30626@puku.stupidest.org> <20090501140108.GA20846@kroah.com> <20090501155342.GA28350@puku.stupidest.org> <20090501160951.GA17433@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090501160951.GA17433@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 May 2009, Oliver Neukum wrote:
+On Fri, May 01, 2009 at 09:09:51AM -0700, Greg KH wrote:
 
-> > If driven by usbhid, the only way how keyboard could be handled if not
-> > claimed by hid-input is a userspace hiddev or hidraw driver. And we don't
-> > suspend if hidraw/hiddev node is open, right?
-> What happens if the node is closed? 
+> You usually need to do more.  We started out just only doing block
+> devices, but you also need the memory devices, and console, and a
+> few others as well.
 
-That's up to the userspace driver. If it is an input driver, it is 
-probably using uinput to inject events into the input system, and 
-therefore should properly unregister itself also from uinput together with 
-closing the node.
+I could add that.  It's probably not hard.
 
-> Will hid forget that a key had been pressed? I must admit that I can't 
-> tell where in hid the key repetition logic is located.
+What's more, it has liblkid support so you could mount by label and a
+few other things.  It seems reasonable that you could add lvm support
+as well.
 
-The repetition is fully handled in the input core, not in the hid-input 
-driver. So if the device is not handled by hid-input, we (the kernel 
-driver) haven't registered with the input subsystem, and therefore no 
-events go to input subsystem at all.
+The main downsides I see right now are:
 
--- 
-Jiri Kosina
-SUSE Labs
+  - it's not in the kernel by default
+
+  - it's actually quite large beacuse i link against glibc
+
+It's not clear these are show stoppers long term.
+
+
+> After all that, you have already written another tool, which seems
+> like overkill when we can do it all in the kernel so much easier and
+> simpler.
+
+I think that's a different argument.  Doesn't the same logic imply we
+shouldn't have udevd?
