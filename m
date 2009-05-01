@@ -1,57 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbZEAJOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756693AbZEAJO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756552AbZEAJOl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 05:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbZEAJOd
+	id S1756693AbZEAJO6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 05:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbZEAJOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 05:14:33 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:63885 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbZEAJOb (ORCPT
+	Fri, 1 May 2009 05:14:47 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38742 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751193AbZEAJOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 05:14:31 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-Subject: Re: [PATCH 17/27] add generic lib/checksum.c
-Date: Fri, 1 May 2009 11:14:18 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
-       Remis Lima Baima <remis.developer@googlemail.com>,
-       linux-kernel@vger.kernel.org
-References: <cover.1241105648.git.arnd@arndb.de> <cda5746ab12cf9d6bcb7803a3667c92250a29784.1241105648.git.arnd@arndb.de> <20090430223547.GO12974@lug-owl.de>
-In-Reply-To: <20090430223547.GO12974@lug-owl.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 1 May 2009 05:14:46 -0400
+Date: Fri, 1 May 2009 05:14:46 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 1/2] Implement trivial struct feature macros
+Message-ID: <20090501091446.GA24116@infradead.org>
+References: <1241112678-6615-1-git-send-email-jack@suse.cz> <1241112678-6615-2-git-send-email-jack@suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905011114.18880.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19SDKpX6kvisTq2TtYqD4Zq4DYq+zPofwPVK60
- 51f7lQk8i8QOyeCW4HIeTUvw+H1F9IjaTQ4U0oDAUv8QVUrF7D
- QxUx+AutfXR3xPMOhABaw==
+In-Reply-To: <1241112678-6615-2-git-send-email-jack@suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 May 2009, Jan-Benedict Glaw wrote:
-> I haven't looked at the code in detail, but it would be nice to see it
-> show up soon. Just faced the IP checksumming code while resurrecting
-> the VAX port.
+On Thu, Apr 30, 2009 at 07:31:17PM +0200, Jan Kara wrote:
+> Sometimes it is useful to have a generic main structure (like struct inode)
+> and then with some of these structures you want to associate additional
+> information (like quota information, block device information etc.).
+> Traditionally, we solved this by having a pointer to associated data in
+> the generic structure. This gets inefficient when there are lots of
+> various kinds of data that can be associated with the generic structure
+> (we need one pointer per type of associated information). This is an
+> attempt to address the issue.
+> 
+> The idea is simple. There is some chunk of allocated memory that contains
+> the generic structure and all the associated information. The generic
+> structure has a pointer to the (usually static) table of offsets (from
+> the beginning of the generic structure) of associated structures for
+> each possible associated structure type.
+> 
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> ---
+>  include/linux/fs.h             |    5 +++++
+>  include/linux/struct_feature.h |   12 ++++++++++++
+>  2 files changed, 17 insertions(+), 0 deletions(-)
+>  create mode 100644 include/linux/struct_feature.h
+> 
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index 5bed436..2404b16 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -710,6 +710,10 @@ static inline int mapping_writably_mapped(struct address_space *mapping)
+>  #define i_size_ordered_init(inode) do { } while (0)
+>  #endif
+>  
+> +enum {
+> +	INODE_FEATURES
+> +};
+> +
+>  struct inode {
+>  	struct hlist_node	i_hash;
+>  	struct list_head	i_list;
+> @@ -775,6 +779,7 @@ struct inode {
+>  	void			*i_security;
+>  #endif
+>  	void			*i_private; /* fs or device private pointer */
+> +	int			*feature_table;
+>  };
+>  
+>  /*
+> diff --git a/include/linux/struct_feature.h b/include/linux/struct_feature.h
+> new file mode 100644
+> index 0000000..0849d3d
+> --- /dev/null
+> +++ b/include/linux/struct_feature.h
+> @@ -0,0 +1,12 @@
+> +#ifndef _LINUX_STRUCT_FEATURE_H
+> +#define _LINUX_STRUCT_FEATURE_H
+> +
+> +
+> +#define FEATURE_OFFSET(str, generic, feature) (offsetof(str, feature) - offsetof(str, generic))
+> +
+> +#define GET_FEATURE(generic, feature) \
+> +	((generic)->feature_table && (generic)->feature_table[feature] ? \
+> +	((void *)(((char *)(generic)) + (generic)->feature_table[feature])) : \
+> +	NULL)
 
-I hope my other header changes are helping you as well, that
-was the main point. The checksum code was one of the hardest
-to consolidate because every architecture tries to optimize
-this in a different way. After merging all the different
-approaches and throwing away all the assembly code from
-each of them, I made the code practically identical to
-Michals version.
+These should be inlines.
 
-Please tell me if you need more hooks in the checksum
-code for VAX optimizations. You might want to try overriding
-the csum_fold function.
+Also I don't think we should make it super-generic.  If we'll eventually
+need it it should be specific to struct inode, something like:
 
-	Arnd <><
+static void *get_inode_extension(struct inode *inode, emum inode_extension ext)
+{
+	if (!inode->i_extensions[ext])
+		return NULL;
+	return (char *)inode + inode->i_extensions[ext];
+}
