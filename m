@@ -1,141 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756507AbZEALbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbZEALfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756507AbZEALbp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 07:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbZEALbe
+	id S1758683AbZEALfo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 07:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbZEALff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 07:31:34 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:42206 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753524AbZEALbd (ORCPT
+	Fri, 1 May 2009 07:35:35 -0400
+Received: from mga10.intel.com ([192.55.52.92]:4655 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752941AbZEALfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 07:31:33 -0400
-Date: Fri, 1 May 2009 12:30:03 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH mmotm] mm: alloc_large_system_hash check order
-In-Reply-To: <20090430132544.GB21997@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0905011202530.8513@blonde.anvils>
-References: <Pine.LNX.4.64.0904292151350.30874@blonde.anvils>
- <20090430132544.GB21997@csn.ul.ie>
+	Fri, 1 May 2009 07:35:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,277,1239001200"; 
+   d="scan'208";a="686641413"
+Date: Fri, 1 May 2009 04:35:33 -0700
+From: Matthew Wilcox <willy@linux.intel.com>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Theodore Tso <tytso@mit.edu>, Alex Buell <alex.buell@munted.org.uk>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: No NCQ support on X61s Ultrabay?  (Intel ICH8 SATA controller
+	question)
+Message-ID: <20090501113533.GB10704@linux.intel.com>
+References: <E1LzLgA-0004j6-9W@closure.thunk.org> <49F90CA2.4080602@garzik.org> <20090430083309.437f9248@lithium.local.net> <20090430113445.GA4809@mit.edu> <20090430113814.GB4809@mit.edu> <49FA55A0.8080303@gmail.com> <20090501025132.GA7275@mit.edu> <49FA78B4.2070900@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49FA78B4.2070900@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Apr 2009, Mel Gorman wrote:
-> On Wed, Apr 29, 2009 at 10:09:48PM +0100, Hugh Dickins wrote:
-> > On an x86_64 with 4GB ram, tcp_init()'s call to alloc_large_system_hash(),
-> > to allocate tcp_hashinfo.ehash, is now triggering an mmotm WARN_ON_ONCE on
-> > order >= MAX_ORDER - it's hoping for order 11.  alloc_large_system_hash()
-> > had better make its own check on the order.
-> > 
-> > Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> 
-> Looks good
-> 
-> Reviewed-by: Mel Gorman <mel@csn.ul.ie>
+On Thu, Apr 30, 2009 at 10:21:08PM -0600, Robert Hancock wrote:
+> I'm suspecting that that Ultrabay slot might be using the PATA ports on  
+> the chipset, with a PATA-SATA bridge chip or something. I haven't seen  
+> an Intel chipset with some SATA ports using AHCI and some in PIIX mode  
+> before, the ones I've seen with both had the PIIX mode driving PATA  
+> ports. If it is indeed bridged through PATA on that laptop, there's no  
+> way you're going to get any NCQ support on that slot.
+>
+> I don't know why Lenovo would do that, as it would kind of cripple SATA  
+> drives in that slot, but hardware people do some bizarre things 
+> sometimes..
 
-Thanks.
+I have to agree with Robert.  If you look at the ich8 data sheet
+(313056-003), the mobile version has 3 ATA ports and 1 IDE port "that
+can be electrically isolated".  See pages 41, 43, and 50-51.  on page 41,
+it says the IDE port has "Tri-state modes to enable swap bay".
 
-> 
-> As I was looking there, it seemed that alloc_large_system_hash() should be
-> using alloc_pages_exact() instead of having its own "give back the spare
-> pages at the end of the buffer" logic. If alloc_pages_exact() was used, then
-> the check for an order >= MAX_ORDER can be pushed down to alloc_pages_exact()
-> where it may catch other unwary callers.
-> 
-> How about adding the following patch on top of yours?
-
-Well observed, yes indeed.  In fact, it even looks as if, shock horror,
-alloc_pages_exact() was _plagiarized_ from alloc_large_system_hash().
-Blessed be the GPL, I'm sure we can skip the lengthy lawsuits!
-
-> 
-> ==== CUT HERE ====
-> Use alloc_pages_exact() in alloc_large_system_hash() to avoid duplicated logic
-> 
-> alloc_large_system_hash() has logic for freeing unused pages at the end
-> of an power-of-two-pages-aligned buffer that is a duplicate of what is in
-> alloc_pages_exact(). This patch converts alloc_large_system_hash() to use
-> alloc_pages_exact().
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> --- 
->  mm/page_alloc.c |   27 +++++----------------------
->  1 file changed, 5 insertions(+), 22 deletions(-)
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 1b3da0f..c94b140 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1942,6 +1942,9 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
->  	unsigned int order = get_order(size);
->  	unsigned long addr;
->  
-> +	if (order >= MAX_ORDER)
-> +		return NULL;
-> +
-
-I suppose there could be an argument about whether we do or do not
-want to skip the WARN_ON when it's in alloc_pages_exact().
-
-I have no opinion on that; but DaveM's reply on large_system_hash
-does make it clear that we're not interested in the warning there.
-
->  	addr = __get_free_pages(gfp_mask, order);
->  	if (addr) {
->  		unsigned long alloc_end = addr + (PAGE_SIZE << order);
-> @@ -4755,28 +4758,8 @@ void *__init alloc_large_system_hash(const char *tablename,
->  			table = alloc_bootmem_nopanic(size);
->  		else if (hashdist)
->  			table = __vmalloc(size, GFP_ATOMIC, PAGE_KERNEL);
-> -		else {
-> -			unsigned long order = get_order(size);
-> -
-> -			if (order < MAX_ORDER)
-> -				table = (void *)__get_free_pages(GFP_ATOMIC,
-> -								order);
-> -			/*
-> -			 * If bucketsize is not a power-of-two, we may free
-> -			 * some pages at the end of hash table.
-> -			 */
-
-That's actually a helpful comment, it's easy to think we're dealing
-in powers of two here when we may not be.  Maybe retain it with your
-alloc_pages_exact call?
-
-> -			if (table) {
-> -				unsigned long alloc_end = (unsigned long)table +
-> -						(PAGE_SIZE << order);
-> -				unsigned long used = (unsigned long)table +
-> -						PAGE_ALIGN(size);
-> -				split_page(virt_to_page(table), order);
-> -				while (used < alloc_end) {
-> -					free_page(used);
-> -					used += PAGE_SIZE;
-> -				}
-> -			}
-> -		}
-> +		else
-> +			table = alloc_pages_exact(PAGE_ALIGN(size), GFP_ATOMIC);
-
-Do you actually need that PAGE_ALIGN on the size?
-
->  	} while (!table && size > PAGE_SIZE && --log2qty);
->  
->  	if (!table)
-
-Andrew noticed another oddity: that if it goes the hashdist __vmalloc()
-way, it won't be limited by MAX_ORDER.  Makes one wonder whether it
-ought to fall back to __vmalloc() if the alloc_pages_exact() fails.
-I think that's a change we could make _if_ the large_system_hash
-users ever ask for it, but _not_ one we should make surreptitiously.
-
-Hugh
+So I don't blame Lenovo for hooking up the Ultrabay slot using the IDE
+port.  They were pretty much told to do it.
