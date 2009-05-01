@@ -1,77 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755817AbZEAHJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691AbZEAHx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755817AbZEAHJa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 03:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbZEAHJU
+	id S1752691AbZEAHx1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 03:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbZEAHxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 03:09:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33536 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752621AbZEAHJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 03:09:19 -0400
-Date: Fri, 1 May 2009 09:09:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 2/6] kill-the-BKL/reiserfs: release the write lock
-	before rescheduling on do_journal_end()
-Message-ID: <20090501070911.GG5983@elte.hu>
-References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com> <1241145862-21700-3-git-send-email-fweisbec@gmail.com>
+	Fri, 1 May 2009 03:53:17 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:33611 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752080AbZEAHxQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 03:53:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :references:mime-version:content-type:content-disposition
+         :in-reply-to:user-agent;
+        b=CIwQJFNqvdXFiunxulORzIU+s8R/vwkekquWuL9i8vs4u2mF0VnKaH1vf6Z/XlBBbk
+         Dy1C6AgZd/VZEymr97B+x6Hz8OEPgWwl+rikIDveKwvygz/nq5qtAAqV2c8DenCkOCm3
+         CLhFzZBas+I3HhiyVbaUTthyOpPQ40X1tdISw=
+Date: Fri, 1 May 2009 09:53:11 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Aristeu Rozanski <aris@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Borislav Petkov <borislav.petkov@amd.com>, akpm@linux-foundation.org,
+       greg@kroah.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       dougthompson@xmission.com, linux-kernel@vger.kernel.org,
+       Ben Woodard <woodard@redhat.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: Re: [RFC PATCH 00/21 v2] amd64_edac: EDAC module for AMD64
+Message-ID: <20090501075311.GA14176@liondog.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, Aristeu Rozanski <aris@redhat.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	Borislav Petkov <borislav.petkov@amd.com>,
+	akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu,
+	tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com,
+	linux-kernel@vger.kernel.org, Ben Woodard <woodard@redhat.com>,
+	Mauro Carvalho Chehab <mchehab@redhat.com>
+References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> <87iqknp8a0.fsf@basil.nowhere.org> <20090430115741.GA23634@aftab> <20090430124716.GW23223@one.firstfloor.org> <20090430144756.GA25200@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1241145862-21700-3-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <20090430144756.GA25200@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+I thought I should summarize some points on the design direction, which,
+in my impression are what all the parties involved more or less would
+agree on:
 
-> When do_journal_end() copies data to the journal blocks buffers in memory,
-> it reschedules if needed between each block copied and dirtyfied.
-> 
-> We can also release the write lock at this rescheduling stage,
-> like did the bkl implicitly.
-> 
-> [ Impact: release the reiserfs write lock when it is not needed ]
-> 
-> Cc: Jeff Mahoney <jeffm@suse.com>
-> Cc: Chris Mason <chris.mason@oracle.com>
-> Cc: Alexander Beregalov <a.beregalov@gmail.com>
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  fs/reiserfs/journal.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
-> index 7976d7d..373d080 100644
-> --- a/fs/reiserfs/journal.c
-> +++ b/fs/reiserfs/journal.c
-> @@ -4232,7 +4232,9 @@ static int do_journal_end(struct reiserfs_transaction_handle *th,
->  		next = cn->next;
->  		free_cnode(sb, cn);
->  		cn = next;
-> +		reiserfs_write_unlock(sb);
->  		cond_resched();
-> +		reiserfs_write_lock(sb);
+* mce interrupt delivers, if EDAC compiled in, the required batch of
+dumped MSRs to chipset/CPU specific EDAC driver. Aristeu, I guess you
+guys have some code on that, right?
 
-There's 8 cond_resched()'s in the code - i'd suggest to introduce a 
-helper for this - reiserfs_write_cond_resched(sb) or so?
+* EDAC module decodes MCE info, computes the DIMM label out of
+that. Additional hw setup stuff like memory hoisting/interleaving,
+ganged/unganged MC mode, testing infrastructure like DRAM error
+injection and all that pertaining to the specific hw is handled by the
+EDAC module.
 
-	Ingo
+* If EDAC not enabled, mce operates as before.
+
+Comments/suggestions?
+
+Hit me! :)
+
+-- 
+Regards/Gruss,
+    Boris.
