@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZEANYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760735AbZEANZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754743AbZEANYb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756088AbZEANYW
+	id S1760735AbZEANZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756088AbZEANZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:24:22 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:50797 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754206AbZEANYW (ORCPT
+	Fri, 1 May 2009 09:25:13 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:7560 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754463AbZEANZL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:24:22 -0400
+	Fri, 1 May 2009 09:25:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=CKi570qh9FlRzq/BnDooe+SkSax68ajJvV4dnYg3oFwyce1kgo1Lx9lqkEV4i+xzhk
+         s6Hb19NdZbccvtiT205T1ehQnZUIruK4NKJS8uQvATuWG4Jje4CQ6hC2K1za3MTVZz6L
+         QV3LMUb1Iif8suMCfEu16KZuKmL+bV++YvKGM=
+Date: Fri, 1 May 2009 15:25:07 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 4/6] kill-the-BKL/reiserfs: release the write lock
+	inside get_neighbors()
+Message-ID: <20090501132506.GD6011@nowhere>
+References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com> <1241145862-21700-5-git-send-email-fweisbec@gmail.com> <20090501055135.GF5983@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <20090501141846.4b833700@lxorguk.ukuu.org.uk>
-References: <1241097822.2516.3.camel@poy> <20090430222900.c13b63d5.akpm@linux-foundation.org> 
-	<20090501061701.GB19234@kroah.com> <20090430234312.a63fa5cf.akpm@linux-foundation.org> 
-	<20090501065527.GA19773@kroah.com> <20090501120359.05bacb48@lxorguk.ukuu.org.uk> 
-	<ac3eb2510905010411r2c1a2be5s449aaf485a76a8c4@mail.gmail.com> 
-	<20090501141846.4b833700@lxorguk.ukuu.org.uk>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Fri, 1 May 2009 15:24:01 +0200
-Message-ID: <ac3eb2510905010624k891f680s7255af8ae185b5d5@mail.gmail.com>
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jan Blunck <jblunck@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090501055135.GF5983@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 1, 2009 at 15:18, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> No tool ever has a chance to get to the information only available at
->> early kernel init. All such tools will need to "replay" what the
->> kernel already did. This is intended to save us from doing this, and
->> retain the information which is there, but lost at the moment the
->> tools have the first chance to run.
->
-> Serious question - which is the better problem to fix ?
+On Fri, May 01, 2009 at 07:51:35AM +0200, Ingo Molnar wrote:
+> 
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > get_neighbors() is used to get the left and/or right blocks 
+> > against a given one in order to balance a tree.
+> > 
+> > sb_bread() is used to read the buffer of these neighors blocks and 
+> > while it waits for this operation, it might sleep.
+> > 
+> > The bkl was released at this point, and then we can also release 
+> > the write lock before calling sb_bread().
+> > 
+> > This is safe because if the filesystem is changed after this lock 
+> > release, the function returns REPEAT_SEARCH (aka SCHEDULE_OCCURRED 
+> > in the function header comments) in order to repeat the neighbhor 
+> > research.
+> > 
+> > [ Impact: release the reiserfs write lock when it is not needed ]
+> 
+> This should also be safe because under the BKL we _already_ dropped 
+> the lock when sb_bread() blocked (which it really would in the 
+> normal case).
+> 
+> There's one special case to consider though: sb_read() maps to 
+> __bread() which can return without sleeping if the bh is already 
+> uptodate. So if the filesystem _knows_ that the bh is already 
+> uptodate and holds a reference to it (this is common pattern in 
+> filesystems), it can have a locking assumption on that.
+> 
+> No such assumption seems to be present here though.
+> 
+> 	Ingo
 
-I'm very sure, you can not fix it outside the kernel. Or do you have
-an idea how to create the missing device nodes for device without
-crawling sysfs, when the first userspace process is started?
 
->> It's not about a sucking tool, its just impossible. And there is no
->> space wasted, it's a single string for a very few subsystems, an
->> nothing is stored per device.
->
-> Plus code plus tmpfs nodes (the latter are not quite free because you
-> create unneeded ones versus udev but I agree that is noise for most users)
+Yeah, fortunately it doesn't base its check on the state of the
+buffer but on the tree number of rebalancing.
 
-It's exactly the same as udev. Udev creates a node for every device
-the core registers in tmpfs. This tmpfs is mounted by the kernel and
-pre-populated with this, not by udev, that's all the difference it
-has. There is not a single node more than before.
+But I have to remember this pattern, it could be present elsewhere
+in reiserfs.
 
-Thanks,
-Kay
+Thanks.
+
