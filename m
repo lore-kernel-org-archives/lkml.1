@@ -1,42 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764808AbZEATu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763097AbZEATyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764808AbZEATu3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 15:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbZEATuW
+	id S1763097AbZEATyh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 15:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbZEATy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 15:50:22 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46018 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751713AbZEATuV (ORCPT
+	Fri, 1 May 2009 15:54:28 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:54996 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752026AbZEATy2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 15:50:21 -0400
-Date: Fri, 1 May 2009 15:50:16 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jason Baron <jbaron@redhat.com>
-Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       jistone@redhat.com
-Subject: Re: [PATCH] export softirq_to_name symbol
-Message-ID: <20090501195015.GA31694@infradead.org>
-References: <20090501193022.GB3111@redhat.com>
+	Fri, 1 May 2009 15:54:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=wbGVS52zLczMRegflQNRMwtRJoI0b7hSIsb6iyR5Y2Bkv6CedTlRQZ8tV4RGkYwQ1E
+         0VEjdIi0X0ZFSuukLZGP7DZh9FCKrkcmEx61mt5KGd4Z0Zt7Vg+dUZB+1pJ8Q9pbsuP8
+         D7wFBK+YQ1qgfSxkvWSepcFE8QaBkLMd9y5IY=
+Date: Fri, 1 May 2009 23:54:25 +0400
+From: Cyrill Gorcunov <gorcunov@openvz.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH -tip] x86: apic - use pr_ macro
+Message-ID: <20090501195425.GB4633@lenovo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090501193022.GB3111@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 03:30:22PM -0400, Jason Baron wrote:
-> 
-> hi,
-> 
-> In response to a user request:
-> 
-> 
-> Export 'softirq_to_name' so that modules using the softirq tracepoints
-> can resolve the # to a name.
+Replace recenly appeared printk with pr_ macro
+(the file already use a lot of them).
 
-Please submit it together with the module that uses it.
+[ Impact: cleanup ]
+
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
+ arch/x86/kernel/apic/apic.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.git/arch/x86/kernel/apic/apic.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic/apic.c
++++ linux-2.6.git/arch/x86/kernel/apic/apic.c
+@@ -2195,7 +2195,7 @@ static int __cpuinit set_multi(const str
+ {
+ 	if (multi)
+ 		return 0;
+-	printk(KERN_INFO "APIC: %s detected, Multi Chassis\n", d->ident);
++	pr_info("APIC: %s detected, Multi Chassis\n", d->ident);
+ 	multi = 1;
+ 	return 0;
+ }
