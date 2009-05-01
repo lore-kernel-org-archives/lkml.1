@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764751AbZEAUFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765076AbZEAUHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764751AbZEAUFp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 16:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755592AbZEAUFf
+	id S1765076AbZEAUHm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 16:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755927AbZEAUHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 16:05:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35409 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753444AbZEAUFe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 16:05:34 -0400
-Date: Fri, 1 May 2009 12:59:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 0/6] kill-the-BKL/reiserfs3: performance improvements,
- faster than Bkl based scheme
-In-Reply-To: <1241145862-21700-1-git-send-email-fweisbec@gmail.com>
-Message-ID: <alpine.LFD.2.00.0905011236530.5379@localhost.localdomain>
-References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 1 May 2009 16:07:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34600 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753691AbZEAUHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 16:07:32 -0400
+Message-ID: <49FB5623.3030403@redhat.com>
+Date: Fri, 01 May 2009 16:05:55 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: elladan@eskimo.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
+       tytso@mit.edu, kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
+Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
+References: <20090428044426.GA5035@eskimo.com>	<20090428192907.556f3a34@bree.surriel.com>	<1240987349.4512.18.camel@laptop>	<20090429114708.66114c03@cuia.bos.redhat.com>	<20090430072057.GA4663@eskimo.com>	<20090430174536.d0f438dd.akpm@linux-foundation.org>	<20090430205936.0f8b29fc@riellaptop.surriel.com>	<20090430181340.6f07421d.akpm@linux-foundation.org>	<20090430215034.4748e615@riellaptop.surriel.com>	<20090430195439.e02edc26.akpm@linux-foundation.org>	<49FB01C1.6050204@redhat.com> <20090501123541.7983a8ae.akpm@linux-foundation.org>
+In-Reply-To: <20090501123541.7983a8ae.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> On Fri, 01 May 2009 10:05:53 -0400
+> Rik van Riel <riel@redhat.com> wrote:
 
-On Fri, 1 May 2009, Frederic Weisbecker wrote:
+>> This means we need to provide our working set protection
+>> on a per-list basis, by tweaking the scan rate or avoiding
+>> scanning of the active file list alltogether under certain
+>> conditions.
+>>
+>> As a side effect, this will help protect frequently accessed
+>> file pages (good for ftp and nfs servers), indirect blocks,
+>> inode buffers and other frequently used metadata.
 > 
-> This reiserfs patchset applies against latest tip:core/kill-the-BKL
-> It adds various explicit write lock releases on specific sleeping sections.
+> Yeah, but that's all internal-implementation-of-the-day details.  It
+> just doesn't matter how the sausages are made.  What we have learned is
+> that the policy of retaining mapped pages over unmapped pages, *all
+> other things being equal* leads to a more pleasing system.
 
-Btw, is there any reason why it cannot just be re-based on top of standard 
--rc4?
+Well, retaining mapped pages is one of the implementations
+that lead to a more pleasing system.
 
-I'd love to pull a "reiserfs: remove bkl" branch when the next merge 
-window opens, but there's no way I'll pull the kill-bkl thing with all the 
-odd random tty stuff etc that is totally unrelated.
+I suspect that a fully scan resistant active file list will
+show the same behaviour, as well as a few other desired
+behaviours that come in very handy in various server loads.
 
-And as far as I can tell, all your reiserfs patches are totally unrelated 
-to all other changes, and it would be _much_ nicer to just merge the 
-reiserfs ones.
+Are you open to evaluating other methods that could lead, on
+desktop systems, to a behaviour similar to the one achieved
+by the preserve-mapped-pages mechanism?
 
-So there's
- - the filesystem mount bkl pushdown
-
- - the reiserfs series
-
-and quite frankly, I'll happily take the straightforward BKL pushdown, but 
-I do _not_ want to see this mix-up with all the tty stuff, or even the NFS 
-and RPC changes. 
-
-In fact, if it makes it easier for people to merge, I can take the pure 
-VFS push-down that was already Ack'ed by Al. But the rest of the stuff 
-really isn't appropriate. 
-
-For example, every single
-
-	remove the BKL: remove "BKL auto-drop" assumption from xyz
-
-patch in that series is pure and utter crap. I'm not going to take things 
-like that. But it looks like your reiserfs patches really are totally 
-independent of everything else, and should be merged as such.
-
-		Linus
+-- 
+All rights reversed.
