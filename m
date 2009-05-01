@@ -1,105 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZEAQH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759851AbZEAQJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbZEAQH7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 12:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbZEAQHu
+	id S1759851AbZEAQJZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 12:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbZEAQJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 12:07:50 -0400
-Received: from kroah.org ([198.145.64.141]:49381 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753290AbZEAQHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 12:07:50 -0400
-Date: Fri, 1 May 2009 09:04:44 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: Chris Wedgwood <cw@f00f.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jan Blunck <jblunck@suse.de>
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev
-	tmpfs
-Message-ID: <20090501160444.GA17325@kroah.com>
-References: <1241097822.2516.3.camel@poy> <20090501065754.GA30626@puku.stupidest.org> <20090501140108.GA20846@kroah.com> <9b2b86520905010843p63daf856pd537adcb439cbaed@mail.gmail.com>
+	Fri, 1 May 2009 12:09:17 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:56611 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752089AbZEAQJQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 12:09:16 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: What's in hid.git for 2.6.30
+Date: Fri, 1 May 2009 18:09:19 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+References: <alpine.LNX.2.00.0903251742520.14346@wotan.suse.de> <200905011102.18945.oliver@neukum.org> <alpine.LNX.2.00.0905011751180.5012@wotan.suse.de>
+In-Reply-To: <alpine.LNX.2.00.0905011751180.5012@wotan.suse.de>
+Cc: Guillaume Chazarain <guichaz@gmail.com>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <9b2b86520905010843p63daf856pd537adcb439cbaed@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200905011809.19971.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 04:43:49PM +0100, Alan Jenkins wrote:
-> On 5/1/09, Greg KH <greg@kroah.com> wrote:
-> > On Thu, Apr 30, 2009 at 11:57:54PM -0700, Chris Wedgwood wrote:
-> >> On Thu, Apr 30, 2009 at 03:23:42PM +0200, Kay Sievers wrote:
-> >>
-> >> > Devtmpfs lets the kernel create a tmpfs very early at kernel
-> >> > initialization, before any driver core device is registered. Every
-> >> > device with a major/minor will have a device node created in this
-> >> > tmpfs instance. After the rootfs is mounted by the kernel, the
-> >> > populated tmpfs is mounted at /dev. In initramfs, it can be moved to
-> >> > the manually mounted root filesystem before /sbin/init is executed.
-> >>
-> >> Why can't the initramfs create /dev and populate it?
+Am Friday 01 May 2009 17:54:39 schrieben Sie:
+> On Fri, 1 May 2009, Oliver Neukum wrote:
+> > > > > +       if (!(hid->claimed & HID_CLAIMED_INPUT))
+> > > > > +               return 0;
+> > > > > +
+> > > >
+> > > > is there a guarantee all keyboards will be claimed as input devices?
+> > >
+> > > do you see any way how hid->inputs could currently be initialized other
+> > > than the device being claimed by hid-input?
 > >
-> > Right now it does, and it takes about 1-2 seconds to do so depending on
-> > the hardware.
-> >
-> > Which is over double the time it takes to boot the kernel entirely these
-> > days, so it is quite noticable.
-> 
-> Please, this argument is pants.
+> > No, but I am worried about a false return of 0 here, not the other way
+> > round. This method is necessary because keyboards don't wake up
+> > if a key is released. Suspending a keyboard with a key pressed will lead
+> > to an endless repetition of that key.
+> > So I wonder whether it is possible to have a keyboard not claimed as an
+> > input device.
+>
+> If driven by usbhid, the only way how keyboard could be handled if not
+> claimed by hid-input is a userspace hiddev or hidraw driver. And we don't
+> suspend if hidraw/hiddev node is open, right?
 
-Is that short pants?  Jeans?  Khakis?  What color? :)
+What happens if the node is closed? Will hid forget that a key had
+been pressed? I must admit that I can't tell where in hid the key repetition
+logic is located.
 
-> The initramfs _could_  create /dev and populate it.
+	Regards
+		Oliver
 
-How?  With a bash script like Android does?  Do you want to maintain two
-different code streams for this kind of thing?
-
-> Neither crawling /sys or creating device nodes is horribly expensive.
-
-No, but it is measurable.
-
-> It's udev that adds overhead which is not needed at this point.
-> If the initramfs was optimised to do the same as devtmpfs, it needn't
-> take more than 50ms on my eeepc.
-
-It would take longer than 50ms.
-
-> Here's my 630Mhz Celeron in action:
-> 
-> # Crawl sysfs to discover valid devices
-> time ls -l /sys/dev/ > /dev/null
-> 
-> real    0m0.008s
-> user    0m0.000s
-> sys     0m0.007s
-> 
-> # Create X number of device nodes
-> time cp -a /dev/block /dev/char .dev2
-> 
-> real    0m0.016s
-> user    0m0.003s
-> sys     0m0.013s
-
-But first, time it with an initramfs with the load time of your script
-and the rest of the stuff you need to do there to get it running.  And
-also drop your caches before doing such a test as well to make it
-"real".
-
-> If this deserves to live in the kernel, let's not pretend that it is
-> because it works dramatically faster.
-
-But it does.
-
-And it's also a solution for the embedded people, and the rescue disk
-users, and the others of us that have to drop down to init=/bin/bash at
-times.
-
-If you don't like it, don't build it into your kernel, it's only 300
-lines of code to keep away from your machine.
-
-thanks,
-
-greg k-h
