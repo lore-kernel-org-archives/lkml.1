@@ -1,158 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbZEALye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbZEAL7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759493AbZEALye (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 07:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756776AbZEALyZ
+	id S1757685AbZEAL7l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 07:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZEAL7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 07:54:25 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:43740 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754002AbZEALyY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 07:54:24 -0400
-Date: Fri, 1 May 2009 07:54:06 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Jarod Wilson <jarod@redhat.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] crypto: don't raise alarm for no ctr(aes) tests
-Message-ID: <20090501115406.GA4344@hmsreliant.think-freely.org>
-References: <200904282118.22823.jarod@redhat.com> <20090429105035.GC7227@hmsreliant.think-freely.org> <200904290846.48267.jarod@redhat.com> <200904301713.26586.jarod@redhat.com>
+	Fri, 1 May 2009 07:59:32 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47232 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751495AbZEAL7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 07:59:31 -0400
+Date: Fri, 1 May 2009 13:58:49 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tim Abbott <tabbott@MIT.EDU>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 00/11] section name cleanup for x86
+Message-ID: <20090501115849.GB24706@elte.hu>
+References: <1241136098-10376-1-git-send-email-tabbott@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200904301713.26586.jarod@redhat.com>
+In-Reply-To: <1241136098-10376-1-git-send-email-tabbott@mit.edu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 05:13:25PM -0400, Jarod Wilson wrote:
-> On Wednesday 29 April 2009 08:46:47 Jarod Wilson wrote:
-> > On Wednesday 29 April 2009 06:50:35 Neil Horman wrote:
-> > > On Tue, Apr 28, 2009 at 09:18:22PM -0400, Jarod Wilson wrote:
-> > > > Per the NIST AESAVS document, Appendix A[1], it isn't possible to
-> > > > have automated self-tests for counter-mode AES, but people are
-> > > > misled to believe something is wrong by the message that says there
-> > > > is no test for ctr(aes). Simply suppress all 'no test for ctr(aes*'
-> > > > messages if fips_enabled is set to avoid confusion.
-> > > > 
-> > > > Dependent on earlier patch 'crypto: catch base cipher self-test
-> > > > failures in fips mode', which adds the test_done label.
-> > > > 
-> > > > [1] http://csrc.nist.gov/groups/STM/cavp/documents/aes/AESAVS.pdf
-> [...]
-> > > From the way I read the document, anything operating in a counter mode will have
-> > > an unpredictable output (given the counter operation isn't specified).  While
-> > > the above works, I'm not sure that it fully covers the various ccm modes
-> > > available (ccm_base and rfc4309).
-> > 
-> > I believe Appendix A only applies for straight up counter-mode aes,
-> > ccm_base and rfc4309 actually have well-defined counter operations.
-> > We've already got self-tests for ccm(aes) and a pending patch for
-> > rfc4309(ccm(aes), and since they don't start w/'ctr(aes', they
-> > wouldn't be caught by that (admittedly hacky) check even if we
-> > didn't have test vectors for them.
-> > 
-> > > Perhaps instead it would be better to add a
-> > > TFM mask flag indicating that the selected transform included a unpredictable
-> > > component or counter input (marking the alg as being unsuitable for automatic
-> > > testing without knoweldge of the inner workings of that counter.  Then you could
-> > > just test for that flag?
-> > 
-> > Yeah, I thought about a flag too, but it seemed potentially a lot of
-> > overhead for what might well be restricted to ctr(aes*). It might've
-> > been relevant for ctr(des3_ede) or ctr(des), but they're not on the
-> > fips approved algo/mode list, so I took the easy way out. I'm game to
-> > go the flag route if need be though.
-> 
-> Neil and I talked a bit more off-list about the best approach to take, and
-> after a bit of trial and error, we came up with the idea to simply add an
-> 'untestable' flag to the alg_test_desc struct, a corresponding entry for
-> ctr(aes) in alg_test_descs, and a hook to check for untestable algs in
-> alg_find_test().
-> 
-> Works well enough in local testing, eliminates the use of strncmp, and
-> results in far more granular control over marking which algs are
-> explicitly untestable and shouldn't have warnings printed for. At the
-> moment, I've gone for suppressing the warnings regardless of whether
-> we're in fips mode or not, but adding a different warning (er, info)
-> message in the untestable case works too, if that's preferred. The
-> errnos used seem appropriate, but I might have missed more appropriate
-> ones somewhere.
-> 
-> nb: this patch applies atop my earlier '[PATCH v2] crypto: catch base
-> cipher self-test failures in fips mode'.
-> 
-> Signed-off-by: Jarod Wilson <jarod@redhat.com>
-> 
-> ---
->  crypto/testmgr.c |   21 +++++++++++++++++++--
->  1 files changed, 19 insertions(+), 2 deletions(-)
-> 
-> diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-> index f39c148..b78278c 100644
-> --- a/crypto/testmgr.c
-> +++ b/crypto/testmgr.c
-> @@ -94,6 +94,7 @@ struct alg_test_desc {
->  	const char *alg;
->  	int (*test)(const struct alg_test_desc *desc, const char *driver,
->  		    u32 type, u32 mask);
-> +	int untestable;
->  
->  	union {
->  		struct aead_test_suite aead;
-> @@ -1518,6 +1519,13 @@ static const struct alg_test_desc alg_test_descs[] = {
->  			}
->  		}
->  	}, {
-> +		/*
-> +		 * Automated ctr(aes) tests aren't possible per Appendix A of
-> +		 * http://csrc.nist.gov/groups/STM/cavp/documents/aes/AESAVS.pdf
-> +		 */
-> +		.alg = "ctr(aes)",
-> +		.untestable = 1,
-> +	}, {
->  		.alg = "cts(cbc(aes))",
->  		.test = alg_test_skcipher,
->  		.suite = {
-> @@ -2198,10 +2206,13 @@ static int alg_find_test(const char *alg)
->  			continue;
->  		}
->  
-> +		if (alg_test_descs[i].untestable)
-> +			return -ENODATA;
-> +
->  		return i;
->  	}
->  
-> -	return -1;
-> +	return -ENOSYS;
->  }
->  
->  int alg_test(const char *driver, const char *alg, u32 type, u32 mask)
-> @@ -2237,7 +2248,13 @@ test_done:
->  	return rc;
->  
->  notest:
-> -	printk(KERN_INFO "alg: No test for %s (%s)\n", alg, driver);
-> +	switch (i) {
-> +	case -ENODATA:
-> +		break;
-> +	case -ENOSYS:
-> +	default:
-> +		printk(KERN_INFO "alg: No test for %s (%s)\n", alg, driver);
-> +	}
->  	return 0;
->  }
->  EXPORT_SYMBOL_GPL(alg_test);
-> 
-> 
-> -- 
-> Jarod Wilson
-> jarod@redhat.com
-> 
 
-Acked-by: Neil Horman <nhorman@tuxdriver.com>
+* Tim Abbott <tabbott@MIT.EDU> wrote:
 
+> This patch series cleans up the section names on the x86
+> architecture.  It requires the architecture-independent macro
+> definitions from this patch series:
+> 
+> <http://www.spinics.net/lists/mips/msg33499.html>
+
+Hm, we cannot pick the x86 bits up into the x86 tree without having 
+these macros upstream first. So those macros need acks from Sam and 
+maybe Linus will take them out of order. (they are pure additions so 
+they look fairly safe and uncontroversial)
+
+	Ingo
