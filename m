@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbZEANP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758429AbZEANTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270AbZEANP3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbZEANPM
+	id S1758429AbZEANTU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbZEANTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:15:12 -0400
-Received: from THUNK.ORG ([69.25.196.29]:59869 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752158AbZEANPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:15:10 -0400
-Date: Fri, 1 May 2009 09:14:59 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Matthew Wilcox <willy@linux.intel.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>,
-       Alex Buell <alex.buell@munted.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: No NCQ support on X61s Ultrabay?  (Intel ICH8 SATA controller
-	question)
-Message-ID: <20090501131459.GA7681@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Matthew Wilcox <willy@linux.intel.com>,
-	Robert Hancock <hancockrwd@gmail.com>,
-	Alex Buell <alex.buell@munted.org.uk>,
-	Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-	Linux IDE mailing list <linux-ide@vger.kernel.org>
-References: <E1LzLgA-0004j6-9W@closure.thunk.org> <49F90CA2.4080602@garzik.org> <20090430083309.437f9248@lithium.local.net> <20090430113445.GA4809@mit.edu> <20090430113814.GB4809@mit.edu> <49FA55A0.8080303@gmail.com> <20090501025132.GA7275@mit.edu> <49FA78B4.2070900@gmail.com> <20090501113533.GB10704@linux.intel.com>
+	Fri, 1 May 2009 09:19:11 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:47198 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751256AbZEANTK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 09:19:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZHZoPdb4BWT89CFRWUWmbTR/bse5ZdxB22xQNaDqjMFKD5K1bxAX6FrNOZaa8foqsn
+         T3jXdoK4xYZXIg5MS9vodDs5eJMlymDHXavjZRgWmK5lfkzqyYzqQtcOYs7Zeq1uo01D
+         N5RVYTiR/39zQb/abRyi9e16TKEb4fkb7czsg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090501113533.GB10704@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <1241165805.13562.2.camel@johannes.local>
+References: <f7848160904301838q4883106fq8d31e2e7c0b10a14@mail.gmail.com>
+	 <1241165805.13562.2.camel@johannes.local>
+Date: Fri, 1 May 2009 09:19:08 -0400
+Message-ID: <f7848160905010619n74372488n45a7b7abccfe5ea7@mail.gmail.com>
+Subject: Re: Probe Timeouts with 47afbaf5af9454a7a1a64591e20cbfcc27ca67a8
+From: Parag Warudkar <parag.lkml@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, niel.lambrechts@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 04:35:33AM -0700, Matthew Wilcox wrote:
-> On Thu, Apr 30, 2009 at 10:21:08PM -0600, Robert Hancock wrote:
-> > I'm suspecting that that Ultrabay slot might be using the PATA ports on  
-> > the chipset, with a PATA-SATA bridge chip or something. I haven't seen  
-> > an Intel chipset with some SATA ports using AHCI and some in PIIX mode  
-> > before, the ones I've seen with both had the PIIX mode driving PATA  
-> > ports. If it is indeed bridged through PATA on that laptop, there's no  
-> > way you're going to get any NCQ support on that slot.
-> >
-> > I don't know why Lenovo would do that, as it would kind of cripple SATA  
-> > drives in that slot, but hardware people do some bizarre things 
-> > sometimes..
-> 
-> I have to agree with Robert.  If you look at the ich8 data sheet
-> (313056-003), the mobile version has 3 ATA ports and 1 IDE port "that
-> can be electrically isolated".  See pages 41, 43, and 50-51.  on page 41,
-> it says the IDE port has "Tri-state modes to enable swap bay".
-> 
-> So I don't blame Lenovo for hooking up the Ultrabay slot using the IDE
-> port.  They were pretty much told to do it.
+On 5/1/09, Johannes Berg <johannes@sipsolutions.net> wrote:
 
-Gaah.... so basically a SATA device (the X25-M) is talking to a
-SATA-PATA bridge chip, which is then talking the IDE port in the ICH8
-chipset, which shows up as piix, which we're then pretending is SATA
-at the OS level via the ata_piix driver.  Did I get that right?
-(Excuse me while I go find a barf bag....)
+> I'm not sure what makes you think that it even _should_ be reverted.
+>  Just to make that clear: it should _not_ be reverted. How did you check
+>  that it isn't reverted in compat-wireless anyway? Must have been by code
+>  inspection since if you had made an attempt to verify that the code in
+>  there works, you would have found that indeed there's no reason to
+>  revert this commit since the fix for it went in, and is literally a
+>  single line.
 
-The sad thing is there doesn't seem to be a good reason to do that,
-since SATA is designed to be hot-swapping, so it's not like they need
-to use tri-state modes on the IDE port --- especially if said IDE is
-fronted by a PATA-SATA bridge chip anyway...
+Well I have the 04-29 compat-wireless tree and it does not work - just
+like mainline I get timeouts. I have not been able to download later
+versions - clicking on the URL does nothing for some reason. (Besides
+I do not normally track compat-wireless.)
 
-Oh.... and I suspect I know why they did it; I'm guessing they wanted
-to support PATA Ultrabay devices for backwards compatibility on the
-X60, and perhaps they were running out of connector pins on the
-docking station (the Ultrabay slot is on the X61's "media slice"), and
-they didn't have enough wires to run both PATA and SATA interfaces to
-the docking station, *and* they wanted to use the same docking station
-for the X60 and X61 Thinkpads.
+So since I wasn't able to use the mainline for 2-3 days and I could
+not find any regression/bug where it was mentioned the bug was fixed
+in compat-wireless I thought it might be better to revert it until a
+fix appears. (BTW, I just did a pull on Linus tree and the fix hasn't
+made it there).
 
-Ah, well.  I hope it made sense to *someone* at Lenovo...  It would be
-interesting to see if they fixed this in the X200 or not.
+So unless I am being too unreasonable here I think reverting *was*
+(not *is* of course now) the right thing to do based if nothing else,
+on the fact that ath9k and iwlagn were unusable for 2+ days and not
+everyone can be expected to run compat-wireless daily builds.
 
-    	      	      	   	    	      	 - Ted
+Any way now that we know there is a fix - I will wait for it to appear
+in mainline.
+
+Parag
