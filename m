@@ -1,104 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760538AbZEANmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761893AbZEANmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760538AbZEANmj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758160AbZEANm0
+	id S1761893AbZEANmy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760191AbZEANmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:42:26 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:50448 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758056AbZEANmZ (ORCPT
+	Fri, 1 May 2009 09:42:39 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:61302 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761017AbZEANmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:42:25 -0400
-Date: Fri, 1 May 2009 14:40:38 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: mel@csn.ul.ie, andi@firstfloor.org, davem@davemloft.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH mmotm] mm: alloc_large_system_hash check order
-In-Reply-To: <20090429142825.6dcf233d.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0905011354560.19012@blonde.anvils>
-References: <Pine.LNX.4.64.0904292151350.30874@blonde.anvils>
- <20090429142825.6dcf233d.akpm@linux-foundation.org>
+	Fri, 1 May 2009 09:42:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tO87cactzyP9kNTD2rB9ntx3XIUW+tpcjtlHVf0AUiIjArNwIq9I9vc4ofGBXYPpTi
+         +XAwCIbVv5eRLbHlQjyzplMXQN3w4p5cZlN6KbVjFPUzXOyKgLjjSal/B9PE5nA8r+1E
+         9wxnwBsjqR30uQH9g09nt0fzEF8gASnkhjkn4=
+Date: Fri, 1 May 2009 15:42:35 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 3/3] ring-buffer: make cpu buffer entries counter atomic
+Message-ID: <20090501134234.GG6011@nowhere>
+References: <20090501022210.851418183@goodmis.org> <20090501022403.826182932@goodmis.org> <20090501115047.GA24706@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090501115047.GA24706@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Apr 2009, Andrew Morton wrote:
+On Fri, May 01, 2009 at 01:50:47PM +0200, Ingo Molnar wrote:
 > 
-> yes, the code is a bit odd:
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> :	do {
-> : 		size = bucketsize << log2qty;
-> : 		if (flags & HASH_EARLY)
-> : 			table = alloc_bootmem_nopanic(size);
-> : 		else if (hashdist)
-> : 			table = __vmalloc(size, GFP_ATOMIC, PAGE_KERNEL);
-> : 		else {
-> : 			unsigned long order = get_order(size);
-> : 			table = (void*) __get_free_pages(GFP_ATOMIC, order);
-> : 			/*
-> : 			 * If bucketsize is not a power-of-two, we may free
-> : 			 * some pages at the end of hash table.
-> : 			 */
-> : 			if (table) {
-> : 				unsigned long alloc_end = (unsigned long)table +
-> : 						(PAGE_SIZE << order);
-> : 				unsigned long used = (unsigned long)table +
-> : 						PAGE_ALIGN(size);
-> : 				split_page(virt_to_page(table), order);
-> : 				while (used < alloc_end) {
-> : 					free_page(used);
-> : 					used += PAGE_SIZE;
-> : 				}
-> : 			}
-> : 		}
-> : 	} while (!table && size > PAGE_SIZE && --log2qty);
+> > From: Steven Rostedt <srostedt@redhat.com>
+> > 
+> > The entries counter in cpu buffer is not atomic. Although it only 
+> > gets updated by a single CPU, interrupts may come in and update 
+> > the counter too. This would cause missing entries to be added.
 > 
-> In the case where it does the __vmalloc(), the order-11 allocation will
-> succeed.  But in the other cases, the allocation attempt will need to
-> be shrunk and we end up with a smaller hash table.  Is that sensible?
-
-It is a little odd, but the __vmalloc() route is used by default on
-64-bit with CONFIG_NUMA, and this route otherwise.  (The hashdist
-Doc isn't up-to-date on that, I'll send a patch.)
-
+> > -	unsigned long			entries;
+> > +	atomic_t			entries;
 > 
-> If we want to regularise all three cases, doing
+> Hm, that's not really good as atomics can be rather expensive and 
+> this is the fastpath.
 > 
-> 	size = min(size, MAX_ORDER);
-
-If I take you literally, the resulting hash tables are going to
-be rather small ;) but I know what you mean.
-
+> This is the upteenth time or so that the fact that we do not disable 
+> irqs while generating trace entries bites us in one way or another. 
+> IRQs can come in and confuse function trace output, etc. etc.
 > 
-> before starting the loop would be suitable, although the huge
-> __get_free_pages() might still fail.
-
-Oh, I don't feel a great urge to regularize these cases in such
-a way.  I particularly don't feel like limiting 64-bit NUMA to
-MAX_ORDER-1 size, if netdev have been happy with more until now.
-Could consider a __vmalloc fallback when order is too large,
-but let's not do so unless someone actually needs that.
-
-> (But it will then warn, won't it?
->  And nobody is reporting that).
-
-Well, it was hard to report it while mmotm's WARN_ON_ONCE was itself
-oopsing.  With that fixed, I've reported it on x86_64 with 4GB
-(without CONFIG_NUMA).
-
+> Please lets do what i suggested a long time ago: disable irqs _once_ 
+> in any trace point and run atomically from that point on, and enable 
+> them once, at the end.
 > 
-> I was a bit iffy about adding the warning in the first place, let it go
-> through due to its potential to lead us to code which isn't doing what
-> it thinks it's doing, or is being generally peculiar.
+> The cost is very small and it turns into a win immediately by 
+> elimination of a _single_ atomic instruction. (even on Nehalem they 
+> cost 20 cycles. More on older CPUs.) We can drop the preempt-count 
+> disable/enable as well and a lot of racy code as well. Please.
+> 
+> 	Ingo
 
-DaveM has confirmed that the code is doing what they want it to do.
-So I think mmotm wants this patch (for alloc_large_system_hash to
-keep away from that warning), plus Mel's improvement on top of it.
 
-Hugh
+I also suspect one other good effect on doing this.
+
+As you know, between a lock_reserve and a discard, several interrupts
+can trigger some traces. It means that if some rooms have already been
+reserved, the discard will really create a discarded entry and we
+can't reuse it.
+
+For example in the case of filters with lock tracing, we rapidly run
+into entries overriden, making the lock events tracing about useless
+because we rapidly lose everything.
+
+At least that's an effect I observed. I'm not sure the discard is the
+real cause but it seems to make sense.
+
+That's a pity because believe me it is very useful to hunt a softlockup.
+
+Of course it doesn't prevent from NMI tempest, but we already have
+protections for that.
+
+Frederic.
+
