@@ -1,65 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759829AbZEAMze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbZEANFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759829AbZEAMze (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 08:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754460AbZEAMzZ
+	id S1759444AbZEANFj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbZEANF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 08:55:25 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:6018 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753751AbZEAMzY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 08:55:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=bfHRIV2aLGmgsYAsqvbBlGjVMszuq3jsUW8oQoFcNrD+x0l+SkqJc7qVjDYSSRRSrh
-         9W7AEuanJuCrqMY5kCeL4KgzsNofCufM2SP/QiYgeqvd4opxG1WFBPa7guUS1sRltJWe
-         mKlTQFAVkWWNY7o30BtpUnRYYIA36jTXjQyZc=
-Date: Fri, 1 May 2009 16:56:05 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org, xemul@parallels.com,
-       mingo@elte.hu, orenl@cs.columbia.edu, hch@infradead.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: checkpoint/restart: taking refcounts on kernel objects
-Message-ID: <20090501125605.GA10942@x200.localdomain>
-References: <20090410023539.GK27788@x200.localdomain> <20090413214701.GA24509@us.ibm.com> <20090414152752.GC27461@x200.localdomain> <20090414154139.GA8085@us.ibm.com> <20090414170419.GD27923@x200.localdomain> <1239729800.32604.92.camel@nimitz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239729800.32604.92.camel@nimitz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 1 May 2009 09:05:28 -0400
+Received: from gimli.pxnet.com ([195.227.45.7]:56979 "EHLO mail.pxnet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753232AbZEANF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 09:05:27 -0400
+From: Tilman Schmidt <tilman@imap.cc>
+Date: Fri, 1 May 2009 12:44:55 +0200
+Subject: [PATCH RFC] isdn: rename capi_ctr_reseted() to capi_ctr_down()
+To: isdn4linux@listserv.isdn4linux.de, i4ldeveloper@listserv.isdn4linux.de,
+       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Message-Id: <20090501130517.A2F4E11181E@xenon.ts.pxnet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 10:23:20AM -0700, Dave Hansen wrote:
-> On Tue, 2009-04-14 at 21:04 +0400, Alexey Dobriyan wrote:
-> > > Right while I have opinions on some things in this list, I didn't
-> > > mean to imply positions on these items.  My question was:  are
-> > > there are differences you want to call out?
-> > 
-> > Sorry? "none needed" is relevant to only item 3. If tasks don't
-> > dissapear during checkpoint, why would netns dissapear.
-> > Taking refcount on checkpoint(2) is likely unneeded.
-> > 
-> > But it's low-level detail anyway.
-> 
-> I guess it is a matter of whether we consider a task that gets unfrozen
-> a kernel bug or not.  If we don't take refcounts and we do reference an
-> object that disappears, then we *certainly* have a kernel bug that can
-> crash the kernel.  If we take refcounts, we at least limit the ways in
-> which the kernel can crash when something screwy happens.
-> 
-> On the other hand, the objhash is a kinda weird way to do it.  Taking
-> and releasing arbitrary refcounts on arbitrary kernel objects one level
-> too much of abstraction for me.
+The Kernel CAPI exported function capi_ctr_reseted() is named rather
+irritatingly IMHO. I'd like to propose renaming it to something that
+represents better what that function is actually about, as per the
+following patch.
 
-Hm, I take this objection back (refcounts at checkpoint(2) time).
-It's easier and safer to always grab it when putting checkpointed object
-to hash/list/whatever to maintain refcount correct.
-On context destroy, every object is put regardless of whether it's
-checkpointing or restarting.
+Opinions? Objections?
+
+Thanks,
+Tilman
+
+isdn: rename capi_ctr_reseted() to capi_ctr_down()
+
+Change the function name to something representing its purpose better.
+
+Impact: cosmetic
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+---
+ Documentation/isdn/INTERFACE.CAPI |    4 ++--
+ drivers/isdn/capi/kcapi.c         |    8 ++++----
+ drivers/isdn/hardware/avm/b1.c    |    2 +-
+ drivers/isdn/hardware/avm/b1dma.c |    2 +-
+ drivers/isdn/hardware/avm/c4.c    |    4 ++--
+ drivers/isdn/hardware/avm/t1isa.c |    2 +-
+ drivers/isdn/hysdn/hycapi.c       |    4 ++--
+ include/linux/isdn/capilli.h      |    2 +-
+ net/bluetooth/cmtp/capi.c         |    2 +-
+ 9 files changed, 15 insertions(+), 15 deletions(-)
+
+diff --git a/Documentation/isdn/INTERFACE.CAPI b/Documentation/isdn/INTERFACE.CAPI
+index 786d619..4631538 100644
+--- a/Documentation/isdn/INTERFACE.CAPI
++++ b/Documentation/isdn/INTERFACE.CAPI
+@@ -45,7 +45,7 @@ From then on, Kernel CAPI may call the registered callback functions for the
+ device.
+ 
+ If the device becomes unusable for any reason (shutdown, disconnect ...), the
+-driver has to call capi_ctr_reseted(). This will prevent further calls to the
++driver has to call capi_ctr_down(). This will prevent further calls to the
+ callback functions by Kernel CAPI.
+ 
+ 
+@@ -166,7 +166,7 @@ int detach_capi_ctr(struct capi_ctr *ctrlr)
+ 	register/unregister a device (controller) with Kernel CAPI
+ 
+ void capi_ctr_ready(struct capi_ctr *ctrlr)
+-void capi_ctr_reseted(struct capi_ctr *ctrlr)
++void capi_ctr_down(struct capi_ctr *ctrlr)
+ 	signal controller ready/not ready
+ 
+ void capi_ctr_suspend_output(struct capi_ctr *ctrlr)
+diff --git a/drivers/isdn/capi/kcapi.c b/drivers/isdn/capi/kcapi.c
+index f331703..57d2636 100644
+--- a/drivers/isdn/capi/kcapi.c
++++ b/drivers/isdn/capi/kcapi.c
+@@ -377,14 +377,14 @@ void capi_ctr_ready(struct capi_ctr * card)
+ EXPORT_SYMBOL(capi_ctr_ready);
+ 
+ /**
+- * capi_ctr_reseted() - signal CAPI controller reset
++ * capi_ctr_down() - signal CAPI controller not ready
+  * @card:	controller descriptor structure.
+  *
+  * Called by hardware driver to signal that the controller is down and
+  * unavailable for use.
+  */
+ 
+-void capi_ctr_reseted(struct capi_ctr * card)
++void capi_ctr_down(struct capi_ctr * card)
+ {
+ 	u16 appl;
+ 
+@@ -413,7 +413,7 @@ void capi_ctr_reseted(struct capi_ctr * card)
+ 	notify_push(KCI_CONTRDOWN, card->cnr, 0, 0);
+ }
+ 
+-EXPORT_SYMBOL(capi_ctr_reseted);
++EXPORT_SYMBOL(capi_ctr_down);
+ 
+ /**
+  * capi_ctr_suspend_output() - suspend controller
+@@ -517,7 +517,7 @@ EXPORT_SYMBOL(attach_capi_ctr);
+ int detach_capi_ctr(struct capi_ctr *card)
+ {
+         if (card->cardstate != CARD_DETECTED)
+-		capi_ctr_reseted(card);
++		capi_ctr_down(card);
+ 
+ 	ncards--;
+ 
+diff --git a/drivers/isdn/hardware/avm/b1.c b/drivers/isdn/hardware/avm/b1.c
+index abf05ec..a7c0083 100644
+--- a/drivers/isdn/hardware/avm/b1.c
++++ b/drivers/isdn/hardware/avm/b1.c
+@@ -330,7 +330,7 @@ void b1_reset_ctr(struct capi_ctr *ctrl)
+ 	spin_lock_irqsave(&card->lock, flags);
+ 	capilib_release(&cinfo->ncci_head);
+ 	spin_unlock_irqrestore(&card->lock, flags);
+-	capi_ctr_reseted(ctrl);
++	capi_ctr_down(ctrl);
+ }
+ 
+ void b1_register_appl(struct capi_ctr *ctrl,
+diff --git a/drivers/isdn/hardware/avm/b1dma.c b/drivers/isdn/hardware/avm/b1dma.c
+index da34b98..0e84aaa 100644
+--- a/drivers/isdn/hardware/avm/b1dma.c
++++ b/drivers/isdn/hardware/avm/b1dma.c
+@@ -759,7 +759,7 @@ void b1dma_reset_ctr(struct capi_ctr *ctrl)
+ 	memset(cinfo->version, 0, sizeof(cinfo->version));
+ 	capilib_release(&cinfo->ncci_head);
+ 	spin_unlock_irqrestore(&card->lock, flags);
+-	capi_ctr_reseted(ctrl);
++	capi_ctr_down(ctrl);
+ }
+ 
+ /* ------------------------------------------------------------- */
+diff --git a/drivers/isdn/hardware/avm/c4.c b/drivers/isdn/hardware/avm/c4.c
+index 9df1d3f..6833301 100644
+--- a/drivers/isdn/hardware/avm/c4.c
++++ b/drivers/isdn/hardware/avm/c4.c
+@@ -681,7 +681,7 @@ static irqreturn_t c4_handle_interrupt(avmcard *card)
+ 			spin_lock_irqsave(&card->lock, flags);
+ 			capilib_release(&cinfo->ncci_head);
+ 			spin_unlock_irqrestore(&card->lock, flags);
+-			capi_ctr_reseted(&cinfo->capi_ctrl);
++			capi_ctr_down(&cinfo->capi_ctrl);
+ 		}
+ 		card->nlogcontr = 0;
+ 		return IRQ_HANDLED;
+@@ -909,7 +909,7 @@ static void c4_reset_ctr(struct capi_ctr *ctrl)
+         for (i=0; i < card->nr_controllers; i++) {
+ 		cinfo = &card->ctrlinfo[i];
+ 		memset(cinfo->version, 0, sizeof(cinfo->version));
+-		capi_ctr_reseted(&cinfo->capi_ctrl);
++		capi_ctr_down(&cinfo->capi_ctrl);
+ 	}
+ 	card->nlogcontr = 0;
+ }
+diff --git a/drivers/isdn/hardware/avm/t1isa.c b/drivers/isdn/hardware/avm/t1isa.c
+index e772449..1c53fd4 100644
+--- a/drivers/isdn/hardware/avm/t1isa.c
++++ b/drivers/isdn/hardware/avm/t1isa.c
+@@ -339,7 +339,7 @@ static void t1isa_reset_ctr(struct capi_ctr *ctrl)
+ 	spin_lock_irqsave(&card->lock, flags);
+ 	capilib_release(&cinfo->ncci_head);
+ 	spin_unlock_irqrestore(&card->lock, flags);
+-	capi_ctr_reseted(ctrl);
++	capi_ctr_down(ctrl);
+ }
+ 
+ static void t1isa_remove(struct pci_dev *pdev)
+diff --git a/drivers/isdn/hysdn/hycapi.c b/drivers/isdn/hysdn/hycapi.c
+index 53f6ad1..4ffaa14 100644
+--- a/drivers/isdn/hysdn/hycapi.c
++++ b/drivers/isdn/hysdn/hycapi.c
+@@ -67,7 +67,7 @@ hycapi_reset_ctr(struct capi_ctr *ctrl)
+ 	printk(KERN_NOTICE "HYCAPI hycapi_reset_ctr\n");
+ #endif
+ 	capilib_release(&cinfo->ncci_head);
+-	capi_ctr_reseted(ctrl);
++	capi_ctr_down(ctrl);
+ }
+ 
+ /******************************
+@@ -347,7 +347,7 @@ int hycapi_capi_stop(hysdn_card *card)
+ 	if(cinfo) {
+ 		ctrl = &cinfo->capi_ctrl;
+ /*		ctrl->suspend_output(ctrl); */
+-		capi_ctr_reseted(ctrl);
++		capi_ctr_down(ctrl);
+ 	}
+ 	return 0;
+ }
+diff --git a/include/linux/isdn/capilli.h b/include/linux/isdn/capilli.h
+index 35e9b0f..7acb87a 100644
+--- a/include/linux/isdn/capilli.h
++++ b/include/linux/isdn/capilli.h
+@@ -79,7 +79,7 @@ int attach_capi_ctr(struct capi_ctr *);
+ int detach_capi_ctr(struct capi_ctr *);
+ 
+ void capi_ctr_ready(struct capi_ctr * card);
+-void capi_ctr_reseted(struct capi_ctr * card);
++void capi_ctr_down(struct capi_ctr * card);
+ void capi_ctr_suspend_output(struct capi_ctr * card);
+ void capi_ctr_resume_output(struct capi_ctr * card);
+ void capi_ctr_handle_message(struct capi_ctr * card, u16 appl, struct sk_buff *skb);
+diff --git a/net/bluetooth/cmtp/capi.c b/net/bluetooth/cmtp/capi.c
+index 78958c0..97f8d68 100644
+--- a/net/bluetooth/cmtp/capi.c
++++ b/net/bluetooth/cmtp/capi.c
+@@ -382,7 +382,7 @@ static void cmtp_reset_ctr(struct capi_ctr *ctrl)
+ 
+ 	BT_DBG("ctrl %p", ctrl);
+ 
+-	capi_ctr_reseted(ctrl);
++	capi_ctr_down(ctrl);
+ 
+ 	atomic_inc(&session->terminate);
+ 	cmtp_schedule(session);
+-- 
+1.6.2.1.214.ge986c
+
