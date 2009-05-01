@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761415AbZEAPJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761693AbZEAPJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761415AbZEAPJW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 11:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbZEAPJJ
+	id S1761693AbZEAPJw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 11:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbZEAPJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 11:09:09 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:33031 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754253AbZEAPJI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 11:09:08 -0400
-Date: Fri, 1 May 2009 17:11:18 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tim Abbott <tabbott@MIT.EDU>
-Cc: David Howells <dhowells@redhat.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>
-Subject: Re: [PATCH 5/6] mn10300: use new macros for .data.init_task.
-Message-ID: <20090501151118.GA25659@uranus.ravnborg.org>
-References: <1241135661-9147-6-git-send-email-tabbott@mit.edu> <1241135661-9147-1-git-send-email-tabbott@mit.edu> <1241135661-9147-2-git-send-email-tabbott@mit.edu> <1241135661-9147-3-git-send-email-tabbott@mit.edu> <1241135661-9147-4-git-send-email-tabbott@mit.edu> <1241135661-9147-5-git-send-email-tabbott@mit.edu> <11779.1241189179@redhat.com> <alpine.DEB.1.10.0905011048420.10966@vinegar-pot.mit.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 1 May 2009 11:09:37 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:58737 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754771AbZEAPJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 11:09:36 -0400
+Date: Fri, 1 May 2009 16:09:33 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH mmotm] mm: alloc_large_system_hash check order
+Message-ID: <20090501150933.GE27831@csn.ul.ie>
+References: <Pine.LNX.4.64.0904292151350.30874@blonde.anvils> <20090430132544.GB21997@csn.ul.ie> <Pine.LNX.4.64.0905011202530.8513@blonde.anvils> <20090501140015.GA27831@csn.ul.ie> <alpine.DEB.1.10.0905010958090.18324@qirst.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0905011048420.10966@vinegar-pot.mit.edu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <alpine.DEB.1.10.0905010958090.18324@qirst.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 11:00:12AM -0400, Tim Abbott wrote:
-> On Fri, 1 May 2009, David Howells wrote:
+On Fri, May 01, 2009 at 09:59:35AM -0400, Christoph Lameter wrote:
+> On Fri, 1 May 2009, Mel Gorman wrote:
 > 
-> > Tim Abbott <tabbott@MIT.EDU> wrote:
-> > 
-> > > .data.init_task should not need a separate output section; this change
-> > > moves it into the .data section.
-> > 
-> > Hmmm...  This causes the kernel I'm building to make an extra page of RAM into
-> > dead space.
+> > > Andrew noticed another oddity: that if it goes the hashdist __vmalloc()
+> > > way, it won't be limited by MAX_ORDER.  Makes one wonder whether it
+> > > ought to fall back to __vmalloc() if the alloc_pages_exact() fails.
+> >
+> > I don't believe so. __vmalloc() is only used when hashdist= is used or on IA-64
+> > (according to the documentation). It is used in the case that the caller is
+> > willing to deal with the vmalloc() overhead (e.g. using base page PTEs) in
+> > exchange for the pages being interleaved on different nodes so that access
+> > to the hash table has average performance[*]
+> >
+> > If we automatically fell back to vmalloc(), I bet 2c we'd eventually get
+> > a mysterious performance regression report for a workload that depended on
+> > the hash tables performance but that there was enough memory for the hash
+> > table to be allocated with vmalloc() instead of alloc_pages_exact().
 > 
-> I would try reversing the order of the things inside the .data output 
-> section, since the stuff after .data at the end of this patch series is 
-> page-aligned, while the stuff before .data isn't.
+> Can we fall back to a huge page mapped vmalloc? Like what the vmemmap code
+> does? Then we also would not have MAX_ORDER limitations.
+> 
 
-I'm looking into creating a WRDATA macro like we have RODATA today.
-If that flys then we will hide a lot in that section,
-including the correct order.
+Potentially yes, although it would appear that it will only help the networking
+hash table. Dentry and inode are both using the bootmem allocator to allocate
+their tables so can exceed MAX_ORDER limitations.
 
-But it will take a few hours before I'm ready.
+But IIRC, the vmemmap code depends on architecture-specific help from
+vmemmap_populate() to place the map in the right place and it's not universally
+available. It's likely that similar would be needed to support large
+hash tables. I think the networking guys would need to be fairly sure
+the larger table would make a big difference before tackling the
+problem.
 
-	Sam
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
