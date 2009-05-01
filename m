@@ -1,54 +1,372 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759851AbZEANNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759966AbZEANN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759851AbZEANNm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbZEANNb
+	id S1759966AbZEANN4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344AbZEANNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:13:31 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43606 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750918AbZEANNa (ORCPT
+	Fri, 1 May 2009 09:13:36 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:64826 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754147AbZEANNe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:13:30 -0400
-Date: Fri, 1 May 2009 14:14:14 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Michal Simek <monstr@monstr.eu>,
-       linux-arch@vger.kernel.org,
+	Fri, 1 May 2009 09:13:34 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
+Subject: [PATCH V3] asm-generic: add a generic uaccess.h
+Date: Fri, 1 May 2009 15:13:24 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-arch@vger.kernel.org,
        Remis Lima Baima <remis.developer@googlemail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 04/27] asm-generic: add legacy I/O header files
-Message-ID: <20090501141414.4adfe4ab@lxorguk.ukuu.org.uk>
-In-Reply-To: <200905011453.32006.arnd@arndb.de>
-References: <cover.1241105648.git.arnd@arndb.de>
-	<49FAEA2A.50504@monstr.eu>
-	<20090501123728.GC27799@flint.arm.linux.org.uk>
-	<200905011453.32006.arnd@arndb.de>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+       linux-kernel@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>
+References: <cover.1241105648.git.arnd@arndb.de> <200905011436.05204.arnd@arndb.de> <49FAED34.5000701@monstr.eu>
+In-Reply-To: <49FAED34.5000701@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905011513.25344.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/YkOSXMgKcaUS5cxlbL5VWyv/u5vdbicHTZ+e
+ sMgWJuVWubROu8mcJTkVeDX0jgLSccqGWO+TqwlxyrCPPuS4tP
+ bz+6IbSMHqjMV1ukrul7g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> #ifndef CLOCK_TICK_RATE
-> #define CLOCK_TICK_RATE                1193182
-> #endif
-> 
-> to include/linux/timex.h. Since al existing architectures already define
-> CLOCK_TICK_RATE as a macro, I don't see anything changing for them.
-> 
-> The only difference would be that all architectures that use the default
-> value can have an empty timex.h.
-> 
-> Am I missing something?
+This adds a new asm-generic/uaccess.h file that should be usable
+by both all NOMMU architectures out of the box. Architectures with
+an MMU should override the __access_ok(), __copy_from_user() and
+__copy_to_user definitions with their own functions to provide
+correct exception handling.
 
-Currently if you create a new architecture you have to figure out what
-your equivalent tick rate is or you get an error for not defining it.
-Ditto if you try to build code using it on platforms that it is
-meaningless (eg S/390) you get an error.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-You'd lose that rather useful property.
-
-Alan
+diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
+new file mode 100644
+index 0000000..deb1722
+--- /dev/null
++++ b/include/asm-generic/uaccess.h
+@@ -0,0 +1,319 @@
++#ifndef __ASM_GENERIC_UACCESS_H
++#define __ASM_GENERIC_UACCESS_H
++
++/*
++ * User space memory access functions, these should work
++ * on a ny machine that has kernel and user data in the same
++ * address space, e.g. all NOMMU machines.
++ */
++#include <linux/sched.h>
++#include <linux/mm.h>
++#include <linux/string.h>
++
++#include <asm/segment.h>
++
++#ifndef get_fs
++#define MAKE_MM_SEG(s)	((mm_segment_t) { (s) })
++#define KERNEL_DS	MAKE_MM_SEG(~0UL)
++#define USER_DS		MAKE_MM_SEG(TASK_SIZE - 1)
++
++#define get_ds() (KERNEL_DS)
++#define get_fs() (current_thread_info()->addr_limit)
++
++static inline void set_fs(mm_segment_t fs)
++{
++	current_thread_info()->addr_limit = fs;
++}
++#endif
++
++#define segment_eq(a, b) ((a).seg == (b).seg)
++
++#define VERIFY_READ	0
++#define VERIFY_WRITE	1
++
++#define access_ok(type, addr, size) __access_ok((unsigned long)(addr),(size))
++
++/*
++ * The architecture should really override this if possible, at least
++ * doing a check on the get_fs()
++ */
++#ifndef __access_ok
++static inline int __access_ok(unsigned long addr, unsigned long size)
++{
++	return 1;
++}
++#endif
++
++/*
++ * The exception table consists of pairs of addresses: the first is the
++ * address of an instruction that is allowed to fault, and the second is
++ * the address at which the program should continue.  No registers are
++ * modified, so it is entirely up to the continuation code to figure out
++ * what to do.
++ *
++ * All the routines below use bits of fixup code that are out of line
++ * with the main instruction path.  This means when everything is well,
++ * we don't even have to jump over them.  Further, they do not intrude
++ * on our cache or tlb entries.
++ */
++
++struct exception_table_entry
++{
++	unsigned long insn, fixup;
++};
++
++/* Returns 0 if exception not found and fixup otherwise.  */
++extern unsigned long search_exception_table(unsigned long);
++
++/*
++ * architectures with an MMU should override these two
++ */
++#ifndef __copy_from_user
++static inline __must_check long __copy_from_user(void *to,
++		const void __user * from, unsigned long n)
++{
++	if (__builtin_constant_p(n)) {
++		switch(n) {
++		case 1:
++			*(u8 *)to = *(u8 __force *)from;
++			return 0;
++		case 2:
++			*(u16 *)to = *(u16 __force *)from;
++			return 0;
++		case 4:
++			*(u32 *)to = *(u32 __force *)from;
++			return 0;
++#ifdef CONFIG_64BIT
++		case 8:
++			*(u64 *)to = *(u64 __force *)from;
++			return 0;
++#endif
++		default:
++			break;
++		}
++	}
++
++	memcpy(to, (const void __force *)from, n);
++	return 0;
++}
++#endif
++
++#ifndef __copy_to_user
++static inline __must_check long __copy_to_user(void __user *to,
++		const void *from, unsigned long n)
++{
++	if (__builtin_constant_p(n)) {
++		switch(n) {
++		case 1:
++			*(u8 __force *)to = *(u8 *)from;
++			return 0;
++		case 2:
++			*(u16 __force *)to = *(u16 *)from;
++			return 0;
++		case 4:
++			*(u32 __force *)to = *(u32 *)from;
++			return 0;
++#ifdef CONFIG_64BIT
++		case 8:
++			*(u64 __force *)to = *(u64 *)from;
++			return 0;
++#endif
++		default:
++			break;
++		}
++	}
++
++	memcpy((void __force *)to, from, n);
++	return 0;
++}
++#endif
++
++/*
++ * These are the main single-value transfer routines.  They automatically
++ * use the right size if we just have the right pointer type.
++ * This version just falls back to copy_{from,to}_user, which should
++ * provide a fast-path for small values. 
++ */
++#define __put_user(x, ptr) \
++({								\
++	__typeof__(*(ptr)) __x = (x);				\
++	int __pu_err = -EFAULT;					\
++        __chk_user_ptr(ptr);					\
++	switch (sizeof (*(ptr))) {				\
++	case 1:							\
++	case 2:							\
++	case 4:							\
++	case 8:							\
++		__pu_err = __put_user_fn(sizeof (*(ptr)),	\
++					 ptr, &__x);		\
++		break;						\
++	default:						\
++		__put_user_bad();				\
++		break;						\
++	 }							\
++	__pu_err;						\
++})
++
++#define put_user(x, ptr)					\
++({								\
++	might_sleep();						\
++	__access_ok(ptr, sizeof (*ptr)) ?			\
++		__put_user(x, ptr) :				\
++		-EFAULT;					\
++})
++
++static inline int __put_user_fn(size_t size, void __user *ptr, void *x)
++{
++	size = __copy_to_user(ptr, x, size);
++	return size ? -EFAULT : size;
++}
++
++extern int __put_user_bad(void) __attribute__((noreturn));
++
++#define __get_user(x, ptr)					\
++({								\
++	int __gu_err = -EFAULT;					\
++	__chk_user_ptr(ptr);					\
++	switch (sizeof(*(ptr))) {				\
++	case 1: {						\
++		unsigned char __x;				\
++		__gu_err = __get_user_fn(sizeof (*(ptr)),	\
++					 ptr, &__x);		\
++		(x) = *(__force __typeof__(*(ptr)) *) &__x;	\
++		break;						\
++	};							\
++	case 2: {						\
++		unsigned short __x;				\
++		__gu_err = __get_user_fn(sizeof (*(ptr)),	\
++					 ptr, &__x);		\
++		(x) = *(__force __typeof__(*(ptr)) *) &__x;	\
++		break;						\
++	};							\
++	case 4: {						\
++		unsigned int __x;				\
++		__gu_err = __get_user_fn(sizeof (*(ptr)),	\
++					 ptr, &__x);		\
++		(x) = *(__force __typeof__(*(ptr)) *) &__x;	\
++		break;						\
++	};							\
++	case 8: {						\
++		unsigned long long __x;				\
++		__gu_err = __get_user_fn(sizeof (*(ptr)),	\
++					 ptr, &__x);		\
++		(x) = *(__force __typeof__(*(ptr)) *) &__x;	\
++		break;						\
++	};							\
++	default:						\
++		__get_user_bad();				\
++		break;						\
++	}							\
++	__gu_err;						\
++})
++
++#define get_user(x, ptr)					\
++({								\
++	might_sleep();						\
++	__access_ok(ptr, sizeof (*ptr)) ?			\
++		__get_user(x, ptr) :				\
++		-EFAULT;					\
++})
++
++static inline int __get_user_fn(size_t size, const void __user *ptr, void *x)
++{
++	size = __copy_from_user(x, ptr, size);
++	return size ? -EFAULT : size;
++}
++
++extern int __get_user_bad(void) __attribute__((noreturn));
++
++#ifndef __copy_from_user_inatomic
++#define __copy_from_user_inatomic __copy_from_user
++#endif
++
++#ifndef __copy_to_user_inatomic
++#define __copy_to_user_inatomic __copy_to_user
++#endif
++
++static inline long copy_from_user(void *to,
++		const void __user * from, unsigned long n)
++{
++	might_sleep();
++	if (__access_ok(from, n))
++		return __copy_from_user(to, from, n);
++	else
++		return n;
++}
++
++static inline long copy_to_user(void __user *to,
++		const void *from, unsigned long n)
++{
++	might_sleep();
++	if (__access_ok(to, n))
++		return __copy_to_user(to, from, n);
++	else
++		return n;
++}
++
++/*
++ * Copy a null terminated string from userspace.
++ */
++#ifndef __strncpy_from_user
++static inline long
++__strncpy_from_user(char *dst, const char __user *src, long count)
++{
++	char *tmp;
++	strncpy(dst, (const char __force *)src, count);
++	for (tmp = dst; *tmp && count > 0; tmp++, count--)
++		;
++	return (tmp - dst);
++}
++#endif
++
++static inline long
++strncpy_from_user(char *dst, const char __user *src, long count)
++{
++	if (!__access_ok(src, 1))
++		return -EFAULT;
++	return __strncpy_from_user(dst, src, count);
++}
++
++/*
++ * Return the size of a string (including the ending 0)
++ *
++ * Return 0 on exception, a value greater than N if too long
++ */
++#ifndef strnlen_user
++static inline long strnlen_user(const char __user *src, long n)
++{
++	return strlen((void * __force)src) + 1;
++}
++#endif
++
++static inline long strlen_user(const char __user *src)
++{
++	return strnlen_user(src, 32767);
++}
++
++/*
++ * Zero Userspace
++ */
++#ifndef __clear_user
++static inline __must_check unsigned long
++__clear_user(void __user *to, unsigned long n)
++{
++	memset((void __force *)to, 0, n);
++	return 0;
++}
++#endif
++
++static inline __must_check unsigned long
++clear_user(void __user *to, unsigned long n)
++{
++	might_sleep();
++	if (!__access_ok(to, n))
++		return n;
++
++	return __clear_user(to, n);
++}
++
++#endif /* __ASM_GENERIC_UACCESS_H */
