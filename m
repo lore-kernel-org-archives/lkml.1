@@ -1,160 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765575AbZEAUTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765681AbZEAUUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765575AbZEAUTr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 16:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762410AbZEAUTf
+	id S1765681AbZEAUUV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 16:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757574AbZEAUUC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 16:19:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50603 "EHLO mx2.redhat.com"
+	Fri, 1 May 2009 16:20:02 -0400
+Received: from ultra7.eskimo.com ([204.122.16.70]:1193 "EHLO ultra7.eskimo.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754601AbZEAUTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 16:19:33 -0400
-Date: Fri, 1 May 2009 16:16:46 -0400
-From: Josef Bacik <josef@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Josef Bacik <josef@redhat.com>, jbacik@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sandeen@redhat.com, stable@kernel.org
-Subject: Re: [PATCH] fiemap: fix problem with setting FIEMAP_EXTENT_LAST
-Message-ID: <20090501201646.GK7076@unused.rdu.redhat.com>
-References: <1241113491-9031-1-git-send-email-jbacik@redhat.com> <20090430154047.5485759f.akpm@linux-foundation.org> <20090501143517.GF7076@unused.rdu.redhat.com> <20090501125043.11da02f3.akpm@linux-foundation.org>
+	id S1756580AbZEAUUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 16:20:00 -0400
+Date: Fri, 1 May 2009 13:17:48 -0700
+From: Elladan <elladan@eskimo.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Andrew Morton <akpm@linux-foundation.org>,
+       elladan@eskimo.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
+       tytso@mit.edu, kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
+Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
+Message-ID: <20090501201748.GH25905@eskimo.com>
+References: <20090429114708.66114c03@cuia.bos.redhat.com> <20090430072057.GA4663@eskimo.com> <20090430174536.d0f438dd.akpm@linux-foundation.org> <20090430205936.0f8b29fc@riellaptop.surriel.com> <20090430181340.6f07421d.akpm@linux-foundation.org> <20090430215034.4748e615@riellaptop.surriel.com> <20090430195439.e02edc26.akpm@linux-foundation.org> <49FB01C1.6050204@redhat.com> <2c0942db0905011104u4e6df9ap9d95fa30b1284294@mail.gmail.com> <49FB4EBB.3030404@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090501125043.11da02f3.akpm@linux-foundation.org>
+In-Reply-To: <49FB4EBB.3030404@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 12:50:43PM -0700, Andrew Morton wrote:
-> On Fri, 1 May 2009 10:35:17 -0400
-> Josef Bacik <josef@redhat.com> wrote:
-> 
-> > 
-> > Here is an updated patch.
-> 
-> This looks heaps better to me.
-> 
-> Officially we shouldn't do this sort of thing in a -stable/-rc4 patch. 
-> We should go for a minimal backportable fixup then do the cleanups
-> later, in an -rc1.
-> 
-> But we could sneak this in anyway, I expect.  Which way would you
-> prefer?
-> 
-> >  What am I supposed to do about these types?
-> > inode->i_size is loff_t, bh->b_size is size_t, bh->b_blocknr is sector_t, not to
-> > mention that all of the fieinfo fields are either u64 or u32.
-> 
-> We're missing a number of types and sometimes it's hard to find one
-> which is appropriate for the problem at hand.
-> 
-> It is appropriate that the fields which are communicated with userspace
-> have the bare u32/u64 types.  One way of handling these
-> information-free types is to name them well.  Another is to avoid using
-> them until the last possible moment - choose well-typed and well-named
-> locals and copy then to/from the target structure immediately
-> before/after the userspace copy in/out.
-> 
-> >  Is what I've done
-> > acceptable, or is there some other magic I'm supposed to be doing?
-> 
-> Looks better ;)
-> 
-> >  I've looked
-> > around some and it seems that people just kind of ignore the types, they're just
-> > there to explain the variables.
-> 
-> Yup, explaiing the variables is a major reason for the existence of 
-> these types.
-> 
-> This sort of code tends to get very confusing.  Look at
-> do_mpage_readpage() and weep.
-> 
-> >  I just would like to better understand this so
-> > I can avoid getting chewed out in the future.
-> 
-> yeah, well, sorry, that was a bit of a rant.  I saw the patch and tried
-> to understand it but this required understanding the surrounding code,
-> and it immediately became clear that this was going to take waaaay more
-> time that it should.
-> 
-> > --- a/fs/ioctl.c
-> > +++ b/fs/ioctl.c
-> > @@ -228,13 +228,22 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
-> >  
-> >  #ifdef CONFIG_BLOCK
-> >  
-> > -#define blk_to_logical(inode, blk) (blk << (inode)->i_blkbits)
-> > -#define logical_to_blk(inode, offset) (offset >> (inode)->i_blkbits);
-> > +static inline sector_t logical_to_blk(struct inode *inode, loff_t offset)
-> > +{
-> > +	return (offset >> inode->i_blkbits);
-> > +}
-> > +
-> > +static inline loff_t blk_to_logical(struct inode *inode, sector_t blk)
-> > +{
-> > +	return (blk << inode->i_blkbits);
-> > +}
-> 
-> That is so much better!
-> 
-> >  /**
-> >   * __generic_block_fiemap - FIEMAP for block based inodes (no locking)
-> >   * @inode - the inode to map
-> > - * @arg - the pointer to userspace where we copy everything to
-> > + * @fieinfo - the fiemap info struct that will be passed back to userspace
-> > + * @start - where to start mapping in the inode
-> > + * @len - how much space to map
-> 
-> space_to_map ;)
-> 
-> >   * @get_block - the fs's get_block function
-> >   *
-> >   * This does FIEMAP for block based inodes.  Basically it will just loop
-> > @@ -250,43 +259,63 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
-> >   */
-> >  
-> >  int __generic_block_fiemap(struct inode *inode,
-> > -			   struct fiemap_extent_info *fieinfo, u64 start,
-> > -			   u64 len, get_block_t *get_block)
-> > +			   struct fiemap_extent_info *fieinfo, loff_t start,
-> > +			   loff_t len, get_block_t *get_block)
-> >  {
-> > -	struct buffer_head tmp;
-> > -	unsigned int start_blk;
-> > -	long long length = 0, map_len = 0;
-> > +	struct buffer_head map_bh;
-> 
-> yep, map_bh is a well-known identifier for an on-stack bh which is
-> going to be used for get_block()ing.  Sticking to established patterns
-> is good.
-> 
-> 
-> > +	sector_t start_blk;
-> > +	loff_t end;
-> 
-> "end" of what?  file/sector/block/page/extent/etc?  The type loff_t is
-> a hint that it's measuring a file length.
-> 
-> >  	u64 logical = 0, phys = 0, size = 0;
-> >  	u32 flags = FIEMAP_EXTENT_MERGED;
-> > +	bool past_eof = false, whole_file = false;
-> >  	int ret = 0;
-> >
-> > ...
-> >
-> 
-> Are you really really confident that this is still correct?  No
-> mysterious shift overflows from type changes, nothing subtle like that?
-> 
-> Or would you be more confident if we ran with version 1 for now?
+On Fri, May 01, 2009 at 03:34:19PM -0400, Rik van Riel wrote:
+> Ray Lee wrote:
+>
+>> Said way #3: We desktop users really want a way to say "Please don't
+>> page my executables out when I'm running a system with 3gig of RAM." I
+>> hate knobs, but I'm willing to beg for one in this case. 'cause
+>> mlock()ing my entire working set into RAM seems pretty silly.
+>>
+>> Does any of that make sense, or am I talking out of an inappropriate orifice?
+>
+> The "don't page my executables out" part makes sense.
+>
+> However, I believe that kind of behaviour should be the
+> default.  Desktops and servers alike have a few different
+> kinds of data in the page cache:
+> 1) pages that have been frequently accessed at some point
+>    in the past and got promoted to the active list
+> 2) streaming IO
+>
+> I believe that we want to give (1) absolute protection from
+> (2), provided there are not too many pages on the active file
+> list.  That way we will provide executables, cached indirect
+> and inode blocks, etc. from streaming IO.
+>
+> Pages that are new to the page cache start on the inactive
+> list.  Only if they get accessed twice while on that list,
+> they get promoted to the active list.
+>
+> Streaming IO should normally be evicted from memory before
+> it can get accessed again.  This means those pages do not
+> get promoted to the active list and the working set is
+> protected.
+>
+> Does this make sense?
 
-Thanks for the review, that was helpful.  I think this late in the game it's
-probably best to just go with whats already in the kernel for now, and I'll
-rework some of this stuff and work with Eric to get a good test suite set up to
-make sure everything is working properly, and then shoot for -31.  Does that
-sound good?  Thanks,
+I think this is a simplistic view of things.
 
-Josef
+Keep in mind that the goal of a VM is: "load each page before it's needed."
+LRU, use-once heuristics, and the like are ways of trying to guess when a page
+is needed and when it isn't, because you don't know the future.
+
+For high throughput, treating all pages equally (or with some simple weighting)
+is often appropriate, because it allows you to balance various sorts of working
+sets dynamically.
+
+But user interfaces are a realtime problem.  When the user presses a button,
+you have a deadline to respond before it's annoying, and another deadline
+before the user will hit the power button.  With this in mind, the user's
+application UI has essentially infinite priority for memory -- it's either
+paged into ram before the user presses a button, or you fail.
+
+Very often, this is just a case of streaming IO vs. everything else, in which
+case detecting streaming IO (because of the usage pattern) will help.  That's a
+pretty simple case.  But imagine I start up a big compute job in the background
+-- for example, I run a video encoder or something similar, and this program
+touches the source data many times, such that it does not appear to be
+"streaming" by a simple heuristic.
+
+Particularly if I walk away from the computer, from any algorithm just based on
+recent usage, this will appear to be the only thing worth doing at that time,
+so the UI will be paged out.  And of course, when I walk back to the computer
+and press a button, the UI will not respond, and will have shocking latency
+until I've touched every bit of it that I use again.
+
+That's a bad outcome.  User interactivity is a real-time problem, and your
+deadline is less than 30 disk seeks.
+
+Of course, if the bulk job completes dramatically faster with some extra
+memory, then the alternative (pinning the entire UI ram) is also a bad outcome.
+There's no perfect solution here, and I suspect a really functional system
+ultimately needs all sorts of weird hints from the UI.  Or alternatively, a
+naive VM (which pins the UI), and enough RAM to keep the user and any bulk jobs
+happy.
+
+-Elladan
+
