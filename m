@@ -1,120 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761480AbZEACYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbZEACon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761480AbZEACYs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 22:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756122AbZEACYG
+	id S1756398AbZEACon (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 22:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbZEACo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 22:24:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:50678 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753955AbZEACYE (ORCPT
+	Thu, 30 Apr 2009 22:44:27 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:47259 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752187AbZEACo0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 22:24:04 -0400
-Message-Id: <20090501022402.302620162@goodmis.org>
-References: <20090501022210.851418183@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 30 Apr 2009 22:22:12 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 2/3] tracing: export stats of ring buffers to userspace
-Content-Disposition: inline; filename=0002-tracing-export-stats-of-ring-buffers-to-userspace.patch
+	Thu, 30 Apr 2009 22:44:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=vM7u3rrrzWPuy8t8FdF0A7EG5wLb4LQYkYLfmVptny8o7KIDW2dYuA+YOIW9Sg/4Sn
+         DnEwJex1uJ3fEg7SAJlP+IN5+Q0+Qhy+5JyLr8ULV/T1tDtX5DLCH/9ML0qPNnMsRdrs
+         dwCzHy8rhE3SVG3G55A/tkGv6nzpkhD+QkfAs=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Jeff Mahoney <jeffm@suse.com>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH 0/6] kill-the-BKL/reiserfs3: performance improvements, faster than Bkl based scheme
+Date: Fri,  1 May 2009 04:44:16 +0200
+Message-Id: <1241145862-21700-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+Hi,
 
-This patch adds stats to the ftrace ring buffers:
+This reiserfs patchset applies against latest tip:core/kill-the-BKL
+It adds various explicit write lock releases on specific sleeping sections.
 
- # cat /debugfs/tracing/per_cpu/cpu0/stats
- entries: 42360
- overrun: 30509326
- commit overrun: 0
- nmi dropped: 0
+A performance test with dbench on UP with 100 processus during 100 seconds
+gives the following results:
 
-Where entries are the total number of data entries in the buffer.
+Locking		  Throughput 
 
-overrun is the number of entries not consumed and were overwritten by
-the writer.
+Bkl:              11.2587 MB/s
+Write lock/Mutex: 12.5713 MB/s
 
-commit overrun is the number of entries dropped due to nested writers
-wrapping the buffer before the initial writer finished the commit.
+So the new locking scheme makes it 11% faster than with the bkl.
 
-nmi dropped is the number of entries dropped due to the ring buffer
-lock being held when an nmi was going to write to the ring buffer.
-Note, this field will be meaningless and will go away when the ring
-buffer becomes lockless.
+It's not possible to compare it on the kill-the-BKL tree because the Bkl
+is not anymore a Bkl inside but a plain Mutex.
 
-[ Impact: let userspace know what is happening in the ring buffers ]
+Instead, you can apply the following equivalent patch against -rc3 to test it:
+http://www.kernel.org/pub/linux/kernel/people/frederic/reiserfs-kill-the-bkl-full.patch
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace.c |   42 ++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 42 insertions(+), 0 deletions(-)
+Of course it might eat your data, make you cows produce black milk, bring coffee
+to your children at 3:00 am, turn the teletubbies song in your mind for
+seven years long and so...
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index f5427e0..74df029 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3595,6 +3595,45 @@ static const struct file_operations tracing_buffers_fops = {
- 	.llseek		= no_llseek,
- };
- 
-+static ssize_t
-+tracing_stats_read(struct file *filp, char __user *ubuf,
-+		   size_t count, loff_t *ppos)
-+{
-+	unsigned long cpu = (unsigned long)filp->private_data;
-+	struct trace_array *tr = &global_trace;
-+	struct trace_seq *s;
-+	unsigned long cnt;
-+
-+	s = kmalloc(sizeof(*s), GFP_ATOMIC);
-+	if (!s)
-+		return ENOMEM;
-+
-+	trace_seq_init(s);
-+
-+	cnt = ring_buffer_entries_cpu(tr->buffer, cpu);
-+	trace_seq_printf(s, "entries: %ld\n", cnt);
-+
-+	cnt = ring_buffer_overrun_cpu(tr->buffer, cpu);
-+	trace_seq_printf(s, "overrun: %ld\n", cnt);
-+
-+	cnt = ring_buffer_commit_overrun_cpu(tr->buffer, cpu);
-+	trace_seq_printf(s, "commit overrun: %ld\n", cnt);
-+
-+	cnt = ring_buffer_nmi_dropped_cpu(tr->buffer, cpu);
-+	trace_seq_printf(s, "nmi dropped: %ld\n", cnt);
-+
-+	count = simple_read_from_buffer(ubuf, count, ppos, s->buffer, s->len);
-+
-+	kfree(s);
-+
-+	return count;
-+}
-+
-+static const struct file_operations tracing_stats_fops = {
-+	.open		= tracing_open_generic,
-+	.read		= tracing_stats_read,
-+};
-+
- #ifdef CONFIG_DYNAMIC_FTRACE
- 
- int __weak ftrace_arch_read_dyn_info(char *buf, int size)
-@@ -3708,6 +3747,9 @@ static void tracing_init_debugfs_percpu(long cpu)
- 
- 	trace_create_file("trace_pipe_raw", 0444, d_cpu,
- 			(void *) cpu, &tracing_buffers_fops);
-+
-+	trace_create_file("stats", 0444, d_cpu,
-+			(void *) cpu, &tracing_stats_fops);
- }
- 
- #ifdef CONFIG_FTRACE_SELFTEST
--- 
-1.6.2.1
+Frederic.
 
--- 
+The following changes since commit a3a2b793d18bc068b79508e96eba33ae2326f759:
+  Alessio Igor Bogani (1):
+        remove the BKL: remove "BKL auto-drop" assumption from ext3_remount()
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git bkl
+
+Frederic Weisbecker (6):
+      kill-the-BKL/reiserfs: release write lock on fs_changed()
+      kill-the-BKL/reiserfs: release the write lock before rescheduling on do_journal_end()
+      kill-the-BKL/reiserfs: release write lock while rescheduling on prepare_for_delete_or_cut()
+      kill-the-BKL/reiserfs: release the write lock inside get_neighbors()
+      kill-the-BKL/reiserfs: release the write lock inside reiserfs_read_bitmap_block()
+      kill-the-BKL/reiserfs: release the write lock on flush_commit_list()
+
+ fs/reiserfs/bitmap.c        |    2 ++
+ fs/reiserfs/fix_node.c      |    4 ++++
+ fs/reiserfs/journal.c       |    9 +++++++--
+ fs/reiserfs/stree.c         |    2 ++
+ include/linux/reiserfs_fs.h |    8 +++++++-
+ 5 files changed, 22 insertions(+), 3 deletions(-)
