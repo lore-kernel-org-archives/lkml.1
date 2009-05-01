@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763888AbZEAS3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932212AbZEASaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763888AbZEAS3g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 14:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755854AbZEAS31
+	id S932212AbZEASaV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 14:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760933AbZEASaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 14:29:27 -0400
-Received: from mga09.intel.com ([134.134.136.24]:24686 "EHLO mga09.intel.com"
+	Fri, 1 May 2009 14:30:01 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:47166 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753395AbZEAS30 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 14:29:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,280,1239001200"; 
-   d="scan'208";a="511745679"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 1 May 2009 11:29:25 -0700
-Subject: RE: [RFC][PATCH 33/35] asm-generic/ptemap.h for HIGHPTE users
-Thread-Topic: [RFC][PATCH 33/35] asm-generic/ptemap.h for HIGHPTE users
-Thread-Index: AcnKiC49hMoKarJ/TmeaWEYX9YLi7AAAgVIw
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA39EF4688A@orsmsx505.amr.corp.intel.com>
-References: <20090501144201.D31EF417@kernel>
-	 <20090501144252.A2BDDE6B@kernel>
-	 <57C9024A16AD2D4C97DC78E552063EA39EF467E5@orsmsx505.amr.corp.intel.com>
- <1241201452.29485.206.camel@nimitz>
-In-Reply-To: <1241201452.29485.206.camel@nimitz>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	id S1755854AbZEASaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 14:30:00 -0400
+Date: Fri, 1 May 2009 20:29:58 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, linux-ide@vger.kernel.org,
+       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
+       mike.miller@hp.com, chirag.kantharia@hp.com, Eric.Moore@lsi.com,
+       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, jesper.juhl@gmail.com, tim@cyberelk.net,
+       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
+       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
+       davem@davemloft.net, rusty@rustcorp.com.au,
+       Markus.Lidel@shadowconnect.com, bharrosh@panasas.com
+Subject: Re: [GIT PATCH] block,scsi,ide: unify sector and data_len
+Message-ID: <20090501182958.GD4593@kernel.dk>
+References: <1240996428-10159-1-git-send-email-tj@kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240996428-10159-1-git-send-email-tj@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> You need to add a closing #endif here.
->
-> Fixed, thanks.
+On Wed, Apr 29 2009, Tejun Heo wrote:
+> Hello,
+> 
+> Upon ack, please pull from the following git tree.
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-unify-sector-and-data_len
 
-ia64 build fails with:
+Looks sane. When you have collected acks and made suggested changes,
+please repost it and I'll integrate it.
 
-arch/ia64/mm/init.c: In function 'put_kernel_page':
-arch/ia64/mm/init.c:248: error: implicit declaration of function 'pte_alloc_kernel'
-arch/ia64/mm/init.c:248: warning: assignment makes pointer from integer without a cast
-make[1]: *** [arch/ia64/mm/init.o] Error 1
+Note that I wont be very responsive the next week or so, taking care of
+a new aspiring kernel hacker.
 
+-- 
+Jens Axboe
 
-Which I fixed by adding a #include <linux/ptemap.h> to init.c
-
--Tony
