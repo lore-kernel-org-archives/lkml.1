@@ -1,91 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbZEAFso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752568AbZEAFvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754189AbZEAFso (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 01:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbZEAFse
+	id S1752568AbZEAFvx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 01:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbZEAFvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 01:48:34 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:49939 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752023AbZEAFsd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 01:48:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:subject;
-        b=lgCMIskwFEDkz24qvYSTP9WXy2smwmTkXfauR3GF8eyv0NueR0BI9rP3pCFsfqPs9r
-         ild5/NIjaD48cZh0B9ak4B8UlWtt1t7iait5UdZp/mHr7LCID/agp4IvDvdPA7YmpZCi
-         e/My3egYPA3JeuTawyJnc8eGMAIYb7UNjGyp4=
-From: Magnus Damm <magnus.damm@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: johnstul@us.ibm.com, mingo@elte.hu, lethal@linux-sh.org,
-       tglx@linutronix.de, akpm@linux-foundation.org,
-       Magnus Damm <magnus.damm@gmail.com>
-Date: Fri, 01 May 2009 14:45:46 +0900
-Message-Id: <20090501054546.8193.10688.sendpatchset@rx1.opensource.se>
-Subject: [PATCH] clocksource: setup mult_orig in clocksource_enable()
+	Fri, 1 May 2009 01:51:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45411 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751353AbZEAFvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 01:51:43 -0400
+Date: Fri, 1 May 2009 07:51:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 4/6] kill-the-BKL/reiserfs: release the write lock
+	inside get_neighbors()
+Message-ID: <20090501055135.GF5983@elte.hu>
+References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com> <1241145862-21700-5-git-send-email-fweisbec@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241145862-21700-5-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
 
-Setup clocksource mult_orig in clocksource_enable().
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-Clocksource drivers can save power by using keeping the
-device clock disabled while the clocksource is unused.
+> get_neighbors() is used to get the left and/or right blocks 
+> against a given one in order to balance a tree.
+> 
+> sb_bread() is used to read the buffer of these neighors blocks and 
+> while it waits for this operation, it might sleep.
+> 
+> The bkl was released at this point, and then we can also release 
+> the write lock before calling sb_bread().
+> 
+> This is safe because if the filesystem is changed after this lock 
+> release, the function returns REPEAT_SEARCH (aka SCHEDULE_OCCURRED 
+> in the function header comments) in order to repeat the neighbhor 
+> research.
+> 
+> [ Impact: release the reiserfs write lock when it is not needed ]
 
-In practice this means that the enable() and disable()
-callbacks perform clk_enable() and clk_disable().
+This should also be safe because under the BKL we _already_ dropped 
+the lock when sb_bread() blocked (which it really would in the 
+normal case).
 
-The enable() callback may also use clk_get_rate() to get
-the clock rate from the clock framework. This information
-can then be used to calculate the shift and mult variables.
+There's one special case to consider though: sb_read() maps to 
+__bread() which can return without sleeping if the bh is already 
+uptodate. So if the filesystem _knows_ that the bh is already 
+uptodate and holds a reference to it (this is common pattern in 
+filesystems), it can have a locking assumption on that.
 
-Currently the mult_orig variable is setup from mult at
-registration time only. This is conflicting with the above
-case since the clock is disabled and the mult variable is
-not yet calculated at the time of registration.
+No such assumption seems to be present here though.
 
-Moving the mult_orig setup code to clocksource_enable()
-allows us to both handle the common case with no enable()
-callback and the mult-changed-after-enable() case.
-
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
-
- include/linux/clocksource.h |   10 +++++++++-
- kernel/time/clocksource.c   |    3 ---
- 2 files changed, 9 insertions(+), 4 deletions(-)
-
---- 0001/include/linux/clocksource.h
-+++ work/include/linux/clocksource.h	2009-05-01 12:59:27.000000000 +0900
-@@ -288,7 +288,15 @@ static inline cycle_t clocksource_read(s
-  */
- static inline int clocksource_enable(struct clocksource *cs)
- {
--	return cs->enable ? cs->enable(cs) : 0;
-+	int ret = 0;
-+
-+	if (cs->enable)
-+		ret = cs->enable(cs);
-+
-+	/* save mult_orig on enable */
-+	cs->mult_orig = cs->mult;
-+
-+	return ret;
- }
- 
- /**
---- 0001/kernel/time/clocksource.c
-+++ work/kernel/time/clocksource.c	2009-05-01 12:59:40.000000000 +0900
-@@ -402,9 +402,6 @@ int clocksource_register(struct clocksou
- 	unsigned long flags;
- 	int ret;
- 
--	/* save mult_orig on registration */
--	c->mult_orig = c->mult;
--
- 	spin_lock_irqsave(&clocksource_lock, flags);
- 	ret = clocksource_enqueue(c);
- 	if (!ret)
+	Ingo
