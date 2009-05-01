@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbZEAJh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757070AbZEAJkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbZEAJh2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 05:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbZEAJhQ
+	id S1757070AbZEAJkm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 05:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbZEAJke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 05:37:16 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:22151 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753645AbZEAJhO (ORCPT
+	Fri, 1 May 2009 05:40:34 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:10187 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754231AbZEAJkd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 05:37:14 -0400
-Message-ID: <49FAC2C4.9020905@monstr.eu>
-Date: Fri, 01 May 2009 11:37:08 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Fri, 1 May 2009 05:40:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=PVaYIJdXk8Ro1jSbUvv5uEyeVa7ozcAQj/Dz8GKYslZWsU6rr0VXwPx+uV4b9FFjrS
+         jUJMNi3ZhuZKVOrtTiG8N0T1IJuMkuH20REVCvGnpl8uDrWQesInJPNmqs/UhQbW4WXB
+         N+lpqOgkndGP5Q/PgIapj6wH51aK8Yf4RAj+E=
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Russell King <rmk+lkml@arm.linux.org.uk>, linux-arch@vger.kernel.org,
-       Remis Lima Baima <remis.developer@googlemail.com>,
+In-Reply-To: <20090420122612.GB17483@game.jcrosoft.org>
+References: <1227626565-25209-1-git-send-email-costa.antonior@gmail.com>
+	 <20090420122612.GB17483@game.jcrosoft.org>
+Date: Fri, 1 May 2009 11:40:32 +0200
+Message-ID: <cd73a99e0905010240w3f5a87d4n40226f05e50faa55@mail.gmail.com>
+Subject: Re: [PATCH 1/5] [RFC PATCH] Support for AT572D940HF-EK [RFC PATCH]
+From: Andrew Victor <avictor.za@gmail.com>
+To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Cc: "Antonio R. Costa" <costa.antonior@gmail.com>, linux@maxim.org.za,
+       nicolas.ferre@atmel.com, linux-arm-kernel@lists.arm.linux.org.uk,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 17/27] add generic lib/checksum.c
-References: <cover.1241105648.git.arnd@arndb.de> <cda5746ab12cf9d6bcb7803a3667c92250a29784.1241105648.git.arnd@arndb.de> <20090501092027.GA29366@flint.arm.linux.org.uk> <200905011135.15137.arnd@arndb.de>
-In-Reply-To: <200905011135.15137.arnd@arndb.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Friday 01 May 2009, Russell King wrote:
->> Since when has 'memcpy' been valid from user addresses?
-> 
-> It's an artifact from the microblaze code, I found it after
-> submitting the patches when running sparse over it (yes, I
-> know I should do these things in a different order).
-> 
-> The s390 version seems to get this right, so I'll use this:
-> 
-> static inline __wsum
-> csum_partial_copy_from_user(const void __user *src, void *dst,
->                                           int len, __wsum sum,
->                                           int *err_ptr)
-> {
-> 	int missing;
-> 
-> 	missing = copy_from_user(dst, src, len);
-> 	if (missing) {
-> 		memset(dst + len - missing, 0, missing);
-> 		*err_ptr = -EFAULT;
-> 	}
-> 
-> 	return csum_partial(dst, len, sum);
-> }
-> 
-> On microblaze, the old code was only correct for NOMMU.
+hi Jean-Christophe,
 
-Not it wasn't there were address space problem too.
+>> AT572D940HF (Diopsis) is an ARM926 + a 40-bits floating point DSP
+>> (mAgicV)
+>>
+> Any news?
 
-Michal
-
-> 
-> Thanks,
-> 
-> 	Arnd <><
+I am busy merging the support for the AT572D940HF into my tree.
+It will be included in the next AT91 patch, and thereafter submitted
+to the mainline kernel.
 
 
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+Regards,
+  Andrew Victor
