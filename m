@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763424AbZEARwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761918AbZEAR4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763424AbZEARwQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 13:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZEARv7
+	id S1761918AbZEAR4t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 13:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756028AbZEAR4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 13:51:59 -0400
-Received: from mga11.intel.com ([192.55.52.93]:7699 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753395AbZEARv6 convert rfc822-to-8bit (ORCPT
+	Fri, 1 May 2009 13:56:41 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37453 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757525AbZEAR4k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 13:51:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,280,1239001200"; 
-   d="scan'208";a="686727406"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 1 May 2009 10:51:57 -0700
-Subject: RE: [RFC][PATCH 33/35] asm-generic/ptemap.h for HIGHPTE users
-Thread-Topic: [RFC][PATCH 33/35] asm-generic/ptemap.h for HIGHPTE users
-Thread-Index: AcnKa5perj1MKvsyQm+Ay1OOHmucbwAGZliQ
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA39EF467E5@orsmsx505.amr.corp.intel.com>
-References: <20090501144201.D31EF417@kernel> <20090501144252.A2BDDE6B@kernel>
-In-Reply-To: <20090501144252.A2BDDE6B@kernel>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Fri, 1 May 2009 13:56:40 -0400
+Date: Fri, 1 May 2009 13:56:39 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 3/3] ring-buffer: make cpu buffer entries counter
+ atomic
+In-Reply-To: <20090501174228.GB9565@elte.hu>
+Message-ID: <alpine.DEB.2.00.0905011351520.20374@gandalf.stny.rr.com>
+References: <20090501022403.826182932@goodmis.org> <20090501115047.GA24706@elte.hu> <alpine.DEB.2.00.0905011016560.20374@gandalf.stny.rr.com> <alpine.DEB.2.00.0905011212130.20374@gandalf.stny.rr.com> <20090501162053.GA17915@elte.hu>
+ <alpine.DEB.2.00.0905011230350.20374@gandalf.stny.rr.com> <20090501165258.GA26143@elte.hu> <alpine.DEB.2.00.0905011302150.20374@gandalf.stny.rr.com> <20090501171437.GA5932@elte.hu> <alpine.DEB.2.00.0905011335320.20374@gandalf.stny.rr.com>
+ <20090501174228.GB9565@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> diff -puN include/asm-generic/ptemap.h~asm-generic-ptemap-h-highpte include/asm-generic/ptemap.h
-> +#ifdef CONFIG_HIGHPTE
-> +#include <asm/highmem.h>
-> +#define pte_offset_map(dir, address) \
-> +     ((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE0) + pte_index(address))
-> +#define pte_offset_map_nested(dir, address) \
-> +     ((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE1) + pte_index(address))
-> +#define pte_unmap(pte) kunmap_atomic(pte, KM_PTE0)
-> +#define pte_unmap_nested(pte) kunmap_atomic((pte), KM_PTE1)
-> +
-> +#else /* !CONFIG_HIGHPTE */
-> +
-> #define pte_offset_map(dir,addr)      pte_offset_kernel((dir),(addr))
-> #define pte_offset_map_nested(dir,addr)       pte_offset_kernel((dir),(addr))
-> #define pte_unmap(pte)                        do { } while (0)
+On Fri, 1 May 2009, Ingo Molnar wrote:
+> > 
+> > Ah, maybe there's confusion in my explanation. When I talk about 
+> > writers and readers, I'm talking about those writers into the ring 
+> > buffer and readers from the ring buffer. But both writers and 
+> > readers write to the entries counter. Readers subtract and writers 
+> > add. But writers can also subtract on overruns.
+> 
+> a solution for that would be to split it into two counts - for both 
+> sides. Or to eliminate it if possible. We _really_ need to make the 
+> ring-buffer _much_ cheaper than it is today.
 
-You need to add a closing #endif here.
+I was thinking the same thing :-)
 
--Tony
+Actually we would have three counters. All incremental.
+
+	entries
+	overruns
+	read
+
+The writer when adding an entry would increment entries
+
+The writer when overwriting will increment overruns
+
+The reader would increment read.
+
+We could even make it 64 bits (or more) on all archs. Heck, make it two 
+longs (128 bits for 64 bit archs). Since we only need to worry about 
+interrupts, we only increment the second counter if we wrapped the first. 
+I doubt a single interrupt (or many) could wrap the first counter. If it 
+could, we have more to worry about than counters.
+
+Thus the number of entries in the buffer would be:
+
+	(entries - overruns) - read
+
+-- Steve
+
