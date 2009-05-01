@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755779AbZEANUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760502AbZEANUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755779AbZEANUb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760055AbZEANUE
+	id S1760502AbZEANUt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760055AbZEANUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:20:04 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:37698 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759263AbZEANUA (ORCPT
+	Fri, 1 May 2009 09:20:37 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:51241 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760319AbZEANUf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:20:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xF83Q7lnwJfM/KEVS6+U92r5hElxLrgX3CiGPK/6jBE/P+n98TNw1sCGc1jNQzjuwf
-         KglaiKEPaBSMQtEMgw7Ynb3LAxf5F3DdVyCgv4CcgIr+gz3SM4sFOHD4q9kyPkrHt7Fl
-         R31GYaJzF9aP9ZCi42GvjLn9sLIPZzwR8ksLc=
-Date: Fri, 1 May 2009 15:19:55 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 5/6] kill-the-BKL/reiserfs: release the write lock
-	inside reiserfs_read_bitmap_block()
-Message-ID: <20090501131955.GC6011@nowhere>
-References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com> <1241145862-21700-6-git-send-email-fweisbec@gmail.com> <20090501054734.GE5983@elte.hu>
+	Fri, 1 May 2009 09:20:35 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 04/27] asm-generic: add legacy I/O header files
+Date: Fri, 1 May 2009 15:20:33 +0200
+User-Agent: KMail/1.9.9
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Michal Simek <monstr@monstr.eu>,
+       linux-arch@vger.kernel.org,
+       Remis Lima Baima <remis.developer@googlemail.com>,
+       linux-kernel@vger.kernel.org
+References: <cover.1241105648.git.arnd@arndb.de> <200905011453.32006.arnd@arndb.de> <20090501141414.4adfe4ab@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090501141414.4adfe4ab@lxorguk.ukuu.org.uk>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090501054734.GE5983@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905011520.34097.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX199ocAvsLA8CqB8KUKxNwpyJ616Bh+DoeQZcuE
+ wgP4STO1DXQGUp++rOm/4Q0IO2EfNhM368l/jv4kXLXcxS52N4
+ GT5d7Sdkfd3NDKwCvF75A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 07:47:34AM +0200, Ingo Molnar wrote:
+On Friday 01 May 2009, Alan Cox wrote:
+> Currently if you create a new architecture you have to figure out what
+> your equivalent tick rate is or you get an error for not defining it.
+> Ditto if you try to build code using it on platforms that it is
+> meaningless (eg S/390) you get an error.
 > 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > reiserfs_read_bitmap_block() uses sb_bread() to read the bitmap block. This
-> > helper might sleep.
-> > 
-> > Then, when the bkl was used, it was released at this point. We can then
-> > relax the write lock too here.
-> > 
-> > [ Impact: release the reiserfs write lock when it is not needed ]
-> > 
-> > Cc: Jeff Mahoney <jeffm@suse.com>
-> > Cc: Chris Mason <chris.mason@oracle.com>
-> > Cc: Alexander Beregalov <a.beregalov@gmail.com>
-> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > ---
-> >  fs/reiserfs/bitmap.c |    2 ++
-> >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/fs/reiserfs/bitmap.c b/fs/reiserfs/bitmap.c
-> > index 1470334..6854957 100644
-> > --- a/fs/reiserfs/bitmap.c
-> > +++ b/fs/reiserfs/bitmap.c
-> > @@ -1249,7 +1249,9 @@ struct buffer_head *reiserfs_read_bitmap_block(struct super_block *sb,
-> >  	else if (bitmap == 0)
-> >  		block = (REISERFS_DISK_OFFSET_IN_BYTES >> sb->s_blocksize_bits) + 1;
-> >  
-> > +	reiserfs_write_unlock(sb);
-> >  	bh = sb_bread(sb, block);
-> > +	reiserfs_write_lock(sb);
-> >  	if (bh == NULL)
-> >  		reiserfs_warning(sb, "sh-2029: %s: bitmap block (#%u) "
-> >  		                 "reading failed", __func__, block);
-> 
-> Note, there's a side-effect here: the access to sb->b_blocksize is 
-> moved outside of the lock. Previously it was accessed via the BKL. 
-> On a mounted filesystem sb->b_blocksize is not supposed to change, 
-> so it's probably not an issue - but wanted to mention it.
-> 
-> 	Ingo
+> You'd lose that rather useful property.
 
+In that case, I still think it would be good to have it in asm-generic.
+Half the architectures define it in this way currently, and new architectures
+would still have to think about it before falling back on the default.
 
-Indeed. Well I guess it can't be dynamically changed.
-This is something that can be chosen with mkfs on filesystem creation
-but I guess it can't be changed, at least not while the filesystem
-is mounted. I hope...
-
-Frederic.
-
+	Arnd <><
