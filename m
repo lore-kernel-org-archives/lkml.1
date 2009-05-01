@@ -1,40 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765213AbZEAUW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764924AbZEAUWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765213AbZEAUW7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 16:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZEAUWu
+	id S1764924AbZEAUWU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 16:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZEAUWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 16:22:50 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46703 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755884AbZEAUWt (ORCPT
+	Fri, 1 May 2009 16:22:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46592 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750940AbZEAUWG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 16:22:49 -0400
-Date: Fri, 1 May 2009 16:22:46 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Josh Stone <jistone@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Jason Baron <jbaron@redhat.com>,
-       mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] export softirq_to_name symbol
-Message-ID: <20090501202246.GA20056@infradead.org>
-References: <20090501193022.GB3111@redhat.com> <20090501195015.GA31694@infradead.org> <49FB5686.8020908@redhat.com> <20090501201028.GA2084@infradead.org> <49FB58F7.8080109@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49FB58F7.8080109@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 1 May 2009 16:22:06 -0400
+Date: Fri, 1 May 2009 13:10:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: john stultz <johnstul@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, rmk+lkml@arm.linux.org.uk,
+       cooloney@kernel.org, starvik@axis.com, takata@linux-m32r.org,
+       geert@linux-m68k.org, zippel@linux-m68k.org, lethal@linux-sh.org,
+       magnus.damm@gmail.com, wli@holomorphy.com, rth@twiddle.net
+Subject: Re: [RESEND][PATCH 2/2] Convert sh to use arch_getoffset()
+ infrastructure.
+Message-Id: <20090501131006.fa631417.akpm@linux-foundation.org>
+In-Reply-To: <1239759393.6064.30.camel@localhost>
+References: <1239759163.6064.25.camel@localhost>
+	<1239759251.6064.27.camel@localhost>
+	<1239759393.6064.30.camel@localhost>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 01:17:59PM -0700, Josh Stone wrote:
-> More precisely, it's the piece of code that copies the trace into an
-> __entry pointer.  In my case, __entry has nothing to do with the ring
-> buffer.
+On Tue, 14 Apr 2009 18:36:33 -0700
+john stultz <johnstul@us.ibm.com> wrote:
 
-Well, it should be the ring buffer.  If you want to do something more
-fancy rewrite it in proper C code and submit a patch for discussion to
-lkml.
+> This patch converts sh to use GENERIC_TIME via the arch_getoffset()
+> infrastructure 
+> 
+> I have tried cross-compiling this for sh3 and sh4. Also little has
+> changed since my last submission where it was acked. So I've taken my
+> best swing at converting this, but I'm not 100% confident I got it
+> right. Any assistance from arch maintainers or testers would be great.
+
+arch/sh/kernel/timers/timer-cmt.c has just vanished from linux-next and
+I didn't find it popping up anywhere else, so I simply dropped that hunk
+from the patch.
+
+I'll send these patches at Thomas before they bitrot any further.
+
+What's the status of
+clocksource-sanity-check-sysfs-clocksource-changes.patch, btw?  I have
+it marked as "still an RFC", but it's been sitting here since January?
 
