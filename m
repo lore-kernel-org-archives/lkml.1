@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbZEAJIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbZEAJJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbZEAJIk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 05:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbZEAJIT
+	id S1756706AbZEAJJV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 05:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755653AbZEAJJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 05:08:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36942 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754543AbZEAJIS (ORCPT
+	Fri, 1 May 2009 05:09:03 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57938 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756623AbZEAJJB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 05:08:18 -0400
-Date: Fri, 1 May 2009 01:59:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Philipp Reisner <philipp.reisner@linbit.com>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       "Lars Marowsky-Bree" <lmb@suse.de>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>
-Subject: Re: [PATCH 01/16] DRBD: major.h
-Message-Id: <20090501015912.a16776da.akpm@linux-foundation.org>
-In-Reply-To: <1241090812-13516-2-git-send-email-philipp.reisner@linbit.com>
-References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com>
-	<1241090812-13516-2-git-send-email-philipp.reisner@linbit.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 1 May 2009 05:09:01 -0400
+Date: Fri, 1 May 2009 05:08:59 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [RFC PATCH 0/2] A new way of attaching information to inodes
+Message-ID: <20090501090858.GA15363@infradead.org>
+References: <1241112678-6615-1-git-send-email-jack@suse.cz> <20090430194339.GE19276@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090430194339.GE19276@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Apr 2009 13:26:37 +0200 Philipp Reisner <philipp.reisner@linbit.com> wrote:
+On Thu, Apr 30, 2009 at 03:43:39PM -0400, Theodore Tso wrote:
+> One of the things on my "round tuit" list was separating out those
+> inode fields which are only needed when the inode is in use, and
+> separating them out into a separate data structure, so that the 90+%
+> of the inodes which are just being cached, and are not active, don't
+> burn space in struct inode.  In particular, we can probably move out
+> i_mutex, i_alloc_sem, i_size_seqcount, i_flock, and perhaps others.
 
-> Since we have had a LANANA major number for years, and it is documented in devices.txt,
-> I think that this first patch can go upstream without further changes.
-> 
-> Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
-> Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
-> 
-> ---
-> diff --git a/include/linux/major.h b/include/linux/major.h
-> index 058ec15..6a8ca98 100644
-> --- a/include/linux/major.h
-> +++ b/include/linux/major.h
-> @@ -145,6 +145,7 @@
->  #define UNIX98_PTY_MAJOR_COUNT	8
->  #define UNIX98_PTY_SLAVE_MAJOR	(UNIX98_PTY_MASTER_MAJOR+UNIX98_PTY_MAJOR_COUNT)
->  
-> +#define DRBD_MAJOR		147
->  #define RTF_MAJOR		150
->  #define RAW_MAJOR		162
+I think that's generally a good idea, but I don't think we should
+use this mechanism for it.  Just split the inode into two structures,
+as struct cached_inode and a struct active_inode and make the struct
+inode an anonymous union of the two.
 
-Yup.  I'll merge this, after having given it a vaguely useful title,
-"drbd: add major number to major.h".
+> The same applies for the filesystem-specific portion of the in-core
+> inode; and for some filesystems there might be even more opportunity
+> for savings there.
+
+I'd rather move them out into the filesystem.  E.g. i_alloc_sem is
+specific to those few filesystem that support O_DIRECT but don't
+actually do good enough internal locking - we'd be much better
+off just having the i_alloc_sem equivalent inside those filesystems
+and get rid of the calls to it in the VFS which only hurt the others.
+
+Similarly I'd really love to get rid of the quota calls in the VFS but
+instead move calls to these helpers into the filesystems - it's not
+a function of the VFS switch and that way we can easily keep the quota
+inode in the FS without a feature table.
+
