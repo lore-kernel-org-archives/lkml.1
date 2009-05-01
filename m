@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764727AbZEASVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760906AbZEAS2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764727AbZEASVb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 14:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbZEASVU
+	id S1760906AbZEAS2V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 14:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbZEAS2B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 14:21:20 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:60732 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754709AbZEASVT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 14:21:19 -0400
-X-Auth-Info: GiIO25L+RbaAoCszG47hweK2ezlOw7Y7S43FNHKIWUE=
-Message-ID: <49FB3D9B.3050704@grandegger.com>
-Date: Fri, 01 May 2009 20:21:15 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 1 May 2009 14:28:01 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:36514 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753895AbZEAS2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 14:28:00 -0400
+Date: Fri, 1 May 2009 20:27:58 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Boaz Harrosh <bharrosh@panasas.com>, Tejun Heo <tj@kernel.org>,
+       linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
+       mike.miller@hp.com, chirag.kantharia@hp.com, Eric.Moore@lsi.com,
+       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, jesper.juhl@gmail.com, tim@cyberelk.net,
+       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
+       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
+       davem@davemloft.net, rusty@rustcorp.com.au,
+       Markus.Lidel@shadowconnect.com, "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH 08/10] block: cleanup rq->data_len usages
+Message-ID: <20090501182758.GC4593@kernel.dk>
+References: <1240996428-10159-1-git-send-email-tj@kernel.org> <1240996428-10159-9-git-send-email-tj@kernel.org> <49F9AC04.9060403@panasas.com> <1241105757.3320.1.camel@mulgrave.int.hansenpartnership.com>
 MIME-Version: 1.0
-To: Jonathan Corbet <corbet@lwn.net>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-Subject: Re: [PATCH 4/8] can: Driver for the SJA1000 CAN controller
-References: <1235070082-7069-1-git-send-email-wg@grandegger.com>	<1235070082-7069-2-git-send-email-wg@grandegger.com>	<1235070082-7069-3-git-send-email-wg@grandegger.com>	<1235070082-7069-4-git-send-email-wg@grandegger.com>	<1235070082-7069-5-git-send-email-wg@grandegger.com> <20090219171440.0c8286a1@bike.lwn.net>
-In-Reply-To: <20090219171440.0c8286a1@bike.lwn.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241105757.3320.1.camel@mulgrave.int.hansenpartnership.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm now back fixing the open issues of this patch series...
-
-Jonathan Corbet wrote:
-[snip]
->> +/*
->> + * SJA1000 private data structure
->> + */
->> +struct sja1000_priv {
->> +	struct can_priv can;	/* must be the first member! */
+On Thu, Apr 30 2009, James Bottomley wrote:
+> On Thu, 2009-04-30 at 16:47 +0300, Boaz Harrosh wrote:
+> > > @@ -966,7 +965,7 @@ static int scsi_init_sgtable(struct request
+> > *req, struct scsi_data_buffer *sdb,
+> > >       BUG_ON(count > sdb->table.nents);
+> > >       sdb->table.nents = count;
+> > >       if (blk_pc_request(req))
+> > > -             sdb->length = req->data_len;
+> > > +             sdb->length = blk_rq_bytes(req);
+> > >       else
+> > >               sdb->length = blk_rq_sectors(req) << 9;
+> > 
+> > Is this true. I thought they must be the same now. I was actually
+> > anticipating this if() removed.
 > 
-> AHA!  I knew it!
+> Me too ... there's one of these in scsi_lib.c as well.
 > 
-> This kind of pointer trickery is fragile and dangerous, please don't do
-> it.  Much better would be something like:
-> 
-> 	dev->priv = &dev_specific_priv->can;
-> 
-> Then the higher layers know they have a proper struct can_priv pointer.
-> Then you can use container_of() at this level to get the outer structure
-> pointer.  Much more robust and in line with normal kernel coding idiom.
+> The difference comes because filesystem requests are always in sectors,
+> but BLOCK_PC requests are always in bytes .... we should be able to wrap
+> the accessors so they do the correct conversions.
 
-Unfortunately, the "struct net_device" does not have a "priv" field. Using
+blk_rq_bytes() already takes care of this, it can be used on any type
+request. So just kill the if/else.
 
-	struct can_priv *can = netdev_priv(dev);
-	struct sja1000_priv *sja1000 = candev_priv(dev);
-
-instead is awkward. That's what we had at first. Any other more elegant
-solution in mind?
-
-Wolfgang.
+-- 
+Jens Axboe
 
