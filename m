@@ -1,74 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbZEAX1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbZEAX3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756747AbZEAX1e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 19:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZEAX1Z
+	id S1755614AbZEAX3g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 19:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZEAX32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 19:27:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:49834 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751212AbZEAX1Y (ORCPT
+	Fri, 1 May 2009 19:29:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52624 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751212AbZEAX31 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 19:27:24 -0400
-Date: Fri, 1 May 2009 19:27:23 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 0/7] kconfig: more featured minimum module configs
-In-Reply-To: <20090501120100.GC24706@elte.hu>
-Message-ID: <alpine.DEB.2.00.0905011926330.20374@gandalf.stny.rr.com>
-References: <20090430185022.122124349@goodmis.org> <20090430191001.GA14108@elte.hu> <alpine.DEB.2.00.0904301854230.20374@gandalf.stny.rr.com> <20090501120100.GC24706@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 1 May 2009 19:29:27 -0400
+Date: Fri, 1 May 2009 16:25:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: kosaki.motohiro@jp.fujitsu.com, peterz@infradead.org, elladan@eskimo.com,
+       linux-kernel@vger.kernel.org, tytso@mit.edu, linux-mm@kvack.org
+Subject: Re: [PATCH] vmscan: evict use-once pages first (v3)
+Message-Id: <20090501162506.f9243dca.akpm@linux-foundation.org>
+In-Reply-To: <49FB8031.8000602@redhat.com>
+References: <20090428044426.GA5035@eskimo.com>
+	<20090428192907.556f3a34@bree.surriel.com>
+	<1240987349.4512.18.camel@laptop>
+	<20090429114708.66114c03@cuia.bos.redhat.com>
+	<2f11576a0904290907g48e94e74ye97aae593f6ac519@mail.gmail.com>
+	<20090429131436.640f09ab@cuia.bos.redhat.com>
+	<20090501153255.0f412420.akpm@linux-foundation.org>
+	<49FB8031.8000602@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 01 May 2009 19:05:21 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
-
-On Fri, 1 May 2009, Ingo Molnar wrote:
-
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > On Thu, 30 Apr 2009, Ingo Molnar wrote:
+> Andrew Morton wrote:
+> > On Wed, 29 Apr 2009 13:14:36 -0400
+> > Rik van Riel <riel@redhat.com> wrote:
 > > 
-> > > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > > 
-> > > > This set of patches adds on top of my previous post.
-> > > > 
-> > > > It fixes CONFIG_IKCONFIG when CONFIG_IKCONFIG_PROC is not set.
-> > > >  (gcc optimizes the config out!)
-> > > > 
-> > > > As a request from Ingo, it now enables IKCONFIG and will also use 
-> > > > various locations to find a config to base against.
-> > > 
-> > > hm, now 'make localyesconfig' done on a Fedora distro kernel 
-> > > produces something very close to an allyesconfig:
-> > > 
-> > >  -rw-rw-r-- 1 mingo mingo 91930 2009-04-30 20:03 .config
-> > >  aldebaran:~/linux/linux> grep =y .config | wc -l
-> > >  3398
-> > > 
-> > > is that expected?
+> >> When the file LRU lists are dominated by streaming IO pages,
+> >> evict those pages first, before considering evicting other
+> >> pages.
+> >>
+> >> This should be safe from deadlocks or performance problems
+> >> because only three things can happen to an inactive file page:
+> >> 1) referenced twice and promoted to the active list
+> >> 2) evicted by the pageout code
+> >> 3) under IO, after which it will get evicted or promoted
+> >>
+> >> The pages freed in this way can either be reused for streaming
+> >> IO, or allocated for something else. If the pages are used for
+> >> streaming IO, this pageout pattern continues. Otherwise, we will
+> >> fall back to the normal pageout pattern.
+> >>
+> >> ..
+> >>
+> >> +int mem_cgroup_inactive_file_is_low(struct mem_cgroup *memcg)
+> >> +{
+> >> +	unsigned long active;
+> >> +	unsigned long inactive;
+> >> +
+> >> +	inactive = mem_cgroup_get_local_zonestat(memcg, LRU_INACTIVE_FILE);
+> >> +	active = mem_cgroup_get_local_zonestat(memcg, LRU_ACTIVE_FILE);
+> >> +
+> >> +	return (active > inactive);
+> >> +}
 > > 
-> > What config did it use? If it uses an allyesconfig that was 
-> > already made then it will not disable anything.
+> > This function could trivially be made significantly more efficient by
+> > changing it to do a single pass over all the zones of all the nodes,
+> > rather than two passes.
 > 
-> i used a regular config - then i also tried an allnoconfig - but no 
-> change in the result, bloated .config.
+> How would I do that in a clean way?
 
-Could you send me the config it used (it should print out which one it 
-used) and the output of lsmod. Then I can test it locally.
+copy-n-paste :(
 
-Thanks,
+static unsigned long foo(struct mem_cgroup *mem,
+			enum lru_list idx1, enum lru_list idx2)
+{
+	int nid, zid;
+	struct mem_cgroup_per_zone *mz;
+	u64 total = 0;
 
--- Steve
+	for_each_online_node(nid)
+		for (zid = 0; zid < MAX_NR_ZONES; zid++) {
+			mz = mem_cgroup_zoneinfo(mem, nid, zid);
+			total += MEM_CGROUP_ZSTAT(mz, idx1);
+			total += MEM_CGROUP_ZSTAT(mz, idx3);
+		}
+	return total;
+}
 
+dunno if that's justifiable.
+
+> The function mem_cgroup_inactive_anon_is_low and
+> the global versions all do the same.  It would be
+> nice to make all four of them go fast :)
+> 
+> If there is no standardized infrastructure for
+> getting multiple statistics yet, I can probably
+> whip something up.
+
+It depends how often it would be called for, I guess.
+
+One approach would be pass in a variable-length array of `enum
+lru_list's, get returned a same-lengthed array of totals.
+
+Or perhaps all we need to return is the sum of those totals.
+
+I'd let the memcg guys worry about this if I were you ;)
+
+> Optimizing them might make sense if it turns out to
+> use a significant amount of CPU.
+
+Yeah.  By then it's often too late though.  The sort of people for whom
+(num_online_nodes*MAX_NR_ZONES) is nuttily large tend not to run
+kernel.org kernels.
