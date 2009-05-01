@@ -1,102 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762248AbZEAO2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760010AbZEAOa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762248AbZEAO2Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 10:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757040AbZEAO2P
+	id S1760010AbZEAOa0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 10:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758388AbZEAOaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 10:28:15 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:52595 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751539AbZEAO2O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 10:28:14 -0400
-Date: Fri, 1 May 2009 10:28:13 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/3] ring-buffer: make cpu buffer entries counter
- atomic
-In-Reply-To: <20090501134234.GG6011@nowhere>
-Message-ID: <alpine.DEB.2.00.0905011023580.20374@gandalf.stny.rr.com>
-References: <20090501022210.851418183@goodmis.org> <20090501022403.826182932@goodmis.org> <20090501115047.GA24706@elte.hu> <20090501134234.GG6011@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 1 May 2009 10:30:05 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:44106 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754711AbZEAOaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 10:30:01 -0400
+Date: Fri, 1 May 2009 15:29:58 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, andi@firstfloor.org,
+       davem@davemloft.net, anton@samba.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 2.6.30] Doc: hashdist defaults on for 64bit
+Message-ID: <20090501142957.GC27831@csn.ul.ie>
+References: <Pine.LNX.4.64.0904292151350.30874@blonde.anvils> <20090429142825.6dcf233d.akpm@linux-foundation.org> <Pine.LNX.4.64.0905011354560.19012@blonde.anvils> <Pine.LNX.4.64.0905011442540.19247@blonde.anvils>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0905011442540.19247@blonde.anvils>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-
-On Fri, 1 May 2009, Frederic Weisbecker wrote:
-
-> On Fri, May 01, 2009 at 01:50:47PM +0200, Ingo Molnar wrote:
-> > 
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > > From: Steven Rostedt <srostedt@redhat.com>
-> > > 
-> > > The entries counter in cpu buffer is not atomic. Although it only 
-> > > gets updated by a single CPU, interrupts may come in and update 
-> > > the counter too. This would cause missing entries to be added.
-> > 
-> > > -	unsigned long			entries;
-> > > +	atomic_t			entries;
-> > 
-> > Hm, that's not really good as atomics can be rather expensive and 
-> > this is the fastpath.
-> > 
-> > This is the upteenth time or so that the fact that we do not disable 
-> > irqs while generating trace entries bites us in one way or another. 
-> > IRQs can come in and confuse function trace output, etc. etc.
-> > 
-> > Please lets do what i suggested a long time ago: disable irqs _once_ 
-> > in any trace point and run atomically from that point on, and enable 
-> > them once, at the end.
-> > 
-> > The cost is very small and it turns into a win immediately by 
-> > elimination of a _single_ atomic instruction. (even on Nehalem they 
-> > cost 20 cycles. More on older CPUs.) We can drop the preempt-count 
-> > disable/enable as well and a lot of racy code as well. Please.
-> > 
-> > 	Ingo
+On Fri, May 01, 2009 at 02:45:43PM +0100, Hugh Dickins wrote:
+> Update Doc: kernel boot parameter hashdist now defaults on for all 64bit NUMA.
 > 
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+
+> ---
 > 
-> I also suspect one other good effect on doing this.
+>  Documentation/kernel-parameters.txt |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> As you know, between a lock_reserve and a discard, several interrupts
-> can trigger some traces. It means that if some rooms have already been
-> reserved, the discard will really create a discarded entry and we
-> can't reuse it.
+> --- 2.6.30-rc4/Documentation/kernel-parameters.txt	2009-04-30 06:39:30.000000000 +0100
+> +++ linux/Documentation/kernel-parameters.txt	2009-05-01 14:08:56.000000000 +0100
+> @@ -775,7 +775,7 @@ and is between 256 and 4096 characters.
+>  
+>  	hashdist=	[KNL,NUMA] Large hashes allocated during boot
+>  			are distributed across NUMA nodes.  Defaults on
+> -			for IA-64, off otherwise.
+> +			for 64bit NUMA, off otherwise.
+>  			Format: 0 | 1 (for off | on)
+>  
+>  	hcl=		[IA-64] SGI's Hardware Graph compatibility layer
 > 
-> For example in the case of filters with lock tracing, we rapidly run
-> into entries overriden, making the lock events tracing about useless
-> because we rapidly lose everything.
 
-If you want, we can disable interrupts from the event tracer, not the ring 
-buffer.
-
-We would have to go back to the original ring buffer code that passed in 
-flags.
-
-> 
-> At least that's an effect I observed. I'm not sure the discard is the
-> real cause but it seems to make sense.
-> 
-> That's a pity because believe me it is very useful to hunt a softlockup.
-> 
-> Of course it doesn't prevent from NMI tempest, but we already have
-> protections for that.
-
-If we do not allow interrupts to be traced, we can not allow NMIs either. 
-If we do not let the ring buffer be re-entrant, then we will not be able 
-to trace any NMI (to be safe).
-
-Going this route, there would be no need to make a lockless ring buffer 
-either.
-
--- Steve
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
