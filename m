@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762264AbZEAPxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763736AbZEAPyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762264AbZEAPxx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 11:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756909AbZEAPxp
+	id S1763736AbZEAPyw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 11:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760108AbZEAPyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 11:53:45 -0400
-Received: from parsec.stupidest.org ([71.6.196.126]:56151 "EHLO
-	parsec.stupidest.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756312AbZEAPxo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 11:53:44 -0400
-Date: Fri, 1 May 2009 08:53:42 -0700
-From: Chris Wedgwood <cw@f00f.org>
-To: Greg KH <greg@kroah.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jan Blunck <jblunck@suse.de>
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev
-	tmpfs
-Message-ID: <20090501155342.GA28350@puku.stupidest.org>
-References: <1241097822.2516.3.camel@poy> <20090501065754.GA30626@puku.stupidest.org> <20090501140108.GA20846@kroah.com>
+	Fri, 1 May 2009 11:54:43 -0400
+Received: from cantor.suse.de ([195.135.220.2]:37579 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756774AbZEAPym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 11:54:42 -0400
+Date: Fri, 1 May 2009 17:54:39 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Guillaume Chazarain <guichaz@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: What's in hid.git for 2.6.30
+In-Reply-To: <200905011102.18945.oliver@neukum.org>
+Message-ID: <alpine.LNX.2.00.0905011751180.5012@wotan.suse.de>
+References: <alpine.LNX.2.00.0903251742520.14346@wotan.suse.de> <200905010102.34272.oliver@neukum.org> <alpine.LNX.2.00.0905010103550.5012@wotan.suse.de> <200905011102.18945.oliver@neukum.org>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090501140108.GA20846@kroah.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-202102907-1241193279=:5012"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 07:01:08AM -0700, Greg KH wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> Right now it does, and it takes about 1-2 seconds to do so depending
-> on the hardware.
+--168427776-202102907-1241193279=:5012
+Content-Type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 
-The code I have only does block devices right now, but it could do
-more.  Even if it was 10x slower it wouldn't be close to 1-2 seconds.
+On Fri, 1 May 2009, Oliver Neukum wrote:
 
-> Which is over double the time it takes to boot the kernel entirely
-> these days, so it is quite noticable.
+> > > > +       if (!(hid->claimed & HID_CLAIMED_INPUT))
+> > > > +               return 0;
+> > > > +
+> > > is there a guarantee all keyboards will be claimed as input devices?
+> > do you see any way how hid->inputs could currently be initialized other
+> > than the device being claimed by hid-input?
+> No, but I am worried about a false return of 0 here, not the other way
+> round. This method is necessary because keyboards don't wake up
+> if a key is released. Suspending a keyboard with a key pressed will lead
+> to an endless repetition of that key.
+> So I wonder whether it is possible to have a keyboard not claimed as an
+> input device.
 
-So the kernel takes 500-1000ms then?  That seems really high.
+If driven by usbhid, the only way how keyboard could be handled if not 
+claimed by hid-input is a userspace hiddev or hidraw driver. And we don't 
+suspend if hidraw/hiddev node is open, right?
 
+-- 
+Jiri Kosina
+SUSE Labs
+--168427776-202102907-1241193279=:5012--
