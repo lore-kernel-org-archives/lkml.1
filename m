@@ -1,50 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765122AbZEATli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764844AbZEATpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765122AbZEATli (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 15:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbZEATlL
+	id S1764844AbZEATpZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 15:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755756AbZEATpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 15:41:11 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:51994 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755756AbZEATlJ (ORCPT
+	Fri, 1 May 2009 15:45:10 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:23144 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755064AbZEATpJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 15:41:09 -0400
-Date: Fri, 1 May 2009 15:31:11 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Yuriy Lalym <ylalym@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ltt-dev@lists.casi.polymtl.ca, Tejun Heo <tj@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ltt-dev] [PATCH] Fix dirty page accounting in
- redirty_page_for_writepage()
-In-Reply-To: <20090501192142.GA18339@Krystal>
-Message-ID: <alpine.DEB.1.10.0905011527260.7795@qirst.com>
-References: <20090430062140.GA9559@elte.hu> <20090430063306.GA27431@Krystal> <20090430065055.GA16277@elte.hu> <alpine.DEB.1.10.0904300926530.22262@qirst.com> <20090430141211.GB5922@Krystal> <alpine.DEB.1.10.0904301009530.14178@qirst.com> <20090430194158.GB12926@Krystal>
- <alpine.DEB.1.10.0904301559500.11923@qirst.com> <20090430211750.GA19933@Krystal> <alpine.DEB.1.10.0905010939090.18324@qirst.com> <20090501192142.GA18339@Krystal>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 1 May 2009 15:45:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:from:date
+         :x-google-sender-auth:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=thvaiD5NEfEf9AjckoXMO9U8rOosZTyzYmg1nwUBdun4TG8Joho3Pc8bFC8MYaggTC
+         lbv57PoT9wm+Hxu7tyzAWyr7j8uYzOO+NkzCTmTLKKi7Q+1uzqZZ7E8nJ9Up7DID4YPD
+         MhzqWCMEAIUAdb+EnwPmDZWXxvpgi5axtDDeA=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <49FB4EBB.3030404@redhat.com>
+References: <20090428044426.GA5035@eskimo.com> <20090430072057.GA4663@eskimo.com> 
+	<20090430174536.d0f438dd.akpm@linux-foundation.org> <20090430205936.0f8b29fc@riellaptop.surriel.com> 
+	<20090430181340.6f07421d.akpm@linux-foundation.org> <20090430215034.4748e615@riellaptop.surriel.com> 
+	<20090430195439.e02edc26.akpm@linux-foundation.org> <49FB01C1.6050204@redhat.com> 
+	<2c0942db0905011104u4e6df9ap9d95fa30b1284294@mail.gmail.com> 
+	<49FB4EBB.3030404@redhat.com>
+From: Ray Lee <ray-lk@madrabbit.org>
+Date: Fri, 1 May 2009 12:44:48 -0700
+X-Google-Sender-Auth: bbc9748d97f53639
+Message-ID: <2c0942db0905011244v331273dfr2bb34953e42bebdf@mail.gmail.com>
+Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
+To: Rik van Riel <riel@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, elladan@eskimo.com,
+       peterz@infradead.org, linux-kernel@vger.kernel.org, tytso@mit.edu,
+       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 May 2009, Mathieu Desnoyers wrote:
+On Fri, May 1, 2009 at 12:34 PM, Rik van Riel <riel@redhat.com> wrote:
+> Ray Lee wrote:
+>
+>> Said way #3: We desktop users really want a way to say "Please don't
+>> page my executables out when I'm running a system with 3gig of RAM." I
+>> hate knobs, but I'm willing to beg for one in this case. 'cause
+>> mlock()ing my entire working set into RAM seems pretty silly.
+>>
+>> Does any of that make sense, or am I talking out of an inappropriate
+>> orifice?
+>
+> The "don't page my executables out" part makes sense.
+>
+> However, I believe that kind of behaviour should be the
+> default.  Desktops and servers alike have a few different
+> kinds of data in the page cache:
+> 1) pages that have been frequently accessed at some point
+>   in the past and got promoted to the active list
+> 2) streaming IO
+>
+> I believe that we want to give (1) absolute protection from
+> (2), provided there are not too many pages on the active file
+> list.  That way we will provide executables, cached indirect
+> and inode blocks, etc. from streaming IO.
+>
+> Pages that are new to the page cache start on the inactive
+> list.  Only if they get accessed twice while on that list,
+> they get promoted to the active list.
+>
+> Streaming IO should normally be evicted from memory before
+> it can get accessed again.  This means those pages do not
+> get promoted to the active list and the working set is
+> protected.
+>
+> Does this make sense?
 
-> What I do here is to let those u8 counters increment as free-running
-> counters. Yes, they will periodically overflow the 8 bits. But I don't
-> rely on this for counting the number of increments we need between
-> global counter updates : I use the bitmask taken from the threshold
-> value (which is now required to be a power of two) to detect 0, 1, 2, 3,
-> 4, 5, 6 or 7-bit counter overflow. Therefore we can still have the kind
-> of granularity currently provided. The only limitation is that we have
-> to use powers of two for the threshold, so we end up counting in power
-> of two modulo, which will be unaffected by the u8 overflow.
+Streaming IO should always be at the bottom of the list as it's nearly
+always use-once. That's not the interesting case. (I'm glad you're
+protecting everything from steaming IO, it's a good thing. And if it's
+a media server and serving the same stream to many clients, if I
+understood you correctly those streams will no longer be use-once, and
+therefore be a normal citizen with the rest of the cache. That's great
+too.)
 
-Ack. Got it. Looks good.
-
+The interesting case is an updatedb running in the background, paging
+out firefox, or worse, parts of X. That sucks.
