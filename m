@@ -1,92 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbZEAWU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761222AbZEAWUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757374AbZEAWU0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 18:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZEAWUH
+	id S1761222AbZEAWUp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 18:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758716AbZEAWUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 18:20:07 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:41699 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753143AbZEAWUF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 18:20:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vaAx9BHBnGVRAZ9NOIQK44cE8NhOwcwD0zBZPP+DeI00zn4c1VRIOQI0TbS5ZEJN5p
-         +yw4utcJtd6I8Qc4hZxlD8x5gwR5JNuWzmFfvYIKBRZyT1yelnGJjKKzhKVfhmh8UT8a
-         9B8vnoTZJTrYPrESicxCPZ1CMjqUfw+4z06sQ=
-Date: Sat, 2 May 2009 00:20:02 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 2/6] kill-the-BKL/reiserfs: release the write lock
-	before rescheduling on do_journal_end()
-Message-ID: <20090501222001.GD6404@nowhere>
-References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com> <1241145862-21700-3-git-send-email-fweisbec@gmail.com> <20090501070911.GG5983@elte.hu> <20090501133147.GF6011@nowhere>
+	Fri, 1 May 2009 18:20:24 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43754 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761674AbZEAWUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 18:20:23 -0400
+Date: Sat, 2 May 2009 00:20:22 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Marc Pignat <Marc.Pignat@hevs.ch>
+Cc: marcel@holtmann.org, ext-roger.quadros@nokia.com,
+       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.30-rc4 hid bluetooth not working
+In-Reply-To: <49FA604C020000BF000290B6@mailgw2.hevs.ch>
+Message-ID: <alpine.LNX.2.00.0905020019360.22532@wotan.suse.de>
+References: <49FA604C020000BF000290B6@mailgw2.hevs.ch>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090501133147.GF6011@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 03:31:48PM +0200, Frederic Weisbecker wrote:
-> On Fri, May 01, 2009 at 09:09:11AM +0200, Ingo Molnar wrote:
-> > 
-> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> > > When do_journal_end() copies data to the journal blocks buffers in memory,
-> > > it reschedules if needed between each block copied and dirtyfied.
-> > > 
-> > > We can also release the write lock at this rescheduling stage,
-> > > like did the bkl implicitly.
-> > > 
-> > > [ Impact: release the reiserfs write lock when it is not needed ]
-> > > 
-> > > Cc: Jeff Mahoney <jeffm@suse.com>
-> > > Cc: Chris Mason <chris.mason@oracle.com>
-> > > Cc: Alexander Beregalov <a.beregalov@gmail.com>
-> > > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > > ---
-> > >  fs/reiserfs/journal.c |    2 ++
-> > >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
-> > > index 7976d7d..373d080 100644
-> > > --- a/fs/reiserfs/journal.c
-> > > +++ b/fs/reiserfs/journal.c
-> > > @@ -4232,7 +4232,9 @@ static int do_journal_end(struct reiserfs_transaction_handle *th,
-> > >  		next = cn->next;
-> > >  		free_cnode(sb, cn);
-> > >  		cn = next;
-> > > +		reiserfs_write_unlock(sb);
-> > >  		cond_resched();
-> > > +		reiserfs_write_lock(sb);
-> > 
-> > There's 8 cond_resched()'s in the code - i'd suggest to introduce a 
-> > helper for this - reiserfs_write_cond_resched(sb) or so?
-> > 
-> > 	Ingo
+On Fri, 1 May 2009, Marc Pignat wrote:
+
+> Subject: bluetooth: Fix serialization when adding/deleting connections in hci_sysfs
 > 
-> Indeed, that + the pattern suggested by Al.
-
-
-
-s/Al/Andi
-
-Sorry for the confusion.
-
- 
-> Thanks.
+> add_conn and del_conn should be serialized, but flush_workqueue can't be used
+> by the worker thread on it's own queue, so use flush_work to serialize add_conn
+> and del_conn against each other.
 > 
+> Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
 
+Acked-by: Jiri Kosina <jkosina@suse.cz>
+
+FWIW.
+
+-- 
+Jiri Kosina
+SUSE Labs
