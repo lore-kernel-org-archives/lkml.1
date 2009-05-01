@@ -1,98 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbZEAGRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbZEAG3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753250AbZEAGRl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 02:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbZEAGRd
+	id S1754562AbZEAG3m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 02:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbZEAG3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 02:17:33 -0400
-Received: from kroah.org ([198.145.64.141]:57122 "EHLO coco.kroah.org"
+	Fri, 1 May 2009 02:29:34 -0400
+Received: from mga03.intel.com ([143.182.124.21]:53061 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751681AbZEAGRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 02:17:32 -0400
-Date: Thu, 30 Apr 2009 23:17:01 -0700
-From: Greg KH <greg@kroah.com>
+	id S1751320AbZEAG3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 02:29:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,277,1239001200"; 
+   d="scan'208";a="138041542"
+Date: Fri, 1 May 2009 14:29:03 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jan Blunck <jblunck@suse.de>
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev
-	tmpfs
-Message-ID: <20090501061701.GB19234@kroah.com>
-References: <1241097822.2516.3.camel@poy> <20090430222900.c13b63d5.akpm@linux-foundation.org>
+Cc: "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 20/22] vmscan: avoid multiplication overflow in
+	shrink_zone()
+Message-ID: <20090501062903.GA16746@localhost>
+References: <200904302208.n3UM8t9R016687@imap1.linux-foundation.org> <20090501012212.GA5848@localhost> <20090430194907.82b31565.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090430222900.c13b63d5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090430194907.82b31565.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 10:29:00PM -0700, Andrew Morton wrote:
-> On Thu, 30 Apr 2009 15:23:42 +0200 Kay Sievers <kay.sievers@vrfy.org> wrote:
+On Fri, May 01, 2009 at 10:49:07AM +0800, Andrew Morton wrote:
+> On Fri, 1 May 2009 09:22:12 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
 > 
-> > From: Kay Sievers <kay.sievers@vrfy.org>
-> > Subject: driver-core: devtmpfs - driver core maintained /dev tmpfs
+> > On Fri, May 01, 2009 at 06:08:55AM +0800, Andrew Morton wrote:
+> > > 
+> > > Local variable `scan' can overflow on zones which are larger than
+> > > 
+> > > 	(2G * 4k) / 100 = 80GB.
+> > > 
+> > > Making it 64-bit on 64-bit will fix that up.
 > > 
-> > Devtmpfs lets the kernel create a tmpfs very early at kernel
-> > initialization, before any driver core device is registered. Every
-> > device with a major/minor will have a device node created in this
-> > tmpfs instance. After the rootfs is mounted by the kernel, the
-> > populated tmpfs is mounted at /dev. In initramfs, it can be moved
-> > to the manually mounted root filesystem before /sbin/init is
-> > executed.
+> > A side note about the "one HUGE scan inside shrink_zone":
+> > 
+> > Isn't this low level scan granularity way tooooo large?
+> > 
+> > It makes things a lot worse on memory pressure:
+> > - the over reclaim, somehow workarounded by Rik's early bail out patch
+> > - the throttle_vm_writeout()/congestion_wait() guards could work in a
+> >   very sparse manner and hence is useless: imagine to stop and wait
+> >   after shooting away every 1GB memory.
+> > 
+> > The long term fix could be to move the granularity control up to the
+> > shrink_zones() level: there it can bail out early without hurting the
+> > balanced zone aging.
+> > 
 > 
-> Lol, devfs.
+> I guess it could be bad in some circumstances.  Normally we'll bail out
+> way early because (nr_reclaimed > swap_cluster_max) comes true.  If it
+> _doesn't_ come true, we have little choice but to keep scanning.
 
-Well, devfs "done right" with hopefully none of the vfs problems the
-last devfs had. :)
-
-> >  block/bsg.c                         |    6 
-> >  drivers/gpu/drm/drm_sysfs.c         |    7 
-> >  drivers/input/input.c               |    6 
-> >  drivers/media/dvb/dvb-core/dvbdev.c |   10 +
-> >  drivers/usb/core/usb.c              |   11 +
+Right. The main concern to the proposed granularity-control-lifting
+could be the trickiness of scan code - the transition won't be easy. 
+ 
+> The code is mystifying:
 > 
-> These five subsystems were updated, but there are so many others.  Why
-> these five in particular?
-
-These are the ones that create a subdirectory in /dev/   None of the
-others do.
-
-> > +const char *device_get_nodename(struct device *dev, const char **tmp)
-> > +{
-> > +	char *s;
-> > +
-> > +	*tmp = NULL;
-> > +
-> > +	/* the device type may provide a specific name */
-> > +	if (dev->type && dev->type->nodename)
-> > +		*tmp = dev->type->nodename(dev);
+> : 	for_each_evictable_lru(l) {
+> : 		int file = is_file_lru(l);
+> : 		unsigned long scan;
+> : 
+> : 		scan = zone_nr_pages(zone, sc, l);
+> : 		if (priority) {
+> : 			scan >>= priority;
+> : 			scan = (scan * percent[file]) / 100;
+> : 		}
+> : 		if (scanning_global_lru(sc)) {
+> : 			zone->lru[l].nr_scan += scan;
 > 
-> dev->type->nodename() might have failed due to -ENOMEM, in which case
-> it seems wrong to assume that it returned NULL for <whatever reason you
-> thought it might want to return NULL>.
+> Here we increase zone->lru[l].nr_scan by (say) 1000000.
 > 
-> It's all a bit confused.
-
-I'll let Kay answer this one.
-
-> > +	if (*tmp)
-> > +		return *tmp;
-> > +
-> > +	/* the class may provide a specific name */
-> > +	if (dev->class && dev->class->nodename)
-> > +		*tmp = dev->class->nodename(dev);
-> > +	if (*tmp)
-> > +		return *tmp;
-> > +
-> > +	/* return name without allocation, tmp == NULL */
-> > +	if (strchr(dev_name(dev), '!') ==  NULL)
+> : 			nr[l] = zone->lru[l].nr_scan;
 > 
-> s/  / /
+> locally save away the number of pages to scan
+> 
+> : 			if (nr[l] >= swap_cluster_max)
+> : 				zone->lru[l].nr_scan = 0;
+> 
+> err, wot?  This makes no sense at all afacit.
+> 
+> : 			else
+> : 				nr[l] = 0;
+> 
+> ok, this is doing some batching I think.
 
-good catch.  I've edited that in the version of this patch in my tree.
+Yes it's batching. So that smallish <32 scans can be delayed and batched.
+I was lost too (twice! First time in 2006 and once more in 2009), so
+we'd better add a simple comment to remind this fact 8-)
 
-thanks,
+> : 		} else
+> : 			nr[l] = scan;
+> 
+> so we didn't update the zone's nr_scan at all here.  But we display
+> nr_scan in /proc/zoneinfo as "scanned".  So we're filing to inform
+> userspace about scanning on this zone which is due to memcgroup
+> constraints.  I think.
 
-greg k-h
+$ grep scanned /proc/zoneinfo
+        scanned  0 (aa: 0 ia: 0 af: 0 if: 0)
+        scanned  0 (aa: 0 ia: 0 af: 0 if: 0)
+        scanned  0 (aa: 0 ia: 0 af: 0 if: 0)
+
+They are all dynamic values. The first field shows pages scanned since
+last reclaim - so a large value indicates we have trouble reclaiming
+enough pages. The following 4 fields are the useless nr_scan[]s: they
+never exceed SWAP_CLUSTER_MAX=32, and typically is 0 for large lists.
+
+> : 	}
+> : 
+> : 	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
+> : 					nr[LRU_INACTIVE_FILE]) {
+> : 		for_each_evictable_lru(l) {
+> : 			if (nr[l]) {
+> : 				nr_to_scan = min(nr[l], swap_cluster_max);
+> : 				nr[l] -= nr_to_scan;
+> : 
+> : 				nr_reclaimed += shrink_list(l, nr_to_scan,
+> : 							    zone, sc, priority);
+> : 			}
+> : 		}
+> : 		/*
+> : 		 * On large memory systems, scan >> priority can become
+> : 		 * really large. This is fine for the starting priority;
+> : 		 * we want to put equal scanning pressure on each zone.
+> : 		 * However, if the VM has a harder time of freeing pages,
+> : 		 * with multiple processes reclaiming pages, the total
+> : 		 * freeing target can get unreasonably large.
+> : 		 */
+> : 		if (nr_reclaimed > swap_cluster_max &&
+> : 			priority < DEF_PRIORITY && !current_is_kswapd())
+> : 			break;
+> 
+> here we bale out after scanning 32 pages, without updating ->nr_scan.
+
+This is fine. Because (nr_reclaimed > swap_cluster_max) implies
+(nr_scan = 0).  You know nr_scan is not regular accounting numbers ;-)
+
+> : 	}
+> 
+> 
+> What on earth does zone->lru[l].nr_scan mean after wending through all
+> this stuff?
+> 
+> afacit this will muck up /proc/zoneinfo, but nothing else.
+
+Exactly. nr_scan[] are not accounting numbers and means nothing to user.
+They shall either be removed from /proc/zoneinfo, or be replaced with
+meaningful _accumulated_ scan numbers.
+
+Thanks,
+Fengguang
