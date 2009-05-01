@@ -1,24 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764522AbZEARMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762466AbZEARNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764522AbZEARMh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 13:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764100AbZEARKq
+	id S1762466AbZEARNF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 13:13:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764334AbZEARLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 13:10:46 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:53238 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764199AbZEARKn (ORCPT
+	Fri, 1 May 2009 13:11:20 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53546 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764310AbZEARLT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 13:10:43 -0400
-Date: Fri, 1 May 2009 19:10:42 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Christopher Sylvain <chris.sylvain@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: additional info for kernel-parameters.txt
-In-Reply-To: <c4cb03b00904231631k49902d45o9ba6bad7e4b21094@mail.gmail.com>
-Message-ID: <alpine.LSU.2.00.0905011909440.7409@fbirervta.pbzchgretzou.qr>
-References: <c4cb03b00904231631k49902d45o9ba6bad7e4b21094@mail.gmail.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Fri, 1 May 2009 13:11:19 -0400
+Date: Fri, 1 May 2009 13:11:17 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 3/3] ring-buffer: make cpu buffer entries counter
+ atomic
+In-Reply-To: <20090501165258.GA26143@elte.hu>
+Message-ID: <alpine.DEB.2.00.0905011302150.20374@gandalf.stny.rr.com>
+References: <20090501022210.851418183@goodmis.org> <20090501022403.826182932@goodmis.org> <20090501115047.GA24706@elte.hu> <alpine.DEB.2.00.0905011016560.20374@gandalf.stny.rr.com> <alpine.DEB.2.00.0905011212130.20374@gandalf.stny.rr.com> <20090501162053.GA17915@elte.hu>
+ <alpine.DEB.2.00.0905011230350.20374@gandalf.stny.rr.com> <20090501165258.GA26143@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,45 +30,42 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-[Cc: linux-kernel]
+On Fri, 1 May 2009, Ingo Molnar wrote:
+> > The entries keeps track of the number of entries in the buffer. A 
+> > writer (producer) adds to the counter and readers (consumers) 
+> > subtract from them. A writer can subtract them if it overwrites a 
+> > page before the producer consumes it.
+> > 
+> > Only the writers are pinned to a CPU, the readers happen on any 
+> > CPU.
+> 
+> But that does not require atomicity. It requires careful use of 
+> barriers, but otherwise atomicity is not needed. Update of machine 
+> word variables (if they are aligned to a machine word) is guaranteed 
+> to be atomic, even without atomic_t overhead.
 
-On Friday 2009-04-24 01:31, Christopher Sylvain wrote:
+I'm confused :-/ This throws out all that I learned in multi threaded 
+programming.
 
->a while ago you invited patches to kernel-parameters.txt when someone said
->they were
->unhappy with a reference to a source file instead of listing the actual
->parameters.
+If I have a shared variable used by two threads, the adding and 
+subtracting of that variable does not need to be atomic?
 
-[1] possibly http://lkml.org/lkml/2006/12/18/185
+        CPU0                 CPU1
+        ----                 ----
+	load A               load A
+	sub  1, A            sub 1, A
+	store A              store A
 
+can work??
 
->instead of a patch, how about simply adding:
->-----
->
->(We allow underscores for compatibility with the modules code)
->apm=on/off enable/disable APM
->[no-]allow[-_]ints allow interrupts during BIOS calls
->[no-]broken[-_]psr BIOS has a broken GetPowerStatus call
->[no-]realmode[-_]power[-_]off switch to real mode before powering off
->[no-]debug log some debugging messages
->[no-]power[-_]off power off on shutdown
->[no-]smp Use apm even on an SMP box
->bounce[-_]interval=<n> number of ticks to ignore suspend bounces
->idle[-_]threshold=<n> System idle percentage above which to make APM BIOS
->idle calls. Set it to 100 to disable.
->idle[-_]period=<n> Period (in 1/100s of a second) over which the idle
->percentage is calculated.
->
->see /linux/arch/x86/kernel/apm_32.c for some additional information
+BTW, how expensive is an LOCK operation on a cache line that is not 
+shared by other CPUs?  As long as a reader is not running, the updating of 
+the variable is not shared.
 
-Saying "we allow underscores" is enough, I would not clutter the 
-textfile with [-_].
+Also, if this becomes a problem, I can just nuke the field. I like knowing 
+the number of entries in the buffer, as well as the number of overruns. 
+But these are more for debugging purposes. The overruns should probably be 
+kept, because that is the only way a tracer can know if a overrun 
+occurred. The number of entries in the buffer is not as important.
 
->
->-----
->
->to the entry for [APM] ?
->
->
->
-
+-- Steve
