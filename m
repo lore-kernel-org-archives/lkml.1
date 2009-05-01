@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932673AbZEAAN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763627AbZEAAOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932673AbZEAAN5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 20:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764050AbZEAACS
+	id S1763627AbZEAAOa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 20:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764438AbZEAACY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 20:02:18 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:61752 "EHLO
+	Thu, 30 Apr 2009 20:02:24 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:61771 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765261AbZEAACR (ORCPT
+	by vger.kernel.org with ESMTP id S1765283AbZEAACX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 20:02:17 -0400
+	Thu, 30 Apr 2009 20:02:23 -0400
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
@@ -18,103 +18,60 @@ Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
        Jeff Arnold <jbarnold@MIT.EDU>, Ingo Molnar <mingo@redhat.com>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Tim Abbott <tabbott@MIT.EDU>
-Subject: [PATCH 06/11] x86: use NOSAVE_DATA macro for .data.nosave section.
-Date: Thu, 30 Apr 2009 20:01:33 -0400
-Message-Id: <1241136098-10376-7-git-send-email-tabbott@mit.edu>
+Subject: [PATCH 00/11] section name cleanup for x86
+Date: Thu, 30 Apr 2009 20:01:27 -0400
+Message-Id: <1241136098-10376-1-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1241136098-10376-6-git-send-email-tabbott@mit.edu>
-References: <1241136098-10376-1-git-send-email-tabbott@mit.edu>
- <1241136098-10376-2-git-send-email-tabbott@mit.edu>
- <1241136098-10376-3-git-send-email-tabbott@mit.edu>
- <1241136098-10376-4-git-send-email-tabbott@mit.edu>
- <1241136098-10376-5-git-send-email-tabbott@mit.edu>
- <1241136098-10376-6-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-.data.nosave should not need a separate output section; this change
-moves it into the .data section.
+This patch series cleans up the section names on the x86
+architecture.  It requires the architecture-independent macro
+definitions from this patch series:
 
-On x86_64, this has the consequence of moving .data.nosave inside
-_edata, which I think should be harmless.
+<http://www.spinics.net/lists/mips/msg33499.html>
 
-Signed-off-by: Tim Abbott <tabbott@mit.edu>
-Cc: Ingo Molnar <mingo@redhat.com>
----
- arch/x86/kernel/vmlinux.lds.S |   29 ++++++-----------------------
- 1 files changed, 6 insertions(+), 23 deletions(-)
+The long-term goal here is to add support for building the kernel with
+-ffunction-sections -fdata-sections.  This requires renaming all the
+magic section names in the kernel of the form .text.foo, .data.foo,
+.bss.foo, and .rodata.foo to not have collisions with sections
+generated for code like:
 
-diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index 791afa7..88b059b 100644
---- a/arch/x86/kernel/vmlinux.lds.S
-+++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -103,6 +103,7 @@ SECTIONS
- 	. = ALIGN(PAGE_SIZE);
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
- 		PAGE_ALIGNED_DATA
-+		NOSAVE_DATA
- 		DATA_DATA
- 		CONSTRUCTORS
- 
-@@ -113,17 +114,6 @@ SECTIONS
- 	} :data
- 
- #ifdef CONFIG_X86_32
--	/* 32 bit has nosave before _edata */
--	. = ALIGN(PAGE_SIZE);
--	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
--		__nosave_begin = .;
--		*(.data.nosave)
--		. = ALIGN(PAGE_SIZE);
--		__nosave_end = .;
--	}
--#endif
--
--#ifdef CONFIG_X86_32
- 	. = ALIGN(32);
- #else
- 	. = ALIGN(PAGE_SIZE);
-@@ -323,7 +313,7 @@ SECTIONS
- #if defined(CONFIG_X86_64) && defined(CONFIG_SMP)
- 	/*
- 	 * percpu offsets are zero-based on SMP.  PERCPU_VADDR() changes the
--	 * output PHDR, so the next output section - __data_nosave - should
-+	 * output PHDR, so the next output section - .bss - should
- 	 * start another section data.init2.  Also, pda should be at the head of
- 	 * percpu area.  Preallocate it and define the percpu offset symbol
- 	 * so that it can be accessed as a percpu variable.
-@@ -341,17 +331,6 @@ SECTIONS
- 		__init_end = .;
- 	}
- 
--#ifdef CONFIG_X86_64
--	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
--		. = ALIGN(PAGE_SIZE);
--		__nosave_begin = .;
--		*(.data.nosave)
--		. = ALIGN(PAGE_SIZE);
--		__nosave_end = .;
--	} :data.init2
--	/* use another section data.init2, see PERCPU_VADDR() above */
--#endif
--
- 	/* BSS */
- 	. = ALIGN(PAGE_SIZE);
- 	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {
-@@ -361,6 +340,10 @@ SECTIONS
- 		. = ALIGN(4);
- 		__bss_stop = .;
- 	}
-+#ifdef CONFIG_X86_64
-+	 :data.init2
-+#endif
-+	/* use another section data.init2, see PERCPU_VADDR() above */
- 
- 	. = ALIGN(PAGE_SIZE);
- 	.brk : AT(ADDR(.brk) - LOAD_OFFSET) {
--- 
-1.6.2.1
+static int nosave = 0; /* -fdata-sections places in .data.nosave */
+static void head(); /* -ffunction-sections places in .text.head */
+
+These patches are on top of the x86/kbuild branch of linux-tip.
+
+	-Tim Abbott
+
+
+Anders Kaseorg (1):
+  x86: fix fragile computation of vsyscall address
+
+Tim Abbott (10):
+  x86: Use macros for .bss.page_aligned section.
+  x86: Use section .data.page_aligned for the idt_table.
+  x86: Use macros for .data.page_aligned.
+  x86: convert compressed loader to use __HEAD and HEAD_TEXT macros.
+  x86: convert to use __HEAD and HEAD_TEXT macros.
+  x86: use NOSAVE_DATA macro for .data.nosave section.
+  x86: use new macro for .data.cacheline_aligned section.
+  x86: use new macros for .data.init_task.
+  x86: use new macro for .data.read_mostly section.
+  x86: convert to new generic read_mostly support.
+
+ arch/x86/Kconfig                       |    3 +
+ arch/x86/boot/compressed/head_32.S     |    3 +-
+ arch/x86/boot/compressed/head_64.S     |    3 +-
+ arch/x86/boot/compressed/vmlinux.lds.S |    6 +-
+ arch/x86/include/asm/cache.h           |    2 -
+ arch/x86/kernel/head_32.S              |    6 +-
+ arch/x86/kernel/head_64.S              |    4 +-
+ arch/x86/kernel/init_task.c            |    3 +-
+ arch/x86/kernel/traps.c                |    6 +-
+ arch/x86/kernel/vmlinux.lds.S          |  119 ++++++++------------------------
+ 10 files changed, 49 insertions(+), 106 deletions(-)
 
