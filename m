@@ -1,75 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763664AbZEAOMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763616AbZEAOOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763664AbZEAOMx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 10:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759669AbZEAOMj
+	id S1763616AbZEAOOl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 10:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbZEAOOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 10:12:39 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:47103 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751000AbZEAOMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 10:12:38 -0400
-Date: Fri, 1 May 2009 15:12:35 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH mmotm] mm: alloc_large_system_hash check order
-Message-ID: <20090501141234.GB27831@csn.ul.ie>
-References: <Pine.LNX.4.64.0904292151350.30874@blonde.anvils> <20090430132544.GB21997@csn.ul.ie> <Pine.LNX.4.64.0905011202530.8513@blonde.anvils> <20090501140015.GA27831@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090501140015.GA27831@csn.ul.ie>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 1 May 2009 10:14:31 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:60760 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbZEAOO3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 10:14:29 -0400
+Subject: Re: [PATCH 1/6] kill-the-BKL/reiserfs: release write lock on
+ fs_changed()
+From: Chris Mason <chris.mason@oracle.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+In-Reply-To: <20090501140136.GI6011@nowhere>
+References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com>
+	 <1241145862-21700-2-git-send-email-fweisbec@gmail.com>
+	 <878wlhpc5r.fsf@basil.nowhere.org> <20090501132825.GE6011@nowhere>
+	 <1241185456.13084.28.camel@think.oraclecorp.com>
+	 <20090501140136.GI6011@nowhere>
+Content-Type: text/plain
+Date: Fri, 01 May 2009 10:14:01 -0400
+Message-Id: <1241187241.13084.44.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010206.49FB03AC.02B6:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 03:00:15PM +0100, Mel Gorman wrote:
-> > <SNIP>
+On Fri, 2009-05-01 at 16:01 +0200, Frederic Weisbecker wrote:
+> On Fri, May 01, 2009 at 09:44:16AM -0400, Chris Mason wrote:
+> > On Fri, 2009-05-01 at 15:28 +0200, Frederic Weisbecker wrote:
+> > > On Fri, May 01, 2009 at 08:31:12AM +0200, Andi Kleen wrote:
+> > > > Frederic Weisbecker <fweisbec@gmail.com> writes:
+> > > > >
+> > > > > diff --git a/include/linux/reiserfs_fs.h b/include/linux/reiserfs_fs.h
+> > > > > index 6587b4e..397d281 100644
+> > > > > --- a/include/linux/reiserfs_fs.h
+> > > > > +++ b/include/linux/reiserfs_fs.h
+> > > > > @@ -1302,7 +1302,13 @@ static inline loff_t max_reiserfs_offset(struct inode *inode)
+> > > > >  #define get_generation(s) atomic_read (&fs_generation(s))
+> > > > >  #define FILESYSTEM_CHANGED_TB(tb)  (get_generation((tb)->tb_sb) != (tb)->fs_gen)
+> > > > >  #define __fs_changed(gen,s) (gen != get_generation (s))
+> > > > > -#define fs_changed(gen,s) ({cond_resched(); __fs_changed(gen, s);})
+> > > > > +#define fs_changed(gen,s)		\
+> > > > > +({					\
+> > > > > +	reiserfs_write_unlock(s);	\
+> > > > > +	cond_resched();			\
+> > > > > +	reiserfs_write_lock(s);		\
+> > > > 
+> > > > Did you try writing that 
+> > > > 
+> > > >     if (need_resched()) {               \
+> > > > 	reiserfs_write_unlock(s);	\
+> > > > 	cond_resched();			\  (or schedule(), but cond_resched does a loop)
+> > > > 	reiserfs_write_lock(s);		\
+> > > >     }				
+> > > > 
+> > > > ? That might give better performance under load because users will be better
+> > > > batched and you don't release the lock unnecessarily in the unloaded case.
+> > > 
+> > > 
+> > > 
+> > > Good catch!
+> > > And I guess this pattern matches most of the cond_resched()
+> > > all over the code (the only condition is that we must already hold
+> > > the write lock).
+> > > 
+> > > I will merge your idea and Ingo's one, write a
+> > > reiserfs_cond_resched() to have a helper which
+> > > factorizes this pattern.
 > > 
-> > Andrew noticed another oddity: that if it goes the hashdist __vmalloc()
-> > way, it won't be limited by MAX_ORDER.  Makes one wonder whether it
-> > ought to fall back to __vmalloc() if the alloc_pages_exact() fails.
+> > The pattern you'll find goes like this:
+> > 
+> > lock_kernel()
+> > do some work
+> > do something that might schedule
+> > run fs_changed(), fixup as required.
+> > 
+> > In your setup it is translating to:
+> > 
+> > reiserfs_write_lock(s)
+> > do some work
+> > reiserfs_write_unlock(s)
+> > 
+> > do something that might schedule
+> > 
+> > reiserfs_write_lock(s)
+> > if (need_resched()) {
+> >     reiserfs_write_unlock(s)
+> >     cond_resched()
+> >     reiserfs_write_lock(s)
+> > }
+> > 
+> > if (__fs_changed()) fixup as required
+> > 
+> > You'll also find that item_moved is similar to __fs_changed() but more
+> > fine grained.
+> > 
+> > One easy optimization is to make an fs_changed_relock()
+> > 
+> > static inline int fs_changed_relock(gen, s) {
+> > 	cond_resched();
+> > 	reiserfs_write_lock(s)
+> > 	return __fs_changed(gen, s)
+> > }
 > 
-> I don't believe so. __vmalloc() is only used when hashdist= is used or on IA-64
-> (according to the documentation).
-
-I was foolish to believe the documentation. vmalloc() will be used by
-default on 64-bit NUMA, not just IA-64.
-
-> It is used in the case that the caller is
-> willing to deal with the vmalloc() overhead (e.g. using base page PTEs) in
-> exchange for the pages being interleaved on different nodes so that access
-> to the hash table has average performance[*]
 > 
-> If we automatically fell back to vmalloc(), I bet 2c we'd eventually get
-> a mysterious performance regression report for a workload that depended on
-> the hash tables performance but that there was enough memory for the hash
-> table to be allocated with vmalloc() instead of alloc_pages_exact().
+> 
+> Nice idea!
+> Does it means I can also replace the item_moved() calls to __fs_changed()?
 > 
 
-I think this point still holds. On non-NUMA machine, we don't want to fall
-back to using vmalloc() just because the machine happened to have enough
-memory. It's really tricky to know for sure though - will there be enough
-performance benefits from having a bigger hash table to offset using base
-pages to back it? It's probably unknowable because it depends on the exact
-hardware and how the hash table is being used.
+Not quite, it looks like a common convention is also
 
-> [*] I speculate that on non-IA64 NUMA machines that we see different
->     performance for large filesystem benchmarks depending on whether we are
->     running on the boot-CPU node or not depending on whether hashdist=
->     is used or not.
+if (fs_changed && item_moved) { fixup }
 
-This speculation is junk because using vmalloc() for hash tables is not
-specific to IA-64.
+item_moved is the expensive check based on the contents of a btree
+block, while fs_changed is a simple generation number.
 
-> <SNIP>
+> They seem to not work the same way, I guess I should provide two different
+> helpers, depending on the check.
+> 
+> 
+> > 
+> > Another cause of scheduling is going to be reiserfs_prepare_for_journal.
+> > This function gets called before we modify a metadata buffer and it
+> > waits for IO to finish.
+> > 
+> > Not sure if your patch series already found it, but if you change this:
+> > 
+> > int reiserfs_prepare_for_journal(struct super_block *sb,
+> >                                  struct buffer_head *bh, int wait)
+> > {
+> >         PROC_INFO_INC(sb, journal.prepare);
+> > 
+> >         if (!trylock_buffer(bh)) {
+> >                 if (!wait)
+> >                         return 0;
+> >                 lock_buffer(bh);
+> >         }
+> > 
+> > Into:
+> > 
+> > 	if (!trylock_buffer(bh)) {
+> > 		if (!wait)
+> > 			return 0;
+> > 		reiserfs_write_unlock(s);
+> > 		wait_on_buffer(bh);
+> > 		reiserfs_write_lock(s);
+> > 		lock_buffer(bh);
+> > 	}
+> > 
+> > You'll catch a big cause of waiting for the disk with the lock held.
+> 
+> 
+> Again, good catch. I will try that.
+> 
+> I should also check the different other lock_buffer() which
+> indeed might sleep.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+ftrace can help some.
+
+cd /sys/kernel/debug/tracing
+echo function > current_tracer
+echo func_stack_trace > trace_options
+echo schedule > set_ftrace_filter
+echo 1 > tracing_on
+
+trace-histogram < trace_pipe > /tmp/trace_output
+
+(in another window run the reiserfs workload)
+
+When done hit ctrl-c on the trace-histogram window
+
+You'll get the most common causes of schedule during the run, groupd by
+stack trace.  Just look for the ones that are done with the lock held.
+
+trace-histogram is here:
+
+http://oss.oracle.com/~mason/trace-histogram
+
+-chris
+
+
