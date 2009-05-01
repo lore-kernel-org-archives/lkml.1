@@ -1,69 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763869AbZEADLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbZEADMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763869AbZEADLT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 23:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbZEADLJ
+	id S1757468AbZEADMH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 23:12:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758194AbZEADLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 23:11:09 -0400
-Received: from ultra7.eskimo.com ([204.122.16.70]:2805 "EHLO ultra7.eskimo.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755917AbZEADLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 23:11:08 -0400
-Date: Thu, 30 Apr 2009 20:09:16 -0700
-From: Elladan <elladan@eskimo.com>
+	Thu, 30 Apr 2009 23:11:53 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:57733 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756618AbZEADLx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 23:11:53 -0400
+Date: Thu, 30 Apr 2009 23:11:52 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Elladan <elladan@eskimo.com>, riel@redhat.com, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, tytso@mit.edu,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
-Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
-Message-ID: <20090501030916.GA25905@eskimo.com>
-References: <20090428044426.GA5035@eskimo.com> <20090428192907.556f3a34@bree.surriel.com> <1240987349.4512.18.camel@laptop> <20090429114708.66114c03@cuia.bos.redhat.com> <20090430072057.GA4663@eskimo.com> <20090430174536.d0f438dd.akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 1/3] ring-buffer: add counters for commit overrun and
+ nmi dropped entries
+In-Reply-To: <20090430200034.fb794702.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.2.00.0904302311320.20374@gandalf.stny.rr.com>
+References: <20090501022210.851418183@goodmis.org> <20090501022400.894326175@goodmis.org> <20090430200034.fb794702.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090430174536.d0f438dd.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 05:45:36PM -0700, Andrew Morton wrote:
-> On Thu, 30 Apr 2009 00:20:58 -0700
-> Elladan <elladan@eskimo.com> wrote:
+
+On Thu, 30 Apr 2009, Andrew Morton wrote:
+
+> On Thu, 30 Apr 2009 22:22:11 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> > > Elladan, does this smaller patch still work as expected?
-> > 
-> > Rik, since the third patch doesn't work on 2.6.28 (without disabling a lot of
-> > code), I went ahead and tested this patch.
-> > 
-> > The system does seem relatively responsive with this patch for the most part,
-> > with occasional lag.  I don't see much evidence at least over the course of a
-> > few minutes that it pages out applications significantly.  It seems about
-> > equivalent to the first patch.
-> > 
-> > Given Andrew Morton's request that I track the Mapped: field in /proc/meminfo,
-> > I went ahead and did that with this patch built into a kernel.  Compared to the
-> > standard Ubuntu kernel, this patch keeps significantly more Mapped memory
-> > around, and it shrinks at a slower rate after the test runs for a while.
-> > Eventually, it seems to reach a steady state.
-> > 
-> > For example, with your patch, Mapped will often go for 30 seconds without
-> > changing significantly.  Without your patch, it continuously lost about
-> > 500-1000K every 5 seconds, and then jumped up again significantly when I
-> > touched Firefox or other applications.  I do see some of that behavior with
-> > your patch too, but it's much less significant.
+> > +unsigned long ring_buffer_nmi_dropped_cpu(struct ring_buffer *buffer, int cpu)
+> > +{
+> > +	struct ring_buffer_per_cpu *cpu_buffer;
+> > +	unsigned long ret;
+> > +
+> > +	if (!cpumask_test_cpu(cpu, buffer->cpumask))
+> > +		return 0;
+> > +
+> > +	cpu_buffer = buffer->buffers[cpu];
+> > +	ret = cpu_buffer->nmi_dropped;
+> > +
+> > +	return ret;
+> > +}
+> > +EXPORT_SYMBOL_GPL(ring_buffer_nmi_dropped_cpu);
+> > +
+> > +/**
+> > + * ring_buffer_commit_overrun_cpu - get the number of overruns caused by commits
+> > + * @buffer: The ring buffer
+> > + * @cpu: The per CPU buffer to get the number of overruns from
+> > + */
+> > +unsigned long
+> > +ring_buffer_commit_overrun_cpu(struct ring_buffer *buffer, int cpu)
+> > +{
+> > +	struct ring_buffer_per_cpu *cpu_buffer;
+> > +	unsigned long ret;
+> > +
+> > +	if (!cpumask_test_cpu(cpu, buffer->cpumask))
+> > +		return 0;
+> > +
+> > +	cpu_buffer = buffer->buffers[cpu];
+> > +	ret = cpu_buffer->commit_overrun;
+> > +
+> > +	return ret;
+> > +}
 > 
-> Were you able to tell whether altering /proc/sys/vm/swappiness appropriately
-> regulated the rate at which the mapped page count decreased?
+> hm.  Four functions in a row, all of which differ in but a single line.
+> 
+> unsigned long
+> ring_buffer_commit_overrun_cpu(struct ring_buffer *buffer, int cpu)
+> {
+> 	return some_common_function(buffer, cpu)->commit_overrun;
+> }
+> 
+> ?
 
-I don't believe so.  I tested with swappiness=0 and =60, and in each case the
-mapped pages continued to decrease.  I don't know at what rate though.  If
-you'd like more precise data, I can rerun the test with appropriate logging.  I
-admit my "Hey, latency is terrible and mapped pages is decreasing" testing is
-somewhat unscientific.
+But that actually takes thought. I like my cut and paste ;-)
 
-I get the impression that VM regressions happen fairly regularly.  Does anyone
-have good unit tests for this?  Is seems like a difficult problem, since it's
-partly based on pattern and partly timing.
+-- Steve
 
--J
