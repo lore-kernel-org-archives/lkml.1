@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765229AbZEAUwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763312AbZEAUxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765229AbZEAUwY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 16:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755979AbZEAUwG
+	id S1763312AbZEAUxX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 16:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758928AbZEAUwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 16:52:06 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:44701 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751713AbZEAUwD (ORCPT
+	Fri, 1 May 2009 16:52:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38065 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758823AbZEAUwt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 16:52:03 -0400
-Date: Fri, 1 May 2009 16:42:12 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Yuriy Lalym <ylalym@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
-       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ltt-dev] [PATCH] Fix dirty page accounting in
- redirty_page_for_writepage()
-In-Reply-To: <20090501204355.GB20280@Krystal>
-Message-ID: <alpine.DEB.1.10.0905011640480.16255@qirst.com>
-References: <20090430141211.GB5922@Krystal> <alpine.DEB.1.10.0904301009530.14178@qirst.com> <20090430194158.GB12926@Krystal> <alpine.DEB.1.10.0904301559500.11923@qirst.com> <20090430211750.GA19933@Krystal> <alpine.DEB.1.10.0905010939090.18324@qirst.com>
- <20090501192142.GA18339@Krystal> <alpine.DEB.1.10.0905011527260.7795@qirst.com> <20090501202400.GA20280@Krystal> <alpine.DEB.1.10.0905011623450.16255@qirst.com> <20090501204355.GB20280@Krystal>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 1 May 2009 16:52:49 -0400
+Date: Fri, 1 May 2009 13:47:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Josef Bacik <josef@redhat.com>
+Cc: josef@redhat.com, jbacik@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sandeen@redhat.com, stable@kernel.org
+Subject: Re: [PATCH] fiemap: fix problem with setting FIEMAP_EXTENT_LAST
+Message-Id: <20090501134709.5fda74ba.akpm@linux-foundation.org>
+In-Reply-To: <20090501201646.GK7076@unused.rdu.redhat.com>
+References: <1241113491-9031-1-git-send-email-jbacik@redhat.com>
+	<20090430154047.5485759f.akpm@linux-foundation.org>
+	<20090501143517.GF7076@unused.rdu.redhat.com>
+	<20090501125043.11da02f3.akpm@linux-foundation.org>
+	<20090501201646.GK7076@unused.rdu.redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 May 2009, Mathieu Desnoyers wrote:
+On Fri, 1 May 2009 16:16:46 -0400
+Josef Bacik <josef@redhat.com> wrote:
 
-> Then do you have a better idea on how to deal with
-> __inc_zone_state/inc_zone_state without duplicating the code and without
-> adding useless local_irq_save/restore on x86 ?
+> I think this late in the game it's
+> probably best to just go with whats already in the kernel for now, and I'll
+> rework some of this stuff and work with Eric to get a good test suite set up to
+> make sure everything is working properly, and then shoot for -31.  Does that
+> sound good?
 
-We are already using __inc_zone_state to avoid local_irq_save/restore.
-
+yup, I agree.
