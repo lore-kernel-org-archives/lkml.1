@@ -1,104 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756693AbZEAJO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbZEAJQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756693AbZEAJO6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 05:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbZEAJOr
+	id S1755434AbZEAJQQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 05:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbZEAJP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 05:14:47 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38742 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751193AbZEAJOq (ORCPT
+	Fri, 1 May 2009 05:15:58 -0400
+Received: from smtp.flash.net.br ([201.46.240.48]:59756 "EHLO
+	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753290AbZEAJP5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 05:14:46 -0400
-Date: Fri, 1 May 2009 05:14:46 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 1/2] Implement trivial struct feature macros
-Message-ID: <20090501091446.GA24116@infradead.org>
-References: <1241112678-6615-1-git-send-email-jack@suse.cz> <1241112678-6615-2-git-send-email-jack@suse.cz>
+	Fri, 1 May 2009 05:15:57 -0400
+Date: Fri, 1 May 2009 06:15:01 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@users.sf.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [2.6.30-rc2] usb reset during big file transfer and ext3 error
+Message-ID: <20090501091501.GA29466@ime.usp.br>
+References: <20090422220648.GB4066@ime.usp.br> <Pine.LNX.4.44L0.0904222236440.23171-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1241112678-6615-2-git-send-email-jack@suse.cz>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.44L0.0904222236440.23171-100000@netrider.rowland.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 07:31:17PM +0200, Jan Kara wrote:
-> Sometimes it is useful to have a generic main structure (like struct inode)
-> and then with some of these structures you want to associate additional
-> information (like quota information, block device information etc.).
-> Traditionally, we solved this by having a pointer to associated data in
-> the generic structure. This gets inefficient when there are lots of
-> various kinds of data that can be associated with the generic structure
-> (we need one pointer per type of associated information). This is an
-> attempt to address the issue.
-> 
-> The idea is simple. There is some chunk of allocated memory that contains
-> the generic structure and all the associated information. The generic
-> structure has a pointer to the (usually static) table of offsets (from
-> the beginning of the generic structure) of associated structures for
-> each possible associated structure type.
-> 
-> Signed-off-by: Jan Kara <jack@suse.cz>
-> ---
->  include/linux/fs.h             |    5 +++++
->  include/linux/struct_feature.h |   12 ++++++++++++
->  2 files changed, 17 insertions(+), 0 deletions(-)
->  create mode 100644 include/linux/struct_feature.h
-> 
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 5bed436..2404b16 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -710,6 +710,10 @@ static inline int mapping_writably_mapped(struct address_space *mapping)
->  #define i_size_ordered_init(inode) do { } while (0)
->  #endif
->  
-> +enum {
-> +	INODE_FEATURES
-> +};
-> +
->  struct inode {
->  	struct hlist_node	i_hash;
->  	struct list_head	i_list;
-> @@ -775,6 +779,7 @@ struct inode {
->  	void			*i_security;
->  #endif
->  	void			*i_private; /* fs or device private pointer */
-> +	int			*feature_table;
->  };
->  
->  /*
-> diff --git a/include/linux/struct_feature.h b/include/linux/struct_feature.h
-> new file mode 100644
-> index 0000000..0849d3d
-> --- /dev/null
-> +++ b/include/linux/struct_feature.h
-> @@ -0,0 +1,12 @@
-> +#ifndef _LINUX_STRUCT_FEATURE_H
-> +#define _LINUX_STRUCT_FEATURE_H
-> +
-> +
-> +#define FEATURE_OFFSET(str, generic, feature) (offsetof(str, feature) - offsetof(str, generic))
-> +
-> +#define GET_FEATURE(generic, feature) \
-> +	((generic)->feature_table && (generic)->feature_table[feature] ? \
-> +	((void *)(((char *)(generic)) + (generic)->feature_table[feature])) : \
-> +	NULL)
+Hi, Alan.
 
-These should be inlines.
+Sorry for the late reply, but I had some problems with an HD of mine
+giving me trouble. :-( Of course, I have backups. :-)
 
-Also I don't think we should make it super-generic.  If we'll eventually
-need it it should be specific to struct inode, something like:
+On Apr 22 2009, Alan Stern wrote:
+> On Wed, 22 Apr 2009, Rogério Brito wrote:
+> > Is there any way of controlling the number of retries in the host
+> > controller? Or, perhaps, of controlling the time between retries so
+> > that the device can shape it up again?
+> 
+> It's not all that simple.  The host controller allows the OS to set the
+> number of hardware retries to 1, 2, 3, or unlimited.  Linux uses 3;  
+> those XactErr debugging messages in your log show that the driver was
+> extending the number of retries in software.
 
-static void *get_inode_extension(struct inode *inode, emum inode_extension ext)
-{
-	if (!inode->i_extensions[ext])
-		return NULL;
-	return (char *)inode + inode->i_extensions[ext];
-}
+Right. I didn't know that. Obviously, setting it to unlimited can give
+undefined behavior of the computer.
+
+> It's not possible to change the time interval between retries done by
+> the hardware.  While it is possible in theory to change the interval
+> between retries done by the driver, it would be rather difficult and
+> so ehci-hcd doesn't attempt it.
+
+Oh, what a pity. It seems that the device at hand sort of gets in shape
+again after some time, since I have an automounter here and the device
+nodes appear again under dev and it auto-mounts the device at the
+appropriate mount point. Weird.
+
+> The software retries were introduced to solve one particular problem:
+> Many EHCI controllers will generate a transaction error if a data
+> transfer is occurring on one port at the same time as a device is
+> being unplugged on another port.
+
+Right. I just got myself a (non powered) USB hub and I noticed one thing
+(unrelated to this problem): if I plug a USB disk to this hub and, then,
+plug a printer, very weird things happen, like the disc being unmounted
+or things like that.
+
+I can give you precise details of what happens here, if you're
+interested.
+
+OTOH, I think that I may be seeing some other problems with a pen drive
+being connected to a port of this machine I'm typing this message on. I
+will try to compile a newer kernel, now that -rc4 is released and I
+would appreciate if you could help me with the issues that I'm seeing.
+
+> This is clearly a hardware bug, and the software retries were intended
+> to work around it.  In practice only a couple of software retries are
+> needed; if the transfer hasn't succeeded by that point then it's never
+> going to succeed.  I set the upper limit to 32 retries just to be
+> conservative.
+
+OK. Thanks for the nice and clear explanation of the problem. I only
+wonder why I not seeing these errors on other machines while I *do* see
+them on other machines (this one is an intel ICH5).
+
+> If transaction errors aren't caused by noise in the cable then they
+> are almost always caused by bugs or failures in the device.
+
+I will try again with a shorter and newer cable. Let's see how that
+works. BTW, is there any way to check the quality of a cable? I have a
+multimeter here and I would be willing to do some extensive tests.
+Testing the USB enclosure is also pretty feasible.
+
+> Once a device's firmware has crashed, it doesn't magically fix itself.
+
+Oh, what a pity that it doesn't recovers itself with a watchdog-like
+mechanism.
+
+
+Thanks for all your help, Rogério.
+
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
