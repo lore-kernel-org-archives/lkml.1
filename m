@@ -1,42 +1,31 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762767AbZEAO2s (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 1 May 2009 10:28:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757040AbZEAO2d
+	id S1764525AbZEARQd (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 1 May 2009 13:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZEARQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 10:28:33 -0400
-Received: from mailhub-4.iastate.edu ([129.186.140.14]:47220 "EHLO
-	mailhub-4.iastate.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751539AbZEAO2c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 10:28:32 -0400
-X-Greylist: delayed 4630 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 May 2009 10:28:32 EDT
-From: "Technical Service Unit" <oriole@iastate.edu>
-Subject: Dear email owner,
-Date: Fri, 1 May 2009 08:10:11 -0500 (CDT)
-X-Mailer: Endymion MailMan Professional Edition v3.0.14 ISU Version mp9.11
-Message-Id: <111081410951201@webmail.iastate.edu>
-X-PMX-Version: 5.5.3.366731, Antispam-Engine: 2.7.0.366912, Antispam-Data: 2009.5.1.124938
-X-ISUMailhub-test: Gauge=XIIIIIIIII, Probability=20%, Report='TO_EMPTY 2.199, BODY_SIZE_1000_LESS 0, BODY_SIZE_2000_LESS 0, BODY_SIZE_400_499 0, BODY_SIZE_5000_LESS 0, BODY_SIZE_7000_LESS 0, FROM_EDU_TLD 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __PHISH_SPEAR_GREETING 0, __PHISH_SPEAR_STRUCTURE_1 0, __PHISH_SPEAR_STRUCTURE_2 0, __PHISH_SPEAR_SUBJECT 0, __SANE_MSGID 0'
-To: unlisted-recipients:; (no To-header on input)
+	Fri, 1 May 2009 13:16:21 -0400
+Received: from tomts31.bellnexxia.net ([209.226.175.105]:37484 "EHLO
+	tomts31-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751604AbZEARQU convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 13:16:20 -0400
+X-Greylist: delayed 2047 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 May 2009 13:16:19 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Al5bABzB+knR4q+H/2dsb2JhbACOG7BbkS2DawU
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [200.65.129.2]
+From: =?ISO-8859-1?B?qU9ubGluZQ==?= Notification <sgstool@bellnet.ca>
+Reply-To: uk_office01@btinternet.com
+To: <info@winner.org>
+Subject: Mrs. Pamela White
+Date: Fri, 1 May 2009 12:41:58 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20090501164202.CAXR1724.tomts29-srv.bellnexxia.net@toip38-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear email owner,
-
-Your webmail quota has exceeded the set limit which is 20Gb, you are now 
-running on 20.98Gb.
-
-To be able to send and recieve new mails please contact the system 
-administrator by e-mail.
-
-system administrator
-E-mail: technical_service_unit@informaticos.com
-
-failure to do so may result in limited access to your webmail imbox.
-
-Thanks,and sorry for the inconvienences,
-
-Technical Service Unit.
-
+Your id has won £1,000,000. Fill the details: Full Name,Address,Tel,Occupation: To E-mail(uk_office01@btinternet.com)
 
