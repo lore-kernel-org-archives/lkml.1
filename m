@@ -1,89 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758815AbZEAMwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756929AbZEAMwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758815AbZEAMwU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 08:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbZEAMwH
+	id S1756929AbZEAMwf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 08:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757177AbZEAMwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 08:52:07 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:47587 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751449AbZEAMwG (ORCPT
+	Fri, 1 May 2009 08:52:10 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:52084 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751746AbZEAMwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 08:52:06 -0400
-Date: Fri, 1 May 2009 14:51:51 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Ming Lei <tom.leiming@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] driver core: Silent meaningless error message
-Message-ID: <20090501145151.5f97456e@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 1 May 2009 08:52:07 -0400
+Message-ID: <49FAF074.9080202@monstr.eu>
+Date: Fri, 01 May 2009 14:52:04 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: linux-arch@vger.kernel.org,
+       Remis Lima Baima <remis.developer@googlemail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 07/27] asm-generic: add minimal cache description
+References: <cover.1241105648.git.arnd@arndb.de> <2d8ccc76119d2379859480dbb8f7562743a1de58.1241105648.git.arnd@arndb.de> <c1a198be0904302303h73c5168fi73f8dc24dc677965@mail.gmail.com> <200905011427.05099.arnd@arndb.de>
+In-Reply-To: <200905011427.05099.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I see the following error message in my kernel logs:
+Arnd Bergmann wrote:
+> On Friday 01 May 2009, Michal Simek wrote:
+>>> +#define copy_to_user_page(vma, page, vaddr, dst, src, len) \
+>>> +       memcpy(dst, src, len)
+>>> +#define copy_from_user_page(vma, page, vaddr, dst, src, len) \
+>>> +       memcpy(dst, src, len)
+>>
+>> IMHO these two macros will generate cast errors.
+> 
+> I did not see errors here, can you clarify? Note that despite the name,
+> they don't take a __user pointer. Maybe they should be inline functions
+> to make that more obvious.
 
-w83627ehf.2576: use which platform_data?
+you are right here with __user.
+x86 use it as inline function.
 
-This is caused by platform_device_add_data() setting both
-pdev->platform_data and pdev->dev.platform_data, and then
-platform_device_add() complaining if both pointers are set.
+Michal
 
-As platform_device_add() is now making sure that both pointers are
-set, there is no point in setting both in platform_device_add_data().
-
-Additionally, we should only issue the error message when there is a
-real problem, that is: both data pointers are set and differ. And, in
-this case, we should fail right away, as something is seriously wrong.
-
-Also free the memory through pa->pdev.platform_data rather than
-pa->pdev.dev.platform_data. We will have to do that someday anyway, so
-we might as well start now to make the intents clearer.
-
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Ming Lei <tom.leiming@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/base/platform.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
---- linux-2.6.30-rc4.orig/drivers/base/platform.c	2009-04-22 09:51:01.000000000 +0200
-+++ linux-2.6.30-rc4/drivers/base/platform.c	2009-05-01 14:09:16.000000000 +0200
-@@ -143,7 +143,7 @@ static void platform_device_release(stru
- 	struct platform_object *pa = container_of(dev, struct platform_object,
- 						  pdev.dev);
- 
--	kfree(pa->pdev.dev.platform_data);
-+	kfree(pa->pdev.platform_data);
- 	kfree(pa->pdev.resource);
- 	kfree(pa);
- }
-@@ -216,7 +216,6 @@ int platform_device_add_data(struct plat
- 	d = kmalloc(size, GFP_KERNEL);
- 	if (d) {
- 		memcpy(d, data, size);
--		pdev->dev.platform_data = d;
- 		pdev->platform_data = d;
- 	}
- 	return d ? 0 : -ENOMEM;
-@@ -253,9 +252,12 @@ int platform_device_add(struct platform_
- 	* long time, so we allow the two cases coexist to make
- 	* this kind of fix more easily*/
- 	if (pdev->platform_data && pdev->dev.platform_data) {
--		printk(KERN_ERR
-+		if (pdev->platform_data != pdev->dev.platform_data) {
-+			printk(KERN_ERR
- 			       "%s: use which platform_data?\n",
- 			       dev_name(&pdev->dev));
-+			return -EINVAL;
-+		}
- 	} else if (pdev->platform_data) {
- 		pdev->dev.platform_data = pdev->platform_data;
- 	} else if (pdev->dev.platform_data) {
+> 
+> 	Arnd <><
 
 
 -- 
-Jean Delvare
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
