@@ -1,100 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765190AbZEAT44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764089AbZEAT5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765190AbZEAT44 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 15:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762019AbZEAT4b
+	id S1764089AbZEAT5X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 15:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762349AbZEAT4n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 15:56:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52774 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753444AbZEAT43 (ORCPT
+	Fri, 1 May 2009 15:56:43 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:59879 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764940AbZEAT4k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 15:56:29 -0400
-Date: Fri, 1 May 2009 12:53:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: peterz@infradead.org, rientjes@google.com, david@fromorbit.com,
-       cl@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: prevent divide error for small values of
- vm_dirty_bytes
-Message-Id: <20090501125317.599c3af8.akpm@linux-foundation.org>
-In-Reply-To: <20090501145639.GA24443@linux>
-References: <1240993759-30787-1-git-send-email-righi.andrea@gmail.com>
-	<1240994676.8021.83.camel@laptop>
-	<20090429093449.GB3151@linux>
-	<20090429144655.e60fdf7a.akpm@linux-foundation.org>
-	<20090501145639.GA24443@linux>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 1 May 2009 15:56:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=BCI7l3+5aT1tV+JrGUM33MDAACHcA/9D/yVKAe8WxeuClxJS5iZXVbxgFuh3n6BmmY
+         KwYIsH9WlbzQrFAoo4yGtzdU6jcertaXIt+Ufktk0v9z/8lDrcXmpt8df2AagTSL+nQy
+         V1Raax8dmTcIJCJbYvL803L6pkCwuRchRDFko=
+Date: Fri, 1 May 2009 23:56:38 +0400
+From: Cyrill Gorcunov <gorcunov@openvz.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Jack Steiner <steiner@sgi.com>
+Subject: [PATCH -tip] x86: uv - prevent NULL dereference in uv_system_init
+Message-ID: <20090501195638.GC4633@lenovo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 May 2009 16:56:40 +0200
-Andrea Righi <righi.andrea@gmail.com> wrote:
+We may reach NULL dereference oops if kmalloc failed.
+Lets do panic better with sensible message.
 
-> On Wed, Apr 29, 2009 at 02:46:55PM -0700, Andrew Morton wrote:
-> > On Wed, 29 Apr 2009 11:34:51 +0200
-> > Andrea Righi <righi.andrea@gmail.com> wrote:
-> > 
-> > > --- a/Documentation/sysctl/vm.txt
-> > > +++ b/Documentation/sysctl/vm.txt
-> > > @@ -90,6 +90,10 @@ will itself start writeback.
-> > >  If dirty_bytes is written, dirty_ratio becomes a function of its value
-> > >  (dirty_bytes / the amount of dirtyable system memory).
-> > >  
-> > > +Note: the minimum value allowed for dirty_bytes is two pages (in bytes); any
-> > > +value lower than this limit will be ignored and the old configuration will be
-> > > +retained.
-> > 
-> > Well.  This implies that the write to the procfs file would appear to
-> > succeed.  One hopes that the write would in fact return -EINVAL or
-> > such?
-> 
-> I definitely agree. Just tested the following patch and it looks much
-> better with the error code.
-> 
-> -Andrea
-> 
-> ---
-> sysctl: return error code if values are not within a valid range
-> 
-> Currently __do_proc_doulongvec_minmax(), as well as
-> __do_proc_dointvec(), simply skip the invalid values instead of return
-> -EINVAL.
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
 
-Oh geeze, I didn't know that.
+Actually there is a dubious place as well at early_get_nodeid.
+Is there a guarantee that we _never_ fail in early_ioremap?
 
-> A more correct behaviour is to report to the userspace that some values
-> were invalid and they couldn't be written instead of silently drop
-> them.
-> 
-> For example (vm_dirty_bytes must be greater or equal than 2*PAGE_SIZE):
-> - before:
->   # cat /proc/sys/vm/dirty_bytes
->   0
->   # /bin/echo 1 > /proc/sys/vm/dirty_bytes
->   # cat /proc/sys/vm/dirty_bytes
->   0
->   # /bin/echo 8192 > /proc/sys/vm/dirty_bytes
->   # cat /proc/sys/vm/dirty_bytes
->   8192
-> 
-> - after:
->   # cat /proc/sys/vm/dirty_bytes
->   0
->   # /bin/echo 1 > /proc/sys/vm/dirty_bytes
->   /bin/echo: write error: Invalid argument
->   # cat /proc/sys/vm/dirty_bytes
->   0
->   # /bin/echo 8192 > /proc/sys/vm/dirty_bytes
->   # cat /proc/sys/vm/dirty_bytes
->   8192
-> 
+ arch/x86/kernel/apic/x2apic_uv_x.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-Unfortunately the potential here for breaking existing userspace is
-huge.  I think it's too late for us to fix this :(
-
-
+Index: linux-2.6.git/arch/x86/kernel/apic/x2apic_uv_x.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic/x2apic_uv_x.c
++++ linux-2.6.git/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -584,15 +584,21 @@ void __init uv_system_init(void)
+ 
+ 	bytes = sizeof(struct uv_blade_info) * uv_num_possible_blades();
+ 	uv_blade_info = kmalloc(bytes, GFP_KERNEL);
++	if (!uv_blade_info)
++		goto err_nomem;
+ 
+ 	get_lowmem_redirect(&lowmem_redir_base, &lowmem_redir_size);
+ 
+ 	bytes = sizeof(uv_node_to_blade[0]) * num_possible_nodes();
+ 	uv_node_to_blade = kmalloc(bytes, GFP_KERNEL);
++	if (!uv_node_to_blade)
++		goto err_nomem;
+ 	memset(uv_node_to_blade, 255, bytes);
+ 
+ 	bytes = sizeof(uv_cpu_to_blade[0]) * num_possible_cpus();
+ 	uv_cpu_to_blade = kmalloc(bytes, GFP_KERNEL);
++	if (!uv_cpu_to_blade)
++		goto err_nomem;
+ 	memset(uv_cpu_to_blade, 255, bytes);
+ 
+ 	blade = 0;
+@@ -667,4 +673,7 @@ void __init uv_system_init(void)
+ 	uv_cpu_init();
+ 	uv_scir_register_cpu_notifier();
+ 	proc_mkdir("sgi_uv", NULL);
++
++err_nomem:
++	panic("UV: Out of memory\n");
+ }
