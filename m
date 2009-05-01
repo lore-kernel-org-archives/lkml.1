@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691AbZEAHx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752775AbZEAIRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752691AbZEAHx1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 03:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbZEAHxR
+	id S1752775AbZEAIRj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 04:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZEAIRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 03:53:17 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:33611 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752080AbZEAHxQ (ORCPT
+	Fri, 1 May 2009 04:17:23 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:51792 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750734AbZEAIRW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 03:53:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        b=CIwQJFNqvdXFiunxulORzIU+s8R/vwkekquWuL9i8vs4u2mF0VnKaH1vf6Z/XlBBbk
-         Dy1C6AgZd/VZEymr97B+x6Hz8OEPgWwl+rikIDveKwvygz/nq5qtAAqV2c8DenCkOCm3
-         CLhFzZBas+I3HhiyVbaUTthyOpPQ40X1tdISw=
-Date: Fri, 1 May 2009 09:53:11 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Aristeu Rozanski <aris@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Borislav Petkov <borislav.petkov@amd.com>, akpm@linux-foundation.org,
-       greg@kroah.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       dougthompson@xmission.com, linux-kernel@vger.kernel.org,
-       Ben Woodard <woodard@redhat.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: [RFC PATCH 00/21 v2] amd64_edac: EDAC module for AMD64
-Message-ID: <20090501075311.GA14176@liondog.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com, Aristeu Rozanski <aris@redhat.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	Borislav Petkov <borislav.petkov@amd.com>,
-	akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu,
-	tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com,
-	linux-kernel@vger.kernel.org, Ben Woodard <woodard@redhat.com>,
-	Mauro Carvalho Chehab <mchehab@redhat.com>
-References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> <87iqknp8a0.fsf@basil.nowhere.org> <20090430115741.GA23634@aftab> <20090430124716.GW23223@one.firstfloor.org> <20090430144756.GA25200@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090430144756.GA25200@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 1 May 2009 04:17:22 -0400
+Subject: Re: Probe Timeouts with 47afbaf5af9454a7a1a64591e20cbfcc27ca67a8
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Parag Warudkar <parag.lkml@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, niel.lambrechts@gmail.com
+In-Reply-To: <f7848160904301838q4883106fq8d31e2e7c0b10a14@mail.gmail.com>
+References: <f7848160904301838q4883106fq8d31e2e7c0b10a14@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-HKa1r6ihO2+Ep+GO8LTL"
+Date: Fri, 01 May 2009 10:16:45 +0200
+Message-Id: <1241165805.13562.2.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-I thought I should summarize some points on the design direction, which,
-in my impression are what all the parties involved more or less would
-agree on:
+--=-HKa1r6ihO2+Ep+GO8LTL
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-* mce interrupt delivers, if EDAC compiled in, the required batch of
-dumped MSRs to chipset/CPU specific EDAC driver. Aristeu, I guess you
-guys have some code on that, right?
+Parag,
 
-* EDAC module decodes MCE info, computes the DIMM label out of
-that. Additional hw setup stuff like memory hoisting/interleaving,
-ganged/unganged MC mode, testing infrastructure like DRAM error
-injection and all that pertaining to the specific hw is handled by the
-EDAC module.
+> Niel bisected the probe timeouts with iwlagn to your commit
+> 47afbaf5af9454a7a1a64591e20cbfcc27ca67a8 .  I too was getting probe
+> timeouts but with ath9k and tried reverting the above commit which
+> made the problem disappear.
 
-* If EDAC not enabled, mce operates as before.
+I know. There's a bug in that commit.
 
-Comments/suggestions?
+> It is not yet reverted from mainline and compat-wireless - just wanted
+> to bring it to your notice that it impacts both iwlagn and ath9k.
 
-Hit me! :)
+I'm not sure what makes you think that it even _should_ be reverted.
+Just to make that clear: it should _not_ be reverted. How did you check
+that it isn't reverted in compat-wireless anyway? Must have been by code
+inspection since if you had made an attempt to verify that the code in
+there works, you would have found that indeed there's no reason to
+revert this commit since the fix for it went in, and is literally a
+single line.
 
--- 
-Regards/Gruss,
-    Boris.
+johannes
+
+--=-HKa1r6ihO2+Ep+GO8LTL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJ+q/qAAoJEKVg1VMiehFYyMoP/0pCoYuldJevAp5O3qk+WUV0
+e4PS0SOTzlGa9zmAUvMOJY4bu0ggvDBapHhvzpQgEmNo/v/U0G4kjJJl03JmRZ6E
+DFwC7JKWFTUsrOcBCzwEMqPWT3PAr/5tw41gS185o019CmXYUDIuVrdP/8qAN0BI
+8ZzGEJESE0ckpVvIOevf5EGDsErv+p6QwaeKCqeT7E9/kHa3KGJseDHVX2wMpnvM
+YkXTtsAW7Ad13iNh6RbCsg74fcaCHcfh9yNequIv6aB/VWFOGCRUeLBGlyATD16u
+HBgqZzRGX5OrvYJtWM/YMULHb7+Su+bHJv7GEYFc5ES9oZUdHcBwFe4qH4Pi1aCX
+CcGJsqflE7NfEVrimwEXTpl9NWUBMj3wc6l/Kt7taIKTRjL9ZGWJPvmfbqkw96x6
+/L1u5lsTfhy5LlyzMTBAc0cPcu8u++4sGAe/viIX81fzdp6VOtqxJO/qbBSxJhvD
+TenU95bUnwJKo3sunXpuZvWWNb4QjS8DtevxNx3iyijV1rq57YEpDiM2YJ+wDoE0
+z7cLpZpucgGR/BeW5zbLYvAXZSh6peSELdv4QShkEm2SOklgfg4fkvPANZty/pfl
+4ked014THaCtpxU2mI3SS4tzTpdhTeLwmwaGuPm7RLNxNm1NRhQTYRKYaWsCCnyY
+H9yNMOSEQqo7HIBFEdeO
+=uS9N
+-----END PGP SIGNATURE-----
+
+--=-HKa1r6ihO2+Ep+GO8LTL--
+
