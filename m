@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbZEAAha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbZEAAlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757347AbZEAAha (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 20:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbZEAAhK
+	id S1754543AbZEAAlU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 20:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbZEAAlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 20:37:10 -0400
-Received: from mailgw2.hevs.ch ([153.109.6.17]:26928 "EHLO mailgw2.hevs.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751797AbZEAAhJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 20:37:09 -0400
-Message-Id: <49FA604C020000BF000290B6@mailgw2.hevs.ch>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Fri, 01 May 2009 02:37:00 +0200
-From: "Marc Pignat" <Marc.Pignat@hevs.ch>
-To: <marcel@holtmann.org>, <jkosina@suse.cz>
-Cc: <ext-roger.quadros@nokia.com>, <linux-bluetooth@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] 2.6.30-rc4 hid bluetooth not working
+	Thu, 30 Apr 2009 20:41:11 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:57004 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751336AbZEAAlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 20:41:10 -0400
+Date: Thu, 30 Apr 2009 19:41:06 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: akpm@linux-foundation.org, piggin@suse.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] - Fix memory corruption in slbq
+Message-ID: <20090501004105.GA16409@sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: bluetooth: Fix serialization when adding/deleting connections in hci_sysfs
+Fix memory corruption caused by slqb overrunning the end
+of the page allocated in kmem_cache_dyn_array_alloc() for
+initial caches.
 
-add_conn and del_conn should be serialized, but flush_workqueue can't be used
-by the worker thread on it's own queue, so use flush_work to serialize add_conn
-and del_conn against each other.
 
-Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
+Signed-off-by: Jack Steiner <steiner@sgi.com>
+
 ---
+ mm/slqb.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-patch against 2.6.30-rc4.
-
-
-diff --git a/net/bluetooth/hci_sysfs.c b/net/bluetooth/hci_sysfs.c
-index b7c5108..42695e3 100644
---- a/net/bluetooth/hci_sysfs.c
-+++ b/net/bluetooth/hci_sysfs.c
-@@ -89,8 +89,8 @@ static void add_conn(struct work_struct *work)
- {
- 	struct hci_conn *conn = container_of(work, struct hci_conn, work_add);
- 
--	/* ensure previous add/del is complete */
--	flush_workqueue(bluetooth);
-+	/* ensure previous del is complete */
-+	flush_work(&conn->work_del);
- 
- 	if (device_add(&conn->dev) < 0) {
- 		BT_ERR("Failed to register connection device");
-@@ -134,8 +134,8 @@ static void del_conn(struct work_struct *work)
- 	struct hci_conn *conn = container_of(work, struct hci_conn, work_del);
- 	struct hci_dev *hdev = conn->hdev;
- 
--	/* ensure previous add/del is complete */
--	flush_workqueue(bluetooth);
-+	/* ensure previous add is complete */
-+	flush_work(&conn->work_add);
- 
- 	while (1) {
- 		struct device *dev;
-
+Index: linux/mm/slqb.c
+===================================================================
+--- linux.orig/mm/slqb.c	2009-04-30 15:47:16.000000000 -0500
++++ linux/mm/slqb.c	2009-04-30 19:08:33.000000000 -0500
+@@ -2194,15 +2194,14 @@ static void *kmem_cache_dyn_array_alloc(
+ 		 * never get freed by definition so we can do it rather
+ 		 * simply.
+ 		 */
+-		if (!nextmem) {
++		if (!nextmem || offset_in_page(nextmem) + size > PAGE_SIZE) {
+ 			nextmem = alloc_pages_exact(size, GFP_KERNEL);
+ 			if (!nextmem)
+ 				return NULL;
+ 		}
+ 		ret = nextmem;
+ 		nextmem = (void *)((unsigned long)ret + size);
+-		if ((unsigned long)ret >> PAGE_SHIFT !=
+-				(unsigned long)nextmem >> PAGE_SHIFT)
++		if (offset_in_page(ret) + size >= PAGE_SIZE)
+ 			nextmem = NULL;
+ 		memset(ret, 0, size);
+ 		return ret;
