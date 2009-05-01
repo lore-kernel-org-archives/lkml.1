@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765076AbZEAUHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765464AbZEAUIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765076AbZEAUHm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 16:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755927AbZEAUHd
+	id S1765464AbZEAUIF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 16:08:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765216AbZEAUHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 16:07:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34600 "EHLO mx2.redhat.com"
+	Fri, 1 May 2009 16:07:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34608 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753691AbZEAUHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 16:07:32 -0400
-Message-ID: <49FB5623.3030403@redhat.com>
-Date: Fri, 01 May 2009 16:05:55 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1764796AbZEAUHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 16:07:51 -0400
+Message-ID: <49FB5686.8020908@redhat.com>
+Date: Fri, 01 May 2009 13:07:34 -0700
+From: Josh Stone <jistone@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090324 Fedora/3.0-2.1.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: elladan@eskimo.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
-       tytso@mit.edu, kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
-Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
-References: <20090428044426.GA5035@eskimo.com>	<20090428192907.556f3a34@bree.surriel.com>	<1240987349.4512.18.camel@laptop>	<20090429114708.66114c03@cuia.bos.redhat.com>	<20090430072057.GA4663@eskimo.com>	<20090430174536.d0f438dd.akpm@linux-foundation.org>	<20090430205936.0f8b29fc@riellaptop.surriel.com>	<20090430181340.6f07421d.akpm@linux-foundation.org>	<20090430215034.4748e615@riellaptop.surriel.com>	<20090430195439.e02edc26.akpm@linux-foundation.org>	<49FB01C1.6050204@redhat.com> <20090501123541.7983a8ae.akpm@linux-foundation.org>
-In-Reply-To: <20090501123541.7983a8ae.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Christoph Hellwig <hch@infradead.org>
+CC: Jason Baron <jbaron@redhat.com>, mingo@elte.hu, rostedt@goodmis.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] export softirq_to_name symbol
+References: <20090501193022.GB3111@redhat.com> <20090501195015.GA31694@infradead.org>
+In-Reply-To: <20090501195015.GA31694@infradead.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 01 May 2009 10:05:53 -0400
-> Rik van Riel <riel@redhat.com> wrote:
-
->> This means we need to provide our working set protection
->> on a per-list basis, by tweaking the scan rate or avoiding
->> scanning of the active file list alltogether under certain
->> conditions.
+On 05/01/2009 12:50 PM, Christoph Hellwig wrote:
+> On Fri, May 01, 2009 at 03:30:22PM -0400, Jason Baron wrote:
+>> hi,
 >>
->> As a side effect, this will help protect frequently accessed
->> file pages (good for ftp and nfs servers), indirect blocks,
->> inode buffers and other frequently used metadata.
+>> In response to a user request:
+>>
+>>
+>> Export 'softirq_to_name' so that modules using the softirq tracepoints
+>> can resolve the # to a name.
 > 
-> Yeah, but that's all internal-implementation-of-the-day details.  It
-> just doesn't matter how the sausages are made.  What we have learned is
-> that the policy of retaining mapped pages over unmapped pages, *all
-> other things being equal* leads to a more pleasing system.
+> Please submit it together with the module that uses it.
 
-Well, retaining mapped pages is one of the implementations
-that lead to a more pleasing system.
+I'm adding SystemTap support for the format strings in the TRACE_EVENT
+macros.  The softirq's TP_fast_assign uses softirq_to_name, and so that
+array is needed to prepare the softirq's trace string.
 
-I suspect that a fully scan resistant active file list will
-show the same behaviour, as well as a few other desired
-behaviours that come in very handy in various server loads.
+So, there's no explicit reference to the symbol in SystemTap -- it's
+just indirectly referenced by the tracepoint declaration.
 
-Are you open to evaluating other methods that could lead, on
-desktop systems, to a behaviour similar to the one achieved
-by the preserve-mapped-pages mechanism?
+Thanks,
 
--- 
-All rights reversed.
+Josh
