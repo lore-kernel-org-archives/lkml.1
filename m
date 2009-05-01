@@ -1,253 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbZEAGe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953AbZEAGpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753494AbZEAGe1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 02:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbZEAGeS
+	id S1752953AbZEAGpv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 02:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZEAGpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 02:34:18 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:42480 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751792AbZEAGeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 02:34:17 -0400
-Date: Fri, 1 May 2009 16:34:05 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for May 1
-Message-Id: <20090501163405.973f9088.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Fri, 1 May 2009 02:45:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49043 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751881AbZEAGpl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 02:45:41 -0400
+Date: Thu, 30 Apr 2009 23:43:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jan Blunck <jblunck@suse.de>
+Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev
+ tmpfs
+Message-Id: <20090430234312.a63fa5cf.akpm@linux-foundation.org>
+In-Reply-To: <20090501061701.GB19234@kroah.com>
+References: <1241097822.2516.3.camel@poy>
+	<20090430222900.c13b63d5.akpm@linux-foundation.org>
+	<20090501061701.GB19234@kroah.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__1_May_2009_16_34_05_+1000_372Kiy3nC=Zol4uv"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__1_May_2009_16_34_05_+1000_372Kiy3nC=Zol4uv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 30 Apr 2009 23:17:01 -0700 Greg KH <greg@kroah.com> wrote:
 
-Hi all,
+> On Thu, Apr 30, 2009 at 10:29:00PM -0700, Andrew Morton wrote:
+> > On Thu, 30 Apr 2009 15:23:42 +0200 Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > 
+> > > From: Kay Sievers <kay.sievers@vrfy.org>
+> > > Subject: driver-core: devtmpfs - driver core maintained /dev tmpfs
+> > > 
+> > > Devtmpfs lets the kernel create a tmpfs very early at kernel
+> > > initialization, before any driver core device is registered. Every
+> > > device with a major/minor will have a device node created in this
+> > > tmpfs instance. After the rootfs is mounted by the kernel, the
+> > > populated tmpfs is mounted at /dev. In initramfs, it can be moved
+> > > to the manually mounted root filesystem before /sbin/init is
+> > > executed.
+> > 
+> > Lol, devfs.
+> 
+> Well, devfs "done right" with hopefully none of the vfs problems the
+> last devfs had. :)
 
-Changes since 20090430:
+I think Adam Richter's devfs rewrite (which, iirc, was tmpfs-based)
+would have fixed up these things.  But it was never quite completed and
+came when minds were already made up.
 
-The ide tree gained a conflict against Linus' tree.
+I don't understand why we need devfs2, really.  What problems are
+people having with teh existing design?
 
-The net tree lost 4 conflicts.
+> > >  block/bsg.c                         |    6 
+> > >  drivers/gpu/drm/drm_sysfs.c         |    7 
+> > >  drivers/input/input.c               |    6 
+> > >  drivers/media/dvb/dvb-core/dvbdev.c |   10 +
+> > >  drivers/usb/core/usb.c              |   11 +
+> > 
+> > These five subsystems were updated, but there are so many others.  Why
+> > these five in particular?
+> 
+> These are the ones that create a subdirectory in /dev/   None of the
+> others do.
 
-The driver-core tree gained a conflict against the tracing tree.
+oic.
 
-I added a patch that fixes a boot failure on some PowerPC machines.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 135 trees (counting Linus' and 18 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging configfs/linux-next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging tracing/auto-tracing-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging ide/for-next
-CONFLICT (content): Merge conflict in include/linux/blkdev.h
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-CONFLICT (content): Merge conflict in include/Kbuild
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (content): Merge conflict in include/linux/mmc/sdio_ids.h
-Merging wireless/master
-[master 84d3d5e] Revert "rfkill: remove user_claim stuff"
-Merging mtd/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
-req.c
-Merging cifs/master
-Merging mmc/next
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging lsm/for-next
-Merging block/for-next
-CONFLICT (content): Merge conflict in drivers/block/hd.c
-CONFLICT (content): Merge conflict in drivers/block/mg_disk.c
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging generic-ipi/auto-generic-ipi-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging kmemleak/kmemleak
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging suspend/linux-next
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in init/main.c
-Merging quilt/usb
-CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
-Merging quilt/staging
-CONFLICT (content): Merge conflict in drivers/staging/rt2860/common/mlme.c
-CONFLICT (content): Merge conflict in drivers/staging/rt2870/common/mlme.c
-CONFLICT (content): Merge conflict in drivers/staging/rt3070/common/mlme.c
-Merging scsi-post-merge/master
-Applying: SLQB: fix dumb early allocation cache
-
---Signature=_Fri__1_May_2009_16_34_05_+1000_372Kiy3nC=Zol4uv
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkn6l90ACgkQjjKRsyhoI8zmQACfYdxHMuTrnjNq54SOqkaciV90
-0NkAoLY5CMCDb2uRXqVSxeCkXn18DAX6
-=ceFy
------END PGP SIGNATURE-----
-
---Signature=_Fri__1_May_2009_16_34_05_+1000_372Kiy3nC=Zol4uv--
+Where is it determined that these subsystems create /dev subdirectories? 
+udev rules?  If so, do we need to henceforth keep devfs2 (sorry, I
+can't resist) in sync with udev?
