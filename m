@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757779AbZEABBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758981AbZEABEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757779AbZEABBQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 21:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZEABBA
+	id S1758981AbZEABEz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 21:04:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbZEABEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 21:01:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35131 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750799AbZEABA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 21:00:59 -0400
-Date: Thu, 30 Apr 2009 20:59:36 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Elladan <elladan@eskimo.com>, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, tytso@mit.edu,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
-Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
-Message-ID: <20090430205936.0f8b29fc@riellaptop.surriel.com>
-In-Reply-To: <20090430174536.d0f438dd.akpm@linux-foundation.org>
-References: <20090428044426.GA5035@eskimo.com>
-	<20090428192907.556f3a34@bree.surriel.com>
-	<1240987349.4512.18.camel@laptop>
-	<20090429114708.66114c03@cuia.bos.redhat.com>
-	<20090430072057.GA4663@eskimo.com>
-	<20090430174536.d0f438dd.akpm@linux-foundation.org>
-Organization: Red Hat, Inc
+	Thu, 30 Apr 2009 21:04:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49785 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754304AbZEABEq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 21:04:46 -0400
+Date: Thu, 30 Apr 2009 17:59:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Karsten Mehrhoff <kawime@gmx.de>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net,
+       Shaohua Li <shaohua.li@intel.com>, Dave Airlie <airlied@linux.ie>,
+       stable@kernel.org
+Subject: Re: PROBLEM: 2.6.29.2 - AGP doesn't work anymore on my nforce2
+Message-Id: <20090430175927.a89f1cd3.akpm@linux-foundation.org>
+In-Reply-To: <op.us6ywl2jgp7xae@127.0.0.1>
+References: <op.us6ywl2jgp7xae@127.0.0.1>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,24 +28,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Apr 2009 17:45:36 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Thu, 30 Apr 2009 10:51:47 +0200
+Karsten Mehrhoff <kawime@gmx.de> wrote:
 
-> Were you able to tell whether altering /proc/sys/vm/swappiness
-> appropriately regulated the rate at which the mapped page count
-> decreased?
+> [1.]
+> PROBLEM: No more agp card functionality with the patch 2.6.29.2 of 'a/drivers/char/agp/generic.c'
+> 
+> [2.]
+> I compiled the kernel 2.6.29.2 with my .config of 2.6.29.1 and run into problems with the speed of my ATI RADEON 9600 (rv350)
+> 
 
-That should not make a difference at all for mapped file
-pages, after the change was merged that makes the VM ignores
-the referenced bit of mapped active file pages.
+So we have a 2.6.29.1 -> 2.6.29.2 regression.
 
-Ever since the split LRU code was merged, all that the
-swappiness controls is the aggressiveness of file vs
-anonymous LRU scanning.
+> ...
+> 
+> Problematic patch:
+> //---
+> --- a/drivers/char/agp/generic.c
+> +++ b/drivers/char/agp/generic.c
+> @@ -1226,7 +1226,7 @@ int agp_generic_alloc_pages(struct agp_bridge_data *bridge, struct agp_memory *m
+>          int i, ret = -ENOMEM;
+>  
+>          for (i = 0; i < num_pages; i++) {
+> -                page = alloc_page(GFP_KERNEL | GFP_DMA32);
+> +                page = alloc_page(GFP_KERNEL | GFP_DMA32 | __GFP_ZERO);
+>                  /* agp_free_memory() needs gart address */
+>                  if (page == NULL)
+>                          goto out;
+> @@ -1257,7 +1257,7 @@ void *agp_generic_alloc_page(struct agp_bridge_data *bridge)
+>  {
+>          struct page * page;
+>  
+> -        page = alloc_page(GFP_KERNEL | GFP_DMA32);
+> +        page = alloc_page(GFP_KERNEL | GFP_DMA32 | __GFP_ZERO);
+>          if (page == NULL)
+>                  return NULL;
+> ---//
+> 
+> I reverted the patch back to 2.6.29.1, compiled and the kernel agian and agp works ok.
 
-Currently the kernel has no effective code to protect the 
-page cache working set from streaming IO.  Elladan's bug
-report shows that we do need some kind of protection...
+Really?  So reverting 
 
--- 
-All rights reversed.
+: commit 59de2bebabc5027f93df999d59cc65df591c3e6e
+: Author:     Shaohua Li <shaohua.li@intel.com>
+: AuthorDate: Mon Apr 20 10:08:35 2009 +1000
+: Commit:     Dave Airlie <airlied@redhat.com>
+: CommitDate: Mon Apr 20 10:08:35 2009 +1000
+:
+:    agp: zero pages before sending to userspace
+
+makes your AGP work properly?
+
+That's really weird.
