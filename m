@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757673AbZEAMxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759829AbZEAMze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757673AbZEAMxy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 08:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755119AbZEAMxo
+	id S1759829AbZEAMze (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 08:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754460AbZEAMzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 08:53:44 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:61798 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753181AbZEAMxo (ORCPT
+	Fri, 1 May 2009 08:55:25 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:6018 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753751AbZEAMzY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 08:53:44 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH 04/27] asm-generic: add legacy I/O header files
-Date: Fri, 1 May 2009 14:53:31 +0200
-User-Agent: KMail/1.9.9
-Cc: Michal Simek <monstr@monstr.eu>, linux-arch@vger.kernel.org,
-       Remis Lima Baima <remis.developer@googlemail.com>,
-       linux-kernel@vger.kernel.org
-References: <cover.1241105648.git.arnd@arndb.de> <49FAEA2A.50504@monstr.eu> <20090501123728.GC27799@flint.arm.linux.org.uk>
-In-Reply-To: <20090501123728.GC27799@flint.arm.linux.org.uk>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 1 May 2009 08:55:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=bfHRIV2aLGmgsYAsqvbBlGjVMszuq3jsUW8oQoFcNrD+x0l+SkqJc7qVjDYSSRRSrh
+         9W7AEuanJuCrqMY5kCeL4KgzsNofCufM2SP/QiYgeqvd4opxG1WFBPa7guUS1sRltJWe
+         mKlTQFAVkWWNY7o30BtpUnRYYIA36jTXjQyZc=
+Date: Fri, 1 May 2009 16:56:05 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, xemul@parallels.com,
+       mingo@elte.hu, orenl@cs.columbia.edu, hch@infradead.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: checkpoint/restart: taking refcounts on kernel objects
+Message-ID: <20090501125605.GA10942@x200.localdomain>
+References: <20090410023539.GK27788@x200.localdomain> <20090413214701.GA24509@us.ibm.com> <20090414152752.GC27461@x200.localdomain> <20090414154139.GA8085@us.ibm.com> <20090414170419.GD27923@x200.localdomain> <1239729800.32604.92.camel@nimitz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905011453.32006.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+2/LxYLynCVT1VTH40gq2AqRLGqZxTiCRyCT5
- IHc4VYIk6fX4fyS3h1mJaaKU+8rZBAIY9HRk3o6usK0VUBSHuE
- ca7V6VNEU6wlmiK0x/zaQ==
+In-Reply-To: <1239729800.32604.92.camel@nimitz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 May 2009, Russell King wrote:
-> > > All of these are either PC-specific, or they don't actually care
-> > > about the specific value. Most architectures just use the
-> > > value from the IBM PC, so we might as well make that the generic
-> > > default.
+On Tue, Apr 14, 2009 at 10:23:20AM -0700, Dave Hansen wrote:
+> On Tue, 2009-04-14 at 21:04 +0400, Alexey Dobriyan wrote:
+> > > Right while I have opinions on some things in this list, I didn't
+> > > mean to imply positions on these items.  My question was:  are
+> > > there are differences you want to call out?
 > > 
-> > ok. Let's move out from arch to generic location.
+> > Sorry? "none needed" is relevant to only item 3. If tasks don't
+> > dissapear during checkpoint, why would netns dissapear.
+> > Taking refcount on checkpoint(2) is likely unneeded.
+> > 
+> > But it's low-level detail anyway.
 > 
-> That's only possible once the users have been fixed - otherwise the ARM
-> stuff listed above _will_ break.
+> I guess it is a matter of whether we consider a task that gets unfrozen
+> a kernel bug or not.  If we don't take refcounts and we do reference an
+> object that disappears, then we *certainly* have a kernel bug that can
+> crash the kernel.  If we take refcounts, we at least limit the ways in
+> which the kernel can crash when something screwy happens.
+> 
+> On the other hand, the objhash is a kinda weird way to do it.  Taking
+> and releasing arbitrary refcounts on arbitrary kernel objects one level
+> too much of abstraction for me.
 
-My idea was to just add a fallback of
-
-#ifndef CLOCK_TICK_RATE
-#define CLOCK_TICK_RATE                1193182
-#endif
-
-to include/linux/timex.h. Since al existing architectures already define
-CLOCK_TICK_RATE as a macro, I don't see anything changing for them.
-
-The only difference would be that all architectures that use the default
-value can have an empty timex.h.
-
-Am I missing something?
-
-	Arnd <><
+Hm, I take this objection back (refcounts at checkpoint(2) time).
+It's easier and safer to always grab it when putting checkpointed object
+to hash/list/whatever to maintain refcount correct.
+On context destroy, every object is put regardless of whether it's
+checkpointing or restarting.
