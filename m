@@ -1,89 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761893AbZEANmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760497AbZEANnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761893AbZEANmy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:42:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760191AbZEANmj
+	id S1760497AbZEANnr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757617AbZEANnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:42:39 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:61302 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761017AbZEANmi (ORCPT
+	Fri, 1 May 2009 09:43:37 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53311 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756194AbZEANng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:42:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tO87cactzyP9kNTD2rB9ntx3XIUW+tpcjtlHVf0AUiIjArNwIq9I9vc4ofGBXYPpTi
-         +XAwCIbVv5eRLbHlQjyzplMXQN3w4p5cZlN6KbVjFPUzXOyKgLjjSal/B9PE5nA8r+1E
-         9wxnwBsjqR30uQH9g09nt0fzEF8gASnkhjkn4=
-Date: Fri, 1 May 2009 15:42:35 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/3] ring-buffer: make cpu buffer entries counter atomic
-Message-ID: <20090501134234.GG6011@nowhere>
-References: <20090501022210.851418183@goodmis.org> <20090501022403.826182932@goodmis.org> <20090501115047.GA24706@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090501115047.GA24706@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 1 May 2009 09:43:36 -0400
+Date: Fri, 1 May 2009 14:44:20 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Michal Simek <monstr@monstr.eu>,
+       linux-arch@vger.kernel.org,
+       Remis Lima Baima <remis.developer@googlemail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 04/27] asm-generic: add legacy I/O header files
+Message-ID: <20090501144420.5a3e9c6e@lxorguk.ukuu.org.uk>
+In-Reply-To: <200905011529.04774.arnd@arndb.de>
+References: <cover.1241105648.git.arnd@arndb.de>
+	<20090501123728.GC27799@flint.arm.linux.org.uk>
+	<20090501140904.69f44406@lxorguk.ukuu.org.uk>
+	<200905011529.04774.arnd@arndb.de>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 01:50:47PM +0200, Ingo Molnar wrote:
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > The entries counter in cpu buffer is not atomic. Although it only 
-> > gets updated by a single CPU, interrupts may come in and update 
-> > the counter too. This would cause missing entries to be added.
-> 
-> > -	unsigned long			entries;
-> > +	atomic_t			entries;
-> 
-> Hm, that's not really good as atomics can be rather expensive and 
-> this is the fastpath.
-> 
-> This is the upteenth time or so that the fact that we do not disable 
-> irqs while generating trace entries bites us in one way or another. 
-> IRQs can come in and confuse function trace output, etc. etc.
-> 
-> Please lets do what i suggested a long time ago: disable irqs _once_ 
-> in any trace point and run atomically from that point on, and enable 
-> them once, at the end.
-> 
-> The cost is very small and it turns into a win immediately by 
-> elimination of a _single_ atomic instruction. (even on Nehalem they 
-> cost 20 cycles. More on older CPUs.) We can drop the preempt-count 
-> disable/enable as well and a lot of racy code as well. Please.
-> 
-> 	Ingo
+> /*
+>  * CLOCK_TICK_RATE is traditionally the base frequency using the PC-style
+>  * i8253 "PIT" timer. Architecture independent device drivers should not
+>  * rely on this value.
+>  * Any architecture that either has a real PC-style PIT, or does not have a
+>  * fixed timer interval at all and just needs to provide some value here
+>  * should just fall back to this default.
+>  */
 
-
-I also suspect one other good effect on doing this.
-
-As you know, between a lock_reserve and a discard, several interrupts
-can trigger some traces. It means that if some rooms have already been
-reserved, the discard will really create a discarded entry and we
-can't reuse it.
-
-For example in the case of filters with lock tracing, we rapidly run
-into entries overriden, making the lock events tracing about useless
-because we rapidly lose everything.
-
-At least that's an effect I observed. I'm not sure the discard is the
-real cause but it seems to make sense.
-
-That's a pity because believe me it is very useful to hunt a softlockup.
-
-Of course it doesn't prevent from NMI tempest, but we already have
-protections for that.
-
-Frederic.
+They shouldn't define it - we want those invalid cases to error. Stick
+CLOCK_TICK_RATE in the depths of the x86 arch includes and then we can
+fix the other cases properly. Either the device has an independant clock
+of the same frequency (some watchdogs do this), it relies upon a
+motherboard timer in which case the platform can define CLOCK_TICK_RATE
+(or a better name for it), or it doesn't have any meaning in which case
+we *want* it not to compile.
 
