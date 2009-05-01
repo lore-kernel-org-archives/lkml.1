@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764602AbZEAXKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765753AbZEAXLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764602AbZEAXKe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 19:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbZEAXKX
+	id S1765753AbZEAXLd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 19:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbZEAXLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 19:10:23 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:35446 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754269AbZEAXKW (ORCPT
+	Fri, 1 May 2009 19:11:23 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:21655 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754840AbZEAXLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 19:10:22 -0400
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: "H. Peter Anvin" <hpa@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: "N" symbols and System.map
-References: <49FB7692.2000508@linux.intel.com>
-X-Yow: CHUBBY CHECKER just had a CHICKEN SANDWICH in downtown DULUTH!
-Date: Sat, 02 May 2009 01:10:18 +0200
-In-Reply-To: <49FB7692.2000508@linux.intel.com> (H. Peter Anvin's message of
-	"Fri, 01 May 2009 15:24:18 -0700")
-Message-ID: <m2preso1wl.fsf@igel.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.93 (gnu/linux)
+	Fri, 1 May 2009 19:11:22 -0400
+X-IronPort-AV: E=Sophos;i="4.40,280,1238976000"; 
+   d="scan'208";a="179832178"
+Date: Fri, 1 May 2009 16:11:22 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: stern@rowland.harvard.edu, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, linux-scsi@cuplxvomd02.corp.sa.net,
+       netdev@cuplxvomd02.corp.sa.net
+Subject: Re: [PATCH 1/5] KERNEL: Support asynchronously-discovered boot
+	devices, v4 (resend)
+Message-ID: <20090501231122.GA12797@cuplxvomd02.corp.sa.net>
+References: <20090430140559.a2343f7c.akpm@linux-foundation.org> <Pine.LNX.4.44L0.0904301712450.31375-100000@netrider.rowland.org> <20090430145412.c1386cb2.akpm@linux-foundation.org> <20090501165803.GA13342@cuplxvomd02.corp.sa.net> <20090501132258.672002ee.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090501132258.672002ee.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@linux.intel.com> writes:
+On Fri, May 01, 2009 at 01:22:58PM -0700, Andrew Morton wrote:
+> On Fri, 1 May 2009 09:58:03 -0700
+> David VomLehn <dvomlehn@cisco.com> wrote:
+> > Yes, we do need a good name, so we are now guaranteed to be entering
+> > the Bike Shed Zone.
+> 
+> Getting the name right is important!  We live with the decision daily,
+> for years.
 
-> right now, we filter out symbols that nm tag N, meaning "debugging
-> symbols", from System.map.  However, at least on x86, the linker-generated
-> symbol _end is tagged N, and in fact is the only N in the entire image.
->
-> Are there other architectures which would suffer if N were included in
-> System.map, or would that be a reasonable thing to do?
+Please don't misunderstand; I was agreeing that we need a *good* name! And
+making the (intended to be humorous) comment about bike shedding.
 
-There should not be any N symbols unless you are using stabs debugging.
+> > I've avoided making any guarantees about this, but /sbin/init is implicitly
+> > the red line. If we make this explicit, we're probably back in the vicinity
+> > of the bike shed, but this should help frame any subsequent discussion
+> > in a concrete manner.
+> 
+> Well, decisions which are made here can make the difference between
+> "computer boots" and "computer doesn't boot".  That ain't bikeshed
+> painting.
 
-Andreas.
+Again, I agree on the importance of this. At the same time, we risk
+kickstarting an abstract and long-winded philosophical discourse on what
+the "right" choice is. It does seem as though these usually do yield,
+as a minimum, a better understanding of what we're doing, and I am all
+in favor of that.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+David VomLehn
