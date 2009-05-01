@@ -1,58 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763835AbZEARUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764508AbZEARUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763835AbZEARUW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 13:20:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756312AbZEARUD
+	id S1764508AbZEARUp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 13:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763073AbZEARUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 13:20:03 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:46303 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754987AbZEARUA (ORCPT
+	Fri, 1 May 2009 13:20:30 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59083
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754932AbZEARU2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 13:20:00 -0400
-Date: Fri, 1 May 2009 13:20:00 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David VomLehn <dvomlehn@cisco.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH 1/5] KERNEL: Support asynchronously-discovered boot
- devices, v4 (resend)
-In-Reply-To: <20090501165803.GA13342@cuplxvomd02.corp.sa.net>
-Message-ID: <Pine.LNX.4.44L0.0905011308460.2989-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 1 May 2009 13:20:28 -0400
+Date: Fri, 01 May 2009 10:20:22 -0700 (PDT)
+Message-Id: <20090501.102022.149412194.davem@davemloft.net>
+To: hugh@veritas.com
+Cc: akpm@linux-foundation.org, mel@csn.ul.ie, andi@firstfloor.org,
+       anton@samba.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 2.6.30] Doc: hashdist defaults on for 64bit
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0905011442540.19247@blonde.anvils>
+References: <20090429142825.6dcf233d.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0905011354560.19012@blonde.anvils>
+	<Pine.LNX.4.64.0905011442540.19247@blonde.anvils>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 May 2009, David VomLehn wrote:
+From: Hugh Dickins <hugh@veritas.com>
+Date: Fri, 1 May 2009 14:45:43 +0100 (BST)
 
-> > OK, so "initdev" could be viewed as meaning "a device which /sbin/init
-> > needs"?  Even I can understand that.
-> > 
-> > But /sbin/init isn't the first userspace we run, is it?  There's
-> > initramfs stuff, firmware loaders, etc.
-> > 
-> > What's the story here?  Do we intend that all initdevs be up and
-> > running before _any_ userspace runs?  Or is /sbin/init the red line?
+> Update Doc: kernel boot parameter hashdist now defaults on for all 64bit NUMA.
 > 
-> I've avoided making any guarantees about this, but /sbin/init is implicitly
-> the red line. If we make this explicit, we're probably back in the vicinity
-> of the bike shed, but this should help frame any subsequent discussion
-> in a concrete manner.
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
 
-This matter is a little unclear, to me at least.  Consoles, yes, I
-think we do want the console to be connected when the first user
-process -- whether it is an initramfs or /bin/init or whatever --
-starts up (if a console device does exist).
-
-But the root filesystem is another story.  The initramfs or initrd may
-itself load the necessary drivers.  Waiting for the root device to show
-up then is no longer the kernel's responsibility.  However if there is
-no initramfs then the kernel should indeed wait for the root device to
-exist before trying to mount the root filesystem and start /bin/init.
-
-Alan Stern
-
+Acked-by: David S. Miller <davem@davemloft.net>
