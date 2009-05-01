@@ -1,372 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759966AbZEANN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760022AbZEANOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759966AbZEANN4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344AbZEANNg
+	id S1760022AbZEANOX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758300AbZEANNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:13:36 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:64826 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754147AbZEANNe (ORCPT
+	Fri, 1 May 2009 09:13:47 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:52494 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757035AbZEANNo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:13:34 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@monstr.eu
-Subject: [PATCH V3] asm-generic: add a generic uaccess.h
-Date: Fri, 1 May 2009 15:13:24 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-arch@vger.kernel.org,
-       Remis Lima Baima <remis.developer@googlemail.com>,
-       linux-kernel@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>
-References: <cover.1241105648.git.arnd@arndb.de> <200905011436.05204.arnd@arndb.de> <49FAED34.5000701@monstr.eu>
-In-Reply-To: <49FAED34.5000701@monstr.eu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 1 May 2009 09:13:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=rS7z2RMcqk0UWPyVCPTTTpFhL1bJGPeOxCY1oR9UlDZR5srwqzU8qD3vbNtvdSBaf5
+         ZsMdzBzYwIWVDkmsGtIQwaGYpyXUt2N1u9nfTuf1pqGSwPM9TkSfoh7TvyMFOZL9lRRw
+         B5xXMxVYDKTiA7o+lY4Q/eX6QLr93C2YzJy7I=
+Date: Fri, 1 May 2009 15:13:41 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 6/6] kill-the-BKL/reiserfs: release the write lock on
+	flush_commit_list()
+Message-ID: <20090501131340.GB6011@nowhere>
+References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com> <1241145862-21700-7-git-send-email-fweisbec@gmail.com> <20090501054247.GD5983@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905011513.25344.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/YkOSXMgKcaUS5cxlbL5VWyv/u5vdbicHTZ+e
- sMgWJuVWubROu8mcJTkVeDX0jgLSccqGWO+TqwlxyrCPPuS4tP
- bz+6IbSMHqjMV1ukrul7g==
+In-Reply-To: <20090501054247.GD5983@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds a new asm-generic/uaccess.h file that should be usable
-by both all NOMMU architectures out of the box. Architectures with
-an MMU should override the __access_ok(), __copy_from_user() and
-__copy_to_user definitions with their own functions to provide
-correct exception handling.
+On Fri, May 01, 2009 at 07:42:47AM +0200, Ingo Molnar wrote:
+> 
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > flush_commit_list() uses ll_rw_block() to commit the pending log blocks.
+> > ll_rw_block() might sleep, and the bkl was released at this point. Then
+> > we can also relax the write lock at this point.
+> > 
+> > [ Impact: release the reiserfs write lock when it is not needed ]
+> > 
+> > Cc: Jeff Mahoney <jeffm@suse.com>
+> > Cc: Chris Mason <chris.mason@oracle.com>
+> > Cc: Alexander Beregalov <a.beregalov@gmail.com>
+> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > ---
+> >  fs/reiserfs/journal.c |    7 +++++--
+> >  1 files changed, 5 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
+> > index 373d080..b1ebd5a 100644
+> > --- a/fs/reiserfs/journal.c
+> > +++ b/fs/reiserfs/journal.c
+> > @@ -1120,8 +1120,11 @@ static int flush_commit_list(struct super_block *s,
+> >  		    SB_ONDISK_JOURNAL_SIZE(s);
+> >  		tbh = journal_find_get_block(s, bn);
+> >  		if (tbh) {
+> > -			if (buffer_dirty(tbh))
+> > -			    ll_rw_block(WRITE, 1, &tbh) ;
+> > +			if (buffer_dirty(tbh)) {
+> > +		            reiserfs_write_unlock(s);
+> > +			    ll_rw_block(WRITE, 1, &tbh);
+> > +			    reiserfs_write_lock(s);
+> > +			}
+> >  			put_bh(tbh) ;
+> >  		}
+> >  	}
+> 
+> there's 7 other instances of ll_rw_block():
+> 
+> fs/reiserfs/journal.c-			spin_unlock(lock);
+> fs/reiserfs/journal.c:			ll_rw_block(WRITE, 1, &bh);
+> fs/reiserfs/journal.c-			spin_lock(lock);
+> --
+> fs/reiserfs/journal.c-		            reiserfs_write_unlock(s);
+> fs/reiserfs/journal.c:			    ll_rw_block(WRITE, 1, &tbh);
+> fs/reiserfs/journal.c-			    reiserfs_write_lock(s);
+> --
+> fs/reiserfs/journal.c-	/* read in the log blocks, memcpy to the corresponding real block */
+> fs/reiserfs/journal.c:	ll_rw_block(READ, get_desc_trans_len(desc), log_blocks);
+> fs/reiserfs/journal.c-	for (i = 0; i < get_desc_trans_len(desc); i++) {
+> --
+> fs/reiserfs/journal.c-		set_buffer_dirty(real_blocks[i]);
+> fs/reiserfs/journal.c:		ll_rw_block(SWRITE, 1, real_blocks + i);
+> fs/reiserfs/journal.c-	}
+> --
+> fs/reiserfs/journal.c-	}
+> fs/reiserfs/journal.c:	ll_rw_block(READ, j, bhlist);
+> fs/reiserfs/journal.c-	for (i = 1; i < j; i++)
+> --
+> fs/reiserfs/stree.c-		if (!buffer_uptodate(bh[j]))
+> fs/reiserfs/stree.c:			ll_rw_block(READA, 1, bh + j);
+> fs/reiserfs/stree.c-		brelse(bh[j]);
+> --
+> fs/reiserfs/stree.c-						    reada_blocks, reada_count);
+> fs/reiserfs/stree.c:			ll_rw_block(READ, 1, &bh);
+> fs/reiserfs/stree.c-			reiserfs_write_unlock(sb);
+> --
+> fs/reiserfs/super.c-{
+> fs/reiserfs/super.c:	ll_rw_block(READ, 1, &(SB_BUFFER_WITH_SB(s)));
+> fs/reiserfs/super.c-	reiserfs_write_unlock(s);
+> 
+> in particular the second stree.c one and the super.c has a 
+> write-unlock straight before the lock-drop.
+> 
+> I think the stree.c unlock could be moved to before the 
+> ll_rw_block() call straight away.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
-new file mode 100644
-index 0000000..deb1722
---- /dev/null
-+++ b/include/asm-generic/uaccess.h
-@@ -0,0 +1,319 @@
-+#ifndef __ASM_GENERIC_UACCESS_H
-+#define __ASM_GENERIC_UACCESS_H
-+
-+/*
-+ * User space memory access functions, these should work
-+ * on a ny machine that has kernel and user data in the same
-+ * address space, e.g. all NOMMU machines.
-+ */
-+#include <linux/sched.h>
-+#include <linux/mm.h>
-+#include <linux/string.h>
-+
-+#include <asm/segment.h>
-+
-+#ifndef get_fs
-+#define MAKE_MM_SEG(s)	((mm_segment_t) { (s) })
-+#define KERNEL_DS	MAKE_MM_SEG(~0UL)
-+#define USER_DS		MAKE_MM_SEG(TASK_SIZE - 1)
-+
-+#define get_ds() (KERNEL_DS)
-+#define get_fs() (current_thread_info()->addr_limit)
-+
-+static inline void set_fs(mm_segment_t fs)
-+{
-+	current_thread_info()->addr_limit = fs;
-+}
-+#endif
-+
-+#define segment_eq(a, b) ((a).seg == (b).seg)
-+
-+#define VERIFY_READ	0
-+#define VERIFY_WRITE	1
-+
-+#define access_ok(type, addr, size) __access_ok((unsigned long)(addr),(size))
-+
-+/*
-+ * The architecture should really override this if possible, at least
-+ * doing a check on the get_fs()
-+ */
-+#ifndef __access_ok
-+static inline int __access_ok(unsigned long addr, unsigned long size)
-+{
-+	return 1;
-+}
-+#endif
-+
-+/*
-+ * The exception table consists of pairs of addresses: the first is the
-+ * address of an instruction that is allowed to fault, and the second is
-+ * the address at which the program should continue.  No registers are
-+ * modified, so it is entirely up to the continuation code to figure out
-+ * what to do.
-+ *
-+ * All the routines below use bits of fixup code that are out of line
-+ * with the main instruction path.  This means when everything is well,
-+ * we don't even have to jump over them.  Further, they do not intrude
-+ * on our cache or tlb entries.
-+ */
-+
-+struct exception_table_entry
-+{
-+	unsigned long insn, fixup;
-+};
-+
-+/* Returns 0 if exception not found and fixup otherwise.  */
-+extern unsigned long search_exception_table(unsigned long);
-+
-+/*
-+ * architectures with an MMU should override these two
-+ */
-+#ifndef __copy_from_user
-+static inline __must_check long __copy_from_user(void *to,
-+		const void __user * from, unsigned long n)
-+{
-+	if (__builtin_constant_p(n)) {
-+		switch(n) {
-+		case 1:
-+			*(u8 *)to = *(u8 __force *)from;
-+			return 0;
-+		case 2:
-+			*(u16 *)to = *(u16 __force *)from;
-+			return 0;
-+		case 4:
-+			*(u32 *)to = *(u32 __force *)from;
-+			return 0;
-+#ifdef CONFIG_64BIT
-+		case 8:
-+			*(u64 *)to = *(u64 __force *)from;
-+			return 0;
-+#endif
-+		default:
-+			break;
-+		}
-+	}
-+
-+	memcpy(to, (const void __force *)from, n);
-+	return 0;
-+}
-+#endif
-+
-+#ifndef __copy_to_user
-+static inline __must_check long __copy_to_user(void __user *to,
-+		const void *from, unsigned long n)
-+{
-+	if (__builtin_constant_p(n)) {
-+		switch(n) {
-+		case 1:
-+			*(u8 __force *)to = *(u8 *)from;
-+			return 0;
-+		case 2:
-+			*(u16 __force *)to = *(u16 *)from;
-+			return 0;
-+		case 4:
-+			*(u32 __force *)to = *(u32 *)from;
-+			return 0;
-+#ifdef CONFIG_64BIT
-+		case 8:
-+			*(u64 __force *)to = *(u64 *)from;
-+			return 0;
-+#endif
-+		default:
-+			break;
-+		}
-+	}
-+
-+	memcpy((void __force *)to, from, n);
-+	return 0;
-+}
-+#endif
-+
-+/*
-+ * These are the main single-value transfer routines.  They automatically
-+ * use the right size if we just have the right pointer type.
-+ * This version just falls back to copy_{from,to}_user, which should
-+ * provide a fast-path for small values. 
-+ */
-+#define __put_user(x, ptr) \
-+({								\
-+	__typeof__(*(ptr)) __x = (x);				\
-+	int __pu_err = -EFAULT;					\
-+        __chk_user_ptr(ptr);					\
-+	switch (sizeof (*(ptr))) {				\
-+	case 1:							\
-+	case 2:							\
-+	case 4:							\
-+	case 8:							\
-+		__pu_err = __put_user_fn(sizeof (*(ptr)),	\
-+					 ptr, &__x);		\
-+		break;						\
-+	default:						\
-+		__put_user_bad();				\
-+		break;						\
-+	 }							\
-+	__pu_err;						\
-+})
-+
-+#define put_user(x, ptr)					\
-+({								\
-+	might_sleep();						\
-+	__access_ok(ptr, sizeof (*ptr)) ?			\
-+		__put_user(x, ptr) :				\
-+		-EFAULT;					\
-+})
-+
-+static inline int __put_user_fn(size_t size, void __user *ptr, void *x)
-+{
-+	size = __copy_to_user(ptr, x, size);
-+	return size ? -EFAULT : size;
-+}
-+
-+extern int __put_user_bad(void) __attribute__((noreturn));
-+
-+#define __get_user(x, ptr)					\
-+({								\
-+	int __gu_err = -EFAULT;					\
-+	__chk_user_ptr(ptr);					\
-+	switch (sizeof(*(ptr))) {				\
-+	case 1: {						\
-+		unsigned char __x;				\
-+		__gu_err = __get_user_fn(sizeof (*(ptr)),	\
-+					 ptr, &__x);		\
-+		(x) = *(__force __typeof__(*(ptr)) *) &__x;	\
-+		break;						\
-+	};							\
-+	case 2: {						\
-+		unsigned short __x;				\
-+		__gu_err = __get_user_fn(sizeof (*(ptr)),	\
-+					 ptr, &__x);		\
-+		(x) = *(__force __typeof__(*(ptr)) *) &__x;	\
-+		break;						\
-+	};							\
-+	case 4: {						\
-+		unsigned int __x;				\
-+		__gu_err = __get_user_fn(sizeof (*(ptr)),	\
-+					 ptr, &__x);		\
-+		(x) = *(__force __typeof__(*(ptr)) *) &__x;	\
-+		break;						\
-+	};							\
-+	case 8: {						\
-+		unsigned long long __x;				\
-+		__gu_err = __get_user_fn(sizeof (*(ptr)),	\
-+					 ptr, &__x);		\
-+		(x) = *(__force __typeof__(*(ptr)) *) &__x;	\
-+		break;						\
-+	};							\
-+	default:						\
-+		__get_user_bad();				\
-+		break;						\
-+	}							\
-+	__gu_err;						\
-+})
-+
-+#define get_user(x, ptr)					\
-+({								\
-+	might_sleep();						\
-+	__access_ok(ptr, sizeof (*ptr)) ?			\
-+		__get_user(x, ptr) :				\
-+		-EFAULT;					\
-+})
-+
-+static inline int __get_user_fn(size_t size, const void __user *ptr, void *x)
-+{
-+	size = __copy_from_user(x, ptr, size);
-+	return size ? -EFAULT : size;
-+}
-+
-+extern int __get_user_bad(void) __attribute__((noreturn));
-+
-+#ifndef __copy_from_user_inatomic
-+#define __copy_from_user_inatomic __copy_from_user
-+#endif
-+
-+#ifndef __copy_to_user_inatomic
-+#define __copy_to_user_inatomic __copy_to_user
-+#endif
-+
-+static inline long copy_from_user(void *to,
-+		const void __user * from, unsigned long n)
-+{
-+	might_sleep();
-+	if (__access_ok(from, n))
-+		return __copy_from_user(to, from, n);
-+	else
-+		return n;
-+}
-+
-+static inline long copy_to_user(void __user *to,
-+		const void *from, unsigned long n)
-+{
-+	might_sleep();
-+	if (__access_ok(to, n))
-+		return __copy_to_user(to, from, n);
-+	else
-+		return n;
-+}
-+
-+/*
-+ * Copy a null terminated string from userspace.
-+ */
-+#ifndef __strncpy_from_user
-+static inline long
-+__strncpy_from_user(char *dst, const char __user *src, long count)
-+{
-+	char *tmp;
-+	strncpy(dst, (const char __force *)src, count);
-+	for (tmp = dst; *tmp && count > 0; tmp++, count--)
-+		;
-+	return (tmp - dst);
-+}
-+#endif
-+
-+static inline long
-+strncpy_from_user(char *dst, const char __user *src, long count)
-+{
-+	if (!__access_ok(src, 1))
-+		return -EFAULT;
-+	return __strncpy_from_user(dst, src, count);
-+}
-+
-+/*
-+ * Return the size of a string (including the ending 0)
-+ *
-+ * Return 0 on exception, a value greater than N if too long
-+ */
-+#ifndef strnlen_user
-+static inline long strnlen_user(const char __user *src, long n)
-+{
-+	return strlen((void * __force)src) + 1;
-+}
-+#endif
-+
-+static inline long strlen_user(const char __user *src)
-+{
-+	return strnlen_user(src, 32767);
-+}
-+
-+/*
-+ * Zero Userspace
-+ */
-+#ifndef __clear_user
-+static inline __must_check unsigned long
-+__clear_user(void __user *to, unsigned long n)
-+{
-+	memset((void __force *)to, 0, n);
-+	return 0;
-+}
-+#endif
-+
-+static inline __must_check unsigned long
-+clear_user(void __user *to, unsigned long n)
-+{
-+	might_sleep();
-+	if (!__access_ok(to, n))
-+		return n;
-+
-+	return __clear_user(to, n);
-+}
-+
-+#endif /* __ASM_GENERIC_UACCESS_H */
+Indeed.
+
+
+> 
+> The super.c one needs more care: first put &(SB_BUFFER_WITH_SB(s)) 
+> into a local variable, then unlock the wite-lock, then call 
+> ll_rw_block(). (This is important because &(SB_BUFFER_WITH_SB(s)) is 
+> global filesystem state that has to be read with the lock held.)
+
+
+Indeed &(SB_BUFFER_WITH_SB(s)) is a pointer to blocks that
+reflect the state of the filesystem but it was already not
+safe on the old code.
+
+ll_rw_block() may sleep, and wait_on_buffer() too. And this
+pointer could have changed already during these sleeps.
+
+If we put it in a local variable, it prevents from a change of the
+pointer value, but not from its content, like in the older scheme.
+
+And I guess this pointer is unlikely to change, this is about the superblock
+and the bitmap...
+
+But I'm not sure. I guess it's indeed better to put it in a local variable.
+
+> ll_rw_block() generally always has a chance to block (especially on 
+> READ) - so the other places could be converted to drop the 
+> write-lock too. Most seem straightforward - some need similar 
+> local-variable treatment as super.c.
+
+
+Ok, thanks!
+
+
+> 	Ingo
+
