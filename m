@@ -1,169 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762795AbZEANal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763276AbZEANbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762795AbZEANal (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761914AbZEAN3P
+	id S1763276AbZEANbp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762074AbZEAN3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:29:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58536 "EHLO hera.kernel.org"
+	Fri, 1 May 2009 09:29:34 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36981 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761719AbZEAN3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:29:12 -0400
-Date: Fri, 1 May 2009 13:28:35 GMT
-From: tip-bot for Jason Baron <jbaron@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jbaron@redhat.com, tglx@linutronix.de, randy.dunlap@oracle.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, jbaron@redhat.com, randy.dunlap@oracle.com,
-       mingo@elte.hu
-In-Reply-To: <84160b6bd94aff02455da7e12bad054d34c579a0.1241107197.git.jbaron@redhat.com>
-References: <84160b6bd94aff02455da7e12bad054d34c579a0.1241107197.git.jbaron@redhat.com>
-Subject: [tip:tracing/core] tracing: add new tracepoints docbook
-Message-ID: <tip-a76f8c6da1e48fd4ef025f42c736389532ff30ba@git.kernel.org>
-Git-Commit-ID: a76f8c6da1e48fd4ef025f42c736389532ff30ba
-X-Mailer: tip-git-log-daemon
+	id S1762120AbZEAN3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 09:29:32 -0400
+Date: Fri, 1 May 2009 15:29:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 6/6] kill-the-BKL/reiserfs: release the write lock on
+	flush_commit_list()
+Message-ID: <20090501132923.GA30663@elte.hu>
+References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com> <1241145862-21700-7-git-send-email-fweisbec@gmail.com> <20090501054247.GD5983@elte.hu> <20090501131340.GB6011@nowhere> <1241184385.13084.11.camel@think.oraclecorp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 01 May 2009 13:28:38 +0000 (UTC)
+In-Reply-To: <1241184385.13084.11.camel@think.oraclecorp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a76f8c6da1e48fd4ef025f42c736389532ff30ba
-Gitweb:     http://git.kernel.org/tip/a76f8c6da1e48fd4ef025f42c736389532ff30ba
-Author:     Jason Baron <jbaron@redhat.com>
-AuthorDate: Thu, 30 Apr 2009 13:29:42 -0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 1 May 2009 14:03:35 +0200
 
-tracing: add new tracepoints docbook
+* Chris Mason <chris.mason@oracle.com> wrote:
 
-Add tracepoint docbook. This will help us document and understand
-what tracepoints are in the kernel. Since there are multiple
-macros, and files that contain tracepoints.
+> On Fri, 2009-05-01 at 15:13 +0200, Frederic Weisbecker wrote:
+> > On Fri, May 01, 2009 at 07:42:47AM +0200, Ingo Molnar wrote:
+> > > 
+> > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > > 
+> > > > flush_commit_list() uses ll_rw_block() to commit the pending log blocks.
+> > > > ll_rw_block() might sleep, and the bkl was released at this point. Then
+> > > > we can also relax the write lock at this point.
+> > > > 
+> > > > [ Impact: release the reiserfs write lock when it is not needed ]
+> > > > 
+> > > > Cc: Jeff Mahoney <jeffm@suse.com>
+> > > > Cc: Chris Mason <chris.mason@oracle.com>
+> > > > Cc: Alexander Beregalov <a.beregalov@gmail.com>
+> > > > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > > > ---
+> > > >  fs/reiserfs/journal.c |    7 +++++--
+> > > >  1 files changed, 5 insertions(+), 2 deletions(-)
+> > > > 
+> > > > diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
+> > > > index 373d080..b1ebd5a 100644
+> > > > --- a/fs/reiserfs/journal.c
+> > > > +++ b/fs/reiserfs/journal.c
+> > > > @@ -1120,8 +1120,11 @@ static int flush_commit_list(struct super_block *s,
+> > > >  		    SB_ONDISK_JOURNAL_SIZE(s);
+> > > >  		tbh = journal_find_get_block(s, bn);
+> > > >  		if (tbh) {
+> > > > -			if (buffer_dirty(tbh))
+> > > > -			    ll_rw_block(WRITE, 1, &tbh) ;
+> > > > +			if (buffer_dirty(tbh)) {
+> > > > +		            reiserfs_write_unlock(s);
+> > > > +			    ll_rw_block(WRITE, 1, &tbh);
+> > > > +			    reiserfs_write_lock(s);
+> > > > +			}
+> > > >  			put_bh(tbh) ;
+> > > >  		}
+> > > >  	}
+> > > 
+> > > there's 7 other instances of ll_rw_block():
+> > > 
+> > > fs/reiserfs/journal.c-			spin_unlock(lock);
+> > > fs/reiserfs/journal.c:			ll_rw_block(WRITE, 1, &bh);
+> > > fs/reiserfs/journal.c-			spin_lock(lock);
+> > > --
+> > > fs/reiserfs/journal.c-		            reiserfs_write_unlock(s);
+> > > fs/reiserfs/journal.c:			    ll_rw_block(WRITE, 1, &tbh);
+> > > fs/reiserfs/journal.c-			    reiserfs_write_lock(s);
+> > > --
+> > > fs/reiserfs/journal.c-	/* read in the log blocks, memcpy to the corresponding real block */
+> > > fs/reiserfs/journal.c:	ll_rw_block(READ, get_desc_trans_len(desc), log_blocks);
+> > > fs/reiserfs/journal.c-	for (i = 0; i < get_desc_trans_len(desc); i++) {
+> > > --
+> > > fs/reiserfs/journal.c-		set_buffer_dirty(real_blocks[i]);
+> > > fs/reiserfs/journal.c:		ll_rw_block(SWRITE, 1, real_blocks + i);
+> > > fs/reiserfs/journal.c-	}
+> > > --
+> > > fs/reiserfs/journal.c-	}
+> > > fs/reiserfs/journal.c:	ll_rw_block(READ, j, bhlist);
+> > > fs/reiserfs/journal.c-	for (i = 1; i < j; i++)
+> > > --
+> > > fs/reiserfs/stree.c-		if (!buffer_uptodate(bh[j]))
+> > > fs/reiserfs/stree.c:			ll_rw_block(READA, 1, bh + j);
+> > > fs/reiserfs/stree.c-		brelse(bh[j]);
+> > > --
+> > > fs/reiserfs/stree.c-						    reada_blocks, reada_count);
+> > > fs/reiserfs/stree.c:			ll_rw_block(READ, 1, &bh);
+> > > fs/reiserfs/stree.c-			reiserfs_write_unlock(sb);
+> > > --
+> > > fs/reiserfs/super.c-{
+> > > fs/reiserfs/super.c:	ll_rw_block(READ, 1, &(SB_BUFFER_WITH_SB(s)));
+> > > fs/reiserfs/super.c-	reiserfs_write_unlock(s);
+> > > 
+> > > in particular the second stree.c one and the super.c has a 
+> > > write-unlock straight before the lock-drop.
+> > > 
+> > > I think the stree.c unlock could be moved to before the 
+> > > ll_rw_block() call straight away.
+> > 
+> > 
+> > Indeed.
+> > 
+> > 
+> > > 
+> > > The super.c one needs more care: first put &(SB_BUFFER_WITH_SB(s)) 
+> > > into a local variable, then unlock the wite-lock, then call 
+> > > ll_rw_block(). (This is important because &(SB_BUFFER_WITH_SB(s)) is 
+> > > global filesystem state that has to be read with the lock held.)
+> > 
+> > 
+> > Indeed &(SB_BUFFER_WITH_SB(s)) is a pointer to blocks that
+> > reflect the state of the filesystem but it was already not
+> > safe on the old code.
+> > 
+> 
+> SB_BUFFER_WITH_SB isn't going to change.  It gets set once during 
+> mount and will return the same buffer from then on.
 
-[ Impact: add documentation ]
+Are we holding a permanent reference to it after the first read? If 
+yes then any bread done on an uptodate bh will return immediately 
+without scheduling.
 
-Signed-off-by: Jason Baron <jbaron@redhat.com>
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: akpm@linux-foundation.org
-Cc: rostedt@goodmis.org
-Cc: fweisbec@gmail.com
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: wcohen@redhat.com
-LKML-Reference: <84160b6bd94aff02455da7e12bad054d34c579a0.1241107197.git.jbaron@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- Documentation/DocBook/Makefile        |    3 +-
- Documentation/DocBook/tracepoint.tmpl |   84 +++++++++++++++++++++++++++++++++
- 2 files changed, 86 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
-index 8918a32..4c8f4d6 100644
---- a/Documentation/DocBook/Makefile
-+++ b/Documentation/DocBook/Makefile
-@@ -13,7 +13,8 @@ DOCBOOKS := z8530book.xml mcabook.xml device-drivers.xml \
- 	    gadget.xml libata.xml mtdnand.xml librs.xml rapidio.xml \
- 	    genericirq.xml s390-drivers.xml uio-howto.xml scsi.xml \
- 	    mac80211.xml debugobjects.xml sh.xml regulator.xml \
--	    alsa-driver-api.xml writing-an-alsa-driver.xml
-+	    alsa-driver-api.xml writing-an-alsa-driver.xml \
-+	    tracepoint.xml
- 
- ###
- # The build process is as follows (targets):
-diff --git a/Documentation/DocBook/tracepoint.tmpl b/Documentation/DocBook/tracepoint.tmpl
-new file mode 100644
-index 0000000..70891bc
---- /dev/null
-+++ b/Documentation/DocBook/tracepoint.tmpl
-@@ -0,0 +1,84 @@
-+<?xml version="1.0" encoding="UTF-8"?>
-+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-+	"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" []>
-+
-+<book id="Tracepoints">
-+ <bookinfo>
-+  <title>The Linux Kernel Tracepoint API</title>
-+
-+  <authorgroup>
-+   <author>
-+    <firstname>Jason</firstname>
-+    <surname>Baron</surname>
-+    <affiliation>
-+     <address>
-+      <email>jbaron@redhat.com</email>
-+     </address>
-+    </affiliation>
-+   </author>
-+  </authorgroup>
-+
-+  <legalnotice>
-+   <para>
-+     This documentation is free software; you can redistribute
-+     it and/or modify it under the terms of the GNU General Public
-+     License as published by the Free Software Foundation; either
-+     version 2 of the License, or (at your option) any later
-+     version.
-+   </para>
-+
-+   <para>
-+     This program is distributed in the hope that it will be
-+     useful, but WITHOUT ANY WARRANTY; without even the implied
-+     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+     See the GNU General Public License for more details.
-+   </para>
-+
-+   <para>
-+     You should have received a copy of the GNU General Public
-+     License along with this program; if not, write to the Free
-+     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+     MA 02111-1307 USA
-+   </para>
-+
-+   <para>
-+     For more details see the file COPYING in the source
-+     distribution of Linux.
-+   </para>
-+  </legalnotice>
-+ </bookinfo>
-+
-+ <toc></toc>
-+  <chapter id="intro">
-+   <title>Introduction</title>
-+   <para>
-+     Tracepoints are static probe points that are located in strategic points
-+     throughout the kernel. 'Probes' register/unregister with tracepoints
-+     via a callback mechanism. The 'probes' are strictly typed functions that
-+     are passed a unique set of parameters defined by each tracepoint.
-+   </para>
-+
-+   <para>
-+     From this simple callback mechanism, 'probes' can be used to profile, debug,
-+     and understand kernel behavior. There are a number of tools that provide a
-+     framework for using 'probes'. These tools include Systemtap, ftrace, and
-+     LTTng.
-+   </para>
-+
-+   <para>
-+     Tracepoints are defined in a number of header files via various macros. Thus,
-+     the purpose of this document is to provide a clear accounting of the available
-+     tracepoints. The intention is to understand not only what tracepoints are
-+     available but also to understand where future tracepoints might be added.
-+   </para>
-+
-+   <para>
-+     The API presented has functions of the form:
-+     <function>trace_tracepointname(function parameters)</function>. These are the
-+     tracepoints callbacks that are found throughout the code. Registering and
-+     unregistering probes with these callback sites is covered in the
-+     <filename>Documentation/trace/*</filename> directory.
-+   </para>
-+  </chapter>
-+
-+</book>
+	Ingo
