@@ -1,108 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765756AbZEAUeF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765743AbZEAUeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765756AbZEAUeF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 16:34:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765286AbZEAUdi
+	id S1765743AbZEAUeg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 16:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764746AbZEAUeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 16:33:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46684 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764501AbZEAUdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 16:33:36 -0400
-Date: Fri, 1 May 2009 22:33:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 0/6] kill-the-BKL/reiserfs3: performance improvements,
-	faster than Bkl based scheme
-Message-ID: <20090501203309.GA6243@elte.hu>
-References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com> <alpine.LFD.2.00.0905011236530.5379@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0905011236530.5379@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 1 May 2009 16:34:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35509 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764298AbZEAUeX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 16:34:23 -0400
+Date: Fri, 1 May 2009 13:28:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Paris <eparis@redhat.com>
+Cc: fengguang.wu@intel.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       mpm@selenic.com, clameter@sgi.com, mingo@elte.hu,
+       viro@zeniv.linux.org.uk
+Subject: Re: [PATCH] use GFP_NOFS in kernel_event()
+Message-Id: <20090501132818.b16704c4.akpm@linux-foundation.org>
+In-Reply-To: <1241201494.3086.3.camel@dhcp231-142.rdu.redhat.com>
+References: <20090430020004.GA1898@localhost>
+	<20090429191044.b6fceae2.akpm@linux-foundation.org>
+	<1241097573.6020.7.camel@localhost.localdomain>
+	<20090430141041.c167b4d4.akpm@linux-foundation.org>
+	<1241201494.3086.3.camel@dhcp231-142.rdu.redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 01 May 2009 14:11:34 -0400
+Eric Paris <eparis@redhat.com> wrote:
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Fri, 1 May 2009, Frederic Weisbecker wrote:
+> On Thu, 2009-04-30 at 14:10 -0700, Andrew Morton wrote:
+> > On Thu, 30 Apr 2009 09:19:33 -0400
+> > Eric Paris <eparis@redhat.com> wrote:
 > > 
-> > This reiserfs patchset applies against latest 
-> > tip:core/kill-the-BKL It adds various explicit write lock 
-> > releases on specific sleeping sections.
+> > > > Somebody was going to fix this for us via lockdep annotation.
+> > > > 
+> > > > <adds randomly-chosen cc>
+> > > 
+> > > I really didn't forget this, but I can't figure out how to recreate it,
+> > > so I don't know if my logic in the patch is sound.  The patch certainly
+> > > will shut up the complaint.
+> > 
+> > Do you think we should merge the GFP_NOFS workaround for 2.6.30 and
+> > fix all up nicely for 2.6.31?
 > 
-> Btw, is there any reason why it cannot just be re-based on top of 
-> standard -rc4?
-> 
-> I'd love to pull a "reiserfs: remove bkl" branch when the next 
-> merge window opens, but there's no way I'll pull the kill-bkl 
-> thing with all the odd random tty stuff etc that is totally 
-> unrelated.
-> 
-> And as far as I can tell, all your reiserfs patches are totally 
-> unrelated to all other changes, and it would be _much_ nicer to 
-> just merge the reiserfs ones.
+> I'm all for it for 2.6.30
 
-Sure, that's sensible. Perhaps the patches could show up in the VFS 
-tree once they are stable enough and are acceptable to Al. It will 
-take quite a long time for the complete BKL elimination to be 
-finished in our tree.
+OK.
 
-> So there's
->  - the filesystem mount bkl pushdown
+> although the patch really should have been
+> the one that gets the audit use case too at 
 > 
->  - the reiserfs series
+> >From me on Mar 18 Subject [PATCH] make inotify event handles use
+> GFP_NOFS
 > 
-> and quite frankly, I'll happily take the straightforward BKL 
-> pushdown, but I do _not_ want to see this mix-up with all the tty 
-> stuff, or even the NFS and RPC changes.
-> 
-> In fact, if it makes it easier for people to merge, I can take the 
-> pure VFS push-down that was already Ack'ed by Al. But the rest of 
-> the stuff really isn't appropriate.
-> 
-> For example, every single
-> 
-> 	remove the BKL: remove "BKL auto-drop" assumption from xyz
-> 
-> patch in that series is pure and utter crap. I'm not going to take 
-> things like that. But it looks like your reiserfs patches really 
-> are totally independent of everything else, and should be merged 
-> as such.
+> http://lkml.org/lkml/2009/3/18/310
 
-Yeah, we dont need that upstream.
+I queued that as an incremental to Wu Fengguang's patch, because
+inotify-use-gfp_nofs-in-kernel_event-to-work-around-a-lockdep-false-positive.patch
+has a longer changelog ;)
 
-It would obviously be a basic act of honesty and fairness to admit 
-that that "crazy thing" was the thing that spurred and enabled the 
-"good" patches to begin with.
-
-We can whitewash that piece of embarrasing history out of existence 
-of course, but i think it is axiomatic that if the only demonstrated 
-way to achieve a good end result is over a messy middle step, that 
-messy middle step shouldnt really be declared non-existent - even if 
-we can.
-
-The BKL is clearly removed at a faster reate with such debugging 
-measures in place. With such measures the BKL _really_ hurts, and 
-very visibly so - and that results in active removal.
-
-	Ingo
