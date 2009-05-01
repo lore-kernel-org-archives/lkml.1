@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761999AbZEAN5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761298AbZEAN73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761999AbZEAN5O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:57:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759105AbZEAN4u
+	id S1761298AbZEAN73 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758429AbZEAN7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:56:50 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:54273 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760364AbZEAN4s (ORCPT
+	Fri, 1 May 2009 09:59:19 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:53196 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757463AbZEAN7T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:56:48 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 04/27] asm-generic: add legacy I/O header files
-Date: Fri, 1 May 2009 15:56:38 +0200
-User-Agent: KMail/1.9.9
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Michal Simek <monstr@monstr.eu>,
-       linux-arch@vger.kernel.org,
-       Remis Lima Baima <remis.developer@googlemail.com>,
-       linux-kernel@vger.kernel.org
-References: <cover.1241105648.git.arnd@arndb.de> <200905011529.04774.arnd@arndb.de> <20090501144420.5a3e9c6e@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090501144420.5a3e9c6e@lxorguk.ukuu.org.uk>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 1 May 2009 09:59:19 -0400
+Date: Fri, 1 May 2009 14:59:09 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Theodore Tso <tytso@mit.edu>, Matthew Wilcox <willy@linux.intel.com>,
+       Robert Hancock <hancockrwd@gmail.com>,
+       Alex Buell <alex.buell@munted.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: No NCQ support on X61s Ultrabay?  (Intel ICH8 SATA controller
+	question)
+Message-ID: <20090501135908.GA17872@srcf.ucam.org>
+References: <E1LzLgA-0004j6-9W@closure.thunk.org> <49F90CA2.4080602@garzik.org> <20090430083309.437f9248@lithium.local.net> <20090430113445.GA4809@mit.edu> <20090430113814.GB4809@mit.edu> <49FA55A0.8080303@gmail.com> <20090501025132.GA7275@mit.edu> <49FA78B4.2070900@gmail.com> <20090501113533.GB10704@linux.intel.com> <20090501131459.GA7681@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905011556.39437.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18Q4JIJ5D7xC4NUoZ7RypawzWYGn1LeBT49Myz
- ImSMjngzrU+llOmrttxtCagMa9uuK0RQnvucobAaiZ1DN7uvVS
- tUhdwIPePXC4IbRsr4AxA==
+In-Reply-To: <20090501131459.GA7681@mit.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 May 2009, Alan Cox wrote:
-> They shouldn't define it - we want those invalid cases to error. Stick
-> CLOCK_TICK_RATE in the depths of the x86 arch includes and then we can
-> fix the other cases properly. Either the device has an independant clock
-> of the same frequency (some watchdogs do this), it relies upon a
-> motherboard timer in which case the platform can define CLOCK_TICK_RATE
-> (or a better name for it), or it doesn't have any meaning in which case
-> we *want* it not to compile.
+On Fri, May 01, 2009 at 09:14:59AM -0400, Theodore Tso wrote:
 
-I just noticed that linux/jiffies.h does not compile without a definition
-of CLOCK_TICK_RATE, so that's probably why every architecture defines it.
-If I find a way to remove that dependency, I can simply leave out the
-CLOCK_TICK_RATE from the generic header. I have not yet understood the
-relation of jiffies to CLOCK_TICK_RATE, but my suspicion is that it's
-not good for architectures that do not have a clock tick.
+> Oh.... and I suspect I know why they did it; I'm guessing they wanted
+> to support PATA Ultrabay devices for backwards compatibility on the
+> X60, and perhaps they were running out of connector pins on the
+> docking station (the Ultrabay slot is on the X61's "media slice"), and
+> they didn't have enough wires to run both PATA and SATA interfaces to
+> the docking station, *and* they wanted to use the same docking station
+> for the X60 and X61 Thinkpads.
 
-	Arnd <><
+SATA ultrabays have a standard SATA connector, which is in the same 
+physical location as the PATA connector on the older bays - it's not 
+possible for a single bay to support both PATA and SATA devices. Bear in 
+mind that the usual use for one of these bays is for optical drives, and 
+SATA slimline drives have only started appearing recently.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
