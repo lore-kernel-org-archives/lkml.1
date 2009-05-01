@@ -1,232 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760394AbZEAOAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762770AbZEAOBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760394AbZEAOAd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 10:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbZEAOAW
+	id S1762770AbZEAOBw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 10:01:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbZEAOBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 10:00:22 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:59781 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752042AbZEAOAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 10:00:19 -0400
-Date: Fri, 1 May 2009 15:00:15 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH mmotm] mm: alloc_large_system_hash check order
-Message-ID: <20090501140015.GA27831@csn.ul.ie>
-References: <Pine.LNX.4.64.0904292151350.30874@blonde.anvils> <20090430132544.GB21997@csn.ul.ie> <Pine.LNX.4.64.0905011202530.8513@blonde.anvils>
+	Fri, 1 May 2009 10:01:43 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:17125 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752242AbZEAOBl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 10:01:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ewMdCSczHlgvKVcscy5Jz+wsGeuPAubh53YKxqUgkho1RkuTxk7Kv8pAM3p/swhCfd
+         P1ItJ/iwvaklhpu7ajw31XfQhl/HEZVxBR245H0anBA0OOPAcYJsD9Rra/n8f3rBcY4T
+         Up44QWPvyNSbCf8Lz94e84IhRVhGdqyoZ3aM0=
+Date: Fri, 1 May 2009 16:01:37 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 1/6] kill-the-BKL/reiserfs: release write lock on
+	fs_changed()
+Message-ID: <20090501140136.GI6011@nowhere>
+References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com> <1241145862-21700-2-git-send-email-fweisbec@gmail.com> <878wlhpc5r.fsf@basil.nowhere.org> <20090501132825.GE6011@nowhere> <1241185456.13084.28.camel@think.oraclecorp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0905011202530.8513@blonde.anvils>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1241185456.13084.28.camel@think.oraclecorp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 12:30:03PM +0100, Hugh Dickins wrote:
-> On Thu, 30 Apr 2009, Mel Gorman wrote:
-> > On Wed, Apr 29, 2009 at 10:09:48PM +0100, Hugh Dickins wrote:
-> > > On an x86_64 with 4GB ram, tcp_init()'s call to alloc_large_system_hash(),
-> > > to allocate tcp_hashinfo.ehash, is now triggering an mmotm WARN_ON_ONCE on
-> > > order >= MAX_ORDER - it's hoping for order 11.  alloc_large_system_hash()
-> > > had better make its own check on the order.
+On Fri, May 01, 2009 at 09:44:16AM -0400, Chris Mason wrote:
+> On Fri, 2009-05-01 at 15:28 +0200, Frederic Weisbecker wrote:
+> > On Fri, May 01, 2009 at 08:31:12AM +0200, Andi Kleen wrote:
+> > > Frederic Weisbecker <fweisbec@gmail.com> writes:
+> > > >
+> > > > diff --git a/include/linux/reiserfs_fs.h b/include/linux/reiserfs_fs.h
+> > > > index 6587b4e..397d281 100644
+> > > > --- a/include/linux/reiserfs_fs.h
+> > > > +++ b/include/linux/reiserfs_fs.h
+> > > > @@ -1302,7 +1302,13 @@ static inline loff_t max_reiserfs_offset(struct inode *inode)
+> > > >  #define get_generation(s) atomic_read (&fs_generation(s))
+> > > >  #define FILESYSTEM_CHANGED_TB(tb)  (get_generation((tb)->tb_sb) != (tb)->fs_gen)
+> > > >  #define __fs_changed(gen,s) (gen != get_generation (s))
+> > > > -#define fs_changed(gen,s) ({cond_resched(); __fs_changed(gen, s);})
+> > > > +#define fs_changed(gen,s)		\
+> > > > +({					\
+> > > > +	reiserfs_write_unlock(s);	\
+> > > > +	cond_resched();			\
+> > > > +	reiserfs_write_lock(s);		\
 > > > 
-> > > Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> > > Did you try writing that 
+> > > 
+> > >     if (need_resched()) {               \
+> > > 	reiserfs_write_unlock(s);	\
+> > > 	cond_resched();			\  (or schedule(), but cond_resched does a loop)
+> > > 	reiserfs_write_lock(s);		\
+> > >     }				
+> > > 
+> > > ? That might give better performance under load because users will be better
+> > > batched and you don't release the lock unnecessarily in the unloaded case.
 > > 
-> > Looks good
 > > 
-> > Reviewed-by: Mel Gorman <mel@csn.ul.ie>
-> 
-> Thanks.
-> 
 > > 
-> > As I was looking there, it seemed that alloc_large_system_hash() should be
-> > using alloc_pages_exact() instead of having its own "give back the spare
-> > pages at the end of the buffer" logic. If alloc_pages_exact() was used, then
-> > the check for an order >= MAX_ORDER can be pushed down to alloc_pages_exact()
-> > where it may catch other unwary callers.
+> > Good catch!
+> > And I guess this pattern matches most of the cond_resched()
+> > all over the code (the only condition is that we must already hold
+> > the write lock).
 > > 
-> > How about adding the following patch on top of yours?
+> > I will merge your idea and Ingo's one, write a
+> > reiserfs_cond_resched() to have a helper which
+> > factorizes this pattern.
 > 
-> Well observed, yes indeed.  In fact, it even looks as if, shock horror,
-> alloc_pages_exact() was _plagiarized_ from alloc_large_system_hash().
-> Blessed be the GPL, I'm sure we can skip the lengthy lawsuits!
+> The pattern you'll find goes like this:
 > 
+> lock_kernel()
+> do some work
+> do something that might schedule
+> run fs_changed(), fixup as required.
+> 
+> In your setup it is translating to:
+> 
+> reiserfs_write_lock(s)
+> do some work
+> reiserfs_write_unlock(s)
+> 
+> do something that might schedule
+> 
+> reiserfs_write_lock(s)
+> if (need_resched()) {
+>     reiserfs_write_unlock(s)
+>     cond_resched()
+>     reiserfs_write_lock(s)
+> }
+> 
+> if (__fs_changed()) fixup as required
+> 
+> You'll also find that item_moved is similar to __fs_changed() but more
+> fine grained.
+> 
+> One easy optimization is to make an fs_changed_relock()
+> 
+> static inline int fs_changed_relock(gen, s) {
+> 	cond_resched();
+> 	reiserfs_write_lock(s)
+> 	return __fs_changed(gen, s)
+> }
 
-*phew*.  We dodged a bullet there. I can put away my pitchfork and
-flaming torch kit for another day.
 
-> > 
-> > ==== CUT HERE ====
-> > Use alloc_pages_exact() in alloc_large_system_hash() to avoid duplicated logic
-> > 
-> > alloc_large_system_hash() has logic for freeing unused pages at the end
-> > of an power-of-two-pages-aligned buffer that is a duplicate of what is in
-> > alloc_pages_exact(). This patch converts alloc_large_system_hash() to use
-> > alloc_pages_exact().
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > --- 
-> >  mm/page_alloc.c |   27 +++++----------------------
-> >  1 file changed, 5 insertions(+), 22 deletions(-)
-> > 
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index 1b3da0f..c94b140 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -1942,6 +1942,9 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
-> >  	unsigned int order = get_order(size);
-> >  	unsigned long addr;
-> >  
-> > +	if (order >= MAX_ORDER)
-> > +		return NULL;
-> > +
-> 
-> I suppose there could be an argument about whether we do or do not
-> want to skip the WARN_ON when it's in alloc_pages_exact().
-> 
-> I have no opinion on that; but DaveM's reply on large_system_hash
-> does make it clear that we're not interested in the warning there.
-> 
 
-That's a fair point. I've included a slightly modified patch below that
-preserves the warning for alloc_pages_exact() being called with a
-too-large-an-order.
+Nice idea!
+Does it means I can also replace the item_moved() calls to __fs_changed()?
 
-It means we call get_order() twice but in this path, so what. It's not
-even text bloat as it's freed up.
+They seem to not work the same way, I guess I should provide two different
+helpers, depending on the check.
 
-> >  	addr = __get_free_pages(gfp_mask, order);
-> >  	if (addr) {
-> >  		unsigned long alloc_end = addr + (PAGE_SIZE << order);
-> > @@ -4755,28 +4758,8 @@ void *__init alloc_large_system_hash(const char *tablename,
-> >  			table = alloc_bootmem_nopanic(size);
-> >  		else if (hashdist)
-> >  			table = __vmalloc(size, GFP_ATOMIC, PAGE_KERNEL);
-> > -		else {
-> > -			unsigned long order = get_order(size);
-> > -
-> > -			if (order < MAX_ORDER)
-> > -				table = (void *)__get_free_pages(GFP_ATOMIC,
-> > -								order);
-> > -			/*
-> > -			 * If bucketsize is not a power-of-two, we may free
-> > -			 * some pages at the end of hash table.
-> > -			 */
+
 > 
-> That's actually a helpful comment, it's easy to think we're dealing
-> in powers of two here when we may not be.  Maybe retain it with your
-> alloc_pages_exact call?
+> Another cause of scheduling is going to be reiserfs_prepare_for_journal.
+> This function gets called before we modify a metadata buffer and it
+> waits for IO to finish.
 > 
-
-Sure, it explains why alloc_pages_exact() is being used instead of
-__get_free_pages() for those that are unfamiliar with the call.
-
-> > -			if (table) {
-> > -				unsigned long alloc_end = (unsigned long)table +
-> > -						(PAGE_SIZE << order);
-> > -				unsigned long used = (unsigned long)table +
-> > -						PAGE_ALIGN(size);
-> > -				split_page(virt_to_page(table), order);
-> > -				while (used < alloc_end) {
-> > -					free_page(used);
-> > -					used += PAGE_SIZE;
-> > -				}
-> > -			}
-> > -		}
-> > +		else
-> > +			table = alloc_pages_exact(PAGE_ALIGN(size), GFP_ATOMIC);
+> Not sure if your patch series already found it, but if you change this:
 > 
-> Do you actually need that PAGE_ALIGN on the size?
+> int reiserfs_prepare_for_journal(struct super_block *sb,
+>                                  struct buffer_head *bh, int wait)
+> {
+>         PROC_INFO_INC(sb, journal.prepare);
+> 
+>         if (!trylock_buffer(bh)) {
+>                 if (!wait)
+>                         return 0;
+>                 lock_buffer(bh);
+>         }
+> 
+> Into:
+> 
+> 	if (!trylock_buffer(bh)) {
+> 		if (!wait)
+> 			return 0;
+> 		reiserfs_write_unlock(s);
+> 		wait_on_buffer(bh);
+> 		reiserfs_write_lock(s);
+> 		lock_buffer(bh);
+> 	}
+> 
+> You'll catch a big cause of waiting for the disk with the lock held.
+
+
+Again, good catch. I will try that.
+
+I should also check the different other lock_buffer() which
+indeed might sleep.
+
+Thanks!
+
+
+> -chris
+> 
 > 
 
-Actually no. When I added it, it was because alloc_pages_exact() did not
-obviously deal with unaligned sizes but it does. Sorry about that.
-
-> >  	} while (!table && size > PAGE_SIZE && --log2qty);
-> >  
-> >  	if (!table)
-> 
-> Andrew noticed another oddity: that if it goes the hashdist __vmalloc()
-> way, it won't be limited by MAX_ORDER.  Makes one wonder whether it
-> ought to fall back to __vmalloc() if the alloc_pages_exact() fails.
-
-I don't believe so. __vmalloc() is only used when hashdist= is used or on IA-64
-(according to the documentation). It is used in the case that the caller is
-willing to deal with the vmalloc() overhead (e.g. using base page PTEs) in
-exchange for the pages being interleaved on different nodes so that access
-to the hash table has average performance[*]
-
-If we automatically fell back to vmalloc(), I bet 2c we'd eventually get
-a mysterious performance regression report for a workload that depended on
-the hash tables performance but that there was enough memory for the hash
-table to be allocated with vmalloc() instead of alloc_pages_exact().
-
-[*] I speculate that on non-IA64 NUMA machines that we see different
-    performance for large filesystem benchmarks depending on whether we are
-    running on the boot-CPU node or not depending on whether hashdist=
-    is used or not.
-
-> I think that's a change we could make _if_ the large_system_hash
-> users ever ask for it, but _not_ one we should make surreptitiously.
-> 
-
-If they want it, they'll have to ask with hashdist=. Somehow I doubt it's
-specified very often :/ .
-
-Here is Take 2
-
-==== CUT HERE ====
-
-Use alloc_pages_exact() in alloc_large_system_hash() to avoid duplicated logic V2
-
-alloc_large_system_hash() has logic for freeing pages at the end
-of an excessively large power-of-two buffer that is a duplicate of what
-is in alloc_pages_exact(). This patch converts alloc_large_system_hash()
-to use alloc_pages_exact().
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- mm/page_alloc.c |   21 ++++-----------------
- 1 file changed, 4 insertions(+), 17 deletions(-)
-
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 1b3da0f..8360d59 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -4756,26 +4756,13 @@ void *__init alloc_large_system_hash(const char *tablename,
- 		else if (hashdist)
- 			table = __vmalloc(size, GFP_ATOMIC, PAGE_KERNEL);
- 		else {
--			unsigned long order = get_order(size);
--
--			if (order < MAX_ORDER)
--				table = (void *)__get_free_pages(GFP_ATOMIC,
--								order);
- 			/*
- 			 * If bucketsize is not a power-of-two, we may free
--			 * some pages at the end of hash table.
-+			 * some pages at the end of hash table which
-+			 * alloc_pages_exact() automatically does
- 			 */
--			if (table) {
--				unsigned long alloc_end = (unsigned long)table +
--						(PAGE_SIZE << order);
--				unsigned long used = (unsigned long)table +
--						PAGE_ALIGN(size);
--				split_page(virt_to_page(table), order);
--				while (used < alloc_end) {
--					free_page(used);
--					used += PAGE_SIZE;
--				}
--			}
-+			if (get_order(size) < MAX_ORDER)
-+				table = alloc_pages_exact(size, GFP_ATOMIC);
- 		}
- 	} while (!table && size > PAGE_SIZE && --log2qty);
- 
