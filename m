@@ -1,83 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbZEAMZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752523AbZEAM1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758835AbZEAMZc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 08:25:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbZEAMZW
+	id S1752523AbZEAM1T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 08:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbZEAM1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 08:25:22 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:48661 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752918AbZEAMZV (ORCPT
+	Fri, 1 May 2009 08:27:10 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:51946 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751539AbZEAM1J convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 08:25:21 -0400
-Message-ID: <49FAEA2A.50504@monstr.eu>
-Date: Fri, 01 May 2009 14:25:14 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linux-arch@vger.kernel.org,
+	Fri, 1 May 2009 08:27:09 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH 07/27] asm-generic: add minimal cache description
+Date: Fri, 1 May 2009 14:27:04 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-arch@vger.kernel.org,
        Remis Lima Baima <remis.developer@googlemail.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 04/27] asm-generic: add legacy I/O header files
-References: <cover.1241105648.git.arnd@arndb.de> <10b3a32656e5552458db7412ef9ff8530d5f92aa.1241105648.git.arnd@arndb.de> <c1a198be0904302309w4154f97dqddd0b2df1924a821@mail.gmail.com> <200905011422.29753.arnd@arndb.de>
-In-Reply-To: <200905011422.29753.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+References: <cover.1241105648.git.arnd@arndb.de> <2d8ccc76119d2379859480dbb8f7562743a1de58.1241105648.git.arnd@arndb.de> <c1a198be0904302303h73c5168fi73f8dc24dc677965@mail.gmail.com>
+In-Reply-To: <c1a198be0904302303h73c5168fi73f8dc24dc677965@mail.gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200905011427.05099.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/U1EoUWPNvK+h8YFamQfD0VhA1+OUDQCd2v0K
+ VJlmU23TF7jqzuAtXk++mbUKF0YoR8zntsdzc2DeNjFoQTq959
+ tdAn17917BA43weHeGiXA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Friday 01 May 2009, Michal Simek wrote:
->>> +/*
->>> + * CLOCK_TICK_RATE is highly PC-specific and should not
->>> + * be used in portable code. 1193182 is the value for the
->>> + * original i8253 PIC.
->>> + */
->>> +#ifndef CLOCK_TICK_RATE
->>> +#define CLOCK_TICK_RATE                1193182
->>> +#endif
->>
->> Why is this in generic code?
+On Friday 01 May 2009, Michal Simek wrote:
+> > +#define copy_to_user_page(vma, page, vaddr, dst, src, len) \
+> > +       memcpy(dst, src, len)
+> > +#define copy_from_user_page(vma, page, vaddr, dst, src, len) \
+> > +       memcpy(dst, src, len)
 > 
-> CLOCK_TICK_RATE is only used in a few places:
 > 
-> drivers/char/vt_ioctl.c:                        arg = CLOCK_TICK_RATE / arg;
-> drivers/char/vt_ioctl.c:                        count = CLOCK_TICK_RATE / count;
-> drivers/clocksource/acpi_pm.c:  ((CALIBRATE_LATCH * (PMTMR_TICKS_PER_SEC >> 10)) / (CLOCK_TICK_RATE>>10))
-> drivers/input/joystick/analog.c:#define DELTA(x,y)      (cpu_has_tsc ? ((y) - (x)) : ((x) - (y) + ((x) < (y) ? CLOCK_TICK_RATE / HZ : 0
-> drivers/rtc/rtc-pxa.c:#define TIMER_FREQ                CLOCK_TICK_RATE
-> drivers/serial/serial_ks8695.c:         .uartclk        = CLOCK_TICK_RATE * 16,
-> drivers/watchdog/davinci_wdt.c: timer_margin = (((u64)heartbeat * CLOCK_TICK_RATE) & 0xffffffff);
-> drivers/watchdog/davinci_wdt.c: timer_margin = (((u64)heartbeat * CLOCK_TICK_RATE) >> 32);
-> drivers/watchdog/ks8695_wdt.c:  unsigned long tval = wdt_time * CLOCK_TICK_RATE;
-> include/linux/jiffies.h:#define LATCH  ((CLOCK_TICK_RATE + HZ/2) / HZ)  /* For divider */
-> include/linux/jiffies.h:#define ACTHZ (SH_DIV (CLOCK_TICK_RATE, LATCH, 8))
-> include/linux/timex.h: *        Moved CLOCK_TICK_RATE, CLOCK_TICK_FACTOR and FINETUNE to asm/timex.h
-> sound/oss/pas2_pcm.c:           foo = ((CLOCK_TICK_RATE / 2) + (arg / 2)) / arg;
-> sound/oss/pas2_pcm.c:           arg = ((CLOCK_TICK_RATE / 2) + (foo / 2)) / foo;
-> sound/oss/pas2_pcm.c:           foo = (CLOCK_TICK_RATE + (arg / 2)) / arg;
-> sound/oss/pas2_pcm.c:           arg = (CLOCK_TICK_RATE + (foo / 2)) / foo;
-> 
-> All of these are either PC-specific, or they don't actually care
-> about the specific value. Most architectures just use the
-> value from the IBM PC, so we might as well make that the generic
-> default.
+> IMHO these two macros will generate cast errors.
 
-ok. Let's move out from arch to generic location.
+I did not see errors here, can you clarify? Note that despite the name,
+they don't take a __user pointer. Maybe they should be inline functions
+to make that more obvious.
 
-Michal
-
-> 
-> Alternatively, we could also move the definition back to linux/timex.h
-> and allow asm/timex.h to be empty.
-
-> 
-> 	Arnd <><
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+	Arnd <><
