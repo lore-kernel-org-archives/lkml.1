@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758429AbZEANTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbZEANTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758429AbZEANTU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbZEANTL
+	id S1757449AbZEANTd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbZEANTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:19:11 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:47198 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751256AbZEANTK (ORCPT
+	Fri, 1 May 2009 09:19:16 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37591 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756578AbZEANTP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:19:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZHZoPdb4BWT89CFRWUWmbTR/bse5ZdxB22xQNaDqjMFKD5K1bxAX6FrNOZaa8foqsn
-         T3jXdoK4xYZXIg5MS9vodDs5eJMlymDHXavjZRgWmK5lfkzqyYzqQtcOYs7Zeq1uo01D
-         N5RVYTiR/39zQb/abRyi9e16TKEb4fkb7czsg=
-MIME-Version: 1.0
-In-Reply-To: <1241165805.13562.2.camel@johannes.local>
-References: <f7848160904301838q4883106fq8d31e2e7c0b10a14@mail.gmail.com>
-	 <1241165805.13562.2.camel@johannes.local>
-Date: Fri, 1 May 2009 09:19:08 -0400
-Message-ID: <f7848160905010619n74372488n45a7b7abccfe5ea7@mail.gmail.com>
-Subject: Re: Probe Timeouts with 47afbaf5af9454a7a1a64591e20cbfcc27ca67a8
-From: Parag Warudkar <parag.lkml@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, niel.lambrechts@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 1 May 2009 09:19:15 -0400
+Date: Fri, 1 May 2009 14:18:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jan Blunck <jblunck@suse.de>
+Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev
+ tmpfs
+Message-ID: <20090501141846.4b833700@lxorguk.ukuu.org.uk>
+In-Reply-To: <ac3eb2510905010411r2c1a2be5s449aaf485a76a8c4@mail.gmail.com>
+References: <1241097822.2516.3.camel@poy>
+	<20090430222900.c13b63d5.akpm@linux-foundation.org>
+	<20090501061701.GB19234@kroah.com>
+	<20090430234312.a63fa5cf.akpm@linux-foundation.org>
+	<20090501065527.GA19773@kroah.com>
+	<20090501120359.05bacb48@lxorguk.ukuu.org.uk>
+	<ac3eb2510905010411r2c1a2be5s449aaf485a76a8c4@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/1/09, Johannes Berg <johannes@sipsolutions.net> wrote:
+> No tool ever has a chance to get to the information only available at
+> early kernel init. All such tools will need to "replay" what the
+> kernel already did. This is intended to save us from doing this, and
+> retain the information which is there, but lost at the moment the
+> tools have the first chance to run.
 
-> I'm not sure what makes you think that it even _should_ be reverted.
->  Just to make that clear: it should _not_ be reverted. How did you check
->  that it isn't reverted in compat-wireless anyway? Must have been by code
->  inspection since if you had made an attempt to verify that the code in
->  there works, you would have found that indeed there's no reason to
->  revert this commit since the fix for it went in, and is literally a
->  single line.
+Serious question - which is the better problem to fix ?
 
-Well I have the 04-29 compat-wireless tree and it does not work - just
-like mainline I get timeouts. I have not been able to download later
-versions - clicking on the URL does nothing for some reason. (Besides
-I do not normally track compat-wireless.)
+> It's not about a sucking tool, its just impossible. And there is no
+> space wasted, it's a single string for a very few subsystems, an
+> nothing is stored per device.
 
-So since I wasn't able to use the mainline for 2-3 days and I could
-not find any regression/bug where it was mentioned the bug was fixed
-in compat-wireless I thought it might be better to revert it until a
-fix appears. (BTW, I just did a pull on Linus tree and the fix hasn't
-made it there).
-
-So unless I am being too unreasonable here I think reverting *was*
-(not *is* of course now) the right thing to do based if nothing else,
-on the fact that ath9k and iwlagn were unusable for 2+ days and not
-everyone can be expected to run compat-wireless daily builds.
-
-Any way now that we know there is a fix - I will wait for it to appear
-in mainline.
-
-Parag
+Plus code plus tmpfs nodes (the latter are not quite free because you
+create unneeded ones versus udev but I agree that is noise for most users)
