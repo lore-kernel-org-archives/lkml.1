@@ -1,53 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761298AbZEAN73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760394AbZEAOAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761298AbZEAN73 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758429AbZEAN7T
+	id S1760394AbZEAOAd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 10:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbZEAOAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:59:19 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:53196 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757463AbZEAN7T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:59:19 -0400
-Date: Fri, 1 May 2009 14:59:09 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Theodore Tso <tytso@mit.edu>, Matthew Wilcox <willy@linux.intel.com>,
-       Robert Hancock <hancockrwd@gmail.com>,
-       Alex Buell <alex.buell@munted.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: No NCQ support on X61s Ultrabay?  (Intel ICH8 SATA controller
-	question)
-Message-ID: <20090501135908.GA17872@srcf.ucam.org>
-References: <E1LzLgA-0004j6-9W@closure.thunk.org> <49F90CA2.4080602@garzik.org> <20090430083309.437f9248@lithium.local.net> <20090430113445.GA4809@mit.edu> <20090430113814.GB4809@mit.edu> <49FA55A0.8080303@gmail.com> <20090501025132.GA7275@mit.edu> <49FA78B4.2070900@gmail.com> <20090501113533.GB10704@linux.intel.com> <20090501131459.GA7681@mit.edu>
+	Fri, 1 May 2009 10:00:22 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:59781 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752042AbZEAOAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 10:00:19 -0400
+Date: Fri, 1 May 2009 15:00:15 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH mmotm] mm: alloc_large_system_hash check order
+Message-ID: <20090501140015.GA27831@csn.ul.ie>
+References: <Pine.LNX.4.64.0904292151350.30874@blonde.anvils> <20090430132544.GB21997@csn.ul.ie> <Pine.LNX.4.64.0905011202530.8513@blonde.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090501131459.GA7681@mit.edu>
+In-Reply-To: <Pine.LNX.4.64.0905011202530.8513@blonde.anvils>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 09:14:59AM -0400, Theodore Tso wrote:
+On Fri, May 01, 2009 at 12:30:03PM +0100, Hugh Dickins wrote:
+> On Thu, 30 Apr 2009, Mel Gorman wrote:
+> > On Wed, Apr 29, 2009 at 10:09:48PM +0100, Hugh Dickins wrote:
+> > > On an x86_64 with 4GB ram, tcp_init()'s call to alloc_large_system_hash(),
+> > > to allocate tcp_hashinfo.ehash, is now triggering an mmotm WARN_ON_ONCE on
+> > > order >= MAX_ORDER - it's hoping for order 11.  alloc_large_system_hash()
+> > > had better make its own check on the order.
+> > > 
+> > > Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> > 
+> > Looks good
+> > 
+> > Reviewed-by: Mel Gorman <mel@csn.ul.ie>
+> 
+> Thanks.
+> 
+> > 
+> > As I was looking there, it seemed that alloc_large_system_hash() should be
+> > using alloc_pages_exact() instead of having its own "give back the spare
+> > pages at the end of the buffer" logic. If alloc_pages_exact() was used, then
+> > the check for an order >= MAX_ORDER can be pushed down to alloc_pages_exact()
+> > where it may catch other unwary callers.
+> > 
+> > How about adding the following patch on top of yours?
+> 
+> Well observed, yes indeed.  In fact, it even looks as if, shock horror,
+> alloc_pages_exact() was _plagiarized_ from alloc_large_system_hash().
+> Blessed be the GPL, I'm sure we can skip the lengthy lawsuits!
+> 
 
-> Oh.... and I suspect I know why they did it; I'm guessing they wanted
-> to support PATA Ultrabay devices for backwards compatibility on the
-> X60, and perhaps they were running out of connector pins on the
-> docking station (the Ultrabay slot is on the X61's "media slice"), and
-> they didn't have enough wires to run both PATA and SATA interfaces to
-> the docking station, *and* they wanted to use the same docking station
-> for the X60 and X61 Thinkpads.
+*phew*.  We dodged a bullet there. I can put away my pitchfork and
+flaming torch kit for another day.
 
-SATA ultrabays have a standard SATA connector, which is in the same 
-physical location as the PATA connector on the older bays - it's not 
-possible for a single bay to support both PATA and SATA devices. Bear in 
-mind that the usual use for one of these bays is for optical drives, and 
-SATA slimline drives have only started appearing recently.
+> > 
+> > ==== CUT HERE ====
+> > Use alloc_pages_exact() in alloc_large_system_hash() to avoid duplicated logic
+> > 
+> > alloc_large_system_hash() has logic for freeing unused pages at the end
+> > of an power-of-two-pages-aligned buffer that is a duplicate of what is in
+> > alloc_pages_exact(). This patch converts alloc_large_system_hash() to use
+> > alloc_pages_exact().
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > --- 
+> >  mm/page_alloc.c |   27 +++++----------------------
+> >  1 file changed, 5 insertions(+), 22 deletions(-)
+> > 
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index 1b3da0f..c94b140 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1942,6 +1942,9 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
+> >  	unsigned int order = get_order(size);
+> >  	unsigned long addr;
+> >  
+> > +	if (order >= MAX_ORDER)
+> > +		return NULL;
+> > +
+> 
+> I suppose there could be an argument about whether we do or do not
+> want to skip the WARN_ON when it's in alloc_pages_exact().
+> 
+> I have no opinion on that; but DaveM's reply on large_system_hash
+> does make it clear that we're not interested in the warning there.
+> 
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+That's a fair point. I've included a slightly modified patch below that
+preserves the warning for alloc_pages_exact() being called with a
+too-large-an-order.
+
+It means we call get_order() twice but in this path, so what. It's not
+even text bloat as it's freed up.
+
+> >  	addr = __get_free_pages(gfp_mask, order);
+> >  	if (addr) {
+> >  		unsigned long alloc_end = addr + (PAGE_SIZE << order);
+> > @@ -4755,28 +4758,8 @@ void *__init alloc_large_system_hash(const char *tablename,
+> >  			table = alloc_bootmem_nopanic(size);
+> >  		else if (hashdist)
+> >  			table = __vmalloc(size, GFP_ATOMIC, PAGE_KERNEL);
+> > -		else {
+> > -			unsigned long order = get_order(size);
+> > -
+> > -			if (order < MAX_ORDER)
+> > -				table = (void *)__get_free_pages(GFP_ATOMIC,
+> > -								order);
+> > -			/*
+> > -			 * If bucketsize is not a power-of-two, we may free
+> > -			 * some pages at the end of hash table.
+> > -			 */
+> 
+> That's actually a helpful comment, it's easy to think we're dealing
+> in powers of two here when we may not be.  Maybe retain it with your
+> alloc_pages_exact call?
+> 
+
+Sure, it explains why alloc_pages_exact() is being used instead of
+__get_free_pages() for those that are unfamiliar with the call.
+
+> > -			if (table) {
+> > -				unsigned long alloc_end = (unsigned long)table +
+> > -						(PAGE_SIZE << order);
+> > -				unsigned long used = (unsigned long)table +
+> > -						PAGE_ALIGN(size);
+> > -				split_page(virt_to_page(table), order);
+> > -				while (used < alloc_end) {
+> > -					free_page(used);
+> > -					used += PAGE_SIZE;
+> > -				}
+> > -			}
+> > -		}
+> > +		else
+> > +			table = alloc_pages_exact(PAGE_ALIGN(size), GFP_ATOMIC);
+> 
+> Do you actually need that PAGE_ALIGN on the size?
+> 
+
+Actually no. When I added it, it was because alloc_pages_exact() did not
+obviously deal with unaligned sizes but it does. Sorry about that.
+
+> >  	} while (!table && size > PAGE_SIZE && --log2qty);
+> >  
+> >  	if (!table)
+> 
+> Andrew noticed another oddity: that if it goes the hashdist __vmalloc()
+> way, it won't be limited by MAX_ORDER.  Makes one wonder whether it
+> ought to fall back to __vmalloc() if the alloc_pages_exact() fails.
+
+I don't believe so. __vmalloc() is only used when hashdist= is used or on IA-64
+(according to the documentation). It is used in the case that the caller is
+willing to deal with the vmalloc() overhead (e.g. using base page PTEs) in
+exchange for the pages being interleaved on different nodes so that access
+to the hash table has average performance[*]
+
+If we automatically fell back to vmalloc(), I bet 2c we'd eventually get
+a mysterious performance regression report for a workload that depended on
+the hash tables performance but that there was enough memory for the hash
+table to be allocated with vmalloc() instead of alloc_pages_exact().
+
+[*] I speculate that on non-IA64 NUMA machines that we see different
+    performance for large filesystem benchmarks depending on whether we are
+    running on the boot-CPU node or not depending on whether hashdist=
+    is used or not.
+
+> I think that's a change we could make _if_ the large_system_hash
+> users ever ask for it, but _not_ one we should make surreptitiously.
+> 
+
+If they want it, they'll have to ask with hashdist=. Somehow I doubt it's
+specified very often :/ .
+
+Here is Take 2
+
+==== CUT HERE ====
+
+Use alloc_pages_exact() in alloc_large_system_hash() to avoid duplicated logic V2
+
+alloc_large_system_hash() has logic for freeing pages at the end
+of an excessively large power-of-two buffer that is a duplicate of what
+is in alloc_pages_exact(). This patch converts alloc_large_system_hash()
+to use alloc_pages_exact().
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ mm/page_alloc.c |   21 ++++-----------------
+ 1 file changed, 4 insertions(+), 17 deletions(-)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 1b3da0f..8360d59 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -4756,26 +4756,13 @@ void *__init alloc_large_system_hash(const char *tablename,
+ 		else if (hashdist)
+ 			table = __vmalloc(size, GFP_ATOMIC, PAGE_KERNEL);
+ 		else {
+-			unsigned long order = get_order(size);
+-
+-			if (order < MAX_ORDER)
+-				table = (void *)__get_free_pages(GFP_ATOMIC,
+-								order);
+ 			/*
+ 			 * If bucketsize is not a power-of-two, we may free
+-			 * some pages at the end of hash table.
++			 * some pages at the end of hash table which
++			 * alloc_pages_exact() automatically does
+ 			 */
+-			if (table) {
+-				unsigned long alloc_end = (unsigned long)table +
+-						(PAGE_SIZE << order);
+-				unsigned long used = (unsigned long)table +
+-						PAGE_ALIGN(size);
+-				split_page(virt_to_page(table), order);
+-				while (used < alloc_end) {
+-					free_page(used);
+-					used += PAGE_SIZE;
+-				}
+-			}
++			if (get_order(size) < MAX_ORDER)
++				table = alloc_pages_exact(size, GFP_ATOMIC);
+ 		}
+ 	} while (!table && size > PAGE_SIZE && --log2qty);
+ 
