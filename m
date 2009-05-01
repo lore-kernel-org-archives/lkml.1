@@ -1,111 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760978AbZEAOGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761359AbZEAOG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760978AbZEAOGU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 10:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755235AbZEAOGJ
+	id S1761359AbZEAOG6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 10:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757217AbZEAOGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 10:06:09 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:53997 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753072AbZEAOGI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 10:06:08 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@monstr.eu
-Subject: Re: [PATCH V3] asm-generic: add a generic uaccess.h
-Date: Fri, 1 May 2009 16:06:04 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-arch@vger.kernel.org,
-       Remis Lima Baima <remis.developer@googlemail.com>,
-       linux-kernel@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>
-References: <cover.1241105648.git.arnd@arndb.de> <200905011513.25344.arnd@arndb.de> <49FAFD63.2080102@monstr.eu>
-In-Reply-To: <49FAFD63.2080102@monstr.eu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 1 May 2009 10:06:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41539 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754713AbZEAOGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 10:06:49 -0400
+Message-ID: <49FB01C1.6050204@redhat.com>
+Date: Fri, 01 May 2009 10:05:53 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: elladan@eskimo.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
+       tytso@mit.edu, kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
+Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
+References: <20090428044426.GA5035@eskimo.com>	<20090428192907.556f3a34@bree.surriel.com>	<1240987349.4512.18.camel@laptop>	<20090429114708.66114c03@cuia.bos.redhat.com>	<20090430072057.GA4663@eskimo.com>	<20090430174536.d0f438dd.akpm@linux-foundation.org>	<20090430205936.0f8b29fc@riellaptop.surriel.com>	<20090430181340.6f07421d.akpm@linux-foundation.org>	<20090430215034.4748e615@riellaptop.surriel.com> <20090430195439.e02edc26.akpm@linux-foundation.org>
+In-Reply-To: <20090430195439.e02edc26.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905011606.05319.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18uXIN6EeItFxbOgyG7zUFYOUBS7kUO812EP+j
- yRXdoqm+4DlBCvKAPqARHu+Y4EtvGV0mxFU/TBTz7CBNQrCl9F
- fDTDo0ugU1dfvvGSKpmLQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 May 2009, Michal Simek wrote:
-> Arnd Bergmann wrote:
-> > +
-> > +#include <asm/segment.h>
-> > +
-> > +#ifndef get_fs
-> > +#define MAKE_MM_SEG(s)	((mm_segment_t) { (s) })
+Andrew Morton wrote:
+
+>> When we implement working set protection, we might as well
+>> do it for frequently accessed unmapped pages too.  There is
+>> no reason to restrict this protection to mapped pages.
 > 
-> one line above -> get_fs could be defined in different space
-> and this arch could use MAKE_MM_SEG too -> for example powerpc.
+> Well.  Except for empirical observation, which tells us that biasing
+> reclaim to prefer to retain mapped memory produces a better result.
 
-I don't think I understand what you are trying to tell me.
-How do you think this should look?
+That used to be the case because file-backed and
+swap-backed pages shared the same set of LRUs,
+while each following a different page reclaim
+heuristic!
 
-> > +
-> > +#define VERIFY_READ	0
-> > +#define VERIFY_WRITE	1
-> > +
-> 
-> 
-> Not sure if any arch do READ/WRITE check but if yes.
+Today:
+1) file-backed and swap-backed pages are separated,
+2) the majority of mapped pages are on the swap-backed LRUs
+3) the accessed bit on active pages no longer means much,
+    for good scalability reasons, and
+4) because of (3), we cannot really provide special treatment
+    to any individual page any more, however
 
-I could not find any architecture using it either, but the
-API is defined this way.
+This means we need to provide our working set protection
+on a per-list basis, by tweaking the scan rate or avoiding
+scanning of the active file list alltogether under certain
+conditions.
 
-> #ifndef access_ok
-> 
-> > +#define access_ok(type, addr, size) __access_ok((unsigned long)(addr),(size))
-> 
-> #endif
+As a side effect, this will help protect frequently accessed
+file pages (good for ftp and nfs servers), indirect blocks,
+inode buffers and other frequently used metadata.
 
-right, will change.
-
-> > +
-> > +/*
-> > + * The architecture should really override this if possible, at least
-> > + * doing a check on the get_fs()
-> > + */
-> 
-> If they should really override it but why write it here.
-
-Mostly for documentation purposes, so that an architecture maintainer
-can copy the prototype. I see the asm-generic headers as both fallbacks
-for architectures and as templates of what should be implemented.
-
-> > +#define get_user(x, ptr)					\
-> > +({								\
-> > +	might_sleep();						\
-> > +	__access_ok(ptr, sizeof (*ptr)) ?			\
-> > +		__get_user(x, ptr) :				\
-> > +		-EFAULT;					\
-> > +})
-> 
-> I am getting here (for put_user macro too) any error on noMMU. :-(
-
-What kind of error do you see?
- 
-> > +static inline long
-> > +strncpy_from_user(char *dst, const char __user *src, long count)
-> > +{
-> > +	if (!__access_ok(src, 1))
-> > +		return -EFAULT;
-> > +	return __strncpy_from_user(dst, src, count);
-> > +}
-> 
-> Is it a good place to add might_sleep() and unlikely(+ some other cases) too?
-> We have almost the same code.
-
-Yes, I think so. The unlikely() can probably go into __access_ok() though,
-so we don't have to write it every time.
-
-	Arnd <><
+-- 
+All rights reversed.
