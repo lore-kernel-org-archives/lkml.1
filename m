@@ -1,80 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762770AbZEANa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762795AbZEANal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762770AbZEANa5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:30:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761997AbZEAN3U
+	id S1762795AbZEANal (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761914AbZEAN3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:29:20 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:17425 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761972AbZEAN3S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:29:18 -0400
-Subject: Re: [PATCH 4/6] kill-the-BKL/reiserfs: release the write lock
- inside get_neighbors()
-From: Chris Mason <chris.mason@oracle.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Jeff Mahoney <jeffm@suse.com>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-In-Reply-To: <20090501132506.GD6011@nowhere>
-References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com>
-	 <1241145862-21700-5-git-send-email-fweisbec@gmail.com>
-	 <20090501055135.GF5983@elte.hu>  <20090501132506.GD6011@nowhere>
-Content-Type: text/plain
-Date: Fri, 01 May 2009 09:29:03 -0400
-Message-Id: <1241184543.13084.13.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020A.49FAF922.01C3:SCFMA4539814,ss=1,fgs=0
+	Fri, 1 May 2009 09:29:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58536 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761719AbZEAN3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 09:29:12 -0400
+Date: Fri, 1 May 2009 13:28:35 GMT
+From: tip-bot for Jason Baron <jbaron@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       jbaron@redhat.com, tglx@linutronix.de, randy.dunlap@oracle.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, jbaron@redhat.com, randy.dunlap@oracle.com,
+       mingo@elte.hu
+In-Reply-To: <84160b6bd94aff02455da7e12bad054d34c579a0.1241107197.git.jbaron@redhat.com>
+References: <84160b6bd94aff02455da7e12bad054d34c579a0.1241107197.git.jbaron@redhat.com>
+Subject: [tip:tracing/core] tracing: add new tracepoints docbook
+Message-ID: <tip-a76f8c6da1e48fd4ef025f42c736389532ff30ba@git.kernel.org>
+Git-Commit-ID: a76f8c6da1e48fd4ef025f42c736389532ff30ba
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 01 May 2009 13:28:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-01 at 15:25 +0200, Frederic Weisbecker wrote:
-> On Fri, May 01, 2009 at 07:51:35AM +0200, Ingo Molnar wrote:
-> > 
-> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> > > get_neighbors() is used to get the left and/or right blocks 
-> > > against a given one in order to balance a tree.
-> > > 
-> > > sb_bread() is used to read the buffer of these neighors blocks and 
-> > > while it waits for this operation, it might sleep.
-> > > 
-> > > The bkl was released at this point, and then we can also release 
-> > > the write lock before calling sb_bread().
-> > > 
-> > > This is safe because if the filesystem is changed after this lock 
-> > > release, the function returns REPEAT_SEARCH (aka SCHEDULE_OCCURRED 
-> > > in the function header comments) in order to repeat the neighbhor 
-> > > research.
-> > > 
-> > > [ Impact: release the reiserfs write lock when it is not needed ]
-> > 
-> > This should also be safe because under the BKL we _already_ dropped 
-> > the lock when sb_bread() blocked (which it really would in the 
-> > normal case).
-> > 
-> > There's one special case to consider though: sb_read() maps to 
-> > __bread() which can return without sleeping if the bh is already 
-> > uptodate. So if the filesystem _knows_ that the bh is already 
-> > uptodate and holds a reference to it (this is common pattern in 
-> > filesystems), it can have a locking assumption on that.
-> > 
+Commit-ID:  a76f8c6da1e48fd4ef025f42c736389532ff30ba
+Gitweb:     http://git.kernel.org/tip/a76f8c6da1e48fd4ef025f42c736389532ff30ba
+Author:     Jason Baron <jbaron@redhat.com>
+AuthorDate: Thu, 30 Apr 2009 13:29:42 -0400
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 1 May 2009 14:03:35 +0200
 
-sb_bread calls __bread which calls __getblk which always calls
-might_sleep() before returning.
+tracing: add new tracepoints docbook
 
-So, the unlock isn't adding a schedule that wasn't there before.
+Add tracepoint docbook. This will help us document and understand
+what tracepoints are in the kernel. Since there are multiple
+macros, and files that contain tracepoints.
 
--chris
+[ Impact: add documentation ]
+
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: akpm@linux-foundation.org
+Cc: rostedt@goodmis.org
+Cc: fweisbec@gmail.com
+Cc: mathieu.desnoyers@polymtl.ca
+Cc: wcohen@redhat.com
+LKML-Reference: <84160b6bd94aff02455da7e12bad054d34c579a0.1241107197.git.jbaron@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
+---
+ Documentation/DocBook/Makefile        |    3 +-
+ Documentation/DocBook/tracepoint.tmpl |   84 +++++++++++++++++++++++++++++++++
+ 2 files changed, 86 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
+index 8918a32..4c8f4d6 100644
+--- a/Documentation/DocBook/Makefile
++++ b/Documentation/DocBook/Makefile
+@@ -13,7 +13,8 @@ DOCBOOKS := z8530book.xml mcabook.xml device-drivers.xml \
+ 	    gadget.xml libata.xml mtdnand.xml librs.xml rapidio.xml \
+ 	    genericirq.xml s390-drivers.xml uio-howto.xml scsi.xml \
+ 	    mac80211.xml debugobjects.xml sh.xml regulator.xml \
+-	    alsa-driver-api.xml writing-an-alsa-driver.xml
++	    alsa-driver-api.xml writing-an-alsa-driver.xml \
++	    tracepoint.xml
+ 
+ ###
+ # The build process is as follows (targets):
+diff --git a/Documentation/DocBook/tracepoint.tmpl b/Documentation/DocBook/tracepoint.tmpl
+new file mode 100644
+index 0000000..70891bc
+--- /dev/null
++++ b/Documentation/DocBook/tracepoint.tmpl
+@@ -0,0 +1,84 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
++	"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" []>
++
++<book id="Tracepoints">
++ <bookinfo>
++  <title>The Linux Kernel Tracepoint API</title>
++
++  <authorgroup>
++   <author>
++    <firstname>Jason</firstname>
++    <surname>Baron</surname>
++    <affiliation>
++     <address>
++      <email>jbaron@redhat.com</email>
++     </address>
++    </affiliation>
++   </author>
++  </authorgroup>
++
++  <legalnotice>
++   <para>
++     This documentation is free software; you can redistribute
++     it and/or modify it under the terms of the GNU General Public
++     License as published by the Free Software Foundation; either
++     version 2 of the License, or (at your option) any later
++     version.
++   </para>
++
++   <para>
++     This program is distributed in the hope that it will be
++     useful, but WITHOUT ANY WARRANTY; without even the implied
++     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++     See the GNU General Public License for more details.
++   </para>
++
++   <para>
++     You should have received a copy of the GNU General Public
++     License along with this program; if not, write to the Free
++     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++     MA 02111-1307 USA
++   </para>
++
++   <para>
++     For more details see the file COPYING in the source
++     distribution of Linux.
++   </para>
++  </legalnotice>
++ </bookinfo>
++
++ <toc></toc>
++  <chapter id="intro">
++   <title>Introduction</title>
++   <para>
++     Tracepoints are static probe points that are located in strategic points
++     throughout the kernel. 'Probes' register/unregister with tracepoints
++     via a callback mechanism. The 'probes' are strictly typed functions that
++     are passed a unique set of parameters defined by each tracepoint.
++   </para>
++
++   <para>
++     From this simple callback mechanism, 'probes' can be used to profile, debug,
++     and understand kernel behavior. There are a number of tools that provide a
++     framework for using 'probes'. These tools include Systemtap, ftrace, and
++     LTTng.
++   </para>
++
++   <para>
++     Tracepoints are defined in a number of header files via various macros. Thus,
++     the purpose of this document is to provide a clear accounting of the available
++     tracepoints. The intention is to understand not only what tracepoints are
++     available but also to understand where future tracepoints might be added.
++   </para>
++
++   <para>
++     The API presented has functions of the form:
++     <function>trace_tracepointname(function parameters)</function>. These are the
++     tracepoints callbacks that are found throughout the code. Registering and
++     unregistering probes with these callback sites is covered in the
++     <filename>Documentation/trace/*</filename> directory.
++   </para>
++  </chapter>
++
++</book>
