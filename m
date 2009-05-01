@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764173AbZEAOqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764226AbZEAOrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764173AbZEAOqi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 10:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759657AbZEAOmZ
+	id S1764226AbZEAOrF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 10:47:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758975AbZEAOm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 10:42:25 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:42228 "EHLO e7.ny.us.ibm.com"
+	Fri, 1 May 2009 10:42:26 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:52059 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756612AbZEAOmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 10:42:20 -0400
-Subject: [RFC][PATCH 11/35] mips: create ptemap.h
+	id S1758253AbZEAOmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 10:42:23 -0400
+Subject: [RFC][PATCH 13/35] parisc: create ptemap.h
 To: linux-arch@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>
 From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Fri, 01 May 2009 07:42:18 -0700
+Date: Fri, 01 May 2009 07:42:21 -0700
 References: <20090501144201.D31EF417@kernel>
 In-Reply-To: <20090501144201.D31EF417@kernel>
-Message-Id: <20090501144218.4F34C17D@kernel>
+Message-Id: <20090501144221.4C7F3D79@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,71 +26,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 ---
 
- linux-2.6.git-dave/arch/mips/include/asm/pgtable-32.h |    8 ------
- linux-2.6.git-dave/arch/mips/include/asm/pgtable-64.h |    8 ------
- linux-2.6.git-dave/arch/mips/include/asm/ptemap.h     |   22 ++++++++++++++++++
- 3 files changed, 24 insertions(+), 14 deletions(-)
+ linux-2.6.git-dave/arch/parisc/include/asm/pgtable.h |    7 +------
+ linux-2.6.git-dave/arch/parisc/include/asm/ptemap.h  |   12 ++++++++++++
+ 2 files changed, 13 insertions(+), 6 deletions(-)
 
-diff -puN arch/mips/include/asm/pgtable-32.h~mips-ptemaph arch/mips/include/asm/pgtable-32.h
---- linux-2.6.git/arch/mips/include/asm/pgtable-32.h~mips-ptemaph	2009-04-30 15:10:58.000000000 -0700
-+++ linux-2.6.git-dave/arch/mips/include/asm/pgtable-32.h	2009-04-30 15:10:58.000000000 -0700
-@@ -151,13 +151,7 @@ pfn_pte(unsigned long pfn, pgprot_t prot
- 	((pte_t *) pmd_page_vaddr(*(dir)) + __pte_offset(address))
- #define pte_offset_kernel(dir, address)					\
- 	((pte_t *) pmd_page_vaddr(*(dir)) + __pte_offset(address))
--
--#define pte_offset_map(dir, address)                                    \
--	((pte_t *)page_address(pmd_page(*(dir))) + __pte_offset(address))
--#define pte_offset_map_nested(dir, address)                             \
--	((pte_t *)page_address(pmd_page(*(dir))) + __pte_offset(address))
--#define pte_unmap(pte) ((void)(pte))
--#define pte_unmap_nested(pte) ((void)(pte))
+diff -puN arch/parisc/include/asm/pgtable.h~parisc-ptemaph arch/parisc/include/asm/pgtable.h
+--- linux-2.6.git/arch/parisc/include/asm/pgtable.h~parisc-ptemaph	2009-04-30 15:10:59.000000000 -0700
++++ linux-2.6.git-dave/arch/parisc/include/asm/pgtable.h	2009-04-30 15:10:59.000000000 -0700
+@@ -396,13 +396,8 @@ static inline pte_t pte_modify(pte_t pte
+ #define pte_index(address) (((address) >> PAGE_SHIFT) & (PTRS_PER_PTE-1))
+ #define pte_offset_kernel(pmd, address) \
+ 	((pte_t *) pmd_page_vaddr(*(pmd)) + pte_index(address))
+-#define pte_offset_map(pmd, address) pte_offset_kernel(pmd, address)
+-#define pte_offset_map_nested(pmd, address) pte_offset_kernel(pmd, address)
+-#define pte_unmap(pte) do { } while (0)
+-#define pte_unmap_nested(pte) do { } while (0)
+ 
+-#define pte_unmap(pte)			do { } while (0)
+-#define pte_unmap_nested(pte)		do { } while (0)
 +#include <asm/ptemap.h>
  
- #if defined(CONFIG_CPU_R3000) || defined(CONFIG_CPU_TX39XX)
+ extern void paging_init (void);
  
-diff -puN arch/mips/include/asm/pgtable-64.h~mips-ptemaph arch/mips/include/asm/pgtable-64.h
---- linux-2.6.git/arch/mips/include/asm/pgtable-64.h~mips-ptemaph	2009-04-30 15:10:58.000000000 -0700
-+++ linux-2.6.git-dave/arch/mips/include/asm/pgtable-64.h	2009-04-30 15:10:58.000000000 -0700
-@@ -215,13 +215,7 @@ static inline pmd_t *pmd_offset(pud_t * 
- 	((pte_t *) pmd_page_vaddr(*(dir)) + __pte_offset(address))
- #define pte_offset_kernel(dir, address)					\
- 	((pte_t *) pmd_page_vaddr(*(dir)) + __pte_offset(address))
--#define pte_offset_map(dir, address)					\
--	((pte_t *)page_address(pmd_page(*(dir))) + __pte_offset(address))
--#define pte_offset_map_nested(dir, address)				\
--	((pte_t *)page_address(pmd_page(*(dir))) + __pte_offset(address))
--#define pte_unmap(pte) ((void)(pte))
--#define pte_unmap_nested(pte) ((void)(pte))
--
-+#include <asm/ptemap.h>
- /*
-  * Initialize a new pgd / pmd table with invalid pointers.
-  */
-diff -puN /dev/null arch/mips/include/asm/ptemap.h
---- /dev/null	2008-09-02 09:40:19.000000000 -0700
-+++ linux-2.6.git-dave/arch/mips/include/asm/ptemap.h	2009-04-30 15:10:58.000000000 -0700
-@@ -0,0 +1,22 @@
-+#ifndef _MIPS_ASM_PTEMAP_H
-+#define _MIPS_ASM_PTEMAP_H
+diff -puN arch/parisc/include/asm/ptemap.h~parisc-ptemaph arch/parisc/include/asm/ptemap.h
+--- linux-2.6.git/arch/parisc/include/asm/ptemap.h~parisc-ptemaph	2009-04-30 15:10:59.000000000 -0700
++++ linux-2.6.git-dave/arch/parisc/include/asm/ptemap.h	2009-04-30 15:10:59.000000000 -0700
+@@ -0,0 +1,12 @@
++#ifndef _PARISC_ASM_PTEMAP_H
++#define _PARISC_ASM_PTEMAP_H
 +
-+#ifdef CONFIG_32BIT
-+#define pte_offset_map(dir, address)                                    \
-+	((pte_t *)page_address(pmd_page(*(dir))) + __pte_offset(address))
-+#define pte_offset_map_nested(dir, address)                             \
-+	((pte_t *)page_address(pmd_page(*(dir))) + __pte_offset(address))
-+#define pte_unmap(pte) ((void)(pte))
-+#define pte_unmap_nested(pte) ((void)(pte))
-+#endif
++#define pte_offset_map(pmd, address) pte_offset_kernel(pmd, address)
++#define pte_offset_map_nested(pmd, address) pte_offset_kernel(pmd, address)
++#define pte_unmap(pte) do { } while (0)
++#define pte_unmap_nested(pte) do { } while (0)
 +
-+#ifdef CONFIG_64BIT
-+#define pte_offset_map(dir, address)					\
-+	((pte_t *)page_address(pmd_page(*(dir))) + __pte_offset(address))
-+#define pte_offset_map_nested(dir, address)				\
-+	((pte_t *)page_address(pmd_page(*(dir))) + __pte_offset(address))
-+#define pte_unmap(pte) ((void)(pte))
-+#define pte_unmap_nested(pte) ((void)(pte))
-+#endif
++#define pte_unmap(pte)			do { } while (0)
++#define pte_unmap_nested(pte)		do { } while (0)
 +
-+#endif /* _MIPS_ASM_PTEMAP_H */
++#endif /* _PARISC_ASM_PTEMAP_H */
 _
