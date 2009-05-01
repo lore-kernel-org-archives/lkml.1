@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbZEALNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbZEALQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758242AbZEALNq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 07:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755420AbZEALNh
+	id S1756900AbZEALQR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 07:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbZEALQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 07:13:37 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:52205 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752528AbZEALNh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 07:13:37 -0400
+	Fri, 1 May 2009 07:16:06 -0400
+Received: from gate.in-addr.de ([212.8.193.158]:35118 "EHLO mx.in-addr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752645AbZEALQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 07:16:05 -0400
+Date: Fri, 1 May 2009 13:15:54 +0200
+From: Lars Marowsky-Bree <lmb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Philipp Reisner <philipp.reisner@linbit.com>
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>
+Subject: Re: [PATCH 00/16] DRBD: a block device for HA clusters
+Message-ID: <20090501111554.GW12180@suse.de>
+References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com> <20090501015902.ed8b56d3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-In-Reply-To: <9b2b86520905010319g4b1e915ejc5c17baa519f3d35@mail.gmail.com>
-References: <1241097822.2516.3.camel@poy> <9b2b86520905010319g4b1e915ejc5c17baa519f3d35@mail.gmail.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Fri, 1 May 2009 13:13:16 +0200
-Message-ID: <ac3eb2510905010413y6b35e817nf948cedbe076cd4d@mail.gmail.com>
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Jan Blunck <jblunck@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090501015902.ed8b56d3.akpm@linux-foundation.org>
+X-Ctuhulu: HASTUR
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 1, 2009 at 12:19, Alan Jenkins
-<sourcejedi.lkml@googlemail.com> wrote:
-> On 4/30/09, Kay Sievers <kay.sievers@vrfy.org> wrote:
+On 2009-05-01T01:59:02, Andrew Morton <akpm@linux-foundation.org> wrote:
 
->> With the kernel populated /dev, existing initramfs or kernel-mount
->> bootup logic can be optimized to be more efficient, and not to require a
->> full coldplug run, which is currently needed to bootstrap the inital
->> /dev directory content, before continuing bringing up the rest of
->> the system. There will be no missed events to replay, because /dev is
->> available before the first kernel device is registered with the core.
->> A coldplug run can take, depending on the speed of the system and the
->> amount of devices which need to be handled, from one to several seconds.
->
-> Aren't you overeaching in your claims here?  I'm sure you can't avoid
-> at least one coldplug run on a contemporary general purpose system,
+> On Thu, 30 Apr 2009 13:26:36 +0200 Philipp Reisner <philipp.reisner@linbit.com> wrote:
+> 
+> > This is a repost of DRBD
+> How fast is it?
 
-You still need coldplug, sure. But distros have 2 full coldplugs
-today, one in initramfs, one in the rootfs.
+>From experience, it achieves performance of approx. 98% of wire or
+spindle speed, so it is considered rather efficient code.
 
-> because you lose so much of the functionality provided by udev.
+> Is it being used anywhere for anything?  If so, where and what?
 
-No, udev will do the same thing as it does today, it will not be
-different, it's just that the colplug can run in parallel with other
-stuff, and the initramfs coldplug can be much simplified, or even
-avoided.
+It is used by many customers (thousands world-wide, I'm sure) to
+replicate block device data locally (to replace more expensive SANs
+while achieving higher availablity) or async/remotely (for disaster
+recovery).
 
-> I'm
-> sure of that, but it would be nice if you could address it in the
-> changelog.  And modern initramfs' require udev RUN rules to read UUIDs
-> and set up LVM.
+The code is rather stable, the first drbd deployments date back many
+years - drbd0.7 for example has been shipping with SLES10/9, and 0.6
+with SLES8 already. The new drbd8 code is shipping on SLE11 and used
+also in combination with OCFS2.
 
-A simple uuid/label lookup will not need a full coldplug run in
-initramfs. You just need to start udev, and wait for the links to show
-up. Possibly running triggering block events, but not the hundreds of
-other devices.
+So we very much welcome the renewed and persistent interest of merging
+the code in mainline (once all serious issues are addressed).
 
-> I'm loving this for embedded, init=/bin/sh, and rescue floppies :-).
-> But I can't understand how you plan to use this as an optimisation.
->
-> And - I'm sure you must have considered this in a moment of madness -
-> do you know why we couldn't just start _udev_ "before the first kernel
-> device is registered with the core"?
+Even if in the long-term a merge with other raid implementations is
+pursued (which I'd welcome even more), the existence of so many
+deployments means we'll need the code for awhile still.
 
-I think it's pretty obvious, that this is the fastest you can get for
-/dev. And it's not about the time when udev is started, its about
-doing the stuff when the devices are created, and not to need to redo
-it at bootup, or do it even twice.
 
-Thanks,
-Kay
+Regards,
+    Lars
+
+-- 
+SuSE Labs, OPS Engineering, Novell, Inc.
+SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG N�rnberg)
+"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
+
