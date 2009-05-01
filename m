@@ -1,86 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932720AbZEAAOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbZEAAP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932720AbZEAAOv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 20:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZEAACf
+	id S1755573AbZEAAP3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 20:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbZEAACk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 20:02:35 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:61795 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762923AbZEAACe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 20:02:34 -0400
-From: Tim Abbott <tabbott@MIT.EDU>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Tim Abbott <tabbott@MIT.EDU>
-Subject: [PATCH 03/11] x86: Use macros for .data.page_aligned.
-Date: Thu, 30 Apr 2009 20:01:30 -0400
-Message-Id: <1241136098-10376-4-git-send-email-tabbott@mit.edu>
-X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1241136098-10376-3-git-send-email-tabbott@mit.edu>
-References: <1241136098-10376-1-git-send-email-tabbott@mit.edu>
- <1241136098-10376-2-git-send-email-tabbott@mit.edu>
- <1241136098-10376-3-git-send-email-tabbott@mit.edu>
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Thu, 30 Apr 2009 20:02:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44118 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762923AbZEAACi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 20:02:38 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: David Howells <dhowells@redhat.com>, Eric Paris <eparis@parisplace.org>,
+       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Q: selinux_bprm_committed_creds() && signals/do_wait
+In-Reply-To: Oleg Nesterov's message of  Wednesday, 29 April 2009 00:30:25 +0200 <20090428223025.GA11997@redhat.com>
+References: <20090428223025.GA11997@redhat.com>
+X-Shopping-List: (1) Pink eggs
+   (2) Torrential configuration abolitionists
+   (3) Scratch 'n' Snot Hootenanny wavechords
+Message-Id: <20090501000222.8BACEFC3BF@magilla.sf.frob.com>
+Date: Thu, 30 Apr 2009 17:02:22 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-.data.page_aligned should not need a separate output section.  So, as
-part of this cleanup I moved it into the .data output section in the
-linker scripts in order to eliminate unnecessary references to the
-section name.
+The SIGNAL_GROUP_EXIT check is fine for now.  But we should revisit this
+area more thoroughly at some point.  (That is a low-priority thing.)
 
-Signed-off-by: Tim Abbott <tabbott@mit.edu>
-Cc: Ingo Molnar <mingo@redhat.com>
----
- arch/x86/kernel/head_32.S     |    2 +-
- arch/x86/kernel/vmlinux.lds.S |    6 +-----
- 2 files changed, 2 insertions(+), 6 deletions(-)
+There is a wrinkle here I don't like.  The fatal signal is "committed to"
+(sender approved by security modules, etc.) "before" the exec, but gets
+delivered "after" the exec.  e.g., acct_process() writes a record for the
+killed process showing the uid/gid from after the setuid/setgid exec, when
+security would not have allowed the killing signal to be sent after the
+exec, only before.  Obviously this is a minor quirk (not to be worried
+about today), but it points to a deeper kind of "wrong" that troubles me.
+I can't think of any other similar wrinkles that could be observable at
+all (or matter more than that one), but there might be another.
 
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index a420002..d251f71 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -629,7 +629,7 @@ ENTRY(empty_zero_page)
-  * This starts the data section.
-  */
- #ifdef CONFIG_X86_PAE
--.section ".data.page_aligned","wa"
-+__PAGE_ALIGNED_DATA
- 	/* Page-aligned for the benefit of paravirt? */
- 	.align PAGE_SIZE_asm
- ENTRY(swapper_pg_dir)
-diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index 037df73..6f73355 100644
---- a/arch/x86/kernel/vmlinux.lds.S
-+++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -108,6 +108,7 @@ SECTIONS
- 	/* Data */
- 	. = ALIGN(PAGE_SIZE);
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
-+		PAGE_ALIGNED_DATA
- 		DATA_DATA
- 		CONSTRUCTORS
- 
-@@ -128,11 +129,6 @@ SECTIONS
- 	}
- #endif
- 
--	. = ALIGN(PAGE_SIZE);
--	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
--		*(.data.page_aligned)
--	}
--
- #ifdef CONFIG_X86_32
- 	. = ALIGN(32);
- #else
--- 
-1.6.2.1
+This is related to the issue of racing stop signals lost by de_thread().
+That is still on our back-burner list to think about more deeply one day.
+We don't need to contemplate any of this much more right now, but I would
+like to address the whole mess better later on.
 
+I don't understand why install_exec_creds() is called as late as it is.
+Can't we do that in flush_old_exec()--you know, where it says:
+	/* install the new credentials */
+?
+
+What I think would be best is if flush_old_exec() does all the "point of no
+return" logic and that includes the credentials changes.  Then we can
+define this as the point of transition from "before exec" to "after exec".
+It would do the final check for signals interrupting the exec, and if
+flush_old_exec() returned 0, then any "new" signals are "after exec".
+We'd reorganize things so the final creds switch is under siglock.
+Then either a sender precedes the exec and any security module's flushing
+logic wipes the pre-exec state as it wants to, or the sender follows the
+exec and is subject to signal security checks based on the new credentials.
+
+
+Thanks,
+Roland
