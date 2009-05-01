@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751282AbZEAEVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751549AbZEAEeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751282AbZEAEVq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 00:21:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbZEAEVf
+	id S1751549AbZEAEeU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 00:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbZEAEeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 00:21:35 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:20905 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750772AbZEAEVf (ORCPT
+	Fri, 1 May 2009 00:34:12 -0400
+Received: from n62.bullet.mail.sp1.yahoo.com ([98.136.44.35]:48026 "HELO
+	n62.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750757AbZEAEeL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 00:21:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=iPgSNFtipZL/Th2rFwv6pQOoEIf6yTQ5Z4mBYf7l1OCODH2tHQPsKVCyB+y6C7uvbd
-         6VSc6MhJMUEeNDAHw9XmgdLf1MdTeRgMR3g/wAIZ5DMLnfU92bNgXops0mg9sRhikt36
-         +aoNBtKJu+p+4s0ZoiU3aOckTIFEKQuuflA1g=
-Message-ID: <49FA78B4.2070900@gmail.com>
-Date: Thu, 30 Apr 2009 22:21:08 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 1 May 2009 00:34:11 -0400
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 457720.73352.bm@omp115.mail.gq1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
+  b=ZfMioMefP1fiOc/yCuSfv2SsHyzdHj9pxg4LdZfV/uumsB/vci31pfLu1PGJvji+IcE2f49DMyhCVlb2FAqyIDt7xpZqZCfEIsw16RDrwKcaAzFwp85/068NgIPW8k+q66sWgllfxuPvTuUYR1tQODBAR7tVq9+5ElquHUWlj9k=;
+Message-ID: <281401.52512.qm@web112204.mail.gq1.yahoo.com>
+X-YMail-OSG: 4Ll0YxAVM1nkDhGNILN9EgivGWFxkOytIqhtH.eV9ARzGS6eg7MVx7vp9mf8c1bvrsjFgAMg2stW2lhLSd5Fab7WIC4Cpz5CCc_gxX8ojolQJa_7jvdoYk7KgQr_QsY2N5eVyWmMgqrh6BGZJsj2AzbP2yqhxknHQWI5nkJAnzoilno6gwtqAKLNnGCi_hDXE76xOu.F2Ws7ked26hIGT0xuYEkr6QOnvxfz.X9zeaT80eVuNisEkTKglGH8H2KxDmpQumnTIe3YkRa3Vzxnmf1JQQriNDd8A6eCEDuMSi715gZSGM_xVFgseev.aZf.f_PZN12EzRxJ8idcOoXn2_g-
+X-Mailer: YahooMailClassic/5.2.20 YahooMailWebService/0.7.289.1
+Date: Thu, 30 Apr 2009 21:34:10 -0700 (PDT)
+From: We La <w.landgraf@yahoo.com>
+Subject: regression with video and i915 module
+To: akpm@linux-foundation.org, lenb@kernel.org, linux-kernel@vger.kernel.org,
+       davidjon@xenontk.org
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>
-CC: Alex Buell <alex.buell@munted.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: No NCQ support on X61s Ultrabay?  (Intel ICH8 SATA controller
- question)
-References: <E1LzLgA-0004j6-9W@closure.thunk.org> <49F90CA2.4080602@garzik.org> <20090430083309.437f9248@lithium.local.net> <20090430113445.GA4809@mit.edu> <20090430113814.GB4809@mit.edu> <49FA55A0.8080303@gmail.com> <20090501025132.GA7275@mit.edu>
-In-Reply-To: <20090501025132.GA7275@mit.edu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Thu, Apr 30, 2009 at 07:51:28PM -0600, Robert Hancock wrote:
->>> Thinking about this a bit more, I'll bet the problem is the BIOS
->>> setting is only affecting the primary SATA ports (which are being
->>> grabed by ahci) and not the SATA port in the Ultrabay slot (which is
->>> being picked up by either the ata_piix or piix driver).  Sigh...
->> dmesg and lspci -vv output might be useful..
-> 
-> Here you go...
 
-I'm suspecting that that Ultrabay slot might be using the PATA ports on 
-the chipset, with a PATA-SATA bridge chip or something. I haven't seen 
-an Intel chipset with some SATA ports using AHCI and some in PIIX mode 
-before, the ones I've seen with both had the PIIX mode driving PATA 
-ports. If it is indeed bridged through PATA on that laptop, there's no 
-way you're going to get any NCQ support on that slot.
+The error messages with 2.6.30-rc4 are more than before:
 
-I don't know why Lenovo would do that, as it would kind of cripple SATA 
-drives in that slot, but hardware people do some bizarre things sometimes..
+Apr 30 23:35:17 localhost kernel: i915: Unknown symbol acpi_video_exit
+Apr 30 23:35:17 localhost kernel: i915: Unknown symbol acpi_video_register
+
+This is like before a MSI wind U100 laptop
+
+
+On this ocasion, I want to mention that also the broadcom 43 wifi driver dont work correctly. This cards are in HP, Compac, Toshiba laptops.  The driver needs additionally the extraction of firmware from Windows drivers and installation in /lib/firmware, and even then it functions problematically. Often nor the light that the wifi works goes on. The programmers of that should be notified to repair the driver that he dont depend longer on firmware.
+
+On the same time, the rt2860sta driver for wifi on my own laptop works without problems, my server works via wifi with this driver and I up-/download many, no problems with that driver.
+
+
+Werner Landgraf
+
+
+
+      
+
