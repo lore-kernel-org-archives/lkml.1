@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765000AbZEAPCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765591AbZEAPDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765000AbZEAPCW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 11:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932692AbZEAPBO
+	id S1765591AbZEAPDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 11:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764810AbZEAPC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 11:01:14 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60466 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932682AbZEAPBN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 11:01:13 -0400
-Date: Fri, 1 May 2009 11:00:12 -0400 (EDT)
-From: Tim Abbott <tabbott@MIT.EDU>
-To: David Howells <dhowells@redhat.com>
-cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>
-Subject: Re: [PATCH 5/6] mn10300: use new macros for .data.init_task.
-In-Reply-To: <11779.1241189179@redhat.com>
-Message-ID: <alpine.DEB.1.10.0905011048420.10966@vinegar-pot.mit.edu>
-References: <1241135661-9147-6-git-send-email-tabbott@mit.edu> <1241135661-9147-1-git-send-email-tabbott@mit.edu> <1241135661-9147-2-git-send-email-tabbott@mit.edu> <1241135661-9147-3-git-send-email-tabbott@mit.edu> <1241135661-9147-4-git-send-email-tabbott@mit.edu>
- <1241135661-9147-5-git-send-email-tabbott@mit.edu>  <11779.1241189179@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Fri, 1 May 2009 11:02:56 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:47038 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756436AbZEAPCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 11:02:54 -0400
+Subject: Re: [RFC][PATCH 35/35] remove old ptemap.h includes
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090501145917.GB7618@elte.hu>
+References: <20090501144201.D31EF417@kernel>
+	 <20090501144255.35FCBB72@kernel>  <20090501145917.GB7618@elte.hu>
+Content-Type: text/plain
+Date: Fri, 01 May 2009 08:02:50 -0700
+Message-Id: <1241190170.29485.164.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 May 2009, David Howells wrote:
-
-> Tim Abbott <tabbott@MIT.EDU> wrote:
+On Fri, 2009-05-01 at 16:59 +0200, Ingo Molnar wrote:
+> * Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+> > +++
+> linux-2.6.git-dave/arch/alpha/include/asm/pgtable.h       2009-04-30
+> 15:11:13.000000000 -0700
+> > @@ -317,7 +317,7 @@ extern inline pte_t * pte_offset_kernel(
+> >       return ret;
+> >  }
+> >  
+> > -#inclue <asm/ptemap.h>
+> > +#include <asm/ptemap.h>
 > 
-> > .data.init_task should not need a separate output section; this change
-> > moves it into the .data section.
-> 
-> Hmmm...  This causes the kernel I'm building to make an extra page of RAM into
-> dead space.
+> that typo fix should be backmerged to earlier in the series i guess.
 
-I would try reversing the order of the things inside the .data output 
-section, since the stuff after .data at the end of this patch series is 
-page-aligned, while the stuff before .data isn't.
+Whoops.  Got it now, thanks.
 
-	-Tim Abbott
-
+-- Dave
 
