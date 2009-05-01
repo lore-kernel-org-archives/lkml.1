@@ -1,69 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762721AbZEAWOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762583AbZEAWPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762721AbZEAWOz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 18:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbZEAWOr
+	id S1762583AbZEAWPj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 18:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbZEAWPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 18:14:47 -0400
-Received: from cantor.suse.de ([195.135.220.2]:43656 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752454AbZEAWOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 18:14:46 -0400
-Date: Sat, 2 May 2009 00:14:40 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [GIT] HID
-In-Reply-To: <alpine.LNX.2.00.0904301559140.5012@wotan.suse.de>
-Message-ID: <alpine.LNX.2.00.0905020011110.22532@wotan.suse.de>
-References: <alpine.LNX.2.00.0904301559140.5012@wotan.suse.de>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 1 May 2009 18:15:30 -0400
+Received: from mail-ew0-f224.google.com ([209.85.219.224]:44802 "EHLO
+	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752454AbZEAWP3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 18:15:29 -0400
+X-Greylist: delayed 303 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 May 2009 18:15:28 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tJAYE6DepLDkjuchHUnJRV5y5nxKLcZWl9AYgisCPpLnackJ7CulsL0fTt9f3XnXhW
+         ww2amSvuLcOscJgsO2B6z3FOkGyMBslY6daviQCu/qiRJaMH9fAgf9hO5c9QJEkcqY/g
+         HBD+iTSaEmdvsMrtNP8PQhyxpaW29VfVrKJNk=
+Date: Sat, 2 May 2009 00:10:23 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 3/3] ring-buffer: make cpu buffer entries counter atomic
+Message-ID: <20090501221022.GC6404@nowhere>
+References: <20090501022210.851418183@goodmis.org> <20090501022403.826182932@goodmis.org> <20090501115047.GA24706@elte.hu> <20090501134234.GG6011@nowhere> <alpine.DEB.2.00.0905011023580.20374@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0905011023580.20374@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Apr 2009, Jiri Kosina wrote:
-
-> Linus,
+On Fri, May 01, 2009 at 10:28:13AM -0400, Steven Rostedt wrote:
 > 
-> could you please pull from 'for-linus' branch of
 > 
->         git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid.git for-linus
 > 
-> to receive fixes for HID code.
+> On Fri, 1 May 2009, Frederic Weisbecker wrote:
 > 
-> It contains two important fixes (locking fix and possible workqueue 
-> deadlock), plus it adds/fixes support of two particular devices (just 
-> simple product ID additions/range adjustments).
+> > On Fri, May 01, 2009 at 01:50:47PM +0200, Ingo Molnar wrote:
+> > > 
+> > > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > > 
+> > > > From: Steven Rostedt <srostedt@redhat.com>
+> > > > 
+> > > > The entries counter in cpu buffer is not atomic. Although it only 
+> > > > gets updated by a single CPU, interrupts may come in and update 
+> > > > the counter too. This would cause missing entries to be added.
+> > > 
+> > > > -	unsigned long			entries;
+> > > > +	atomic_t			entries;
+> > > 
+> > > Hm, that's not really good as atomics can be rather expensive and 
+> > > this is the fastpath.
+> > > 
+> > > This is the upteenth time or so that the fact that we do not disable 
+> > > irqs while generating trace entries bites us in one way or another. 
+> > > IRQs can come in and confuse function trace output, etc. etc.
+> > > 
+> > > Please lets do what i suggested a long time ago: disable irqs _once_ 
+> > > in any trace point and run atomically from that point on, and enable 
+> > > them once, at the end.
+> > > 
+> > > The cost is very small and it turns into a win immediately by 
+> > > elimination of a _single_ atomic instruction. (even on Nehalem they 
+> > > cost 20 cycles. More on older CPUs.) We can drop the preempt-count 
+> > > disable/enable as well and a lot of racy code as well. Please.
+> > > 
+> > > 	Ingo
+> > 
+> > 
+> > I also suspect one other good effect on doing this.
+> > 
+> > As you know, between a lock_reserve and a discard, several interrupts
+> > can trigger some traces. It means that if some rooms have already been
+> > reserved, the discard will really create a discarded entry and we
+> > can't reuse it.
+> > 
+> > For example in the case of filters with lock tracing, we rapidly run
+> > into entries overriden, making the lock events tracing about useless
+> > because we rapidly lose everything.
+> 
+> If you want, we can disable interrupts from the event tracer, not the ring 
+> buffer.
+> 
+> We would have to go back to the original ring buffer code that passed in 
+> flags.
 
-As this hasn't yet been pulled and I have one more quite important oops 
-fix queued since then, I am resending the request with this fix 
-incorporated, please consider pulling. Thanks.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid.git for-linus
 
- drivers/hid/hid-apple.c       |    2 +-
- drivers/hid/hid-core.c        |    4 ++++
- drivers/hid/hid-ids.h         |    1 +
- drivers/hid/hid-lg.c          |    2 ++
- drivers/hid/hidraw.c          |   12 ++++++++----
- drivers/hid/usbhid/hid-core.c |    2 +-
- 6 files changed, 17 insertions(+), 6 deletions(-)
+Or may be just copy the entry on the stack and filter on it,
+then only reserve if it is eligible.
 
-Christophe Borivant (1):
-      HID: Add support for the G25 force feedback wheel in native mode
 
-Dan Carpenter (1):
-      HID: hidraw -- fix missing unlocks in unlocked_ioctl
+ 
+> > 
+> > At least that's an effect I observed. I'm not sure the discard is the
+> > real cause but it seems to make sense.
+> > 
+> > That's a pity because believe me it is very useful to hunt a softlockup.
+> > 
+> > Of course it doesn't prevent from NMI tempest, but we already have
+> > protections for that.
+> 
+> If we do not allow interrupts to be traced, we can not allow NMIs either. 
+> If we do not let the ring buffer be re-entrant, then we will not be able 
+> to trace any NMI (to be safe).
+> 
+> Going this route, there would be no need to make a lockless ring buffer 
+> either.
 
-Jiri Kosina (1):
-      HID: fix oops in hid_check_keys_pressed()
 
-Oliver Neukum (1):
-      HID: fix possible deadlock in usbhid_close()
+Hm that's really not what we want, indeed :-)
+Just forget about what I said.
 
-Ulrich Dangel (1):
-      HID: Fix the support for apple mini aluminium keyboard
+
+> 
+> -- Steve
+> 
+
