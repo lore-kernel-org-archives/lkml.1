@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763627AbZEAVsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763194AbZEAVy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763627AbZEAVsV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 17:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760266AbZEAVsL
+	id S1763194AbZEAVy1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 17:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbZEAVyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 17:48:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34046 "EHLO mx2.redhat.com"
+	Fri, 1 May 2009 17:54:17 -0400
+Received: from www.tglx.de ([62.245.132.106]:35878 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751913AbZEAVsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 17:48:10 -0400
-Message-ID: <49FB6DC3.3090000@redhat.com>
-Date: Fri, 01 May 2009 17:46:43 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1751848AbZEAVyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 17:54:16 -0400
+Date: Fri, 1 May 2009 23:53:17 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>
+Subject: Re: [Announce] 2.6.29.2-rt10
+In-Reply-To: <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain> <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain> <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>
+ <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain> <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain> <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain> <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>
+ <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain> <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain> <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain> <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain>
+ <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain> <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: elladan@eskimo.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
-       tytso@mit.edu, kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
-Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
-References: <20090428044426.GA5035@eskimo.com>	<20090428192907.556f3a34@bree.surriel.com>	<1240987349.4512.18.camel@laptop>	<20090429114708.66114c03@cuia.bos.redhat.com>	<20090430072057.GA4663@eskimo.com>	<20090430174536.d0f438dd.akpm@linux-foundation.org>	<20090430205936.0f8b29fc@riellaptop.surriel.com>	<20090430181340.6f07421d.akpm@linux-foundation.org>	<20090430215034.4748e615@riellaptop.surriel.com>	<20090430195439.e02edc26.akpm@linux-foundation.org>	<49FB01C1.6050204@redhat.com>	<20090501123541.7983a8ae.akpm@linux-foundation.org>	<49FB5623.3030403@redhat.com> <20090501134528.be5f27b2.akpm@linux-foundation.org>
-In-Reply-To: <20090501134528.be5f27b2.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 01 May 2009 16:05:55 -0400
-> Rik van Riel <riel@redhat.com> wrote:
-> 
->> Are you open to evaluating other methods that could lead, on
->> desktop systems, to a behaviour similar to the one achieved
->> by the preserve-mapped-pages mechanism?
-> 
-> Well..  it's more a matter of retaining what we've learnt (unless we
-> feel it's wrong, or technilogy change broke it) and carefully listening
-> to and responding to what's happening in out-there land.
+We are pleased to announce the next update to our new preempt-rt
+series.
+ 
+     - ioperm fix for x86/32bit
+     - hrtimer fix for !highres
+     - futex updates (Darren Hart)
+     - sys_rt_tgsigqueueinfo added for testing
 
-Treating mapped pages specially is a bad implementation,
-because it does not scale.  The reason is the same reason
-we dropped "treat referenced active file pages special"
-right before the split LRU code was merged by Linus.
+The MIPS support is still work in progress, but I expect that it will
+hit -rt12.
 
-Also, it does not help workloads that have a large number
-of unmapped pages, where we want to protect the frequently
-used ones from a giant stream of used-once pages.  NFS and
-FTP servers would be a typical example of this, but so
-would a database server with postgres or mysql in a default
-setup.
+Download locations:
 
-> The number of problem reports we're seeing from the LRU changes is
-> pretty low.  Hopefully that's because the number of problems _is_
-> low.
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
 
-I believe the number of problems is low.  However, the
-severity of this particular problem means that we'll
-probably want to do something about it.
+Information on the RT patch can be found at:
 
-> Given the low level of problem reports, the relative immaturity of the
-> code and our difficulty with determining what effect our changes will
-> have upon everyone, I'd have thought that sit-tight-and-wait-and-see
-> would be the prudent approach for the next few months.
-> 
-> otoh if you have a change and it proves good in your testing then sure,
-> sooner rather than later.
+    http://rt.wiki.kernel.org/index.php/Main_Page
 
-I believe the patch I submitted in this thread should fix
-the problem.  I have experimented with the patch before
-and Elladan's results show that the situation is resolved
-for him.
+to build the 2.6.29.2-rt11 tree, the following patches should be
+applied:
 
-Furthermore, Peter and I believe the patch has a minimal
-risk of side effects.
+    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.2.tar.bz2
+    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29.2-rt11.bz2
 
-Of course, there may be better ideas yet.  It would be
-nice if people could try to shoot holes in the concept
-of the patch - if anybody can even think of a way in
-which it could break, we can try to come up with a way
-of fixing it.
+The broken out patches are also available at the same download
+locations.
 
-> I still haven't forgotten prev_priority tho!
+Enjoy !
 
-The whole priority thing could be(come) a problem too,
-with us scanning WAY too many pages at once in a gigantic
-memory zone.  Scanning a million pages at once will
-probably lead to unacceptable latencies somewhere :)
-
--- 
-All rights reversed.
+       tglx
