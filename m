@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760633AbZEAMoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758815AbZEAMwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760633AbZEAMoU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 08:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbZEAMoJ
+	id S1758815AbZEAMwU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 08:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbZEAMwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 08:44:09 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:47263 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753954AbZEAMoI (ORCPT
+	Fri, 1 May 2009 08:52:07 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:47587 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751449AbZEAMwG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 08:44:08 -0400
-Message-ID: <49FAEE94.9030007@hp.com>
-Date: Fri, 01 May 2009 08:44:04 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
-MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH] blktrace: swap arg name "from" and "to" of 	blk_add_trace_remap
-References: <20090430133627.D217.A69D9226@jp.fujitsu.com>	 <49F9D82D.50901@hp.com> <2f11576a0904301913h5aa0ed79gc8c5d98e71445858@mail.gmail.com>
-In-Reply-To: <2f11576a0904301913h5aa0ed79gc8c5d98e71445858@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 1 May 2009 08:52:06 -0400
+Date: Fri, 1 May 2009 14:51:51 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Ming Lei <tom.leiming@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] driver core: Silent meaningless error message
+Message-ID: <20090501145151.5f97456e@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
->> I believe this may be more messed up than you believe: Consider the last
->> function: blk_log_remap. Notice how you are printing the /device/ and
->> /sector_from/ as one pair. Isn't that confusing too: wouldn't one expect
->> /device_from/ and /sector_from/ to be paired up?
->>
->> I ran into this problem a long time ago - hence the current code in
->> blkparse contains:
->>
->>        if (act[0] == 'A') {    /* Remap */
->>                get_pdu_remap(t, &r);
->>                t->device = r.device_from;
->>        }
->>
->> Which puts the device_from out at the beginning of the line, and then
->> the 'device' + 'sector' (== 'sector_from') out at the end of the line.
->> (Which, of course, is all confusing.)
-> 
-> Good viewpoint!
-> Currently, 99% blktrace user use blktrace and blkparse command, not
-> ftrace framework.
-> So, ABI changing is proper way?
-> 
-> I'd like to hear Jens and Li opinion.
+I see the following error message in my kernel logs:
 
-I'll hold off reposting until Jens and Li concur.
-Alan
+w83627ehf.2576: use which platform_data?
+
+This is caused by platform_device_add_data() setting both
+pdev->platform_data and pdev->dev.platform_data, and then
+platform_device_add() complaining if both pointers are set.
+
+As platform_device_add() is now making sure that both pointers are
+set, there is no point in setting both in platform_device_add_data().
+
+Additionally, we should only issue the error message when there is a
+real problem, that is: both data pointers are set and differ. And, in
+this case, we should fail right away, as something is seriously wrong.
+
+Also free the memory through pa->pdev.platform_data rather than
+pa->pdev.dev.platform_data. We will have to do that someday anyway, so
+we might as well start now to make the intents clearer.
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Ming Lei <tom.leiming@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/base/platform.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+--- linux-2.6.30-rc4.orig/drivers/base/platform.c	2009-04-22 09:51:01.000000000 +0200
++++ linux-2.6.30-rc4/drivers/base/platform.c	2009-05-01 14:09:16.000000000 +0200
+@@ -143,7 +143,7 @@ static void platform_device_release(stru
+ 	struct platform_object *pa = container_of(dev, struct platform_object,
+ 						  pdev.dev);
+ 
+-	kfree(pa->pdev.dev.platform_data);
++	kfree(pa->pdev.platform_data);
+ 	kfree(pa->pdev.resource);
+ 	kfree(pa);
+ }
+@@ -216,7 +216,6 @@ int platform_device_add_data(struct plat
+ 	d = kmalloc(size, GFP_KERNEL);
+ 	if (d) {
+ 		memcpy(d, data, size);
+-		pdev->dev.platform_data = d;
+ 		pdev->platform_data = d;
+ 	}
+ 	return d ? 0 : -ENOMEM;
+@@ -253,9 +252,12 @@ int platform_device_add(struct platform_
+ 	* long time, so we allow the two cases coexist to make
+ 	* this kind of fix more easily*/
+ 	if (pdev->platform_data && pdev->dev.platform_data) {
+-		printk(KERN_ERR
++		if (pdev->platform_data != pdev->dev.platform_data) {
++			printk(KERN_ERR
+ 			       "%s: use which platform_data?\n",
+ 			       dev_name(&pdev->dev));
++			return -EINVAL;
++		}
+ 	} else if (pdev->platform_data) {
+ 		pdev->dev.platform_data = pdev->platform_data;
+ 	} else if (pdev->dev.platform_data) {
+
+
+-- 
+Jean Delvare
