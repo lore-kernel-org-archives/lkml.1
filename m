@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761693AbZEAPJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757882AbZEAPRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761693AbZEAPJw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 11:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbZEAPJh
+	id S1757882AbZEAPRc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 11:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbZEAPRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 11:09:37 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:58737 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754771AbZEAPJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 11:09:36 -0400
-Date: Fri, 1 May 2009 16:09:33 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH mmotm] mm: alloc_large_system_hash check order
-Message-ID: <20090501150933.GE27831@csn.ul.ie>
-References: <Pine.LNX.4.64.0904292151350.30874@blonde.anvils> <20090430132544.GB21997@csn.ul.ie> <Pine.LNX.4.64.0905011202530.8513@blonde.anvils> <20090501140015.GA27831@csn.ul.ie> <alpine.DEB.1.10.0905010958090.18324@qirst.com>
+	Fri, 1 May 2009 11:17:23 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:62894 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756028AbZEAPRW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 11:17:22 -0400
+Message-ID: <49FB12D0.5030809@oracle.com>
+Date: Fri, 01 May 2009 08:18:40 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0905010958090.18324@qirst.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for May 1 (tmpfs)
+References: <20090501163405.973f9088.sfr@canb.auug.org.au>
+In-Reply-To: <20090501163405.973f9088.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010205.49FB127A.0217:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 09:59:35AM -0400, Christoph Lameter wrote:
-> On Fri, 1 May 2009, Mel Gorman wrote:
+Stephen Rothwell wrote:
+> Hi all,
 > 
-> > > Andrew noticed another oddity: that if it goes the hashdist __vmalloc()
-> > > way, it won't be limited by MAX_ORDER.  Makes one wonder whether it
-> > > ought to fall back to __vmalloc() if the alloc_pages_exact() fails.
-> >
-> > I don't believe so. __vmalloc() is only used when hashdist= is used or on IA-64
-> > (according to the documentation). It is used in the case that the caller is
-> > willing to deal with the vmalloc() overhead (e.g. using base page PTEs) in
-> > exchange for the pages being interleaved on different nodes so that access
-> > to the hash table has average performance[*]
-> >
-> > If we automatically fell back to vmalloc(), I bet 2c we'd eventually get
-> > a mysterious performance regression report for a workload that depended on
-> > the hash tables performance but that there was enough memory for the hash
-> > table to be allocated with vmalloc() instead of alloc_pages_exact().
-> 
-> Can we fall back to a huge page mapped vmalloc? Like what the vmemmap code
-> does? Then we also would not have MAX_ORDER limitations.
-> 
+> Changes since 20090430:
 
-Potentially yes, although it would appear that it will only help the networking
-hash table. Dentry and inode are both using the bootmem allocator to allocate
-their tables so can exceed MAX_ORDER limitations.
 
-But IIRC, the vmemmap code depends on architecture-specific help from
-vmemmap_populate() to place the map in the right place and it's not universally
-available. It's likely that similar would be needed to support large
-hash tables. I think the networking guys would need to be fairly sure
-the larger table would make a big difference before tackling the
-problem.
+When CONFIG_SHMEM=n:
+
+init/built-in.o: In function `kernel_init':
+main.c:(.init.text+0x8be): undefined reference to `init_tmpfs'
+
+
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+~Randy
