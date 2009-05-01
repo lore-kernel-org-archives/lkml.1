@@ -1,236 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765403AbZEAWcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765559AbZEAWdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765403AbZEAWcv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 18:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765073AbZEAWbQ
+	id S1765559AbZEAWdb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 18:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765073AbZEAWdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 18:31:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56700 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764909AbZEAWbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 18:31:09 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/3] PM/Hibernate: Move memory shrinking to snapshot.c
-Date: Sat, 2 May 2009 00:28:23 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
-Cc: pavel@ucw.cz, torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <20090422131943.69288af3.akpm@linux-foundation.org> <200905020026.19027.rjw@sisk.pl>
-In-Reply-To: <200905020026.19027.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Fri, 1 May 2009 18:33:09 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41922
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759063AbZEAWdH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 18:33:07 -0400
+Date: Fri, 01 May 2009 15:33:01 -0700 (PDT)
+Message-Id: <20090501.153301.42015656.davem@davemloft.net>
+To: alex.williamson@hp.com
+Cc: rusty@rustcorp.com.au, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-next@vger.kernel.org
+Subject: Re: [PATCH] virtio_net: Cleanup command queue scatterlist usage
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090427154925.4771.63651.stgit@debian.lart>
+References: <20090426.233014.216353908.davem@davemloft.net>
+	<20090427154925.4771.63651.stgit@debian.lart>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905020028.24452.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Alex Williamson <alex.williamson@hp.com>
+Date: Mon, 27 Apr 2009 09:50:03 -0600
 
-The next patch is going to modify the memory shrinking code so that
-it will make memory allocations to free memory instead of using an
-artificial memory shrinking mechanism for that.  For this purpose it
-is convenient to move swsusp_shrink_memory() from
-kernel/power/swsusp.c to kernel/power/snapshot.c, because the new
-memory-shrinking code is going to use things that are local to
-kernel/power/snapshot.c .
+> We were avoiding calling sg_init* on scatterlists passed
+> into virtnet_send_command to prevent extraneous end markers.
+> This caused build warnings for uninitialized variables.
+> Cleanup the code to create proper scatterlists.
+> 
+> Signed-off-by: Alex Williamson <alex.williamson@hp.com>
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/snapshot.c |   76 ++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/power/swsusp.c   |   76 ------------------------------------------------
- 2 files changed, 76 insertions(+), 76 deletions(-)
-
-Index: linux-2.6/kernel/power/snapshot.c
-===================================================================
---- linux-2.6.orig/kernel/power/snapshot.c
-+++ linux-2.6/kernel/power/snapshot.c
-@@ -39,6 +39,14 @@ static int swsusp_page_is_free(struct pa
- static void swsusp_set_page_forbidden(struct page *);
- static void swsusp_unset_page_forbidden(struct page *);
- 
-+/*
-+ * Preferred image size in bytes (tunable via /sys/power/image_size).
-+ * When it is set to N, swsusp will do its best to ensure the image
-+ * size will not exceed N bytes, but if that is impossible, it will
-+ * try to create the smallest image possible.
-+ */
-+unsigned long image_size = 500 * 1024 * 1024;
-+
- /* List of PBEs needed for restoring the pages that were allocated before
-  * the suspend and included in the suspend image, but have also been
-  * allocated by the "resume" kernel, so their contents cannot be written
-@@ -569,6 +577,74 @@ static unsigned long memory_bm_next_pfn(
- }
- 
- /**
-+ *	swsusp_shrink_memory -  Try to free as much memory as needed
-+ *
-+ *	... but do not OOM-kill anyone
-+ *
-+ *	Notice: all userland should be stopped before it is called, or
-+ *	livelock is possible.
-+ */
-+
-+#define SHRINK_BITE	10000
-+static inline unsigned long __shrink_memory(long tmp)
-+{
-+	if (tmp > SHRINK_BITE)
-+		tmp = SHRINK_BITE;
-+	return shrink_all_memory(tmp);
-+}
-+
-+int swsusp_shrink_memory(void)
-+{
-+	long tmp;
-+	struct zone *zone;
-+	unsigned long pages = 0;
-+	unsigned int i = 0;
-+	char *p = "-\\|/";
-+	struct timeval start, stop;
-+
-+	printk(KERN_INFO "PM: Shrinking memory...  ");
-+	do_gettimeofday(&start);
-+	do {
-+		long size, highmem_size;
-+
-+		highmem_size = count_highmem_pages();
-+		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
-+		tmp = size;
-+		size += highmem_size;
-+		for_each_populated_zone(zone) {
-+			tmp += snapshot_additional_pages(zone);
-+			if (is_highmem(zone)) {
-+				highmem_size -=
-+					zone_page_state(zone, NR_FREE_PAGES);
-+			} else {
-+				tmp -= zone_page_state(zone, NR_FREE_PAGES);
-+				tmp += zone->lowmem_reserve[ZONE_NORMAL];
-+			}
-+		}
-+
-+		if (highmem_size < 0)
-+			highmem_size = 0;
-+
-+		tmp += highmem_size;
-+		if (tmp > 0) {
-+			tmp = __shrink_memory(tmp);
-+			if (!tmp)
-+				return -ENOMEM;
-+			pages += tmp;
-+		} else if (size > image_size / PAGE_SIZE) {
-+			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
-+			pages += tmp;
-+		}
-+		printk("\b%c", p[i++%4]);
-+	} while (tmp > 0);
-+	do_gettimeofday(&stop);
-+	printk("\bdone (%lu pages freed)\n", pages);
-+	swsusp_show_speed(&start, &stop, pages, "Freed");
-+
-+	return 0;
-+}
-+
-+/**
-  *	This structure represents a range of page frames the contents of which
-  *	should not be saved during the suspend.
-  */
-Index: linux-2.6/kernel/power/swsusp.c
-===================================================================
---- linux-2.6.orig/kernel/power/swsusp.c
-+++ linux-2.6/kernel/power/swsusp.c
-@@ -55,14 +55,6 @@
- 
- #include "power.h"
- 
--/*
-- * Preferred image size in bytes (tunable via /sys/power/image_size).
-- * When it is set to N, swsusp will do its best to ensure the image
-- * size will not exceed N bytes, but if that is impossible, it will
-- * try to create the smallest image possible.
-- */
--unsigned long image_size = 500 * 1024 * 1024;
--
- int in_suspend __nosavedata = 0;
- 
- /**
-@@ -195,74 +187,6 @@ void swsusp_show_speed(struct timeval *s
- 			kps / 1000, (kps % 1000) / 10);
- }
- 
--/**
-- *	swsusp_shrink_memory -  Try to free as much memory as needed
-- *
-- *	... but do not OOM-kill anyone
-- *
-- *	Notice: all userland should be stopped before it is called, or
-- *	livelock is possible.
-- */
--
--#define SHRINK_BITE	10000
--static inline unsigned long __shrink_memory(long tmp)
--{
--	if (tmp > SHRINK_BITE)
--		tmp = SHRINK_BITE;
--	return shrink_all_memory(tmp);
--}
--
--int swsusp_shrink_memory(void)
--{
--	long tmp;
--	struct zone *zone;
--	unsigned long pages = 0;
--	unsigned int i = 0;
--	char *p = "-\\|/";
--	struct timeval start, stop;
--
--	printk(KERN_INFO "PM: Shrinking memory...  ");
--	do_gettimeofday(&start);
--	do {
--		long size, highmem_size;
--
--		highmem_size = count_highmem_pages();
--		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
--		tmp = size;
--		size += highmem_size;
--		for_each_populated_zone(zone) {
--			tmp += snapshot_additional_pages(zone);
--			if (is_highmem(zone)) {
--				highmem_size -=
--					zone_page_state(zone, NR_FREE_PAGES);
--			} else {
--				tmp -= zone_page_state(zone, NR_FREE_PAGES);
--				tmp += zone->lowmem_reserve[ZONE_NORMAL];
--			}
--		}
--
--		if (highmem_size < 0)
--			highmem_size = 0;
--
--		tmp += highmem_size;
--		if (tmp > 0) {
--			tmp = __shrink_memory(tmp);
--			if (!tmp)
--				return -ENOMEM;
--			pages += tmp;
--		} else if (size > image_size / PAGE_SIZE) {
--			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
--			pages += tmp;
--		}
--		printk("\b%c", p[i++%4]);
--	} while (tmp > 0);
--	do_gettimeofday(&stop);
--	printk("\bdone (%lu pages freed)\n", pages);
--	swsusp_show_speed(&start, &stop, pages, "Freed");
--
--	return 0;
--}
--
- /*
-  * Platforms, like ACPI, may want us to save some memory used by them during
-  * hibernation and to restore the contents of this memory during the subsequent
+This patch does not apply even to Linus's current tree.
