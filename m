@@ -1,124 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765091AbZEAWb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932152AbZEAWbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765091AbZEAWb1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 18:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761982AbZEAWaz
+	id S932152AbZEAWbp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 18:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764924AbZEAWbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 18:30:55 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:22333 "EHLO
-	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1762447AbZEAWay (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 18:30:54 -0400
-X-BigFish: VPS6(zzzz1202hzzz2fh6bh15fn)
-X-FB-SS: 5,13,
-Message-ID: <49FB77ED.3010800@am.sony.com>
-Date: Fri, 1 May 2009 15:30:05 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 1 May 2009 18:31:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56697 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764799AbZEAWbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 18:31:05 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/3] PM: Drop shrink_all_memory (was: Re: [Bug #13058] First hibernation attempt fails)
+Date: Sat, 2 May 2009 00:26:18 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
+Cc: pavel@ucw.cz, torvalds@linux-foundation.org, jens.axboe@oracle.com,
+       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200904222211.18221.rjw@sisk.pl> <20090422131943.69288af3.akpm@linux-foundation.org>
+In-Reply-To: <20090422131943.69288af3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: linux kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [PATCH 1/2]  ftrace: add notrace to ARM sched_clock routines
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 May 2009 22:30:07.0038 (UTC) FILETIME=[612E4DE0:01C9CAAC]
-X-SEL-encryption-scan: scanned
+Content-Disposition: inline
+Message-Id: <200905020026.19027.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add notrace attribute to sched_clock, to avoid
-recursion with ftrace function_graph tracing.
+On Wednesday 22 April 2009, Andrew Morton wrote:
+> On Wed, 22 Apr 2009 22:11:17 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > On Wednesday 22 April 2009, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > > Of course, this will protect the calling task from getting oom-killed. 
+> > > > But it doesn't protect other tasks from getting oom-killed due to the
+> > > > activity of _this_ task.
+> > > > 
+> > > > But I think that problem already exists, and that this proposal doesn't
+> > > > worsen anything, yes?
+> > > > 
+> > > > Or is it the case that all other tasks are safely stuck in the freezer
+> > > > at this time, so they won't be allocating any memory anyway?
+> > > 
+> > > That is the idea, yes. ... but we now have more threads that are not
+> > > freezable... so they may allocate the memory.
+> > > 
+> > > Is it non-feasible to free memory without really going and allocating
+> > > everything?
+> > 
+> > The question is whether there is a point.  In principle we can just go and
+> > allocate as much as we need upfront.  It shouldn't change anything, because
+> > we resume and suspend devices after creating the image anyway.
+> > 
+> > I think we could try to disable the OOM killer before suspend and just
+> > allocate the memory for the image right before devices are suspended for the
+> > first time.
+> > 
+> 
+> It would be nice to do.
+> 
+> shrink_all_memory() is simply trying to do something which page reclaim
+> doesn't expect to do (free memory when there's already lots of memory
+> free).  Consequently it doesn't do it very well, and there's a good
+> risk that changes to core reclaim will accidentally break
+> shrink_all_memory().  
 
-Signed-off-by: Tim Bird <tim.bird@am.sony.com>
----
- arch/arm/mach-mmp/time.c       |    2 +-
- arch/arm/mach-pxa/time.c       |    2 +-
- arch/arm/mach-realview/core.c  |    2 +-
- arch/arm/mach-sa1100/generic.c |    2 +-
- arch/arm/mach-versatile/core.c |    2 +-
- arch/arm/plat-omap/common.c    |    4 ++--
- 6 files changed, 7 insertions(+), 7 deletions(-)
+OK, a patchset follows:
 
---- a/arch/arm/mach-mmp/time.c
-+++ b/arch/arm/mach-mmp/time.c
-@@ -72,7 +72,7 @@ static inline uint32_t timer_read(void)
- 	return __raw_readl(TIMERS_VIRT_BASE + TMR_CVWR(0));
- }
+[1/3] - disable the OOM killer during system-wide power transitions (should be
+        done anyway IMO)
+[2/3] - move swsusp_shrink_memory() to kernel/power/snapshot.c so that the
+        next patch is easier to read
+[3/3] - drop shrink_all_memory()
 
--unsigned long long sched_clock(void)
-+unsigned long long notrace sched_clock(void)
- {
- 	unsigned long long v = cnt32_to_63(timer_read());
- 	return (v * tcr2ns_scale) >> TCR2NS_SCALE_FACTOR;
---- a/arch/arm/mach-pxa/time.c
-+++ b/arch/arm/mach-pxa/time.c
-@@ -51,7 +51,7 @@ static void __init set_oscr2ns_scale(uns
- 		oscr2ns_scale++;
- }
+Please have a look and tell me what you think.
 
--unsigned long long sched_clock(void)
-+unsigned long long notrace sched_clock(void)
- {
- 	unsigned long long v = cnt32_to_63(OSCR);
- 	return (v * oscr2ns_scale) >> OSCR2NS_SCALE_FACTOR;
---- a/arch/arm/mach-realview/core.c
-+++ b/arch/arm/mach-realview/core.c
-@@ -60,7 +60,7 @@ void __iomem *gic_cpu_base_addr;
-  * This is the RealView sched_clock implementation.  This has
-  * a resolution of 41.7ns, and a maximum value of about 179s.
-  */
--unsigned long long sched_clock(void)
-+unsigned long long notrace sched_clock(void)
- {
- 	unsigned long long v;
-
---- a/arch/arm/mach-sa1100/generic.c
-+++ b/arch/arm/mach-sa1100/generic.c
-@@ -131,7 +131,7 @@ EXPORT_SYMBOL(cpufreq_get);
-  *
-  *  ( * 1E9 / 3686400 => * 78125 / 288)
-  */
--unsigned long long sched_clock(void)
-+unsigned long long notrace sched_clock(void)
- {
- 	unsigned long long v = cnt32_to_63(OSCR);
-
---- a/arch/arm/mach-versatile/core.c
-+++ b/arch/arm/mach-versatile/core.c
-@@ -237,7 +237,7 @@ void __init versatile_map_io(void)
-  * long as there is always less than 89 seconds between successive
-  * calls to this function.
-  */
--unsigned long long sched_clock(void)
-+unsigned long long notrace sched_clock(void)
- {
- 	unsigned long long v = cnt32_to_63(readl(VERSATILE_REFCOUNTER));
-
---- a/arch/arm/plat-omap/common.c
-+++ b/arch/arm/plat-omap/common.c
-@@ -185,7 +185,7 @@ console_initcall(omap_add_serial_console
-
- #include <linux/clocksource.h>
-
--static cycle_t omap_32k_read(struct clocksource *cs)
-+static cycle_t notrace omap_32k_read(struct clocksource *cs)
- {
- 	return omap_readl(TIMER_32K_SYNCHRONIZED);
- }
-@@ -203,7 +203,7 @@ static struct clocksource clocksource_32
-  * Returns current time from boot in nsecs. It's OK for this to wrap
-  * around for now, as it's just a relative time stamp.
-  */
--unsigned long long sched_clock(void)
-+unsigned long long notrace sched_clock(void)
- {
- 	unsigned long long ret;
-
+Thanks,
+Rafael
 
