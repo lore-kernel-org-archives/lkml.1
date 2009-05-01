@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932212AbZEASaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932425AbZEASbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932212AbZEASaV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 14:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760933AbZEASaB
+	id S932425AbZEASbL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 14:31:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932211AbZEASaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 14:30:01 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:47166 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755854AbZEASaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 14:30:00 -0400
-Date: Fri, 1 May 2009 20:29:58 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, linux-ide@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
-       mike.miller@hp.com, chirag.kantharia@hp.com, Eric.Moore@lsi.com,
-       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
-       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, jesper.juhl@gmail.com, tim@cyberelk.net,
-       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
-       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
-       davem@davemloft.net, rusty@rustcorp.com.au,
-       Markus.Lidel@shadowconnect.com, bharrosh@panasas.com
-Subject: Re: [GIT PATCH] block,scsi,ide: unify sector and data_len
-Message-ID: <20090501182958.GD4593@kernel.dk>
-References: <1240996428-10159-1-git-send-email-tj@kernel.org>
+	Fri, 1 May 2009 14:30:52 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42153 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760933AbZEASav (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 14:30:51 -0400
+Date: Fri, 1 May 2009 14:30:50 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Andrew Tridgell <tridge@samba.org>, Steve French <sfrench@us.ibm.com>,
+       Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
+Message-ID: <20090501183050.GA16600@infradead.org>
+References: <1241199689.13073.6.camel@norville.austin.ibm.com> <20090501174757.GC8104@infradead.org> <1241201562.13073.30.camel@norville.austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1240996428-10159-1-git-send-email-tj@kernel.org>
+In-Reply-To: <1241201562.13073.30.camel@norville.austin.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 29 2009, Tejun Heo wrote:
-> Hello,
-> 
-> Upon ack, please pull from the following git tree.
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-unify-sector-and-data_len
+On Fri, May 01, 2009 at 01:12:42PM -0500, Dave Kleikamp wrote:
+> Some linux-based devices would be happy not to contain code to create
+> the long name at all.
 
-Looks sane. When you have collected acks and made suggested changes,
-please repost it and I'll integrate it.
-
-Note that I wont be very responsive the next week or so, taking care of
-a new aspiring kernel hacker.
-
--- 
-Jens Axboe
+Then patch it out.
 
