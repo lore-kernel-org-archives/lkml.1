@@ -1,158 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760812AbZEANy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760998AbZEANzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760812AbZEANy6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 09:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755126AbZEANys
+	id S1760998AbZEANzY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 09:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757363AbZEANyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 09:54:48 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:16738 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754689AbZEANyr (ORCPT
+	Fri, 1 May 2009 09:54:50 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:55303 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754896AbZEANys (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 09:54:47 -0400
-Subject: Re: [PATCH 6/6] kill-the-BKL/reiserfs: release the write lock on
- flush_commit_list()
-From: Chris Mason <chris.mason@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-In-Reply-To: <20090501132923.GA30663@elte.hu>
-References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com>
-	 <1241145862-21700-7-git-send-email-fweisbec@gmail.com>
-	 <20090501054247.GD5983@elte.hu> <20090501131340.GB6011@nowhere>
-	 <1241184385.13084.11.camel@think.oraclecorp.com>
-	 <20090501132923.GA30663@elte.hu>
-Content-Type: text/plain
-Date: Fri, 01 May 2009 09:54:17 -0400
-Message-Id: <1241186057.13084.34.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.49FAFF0C.03D9:SCFMA4539814,ss=1,fgs=0
+	Fri, 1 May 2009 09:54:48 -0400
+Date: Fri, 1 May 2009 09:44:55 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Yuriy Lalym <ylalym@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ltt-dev@lists.casi.polymtl.ca, Tejun Heo <tj@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [ltt-dev] [PATCH] Fix dirty page accounting in
+ redirty_page_for_writepage()
+In-Reply-To: <20090430211750.GA19933@Krystal>
+Message-ID: <alpine.DEB.1.10.0905010939090.18324@qirst.com>
+References: <alpine.LFD.2.00.0904291701450.22156@localhost.localdomain> <20090430024303.GB19875@Krystal> <20090430062140.GA9559@elte.hu> <20090430063306.GA27431@Krystal> <20090430065055.GA16277@elte.hu> <alpine.DEB.1.10.0904300926530.22262@qirst.com>
+ <20090430141211.GB5922@Krystal> <alpine.DEB.1.10.0904301009530.14178@qirst.com> <20090430194158.GB12926@Krystal> <alpine.DEB.1.10.0904301559500.11923@qirst.com> <20090430211750.GA19933@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-01 at 15:29 +0200, Ingo Molnar wrote:
-> * Chris Mason <chris.mason@oracle.com> wrote:
-> 
-> > On Fri, 2009-05-01 at 15:13 +0200, Frederic Weisbecker wrote:
-> > > On Fri, May 01, 2009 at 07:42:47AM +0200, Ingo Molnar wrote:
-> > > > 
-> > > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > > > 
-> > > > > flush_commit_list() uses ll_rw_block() to commit the pending log blocks.
-> > > > > ll_rw_block() might sleep, and the bkl was released at this point. Then
-> > > > > we can also relax the write lock at this point.
-> > > > > 
-> > > > > [ Impact: release the reiserfs write lock when it is not needed ]
-> > > > > 
-> > > > > Cc: Jeff Mahoney <jeffm@suse.com>
-> > > > > Cc: Chris Mason <chris.mason@oracle.com>
-> > > > > Cc: Alexander Beregalov <a.beregalov@gmail.com>
-> > > > > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > > > > ---
-> > > > >  fs/reiserfs/journal.c |    7 +++++--
-> > > > >  1 files changed, 5 insertions(+), 2 deletions(-)
-> > > > > 
-> > > > > diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
-> > > > > index 373d080..b1ebd5a 100644
-> > > > > --- a/fs/reiserfs/journal.c
-> > > > > +++ b/fs/reiserfs/journal.c
-> > > > > @@ -1120,8 +1120,11 @@ static int flush_commit_list(struct super_block *s,
-> > > > >  		    SB_ONDISK_JOURNAL_SIZE(s);
-> > > > >  		tbh = journal_find_get_block(s, bn);
-> > > > >  		if (tbh) {
-> > > > > -			if (buffer_dirty(tbh))
-> > > > > -			    ll_rw_block(WRITE, 1, &tbh) ;
-> > > > > +			if (buffer_dirty(tbh)) {
-> > > > > +		            reiserfs_write_unlock(s);
-> > > > > +			    ll_rw_block(WRITE, 1, &tbh);
-> > > > > +			    reiserfs_write_lock(s);
-> > > > > +			}
-> > > > >  			put_bh(tbh) ;
-> > > > >  		}
-> > > > >  	}
-> > > > 
-> > > > there's 7 other instances of ll_rw_block():
-> > > > 
-> > > > fs/reiserfs/journal.c-			spin_unlock(lock);
-> > > > fs/reiserfs/journal.c:			ll_rw_block(WRITE, 1, &bh);
-> > > > fs/reiserfs/journal.c-			spin_lock(lock);
-> > > > --
-> > > > fs/reiserfs/journal.c-		            reiserfs_write_unlock(s);
-> > > > fs/reiserfs/journal.c:			    ll_rw_block(WRITE, 1, &tbh);
-> > > > fs/reiserfs/journal.c-			    reiserfs_write_lock(s);
-> > > > --
-> > > > fs/reiserfs/journal.c-	/* read in the log blocks, memcpy to the corresponding real block */
-> > > > fs/reiserfs/journal.c:	ll_rw_block(READ, get_desc_trans_len(desc), log_blocks);
-> > > > fs/reiserfs/journal.c-	for (i = 0; i < get_desc_trans_len(desc); i++) {
-> > > > --
-> > > > fs/reiserfs/journal.c-		set_buffer_dirty(real_blocks[i]);
-> > > > fs/reiserfs/journal.c:		ll_rw_block(SWRITE, 1, real_blocks + i);
-> > > > fs/reiserfs/journal.c-	}
-> > > > --
-> > > > fs/reiserfs/journal.c-	}
-> > > > fs/reiserfs/journal.c:	ll_rw_block(READ, j, bhlist);
-> > > > fs/reiserfs/journal.c-	for (i = 1; i < j; i++)
-> > > > --
-> > > > fs/reiserfs/stree.c-		if (!buffer_uptodate(bh[j]))
-> > > > fs/reiserfs/stree.c:			ll_rw_block(READA, 1, bh + j);
-> > > > fs/reiserfs/stree.c-		brelse(bh[j]);
-> > > > --
-> > > > fs/reiserfs/stree.c-						    reada_blocks, reada_count);
-> > > > fs/reiserfs/stree.c:			ll_rw_block(READ, 1, &bh);
-> > > > fs/reiserfs/stree.c-			reiserfs_write_unlock(sb);
-> > > > --
-> > > > fs/reiserfs/super.c-{
-> > > > fs/reiserfs/super.c:	ll_rw_block(READ, 1, &(SB_BUFFER_WITH_SB(s)));
-> > > > fs/reiserfs/super.c-	reiserfs_write_unlock(s);
-> > > > 
-> > > > in particular the second stree.c one and the super.c has a 
-> > > > write-unlock straight before the lock-drop.
-> > > > 
-> > > > I think the stree.c unlock could be moved to before the 
-> > > > ll_rw_block() call straight away.
-> > > 
-> > > 
-> > > Indeed.
-> > > 
-> > > 
-> > > > 
-> > > > The super.c one needs more care: first put &(SB_BUFFER_WITH_SB(s)) 
-> > > > into a local variable, then unlock the wite-lock, then call 
-> > > > ll_rw_block(). (This is important because &(SB_BUFFER_WITH_SB(s)) is 
-> > > > global filesystem state that has to be read with the lock held.)
-> > > 
-> > > 
-> > > Indeed &(SB_BUFFER_WITH_SB(s)) is a pointer to blocks that
-> > > reflect the state of the filesystem but it was already not
-> > > safe on the old code.
-> > > 
-> > 
-> > SB_BUFFER_WITH_SB isn't going to change.  It gets set once during 
-> > mount and will return the same buffer from then on.
-> 
-> Are we holding a permanent reference to it after the first read? If 
-> yes then any bread done on an uptodate bh will return immediately 
-> without scheduling
+On Thu, 30 Apr 2009, Mathieu Desnoyers wrote:
 
-Yes, it is pinned the whole time the FS is mounted.  It looks to me like
-the reread_meta_blocks() function can go away.  The log replay should be
-updating the same caches that the super block bh is in.
+> By ZVC update, you mean Zone ... Counter update ? (which code exactly ?)
 
-But, this isn't very performance critical stuff, it only happens in
-reiserfs_fill_super().  I'd leave it.
+The code that you were modifying in vmstat.c.
 
--chris
+> Hrm, I must admit I'm not sure I follow how your reasoning applies to my
+> code. I am using a percpu_add_return_irq() exactly for this reason : it
+> only ever touches the percpu variable once and atomically. The test for
+> overflow is done on the value returned by percpu_add_return_irq().
 
+If the percpu differential goes over a certain boundary then the
+differential would be updated twice.
 
+> Therefore, an interrupt scenario that would be close to what I
+> understand from your concerns would be :
+>
+> * Thread A
+>
+> inc_zone_page_state()
+>   p_ret = percpu_add_return(p, 1); (let's suppose this increment
+>                                     overflows the threshold, therefore
+>                                     (p_ret & mask) == 0)
+>
+> ----> interrupt comes in, preempts the current thread, execution in a
+>       different thread context (* Thread B) :
+>
+>      inc_zone_page_state()
+>        p_ret = percpu_add_return(p, 1);  ((p_ret & mask) == 1)
+>        if (!(p_ret & mask))
+>          increment global zone count. (not executed)
+>
+> ----> interrupt comes in, preempts the current thread, execution back to
+>       the original thread context (Thread A), on the same or on a
+>       different CPU :
+>
+>   if (!(p_ret & mask))
+>     increment global zone count.   -----> will therefore increment the
+>                                           global zone count only after
+>                                           scheduling back the original
+>                                           thread.
+>
+> So I guess what you say here is that if Thread B is preempted for too
+> long, we will have to wait until it gets scheduled back before the
+> global count is incremented. Do we really need such degree of precision
+> for those counters ?
+>
+> (I fear I'm not understanding your concern fully though)
+
+Inc_zone_page_state modifies the differential which is u8 and can easily
+overflow.
+
+Hmmm. But if you check for overflow to zero this way it may work without
+the need for cmpxchg. But if you rely on overflow then we only update the
+global count after 256 counts on the percpu differential. The tuning of
+the accuracy of the counter wont work anymore. The global counter could
+become wildly inaccurate with a lot of processors.
 
 
