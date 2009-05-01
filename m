@@ -1,81 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761298AbZEAOMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763664AbZEAOMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761298AbZEAOMZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 10:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbZEAOMP
+	id S1763664AbZEAOMx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 10:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759669AbZEAOMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 10:12:15 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:61442 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754491AbZEAOMO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 10:12:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=q8Vu1kHphLsTEzeNq3mvM9AbYLJsHHqZF08v0QejK591VniUPM2xTXBXR4Qo5nzbbo
-         YrscIuzKNdPFQlpLkJiodrnmYy8vrMwbSbooOGsM+/eL+W7WrN0nE/38+zPotHz2n+OB
-         rvLzclY/ubX8b/co+yZq0XxgYe+T+F0eAglPA=
-Date: Fri, 1 May 2009 16:12:09 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Jeff Mahoney <jeffm@suse.com>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Alessio Igor Bogani <abogani@texware.it>, J@pimp.vs19.net
-Subject: Re: [PATCH 0/6] kill-the-BKL/reiserfs3: performance improvements,
-	faster than Bkl based scheme
-Message-ID: <20090501141208.GJ6011@nowhere>
-References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com> <20090501053540.GC5983@elte.hu> <1241180316.3783.3.camel@localhost.localdomain>
+	Fri, 1 May 2009 10:12:39 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:47103 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751000AbZEAOMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 10:12:38 -0400
+Date: Fri, 1 May 2009 15:12:35 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH mmotm] mm: alloc_large_system_hash check order
+Message-ID: <20090501141234.GB27831@csn.ul.ie>
+References: <Pine.LNX.4.64.0904292151350.30874@blonde.anvils> <20090430132544.GB21997@csn.ul.ie> <Pine.LNX.4.64.0905011202530.8513@blonde.anvils> <20090501140015.GA27831@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <1241180316.3783.3.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090501140015.GA27831@csn.ul.ie>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 02:18:36PM +0200, Thomas Meyer wrote:
-> Am Freitag, den 01.05.2009, 07:35 +0200 schrieb Ingo Molnar:
+On Fri, May 01, 2009 at 03:00:15PM +0100, Mel Gorman wrote:
+> > <SNIP>
 > > 
-> > I've pulled it and have also merged -rc4 into the kill-the-BKL tree, 
-> > which can picked up from here:
-> > 
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/kill-the-BKL
-> > 
-> > So for comparative benchmarking, vanilla v2.6.30-rc4 (which has the 
-> > BKL) can be compared against latest kill-the-BKL
+> > Andrew noticed another oddity: that if it goes the hashdist __vmalloc()
+> > way, it won't be limited by MAX_ORDER.  Makes one wonder whether it
+> > ought to fall back to __vmalloc() if the alloc_pages_exact() fails.
 > 
-> Hi,
+> I don't believe so. __vmalloc() is only used when hashdist= is used or on IA-64
+> (according to the documentation).
+
+I was foolish to believe the documentation. vmalloc() will be used by
+default on 64-bit NUMA, not just IA-64.
+
+> It is used in the case that the caller is
+> willing to deal with the vmalloc() overhead (e.g. using base page PTEs) in
+> exchange for the pages being interleaved on different nodes so that access
+> to the hash table has average performance[*]
 > 
-> Kernel gets soft-locked-up in somewhere in initrd:
-> 
-> See
-> http://m3y3r.de/bilder/img_0524.jpg
-> http://m3y3r.de/bilder/img_0525.jpg
-> http://m3y3r.de/bilder/img_0526.jpg
-> http://m3y3r.de/bilder/img_0527.jpg
-> http://m3y3r.de/bilder/img_0528.jpg
-> http://m3y3r.de/bilder/img_0529.jpg
-
-
-Looks like someone owns the kernel lock and is sleeping
-with the assumption it releases the lock, like the old bkl did.
-
- 
-> config is:
-> http://m3y3r.de/bilder/config-2.6.30-rc4-ktb
-
-
-Thanks, I will try it out once I have some time.
-
-
-> greets
-> thomas
-> 
+> If we automatically fell back to vmalloc(), I bet 2c we'd eventually get
+> a mysterious performance regression report for a workload that depended on
+> the hash tables performance but that there was enough memory for the hash
+> table to be allocated with vmalloc() instead of alloc_pages_exact().
 > 
 
+I think this point still holds. On non-NUMA machine, we don't want to fall
+back to using vmalloc() just because the machine happened to have enough
+memory. It's really tricky to know for sure though - will there be enough
+performance benefits from having a bigger hash table to offset using base
+pages to back it? It's probably unknowable because it depends on the exact
+hardware and how the hash table is being used.
+
+> [*] I speculate that on non-IA64 NUMA machines that we see different
+>     performance for large filesystem benchmarks depending on whether we are
+>     running on the boot-CPU node or not depending on whether hashdist=
+>     is used or not.
+
+This speculation is junk because using vmalloc() for hash tables is not
+specific to IA-64.
+
+> <SNIP>
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
