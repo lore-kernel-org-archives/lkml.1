@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764920AbZEAOwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764992AbZEAOwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764920AbZEAOwO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 10:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761372AbZEAOmu
+	id S1764992AbZEAOwi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 10:52:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761497AbZEAOmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 10:42:50 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:36969 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761307AbZEAOmo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 10:42:44 -0400
-Subject: [RFC][PATCH 25/35] cris: use pte_offset_kernel() as base for pte_offset_map*()
+	Fri, 1 May 2009 10:42:51 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:57883 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761319AbZEAOmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 10:42:45 -0400
+Subject: [RFC][PATCH 27/35] m32r: use pte_offset_kernel() as base for pte_offset_map*()
 To: linux-arch@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>
 From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Fri, 01 May 2009 07:42:40 -0700
+Date: Fri, 01 May 2009 07:42:43 -0700
 References: <20090501144201.D31EF417@kernel>
 In-Reply-To: <20090501144201.D31EF417@kernel>
-Message-Id: <20090501144240.C3F1A3B9@kernel>
+Message-Id: <20090501144243.33BDCFD4@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,23 +36,22 @@ directly.
 Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 ---
 
- linux-2.6.git-dave/arch/cris/include/asm/ptemap.h |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ linux-2.6.git-dave/arch/m32r/include/asm/ptemap.h |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff -puN arch/cris/include/asm/ptemap.h~cris-pte_offset_kernel arch/cris/include/asm/ptemap.h
---- linux-2.6.git/arch/cris/include/asm/ptemap.h~cris-pte_offset_kernel	2009-04-30 15:11:07.000000000 -0700
-+++ linux-2.6.git-dave/arch/cris/include/asm/ptemap.h	2009-04-30 15:11:07.000000000 -0700
-@@ -1,10 +1,8 @@
- #ifndef _CRIS_ASM_PTEMAP_H
- #define _CRIS_ASM_PTEMAP_H
+diff -puN arch/m32r/include/asm/ptemap.h~m32r-pte_offset_kernel arch/m32r/include/asm/ptemap.h
+--- linux-2.6.git/arch/m32r/include/asm/ptemap.h~m32r-pte_offset_kernel	2009-04-30 15:11:08.000000000 -0700
++++ linux-2.6.git-dave/arch/m32r/include/asm/ptemap.h	2009-04-30 15:11:08.000000000 -0700
+@@ -1,9 +1,8 @@
+ #ifndef _M32R_ASM_PTEMAP_H
+ #define _M32R_ASM_PTEMAP_H
  
--#define pte_offset_map(dir, address) \
--	((pte_t *)page_address(pmd_page(*(dir))) + __pte_offset(address))
--#define pte_offset_map_nested(dir, address) pte_offset_map(dir, address)
--
-+#define pte_offset_map(dir, address) pte_offset_kernel(dir, address)
-+#define pte_offset_map_nested(dir, address) pte_offset_kernel(dir, address)
- #define pte_unmap(pte) do { } while (0)
- #define pte_unmap_nested(pte) do { } while (0)
+-#define pte_offset_map(dir, address)	\
+-	((pte_t *)page_address(pmd_page(*(dir))) + pte_index(address))
+-#define pte_offset_map_nested(dir, address)	pte_offset_map(dir, address)
++#define pte_offset_map(dir, address)	pte_offset_kernel(dir, address)
++#define pte_offset_map_nested(dir, address)	pte_offset_kernel(dir, address)
+ #define pte_unmap(pte)		do { } while (0)
+ #define pte_unmap_nested(pte)	do { } while (0)
  
 _
