@@ -1,74 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759340AbZEBVB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758274AbZEBVHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759340AbZEBVB6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 17:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbZEBVBt
+	id S1758274AbZEBVHa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 17:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757767AbZEBVHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 17:01:49 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:36272 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756519AbZEBVBt (ORCPT
+	Sat, 2 May 2009 17:07:15 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:34283 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757507AbZEBVHN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 17:01:49 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhwFAG9N/ElMQW1W/2dsb2JhbACBUMsog30F
-Date: Sat, 2 May 2009 17:01:47 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Christoph Lameter <cl@linux.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Yuriy Lalym <ylalym@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
-       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ltt-dev] [PATCH] Fix dirty page accounting in
-	redirty_page_for_writepage()
-Message-ID: <20090502210147.GA23766@Krystal>
-References: <20090430065055.GA16277@elte.hu> <alpine.DEB.1.10.0904300926530.22262@qirst.com> <20090430141211.GB5922@Krystal> <alpine.DEB.1.10.0904301009530.14178@qirst.com> <20090430194158.GB12926@Krystal> <alpine.DEB.1.10.0904301559500.11923@qirst.com> <20090430211750.GA19933@Krystal> <alpine.DEB.1.10.0905010939090.18324@qirst.com> <20090501192142.GA18339@Krystal> <alpine.DEB.1.10.0905011527260.7795@qirst.com>
+	Sat, 2 May 2009 17:07:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=UYDpI4Rlh9y7nqonH/tB78WWvK8QrKUFEz/tykCWnKK3lTbJUR42EF6LOiGsuke+K/
+         Q/TOkcjJQqqHse4UHk1uckZHQca4DfFmA0DuhHIHdCzUi5x+iMNMfXYbLNFnCCU8Kf9U
+         hJlwIgsTP8vPzTvh4t0UV0h66eNa8gUkewRE8=
+Subject: Re: [BUG] 2.6.30-rc4 hid bluetooth not working
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: Dave Young <hidave.darkstar@gmail.com>, Marc Pignat <Marc.Pignat@hevs.ch>,
+       jkosina@suse.cz, ext-roger.quadros@nokia.com,
+       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1241295698.4412.15.camel@localhost.localdomain>
+References: <49FC2455020000BF000290DA@mailgw2.hevs.ch>
+	 <a8e1da0905020708j54cda260tac256469498f6ce3@mail.gmail.com>
+	 <1241293366.4412.14.camel@localhost.localdomain>
+	 <dd18b0c30905021319u79bc94d0ned9c6333e0408818@mail.gmail.com>
+	 <1241295698.4412.15.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 02 May 2009 14:07:18 -0700
+Message-Id: <1241298438.1864.1.camel@unix>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.26.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0905011527260.7795@qirst.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:56:10 up 63 days, 17:22,  3 users,  load average: 0.17, 0.39,
-	0.43
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (cl@linux.com) wrote:
-> On Fri, 1 May 2009, Mathieu Desnoyers wrote:
+On Sat, 2009-05-02 at 13:21 -0700, Marcel Holtmann wrote:
+> Hi Justin,
 > 
-> > What I do here is to let those u8 counters increment as free-running
-> > counters. Yes, they will periodically overflow the 8 bits. But I don't
-> > rely on this for counting the number of increments we need between
-> > global counter updates : I use the bitmask taken from the threshold
-> > value (which is now required to be a power of two) to detect 0, 1, 2, 3,
-> > 4, 5, 6 or 7-bit counter overflow. Therefore we can still have the kind
-> > of granularity currently provided. The only limitation is that we have
-> > to use powers of two for the threshold, so we end up counting in power
-> > of two modulo, which will be unaffected by the u8 overflow.
+> > >> >>> > Subject: bluetooth: Fix serialization when adding/deleting connections in hci_sysfs
+> > >> >>> >
+> > >> >>> > add_conn and del_conn should be serialized, but flush_workqueue can't be used
+> > >> >>> > by the worker thread on it's own queue, so use flush_work to serialize add_conn
+> > >> >>> > and del_conn against each other.
+> > >> >>> >
+> > >> >>> > Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
+> > >> >>>
+> > >> >>> Acked-by: Jiri Kosina <jkosina@suse.cz>
+> > >> >>>
+> > >> >>> FWIW.
+> > >> >>
+> > >> >>nak from my side since I think it is the wrong fix. We really wanna wait
+> > >> >>for all works to finish here. This includes work from other connection
+> > >> >>attempts or terminations.
+> > >> >
+> > >> > IMHO, there is no need to wait for work currently running, since this is a
+> > >> > singlethread workqueue.
+> > >>
+> > >> Yes, sounds right.
+> > >>
+> > >> >
+> > >> > But it is perhaps simpler to use a lock (mutex or watherver locking primitive).
+> > >>
+> > >> I'm here a little bit late. Marcel, I'm quite busy recently, I just
+> > >> see the commit and then this thread.
+> > >>
+> > >> Let me explain why I add two workqueue originally,  because workqueue
+> > >> will be defered, so   we must guarantee "connection deletion" finished
+> > >> before "connection adding with same bt addr",  or the "connection
+> > >> adding" will fail.
+> > >>
+> > >> On the other hand flush "adding" workqueue in "connection deletion"
+> > >> function is not necessary.
+> > >>
+> > >> To fix this bug, I think we can just use the two work struct for
+> > >> add/del, at the same time keeping the original two workqueue.
+> > >>
+> > >> Please see following patch for this, (building-test only, I have no
+> > >> bluetooth device at hand, I can test this the day after tommorrow)
+> > >
+> > > so I spent the whole day figuring out what is going on here and we keep
+> > > making the wrong assumptions over and over again.
+> > >
+> > > First of all, we only add the sysfs device when we have a successful
+> > > connection. And we identify it with the handle. This means that we can
+> > > NOT have any name clashes anymore since the controller has to make sure
+> > > a handle is only assigned once. Previously we did this on the BD_ADDR
+> > > value and that lead to it. That is no longer the case.
+> > >
+> > > Second of all the two work queues introduces way too much complexity for
+> > > a really simple task of adding and removing a sysfs device entry.
+> > >
+> > > The real problem we have right now are that we are not initializing the
+> > > sysfs device when creating the hci_conn. This is just wrong and can lead
+> > > to all kinds of weird invalid data access. And as a result the adding of
+> > > the sysfs device should only set the name and add it.
+> > >
+> > > We also check device_registered before making sure that device_add has
+> > > been run. And instead of adding more locking or crazy work queue
+> > > dependencies, we should use the single thread work queue to ensure the
+> > > correct order of things.
+> > >
+> > > The attached patch introduces a hci_conn_init_sysfs step to make sure we
+> > > setup the sysfs device correctly. I left the flush_work calls, but I
+> > > think they are not needed since a del_conn before add_conn is no longer
+> > > possible now.
+> > 
+> > well it seems your not the only one
+> > with a broken bluetooth(latest git pull
+> > this morning)
 > 
-> Ack. Got it. Looks good.
+> can you try the patch that I attached to the previous email. It should
+> fix exactly this.
+> 
+> Regards
+> 
+> Marcel
+> 
 > 
 
-Modifying mmzone.h "struct per_cpu_pageset" so it uses percpu dynamic
-allocation seems to be the far-reaching part of the modification (of a
-subsystem I'm not completely familiar with, including NUMA special
-cases). Is there any patch already doing this kind of modification
-floating around ?
+nice patch.
+works like a charm
+bluetooth is alive again.
 
-I'd be glad to give a try at some percpu_add_return counters experiments
-if percpu struct per_cpu_pageset allocation happens to be already
-available.
+Justin P. Mattock
 
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
