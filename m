@@ -1,204 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757552AbZEBPjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbZEBPk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757552AbZEBPjh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 11:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbZEBPj2
+	id S1757945AbZEBPk0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 11:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbZEBPkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 11:39:28 -0400
-Received: from [212.69.161.110] ([212.69.161.110]:60912 "EHLO
-	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754251AbZEBPj1 (ORCPT
+	Sat, 2 May 2009 11:40:12 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:60380 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754251AbZEBPkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 11:39:27 -0400
-X-Greylist: delayed 730 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 May 2009 11:39:27 EDT
-Date: Sat, 2 May 2009 17:26:20 +0200
-From: Lars Ellenberg <lars.ellenberg@linbit.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Philipp Reisner <philipp.reisner@linbit.com>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
-       Neil Brown <neilb@suse.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       Lars Marowsky-Bree <lmb@suse.de>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: [PATCH 02/16] DRBD: lru_cache
-Message-ID: <20090502152620.GA6466@racke>
-References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com> <1241090812-13516-2-git-send-email-philipp.reisner@linbit.com> <1241090812-13516-3-git-send-email-philipp.reisner@linbit.com> <20090501015956.ef663e9b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090501015956.ef663e9b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 2 May 2009 11:40:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:cc:message-id:from:date;
+        b=Whka8IURIbT/BNtNX0L07dtFN3DVmci0kVD6TCKZKCxkhCP4UTYdm3p30b7NmUEYQl
+         ftUFmmzH1ms1n+9Cv48pj21IA7LMLOQbzG0wnvMG15JmdalA3MzS8AXmlgiqzh6lVGqO
+         9PiftEA7uOxFTnINI6T7/tOsMp41LYLKaPEB4=
+To: linux-mtd@lists.infradead.org
+Subject: [PATCH] MTD: Remove pmcmsp-ramroot.c
+Cc: linux-mips@linux-mips.org, ralf@linux-mips.org, hch@lst.de,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org
+Message-Id: <E1M0HJu-0007HN-7j@localhost>
+From: Shane McDonald <mcdonald.shane@gmail.com>
+Date: Sat, 02 May 2009 09:40:06 -0600
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 01:59:56AM -0700, Andrew Morton wrote:
-> On Thu, 30 Apr 2009 13:26:38 +0200 Philipp Reisner <philipp.reisner@linbit.com> wrote:
-> 
-> > The lru_cache is a fixed size cache of equal sized objects. It allows its
-> > users to do arbitrary transactions in case an element in the cache needs to
-> > be replaced. Its replacement policy is LRU.
-> > 
-> 
-> None of this really looks drbd-specific.
-> 
-> Would it not be better to present this as a general library function? 
-> lib/lru_cache.c?
+The RAMROOT function was a successful but non-portable attempt to append
+the root filesystem to the end of the kernel image.  The preferred and
+portable solution is to use an initramfs instead.
 
-yes. will do.
+The only user of this function was the msp71xx configuration
+in the MIPS architecture; as the use of the RAMROOT has been removed
+from that configuration, there are no more users, so this code
+can be removed.
 
-> I think I might have asked this before.  If I did, then thwap-to-you
-> for not permanently answering it in the changelog ;)
-> 
-> >
-> > ...
-> >
-> > +#define lc_e_base(lc)  ((char *)((lc)->slot + (lc)->nr_elements))
-> > +#define lc_entry(lc, i) ((struct lc_element *) \
-> > +		       (lc_e_base(lc) + (i)*(lc)->element_size))
-> > +#define lc_index_of(lc, e) (((char *)(e) - lc_e_base(lc))/(lc)->element_size)
-> 
-> The macros reference their arguments multiple times and hence are
-> inefficient and/or buggy and/or unpredictable when passed an expression
-> with side-effects.
-> 
-> If possible this should be fixed by turning them into regular C
-> functions.  Inlined C functions if that makes sense (it frequently
-> doesn't).
-> 
-> A pleasing side-effect of this conversion is that for some reason
-> developers are more likely to document C functions than they are macros
-> (hint).
-> 
-> I don't understand what these macros are doing and can't be bothered
-> reverse-engineering the code to work that out.  But all the typecasting
-> looks fishy.
+Signed-off-by: Shane McDonald <mcdonald.shane@gmail.com>
+---
+ drivers/mtd/maps/Kconfig          |    9 ---
+ drivers/mtd/maps/Makefile         |    1 -
+ drivers/mtd/maps/pmcmsp-ramroot.c |  104 -------------------------------------
+ 3 files changed, 0 insertions(+), 114 deletions(-)
+ delete mode 100644 drivers/mtd/maps/pmcmsp-ramroot.c
 
-I have a half finished rewrite of that piece code anyways,
-so I guess I'll have to finish it then.
+diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
+index 82923bd..2807833 100644
+--- a/drivers/mtd/maps/Kconfig
++++ b/drivers/mtd/maps/Kconfig
+@@ -105,15 +105,6 @@ config MSP_FLASH_MAP_LIMIT
+ 	default "0x02000000"
+ 	depends on MSP_FLASH_MAP_LIMIT_32M
+ 
+-config MTD_PMC_MSP_RAMROOT
+-	tristate "Embedded RAM block device for root on PMC-Sierra MSP"
+-	depends on PMC_MSP_EMBEDDED_ROOTFS && \
+-			(MTD_BLOCK || MTD_BLOCK_RO) && \
+-			MTD_RAM
+-	help
+-	  This provides support for the embedded root file system
+-          on PMC MSP devices.  This memory is mapped as a MTD block device.
+-
+ config MTD_SUN_UFLASH
+ 	tristate "Sun Microsystems userflash support"
+ 	depends on SPARC && MTD_CFI && PCI
+diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
+index 2dbc1be..8bae7f9 100644
+--- a/drivers/mtd/maps/Makefile
++++ b/drivers/mtd/maps/Makefile
+@@ -25,7 +25,6 @@ obj-$(CONFIG_MTD_OCTAGON)	+= octagon-5066.o
+ obj-$(CONFIG_MTD_PHYSMAP)	+= physmap.o
+ obj-$(CONFIG_MTD_PHYSMAP_OF)	+= physmap_of.o
+ obj-$(CONFIG_MTD_PMC_MSP_EVM)   += pmcmsp-flash.o
+-obj-$(CONFIG_MTD_PMC_MSP_RAMROOT)+= pmcmsp-ramroot.o
+ obj-$(CONFIG_MTD_PCMCIA)	+= pcmciamtd.o
+ obj-$(CONFIG_MTD_RPXLITE)	+= rpxlite.o
+ obj-$(CONFIG_MTD_TQM8XXL)	+= tqm8xxl.o
+diff --git a/drivers/mtd/maps/pmcmsp-ramroot.c b/drivers/mtd/maps/pmcmsp-ramroot.c
+deleted file mode 100644
+index 30de5c0..0000000
+--- a/drivers/mtd/maps/pmcmsp-ramroot.c
++++ /dev/null
+@@ -1,104 +0,0 @@
+-/*
+- * Mapping of the rootfs in a physical region of memory
+- *
+- * Copyright (C) 2005-2007 PMC-Sierra Inc.
+- * Author: Andrew Hughes, Andrew_Hughes@pmc-sierra.com
+- *
+- *  This program is free software; you can redistribute  it and/or modify it
+- *  under  the terms of  the GNU General  Public License as published by the
+- *  Free Software Foundation;  either version 2 of the  License, or (at your
+- *  option) any later version.
+- *
+- *  THIS  SOFTWARE  IS PROVIDED   ``AS  IS'' AND   ANY  EXPRESS OR IMPLIED
+- *  WARRANTIES,   INCLUDING, BUT NOT  LIMITED  TO, THE IMPLIED WARRANTIES OF
+- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
+- *  NO  EVENT  SHALL   THE AUTHOR  BE    LIABLE FOR ANY   DIRECT, INDIRECT,
+- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *  NOT LIMITED   TO, PROCUREMENT OF  SUBSTITUTE GOODS  OR SERVICES; LOSS OF
+- *  USE, DATA,  OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+- *  ANY THEORY OF LIABILITY, WHETHER IN  CONTRACT, STRICT LIABILITY, OR TORT
+- *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+- *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- *
+- *  You should have received a copy of the  GNU General Public License along
+- *  with this program; if not, write  to the Free Software Foundation, Inc.,
+- *  675 Mass Ave, Cambridge, MA 02139, USA.
+- */
+-
+-#include <linux/module.h>
+-#include <linux/types.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/slab.h>
+-#include <linux/fs.h>
+-#include <linux/root_dev.h>
+-#include <linux/mtd/mtd.h>
+-#include <linux/mtd/map.h>
+-
+-#include <asm/io.h>
+-
+-#include <msp_prom.h>
+-
+-static struct mtd_info *rr_mtd;
+-
+-struct map_info rr_map = {
+-	.name = "ramroot",
+-	.bankwidth = 4,
+-};
+-
+-static int __init init_rrmap(void)
+-{
+-	void *ramroot_start;
+-	unsigned long ramroot_size;
+-
+-	/* Check for supported rootfs types */
+-	if (get_ramroot(&ramroot_start, &ramroot_size)) {
+-		rr_map.phys = CPHYSADDR(ramroot_start);
+-		rr_map.size = ramroot_size;
+-
+-		printk(KERN_NOTICE
+-			"PMC embedded root device: 0x%08lx @ 0x%08lx\n",
+-			rr_map.size, (unsigned long)rr_map.phys);
+-	} else {
+-		printk(KERN_ERR
+-			"init_rrmap: no supported embedded rootfs detected!\n");
+-		return -ENXIO;
+-	}
+-
+-	/* Map rootfs to I/O space for block device driver */
+-	rr_map.virt = ioremap(rr_map.phys, rr_map.size);
+-	if (!rr_map.virt) {
+-		printk(KERN_ERR "Failed to ioremap\n");
+-		return -EIO;
+-	}
+-
+-	simple_map_init(&rr_map);
+-
+-	rr_mtd = do_map_probe("map_ram", &rr_map);
+-	if (rr_mtd) {
+-		rr_mtd->owner = THIS_MODULE;
+-
+-		add_mtd_device(rr_mtd);
+-
+-		return 0;
+-	}
+-
+-	iounmap(rr_map.virt);
+-	return -ENXIO;
+-}
+-
+-static void __exit cleanup_rrmap(void)
+-{
+-	del_mtd_device(rr_mtd);
+-	map_destroy(rr_mtd);
+-
+-	iounmap(rr_map.virt);
+-	rr_map.virt = NULL;
+-}
+-
+-MODULE_AUTHOR("PMC-Sierra, Inc");
+-MODULE_DESCRIPTION("MTD map driver for embedded PMC-Sierra MSP filesystem");
+-MODULE_LICENSE("GPL");
+-
+-module_init(init_rrmap);
+-module_exit(cleanup_rrmap);
+-- 
+1.6.2.4
 
-basically it allocates one continguous memory block,
-to avoid additional small allocations and pointer arrays.
-
-in memory structure is
-
-struct lru_cache {
-        struct list_head active;
-        struct list_head quiet;
-        struct list_head free;
-        size_t element_size;          <-- parameter to "lc_alloc"
-        unsigned int  nr_elements;    <-- parameter to "lc_alloc"
-        unsigned int  new_number;
-
-        unsigned int used;
-        unsigned long flags;
-        unsigned long hits, misses, starving, dirty, changed;
-
-        struct lc_element *changing_element; /* just for paranoia */
-
-        const char *name;
-
-        struct hlist_head slot[0];
-        /* hash colision chains here, then element storage. */
-};
-
-so we have fixed size list heads,
-size of a single such "element", to allow the user
-to add small payload;
-number of hash slots and "elements" following this header;
-some counters;
-hlist_slot[0];
-}
-following:
-struct hlist_head[nr_elements];
-array of element_size blobs[nr_elements];
-
-these "blobs" start with the struct lru_element,
-possibly followed by some user payload.
-
-the "index" you are asking about later is
-index into that "blob" array,
-and is used primarily to initialize the state of this thing
-from an on-disk representation (the "activity log", "AL"),
-for crash recovery purposes.
-
-the typecasting is necessary to get from the slot[0] to the "elements"
-skipping the hash slots.
-using "container of" or something like that would obscure the fact that,
-as currently implemented, the "lru_element" _must_ be the first member
-of any payload structure.  but see below.
-
-> > +static inline void lc_init(struct lru_cache *lc,
-<24 lines/>
-> > +}
-> 
-> How's about you remove all `inline' keywords from the whole patchset
-> and then go back and inline the functions where there is a demonstrable
-> benefit?  This function won't be one of them!
-
-will do.
-
-> > +/**
-> > + * lc_free: Frees memory allocated by lc_alloc.
-> > + * @lc: The lru_cache object
-> > + */
-> > +void lc_free(struct lru_cache *lc)
-> > +{
-> > +	vfree(lc);
-> > +}
-> 
-> vmalloc() is a last-resort thing.  It generates slower-to-access memory
-> and can cause internal fragmentation of the vmalloc arena, leading to
-> total machine failure.
-> 
-> Can it be avoided?  Often it _can_ be avoided, and the code falls back
-> to vmalloc() if the more robust memory allocation schemes failed.
-
-yes, it can be avoided.
-it used to be a kmalloc. but the mentioned "single memory block"
-implementation hit some kmalloc limit, and we have then been lazy,
-going the simple "two-line-patch" way.
-
-we'll go for separate, and independently kmalloc'ed,
-	struct hlist_head *slot;
-	struct lru_element *blob;
-then, or maybe for "struct page *blob_pages;" instead.
-
-> Please review all kerneldoc comments in the patchset - I won't commeent
-> on them further.
-
-will do.
-
-> > + * @lc: The lru_cache object
-> > + * @enr: element number
-> > + */
-> > +struct lc_element *lc_find(struct lru_cache *lc, unsigned int enr)
-> > +{
-> > +	struct hlist_node *n;
-> > +	struct lc_element *e;
-> > +
-> > +	BUG_ON(!lc);
-> > +	hlist_for_each_entry(e, n, lc->slot + lc_hash_fn(lc, enr), colision) {
-> > +		if (e->lc_number == enr)
-> > +			return e;
-> > +	}
-> > +	return NULL;
-> > +}
-> > +
-> >
-> > ...
-> >
-> 
-> 
-> So I assume that the caller of this facility must provide the locking
-> for its internals.  Is that documented somewhere?
-
-in my half-finished rewrite ;)
-
-Thanks,
-
-	Lars
