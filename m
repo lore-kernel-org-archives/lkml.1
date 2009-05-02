@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbZEBO1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbZEBO3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbZEBO1d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 10:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755812AbZEBO1W
+	id S1759218AbZEBO3w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 10:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756418AbZEBO3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 10:27:22 -0400
-Received: from out.tedata.net.eg ([212.103.160.61]:44756 "EHLO
-	out.tedata.net.eg" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754446AbZEBO1V (ORCPT
+	Sat, 2 May 2009 10:29:41 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43051 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756059AbZEBO3k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 10:27:21 -0400
-X-Spam-TE-Data-out-Scanned: Yes
-Message-ID: <20090502172039.xm8i1ukoif8k8gk0@webmail.f-williams.com>
-Date: Sat,  2 May 2009 17:20:39 +0300
-From: maintenance_team09 <maintenance_team09@administrativos.com>
-To: undisclosed-recipients:;
-Subject: Technical Service Unit
+	Sat, 2 May 2009 10:29:40 -0400
+Date: Sat, 2 May 2009 10:29:39 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 13/35] parisc: create ptemap.h
+Message-ID: <20090502142939.GD28342@bombadil.infradead.org>
+References: <20090501144201.D31EF417@kernel> <20090501144221.4C7F3D79@kernel>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=UTF-8;
-	DelSp="Yes";
-	format="flowed"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.5)
+In-Reply-To: <20090501144221.4C7F3D79@kernel>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 01, 2009 at 07:42:21AM -0700, Dave Hansen wrote:
+> +#ifndef _PARISC_ASM_PTEMAP_H
+> +#define _PARISC_ASM_PTEMAP_H
+> +
+> +#define pte_offset_map(pmd, address) pte_offset_kernel(pmd, address)
+> +#define pte_offset_map_nested(pmd, address) pte_offset_kernel(pmd, address)
+> +#define pte_unmap(pte) do { } while (0)
+> +#define pte_unmap_nested(pte) do { } while (0)
+> +
+> +#define pte_unmap(pte)			do { } while (0)
+> +#define pte_unmap_nested(pte)		do { } while (0)
+> +
+> +#endif /* _PARISC_ASM_PTEMAP_H */
 
-Technical Service Unit
+You have duplicate definitiosn of pte_unmap{,_nested}?
 
-Your mailbox has exceeded the storage limit set by your administrator. You may
-not be able to send or receive new mail until your mailbox size is  
-increased by
-your system administrator. You are required to contact your system
-administrator through e-mail with your
-
-current Username:{ } and
-Password:{ } to increase your storage limit.
-
-System Administrator
-E-mail: maintenance_team09@administrativos.com
-
-You will continue to receive this warning message periodically if your inbox
-size continues to exceed its size limit.
-
-
-
-
-
-----------------------------------------------------------------
-
-
+cheers, Kyle
