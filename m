@@ -1,61 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbZEBHDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbZEBHKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754496AbZEBHDQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 03:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbZEBHC7
+	id S1753241AbZEBHKr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 03:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbZEBHKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 03:02:59 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:23580 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbZEBHC6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 03:02:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Gj4ccfC2xXOVW+oBnKM9uGB2sIFrLruJP3Y5H0KM+twrsurpZ32UcrAAJEJ2dTwbOn
-         ou4R2kkePOp72Uvajqp7vQSiRi02wiEU5t7y1fShoaHXk4K9GnjfunT38M2B0Or79xmN
-         jrqueXjmKDzi8WGcXetVKhe04KVU+2wxBrT7s=
-Date: Sat, 2 May 2009 11:02:54 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ed Swierk <eswierk@aristanetworks.com>
-Subject: Re: [PATCH] x86: read apic id if it is not acpi_lapic
-Message-ID: <20090502070254.GA4791@lenovo>
-References: <20090430084145.GD21699@elte.hu> <49FBD0A2.4030309@kernel.org>
+	Sat, 2 May 2009 03:10:37 -0400
+Received: from in.cluded.net ([195.159.98.120]:47246 "EHLO in.cluded.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751550AbZEBHKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 03:10:36 -0400
+Message-ID: <49FBF00F.5030700@uw.no>
+Date: Sat, 02 May 2009 07:02:39 +0000
+From: "Daniel K." <dk@uw.no>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9a1) Gecko/20060307 SeaMonkey/1.5a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49FBD0A2.4030309@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 17/35] sparc: create ptemap.h
+References: <20090501144201.D31EF417@kernel> <20090501144227.3FFE505C@kernel>
+In-Reply-To: <20090501144227.3FFE505C@kernel>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Yinghai Lu - Fri, May 01, 2009 at 09:48:34PM -0700]
-| 
-| Ed found that on 32bit, boot_cpu_physical_apicid is not read right,
-| when mptable is broken.
-| 
-| interesting, actually three path
-| 1. acpi: at that time, at that time that is already read from reg.
-| 2. mptable: that only read from mptable.
-| 3. no madt, and no mptable, that use default apic id 0 for 64bit, -1 for 32bit
-| 
-| so could read that apic id for 2/3 path.
-| 
-| also could avoid set fixmap that lapic two times when acpi_lapic is used.
-| and need to move cpu_has_apic earlier and call apic_disable()
-| 
-| Reported-by: Ed Swierk <eswierk@aristanetworks.com>
-| Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-| Cc: Cyrill Gorcunov <gorcunov@openvz.org>
-| 
+Dave Hansen wrote:
+> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+> ---
+> 
+>  linux-2.6.git-dave/arch/sparc/include/asm/pgtable_32.h |   15 --------
+>  linux-2.6.git-dave/arch/sparc/include/asm/pgtable_64.h |    5 --
+>  linux-2.6.git-dave/arch/sparc/include/asm/ptemap.h     |   29 +++++++++++++++++
+>  3 files changed, 31 insertions(+), 18 deletions(-)
+> 
+> diff -puN arch/sparc/include/asm/pgtable_32.h~sparc-ptemaph arch/sparc/include/asm/pgtable_32.h
+> --- linux-2.6.git/arch/sparc/include/asm/pgtable_32.h~sparc-ptemaph	2009-04-30 15:11:02.000000000 -0700
+> +++ linux-2.6.git-dave/arch/sparc/include/asm/pgtable_32.h	2009-04-30 15:11:02.000000000 -0700
+> @@ -300,20 +300,7 @@ BTFIXUPDEF_CALL(pmd_t *, pmd_offset, pgd
+>  BTFIXUPDEF_CALL(pte_t *, pte_offset_kernel, pmd_t *, unsigned long)
+>  #define pte_offset_kernel(dir,addr) BTFIXUP_CALL(pte_offset_kernel)(dir,addr)
+>  
+> -/*
+> - * This shortcut works on sun4m (and sun4d) because the nocache area is static,
+> - * and sun4c is guaranteed to have no highmem anyway.
+> - */
+> -#define pte_offset_map(d, a)		pte_offset_kernel(d,a)
+> -#define pte_offset_map_nested(d, a)	pte_offset_kernel(d,a)
+> -
+> -#define pte_unmap(pte)		do{}while(0)
+> -#define pte_unmap_nested(pte)	do{}while(0)
+> -
+> -/* Certain architectures need to do special things when pte's
+> - * within a page table are directly modified.  Thus, the following
+> - * hook is made available.
+> - */
 
-Thanks Yinghai! My Ack if needed.
- 
-	-- Cyrill
+This is FUBAR'ed, The comment refers to the BTFIXUPDEF_CALL below, and should not
+be moved to asm/ptemap.h 
+
+> +#include <asm/ptemap.h>
+>  
+>  BTFIXUPDEF_CALL(void, set_pte, pte_t *, pte_t)
+>  
+> diff -puN arch/sparc/include/asm/pgtable_64.h~sparc-ptemaph arch/sparc/include/asm/pgtable_64.h
+> --- linux-2.6.git/arch/sparc/include/asm/pgtable_64.h~sparc-ptemaph	2009-04-30 15:11:02.000000000 -0700
+> +++ linux-2.6.git-dave/arch/sparc/include/asm/pgtable_64.h	2009-04-30 15:11:02.000000000 -0700
+> @@ -652,10 +652,7 @@ static inline int pte_special(pte_t pte)
+>  /* Find an entry in the third-level page table.. */
+>  #define pte_offset_kernel(dir, address)	\
+>  	((pte_t *)pmd_page_vaddr(*(dir)) + pte_index(address))
+> -#define pte_offset_map(dir, address) pte_offset_kernel((dir), (address))
+> -#define pte_offset_map_nested(dir, address) pte_offset_kernel((dir), (address))
+> -#define pte_unmap(pte)			do { } while (0)
+> -#define pte_unmap_nested(pte)		do { } while (0)
+> +#include <asm/ptemap.h>
+>  
+>  /* Actual page table PTE updates.  */
+>  extern void tlb_batch_add(struct mm_struct *mm, unsigned long vaddr, pte_t *ptep, pte_t orig);
+> diff -puN /dev/null arch/sparc/include/asm/ptemap.h
+> --- /dev/null	2008-09-02 09:40:19.000000000 -0700
+> +++ linux-2.6.git-dave/arch/sparc/include/asm/ptemap.h	2009-04-30 15:11:02.000000000 -0700
+> @@ -0,0 +1,29 @@
+> +#ifndef _SPARC_ASM_PTEMAP_H
+> +#define _SPARC_ASM_PTEMAP_H
+> +
+> +#if defined(__sparc__) && defined(__arch64__)
+> +
+> +/* Certain architectures need to do special things when pte's
+> + * within a page table are directly modified.  Thus, the following
+> + * hook is made available.
+> + */
+> +
+> +#define pte_offset_map(dir, address) pte_offset_kernel((dir), (address))
+> +#define pte_offset_map_nested(dir, address) pte_offset_kernel((dir), (address))
+> +#define pte_unmap(pte)			do { } while (0)
+> +#define pte_unmap_nested(pte)		do { } while (0)
+> +
+> +#else
+> +
+> + * This shortcut works on sun4m (and sun4d) because the nocache area is static,
+> + * and sun4c is guaranteed to have no highmem anyway.
+> + */
+
+Broken comment.
+
+> +#define pte_offset_map(d, a)		pte_offset_kernel(d,a)
+> +#define pte_offset_map_nested(d, a)	pte_offset_kernel(d,a)
+> +
+> +#define pte_unmap(pte)		do{}while(0)
+> +#define pte_unmap_nested(pte)	do{}while(0)
+> +
+> +#endif
+> +
+> +#endif /* _SPARC_ASM_PTEMAP_H *//*
+
+Broken comment.
+
+I realize this is going away in the end, but all the interim steps should
+compile, to aid bisection.
+
+
+Daniel K.
