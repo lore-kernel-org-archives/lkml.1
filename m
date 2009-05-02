@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758554AbZEBUq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759461AbZEBUuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758554AbZEBUq7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 16:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757333AbZEBUqt
+	id S1759461AbZEBUuG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 16:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757725AbZEBUtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 16:46:49 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:52065 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755763AbZEBUqs (ORCPT
+	Sat, 2 May 2009 16:49:52 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55477
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756075AbZEBUtv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 16:46:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=o06RVzRer5t/xGlX6c+rvceTQ4Rov/CDdMMRfPFsljcTO4DPBkEdqUf94cgSZWeL4C
-         K/imF0dQ5Ifb337INZK1tdtWOX7SfuPmz/MiKRq4I4VZD4UpkPzPVRX3EHaXIB8qa0YI
-         PlsJ2Q4j2ZdM+bNk4ZL3svQqEd6UYMjvKF46Q=
-Message-ID: <49FCB137.8000003@gmail.com>
-Date: Sat, 02 May 2009 22:46:47 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] staging: &&/|| typo?
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 2 May 2009 16:49:51 -0400
+Date: Sat, 02 May 2009 13:49:45 -0700 (PDT)
+Message-Id: <20090502.134945.07397681.davem@davemloft.net>
+To: mmvinni@yahoo.com
+Cc: rabin@rab.in, shemminger@vyatta.com, netdev@vger.kernel.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org
+Subject: Re: br2684: convert to net_device_ops broke it
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <907051.51698.qm@web58405.mail.re3.yahoo.com>
+References: <777914.38491.qm@web58405.mail.re3.yahoo.com>
+	<20090502134605.GA11168@debian>
+	<907051.51698.qm@web58405.mail.re3.yahoo.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix &&/|| typo
+From: Mikko Vinni <mmvinni@yahoo.com>
+Date: Sat, 2 May 2009 13:02:40 -0700 (PDT)
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-vi drivers/staging/go7007/wis-sony-tuner.c +218
-#define MPX_NUM_MODES   ARRAY_SIZE(mpx_audio_modes)
+> 
+> Rabin Vincent wrote:
+> 
+>> On Sat, May 02, 2009 at 02:04:21AM -0700, Mikko Vinni wrote:
+>> > my ADSL connection works well with kernel 2.6.29, but since commit
+>> > 0ba25ff4c669e5395110ba6ab4958a97a9f96922 (br2684: convert to net_device_ops)
+>> > entered the mainline using br2684ctl fails with the following bug:
+>> [..]
+>> > I'll be glad to test any patches.
+>> 
+>> Please try the one below.
+> 
+> Yes, that fixes it. Good job and thank you!
 
-diff --git a/drivers/staging/go7007/wis-sony-tuner.c b/drivers/staging/go7007/wis-sony-tuner.c
-index c965c60..086896c 100644
---- a/drivers/staging/go7007/wis-sony-tuner.c
-+++ b/drivers/staging/go7007/wis-sony-tuner.c
-@@ -370,7 +370,7 @@ static int set_if(struct i2c_client *client)
- 	i2c_transfer(client->adapter, &msg, 1);
- 
- 	/* Select MPX mode if not forced by the user */
--	if (force_mpx_mode >= 0 || force_mpx_mode < MPX_NUM_MODES)
-+	if (force_mpx_mode >= 0 && force_mpx_mode < MPX_NUM_MODES)
- 		t->mpxmode = force_mpx_mode;
- 	else
- 		t->mpxmode = default_mpx_mode;
+Patch applied, thanks everyone.
