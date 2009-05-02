@@ -1,64 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbZEBDbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZEBDce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754600AbZEBDbc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 23:31:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbZEBDbY
+	id S1755239AbZEBDce (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 23:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbZEBDcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 23:31:24 -0400
-Received: from [192.16.179.4] ([192.16.179.4]:57472 "EHLO sh.osrg.net"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752045AbZEBDbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 23:31:23 -0400
-Date: Sat, 02 May 2009 12:23:52 +0900 (JST)
-Message-Id: <20090502.122352.99036120.ryusuke@osrg.net>
-To: jack@suse.cz
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org
-Subject: Re: [PATCH 2/2] Use feature code to eliminate quota pointers from
- inodes for filesystems that don't need it.
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-In-Reply-To: <1241112678-6615-3-git-send-email-jack@suse.cz>
-References: <1241112678-6615-1-git-send-email-jack@suse.cz>
-	<1241112678-6615-3-git-send-email-jack@suse.cz>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 1 May 2009 23:32:23 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:2750 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752045AbZEBDcV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 23:32:21 -0400
+From: Alex Williamson <alex.williamson@hp.com>
+Subject: [PATCH] virtio_net: Cleanup command queue scatterlist usage
+To: davem@davemloft.net, rusty@rustcorp.com.au
+Cc: alex.williamson@hp.com, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-next@vger.kernel.org
+Date: Fri, 01 May 2009 21:27:56 -0600
+Message-ID: <20090502032646.7927.99584.stgit@debian.lart>
+In-Reply-To: <20090501.153301.42015656.davem@davemloft.net>
+References: <20090501.153301.42015656.davem@davemloft.net>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Sat, 02 May 2009 12:23:53 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Apr 2009 19:31:18 +0200, Jan Kara wrote:
-> Signed-off-by: Jan Kara <jack@suse.cz>
-> ---
->  fs/ext2/ext2.h     |    1 +
->  fs/ext2/super.c    |    5 ++
->  fs/inode.c         |    7 ++-
->  fs/nilfs2/mdt.c    |    3 -
->  fs/quota/dquot.c   |  134 ++++++++++++++++++++++++++++++----------------------
->  include/linux/fs.h |   10 +++-
->  6 files changed, 97 insertions(+), 63 deletions(-)
+We were avoiding calling sg_init* on scatterlists passed
+into virtnet_send_command to prevent extraneous end markers.
+This caused build warnings for uninitialized variables.
+Cleanup the code to create proper scatterlists.
 
-<snip>
+Signed-off-by: Alex Williamson <alex.williamson@hp.com>
+---
 
-> diff --git a/fs/nilfs2/mdt.c b/fs/nilfs2/mdt.c
-> index 47dd815..725cd80 100644
-> --- a/fs/nilfs2/mdt.c
-> +++ b/fs/nilfs2/mdt.c
-> @@ -478,9 +478,6 @@ nilfs_mdt_new_common(struct the_nilfs *nilfs, struct super_block *sb,
->  		inode->i_blocks = 0;
->  		inode->i_bytes = 0;
->  		inode->i_generation = 0;
-> -#ifdef CONFIG_QUOTA
-> -		memset(&inode->i_dquot, 0, sizeof(inode->i_dquot));
-> -#endif
->  		inode->i_pipe = NULL;
->  		inode->i_bdev = NULL;
->  		inode->i_cdev = NULL;
+ Patch against net-2.6.git 7a67e56fd362d3edfde1f19170893508c3940d3a
+ 
+ drivers/net/virtio_net.c |   16 ++++++++++------
+ 1 files changed, 10 insertions(+), 6 deletions(-)
 
-Ack-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
+index 9c82a39..23eb282 100644
+--- a/drivers/net/virtio_net.c
++++ b/drivers/net/virtio_net.c
+@@ -616,10 +616,11 @@ static int virtnet_open(struct net_device *dev)
+ static bool virtnet_send_command(struct virtnet_info *vi, u8 class, u8 cmd,
+ 				 struct scatterlist *data, int out, int in)
+ {
+-	struct scatterlist sg[VIRTNET_SEND_COMMAND_SG_MAX + 2];
++	struct scatterlist *s, sg[VIRTNET_SEND_COMMAND_SG_MAX + 2];
+ 	struct virtio_net_ctrl_hdr ctrl;
+ 	virtio_net_ctrl_ack status = ~0;
+ 	unsigned int tmp;
++	int i;
+ 
+ 	if (!virtio_has_feature(vi->vdev, VIRTIO_NET_F_CTRL_VQ)) {
+ 		BUG();  /* Caller should know better */
+@@ -637,7 +638,8 @@ static bool virtnet_send_command(struct virtnet_info *vi, u8 class, u8 cmd,
+ 	sg_init_table(sg, out + in);
+ 
+ 	sg_set_buf(&sg[0], &ctrl, sizeof(ctrl));
+-	memcpy(&sg[1], data, sizeof(struct scatterlist) * (out + in - 2));
++	for_each_sg(data, s, out + in - 2, i)
++		sg_set_buf(&sg[i + 1], sg_virt(s), s->length);
+ 	sg_set_buf(&sg[out + in - 1], &status, sizeof(status));
+ 
+ 	if (vi->cvq->vq_ops->add_buf(vi->cvq, sg, out, in, vi) != 0)
+@@ -692,7 +694,7 @@ static void virtnet_set_rx_mode(struct net_device *dev)
+ 	promisc = ((dev->flags & IFF_PROMISC) != 0);
+ 	allmulti = ((dev->flags & IFF_ALLMULTI) != 0);
+ 
+-	sg_set_buf(sg, &promisc, sizeof(promisc));
++	sg_init_one(sg, &promisc, sizeof(promisc));
+ 
+ 	if (!virtnet_send_command(vi, VIRTIO_NET_CTRL_RX,
+ 				  VIRTIO_NET_CTRL_RX_PROMISC,
+@@ -700,7 +702,7 @@ static void virtnet_set_rx_mode(struct net_device *dev)
+ 		dev_warn(&dev->dev, "Failed to %sable promisc mode.\n",
+ 			 promisc ? "en" : "dis");
+ 
+-	sg_set_buf(sg, &allmulti, sizeof(allmulti));
++	sg_init_one(sg, &allmulti, sizeof(allmulti));
+ 
+ 	if (!virtnet_send_command(vi, VIRTIO_NET_CTRL_RX,
+ 				  VIRTIO_NET_CTRL_RX_ALLMULTI,
+@@ -716,6 +718,8 @@ static void virtnet_set_rx_mode(struct net_device *dev)
+ 		return;
+ 	}
+ 
++	sg_init_table(sg, 2);
++
+ 	/* Store the unicast list and count in the front of the buffer */
+ 	mac_data->entries = dev->uc_count;
+ 	addr = dev->uc_list;
+@@ -749,7 +753,7 @@ static void virnet_vlan_rx_add_vid(struct net_device *dev, u16 vid)
+ 	struct virtnet_info *vi = netdev_priv(dev);
+ 	struct scatterlist sg;
+ 
+-	sg_set_buf(&sg, &vid, sizeof(vid));
++	sg_init_one(&sg, &vid, sizeof(vid));
+ 
+ 	if (!virtnet_send_command(vi, VIRTIO_NET_CTRL_VLAN,
+ 				  VIRTIO_NET_CTRL_VLAN_ADD, &sg, 1, 0))
+@@ -761,7 +765,7 @@ static void virnet_vlan_rx_kill_vid(struct net_device *dev, u16 vid)
+ 	struct virtnet_info *vi = netdev_priv(dev);
+ 	struct scatterlist sg;
+ 
+-	sg_set_buf(&sg, &vid, sizeof(vid));
++	sg_init_one(&sg, &vid, sizeof(vid));
+ 
+ 	if (!virtnet_send_command(vi, VIRTIO_NET_CTRL_VLAN,
+ 				  VIRTIO_NET_CTRL_VLAN_DEL, &sg, 1, 0))
 
-<snip>
-
-Thanks,
-Ryusuke Konishi
