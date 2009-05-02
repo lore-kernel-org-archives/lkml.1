@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbZEBQwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbZEBQyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758264AbZEBQwU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 12:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405AbZEBQwG
+	id S1757905AbZEBQyJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 12:54:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755800AbZEBQxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 12:52:06 -0400
-Received: from hiauly1.hia.nrc.ca ([132.246.100.193]:4501 "EHLO
-	hiauly1.hia.nrc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752927AbZEBQwF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 12:52:05 -0400
-Subject: Re: [PATCH 3/5] parisc: use new macros for .data.init_task.
-To: deller@gmx.de (Helge Deller)
-Date: Sat, 2 May 2009 12:52:01 -0400 (EDT)
-From: "John David Anglin" <dave@hiauly1.hia.nrc.ca>
-Cc: kyle@mcmartin.ca, tabbott@MIT.EDU, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org, andersk@MIT.EDU, wdaher@MIT.EDU,
-       vda.linux@googlemail.com, jbarnold@MIT.EDU,
-       linux-parisc@vger.kernel.org
-In-Reply-To: <49FC71E6.4000100@gmx.de> from "Helge Deller" at May 2, 2009 06:16:38 pm
-X-Mailer: ELM [version 2.4 PL25]
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 2 May 2009 12:53:51 -0400
+Received: from norkia.v3.sk ([92.240.234.41]:39108 "EHLO norkia.v3.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754405AbZEBQxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 12:53:50 -0400
+X-Greylist: delayed 1494 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 May 2009 12:53:50 EDT
+Subject: [PATCH] Do not register ne2k-pci device until initialized
+From: Lubomir Rintel <lkundrak@v3.sk>
+To: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Content-Type: text/plain
+Date: Sat, 02 May 2009 18:28:54 +0200
+Message-Id: <1241281735.2641.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090502165202.7E4424FC6@hiauly1.hia.nrc.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I really meant that a > 8k alignment was not possible.
-> I tried exactly the same stuff once and failed.
-> I think the restriction came from hpux compatibility or some old gas...
+Doing it in reverse order causes uevent to be sent before
+we have a MAC address, which confuses udev.
 
-The maximum alignment on hpux is 4k bytes.  This was implemented in
-2004 in the PA backend for hpux.  Prior to that, the default for
-MAX_OFILE_ALIGNMENT (BIGGEST_ALIGNMENT) was in effect for all PA
-targets.  It looks like Carlos added the define to elfos.h in November
-2006.  So unless this was back ported, 4.2.0 would be the first gcc
-release to support large alignments on linux.
+Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+---
+ drivers/net/ne2k-pci.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-Dave
+diff --git a/drivers/net/ne2k-pci.c b/drivers/net/ne2k-pci.c
+index eb66f65..7d83896 100644
+--- a/drivers/net/ne2k-pci.c
++++ b/drivers/net/ne2k-pci.c
+@@ -374,18 +374,17 @@ static int __devinit ne2k_pci_init_one (struct pci_dev *pdev,
+ 	dev->ethtool_ops = &ne2k_pci_ethtool_ops;
+ 	NS8390_init(dev, 0);
+ 
++	memcpy(dev->dev_addr, SA_prom, 6);
++	memcpy(dev->perm_addr, dev->dev_addr, dev->addr_len);
++
+ 	i = register_netdev(dev);
+ 	if (i)
+ 		goto err_out_free_netdev;
+ 
+-	for(i = 0; i < 6; i++)
+-		dev->dev_addr[i] = SA_prom[i];
+ 	printk("%s: %s found at %#lx, IRQ %d, %pM.\n",
+ 	       dev->name, pci_clone_list[chip_idx].name, ioaddr, dev->irq,
+ 	       dev->dev_addr);
+ 
+-	memcpy(dev->perm_addr, dev->dev_addr, dev->addr_len);
+-
+ 	return 0;
+ 
+ err_out_free_netdev:
+
 -- 
-J. David Anglin                                  dave.anglin@nrc-cnrc.gc.ca
-National Research Council of Canada              (613) 990-0752 (FAX: 952-6602)
+"Excuse all the blood" -- Dead
+
