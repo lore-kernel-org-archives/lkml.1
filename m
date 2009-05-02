@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759098AbZEBPp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbZEBPz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759098AbZEBPp2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 11:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757051AbZEBPpT
+	id S1758062AbZEBPz1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 11:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755713AbZEBPzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 11:45:19 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:60771 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754798AbZEBPpS (ORCPT
+	Sat, 2 May 2009 11:55:18 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:63853 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755272AbZEBPzQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 11:45:18 -0400
-Subject: Re: [PATCH 12/16] DRBD: variable_length_integer_encoding
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Philipp Reisner <philipp.reisner@linbit.com>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
-       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       Lars Marowsky-Bree <lmb@suse.de>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>
-In-Reply-To: <1241090812-13516-13-git-send-email-philipp.reisner@linbit.com>
-References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com>
-	 <1241090812-13516-2-git-send-email-philipp.reisner@linbit.com>
-	 <1241090812-13516-3-git-send-email-philipp.reisner@linbit.com>
-	 <1241090812-13516-4-git-send-email-philipp.reisner@linbit.com>
-	 <1241090812-13516-5-git-send-email-philipp.reisner@linbit.com>
-	 <1241090812-13516-6-git-send-email-philipp.reisner@linbit.com>
-	 <1241090812-13516-7-git-send-email-philipp.reisner@linbit.com>
-	 <1241090812-13516-8-git-send-email-philipp.reisner@linbit.com>
-	 <1241090812-13516-9-git-send-email-philipp.reisner@linbit.com>
-	 <1241090812-13516-10-git-send-email-philipp.reisner@linbit.com>
-	 <1241090812-13516-11-git-send-email-philipp.reisner@linbit.com>
-	 <1241090812-13516-12-git-send-email-philipp.reisner@linbit.com>
-	 <1241090812-13516-13-git-send-email-philipp.reisner@linbit.com>
-Content-Type: text/plain
-Date: Sat, 02 May 2009 10:45:17 -0500
-Message-Id: <1241279117.3639.51.camel@mulgrave.int.hansenpartnership.com>
+	Sat, 2 May 2009 11:55:16 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuIKAB8H/ElMQW1W/2dsb2JhbACBUJVvtg2COIFFBQ
+Date: Sat, 2 May 2009 11:55:14 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, mark.langsdorf@amd.com, arekm@maven.pl,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Avi Kivity <avi@qumranet.com>
+Subject: Re: [patch 2/2] x86 amd fix cmpxchg read acquire barrier
+Message-ID: <20090502155514.GA18847@Krystal>
+References: <20090422201852.092307236@polymtl.ca> <20090422202453.829846363@polymtl.ca> <20090425081914.GD2428@ucw.cz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090425081914.GD2428@ucw.cz>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:54:03 up 63 days, 12:20,  2 users,  load average: 0.31, 0.31,
+	0.30
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-30 at 13:26 +0200, Philipp Reisner wrote:
-> Encoding of our simple LRE compression scheme. It is very effective since
-> large parts of our bitmap are sparse.
+* Pavel Machek (pavel@ucw.cz) wrote:
+> On Wed 2009-04-22 16:18:54, Mathieu Desnoyers wrote:
+> > http://google-perftools.googlecode.com/svn-history/r48/trunk/src/base/atomicops-internals-x86.cc
+> > 
+> > says
+> > 
+> > "  // Opteron Rev E has a bug in which on very rare occasions a locked
+> >   // instruction doesn't act as a read-acquire barrier if followed by a
+> >   // non-locked read-modify-write instruction.  Rev F has this bug in 
+> >   // pre-release versions, but not in versions released to customers,
+> >   // so we test only for Rev E, which is family 15, model 32..63 inclusive.
 > 
-> Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
-> Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
+> Could we be more careful  here and catch the F pre-release versions,
+> too? Stepping should help there...
+> 
 
-This seems fine to me, but it needs to be in /lib as a separate module
-(which drbd would then select) so the compression can be made available
-to other users.
+Yes, I guess for F pre-releases we're stucked unless AMD provides more
+information. Dtrace did not seem to bother about F pre-release versions
+though, neither did Google.
 
-James
+Mathieu
 
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
