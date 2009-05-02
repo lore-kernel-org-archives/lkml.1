@@ -1,79 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbZEBCsG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbZEBC5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753855AbZEBCsG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 22:48:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbZEBCrz
+	id S1754509AbZEBC5u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 22:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbZEBC5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 22:47:55 -0400
-Received: from mga14.intel.com ([143.182.124.37]:33418 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbZEBCry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 22:47:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,281,1239001200"; 
-   d="scan'208";a="138349166"
-Date: Sat, 2 May 2009 10:47:19 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "riel@redhat.com" <riel@redhat.com>,
+	Fri, 1 May 2009 22:57:41 -0400
+Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.66]:35450 "EHLO
+	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbZEBC5k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 22:57:40 -0400
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Sat, 2 May 2009 11:56:49 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: balbir@linux.vnet.ibm.com
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: [RFC][PATCH] vmscan: don't export nr_saved_scan in /proc/zoneinfo
-Message-ID: <20090502024719.GA29730@localhost>
-References: <200904302208.n3UM8t9R016687@imap1.linux-foundation.org> <20090501012212.GA5848@localhost> <20090430194907.82b31565.akpm@linux-foundation.org> <20090502023125.GA29674@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090502023125.GA29674@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hugh@veritas.com" <hugh@veritas.com>, d-nishimura@mtf.biglobe.ne.jp,
+       nishimura@mxp.nes.nec.co.jp
+Subject: Re: [PATCH] memcg: fix stale swap cache leak v5
+Message-Id: <20090502115649.027e4a88.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <20090501183256.GD4686@balbir.in.ibm.com>
+References: <20090430161627.0ccce565.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090430163539.7a882cef.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090430180426.25ae2fa6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090430094252.GG4430@balbir.in.ibm.com>
+	<20090430184738.752858ea.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090430181246.GM4430@balbir.in.ibm.com>
+	<20090501133317.9c372d38.d-nishimura@mtf.biglobe.ne.jp>
+	<20090501183256.GD4686@balbir.in.ibm.com>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The lru->nr_saved_scan's are not meaningful counters for even kernel
-developers.  They typically are smaller than 32 and are always 0 for
-large lists. So remove them from /proc/zoneinfo.
+> > > Daisuke in the race conditions mentioned is (2) significant? Since the
+> > > accounting is already fixed during mem_cgroup_uncharge_page()?
+> > > 
+> > Do you mean type-2 stale swap caches I described before ?
+> > 
+> > They doesn't pressure mem.usage nor memsw.usage as you say,
+> > but consumes swp_entry(of cource, type-1 has this problem too).
+> > As a result, all the swap space can be used up and causes OOM.
+> > 
+> 
+> Good point..
+> 
+> > I've verified it long ago by:
+> > 
+> > - make swap space small(50MB).
+> > - set mem.limit(32MB).
+> > - run some programs(allocate, touch sometimes, exit) enough to
+> >   exceed mem.limit repeatedly(I used page01 included in ltp and run
+> >   5 instances 8MB per each in cpuset with 4cpus.).
+> > - wait for a very long time :) (2,30 hours IIRC)
+> >   You can see the usage of swap cache(grep SwapCached /proc/meminfo)
+> >   increasing gradually.
+> > 
+> > 
+> > BTW, I'm now testing a attached patch to fix type-2 with setting page-cluster
+> > to 0 to aboid type-1, and seeing what happens in the usage of swap cache.
+> > (I can't test it in large box though, because my office is closed till May 06.)
+> > 
+In my small box(i386/2CPU/2GB mem), a similar test shows after 12H
+about 600MB leak of swap cache before applying this patch,
+while no outstanding leak can be seen after it.
 
-Hopefully this interface change won't break too many scripts.
-/proc/zoneinfo is too unstructured to be script friendly, and I wonder
-the affected scripts - if there are any - are still bleeding since the
-not long ago commit "vmscan: split LRU lists into anon & file sets",
-which also touched the "scanned" line :)
+(snip)
 
-If we are to re-export accumulated vmscan counts in the future, they
-can go to new lines in /proc/zoneinfo instead of the current form, or
-to /sys/devices/system/node/node0/meminfo?
+> Looking through the patch, I have my doubts
+> 
+>  shrink_page_list() will catch the page - how? It is not on memcg's
+> LRU, so if we have a small cgroup with lots of memory, when the cgroup
+> is running out of memory, will this page show up in
+> shrink_page_list()?
+> 
+It's just because the page has not been uncharged yet when shrink_page_list()
+is called(,more precicely, when shrink_inactive_list() isolates the page),
+so it can be handled in memcg's LRU scanning.
 
-CC: Christoph Lameter <cl@linux-foundation.org>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/vmstat.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
 
---- mm.orig/mm/vmstat.c
-+++ mm/mm/vmstat.c
-@@ -721,7 +721,7 @@ static void zoneinfo_show_print(struct s
- 		   "\n        min      %lu"
- 		   "\n        low      %lu"
- 		   "\n        high     %lu"
--		   "\n        scanned  %lu (aa: %lu ia: %lu af: %lu if: %lu)"
-+		   "\n        scanned  %lu"
- 		   "\n        spanned  %lu"
- 		   "\n        present  %lu",
- 		   zone_page_state(zone, NR_FREE_PAGES),
-@@ -729,10 +729,6 @@ static void zoneinfo_show_print(struct s
- 		   zone->pages_low,
- 		   zone->pages_high,
- 		   zone->pages_scanned,
--		   zone->lru[LRU_ACTIVE_ANON].nr_saved_scan,
--		   zone->lru[LRU_INACTIVE_ANON].nr_saved_scan,
--		   zone->lru[LRU_ACTIVE_FILE].nr_saved_scan,
--		   zone->lru[LRU_INACTIVE_FILE].nr_saved_scan,
- 		   zone->spanned_pages,
- 		   zone->present_pages);
- 
+Thanks,
+Daisuke Nishimura.
