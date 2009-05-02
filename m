@@ -1,116 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761967AbZEBWUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762081AbZEBWUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761967AbZEBWUS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 18:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761520AbZEBWTP
+	id S1762081AbZEBWUu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 18:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757955AbZEBWTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 18:19:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47586 "EHLO mx2.redhat.com"
+	Sat, 2 May 2009 18:19:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47590 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761464AbZEBWTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 18:19:13 -0400
+	id S1761559AbZEBWTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 18:19:18 -0400
 From: Izik Eidus <ieidus@redhat.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, aarcange@redhat.com, chrisw@redhat.com,
        alan@lxorguk.ukuu.org.uk, device@lanana.org, linux-mm@kvack.org,
        hugh@veritas.com, nickpiggin@yahoo.com.au,
        Izik Eidus <ieidus@redhat.com>
-Subject: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
-Date: Sun,  3 May 2009 01:16:09 +0300
-Message-Id: <1241302572-4366-4-git-send-email-ieidus@redhat.com>
-In-Reply-To: <1241302572-4366-3-git-send-email-ieidus@redhat.com>
+Subject: [PATCH 1/6] ksm: limiting the num of mem regions user can register per fd.
+Date: Sun,  3 May 2009 01:16:07 +0300
+Message-Id: <1241302572-4366-2-git-send-email-ieidus@redhat.com>
+In-Reply-To: <1241302572-4366-1-git-send-email-ieidus@redhat.com>
 References: <1241302572-4366-1-git-send-email-ieidus@redhat.com>
- <1241302572-4366-2-git-send-email-ieidus@redhat.com>
- <1241302572-4366-3-git-send-email-ieidus@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch change the KSM_REMOVE_MEMORY_REGION ioctl to be specific per
-memory region (instead of flushing all the registred memory regions inside
-the file descriptor like it happen now)
-
-The previoes api was:
-user register memory regions using KSM_REGISTER_MEMORY_REGION inside the fd,
-and then when he wanted to remove just one memory region, he had to remove them
-all using KSM_REMOVE_MEMORY_REGION.
-
-This patch change this beahivor by chaning the KSM_REMOVE_MEMORY_REGION
-ioctl to recive another paramter that it is the begining of the virtual
-address that is wanted to be removed.
-
-(user can still remove all the memory regions all at once, by just closing
-the file descriptor)
+Right now user can open /dev/ksm fd and register unlimited number of
+regions, such behavior may allocate unlimited amount of kernel memory
+and get the whole host into out of memory situation.
 
 Signed-off-by: Izik Eidus <ieidus@redhat.com>
 ---
- mm/ksm.c |   31 +++++++++++++++++++++----------
- 1 files changed, 21 insertions(+), 10 deletions(-)
+ mm/ksm.c |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
 diff --git a/mm/ksm.c b/mm/ksm.c
-index 982dfff..c14019f 100644
+index 6165276..d58db6b 100644
 --- a/mm/ksm.c
 +++ b/mm/ksm.c
-@@ -561,17 +561,20 @@ static void remove_mm_from_hash_and_tree(struct mm_struct *mm)
- 	list_del(&slot->link);
- }
+@@ -48,6 +48,9 @@ static int rmap_hash_size;
+ module_param(rmap_hash_size, int, 0);
+ MODULE_PARM_DESC(rmap_hash_size, "Hash table size for the reverse mapping");
  
--static int ksm_sma_ioctl_remove_memory_region(struct ksm_sma *ksm_sma)
-+static int ksm_sma_ioctl_remove_memory_region(struct ksm_sma *ksm_sma,
-+					      unsigned long addr)
- {
- 	struct ksm_mem_slot *slot, *node;
++static int regions_per_fd;
++module_param(regions_per_fd, int, 0);
++
+ /*
+  * ksm_mem_slot - hold information for an userspace scanning range
+  * (the scanning for this region will be from addr untill addr +
+@@ -67,6 +70,7 @@ struct ksm_mem_slot {
+  */
+ struct ksm_sma {
+ 	struct list_head sma_slots;
++	int nregions;
+ };
  
- 	down_write(&slots_lock);
- 	list_for_each_entry_safe(slot, node, &ksm_sma->sma_slots, sma_link) {
--		remove_mm_from_hash_and_tree(slot->mm);
--		mmput(slot->mm);
--		list_del(&slot->sma_link);
--		kfree(slot);
--		ksm_sma->nregions--;
-+		if (addr == slot->addr) {
-+			remove_mm_from_hash_and_tree(slot->mm);
-+			mmput(slot->mm);
-+			list_del(&slot->sma_link);
-+			kfree(slot);
-+			ksm_sma->nregions--;
-+		}
+ /**
+@@ -453,6 +457,11 @@ static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
+ 	struct ksm_mem_slot *slot;
+ 	int ret = -EPERM;
+ 
++	if ((ksm_sma->nregions + 1) > regions_per_fd) {
++		ret = -EBUSY;
++		goto out;
++	}
++
+ 	slot = kzalloc(sizeof(struct ksm_mem_slot), GFP_KERNEL);
+ 	if (!slot) {
+ 		ret = -ENOMEM;
+@@ -473,6 +482,7 @@ static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
+ 
+ 	list_add_tail(&slot->link, &slots);
+ 	list_add_tail(&slot->sma_link, &ksm_sma->sma_slots);
++	ksm_sma->nregions++;
+ 
+ 	up_write(&slots_lock);
+ 	return 0;
+@@ -511,6 +521,7 @@ static int ksm_sma_ioctl_remove_memory_region(struct ksm_sma *ksm_sma)
+ 		mmput(slot->mm);
+ 		list_del(&slot->sma_link);
+ 		kfree(slot);
++		ksm_sma->nregions--;
  	}
  	up_write(&slots_lock);
  	return 0;
-@@ -579,12 +582,20 @@ static int ksm_sma_ioctl_remove_memory_region(struct ksm_sma *ksm_sma)
+@@ -1389,6 +1400,7 @@ static int ksm_dev_ioctl_create_shared_memory_area(void)
+ 	}
  
- static int ksm_sma_release(struct inode *inode, struct file *filp)
- {
-+	struct ksm_mem_slot *slot, *node;
- 	struct ksm_sma *ksm_sma = filp->private_data;
--	int r;
+ 	INIT_LIST_HEAD(&ksm_sma->sma_slots);
++	ksm_sma->nregions = 0;
  
--	r = ksm_sma_ioctl_remove_memory_region(ksm_sma);
-+	down_write(&slots_lock);
-+	list_for_each_entry_safe(slot, node, &ksm_sma->sma_slots, sma_link) {
-+		remove_mm_from_hash_and_tree(slot->mm);
-+		mmput(slot->mm);
-+		list_del(&slot->sma_link);
-+		kfree(slot);
-+	}
-+	up_write(&slots_lock);
+ 	fd = anon_inode_getfd("ksm-sma", &ksm_sma_fops, ksm_sma, 0);
+ 	if (fd < 0)
+@@ -1631,6 +1643,9 @@ static int __init ksm_init(void)
+ 	if (r)
+ 		goto out_free1;
+ 
++	if (!regions_per_fd)
++		regions_per_fd = 1024;
 +
- 	kfree(ksm_sma);
--	return r;
-+	return 0;
- }
- 
- static long ksm_sma_ioctl(struct file *filp,
-@@ -607,7 +618,7 @@ static long ksm_sma_ioctl(struct file *filp,
- 		break;
- 	}
- 	case KSM_REMOVE_MEMORY_REGION:
--		r = ksm_sma_ioctl_remove_memory_region(sma);
-+		r = ksm_sma_ioctl_remove_memory_region(sma, arg);
- 		break;
- 	}
- 
+ 	ksm_thread = kthread_run(ksm_scan_thread, NULL, "kksmd");
+ 	if (IS_ERR(ksm_thread)) {
+ 		printk(KERN_ERR "ksm: creating kthread failed\n");
 -- 
 1.5.6.5
 
