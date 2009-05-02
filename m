@@ -1,96 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757036AbZEBPSo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756506AbZEBPfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757036AbZEBPSo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 11:18:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754536AbZEBPSf
+	id S1756506AbZEBPfp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 11:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbZEBPff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 11:18:35 -0400
-Received: from main.gmane.org ([80.91.229.2]:45342 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754342AbZEBPSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 11:18:35 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Andy Lutomirski <luto@myrealbox.com>
+	Sat, 2 May 2009 11:35:35 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:60868 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754798AbZEBPff convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 11:35:35 -0400
+MIME-Version: 1.0
+In-Reply-To: <49FC6439.80704@myrealbox.com>
+References: <1241097822.2516.3.camel@poy> <20090430234312.a63fa5cf.akpm@linux-foundation.org> 
+	<20090501065527.GA19773@kroah.com> <20090501120359.05bacb48@lxorguk.ukuu.org.uk> 
+	<ac3eb2510905010411r2c1a2be5s449aaf485a76a8c4@mail.gmail.com> 
+	<20090501141846.4b833700@lxorguk.ukuu.org.uk> <ac3eb2510905010624k891f680s7255af8ae185b5d5@mail.gmail.com> 
+	<20090502071939.GA14094@infradead.org> <ac3eb2510905020646k28ebaf07j2216c6f3f614748c@mail.gmail.com> 
+	<49FC6439.80704@myrealbox.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Sat, 2 May 2009 17:35:19 +0200
+Message-ID: <ac3eb2510905020835o66f46b03ra2ec24b5594ff7c6@mail.gmail.com>
 Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
-Date: Sat, 02 May 2009 11:18:17 -0400
-Message-ID: <49FC6439.80704@myrealbox.com>
-References: <1241097822.2516.3.camel@poy> <20090430222900.c13b63d5.akpm@linux-foundation.org> 	<20090501061701.GB19234@kroah.com> <20090430234312.a63fa5cf.akpm@linux-foundation.org> 	<20090501065527.GA19773@kroah.com> <20090501120359.05bacb48@lxorguk.ukuu.org.uk> 	<ac3eb2510905010411r2c1a2be5s449aaf485a76a8c4@mail.gmail.com> 	<20090501141846.4b833700@lxorguk.ukuu.org.uk> <ac3eb2510905010624k891f680s7255af8ae185b5d5@mail.gmail.com> 	<20090502071939.GA14094@infradead.org> <ac3eb2510905020646k28ebaf07j2216c6f3f614748c@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
+To: Andy Lutomirski <luto@myrealbox.com>
 Cc: Christoph Hellwig <hch@infradead.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel <linux-kernel@vger.kernel.org>,
        Jan Blunck <jblunck@suse.de>
-X-Gmane-NNTP-Posting-Host: 207-172-69-77.c3-0.smr-ubr3.sbo-smr.ma.static.cable.rcn.com
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-In-Reply-To: <ac3eb2510905020646k28ebaf07j2216c6f3f614748c@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> On Sat, May 2, 2009 at 09:19, Christoph Hellwig <hch@infradead.org> wrote:
->> On Fri, May 01, 2009 at 03:24:01PM +0200, Kay Sievers wrote:
->>> I'm very sure, you can not fix it outside the kernel. Or do you have
->>> an idea how to create the missing device nodes for device without
->>> crawling sysfs, when the first userspace process is started?
->> Just make sure to queue up your uevents in a ring buffer that udev
->> can read once it has started?
-> 
-> Which does not really target any of the problems we try to solve, and
-> is probably even larger than the 300 lines to create the proper /dev
-> stuff right away. It's about fractions of a second, we are optimizing
-> for, and we need to start as many things in parallel, as early as
-> possible. And a working and populated /dev is mandatory for most of
-> the stuff we need to bring up.
-> 
-> I think the init=/bin/sh case alone would be justification enough to
-> do that, it can save you a lot of trouble if things go wrong, which
-> things do, and which is pretty hard to cope with today, with no access
-> to your devices.
+On Sat, May 2, 2009 at 17:18, Andy Lutomirski <luto@myrealbox.com> wrote:
+> What's wrong with:
+>
+> mount -n -t sysfs none /sys
+> mount -n -t tmpfs none /tmp
 
-What's wrong with:
+You need tmpfs on /dev, and you need initial nodes in the new tmpfs
+before you can start udevd.
 
-mount -n -t sysfs none /sys
-mount -n -t tmpfs none /tmp
-udevd --daemon
-udevadm trigger
+> udevd --daemon
+> udevadm trigger
 
-once the shell comes up?  There could even be a standard script that all 
-distributions ship that does that, plus mounts /proc and does whatever 
-magic is needed to make Ctrl-C work.
+Then you need to wait for udev to finish, to be sure the nodes are
+there, before you start anything else.
 
-(OK, so you depend on udev and mount working, but you already depend
-on sh working, and you'll have a heck of time rescuing anything if even 
-mount doesn't work.)
+> once the shell comes up?
 
-If you want a really reliable rescue mode, then either put a whole 
-working busybox system in a spare initramfs with a spare boot menu entry 
-or just use a real rescue disk, neither of which require devtmpfs.
+If the kernel mounts your root, and not initramfs, the shell does not
+come up, when /dev is empty, like it is on some distros which always
+use tmpfs on /dev.
 
+> There could even be a standard script that all
+> distributions ship that does that, plus mounts /proc and does whatever magic
+> is needed to make Ctrl-C work.
 
-As a separate question, what happens with devtmpfs if I plug in some 
-device that uses dynamic minors, then unplug it, then plug in another 
-device that gets a new minor but the same name, all before (or even 
-after) udev starts?  Are there any subsystems that could do that?
+There is no such thing today, as "standard that distros ship", and I
+doubt there will be. We needed years to sync the device names across
+distros. That happened now, but there will never be any "standard
+thing that bring us a box that the kernel can "ship". Same for the
+"let every new driver provide a udev rule for the names of the device
+at the same time", that will never happen, people just don't care
+about userspace issues at all - I've given up on trying that.
 
---Andy
+> (OK, so you depend on udev and mount working, but you already depend
+> on sh working, and you'll have a heck of time rescuing anything if even
+> mount doesn't work.)
 
-> 
-> We are not implementing anything crazy here like devfs did, including
-> the later versions - there is no modprobe behind your back, no lookup
-> hooks, no stupid new naming scheme, no new filesystem type to
-> register.
-> Udev uses the kernel provided names anyway today, there are no naming
-> rules at all in current userspace for 98 of 100 devices. It's todays
-> kernel which provides the naming already, and we will not change
-> anything here, just add the few exceptions, which are only in udev
-> rules today, and let the kernel create the node that udev will create
-> anyway.
-> 
-> Thanks,
-> Kay
+You need access to your devices, and device numbers may be dynamic.
+It's not about mount(8) is not working, you may have lost anyway in
+such cases.
 
+> If you want a really reliable rescue mode, then either put a whole working
+> busybox system in a spare initramfs with a spare boot menu entry or just use
+> a real rescue disk, neither of which require devtmpfs.
+
+Yeah, why not have a spare box close to every one, then you can use
+that instead. :) This is not about being prepared that stuff went
+wrong, then you are lucky. You usually can not copy a new image to a
+box that does not boot, and you do not have a working rescue disk
+right next to you.
+
+> As a separate question, what happens with devtmpfs if I plug in some device
+> that uses dynamic minors, then unplug it, then plug in another device that
+> gets a new minor but the same name, all before (or even after) udev starts?
+>  Are there any subsystems that could do that?
+
+The node gets removed, then a new one gets created for the new device.
+Besides that there are no device with the same name at the same time
+today, udev would not solve that problem either.
+
+Thanks,
+Kay
