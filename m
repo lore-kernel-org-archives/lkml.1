@@ -1,130 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbZEBJfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbZEBJkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754263AbZEBJfa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 05:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbZEBJfU
+	id S1755639AbZEBJkO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 05:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbZEBJj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 05:35:20 -0400
-Received: from samba.ing.unimo.it ([155.185.54.131]:50221 "EHLO
-	samba.ing.unimo.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751764AbZEBJfT (ORCPT
+	Sat, 2 May 2009 05:39:59 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:64743 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752280AbZEBJj7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 05:35:19 -0400
-X-Greylist: delayed 2305 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 May 2009 05:35:18 EDT
-Message-ID: <5678c0edb92482ea613d44a024eac6c1.squirrel@weblab.ing.unimo.it>
-Date: Sat, 2 May 2009 10:56:42 +0200 (CEST)
-Subject: BUG: scheduling while atomic upon USB HSDPA modem insertion
-From: andreoli@samba.ing.unimo.it
-To: linux-kernel@vger.kernel.org
-Cc: andreoli@samba.ing.unimo.it
-User-Agent: SquirrelMail/1.4.15
+	Sat, 2 May 2009 05:39:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=bXeRw77ljWACkfRed6Q6/jKsIxczRWO4vggDY1LCDKoyDJCWet/oPdGBHaClP9979a
+         bg/m78WPqbHe+TBraECFq6hxflAiE79h/zbNYjlAVCRcavrXYMoaj64TC/QCBh2srSza
+         ccvlr6wz6VYvsbAnoMkc1/p3kBgT6waOKz680=
+Date: Sat, 2 May 2009 13:39:56 +0400
+From: Cyrill Gorcunov <gorcunov@openvz.org>
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Jack Steiner <steiner@sgi.com>
+Subject: [PATCH -tip] x86: uv io-apic - use BUILD_BUG_ON instead of BUG_ON
+Message-ID: <20090502093956.GB4791@lenovo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam_score: -4.4
-X-Spam_score_int: -43
-X-Spam_bar: ----
-X-Spam_report: Spam detection software, running on the system "samba.ing.unimo.it", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	the administrator of that system for details.
-	Content preview:  Hi all, just noticed that I get this upon plugging my USB
-	HSDPA USB modem. Yes, it's a zeroCD device. Here's the (hopefully) relevant
-	dmesg output. The machine is a 64bit Dell Latitude E6500, the distro I'm
-	using is Ubuntu 9.04, the kernel is a 2.6.29 vanilla one. [...] 
-	Content analysis details:   (-4.4 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 AWL                    AWL: From: address is in the auto white-list
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+The expression is known to be true/false at compilation
+time so we're allowed to use build-time instead of
+run-time check. Also align 'entry' items assignment.
 
-just noticed that I get this upon plugging my USB HSDPA USB modem. Yes,
-it's a zeroCD device. Here's the (hopefully) relevant dmesg output. The
-machine is a 64bit Dell Latitude E6500, the distro I'm using is Ubuntu
-9.04, the kernel is a 2.6.29 vanilla one.
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+CC: Jack Steiner <steiner@sgi.com>
+---
+ arch/x86/kernel/apic/io_apic.c |   22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-Best regards
-Mauro Andreolini
-
-[ 3154.033123] BUG: scheduling while atomic: usb_id/11592/0x10010000
-[ 3154.033126] Modules linked in: isofs vmnet parport_pc vsock vmci vmmon
-ppp_deflate zlib_deflate bsd_comp ppp_async crc_ccitt i915 drm
-i2c_algo_bit binfmt_misc ppdev btusb bnep ipt_MASQUERADE iptable_nat
-nf_nat nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack ipt_REJECT
-xt_tcpudp vboxnetflt iptable_filter ip_tables vboxdrv x_tables bridge stp
-kvm_intel kvm option lp parport snd_hda_codec_intelhdmi snd_hda_codec_idt
-snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm
-snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi arc4 snd_seq_midi_event
-ecb joydev snd_seq snd_timer iwlagn pcmcia snd_seq_device iwlcore uvcvideo
-videodev mac80211 psmouse v4l1_compat sdhci_pci sdhci iTCO_wdt
-yenta_socket rsrc_nonstatic snd pcspkr serio_raw ricoh_mmc
-v4l2_compat_ioctl32 led_class dcdbas intel_agp usbhid iTCO_vendor_support
-pcmcia_core video soundcore snd_page_alloc cfg80211 output usb_storage
-ohci1394 ieee1394 ehci_hcd uhci_hcd e1000e fuse [last unloaded: vmnet]
-[ 3154.033179] CPU 0:
-[ 3154.033180] Modules linked in: isofs vmnet parport_pc vsock vmci vmmon
-ppp_deflate zlib_deflate bsd_comp ppp_async crc_ccitt i915 drm
-i2c_algo_bit binfmt_misc ppdev btusb bnep ipt_MASQUERADE iptable_nat
-nf_nat nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack ipt_REJECT
-xt_tcpudp vboxnetflt iptable_filter ip_tables vboxdrv x_tables bridge stp
-kvm_intel kvm option lp parport snd_hda_codec_intelhdmi snd_hda_codec_idt
-snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm
-snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi arc4 snd_seq_midi_event
-ecb joydev snd_seq snd_timer iwlagn pcmcia snd_seq_device iwlcore uvcvideo
-videodev mac80211 psmouse v4l1_compat sdhci_pci sdhci iTCO_wdt
-yenta_socket rsrc_nonstatic snd pcspkr serio_raw ricoh_mmc
-v4l2_compat_ioctl32 led_class dcdbas intel_agp usbhid iTCO_vendor_support
-pcmcia_core video soundcore snd_page_alloc cfg80211 output usb_storage
-ohci1394 ieee1394 ehci_hcd uhci_hcd e1000e fuse [last unloaded: vmnet]
-[ 3154.033218] Pid: 11592, comm: usb_id Not tainted 2.6.29 #1 Latitude E6500
-[ 3154.033220] RIP: 0010:[<ffffffff802f60a6>]  [<ffffffff802f60a6>]
-__follow_mount+0x46/0xb0
-[ 3154.033230] RSP: 0018:ffff8800c3507c08  EFLAGS: 00000202
-[ 3154.033232] RAX: 000000000000000c RBX: ffff8800c3507c28 RCX:
-0000000000000002
-[ 3154.033233] RDX: 0000000000000000 RSI: ffff88011f402000 RDI:
-ffff880113c1f6c0
-[ 3154.033234] RBP: ffffffff8021320e R08: 0000000000000000 R09:
-0000000000000001
-[ 3154.033235] R10: 0000000000000000 R11: 0000000000000246 R12:
-ffff8800c3507bc8
-[ 3154.033236] R13: ffffffff808f2a00 R14: 0000000000000292 R15:
-ffff8800c3507b33
-[ 3154.033238] FS:  00007faadc0016f0(0000) GS:ffffffff80a35000(0000)
-knlGS:0000000000000000
-[ 3154.033239] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[ 3154.033240] CR2: 00007fffe4027f88 CR3: 0000000013d22000 CR4:
-00000000000026a0
-[ 3154.033242] DR0: 0000000000000000 DR1: 0000000000000000 DR2:
-0000000000000000
-[ 3154.033243] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7:
-0000000000000400
-[ 3154.033244] Call Trace:
-[ 3154.033246]  [<ffffffff802f60cb>] ? __follow_mount+0x6b/0xb0
-[ 3154.033248]  [<ffffffff802f70f7>] ? do_lookup+0x147/0x250
-[ 3154.033250]  [<ffffffff802f7343>] ? __link_path_walk+0x143/0xee0
-[ 3154.033252]  [<ffffffff802f6170>] ? path_to_nameidata+0x20/0x60
-[ 3154.033253]  [<ffffffff802f830e>] ? path_walk+0x6e/0xe0
-[ 3154.033255]  [<ffffffff802f8524>] ? do_path_lookup+0xe4/0x200
-[ 3154.033258]  [<ffffffff802eda03>] ? get_empty_filp+0x83/0x180
-[ 3154.033259]  [<ffffffff802f8715>] ? path_lookup_open+0x65/0xd0
-[ 3154.033261]  [<ffffffff802f92f9>] ? do_filp_open+0xb9/0x940
-[ 3154.033264]  [<ffffffff802baa0b>] ? free_hot_page+0xb/0x10
-[ 3154.033265]  [<ffffffff802baa8d>] ? free_pages+0x3d/0x50
-[ 3154.033268]  [<ffffffff80305ce1>] ? mntput_no_expire+0x31/0x170
-[ 3154.033269]  [<ffffffff80303f31>] ? alloc_fd+0x121/0x150
-[ 3154.033271]  [<ffffffff802ea4a8>] ? do_sys_open+0x78/0x100
-[ 3154.033273]  [<ffffffff802ea55b>] ? sys_open+0x1b/0x20
-[ 3154.033275]  [<ffffffff8021272a>] ? system_call_fastpath+0x16/0x1b
-
-
+Index: linux-2.6.git/arch/x86/kernel/apic/io_apic.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-2.6.git/arch/x86/kernel/apic/io_apic.c
+@@ -3752,6 +3752,8 @@ int arch_enable_uv_irq(char *irq_name, u
+ 	unsigned long flags;
+ 	int err;
+ 
++	BUILD_BUG_ON(sizeof(struct uv_IO_APIC_route_entry) != sizeof(unsigned long));
++
+ 	cfg = irq_cfg(irq);
+ 
+ 	err = assign_irq_vector(irq, cfg, eligible_cpu);
+@@ -3765,15 +3767,13 @@ int arch_enable_uv_irq(char *irq_name, u
+ 
+ 	mmr_value = 0;
+ 	entry = (struct uv_IO_APIC_route_entry *)&mmr_value;
+-	BUG_ON(sizeof(struct uv_IO_APIC_route_entry) != sizeof(unsigned long));
+-
+-	entry->vector = cfg->vector;
+-	entry->delivery_mode = apic->irq_delivery_mode;
+-	entry->dest_mode = apic->irq_dest_mode;
+-	entry->polarity = 0;
+-	entry->trigger = 0;
+-	entry->mask = 0;
+-	entry->dest = apic->cpu_mask_to_apicid(eligible_cpu);
++	entry->vector		= cfg->vector;
++	entry->delivery_mode	= apic->irq_delivery_mode;
++	entry->dest_mode	= apic->irq_dest_mode;
++	entry->polarity		= 0;
++	entry->trigger		= 0;
++	entry->mask		= 0;
++	entry->dest		= apic->cpu_mask_to_apicid(eligible_cpu);
+ 
+ 	mmr_pnode = uv_blade_to_pnode(mmr_blade);
+ 	uv_write_global_mmr64(mmr_pnode, mmr_offset, mmr_value);
+@@ -3791,10 +3791,10 @@ void arch_disable_uv_irq(int mmr_blade, 
+ 	struct uv_IO_APIC_route_entry *entry;
+ 	int mmr_pnode;
+ 
++	BUILD_BUG_ON(sizeof(struct uv_IO_APIC_route_entry) != sizeof(unsigned long));
++
+ 	mmr_value = 0;
+ 	entry = (struct uv_IO_APIC_route_entry *)&mmr_value;
+-	BUG_ON(sizeof(struct uv_IO_APIC_route_entry) != sizeof(unsigned long));
+-
+ 	entry->mask = 1;
+ 
+ 	mmr_pnode = uv_blade_to_pnode(mmr_blade);
