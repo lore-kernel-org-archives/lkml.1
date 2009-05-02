@@ -1,53 +1,43 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757356AbZEBP7W (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 2 May 2009 11:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756489AbZEBP7F
+	id S1760037AbZEBWNR (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 2 May 2009 18:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757650AbZEBWM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 11:59:05 -0400
-Received: from mail.vnpt.com.vn ([203.162.130.70]:65426 "EHLO
-	mailhost.vnpt.com.vn" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755971AbZEBP7E (ORCPT
+	Sat, 2 May 2009 18:12:56 -0400
+Received: from tomts29.bellnexxia.net ([209.226.175.103]:45770 "EHLO
+	tomts29-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755115AbZEBWMz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 11:59:04 -0400
-Message-ID: <44110.202.99.29.27.1241279529.squirrel@mail.vnpt.com.vn>
-Date: Sat, 2 May 2009 22:52:09 +0700 (ICT)
-Subject: CONFIRM YOUR WEBMAIL ACCOUNT !!!
-From: "WEBMAIL UPGRADE TEAM 2009." <support_webmail@mail2world.com>
-X-Priority: 3
-Importance: Normal
-Reply-To: webmailcustomercare@fbnet.co.zw
-X-Mailer: SquirrelMail (version x.x.x)
+	Sat, 2 May 2009 18:12:55 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Av6IANNh/EnR4q+H/2dsb2JhbACOHIc3tyCDawWHdg
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [117.96.34.45]
+From: YOU ARE A WINNER <scovilb@nbnet.nb.ca>
+Reply-To: mrselizabethdaniels@strompost.com
+To: <Lynnebentel@verizon.net>, <tandpawards@verizon.net>, <WBIPI@verizon.net>,
+   <wrg1@verizon.net>, <linux-kernel@vger.kernel.org>,
+   <netdev@vger.kernel.org>, <akar@videotron.qc.ca>,
+   <info@vinayakInfoSoft.com>, <hartleys@visionengravers.com>,
+   <info@vkubilay.com>, <adi-jsc@vnn.vn>, <bakshis9@vsnl.com>, <imex@vsnl.com>,
+   <ketna@vsnl.com>, <monanath@vsnl.com>, <rgv@vsnl.com>, <aeron@vsnl.in>,
+   <indiatravelite@vsnl.net>, <priyadarshinishishu@vsnl.net>,
+   <cyberciti@vsnl.net.in>, <gias01@vsnl.net.in>, <giasb01@vsnl.net.in>,
+   <mkentpl@vsnl.net.in>, <nadjerid@vt.edu>, <danbri@w3.org>,
+   <www-style@w3.org>, <xmlschema-dev@w3.org>, <adesh.gupta@wachovia.com>,
+   <aadinath@walla.com>, <3C20000906081701.9897.qmail@web125.yahoo>
+Subject: 
+Date: Sat, 2 May 2009 18:12:54 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090502221254.VIOR1724.tomts29-srv.bellnexxia.net@toip37-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-ATTENTION ,
- We wish to inform you that we are currently undergoing slight
-maintenance and upgrading of our site. And we are also using
-this medium to delete the inactive email id users,You are
-therefore required to send your account details for proper
-verification immediately:
-User name: (*********)
-Password: *********)
-Date Of Birth(DOB)*********)
-Country*********)
-CAUTION:
-   Failure to complete the above process within the shortest
-possible time will result in both inbound and outbound
-failures on your email.This will prevent you from sending or
-receiving email messages.
- We are sorry for any inconvinence we might have cause you,
-Expect our new mail features.
-Please do help spread this important information by forwarding
-it to other users.
-  You will be sent a confirmation letter from our customer
-service after our upgrading.
- Thanks for understanding our plight.
-WEBMAIL TECHNICAL UNIT.
-
+You Won 1,350,000.
+Send Name,Age,Occupation,Country.
+EMAIL(mrselizabethdaniels@strompost.com )
 
