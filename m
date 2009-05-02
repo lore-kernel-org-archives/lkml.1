@@ -1,91 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762197AbZEBAPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbZEBAtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762197AbZEBAPc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 20:15:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757754AbZEBAOp
+	id S1755614AbZEBAtO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 20:49:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbZEBAs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 20:14:45 -0400
-Received: from ru.mvista.com ([213.79.90.228]:7166 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760863AbZEBAOo (ORCPT
+	Fri, 1 May 2009 20:48:58 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:32981 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751745AbZEBAs5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 20:14:44 -0400
-Date: Sat, 2 May 2009 04:14:43 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+	Fri, 1 May 2009 20:48:57 -0400
+Date: Fri, 1 May 2009 20:48:53 -0400 (EDT)
+From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely
-	select CONFIG_FRAME_POINTER
-Message-ID: <20090502001443.GA2762@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090320164404.GA19933@oksana.dev.rtsoft.ru> <20090320164429.GA28037@oksana.dev.rtsoft.ru> <20090405210756.GG24374@uranus.ravnborg.org>
+cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux arch <linux-arch@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>
+Subject: Re: [PATCH v2 0/6] macros for section name cleanup
+In-Reply-To: <20090501213118.GA28126@uranus.ravnborg.org>
+Message-ID: <alpine.DEB.1.10.0905011916530.10966@vinegar-pot.mit.edu>
+References: <1241121253-32341-1-git-send-email-tabbott@mit.edu> <20090501213118.GA28126@uranus.ravnborg.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20090405210756.GG24374@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 05, 2009 at 11:07:56PM +0200, Sam Ravnborg wrote:
-> On Fri, Mar 20, 2009 at 07:44:29PM +0300, Anton Vorontsov wrote:
-> > This patch introduces ARCH_HAS_NORMAL_FRAME_POINTERS Kconfig symbol.
-> > When defined, the top level Makefile won't add -fno-omit-frame-pointer
-> > cflag (the flag is useless in PowerPC kernels, and also makes gcc
-> > generate wrong code).
-> > 
-> > Also move ARCH_WANT_FRAME_POINTERS's help text.
-> > 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> 
-> Hi Anton - sorry for the late feedback.
-> 
-> 1) The preferred naming for variables that are supposed to be selcted
->    are "HAVE_xxxx".
->    So in this case it would be:
->    HAVE_NORMAL_FRAME_POINTER
+On Fri, 1 May 2009, Sam Ravnborg wrote:
 
-OK, will rename.
+> This is the way I want to go where we have more complete
+> definitions in the shared file and we try to keep the arch
+> linker scripts to the arch specifc stuff.
 
-> 2) I do not really understand the interpretation of normal in this case,
->    can it be more specific?
+I like the general look of this.  Indeed, I was planning to work on 
+something like this as a follow-on to the linker script cleanup work I've 
+done so far.
 
-Normal means that architecture's ABI implies having a framepointer,
-we don't need any gcc flags.
+Some comments on the details are below.
 
-I'm not sure if we can name it any better, that is what was
-suggested by Steven and I don't have any better variant. ;-)
+> +#define PAGE_ALIGNED_DATA(page_align)                                \
+> +     . = ALIGN((page_align));                                        \
+> +     *(.data.page_aligned)
 
->    Looking at your patch then if specified we use "-fomit-frame-pointer"
->    in the case where it is set.
+Why does this need an argument?  You should be able to just align to 
+PAGE_SIZE.
 
-No. We specify neither -fomit-frame-pointer, nor we specify
--fno-omit-frame-pointer (because that flag causes gcc to generate
-wrong code).
+Also, I'm not sure what you're trying to do with the double parentheses 
+here (it also appears inconsistently in several other places in this 
+patch).
 
->    So I read it like:
-> 
->       If arch has normal framepointer then we omit them - strange?
-> 
-> 3) Indent in top-level MAkefile for new stuff is generally 8 spaces.
->    Do NOT use tabs as this would confuse make and rener assignmnet non-functional.
-> 
-> 4) The individual "HAVE_* members should be sorted alphabetically in the arch
->    Kconfig file (which they seldomly are :-( )
-> 
-> 	Sam
+> +/* use 0 as page_align if page_aligned data is not used */ 
+> +#define RW_DATA(page_align, readmostly_align, cache_align)           \
+> +     . = ALIGN(PAGE_SIZE);                                           \
+> +     .data : AT(ADDR(.data) - LOAD_OFFSET) {                         \
+> +             DATA_DATA                                               \
+> +             CONSTRUCTORS                                            \
+> +             NOSAVE_DATA                                             \
+> +             PAGE_ALIGNED_DATA(page_align)                           \
+> +             READMOSTLY_DATA((readmostly_align))                     \
+> +             CACHELINE_ALIGNED_DATA((cache_align))                   \
+> +     }
 
-Well, yes. So looking into the Kconfig, I'm quite unsure where
-to put it to make it alphabetically correct. Ok, let's put
-it after K. ;-)
+I think there are several architectures that have some other stuff in 
+their .data output section (e.g. powerpc, frv, ia64), so we won't be able 
+to use this on all architectures.  
 
-Thanks!
+Perhaps we want an intermediate macro between DATA_DATA and RW_DATA that 
+is just the contents of .data here that those architectuere can use?
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> +#define INITDATA(initsetup_align)					\
+> +	.init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {		\
+> +		INIT_DATA						\
+> +		. = ALIGN(initsetup_align);				\
+> +               VMLINUX_SYMBOL(__setup_start) = .;                    \
+> +               *(.init.setup)                                        \
+[...]
+> +#define INITDATA(initdata_align)					\
+> +	. = ALIGN((initdata_align));					\
+> +	.init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {		\
+> +		INIT_DATA						\
+> +	}
+
+You define two different macros called INITDATA; I'm not sure what the 
+intention is here.
+
+> +#define INIT_TASK                                                    \
+> +     *(.data.init_task)
+> +             
+> +#define INIT_TASK_DATA(align)                                                
+> +     . = ALIGN((align));                                             \
+> +     .data.init_task : {                                             \
+> +             INIT_TASK                                               \
+> +     }
+> +
+
+You mentioned elsewhere you thought .data.init_task needs to be its own 
+output section rather than part of the .data output section; why is that?  
+There are several architectures on which it is part of the .data output 
+section (e.g. sh, um, avr32).
+
+Also, I think it is possible that INIT_TASK_DATA could just align to 
+THREAD_SIZE rather than taking an argument.  While working on my patches 
+for this I noticed there were only a couple of architectures where the 
+alignment wasn't THREAD_SIZE (or a value equal to THREAD_SIZE was used).  
+One exception was parisc, where the aligment is 16384 and THREAD_SIZE is 
+always at least that but could be bigger in some configs where PAGE_SIZE 
+is bigger.  I'm not sure whether this one exception is a bug.
+
+	-Tim Abbott
