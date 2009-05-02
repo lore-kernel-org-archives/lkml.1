@@ -1,96 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbZEBLr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbZEBL7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756004AbZEBLr3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 07:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405AbZEBLrU
+	id S1756454AbZEBL7a (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 07:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbZEBL7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 07:47:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58656 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754317AbZEBLrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 07:47:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/3] PM/Hibernate: Use memory allocations to free memory
-Date: Sat, 2 May 2009 13:46:34 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
-Cc: pavel@ucw.cz, torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905020029.39181.rjw@sisk.pl> <20090501161423.94b37d5b.akpm@linux-foundation.org>
-In-Reply-To: <20090501161423.94b37d5b.akpm@linux-foundation.org>
+	Sat, 2 May 2009 07:59:20 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:50376 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753842AbZEBL7T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 07:59:19 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: tridge@samba.org
+Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
+References: <1241199689.13073.6.camel@norville.austin.ibm.com>
+	<87fxfnbytu.fsf@devron.myhome.or.jp>
+	<87ws8zak1m.fsf@devron.myhome.or.jp>
+	<87bpqbaji9.fsf@devron.myhome.or.jp>
+	<18940.9039.850580.48730@samba.org>
+	<87ab5v9381.fsf@devron.myhome.or.jp>
+	<18940.10942.989329.993465@samba.org>
+	<87ocub7ngh.fsf@devron.myhome.or.jp>
+	<18940.12667.429391.927727@samba.org>
+Date: Sat, 02 May 2009 20:59:16 +0900
+In-Reply-To: <18940.12667.429391.927727@samba.org> (tridge@samba.org's message
+	of "Sat, 2 May 2009 21:41:47 +1000")
+Message-ID: <8763gj7m23.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.92 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905021346.34967.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 May 2009, Andrew Morton wrote:
-> On Sat, 2 May 2009 00:29:38 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Modify the hibernation memory shrinking code so that it will make
-> > memory allocations to free memory instead of using an artificial
-> > memory shrinking mechanism for that.  Remove the shrinking of
-> > memory from the suspend-to-RAM code, where it is not really
-> > necessary.  Finally, remove the no longer used memory shrinking
-> > functions from mm/vmscan.c .
-> > 
-> > ...
-> >
-> > +static long alloc_and_mark_pages(struct memory_bitmap *bm, long nr_pages)
-> >  {
-> > -	if (tmp > SHRINK_BITE)
-> > -		tmp = SHRINK_BITE;
-> > -	return shrink_all_memory(tmp);
-> > +	long nr_normal = 0;
-> > +
-> > +	while (nr_pages-- > 0) {
-> > +		struct page *page;
-> > +
-> > +		page = alloc_page(GFP_KERNEL | __GFP_HIGHMEM);
-> > +		if (!page)
-> > +			return -ENOMEM;
-> > +		memory_bm_set_bit(bm, page_to_pfn(page));
-> > +		if (!PageHighMem(page))
-> > +			nr_normal++;
-> > +	}
-> > +
-> > +	return nr_normal;
-> >  }
-> 
-> Do we need the bitmap?  I expect we can just string all these pages
-> onto a local list via page.lru.  Would need to check that - the
-> pageframe fields are quite overloaded.
+tridge@samba.org writes:
 
-This is the reason why we use the bitmaps for hibernation. :-)
+>  > Yes. I guess -ENAMETOOLONG would not good for !valid, and !(is_shortname
+>  > && base_info.valid && ext_info.valid) or add "else" part is more prefer
+>  > though.
+>
+> ok, new patch below. 
 
-> > ...
-> >
-> > +#define SHRINK_BITE	10000
-> > +		long size, highmem_size, ret;
-> > +
-> > +		highmem_size = count_highmem_pages() - 2 * alloc_highmem;
-> > +		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES
-> > +			- 2 * alloc_normal;
-> 
-> It'd be nice if this head-spinning arithmetic were spelled out in a
-> comment somewhere.  There are rather a lot of magic-number heuristics
-> in here.
+Looks good to me as technical stand.
 
-Well, yeah.  I'll try to write up something. :-)
+>  > Yes. The case-insensitive is ok, the dcache can handle case-insensitive.
+>
+> good, that makes life simpler :-)
+>
+> Are you happy with the shortname_flags hackery in
+> vfat_create_shortname() ?
 
-> >  		tmp = size;
-> >  		size += highmem_size;
-> >  		for_each_populated_zone(zone) {
-> > @@ -621,27 +671,39 @@ int swsusp_shrink_memory(void)
-> 
-> All looks pretty sane to me.
-
-Great, thanks for the comments!
+Ah. What is the intent to force WINNT option (lcase field)? To force it
+may not be good. So, change default if config is on?
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
