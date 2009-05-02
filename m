@@ -1,61 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752359AbZEBFY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbZEBFvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752359AbZEBFY1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 01:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbZEBFYS
+	id S1752907AbZEBFvd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 01:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbZEBFvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 01:24:18 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38087 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750746AbZEBFYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 01:24:18 -0400
-Date: Sat, 2 May 2009 15:24:14 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <gregkh@suse.de>
-Subject: Re: linux-next: Tree for May 1 (tmpfs)
-Message-Id: <20090502152414.547a8052.sfr@canb.auug.org.au>
-In-Reply-To: <49FB12D0.5030809@oracle.com>
-References: <20090501163405.973f9088.sfr@canb.auug.org.au>
-	<49FB12D0.5030809@oracle.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__2_May_2009_15_24_14_+1000_zqHFeFzCGRX_.I2g"
+	Sat, 2 May 2009 01:51:24 -0400
+Received: from mail01a.mail.t-online.hu ([84.2.40.6]:50879 "EHLO
+	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750847AbZEBFvX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 01:51:23 -0400
+Message-ID: <49FBDF1F.1030508@freemail.hu>
+Date: Sat, 02 May 2009 07:50:23 +0200
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+MIME-Version: 1.0
+To: Trent Piepho <xyzzy@speakeasy.org>
+CC: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] v4l2: fill the reserved fields of VIDIOC_REQBUFS ioctl
+References: <49F8A325.7060303@freemail.hu> <Pine.LNX.4.58.0904300803410.7837@shell2.speakeasy.net> <Pine.LNX.4.58.0904300916250.7837@shell2.speakeasy.net>
+In-Reply-To: <Pine.LNX.4.58.0904300916250.7837@shell2.speakeasy.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail01a.mail.t-online.hu 32721; Body=4 Fuz1=4
+	Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__2_May_2009_15_24_14_+1000_zqHFeFzCGRX_.I2g
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Trent Piepho <xyzzy@speakeasy.org>
 
-[Just added some cc's]
+Some ioctls have structs that are a different size depending on what type
+of buffer is being used.  If the buffer type leaves a field unused or has
+padding space at the end, this space should be zeroed out. This patch modifies
+the VIDIOC_S_FMT, VIDIOC_TRY_FMT and VIDIOC_REQBUFS ioctls [1].
 
-On Fri, 01 May 2009 08:18:40 -0700 Randy Dunlap <randy.dunlap@oracle.com> w=
-rote:
->=20
-> When CONFIG_SHMEM=3Dn:
->=20
-> init/built-in.o: In function `kernel_init':
-> main.c:(.init.text+0x8be): undefined reference to `init_tmpfs'
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+The problems with S_FMT and REQBUFS were original identified and patched by
+Márton Németh.
 
---Signature=_Sat__2_May_2009_15_24_14_+1000_zqHFeFzCGRX_.I2g
-Content-Type: application/pgp-signature
+The patch was tested with v4l-test 0.13 [2] with vivi driver.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+References:
+[1] V4L2 API specification, revision 0.24
+    http://v4l2spec.bytesex.org/spec/r10944.htm
+    http://v4l2spec.bytesex.org/spec/r13696.htm
 
-iEYEARECAAYFAkn72P4ACgkQjjKRsyhoI8yUNQCfSsDBcLL8oTmcIQ69giSG8gzO
-vSsAn2dUspDIKizsGcfyFpirsuMGMTXX
-=FbEb
------END PGP SIGNATURE-----
+[2] v4l-test: Test environment for Video For Linux Two API
+    http://v4l-test.sourceforge.net/
 
---Signature=_Sat__2_May_2009_15_24_14_+1000_zqHFeFzCGRX_.I2g--
+Priority: normal
+
+Signed-off-by: Trent Piepho <xyzzy@speakeasy.org>
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+--- linux-2.6.30-rc4/drivers/media/video/v4l2-ioctl.c.orig	2009-05-01 23:31:22.000000000 +0200
++++ linux-2.6.30-rc4/drivers/media/video/v4l2-ioctl.c	2009-05-02 07:14:11.000000000 +0200
+@@ -42,6 +42,12 @@
+ 			printk(KERN_DEBUG "%s: " fmt, vfd->name, ## arg);\
+ 		} while (0)
+
++/* Zero out the end of the struct pointed to by p.  Everthing after, but
++ * not including, the specified field is cleared. */
++#define CLEAR_AFTER_FIELD(p, field) \
++	memset((u8 *)(p) + offsetof(typeof(*(p)), field) + sizeof((p)->field), \
++	0, sizeof(*(p)) - offsetof(typeof(*(p)), field) - sizeof((p)->field))
++
+ struct std_descr {
+ 	v4l2_std_id std;
+ 	const char *descr;
+@@ -782,44 +788,53 @@
+
+ 		switch (f->type) {
+ 		case V4L2_BUF_TYPE_VIDEO_CAPTURE:
++			CLEAR_AFTER_FIELD(f, fmt.pix);
+ 			v4l_print_pix_fmt(vfd, &f->fmt.pix);
+ 			if (ops->vidioc_s_fmt_vid_cap)
+ 				ret = ops->vidioc_s_fmt_vid_cap(file, fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_VIDEO_OVERLAY:
++			CLEAR_AFTER_FIELD(f, fmt.win);
+ 			if (ops->vidioc_s_fmt_vid_overlay)
+ 				ret = ops->vidioc_s_fmt_vid_overlay(file,
+ 								    fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_VIDEO_OUTPUT:
++			CLEAR_AFTER_FIELD(f, fmt.pix);
+ 			v4l_print_pix_fmt(vfd, &f->fmt.pix);
+ 			if (ops->vidioc_s_fmt_vid_out)
+ 				ret = ops->vidioc_s_fmt_vid_out(file, fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_VIDEO_OUTPUT_OVERLAY:
++			CLEAR_AFTER_FIELD(f, fmt.win);
+ 			if (ops->vidioc_s_fmt_vid_out_overlay)
+ 				ret = ops->vidioc_s_fmt_vid_out_overlay(file,
+ 					fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_VBI_CAPTURE:
++			CLEAR_AFTER_FIELD(f, fmt.vbi);
+ 			if (ops->vidioc_s_fmt_vbi_cap)
+ 				ret = ops->vidioc_s_fmt_vbi_cap(file, fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_VBI_OUTPUT:
++			CLEAR_AFTER_FIELD(f, fmt.vbi);
+ 			if (ops->vidioc_s_fmt_vbi_out)
+ 				ret = ops->vidioc_s_fmt_vbi_out(file, fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_SLICED_VBI_CAPTURE:
++			CLEAR_AFTER_FIELD(f, fmt.sliced);
+ 			if (ops->vidioc_s_fmt_sliced_vbi_cap)
+ 				ret = ops->vidioc_s_fmt_sliced_vbi_cap(file,
+ 									fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_SLICED_VBI_OUTPUT:
++			CLEAR_AFTER_FIELD(f, fmt.sliced);
+ 			if (ops->vidioc_s_fmt_sliced_vbi_out)
+ 				ret = ops->vidioc_s_fmt_sliced_vbi_out(file,
+ 									fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_PRIVATE:
++			/* CLEAR_AFTER_FIELD(f, fmt.raw_data); <- does nothing */
+ 			if (ops->vidioc_s_fmt_type_private)
+ 				ret = ops->vidioc_s_fmt_type_private(file,
+ 								fh, f);
+@@ -836,46 +851,55 @@
+ 						v4l2_type_names));
+ 		switch (f->type) {
+ 		case V4L2_BUF_TYPE_VIDEO_CAPTURE:
++			CLEAR_AFTER_FIELD(f, fmt.pix);
+ 			if (ops->vidioc_try_fmt_vid_cap)
+ 				ret = ops->vidioc_try_fmt_vid_cap(file, fh, f);
+ 			if (!ret)
+ 				v4l_print_pix_fmt(vfd, &f->fmt.pix);
+ 			break;
+ 		case V4L2_BUF_TYPE_VIDEO_OVERLAY:
++			CLEAR_AFTER_FIELD(f, fmt.win);
+ 			if (ops->vidioc_try_fmt_vid_overlay)
+ 				ret = ops->vidioc_try_fmt_vid_overlay(file,
+ 					fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_VIDEO_OUTPUT:
++			CLEAR_AFTER_FIELD(f, fmt.pix);
+ 			if (ops->vidioc_try_fmt_vid_out)
+ 				ret = ops->vidioc_try_fmt_vid_out(file, fh, f);
+ 			if (!ret)
+ 				v4l_print_pix_fmt(vfd, &f->fmt.pix);
+ 			break;
+ 		case V4L2_BUF_TYPE_VIDEO_OUTPUT_OVERLAY:
++			CLEAR_AFTER_FIELD(f, fmt.win);
+ 			if (ops->vidioc_try_fmt_vid_out_overlay)
+ 				ret = ops->vidioc_try_fmt_vid_out_overlay(file,
+ 				       fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_VBI_CAPTURE:
++			CLEAR_AFTER_FIELD(f, fmt.vbi);
+ 			if (ops->vidioc_try_fmt_vbi_cap)
+ 				ret = ops->vidioc_try_fmt_vbi_cap(file, fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_VBI_OUTPUT:
++			CLEAR_AFTER_FIELD(f, fmt.vbi);
+ 			if (ops->vidioc_try_fmt_vbi_out)
+ 				ret = ops->vidioc_try_fmt_vbi_out(file, fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_SLICED_VBI_CAPTURE:
++			CLEAR_AFTER_FIELD(f, fmt.sliced);
+ 			if (ops->vidioc_try_fmt_sliced_vbi_cap)
+ 				ret = ops->vidioc_try_fmt_sliced_vbi_cap(file,
+ 								fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_SLICED_VBI_OUTPUT:
++			CLEAR_AFTER_FIELD(f, fmt.sliced);
+ 			if (ops->vidioc_try_fmt_sliced_vbi_out)
+ 				ret = ops->vidioc_try_fmt_sliced_vbi_out(file,
+ 								fh, f);
+ 			break;
+ 		case V4L2_BUF_TYPE_PRIVATE:
++			/* CLEAR_AFTER_FIELD(f, fmt.raw_data); <- does nothing */
+ 			if (ops->vidioc_try_fmt_type_private)
+ 				ret = ops->vidioc_try_fmt_type_private(file,
+ 								fh, f);
+@@ -898,6 +922,9 @@
+ 		if (ret)
+ 			break;
+
++		if (p->type < V4L2_BUF_TYPE_PRIVATE)
++			CLEAR_AFTER_FIELD(p, memory);
++
+ 		ret = ops->vidioc_reqbufs(file, fh, p);
+ 		dbgarg(cmd, "count=%d, type=%s, memory=%s\n",
+ 				p->count,
+
