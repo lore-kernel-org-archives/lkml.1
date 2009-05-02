@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbZEBKK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbZEBKSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755174AbZEBKK2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 06:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZEBKKP
+	id S1754795AbZEBKSN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 06:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbZEBKR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 06:10:15 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:53288 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751541AbZEBKKN (ORCPT
+	Sat, 2 May 2009 06:17:56 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:60211 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751541AbZEBKRz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 06:10:13 -0400
-Date: Sat, 2 May 2009 12:14:05 +0200
-From: Heinz Diehl <htd@fancy-poultry.org>
-To: linux-kernel@vger.kernel.org
-Cc: Alexander Beregalov <a.beregalov@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>, xfs@oss.sgi.com
-Subject: Re: 2.6.30-rc4: xfs_fsr hangs
-Message-ID: <20090502101405.GA6145@fancy-poultry.org>
-Reply-To: linux-kernel@vger.kernel.org
-References: <a4423d670905011333s664115bdh1d72392897567c1d@mail.gmail.com>
+	Sat, 2 May 2009 06:17:55 -0400
+X-Greylist: delayed 480 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 May 2009 06:17:55 EDT
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Andrew Tridgell <tridge@samba.org>, Steve French <sfrench@us.ibm.com>,
+       Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
+References: <1241199689.13073.6.camel@norville.austin.ibm.com>
+Date: Sat, 02 May 2009 19:09:49 +0900
+In-Reply-To: <1241199689.13073.6.camel@norville.austin.ibm.com> (Dave
+	Kleikamp's message of "Fri, 01 May 2009 12:41:29 -0500")
+Message-ID: <87fxfnbytu.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.92 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a4423d670905011333s664115bdh1d72392897567c1d@mail.gmail.com>
-Organization: private site
-User-Agent: Mutt/1.5.19+20090405 (GNU/Linux)
-X-Provags-ID: V01U2FsdGVkX19cgp2K9Ko3pvHs3Q2/qyDAw8E8TAQA2ZAnuqk
- V4dZi3Wnxj8XpH5VIwvNtdjWkuHgMY1MWV+mafU7R/smfZKSXE
- uvz1NilNy2sgzRg9kfiPTNRxtqflRFh
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01.05.2009, Alexander Beregalov wrote: 
+Dave Kleikamp <shaggy@linux.vnet.ibm.com> writes:
 
-> # xfs_db -r /dev/sdc1
-> xfs_db> frag
-> actual 23805, ideal 22890, fragmentation factor 3.84%
-> # xfs_fsr -v /dev/sdc1
-> /mnt/c start inode=0
-> ino=158
-> extents before:3 after:1 DONE ino=158
-> 
->  then it hangs
+> Subject: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
+>
+> When this option is enabled the VFAT filesystem will refuse to create
+> new files with long names. Accessing existing files with long names
+> will continue to work.
+>
+> File names to be created must conform to the 8.3 format.  Mixed case is
+> not allowed in either the prefix or the suffix.
 
-I can't confirm this here on my systems:
+I'll answer to only technical part. This patch creates different name
+internally, without renaming dcache. Are you really sure if that's ok?
 
-liesel:~ # uname -a
-Linux liesel 2.6.30-rc4 #1 SMP PREEMPT Sat May 2 11:49:13 CEST 2009 x86_64 x86_64 x86_64 GNU/Linux
-
-liesel:~ # xfs_db -r /dev/sdc1
-xfs_db> frag
-actual 42974, ideal 42842, fragmentation factor 0.31%
-xfs_db> quit
-
-liesel:~ # xfs_fsr -v /dev/sdc1
-/home start inode=0
-ino=248755507
-ino=248755507 already fully defragmented.
-ino=536871160
-extents before:2 after:1 DONE ino=536871160
-ino=536875693
-extents before:3 after:1 DONE ino=536875693
-ino=615920545
-extents before:2 after:1 DONE ino=615920545
-ino=615920557
-extents before:2 after:1 DONE ino=615920557
-ino=1092324584
-extents before:4 after:1 DONE ino=1092324584
-liesel:~ #
-
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
