@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbZEBBhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbZEBBjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755648AbZEBBhl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 21:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbZEBBhb
+	id S1754490AbZEBBjW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 21:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbZEBBjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 21:37:31 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:45230 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751480AbZEBBha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 21:37:30 -0400
-Date: Fri, 1 May 2009 18:37:29 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Steve French <smfrench@gmail.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, Andrew Tridgell <tridge@samba.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090502013729.GI6996@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <524f69650905011318m34e0027dt57877d225b3fe2da@mail.gmail.com> <20090501210109.GA3079@infradead.org>
+	Fri, 1 May 2009 21:39:12 -0400
+Received: from mail-ew0-f224.google.com ([209.85.219.224]:51601 "EHLO
+	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394AbZEBBjL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 21:39:11 -0400
+X-Greylist: delayed 1191 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 May 2009 21:39:10 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=fe4l/BNreqqOwwR/G2I0zk9HcLATDahvcWSIt17FJFHjbzQFdgekwRfmYAM+6Jtn5q
+         oAbOMiJ8mvWIQYPtKBbFIpArCsKVcWUa0u/JUo6cRWRwYuadpNh50tIVAO8IKdAEthrU
+         UTV0quabgNZwKaixZbV48WYBHiJwAzbBmewWc=
+Date: Sat, 2 May 2009 03:39:07 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 0/6] kill-the-BKL/reiserfs3: performance improvements,
+	faster than Bkl based scheme
+Message-ID: <20090502013906.GA5331@nowhere>
+References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090501210109.GA3079@infradead.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <1241145862-21700-1-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 05:01:09PM -0400, Christoph Hellwig wrote:
-> On Fri, May 01, 2009 at 03:18:20PM -0500, Steve French wrote:
-> > For those manufacturers who who would like to disable
-> > creation of long file names, but allow reading long file names,
-> > and handle FAT32 on disk format and maximum sizes, it seems
-> > reasonable to give them a simple configure option for it.  It is
-> > harder, and less effective, to make the corresponding change
-> > to modify the mount helper and kernel code to add
-> > a new mount option, because it can be bypassed trivially
-> > at the command line (ie having to "force" mount to pass a "nolongfilename"
-> > mount option, would be harder than a simple kernel configure option)
+On Fri, May 01, 2009 at 04:44:16AM +0200, Frederic Weisbecker wrote:
+> Hi,
 > 
-> Steve, can you please stop the bullshitting?
+> This reiserfs patchset applies against latest tip:core/kill-the-BKL
+> It adds various explicit write lock releases on specific sleeping sections.
 > 
-> >From the complete lack of technical arguments it's pretty obvious that
-> this seems to be some FUD fallout from the MS vs TomTom patent lawsuite.
+> A performance test with dbench on UP with 100 processus during 100 seconds
+> gives the following results:
 > 
-> I'm not a lawyer so I don't know how much of a threat it is.  But either
-> the case gets shot down by showing prior art and everything is fine, or
-> we indeed are in deep trouble and should remove it completely.  Given
-> the Cc list on here IBM seems to have some legal opinion on it, so can
-> we please see it and discuss what we want to with all cards on the
-> table?
+> Locking		  Throughput 
+> 
+> Bkl:              11.2587 MB/s
+> Write lock/Mutex: 12.5713 MB/s
 
-Hello, Christoph!
 
-Hmmm...  Both Tridge and Dave have Signed-off-by on the original patch,
-and Steve has Acked-by, Mingming has Cc, and Dave is on the From list
-rather than the Cc list, so I have to guess that there is a good chance
-that you are talking about me.  ;-)
+I just tested on SMP with two CPU:
 
-However, as far as I know, none of us are lawyers, and LKML is definitely
-a technical rather than a legal forum, so we really do need to stick to
-technical topics.  I understand that this might be a bit frustrating
-to you.  On the other hand, I for one much prefer being in a forum
-restricted to technical topics than to be in those places designed to
-handle legal topics!
+Write Lock/Mutex: Throughput 66.9269 MB/sec 100 procs
+Bkl:              Throughput 71.9998 MB/sec 100 procs
 
-I suspect that this is not the answer that you were looking for, and
-I do apologize for any disappointment, but this does happen to be the
-answer that I have.
+So:
 
-							Thanx, Paul
+UP:  11% faster
+SMP:  8% slower
+
+
+I guess there is still some work to do :)
+
