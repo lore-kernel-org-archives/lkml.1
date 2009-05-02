@@ -1,63 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbZEBOQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758247AbZEBORq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757966AbZEBOQy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 10:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbZEBOQl
+	id S1758247AbZEBORq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 10:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZEBORf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 10:16:41 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:37315 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755359AbZEBOQj (ORCPT
+	Sat, 2 May 2009 10:17:35 -0400
+Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:4702 "EHLO
+	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754215AbZEBORe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 10:16:39 -0400
-Date: Sat, 2 May 2009 10:16:39 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: David VomLehn <dvomlehn@cisco.com>
-cc: Sergey Vlasov <vsu@altlinux.ru>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       USB list <linux-usb@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       <netdev@vger.kernel.org>, <arjan@infradead.org>
-Subject: Re: [PATCH 1/5] initdev:kernel: Asynchronously-discovered device
- synchronization, v5
-In-Reply-To: <20090502133153.GA8116@atlas.home>
-Message-ID: <Pine.LNX.4.44L0.0905021010200.23879-100000@netrider.rowland.org>
+	Sat, 2 May 2009 10:17:34 -0400
+From: Hans Verkuil <hverkuil@xs4all.nl>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: tvaudio.c: possible problem with V4L2_TUNER_MODE_MONO
+Date: Sat, 2 May 2009 16:17:16 +0200
+User-Agent: KMail/1.9.9
+Cc: mchehab@infradead.org, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <Pine.LNX.4.64.0905021518250.9563@pc-004.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0905021518250.9563@pc-004.diku.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905021617.16995.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I agree with Sergey's comments.  In addition:
+On Saturday 02 May 2009 15:19:03 Julia Lawall wrote:
+> The file drivers/media/video/tvaudio.c contains the following code:
+>
+> (starting at line 1257 in a recent linux-next)
+>
+> 		if (mode & V4L2_TUNER_MODE_MONO)
+> 			s1 |= TDA8425_S1_STEREO_MONO;
+> 		if (mode & V4L2_TUNER_MODE_STEREO)
+> 			s1 |= TDA8425_S1_STEREO_SPATIAL;
+>
+> (starting at line 1856 in a recent linux-next)
+>
+> 	if (mode & V4L2_TUNER_MODE_MONO)
+> 		vt->rxsubchans |= V4L2_TUNER_SUB_MONO;
+> 	if (mode & V4L2_TUNER_MODE_STEREO)
+> 		vt->rxsubchans |= V4L2_TUNER_SUB_STEREO;
+>
+> The only possible value of V4L2_TUNER_MODE_MONO, however, seems to be 0,
+> as defined in include/linux/videodev2.h, and thus the first test in each
+> case is never true.  Is this what is intended, or should the tests be
+> expressed in another way?
 
-On Fri, May 01, 2009 at 07:25:51PM -0700, David VomLehn wrote:
+Hi Julia,
 
-> +initdev_wait(enum initdev_type type, bool (*done)(void))
-> +	Wait until one of two conditions is met:
-> +	o	All possible init devices of the given type have been probed
-> +	o	The "done" function returns true
-> +
-> +	The type is one of:
-> +		BOOTDEV_CONSOLE
-> +		BOOTDEV_NETDEV
-> +		BOOTDEV_BLOCK
+Nope, this isn't intended. A grep over the v4l sources shows that it is 
+handled incorrectly in several other drivers as well. I'll prepare patches 
+to fix all these drivers.
 
-These should be named INITDEV_CONSOLE_TYPE and so on, with the final 
-_TYPE suffix to help prevent confusion with INITDEV_CONSOLE_MASK.
+Thanks,
 
-Also, in patch 3/5:
+	Hans
 
-> --- a/drivers/accessibility/braille/braille_console.c
-> +++ b/drivers/accessibility/braille/braille_console.c
-> @@ -35,6 +35,7 @@
->  #include <linux/keyboard.h>
->  #include <linux/kbd_kern.h>
->  #include <linux/input.h>
-> +#include <linux/initdev.h>
+>
+> julia
+>
+> This problem was found using the following semantic match:
+> (http://www.emn.fr/x-info/coccinelle/)
+>
+> @r expression@
+> identifier C;
+> expression E;
+> position p;
+> @@
+>
+> (
+>  E & C@p && ...
+>
+>  E & C@p || ...
+> )
+>
+> @s@
+> identifier r.C;
+> position p1;
+> @@
+>
+> #define C 0
+>
+> @t@
+> identifier r.C;
+> expression E != 0;
+> @@
+>
+> #define C E
+>
+> @script:python depends on s && !t@
+> p << r.p;
+> C << r.C;
+> @@
+>
+> cocci.print_main("and with 0", p)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-What does this do?  It looks like a typo.
 
-Alan Stern
 
+-- 
+Hans Verkuil - video4linux developer - sponsored by TANDBERG Telecom
