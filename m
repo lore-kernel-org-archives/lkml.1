@@ -1,66 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbZEBSf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758309AbZEBSfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757547AbZEBSf2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 14:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbZEBSfV
+	id S1758309AbZEBSfn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 14:35:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757667AbZEBSfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 14:35:21 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:47737 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752680AbZEBSfT convert rfc822-to-8bit (ORCPT
+	Sat, 2 May 2009 14:35:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50640 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757339AbZEBSfY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 14:35:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=TQF4f5QiVUADtcYG6wKnyU8xUL1qGwaU1DYwjbCv6S11WAYsqcdi/nF+x6GEYCFBZF
-         N+Oejy3v4oJj0iWb1tlAjwGvdGB3hGDWhNYVZ8rE3TzsmkNlP+drOXfELVPG2tpwGSdh
-         ilXbs75yaXRf3+Bb7V0f6cYEgVrGUTR1yjGPE=
-MIME-Version: 1.0
-In-Reply-To: <20090502101405.GA6145@fancy-poultry.org>
-References: <a4423d670905011333s664115bdh1d72392897567c1d@mail.gmail.com>
-	 <20090502101405.GA6145@fancy-poultry.org>
-Date: Sat, 2 May 2009 22:35:17 +0400
-Message-ID: <a4423d670905021135s4fdbea82t20cf75b61c59dc75@mail.gmail.com>
-Subject: Re: 2.6.30-rc4: xfs_fsr hangs
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: linux-kernel@vger.kernel.org, Heinz Diehl <htd@fancy-poultry.org>
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>, xfs@oss.sgi.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sat, 2 May 2009 14:35:24 -0400
+Date: Sat, 2 May 2009 11:26:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lars Ellenberg <lars.ellenberg@linbit.com>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
+       Neil Brown <neilb@suse.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Lars Marowsky-Bree <lmb@suse.de>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: [PATCH 02/16] DRBD: lru_cache
+Message-Id: <20090502112609.67637bc6.akpm@linux-foundation.org>
+In-Reply-To: <20090502181311.GG6466@racke>
+References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com>
+	<1241090812-13516-2-git-send-email-philipp.reisner@linbit.com>
+	<1241090812-13516-3-git-send-email-philipp.reisner@linbit.com>
+	<20090501015956.ef663e9b.akpm@linux-foundation.org>
+	<20090502152620.GA6466@racke>
+	<20090502105823.bf27bf22.akpm@linux-foundation.org>
+	<20090502181311.GG6466@racke>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/2 Heinz Diehl <htd@fancy-poultry.org>:
-> On 01.05.2009, Alexander Beregalov wrote:
->
->> # xfs_db -r /dev/sdc1
->> xfs_db> frag
->> actual 23805, ideal 22890, fragmentation factor 3.84%
->> # xfs_fsr -v /dev/sdc1
->> /mnt/c start inode=0
->> ino=158
->> extents before:3 after:1 DONE ino=158
->>
->>  then it hangs
->
-> I can't confirm this here on my systems:
->
-> liesel:~ # uname -a
-> Linux liesel 2.6.30-rc4 #1 SMP PREEMPT Sat May 2 11:49:13 CEST 2009 x86_64 x86_64 x86_64 GNU/Linux
+On Sat, 2 May 2009 20:13:12 +0200 Lars Ellenberg <lars.ellenberg@linbit.com> wrote:
 
-I have this problem on two x86_32 hosts.
-It runs for about a minute and then hangs.
-vmstat 1:
- 0  1     80  30856  12284 1289452    0    0 16384 16380  224  301  0  5  0 95
- 0  1     80  32020  12196 1287884    0    0 25984 16380  290  470  0 11  0 89
- 0  1     80  30732  12132 1289648    0    0 23168 32760  286  413  0  6  0 94
- 0  1     80  32220  12128 1287620    0    0 16384 16380  220  303  0  8  0 92
- 1  0     80 198312  12108 1137956    0    0 14472 14628  223  284  0 10  3 87
- 0  0     80 1118144  12108 218216    0    0     0     0   63   33  0 38 62  0
- 0  0     80 1118144  12108 218216    0    0     0     0   24   26  0  0 100  0
- 0  0     80 1118144  12108 218216    0    0     0     0   36   28  0  1 99  0
- 0  0     80 1118144  12108 218216    0    0     0     0   36   32  1  1 98  0
- 0  0     80 1118144  12108 218216    0    0     0     0   78   66  0  1 99  0
+> On Sat, May 02, 2009 at 10:58:23AM -0700, Andrew Morton wrote:
+> > On Sat, 2 May 2009 17:26:20 +0200 Lars Ellenberg <lars.ellenberg@linbit.com> wrote:
+> > 
+> > > in memory structure is
+> > > 
+> > > struct lru_cache {
+> > >         struct list_head active;
+> > >         struct list_head quiet;
+> > >         struct list_head free;
+> > >         size_t element_size;          <-- parameter to "lc_alloc"
+> > >         unsigned int  nr_elements;    <-- parameter to "lc_alloc"
+> > >         unsigned int  new_number;
+> > > 
+> > >         unsigned int used;
+> > >         unsigned long flags;
+> > >         unsigned long hits, misses, starving, dirty, changed;
+> > > 
+> > >         struct lc_element *changing_element; /* just for paranoia */
+> > > 
+> > >         const char *name;
+> > > 
+> > >         struct hlist_head slot[0];
+> > >         /* hash colision chains here, then element storage. */
+> > > };
+> > > 
+> > > so we have fixed size list heads,
+> > > size of a single such "element", to allow the user
+> > > to add small payload;
+> > > number of hash slots and "elements" following this header;
+> > > some counters;
+> > > hlist_slot[0];
+> > > }
+> > > following:
+> > > struct hlist_head[nr_elements];
+> > > array of element_size blobs[nr_elements];
+> > > 
+> > > these "blobs" start with the struct lru_element,
+> > > possibly followed by some user payload.
+> > > 
+> > > the "index" you are asking about later is
+> > > index into that "blob" array,
+> > > and is used primarily to initialize the state of this thing
+> > > from an on-disk representation (the "activity log", "AL"),
+> > > for crash recovery purposes.
+> > > 
+> > > the typecasting is necessary to get from the slot[0] to the "elements"
+> > > skipping the hash slots.
+> > > using "container of" or something like that would obscure the fact that,
+> > > as currently implemented, the "lru_element" _must_ be the first member
+> > > of any payload structure.
+> > 
+> > I still don't see why the lru_element must be the first member of the
+> > user's outer, containing structure.
+> 
+> 
+> ok, arguably one could also record the offset_of beneath the element_size,
+> and add that in when doing the lc_element *e =  blob[index] + offset.
+> would not make it much more appealing, though.
+> 
+
+You appear to believe that I understood the relevance of all the above
+text.  I didn't ;)
+
+Let's start again.
+
+Why can't I do
+
+struct foo {
+	int x;
+	struct lc_element lc;
+	..
+};
+
+and then use the lru library code to handle my foo objects?
