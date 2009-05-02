@@ -1,96 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752467AbZEBEvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753560AbZEBFNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752467AbZEBEvV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 00:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750746AbZEBEvK
+	id S1753560AbZEBFNw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 01:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbZEBFNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 00:51:10 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:40409 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750730AbZEBEvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 00:51:09 -0400
-Date: Fri, 1 May 2009 21:51:03 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Christoph Hellwig <hch@infradead.org>, Steve French <smfrench@gmail.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, Andrew Tridgell <tridge@samba.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090502045103.GA7141@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <524f69650905011318m34e0027dt57877d225b3fe2da@mail.gmail.com> <20090501210109.GA3079@infradead.org> <20090502013729.GI6996@linux.vnet.ibm.com> <20090502015927.GJ8822@parisc-linux.org>
+	Sat, 2 May 2009 01:13:43 -0400
+Received: from mail.gmx.net ([213.165.64.20]:57156 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750746AbZEBFNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 01:13:42 -0400
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX18P6uoaM8MPpmxil0QApzgmS/d3bkaB3kke0VllQL
+	lWxNOKuuLa8f/m
+Message-ID: <49FBD681.9080605@gmx.de>
+Date: Sat, 02 May 2009 07:13:37 +0200
+From: Helge Deller <deller@gmx.de>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090502015927.GJ8822@parisc-linux.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Tim Abbott <tabbott@MIT.EDU>
+CC: Sam Ravnborg <sam@ravnborg.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Kyle McMartin <kyle@mcmartin.ca>,
+       linux-parisc@vger.kernel.org
+Subject: Re: [PATCH 3/5] parisc: use new macros for .data.init_task.
+References: <1241135719-9286-1-git-send-email-tabbott@mit.edu> <1241135719-9286-2-git-send-email-tabbott@mit.edu> <1241135719-9286-3-git-send-email-tabbott@mit.edu> <1241135719-9286-4-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1241135719-9286-4-git-send-email-tabbott@mit.edu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 07:59:28PM -0600, Matthew Wilcox wrote:
-> On Fri, May 01, 2009 at 06:37:29PM -0700, Paul E. McKenney wrote:
-> > On Fri, May 01, 2009 at 05:01:09PM -0400, Christoph Hellwig wrote:
-> > > >From the complete lack of technical arguments it's pretty obvious that
-> > > this seems to be some FUD fallout from the MS vs TomTom patent lawsuite.
-> > > 
-> > > I'm not a lawyer so I don't know how much of a threat it is.  But either
-> > > the case gets shot down by showing prior art and everything is fine, or
-> > > we indeed are in deep trouble and should remove it completely.  Given
-> > > the Cc list on here IBM seems to have some legal opinion on it, so can
-> > > we please see it and discuss what we want to with all cards on the
-> > > table?
-> > 
-> > Hello, Christoph!
-> > 
-> > Hmmm...  Both Tridge and Dave have Signed-off-by on the original patch,
-> > and Steve has Acked-by, Mingming has Cc, and Dave is on the From list
-> > rather than the Cc list, so I have to guess that there is a good chance
-> > that you are talking about me.  ;-)
-> > 
-> > However, as far as I know, none of us are lawyers, and LKML is definitely
-> > a technical rather than a legal forum, so we really do need to stick to
-> > technical topics.  I understand that this might be a bit frustrating
-> > to you.  On the other hand, I for one much prefer being in a forum
-> > restricted to technical topics than to be in those places designed to
-> > handle legal topics!
+Tim Abbott wrote:
+> .data.init_task should not need a separate output section; this change
+> moves it into the .data section.
 > 
-> So what's the purely technical argument for including this patch?
+> Signed-off-by: Tim Abbott <tabbott@mit.edu>
+> Cc: Kyle McMartin <kyle@mcmartin.ca>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: linux-parisc@vger.kernel.org
 
-Pretty much what it says in the config-variable description in the patch
-itself.  To recap, with some technical elaboration:
 
-1.	It allows you to read VFAT media, mixed-case long names and all.
-	Full compatibility for reading from existing media.
+I think this patch is wrong, although it is theoretically correct.
 
-2.	It allows opening existing mixed-case long-named files
-	both for reading and writing.
+IIRC, gcc on hppa is not able to provide an alignment >= 8k, which is
+why we have done the 16k alignment inside the linker script.
+So, I think this change will prevent the parisc kernel to boot up.
+Needs testing.
 
-3.	For file creation, only the 8.3-format filename is permitted.
-	Such a name can be stored in a single VFAT directory entry.
+Helge
 
-4.	It allows you to create files with both uppercase and lowercase
-	8.3-format names, as long as the 8-character portion is either
-	entirely uppercase or entirely lowercase, and as long as
-	the 3-character extension is either entirely uppercase
-	or entirely lowercase.  This again keeps the name confined
-	to a single VFAT directory entry.
+> ---
+>  arch/parisc/kernel/init_task.c   |    2 +-
+>  arch/parisc/kernel/vmlinux.lds.S |   10 ++--------
+>  2 files changed, 3 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/parisc/kernel/init_task.c b/arch/parisc/kernel/init_task.c
+> index 1e25a45..8ee17ea 100644
+> --- a/arch/parisc/kernel/init_task.c
+> +++ b/arch/parisc/kernel/init_task.c
+> @@ -48,7 +48,7 @@ EXPORT_SYMBOL(init_mm);
+>   * "init_task" linker map entry..
+>   */
+>  union thread_union init_thread_union
+> -	__attribute__((aligned(128))) __attribute__((__section__(".data.init_task"))) =
+> +	__attribute__((aligned(128))) __init_task_data =
+>  		{ INIT_THREAD_INFO(init_task) };
+>  
+>  #if PT_NLEVELS == 3
+> diff --git a/arch/parisc/kernel/vmlinux.lds.S b/arch/parisc/kernel/vmlinux.lds.S
+> index b5936c9..c8a528d 100644
+> --- a/arch/parisc/kernel/vmlinux.lds.S
+> +++ b/arch/parisc/kernel/vmlinux.lds.S
+> @@ -103,6 +103,8 @@ SECTIONS
+>  	. = ALIGN(L1_CACHE_BYTES);
+>  	/* Data */
+>  	.data : {
+> +		/* assembler code expects init_task to be 16k aligned */
+> +		INIT_TASK_DATA(16384)
+>  		NOSAVE_DATA
+>  		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
+>  		DATA_DATA
+> @@ -133,14 +135,6 @@ SECTIONS
+>  	}
+>  	__bss_stop = .;
+>  
+> -
+> -	/* assembler code expects init_task to be 16k aligned */
+> -	. = ALIGN(16384);
+> -	/* init_task */
+> -	.data.init_task : {
+> -		*(.data.init_task)
+> -	}
+> -
+>  #ifdef CONFIG_64BIT
+>  	. = ALIGN(16);
+>  	/* Linkage tables */
 
->From the original patch, with a couple additional examples added:
-
-o	Creating FILE1234.TXT is allowed.
-
-o	Creating FILE12345.TXT or FILE1234.TEXT is prohibited, as
-	neither fits the 8.3 format.
-
-o	Creating FILE.TXT, FILE.txt, file.TXT, and file.txt would all
-	be allowed, and would create files by exactly those names.
-
-o	Attempting to create File.TxT will give you a file named FILE.TXT.
-
-There you have it!
-
-							Thanx, Paul
