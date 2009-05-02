@@ -1,79 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbZEBQo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757153AbZEBQuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756123AbZEBQo5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 12:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbZEBQos
+	id S1757153AbZEBQuV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 12:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405AbZEBQuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 12:44:48 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:35194 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754405AbZEBQos (ORCPT
+	Sat, 2 May 2009 12:50:05 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:24815 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752927AbZEBQuE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 12:44:48 -0400
-Subject: Re: Probe Timeouts with 47afbaf5af9454a7a1a64591e20cbfcc27ca67a8
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Parag Warudkar <parag.lkml@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, niel.lambrechts@gmail.com
-In-Reply-To: <f7848160905020420t114db70dq4018bab2ab53fc8f@mail.gmail.com>
-References: <f7848160904301838q4883106fq8d31e2e7c0b10a14@mail.gmail.com>
-	 <1241165805.13562.2.camel@johannes.local>
-	 <f7848160905011328o68010ba0rf8e18fa7ce88c7b5@mail.gmail.com>
-	 <1241252825.13562.20.camel@johannes.local>
-	 <f7848160905020420t114db70dq4018bab2ab53fc8f@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-oxxwDFddLuB2z/hLFBxT"
-Date: Sat, 02 May 2009 18:44:42 +0200
-Message-Id: <1241282682.13562.21.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Sat, 2 May 2009 12:50:04 -0400
+Message-ID: <49FC7A13.8040807@oracle.com>
+Date: Sat, 02 May 2009 09:51:31 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Lee <lee-in-berlin@web.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.30-rc4: compile fail with CONFIG_DRM_I915=y
+References: <49FC4F88.3090403@web.de>
+In-Reply-To: <49FC4F88.3090403@web.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.49FC79B8.011A:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Lee wrote:
+> Hi list,
+> 
+> compiling 2.6.30-rc4 with following options will result in an compile
+> error:
+> 
+> CONFIG_DRM_I915=y
+> CONFIG_ACPI_VIDEO=m
+> 
+> 
+> drivers/video/backlight/backlight.c: In function
+> ‘backlight_device_register’:
+> drivers/video/backlight/backlight.c:247: warning: format not a string
+> literal and no format arguments
+> drivers/video/output.c: In function ‘video_output_register’:
+> drivers/video/output.c:99: warning: format not a string literal and no
+> format arguments
+> drivers/usb/storage/libusual.c: In function ‘usu_probe_thread’:
+> drivers/usb/storage/libusual.c:159: warning: format not a string literal
+> and no format arguments
+> drivers/built-in.o: In function `intel_opregion_free':
+> (.text+0xaf051): undefined reference to `acpi_video_exit'
+> drivers/built-in.o: In function `intel_opregion_init':
+> (.text+0xaf411): undefined reference to `acpi_video_register'
+> make[1]: *** [.tmp_vmlinux1] Error 1
+> make[1]: Leaving directory `/home/randall/kernel-source'
+> make: *** [debian/stamp/build/kernel] Error 2
+> 
+> Compiling the kernel with both options as module or both options
+> built-in results in a working kernel.
 
---=-oxxwDFddLuB2z/hLFBxT
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Len Brown posted a patch to fix this, although I can't find it in
+any email archives just now, so I'm appending it below.
 
-On Sat, 2009-05-02 at 07:20 -0400, Parag Warudkar wrote:
 
-> > Can you make sure the txpower is set correctly, on your compat? Just sa=
-y
-> > "iwconfig wlan0" or whatever _while_ associated -- and check that it
-> > reports 15dBm or so.
->=20
-> It shows 27 dBm when associated - both for mainline and compat.
+-- 
 
-Good.
+From: Len Brown <len.brown@intel.com>
+Subject: [PATCH] ACPI, i915: build fix
 
-> Still get the disassociated messages.
+drivers/built-in.o: In function `intel_opregion_init':
+(.text+0x9d540): undefined reference to `acpi_video_register'
 
-Right, different problem then. Can you put that into a kernel.org
-bugzilla please?
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ drivers/gpu/drm/Kconfig |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-johannes
-
---=-oxxwDFddLuB2z/hLFBxT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJ/Hh3AAoJEKVg1VMiehFYTKEQAI9KYywB4WU5Trlvw7K0RMM/
-IpNoox6A2zMVcU+i7cjRDlrnCB4yQXOsC/hB5Z3GClX0ury8gj06pHJf6bAhRG7B
-Ggrkr5LzB8MUqIHeukek7b0VrkqszIxdvOCHQ/YVk24WTT7+ZCu73rjl5HrGbqQe
-2K1j+zXi2K0NucIKSzv7RYrklyyp9xdCOKiR6w/8jfsTrykI/1zD/TRy/Mw240Mp
-nKomZKM8vzsN9RbqN643s6PP5O6CpsvXtsSl6AvIiqopnybD4iJ2GoMZIFfUy6Of
-dURf7k4KoLrskKEBtQl4YjDelVKZeghsNyszFp9X6Xpm957QO/ux3tiz0MudCprh
-4oiUJluePPFiSIjyXY96QvosnzL3ZOzeZ8Ix00dKjIj+YRo9jBLyd7d9Rbv7zQfs
-wAbApA9+0jykX+dmrYWZKDyTrs+rLDEO6auAN2PY6n/iarnLrzWhNKxCLogDphvH
-S3LZm3+T7jJCmS6YstLoBXhfdHtHgJ5j8gZtZTdpeWziSL/+m2Pce42Kv7LR9XFZ
-9bbhgvYumPOKa6ptbQVYZYzndQQk9oE74jDUy1RWyVGIvOfEc/lU9EQW8dl/QHH6
-92xZ/CJmU9d7Cln0dz9QjjqO7X3IV3UY/ujateD3mkWUOLaHRsXm08X3nM2lZlCw
-Zsa45y6O9loga23onwmj
-=zNMd
------END PGP SIGNATURE-----
-
---=-oxxwDFddLuB2z/hLFBxT--
-
+diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+index 3a22eb9..f33d252 100644
+--- a/drivers/gpu/drm/Kconfig
++++ b/drivers/gpu/drm/Kconfig
+@@ -83,6 +83,12 @@ config DRM_I915
+ config DRM_I915_KMS
+ 	bool "Enable modesetting on intel by default"
+ 	depends on DRM_I915
++	# i915 KMS depends on ACPI_VIDEO when ACPI is enabled
++	# but for select to work, need to select ACPI_VIDEO's dependencies, ick
++	select VIDEO_OUTPUT_CONTROL if ACPI
++	select BACKLIGHT_CLASS_DEVICE if ACPI
++	select INPUT if ACPI
++	select ACPI_VIDEO if ACPI
+ 	help
+ 	  Choose this option if you want kernel modesetting enabled by default,
+ 	  and you have a new enough userspace to support this. Running old
+-- 
