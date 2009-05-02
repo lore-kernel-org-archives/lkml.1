@@ -1,39 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753109AbZEBWrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753035AbZEBXe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753109AbZEBWrU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 18:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbZEBWrK
+	id S1753035AbZEBXe6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 19:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbZEBXeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 18:47:10 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:39214 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752129AbZEBWrI (ORCPT
+	Sat, 2 May 2009 19:34:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36180 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752343AbZEBXet (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 18:47:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=qCZrvrT42VP/1KxQFmwNsWowNZv1lklkGnyc/Rp1Kk2Tr2cPz40zAfB899DeVcfndo
-         Dyz5zzvy+lYwif29z2A1isSi1Twqr4KL3dmHbyY+FFXUTmtjGnFKP2hTXkEq+l4OowvD
-         /G2XUEND4L9NE2eHIB992Fba+liZtE6BXg58s=
+	Sat, 2 May 2009 19:34:49 -0400
+Date: Sat, 2 May 2009 16:32:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Joel Becker <Joel.Becker@oracle.com>
+cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+       Mark Fasheh <mfasheh@suse.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL] ocfs2 fixes
+In-Reply-To: <20090501230548.GD29617@mail.oracle.com>
+Message-ID: <alpine.LFD.2.01.0905021632080.4983@localhost.localdomain>
+References: <20090501230548.GD29617@mail.oracle.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Date: Sat, 2 May 2009 17:47:07 -0500
-Message-ID: <6598f8b90905021547v42564e64t224091a6adb15104@mail.gmail.com>
-Subject: x86: atomic.h memory clobbers
-From: John Sheu <john.sheu@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looking at include/asm-i386/atomic.h, is there any particular reason
-why "memory" is in the clobber list for, say, atomic_sub_and_test, and
-not atomic_sub?  As far as I can tell, all the possible memory
-operands are already in the in/out lists, and any memory-barrier
-concerns (if any) that happen to atomic_sub_and_test should apply
-equally for atomic_sub.
 
--John Sheu
+On Fri, 1 May 2009, Joel Becker wrote:
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/jlbec/ocfs2.git upstream-linus
+
+No they're not.
+
+Theres' a missing directory component there. Please fix your scripts.
+
+I pulled, but I hate having to figure out where I should pull from,
+
+		Linus
