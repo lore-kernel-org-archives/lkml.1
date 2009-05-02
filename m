@@ -1,105 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbZEBCCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753637AbZEBCN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752667AbZEBCCx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 22:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbZEBCCp
+	id S1753637AbZEBCN3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 22:13:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbZEBCNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 22:02:45 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:12940 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750877AbZEBCCn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 22:02:43 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=UVR+8FrbnW01CXpIZoR66toPLBcm8Ogw/aOUu1nFBudSsFqQ5zSYoAGxadG0EQ7Sg
-	VD9Yp/NXkV1mHk5aqXcrw==
+	Fri, 1 May 2009 22:13:18 -0400
+Received: from THUNK.ORG ([69.25.196.29]:56000 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752799AbZEBCNR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 22:13:17 -0400
+Date: Fri, 1 May 2009 22:12:58 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Steve French <smfrench@gmail.com>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Michael Tokarev <mjt@tls.msk.ru>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>,
+       Andrew Tridgell <tridge@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
+Message-ID: <20090502021258.GJ7681@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Christoph Hellwig <hch@infradead.org>,
+	Steve French <smfrench@gmail.com>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
+	linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+	Michael Tokarev <mjt@tls.msk.ru>,
+	Paul McKenney <paulmck@linux.vnet.ibm.com>,
+	Andrew Tridgell <tridge@samba.org>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <524f69650905011318m34e0027dt57877d225b3fe2da@mail.gmail.com> <20090501210109.GA3079@infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <ac3eb2510905011848i51aef8e6wbe9506a13e67377d@mail.gmail.com>
-References: <1241097822.2516.3.camel@poy>
-	 <20090430222900.c13b63d5.akpm@linux-foundation.org>
-	 <20090501061701.GB19234@kroah.com>
-	 <20090430234312.a63fa5cf.akpm@linux-foundation.org>
-	 <20090501065527.GA19773@kroah.com>
-	 <a55d774e0905011824k11e06f61ibc9937a2b26fd9e0@mail.gmail.com>
-	 <ac3eb2510905011848i51aef8e6wbe9506a13e67377d@mail.gmail.com>
-Date: Fri, 1 May 2009 19:02:41 -0700
-Message-ID: <a55d774e0905011902y1827322ascd7d2eb42570d1dc@mail.gmail.com>
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
-From: Brian Swetland <swetland@google.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jan Blunck <jblunck@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090501210109.GA3079@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 1, 2009 at 6:48 PM, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> On Sat, May 2, 2009 at 03:24, Brian Swetland <swetland@google.com> wrote:
->> It's always struck me as odd that sysfs couldn't provide device node
->> access, given that there's already an entity exposed for everything
->> (or nearly everything).
->
-> You really want to be able to run grep-like stuff in sysfs, which
-> would do horrible things with device nodes. Also it does not support
-> extended attributes, not access control lists, ..., all stuff we need
-> for device nodes. You also want userspace to have control over device
-> nodes, and possibly mangle them, regardless what the kernel exports,
-> that's why it's a tmpfs and not part of sysfs.
+On Fri, May 01, 2009 at 05:01:09PM -0400, Christoph Hellwig wrote:
+> Steve, can you please stop the bullshitting?
+> 
+> From the complete lack of technical arguments it's pretty obvious that
+> this seems to be some FUD fallout from the MS vs TomTom patent lawsuite.
+> 
+> I'm not a lawyer so I don't know how much of a threat it is.  But either
+> the case gets shot down by showing prior art and everything is fine, or
+> we indeed are in deep trouble and should remove it completely.  Given
+> the Cc list on here IBM seems to have some legal opinion on it, so can
+> we please see it and discuss what we want to with all cards on the
+> table?
 
-That makes sense.
+It's really not that simple.  For some of the complexities involved,
+please see:
 
->> It seems weird to have to have an agent in
->> userspace to create another hierarchy in addition to what the kernel
->> already maintains.
->
-> Well, until just recently, there was no sane definition how device
-> nodes are names and layouted, every system did it differently, some
-> even tried to keep the totally useless devfs naming scheme alive. Now
-> that we managed to define a common default setup, which almost
-> everybody ships it, it makes it possible to add the few needed rules.
+http://arstechnica.com/open-source/news/2009/04/open-invention-network-seeks-prior-art-to-burn-fat-patents.ars
 
-That's good news -- I wasn't sure if there was still variety in layout
-policies that required somehow supporting multiple different ones.
+http://arstechnica.com/open-source/news/2009/04/linux-foundation-says-its-time-to-ditch-microsofts-fat.ars
 
->> I guess the really tricky bit is how to deal with
->> permissions/ownership sanely.
->
-> Simple permissions would be possible without too much hassle, but uid
-> gid ownership, I can't see how the kernel could do that.
+I personally believe that the patents are bullshit, but at the same
+time, I also believe that the USPTO is underfunded, has incompetent
+patent examiners (if they were competent engineers they could be
+making 2 or 3 times as much money and have much better working
+conditions), and they are very loath to admit that they make mistakes,
+whch is just human nature, I suppose --- and also, that in our
+society, you get the best justice money can buy.
 
-Yeah, I don't see any easy solution there.  Which means we end up
-having to have some userspace agent responsible for arranging
-permissions as devices are published.
+Even if the patents are bullshit, some companies, especially those
+that might not have the money to engage in long, extended, drawn-out
+patent battles that could easily cost $10 million minimum, might
+decide that it's better to evade the issue than to fight the good
+fight.  If you're a small company, and you can't afford the legal
+battle, or worse yet, be able to survive drop in sales caused by the
+FUD generated during the lawsuit about whether or not you'll be around
+to support your customers in the long-term, you make make difference
+choices compared to some other larger, more secure company.
 
->> I suspect there's no easy way to do
->> something that "just works" for even the majority of userspace
->> environments.
->
-> It will work just fine for root environments, what's missing without
-> userspace support is if you need to grant specific users access to
-> devices.
->
->> Most of the ugly in the microudev thing in our init
->> comes from having to do something about permissions.
->>
->> I would love to have a way for the kernel to do something like devfs
->> (it'd let me kill some ugly userspace code on my side)....
->
-> How are permissions defined in your environment? What's the set of
-> permissions you need to apply?
+I have no trouble walking in Chinatown near the "Combat Zone" in
+Boston at night; someone who is half my size and female and who has
+had no martial arts training, however, might decide differently.  In
+neither case is the mugger justified in doing what they are doing, but
+we live in an imperfect world, where pirates can hijack ships near
+Somalia even though that's also Wrong.
 
-In our world we use groups to provide access to specific classes of
-hardware resources (audio, video, display, dsp, etc) and processes
-that have the appropriate permissions are arranged to run with
-necessary additional groups for the hardware they need to access.
-Very little of the system ever runs as root -- most runs as a per-app
-or per-service untrusted user with permissions granted via group
-membership.
+So I don't believe removing the code is the right thing to do.  I do
+believe that giving people who build and use the Linux kernel choice
+is a good thing; consider that digital cameras manufactures have
+adhered to a 8.3 filenames, which is encoded in the DCIM standard, for
+15+ years --- and I don't believe that's an accident.  What might lead
+one company to settle and another one to fight and another to decide
+to evade the issue, may depend on many things, and may have very
+little have to do with Truth or Ethics or Morality.  Welcome to the
+law and business as practiced in our civilized society.
 
-Brian
+(But hey, at least we don't torture people!  :-)
+
+    		    	      	     	       - Ted
+
+P.S.  Everything in this e-mail is my own opinion, and does not
+necessarily represent the positions, strategies, or opinions of IBM or
+the Linux Foundation.
