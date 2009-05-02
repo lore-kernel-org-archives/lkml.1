@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755744AbZEAXy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbZEBAAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755744AbZEAXy2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 19:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZEAXyT
+	id S1755967AbZEBAAt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 20:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZEBAAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 19:54:19 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:57453 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752451AbZEAXyT (ORCPT
+	Fri, 1 May 2009 20:00:40 -0400
+Received: from mga05.intel.com ([192.55.52.89]:45210 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752703AbZEBAAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 19:54:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LRAE5atsiLXFFFHDedH7U1PPidEDo+mS/pWhfNPRUG3KrHwxT4IPhsPZrGMCosSam1
-         xnFPNlK/VtJat9n+1Y6/eS1B5GkJrXm7CgJWEXK0r2bPsfYkD/10FLa4o2Ust1vzoCP4
-         8NfD0+OkKA/NkYUZ///eYG8n6Q1msTUW2lrkU=
-Date: Sat, 2 May 2009 01:54:15 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Ingo Molnar <mingo@elte.hu>,
-       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: [PATCH 1/2]  ftrace: add notrace to ARM sched_clock routines
-Message-ID: <20090501235414.GG6404@nowhere>
-References: <49FB77ED.3010800@am.sony.com> <20090501233744.GF6404@nowhere> <alpine.DEB.2.00.0905011942390.20374@gandalf.stny.rr.com>
+	Fri, 1 May 2009 20:00:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,281,1239001200"; 
+   d="scan'208";a="686813963"
+Message-ID: <49FB8D27.3000305@linux.intel.com>
+Date: Fri, 01 May 2009 17:00:39 -0700
+From: "H. Peter Anvin" <hpa@linux.intel.com>
+Organization: Intel Open Source Technology Center
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0905011942390.20374@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Andreas Schwab <schwab@linux-m68k.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
+Subject: Re: "N" symbols and System.map
+References: <49FB7692.2000508@linux.intel.com> <m2preso1wl.fsf@igel.home> <20090501232149.GA28888@uranus.ravnborg.org>
+In-Reply-To: <20090501232149.GA28888@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 07:43:50PM -0400, Steven Rostedt wrote:
+Sam Ravnborg wrote:
+> On Sat, May 02, 2009 at 01:10:18AM +0200, Andreas Schwab wrote:
+>> "H. Peter Anvin" <hpa@linux.intel.com> writes:
+>>
+>>> right now, we filter out symbols that nm tag N, meaning "debugging
+>>> symbols", from System.map.  However, at least on x86, the linker-generated
+>>> symbol _end is tagged N, and in fact is the only N in the entire image.
+>>>
+>>> Are there other architectures which would suffer if N were included in
+>>> System.map, or would that be a reasonable thing to do?
+>> There should not be any N symbols unless you are using stabs debugging.
 > 
-> On Sat, 2 May 2009, Frederic Weisbecker wrote:
-> > >  }
-> > > @@ -203,7 +203,7 @@ static struct clocksource clocksource_32
-> > >   * Returns current time from boot in nsecs. It's OK for this to wrap
-> > >   * around for now, as it's just a relative time stamp.
-> > >   */
-> > > -unsigned long long sched_clock(void)
-> > > +unsigned long long notrace sched_clock(void)
-> > >  {
-> > >  	unsigned long long ret;
-> > 
-> > 
-> > I've looked into all of these functions and they don't seem to call
-> > anything that could be traced. I could have missed something though
-> > but it looks good.
+> We have in vmlinux:
+>         .end : AT(ADDR(.end) - LOAD_OFFSET) {
+>                 _end = .;
+>         }
 > 
-> I think the issue is that the tracing clock will call these functions, and 
-> we will waste time recursing into them.
+> 
+> And I see:
+> c1834000 N _end
+> 
+> This is the _only_ 'N' symbol in my vmlinux.
+> 
 
+Yup, this is what happens.  I don't know why the linker does this, and 
+if there is a way around it.
 
-Indeed, but I wanted to ensure that none of these sched_clock() were calling
-any traceable function, or it would recurse inside the function graph
-low level helpers which are not protected. Hence an endless stack overrun which
-ends up on an immediate reboot :)
-
-But it looks good.
- 
-> > 
-> > Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-> 
-> Heck I'll add mine too ;-)
-> 
-> Acked-by: Steven Rostedt <rostedt@goodmis.org>
-> 
-> -- Steve
-> 
+	-hpa
 
