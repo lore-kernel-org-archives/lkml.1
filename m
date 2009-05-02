@@ -1,110 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758247AbZEBORq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758513AbZEBOSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758247AbZEBORq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 10:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZEBORf
+	id S1758513AbZEBOSL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 10:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755519AbZEBORx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 10:17:35 -0400
-Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:4702 "EHLO
-	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754215AbZEBORe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 10:17:34 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: tvaudio.c: possible problem with V4L2_TUNER_MODE_MONO
-Date: Sat, 2 May 2009 16:17:16 +0200
-User-Agent: KMail/1.9.9
-Cc: mchehab@infradead.org, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-References: <Pine.LNX.4.64.0905021518250.9563@pc-004.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0905021518250.9563@pc-004.diku.dk>
+	Sat, 2 May 2009 10:17:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41928 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757699AbZEBORw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 10:17:52 -0400
+Message-ID: <49FC5554.2070802@redhat.com>
+Date: Sat, 02 May 2009 10:14:44 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH] vmscan: cleanup the scan batching code
+References: <200904302208.n3UM8t9R016687@imap1.linux-foundation.org> <20090501012212.GA5848@localhost> <20090430194907.82b31565.akpm@linux-foundation.org> <20090502023125.GA29674@localhost>
+In-Reply-To: <20090502023125.GA29674@localhost>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905021617.16995.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 May 2009 15:19:03 Julia Lawall wrote:
-> The file drivers/media/video/tvaudio.c contains the following code:
->
-> (starting at line 1257 in a recent linux-next)
->
-> 		if (mode & V4L2_TUNER_MODE_MONO)
-> 			s1 |= TDA8425_S1_STEREO_MONO;
-> 		if (mode & V4L2_TUNER_MODE_STEREO)
-> 			s1 |= TDA8425_S1_STEREO_SPATIAL;
->
-> (starting at line 1856 in a recent linux-next)
->
-> 	if (mode & V4L2_TUNER_MODE_MONO)
-> 		vt->rxsubchans |= V4L2_TUNER_SUB_MONO;
-> 	if (mode & V4L2_TUNER_MODE_STEREO)
-> 		vt->rxsubchans |= V4L2_TUNER_SUB_STEREO;
->
-> The only possible value of V4L2_TUNER_MODE_MONO, however, seems to be 0,
-> as defined in include/linux/videodev2.h, and thus the first test in each
-> case is never true.  Is this what is intended, or should the tests be
-> expressed in another way?
+Wu Fengguang wrote:
+> The vmscan batching logic is twisting. Move it into a standalone
+> function nr_scan_try_batch() and document it.  No behavior change.
+> 
+> CC: Nick Piggin <npiggin@suse.de>
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: Christoph Lameter <cl@linux-foundation.org>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 
-Hi Julia,
-
-Nope, this isn't intended. A grep over the v4l sources shows that it is 
-handled incorrectly in several other drivers as well. I'll prepare patches 
-to fix all these drivers.
-
-Thanks,
-
-	Hans
-
->
-> julia
->
-> This problem was found using the following semantic match:
-> (http://www.emn.fr/x-info/coccinelle/)
->
-> @r expression@
-> identifier C;
-> expression E;
-> position p;
-> @@
->
-> (
->  E & C@p && ...
->
->  E & C@p || ...
-> )
->
-> @s@
-> identifier r.C;
-> position p1;
-> @@
->
-> #define C 0
->
-> @t@
-> identifier r.C;
-> expression E != 0;
-> @@
->
-> #define C E
->
-> @script:python depends on s && !t@
-> p << r.p;
-> C << r.C;
-> @@
->
-> cocci.print_main("and with 0", p)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-media" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
+Acked-by: Rik van Riel <riel@redhat.com>
 
 -- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG Telecom
+All rights reversed.
