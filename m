@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753399AbZEBBYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbZEBBeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753399AbZEBBYh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 21:24:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbZEBBY3
+	id S1756924AbZEBBeo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 21:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbZEBBef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 21:24:29 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:58061 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266AbZEBBY2 convert rfc822-to-8bit (ORCPT
+	Fri, 1 May 2009 21:34:35 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:36425 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752840AbZEBBef (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 21:24:28 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=LLTPJqkN6GT9MQ5tqhpPOiGbEwu4S0XjPQWHuNztDriJa/A3HVHxibNBmPsGugiRO
-	4W3HZIN7dTH5yDxpBT3Nw==
+	Fri, 1 May 2009 21:34:35 -0400
+Date: Sat, 2 May 2009 02:34:34 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: monstr@monstr.eu
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Bullshit commit messages (Re: [PATCH] fs: Remove sparse errors in
+	bio.c)
+Message-ID: <20090502013433.GQ8633@ZenIV.linux.org.uk>
+References: <1241188402-19332-1-git-send-email-monstr@monstr.eu>
 MIME-Version: 1.0
-In-Reply-To: <20090501065527.GA19773@kroah.com>
-References: <1241097822.2516.3.camel@poy>
-	 <20090430222900.c13b63d5.akpm@linux-foundation.org>
-	 <20090501061701.GB19234@kroah.com>
-	 <20090430234312.a63fa5cf.akpm@linux-foundation.org>
-	 <20090501065527.GA19773@kroah.com>
-Date: Fri, 1 May 2009 18:24:23 -0700
-Message-ID: <a55d774e0905011824k11e06f61ibc9937a2b26fd9e0@mail.gmail.com>
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
-From: Brian Swetland <swetland@google.com>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jan Blunck <jblunck@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241188402-19332-1-git-send-email-monstr@monstr.eu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 11:55 PM, Greg KH <greg@kroah.com> wrote:
-> On Thu, Apr 30, 2009 at 11:43:12PM -0700, Andrew Morton wrote:
->> On Thu, 30 Apr 2009 23:17:01 -0700 Greg KH <greg@kroah.com> wrote:
->> > On Thu, Apr 30, 2009 at 10:29:00PM -0700, Andrew Morton wrote:
->> >
->> > Well, devfs "done right" with hopefully none of the vfs problems the
->> > last devfs had. :)
->>
->> I think Adam Richter's devfs rewrite (which, iirc, was tmpfs-based)
->> would have fixed up these things.  But it was never quite completed and
->> came when minds were already made up.
->>
->> I don't understand why we need devfs2, really.  What problems are
->> people having with teh existing design?
->
-> Boot speed, boot speed, boot speed.
->
-> Oh, and reduction in complexity in init scripts, and saving embedded
-> systems a lot of effort to implement a dynamic /dev properly (have you
-> _seen_ what Android does to keep from having to ship udev?  It's
-> horrible...)
+On Fri, May 01, 2009 at 04:33:22PM +0200, monstr@monstr.eu wrote:
+> From: Michal Simek <monstr@monstr.eu>
+> 
+> fs/bio.c:720:13: warning: incorrect type in assignment (different address spaces)
+> fs/bio.c:720:13:    expected char *iov_addr
+> fs/bio.c:720:13:    got void [noderef] <asn:1>*
+> fs/bio.c:724:36: warning: incorrect type in argument 2 (different address spaces)
+> fs/bio.c:724:36:    expected void const [noderef] <asn:1>*from
+> fs/bio.c:724:36:    got char *iov_addr
+> 
+> Signed-off-by: Michal Simek <monstr@monstr.eu>
 
-It's always struck me as odd that sysfs couldn't provide device node
-access, given that there's already an entity exposed for everything
-(or nearly everything).  It seems weird to have to have an agent in
-userspace to create another hierarchy in addition to what the kernel
-already maintains.
+I'm sorry, but I've had it.  Resend with sane commit message and don't do that
+kind of crap again; I'm beyond being sick and tired of mail with subjects that
+say nothing about what's going on, not to mention flat-out untruth in attempt
+to make them look more impressive (for crying out loud, you couldn't even have
+reported what kind of message does the tool generate, let alone being more
+specific than "warning").
 
-I guess the really tricky bit is how to deal with
-permissions/ownership sanely.  I suspect there's no easy way to do
-something that "just works" for even the majority of userspace
-environments.  Most of the ugly in the microudev thing in our init
-comes from having to do something about permissions.
+Folks, that's got to end.  I've pondered replying to the previous one like
+that from the same source (what with having sent a reply to yet another
+such submission saying "don't do that" just before), but this one is over
+the top.  And this kind of thing is getting more and more common.  For
+a while it used to be about "checkpatch errors", but it seems to be spreading.
 
-I would love to have a way for the kernel to do something like devfs
-(it'd let me kill some ugly userspace code on my side)....
+I'm sorry if that'll drive somebody to whinging about unkindness to newbies.
+However, I really believe that this needs to be said plainly:
 
-Brian
+	* Thou Shalt Not Forget The Tail Of Boy Who Cried "Wolf".  Don't
+pass warnings for errors and don't hide the information about the kind
+of warning in the mail itself.
+
+	* Tools Are Not Deities To Be Appeased.  Subject saying in effect
+"$TOOL is upset!!!" is bloody useless.
+
+	* Thy Mail Will Be Triaged.  Live with it.  Volume on l-k is huge
+and the best strategy is to get mail recognized as relevant and to have
+reviewers' estimate of priority before looking into the thing more or less
+close to that after.  We all have heuristics; defeat these too often and
+you will *become* one.
+
+	* Thou Shalt Give Relevant Information In Subject.  Is that patch
+correcting a misannotation?  Is it fixing a bug?  What kind of ...?
+
+	* If Thou Hast No Better Message Than Quoted Warning, Thou Hast
+No Message At All.  Either we are getting the $TOOL to STFU (in which
+case you should've said so in the subject), or everything is really,
+really obvious from the (short) patch itself, *OR* you are making a
+change that ought to have an understandable goal.  In which case you
+should put _that_ into commit message, not the $TOOL output.  Tools are
+just that; tools, not oracles.  "This patch removes these warnings from
+$TOOL" is neither a good explanation of what's going on nor, per se,
+a good reason to apply the patch.
+
+
+	In case of this patch, you have a __user misannotation in bio.c
+and patch fixes that misannotation.  Correctly.  In case of proc/devtree
+patch you've got NULL noise from sparse and said noise has been kinda-sorta
+removed.  And I'd argue that blind replacement of if (p == 0) with
+if (p == NULL) is the wrong thing to do; in particular, in these cases
+if (!p) would be more idiomatic, but that's really up to Alexey.
