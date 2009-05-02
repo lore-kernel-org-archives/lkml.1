@@ -1,196 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757514AbZEBNrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbZEBNuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757514AbZEBNrT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 09:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757004AbZEBNq4
+	id S1756009AbZEBNuV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 09:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbZEBNuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 09:46:56 -0400
-Received: from vint.altlinux.org ([194.107.17.35]:54822 "EHLO
-	vint.altlinux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753920AbZEBNqy (ORCPT
+	Sat, 2 May 2009 09:50:06 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:47030 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752514AbZEBNuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 09:46:54 -0400
-Date: Sat, 2 May 2009 17:36:03 +0400
-From: Sergey Vlasov <vsu@altlinux.ru>
-To: David VomLehn <dvomlehn@cisco.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-usb@vger.kernel.org, greg@kroah.com, linux-scsi@vger.kernel.org,
-       netdev@vger.kernel.org, arjan@infradead.org
-Subject: Re: [PATCH 4/5] initdev:kernel: Await network init device
-	discovery, v2
-Message-ID: <20090502133603.GB8116@atlas.home>
-References: <20090502022858.GA15981@cuplxvomd02.corp.sa.net>
+	Sat, 2 May 2009 09:50:05 -0400
+Message-ID: <49FC4F88.3090403@web.de>
+Date: Sat, 02 May 2009 15:50:00 +0200
+From: Lee <lee-in-berlin@web.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090409 Thunderbird/2.0.0.21 Mnenhy/0.7.6.666
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="V0207lvV8h4k8FAm"
-Content-Disposition: inline
-In-Reply-To: <20090502022858.GA15981@cuplxvomd02.corp.sa.net>
+To: linux-kernel@vger.kernel.org
+Subject: [BUG] 2.6.30-rc4: compile fail with CONFIG_DRM_I915=y
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX1/SrlXipWL77SXFD55qoJzR3HyqxabQNNhKJbu3
+	DV43NEO6MDDWl04SG/LaZ76FDLviHIPkbxV5LLjpF3iHvO+PPP
+	FN3DYCkEGGT13qbL8nGQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi list,
 
---V0207lvV8h4k8FAm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+compiling 2.6.30-rc4 with following options will result in an compile error:
 
-On Fri, May 01, 2009 at 07:28:58PM -0700, David VomLehn wrote:
-> Delay IP autoconfiguration until network boot devices have been initializ=
-ed.
-> This depends on the boot device discovery code and on the asynchronous
-> function call infrastructure.
->=20
-> History
-> v2	Change bootdev_* to initdev_*
-> v1	Initial release
->=20
-> Signed-off-by: David VomLehn <dvomlehn@cisco.com>
-> ---
->  net/core/dev.c      |    2 +
->  net/ipv4/ipconfig.c |   56 +++++++++++++++++++++++++++++++++++++++++++++=
-+++++-
->  2 files changed, 57 insertions(+), 1 deletions(-)
->=20
-> diff --git a/net/core/dev.c b/net/core/dev.c
-> index 308a7d0..73cb282 100644
-> --- a/net/core/dev.c
-> +++ b/net/core/dev.c
-> @@ -93,6 +93,7 @@
->  #include <linux/ethtool.h>
->  #include <linux/notifier.h>
->  #include <linux/skbuff.h>
-> +#include <linux/device.h>
->  #include <net/net_namespace.h>
->  #include <net/sock.h>
->  #include <linux/rtnetlink.h>
-> @@ -4497,6 +4498,7 @@ int register_netdevice(struct net_device *dev)
->  		dev->reg_state =3D NETREG_UNREGISTERED;
->  	}
-> =20
-> +	initdev_registered(BOOTDEV_NETDEV);
->  out:
->  	return ret;
-> =20
-> diff --git a/net/ipv4/ipconfig.c b/net/ipv4/ipconfig.c
-> index 90d22ae..65a7ecd 100644
-> --- a/net/ipv4/ipconfig.c
-> +++ b/net/ipv4/ipconfig.c
-> @@ -53,6 +53,7 @@
->  #include <linux/root_dev.h>
->  #include <linux/delay.h>
->  #include <linux/nfs_fs.h>
-> +#include <linux/async.h>
->  #include <net/net_namespace.h>
->  #include <net/arp.h>
->  #include <net/ip.h>
-> @@ -182,12 +183,48 @@ struct ic_device {
->  static struct ic_device *ic_first_dev __initdata =3D NULL;/* List of ope=
-n device */
->  static struct net_device *ic_dev __initdata =3D NULL;	/* Selected device=
- */
-> =20
-> +/*
-> + * Wait for required network devices to come up
-> + * If the networking device name was specified on the kernel command line
-> + * and that device is now registered, we have the device we want to conf=
-igure
-> + * and we return true. Otherwise, we return false. So, if no device was
-> + * specified on the command line, we wait for all possible network devic=
-es to
-> + * be initialized.
-> + */
-> +static bool have_all_netdevs(void)
-> +{
-> +	struct net_device *dev;
-> +	bool	result =3D false;
-> +
-> +	rtnl_lock();
-> +
-> +	for_each_netdev(&init_net, dev) {
-> +		if (dev->flags & IFF_LOOPBACK)
-> +			continue;
-> +
-> +		/* If a specific device name was specified and that name is
-> +		 * registered, we have the device we need. */
-> +		if (user_dev_name[0] && !strcmp(dev->name, user_dev_name)) {
-> +			result =3D true;
-> +			break;
-> +		}
-> +	}
-> +
-> +	rtnl_unlock();
-> +
-> +	return result;
-> +
-> +}
-> +
->  static int __init ic_open_devs(void)
->  {
->  	struct ic_device *d, **last;
->  	struct net_device *dev;
->  	unsigned short oflags;
-> =20
-> +	/* Wait for networking devices */
-> +	initdev_wait(BOOTDEV_NETDEV, have_all_netdevs);
-> +
->  	last =3D &ic_first_dev;
->  	rtnl_lock();
-> =20
-> @@ -1263,6 +1300,7 @@ __be32 __init root_nfs_parse_addr(char *name)
-> =20
->  /*
->   *	IP Autoconfig dispatcher.
-> + *	Return zero on success, negative one on failure
->   */
-> =20
->  static int __init ip_auto_config(void)
-> @@ -1397,7 +1435,23 @@ static int __init ip_auto_config(void)
->  	return 0;
->  }
-> =20
-> -late_initcall(ip_auto_config);
-> +static void __init ip_auto_config_async(void *data, async_cookie_t cooki=
-e)
-> +{
-> +	ip_auto_config();
-> +}
-> +
-> +static async_cookie_t ic_cookie;
+CONFIG_DRM_I915=y
+CONFIG_ACPI_VIDEO=m
 
-This write-only variable is useless.
 
-> +/*
-> + * Start a thread to do IP autoconfiguration
-> + */
-> +static int __init ip_auto_configurator(void)
-> +{
-> +	ic_cookie =3D async_schedule(ip_auto_config_async, NULL);
-> +
-> +	return 0;
-> +}
-> +
-> +late_initcall(ip_auto_configurator);
-> =20
-> =20
->  /*
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->=20
+drivers/video/backlight/backlight.c: In function ‘backlight_device_register’:
+drivers/video/backlight/backlight.c:247: warning: format not a string literal 
+and no format arguments
+drivers/video/output.c: In function ‘video_output_register’:
+drivers/video/output.c:99: warning: format not a string literal and no format 
+arguments
+drivers/usb/storage/libusual.c: In function ‘usu_probe_thread’:
+drivers/usb/storage/libusual.c:159: warning: format not a string literal and 
+no format arguments
+drivers/built-in.o: In function `intel_opregion_free':
+(.text+0xaf051): undefined reference to `acpi_video_exit'
+drivers/built-in.o: In function `intel_opregion_init':
+(.text+0xaf411): undefined reference to `acpi_video_register'
+make[1]: *** [.tmp_vmlinux1] Error 1
+make[1]: Leaving directory `/home/randall/kernel-source'
+make: *** [debian/stamp/build/kernel] Error 2
 
---V0207lvV8h4k8FAm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Compiling the kernel with both options as module or both options built-in 
+results in a working kernel.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkn8TEMACgkQW82GfkQfsqLVhgCZAWUNR/PA4gpkCRHBTwwG72rB
-ejUAn2PQXbya8SIcahwId4el8Pp75SV4
-=FH1J
------END PGP SIGNATURE-----
-
---V0207lvV8h4k8FAm--
+Kind regards,
+Lee
