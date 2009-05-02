@@ -1,56 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbZEBC3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbZEBC31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751993AbZEBC3D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 22:29:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZEBC2u
+	id S1756783AbZEBC31 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 22:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756022AbZEBC3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 22:28:50 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:38323 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753142AbZEBC2t (ORCPT
+	Fri, 1 May 2009 22:29:00 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:30621 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755619AbZEBC25 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 22:28:49 -0400
+	Fri, 1 May 2009 22:28:57 -0400
+X-IronPort-AV: E=Sophos;i="4.40,281,1238976000"; 
+   d="scan'208";a="296898650"
+Date: Fri, 1 May 2009 19:28:58 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, linux-usb@vger.kernel.org, greg@kroah.com,
+       linux-scsi@vger.kernel.org, netdev@vger.kernel.org, arjan@infradead.org
+Subject: [PATCH 4/5] initdev:kernel: Await network init device discovery, v2
+Message-ID: <20090502022858.GA15981@cuplxvomd02.corp.sa.net>
 MIME-Version: 1.0
-In-Reply-To: <a55d774e0905011902y1827322ascd7d2eb42570d1dc@mail.gmail.com>
-References: <1241097822.2516.3.camel@poy> <20090430222900.c13b63d5.akpm@linux-foundation.org> 
-	<20090501061701.GB19234@kroah.com> <20090430234312.a63fa5cf.akpm@linux-foundation.org> 
-	<20090501065527.GA19773@kroah.com> <a55d774e0905011824k11e06f61ibc9937a2b26fd9e0@mail.gmail.com> 
-	<ac3eb2510905011848i51aef8e6wbe9506a13e67377d@mail.gmail.com> 
-	<a55d774e0905011902y1827322ascd7d2eb42570d1dc@mail.gmail.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Sat, 2 May 2009 04:28:33 +0200
-Message-ID: <ac3eb2510905011928o26ae45efr2b23deafda76e1fc@mail.gmail.com>
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
-To: Brian Swetland <swetland@google.com>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jan Blunck <jblunck@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-3; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 2, 2009 at 04:02, Brian Swetland <swetland@google.com> wrote:
-> On Fri, May 1, 2009 at 6:48 PM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+Delay IP autoconfiguration until network boot devices have been initialized.
+This depends on the boot device discovery code and on the asynchronous
+function call infrastructure.
 
->>> I would love to have a way for the kernel to do something like devfs
->>> (it'd let me kill some ugly userspace code on my side)....
->>
->> How are permissions defined in your environment? What's the set of
->> permissions you need to apply?
->
-> In our world we use groups to provide access to specific classes of
-> hardware resources (audio, video, display, dsp, etc) and processes
-> that have the appropriate permissions are arranged to run with
-> necessary additional groups for the hardware they need to access.
+History
+v2	Change bootdev_* to initdev_*
+v1	Initial release
 
-These group numbers are always static on your system, and don't get
-changed while the system is running? Like you always assign gid X to
-all sound devices? Or do you need to manage them dynamically?
+Signed-off-by: David VomLehn <dvomlehn@cisco.com>
+---
+ net/core/dev.c      |    2 +
+ net/ipv4/ipconfig.c |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 57 insertions(+), 1 deletions(-)
 
-Do your device nodes permissions/ownership ever change on the running
-system after the device is alive?
-
-Thanks,
-Kay
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 308a7d0..73cb282 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -93,6 +93,7 @@
+ #include <linux/ethtool.h>
+ #include <linux/notifier.h>
+ #include <linux/skbuff.h>
++#include <linux/device.h>
+ #include <net/net_namespace.h>
+ #include <net/sock.h>
+ #include <linux/rtnetlink.h>
+@@ -4497,6 +4498,7 @@ int register_netdevice(struct net_device *dev)
+ 		dev->reg_state = NETREG_UNREGISTERED;
+ 	}
+ 
++	initdev_registered(BOOTDEV_NETDEV);
+ out:
+ 	return ret;
+ 
+diff --git a/net/ipv4/ipconfig.c b/net/ipv4/ipconfig.c
+index 90d22ae..65a7ecd 100644
+--- a/net/ipv4/ipconfig.c
++++ b/net/ipv4/ipconfig.c
+@@ -53,6 +53,7 @@
+ #include <linux/root_dev.h>
+ #include <linux/delay.h>
+ #include <linux/nfs_fs.h>
++#include <linux/async.h>
+ #include <net/net_namespace.h>
+ #include <net/arp.h>
+ #include <net/ip.h>
+@@ -182,12 +183,48 @@ struct ic_device {
+ static struct ic_device *ic_first_dev __initdata = NULL;/* List of open device */
+ static struct net_device *ic_dev __initdata = NULL;	/* Selected device */
+ 
++/*
++ * Wait for required network devices to come up
++ * If the networking device name was specified on the kernel command line
++ * and that device is now registered, we have the device we want to configure
++ * and we return true. Otherwise, we return false. So, if no device was
++ * specified on the command line, we wait for all possible network devices to
++ * be initialized.
++ */
++static bool have_all_netdevs(void)
++{
++	struct net_device *dev;
++	bool	result = false;
++
++	rtnl_lock();
++
++	for_each_netdev(&init_net, dev) {
++		if (dev->flags & IFF_LOOPBACK)
++			continue;
++
++		/* If a specific device name was specified and that name is
++		 * registered, we have the device we need. */
++		if (user_dev_name[0] && !strcmp(dev->name, user_dev_name)) {
++			result = true;
++			break;
++		}
++	}
++
++	rtnl_unlock();
++
++	return result;
++
++}
++
+ static int __init ic_open_devs(void)
+ {
+ 	struct ic_device *d, **last;
+ 	struct net_device *dev;
+ 	unsigned short oflags;
+ 
++	/* Wait for networking devices */
++	initdev_wait(BOOTDEV_NETDEV, have_all_netdevs);
++
+ 	last = &ic_first_dev;
+ 	rtnl_lock();
+ 
+@@ -1263,6 +1300,7 @@ __be32 __init root_nfs_parse_addr(char *name)
+ 
+ /*
+  *	IP Autoconfig dispatcher.
++ *	Return zero on success, negative one on failure
+  */
+ 
+ static int __init ip_auto_config(void)
+@@ -1397,7 +1435,23 @@ static int __init ip_auto_config(void)
+ 	return 0;
+ }
+ 
+-late_initcall(ip_auto_config);
++static void __init ip_auto_config_async(void *data, async_cookie_t cookie)
++{
++	ip_auto_config();
++}
++
++static async_cookie_t ic_cookie;
++/*
++ * Start a thread to do IP autoconfiguration
++ */
++static int __init ip_auto_configurator(void)
++{
++	ic_cookie = async_schedule(ip_auto_config_async, NULL);
++
++	return 0;
++}
++
++late_initcall(ip_auto_configurator);
+ 
+ 
+ /*
