@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbZEBNGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbZEBNTX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754449AbZEBNGn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 09:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZEBNGd
+	id S1754590AbZEBNTX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 09:19:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbZEBNTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 09:06:33 -0400
-Received: from mail.samba.org ([66.70.73.150]:43097 "EHLO lists.samba.org"
+	Sat, 2 May 2009 09:19:10 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:47967 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752989AbZEBNGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 09:06:33 -0400
+	id S1753659AbZEBNTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 09:19:09 -0400
+Date: Sat, 2 May 2009 15:19:03 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: mchehab@infradead.org, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: tvaudio.c: possible problem with V4L2_TUNER_MODE_MONO
+Message-ID: <Pine.LNX.4.64.0905021518250.9563@pc-004.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18940.17732.738194.350106@samba.org>
-Date: Sat, 2 May 2009 23:06:12 +1000
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-In-Reply-To: <87my9v657r.fsf@devron.myhome.or.jp>
-References: <1241199689.13073.6.camel@norville.austin.ibm.com>
-	<87fxfnbytu.fsf@devron.myhome.or.jp>
-	<87ws8zak1m.fsf@devron.myhome.or.jp>
-	<87bpqbaji9.fsf@devron.myhome.or.jp>
-	<18940.9039.850580.48730@samba.org>
-	<87ab5v9381.fsf@devron.myhome.or.jp>
-	<18940.10942.989329.993465@samba.org>
-	<87ocub7ngh.fsf@devron.myhome.or.jp>
-	<18940.12667.429391.927727@samba.org>
-	<8763gj7m23.fsf@devron.myhome.or.jp>
-	<18940.14675.395802.635154@samba.org>
-	<87my9v657r.fsf@devron.myhome.or.jp>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Current default (shortname=lower) is just for historically reason.
- > Personally, I'm thinking it's not good as default ("winnt" or "mixed" is
- > prefer).
+The file drivers/media/video/tvaudio.c contains the following code:
 
-It might make sense to make the default depend on the fs type. For
-example, make FAT32 use "winnt" and FAT12/16 use "mixed". That would
-give maximum interoperability I think.
+(starting at line 1257 in a recent linux-next)
 
-I'm presuming that the versions of win95 that supported FAT32 also
-supported the mixed case bits, though I haven't tested that.
+		if (mode & V4L2_TUNER_MODE_MONO)
+			s1 |= TDA8425_S1_STEREO_MONO;
+		if (mode & V4L2_TUNER_MODE_STEREO)
+			s1 |= TDA8425_S1_STEREO_SPATIAL;
 
-Cheers, Tridge
+(starting at line 1856 in a recent linux-next)
+
+	if (mode & V4L2_TUNER_MODE_MONO)
+		vt->rxsubchans |= V4L2_TUNER_SUB_MONO;
+	if (mode & V4L2_TUNER_MODE_STEREO)
+		vt->rxsubchans |= V4L2_TUNER_SUB_STEREO;
+
+The only possible value of V4L2_TUNER_MODE_MONO, however, seems to be 0, as
+defined in include/linux/videodev2.h, and thus the first test in each case
+is never true.  Is this what is intended, or should the tests be expressed
+in another way?
+
+julia
+
+This problem was found using the following semantic match:
+(http://www.emn.fr/x-info/coccinelle/)
+
+@r expression@
+identifier C;
+expression E;
+position p;
+@@
+
+(
+ E & C@p && ...
+|
+ E & C@p || ...
+)
+
+@s@
+identifier r.C;
+position p1;
+@@
+
+#define C 0
+
+@t@
+identifier r.C;
+expression E != 0;
+@@
+
+#define C E
+
+@script:python depends on s && !t@
+p << r.p;
+C << r.C;
+@@
+
+cocci.print_main("and with 0", p)
