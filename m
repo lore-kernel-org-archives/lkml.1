@@ -1,75 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbZEBPD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756464AbZEBPNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756877AbZEBPD0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 11:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbZEBPDQ
+	id S1756464AbZEBPNS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 11:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbZEBPNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 11:03:16 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:27069 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753684AbZEBPDQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 11:03:16 -0400
-MIME-Version: 1.0
-In-Reply-To: <20090501141235.733d4b1b@lxorguk.ukuu.org.uk>
-References: <1241097822.2516.3.camel@poy>
-	 <9b2b86520905010319g4b1e915ejc5c17baa519f3d35@mail.gmail.com>
-	 <ac3eb2510905010413y6b35e817nf948cedbe076cd4d@mail.gmail.com>
-	 <9b2b86520905010538p2d781eedhd7bed86ab908c990@mail.gmail.com>
-	 <20090501141235.733d4b1b@lxorguk.ukuu.org.uk>
-Date: Sat, 2 May 2009 11:03:15 -0400
-Message-ID: <f73f7ab80905020803hf5bae32i7f7b871e34f4e557@mail.gmail.com>
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
-From: Kyle Moffett <kyle@moffetthome.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Jan Blunck <jblunck@suse.de>
-Content-Type: text/plain; charset=UTF-8
+	Sat, 2 May 2009 11:13:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49116 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751869AbZEBPNC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 11:13:02 -0400
+Subject: Re: [PATCH] use GFP_NOFS in kernel_event()
+From: Eric Paris <eparis@redhat.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       "peterz@infradead.org" <peterz@infradead.org>
+In-Reply-To: <20090502080405.GA6432@localhost>
+References: <20090430020004.GA1898@localhost>
+	 <20090429191044.b6fceae2.akpm@linux-foundation.org>
+	 <1241097573.6020.7.camel@localhost.localdomain>
+	 <20090430134821.GB8644@localhost> <20090430142807.GA13931@localhost>
+	 <1241103132.6020.17.camel@localhost.localdomain>
+	 <20090502022515.GB29422@localhost>  <20090502080405.GA6432@localhost>
+Content-Type: text/plain
+Date: Sat, 02 May 2009 11:11:12 -0400
+Message-Id: <1241277072.3086.47.camel@dhcp231-142.rdu.redhat.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 1, 2009 at 9:12 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> a) running before /dev/null and /dev/console requires hacks
->
-> Not really, well not if you are writing a serious small tool anyway. In
-> actual fact the bigger problem if you are using the standard dynamic
-> link setup (which you wouldn't be I suspect) is /dev/zero.
->
->> b) it requires an initramfs
->> c) it pulls everything that hooks into or otherwise affects udev into
->> the initramfs; that's much more than we have at present, and a bigger
->> initramfs' can only make bootup _slower_.
->
-> Ditto a bigger kernel. Remember moving stuff from initramfs to the kernel
-> makes it less memory efficient usually as its now harder to get rid of
-> and not pageable later on either.
+On Sat, 2009-05-02 at 16:04 +0800, Wu Fengguang wrote:
+> On Sat, May 02, 2009 at 10:25:15AM +0800, Wu Fengguang wrote:
 
-Hmm... I'm almost curious how early it is possible to start userspace,
-if you ensure that the userspace is very careful to limit its
-dependencies.  Specifically, you could actually include software
-that's little more than a paged kernel thread with its own mm.  If
-there's any userspace code that we would really want to be updated in
-lockstep with the kernel (possibly this udev-replacement), it could be
-originally linked as part of the kernel image and later marked as
-swappable pages.
+> > Eric: this patch worked for me. Till now it has undergone many read,
+> > write, reboot, halt cycles without triggering the lockdep warnings :-)
+>  
+> Bad news: the warning turns up again:
+> 
+> [12979.538333] nfsd: last server has exited, flushing export cache
+> [12982.962058]
+> [12982.962062] ======================================================
+> [12982.965486] [ INFO: RECLAIM_FS-safe -> RECLAIM_FS-unsafe lock order detected ]
+> [12982.965486] 2.6.30-rc2-next-20090417 #218
+> [12982.965486] ------------------------------------------------------
+> [12982.965486] umount/3574 [HC0[0]:SC0[0]:HE1:SE1] is trying to acquire:
+> [12982.965486]  (&inode->inotify_mutex){+.+.+.}, at: [<ffffffff81134ada>] inotify_unmount_inodes+0xda/0x1f0
+> [12982.965486]
+> [12982.965486] and this task is already holding:
+> [12982.965486]  (iprune_mutex){+.+.-.}, at: [<ffffffff811160da>] invalidate_inodes+0x3a/0x170
+> [12982.965486] which would create a new lock dependency:
+> [12982.965486]  (iprune_mutex){+.+.-.} -> (&inode->inotify_mutex){+.+.+.}
+> [12982.965486]
+> [12982.965486] but this new dependency connects a RECLAIM_FS-irq-safe lock:
+> [12982.965486]  (iprune_mutex){+.+.-.}
+> [12982.965486] ... which became RECLAIM_FS-irq-safe at:
+> [12982.965486]   [<ffffffff8107b172>] __lock_acquire+0xc62/0x1ae0
+> [12982.965486]   [<ffffffff8107c0d1>] lock_acquire+0xe1/0x120
+> [12982.965486]   [<ffffffff81569353>] mutex_lock_nested+0x63/0x420
+> [12982.965486]   [<ffffffff81115e24>] shrink_icache_memory+0x84/0x300
+> [12982.965486]   [<ffffffff810d5d75>] shrink_slab+0x125/0x180
+> [12982.965486]   [<ffffffff810d6f66>] try_to_free_pages+0x276/0x400
+> [12982.965486]   [<ffffffff810cdf96>] __alloc_pages_internal+0x2b6/0x650
+> [12982.965486]   [<ffffffff810f819c>] alloc_pages_current+0x8c/0xe0
+> [12982.965486]   [<ffffffff810c5920>] __page_cache_alloc+0x10/0x20
+> [12982.965486]   [<ffffffff810d0add>] __do_page_cache_readahead+0x11d/0x260
+> [12982.965486]   [<ffffffff810d0f4b>] ondemand_readahead+0x1cb/0x250
+> [12982.965486]   [<ffffffff810d1079>] page_cache_async_readahead+0xa9/0xc0
+> [12982.965486]   [<ffffffff810c7763>] generic_file_aio_read+0x493/0x7c0
+> [12982.965486]   [<ffffffff810fe1a9>] do_sync_read+0xf9/0x140
+> [12982.965486]   [<ffffffff810ff233>] vfs_read+0x113/0x1d0
+> [12982.965486]   [<ffffffff810ff407>] sys_read+0x57/0xb0
+> [12982.965486]   [<ffffffff8100c272>] system_call_fastpath+0x16/0x1b
+> [12982.965486]   [<ffffffffffffffff>] 0xffffffffffffffff
+> [12982.965486]
+> [12982.965486] to a RECLAIM_FS-irq-unsafe lock:
+> [12982.965486]  (&inode->inotify_mutex){+.+.+.}
+> [12982.965486] ... which became RECLAIM_FS-irq-unsafe at:
+> [12982.965486] ...  [<ffffffff810791b8>] mark_held_locks+0x68/0x90
+> [12982.965486]   [<ffffffff810792d5>] lockdep_trace_alloc+0xf5/0x100
+> [12982.965486]   [<ffffffff810fa561>] __kmalloc_node+0x31/0x1e0
+> [12982.965486]   [<ffffffff811359c2>] kernel_event+0xe2/0x190
+> [12982.965486]   [<ffffffff81135b96>] inotify_dev_queue_event+0x126/0x230
+> [12982.965486]   [<ffffffff811343a6>] inotify_inode_queue_event+0xc6/0x110
+> [12982.965486]   [<ffffffff8110974d>] vfs_create+0xcd/0x140
+> [12982.965486]   [<ffffffff8110d55d>] do_filp_open+0x88d/0xa20
+> [12982.965486]   [<ffffffff810fbe68>] do_sys_open+0x98/0x140
+> [12982.965486]   [<ffffffff810fbf50>] sys_open+0x20/0x30
+> [12982.965486]   [<ffffffff8100c272>] system_call_fastpath+0x16/0x1b
+> [12982.965486]   [<ffffffffffffffff>] 0xffffffffffffffff
 
-So then the essential questions would be things like:
+So this is a completely different message than the original report, and
+one that is kind of cool and interesting.  I think it could be triggered
+today.  Again I think it's a false positive, since the inodes in
+question are being kicked out of kernel because the fs is being
+unmounted, but I'll poke someone to make sure I understand what lockdep
+is telling me and we can shut this one up too if we care....
 
-*  How early can rootfs be set up? (even if not yet populated from the
-initramfs)
-*  How early can pipefs be ready?
-*  What syscalls are safe from that early of a context?
+-Eric
 
-If those questions have satisfactory answers, you could basically
-build a mini-udev as a part of the kernel, perhaps even with a
-device-table automatically extracted from a specific section by the
-linker script.  It would also be useful without an initramfs, as it
-could replace the existing root= name-to-dev_t lookup code with
-something swappable.
-
-Cheers,
-Kyle Moffett
