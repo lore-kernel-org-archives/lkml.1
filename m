@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760296AbZEBV6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760825AbZEBV6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760296AbZEBV6A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 17:58:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755613AbZEBV5v
+	id S1760825AbZEBV6W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 17:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759512AbZEBV5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 17:57:51 -0400
-Received: from kroah.org ([198.145.64.141]:48476 "EHLO coco.kroah.org"
+	Sat, 2 May 2009 17:57:54 -0400
+Received: from cantor.suse.de ([195.135.220.2]:60925 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755360AbZEBV5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 17:57:50 -0400
-Date: Sat, 2 May 2009 14:54:34 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jan Blunck <jblunck@suse.de>, linux-arch@vger.kernel.org,
-       viro@zeniv.linux.org.uk, torvalds@osdl.org, akpm@osdl.org,
-       adam@yggdrasil.com
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev
-	tmpfs
-Message-ID: <20090502215434.GB17622@kroah.com>
-References: <1241097822.2516.3.camel@poy> <20090502071636.GA9487@infradead.org> <ac3eb2510905020434k57b561f7ld3db423f3dba26f0@mail.gmail.com> <9b2b86520905021322l31845d2dubad98d78380aa1d5@mail.gmail.com> <9b2b86520905021441r76ba0b73u1ef02b5aa855a02b@mail.gmail.com>
+	id S1758687AbZEBV5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 17:57:53 -0400
+Date: Sat, 2 May 2009 14:50:11 -0700
+From: Greg KH <gregkh@suse.de>
+To: Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.28.10
+Message-ID: <20090502215011.GA17424@suse.de>
+References: <20090502200413.GA7287@kroah.com> <49FCBF1C.1060603@pardus.org.tr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <9b2b86520905021441r76ba0b73u1ef02b5aa855a02b@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49FCBF1C.1060603@pardus.org.tr>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 02, 2009 at 10:41:50PM +0100, Alan Jenkins wrote:
+On Sun, May 03, 2009 at 12:46:04AM +0300, Ozan Çağlayan wrote:
+> Greg KH wrote:
+> > I'm announcing the release of the 2.6.28.10 kernel.
+> >
+> > It contains a wide range of bugfixes, and all users of the 2.6.28 kernel
+> > series are strongly encouraged to upgrade.  Especially due to the CVE
+> > issues that are fixed here.
+> >
+> > NOTE, this is the LAST update of the 2.6.28 kernel series, so all users
+> > are very strongly encouraged to upgrade to the 2.6.29 series at this
+> > point in time!
+> >   
+> Hi,
 > 
-> But is read-only so bad?  You just have to copy it over to a tmpfs and
-> then mount that on top of /dev.  That's atomic, so it won't interfere
-> with parallel early init.
+> Is there a policy about the end-of-life of kernel releases? 2.6.27 is at
+> .21 while
+> .10 is the last update for 2.6.28.
 
-The copy would not be atomic.
+"Policy"?  heh, no :)
 
-> I sympathize, devtmpfs is a really neat hack that does exactly what
-> udev needs.  But you have to admit, it doesn't fit in _quite_ as well
-> with the kernel status quo.
+It has been repeated many times that the 2.6.27 tree is going to be
+maintained for a long time.  That is why I am still doing .27 releases,
+and will be for quite a while.
 
-I disagree, it mirrors exactly what we are doing today from userspace,
-which is quite the "status quo" in that distros have been doing that for
-years now :)
+The other -stable branches are moving just like they always have been,
+nothing is new there.
 
-thanks,
+Hope this helps,
 
 greg k-h
