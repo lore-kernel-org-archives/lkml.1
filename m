@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbZEBQyJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbZEBQ7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757905AbZEBQyJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 12:54:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755800AbZEBQxv
+	id S1758264AbZEBQ7v (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 12:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757383AbZEBQ7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 12:53:51 -0400
-Received: from norkia.v3.sk ([92.240.234.41]:39108 "EHLO norkia.v3.sk"
+	Sat, 2 May 2009 12:59:41 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50984 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754405AbZEBQxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 12:53:50 -0400
-X-Greylist: delayed 1494 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 May 2009 12:53:50 EDT
-Subject: [PATCH] Do not register ne2k-pci device until initialized
-From: Lubomir Rintel <lkundrak@v3.sk>
-To: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-Content-Type: text/plain
-Date: Sat, 02 May 2009 18:28:54 +0200
-Message-Id: <1241281735.2641.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
+	id S1753369AbZEBQ7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 12:59:41 -0400
+Message-ID: <49FC7BF5.8080502@garzik.org>
+Date: Sat, 02 May 2009 12:59:33 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>
+CC: Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Jan Blunck <jblunck@suse.de>, linux-arch@vger.kernel.org,
+       viro@zeniv.linux.org.uk, torvalds@osdl.org, akpm@osdl.org,
+       adam@yggdrasil.com
+Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev	tmpfs
+References: <1241097822.2516.3.camel@poy> <20090502071636.GA9487@infradead.org>
+In-Reply-To: <20090502071636.GA9487@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Doing it in reverse order causes uevent to be sent before
-we have a MAC address, which confuses udev.
+Christoph Hellwig wrote:
+> On Thu, Apr 30, 2009 at 03:23:42PM +0200, Kay Sievers wrote:
+>> From: Kay Sievers <kay.sievers@vrfy.org>
+>> Subject: driver-core: devtmpfs - driver core maintained /dev tmpfs
+> 
+> Umm, guys this needs much broader discussion than just sneaking in
+> a patch under the covers.
+> 
+> It basically does re-introduce devfs under a different name, and from
+> looking at the implementation it might not be quite as bad a Gooch's
+> original, but it's certainly worse than Adam Richters rewrite the we
+> never ended up merging.
 
-Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
----
- drivers/net/ne2k-pci.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+I was interested in this Richter devfs rewrite, since I was unfamiliar 
+with it.
 
-diff --git a/drivers/net/ne2k-pci.c b/drivers/net/ne2k-pci.c
-index eb66f65..7d83896 100644
---- a/drivers/net/ne2k-pci.c
-+++ b/drivers/net/ne2k-pci.c
-@@ -374,18 +374,17 @@ static int __devinit ne2k_pci_init_one (struct pci_dev *pdev,
- 	dev->ethtool_ops = &ne2k_pci_ethtool_ops;
- 	NS8390_init(dev, 0);
- 
-+	memcpy(dev->dev_addr, SA_prom, 6);
-+	memcpy(dev->perm_addr, dev->dev_addr, dev->addr_len);
-+
- 	i = register_netdev(dev);
- 	if (i)
- 		goto err_out_free_netdev;
- 
--	for(i = 0; i < 6; i++)
--		dev->dev_addr[i] = SA_prom[i];
- 	printk("%s: %s found at %#lx, IRQ %d, %pM.\n",
- 	       dev->name, pci_clone_list[chip_idx].name, ioaddr, dev->irq,
- 	       dev->dev_addr);
- 
--	memcpy(dev->perm_addr, dev->dev_addr, dev->addr_len);
--
- 	return 0;
- 
- err_out_free_netdev:
+For the benefit of the thread, here is a URL that people can examine:
 
--- 
-"Excuse all the blood" -- Dead
+	http://marc.info/?l=linux-kernel&m=104138806530375&w=2
+
+Regards,
+
+	Jeff
+
+
 
