@@ -1,93 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbZEBCa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbZEBCbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755653AbZEBCa0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 22:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbZEBCaE
+	id S1757042AbZEBCbr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 22:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbZEBCbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 22:30:04 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:28493 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbZEBCaA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 22:30:00 -0400
-X-IronPort-AV: E=Sophos;i="4.40,281,1238976000"; 
-   d="scan'208";a="158433888"
-Date: Fri, 1 May 2009 19:30:00 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, linux-usb@vger.kernel.org, greg@kroah.com,
-       linux-scsi@vger.kernel.org, netdev@vger.kernel.org, arjan@infradead.org
-Subject: [PATCH 5/5] initdev:kernel: USB and SCSI block init device
-	notification, v3
-Message-ID: <20090502023000.GA16076@cuplxvomd02.corp.sa.net>
+	Fri, 1 May 2009 22:31:38 -0400
+Received: from mga14.intel.com ([143.182.124.37]:10099 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751792AbZEBCbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 22:31:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,281,1239001200"; 
+   d="scan'208";a="138346903"
+Date: Sat, 2 May 2009 10:31:25 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [PATCH] vmscan: cleanup the scan batching code
+Message-ID: <20090502023125.GA29674@localhost>
+References: <200904302208.n3UM8t9R016687@imap1.linux-foundation.org> <20090501012212.GA5848@localhost> <20090430194907.82b31565.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090430194907.82b31565.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Stern <stern@rowland.harvard.edu
+The vmscan batching logic is twisting. Move it into a standalone
+function nr_scan_try_batch() and document it.  No behavior change.
 
-Add notification of device discovery for USB and SCSI block devices.
-
-History
-v3	Change bootdev_* to initdev_*
-v2	Correct location of call to bootdev_found
-v1	Initial version
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu
-Signed-off-by: David VomLehn <dvomlehn@cisco.com>
+CC: Nick Piggin <npiggin@suse.de>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- drivers/scsi/scsi_scan.c  |    2 ++
- drivers/usb/storage/usb.c |    3 +++
- 2 files changed, 5 insertions(+), 0 deletions(-)
+ include/linux/mmzone.h |    4 ++--
+ mm/page_alloc.c        |    2 +-
+ mm/vmscan.c            |   39 ++++++++++++++++++++++++++++-----------
+ mm/vmstat.c            |    8 ++++----
+ 4 files changed, 35 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
-index 6f51ca4..735b061 100644
---- a/drivers/scsi/scsi_scan.c
-+++ b/drivers/scsi/scsi_scan.c
-@@ -1834,6 +1834,7 @@ static int do_scan_async(void *_data)
- 	struct async_scan_data *data = _data;
- 	do_scsi_scan_host(data->shost);
- 	scsi_finish_async_scan(data);
-+	initdev_probe_done(BOOTDEV_BLOCK_MASK);
- 	return 0;
+--- mm.orig/include/linux/mmzone.h
++++ mm/include/linux/mmzone.h
+@@ -323,9 +323,9 @@ struct zone {
+ 
+ 	/* Fields commonly accessed by the page reclaim scanner */
+ 	spinlock_t		lru_lock;	
+-	struct {
++	struct zone_lru {
+ 		struct list_head list;
+-		unsigned long nr_scan;
++		unsigned long nr_saved_scan;	/* accumulated for batching */
+ 	} lru[NR_LRU_LISTS];
+ 
+ 	struct zone_reclaim_stat reclaim_stat;
+--- mm.orig/mm/vmscan.c
++++ mm/mm/vmscan.c
+@@ -1450,6 +1450,26 @@ static void get_scan_ratio(struct zone *
+ 	percent[1] = 100 - percent[0];
  }
  
-@@ -1855,6 +1856,7 @@ void scsi_scan_host(struct Scsi_Host *shost)
- 		return;
++/*
++ * Smallish @nr_to_scan's are deposited in @nr_saved_scan,
++ * until we collected @swap_cluster_max pages to scan.
++ */
++static unsigned long nr_scan_try_batch(unsigned long nr_to_scan,
++				       unsigned long *nr_saved_scan,
++				       unsigned long swap_cluster_max)
++{
++	unsigned long nr;
++
++	*nr_saved_scan += nr_to_scan;
++	nr = *nr_saved_scan;
++
++	if (nr >= swap_cluster_max)
++		*nr_saved_scan = 0;
++	else
++		nr = 0;
++
++	return nr;
++}
+ 
+ /*
+  * This is a basic per-zone page freer.  Used by both kswapd and direct reclaim.
+@@ -1475,14 +1495,11 @@ static void shrink_zone(int priority, st
+ 			scan >>= priority;
+ 			scan = (scan * percent[file]) / 100;
+ 		}
+-		if (scanning_global_lru(sc)) {
+-			zone->lru[l].nr_scan += scan;
+-			nr[l] = zone->lru[l].nr_scan;
+-			if (nr[l] >= swap_cluster_max)
+-				zone->lru[l].nr_scan = 0;
+-			else
+-				nr[l] = 0;
+-		} else
++		if (scanning_global_lru(sc))
++			nr[l] = nr_scan_try_batch(scan,
++						  &zone->lru[l].nr_saved_scan,
++						  swap_cluster_max);
++		else
+ 			nr[l] = scan;
  	}
  
-+	initdev_found(BOOTDEV_BLOCK_MASK);
- 	p = kthread_run(do_scan_async, data, "scsi_scan_%d", shost->host_no);
- 	if (IS_ERR(p))
- 		do_scan_async(data);
-diff --git a/drivers/usb/storage/usb.c b/drivers/usb/storage/usb.c
-index 8060b85..ea7abab 100644
---- a/drivers/usb/storage/usb.c
-+++ b/drivers/usb/storage/usb.c
-@@ -837,6 +837,7 @@ static int usb_stor_scan_thread(void * __us)
- 		/* Should we unbind if no devices were detected? */
- 	}
+@@ -2079,11 +2096,11 @@ static void shrink_all_zones(unsigned lo
+ 						l == LRU_ACTIVE_FILE))
+ 				continue;
  
-+	initdev_probe_done(BOOTDEV_BLOCK_MASK);
- 	complete_and_exit(&us->scanning_done, 0);
- }
+-			zone->lru[l].nr_scan += (lru_pages >> prio) + 1;
+-			if (zone->lru[l].nr_scan >= nr_pages || pass > 3) {
++			zone->lru[l].nr_saved_scan += (lru_pages >> prio) + 1;
++			if (zone->lru[l].nr_saved_scan >= nr_pages || pass > 3) {
+ 				unsigned long nr_to_scan;
  
-@@ -937,10 +938,12 @@ int usb_stor_probe2(struct us_data *us)
- 	}
+-				zone->lru[l].nr_scan = 0;
++				zone->lru[l].nr_saved_scan = 0;
+ 				nr_to_scan = min(nr_pages, lru_pages);
+ 				nr_reclaimed += shrink_list(l, nr_to_scan, zone,
+ 								sc, prio);
+--- mm.orig/mm/vmstat.c
++++ mm/mm/vmstat.c
+@@ -729,10 +729,10 @@ static void zoneinfo_show_print(struct s
+ 		   zone->pages_low,
+ 		   zone->pages_high,
+ 		   zone->pages_scanned,
+-		   zone->lru[LRU_ACTIVE_ANON].nr_scan,
+-		   zone->lru[LRU_INACTIVE_ANON].nr_scan,
+-		   zone->lru[LRU_ACTIVE_FILE].nr_scan,
+-		   zone->lru[LRU_INACTIVE_FILE].nr_scan,
++		   zone->lru[LRU_ACTIVE_ANON].nr_saved_scan,
++		   zone->lru[LRU_INACTIVE_ANON].nr_saved_scan,
++		   zone->lru[LRU_ACTIVE_FILE].nr_saved_scan,
++		   zone->lru[LRU_INACTIVE_FILE].nr_saved_scan,
+ 		   zone->spanned_pages,
+ 		   zone->present_pages);
  
- 	/* Start up the thread for delayed SCSI-device scanning */
-+	initdev_found(BOOTDEV_BLOCK_MASK);
- 	th = kthread_create(usb_stor_scan_thread, us, "usb-stor-scan");
- 	if (IS_ERR(th)) {
- 		printk(KERN_WARNING USB_STORAGE 
- 		       "Unable to start the device-scanning thread\n");
-+		initdev_probe_done(BOOTDEV_BLOCK_MASK);
- 		complete(&us->scanning_done);
- 		quiesce_and_remove_host(us);
- 		result = PTR_ERR(th);
+--- mm.orig/mm/page_alloc.c
++++ mm/mm/page_alloc.c
+@@ -3544,7 +3544,7 @@ static void __paginginit free_area_init_
+ 		zone_pcp_init(zone);
+ 		for_each_lru(l) {
+ 			INIT_LIST_HEAD(&zone->lru[l].list);
+-			zone->lru[l].nr_scan = 0;
++			zone->lru[l].nr_saved_scan = 0;
+ 		}
+ 		zone->reclaim_stat.recent_rotated[0] = 0;
+ 		zone->reclaim_stat.recent_rotated[1] = 0;
