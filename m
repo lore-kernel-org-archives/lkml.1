@@ -1,115 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZEBDce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbZEBDiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755239AbZEBDce (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 23:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbZEBDcX
+	id S1755524AbZEBDiy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 23:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbZEBDik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 23:32:23 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:2750 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752045AbZEBDcV (ORCPT
+	Fri, 1 May 2009 23:38:40 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:26666 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751993AbZEBDii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 23:32:21 -0400
-From: Alex Williamson <alex.williamson@hp.com>
-Subject: [PATCH] virtio_net: Cleanup command queue scatterlist usage
-To: davem@davemloft.net, rusty@rustcorp.com.au
-Cc: alex.williamson@hp.com, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-next@vger.kernel.org
-Date: Fri, 01 May 2009 21:27:56 -0600
-Message-ID: <20090502032646.7927.99584.stgit@debian.lart>
-In-Reply-To: <20090501.153301.42015656.davem@davemloft.net>
-References: <20090501.153301.42015656.davem@davemloft.net>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Fri, 1 May 2009 23:38:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=Io1GLhWWmWR+j7sxhXT6Hc1d66wHlovmIHLKqvT9ZsTgb4seKM4td0Vm+TJrtHWB6X
+         GSCzSr2BYWGJMnOP/Ss1KmA9I1w7aotibmmoOyKIRLFrLWGmz+BkIpu1/V7bdYl+g4k4
+         fdFN0kzHrj3d4AdunACiXLp+W/86ORI6IKdc8=
+Date: Sat, 2 May 2009 11:38:25 +0800
+From: Ming Lei <tom.leiming@gmail.com>
+To: David VomLehn <dvomlehn@cisco.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-usb@vger.kernel.org, greg@kroah.com, linux-scsi@vger.kernel.org,
+       netdev@vger.kernel.org, arjan@infradead.org
+Subject: Re: [PATCH 3/5] initdev:kernel: Await console discovery, v5
+Message-ID: <20090502113825.11bc7876@linux-lm>
+In-Reply-To: <20090502022756.GA15838@cuplxvomd02.corp.sa.net>
+References: <20090502022756.GA15838@cuplxvomd02.corp.sa.net>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.4; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We were avoiding calling sg_init* on scatterlists passed
-into virtnet_send_command to prevent extraneous end markers.
-This caused build warnings for uninitialized variables.
-Cleanup the code to create proper scatterlists.
+On Fri, 1 May 2009 19:27:56 -0700
+David VomLehn <dvomlehn@cisco.com> wrote:
 
-Signed-off-by: Alex Williamson <alex.williamson@hp.com>
----
+> The patch has been re-written to use the init device synchronization
+> infrastructure. This ensures that we can detect console
+> initialization when the devices become available, as well as
+> determining that no console is attached at boot time.
+> 
+> History
+> v5	Change bootdev_* to initdev_*.
+> v4	Use new hotplug synchronization infrastructure. Include
+> Braille console support.
+> v3.2	Use only a single new command line parameter by adding
+> the possible value "forever".  Add message specifying the parameter
+> to modify to increase the delay for console initialization
+> v3.1	Correct the abbreviation for milliseconds in
+> 	Documentation/kernel-parameters.txt to be "ms", not "mS".
+> Thanks to Peter Anvin for this.
+> v3	Increase the default delay to 1 second and add kernel
+> command line parameters to override the default delay. Thanks to
+> David Brownell for his helpful suggestions.
+> v2	Wait for the preferred console rather than any console.
+> Make the delay interval a tunable.
+> v1	Initial version
+> 
+> Signed-off-by: David VomLehn <dvomlehn@cisco.com>
+> ---
+>  drivers/accessibility/braille/braille_console.c |    3 ++
+>  kernel/printk.c                                 |   29
+> ++++++++++++++++++++++- 2 files changed, 31 insertions(+), 1
+> deletions(-)
+> 
+> diff --git a/drivers/accessibility/braille/braille_console.c
+> b/drivers/accessibility/braille/braille_console.c index
+> d672cfe..4420ac3 100644 ---
+> a/drivers/accessibility/braille/braille_console.c +++
+> b/drivers/accessibility/braille/braille_console.c @@ -35,6 +35,7 @@
+>  #include <linux/keyboard.h>
+>  #include <linux/kbd_kern.h>
+>  #include <linux/input.h>
+> +#include <linux/initdev.h>
+>  
+>  MODULE_AUTHOR("samuel.thibault@ens-lyon.org");
+>  MODULE_DESCRIPTION("braille device");
+> @@ -378,6 +379,8 @@ int braille_register_console(struct console
+> *console, int index, braille_co = console;
+>  	register_keyboard_notifier(&keyboard_notifier_block);
+>  	register_vt_notifier(&vt_notifier_block);
+> +
+> +	initdev_register(BOOTDEV_CONSOLE);
 
- Patch against net-2.6.git 7a67e56fd362d3edfde1f19170893508c3940d3a
- 
- drivers/net/virtio_net.c |   16 ++++++++++------
- 1 files changed, 10 insertions(+), 6 deletions(-)
+Should it be initdev_registered(BOOTDEV_CONSOLE)?
 
-diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index 9c82a39..23eb282 100644
---- a/drivers/net/virtio_net.c
-+++ b/drivers/net/virtio_net.c
-@@ -616,10 +616,11 @@ static int virtnet_open(struct net_device *dev)
- static bool virtnet_send_command(struct virtnet_info *vi, u8 class, u8 cmd,
- 				 struct scatterlist *data, int out, int in)
- {
--	struct scatterlist sg[VIRTNET_SEND_COMMAND_SG_MAX + 2];
-+	struct scatterlist *s, sg[VIRTNET_SEND_COMMAND_SG_MAX + 2];
- 	struct virtio_net_ctrl_hdr ctrl;
- 	virtio_net_ctrl_ack status = ~0;
- 	unsigned int tmp;
-+	int i;
- 
- 	if (!virtio_has_feature(vi->vdev, VIRTIO_NET_F_CTRL_VQ)) {
- 		BUG();  /* Caller should know better */
-@@ -637,7 +638,8 @@ static bool virtnet_send_command(struct virtnet_info *vi, u8 class, u8 cmd,
- 	sg_init_table(sg, out + in);
- 
- 	sg_set_buf(&sg[0], &ctrl, sizeof(ctrl));
--	memcpy(&sg[1], data, sizeof(struct scatterlist) * (out + in - 2));
-+	for_each_sg(data, s, out + in - 2, i)
-+		sg_set_buf(&sg[i + 1], sg_virt(s), s->length);
- 	sg_set_buf(&sg[out + in - 1], &status, sizeof(status));
- 
- 	if (vi->cvq->vq_ops->add_buf(vi->cvq, sg, out, in, vi) != 0)
-@@ -692,7 +694,7 @@ static void virtnet_set_rx_mode(struct net_device *dev)
- 	promisc = ((dev->flags & IFF_PROMISC) != 0);
- 	allmulti = ((dev->flags & IFF_ALLMULTI) != 0);
- 
--	sg_set_buf(sg, &promisc, sizeof(promisc));
-+	sg_init_one(sg, &promisc, sizeof(promisc));
- 
- 	if (!virtnet_send_command(vi, VIRTIO_NET_CTRL_RX,
- 				  VIRTIO_NET_CTRL_RX_PROMISC,
-@@ -700,7 +702,7 @@ static void virtnet_set_rx_mode(struct net_device *dev)
- 		dev_warn(&dev->dev, "Failed to %sable promisc mode.\n",
- 			 promisc ? "en" : "dis");
- 
--	sg_set_buf(sg, &allmulti, sizeof(allmulti));
-+	sg_init_one(sg, &allmulti, sizeof(allmulti));
- 
- 	if (!virtnet_send_command(vi, VIRTIO_NET_CTRL_RX,
- 				  VIRTIO_NET_CTRL_RX_ALLMULTI,
-@@ -716,6 +718,8 @@ static void virtnet_set_rx_mode(struct net_device *dev)
- 		return;
- 	}
- 
-+	sg_init_table(sg, 2);
-+
- 	/* Store the unicast list and count in the front of the buffer */
- 	mac_data->entries = dev->uc_count;
- 	addr = dev->uc_list;
-@@ -749,7 +753,7 @@ static void virnet_vlan_rx_add_vid(struct net_device *dev, u16 vid)
- 	struct virtnet_info *vi = netdev_priv(dev);
- 	struct scatterlist sg;
- 
--	sg_set_buf(&sg, &vid, sizeof(vid));
-+	sg_init_one(&sg, &vid, sizeof(vid));
- 
- 	if (!virtnet_send_command(vi, VIRTIO_NET_CTRL_VLAN,
- 				  VIRTIO_NET_CTRL_VLAN_ADD, &sg, 1, 0))
-@@ -761,7 +765,7 @@ static void virnet_vlan_rx_kill_vid(struct net_device *dev, u16 vid)
- 	struct virtnet_info *vi = netdev_priv(dev);
- 	struct scatterlist sg;
- 
--	sg_set_buf(&sg, &vid, sizeof(vid));
-+	sg_init_one(&sg, &vid, sizeof(vid));
- 
- 	if (!virtnet_send_command(vi, VIRTIO_NET_CTRL_VLAN,
- 				  VIRTIO_NET_CTRL_VLAN_DEL, &sg, 1, 0))
 
+>  	return 0;
+>  }
+>  
+> diff --git a/kernel/printk.c b/kernel/printk.c
+> index 5052b54..e6a9379 100644
+> --- a/kernel/printk.c
+> +++ b/kernel/printk.c
+> @@ -33,6 +33,7 @@
+>  #include <linux/bootmem.h>
+>  #include <linux/syscalls.h>
+>  #include <linux/kexec.h>
+> +#include <linux/device.h>
+>  
+>  #include <asm/uaccess.h>
+>  
+> @@ -1075,8 +1076,10 @@ void console_unblank(void)
+>  
+>  /*
+>   * Return the console tty driver structure and its associated index
+> + * @index:	Pointer to the device index
+> + * Returns NULL if no driver available, otherwise a pointer to the
+> TTY driver. */
+> -struct tty_driver *console_device(int *index)
+> +struct tty_driver *_console_device(int *index)
+>  {
+>  	struct console *c;
+>  	struct tty_driver *driver = NULL;
+> @@ -1094,6 +1097,29 @@ struct tty_driver *console_device(int *index)
+>  }
+>  
+>  /*
+> + * Returns true if all specific consoles are registered, false
+> otherwise
+> + */
+> +static bool have_all_consoles(void)
+> +{
+> +	struct tty_driver *driver;
+> +	int		index;
+> +
+> +	driver = _console_device(&index);
+> +
+> +	return driver != NULL;
+> +}
+> +
+> +struct tty_driver *console_device(int *index)
+> +{
+> +	struct tty_driver *driver;
+> +	initdev_wait(BOOTDEV_CONSOLE, have_all_consoles);
+> +
+> +	driver = _console_device(index);
+> +
+> +	return driver;
+> +}
+> +
+> +/*
+>   * Prevent further output on the passed console device so that (for
+> example)
+>   * serial drivers can disable console output before suspending a
+> port, and can
+>   * re-enable output afterwards.
+> @@ -1230,6 +1256,7 @@ void register_console(struct console *console)
+>  		spin_unlock_irqrestore(&logbuf_lock, flags);
+>  	}
+>  	release_console_sem();
+> +	initdev_registered(BOOTDEV_CONSOLE);
+>  }
+>  EXPORT_SYMBOL(register_console);
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi"
+> in the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
+-- 
+Lei Ming
