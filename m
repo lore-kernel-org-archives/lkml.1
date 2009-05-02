@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757148AbZEBOO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbZEBOQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757148AbZEBOO7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 10:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbZEBOOv
+	id S1757966AbZEBOQy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 10:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbZEBOQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 10:14:51 -0400
-Received: from hiauly1.hia.nrc.ca ([132.246.100.193]:4493 "EHLO
-	hiauly1.hia.nrc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754199AbZEBOOu (ORCPT
+	Sat, 2 May 2009 10:16:41 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:37315 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755359AbZEBOQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 10:14:50 -0400
-X-Greylist: delayed 647 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 May 2009 10:14:50 EDT
-Subject: Re: [PATCH 3/5] parisc: use new macros for .data.init_task.
-To: deller@gmx.de (Helge Deller)
-Date: Sat, 2 May 2009 10:04:01 -0400 (EDT)
-From: "John David Anglin" <dave@hiauly1.hia.nrc.ca>
-Cc: tabbott@MIT.EDU, sam@ravnborg.org, linux-kernel@vger.kernel.org,
-       andersk@MIT.EDU, wdaher@MIT.EDU, vda.linux@googlemail.com,
-       jbarnold@MIT.EDU, kyle@mcmartin.ca, linux-parisc@vger.kernel.org
-In-Reply-To: <49FBD681.9080605@gmx.de> from "Helge Deller" at May 2, 2009 07:13:37 am
-X-Mailer: ELM [version 2.4 PL25]
+	Sat, 2 May 2009 10:16:39 -0400
+Date: Sat, 2 May 2009 10:16:39 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: David VomLehn <dvomlehn@cisco.com>
+cc: Sergey Vlasov <vsu@altlinux.ru>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       USB list <linux-usb@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       <netdev@vger.kernel.org>, <arjan@infradead.org>
+Subject: Re: [PATCH 1/5] initdev:kernel: Asynchronously-discovered device
+ synchronization, v5
+In-Reply-To: <20090502133153.GA8116@atlas.home>
+Message-ID: <Pine.LNX.4.44L0.0905021010200.23879-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090502140402.AC1124FC6@hiauly1.hia.nrc.ca>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> IIRC, gcc on hppa is not able to provide an alignment >= 8k, which is
-> why we have done the 16k alignment inside the linker script.
+I agree with Sergey's comments.  In addition:
 
-How does this arise?  We have the following define for MAX_OFILE_ALIGNMENT
-in elfos.h:
+On Fri, May 01, 2009 at 07:25:51PM -0700, David VomLehn wrote:
 
-#define MAX_OFILE_ALIGNMENT (((unsigned int) 1 << 28) * 8)
+> +initdev_wait(enum initdev_type type, bool (*done)(void))
+> +	Wait until one of two conditions is met:
+> +	o	All possible init devices of the given type have been probed
+> +	o	The "done" function returns true
+> +
+> +	The type is one of:
+> +		BOOTDEV_CONSOLE
+> +		BOOTDEV_NETDEV
+> +		BOOTDEV_BLOCK
 
-If you are correct, MAX_OFILE_ALIGNMENT should be changed.
+These should be named INITDEV_CONSOLE_TYPE and so on, with the final 
+_TYPE suffix to help prevent confusion with INITDEV_CONSOLE_MASK.
 
-Dave
--- 
-J. David Anglin                                  dave.anglin@nrc-cnrc.gc.ca
-National Research Council of Canada              (613) 990-0752 (FAX: 952-6602)
+Also, in patch 3/5:
+
+> --- a/drivers/accessibility/braille/braille_console.c
+> +++ b/drivers/accessibility/braille/braille_console.c
+> @@ -35,6 +35,7 @@
+>  #include <linux/keyboard.h>
+>  #include <linux/kbd_kern.h>
+>  #include <linux/input.h>
+> +#include <linux/initdev.h>
+
+What does this do?  It looks like a typo.
+
+Alan Stern
+
