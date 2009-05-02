@@ -1,81 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbZEBSGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757702AbZEBSHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755812AbZEBSGT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 14:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbZEBSGG
+	id S1757702AbZEBSHl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 14:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405AbZEBSHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 14:06:06 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:48055 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752680AbZEBSGF convert rfc822-to-8bit (ORCPT
+	Sat, 2 May 2009 14:07:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54887 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753813AbZEBSHa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 14:06:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=TU4iokOUWeWWm7AyXFkD9E3+X+xhSVY/7nXyE3t+cfHqr/vZrx2YbfUXQNaJ7M8Nmm
-         AMG2ppIZsBWiEKVw4DrNbFLBJ6Zdm3W6JMV+/ZKF4jRtMnyxe6eEJHt6Ck08176nMM2b
-         4H5Yyg5H0LUVvHmTwTKhBxX+mUKATWq3zGokU=
-From: Eric Lacombe <goretux@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [unused symbol] need to use init_mm
-Date: Sat, 2 May 2009 20:05:36 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       davej@redhat.com, tglx@linutronix.de
-References: <200904301232.05302.goretux@gmail.com> <200904301955.55407.goretux@gmail.com> <20090501155130.GF27831@csn.ul.ie>
-In-Reply-To: <20090501155130.GF27831@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200905022005.37101.goretux@gmail.com>
+	Sat, 2 May 2009 14:07:30 -0400
+Date: Sat, 2 May 2009 10:58:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lars Ellenberg <lars.ellenberg@linbit.com>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
+       Neil Brown <neilb@suse.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Lars Marowsky-Bree <lmb@suse.de>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: [PATCH 02/16] DRBD: lru_cache
+Message-Id: <20090502105823.bf27bf22.akpm@linux-foundation.org>
+In-Reply-To: <20090502152620.GA6466@racke>
+References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com>
+	<1241090812-13516-2-git-send-email-philipp.reisner@linbit.com>
+	<1241090812-13516-3-git-send-email-philipp.reisner@linbit.com>
+	<20090501015956.ef663e9b.akpm@linux-foundation.org>
+	<20090502152620.GA6466@racke>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le vendredi 1 mai 2009 17:51:30 Mel Gorman, vous avez écrit :
-> On Thu, Apr 30, 2009 at 07:55:54PM +0200, Eric Lacombe wrote:
-> > On Thu, Apr 30, 2009, Ingo Molnar wrote :
-> > > * Mel Gorman <mel@csn.ul.ie> wrote:
-> > > > On Thu, Apr 30, 2009 at 12:32:04PM +0200, Eric Lacombe wrote:
+On Sat, 2 May 2009 17:26:20 +0200 Lars Ellenberg <lars.ellenberg@linbit.com> wrote:
 
-[...]
+> in memory structure is
+> 
+> struct lru_cache {
+>         struct list_head active;
+>         struct list_head quiet;
+>         struct list_head free;
+>         size_t element_size;          <-- parameter to "lc_alloc"
+>         unsigned int  nr_elements;    <-- parameter to "lc_alloc"
+>         unsigned int  new_number;
+> 
+>         unsigned int used;
+>         unsigned long flags;
+>         unsigned long hits, misses, starving, dirty, changed;
+> 
+>         struct lc_element *changing_element; /* just for paranoia */
+> 
+>         const char *name;
+> 
+>         struct hlist_head slot[0];
+>         /* hash colision chains here, then element storage. */
+> };
+> 
+> so we have fixed size list heads,
+> size of a single such "element", to allow the user
+> to add small payload;
+> number of hash slots and "elements" following this header;
+> some counters;
+> hlist_slot[0];
+> }
+> following:
+> struct hlist_head[nr_elements];
+> array of element_size blobs[nr_elements];
+> 
+> these "blobs" start with the struct lru_element,
+> possibly followed by some user payload.
+> 
+> the "index" you are asking about later is
+> index into that "blob" array,
+> and is used primarily to initialize the state of this thing
+> from an on-disk representation (the "activity log", "AL"),
+> for crash recovery purposes.
+> 
+> the typecasting is necessary to get from the slot[0] to the "elements"
+> skipping the hash slots.
+> using "container of" or something like that would obscure the fact that,
+> as currently implemented, the "lru_element" _must_ be the first member
+> of any payload structure.
 
-> If it's the kernel portion of the address space is what you care about,
-> is current->mm->pgd usable?
-
-Not currently, because this one is precisely compared to init_mm.pgd.
-
-[...]
-
-> > > > 4. When do you think the module will be ready for posting?  i.e. is
-> > > > this really something destined for mainline or some
-> > > > perma-out-of-tree?
-> >
-> > It is destined for mainline as far as I'm concerned. But it needs to be
-> > accepted by the kernel community when it will be ready.
-> > (I work for a french public laboratory, so it will be GPL 2 or 3 licensed
-> > anyway)
->
-> If it really is absolutly necessary that you have init_mm and the
-> alternatives really are too ugly, patch 1 of your set becomes a
-> re-export of init_mm. The leader of that patch should explain why the
-> alternatives to init_mm suck.
->
-> You can try posting a patch to export init_mm without an in-tree user but
-> I wouldn't bet money on the x86 maintainers picking it up without an
-> extremely compelling reason.
-
-Thanks for your comments. I recently thought about an alternative that seems 
-to be acceptable.
-Nonetheless, I need to modify my security paradigm a little, but this one will 
-still be correct. Besides, no ugliness ;)
-
-Best regards,
-
-	Eric
-
+I still don't see why the lru_element must be the first member of the
+user's outer, containing structure.
