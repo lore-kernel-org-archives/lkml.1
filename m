@@ -1,89 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbZEBI1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbZEBIqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340AbZEBI1U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 04:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbZEBI1K
+	id S1753335AbZEBIqF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 04:46:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZEBIpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 04:27:10 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:60388 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751488AbZEBI1J (ORCPT
+	Sat, 2 May 2009 04:45:53 -0400
+Received: from mailgw2.hevs.ch ([153.109.6.17]:31732 "EHLO mailgw2.hevs.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750730AbZEBIpw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 04:27:09 -0400
-Subject: Re: Probe Timeouts with 47afbaf5af9454a7a1a64591e20cbfcc27ca67a8
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Parag Warudkar <parag.lkml@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, niel.lambrechts@gmail.com
-In-Reply-To: <f7848160905011328o68010ba0rf8e18fa7ce88c7b5@mail.gmail.com>
-References: <f7848160904301838q4883106fq8d31e2e7c0b10a14@mail.gmail.com>
-	 <1241165805.13562.2.camel@johannes.local>
-	 <f7848160905011328o68010ba0rf8e18fa7ce88c7b5@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-cI8+puQ4D4u3cQTnqcw5"
-Date: Sat, 02 May 2009 10:27:05 +0200
-Message-Id: <1241252825.13562.20.camel@johannes.local>
+	Sat, 2 May 2009 04:45:52 -0400
+Message-Id: <49FC2455020000BF000290DA@mailgw2.hevs.ch>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Sat, 02 May 2009 10:45:41 +0200
+From: "Marc Pignat" <Marc.Pignat@hevs.ch>
+To: <marcel@holtmann.org>, <jkosina@suse.cz>
+Cc: <ext-roger.quadros@nokia.com>, <linux-bluetooth@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] 2.6.30-rc4 hid bluetooth not working
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> Marcel Holtmann <marcel@holtmann.org> 05/02/09 12:57 AM >>>
+>Hi Jiri,
+>
+>> > Subject: bluetooth: Fix serialization when adding/deleting connections in hci_sysfs
+>> > 
+>> > add_conn and del_conn should be serialized, but flush_workqueue can't be used
+>> > by the worker thread on it's own queue, so use flush_work to serialize add_conn
+>> > and del_conn against each other.
+>> > 
+>> > Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
+>> 
+>> Acked-by: Jiri Kosina <jkosina@suse.cz>
+>> 
+>> FWIW.
+>
+>nak from my side since I think it is the wrong fix. We really wanna wait
+>for all works to finish here. This includes work from other connection
+>attempts or terminations.
 
---=-cI8+puQ4D4u3cQTnqcw5
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+IMHO, there is no need to wait for work currently running, since this is a
+singlethread workqueue.
 
-Parag,
+But it is perhaps simpler to use a lock (mutex or watherver locking primitive).
 
-> Just got around to downloading today's compat-wireless and it doesn't
-> work for me - frequent disconnects this time with response timeouts -
->=20
->  9731.902114] wlan1: RX ReassocResp from 00:1e:e5:6a:2c:c2
-> (capab=3D0x411 status=3D0 aid=3D1)
-> [ 9731.902117] wlan1: associated
-> [ 9886.744022] wlan1: no probe response from AP 00:1e:e5:6a:2c:c2 -
-> disassociating
-> [ 9887.594299] wlan1: authenticate with AP 00:1e:e5:6a:2c:c2
-> [ 9887.596953] wlan1: authenticated
-> [ 9887.596958] wlan1: associate with AP 00:1e:e5:6a:2c:c2
-> [ 9887.600997] wlan1: RX ReassocResp from 00:1e:e5:6a:2c:c2
-> (capab=3D0x411 status=3D0 aid=3D1)
-> [ 9887.601000] wlan1: associated
-> [ 9930.640019] wlan1: no probe response from AP 00:1e:e5:6a:2c:c2 -
-> disassociating
+Regards
 
-This looks like something entirely different.
-
-> Of course mainline continues to work fine after reverting
-> 47afbaf5af9454a7a1a64591e20cbfcc27ca67a8.
-
-Can you make sure the txpower is set correctly, on your compat? Just say
-"iwconfig wlan0" or whatever _while_ associated -- and check that it
-reports 15dBm or so.
-
-johannes
-
---=-cI8+puQ4D4u3cQTnqcw5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJ/APWAAoJEKVg1VMiehFYOjQP/jcAhxAmJCZAuT/ln7zXKCQO
-VDpX16jT0BPsZTFbdSLHpIucQOzaleD2TaJZ5iTAMqyDTNwmFQr+YmXgdC0rT9pm
-zQo0DXXGv83U+T/dj2IMwCS1BFdyvo0wJ1KLPpSsu7eKYjo8m143uM+d8KcwmCCZ
-RwwlZ9SnOCK7SeJ/KpSmbqlspOzqSK0FzrhZbjCMiN/kIYkkpUNP5Ccf+No7MqJR
-Z+kVOZvkZ0cl2tJ4Ysi8Y3zIjm8WIQJfnPgZe+fJ3tYuXmRO0jDS9dhva4gSYoYZ
-RJX18iX9hqR75m3ASp0QXh5dt7NBgSkzbNN327D/HSnhpVnwRGzgjq8787NH1mhI
-rm0V6TVI6zrbu+kBK40CVkQwhQc/ky86CsWh5qnHYM9Nof//UcJkikQ65zn5v11t
-zGmMkROa2ptslr6EqFEtcwy9TloiUfpNtd4JvtKvUKfn09ns5CMvQE64Au4yO3Bv
-RLSonwa1np1kVonff+9b3J7AdoFurDQjFKwPgfuNTxUEn9snsGAR4kdjer4TR0N6
-OF1P9Aw8wcO7yBrkkGLGTehCBplpgruiZXTTAj8CQTWfoBTUPfuhMqlqgJVScvWg
-rAb+TdKjuNAm01IhA7OcSE8QSTmn+ifB0yqXvGKAZymnfp4Kge/8WGEj/8ZviQuh
-08n0nsgOPgjwOjdM2S5b
-=elRj
------END PGP SIGNATURE-----
-
---=-cI8+puQ4D4u3cQTnqcw5--
+Marc
 
