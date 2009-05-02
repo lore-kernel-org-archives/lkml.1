@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbZEBDQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbZEBDbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753118AbZEBDQi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 23:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbZEBDQa
+	id S1754600AbZEBDbc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 23:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbZEBDbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 23:16:30 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:51372 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751783AbZEBDQ3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 23:16:29 -0400
-Date: Fri, 1 May 2009 23:06:28 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, thomas.pi@arcor.dea,
-       Yuriy Lalym <ylalym@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ltt-dev@lists.casi.polymtl.ca, Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] Fix dirty page accounting in
- redirty_page_for_writepage()
-In-Reply-To: <20090501210724.GB11095@elte.hu>
-Message-ID: <alpine.DEB.1.10.0905012234480.32364@qirst.com>
-References: <20090430150142.GC20580@elte.hu> <alpine.DEB.1.10.0904301114440.4028@qirst.com> <20090430154255.GA3714@elte.hu> <alpine.DEB.1.10.0904301142140.4028@qirst.com> <20090430160606.GA5913@elte.hu> <alpine.LFD.2.00.0904300914110.3395@localhost.localdomain>
- <20090430172341.GA11865@elte.hu> <alpine.DEB.1.10.0904301406210.11923@qirst.com> <20090501195941.GA28264@elte.hu> <alpine.DEB.1.10.0905011632440.16255@qirst.com> <20090501210724.GB11095@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 1 May 2009 23:31:24 -0400
+Received: from [192.16.179.4] ([192.16.179.4]:57472 "EHLO sh.osrg.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752045AbZEBDbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 23:31:23 -0400
+Date: Sat, 02 May 2009 12:23:52 +0900 (JST)
+Message-Id: <20090502.122352.99036120.ryusuke@osrg.net>
+To: jack@suse.cz
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [PATCH 2/2] Use feature code to eliminate quota pointers from
+ inodes for filesystems that don't need it.
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <1241112678-6615-3-git-send-email-jack@suse.cz>
+References: <1241112678-6615-1-git-send-email-jack@suse.cz>
+	<1241112678-6615-3-git-send-email-jack@suse.cz>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Sat, 02 May 2009 12:23:53 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 May 2009, Ingo Molnar wrote:
+On Thu, 30 Apr 2009 19:31:18 +0200, Jan Kara wrote:
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> ---
+>  fs/ext2/ext2.h     |    1 +
+>  fs/ext2/super.c    |    5 ++
+>  fs/inode.c         |    7 ++-
+>  fs/nilfs2/mdt.c    |    3 -
+>  fs/quota/dquot.c   |  134 ++++++++++++++++++++++++++++++----------------------
+>  include/linux/fs.h |   10 +++-
+>  6 files changed, 97 insertions(+), 63 deletions(-)
 
-> > I see but it may take some time for me to get that finished
-> > (probably 2 weeks or so). Dont feel that you have to merge my old
-> > patches or a variant thereof.
->
-> it's your baby really and i dont want to interfere in any negative
-> way. The patches look fairly complete and you did all the hard work
-> with them already.
+<snip>
 
-Ah I remember, you drowned that baby when you asked me to do lowercase
-macros. That plus the job change made me to lose most of my drive for the
-patchset. No employer anymore that wants the stuff... Then there is the
-scheduler regression and the network latency issues that prevent my new
-project from running kernels after 2.6.22. Time that I have will be mostly
-spend on that in the coming weeks. Cannot really push much into newer
-kernels until we are able to run upstream kernels without significant loss
-in performance.
+> diff --git a/fs/nilfs2/mdt.c b/fs/nilfs2/mdt.c
+> index 47dd815..725cd80 100644
+> --- a/fs/nilfs2/mdt.c
+> +++ b/fs/nilfs2/mdt.c
+> @@ -478,9 +478,6 @@ nilfs_mdt_new_common(struct the_nilfs *nilfs, struct super_block *sb,
+>  		inode->i_blocks = 0;
+>  		inode->i_bytes = 0;
+>  		inode->i_generation = 0;
+> -#ifdef CONFIG_QUOTA
+> -		memset(&inode->i_dquot, 0, sizeof(inode->i_dquot));
+> -#endif
+>  		inode->i_pipe = NULL;
+>  		inode->i_bdev = NULL;
+>  		inode->i_cdev = NULL;
 
-We just tried 2.6.9. And hey performance is better. Looks like going back
-in kernel versions is a way to improve performance. Simpler kernel,
-lower cache footprint and it becomes faster. And the app is simply
-doing network I/O and some number crunching. Sigh.
+Ack-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 
-> Can help out with review and testing (as always) but i suspect it's
-> more appropriate for -mm to carry them in the end, because of the MM
-> and tree-wide impact, and because the fine differences between those
-> APIs will only be truly visible on non-x86.
+<snip>
 
-I'd be glad to review. But this is not far up in the priority list given
-the unresolved regressions.
-
-> ( There's also Tejun's latest improvements of the dynamic allocator
->   that he made based on your feedback - are those in any tree yet? )
-
-No idea. Do not see them upstream.
+Thanks,
+Ryusuke Konishi
