@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760067AbZEBUCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760423AbZEBUDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760067AbZEBUCx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 16:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759003AbZEBUBm
+	id S1760423AbZEBUDQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 16:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759466AbZEBUBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 16:01:42 -0400
-Received: from www.tglx.de ([62.245.132.106]:55709 "EHLO www.tglx.de"
+	Sat, 2 May 2009 16:01:52 -0400
+Received: from www.tglx.de ([62.245.132.106]:55716 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758359AbZEBUBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 16:01:41 -0400
-Message-Id: <20090502195925.485566561@linutronix.de>
+	id S1759445AbZEBUBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 16:01:51 -0400
+Message-Id: <20090502195925.690548195@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Sat, 02 May 2009 20:00:52 -0000
+Date: Sat, 02 May 2009 20:01:02 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [patch 04/11] drivers/mfd: remove obsolete irq_desc_t typedef
+       Haavard Skinnemoen <skinnemoen@atmel.com>
+Subject: [patch 06/11] avr32: remove obsolete hw_interrupt_type
 References: <20090502195607.539955644@linutronix.de>
 Content-Disposition: inline;
-	filename=mfd-remove-obsolete-irq-desc-t-typedef.patch
+	filename=avr32-remove-obsolete-hw-interrupt-type.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Impact: cleanup
 
-Convert the last remaining users and remove the typedef.
+Convert the last remaining users to struct irq_chip and remove the
+define.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-CC: David Brownell <dbrownell@users.sourceforge.net>
+CC: Haavard Skinnemoen <skinnemoen@atmel.com>
+
 ---
- drivers/mfd/twl4030-irq.c |    2 +-
+ arch/avr32/include/asm/hw_irq.h |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6/drivers/mfd/twl4030-irq.c
+Index: linux-2.6/arch/avr32/include/asm/hw_irq.h
 ===================================================================
---- linux-2.6.orig/drivers/mfd/twl4030-irq.c
-+++ linux-2.6/drivers/mfd/twl4030-irq.c
-@@ -255,7 +255,7 @@ static int twl4030_irq_thread(void *data
-  * thread.  All we do here is acknowledge and mask the interrupt and wakeup
-  * the kernel thread.
-  */
--static void handle_twl4030_pih(unsigned int irq, irq_desc_t *desc)
-+static void handle_twl4030_pih(unsigned int irq, struct irq_desc *desc)
+--- linux-2.6.orig/arch/avr32/include/asm/hw_irq.h
++++ linux-2.6/arch/avr32/include/asm/hw_irq.h
+@@ -1,7 +1,7 @@
+ #ifndef __ASM_AVR32_HW_IRQ_H
+ #define __ASM_AVR32_HW_IRQ_H
+ 
+-static inline void hw_resend_irq(struct hw_interrupt_type *h, unsigned int i)
++static inline void hw_resend_irq(struct irq_chip *h, unsigned int i)
  {
- 	/* Acknowledge, clear *AND* mask the interrupt... */
- 	desc->chip->ack(irq);
+ 	/* Nothing to do */
+ }
 
 
