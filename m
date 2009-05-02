@@ -1,81 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751793AbZEBE1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751635AbZEBEmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751793AbZEBE1c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 00:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbZEBE1J
+	id S1751635AbZEBEmU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 00:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbZEBEmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 00:27:09 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:35882 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751055AbZEBE1G (ORCPT
+	Sat, 2 May 2009 00:42:11 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:3038 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751031AbZEBEmK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 00:27:06 -0400
-Message-ID: <49FBCBC1.3050006@oracle.com>
-Date: Fri, 01 May 2009 21:27:45 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sat, 2 May 2009 00:42:10 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=cbjvMPqWlDvDtKwZwLmuuWV04mbrPXykttTUberOo3iUfAYiLtOAc2zaTKeZHSfIF
+	aUQTvceTBff+1mO/dnrfA==
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Jan Engelhardt <jengelh@medozas.de>,
-       Christopher Sylvain <chris.sylvain@gmail.com>
-Subject: [PATCH] doc: small kernel-parameters updates
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <ac3eb2510905011928o26ae45efr2b23deafda76e1fc@mail.gmail.com>
+References: <1241097822.2516.3.camel@poy>
+	 <20090430222900.c13b63d5.akpm@linux-foundation.org>
+	 <20090501061701.GB19234@kroah.com>
+	 <20090430234312.a63fa5cf.akpm@linux-foundation.org>
+	 <20090501065527.GA19773@kroah.com>
+	 <a55d774e0905011824k11e06f61ibc9937a2b26fd9e0@mail.gmail.com>
+	 <ac3eb2510905011848i51aef8e6wbe9506a13e67377d@mail.gmail.com>
+	 <a55d774e0905011902y1827322ascd7d2eb42570d1dc@mail.gmail.com>
+	 <ac3eb2510905011928o26ae45efr2b23deafda76e1fc@mail.gmail.com>
+Date: Fri, 1 May 2009 21:42:04 -0700
+Message-ID: <a55d774e0905012142p7acd1086kc5a10d834b021eaa@mail.gmail.com>
+Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
+From: Brian Swetland <swetland@google.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jan Blunck <jblunck@suse.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.49FBCB68.0117:SCFMA4539814,ss=1,fgs=0
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Fri, May 1, 2009 at 7:28 PM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> On Sat, May 2, 2009 at 04:02, Brian Swetland <swetland@google.com> wrote:
+>> On Fri, May 1, 2009 at 6:48 PM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+>
+>>>> I would love to have a way for the kernel to do something like devfs
+>>>> (it'd let me kill some ugly userspace code on my side)....
+>>>
+>>> How are permissions defined in your environment? What's the set of
+>>> permissions you need to apply?
+>>
+>> In our world we use groups to provide access to specific classes of
+>> hardware resources (audio, video, display, dsp, etc) and processes
+>> that have the appropriate permissions are arranged to run with
+>> necessary additional groups for the hardware they need to access.
+>
+> These group numbers are always static on your system, and don't get
+> changed while the system is running? Like you always assign gid X to
+> all sound devices? Or do you need to manage them dynamically?
 
-Change last "i386" to X86-32 as is used throughout the rest of the file.
-Change combination of X86-32,X86-64 to just X86, as is done throughout
-the rest of the file.
+The gids for device access are static, part of the platform
+definition.  I could imagine a model where the board file for a target
+defined the ownership for devices or that was loaded in from userspace
+at boot (just a table of path-match-string, uid, gid, perms).  Not
+sure if that'd be considered too ugly, but it would certainly solve
+the problem in a straightforward way.  Early on the "device ownership
+policy" is installed and then userspace can leave everything to the
+kernel.
 
-Add a note that hyphens and underscores are equivalent in parameter names,
-with examples.
+The uids for applications are dynamic, assigned on app install (every
+app gets its own uid).
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Jan Engelhardt <jengelh@medozas.de>
-Cc: Christopher Sylvain <chris.sylvain@gmail.com>
----
- Documentation/kernel-parameters.txt |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+> Do your device nodes permissions/ownership ever change on the running
+> system after the device is alive?
 
---- lnx-2630-rc4.orig/Documentation/kernel-parameters.txt
-+++ lnx-2630-rc4/Documentation/kernel-parameters.txt
-@@ -17,6 +17,12 @@ are specified on the kernel command line
- 
- 	usbcore.blinkenlights=1
- 
-+Hyphens (dashes) and underscores are equivalent in parameter names, so
-+	log_buf_len=1M print-fatal-signals=1
-+can also be entered as
-+	log-buf-len=1M print_fatal_signals=1
-+
-+
- This document may not be entirely up to date and comprehensive. The command
- "modinfo -p ${modulename}" shows a current list of all parameters of a loadable
- module. Loadable modules, after being loaded into the running kernel, also
-@@ -345,7 +351,7 @@ and is between 256 and 4096 characters. 
- 			not play well with APC CPU idle - disable it if you have
- 			APC and your system crashes randomly.
- 
--	apic=		[APIC,i386] Advanced Programmable Interrupt Controller
-+	apic=		[APIC,X86-32] Advanced Programmable Interrupt Controller
- 			Change the output verbosity whilst booting
- 			Format: { quiet (default) | verbose | debug }
- 			Change the amount of debugging information output
-@@ -702,7 +708,7 @@ and is between 256 and 4096 characters. 
- 			to discrete, to make X server driver able to add WB
- 			entry later. This parameter enables that.
- 
--	enable_timer_pin_1 [i386,x86-64]
-+	enable_timer_pin_1 [X86]
- 			Enable PIN 1 of APIC timer
- 			Can be useful to work around chipset bugs
- 			(in particular on some ATI chipsets).
+We never change device node permissions or ownership at runtime.  I
+could see situations in which that would be useful, but it's not
+something that is currently used by the platform.
+
+Brian
