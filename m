@@ -1,69 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbZEBNqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbZEBNqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756859AbZEBNqc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 09:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbZEBNqU
+	id S1757255AbZEBNqq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 09:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbZEBNq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 09:46:20 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:14478 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753920AbZEBNqT (ORCPT
+	Sat, 2 May 2009 09:46:26 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:10822 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756787AbZEBNqY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 09:46:19 -0400
+	Sat, 2 May 2009 09:46:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=st3brFpOtnpNqj685SvD/6urnXSVTfgbqPyS72WzATPmvR3czkqQIndD38c8+F/Zk0
+         FNfF4kYe+K0SBAlWR/ogvTmSkSxPjAAT2SkTowuJgjnGX8owXTic68Gl1GPpsqKuWaot
+         t0Tl2QSUAiLS7cldCGAgMv/LCm4EePkeOHDUQ=
+Date: Sat, 2 May 2009 19:16:06 +0530
+From: Rabin Vincent <rabin@rab.in>
+To: Mikko Vinni <mmvinni@yahoo.com>
+Cc: Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: br2684: convert to net_device_ops broke it
+Message-ID: <20090502134605.GA11168@debian>
+References: <777914.38491.qm@web58405.mail.re3.yahoo.com>
 MIME-Version: 1.0
-In-Reply-To: <20090502071939.GA14094@infradead.org>
-References: <1241097822.2516.3.camel@poy> <20090430222900.c13b63d5.akpm@linux-foundation.org> 
-	<20090501061701.GB19234@kroah.com> <20090430234312.a63fa5cf.akpm@linux-foundation.org> 
-	<20090501065527.GA19773@kroah.com> <20090501120359.05bacb48@lxorguk.ukuu.org.uk> 
-	<ac3eb2510905010411r2c1a2be5s449aaf485a76a8c4@mail.gmail.com> 
-	<20090501141846.4b833700@lxorguk.ukuu.org.uk> <ac3eb2510905010624k891f680s7255af8ae185b5d5@mail.gmail.com> 
-	<20090502071939.GA14094@infradead.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Sat, 2 May 2009 15:46:03 +0200
-Message-ID: <ac3eb2510905020646k28ebaf07j2216c6f3f614748c@mail.gmail.com>
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jan Blunck <jblunck@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <777914.38491.qm@web58405.mail.re3.yahoo.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 2, 2009 at 09:19, Christoph Hellwig <hch@infradead.org> wrote:
-> On Fri, May 01, 2009 at 03:24:01PM +0200, Kay Sievers wrote:
->> I'm very sure, you can not fix it outside the kernel. Or do you have
->> an idea how to create the missing device nodes for device without
->> crawling sysfs, when the first userspace process is started?
->
-> Just make sure to queue up your uevents in a ring buffer that udev
-> can read once it has started?
+On Sat, May 02, 2009 at 02:04:21AM -0700, Mikko Vinni wrote:
+> my ADSL connection works well with kernel 2.6.29, but since commit
+> 0ba25ff4c669e5395110ba6ab4958a97a9f96922 (br2684: convert to net_device_ops)
+> entered the mainline using br2684ctl fails with the following bug:
+> 
+> kernel: [  321.015643] ATM dev 0: ADSL line: training
+> kernel: [  323.011315] ATM dev 0: ADSL line: channel analysis
+> kernel: [  327.019647] ATM dev 0: ADSL line: exchange
+> kernel: [  328.013485] ATM dev 0: ADSL line: up (8000 kb/s down | 896 kb/s up)
+> br2684ctl[5606]: Interface "nas0" could not be created, reason: File exists 
+> br2684ctl[5606]: Communicating over ATM 0.0.33, encapsulation: LLC 
+> kernel: [  334.414469] br2684_create: register_netdev failed
+> kernel: [  334.421276] BUG: unable to handle kernel NULL pointer dereference at (null)
+> kernel: [  334.421298] IP: [<c0201544>] strncmp+0x14/0x30
+> kernel: [  334.421325] *pde = 00000000 
+> kernel: [  334.421336] Oops: 0000 [#1] 
+> kernel: [  334.421344] last sysfs file: /sys/module/br2684/initstate
+> kernel: [  334.421355] Modules linked in: cxacru usbatm br2684 binfmt_misc ipv6 radeon drm bridge stp llc bnep sco rfcomm l2cap sbs sbshc powernow_k7 lp joydev ppdev pcmcia snd_ali5451 snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device i2c_ali15x3 i2c_ali1535 snd parport_pc parport psmouse i2c_core soundcore snd_page_alloc yenta_socket rsrc_nonstatic pcmcia_core serio_raw container video shpchp pci_hotplug ati_agp agpgart evdev ext4 mbcache jbd2 crc16 usbhid hid natsemi ide_cd_mod cdrom ohci1394 ide_gd_mod ieee1394 ohci_hcd usbcore fuse
+> kernel: [  334.421493] 
+> kernel: [  334.421505] Pid: 5606, comm: br2684ctl Not tainted (2.6.29-rc2-702-ge0463f5 #17) HP nx9005 (DG832A)       
+> kernel: [  334.421518] EIP: 0060:[<c0201544>] EFLAGS: 00210016 CPU: 0
+> kernel: [  334.421529] EIP is at strncmp+0x14/0x30
+> kernel: [  334.421537] EAX: 00000000 EBX: dcc31b84 ECX: 0000000f EDX: d6658e78
+> kernel: [  334.421547] ESI: 00000000 EDI: d6658e78 EBP: d6658e54 ESP: d6658e4c
+> kernel: [  334.421556]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+> kernel: [  334.421567] Process br2684ctl (pid: 5606, ti=d6658000 task=ccc48000 task.ti=d6658000)
+> kernel: [  334.421575] Stack:
+> kernel: [  334.421580]  d6658e78 400261f2 d6658eb8 de7e95dc d677c000 d677c000 00000000 d73acd80
+> kernel: [  334.421600]  d6658eb0 00000002 00000002 3073616e b7fe3f00 0804ac80 08048ac0 00000000
+> kernel: [  334.421619]  00000000 00000000 00000001 00000000 00000000 00000000 00000000 00000000
+> kernel: [  334.421637] Call Trace:
+> kernel: [  334.421646]  [<de7e95dc>] ? br2684_ioctl+0x20c/0x410 [br2684]
+> kernel: [  334.421675]  [<c030b9f7>] ? vcc_ioctl+0xa7/0x380
+> kernel: [  334.421701]  [<c0297af2>] ? sock_ioctl+0x52/0x240
+> kernel: [  334.421723]  [<c0297aa0>] ? sock_ioctl+0x0/0x240
+> kernel: [  334.421736]  [<c0193260>] ? vfs_ioctl+0x20/0x70
+> kernel: [  334.421758]  [<c0193732>] ? do_vfs_ioctl+0x72/0x580
+> kernel: [  334.421771]  [<c029a83c>] ? release_sock+0x7c/0x90
+> kernel: [  334.421785]  [<c030a044>] ? pvc_setsockopt+0x44/0x60
+> kernel: [  334.421798]  [<c029818f>] ? sys_setsockopt+0x5f/0xb0
+> kernel: [  334.421812]  [<c0299cc1>] ? sys_socketcall+0x231/0x270
+> kernel: [  334.421824]  [<c0193ca3>] ? sys_ioctl+0x63/0x70
+> kernel: [  334.421837]  [<c01034c5>] ? sysenter_do_call+0x12/0x25
+> kernel: [  334.421853] Code: 31 c0 eb 04 19 c0 0c 01 8b 34 24 8b 7c 24 04 c9 c3 8d b6 00 00 00 00 55 89 e5 83 ec 08 89 34 24 89 7c 24 04 89 c6 89 d7 49 78 08 <ac> ae 75 08 84 c0 75 f5 31 c0 eb 04 19 c0 0c 01 8b 34 24 8b 7c 
+> kernel: [  334.421936] EIP: [<c0201544>] strncmp+0x14/0x30 SS:ESP 0068:d6658e4c
+> kernel: [  334.421956] ---[ end trace c26391b26aac614a ]---
+> /USR/SBIN/CRON[5723]: (root) CMD ([ -x /usr/sbin/update-motd ] && /usr/sbin/update-motd 2>/dev/null)
+> kernel: [  557.287581] ACPI: EC: GPE storm detected, transactions will use polling mode
+> 
+> 
+> I traced the failing strncmp call to be in the br2684_find_dev function. With the following patch
+> the messages change a little bit, but the connection still doesn't work. It seems
+> that net_dev->name is not initialized, but I have no idea where it should be set.
+[..]
+> I'll be glad to test any patches.
 
-Which does not really target any of the problems we try to solve, and
-is probably even larger than the 300 lines to create the proper /dev
-stuff right away. It's about fractions of a second, we are optimizing
-for, and we need to start as many things in parallel, as early as
-possible. And a working and populated /dev is mandatory for most of
-the stuff we need to bring up.
+Please try the one below.
 
-I think the init=/bin/sh case alone would be justification enough to
-do that, it can save you a lot of trouble if things go wrong, which
-things do, and which is pretty hard to cope with today, with no access
-to your devices.
+Rabin
 
-We are not implementing anything crazy here like devfs did, including
-the later versions - there is no modprobe behind your back, no lookup
-hooks, no stupid new naming scheme, no new filesystem type to
-register.
-Udev uses the kernel provided names anyway today, there are no naming
-rules at all in current userspace for 98 of 100 devices. It's todays
-kernel which provides the naming already, and we will not change
-anything here, just add the few exceptions, which are only in udev
-rules today, and let the kernel create the node that udev will create
-anyway.
+>From 9f767672d3362bb07fb1d8764b0d26312eb2bb96 Mon Sep 17 00:00:00 2001
+From: Rabin Vincent <rabin@rab.in>
+Date: Sat, 2 May 2009 18:44:28 +0530
+Subject: [PATCH] br2684: restore net_dev initialization
 
-Thanks,
-Kay
+Commit 0ba25ff4c669e5395110ba6ab4958a97a9f96922 ("br2684: convert to
+net_device_ops") inadvertently deleted the initialization of the net_dev
+pointer in the br2684_dev structure, leading to crashes.  This patch
+adds it back.
+
+Reported-by: Mikko Vinni <mmvinni@yahoo.com>
+Signed-off-by: Rabin Vincent <rabin@rab.in>
+---
+ net/atm/br2684.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/net/atm/br2684.c b/net/atm/br2684.c
+index 334fcd4..3100a89 100644
+--- a/net/atm/br2684.c
++++ b/net/atm/br2684.c
+@@ -549,6 +549,7 @@ static void br2684_setup(struct net_device *netdev)
+ 	struct br2684_dev *brdev = BRPRIV(netdev);
+ 
+ 	ether_setup(netdev);
++	brdev->net_dev = netdev;
+ 
+ 	netdev->netdev_ops = &br2684_netdev_ops;
+ 
+-- 
+1.6.2.4
+
