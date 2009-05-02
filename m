@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759655AbZEBAOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761792AbZEBAPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759655AbZEBAOp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 20:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760174AbZEBAOY
+	id S1761792AbZEBAPA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 20:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760121AbZEBAO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 20:14:24 -0400
-Received: from ru.mvista.com ([213.79.90.228]:7152 "EHLO
+	Fri, 1 May 2009 20:14:26 -0400
+Received: from ru.mvista.com ([213.79.90.228]:7159 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759670AbZEBAOX (ORCPT
+	by vger.kernel.org with ESMTP id S1760497AbZEBAOZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 20:14:23 -0400
-Date: Sat, 2 May 2009 04:14:22 +0400
+	Fri, 1 May 2009 20:14:25 -0400
+Date: Sat, 2 May 2009 04:14:25 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Steven Rostedt <srostedt@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
        Paul Mackerras <paulus@samba.org>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] powerpc: Remove -fno-omit-frame-pointer workarounds
-Message-ID: <20090502001422.GB9342@oksana.dev.rtsoft.ru>
+Subject: [PATCH 3/3] tracing: Tracers that use CALLER_ADDR macros should
+	select FRAME_POINTER
+Message-ID: <20090502001425.GC9342@oksana.dev.rtsoft.ru>
 References: <20090502001329.GA11549@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -29,100 +30,41 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The workarounds aren't needed any longer since the top level Makefile
-doesn't pass -fno-omit-frame-pointer cflag for PowerPC builds.
+Irqsoff, switch and preempt tracers use CALLER_ADDR macros, so they
+should select FRAME_POINTER. Otherwise traces are meaningless.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/Makefile                    |    5 -----
- arch/powerpc/kernel/Makefile             |   12 ++++++------
- arch/powerpc/platforms/powermac/Makefile |    2 +-
- lib/Kconfig.debug                        |    6 +++---
- 4 files changed, 10 insertions(+), 15 deletions(-)
+ kernel/trace/Kconfig |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 551fc58..1dd7748 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -120,11 +120,6 @@ ifeq ($(CONFIG_6xx),y)
- KBUILD_CFLAGS		+= -mcpu=powerpc
- endif
- 
--# Work around a gcc code-gen bug with -fno-omit-frame-pointer.
--ifeq ($(CONFIG_FUNCTION_TRACER),y)
--KBUILD_CFLAGS		+= -mno-sched-epilog
--endif
--
- cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
- cpu-as-$(CONFIG_6xx)		+= -Wa,-maltivec
- cpu-as-$(CONFIG_POWER4)		+= -Wa,-maltivec
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 71901fb..fdbca81 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -14,14 +14,14 @@ endif
- 
- ifdef CONFIG_FUNCTION_TRACER
- # Do not trace early boot code
--CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog
--CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog
--CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog
--CFLAGS_REMOVE_prom.o = -pg -mno-sched-epilog
-+CFLAGS_REMOVE_cputable.o = -pg
-+CFLAGS_REMOVE_prom_init.o = -pg
-+CFLAGS_REMOVE_btext.o = -pg
-+CFLAGS_REMOVE_prom.o = -pg
- # do not trace tracer code
--CFLAGS_REMOVE_ftrace.o = -pg -mno-sched-epilog
-+CFLAGS_REMOVE_ftrace.o = -pg
- # timers used by tracing
--CFLAGS_REMOVE_time.o = -pg -mno-sched-epilog
-+CFLAGS_REMOVE_time.o = -pg
- endif
- 
- obj-y				:= cputable.o ptrace.o syscalls.o \
-diff --git a/arch/powerpc/platforms/powermac/Makefile b/arch/powerpc/platforms/powermac/Makefile
-index 50f1693..0eb8781 100644
---- a/arch/powerpc/platforms/powermac/Makefile
-+++ b/arch/powerpc/platforms/powermac/Makefile
-@@ -2,7 +2,7 @@ CFLAGS_bootx_init.o  		+= -fPIC
- 
- ifdef CONFIG_FUNCTION_TRACER
- # Do not trace early boot code
--CFLAGS_REMOVE_bootx_init.o = -pg -mno-sched-epilog
-+CFLAGS_REMOVE_bootx_init.o = -pg
- endif
- 
- obj-y				+= pic.o setup.o time.o feature.o pci.o \
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 1f1633b..cffbfc4 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -492,7 +492,7 @@ config LOCKDEP
- 	bool
- 	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
- 	select STACKTRACE
--	select FRAME_POINTER if !X86 && !MIPS && !PPC && !ARM_UNWIND && !S390
-+	select FRAME_POINTER if !X86 && !MIPS && !ARM_UNWIND && !S390
- 	select KALLSYMS
- 	select KALLSYMS_ALL
- 
-@@ -865,13 +865,13 @@ config FAULT_INJECTION_STACKTRACE_FILTER
- 	depends on FAULT_INJECTION_DEBUG_FS && STACKTRACE_SUPPORT
- 	depends on !X86_64
- 	select STACKTRACE
--	select FRAME_POINTER if !PPC && !S390
-+	select FRAME_POINTER if !S390
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index 450d3c2..ad44791 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -122,6 +122,7 @@ config IRQSOFF_TRACER
+ 	select TRACE_IRQFLAGS
+ 	select TRACING
+ 	select TRACER_MAX_TRACE
++	select FRAME_POINTER
  	help
- 	  Provide stacktrace filter for fault-injection capabilities
- 
- config LATENCYTOP
- 	bool "Latency measuring infrastructure"
--	select FRAME_POINTER if !MIPS && !PPC && !S390
-+	select FRAME_POINTER if !MIPS && !S390
- 	select KALLSYMS
- 	select KALLSYMS_ALL
- 	select STACKTRACE
+ 	  This option measures the time spent in irqs-off critical
+ 	  sections, with microsecond accuracy.
+@@ -143,6 +144,7 @@ config PREEMPT_TRACER
+ 	depends on PREEMPT
+ 	select TRACING
+ 	select TRACER_MAX_TRACE
++	select FRAME_POINTER
+ 	help
+ 	  This option measures the time spent in preemption off critical
+ 	  sections, with microsecond accuracy.
+@@ -171,6 +173,7 @@ config SCHED_TRACER
+ 	select TRACING
+ 	select CONTEXT_SWITCH_TRACER
+ 	select TRACER_MAX_TRACE
++	select FRAME_POINTER
+ 	help
+ 	  This tracer tracks the latency of the highest priority task
+ 	  to be scheduled in, starting from the point it has woken up.
 -- 
 1.6.2.2
-
