@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762081AbZEBWUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760222AbZEBWVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762081AbZEBWUu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 18:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757955AbZEBWTU
+	id S1760222AbZEBWVW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 18:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760008AbZEBWTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 18:19:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47590 "EHLO mx2.redhat.com"
+	Sat, 2 May 2009 18:19:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47593 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761559AbZEBWTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 18:19:18 -0400
+	id S1761583AbZEBWTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 18:19:19 -0400
 From: Izik Eidus <ieidus@redhat.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, aarcange@redhat.com, chrisw@redhat.com,
        alan@lxorguk.ukuu.org.uk, device@lanana.org, linux-mm@kvack.org,
        hugh@veritas.com, nickpiggin@yahoo.com.au,
        Izik Eidus <ieidus@redhat.com>
-Subject: [PATCH 1/6] ksm: limiting the num of mem regions user can register per fd.
-Date: Sun,  3 May 2009 01:16:07 +0300
-Message-Id: <1241302572-4366-2-git-send-email-ieidus@redhat.com>
-In-Reply-To: <1241302572-4366-1-git-send-email-ieidus@redhat.com>
+Subject: [PATCH 6/6] ksm: use another miscdevice minor number.
+Date: Sun,  3 May 2009 01:16:12 +0300
+Message-Id: <1241302572-4366-7-git-send-email-ieidus@redhat.com>
+In-Reply-To: <1241302572-4366-6-git-send-email-ieidus@redhat.com>
 References: <1241302572-4366-1-git-send-email-ieidus@redhat.com>
+ <1241302572-4366-2-git-send-email-ieidus@redhat.com>
+ <1241302572-4366-3-git-send-email-ieidus@redhat.com>
+ <1241302572-4366-4-git-send-email-ieidus@redhat.com>
+ <1241302572-4366-5-git-send-email-ieidus@redhat.com>
+ <1241302572-4366-6-git-send-email-ieidus@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Right now user can open /dev/ksm fd and register unlimited number of
-regions, such behavior may allocate unlimited amount of kernel memory
-and get the whole host into out of memory situation.
+The old number was registered already by another project.
+The new number is #234.
+
+Thanks.
 
 Signed-off-by: Izik Eidus <ieidus@redhat.com>
 ---
- mm/ksm.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+ Documentation/devices.txt  |    1 +
+ include/linux/miscdevice.h |    2 +-
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/mm/ksm.c b/mm/ksm.c
-index 6165276..d58db6b 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -48,6 +48,9 @@ static int rmap_hash_size;
- module_param(rmap_hash_size, int, 0);
- MODULE_PARM_DESC(rmap_hash_size, "Hash table size for the reverse mapping");
+diff --git a/Documentation/devices.txt b/Documentation/devices.txt
+index 53d64d3..a0c3259 100644
+--- a/Documentation/devices.txt
++++ b/Documentation/devices.txt
+@@ -443,6 +443,7 @@ Your cooperation is appreciated.
+ 		231 = /dev/snapshot	System memory snapshot device
+ 		232 = /dev/kvm		Kernel-based virtual machine (hardware virtualization extensions)
+ 		233 = /dev/kmview	View-OS A process with a view
++		234 = /dev/ksm		Dynamic page sharing
+ 		240-254			Reserved for local use
+ 		255			Reserved for MISC_DYNAMIC_MINOR
  
-+static int regions_per_fd;
-+module_param(regions_per_fd, int, 0);
-+
- /*
-  * ksm_mem_slot - hold information for an userspace scanning range
-  * (the scanning for this region will be from addr untill addr +
-@@ -67,6 +70,7 @@ struct ksm_mem_slot {
-  */
- struct ksm_sma {
- 	struct list_head sma_slots;
-+	int nregions;
- };
+diff --git a/include/linux/miscdevice.h b/include/linux/miscdevice.h
+index 297c0bb..c7b8e9b 100644
+--- a/include/linux/miscdevice.h
++++ b/include/linux/miscdevice.h
+@@ -30,7 +30,7 @@
+ #define HPET_MINOR		228
+ #define FUSE_MINOR		229
+ #define KVM_MINOR		232
+-#define KSM_MINOR		233
++#define KSM_MINOR		234
+ #define MISC_DYNAMIC_MINOR	255
  
- /**
-@@ -453,6 +457,11 @@ static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
- 	struct ksm_mem_slot *slot;
- 	int ret = -EPERM;
- 
-+	if ((ksm_sma->nregions + 1) > regions_per_fd) {
-+		ret = -EBUSY;
-+		goto out;
-+	}
-+
- 	slot = kzalloc(sizeof(struct ksm_mem_slot), GFP_KERNEL);
- 	if (!slot) {
- 		ret = -ENOMEM;
-@@ -473,6 +482,7 @@ static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
- 
- 	list_add_tail(&slot->link, &slots);
- 	list_add_tail(&slot->sma_link, &ksm_sma->sma_slots);
-+	ksm_sma->nregions++;
- 
- 	up_write(&slots_lock);
- 	return 0;
-@@ -511,6 +521,7 @@ static int ksm_sma_ioctl_remove_memory_region(struct ksm_sma *ksm_sma)
- 		mmput(slot->mm);
- 		list_del(&slot->sma_link);
- 		kfree(slot);
-+		ksm_sma->nregions--;
- 	}
- 	up_write(&slots_lock);
- 	return 0;
-@@ -1389,6 +1400,7 @@ static int ksm_dev_ioctl_create_shared_memory_area(void)
- 	}
- 
- 	INIT_LIST_HEAD(&ksm_sma->sma_slots);
-+	ksm_sma->nregions = 0;
- 
- 	fd = anon_inode_getfd("ksm-sma", &ksm_sma_fops, ksm_sma, 0);
- 	if (fd < 0)
-@@ -1631,6 +1643,9 @@ static int __init ksm_init(void)
- 	if (r)
- 		goto out_free1;
- 
-+	if (!regions_per_fd)
-+		regions_per_fd = 1024;
-+
- 	ksm_thread = kthread_run(ksm_scan_thread, NULL, "kksmd");
- 	if (IS_ERR(ksm_thread)) {
- 		printk(KERN_ERR "ksm: creating kthread failed\n");
+ struct device;
 -- 
 1.5.6.5
 
