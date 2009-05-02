@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbZEBJzG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbZEBKK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756004AbZEBJzG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 05:55:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZEBJy4
+	id S1755174AbZEBKK2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 06:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZEBKKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 05:54:56 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46277 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751995AbZEBJyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 05:54:55 -0400
-Date: Sat, 2 May 2009 09:54:29 GMT
-From: tip-bot for Magnus Damm <magnus.damm@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       damm@igel.co.jp, tglx@linutronix.de, magnus.damm@gmail.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       damm@igel.co.jp, tglx@linutronix.de, magnus.damm@gmail.com
-In-Reply-To: <20090501055247.8286.64067.sendpatchset@rx1.opensource.se>
-References: <20090501055247.8286.64067.sendpatchset@rx1.opensource.se>
-Subject: [tip:timers/clockevents] clockevent: export register_device and delta2ns
-Message-ID: <tip-c81fc2c331b8514ad112054cd2d87e6ec132286b@git.kernel.org>
-Git-Commit-ID: c81fc2c331b8514ad112054cd2d87e6ec132286b
-X-Mailer: tip-git-log-daemon
+	Sat, 2 May 2009 06:10:15 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:53288 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751541AbZEBKKN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 06:10:13 -0400
+Date: Sat, 2 May 2009 12:14:05 +0200
+From: Heinz Diehl <htd@fancy-poultry.org>
+To: linux-kernel@vger.kernel.org
+Cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>, xfs@oss.sgi.com
+Subject: Re: 2.6.30-rc4: xfs_fsr hangs
+Message-ID: <20090502101405.GA6145@fancy-poultry.org>
+Reply-To: linux-kernel@vger.kernel.org
+References: <a4423d670905011333s664115bdh1d72392897567c1d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 02 May 2009 09:54:31 +0000 (UTC)
+In-Reply-To: <a4423d670905011333s664115bdh1d72392897567c1d@mail.gmail.com>
+Organization: private site
+User-Agent: Mutt/1.5.19+20090405 (GNU/Linux)
+X-Provags-ID: V01U2FsdGVkX19cgp2K9Ko3pvHs3Q2/qyDAw8E8TAQA2ZAnuqk
+ V4dZi3Wnxj8XpH5VIwvNtdjWkuHgMY1MWV+mafU7R/smfZKSXE
+ uvz1NilNy2sgzRg9kfiPTNRxtqflRFh
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c81fc2c331b8514ad112054cd2d87e6ec132286b
-Gitweb:     http://git.kernel.org/tip/c81fc2c331b8514ad112054cd2d87e6ec132286b
-Author:     Magnus Damm <magnus.damm@gmail.com>
-AuthorDate: Fri, 1 May 2009 14:52:47 +0900
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Sat, 2 May 2009 11:51:07 +0200
+On 01.05.2009, Alexander Beregalov wrote: 
 
-clockevent: export register_device and delta2ns
+> # xfs_db -r /dev/sdc1
+> xfs_db> frag
+> actual 23805, ideal 22890, fragmentation factor 3.84%
+> # xfs_fsr -v /dev/sdc1
+> /mnt/c start inode=0
+> ino=158
+> extents before:3 after:1 DONE ino=158
+> 
+>  then it hangs
 
-Export the following symbols using EXPORT_SYMBOL_GPL:
- - clockevent_delta2ns
- - clockevents_register_device
+I can't confirm this here on my systems:
 
-This allows us to build SuperH clockevent and clocksource
-drivers as modules, see drivers/clocksource/sh_*.c
+liesel:~ # uname -a
+Linux liesel 2.6.30-rc4 #1 SMP PREEMPT Sat May 2 11:49:13 CEST 2009 x86_64 x86_64 x86_64 GNU/Linux
 
-[ Impact: allow modular build of clockevent drivers ]
+liesel:~ # xfs_db -r /dev/sdc1
+xfs_db> frag
+actual 42974, ideal 42842, fragmentation factor 0.31%
+xfs_db> quit
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
-LKML-Reference: <20090501055247.8286.64067.sendpatchset@rx1.opensource.se>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+liesel:~ # xfs_fsr -v /dev/sdc1
+/home start inode=0
+ino=248755507
+ino=248755507 already fully defragmented.
+ino=536871160
+extents before:2 after:1 DONE ino=536871160
+ino=536875693
+extents before:3 after:1 DONE ino=536875693
+ino=615920545
+extents before:2 after:1 DONE ino=615920545
+ino=615920557
+extents before:2 after:1 DONE ino=615920557
+ino=1092324584
+extents before:4 after:1 DONE ino=1092324584
+liesel:~ #
 
-
----
- kernel/time/clockevents.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
-index d13be21..3948fa6 100644
---- a/kernel/time/clockevents.c
-+++ b/kernel/time/clockevents.c
-@@ -54,6 +54,7 @@ unsigned long clockevent_delta2ns(unsigned long latch,
- 
- 	return (unsigned long) clc;
- }
-+EXPORT_SYMBOL_GPL(clockevent_delta2ns);
- 
- /**
-  * clockevents_set_mode - set the operating mode of a clock event device
-@@ -187,6 +188,7 @@ void clockevents_register_device(struct clock_event_device *dev)
- 
- 	spin_unlock(&clockevents_lock);
- }
-+EXPORT_SYMBOL_GPL(clockevents_register_device);
- 
- /*
-  * Noop handler when we shut down an event device
