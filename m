@@ -1,34 +1,53 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755396AbZEBDVK (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 1 May 2009 23:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbZEBDU6
+	id S1757356AbZEBP7W (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 2 May 2009 11:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756489AbZEBP7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 23:20:58 -0400
-Received: from simmts8-qfe0.srvr.bell.ca ([206.47.199.166]:56208 "EHLO
-	simmts8-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752045AbZEBDU5 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 23:20:57 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiWaAMtM+0nOL8cR/2dsb2JhbACBUIJNiSkzh3anIZBug2sFhXQ
-X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
-X-Originating-IP: [200.65.129.2]
-From: <conceptcreations@bellnet.ca>
-Reply-To: agenttofficer@gmail.com
-To: <info@winner.org>
-Subject: 2009  ONLINE WINNER**CONFIRM RECEIPT**
-Date: Fri, 1 May 2009 23:20:56 -0400
+	Sat, 2 May 2009 11:59:05 -0400
+Received: from mail.vnpt.com.vn ([203.162.130.70]:65426 "EHLO
+	mailhost.vnpt.com.vn" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755971AbZEBP7E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 11:59:04 -0400
+Message-ID: <44110.202.99.29.27.1241279529.squirrel@mail.vnpt.com.vn>
+Date: Sat, 2 May 2009 22:52:09 +0700 (ICT)
+Subject: CONFIRM YOUR WEBMAIL ACCOUNT !!!
+From: "WEBMAIL UPGRADE TEAM 2009." <support_webmail@mail2world.com>
+X-Priority: 3
+Importance: Normal
+Reply-To: webmailcustomercare@fbnet.co.zw
+X-Mailer: SquirrelMail (version x.x.x)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-Id: <20090502032056.GJIS1670.simmts8-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You have won £750,000 GBP.
 
-contact with your name, age, country and address to,
+ATTENTION ,
+ We wish to inform you that we are currently undergoing slight
+maintenance and upgrading of our site. And we are also using
+this medium to delete the inactive email id users,You are
+therefore required to send your account details for proper
+verification immediately:
+User name: (*********)
+Password: *********)
+Date Of Birth(DOB)*********)
+Country*********)
+CAUTION:
+   Failure to complete the above process within the shortest
+possible time will result in both inbound and outbound
+failures on your email.This will prevent you from sending or
+receiving email messages.
+ We are sorry for any inconvinence we might have cause you,
+Expect our new mail features.
+Please do help spread this important information by forwarding
+it to other users.
+  You will be sent a confirmation letter from our customer
+service after our upgrading.
+ Thanks for understanding our plight.
+WEBMAIL TECHNICAL UNIT.
 
-Dr Joseph Patrick  Email agenttofficer@gmail.com
 
