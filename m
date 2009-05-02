@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760852AbZEBUFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762006AbZEBUFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760852AbZEBUFS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 16:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759960AbZEBUCb
+	id S1762006AbZEBUFv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 16:05:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760137AbZEBUCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 16:02:31 -0400
-Received: from www.tglx.de ([62.245.132.106]:58495 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759512AbZEBUCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 16:02:30 -0400
-Message-Id: <20090502195926.222302283@linutronix.de>
-User-Agent: quilt/0.47-1
-Date: Sat, 02 May 2009 20:01:24 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Dike <jdike@addtoit.com>
-Subject: [patch 11/11] um: remove obsolete hw_interrupt_type
-References: <20090502195607.539955644@linutronix.de>
-Content-Disposition: inline;
-	filename=um-remove-obsolete-hw-interrupt-type.patch
+	Sat, 2 May 2009 16:02:42 -0400
+Received: from web58405.mail.re3.yahoo.com ([68.142.236.173]:30308 "HELO
+	web58405.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760100AbZEBUCl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 16:02:41 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:References:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type;
+  b=PI6bCuL8+34uBaFJaaf1tC3AssEjtek2ANI8UtIGYw0eJMT1QG5alfByVPUMVgXgG1tyvqjwJJo/YdBK1C/v0/18afKJO2+4t5tF08z6VsPhUdwdcrTvUMttB4nr/VJsA2EetnmaHHlPzp6aOL66hGI83lsiSafzkfWaaCdCU64=;
+Message-ID: <907051.51698.qm@web58405.mail.re3.yahoo.com>
+X-YMail-OSG: cVnbpF0VM1mDSgl.hZO61cDs6fpLlAtfzjk_jpPbNjUONS1ncRpYMyVjkUNK25NaI7fT4Yt9E7K2EpqJ0eXafk00AVr.oDUeYxoeggEyI.Qlspd5lF2gucTqNR2W_TE66zxoqj053W7bZOIr7MUYxAb.DopqZR4jAA9X08GOWYaFjqHX6JgpFJefr5KX9eYvWEm4uxqj4I99FAG1GmkpJiLvLymFPE6S4Jygzf_jin7P6GqhSuaifqY-
+X-Mailer: YahooMailRC/1277.35 YahooMailWebService/0.7.289.1
+References: <777914.38491.qm@web58405.mail.re3.yahoo.com> <20090502134605.GA11168@debian>
+Date: Sat, 2 May 2009 13:02:40 -0700 (PDT)
+From: Mikko Vinni <mmvinni@yahoo.com>
+Subject: Re: br2684: convert to net_device_ops broke it
+To: Rabin Vincent <rabin@rab.in>
+Cc: Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20090502134605.GA11168@debian>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
 
-Convert the last remaining users to struct irq_chip and remove the
-define.
+Rabin Vincent wrote:
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-CC: Jeff Dike <jdike@addtoit.com>
----
- arch/um/kernel/irq.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+> On Sat, May 02, 2009 at 02:04:21AM -0700, Mikko Vinni wrote:
+> > my ADSL connection works well with kernel 2.6.29, but since commit
+> > 0ba25ff4c669e5395110ba6ab4958a97a9f96922 (br2684: convert to net_device_ops)
+> > entered the mainline using br2684ctl fails with the following bug:
+> [..]
+> > I'll be glad to test any patches.
+> 
+> Please try the one below.
 
-Index: linux-2.6/arch/um/kernel/irq.c
-===================================================================
---- linux-2.6.orig/arch/um/kernel/irq.c
-+++ linux-2.6/arch/um/kernel/irq.c
-@@ -358,7 +358,7 @@ EXPORT_SYMBOL(um_request_irq);
- EXPORT_SYMBOL(reactivate_fd);
- 
- /*
-- * hw_interrupt_type must define (startup || enable) &&
-+ * irq_chip must define (startup || enable) &&
-  * (shutdown || disable) && end
-  */
- static void dummy(unsigned int irq)
-@@ -366,7 +366,7 @@ static void dummy(unsigned int irq)
- }
- 
- /* This is used for everything else than the timer. */
--static struct hw_interrupt_type normal_irq_type = {
-+static struct irq_chip normal_irq_type = {
- 	.typename = "SIGIO",
- 	.release = free_irq_by_irq_and_dev,
- 	.disable = dummy,
-@@ -375,7 +375,7 @@ static struct hw_interrupt_type normal_i
- 	.end = dummy
- };
- 
--static struct hw_interrupt_type SIGVTALRM_irq_type = {
-+static struct irq_chip SIGVTALRM_irq_type = {
- 	.typename = "SIGVTALRM",
- 	.release = free_irq_by_irq_and_dev,
- 	.shutdown = dummy, /* never called */
+Yes, that fixes it. Good job and thank you!
+
+Mikko
 
 
+> 
+> Rabin
+> 
+> From 9f767672d3362bb07fb1d8764b0d26312eb2bb96 Mon Sep 17 00:00:00 2001
+> From: Rabin Vincent 
+> Date: Sat, 2 May 2009 18:44:28 +0530
+> Subject: [PATCH] br2684: restore net_dev initialization
+> 
+> Commit 0ba25ff4c669e5395110ba6ab4958a97a9f96922 ("br2684: convert to
+> net_device_ops") inadvertently deleted the initialization of the net_dev
+> pointer in the br2684_dev structure, leading to crashes.  This patch
+> adds it back.
+> 
+> Reported-by: Mikko Vinni 
+> Signed-off-by: Rabin Vincent 
+> ---
+> net/atm/br2684.c |    1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/net/atm/br2684.c b/net/atm/br2684.c
+> index 334fcd4..3100a89 100644
+> --- a/net/atm/br2684.c
+> +++ b/net/atm/br2684.c
+> @@ -549,6 +549,7 @@ static void br2684_setup(struct net_device *netdev)
+>     struct br2684_dev *brdev = BRPRIV(netdev);
+> 
+>     ether_setup(netdev);
+> +    brdev->net_dev = netdev;
+> 
+>     netdev->netdev_ops = &br2684_netdev_ops;
+> 
+
+
+
+      
