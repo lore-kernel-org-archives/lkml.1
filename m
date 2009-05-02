@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbZEBVqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760962AbZEBVqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758073AbZEBVqT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 17:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbZEBVqE
+	id S1760962AbZEBVqr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 17:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757769AbZEBVqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 17:46:04 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:60173 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753247AbZEBVqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 17:46:01 -0400
-Subject: Re: [RFC][PATCH 13/35] parisc: create ptemap.h
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090502142939.GD28342@bombadil.infradead.org>
-References: <20090501144201.D31EF417@kernel>
-	 <20090501144221.4C7F3D79@kernel>
-	 <20090502142939.GD28342@bombadil.infradead.org>
-Content-Type: text/plain
-Date: Sat, 02 May 2009 14:45:59 -0700
-Message-Id: <1241300759.9131.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Sat, 2 May 2009 17:46:39 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:35809 "EHLO pardus.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754519AbZEBVqj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 17:46:39 -0400
+Message-ID: <49FCBF1C.1060603@pardus.org.tr>
+Date: Sun, 03 May 2009 00:46:04 +0300
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.28.10
+References: <20090502200413.GA7287@kroah.com>
+In-Reply-To: <20090502200413.GA7287@kroah.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-05-02 at 10:29 -0400, Kyle McMartin wrote:
-> On Fri, May 01, 2009 at 07:42:21AM -0700, Dave Hansen wrote:
-> > +#ifndef _PARISC_ASM_PTEMAP_H
-> > +#define _PARISC_ASM_PTEMAP_H
-> > +
-> > +#define pte_offset_map(pmd, address) pte_offset_kernel(pmd, address)
-> > +#define pte_offset_map_nested(pmd, address) pte_offset_kernel(pmd, address)
-> > +#define pte_unmap(pte) do { } while (0)
-> > +#define pte_unmap_nested(pte) do { } while (0)
-> > +
-> > +#define pte_unmap(pte)			do { } while (0)
-> > +#define pte_unmap_nested(pte)		do { } while (0)
-> > +
-> > +#endif /* _PARISC_ASM_PTEMAP_H */
-> 
-> You have duplicate definitiosn of pte_unmap{,_nested}?
+Greg KH wrote:
+> I'm announcing the release of the 2.6.28.10 kernel.
+>
+> It contains a wide range of bugfixes, and all users of the 2.6.28 kernel
+> series are strongly encouraged to upgrade.  Especially due to the CVE
+> issues that are fixed here.
+>
+> NOTE, this is the LAST update of the 2.6.28 kernel series, so all users
+> are very strongly encouraged to upgrade to the 2.6.29 series at this
+> point in time!
+>   
+Hi,
 
-Heh.  I actually just copied this verbatim from the existing parisc
-header.  It already had a duplicate. :)
+Is there a policy about the end-of-life of kernel releases? 2.6.27 is at
+.21 while
+.10 is the last update for 2.6.28.
 
-Anyway, I've made sure not to copy the dup and added a note in the patch
-description so that it is much more clear.  I'll show up in the next
-post.  Thanks for the review!
+Thanks,
 
--- Dave
-
+Ozan Caglayan
+http://www.pardus.org.tr/eng
