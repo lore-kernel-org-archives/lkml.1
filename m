@@ -1,192 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbZEBFvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751743AbZEBGeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752907AbZEBFvd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 01:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbZEBFvY
+	id S1751743AbZEBGeU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 02:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbZEBGeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 01:51:24 -0400
-Received: from mail01a.mail.t-online.hu ([84.2.40.6]:50879 "EHLO
-	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750847AbZEBFvX (ORCPT
+	Sat, 2 May 2009 02:34:03 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54205 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961AbZEBGeB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 01:51:23 -0400
-Message-ID: <49FBDF1F.1030508@freemail.hu>
-Date: Sat, 02 May 2009 07:50:23 +0200
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
-MIME-Version: 1.0
-To: Trent Piepho <xyzzy@speakeasy.org>
-CC: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+	Sat, 2 May 2009 02:34:01 -0400
+Date: Sat, 2 May 2009 02:33:59 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Steve French <smfrench@gmail.com>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Michael Tokarev <mjt@tls.msk.ru>, Andrew Tridgell <tridge@samba.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] v4l2: fill the reserved fields of VIDIOC_REQBUFS ioctl
-References: <49F8A325.7060303@freemail.hu> <Pine.LNX.4.58.0904300803410.7837@shell2.speakeasy.net> <Pine.LNX.4.58.0904300916250.7837@shell2.speakeasy.net>
-In-Reply-To: <Pine.LNX.4.58.0904300916250.7837@shell2.speakeasy.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01a.mail.t-online.hu 32721; Body=4 Fuz1=4
-	Fuz2=4
+Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
+Message-ID: <20090502063359.GA7905@infradead.org>
+References: <524f69650905011318m34e0027dt57877d225b3fe2da@mail.gmail.com> <20090501210109.GA3079@infradead.org> <20090502013729.GI6996@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090502013729.GI6996@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Trent Piepho <xyzzy@speakeasy.org>
+On Fri, May 01, 2009 at 06:37:29PM -0700, Paul E. McKenney wrote:
+> Hello, Christoph!
+> 
+> Hmmm...  Both Tridge and Dave have Signed-off-by on the original patch,
+> and Steve has Acked-by, Mingming has Cc, and Dave is on the From list
+> rather than the Cc list, so I have to guess that there is a good chance
+> that you are talking about me.  ;-)
+> 
+> However, as far as I know, none of us are lawyers, and LKML is definitely
+> a technical rather than a legal forum, so we really do need to stick to
+> technical topics.  I understand that this might be a bit frustrating
+> to you.  On the other hand, I for one much prefer being in a forum
+> restricted to technical topics than to be in those places designed to
+> handle legal topics!
+> 
+> I suspect that this is not the answer that you were looking for, and
+> I do apologize for any disappointment, but this does happen to be the
+> answer that I have.
 
-Some ioctls have structs that are a different size depending on what type
-of buffer is being used.  If the buffer type leaves a field unused or has
-padding space at the end, this space should be zeroed out. This patch modifies
-the VIDIOC_S_FMT, VIDIOC_TRY_FMT and VIDIOC_REQBUFS ioctls [1].
-
-The problems with S_FMT and REQBUFS were original identified and patched by
-Márton Németh.
-
-The patch was tested with v4l-test 0.13 [2] with vivi driver.
-
-References:
-[1] V4L2 API specification, revision 0.24
-    http://v4l2spec.bytesex.org/spec/r10944.htm
-    http://v4l2spec.bytesex.org/spec/r13696.htm
-
-[2] v4l-test: Test environment for Video For Linux Two API
-    http://v4l-test.sourceforge.net/
-
-Priority: normal
-
-Signed-off-by: Trent Piepho <xyzzy@speakeasy.org>
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
---- linux-2.6.30-rc4/drivers/media/video/v4l2-ioctl.c.orig	2009-05-01 23:31:22.000000000 +0200
-+++ linux-2.6.30-rc4/drivers/media/video/v4l2-ioctl.c	2009-05-02 07:14:11.000000000 +0200
-@@ -42,6 +42,12 @@
- 			printk(KERN_DEBUG "%s: " fmt, vfd->name, ## arg);\
- 		} while (0)
-
-+/* Zero out the end of the struct pointed to by p.  Everthing after, but
-+ * not including, the specified field is cleared. */
-+#define CLEAR_AFTER_FIELD(p, field) \
-+	memset((u8 *)(p) + offsetof(typeof(*(p)), field) + sizeof((p)->field), \
-+	0, sizeof(*(p)) - offsetof(typeof(*(p)), field) - sizeof((p)->field))
-+
- struct std_descr {
- 	v4l2_std_id std;
- 	const char *descr;
-@@ -782,44 +788,53 @@
-
- 		switch (f->type) {
- 		case V4L2_BUF_TYPE_VIDEO_CAPTURE:
-+			CLEAR_AFTER_FIELD(f, fmt.pix);
- 			v4l_print_pix_fmt(vfd, &f->fmt.pix);
- 			if (ops->vidioc_s_fmt_vid_cap)
- 				ret = ops->vidioc_s_fmt_vid_cap(file, fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_VIDEO_OVERLAY:
-+			CLEAR_AFTER_FIELD(f, fmt.win);
- 			if (ops->vidioc_s_fmt_vid_overlay)
- 				ret = ops->vidioc_s_fmt_vid_overlay(file,
- 								    fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_VIDEO_OUTPUT:
-+			CLEAR_AFTER_FIELD(f, fmt.pix);
- 			v4l_print_pix_fmt(vfd, &f->fmt.pix);
- 			if (ops->vidioc_s_fmt_vid_out)
- 				ret = ops->vidioc_s_fmt_vid_out(file, fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_VIDEO_OUTPUT_OVERLAY:
-+			CLEAR_AFTER_FIELD(f, fmt.win);
- 			if (ops->vidioc_s_fmt_vid_out_overlay)
- 				ret = ops->vidioc_s_fmt_vid_out_overlay(file,
- 					fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_VBI_CAPTURE:
-+			CLEAR_AFTER_FIELD(f, fmt.vbi);
- 			if (ops->vidioc_s_fmt_vbi_cap)
- 				ret = ops->vidioc_s_fmt_vbi_cap(file, fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_VBI_OUTPUT:
-+			CLEAR_AFTER_FIELD(f, fmt.vbi);
- 			if (ops->vidioc_s_fmt_vbi_out)
- 				ret = ops->vidioc_s_fmt_vbi_out(file, fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_SLICED_VBI_CAPTURE:
-+			CLEAR_AFTER_FIELD(f, fmt.sliced);
- 			if (ops->vidioc_s_fmt_sliced_vbi_cap)
- 				ret = ops->vidioc_s_fmt_sliced_vbi_cap(file,
- 									fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_SLICED_VBI_OUTPUT:
-+			CLEAR_AFTER_FIELD(f, fmt.sliced);
- 			if (ops->vidioc_s_fmt_sliced_vbi_out)
- 				ret = ops->vidioc_s_fmt_sliced_vbi_out(file,
- 									fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_PRIVATE:
-+			/* CLEAR_AFTER_FIELD(f, fmt.raw_data); <- does nothing */
- 			if (ops->vidioc_s_fmt_type_private)
- 				ret = ops->vidioc_s_fmt_type_private(file,
- 								fh, f);
-@@ -836,46 +851,55 @@
- 						v4l2_type_names));
- 		switch (f->type) {
- 		case V4L2_BUF_TYPE_VIDEO_CAPTURE:
-+			CLEAR_AFTER_FIELD(f, fmt.pix);
- 			if (ops->vidioc_try_fmt_vid_cap)
- 				ret = ops->vidioc_try_fmt_vid_cap(file, fh, f);
- 			if (!ret)
- 				v4l_print_pix_fmt(vfd, &f->fmt.pix);
- 			break;
- 		case V4L2_BUF_TYPE_VIDEO_OVERLAY:
-+			CLEAR_AFTER_FIELD(f, fmt.win);
- 			if (ops->vidioc_try_fmt_vid_overlay)
- 				ret = ops->vidioc_try_fmt_vid_overlay(file,
- 					fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_VIDEO_OUTPUT:
-+			CLEAR_AFTER_FIELD(f, fmt.pix);
- 			if (ops->vidioc_try_fmt_vid_out)
- 				ret = ops->vidioc_try_fmt_vid_out(file, fh, f);
- 			if (!ret)
- 				v4l_print_pix_fmt(vfd, &f->fmt.pix);
- 			break;
- 		case V4L2_BUF_TYPE_VIDEO_OUTPUT_OVERLAY:
-+			CLEAR_AFTER_FIELD(f, fmt.win);
- 			if (ops->vidioc_try_fmt_vid_out_overlay)
- 				ret = ops->vidioc_try_fmt_vid_out_overlay(file,
- 				       fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_VBI_CAPTURE:
-+			CLEAR_AFTER_FIELD(f, fmt.vbi);
- 			if (ops->vidioc_try_fmt_vbi_cap)
- 				ret = ops->vidioc_try_fmt_vbi_cap(file, fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_VBI_OUTPUT:
-+			CLEAR_AFTER_FIELD(f, fmt.vbi);
- 			if (ops->vidioc_try_fmt_vbi_out)
- 				ret = ops->vidioc_try_fmt_vbi_out(file, fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_SLICED_VBI_CAPTURE:
-+			CLEAR_AFTER_FIELD(f, fmt.sliced);
- 			if (ops->vidioc_try_fmt_sliced_vbi_cap)
- 				ret = ops->vidioc_try_fmt_sliced_vbi_cap(file,
- 								fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_SLICED_VBI_OUTPUT:
-+			CLEAR_AFTER_FIELD(f, fmt.sliced);
- 			if (ops->vidioc_try_fmt_sliced_vbi_out)
- 				ret = ops->vidioc_try_fmt_sliced_vbi_out(file,
- 								fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_PRIVATE:
-+			/* CLEAR_AFTER_FIELD(f, fmt.raw_data); <- does nothing */
- 			if (ops->vidioc_try_fmt_type_private)
- 				ret = ops->vidioc_try_fmt_type_private(file,
- 								fh, f);
-@@ -898,6 +922,9 @@
- 		if (ret)
- 			break;
-
-+		if (p->type < V4L2_BUF_TYPE_PRIVATE)
-+			CLEAR_AFTER_FIELD(p, memory);
-+
- 		ret = ops->vidioc_reqbufs(file, fh, p);
- 		dbgarg(cmd, "count=%d, type=%s, memory=%s\n",
- 				p->count,
+-ENOCONTENT
 
