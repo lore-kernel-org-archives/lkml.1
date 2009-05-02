@@ -1,71 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbZEBBjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751920AbZEBBtC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754490AbZEBBjW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 21:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbZEBBjM
+	id S1751920AbZEBBtC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 21:49:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbZEBBsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 21:39:12 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:51601 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751394AbZEBBjL (ORCPT
+	Fri, 1 May 2009 21:48:53 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:21295 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750757AbZEBBsw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 21:39:11 -0400
-X-Greylist: delayed 1191 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 May 2009 21:39:10 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=fe4l/BNreqqOwwR/G2I0zk9HcLATDahvcWSIt17FJFHjbzQFdgekwRfmYAM+6Jtn5q
-         oAbOMiJ8mvWIQYPtKBbFIpArCsKVcWUa0u/JUo6cRWRwYuadpNh50tIVAO8IKdAEthrU
-         UTV0quabgNZwKaixZbV48WYBHiJwAzbBmewWc=
-Date: Sat, 2 May 2009 03:39:07 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 0/6] kill-the-BKL/reiserfs3: performance improvements,
-	faster than Bkl based scheme
-Message-ID: <20090502013906.GA5331@nowhere>
-References: <1241145862-21700-1-git-send-email-fweisbec@gmail.com>
+	Fri, 1 May 2009 21:48:52 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241145862-21700-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <a55d774e0905011824k11e06f61ibc9937a2b26fd9e0@mail.gmail.com>
+References: <1241097822.2516.3.camel@poy> <20090430222900.c13b63d5.akpm@linux-foundation.org> 
+	<20090501061701.GB19234@kroah.com> <20090430234312.a63fa5cf.akpm@linux-foundation.org> 
+	<20090501065527.GA19773@kroah.com> <a55d774e0905011824k11e06f61ibc9937a2b26fd9e0@mail.gmail.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Sat, 2 May 2009 03:48:36 +0200
+Message-ID: <ac3eb2510905011848i51aef8e6wbe9506a13e67377d@mail.gmail.com>
+Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
+To: Brian Swetland <swetland@google.com>
+Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jan Blunck <jblunck@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 04:44:16AM +0200, Frederic Weisbecker wrote:
-> Hi,
-> 
-> This reiserfs patchset applies against latest tip:core/kill-the-BKL
-> It adds various explicit write lock releases on specific sleeping sections.
-> 
-> A performance test with dbench on UP with 100 processus during 100 seconds
-> gives the following results:
-> 
-> Locking		  Throughput 
-> 
-> Bkl:              11.2587 MB/s
-> Write lock/Mutex: 12.5713 MB/s
+On Sat, May 2, 2009 at 03:24, Brian Swetland <swetland@google.com> wrote:
+> On Thu, Apr 30, 2009 at 11:55 PM, Greg KH <greg@kroah.com> wrote:
+>> On Thu, Apr 30, 2009 at 11:43:12PM -0700, Andrew Morton wrote:
+>>> On Thu, 30 Apr 2009 23:17:01 -0700 Greg KH <greg@kroah.com> wrote:
+>>> > On Thu, Apr 30, 2009 at 10:29:00PM -0700, Andrew Morton wrote:
+>>> >
+>>> > Well, devfs "done right" with hopefully none of the vfs problems the
+>>> > last devfs had. :)
+>>>
+>>> I think Adam Richter's devfs rewrite (which, iirc, was tmpfs-based)
+>>> would have fixed up these things.  But it was never quite completed and
+>>> came when minds were already made up.
+>>>
+>>> I don't understand why we need devfs2, really.  What problems are
+>>> people having with teh existing design?
+>>
+>> Boot speed, boot speed, boot speed.
+>>
+>> Oh, and reduction in complexity in init scripts, and saving embedded
+>> systems a lot of effort to implement a dynamic /dev properly (have you
+>> _seen_ what Android does to keep from having to ship udev?  It's
+>> horrible...)
+>
+> It's always struck me as odd that sysfs couldn't provide device node
+> access, given that there's already an entity exposed for everything
+> (or nearly everything).
 
+You really want to be able to run grep-like stuff in sysfs, which
+would do horrible things with device nodes. Also it does not support
+extended attributes, not access control lists, ..., all stuff we need
+for device nodes. You also want userspace to have control over device
+nodes, and possibly mangle them, regardless what the kernel exports,
+that's why it's a tmpfs and not part of sysfs.
 
-I just tested on SMP with two CPU:
+> It seems weird to have to have an agent in
+> userspace to create another hierarchy in addition to what the kernel
+> already maintains.
 
-Write Lock/Mutex: Throughput 66.9269 MB/sec 100 procs
-Bkl:              Throughput 71.9998 MB/sec 100 procs
+Well, until just recently, there was no sane definition how device
+nodes are names and layouted, every system did it differently, some
+even tried to keep the totally useless devfs naming scheme alive. Now
+that we managed to define a common default setup, which almost
+everybody ships it, it makes it possible to add the few needed rules.
 
-So:
+> I guess the really tricky bit is how to deal with
+> permissions/ownership sanely.
 
-UP:  11% faster
-SMP:  8% slower
+Simple permissions would be possible without too much hassle, but uid
+gid ownership, I can't see how the kernel could do that.
 
+> I suspect there's no easy way to do
+> something that "just works" for even the majority of userspace
+> environments.
 
-I guess there is still some work to do :)
+It will work just fine for root environments, what's missing without
+userspace support is if you need to grant specific users access to
+devices.
 
+> Most of the ugly in the microudev thing in our init
+> comes from having to do something about permissions.
+>
+> I would love to have a way for the kernel to do something like devfs
+> (it'd let me kill some ugly userspace code on my side)....
+
+How are permissions defined in your environment? What's the set of
+permissions you need to apply?
+
+Thanks,
+Kay
