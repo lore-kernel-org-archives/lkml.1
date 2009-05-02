@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756349AbZEBNT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756810AbZEBNUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756349AbZEBNT4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 09:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZEBNTo
+	id S1756810AbZEBNUk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 09:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbZEBNU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 09:19:44 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:47989 "EHLO mgw2.diku.dk"
+	Sat, 2 May 2009 09:20:29 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:48003 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752989AbZEBNTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 09:19:43 -0400
-Date: Sat, 2 May 2009 15:19:38 +0200 (CEST)
+	id S1754169AbZEBNU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 09:20:28 -0400
+Date: Sat, 2 May 2009 15:20:23 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: hverkuil@xs4all.nl, ivtv-devel@ivtvdriver.org, linux-media@vger.kernel.org,
+To: joerg.roedel@amd.com, iommu@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: ivtv-ioctl.c: possible problem with IVTV_F_I_DMA
-Message-ID: <Pine.LNX.4.64.0905021519040.9563@pc-004.diku.dk>
+Subject: amd_iommu_init.c: possible problem with IVHD_FLAG_HT_TUN_EN
+Message-ID: <Pine.LNX.4.64.0905021519390.9563@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The file drivers/media/video/ivtv/ivtv-ioctl.c contains the following code:
+The file arch/x86/kernel/amd_iommu_init.c contains the following code:
 
-(starting at line 183 in a recent linux-next)
+(starting at line 586 in a recent linux-next)
 
-		while (itv->i_flags & IVTV_F_I_DMA) {
-			got_sig = signal_pending(current);
-			if (got_sig)
-				break;
-			got_sig = 0;
-			schedule();
-		}
+	h->flags & IVHD_FLAG_HT_TUN_EN ?
+		iommu_feature_enable(iommu, CONTROL_HT_TUN_EN) :
+		iommu_feature_disable(iommu, CONTROL_HT_TUN_EN);
 
-The only possible value of IVTV_F_I_DMA, however, seems to be 0, as defined
-in drivers/media/video/ivtv/ivtv-driver.h, and thus the test is never true.
-Is this what is intended, or should the test be expressed in another way?
+	h->flags & IVHD_FLAG_PASSPW_EN ?
+		iommu_feature_enable(iommu, CONTROL_PASSPW_EN) :
+		iommu_feature_disable(iommu, CONTROL_PASSPW_EN);
+
+	h->flags & IVHD_FLAG_RESPASSPW_EN ?
+		iommu_feature_enable(iommu, CONTROL_RESPASSPW_EN) :
+		iommu_feature_disable(iommu, CONTROL_RESPASSPW_EN);
+
+	h->flags & IVHD_FLAG_ISOC_EN ?
+		iommu_feature_enable(iommu, CONTROL_ISOC_EN) :
+		iommu_feature_disable(iommu, CONTROL_ISOC_EN);
+
+The only possible value of IVHD_FLAG_HT_TUN_EN, however, seems to be 0, as
+defined in the same file, and thus the first test is never true.  Is this
+what is intended, or should the test be expressed in another way?
 
 julia
 
