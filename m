@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758513AbZEBOSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbZEBOUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758513AbZEBOSL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 10:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755519AbZEBORx
+	id S1756727AbZEBOUQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 10:20:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756282AbZEBOT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 10:17:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41928 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757699AbZEBORw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 10:17:52 -0400
-Message-ID: <49FC5554.2070802@redhat.com>
-Date: Sat, 02 May 2009 10:14:44 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Sat, 2 May 2009 10:19:59 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41237 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755713AbZEBOT6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 10:19:58 -0400
+Date: Sat, 2 May 2009 10:19:53 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Tim Abbott <tabbott@MIT.EDU>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Kyle McMartin <kyle@mcmartin.ca>,
+       Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org
+Subject: Re: [PATCH 0/5] section name cleanup for parisc
+Message-ID: <20090502141953.GC28342@bombadil.infradead.org>
+References: <1241135719-9286-1-git-send-email-tabbott@mit.edu>
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH] vmscan: cleanup the scan batching code
-References: <200904302208.n3UM8t9R016687@imap1.linux-foundation.org> <20090501012212.GA5848@localhost> <20090430194907.82b31565.akpm@linux-foundation.org> <20090502023125.GA29674@localhost>
-In-Reply-To: <20090502023125.GA29674@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241135719-9286-1-git-send-email-tabbott@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
-> The vmscan batching logic is twisting. Move it into a standalone
-> function nr_scan_try_batch() and document it.  No behavior change.
+On Thu, Apr 30, 2009 at 07:55:14PM -0400, Tim Abbott wrote:
+> This patch series cleans up the section names on the parisc
+> architecture.  It requires the architecture-independent macro
+> definitions from this patch series:
 > 
-> CC: Nick Piggin <npiggin@suse.de>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Christoph Lameter <cl@linux-foundation.org>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> <http://www.spinics.net/lists/mips/msg33499.html>
+> 
+> The long-term goal here is to add support for building the kernel with
+> -ffunction-sections -fdata-sections.  This requires renaming all the
+> magic section names in the kernel of the form .text.foo, .data.foo,
+> .bss.foo, and .rodata.foo to not have collisions with sections
+> generated for code like:
+> 
+> static int nosave = 0; /* -fdata-sections places in .data.nosave */
+> static void head(); /* -ffunction-sections places in .text.head */
+> 
+> Note that these patches have not been boot-tested (aside from testing
+> the analogous changes on x86), since I don't have access to the
+> appropriate hardware.
+> 
+> 	-Tim Abbott
+> 
+> 
+> Tim Abbott (5):
+>   parisc: use NOSAVE_DATA macro for .data.nosave section.
+>   parisc: use new macro for .data.cacheline_aligned section.
+>   parisc: use new macros for .data.init_task.
+>   parisc: use new macro for .data.read_mostly section.
+>   parisc: convert to new generic read_mostly support.
+> 
 
-Acked-by: Rik van Riel <riel@redhat.com>
+Not sure what the easiest way to merge these will be... I'll apply them
+to a section-cleanup branch in the parisc git tree until the
+architecture independent portions are upstream.
 
--- 
-All rights reversed.
+regards, Kyle
