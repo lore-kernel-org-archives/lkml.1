@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755016AbZECA10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbZECA1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755016AbZECA10 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 20:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbZECA1N
+	id S1755353AbZECA1k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 20:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbZECA1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 20:27:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60684 "EHLO ogre.sisk.pl"
+	Sat, 2 May 2009 20:27:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60683 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752929AbZECA1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753035AbZECA1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 2 May 2009 20:27:12 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/4] mm: Add __GFP_NO_OOM_KILL flag
-Date: Sun, 3 May 2009 02:22:06 +0200
+Subject: [PATCH 0/4] PM: Drop shrink_all_memory (rev. 2) (was: Re: [PATCH 3/3] PM/Hibernate: Use memory allocations to free memory)
+Date: Sun, 3 May 2009 02:20:57 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
 Cc: pavel@ucw.cz, torvalds@linux-foundation.org, jens.axboe@oracle.com,
        alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
        kernel-testers@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <20090502104947.2720f173.akpm@linux-foundation.org> <200905030220.57933.rjw@sisk.pl>
-In-Reply-To: <200905030220.57933.rjw@sisk.pl>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905021346.34967.rjw@sisk.pl> <20090502104947.2720f173.akpm@linux-foundation.org>
+In-Reply-To: <20090502104947.2720f173.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905030222.07360.rjw@sisk.pl>
+Message-Id: <200905030220.57933.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-
-> > Remind me: why can't we just allocate N pages at suspend-time?
+On Saturday 02 May 2009, Andrew Morton wrote:
+> On Sat, 2 May 2009 13:46:34 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> We need half of memory free. The reason we can't "just allocate" is
-> probably OOM killer; but my memories are quite weak :-(.
+> > > Do we need the bitmap?  I expect we can just string all these pages
+> > > onto a local list via page.lru.  Would need to check that - the
+> > > pageframe fields are quite overloaded.
+> > 
+> > This is the reason why we use the bitmaps for hibernation. :-)
+> 
+> grep the tree for page->lru and you'll see that quite a few page
+> consumers are using it.  So you'd be pretty safe doing it this way.
+> 
+> Whether it's _worth_ doing it this way is debatable, given that
+> hibernation uses bitmaps elsewhere.  But it would shrink the patch a
+> bit I expect?
 
-hm.  You'd think that with our splendid range of __GFP_foo falgs, there
-would be some combo which would suit this requirement but I can't
-immediately spot one.
+It probably would, but it turns out we need not create the new bitmap, we
+can use the existing ones for marking the allocated pages.  That also has
+the benefit that we can use swsusp_free() to release them.
 
-We can always add another I guess.  Something like...
+Modified patch series follows:
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- include/linux/gfp.h |    3 ++-
- mm/page_alloc.c     |    3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+[1/4] - your patch introducing __GFP_NO_OOM_KILL (I decided it would be better
+        do it this way in this particular case.  The fact that the OOM killer
+        is not going to work after tasks have been frozen is a different issue.)
 
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -1620,7 +1620,8 @@ nofail_alloc:
- 		}
- 
- 		/* The OOM killer will not help higher order allocs so fail */
--		if (order > PAGE_ALLOC_COSTLY_ORDER) {
-+		if (order > PAGE_ALLOC_COSTLY_ORDER ||
-+				(gfp_mask & __GFP_NO_OOM_KILL)) {
- 			clear_zonelist_oom(zonelist, gfp_mask);
- 			goto nopage;
- 		}
-Index: linux-2.6/include/linux/gfp.h
-===================================================================
---- linux-2.6.orig/include/linux/gfp.h
-+++ linux-2.6/include/linux/gfp.h
-@@ -51,8 +51,9 @@ struct vm_area_struct;
- #define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
- #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
- #define __GFP_MOVABLE	((__force gfp_t)0x100000u)  /* Page is movable */
-+#define __GFP_NO_OOM_KILL ((__force gfp_t)0x200000u)  /* Don't invoke out_of_memory() */
- 
--#define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
-+#define __GFP_BITS_SHIFT 22	/* Number of__GFP_FOO bits */
- #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
- 
- /* This equals 0, but use constants in case they ever change */
+[2/4] - move swsusp_shrink_memory to snapshot.c, no major changes
+
+[3/4] - use memory allocations to for making the room for the image (added
+        comments, used the existing bitmaps, cleaned up a bit)
+
+[4/4] - new thing: do not release memory allocated by [3/4] and use it for
+        creating the image directly.
+
+Thanks,
+Rafael
 
