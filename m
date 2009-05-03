@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbZECAc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753703AbZECBKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350AbZECAc5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 20:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbZECAcs
+	id S1753703AbZECBKF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 21:10:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbZECBJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 20:32:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35104 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752719AbZECAcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 20:32:48 -0400
-Date: Sat, 2 May 2009 20:32:56 -0400
-From: Aristeu Rozanski <aris@redhat.com>
-To: petkovbb@gmail.com, Andi Kleen <andi@firstfloor.org>,
-       Borislav Petkov <borislav.petkov@amd.com>, akpm@linux-foundation.org,
-       greg@kroah.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       dougthompson@xmission.com, linux-kernel@vger.kernel.org,
-       Ben Woodard <woodard@redhat.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: [RFC PATCH 00/21 v2] amd64_edac: EDAC module for AMD64
-Message-ID: <20090503003256.GD22116@redhat.com>
-References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> <87iqknp8a0.fsf@basil.nowhere.org> <20090430115741.GA23634@aftab> <20090430124716.GW23223@one.firstfloor.org> <20090430144756.GA25200@redhat.com> <20090501075311.GA14176@liondog.tnic>
+	Sat, 2 May 2009 21:09:54 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:17074 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753035AbZECBJy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 21:09:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=fn6XGfTwjgk3WIR+T44Cfx3g9gzxjxR2MFDV9sFkgWDOMHkL5ICm7xhV+vVNhmEQwy
+         UnHLipinXbm0a7d+Q+cMPPU83NImxvyvv/PkgFuqxA+yCGjd1IBy6SfVqeJ02MSasjfT
+         j2viLtg8UF+GjemMNuor95iiq5SZwTWY93cj4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090501075311.GA14176@liondog.tnic>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Sun, 3 May 2009 10:09:54 +0900
+Message-ID: <3ecd1e960905021809p448f6b0eo3a530cd35d4f763e@mail.gmail.com>
+Subject: [PATCH] gfp.h: a trivial comment typo
+From: Kazuo Ito <kzpn200@gmail.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I thought I should summarize some points on the design direction, which,
-> in my impression are what all the parties involved more or less would
-> agree on:
-> 
-> * mce interrupt delivers, if EDAC compiled in, the required batch of
-> dumped MSRs to chipset/CPU specific EDAC driver. Aristeu, I guess you
-> guys have some code on that, right?
-it's in really early stage and like Andi said, it needs work.
+Hello,
 
-> * EDAC module decodes MCE info, computes the DIMM label out of
-> that. Additional hw setup stuff like memory hoisting/interleaving,
-> ganged/unganged MC mode, testing infrastructure like DRAM error
-> injection and all that pertaining to the specific hw is handled by the
-> EDAC module.
-> 
-> * If EDAC not enabled, mce operates as before.
-agreed.
+It's really trivial and doesn't mean much for overall code
+quality, but since I found it...
 
--- 
-Aristeu
+commit 99b4ac1ebc20382c2215ae984d565ab183e0f4bc
+Author: Kazuo Ito <kzpn200@gmail.com>
+Date:   Sun May 3 09:56:35 2009 +0900
 
+    gfp.h: a comment typo
+---
+ include/linux/gfp.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index 0bbc15f..eda48ed 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -14,7 +14,7 @@ struct vm_area_struct;
+  * Zone modifiers (see linux/mmzone.h - low three bits)
+  *
+  * Do not put any conditional on these. If necessary modify the definitions
+- * without the underscores and use the consistently. The definitions here may
++ * without the underscores and use them consistently. The definitions here may
+  * be used in bit comparisons.
+  */
+ #define __GFP_DMA	((__force gfp_t)0x01u)
