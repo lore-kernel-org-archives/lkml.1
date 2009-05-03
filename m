@@ -1,110 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbZECTUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbZECTWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbZECTUd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 15:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbZECTUV
+	id S1756804AbZECTWV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 15:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbZECTWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 15:20:21 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52504 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752059AbZECTUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 15:20:19 -0400
-Message-ID: <49FDEE64.5090302@garzik.org>
-Date: Sun, 03 May 2009 15:20:04 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 3 May 2009 15:22:06 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:58926 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754168AbZECTWF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 15:22:05 -0400
+Date: Sun, 3 May 2009 20:22:01 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com, hirofuchi@users.sourceforge.net, ericvh@gmail.com
+Subject: file descriptor abuses
+Message-ID: <20090503192201.GA8633@ZenIV.linux.org.uk>
+References: <20090427182540.6646.96740.stgit@dev.haskins.net> <20090427183334.6646.90800.stgit@dev.haskins.net> <20090503064432.GS8633@ZenIV.linux.org.uk> <alpine.DEB.1.10.0905031103290.7899@makko.or.mcafeemobile.com> <20090503190136.GY8633@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Matthew Wilcox <matthew@wil.cx>, Jens Axboe <jens.axboe@oracle.com>,
-       Boaz Harrosh <bharrosh@panasas.com>, Hugh Dickins <hugh@veritas.com>,
-       Matthew Wilcox <willy@linux.intel.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Mark Lord <lkml@rtr.ca>
-Subject: Re: New TRIM/UNMAP tree published (2009-05-02)
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com>	 <49D8A3D7.5070507@panasas.com> <20090503061150.GF10704@linux.intel.com>	 <20090503071619.GP8822@parisc-linux.org>	 <Pine.LNX.4.64.0905031346350.29671@blonde.anvils>	 <20090503144847.GR8822@parisc-linux.org> <49FDB21B.3080301@panasas.com>	 <20090503154216.GU8822@parisc-linux.org> <49FDC786.6070309@panasas.com>	 <49FDE3BB.505@garzik.org>  <49FDE50A.4060503@garzik.org> <1241377472.5596.88.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1241377472.5596.88.camel@mulgrave.int.hansenpartnership.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090503190136.GY8633@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Sun, 2009-05-03 at 14:40 -0400, Jeff Garzik wrote:
->> Jeff Garzik wrote:
->>> (2) determine at init if queue (a) supports explicit DISCARD and/or (b) 
->>> supports DISCARD flag passed with READ or WRITE
->>
->> As an aside -- does any existing command set support case #b, above?
+On Sun, May 03, 2009 at 08:01:36PM +0100, Al Viro wrote:
+
+> General rules:
+> 	* descriptor you've generated is fit only for return to userland;
+> 	* descriptor you've got from userland is fit only for *single*
+> fget() or equivalent, unless you are one of the core syscalls manipulating
+> the descriptor table itself (dup2, etc.)
+> 	* once file is installed in descriptor table, you'd better be past
+> the last failure exit; sys_close() on cleanup path is not acceptable.
+> That's what reserving descriptors is for.
 > 
-> Not to my knowledge.
-> 
-> I think discard was modelled on barrier (which can be associated with
-> data or stand on its own).
+> IOW, the sane solution would be to export something that returns your
+> struct file *.  And stop playing with fd completely.
 
-Yeah -- I am thinking we can reduce complexity if no real hardware 
-supports "associated with data."
+Speaking of which, quick look through fget() callers shows this turd:
 
+static int p9_socket_open(struct p9_client *client, struct socket *csocket)
+{
+	int fd, ret;
 
->> AFAICT, ATA, SCSI and NVMHCI all have a single, explicit hardware 
->> command to discard/deallocate unused sectors.
->>
->> Therefore, creating REQ_TYPE_DISCARD seems to eliminate any need for new 
->> hook ->prepare_discard().
-> 
-> Well, yes and no ... in the SCSI implementation of either UNMAP or WRITE
-> SAME, we still need a data buffer to store either the extents or the
-> actual same data.
+	fd = sock_map_fd(csocket, 0);
+	.....
 
-Sure, UNMAP's extents would quite naturally travel with the 
-REQ_TYPE_DISCARD struct request, and can be set up at struct request 
-allocation time.  In all of ATA, SCSI and NVMHCI, they appear to want 
-the extents.
+	ret = p9_fd_open(client, fd, fd);
+	if (ret < 0) {
+		P9_EPRINTK(KERN_ERR, "p9_socket_open: failed to open fd\n");
+		sockfd_put(csocket);
+		return ret;
+	}
+	.....
+	return 0;
+}
 
-Is WRITE SAME associated with this current DISCARD work, or is that just 
-a similar example?  I'm unfamiliar with its issues...
+where p9_fd_open() calls fget() on its 2nd and 3rd arguments.  Which does
+worse than just a leak, AFAICT - on failure exit it leaves a dangling
+pointer from descriptor table.
 
-
->> This provides a 1:1 correspondence between hardware and struct request, 
->> most closely matching the setup of known hardware.
-> 
-> Agreed ... but we still have to allocate the adjunct buffer
-> somewhere ....
-
-Agreed.  I merely argue ->prep_rq_fn() would be a better place -- it can 
-at least return a useful return value -- than ->prepare_discard(), which 
-would be the natural disposition for a REQ_TYPE_DISCARD -- or 
-->request_fn() itself, if a block driver so chooses.
-
-The extents would be an argument to REQ_TYPE_DISCARD, and should be 
-associated with struct request somehow, by struct request's creator. 
-The extent info needs to be in some generic form, because all of 
-ATA|SCSI|NVMHCI seem to want it.
-
-
-[tangent...]
-
-Does make you wonder if a ->init_rq_fn() would be helpful, one that 
-could perform gfp_t allocations rather than GFP_ATOMIC?  The idea being 
-to call ->init_rq_fn() almost immediately after creation of struct 
-request, by the struct request creator.
-
-I obviously have not thought in depth about this, but it does seem that 
-init_rq_fn(), called earlier in struct request lifetime, could eliminate 
-the need for ->prepare_flush, ->prepare_discard, and perhaps could be a 
-better place for some of the ->prep_rq_fn logic.
-
-The creator of struct request generally has more freedom to sleep, and 
-it seems logical to give low-level drivers a "fill in LLD-specific info" 
-hook BEFORE the request is ever added to a request_queue.
-
-Who knows...
-
-	Jeff
-
-
-
-
+On the almost unrelated note, we have (in drivers/sneak_in^Wstaging/usbip)
+sockfd_to_socket(), with all callers leaking struct file, AFAICS.
