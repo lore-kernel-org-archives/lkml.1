@@ -1,150 +1,283 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756371AbZECT6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756515AbZECUQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756371AbZECT6k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 15:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbZECT6a
+	id S1756515AbZECUQW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 16:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbZECUQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 15:58:30 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40307 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755305AbZECT6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 15:58:30 -0400
-Date: Sun, 3 May 2009 21:54:04 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ptrace: do not use task->ptrace directly in core kernel
-Message-ID: <20090503195404.GA18889@redhat.com>
-References: <20090429122827.GA27838@redhat.com> <20090430202828.8A763FC3BF@magilla.sf.frob.com>
+	Sun, 3 May 2009 16:16:06 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:33201 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754168AbZECUQF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 16:16:05 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 3 May 2009 13:11:39 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com
+Subject: Re: [KVM PATCH v3 2/2] kvm: add support for irqfd via eventfd-notification
+ interface
+In-Reply-To: <20090503190136.GY8633@ZenIV.linux.org.uk>
+Message-ID: <alpine.DEB.1.10.0905031252540.7899@makko.or.mcafeemobile.com>
+References: <20090427182540.6646.96740.stgit@dev.haskins.net> <20090427183334.6646.90800.stgit@dev.haskins.net> <20090503064432.GS8633@ZenIV.linux.org.uk> <alpine.DEB.1.10.0905031103290.7899@makko.or.mcafeemobile.com>
+ <20090503190136.GY8633@ZenIV.linux.org.uk>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090430202828.8A763FC3BF@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/30, Roland McGrath wrote:
->
-> That is fine, but doesn't buy much.
+On Sun, 3 May 2009, Al Viro wrote:
 
-Yes this patch is only cosmetic. But it allows us to change the internals
-in ptrace.c without thinking about other kernel/*.c. The only goal is to
-make the further changes smaller and more reviewable.
+> IOW, the sane solution would be to export something that returns your
+> struct file *.  And stop playing with fd completely.
 
-Honestly, I'd also like to temporary change ptrace.c too, see the patch
-below. But this is minor.
+This builds but it's not tested at all.
 
-> i.e., we will be changing these again
-> before too long anyway I imagine.
+- Make all the work of the old anon_inode_getfd(), done by a new 
+  anon_inode_getfile(), with anon_inode_getfd() using its services
 
-Yes, agreed.
+- Make all the work done by sys_eventfd(), done by a new 
+  eventfd_file_create() (which in turn uses anon_inode_getfile()), with 
+  sys_eventfd() using its services
 
-> The BUG_ON cases might as well just go away, probably.
+IRQfd can use eventfd_file_create(), fget(), get_unused_fd_flags() and 
+fd_install() just before returning.
+Is that what you had in mind?
 
-Agreed.
 
-> ptrace_fork() is a wrapper that just calls arch_ptrace_fork(), which itself
-> is an empty macro on most configurations.  I think we might as well just
-> make ptrace_fork() an inline in linux/ptrace.h and put the test inside it.
-> (Thus any future changes touch ptrace.h and not fork.c.)
 
-ptrace_fork() will die soon, so the change if fork.c will go away. Markus
-already has patches, hopefully they will be merged soon.
+- Davide
 
-Oleg.
 
---- a/kernel/ptrace.c	2009-05-03 19:57:11.000000000 +0200
-+++ b/kernel/ptrace.c	2009-05-03 21:24:36.000000000 +0200
-@@ -79,8 +79,6 @@ static void ptrace_untrace(struct task_s
+---
+ fs/anon_inodes.c            |   68 +++++++++++++++++++++++++++++++++-----------
+ fs/eventfd.c                |   44 +++++++++++++++++++++-------
+ include/linux/anon_inodes.h |    3 +
+ include/linux/eventfd.h     |    6 +++
+ 4 files changed, 92 insertions(+), 29 deletions(-)
+
+Index: linux-2.6.mod/fs/anon_inodes.c
+===================================================================
+--- linux-2.6.mod.orig/fs/anon_inodes.c	2009-05-03 12:21:09.000000000 -0700
++++ linux-2.6.mod/fs/anon_inodes.c	2009-05-03 12:54:02.000000000 -0700
+@@ -64,28 +64,24 @@ static const struct dentry_operations an
+  *
+  * Creates a new file by hooking it on a single inode. This is useful for files
+  * that do not need to have a full-fledged inode in order to operate correctly.
+- * All the files created with anon_inode_getfd() will share a single inode,
++ * All the files created with anon_inode_getfile() will share a single inode,
+  * hence saving memory and avoiding code duplication for the file/inode/dentry
+- * setup.  Returns new descriptor or -error.
++ * setup.  Returns the newly created file* or error.
   */
- void __ptrace_unlink(struct task_struct *child)
+-int anon_inode_getfd(const char *name, const struct file_operations *fops,
+-		     void *priv, int flags)
++struct file *anon_inode_getfile(const char *name,
++				const struct file_operations *fops,
++				void *priv, int flags)
  {
--	BUG_ON(!child->ptrace);
+ 	struct qstr this;
+ 	struct dentry *dentry;
+ 	struct file *file;
+-	int error, fd;
++	int error;
+ 
+ 	if (IS_ERR(anon_inode_inode))
+-		return -ENODEV;
++		return ERR_PTR(-ENODEV);
+ 
+ 	if (fops->owner && !try_module_get(fops->owner))
+-		return -ENOENT;
 -
- 	child->ptrace = 0;
- 	child->parent = child->real_parent;
- 	list_del_init(&child->ptrace_entry);
-@@ -105,7 +103,7 @@ int ptrace_check_attach(struct task_stru
- 	 * be changed by us so it's not changing right after this.
- 	 */
- 	read_lock(&tasklist_lock);
--	if ((child->ptrace & PT_PTRACED) && child->parent == current) {
-+	if (task_ptrace(child) && child->parent == current) {
- 		ret = 0;
- 		/*
- 		 * child->sighand can't be NULL, release_task()
-@@ -203,7 +201,7 @@ int ptrace_attach(struct task_struct *ta
- 	retval = -EPERM;
- 	if (unlikely(task->exit_state))
- 		goto unlock_tasklist;
--	if (task->ptrace)
-+	if (task_ptrace(task))
- 		goto unlock_tasklist;
+-	error = get_unused_fd_flags(flags);
+-	if (error < 0)
+-		goto err_module;
+-	fd = error;
++		return ERR_PTR(-ENOENT);
  
- 	task->ptrace = PT_PTRACED;
-@@ -233,7 +231,7 @@ int ptrace_traceme(void)
+ 	/*
+ 	 * Link the inode to a directory entry by creating a unique name
+@@ -97,7 +93,7 @@ int anon_inode_getfd(const char *name, c
+ 	this.hash = 0;
+ 	dentry = d_alloc(anon_inode_mnt->mnt_sb->s_root, &this);
+ 	if (!dentry)
+-		goto err_put_unused_fd;
++		goto err_module;
  
- 	write_lock_irq(&tasklist_lock);
- 	/* Are we already being traced? */
--	if (!current->ptrace) {
-+	if (!task_ptrace(current)) {
- 		ret = security_ptrace_traceme(current->parent);
- 		/*
- 		 * Check PF_EXITING to ensure ->real_parent has not passed
-@@ -314,7 +312,7 @@ int ptrace_detach(struct task_struct *ch
- 	 * This child can be already killed. Make sure de_thread() or
- 	 * our sub-thread doing do_wait() didn't do release_task() yet.
- 	 */
--	if (child->ptrace) {
-+	if (task_ptrace(child)) {
- 		child->exit_code = data;
- 		dead = __ptrace_detach(current, child);
- 	}
-@@ -401,30 +399,35 @@ int ptrace_writedata(struct task_struct 
+ 	/*
+ 	 * We know the anon_inode inode count is always greater than zero,
+@@ -123,16 +119,54 @@ int anon_inode_getfd(const char *name, c
+ 	file->f_version = 0;
+ 	file->private_data = priv;
  
- static int ptrace_setoptions(struct task_struct *child, long data)
- {
--	child->ptrace &= ~PT_TRACE_MASK;
-+	unsigned int new_flags = 0;
++	return file;
 +
-+	if (data & ~PTRACE_O_MASK)
-+		return -EINVAL;
++err_dput:
++	dput(dentry);
++err_module:
++	module_put(fops->owner);
++	return ERR_PTR(error);
++}
++EXPORT_SYMBOL_GPL(anon_inode_getfile);
++
++/**
++ * anon_inode_getfd - creates a new file instance by hooking it up to an
++ *                    anonymous inode, and a dentry that describe the "class"
++ *                    of the file
++ *
++ * @name:    [in]    name of the "class" of the new file
++ * @fops:    [in]    file operations for the new file
++ * @priv:    [in]    private data for the new file (will be file's private_data)
++ * @flags:   [in]    flags
++ *
++ * Creates a new file by hooking it on a single inode. This is useful for files
++ * that do not need to have a full-fledged inode in order to operate correctly.
++ * All the files created with anon_inode_getfd() will share a single inode,
++ * hence saving memory and avoiding code duplication for the file/inode/dentry
++ * setup.  Returns new descriptor or -error.
++ */
++int anon_inode_getfd(const char *name, const struct file_operations *fops,
++		     void *priv, int flags)
++{
++	int error, fd;
++	struct file *file;
++
++	error = get_unused_fd_flags(flags);
++	if (error < 0)
++		return error;
++	fd = error;
++
++	file = anon_inode_getfile(name, fops, priv, flags);
++	if (IS_ERR(file)) {
++		error = PTR_ERR(file);
++		goto err_put_unused_fd;
++	}
+ 	fd_install(fd, file);
  
- 	if (data & PTRACE_O_TRACESYSGOOD)
--		child->ptrace |= PT_TRACESYSGOOD;
-+		new_flags |= PT_TRACESYSGOOD;
+ 	return fd;
  
- 	if (data & PTRACE_O_TRACEFORK)
--		child->ptrace |= PT_TRACE_FORK;
-+		new_flags |= PT_TRACE_FORK;
- 
- 	if (data & PTRACE_O_TRACEVFORK)
--		child->ptrace |= PT_TRACE_VFORK;
-+		new_flags |= PT_TRACE_VFORK;
- 
- 	if (data & PTRACE_O_TRACECLONE)
--		child->ptrace |= PT_TRACE_CLONE;
-+		new_flags |= PT_TRACE_CLONE;
- 
- 	if (data & PTRACE_O_TRACEEXEC)
--		child->ptrace |= PT_TRACE_EXEC;
-+		new_flags |= PT_TRACE_EXEC;
- 
- 	if (data & PTRACE_O_TRACEVFORKDONE)
--		child->ptrace |= PT_TRACE_VFORK_DONE;
-+		new_flags |= PT_TRACE_VFORK_DONE;
- 
- 	if (data & PTRACE_O_TRACEEXIT)
--		child->ptrace |= PT_TRACE_EXIT;
-+		new_flags |= PT_TRACE_EXIT;
- 
--	return (data & ~PTRACE_O_MASK) ? -EINVAL : 0;
-+	child->ptrace &= ~PT_TRACE_MASK;
-+	child->ptrace |= new_flags;
-+	return 0;
+-err_dput:
+-	dput(dentry);
+ err_put_unused_fd:
+ 	put_unused_fd(fd);
+-err_module:
+-	module_put(fops->owner);
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(anon_inode_getfd);
+Index: linux-2.6.mod/fs/eventfd.c
+===================================================================
+--- linux-2.6.mod.orig/fs/eventfd.c	2009-05-03 12:21:09.000000000 -0700
++++ linux-2.6.mod/fs/eventfd.c	2009-05-03 12:54:07.000000000 -0700
+@@ -198,9 +198,9 @@ struct file *eventfd_fget(int fd)
+ 	return file;
  }
  
- static int ptrace_getsiginfo(struct task_struct *child, siginfo_t *info)
-
+-SYSCALL_DEFINE2(eventfd2, unsigned int, count, int, flags)
++struct file *eventfd_file_create(unsigned int count, int flags)
+ {
+-	int fd;
++	struct file *file;
+ 	struct eventfd_ctx *ctx;
+ 
+ 	/* Check the EFD_* constants for consistency.  */
+@@ -208,25 +208,47 @@ SYSCALL_DEFINE2(eventfd2, unsigned int, 
+ 	BUILD_BUG_ON(EFD_NONBLOCK != O_NONBLOCK);
+ 
+ 	if (flags & ~EFD_FLAGS_SET)
+-		return -EINVAL;
++		return ERR_PTR(-EINVAL);
+ 
+ 	ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
+ 	if (!ctx)
+-		return -ENOMEM;
++		return ERR_PTR(-ENOMEM);
+ 
+ 	init_waitqueue_head(&ctx->wqh);
+ 	ctx->count = count;
+ 	ctx->flags = flags;
+ 
+-	/*
+-	 * When we call this, the initialization must be complete, since
+-	 * anon_inode_getfd() will install the fd.
+-	 */
+-	fd = anon_inode_getfd("[eventfd]", &eventfd_fops, ctx,
+-			      flags & EFD_SHARED_FCNTL_FLAGS);
+-	if (fd < 0)
++	file = anon_inode_getfile("[eventfd]", &eventfd_fops, ctx,
++				  flags & EFD_SHARED_FCNTL_FLAGS);
++	if (IS_ERR(file))
+ 		kfree(ctx);
++
++	return file;
++}
++
++SYSCALL_DEFINE2(eventfd2, unsigned int, count, int, flags)
++{
++	int fd, error;
++	struct file *file;
++
++	error = get_unused_fd_flags(flags & EFD_SHARED_FCNTL_FLAGS);
++	if (error < 0)
++		return error;
++	fd = error;
++
++	file = eventfd_file_create(count, flags);
++	if (IS_ERR(file)) {
++		error = PTR_ERR(file);
++		goto err_put_unused_fd;
++	}
++	fd_install(fd, file);
++
+ 	return fd;
++
++err_put_unused_fd:
++	put_unused_fd(fd);
++
++	return error;
+ }
+ 
+ SYSCALL_DEFINE1(eventfd, unsigned int, count)
+Index: linux-2.6.mod/include/linux/anon_inodes.h
+===================================================================
+--- linux-2.6.mod.orig/include/linux/anon_inodes.h	2009-05-03 12:21:09.000000000 -0700
++++ linux-2.6.mod/include/linux/anon_inodes.h	2009-05-03 12:48:08.000000000 -0700
+@@ -8,6 +8,9 @@
+ #ifndef _LINUX_ANON_INODES_H
+ #define _LINUX_ANON_INODES_H
+ 
++struct file *anon_inode_getfile(const char *name,
++				const struct file_operations *fops,
++				void *priv, int flags);
+ int anon_inode_getfd(const char *name, const struct file_operations *fops,
+ 		     void *priv, int flags);
+ 
+Index: linux-2.6.mod/include/linux/eventfd.h
+===================================================================
+--- linux-2.6.mod.orig/include/linux/eventfd.h	2009-05-03 12:21:09.000000000 -0700
++++ linux-2.6.mod/include/linux/eventfd.h	2009-05-03 12:43:54.000000000 -0700
+@@ -29,12 +29,16 @@
+ 
+ struct file *eventfd_fget(int fd);
+ int eventfd_signal(struct file *file, int n);
++struct file *eventfd_file_create(unsigned int count, int flags);
+ 
+ #else /* CONFIG_EVENTFD */
+ 
+-#define eventfd_fget(fd) ERR_PTR(-ENOSYS)
++static inline struct file *eventfd_fget(int fd)
++{ ERR_PTR(-ENOSYS); }
+ static inline int eventfd_signal(struct file *file, int n)
+ { return 0; }
++struct file *eventfd_file_create(unsigned int count, int flags)
++{ ERR_PTR(-ENOSYS); }
+ 
+ #endif /* CONFIG_EVENTFD */
+ 
