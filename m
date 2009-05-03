@@ -1,80 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbZECDoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751618AbZECE0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752181AbZECDoj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 23:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbZECDoa
+	id S1751618AbZECE0X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 00:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbZECE0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 23:44:30 -0400
-Received: from mga03.intel.com ([143.182.124.21]:4821 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750899AbZECDo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 23:44:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,284,1239001200"; 
-   d="scan'208";a="138557749"
-Date: Sun, 3 May 2009 11:43:45 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
-Message-ID: <20090503034345.GA12283@localhost>
-References: <20090430072057.GA4663@eskimo.com> <20090430174536.d0f438dd.akpm@linux-foundation.org> <20090430205936.0f8b29fc@riellaptop.surriel.com> <20090430181340.6f07421d.akpm@linux-foundation.org> <20090430215034.4748e615@riellaptop.surriel.com> <20090430195439.e02edc26.akpm@linux-foundation.org> <49FB01C1.6050204@redhat.com> <20090501123541.7983a8ae.akpm@linux-foundation.org> <20090503031539.GC5702@localhost> <20090502232403.3ca10b97@riellaptop.surriel.com>
+	Sun, 3 May 2009 00:26:08 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:56011 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750875AbZECE0G convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 00:26:06 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090502232403.3ca10b97@riellaptop.surriel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <f73f7ab80904301521x16effa0ar2d4756daceada122@mail.gmail.com>
+References: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
+	 <625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
+	 <f73f7ab80904201710m57472291yf7ff86760977b8e8@mail.gmail.com>
+	 <1240388476.17445.10.camel@pasglop>
+	 <f73f7ab80904300804j1f847b70ha0fe3cda07249110@mail.gmail.com>
+	 <1241126291.29501.41.camel@pasglop>
+	 <f73f7ab80904301521x16effa0ar2d4756daceada122@mail.gmail.com>
+Date: Sun, 3 May 2009 00:26:05 -0400
+Message-ID: <f73f7ab80905022126ud3225enc6409bd39b5b2eb8@mail.gmail.com>
+Subject: Re: Porting the ibm_newemac driver to use phylib (and other PHY/MAC 
+	questions)
+From: Kyle Moffett <kyle@moffetthome.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, netdev <netdev@vger.kernel.org>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 03, 2009 at 11:24:03AM +0800, Rik van Riel wrote:
-> On Sun, 3 May 2009 11:15:39 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > Commit 7e9cd484204f(vmscan: fix pagecache reclaim referenced bit
-> > check) tries to address scalability problem when every page get
-> > mapped and referenced, so that logic(which lowed the priority of
-> > mapped pages) could be enabled only on conditions like (priority <
-> > DEF_PRIORITY).
-> > 
-> > Or preferably we can explicitly protect the mapped executables,
-> > as illustrated by this patch (a quick prototype).
-> 
-> Over time, given enough streaming IO and idle applications,
-> executables will still be evicted with just this patch.
-> 
-> However, a combination of your patch and mine might do the
-> trick.  I suspect that executables are never a very big
-> part of memory, except on small memory systems, so protecting
-> just the mapped executables should not be a scalability
-> problem.
+On Thu, Apr 30, 2009 at 6:21 PM, Kyle Moffett <kyle@moffetthome.net> wrote:
+>>> I'm also curious about the intent of the "mdio_instance" pointer (IE:
+>>> the "mdio-device" property).  Is that used when all the PHY devices
+>>> are attached to the MDIO bus of only one of the (multiple) emac
+>>> devices?
+>>
+>> It's common especially on older SoCs using EMAC to have only one of
+>> the EMAC instance with an MDIO bus for configuring the PHYs. This is one
+>> of the reasons why I have the mutex in the low level MDIO access
+>> routines since 2 EMACs can try to talk to the same MDIO, and this is the
+>> problem I had with phylib back then which was doing everything in atomic
+>> contexts.
+>
+> Ok, good, the current mdiobus code seems to make handling this a good
+> deal easier.
 
-Yes, that's my intent to take advantage of you patch :-)
+Ok, I've dug through the docs on the 460EPx (the CPU I'm using), and
+I'd like some confirmation of the following:
 
-There may be programs that embed large amount of static data with
-them - think about self-decompression data - but that's fine: this
-patch behaves not in a too persistent way. Plus we can apply a size
-limit(say 100M) if necessary.
+*  The EMAC hardware itself internally has its own dedicated
+MDIO/MDClk lines, driven by the STACR register.
 
-> My patch in combination with your patch should make sure
-> that if something gets evicted from the active list, it's
-> not executables - meanwhile, lots of the time streaming
-> IO will completely leave the active file list alone.
- 
-They together make
-- mapped executable pages the first class citizen;
-- streaming IO least intrusive.
+*  On many/most cpus, there is only a single set of external
+MDIO/MDClk pins, driven either off the ZMII bridge or the RGMII
+bridge.
 
-I think that would make most desktop users and server administrators
-contented and comfortable :-)
+*  Both bridge-types have their own internal register for switching
+the external MDIO/MDClk pins between the two sets of internal
+EMAC<=>bridge links.
 
-Thanks,
-Fengguang
+*  Some SoCs have both an ZMII and an RGMII bridge, and the external
+MDIO/MDClk pins are only connected to one of the two bridges (How do I
+know which one?  Alternatively, do I just program both and hope for
+the best?).
 
+*  Some older SoCs simply export the MDIO/MDClk pins from one of their
+internal EMAC chips and don't bother with running it through the
+multiplexing bridge.
+
+Are there any SoCs which actually export the MDIO/MDClk pins from
+both/all of their EMACs?
+
+Cheers,
+Kyle Moffett
