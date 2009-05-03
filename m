@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbZECRJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbZECRMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396AbZECRJX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 13:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbZECRJM
+	id S1754539AbZECRMv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 13:12:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbZECRMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 13:09:12 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:49405 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752255AbZECRJL (ORCPT
+	Sun, 3 May 2009 13:12:38 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:41325 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751824AbZECRMh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 13:09:11 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Li Hong <lihong.hi@gmail.com>
-Subject: Re: [PATCH] usb: use memdup_user()
-Date: Sun, 3 May 2009 19:09:13 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: oliver@neukum.name, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <3a3680030905030900x672af596mc2ebc3c38f119c92@mail.gmail.com>
-In-Reply-To: <3a3680030905030900x672af596mc2ebc3c38f119c92@mail.gmail.com>
+	Sun, 3 May 2009 13:12:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=bC9HJ2aKt5YJyNSH5oLeOV5cWrB1SxcWRQ82UqC6GJkfh8KVPRZYsklp+Og9+sJRCR
+         IutOEfRtKtN+QITAA7YyGZsZHNkvw5ct84ttz/Nsi6UlL8NEzKaYF432nDUV/QvxFf2l
+         k+7DbiMb9mGDoHWC/2C4+CLx1DnZwGz6gdBAQ=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <200905031828.14468.florian@openwrt.org>
+References: <38b2ab8a0905030922x722a45f3gf0790b5b90b0f2b3@mail.gmail.com>
+	 <200905031828.14468.florian@openwrt.org>
+Date: Sun, 3 May 2009 19:12:36 +0200
+Message-ID: <38b2ab8a0905031012m5d50b68es22e3c80cfa72fd60@mail.gmail.com>
+Subject: Re: v2.6.30-rc4: b44: eth0: BUG! Timeout waiting for bit 00000002 of 
+	register 42c to clear.
+From: Francis Moreau <francis.moro@gmail.com>
+To: Florian Fainelli <florian@openwrt.org>
+Cc: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905031909.14101.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, 3. Mai 2009 18:00:56 schrieb Li Hong:
-> Replace a combination call of kmalloc() and copy_from_user() with
-> memdup_user().
+Hello Florian,
 
-To be precise. copy_*_user() of course implies that you can do
-GFP_KERNEL. But the point is one of design. Right now I can change
-locking and if that means that one must use GFP_NOIO, which is common
-in usb due to the storage driver, we can find out by simply grepping and
-move the user space copy outside of the loop.
+On Sun, May 3, 2009 at 6:28 PM, Florian Fainelli <florian@openwrt.org> wrote:
+>> I got this since I updated my kernel from 2.6.29 to 2.6.30-rc4.
+>>
+>> Let me know if you need more information.
+>
+> Is this seen on a Broadcom 47xx/53xx platform or on a computer with a PCI b44
+> card ?
+>
 
-If you make that change we must grep against a second and rare
-key.
+$ lspci -vv
 
-	Regards
-		Oliver
+06:01.0 Ethernet controller: Broadcom Corporation BCM4401-B0 100Base-TX (rev 02)
+        Subsystem: Acer Incorporated [ALI] Device 0090
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 64
+        Interrupt: pin A routed to IRQ 21
+        Region 0: Memory at d2000000 (32-bit, non-prefetchable) [size=8K]
+        Capabilities: <access denied>
+        Kernel driver in use: b44
 
+
+Let me know if you need more details.
+
+Thanks
+-- 
+Francis
