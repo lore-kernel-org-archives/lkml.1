@@ -1,173 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbZECSRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbZECSSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755183AbZECSRg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 14:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbZECSR0
+	id S1755949AbZECSSn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 14:18:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbZECSSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 14:17:26 -0400
-Received: from mail.fieldses.org ([141.211.133.115]:58631 "EHLO
-	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754151AbZECSRZ (ORCPT
+	Sun, 3 May 2009 14:18:32 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:45334 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754018AbZECSSa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 14:17:25 -0400
-Date: Sun, 3 May 2009 14:17:25 -0400
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH] nfsd: use C99 struct initializers
-Message-ID: <20090503181725.GA20762@fieldses.org>
-References: <49F795C9.6040909@oracle.com>
+	Sun, 3 May 2009 14:18:30 -0400
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Anders Kaseorg <andersk@mit.edu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Lots of unexpected non-allocatable section warnings
+References: <20090503110517.6d09bca2@hyperion.delvare>
+	<20090503103010.GA27978@uranus.ravnborg.org>
+	<20090503124848.276b437f@hyperion.delvare>
+X-Yow: I'll clean your ROOM!!  I know some GOOD stories, too!!  All about
+ ROAD Island's, HUSH Puppies, and how LUKE finds GOLD on his LAND!!
+Date: Sun, 03 May 2009 20:18:24 +0200
+In-Reply-To: <20090503124848.276b437f@hyperion.delvare> (Jean Delvare's
+	message of "Sun, 3 May 2009 12:48:48 +0200")
+Message-ID: <m21vr6124v.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.93 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49F795C9.6040909@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 04:48:25PM -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Eliminate 56 sparse warnings like this one:
+Jean Delvare <khali@linux-fr.org> writes:
 
-Thanks, applied for 2.6.31.
+> Hi Sam,
+>
+> Thanks for your swift answer.
+>
+> On Sun, 3 May 2009 12:30:10 +0200, Sam Ravnborg wrote:
+>> On Sun, May 03, 2009 at 11:05:17AM +0200, Jean Delvare wrote:
+>> > Hi Anders, Sam,
+>> > 
+>> > After your fix "kbuild, modpost: Check the section flags, to catch
+>> > missing ax/aw", I get a lot of warnings like the following during
+>> > modpost on x86-64:
+>> > 
+>> > WARNING: arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.o (.comment.SUSE.OPTs): unexpected non-allocatable section.
+>> > Did you forget to use "ax"/"aw" in a .S file?
+>> > Note that for example <linux/init.h> contains
+>> > section definitions for use in .S files.
+>> > 
+>> > Apparently there's one such warning for every module on my system, that
+>> > is, 907. That's a lot, and pretty annoying. How do I solve this? I don't
+>> > know much about assembly.
+>> 
+>> Cannot reproduce here..
+>
+> Given the name of the section, I presume it is somewhat SUSE-specific.
+> I'm running openSUSE 11.1.
 
---b.
+The section is created by the SUSE compiler and contains a summary of
+the options used for compiling the file.  It should be treated like a
+.comment section.
 
-> 
-> fs/nfsd/nfs4xdr.c:1331:15: warning: obsolete array initializer, use C99 syntax
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Cc: J. Bruce Fields <bfields@fieldses.org>
-> Cc: Neil Brown <neilb@suse.de>
-> ---
->  fs/nfsd/nfs4xdr.c |  112 +++++++++++++++++++++++++++---------------------------
->  1 file changed, 56 insertions(+), 56 deletions(-)
-> 
-> --- linux-2.6.30-rc3-git4.orig/fs/nfsd/nfs4xdr.c
-> +++ linux-2.6.30-rc3-git4/fs/nfsd/nfs4xdr.c
-> @@ -1328,64 +1328,64 @@ static nfsd4_dec nfsd4_dec_ops[] = {
->  };
->  
->  static nfsd4_dec nfsd41_dec_ops[] = {
-> -	[OP_ACCESS]		(nfsd4_dec)nfsd4_decode_access,
-> -	[OP_CLOSE]		(nfsd4_dec)nfsd4_decode_close,
-> -	[OP_COMMIT]		(nfsd4_dec)nfsd4_decode_commit,
-> -	[OP_CREATE]		(nfsd4_dec)nfsd4_decode_create,
-> -	[OP_DELEGPURGE]		(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_DELEGRETURN]	(nfsd4_dec)nfsd4_decode_delegreturn,
-> -	[OP_GETATTR]		(nfsd4_dec)nfsd4_decode_getattr,
-> -	[OP_GETFH]		(nfsd4_dec)nfsd4_decode_noop,
-> -	[OP_LINK]		(nfsd4_dec)nfsd4_decode_link,
-> -	[OP_LOCK]		(nfsd4_dec)nfsd4_decode_lock,
-> -	[OP_LOCKT]		(nfsd4_dec)nfsd4_decode_lockt,
-> -	[OP_LOCKU]		(nfsd4_dec)nfsd4_decode_locku,
-> -	[OP_LOOKUP]		(nfsd4_dec)nfsd4_decode_lookup,
-> -	[OP_LOOKUPP]		(nfsd4_dec)nfsd4_decode_noop,
-> -	[OP_NVERIFY]		(nfsd4_dec)nfsd4_decode_verify,
-> -	[OP_OPEN]		(nfsd4_dec)nfsd4_decode_open,
-> -	[OP_OPENATTR]		(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_OPEN_CONFIRM]	(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_OPEN_DOWNGRADE]	(nfsd4_dec)nfsd4_decode_open_downgrade,
-> -	[OP_PUTFH]		(nfsd4_dec)nfsd4_decode_putfh,
-> -	[OP_PUTPUBFH]		(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_PUTROOTFH]		(nfsd4_dec)nfsd4_decode_noop,
-> -	[OP_READ]		(nfsd4_dec)nfsd4_decode_read,
-> -	[OP_READDIR]		(nfsd4_dec)nfsd4_decode_readdir,
-> -	[OP_READLINK]		(nfsd4_dec)nfsd4_decode_noop,
-> -	[OP_REMOVE]		(nfsd4_dec)nfsd4_decode_remove,
-> -	[OP_RENAME]		(nfsd4_dec)nfsd4_decode_rename,
-> -	[OP_RENEW]		(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_RESTOREFH]		(nfsd4_dec)nfsd4_decode_noop,
-> -	[OP_SAVEFH]		(nfsd4_dec)nfsd4_decode_noop,
-> -	[OP_SECINFO]		(nfsd4_dec)nfsd4_decode_secinfo,
-> -	[OP_SETATTR]		(nfsd4_dec)nfsd4_decode_setattr,
-> -	[OP_SETCLIENTID]	(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_SETCLIENTID_CONFIRM](nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_VERIFY]		(nfsd4_dec)nfsd4_decode_verify,
-> -	[OP_WRITE]		(nfsd4_dec)nfsd4_decode_write,
-> -	[OP_RELEASE_LOCKOWNER]	(nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_ACCESS]		= (nfsd4_dec)nfsd4_decode_access,
-> +	[OP_CLOSE]		= (nfsd4_dec)nfsd4_decode_close,
-> +	[OP_COMMIT]		= (nfsd4_dec)nfsd4_decode_commit,
-> +	[OP_CREATE]		= (nfsd4_dec)nfsd4_decode_create,
-> +	[OP_DELEGPURGE]		= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_DELEGRETURN]	= (nfsd4_dec)nfsd4_decode_delegreturn,
-> +	[OP_GETATTR]		= (nfsd4_dec)nfsd4_decode_getattr,
-> +	[OP_GETFH]		= (nfsd4_dec)nfsd4_decode_noop,
-> +	[OP_LINK]		= (nfsd4_dec)nfsd4_decode_link,
-> +	[OP_LOCK]		= (nfsd4_dec)nfsd4_decode_lock,
-> +	[OP_LOCKT]		= (nfsd4_dec)nfsd4_decode_lockt,
-> +	[OP_LOCKU]		= (nfsd4_dec)nfsd4_decode_locku,
-> +	[OP_LOOKUP]		= (nfsd4_dec)nfsd4_decode_lookup,
-> +	[OP_LOOKUPP]		= (nfsd4_dec)nfsd4_decode_noop,
-> +	[OP_NVERIFY]		= (nfsd4_dec)nfsd4_decode_verify,
-> +	[OP_OPEN]		= (nfsd4_dec)nfsd4_decode_open,
-> +	[OP_OPENATTR]		= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_OPEN_CONFIRM]	= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_OPEN_DOWNGRADE]	= (nfsd4_dec)nfsd4_decode_open_downgrade,
-> +	[OP_PUTFH]		= (nfsd4_dec)nfsd4_decode_putfh,
-> +	[OP_PUTPUBFH]		= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_PUTROOTFH]		= (nfsd4_dec)nfsd4_decode_noop,
-> +	[OP_READ]		= (nfsd4_dec)nfsd4_decode_read,
-> +	[OP_READDIR]		= (nfsd4_dec)nfsd4_decode_readdir,
-> +	[OP_READLINK]		= (nfsd4_dec)nfsd4_decode_noop,
-> +	[OP_REMOVE]		= (nfsd4_dec)nfsd4_decode_remove,
-> +	[OP_RENAME]		= (nfsd4_dec)nfsd4_decode_rename,
-> +	[OP_RENEW]		= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_RESTOREFH]		= (nfsd4_dec)nfsd4_decode_noop,
-> +	[OP_SAVEFH]		= (nfsd4_dec)nfsd4_decode_noop,
-> +	[OP_SECINFO]		= (nfsd4_dec)nfsd4_decode_secinfo,
-> +	[OP_SETATTR]		= (nfsd4_dec)nfsd4_decode_setattr,
-> +	[OP_SETCLIENTID]	= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_SETCLIENTID_CONFIRM]= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_VERIFY]		= (nfsd4_dec)nfsd4_decode_verify,
-> +	[OP_WRITE]		= (nfsd4_dec)nfsd4_decode_write,
-> +	[OP_RELEASE_LOCKOWNER]	= (nfsd4_dec)nfsd4_decode_notsupp,
->  
->  	/* new operations for NFSv4.1 */
-> -	[OP_BACKCHANNEL_CTL]	(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_BIND_CONN_TO_SESSION](nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_EXCHANGE_ID]	(nfsd4_dec)nfsd4_decode_exchange_id,
-> -	[OP_CREATE_SESSION]	(nfsd4_dec)nfsd4_decode_create_session,
-> -	[OP_DESTROY_SESSION]	(nfsd4_dec)nfsd4_decode_destroy_session,
-> -	[OP_FREE_STATEID]	(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_GET_DIR_DELEGATION]	(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_GETDEVICEINFO]	(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_GETDEVICELIST]	(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_LAYOUTCOMMIT]	(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_LAYOUTGET]		(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_LAYOUTRETURN]	(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_SECINFO_NO_NAME]	(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_SEQUENCE]		(nfsd4_dec)nfsd4_decode_sequence,
-> -	[OP_SET_SSV]		(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_TEST_STATEID]	(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_WANT_DELEGATION]	(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_DESTROY_CLIENTID]	(nfsd4_dec)nfsd4_decode_notsupp,
-> -	[OP_RECLAIM_COMPLETE]	(nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_BACKCHANNEL_CTL]	= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_BIND_CONN_TO_SESSION]= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_EXCHANGE_ID]	= (nfsd4_dec)nfsd4_decode_exchange_id,
-> +	[OP_CREATE_SESSION]	= (nfsd4_dec)nfsd4_decode_create_session,
-> +	[OP_DESTROY_SESSION]	= (nfsd4_dec)nfsd4_decode_destroy_session,
-> +	[OP_FREE_STATEID]	= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_GET_DIR_DELEGATION]	= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_GETDEVICEINFO]	= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_GETDEVICELIST]	= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_LAYOUTCOMMIT]	= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_LAYOUTGET]		= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_LAYOUTRETURN]	= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_SECINFO_NO_NAME]	= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_SEQUENCE]		= (nfsd4_dec)nfsd4_decode_sequence,
-> +	[OP_SET_SSV]		= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_TEST_STATEID]	= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_WANT_DELEGATION]	= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_DESTROY_CLIENTID]	= (nfsd4_dec)nfsd4_decode_notsupp,
-> +	[OP_RECLAIM_COMPLETE]	= (nfsd4_dec)nfsd4_decode_notsupp,
->  };
->  
->  struct nfsd4_minorversion_ops {
-> 
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
