@@ -1,98 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZECDLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbZECDQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752809AbZECDLr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 23:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbZECDLj
+	id S1753844AbZECDQt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 23:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbZECDQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 23:11:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47866 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750730AbZECDLi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 23:11:38 -0400
-Date: Sat, 2 May 2009 20:06:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Andrew Morton <akpm@linux-foundation.org>, pavel@ucw.cz,
-       jens.axboe@oracle.com, alan-jenkins@tuffmail.co.uk,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: [PATCH 3/4] PM/Hibernate: Use memory allocations to free memory
- (rev. 2)
-In-Reply-To: <200905030224.21471.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.01.0905021958480.4983@localhost.localdomain>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <20090502104947.2720f173.akpm@linux-foundation.org> <200905030220.57933.rjw@sisk.pl> <200905030224.21471.rjw@sisk.pl>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sat, 2 May 2009 23:16:40 -0400
+Received: from mga14.intel.com ([143.182.124.37]:21376 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751087AbZECDQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 23:16:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,284,1239001200"; 
+   d="scan'208";a="138554494"
+Date: Sun, 3 May 2009 11:15:39 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rik van Riel <riel@redhat.com>, elladan@eskimo.com, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, tytso@mit.edu,
+       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
+Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
+Message-ID: <20090503031539.GC5702@localhost>
+References: <1240987349.4512.18.camel@laptop> <20090429114708.66114c03@cuia.bos.redhat.com> <20090430072057.GA4663@eskimo.com> <20090430174536.d0f438dd.akpm@linux-foundation.org> <20090430205936.0f8b29fc@riellaptop.surriel.com> <20090430181340.6f07421d.akpm@linux-foundation.org> <20090430215034.4748e615@riellaptop.surriel.com> <20090430195439.e02edc26.akpm@linux-foundation.org> <49FB01C1.6050204@redhat.com> <20090501123541.7983a8ae.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090501123541.7983a8ae.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 01, 2009 at 12:35:41PM -0700, Andrew Morton wrote:
+> On Fri, 01 May 2009 10:05:53 -0400
+> Rik van Riel <riel@redhat.com> wrote:
+> 
+> > Andrew Morton wrote:
+> > 
+> > >> When we implement working set protection, we might as well
+> > >> do it for frequently accessed unmapped pages too.  There is
+> > >> no reason to restrict this protection to mapped pages.
+> > > 
+> > > Well.  Except for empirical observation, which tells us that biasing
+> > > reclaim to prefer to retain mapped memory produces a better result.
+> > 
+> > That used to be the case because file-backed and
+> > swap-backed pages shared the same set of LRUs,
+> > while each following a different page reclaim
+> > heuristic!
+> 
+> No, I think it still _is_ the case.  When reclaim is treating mapped
+> and non-mapped pages equally, the end result sucks.  Applications get
+> all laggy and humans get irritated.  It may be that the system was
+> optimised from an overall throughput POV, but the result was
+> *irritating*.
+> 
+> Which led us to prefer to retain mapped pages.  This had nothing at all
+> to do with internal impementation details - it was a design objective
+> based upon empirical observation of system behaviour.
 
+Heartily Agreed. We shall try hard to protect the running applications.
 
-On Sun, 3 May 2009, Rafael J. Wysocki wrote:
->
-> Remove the shrinking of memory from the suspend-to-RAM code, where it is 
-> not really necessary.
+Commit 7e9cd484204f(vmscan: fix pagecache reclaim referenced bit check)
+tries to address scalability problem when every page get mapped and
+referenced, so that logic(which lowed the priority of mapped pages)
+could be enabled only on conditions like (priority < DEF_PRIORITY).
 
-Hmm. Shouldn't we do this _regardless_?
+Or preferably we can explicitly protect the mapped executables,
+as illustrated by this patch (a quick prototype).
 
-IOW, shouldn't this be a totally separate patch? It seems to be left-over 
-from when we shared the same code-paths, and before the split of the STR 
-and hibernate code?
-
-IOW, shouldn't the very _first_ patch just be this part? That code doesn't 
-make any sense anyway (that FREE_PAGE_NUMBER really _is_ totally 
-arbitrary).
-
-This part seems to be totally independent of all the other parts in your 
-patch-series. No?
-
-		Linus
-
+Thanks,
+Fengguang
 ---
- kernel/power/main.c |   19 +------------------
- 1 files changed, 1 insertions(+), 18 deletions(-)
+ include/linux/pagemap.h |    1 +
+ mm/mmap.c               |    2 ++
+ mm/nommu.c              |    2 ++
+ mm/vmscan.c             |   37 +++++++++++++++++++++++++++++++++++--
+ 4 files changed, 40 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index f99ed6a..e3197e9 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -188,9 +188,6 @@ static void suspend_test_finish(const char *label)
- 
+--- linux.orig/include/linux/pagemap.h
++++ linux/include/linux/pagemap.h
+@@ -25,6 +25,7 @@ enum mapping_flags {
+ #ifdef CONFIG_UNEVICTABLE_LRU
+ 	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
  #endif
++	AS_EXEC		= __GFP_BITS_SHIFT + 4,	/* mapped PROT_EXEC somewhere */
+ };
  
--/* This is just an arbitrary number */
--#define FREE_PAGE_NUMBER (100)
--
- static struct platform_suspend_ops *suspend_ops;
+ static inline void mapping_set_error(struct address_space *mapping, int error)
+--- linux.orig/mm/mmap.c
++++ linux/mm/mmap.c
+@@ -1198,6 +1198,8 @@ munmap_back:
+ 			goto unmap_and_free_vma;
+ 		if (vm_flags & VM_EXECUTABLE)
+ 			added_exe_file_vma(mm);
++		if (vm_flags & VM_EXEC)
++			set_bit(AS_EXEC, &file->f_mapping->flags);
+ 	} else if (vm_flags & VM_SHARED) {
+ 		error = shmem_zero_setup(vma);
+ 		if (error)
+--- linux.orig/mm/vmscan.c
++++ linux/mm/vmscan.c
+@@ -1220,6 +1220,7 @@ static void shrink_active_list(unsigned 
+ 	int pgdeactivate = 0;
+ 	unsigned long pgscanned;
+ 	LIST_HEAD(l_hold);	/* The pages which were snipped off */
++	LIST_HEAD(l_active);
+ 	LIST_HEAD(l_inactive);
+ 	struct page *page;
+ 	struct pagevec pvec;
+@@ -1259,8 +1260,15 @@ static void shrink_active_list(unsigned 
  
- /**
-@@ -241,24 +238,10 @@ static int suspend_prepare(void)
- 	if (error)
- 		goto Finish;
+ 		/* page_referenced clears PageReferenced */
+ 		if (page_mapping_inuse(page) &&
+-		    page_referenced(page, 0, sc->mem_cgroup))
++		    page_referenced(page, 0, sc->mem_cgroup)) {
++			struct address_space *mapping = page_mapping(page);
++
+ 			pgmoved++;
++			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
++				list_add(&page->lru, &l_active);
++				continue;
++			}
++		}
  
--	if (suspend_freeze_processes()) {
--		error = -EAGAIN;
--		goto Thaw;
--	}
--
--	free_pages = global_page_state(NR_FREE_PAGES);
--	if (free_pages < FREE_PAGE_NUMBER) {
--		pr_debug("PM: free some memory\n");
--		shrink_all_memory(FREE_PAGE_NUMBER - free_pages);
--		if (nr_free_pages() < FREE_PAGE_NUMBER) {
--			error = -ENOMEM;
--			printk(KERN_ERR "PM: No enough memory\n");
--		}
--	}
-+	error = suspend_freeze_processes();
- 	if (!error)
- 		return 0;
+ 		list_add(&page->lru, &l_inactive);
+ 	}
+@@ -1269,7 +1277,6 @@ static void shrink_active_list(unsigned 
+ 	 * Move the pages to the [file or anon] inactive list.
+ 	 */
+ 	pagevec_init(&pvec, 1);
+-	lru = LRU_BASE + file * LRU_FILE;
  
-- Thaw:
- 	suspend_thaw_processes();
- 	usermodehelper_enable();
-  Finish:
+ 	spin_lock_irq(&zone->lru_lock);
+ 	/*
+@@ -1281,6 +1288,7 @@ static void shrink_active_list(unsigned 
+ 	reclaim_stat->recent_rotated[!!file] += pgmoved;
+ 
+ 	pgmoved = 0;
++	lru = LRU_BASE + file * LRU_FILE;
+ 	while (!list_empty(&l_inactive)) {
+ 		page = lru_to_page(&l_inactive);
+ 		prefetchw_prev_lru_page(page, &l_inactive, flags);
+@@ -1305,6 +1313,31 @@ static void shrink_active_list(unsigned 
+ 	}
+ 	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+ 	pgdeactivate += pgmoved;
++
++	pgmoved = 0;
++	lru = LRU_ACTIVE + file * LRU_FILE;
++	while (!list_empty(&l_active)) {
++		page = lru_to_page(&l_active);
++		prefetchw_prev_lru_page(page, &l_active, flags);
++		VM_BUG_ON(PageLRU(page));
++		SetPageLRU(page);
++		VM_BUG_ON(!PageActive(page));
++
++		list_move(&page->lru, &zone->lru[lru].list);
++		mem_cgroup_add_lru_list(page, lru);
++		pgmoved++;
++		if (!pagevec_add(&pvec, page)) {
++			__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
++			pgmoved = 0;
++			spin_unlock_irq(&zone->lru_lock);
++			if (buffer_heads_over_limit)
++				pagevec_strip(&pvec);
++			__pagevec_release(&pvec);
++			spin_lock_irq(&zone->lru_lock);
++		}
++	}
++	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
++
+ 	__count_zone_vm_events(PGREFILL, zone, pgscanned);
+ 	__count_vm_events(PGDEACTIVATE, pgdeactivate);
+ 	spin_unlock_irq(&zone->lru_lock);
+--- linux.orig/mm/nommu.c
++++ linux/mm/nommu.c
+@@ -1220,6 +1220,8 @@ unsigned long do_mmap_pgoff(struct file 
+ 			added_exe_file_vma(current->mm);
+ 			vma->vm_mm = current->mm;
+ 		}
++		if (vm_flags & VM_EXEC)
++			set_bit(AS_EXEC, &file->f_mapping->flags);
+ 	}
+ 
+ 	down_write(&nommu_region_sem);
