@@ -1,83 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbZECQ7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbZECRJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754271AbZECQ7z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 12:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbZECQ7o
+	id S1753396AbZECRJX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 13:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbZECRJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 12:59:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59583 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751944AbZECQ7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 12:59:43 -0400
-Message-ID: <49FDCD7C.7070605@redhat.com>
-Date: Sun, 03 May 2009 19:59:40 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 3 May 2009 13:09:12 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:49405 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752255AbZECRJL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 13:09:11 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Li Hong <lihong.hi@gmail.com>
+Subject: Re: [PATCH] usb: use memdup_user()
+Date: Sun, 3 May 2009 19:09:13 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: oliver@neukum.name, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <3a3680030905030900x672af596mc2ebc3c38f119c92@mail.gmail.com>
+In-Reply-To: <3a3680030905030900x672af596mc2ebc3c38f119c92@mail.gmail.com>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, davidel@xmailserver.org
-Subject: Re: [KVM PATCH v3 2/2] kvm: add support for irqfd via	eventfd-notification
- interface
-References: <20090427182540.6646.96740.stgit@dev.haskins.net> <20090427183334.6646.90800.stgit@dev.haskins.net> <20090430130708.GA13763@redhat.com>
-In-Reply-To: <20090430130708.GA13763@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905031909.14101.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael S. Tsirkin wrote:
-> On Mon, Apr 27, 2009 at 02:33:34PM -0400, Gregory Haskins wrote:
->   
->> This allows an eventfd to be registered as an irq source with a guest.  Any
->> signaling operation on the eventfd (via userspace or kernel) will inject
->> the registered GSI at the next available window.
->>
->> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->>     
->
-> If we ever want to use this with e.g. MSI-X emulation in guest, and want
-> to be stricly compliant to MSI-X, we'll need a way for guest to mask
-> interrupts, and for host to report that a masked interrupt is pending.
-> Ideally, all this will be doable with a couple of mmapped pages to avoid
-> vmexits/system calls.
->
->   
+Am Sonntag, 3. Mai 2009 18:00:56 schrieb Li Hong:
+> Replace a combination call of kmalloc() and copy_from_user() with
+> memdup_user().
 
-We could do this in two ways:
+To be precise. copy_*_user() of course implies that you can do
+GFP_KERNEL. But the point is one of design. Right now I can change
+locking and if that means that one must use GFP_NOIO, which is common
+in usb due to the storage driver, we can find out by simply grepping and
+move the user space copy outside of the loop.
 
-- move msix entry emulation into the kernel
-- require the device to support replacing its irqfd, and juggle it like so:
-   - guest disables msi
-       - replace device model fd with eventfd belonging to us
-       - when the device fires its eventfd, set the irq pending bit
-   - guest enables msi
-        - if the pending bit is set, fire the interrupt?
-        - replace device model fd with the real irqfd
+If you make that change we must grep against a second and rare
+key.
 
-I'm leaning towards the latter, though it's not an easy call.
-
->> +static void
->> +irqfd_inject(struct work_struct *work)
->> +{
->> +	struct _irqfd *irqfd = container_of(work, struct _irqfd, work);
->> +	struct kvm *kvm = irqfd->kvm;
->> +
->> +	mutex_lock(&kvm->lock);
->> +	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
->> +	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
->> +	mutex_unlock(&kvm->lock);
->>     
->
-> This will do weird stuff (deliver the irq twice) if the irq is
-> MSI/MSI-X. I know this was discussed already and is a temporary
-> shortcut, but maybe add a comment that we really want kvm_toggle_irq,
-> so that we won't forget?
->   
-
-If so, that's a bug.  MSI should ignore kvm_set_irq(..., 0).
-
--- 
-error compiling committee.c: too many arguments to function
+	Regards
+		Oliver
 
