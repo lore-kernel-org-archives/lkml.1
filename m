@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752000AbZECJKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753140AbZECJP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752000AbZECJKc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 05:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbZECJKA
+	id S1753140AbZECJP1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 05:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbZECJPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 05:10:00 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:61897 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755665AbZECJJ6 (ORCPT
+	Sun, 3 May 2009 05:15:10 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:58477 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752000AbZECJPI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 05:09:58 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=MnaS2wO5kiq2NqYRO8Hdr2p2Ic6sObQ56HRATTtJ0uv7G4YeFhhWtvw2ChInvCRRB
-	W5oXuh2jRIFRWCYFkH/wA==
-Date: Sun, 3 May 2009 02:09:50 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jack Steiner <steiner@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Cyrill Gorcunov <gorcunov@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86: uv - prevent NULL dereference in
- uv_system_init
-In-Reply-To: <20090503084847.GA20394@elte.hu>
-Message-ID: <alpine.DEB.2.00.0905030203520.16287@chino.kir.corp.google.com>
-References: <20090501195638.GC4633@lenovo> <20090501200331.GA2645@elte.hu> <20090501200937.GD4633@lenovo> <20090501202511.GE4633@lenovo> <20090501203123.GA10878@sgi.com> <20090503084847.GA20394@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 3 May 2009 05:15:08 -0400
+Date: Sun, 3 May 2009 10:15:08 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Jeff Mahoney <jeffm@suse.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       David <david@unsolicited.net>
+Subject: Re: [PATCH] reiserfs: Expand i_mutex to enclose lookup_one_len
+Message-ID: <20090503091507.GU8633@ZenIV.linux.org.uk>
+References: <49FB1F20.8040400@suse.com> <20090503085236.GT8633@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090503085236.GT8633@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 3 May 2009, Ingo Molnar wrote:
-
-> Hm, would be nice if we had a __GFP_PANIC variant in kmalloc that 
-> would just panic straight in the allocator, when allocation failure 
-> is not acceptable. (Andrew Cc:-ed)
+On Sun, May 03, 2009 at 09:52:36AM +0100, Al Viro wrote:
+> On Fri, May 01, 2009 at 12:11:12PM -0400, Jeff Mahoney wrote:
+> >  2.6.30-rc3 introduced some sanity checks in the VFS code to avoid NFS
+> >  bugs by ensuring that lookup_one_len is always called under i_mutex.
+> > 
+> >  This patch expands the i_mutex locking to enclose lookup_one_len. This was
+> >  always required, but not not enforced in the reiserfs code since it
+> >  does locking around the xattr interactions with the xattr_sem.
+> > 
+> >  This is obvious enough, but it survived an overnight 50 thread ACL test.
 > 
-> It does not increase the priority of the allocation nor does it 
-> trigger any 'dont fail' logic - it is simply the central expression 
-> of 'this should not have failed, panic'.
+> It's not enough, unfortunately ;-/  It deals with the warning, but it
+> leaves an actual hole in there.
 > 
+> Look: what happens if we mount it r/o without that directory and then
+> remount r/w?  We get dentry for privroot, hash it (negative at that point),
+> then do actual mkdir, unlock root and modify the ->d_compare() of root
+> to reject lookups on that sucker.  Too late - in the meanwhile lookups
+> might very well come and find privroot in dcache.
+> 
+> BTW, the way ->d_compare() is done in there is rather dumb -
+> 	if (q1 == &priv_root->d_name)
+> 		return -ENOENT;
+> 	...
+> would do just as well.  Why don't we do that lookup *once* (on ->get_sb(),
+> before anything can come and race with us), and then just keep negative
+> dentry if the directory hadn't been around?  And set d_compare() for root
+> immediately after that lookup...
+> 
+> I've applied your patch as-is, and unless you have objections to the
+> variant above I'll do that as incremental.  Comments?
 
-SLUB stores two new slab allocation orders: the cache's adjustable order 
-which is calculated at kmem_cache_create(), and the smallest order that 
-can accommodate at least one object allocation.  The latter is used as a 
-fallback when the former fails in the page allocator.
-
-So for __GFP_PANIC to work in this case, it could not be implemented in 
-the page allocator (SLUB also passes __GFP_NORETRY for new slabs) but 
-rather above it in allocate_slab().  It would then be a no-op for 
-alloc_pages().
+BTW, what in the name of everything unholy is ->xattr_root?  Never
+assigned a non-NULL value...
