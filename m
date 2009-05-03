@@ -1,120 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbZECB2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbZECBex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753762AbZECB2x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 21:28:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbZECB2p
+	id S1754157AbZECBex (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 21:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbZECBej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 21:28:45 -0400
-Received: from mga03.intel.com ([143.182.124.21]:35143 "EHLO mga03.intel.com"
+	Sat, 2 May 2009 21:34:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35223 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753389AbZECB2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 21:28:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,284,1239001200"; 
-   d="scan'208";a="138542081"
-Date: Sun, 3 May 2009 09:28:06 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rik van Riel <riel@redhat.com>, kosaki.motohiro@jp.fujitsu.com,
-       peterz@infradead.org, elladan@eskimo.com, linux-kernel@vger.kernel.org,
-       tytso@mit.edu, linux-mm@kvack.org
-Subject: Re: [PATCH] vmscan: evict use-once pages first (v3)
-Message-ID: <20090503012806.GB5702@localhost>
-References: <20090428044426.GA5035@eskimo.com> <20090428192907.556f3a34@bree.surriel.com> <1240987349.4512.18.camel@laptop> <20090429114708.66114c03@cuia.bos.redhat.com> <2f11576a0904290907g48e94e74ye97aae593f6ac519@mail.gmail.com> <20090429131436.640f09ab@cuia.bos.redhat.com> <20090501153255.0f412420.akpm@linux-foundation.org> <49FB8031.8000602@redhat.com> <20090501162506.f9243dca.akpm@linux-foundation.org>
+	id S1752719AbZECBei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 21:34:38 -0400
+Message-ID: <49FCF423.7040609@kernel.org>
+Date: Sun, 03 May 2009 10:32:19 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090501162506.f9243dca.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Boaz Harrosh <bharrosh@panasas.com>, axboe@kernel.dk,
+       linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
+       mike.miller@hp.com, chirag.kantharia@hp.com, Eric.Moore@lsi.com,
+       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, jesper.juhl@gmail.com, tim@cyberelk.net,
+       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
+       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
+       davem@davemloft.net, rusty@rustcorp.com.au,
+       Markus.Lidel@shadowconnect.com, "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH 08/10] block: cleanup rq->data_len usages
+References: <1240996428-10159-1-git-send-email-tj@kernel.org>	 <1240996428-10159-9-git-send-email-tj@kernel.org>	 <49F9AC04.9060403@panasas.com> <1241105757.3320.1.camel@mulgrave.int.hansenpartnership.com>
+In-Reply-To: <1241105757.3320.1.camel@mulgrave.int.hansenpartnership.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 03 May 2009 01:31:24 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 04:25:06PM -0700, Andrew Morton wrote:
-> On Fri, 01 May 2009 19:05:21 -0400
-> Rik van Riel <riel@redhat.com> wrote:
+James Bottomley wrote:
+> On Thu, 2009-04-30 at 16:47 +0300, Boaz Harrosh wrote:
+>>> @@ -966,7 +965,7 @@ static int scsi_init_sgtable(struct request
+>> *req, struct scsi_data_buffer *sdb,
+>>>       BUG_ON(count > sdb->table.nents);
+>>>       sdb->table.nents = count;
+>>>       if (blk_pc_request(req))
+>>> -             sdb->length = req->data_len;
+>>> +             sdb->length = blk_rq_bytes(req);
+>>>       else
+>>>               sdb->length = blk_rq_sectors(req) << 9;
+>> Is this true. I thought they must be the same now. I was actually
+>> anticipating this if() removed.
 > 
-> > Andrew Morton wrote:
-> > > On Wed, 29 Apr 2009 13:14:36 -0400
-> > > Rik van Riel <riel@redhat.com> wrote:
-> > > 
-> > >> When the file LRU lists are dominated by streaming IO pages,
-> > >> evict those pages first, before considering evicting other
-> > >> pages.
-> > >>
-> > >> This should be safe from deadlocks or performance problems
-> > >> because only three things can happen to an inactive file page:
-> > >> 1) referenced twice and promoted to the active list
-> > >> 2) evicted by the pageout code
-> > >> 3) under IO, after which it will get evicted or promoted
-> > >>
-> > >> The pages freed in this way can either be reused for streaming
-> > >> IO, or allocated for something else. If the pages are used for
-> > >> streaming IO, this pageout pattern continues. Otherwise, we will
-> > >> fall back to the normal pageout pattern.
-> > >>
-> > >> ..
-> > >>
-> > >> +int mem_cgroup_inactive_file_is_low(struct mem_cgroup *memcg)
-> > >> +{
-> > >> +	unsigned long active;
-> > >> +	unsigned long inactive;
-> > >> +
-> > >> +	inactive = mem_cgroup_get_local_zonestat(memcg, LRU_INACTIVE_FILE);
-> > >> +	active = mem_cgroup_get_local_zonestat(memcg, LRU_ACTIVE_FILE);
-> > >> +
-> > >> +	return (active > inactive);
-> > >> +}
-> > > 
-> > > This function could trivially be made significantly more efficient by
-> > > changing it to do a single pass over all the zones of all the nodes,
-> > > rather than two passes.
-> > 
-> > How would I do that in a clean way?
-> 
-> copy-n-paste :(
-> 
-> static unsigned long foo(struct mem_cgroup *mem,
-> 			enum lru_list idx1, enum lru_list idx2)
-> {
-> 	int nid, zid;
-> 	struct mem_cgroup_per_zone *mz;
-> 	u64 total = 0;
-> 
-> 	for_each_online_node(nid)
-> 		for (zid = 0; zid < MAX_NR_ZONES; zid++) {
-> 			mz = mem_cgroup_zoneinfo(mem, nid, zid);
-> 			total += MEM_CGROUP_ZSTAT(mz, idx1);
-> 			total += MEM_CGROUP_ZSTAT(mz, idx3);
-> 		}
-> 	return total;
-> }
-> 
-> dunno if that's justifiable.
-> 
-> > The function mem_cgroup_inactive_anon_is_low and
-> > the global versions all do the same.  It would be
-> > nice to make all four of them go fast :)
-> > 
-> > If there is no standardized infrastructure for
-> > getting multiple statistics yet, I can probably
-> > whip something up.
-> 
-> It depends how often it would be called for, I guess.
-> 
-> One approach would be pass in a variable-length array of `enum
-> lru_list's, get returned a same-lengthed array of totals.
-> 
-> Or perhaps all we need to return is the sum of those totals.
-> 
-> I'd let the memcg guys worry about this if I were you ;)
-> 
-> > Optimizing them might make sense if it turns out to
-> > use a significant amount of CPU.
-> 
-> Yeah.  By then it's often too late though.  The sort of people for whom
-> (num_online_nodes*MAX_NR_ZONES) is nuttily large tend not to run
-> kernel.org kernels.
+> Me too ... there's one of these in scsi_lib.c as well.
 
-Good point. We could add a flag that is tested frequently in shrink_list()
-and updated less frequently in shrink_zone() (or whatever).
+Not until the next patch.  It's probably safe for scsi to make the
+switch here but I wanted to do the transition in two logical steps -
+1. make all users use accessors in the defined manner without
+affecting anything else 2. knowing #1 is true for all low level
+drivers, unify implementation inside block layer.  I had a following
+patch which tried to do sweep conversion of all llds (which is
+guaranteed to be safe after #2 has happened) but it looked like more
+trouble than worth and seems like best left to each subsystem, so
+please go ahead and clean up subsystems on top of this patchset.  :-)
+
+> The difference comes because filesystem requests are always in sectors,
+> but BLOCK_PC requests are always in bytes .... we should be able to wrap
+> the accessors so they do the correct conversions.
+
+After this series is applied, blk_rq_bytes() >> 9 == blk_rq_sectors()
+is guaranteed (note that blk_rq_sectors() << 9 might not equal
+blk_rq_bytes() if the data transfer length isn't multiple of 512), so
+the above if can be removed.  I just didn't want to make the
+conversion (probably safe for scsi) before the actual unification.
+
+Thanks.
+
+-- 
+tejun
