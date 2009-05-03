@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbZECUbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZECUjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756307AbZECUbh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 16:31:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756822AbZECUbP
+	id S1756586AbZECUjs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 16:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbZECUji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 16:31:15 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34787 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756716AbZECUbO (ORCPT
+	Sun, 3 May 2009 16:39:38 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:11765 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755444AbZECUjh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 16:31:14 -0400
-Date: Sun, 3 May 2009 21:31:11 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com
-Subject: Re: [KVM PATCH v3 2/2] kvm: add support for irqfd via
-	eventfd-notification interface
-Message-ID: <20090503203111.GB8633@ZenIV.linux.org.uk>
-References: <20090427182540.6646.96740.stgit@dev.haskins.net> <20090427183334.6646.90800.stgit@dev.haskins.net> <20090503064432.GS8633@ZenIV.linux.org.uk> <alpine.DEB.1.10.0905031103290.7899@makko.or.mcafeemobile.com> <20090503190136.GY8633@ZenIV.linux.org.uk> <alpine.DEB.1.10.0905031252540.7899@makko.or.mcafeemobile.com>
+	Sun, 3 May 2009 16:39:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=D6CeSRjIjPQ0ISVis2yIsGKN4pc6KOorPXLMw8eR8zSGBzcOBoyvkMY0obdowQoAsg
+         3wqGNerarnsU8sbWjnvMey6sY0prfy5tuOFKfPuwQEa7vIvvyMxeCWeCSN/PCyGkatMl
+         I2VUDkmH9xY5htHyxggyY5/IsABobb1xjXmPU=
+Message-ID: <49FE0105.6010107@gmail.com>
+Date: Sun, 03 May 2009 14:39:33 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0905031252540.7899@makko.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Panagiotis Papadakos <papadako@csd.uoc.gr>
+CC: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: 2.6.30-rc4 Weird messages with ext4
+References: <200905031508.06053.papadako@csd.uoc.gr>
+In-Reply-To: <200905031508.06053.papadako@csd.uoc.gr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 03, 2009 at 01:11:39PM -0700, Davide Libenzi wrote:
-> On Sun, 3 May 2009, Al Viro wrote:
+Panagiotis Papadakos wrote:
+> Hi.
 > 
-> > IOW, the sane solution would be to export something that returns your
-> > struct file *.  And stop playing with fd completely.
+> When I connect my ext4 formatted Seagate 1.5 TB USB box,
+> I get the messages of the style:
 > 
-> This builds but it's not tested at all.
+> [sdb] Result: hostbyte=DID_OK driverbyte=DRIVER_SENSE           
+> [sdb] Sense Key : Illegal Request [current]                     
+> [sdb] Add. Sense: Logical block address out of range 
 > 
-> - Make all the work of the old anon_inode_getfd(), done by a new 
->   anon_inode_getfile(), with anon_inode_getfd() using its services
+> By the way I am not getting such messages with 2.6.29.
 > 
-> - Make all the work done by sys_eventfd(), done by a new 
->   eventfd_file_create() (which in turn uses anon_inode_getfile()), with 
->   sys_eventfd() using its services
-> 
-> IRQfd can use eventfd_file_create(), fget(), get_unused_fd_flags() and 
-> fd_install() just before returning.
-> Is that what you had in mind?
+> Anyone knows what might be wrong?
 
-More or less, but I'd like to see the irqfd side of that...
+Sounds like something's messing up with the disk size detection, as it 
+gets detected as a 2TB drive. CCing linux-usb and linux-scsi.
+
+Apr 27 20:42:15 cray-7 kernel: [    7.600940] scsi 2:0:0:0: 
+Direct-Access     ST315003 41AS                  PQ: 0 ANSI: 2
+Apr 27 20:42:15 cray-7 kernel: [    7.601701] sd 2:0:0:0: Attached scsi 
+generic sg2 type 0
+Apr 27 20:42:15 cray-7 kernel: [    7.623420] sd 2:0:0:0: [sdb] Very big 
+device. Trying to use READ CAPACITY(16).
+Apr 27 20:42:15 cray-7 kernel: [    7.624694] sd 2:0:0:0: [sdb] Using 
+0xffffffff as device size
+Apr 27 20:42:15 cray-7 kernel: [    7.624703] sd 2:0:0:0: [sdb] 
+4294967296 512-byte hardware sectors: (2.19 TB/2.00 TiB)
+Apr 27 20:42:15 cray-7 kernel: [    7.627074] sd 2:0:0:0: [sdb] Write 
+Protect is off
+Apr 27 20:42:15 cray-7 kernel: [    7.649077] sd 2:0:0:0: [sdb] Very big 
+device. Trying to use READ CAPACITY(16).
+Apr 27 20:42:15 cray-7 kernel: [    7.650288] sd 2:0:0:0: [sdb] Using 
+0xffffffff as device size
+Apr 27 20:42:15 cray-7 kernel: [    7.652566]  sdb: unknown partition table
+Apr 27 20:42:15 cray-7 kernel: [    7.674807] sd 2:0:0:0: [sdb] Attached 
+SCSI disk
+Apr 27 20:42:15 cray-7 kernel: [    7.683409] sd 2:0:0:0: [sdb] Result: 
+hostbyte=DID_OK driverbyte=DRIVER_SENSE
+Apr 27 20:42:15 cray-7 kernel: [    7.683418] sd 2:0:0:0: [sdb] Sense 
+Key : Illegal Request [current]
+Apr 27 20:42:15 cray-7 kernel: [    7.683425] sd 2:0:0:0: [sdb] Add. 
+Sense: Logical block address out of range
