@@ -1,112 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752153AbZECGMC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbZECGZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752153AbZECGMC (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 02:12:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbZECGLv
+	id S1753851AbZECGZo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 02:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbZECGZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 02:11:51 -0400
-Received: from mga06.intel.com ([134.134.136.21]:64588 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751019AbZECGLu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 02:11:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,285,1239001200"; 
-   d="scan'208";a="409003124"
-Date: Sat, 2 May 2009 23:11:50 -0700
-From: Matthew Wilcox <willy@linux.intel.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@redhat.com, Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH 1/5] Block: Discard may need to allocate pages
-Message-ID: <20090503061150.GF10704@linux.intel.com>
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <49D8A3D7.5070507@panasas.com>
+	Sun, 3 May 2009 02:25:35 -0400
+Received: from mail.lang.hm ([64.81.33.126]:60696 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751564AbZECGZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 02:25:34 -0400
+Date: Sat, 2 May 2009 23:24:48 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard
+To: Neil Brown <neilb@suse.de>
+cc: Philipp Reisner <philipp.reisner@linbit.com>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Lars Marowsky-Bree <lmb@suse.de>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>
+Subject: Re: [PATCH 00/16] DRBD: a block device for HA clusters
+In-Reply-To: <18941.12645.590037.589600@notabene.brown>
+Message-ID: <alpine.DEB.1.10.0905022256230.15782@asgard>
+References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com> <18941.12645.590037.589600@notabene.brown>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D8A3D7.5070507@panasas.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I am not a DRDB developer, but I can answer some of your questions below.
 
-[I thought I replied to this, but I don't see an indication that I did]
+On Sun, 3 May 2009, Neil Brown wrote:
 
-On Sun, Apr 05, 2009 at 03:28:07PM +0300, Boaz Harrosh wrote:
-> > +++ b/block/blk-barrier.c
-> > @@ -356,6 +356,8 @@ static void blkdev_discard_end_io(struct bio *bio, int err)
-> >  		clear_bit(BIO_UPTODATE, &bio->bi_flags);
-> >  	}
-> >  
-> > +	if (bio_has_data(bio))
-> > +		__free_page(bio_page(bio));
-> 
-> Page freed which was allocated by the LLD
+> On Thursday April 30, philipp.reisner@linbit.com wrote:
+>> Hi,
+>>
+>> This is a repost of DRBD, to keep you updated about the ongoing
+>> cleanups and improvements.
+>>
+>> Patch set attached. Git tree available:
+>> git pull git://git.drbd.org/linux-2.6-drbd.git drbd
+>>
+>> We are looking for reviews!
+>>
+>> Description
+>>
+>>   DRBD is a shared-nothing, synchronously replicated block device. It
+>>   is designed to serve as a building block for high availability
+>>   clusters and in this context, is a "drop-in" replacement for shared
+>>   storage. Simplistically, you could see it as a network RAID 1.
+>
+> I know this is minor, but it bugs me every time I see that phrase
+> "shared-nothing".   Surely the network is shared??
 
-It wasn't allocated by the LLD.  It was allocated by the ULD.
+the logical network(s) as a whole are shared, but physicaly they can be 
+redundant, multi-pathed, etc.
 
-> >  	bio_put(bio);
-> 
-> OK bio was allocated by user code but shouldn't
+> And the code...
+> Can you just say "DRBD is a synchronously replicated block device"?
+> or would we have to call it SRBD then?
+> Or maybe "shared-nothing" is an accepted technical term in the
+> clustering world??
 
-?  Are you saying the bio should be allocated by each driver
-implementing a discard operation?
+DRDB can be configured to be synchronous or asynchronous.
 
-> >  	while (nr_sects && !ret) {
-> > -		bio = bio_alloc(gfp_mask, 0);
-> > +		bio = bio_alloc(gfp_mask, 1);
-> 
-> blkdev_issue_discard() and blk_ioctl_discard() has half a page
-> of common (and changing) code, could be done to use a common
-> helper that sets policy about bio allocation sizes and such.
-> 
-> Just my $0.017
+'shared-nothing' is a accepted technical term in the clustering world for 
+when two systems are not using any single device.
 
-Yes, that works nicely.  Thanks for the suggestion.
+in the case of a network, I commonly setup systems where the network has 
+two switches (connected togeather with fiber so that an electrical problem 
+in one switch cannot short out the other) with the primary box plugged 
+into one switch and the backup box plugged into another. I also make sure 
+that my systems primary and backup systems are in seperate racks, so that 
+if something goes wrong in one rack that causes an excessive amount of 
+heat it won't affect the backup systems (and yes, this has happened to me 
+when I got lazy and stopped checking on this)
 
-> > @@ -1118,7 +1120,7 @@ void init_request_from_bio(struct request *req, struct bio *bio)
-> >  		req->cmd_flags |= REQ_DISCARD;
-> >  		if (bio_barrier(bio))
-> >  			req->cmd_flags |= REQ_SOFTBARRIER;
-> > -		req->q->prepare_discard_fn(req->q, req);
-> > +		req->q->prepare_discard_fn(req->q, req, bio);
-> 
-> Allocation of bio page could be done commonly here.
-> The prepare_discard_fn() is made to return the needed size. It is not as if we actually
-> give the driver a choice about the allocation.
+at this point the network switch is not shared (although the logical 
+network is)
 
-Not all drivers need to allocate a page.  Some drivers may need
-to allocate more than one page, depending on how large the range is.
-And the driver can't just return the page size it needs here -- it needs
-to fill in the contents of the page too.
+in the case of disk storage the common situation is 'shared-disk' where 
+you have one disk array and both machines are plugged into it.
 
-I suppose we could do something fairly disgusting like:
+this gives you a single point of failure if the disk array crashes (even 
+if it has redundant controllers, power supplies, etc things still happen), 
+and the disk array can only be in one physical location.
 
-		for (;;) {
-			struct page *page;
-			needed = req->q->prepare_discard_fn(req->q, req, bio);
-			if (!needed)
-				break;
-			page = alloc_page(GFP_KERNEL);
-			if (bio_add_pc_page(q, bio, page, PAGE_SIZE, 0) < PAGE_SIZE)
-				goto fail;
-		}
+DRDB lets you logicly setup your systems as if they were a 'shared-disk' 
+architecture, but with the hardware being 'shared-nothing'
 
-Then the driver can return 0 => success, anything else => allocate more
-ram, try again.
+you can have the two halves of the cluster in different states, so that 
+even a major disaster like a earthquake won't kill the system. (a classic 
+case of 'shared-nothing'
 
-> I have one question:
-> 
-> At [PATCH 4/5] and [PATCH 4/5] you do:
-> +	struct page *page = alloc_page(GFP_KERNEL);
-> 
-> does that zero the alloced page? since if I understand correctly this page
-> will go on the wire, a SW target on the other size could snoop random Kernel
-> memory, is that allowed? OK I might be totally clueless here.
+>>
+>>    1) Think of a two node HA cluster. Node A is active ('primary' in DRBD
+>>     speak) has the filesystem mounted and the application running. Node B is
+>>     in standby mode ('secondary' in DRBD speak).
+>
+> If there some strong technical reason to only allow 2 nodes?  Was it
+> Asimov who said the only sensible numbers were 0, 1, and infinity?
+> (People still get surprised that md/raid1 can do 2 or 3 or n drives,
+> and that md/raid5 can handle just 2 :-)
 
-alloc_page doesn't zero the page.
+in this case we have 1 replica (or '1 other machine'), so we are on an 
+'interesting number' ;-)
 
-scsi only sends out 24 bytes of that page on the wire, and it initialises
-all 24 bytes.  ide/ata send multiples of 512 bytes on the wire, and
-they're careful to zero any of the space they're not using.
+many people would love to see DRDB extended beyond this, but my 
+understanding is that doing so in non-trivial.
+
+>>   DRBD can also be used in dual-Primary mode (device writable on both
+>>   nodes), which means it can exhibit shared disk semantics in a
+>>   shared-nothing cluster.  Needless to say, on top of dual-Primary
+>>   DRBD utilizing a cluster file system is necessary to maintain for
+>>   cache coherency.
+>>
+>>   More background on this can be found in this paper:
+>>     http://www.drbd.org/fileadmin/drbd/publications/drbd8.pdf
+>>
+>>   Beyond that, DRBD addresses various issues of cluster partitioning,
+>>   which the MD/NBD stack, to the best of our knowledge, does not
+>>   solve. The above-mentioned paper goes into some detail about that as
+>>   well.
+>
+> Agreed - MD/NBD could probably be easily confused by cluster
+> partitioning, though I suspect that in many simple cases it would get
+> it right.  I haven't given it enough thought to be sure.  I doubt the
+> enhancements necessary would be very significant though.
+
+think of two different threads doing writes directly to their side of the 
+mirror and the system needs to notice this happening and copy the data to 
+the other half of the mirror (with GFS working above you to coordinate the 
+two threads and make sure they don't make conflicting writes)
+
+it's not a trivial task.
+
+David Lang
