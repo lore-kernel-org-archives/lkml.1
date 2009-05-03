@@ -1,78 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbZECWr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbZECWtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754997AbZECWr7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 18:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbZECWrr
+	id S1755793AbZECWtU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 18:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZECWtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 18:47:47 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:37582 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751800AbZECWrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 18:47:46 -0400
-Message-ID: <49FE1EFF.2050406@garzik.org>
-Date: Sun, 03 May 2009 18:47:27 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 3 May 2009 18:49:09 -0400
+Received: from [212.69.161.110] ([212.69.161.110]:49793 "EHLO
+	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753420AbZECWtI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 18:49:08 -0400
+Date: Mon, 4 May 2009 00:48:09 +0200
+From: Lars Ellenberg <lars.ellenberg@linbit.com>
+To: Kyle Moffett <kyle@moffetthome.net>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
+       Neil Brown <neilb@suse.de>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Lars Marowsky-Bree <lmb@suse.de>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: [PATCH 02/16] DRBD: lru_cache
+Message-ID: <20090503224809.GB6243@racke>
+References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com> <1241090812-13516-2-git-send-email-philipp.reisner@linbit.com> <1241090812-13516-3-git-send-email-philipp.reisner@linbit.com> <f73f7ab80905021651y54db1e69y87f0487bc06f0522@mail.gmail.com> <20090503062720.GA31340@racke> <f73f7ab80905030706i4afd0902ub42d42d60f01e6a2@mail.gmail.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Matthew Wilcox <matthew@wil.cx>, Jens Axboe <jens.axboe@oracle.com>,
-       Boaz Harrosh <bharrosh@panasas.com>, Hugh Dickins <hugh@veritas.com>,
-       Matthew Wilcox <willy@linux.intel.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Mark Lord <lkml@rtr.ca>
-Subject: Re: New TRIM/UNMAP tree published (2009-05-02)
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com>	 <49D8A3D7.5070507@panasas.com> <20090503061150.GF10704@linux.intel.com>	 <20090503071619.GP8822@parisc-linux.org>	 <Pine.LNX.4.64.0905031346350.29671@blonde.anvils>	 <20090503144847.GR8822@parisc-linux.org> <49FDB21B.3080301@panasas.com>	 <20090503154216.GU8822@parisc-linux.org> <49FDC786.6070309@panasas.com>	 <49FDE3BB.505@garzik.org>  <49FDE50A.4060503@garzik.org>	 <1241377472.5596.88.camel@mulgrave.int.hansenpartnership.com>	 <49FDEE64.5090302@garzik.org> <1241380067.5596.103.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1241380067.5596.103.camel@mulgrave.int.hansenpartnership.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <f73f7ab80905030706i4afd0902ub42d42d60f01e6a2@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Sun, 2009-05-03 at 15:20 -0400, Jeff Garzik wrote:
->> [tangent...]
->>
->> Does make you wonder if a ->init_rq_fn() would be helpful, one that 
->> could perform gfp_t allocations rather than GFP_ATOMIC?  The idea being 
->> to call ->init_rq_fn() almost immediately after creation of struct 
->> request, by the struct request creator.
+On Sun, May 03, 2009 at 10:06:58AM -0400, Kyle Moffett wrote:
+> On Sun, May 3, 2009 at 2:27 AM, Lars Ellenberg
+> <lars.ellenberg@linbit.com> wrote:
+> > When we created our lru_cache stuff, we considered embedding callbacks
+> > and internal locking, but decided against it.  Conceptually it should be
+> > more like the "list.h" list handling infrastructure.
+> >
+> > The user will have their own locking in place anyways, and in general
+> > their critical section will be a few lines of code larger than the
+> > "lru cache" manipulation itself.
 > 
-> Isn't that what the current prep_fn actually is?
+> One of the major design-points for the code I'm fiddling with is that
+> it allows you to use RCU on your lookup table, which basically means
+> lock-free lookup (although I haven't stress-tested that part of it yet
+> so the code itself may have subtle bugs).  With a bit more work it's
+> probably even possible to make it lock-free even when adding a
+> reference to an object that's currently on the LRU.
 
-> It's hard to see how ... prep_rq_fn is already called pretty early ...
-> almost as soon as the elevator has decided to spit out the request
+sounds good.
 
-prep_rq_fn is called very, very late -- from elv_next_request(), which 
-is called from ->request_fn.
+maybe it is only late, and I just don't see how good your code fits
+what we are doing, after just adding twenty-or-so lines of wrapper code.
+let me sleep about it.
 
-As quoted above, I'm talking about something closer to -creation- time, 
-not -execution- time.
+still, some comments below.
 
-
->> The creator of struct request generally has more freedom to sleep, and 
->> it seems logical to give low-level drivers a "fill in LLD-specific info" 
->> hook BEFORE the request is ever added to a request_queue.
+> > And, the specific use of our implementation is that there is a
+> > pre-selected maximum count of in-use objects, and the user gets
+> > feedback about changes to this "active" set of objects.
 > 
-> Unfortunately it's not really possible to find a sleeping context in
-> there:  The elevators have to operate from the current
-> elv_next_request() context, which, in most drivers can either be user or
-> interrupt.
+> Another major design point (and the reason for the single "evict"
+> callback) is that my code does not require manual tuning, it responds
+> to memory-pressure dynamically using the "shrinker" mechanism.  So on
+> a box with 128MB of RAM your LRU cache will be automatically
+> size-limited by other activity on the system to an appropriate size;
+> yet it can scale up to tens or hundreds of megabytes on a system with
+> hundreds of gigs of RAM under heavy IO load.
 
-Sure, because that's further down the pipeline at the request execution 
-stage.  Think more like make_request time...
+I'm in the IO path.
+I absolutely do not want some stupid excessive read_ahead setting
+or an out-of-bounds badly hacked php cronjob to limit the amount
+of write-out I can do when things get tight (because of that badly
+behaved process, most likely).
 
-> The ideal for REQ_TYPE_DISCARD seems to be to force a page allocation
-> tied to a bio when it's issued at the top.  That way everyone has enough
-> memory when it comes down the stack (both extents and WRITE SAME sector
-> will fit into a page ... although only just for WRITE SAME on 4k
-> sectors).
+And I do not want to let it grow to an arbitrary number of objects,
+that is even one important point of it: giving the admin a tuning knob
+to trade resync-time after crash vs. frequency of meta-data updates.
+I _want_ manual tuning. We are talking about (at max) a few thousand
+small (<=56 bytes, even on 64bit arch), a few hundred kB.
 
-Makes sense...
+I'm sure your approach has a number of valid uses.
+I don't yet see it as a good fit for our purpose, though.
+well, maybe it could replace the "inter part" of what we do.
 
-	Jeff
+> The real deal-breaker for your code is its usage of "vmalloc", it's
+> unlikely to be merged when it relies on vmalloc() of a large
+> continuous block for operation.
 
+yes, I already got that part, thanks ;)
+it is not a problem, its only in there because we have been lazy.
 
+it is easily changed, either by using kmalloc (the objects, and the
+maximum number of objects are both small), or some array of pages.
+maybe even using a kmem_cache, partly following your code,
+if that makes you happy ;-)
+
+still, the main purpose of your "lru_cache",
+and what we do with our "lru_cache",
+seems to me to be different.
+maybe we should change our name to something more appropriate.
+
+> > That is where the focus is:
+> > make the set of active objects easily trackable.
+> > So one can easily keep track of who is in, and who is not,
+> > by writing a log of just this "diff":
+> > seat index was occupied by element_nr A, but now is by element_nr B.
+> 
+> This could be very easily done with tracepoints and a few minor tweaks
+> to the implementation I provided.  I could add an object number and
+> various statistics similar to the ones in your code; the only reason I
+> didn't before is I did not need them and they detracted slightly from
+> the simplicity of the implementation (just 271 lines).
+> 
+> Keep in mind that by using the kmem_cache infrastructure, you get to
+> take advantage of all of the other SLAB debugging features on objects
+> allocated through your LRUs.
+
+I'm not oposed to it. I just say we don't need it.
+We never allocate through our LRUs.
+It is all just reference counting, and changing "seat lables".
+Changing seat lables is the important part of it, actually.
+
+> > So from looking at your code, it may be fine for the "lru" part,
+> > but it is not suitable for our purposes.
+> 
+> It would need an extra layer stacked on top to handle the hash-table
+> lookups,
+
+yes, we need a fast way to know "is this id currently in the active set?".
+that is what we use it most often for.
+
+for our use case, now using label for element_number,
+the most important functions would be
+
+lru_cache_is_label_present(),
+lru_cache_get_by_label(),
+which would need to say "EAGAIN", once the active set is full and all
+are in fact used.  and also return back the previous label now evicted,
+(or "was free anyways") if successful.
+
+lru_cache_try_get_by_label(),
+which is just a combination of these two.
+
+>  but it would solve the vmalloc issue
+
+I hear you ;)
+
+> and allow your LRU lists to dynamically size a bit better.
+
+We currently neither want nor need that.
+
+> It's also not that difficult to apply memory allocation limits (aside
+> from the default memory-pressure) and add additional statistics and
+> debugging info.
+
+Of course, nothing is difficult, if it has been done already ;)
+We don't need memory allocation limits, we want a limit on the
+number of active objects. Boils down to the same thing, but for
+different reasons.
+
+I dislike the embeded lock as well as the callback.
+I see what you need it for.
+But for our purposes, we probably would need to just set a
+"return NO_PLEASE;". And we do need to embed calls to this stuff in larger
+critical sections.  Which means the embeded lock can never have
+contention, it would always use the fast path, ok.  But still: unneccessary.
+
+We just happen to also have the "lru" part somewhere.  But in actually it is
+all about having a fixed number of "seats", with fixed indices and changeing
+labels, then changing these "seat labels", while persistently journalling the
+currently in-use labels.
+
+but wait for the next post to see a better documented (or possibly
+rewritten) implementation of this.
+
+	Lars
