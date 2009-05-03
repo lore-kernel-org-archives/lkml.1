@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZECShI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755710AbZECSkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754855AbZECShI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 14:37:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbZECSgz
+	id S1755710AbZECSkh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 14:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbZECSk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 14:36:55 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:64505 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752229AbZECSgy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 14:36:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=T9D9pc2+rP9OS+n6tdKDDrsl5LqQkBxnrHUuwbnHqEYNn0oNY4N9y1fx6ZsXPLjQs0
-         vYSNwtAMdsnjkpxaY/2eXbEl+6svMeIwGO6w6hIEHzbSQdUrWTMYVfKiBSncrA5PS3zB
-         5kHPdXAc1KmbhUzTU1DvO6HwcVk6a2tJEOejw=
-Date: Sun, 3 May 2009 20:36:51 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Josh Stone <jistone@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] export softirq_to_name symbol
-Message-ID: <20090503183650.GB6010@nowhere>
-References: <20090501193022.GB3111@redhat.com> <20090501195015.GA31694@infradead.org> <49FB5686.8020908@redhat.com> <20090501201028.GA2084@infradead.org>
+	Sun, 3 May 2009 14:40:26 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58147 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752229AbZECSkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 14:40:25 -0400
+Message-ID: <49FDE50A.4060503@garzik.org>
+Date: Sun, 03 May 2009 14:40:10 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090501201028.GA2084@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Matthew Wilcox <matthew@wil.cx>, Jens Axboe <jens.axboe@oracle.com>
+CC: Boaz Harrosh <bharrosh@panasas.com>, Hugh Dickins <hugh@veritas.com>,
+       Matthew Wilcox <willy@linux.intel.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Mark Lord <lkml@rtr.ca>
+Subject: Re: New TRIM/UNMAP tree published (2009-05-02)
+References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <49D8A3D7.5070507@panasas.com> <20090503061150.GF10704@linux.intel.com> <20090503071619.GP8822@parisc-linux.org> <Pine.LNX.4.64.0905031346350.29671@blonde.anvils> <20090503144847.GR8822@parisc-linux.org> <49FDB21B.3080301@panasas.com> <20090503154216.GU8822@parisc-linux.org> <49FDC786.6070309@panasas.com> <49FDE3BB.505@garzik.org>
+In-Reply-To: <49FDE3BB.505@garzik.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 04:10:28PM -0400, Christoph Hellwig wrote:
-> On Fri, May 01, 2009 at 01:07:34PM -0700, Josh Stone wrote:
-> > I'm adding SystemTap support for the format strings in the TRACE_EVENT
-> > macros.  The softirq's TP_fast_assign uses softirq_to_name, and so that
-> > array is needed to prepare the softirq's trace string.
-> > 
-> > So, there's no explicit reference to the symbol in SystemTap -- it's
-> > just indirectly referenced by the tracepoint declaration.
-> 
-> TP_fast_assign should only be called by core code, it's the piece that
-> copies the trace into the ring buffer.  If systemtap copies events into
-> the ring buffer from modular code something is deeply wrong in it's
-> design.
+Jeff Garzik wrote:
+> (2) determine at init if queue (a) supports explicit DISCARD and/or (b) 
+> supports DISCARD flag passed with READ or WRITE
 
 
-In itself, the use of TRACE_EVENT from a module is fine, otherwise
-Steve wouldn't have written the module support.
+As an aside -- does any existing command set support case #b, above?
 
-For example the mac80211 subsystem can be built as a module, and
-if a tracing code is merged for this subsystem, we want it to be
-usable whenever it is build as a module or not.
+AFAICT, ATA, SCSI and NVMHCI all have a single, explicit hardware 
+command to discard/deallocate unused sectors.
 
-Frederic.
+Therefore, creating REQ_TYPE_DISCARD seems to eliminate any need for new 
+hook ->prepare_discard().
+
+This provides a 1:1 correspondence between hardware and struct request, 
+most closely matching the setup of known hardware.
+
+	Jeff
+
+
 
