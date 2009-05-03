@@ -1,138 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757611AbZECX34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757156AbZECXbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757611AbZECX34 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 19:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757536AbZECX3d
+	id S1757156AbZECXbZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 19:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbZECXbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 19:29:33 -0400
-Received: from tundra.namei.org ([65.99.196.166]:59484 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757557AbZECX3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 19:29:31 -0400
-Date: Mon, 4 May 2009 09:27:29 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: linux-security-module@vger.kernel.org
-cc: Jake Edge <jake@lwn.net>, Arjan van de Ven <arjan@infradead.org>,
-       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] proc: avoid leaking eip, esp, or wchan to non-privileged
- processes (fwd)
-Message-ID: <alpine.LRH.2.00.0905040917240.20251@tundra.namei.org>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Sun, 3 May 2009 19:31:16 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:51037 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753145AbZECXbP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 19:31:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=RS27Cc0+pCk/MiOFC5Xa1SDaleAx7H4CSToFVIlHL4muEiZm1lWAaiQchF0nnw4fjZ
+         EC8408cqLlkIDtEzQCXBywPLDQU0fKRy8hBVv7YE6wdifIMUN9X7Yt15fPMtZpwfaJOx
+         e3LhEjzKZEc3x+WN2PAMs1yX5M99FcgN3CqA0=
+Date: Mon, 4 May 2009 03:32:03 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@linux-foundation.org, viro@zeniv.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: [PATCH] dcache: extrace and use d_unlinked()
+Message-ID: <20090503233203.GK16631@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch needs some review.
+d_unlinked() will be used in middle-term to ban checkpointing when opened
+but unlinked file is detected, and in long term, to detect such situation
+and special case on it.
 
-Note that stable@kernel.org typically backport already-reviewed and 
-applied patches.  I think security@kernel.org is for reporting problems in 
-a non-public way (whereas, this is already public knowledge).
-
-Having someone specifically responsible for maintaining kernel memory 
-protection features would be of immense value.  Any takers?
-
----------- Forwarded message ----------
-Date: Thu, 30 Apr 2009 09:11:40 -0600
-From: Jake Edge <jake@lwn.net>
-To: linux-kernel@vger.kernel.org
-Cc: security@kernel.org, stable@kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [PATCH] proc: avoid leaking eip, esp,
-    or wchan to non-privileged processes
-
-
-proc: avoid leaking eip, esp, or wchan to non-privileged processes
-
-Using the same test as is used for /proc/pid/maps and smaps, only allow
-processes that can ptrace() a given process to access its /proc/pid/wchan and
-get eip and esp from /proc/pid/stat.
-
-ASLR can be bypassed by sampling eip as shown by the proof-of-concept code
-at http://code.google.com/p/fuzzyaslr/  As part of a presentation
-(http://www.cr0.org/paper/to-jt-linux-alsr-leak.pdf) esp and wchan were also
-noted as possibly usable information leaks as well.
-
-Signed-off-by: Jake Edge <jake@lwn.net>
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- fs/proc/array.c |   11 ++++++++---
- fs/proc/base.c  |    3 +++
- 2 files changed, 11 insertions(+), 3 deletions(-)
+ fs/dcache.c            |    7 +++----
+ fs/namespace.c         |    8 ++++----
+ include/linux/dcache.h |    5 +++++
+ 3 files changed, 12 insertions(+), 8 deletions(-)
 
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index 7e4877d..e96d508 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -80,6 +80,7 @@
- #include <linux/delayacct.h>
- #include <linux/seq_file.h>
- #include <linux/pid_namespace.h>
-+#include <linux/ptrace.h>
- #include <linux/tracehook.h>
-
- #include <asm/pgtable.h>
-@@ -352,6 +353,7 @@ static int do_task_stat(struct seq_file *m, struct
-pid_namespace *ns,
- 	char state;
- 	pid_t ppid = 0, pgid = -1, sid = -1;
- 	int num_threads = 0;
-+	int permitted;
- 	struct mm_struct *mm;
- 	unsigned long long start_time;
- 	unsigned long cmin_flt = 0, cmaj_flt = 0;
-@@ -364,11 +366,14 @@ static int do_task_stat(struct seq_file *m, struct
-pid_namespace *ns,
-
- 	state = *get_task_state(task);
- 	vsize = eip = esp = 0;
-+	permitted = ptrace_may_access(task, PTRACE_MODE_READ);
- 	mm = get_task_mm(task);
- 	if (mm) {
- 		vsize = task_vsize(mm);
--		eip = KSTK_EIP(task);
--		esp = KSTK_ESP(task);
-+		if (permitted) {
-+			eip = KSTK_EIP(task);
-+			esp = KSTK_ESP(task);
-+		}
- 	}
-
- 	get_task_comm(tcomm, task);
-@@ -424,7 +429,7 @@ static int do_task_stat(struct seq_file *m, struct
-pid_namespace *ns,
- 		unlock_task_sighand(task, &flags);
- 	}
-
--	if (!whole || num_threads < 2)
-+	if (permitted && (!whole || num_threads < 2))
- 		wchan = get_wchan(task);
- 	if (!whole) {
- 		min_flt = task->min_flt;
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index aa763ab..cd3c0d7 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -319,6 +319,9 @@ static int proc_pid_wchan(struct task_struct *task, char
-*buffer)
- 	unsigned long wchan;
- 	char symname[KSYM_NAME_LEN];
-
-+	if (!ptrace_may_access(task, PTRACE_MODE_READ))
-+		return 0;
+diff --git a/fs/dcache.c b/fs/dcache.c
+index 1fcffeb..86cb34f 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1910,7 +1910,7 @@ char *__d_path(const struct path *path, struct path *root,
+ 
+ 	spin_lock(&vfsmount_lock);
+ 	prepend(&end, &buflen, "\0", 1);
+-	if (!IS_ROOT(dentry) && d_unhashed(dentry) &&
++	if (d_unlinked(dentry) &&
+ 		(prepend(&end, &buflen, " (deleted)", 10) != 0))
+ 			goto Elong;
+ 
+@@ -2035,7 +2035,7 @@ char *dentry_path(struct dentry *dentry, char *buf, int buflen)
+ 
+ 	spin_lock(&dcache_lock);
+ 	prepend(&end, &buflen, "\0", 1);
+-	if (!IS_ROOT(dentry) && d_unhashed(dentry) &&
++	if (d_unlinked(dentry) &&
+ 		(prepend(&end, &buflen, "//deleted", 9) != 0))
+ 			goto Elong;
+ 	if (buflen < 1)
+@@ -2097,9 +2097,8 @@ SYSCALL_DEFINE2(getcwd, char __user *, buf, unsigned long, size)
+ 	read_unlock(&current->fs->lock);
+ 
+ 	error = -ENOENT;
+-	/* Has the current directory has been unlinked? */
+ 	spin_lock(&dcache_lock);
+-	if (IS_ROOT(pwd.dentry) || !d_unhashed(pwd.dentry)) {
++	if (!d_unlinked(pwd.dentry)) {
+ 		unsigned long len;
+ 		struct path tmp = root;
+ 		char * cwd;
+diff --git a/fs/namespace.c b/fs/namespace.c
+index 4119620..b2bd687 100644
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -1417,7 +1417,7 @@ static int graft_tree(struct vfsmount *mnt, struct path *path)
+ 		goto out_unlock;
+ 
+ 	err = -ENOENT;
+-	if (IS_ROOT(path->dentry) || !d_unhashed(path->dentry))
++	if (!d_unlinked(path->dentry))
+ 		err = attach_recursive_mnt(mnt, path, NULL);
+ out_unlock:
+ 	mutex_unlock(&path->dentry->d_inode->i_mutex);
+@@ -1599,7 +1599,7 @@ static int do_move_mount(struct path *path, char *old_name)
+ 	if (IS_DEADDIR(path->dentry->d_inode))
+ 		goto out1;
+ 
+-	if (!IS_ROOT(path->dentry) && d_unhashed(path->dentry))
++	if (d_unlinked(path->dentry))
+ 		goto out1;
+ 
+ 	err = -EINVAL;
+@@ -2162,9 +2162,9 @@ SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
+ 	error = -ENOENT;
+ 	if (IS_DEADDIR(new.dentry->d_inode))
+ 		goto out2;
+-	if (d_unhashed(new.dentry) && !IS_ROOT(new.dentry))
++	if (d_unlinked(new.dentry))
+ 		goto out2;
+-	if (d_unhashed(old.dentry) && !IS_ROOT(old.dentry))
++	if (d_unlinked(old.dentry))
+ 		goto out2;
+ 	error = -EBUSY;
+ 	if (new.mnt == root.mnt ||
+diff --git a/include/linux/dcache.h b/include/linux/dcache.h
+index 1515636..f8488bd 100644
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -351,6 +351,11 @@ static inline int d_unhashed(struct dentry *dentry)
+ 	return (dentry->d_flags & DCACHE_UNHASHED);
+ }
+ 
++static inline int d_unlinked(struct dentry *dentry)
++{
++	return d_unhashed(dentry) && !IS_ROOT(dentry);
++}
 +
- 	wchan = get_wchan(task);
-
- 	if (lookup_symbol_name(wchan, symname) < 0)
--- 
-1.6.2.2
-
-
--- 
-Jake Edge - LWN - jake@lwn.net - http://lwn.net
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+ static inline struct dentry *dget_parent(struct dentry *dentry)
+ {
+ 	struct dentry *ret;
