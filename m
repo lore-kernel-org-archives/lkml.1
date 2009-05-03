@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbZECItV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbZECIwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754829AbZECItV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 04:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbZECItL
+	id S1755229AbZECIwt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 04:52:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbZECIwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 04:49:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47124 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752845AbZECItK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 04:49:10 -0400
-Date: Sun, 3 May 2009 10:48:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jack Steiner <steiner@sgi.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86: uv - prevent NULL dereference in
-	uv_system_init
-Message-ID: <20090503084847.GA20394@elte.hu>
-References: <20090501195638.GC4633@lenovo> <20090501200331.GA2645@elte.hu> <20090501200937.GD4633@lenovo> <20090501202511.GE4633@lenovo> <20090501203123.GA10878@sgi.com>
+	Sun, 3 May 2009 04:52:39 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:42462 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754421AbZECIwi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 04:52:38 -0400
+Date: Sun, 3 May 2009 09:52:36 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Jeff Mahoney <jeffm@suse.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       David <david@unsolicited.net>
+Subject: Re: [PATCH] reiserfs: Expand i_mutex to enclose lookup_one_len
+Message-ID: <20090503085236.GT8633@ZenIV.linux.org.uk>
+References: <49FB1F20.8040400@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090501203123.GA10878@sgi.com>
+In-Reply-To: <49FB1F20.8040400@suse.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 01, 2009 at 12:11:12PM -0400, Jeff Mahoney wrote:
+>  2.6.30-rc3 introduced some sanity checks in the VFS code to avoid NFS
+>  bugs by ensuring that lookup_one_len is always called under i_mutex.
+> 
+>  This patch expands the i_mutex locking to enclose lookup_one_len. This was
+>  always required, but not not enforced in the reiserfs code since it
+>  does locking around the xattr interactions with the xattr_sem.
+> 
+>  This is obvious enough, but it survived an overnight 50 thread ACL test.
 
-* Jack Steiner <steiner@sgi.com> wrote:
+It's not enough, unfortunately ;-/  It deals with the warning, but it
+leaves an actual hole in there.
 
-> >  arch/x86/kernel/apic/x2apic_uv_x.c |    3 +++
-> >  1 file changed, 3 insertions(+)
-> > 
-> > Index: linux-2.6.git/arch/x86/kernel/apic/x2apic_uv_x.c
-> > =====================================================================
-> > --- linux-2.6.git.orig/arch/x86/kernel/apic/x2apic_uv_x.c
-> > +++ linux-2.6.git/arch/x86/kernel/apic/x2apic_uv_x.c
-> > @@ -584,15 +584,18 @@ void __init uv_system_init(void)
-> >  
-> >  	bytes = sizeof(struct uv_blade_info) * uv_num_possible_blades();
-> >  	uv_blade_info = kmalloc(bytes, GFP_KERNEL);
-> > +	BUG_ON(!uv_blade_info);
-> >  
-> >  	get_lowmem_redirect(&lowmem_redir_base, &lowmem_redir_size);
-> >  
-> >  	bytes = sizeof(uv_node_to_blade[0]) * num_possible_nodes();
-> >  	uv_node_to_blade = kmalloc(bytes, GFP_KERNEL);
-> > +	BUG_ON(!uv_node_to_blade);
-> >  	memset(uv_node_to_blade, 255, bytes);
-> >  
-> >  	bytes = sizeof(uv_cpu_to_blade[0]) * num_possible_cpus();
-> >  	uv_cpu_to_blade = kmalloc(bytes, GFP_KERNEL);
-> > +	BUG_ON(!uv_cpu_to_blade);
-> >  	memset(uv_cpu_to_blade, 255, bytes);
+Look: what happens if we mount it r/o without that directory and then
+remount r/w?  We get dentry for privroot, hash it (negative at that point),
+then do actual mkdir, unlock root and modify the ->d_compare() of root
+to reject lookups on that sucker.  Too late - in the meanwhile lookups
+might very well come and find privroot in dcache.
 
-Hm, would be nice if we had a __GFP_PANIC variant in kmalloc that 
-would just panic straight in the allocator, when allocation failure 
-is not acceptable. (Andrew Cc:-ed)
+BTW, the way ->d_compare() is done in there is rather dumb -
+	if (q1 == &priv_root->d_name)
+		return -ENOENT;
+	...
+would do just as well.  Why don't we do that lookup *once* (on ->get_sb(),
+before anything can come and race with us), and then just keep negative
+dentry if the directory hadn't been around?  And set d_compare() for root
+immediately after that lookup...
 
-It does not increase the priority of the allocation nor does it 
-trigger any 'dont fail' logic - it is simply the central expression 
-of 'this should not have failed, panic'.
-
-Thus we'd avoid all these duplicated BUG_ON() places.
-
-	Ingo
+I've applied your patch as-is, and unless you have objections to the
+variant above I'll do that as incremental.  Comments?
