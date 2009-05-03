@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbZECMOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbZECMP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755870AbZECMOo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 08:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754992AbZECMOf
+	id S1756442AbZECMP1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 08:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbZECMPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 08:14:35 -0400
+	Sun, 3 May 2009 08:15:12 -0400
 Received: from courier.cs.helsinki.fi ([128.214.9.1]:43866 "EHLO
 	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754887AbZECMOe (ORCPT
+	with ESMTP id S1755843AbZECMPK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 08:14:34 -0400
-Date: Sun, 3 May 2009 15:14:32 +0300 (EEST)
+	Sun, 3 May 2009 08:15:10 -0400
+Date: Sun, 3 May 2009 15:15:10 +0300 (EEST)
 From: Pekka J Enberg <penberg@cs.helsinki.fi>
 To: npiggin@suse.de
 cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] SLQB: Use _RET_IP_ instead of __builtin_return_address(0)
-Message-ID: <Pine.LNX.4.64.0905031513410.32397@melkki.cs.Helsinki.FI>
+Subject: [PATCH] SLQB: Coding style cleanups
+Message-ID: <Pine.LNX.4.64.0905031514330.32397@melkki.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -25,137 +25,100 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-This patch changes SLQB to use the shorter _RET_IP_ form for consistency
-with SLUB and to prepare SQLB for eventual kmemtrace hooks.
+This patch cleans up SQLB to make the code checkpatch clean.
 
 Cc: Nick Piggin <npiggin@suse.de>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- mm/slqb.c |   28 ++++++++++++++--------------
- 1 files changed, 14 insertions(+), 14 deletions(-)
+ mm/slqb.c |   21 ++++++++++++---------
+ 1 files changed, 12 insertions(+), 9 deletions(-)
 
 diff --git a/mm/slqb.c b/mm/slqb.c
-index 474fd2f..f538f2c 100644
+index f538f2c..44a91c0 100644
 --- a/mm/slqb.c
 +++ b/mm/slqb.c
-@@ -246,7 +246,7 @@ static LIST_HEAD(slab_caches);
-  * Tracking user of a slab.
+@@ -59,7 +59,7 @@ static inline void struct_slqb_page_wrong_size(void)
+ /*
+  * slqb_min_order: minimum allocation order for slabs
   */
- struct track {
--	void *addr;		/* Called from address */
-+	unsigned long addr;	/* Called from address */
- 	int cpu;		/* Was running on cpu */
- 	int pid;		/* Pid context */
- 	unsigned long when;	/* When did the operation occur */
-@@ -385,7 +385,7 @@ static struct track *get_track(struct kmem_cache *s, void *object,
- }
+-static int slqb_min_order = 0;
++static int slqb_min_order;
  
- static void set_track(struct kmem_cache *s, void *object,
--				enum track_item alloc, void *addr)
-+				enum track_item alloc, unsigned long addr)
+ /*
+  * slqb_min_objects: minimum number of objects per slab. Increasing this
+@@ -193,12 +193,12 @@ static inline void __free_slqb_pages(struct slqb_page *page, unsigned int order)
+ #ifdef CONFIG_SLQB_DEBUG
+ static inline int slab_debug(struct kmem_cache *s)
  {
- 	struct track *p;
- 
-@@ -409,8 +409,8 @@ static void init_tracking(struct kmem_cache *s, void *object)
- 	if (!(s->flags & SLAB_STORE_USER))
- 		return;
- 
--	set_track(s, object, TRACK_FREE, NULL);
--	set_track(s, object, TRACK_ALLOC, NULL);
-+	set_track(s, object, TRACK_FREE, 0UL);
-+	set_track(s, object, TRACK_ALLOC, 0UL);
+-	return (s->flags &
++	return s->flags &
+ 			(SLAB_DEBUG_FREE |
+ 			 SLAB_RED_ZONE |
+ 			 SLAB_POISON |
+ 			 SLAB_STORE_USER |
+-			 SLAB_TRACE));
++			 SLAB_TRACE);
  }
- 
- static void print_track(const char *s, struct track *t)
-@@ -753,7 +753,7 @@ static void setup_object_debug(struct kmem_cache *s, struct slqb_page *page,
- }
- 
- static int alloc_debug_processing(struct kmem_cache *s,
--					void *object, void *addr)
-+					void *object, unsigned long addr)
+ static inline int slab_poison(struct kmem_cache *s)
  {
- 	struct slqb_page *page;
- 	page = virt_to_head_slqb_page(object);
-@@ -781,7 +781,7 @@ bad:
+@@ -945,7 +945,7 @@ static inline unsigned long kmem_cache_flags(unsigned long objsize,
+ 	return flags;
  }
  
- static int free_debug_processing(struct kmem_cache *s,
--					void *object, void *addr)
-+					void *object, unsigned long addr)
- {
- 	struct slqb_page *page;
- 	page = virt_to_head_slqb_page(object);
-@@ -1528,7 +1528,7 @@ try_remote:
-  * (debug checking and memset()ing).
-  */
- static __always_inline void *slab_alloc(struct kmem_cache *s,
--				gfp_t gfpflags, int node, void *addr)
-+				gfp_t gfpflags, int node, unsigned long addr)
- {
- 	void *object;
- 	unsigned long flags;
-@@ -1550,7 +1550,7 @@ again:
- }
- 
- static __always_inline void *__kmem_cache_alloc(struct kmem_cache *s,
--				gfp_t gfpflags, void *caller)
-+				gfp_t gfpflags, unsigned long caller)
- {
- 	int node = -1;
- #ifdef CONFIG_NUMA
-@@ -1562,14 +1562,14 @@ static __always_inline void *__kmem_cache_alloc(struct kmem_cache *s,
- 
- void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
- {
--	return __kmem_cache_alloc(s, gfpflags, __builtin_return_address(0));
-+	return __kmem_cache_alloc(s, gfpflags, _RET_IP_);
- }
- EXPORT_SYMBOL(kmem_cache_alloc);
- 
- #ifdef CONFIG_NUMA
- void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
- {
--	return slab_alloc(s, gfpflags, node, __builtin_return_address(0));
-+	return slab_alloc(s, gfpflags, node, _RET_IP_);
- }
- EXPORT_SYMBOL(kmem_cache_alloc_node);
- #endif
-@@ -1757,7 +1757,7 @@ static __always_inline void slab_free(struct kmem_cache *s,
- 
- 	debug_check_no_locks_freed(object, s->objsize);
- 	if (likely(object) && unlikely(slab_debug(s))) {
--		if (unlikely(!free_debug_processing(s, object, __builtin_return_address(0))))
-+		if (unlikely(!free_debug_processing(s, object, _RET_IP_)))
- 			return;
- 	}
- 
-@@ -2528,7 +2528,7 @@ void *__kmalloc(size_t size, gfp_t flags)
- 	if (unlikely(ZERO_OR_NULL_PTR(s)))
- 		return s;
- 
--	return __kmem_cache_alloc(s, flags, __builtin_return_address(0));
-+	return __kmem_cache_alloc(s, flags, _RET_IP_);
- }
- EXPORT_SYMBOL(__kmalloc);
- 
-@@ -3124,7 +3124,7 @@ void *__kmalloc_track_caller(size_t size, gfp_t flags, unsigned long caller)
- 	if (unlikely(current->flags & (PF_SPREAD_SLAB | PF_MEMPOLICY)))
- 		node = alternate_nid(s, flags, node);
- #endif
--	return slab_alloc(s, flags, node, (void *)caller);
-+	return slab_alloc(s, flags, node, caller);
- }
- 
- void *__kmalloc_node_track_caller(size_t size, gfp_t flags, int node,
-@@ -3136,7 +3136,7 @@ void *__kmalloc_node_track_caller(size_t size, gfp_t flags, int node,
- 	if (unlikely(ZERO_OR_NULL_PTR(s)))
- 		return s;
- 
--	return slab_alloc(s, flags, node, (void *)caller);
-+	return slab_alloc(s, flags, node, caller);
- }
+-static const int slqb_debug = 0;
++static const int slqb_debug;
  #endif
  
+ /*
+@@ -1954,8 +1954,11 @@ static struct kmem_cache_cpu *alloc_kmem_cache_cpu(struct kmem_cache *s,
+ 				int cpu)
+ {
+ 	struct kmem_cache_cpu *c;
++	int node;
++
++	node = cpu_to_node(cpu);
+ 
+-	c = kmem_cache_alloc_node(&kmem_cpu_cache, GFP_KERNEL, cpu_to_node(cpu));
++	c = kmem_cache_alloc_node(&kmem_cpu_cache, GFP_KERNEL, node);
+ 	if (!c)
+ 		return NULL;
+ 
+@@ -2292,7 +2295,7 @@ error_lock:
+ 	up_write(&slqb_lock);
+ error:
+ 	if (flags & SLAB_PANIC)
+-		panic("kmem_cache_create(): failed to create slab `%s'\n", name);
++		panic("%s: failed to create slab `%s'\n", __func__, name);
+ 	return 0;
+ }
+ 
+@@ -3006,7 +3009,7 @@ static int kmem_cache_create_ok(const char *name, size_t size,
+ 
+ 		if (!strcmp(tmp->name, name)) {
+ 			printk(KERN_ERR
+-			       "kmem_cache_create(): duplicate cache %s\n", name);
++			       "SLAB: duplicate cache %s\n", name);
+ 			dump_stack();
+ 			up_read(&slqb_lock);
+ 
+@@ -3042,7 +3045,7 @@ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
+ 
+ err:
+ 	if (flags & SLAB_PANIC)
+-		panic("kmem_cache_create(): failed to create slab `%s'\n", name);
++		panic("%s: failed to create slab `%s'\n", __func__, name);
+ 
+ 	return NULL;
+ }
+@@ -3676,7 +3679,7 @@ static struct kset_uevent_ops slab_uevent_ops = {
+ 
+ static struct kset *slab_kset;
+ 
+-static int sysfs_available __read_mostly = 0;
++static int sysfs_available __read_mostly;
+ 
+ static int sysfs_slab_add(struct kmem_cache *s)
+ {
 -- 
 1.5.6.3
 
