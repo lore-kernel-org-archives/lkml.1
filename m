@@ -1,124 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbZECMP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbZECMTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756442AbZECMP1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 08:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbZECMPM
+	id S1756298AbZECMTQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 08:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbZECMTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 08:15:12 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:43866 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755843AbZECMPK (ORCPT
+	Sun, 3 May 2009 08:19:00 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:41904 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754007AbZECMS7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 08:15:10 -0400
-Date: Sun, 3 May 2009 15:15:10 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: npiggin@suse.de
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] SLQB: Coding style cleanups
-Message-ID: <Pine.LNX.4.64.0905031514330.32397@melkki.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 3 May 2009 08:18:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Efyvy4gE+YcNI0kJ6GjIH1+Ovo6IDvsUWvbLy6EEO+Hfxnn+SkK5HZBKV7HvvGbPWq
+         fujjC+MvOBVLcQYh0jj5UlL1Dm/5c+Qxjz2yF6eIkmIlDMy1b794JHfKfImrHxVGEr4A
+         PJHsDyHORxRmrB32xQy1o6Hd3XDspDw8ops4s=
+MIME-Version: 1.0
+In-Reply-To: <20090501004105.GA16409@sgi.com>
+References: <20090501004105.GA16409@sgi.com>
+Date: Sun, 3 May 2009 15:18:58 +0300
+X-Google-Sender-Auth: f1b6e5f773b71c98
+Message-ID: <84144f020905030518u22c256ealb1d2511c397454e3@mail.gmail.com>
+Subject: Re: [PATCH] - Fix memory corruption in slbq
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Jack Steiner <steiner@sgi.com>
+Cc: akpm@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+Hi Jack,
 
-This patch cleans up SQLB to make the code checkpatch clean.
+(Please cc me when sending patches to SL*B.)
 
-Cc: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- mm/slqb.c |   21 ++++++++++++---------
- 1 files changed, 12 insertions(+), 9 deletions(-)
+On Fri, May 1, 2009 at 3:41 AM, Jack Steiner <steiner@sgi.com> wrote:
+> Fix memory corruption caused by slqb overrunning the end
+> of the page allocated in kmem_cache_dyn_array_alloc() for
+> initial caches.
+>
+> Signed-off-by: Jack Steiner <steiner@sgi.com>
+>
+> ---
+>  mm/slqb.c |    5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
+>
+> Index: linux/mm/slqb.c
+> ===================================================================
+> --- linux.orig/mm/slqb.c        2009-04-30 15:47:16.000000000 -0500
+> +++ linux/mm/slqb.c     2009-04-30 19:08:33.000000000 -0500
+> @@ -2194,15 +2194,14 @@ static void *kmem_cache_dyn_array_alloc(
+>                 * never get freed by definition so we can do it rather
+>                 * simply.
+>                 */
+> -               if (!nextmem) {
+> +               if (!nextmem || offset_in_page(nextmem) + size > PAGE_SIZE) {
+>                        nextmem = alloc_pages_exact(size, GFP_KERNEL);
+>                        if (!nextmem)
+>                                return NULL;
+>                }
+>                ret = nextmem;
+>                nextmem = (void *)((unsigned long)ret + size);
+> -               if ((unsigned long)ret >> PAGE_SHIFT !=
+> -                               (unsigned long)nextmem >> PAGE_SHIFT)
+> +               if (offset_in_page(ret) + size >= PAGE_SIZE)
+>                        nextmem = NULL;
+>                memset(ret, 0, size);
+>                return ret;
 
-diff --git a/mm/slqb.c b/mm/slqb.c
-index f538f2c..44a91c0 100644
---- a/mm/slqb.c
-+++ b/mm/slqb.c
-@@ -59,7 +59,7 @@ static inline void struct_slqb_page_wrong_size(void)
- /*
-  * slqb_min_order: minimum allocation order for slabs
-  */
--static int slqb_min_order = 0;
-+static int slqb_min_order;
- 
- /*
-  * slqb_min_objects: minimum number of objects per slab. Increasing this
-@@ -193,12 +193,12 @@ static inline void __free_slqb_pages(struct slqb_page *page, unsigned int order)
- #ifdef CONFIG_SLQB_DEBUG
- static inline int slab_debug(struct kmem_cache *s)
- {
--	return (s->flags &
-+	return s->flags &
- 			(SLAB_DEBUG_FREE |
- 			 SLAB_RED_ZONE |
- 			 SLAB_POISON |
- 			 SLAB_STORE_USER |
--			 SLAB_TRACE));
-+			 SLAB_TRACE);
- }
- static inline int slab_poison(struct kmem_cache *s)
- {
-@@ -945,7 +945,7 @@ static inline unsigned long kmem_cache_flags(unsigned long objsize,
- 	return flags;
- }
- 
--static const int slqb_debug = 0;
-+static const int slqb_debug;
- #endif
- 
- /*
-@@ -1954,8 +1954,11 @@ static struct kmem_cache_cpu *alloc_kmem_cache_cpu(struct kmem_cache *s,
- 				int cpu)
- {
- 	struct kmem_cache_cpu *c;
-+	int node;
-+
-+	node = cpu_to_node(cpu);
- 
--	c = kmem_cache_alloc_node(&kmem_cpu_cache, GFP_KERNEL, cpu_to_node(cpu));
-+	c = kmem_cache_alloc_node(&kmem_cpu_cache, GFP_KERNEL, node);
- 	if (!c)
- 		return NULL;
- 
-@@ -2292,7 +2295,7 @@ error_lock:
- 	up_write(&slqb_lock);
- error:
- 	if (flags & SLAB_PANIC)
--		panic("kmem_cache_create(): failed to create slab `%s'\n", name);
-+		panic("%s: failed to create slab `%s'\n", __func__, name);
- 	return 0;
- }
- 
-@@ -3006,7 +3009,7 @@ static int kmem_cache_create_ok(const char *name, size_t size,
- 
- 		if (!strcmp(tmp->name, name)) {
- 			printk(KERN_ERR
--			       "kmem_cache_create(): duplicate cache %s\n", name);
-+			       "SLAB: duplicate cache %s\n", name);
- 			dump_stack();
- 			up_read(&slqb_lock);
- 
-@@ -3042,7 +3045,7 @@ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
- 
- err:
- 	if (flags & SLAB_PANIC)
--		panic("kmem_cache_create(): failed to create slab `%s'\n", name);
-+		panic("%s: failed to create slab `%s'\n", __func__, name);
- 
- 	return NULL;
- }
-@@ -3676,7 +3679,7 @@ static struct kset_uevent_ops slab_uevent_ops = {
- 
- static struct kset *slab_kset;
- 
--static int sysfs_available __read_mostly = 0;
-+static int sysfs_available __read_mostly;
- 
- static int sysfs_slab_add(struct kmem_cache *s)
- {
--- 
-1.5.6.3
+I don't think this is needed now that commit 8804e6f ("SLQB:  fix dumb
+early allocation cache") is merged:
 
+http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff_plain;h=8804e6f0001668656d4cb2a329e1a6e69e695a0f
+
+Or do you still see the corruption with it?
+
+                                              Pekka
