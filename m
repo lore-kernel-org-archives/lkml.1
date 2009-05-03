@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbZECWdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756421AbZECWep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbZECWdj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 18:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbZECWd3
+	id S1756421AbZECWep (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 18:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbZECWee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 18:33:29 -0400
-Received: from alexandria69.etcserver.com ([67.228.183.130]:44511 "EHLO
-	alexandria69.etcserver.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751467AbZECWd2 (ORCPT
+	Sun, 3 May 2009 18:34:34 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43291
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754196AbZECWed (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 18:33:28 -0400
-X-Greylist: delayed 4481 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 May 2009 18:33:28 EDT
-From: Marc Pignat <marc.pignat@hevs.ch>
-To: Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: [BUG] 2.6.30-rc4 hid bluetooth not working
-Date: Sun, 3 May 2009 23:18:26 +0200
-User-Agent: KMail/1.9.9
-Cc: justinmattock@gmail.com, hidave.darkstar@gmail.com,
-       ext-roger.quadros@nokia.com, jkosina@suse.cz,
-       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <49FDCC85020000BF000290ED@mailgw2.hevs.ch> <1241381821.2785.2.camel@localhost.localdomain>
-In-Reply-To: <1241381821.2785.2.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Sun, 3 May 2009 18:34:33 -0400
+Date: Sun, 03 May 2009 15:34:28 -0700 (PDT)
+Message-Id: <20090503.153428.07349534.davem@davemloft.net>
+To: stlman@poczta.fm
+Cc: linux-kernel@vger.kernel.org, yoshfuji@linux-ipv6.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] Temporary IPv6 address asignment
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <49FE18C3.7040702@poczta.fm>
+References: <49FE107A.4020406@poczta.fm>
+	<20090503.144758.222061423.davem@davemloft.net>
+	<49FE18C3.7040702@poczta.fm>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905032318.26927.marc.pignat@hevs.ch>
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - alexandria69.etcserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - hevs.ch
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marcel!
+From: Lukasz Stelmach <stlman@poczta.fm>
+Date: Mon, 04 May 2009 00:20:51 +0200
 
-On Sunday 03 May 2009 22.17:01 Marcel Holtmann wrote:
-> Hi Marc,
->
-> you really need to fix your mailer. You keep breaking the threading all
-> the time and that is clearly your fault.
+> The description is in the patch, and a sign-off too. But all righ.
 
-Sorry for that, I used a web client, should be fixed now.
+Patch is corrupted by your email client, tabs have been converted
+into spaces.  Also, unnecessary leading spaces in front of your
+signoff.
 
-...
-> great. So I queue this up for 2.6.30 inclusion.
+Please fix this up and make a fresh submission of your patch to
+netdev@vger.kernel.org
 
-fine!
-
-Regards
-
-Marc
+Thank you.
