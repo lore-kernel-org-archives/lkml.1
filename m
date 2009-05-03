@@ -1,90 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbZECXT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbZECXVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756055AbZECXT5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 19:19:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbZECXTr
+	id S1756761AbZECXVs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 19:21:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbZECXVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 19:19:47 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46414 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753058AbZECXTp (ORCPT
+	Sun, 3 May 2009 19:21:38 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:3777 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752987AbZECXVh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 19:19:45 -0400
-Date: Sun, 3 May 2009 16:21:15 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       David VomLehn <dvomlehn@cisco.com>, <linux-kernel@vger.kernel.org>,
-       <akpm@linux-foundation.org>, <linux-usb@vger.kernel.org>,
-       <greg@kroah.com>, <linux-scsi@vger.kernel.org>,
-       <netdev@vger.kernel.org>
-Subject: Re: [PATCH 1/5] initdev:kernel: Asynchronously-discovered device
- synchronization, v5
-Message-ID: <20090503162115.2dff79bd@infradead.org>
-In-Reply-To: <Pine.LNX.4.44L0.0905021335150.26241-100000@netrider.rowland.org>
-References: <1241272876.3639.27.camel@mulgrave.int.hansenpartnership.com>
-	<Pine.LNX.4.44L0.0905021335150.26241-100000@netrider.rowland.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 3 May 2009 19:21:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=rY7XiykMBFTxg05zseBgFQKi9TqzRvxHeN7m2WowUK2djm2P/1AKODZtK9wTKAGCZU
+         sCmNmVcqIrcdpvhrh/ZzXCDPXZqmfoC4HGwSvkqe0AsmGToN1h5yN6BHi2leRWnjfB+2
+         OhFzBq8mzsjaQ5ItWIAoNmM3N50490xULGfWE=
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.00.0904281507240.30946@chino.kir.corp.google.com>
+References: <47KgT3nlbjD.A.lnB.jc48JB@chimera>
+	 <Fg2zLW93smL.A.oGE.Zd48JB@chimera> <49F4DF40.50302@intel.com>
+	 <alpine.DEB.2.00.0904281507240.30946@chino.kir.corp.google.com>
+Date: Sun, 3 May 2009 16:21:37 -0700
+X-Google-Sender-Auth: a7673cbfdeadcfc2
+Message-ID: <e9c3a7c20905031621s2a1dc934x11ca1c50859ca75e@mail.gmail.com>
+Subject: Re: [Bug #13116] Can't boot with nosmp
+From: Dan Williams <dan.j.williams@intel.com>
+To: David Rientjes <rientjes@google.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Stephen Hemminger <shemminger@vyatta.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2 May 2009 13:55:45 -0400 (EDT)
-Alan Stern <stern@rowland.harvard.edu> wrote:
+On Tue, Apr 28, 2009 at 3:14 PM, David Rientjes <rientjes@google.com> wrote:
+> On Sun, 26 Apr 2009, Dan Williams wrote:
+>
+>> Rafael J. Wysocki wrote:
+>> > This message has been generated automatically as a part of a report
+>> > of recent regressions.
+>> >
+>> > The following bug entry is on the current list of known regressions
+>> > from 2.6.29.  Please verify if it still should be listed and let me know
+>> > (either way).
+>>
+>> This is still unresolved.
+>>
+>> Stephen, please send your config.
+>>
+>
+> Given the stack for the initial report, why would a config other than
+> enabling CONFIG_DMA_ENGINE help if there's no ifdefs involved?
 
-> On Sat, 2 May 2009, James Bottomley wrote:
-> 
-> > OK, so in your scheme, I get why console devices: they need to be
-> > present early before we start dumping console output otherwise it
-> > can get lost.
-> > 
-> > However, I don't see the need for either network or block.
-> > 
-> > For network, the only early discovery use is net root (which can be
-> > done fully asynchronously)
-> 
-> Are you referring to the "rootwait" kernel parameter?  Is there a 
-> reason why this is a boot-time parameter instead of always being
-> set? I mean, under what circumstances would you _not_ want to wait
-> until the root device is present?
+...because I have been unable to reproduce it and wanted to start
+eliminating differences in our respective setups.  I have booted an
+oversubscribed (8-virtual / 2 physical cpus) kvm instance with 2.6.29
+and have not seen this reproduce.
 
-if you have an initrd ;-)
-> 
-> Perhaps with some enterprise systems, it is preferred to have the 
-> system fail with an explicit error message rather than wait 
-> indefinitely...
+> This is happening in the for_each_possible_cpu() loop within
+> dma_channel_rebalance(), which makes sense since the machine boots fine
+> normally but not with `nosmp'.
+>
+> channel_table[] is not being initialized per-cpu for non-online cpus?
 
-actually, in an enterprise system, you want to reboot.
-The bootloader might boot a different kernel the next time
-that is known to work.
-(for example, the current kernel might have been booted with the "once"
-grub option)
-> 
-> > What I'm getting at is that I don't see the benefit of this in the
-> > light of Arjan's async boot system, which can also tell us when all
-> > discovery is complete ... what added benefit am I missing here?
-> 
-> How does Arjan's async boot system tell use when all discovery is
-> complete?  AFAICS, it only tells you when all its async tasks are
-> finished.  But device discovery and registration sometimes use other
-> asynchronous techniques which Arjan's code is unaware of.
-> Examples: the USB khubd thread, the USB mass-storage scanning thread,
-> and the SCSI async-scanning thread.
+I'm grasping, but could this possibly be a kvm quirk whereby
+cpu_possible_map gets out of sync with cpu_online_map in the 'nosmp'
+case?
 
-for normal device probing we already have infrastructure though...
-wait_for_device_probe, driver_probe_done and friends...
-(the scsi scanning thread is being converted to the async
-infrastructure btw)
-
-do we need to invent more ?
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+--
+Dan
