@@ -1,49 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbZECWJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbZECWPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753386AbZECWJg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 18:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbZECWJ0
+	id S1755208AbZECWPc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 18:15:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZECWPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 18:09:26 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:54066 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751767AbZECWJZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 18:09:25 -0400
-Date: Sun, 3 May 2009 23:09:23 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Bank screen after resume on Dell XPS M1330
-Message-ID: <20090503220923.GA27497@srcf.ucam.org>
-References: <200905031111.50789.arvidjaar@mail.ru> <20090503105932.GA18170@srcf.ucam.org> <20090503215740.GG1368@ucw.cz> <20090503215935.GA27257@srcf.ucam.org> <20090503220552.GC20166@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090503220552.GC20166@elf.ucw.cz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Sun, 3 May 2009 18:15:17 -0400
+Received: from gate.crashing.org ([63.228.1.57]:38707 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752394AbZECWPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 18:15:16 -0400
+Subject: Re: Porting the ibm_newemac driver to use phylib (and other
+ PHY/MAC questions)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kyle Moffett <kyle@moffetthome.net>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, netdev <netdev@vger.kernel.org>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org
+In-Reply-To: <f73f7ab80905022126ud3225enc6409bd39b5b2eb8@mail.gmail.com>
+References: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
+	 <625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
+	 <f73f7ab80904201710m57472291yf7ff86760977b8e8@mail.gmail.com>
+	 <1240388476.17445.10.camel@pasglop>
+	 <f73f7ab80904300804j1f847b70ha0fe3cda07249110@mail.gmail.com>
+	 <1241126291.29501.41.camel@pasglop>
+	 <f73f7ab80904301521x16effa0ar2d4756daceada122@mail.gmail.com>
+	 <f73f7ab80905022126ud3225enc6409bd39b5b2eb8@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 04 May 2009 08:14:54 +1000
+Message-Id: <1241388894.1781.18.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 12:05:52AM +0200, Pavel Machek wrote:
-> On Sun 2009-05-03 22:59:35, Matthew Garrett wrote:
-> > Not for current nivida, except for some Thinkpads.
+On Sun, 2009-05-03 at 00:26 -0400, Kyle Moffett wrote:
+
+> Ok, I've dug through the docs on the 460EPx (the CPU I'm using), and
+> I'd like some confirmation of the following:
 > 
-> Ok, that's bad. There still should be chance to reverse-engineer the
-> BIOS or tweak the emulation in libx86 until it works with the nvidias,
-> but... that's a lot of work.
+> *  The EMAC hardware itself internally has its own dedicated
+> MDIO/MDClk lines, driven by the STACR register.
 
-nvidia BIOSes call into chunks of system BIOS code that aren't available 
-after boot. They rewrite themselves so the c000:0003 entry point just 
-returns in order to prevent you from executing random code. It's not an 
-emulation issue. The only way to fix this is to finish nouveau's 
-implementation of the nvidia bios table bytecode and execute the init 
-tables on resume.
+Yes, though not all EMACs cells have this wired to anything. For
+example, the 405EP has 2 EMACs but only EMAC0 has MDIO, which is
+used to control both PHYs. Later variants multiplex the MDIOs via
+a programmable switch in the ZMII or RGMII though.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> *  On many/most cpus, there is only a single set of external
+> MDIO/MDClk pins, driven either off the ZMII bridge or the RGMII
+> bridge.
+
+Yes, though on the very old ones, the ZMII bridge is effectively
+invisible (if it exists at all) and only EMAC0 MDIO pins are wired out.
+
+> *  Both bridge-types have their own internal register for switching
+> the external MDIO/MDClk pins between the two sets of internal
+> EMAC<=>bridge links.
+
+Yes.
+
+> *  Some SoCs have both an ZMII and an RGMII bridge, and the external
+> MDIO/MDClk pins are only connected to one of the two bridges (How do I
+> know which one?  Alternatively, do I just program both and hope for
+> the best?).
+
+That's been my approach so far :-)
+
+> *  Some older SoCs simply export the MDIO/MDClk pins from one of their
+> internal EMAC chips and don't bother with running it through the
+> multiplexing bridge.
+
+Yes.
+
+> Are there any SoCs which actually export the MDIO/MDClk pins from
+> both/all of their EMACs?
+
+I don't know of such a beast.
+
+Cheers,
+Ben.
+
+> Cheers,
+> Kyle Moffett
+
