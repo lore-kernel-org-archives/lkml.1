@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbZECVsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753083AbZECVz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754552AbZECVsx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 17:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbZECVsl
+	id S1753083AbZECVz1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 17:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZECVzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 17:48:41 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:53910 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752523AbZECVsj (ORCPT
+	Sun, 3 May 2009 17:55:14 -0400
+Received: from mga06.intel.com ([134.134.136.21]:38266 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751453AbZECVzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 17:48:39 -0400
-Date: Sun, 3 May 2009 15:48:37 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Boaz Harrosh <bharrosh@panasas.com>, Hugh Dickins <hugh@veritas.com>,
-       Matthew Wilcox <willy@linux.intel.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
-       linux-scsi@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Mark Lord <lkml@rtr.ca>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: New TRIM/UNMAP tree published (2009-05-02)
-Message-ID: <20090503214836.GV8822@parisc-linux.org>
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <49D8A3D7.5070507@panasas.com> <20090503061150.GF10704@linux.intel.com> <20090503071619.GP8822@parisc-linux.org> <Pine.LNX.4.64.0905031346350.29671@blonde.anvils> <20090503144847.GR8822@parisc-linux.org> <49FDB21B.3080301@panasas.com> <20090503154216.GU8822@parisc-linux.org> <49FDC786.6070309@panasas.com> <49FDE3BB.505@garzik.org>
+	Sun, 3 May 2009 17:55:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,288,1239001200"; 
+   d="scan'208";a="512170449"
+Date: Sun, 3 May 2009 23:57:29 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mfd: Mark WM8350 mask revision as readable to match
+	silicon
+Message-ID: <20090503215728.GC3278@sortiz.org>
+References: <1241099069-17778-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49FDE3BB.505@garzik.org>
+In-Reply-To: <1241099069-17778-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 03, 2009 at 02:34:35PM -0400, Jeff Garzik wrote:
-> Yes, the task of figuring out -what to do- in the queue's request  
-> function is quite complex, and discard makes it even more so.
->
-> The API makes life difficult -- you have to pass temporary info to  
-> yourself in ->prepare_flush_fn() and ->prepare_discard_fn(), and the  
-> overall sum is a bewildering collection of opcodes, flags, and internal  
-> driver notes to itself.
->
-> Add to this yet another prep function, ->prep_rq_fn()
->
-> It definitely sucks, especially with regards to failed atomic  
-> allocations...   but I think fixing this quite a big more than Matthew  
-> probably willing to tackle ;-)
+Hi Mark,
 
-I'm completely confused by the block layer API, to be honest.  Trying to
-deduce how to add a new feature at this stage is hard (compare it to
-adding the reflink operation to the VFS ...).  I'm definitely willing to
-tackle changing the block device API, but it may take a while.
+On Thu, Apr 30, 2009 at 02:44:29PM +0100, Mark Brown wrote:
+> No impact unless someone has written additional kernel code.
+All 3 patches applied to my for-next branch, thanks.
 
-> My ideal block layer interface would be a lot more opcode-based, e.g.
->
-> (1) create REQ_TYPE_DISCARD
->
-> (2) determine at init if queue (a) supports explicit DISCARD and/or (b)  
-> supports DISCARD flag passed with READ or WRITE
->
-> (3) when creating a discard request, use block helpers w/ queue-specific  
-> knowledge to create either
-> 	(a) one request, REQ_TYPE_FS, with discard flag or
-> 	(b) two requests, REQ_TYPE_FS followed by REQ_TYPE_DISCARD
+Cheers,
+Samuel.
 
-I'm not sure we need option 3b.
 
-> (4) blkdev_issue_discard() would function like an empty barrier, and  
-> unconditionally create REQ_TYPE_DISCARD.
-
-I can certainly prototype a replacement for discard_prep_fn along these lines.
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
+>  drivers/mfd/wm8350-regmap.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/mfd/wm8350-regmap.c b/drivers/mfd/wm8350-regmap.c
+> index 9a4cc95..97d6aad 100644
+> --- a/drivers/mfd/wm8350-regmap.c
+> +++ b/drivers/mfd/wm8350-regmap.c
+> @@ -3186,7 +3186,7 @@ const struct wm8350_reg_access wm8350_reg_io_map[] = {
+>  	/*  read    write volatile */
+>  	{ 0xFFFF, 0xFFFF, 0xFFFF }, /* R0   - Reset/ID */
+>  	{ 0x7CFF, 0x0C00, 0x7FFF }, /* R1   - ID */
+> -	{ 0x0000, 0x0000, 0x0000 }, /* R2 */
+> +	{ 0x007F, 0x0000, 0x0000 }, /* R2   - ROM Mask ID */
+>  	{ 0xBE3B, 0xBE3B, 0x8000 }, /* R3   - System Control 1 */
+>  	{ 0xFEF7, 0xFEF7, 0xF800 }, /* R4   - System Control 2 */
+>  	{ 0x80FF, 0x80FF, 0x8000 }, /* R5   - System Hibernate */
+> -- 
+> 1.6.2.4
+> 
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Intel Open Source Technology Centre
+http://oss.intel.com/
