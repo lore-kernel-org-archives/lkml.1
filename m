@@ -1,87 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbZECWPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbZECWUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755208AbZECWPc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 18:15:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZECWPR
+	id S1755174AbZECWUZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 18:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbZECWUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 18:15:17 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38707 "EHLO gate.crashing.org"
+	Sun, 3 May 2009 18:20:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50932 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752394AbZECWPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 18:15:16 -0400
-Subject: Re: Porting the ibm_newemac driver to use phylib (and other
- PHY/MAC questions)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kyle Moffett <kyle@moffetthome.net>
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, netdev <netdev@vger.kernel.org>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <f73f7ab80905022126ud3225enc6409bd39b5b2eb8@mail.gmail.com>
-References: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
-	 <625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
-	 <f73f7ab80904201710m57472291yf7ff86760977b8e8@mail.gmail.com>
-	 <1240388476.17445.10.camel@pasglop>
-	 <f73f7ab80904300804j1f847b70ha0fe3cda07249110@mail.gmail.com>
-	 <1241126291.29501.41.camel@pasglop>
-	 <f73f7ab80904301521x16effa0ar2d4756daceada122@mail.gmail.com>
-	 <f73f7ab80905022126ud3225enc6409bd39b5b2eb8@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 04 May 2009 08:14:54 +1000
-Message-Id: <1241388894.1781.18.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	id S1752987AbZECWUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 18:20:09 -0400
+Date: Mon, 4 May 2009 00:15:31 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Daniel Krueger <daniel.krueger@systec-electronic.com>,
+       Ronald Sieber <Ronald.Sieber@systec-electronic.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] drivers/staging/epl: do not use CLONE_SIGHAND with
+	allow_signal()
+Message-ID: <20090503221531.GA26415@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-05-03 at 00:26 -0400, Kyle Moffett wrote:
+Not sure this patch is really needed since kernel_thread() is deprecated
+(and checkpatch.pl complains).
 
-> Ok, I've dug through the docs on the 460EPx (the CPU I'm using), and
-> I'd like some confirmation of the following:
-> 
-> *  The EMAC hardware itself internally has its own dedicated
-> MDIO/MDClk lines, driven by the STACR register.
+But we should not use kernel_thread(CLONE_SIGHAND) if we are going to play
+with signals.
 
-Yes, though not all EMACs cells have this wired to anything. For
-example, the 405EP has 2 EMACs but only EMAC0 has MDIO, which is
-used to control both PHYs. Later variants multiplex the MDIOs via
-a programmable switch in the ZMII or RGMII though.
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
 
-> *  On many/most cpus, there is only a single set of external
-> MDIO/MDClk pins, driven either off the ZMII bridge or the RGMII
-> bridge.
+ drivers/staging/epl/EplSdoUdpu.c         |    3 ++-
+ drivers/staging/epl/ShbIpc-LinuxKernel.c |    8 ++++----
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-Yes, though on the very old ones, the ZMII bridge is effectively
-invisible (if it exists at all) and only EMAC0 MDIO pins are wired out.
-
-> *  Both bridge-types have their own internal register for switching
-> the external MDIO/MDClk pins between the two sets of internal
-> EMAC<=>bridge links.
-
-Yes.
-
-> *  Some SoCs have both an ZMII and an RGMII bridge, and the external
-> MDIO/MDClk pins are only connected to one of the two bridges (How do I
-> know which one?  Alternatively, do I just program both and hope for
-> the best?).
-
-That's been my approach so far :-)
-
-> *  Some older SoCs simply export the MDIO/MDClk pins from one of their
-> internal EMAC chips and don't bother with running it through the
-> multiplexing bridge.
-
-Yes.
-
-> Are there any SoCs which actually export the MDIO/MDClk pins from
-> both/all of their EMACs?
-
-I don't know of such a beast.
-
-Cheers,
-Ben.
-
-> Cheers,
-> Kyle Moffett
+--- PTRACE/drivers/staging/epl/EplSdoUdpu.c~AS_2	2009-04-06 00:03:39.000000000 +0200
++++ PTRACE/drivers/staging/epl/EplSdoUdpu.c	2009-05-04 00:03:50.000000000 +0200
+@@ -334,7 +334,8 @@ tEplKernel EplSdoUdpuConfig(unsigned lon
+ 	}
+ 	// create Listen-Thread
+ 	SdoUdpInstance_g.m_ThreadHandle =
+-	    kernel_thread(EplSdoUdpThread, &SdoUdpInstance_g, CLONE_KERNEL);
++		kernel_thread(EplSdoUdpThread, &SdoUdpInstance_g,
++				CLONE_FS | CLONE_FILES);
+ 	if (SdoUdpInstance_g.m_ThreadHandle == 0) {
+ 		Ret = kEplSdoUdpThreadError;
+ 		goto Exit;
+--- PTRACE/drivers/staging/epl/ShbIpc-LinuxKernel.c~AS_2	2009-04-06 00:03:39.000000000 +0200
++++ PTRACE/drivers/staging/epl/ShbIpc-LinuxKernel.c	2009-05-03 23:54:04.000000000 +0200
+@@ -532,8 +532,8 @@ tShbError ShbIpcStartSignalingNewData(tS
+ 
+ 	//create thread for signalling new data
+ 	pShbMemInst->m_tThreadNewDataId =
+-	    kernel_thread(ShbIpcThreadSignalNewData, pShbInstance_p,
+-			  CLONE_KERNEL);
++		kernel_thread(ShbIpcThreadSignalNewData, pShbInstance_p,
++				CLONE_FS | CLONE_FILES);
+ 
+       Exit:
+ 	return ShbError;
+@@ -636,8 +636,8 @@ tShbError ShbIpcStartSignalingJobReady(t
+ 	pShbMemHeader->m_fJobReady = FALSE;
+ 	//create thread for signalling new data
+ 	pShbMemInst->m_tThreadJobReadyId =
+-	    kernel_thread(ShbIpcThreadSignalJobReady, pShbInstance_p,
+-			  CLONE_KERNEL);
++		kernel_thread(ShbIpcThreadSignalJobReady, pShbInstance_p,
++				CLONE_FS | CLONE_FILES);
+       Exit:
+ 	return ShbError;
+ }
 
