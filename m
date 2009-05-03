@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753083AbZECVz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbZECV4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753083AbZECVz1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 17:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZECVzO
+	id S1753897AbZECV4d (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 17:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZECV4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 17:55:14 -0400
-Received: from mga06.intel.com ([134.134.136.21]:38266 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751453AbZECVzN (ORCPT
+	Sun, 3 May 2009 17:56:23 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34404 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751467AbZECV4W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 17:55:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,288,1239001200"; 
-   d="scan'208";a="512170449"
-Date: Sun, 3 May 2009 23:57:29 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mfd: Mark WM8350 mask revision as readable to match
-	silicon
-Message-ID: <20090503215728.GC3278@sortiz.org>
-References: <1241099069-17778-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	Sun, 3 May 2009 17:56:22 -0400
+Date: Sun, 3 May 2009 23:56:15 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: jmorris@namei.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [TOMOYO 1/2] tomoyo: add Documentation/tomoyo.txt
+Message-ID: <20090503215615.GA1368@ucw.cz>
+References: <20090408133126.180521064@I-love.SAKURA.ne.jp> <20090408133524.395437925@I-love.SAKURA.ne.jp> <20090410171001.GA26156@elf.ucw.cz> <200904130204.n3D24JNk095583@www262.sakura.ne.jp> <20090501102438.GA7470@elf.ucw.cz> <200905012207.BFC60616.QStOHOMJFOLFFV@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1241099069-17778-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <200905012207.BFC60616.QStOHOMJFOLFFV@I-love.SAKURA.ne.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
-
-On Thu, Apr 30, 2009 at 02:44:29PM +0100, Mark Brown wrote:
-> No impact unless someone has written additional kernel code.
-All 3 patches applied to my for-next branch, thanks.
-
-Cheers,
-Samuel.
-
-
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  drivers/mfd/wm8350-regmap.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+On Fri 2009-05-01 22:07:31, Tetsuo Handa wrote:
+> Sorry for delayed response.
 > 
-> diff --git a/drivers/mfd/wm8350-regmap.c b/drivers/mfd/wm8350-regmap.c
-> index 9a4cc95..97d6aad 100644
-> --- a/drivers/mfd/wm8350-regmap.c
-> +++ b/drivers/mfd/wm8350-regmap.c
-> @@ -3186,7 +3186,7 @@ const struct wm8350_reg_access wm8350_reg_io_map[] = {
->  	/*  read    write volatile */
->  	{ 0xFFFF, 0xFFFF, 0xFFFF }, /* R0   - Reset/ID */
->  	{ 0x7CFF, 0x0C00, 0x7FFF }, /* R1   - ID */
-> -	{ 0x0000, 0x0000, 0x0000 }, /* R2 */
-> +	{ 0x007F, 0x0000, 0x0000 }, /* R2   - ROM Mask ID */
->  	{ 0xBE3B, 0xBE3B, 0x8000 }, /* R3   - System Control 1 */
->  	{ 0xFEF7, 0xFEF7, 0xF800 }, /* R4   - System Control 2 */
->  	{ 0x80FF, 0x80FF, 0x8000 }, /* R5   - System Hibernate */
-> -- 
-> 1.6.2.4
+> Pavel Machek wrote:
+> > 2.5 Memory Allocation Rules
+> > 
+> > In TOMOYO Linux, memory allocated for holding access permissions and
+> > words are never freed. There is no way except rebooting the system
+> > that can free unneeded memory.
+> > 
+> > But don't worry. The policy seldom changes after you start production
+> > mode. By tuning policy before starting production mode, you can reduce
+> > memory usage to (usually) less than 1 MB.
+> > 
+> > ....does that mean that it leaks memory by design?
 > 
+> This is memory leak, but *controlled* memory allocation with a strategy for
+> avoiding memory fragmentation and reducing memory usage. kstrdup()ing string
+> data produces partially unused memory block since string data's length is
+> unlikely power of two. Therefore, TOMOYO allocates memory in PAGE_SIZE bytes
+> block and embeds string data as much as possible.
+> TOMOYO does not continue allocating forever.
 
+The document above says otherwise. 'There is no way except rebooting
+the system that can free unneeded memory' certainly looks like memory
+leak. Plus it sounds like if you change the policy, it will not free
+the old one, either.
+
+								Pavel
 -- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
