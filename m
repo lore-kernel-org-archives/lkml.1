@@ -1,196 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZECFxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZECGIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbZECFxp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 01:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbZECFxg
+	id S1752764AbZECGIR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 02:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbZECGH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 01:53:36 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37903 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953AbZECFxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 01:53:35 -0400
-From: Neil Brown <neilb@suse.de>
-To: Philipp Reisner <philipp.reisner@linbit.com>
-Date: Sun, 3 May 2009 15:53:41 +1000
+	Sun, 3 May 2009 02:07:58 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:43351 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751019AbZECGH5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 02:07:57 -0400
+Message-ID: <49FD347F.6030306@cosmosbay.com>
+Date: Sun, 03 May 2009 08:06:55 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18941.12645.590037.589600@notabene.brown>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Greg KH <gregkh@suse.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       "Lars Marowsky-Bree" <lmb@suse.de>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>
-Subject: Re: [PATCH 00/16] DRBD: a block device for HA clusters
-In-Reply-To: message from Philipp Reisner on Thursday April 30
-References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+To: Ingo Molnar <mingo@elte.hu>
+CC: Christoph Lameter <cl@linux.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       jesse.brandeburg@intel.com, netdev@vger.kernel.org, haoki@redhat.com,
+       mchan@broadcom.com, davidel@xmailserver.org,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [BUG] perf_counter: change cpu frequencies
+References: <49F71B63.8010503@cosmosbay.com> <alpine.DEB.1.10.0904281501300.13862@qirst.com> <49F76174.6060009@cosmosbay.com> <alpine.DEB.1.10.0904281612560.13862@qirst.com> <49F767FD.2040205@cosmosbay.com> <alpine.DEB.1.10.0904281629090.15947@qirst.com> <49F76F6C.80005@cosmosbay.com> <49F77108.7060509@cosmosbay.com> <20090429091130.GA27857@elte.hu> <49F9821C.5010802@cosmosbay.com> <20090430115736.GA24349@elte.hu> <49F9B0F0.40306@cosmosbay.com> <49F9CCD0.2080005@cosmosbay.com>
+In-Reply-To: <49F9CCD0.2080005@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 03 May 2009 08:07:01 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday April 30, philipp.reisner@linbit.com wrote:
-> Hi,
+Eric Dumazet a écrit :
+> Eric Dumazet a écrit :
+>  
+>> But if I use plain "perf stat -a sleep 10"
+>> it seems I get wrong values again (16 G cycles/sec) for all next perf sessions
+>>
 > 
-> This is a repost of DRBD, to keep you updated about the ongoing
-> cleanups and improvements.
+> Well, I confirm all my cpus switched from 3GHz to 2GHz, after
 > 
-> Patch set attached. Git tree available:
-> git pull git://git.drbd.org/linux-2.6-drbd.git drbd
+> "perf stat -a sleep 10"
 > 
-> We are looking for reviews!
+> (but "perf stat -e instructions -e cycles -a sleep 10" doesnt trigger this problem)
 > 
-> Description
+> Nothing logged, and /proc/cpuinfo stills reports 3 GHz frequencies
 > 
->   DRBD is a shared-nothing, synchronously replicated block device. It
->   is designed to serve as a building block for high availability
->   clusters and in this context, is a "drop-in" replacement for shared
->   storage. Simplistically, you could see it as a network RAID 1.
-
-I know this is minor, but it bugs me every time I see that phrase
-"shared-nothing".   Surely the network is shared?? And the code...
-Can you just say "DRBD is a synchronously replicated block device"?
-or would we have to call it SRBD then?
-Or maybe "shared-nothing" is an accepted technical term in the
-clustering world??
-
+> # cat unit.c
+> main() {
+>   int i;
+>   for (i = 0 ; i < 10000000; i++)
+>         getppid();
+> }
+> # time ./unit
 > 
->   Although I use the "RAID1+NBD" metaphor myself, recent discussion
->   unveiled that one needs to understand the differences as well.
->   Here are just two examples of that:
-
-All this should probably be in a patch against Documentation/drbd.txt 
-
+> real    0m0.818s
+> user    0m0.289s
+> sys     0m0.529s
+> # perf stat -a sleep 10 2>/dev/null
+> # time ./unit
 > 
->    1) Think of a two node HA cluster. Node A is active ('primary' in DRBD
->     speak) has the filesystem mounted and the application running. Node B is
->     in standby mode ('secondary' in DRBD speak).
-
-If there some strong technical reason to only allow 2 nodes?  Was it
-Asimov who said the only sensible numbers were 0, 1, and infinity?
-(People still get surprised that md/raid1 can do 2 or 3 or n drives,
-and that md/raid5 can handle just 2 :-)
-
+> real    0m1.122s
+> user    0m0.482s
+> sys     0m0.640s
 > 
->     We loose network connectivity, the primary node continues to run, the
-         lose
->     secondary no longer gets updates.
+> # tail -n 27 /proc/cpuinfo
+> processor       : 7
+> vendor_id       : GenuineIntel
+> cpu family      : 6
+> model           : 23
+> model name      : Intel(R) Xeon(R) CPU           E5450  @ 3.00GHz
+> stepping        : 6
+> cpu MHz         : 3000.102
+> cache size      : 6144 KB
+> physical id     : 1
+> siblings        : 1
+> core id         : 3
+> cpu cores       : 4
+> apicid          : 7
+> initial apicid  : 7
+> fdiv_bug        : no
+> hlt_bug         : no
+> f00f_bug        : no
+> coma_bug        : no
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 10
+> wp              : yes
+> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe lm constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 lahf_lm tpr_shadow vnmi flexpriority
+> bogomips        : 6000.01
+> clflush size    : 64
+> power management:
 > 
->     Then we have a complete power failure, both nodes are down. Then they
->     power up the data center again, but at first the get only the power
-                                                   they
->     circuit of node B up and running again.
+> # grep CPU_FREQ .config
+> # CONFIG_CPU_FREQ is not set
 > 
->     Should node B offer the service right now ?
->       ( DRBD has configurable policies for that )
 > 
->     Later on they manage to get node A up and running again, now lets assume
->     node B was chosen to be the new primary node. What needs to be done ?
+> perf_counter seems promising, but still... needs some bug hunting :)
 > 
->     Modifications on B since it became primary needs to be resynced to A.
->     Modifications on A sind it lost contact to B needs to be taken out.
-> 
->     DRBD does that.
-> 
->     How do you fit that into a RAID1+NBD model ? NBD is just a block
->     transport, it does not offer the ability to exchange dirty bitmaps or
->     data generation identifiers, nor does the RAID1 code has a concept of
->     that.
 
-Not 100% true, but I - at least partly -  get your point.
-As md stores bitmaps and data generation identifiers on the block
-device, these can be transferred over NBD just like any other data on
-the block device.
-However I think that part of your point is that DRBD can transfer them
-more efficiently (e.g. it compresses the bitmap before transferring it
--  I assume the compression you use is much more effective than gzip??
-else why both to code your own).
-I suspect there is more to your point that I am missing.
-You say "nor does the RAID1 code has a concept of that".  It isn't
-clear what you are referring to.  RAID1 does have a concept of dirty
-bitmaps as you know, and it does have a concept of data generation,
-though it is quite possibly weaker than the concept that DRBD has.
-I'd need to explore the DRBD code more to be sure.
+Update :
+
+Mike Galbraith suggested me to try various things, and finally, I discovered
+this frequency change was probably a BIOS problem on my HP BL460c G1
+
+System Options -> Power regulator for Proliant
+
+[*] HP Dynamic Power Savings Mode
+[ ] HP Static Low Power Mode
+[ ] HP Static High Performance Mode
+[ ] OS Control Mode
 
 
-> 
->    2) When using DRBD over small bandwidth links, one has to run a resync,
->     DRBD offers the option to do a "checksum based resync". Similar to rsync
->     it at first only exchanges a checksum, and transmits the whole data
->     block only if the checksums differ.
-> 
->     That again is something that does not fit into the concepts of
->     NBD or RAID1.
+I switched it to 'OS Control Mode'
 
-Interesting idea....  RAID1 does have a mode where it reads both (all)
-devices and compares them to see if they match or not.  Doing this
-compare with checksums rather than memcmp would not be an enormous
-change.
+Then acpi-cpufreq could load, and no more frequencies changes on a "perf -a sleep 10" 
+session, using or not cpufreq.
+(Supported cpufreq speeds on these cpus : 1999 & 2999 MHz)
 
-I'm beginning to imagine an enhanced NBD as a model for what DRBD
-does.
-This enhanced NBD not only supports read and write of blocks but also:
+So it was a BIOS issue
 
-   - maintains the local bitmap and sets bits before allowing a write
-   - can return a strong checksum rather than the data of a block
-   - provides sequence numbers in a way that I don't fully understand
-     yet, but which allows consistent write ordering.
-   - allows reads to be compressed so that the bitmap can be
-     transferred efficiently.
+# perf stat -a sleep 10
 
-I can imagine that md/raid1 could be made to work well with an
-enhanced NBD like this.
+ Performance counter stats for 'sleep':
 
-> 
->   DRBD can also be used in dual-Primary mode (device writable on both
->   nodes), which means it can exhibit shared disk semantics in a
->   shared-nothing cluster.  Needless to say, on top of dual-Primary
->   DRBD utilizing a cluster file system is necessary to maintain for
->   cache coherency.
-> 
->   More background on this can be found in this paper:
->     http://www.drbd.org/fileadmin/drbd/publications/drbd8.pdf
-> 
->   Beyond that, DRBD addresses various issues of cluster partitioning,
->   which the MD/NBD stack, to the best of our knowledge, does not
->   solve. The above-mentioned paper goes into some detail about that as
->   well.
+   80005.418223  task clock ticks     (msecs)
+          80266  context switches     (events)
+              3  CPU migrations       (events)
+            486  pagefaults           (events)
+   240013851624  CPU cycles           (events) << good >>
+   239076501419  instructions         (events)
+         679464  cache references     (events)
+  <not counted>  cache misses
 
-Agreed - MD/NBD could probably be easily confused by cluster
-partitioning, though I suspect that in many simple cases it would get
-it right.  I haven't given it enough thought to be sure.  I doubt the
-enhancements necessary would be very significant though.
+ Wall-clock time elapsed: 10000.468808 msecs
 
-> 
->   DRBD can operate in synchronous mode, or in asynchronous mode. I want
->   to point out that we guarantee not to violate a single possible write
->   after write dependency when writing on the standby node. More on that
->   can be found in this paper:
->     http://www.drbd.org/fileadmin/drbd/publications/drbd_lk9.pdf
+Thank you
 
-I really must read and understand this paper..
-
-
-So... what would you think of working towards incorporating all of the
-DRBD functionality into md/raid1??
-I suspect that it would be a mutually beneficial exercise, except for
-the small fact that it would take a significant amount of time and
-effort.  I'd be will to shuffle some priorities and put in some effort
-if it was a direction that you would be open to exploring.
-
-Whether the current DRBD code gets merged or not is possibly a
-separate question, though I would hope that if we followed the path of
-merging DRBD into md/raid1, then any duplicate code would eventually be
-excised from the kernel.
-
-What do you think?
-
-NeilBrown
