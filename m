@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753703AbZECBKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbZECBQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753703AbZECBKF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 21:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbZECBJy
+	id S1753837AbZECBQY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 21:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbZECBQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 21:09:54 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:17074 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753035AbZECBJy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 May 2009 21:09:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=fn6XGfTwjgk3WIR+T44Cfx3g9gzxjxR2MFDV9sFkgWDOMHkL5ICm7xhV+vVNhmEQwy
-         UnHLipinXbm0a7d+Q+cMPPU83NImxvyvv/PkgFuqxA+yCGjd1IBy6SfVqeJ02MSasjfT
-         j2viLtg8UF+GjemMNuor95iiq5SZwTWY93cj4=
+	Sat, 2 May 2009 21:16:15 -0400
+Received: from mga03.intel.com ([143.182.124.21]:48092 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753065AbZECBQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 May 2009 21:16:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,284,1239001200"; 
+   d="scan'208";a="138540510"
+Date: Sun, 3 May 2009 09:15:40 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>, Elladan <elladan@eskimo.com>,
+       linux-kernel@vger.kernel.org, tytso@mit.edu, linux-mm@kvack.org
+Subject: Re: [PATCH] vmscan: evict use-once pages first (v3)
+Message-ID: <20090503011540.GA5702@localhost>
+References: <20090428044426.GA5035@eskimo.com> <20090428192907.556f3a34@bree.surriel.com> <1240987349.4512.18.camel@laptop> <20090429114708.66114c03@cuia.bos.redhat.com> <2f11576a0904290907g48e94e74ye97aae593f6ac519@mail.gmail.com> <20090429131436.640f09ab@cuia.bos.redhat.com>
 MIME-Version: 1.0
-Date: Sun, 3 May 2009 10:09:54 +0900
-Message-ID: <3ecd1e960905021809p448f6b0eo3a530cd35d4f763e@mail.gmail.com>
-Subject: [PATCH] gfp.h: a trivial comment typo
-From: Kazuo Ito <kzpn200@gmail.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090429131436.640f09ab@cuia.bos.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, Apr 29, 2009 at 01:14:36PM -0400, Rik van Riel wrote:
+> When the file LRU lists are dominated by streaming IO pages,
+> evict those pages first, before considering evicting other
+> pages.
+> 
+> This should be safe from deadlocks or performance problems
+> because only three things can happen to an inactive file page:
+> 1) referenced twice and promoted to the active list
+> 2) evicted by the pageout code
+> 3) under IO, after which it will get evicted or promoted
+> 
+> The pages freed in this way can either be reused for streaming
+> IO, or allocated for something else. If the pages are used for
+> streaming IO, this pageout pattern continues. Otherwise, we will
+> fall back to the normal pageout pattern.
+> 
+> Signed-off-by: Rik van Riel <riel@redhat.com>
+> 
+[snip]
+> +static int inactive_file_is_low_global(struct zone *zone)
+> +{
+> +	unsigned long active, inactive;
+> +
+> +	active = zone_page_state(zone, NR_ACTIVE_FILE);
+> +	inactive = zone_page_state(zone, NR_INACTIVE_FILE);
+> +
+> +	return (active > inactive);
+> +}
+[snip]
+>  static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
+>  	struct zone *zone, struct scan_control *sc, int priority)
+>  {
+>  	int file = is_file_lru(lru);
+>  
+> -	if (lru == LRU_ACTIVE_FILE) {
+> +	if (lru == LRU_ACTIVE_FILE && inactive_file_is_low(zone, sc)) {
+>  		shrink_active_list(nr_to_scan, zone, sc, priority, file);
+>  		return 0;
+>  	}
 
-It's really trivial and doesn't mean much for overall code
-quality, but since I found it...
+Acked-by: Wu Fengguang <fengguang.wu@intel.com>
 
-commit 99b4ac1ebc20382c2215ae984d565ab183e0f4bc
-Author: Kazuo Ito <kzpn200@gmail.com>
-Date:   Sun May 3 09:56:35 2009 +0900
+I like this idea - it's simple and sound, and is expected to work well
+for the majority workloads. Sure the arbitrary 1:1 active:inactive ratio
+may be suboptimal for many workloads, but it is mostly safe.
 
-    gfp.h: a comment typo
----
- include/linux/gfp.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+In the worse scenario, it could waste half the memory that could
+otherwise be used for readahead buffer and to prevent thrashing, in a
+server serving large datasets that are hardly reused, but still slowly
+builds up its active list during the long uptime (think about a slowly
+performance downgrade that can be fixed by a crude dropcache action).
 
-diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-index 0bbc15f..eda48ed 100644
---- a/include/linux/gfp.h
-+++ b/include/linux/gfp.h
-@@ -14,7 +14,7 @@ struct vm_area_struct;
-  * Zone modifiers (see linux/mmzone.h - low three bits)
-  *
-  * Do not put any conditional on these. If necessary modify the definitions
-- * without the underscores and use the consistently. The definitions here may
-+ * without the underscores and use them consistently. The definitions here may
-  * be used in bit comparisons.
-  */
- #define __GFP_DMA	((__force gfp_t)0x01u)
+That said, the actual performance degradation could be much smaller -
+say 15% - all memories are not equal.
+
+Thanks,
+Fengguang
