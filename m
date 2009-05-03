@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbZECURW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756986AbZECURi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756829AbZECURW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 16:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbZECURN
+	id S1756986AbZECURi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 16:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756184AbZECUR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 16:17:13 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:47851 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751645AbZECURM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 16:17:12 -0400
-Subject: Re: [BUG] 2.6.30-rc4 hid bluetooth not working
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Marc Pignat <Marc.Pignat@hevs.ch>
-Cc: justinmattock@gmail.com, hidave.darkstar@gmail.com,
-       ext-roger.quadros@nokia.com, jkosina@suse.cz,
-       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <49FDCC85020000BF000290ED@mailgw2.hevs.ch>
-References: <49FDCC85020000BF000290ED@mailgw2.hevs.ch>
-Content-Type: text/plain
-Date: Sun, 03 May 2009 13:17:01 -0700
-Message-Id: <1241381821.2785.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sun, 3 May 2009 16:17:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38019 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752177AbZECUR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 16:17:26 -0400
+Date: Sun, 3 May 2009 22:10:27 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, Eric Paris <eparis@parisplace.org>,
+       James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org
+Subject: Re: ptrace: selinux_bprm_committed_creds: simplify
+	__wake_up_parent() code and s/parent/real_parent/
+Message-ID: <20090503201027.GB18889@redhat.com>
+References: <20090428223025.GA11997@redhat.com> <1241011116.18249.193.camel@localhost.localdomain> <20090429140224.GA31948@redhat.com> <20090429140836.GB31948@redhat.com> <20090430224407.63B9DFC3BF@magilla.sf.frob.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090430224407.63B9DFC3BF@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marc,
+On 04/30, Roland McGrath wrote:
+>
+> > Afaics, with this patch the only user of ->parent outside of ptrace.c & co
+> > is arch/ia64/kernel/mca.c:format_mca_init_stack(). Hopefully ->parent will
+> > die soon.
+>
+> You could clean it up today with:
+> 	tracehook_finish_clone(p, 0, 0);
 
-you really need to fix your mailer. You keep breaking the threading all
-the time and that is clearly your fault.
+Yes... but we still need to initialize real_parent/group_leader. This code
+is so special, perhaps it is better to just remove "p->parent = " later and
+do not add "#include tracehook". We will see.
 
-> > thanks for testing.
-> 
-> > Marc, Roger, can you test this and confirm that it works for you and
-> > doesn't have any other side effects. Then I prepare it work upstream
-> > inclusion.
-> 
-> Tested and working!
-
-great. So I queue this up for 2.6.30 inclusion.
-
-> Exercise left for 2.6.31: use the system wide wq ;)
-
-Actually no, the private workqueue is used on purpose. No need to bother
-keventd for a regular task.
-
-Regards
-
-Marcel
-
+Oleg.
 
