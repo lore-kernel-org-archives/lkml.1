@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756650AbZECUqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757003AbZECUtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756650AbZECUqZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 16:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757094AbZECUpy
+	id S1757003AbZECUtn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 16:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051AbZECUtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 16:45:54 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:41071 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757014AbZECUpx (ORCPT
+	Sun, 3 May 2009 16:49:35 -0400
+Received: from outbound-mail-132.bluehost.com ([67.222.39.22]:60416 "HELO
+	outbound-mail-132.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753466AbZECUte (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 16:45:53 -0400
-Subject: Re: 2.6.30-rc4 Weird messages with ext4
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Panagiotis Papadakos <papadako@csd.uoc.gr>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <49FE0105.6010107@gmail.com>
-References: <200905031508.06053.papadako@csd.uoc.gr>
-	 <49FE0105.6010107@gmail.com>
-Content-Type: text/plain
-Date: Sun, 03 May 2009 20:45:51 +0000
-Message-Id: <1241383551.5596.116.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Sun, 3 May 2009 16:49:34 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 May 2009 16:49:34 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=damore.org;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=oOpobC/gBPL2e1jizDhUXqfYigk+rLO0RvCN8fDlDfCXpf7jOva3XV32q8qiHLaFMJVUShukdHY7OoaAFL1OT4cPhPYiN5XTVAspRAaWlzb/+g4FGuJFtWEi5vj0GMIW;
+Message-ID: <49FE01CD.8000903@damore.org>
+Date: Sun, 03 May 2009 13:42:53 -0700
+From: "Garrett D'Amore" <garrett@damore.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081201)
+MIME-Version: 1.0
+To: Pierre Ossman <pierre@ossman.eu>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, sdhci-devel@lists.ossman.eu,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Robert Hancock <hancockrwd@gmail.com>
+Subject: Re: [Sdhci-devel] SDHCI driver runnining in aspire one, allows to
+ write to R/O SD cards
+References: <1240219764.13640.5.camel@maxim-laptop>	<49ED0865.9030603@gmail.com>	<1240524632.20871.0.camel@maxim-laptop>	<1240759276.10972.0.camel@maxim-laptop>	<49F5F57D.3010700@damore.org> <20090503212944.214d7137@mjolnir.ossman.eu>
+In-Reply-To: <20090503212944.214d7137@mjolnir.ossman.eu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {2225:box374.bluehost.com:damoreor:damore.org} {sentby:smtp auth 192.18.43.225 authed with garrett+damore.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-05-03 at 14:39 -0600, Robert Hancock wrote:
-> Panagiotis Papadakos wrote:
-> > Hi.
-> > 
-> > When I connect my ext4 formatted Seagate 1.5 TB USB box,
-> > I get the messages of the style:
-> > 
-> > [sdb] Result: hostbyte=DID_OK driverbyte=DRIVER_SENSE           
-> > [sdb] Sense Key : Illegal Request [current]                     
-> > [sdb] Add. Sense: Logical block address out of range 
-> > 
-> > By the way I am not getting such messages with 2.6.29.
-> > 
-> > Anyone knows what might be wrong?
-> 
-> Sounds like something's messing up with the disk size detection, as it 
-> gets detected as a 2TB drive. CCing linux-usb and linux-scsi.
+Pierre Ossman wrote:
+> On Mon, 27 Apr 2009 11:12:13 -0700
+> Garrett D'Amore <garrett@damore.org> wrote:
+>
+>   
+>> As an extra data point, my sdhost driver in OpenSolaris works fine on 
+>> the AA1.. it does see that the cards are locked, and refuses to allow 
+>> them to be mounted read/write.
+>>
+>> This leads me to believe that the original linux problem is one of two 
+>> things:
+>>
+>> * either a bug in the linux code, or
+>> * busted circuit/hardware on a specific unit (i.e. a damaged unit)
+>>
+>>     
+>
+> I don't suppose you could try a Linux LiveCD to determine if your AA1
+> has the same issue under Linux?
+>   
 
-There was a screw up in the READ CAPACITY 16 rewrite.  The fix is here:
+I'll have to download one, and I need to install via USB media... (which 
+I've not done with Linux before) -- the AA1 doesn't have a CDROM drive.
 
-commit 8f76d151b010980d137bfdc736d1d8f64b489165
-Author: Dave Hansen <dave@linux.vnet.ibm.com>
-Date:   Tue Apr 21 16:43:27 2009 -0700
-
-    [SCSI] fix sign extension with 1.5TB usb-storage LBD=y
- 
-It's just gone upstream.
-
-James
-
+    - Garrett
+> Rgds
+>   
+> ------------------------------------------------------------------------
+>
+> _______________________________________________
+> sdhci-devel mailing list
+> sdhci-devel@lists.ossman.eu
+> http://list.drzeus.cx/mailman/listinfo/sdhci-devel
+>   
 
