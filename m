@@ -1,70 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756671AbZECTEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbZECTFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756671AbZECTEq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 15:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbZECTEf
+	id S1755407AbZECTFj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 15:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbZECTF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 15:04:35 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:55142 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752183AbZECTEd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 15:04:33 -0400
-Subject: Re: New TRIM/UNMAP tree published (2009-05-02)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Jens Axboe <jens.axboe@oracle.com>,
-       Boaz Harrosh <bharrosh@panasas.com>, Hugh Dickins <hugh@veritas.com>,
-       Matthew Wilcox <willy@linux.intel.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Mark Lord <lkml@rtr.ca>
-In-Reply-To: <49FDE50A.4060503@garzik.org>
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com>
-	 <49D8A3D7.5070507@panasas.com> <20090503061150.GF10704@linux.intel.com>
-	 <20090503071619.GP8822@parisc-linux.org>
-	 <Pine.LNX.4.64.0905031346350.29671@blonde.anvils>
-	 <20090503144847.GR8822@parisc-linux.org> <49FDB21B.3080301@panasas.com>
-	 <20090503154216.GU8822@parisc-linux.org> <49FDC786.6070309@panasas.com>
-	 <49FDE3BB.505@garzik.org>  <49FDE50A.4060503@garzik.org>
-Content-Type: text/plain
-Date: Sun, 03 May 2009 14:04:32 -0500
-Message-Id: <1241377472.5596.88.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sun, 3 May 2009 15:05:28 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47394 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752482AbZECTF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 15:05:27 -0400
+Date: Sun, 3 May 2009 22:04:27 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, davidel@xmailserver.org
+Subject: Re: [KVM PATCH v3 2/2] kvm: add support for irqfd via
+	eventfd-notification interface
+Message-ID: <20090503190427.GB14483@redhat.com>
+References: <20090427182540.6646.96740.stgit@dev.haskins.net> <20090427183334.6646.90800.stgit@dev.haskins.net> <20090430130708.GA13763@redhat.com> <49FDCD7C.7070605@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49FDCD7C.7070605@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-05-03 at 14:40 -0400, Jeff Garzik wrote:
-> Jeff Garzik wrote:
-> > (2) determine at init if queue (a) supports explicit DISCARD and/or (b) 
-> > supports DISCARD flag passed with READ or WRITE
-> 
-> 
-> As an aside -- does any existing command set support case #b, above?
+On Sun, May 03, 2009 at 07:59:40PM +0300, Avi Kivity wrote:
+> Michael S. Tsirkin wrote:
+>> On Mon, Apr 27, 2009 at 02:33:34PM -0400, Gregory Haskins wrote:
+>>   
+>>> This allows an eventfd to be registered as an irq source with a guest.  Any
+>>> signaling operation on the eventfd (via userspace or kernel) will inject
+>>> the registered GSI at the next available window.
+>>>
+>>> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+>>>     
+>>
+>> If we ever want to use this with e.g. MSI-X emulation in guest, and want
+>> to be stricly compliant to MSI-X, we'll need a way for guest to mask
+>> interrupts, and for host to report that a masked interrupt is pending.
+>> Ideally, all this will be doable with a couple of mmapped pages to avoid
+>> vmexits/system calls.
+>>
+>>   
+>
+> We could do this in two ways:
+>
+> - move msix entry emulation into the kernel
 
-Not to my knowledge.
+It's not too bad IMO: MSIX is just a table with a list
+of vectors, you check the mask bit on each interrupt,
+if masked mark vector pending and poll until unmasked.
 
-I think discard was modelled on barrier (which can be associated with
-data or stand on its own).
+> - require the device to support replacing its irqfd, and juggle it like so:
+>   - guest disables msi
+>       - replace device model fd with eventfd belonging to us
+>       - when the device fires its eventfd, set the irq pending bit
+>   - guest enables msi
+>        - if the pending bit is set, fire the interrupt?
+>        - replace device model fd with the real irqfd
 
-> AFAICT, ATA, SCSI and NVMHCI all have a single, explicit hardware 
-> command to discard/deallocate unused sectors.
-> 
-> Therefore, creating REQ_TYPE_DISCARD seems to eliminate any need for new 
-> hook ->prepare_discard().
+Looks like a lot of code. No?
 
-Well, yes and no ... in the SCSI implementation of either UNMAP or WRITE
-SAME, we still need a data buffer to store either the extents or the
-actual same data.
+> I'm leaning towards the latter, though it's not an easy call.
 
-> This provides a 1:1 correspondence between hardware and struct request, 
-> most closely matching the setup of known hardware.
+Actually there's a third option: add KVM_MASK_IRQ, KVM_UNMASK_IRQ ioctls
+which will block/unblock guest from getting interrupt on this irq,
+whatever the source.  Interrupts are queued in kernel while masked. A
+third ioctl KVM_PENDING_IRQS will return the status for a set if IRQs.
+qemu would call these ioctls when guest edits the MSIX vector control or
+reads the pending bit array.
 
-Agreed ... but we still have to allocate the adjunct buffer
-somewhere ....
+>>> +static void
+>>> +irqfd_inject(struct work_struct *work)
+>>> +{
+>>> +	struct _irqfd *irqfd = container_of(work, struct _irqfd, work);
+>>> +	struct kvm *kvm = irqfd->kvm;
+>>> +
+>>> +	mutex_lock(&kvm->lock);
+>>> +	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
+>>> +	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
+>>> +	mutex_unlock(&kvm->lock);
+>>>     
+>>
+>> This will do weird stuff (deliver the irq twice) if the irq is
+>> MSI/MSI-X. I know this was discussed already and is a temporary
+>> shortcut, but maybe add a comment that we really want kvm_toggle_irq,
+>> so that we won't forget?
+>>   
+>
+> If so, that's a bug.  MSI should ignore kvm_set_irq(..., 0).
 
-James
-
-
+-- 
+MST
