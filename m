@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbZECA2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbZECA2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756280AbZECA2g (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 May 2009 20:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbZECA1V
+	id S1756002AbZECA2W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 May 2009 20:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbZECA1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 May 2009 20:27:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60687 "EHLO ogre.sisk.pl"
+	Sat, 2 May 2009 20:27:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60686 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753088AbZECA1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753065AbZECA1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 2 May 2009 20:27:12 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 3/4] PM/Hibernate: Use memory allocations to free memory (rev. 2)
-Date: Sun, 3 May 2009 02:24:20 +0200
+Subject: [PATCH 4/4] PM/Hibernate: Do not release preallocated memory unnecessarily
+Date: Sun, 3 May 2009 02:25:06 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
 Cc: pavel@ucw.cz, torvalds@linux-foundation.org, jens.axboe@oracle.com,
        alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
@@ -24,404 +24,379 @@ Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905030224.21471.rjw@sisk.pl>
+Message-Id: <200905030225.07366.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Modify the hibernation memory shrinking code so that it will make
-memory allocations to free memory instead of using an artificial
-memory shrinking mechanism for that.  Remove the shrinking of
-memory from the suspend-to-RAM code, where it is not really
-necessary.  Finally, remove the no longer used memory shrinking
-functions from mm/vmscan.c .
-
-[rev. 2: Use the existing memory bitmaps for marking preallocated
- image pages and use swsusp_free() from releasing them, introduce
- GFP_IMAGE, add comments describing the memory shrinking strategy.]
+Since the hibernation code is now going to use allocations of memory
+to create enough room for the image, it can also use the page frames
+allocated at this stage as image page frames.  The low-level
+hibernation code needs to be rearranged for this purpose, but it
+allows us to avoid freeing a great number of pages and allocating
+these same pages once again later, so it generally is worth doing.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/main.c     |   20 ------
- kernel/power/snapshot.c |  132 +++++++++++++++++++++++++++++++++-----------
- mm/vmscan.c             |  142 ------------------------------------------------
- 3 files changed, 101 insertions(+), 193 deletions(-)
+ kernel/power/disk.c     |   15 +++-
+ kernel/power/power.h    |    2 
+ kernel/power/snapshot.c |  151 +++++++++++++++++++++++-------------------------
+ 3 files changed, 87 insertions(+), 81 deletions(-)
 
 Index: linux-2.6/kernel/power/snapshot.c
 ===================================================================
 --- linux-2.6.orig/kernel/power/snapshot.c
 +++ linux-2.6/kernel/power/snapshot.c
-@@ -1066,41 +1066,97 @@ void swsusp_free(void)
- 	buffer = NULL;
+@@ -783,21 +783,6 @@ void free_basic_memory_bitmaps(void)
+ 	pr_debug("PM: Basic memory bitmaps freed\n");
  }
  
-+/* Helper functions used for the shrinking of memory. */
-+
-+#ifdef CONFIG_HIGHMEM
-+#define GFP_IMAGE	(GFP_KERNEL | __GFP_HIGHMEM | __GFP_NO_OOM_KILL)
-+#else
-+#define GFP_IMAGE	(GFP_KERNEL | __GFP_NO_OOM_KILL)
-+#endif
-+
-+#define SHRINK_BITE	10000
-+
- /**
-- *	swsusp_shrink_memory -  Try to free as much memory as needed
-+ * prealloc_pages - preallocate given number of pages and mark their PFNs
-+ * @nr_pages: Number of pages to allocate.
-  *
-- *	... but do not OOM-kill anyone
-- *
-- *	Notice: all userland should be stopped before it is called, or
-- *	livelock is possible.
-+ * Allocate given number of pages and mark their PFNs in the hibernation memory
-+ * bitmaps, so that they can be released by swsusp_free().
-+ * Return value: The number of normal (ie. non-highmem) pages allocated or
-+ * -ENOMEM on failure.
-  */
+-/**
+- *	snapshot_additional_pages - estimate the number of additional pages
+- *	be needed for setting up the suspend image data structures for given
+- *	zone (usually the returned value is greater than the exact number)
+- */
 -
--#define SHRINK_BITE	10000
--static inline unsigned long __shrink_memory(long tmp)
-+static long prealloc_pages(long nr_pages)
- {
--	if (tmp > SHRINK_BITE)
--		tmp = SHRINK_BITE;
--	return shrink_all_memory(tmp);
-+	long nr_normal = 0;
-+
-+	while (nr_pages-- > 0) {
-+		struct page *page;
-+
-+		page = alloc_image_page(GFP_IMAGE);
-+		if (!page)
-+			return -ENOMEM;
-+		if (!PageHighMem(page))
-+			nr_normal++;
-+	}
-+
-+	return nr_normal;
+-unsigned int snapshot_additional_pages(struct zone *zone)
+-{
+-	unsigned int res;
+-
+-	res = DIV_ROUND_UP(zone->spanned_pages, BM_BITS_PER_BLOCK);
+-	res += DIV_ROUND_UP(res * sizeof(struct bm_block), PAGE_SIZE);
+-	return 2 * res;
+-}
+-
+ #ifdef CONFIG_HIGHMEM
+ /**
+  *	count_free_highmem_pages - compute the total number of free highmem
+@@ -1033,6 +1018,25 @@ copy_data_pages(struct memory_bitmap *co
+ static unsigned int nr_copy_pages;
+ /* Number of pages needed for saving the original pfns of the image pages */
+ static unsigned int nr_meta_pages;
++/*
++ * Numbers of normal and highmem page frames allocated for hibernation image
++ * before suspending devices.
++ */
++unsigned int alloc_normal, alloc_highmem;
++/*
++ * Memory bitmap used for marking saveable pages (during hibernation) or
++ * hibernation image pages (during restore)
++ */
++static struct memory_bitmap orig_bm;
++/*
++ * Memory bitmap used during hibernation for marking allocated page frames that
++ * will contain copies of saveable pages.  During restore it is initially used
++ * for marking hibernation image pages, but then the set bits from it are
++ * duplicated in @orig_bm and it is released.  On highmem systems it is next
++ * used for marking "safe" highmem pages, but it has to be reinitialized for
++ * this purpose.
++ */
++static struct memory_bitmap copy_bm;
+ 
+ /**
+  *	swsusp_free - free pages allocated for the suspend.
+@@ -1064,6 +1068,8 @@ void swsusp_free(void)
+ 	nr_meta_pages = 0;
+ 	restore_pblist = NULL;
+ 	buffer = NULL;
++	alloc_normal = 0;
++	alloc_highmem = 0;
  }
  
-+/**
-+ * swsusp_shrink_memory -  Make the kernel release as much memory as needed
-+ *
-+ * To create a hibernation image it is necessary to make a copy of every page
-+ * frame in use.  We also need a number of page frames to be free during
-+ * hibernation for allocations made while saving the image and for device
-+ * drivers, in case they need to allocate memory from their hibernation
-+ * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
-+ * respectively, both of which are rough estimates).  To make this happen, we
-+ * preallocate memory in SHRINK_BITE chunks in a loop until the following
-+ * condition is satisfied:
-+ *
-+ * [number of preallocated page frames] >=
-+ *	(1/2) * ([total number of page frames in use] + PAGES_FOR_IO
-+ *		+ SPARE_PAGES - [number of free page frames])
-+ *
-+ * because in that case, if all of the preallocated page frames are released,
-+ * the total number of free page frames will be equal to or greater than the sum
-+ * of the total number of page frames in use with PAGES_FOR_IO and SPARE_PAGES,
-+ * which is what we need.
-+ *
-+ * If image_size is set below the number following from the above inequality,
-+ * the preallocation of memory is continued until the total number of page
-+ * frames in use is below the requested image size.
-+ */
- int swsusp_shrink_memory(void)
+ /* Helper functions used for the shrinking of memory. */
+@@ -1085,7 +1091,7 @@ void swsusp_free(void)
+  * Return value: The number of normal (ie. non-highmem) pages allocated or
+  * -ENOMEM on failure.
+  */
+-static long prealloc_pages(long nr_pages)
++static long prealloc_pages(struct memory_bitmap *bm, long nr_pages)
  {
--	long tmp;
--	struct zone *zone;
--	unsigned long pages = 0;
-+	unsigned long pages = 0, alloc_normal = 0, alloc_highmem = 0;
+ 	long nr_normal = 0;
+ 
+@@ -1095,6 +1101,7 @@ static long prealloc_pages(long nr_pages
+ 		page = alloc_image_page(GFP_IMAGE);
+ 		if (!page)
+ 			return -ENOMEM;
++		memory_bm_set_bit(bm, page_to_pfn(page));
+ 		if (!PageHighMem(page))
+ 			nr_normal++;
+ 	}
+@@ -1103,7 +1110,7 @@ static long prealloc_pages(long nr_pages
+ }
+ 
+ /**
+- * swsusp_shrink_memory -  Make the kernel release as much memory as needed
++ * hibernate_preallocate_memory - Preallocate memory for hibernation image
+  *
+  * To create a hibernation image it is necessary to make a copy of every page
+  * frame in use.  We also need a number of page frames to be free during
+@@ -1127,17 +1134,29 @@ static long prealloc_pages(long nr_pages
+  * the preallocation of memory is continued until the total number of page
+  * frames in use is below the requested image size.
+  */
+-int swsusp_shrink_memory(void)
++int hibernate_preallocate_memory(void)
+ {
+-	unsigned long pages = 0, alloc_normal = 0, alloc_highmem = 0;
++	unsigned long pages = 0;
  	unsigned int i = 0;
  	char *p = "-\\|/";
  	struct timeval start, stop;
-+	int error = 0;
+-	int error = 0;
++	int error;
  
- 	printk(KERN_INFO "PM: Shrinking memory...  ");
+-	printk(KERN_INFO "PM: Shrinking memory...  ");
++	printk(KERN_INFO "PM: Preallocating image memory ...  ");
  	do_gettimeofday(&start);
--	do {
--		long size, highmem_size;
  
--		highmem_size = count_highmem_pages();
--		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
--		tmp = size;
-+	for (;;) {
-+		struct zone *zone;
-+		long size, highmem_size, tmp, ret;
++	error = memory_bm_create(&orig_bm, GFP_IMAGE, PG_ANY);
++	if (error)
++		goto err_out;
 +
-+		/*
-+		 * Pages preallocated by this loop are not counted as data pages
-+		 * by count_data_pages() and count_highmem_pages(), so we only
-+		 * need to subtract their numbers once here to verify the
-+		 * satisfaction of the stop condition.
-+		 */
-+		size = count_data_pages() - alloc_normal;
-+		tmp = size + PAGES_FOR_IO + SPARE_PAGES;
-+		highmem_size = count_highmem_pages() - alloc_highmem;
- 		size += highmem_size;
-+		/*
-+		 * Highmem is treated differently, because we prefer not to
-+		 * store copies of normal page frames in it during image
-+		 * creation.
-+		 */
++	error = memory_bm_create(&copy_bm, GFP_IMAGE, PG_ANY);
++	if (error)
++		goto err_out;
++
++	alloc_normal = 0;
++	alloc_highmem = 0;
++	error = -ENOMEM;
++
+ 	for (;;) {
+ 		struct zone *zone;
+ 		long size, highmem_size, tmp, ret;
+@@ -1158,7 +1177,6 @@ int swsusp_shrink_memory(void)
+ 		 * creation.
+ 		 */
  		for_each_populated_zone(zone) {
- 			tmp += snapshot_additional_pages(zone);
+-			tmp += snapshot_additional_pages(zone);
  			if (is_highmem(zone)) {
-@@ -1111,27 +1167,39 @@ int swsusp_shrink_memory(void)
- 				tmp += zone->lowmem_reserve[ZONE_NORMAL];
- 			}
- 		}
--
- 		if (highmem_size < 0)
- 			highmem_size = 0;
--
- 		tmp += highmem_size;
--		if (tmp > 0) {
--			tmp = __shrink_memory(tmp);
--			if (!tmp)
--				return -ENOMEM;
--			pages += tmp;
--		} else if (size > image_size / PAGE_SIZE) {
--			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
--			pages += tmp;
-+
-+		if (tmp <= 0 && size > image_size / PAGE_SIZE)
-+			tmp = size - (image_size / PAGE_SIZE);
-+
-+		if (tmp > SHRINK_BITE)
-+			tmp = SHRINK_BITE;
-+		else if (tmp <= 0)
-+			break;
-+
-+		ret = prealloc_pages(tmp);
-+		if (ret < 0) {
-+			error = -ENOMEM;
-+			goto out;
- 		}
-+		alloc_normal += ret;
-+		alloc_highmem += tmp - ret;
-+		pages += tmp;
-+
- 		printk("\b%c", p[i++%4]);
--	} while (tmp > 0);
-+	}
-+
- 	do_gettimeofday(&stop);
--	printk("\bdone (%lu pages freed)\n", pages);
-+	printk("\bdone (preallocated %lu free pages)\n", pages);
- 	swsusp_show_speed(&start, &stop, pages, "Freed");
+ 				highmem_size -=
+ 					zone_page_state(zone, NR_FREE_PAGES);
+@@ -1179,11 +1197,9 @@ int swsusp_shrink_memory(void)
+ 		else if (tmp <= 0)
+ 			break;
  
--	return 0;
-+ out:
-+	/* Release the preallocated page frames. */
+-		ret = prealloc_pages(tmp);
+-		if (ret < 0) {
+-			error = -ENOMEM;
+-			goto out;
+-		}
++		ret = prealloc_pages(&copy_bm, tmp);
++		if (ret < 0)
++			goto err_out;
+ 		alloc_normal += ret;
+ 		alloc_highmem += tmp - ret;
+ 		pages += tmp;
+@@ -1192,13 +1208,13 @@ int swsusp_shrink_memory(void)
+ 	}
+ 
+ 	do_gettimeofday(&stop);
+-	printk("\bdone (preallocated %lu free pages)\n", pages);
+-	swsusp_show_speed(&start, &stop, pages, "Freed");
++	printk("\bdone (allocated %lu image pages)\n", pages);
++	swsusp_show_speed(&start, &stop, pages, "Allocated");
+ 
+- out:
+-	/* Release the preallocated page frames. */
+-	swsusp_free();
++	return 0;
+ 
++ err_out:
 +	swsusp_free();
-+
-+	return error;
+ 	return error;
+ }
+ 
+@@ -1210,7 +1226,7 @@ int swsusp_shrink_memory(void)
+ 
+ static unsigned int count_pages_for_highmem(unsigned int nr_highmem)
+ {
+-	unsigned int free_highmem = count_free_highmem_pages();
++	unsigned int free_highmem = count_free_highmem_pages() + alloc_highmem;
+ 
+ 	if (free_highmem >= nr_highmem)
+ 		nr_highmem = 0;
+@@ -1232,19 +1248,17 @@ count_pages_for_highmem(unsigned int nr_
+ static int enough_free_mem(unsigned int nr_pages, unsigned int nr_highmem)
+ {
+ 	struct zone *zone;
+-	unsigned int free = 0, meta = 0;
++	unsigned int free = alloc_normal;
+ 
+-	for_each_zone(zone) {
+-		meta += snapshot_additional_pages(zone);
++	for_each_zone(zone)
+ 		if (!is_highmem(zone))
+ 			free += zone_page_state(zone, NR_FREE_PAGES);
+-	}
+ 
+ 	nr_pages += count_pages_for_highmem(nr_highmem);
+-	pr_debug("PM: Normal pages needed: %u + %u + %u, available pages: %u\n",
+-		nr_pages, PAGES_FOR_IO, meta, free);
++	pr_debug("PM: Normal pages needed: %u + %u, available pages: %u\n",
++		nr_pages, PAGES_FOR_IO, free);
+ 
+-	return free > nr_pages + PAGES_FOR_IO + meta;
++	return free > nr_pages + PAGES_FOR_IO;
  }
  
  #ifdef CONFIG_HIGHMEM
-Index: linux-2.6/mm/vmscan.c
-===================================================================
---- linux-2.6.orig/mm/vmscan.c
-+++ linux-2.6/mm/vmscan.c
-@@ -2054,148 +2054,6 @@ unsigned long global_lru_pages(void)
- 		+ global_page_state(NR_INACTIVE_FILE);
- }
+@@ -1266,7 +1280,7 @@ static inline int get_highmem_buffer(int
+  */
  
--#ifdef CONFIG_PM
--/*
-- * Helper function for shrink_all_memory().  Tries to reclaim 'nr_pages' pages
-- * from LRU lists system-wide, for given pass and priority.
-- *
-- * For pass > 3 we also try to shrink the LRU lists that contain a few pages
-- */
--static void shrink_all_zones(unsigned long nr_pages, int prio,
--				      int pass, struct scan_control *sc)
--{
--	struct zone *zone;
--	unsigned long nr_reclaimed = 0;
--
--	for_each_populated_zone(zone) {
--		enum lru_list l;
--
--		if (zone_is_all_unreclaimable(zone) && prio != DEF_PRIORITY)
--			continue;
--
--		for_each_evictable_lru(l) {
--			enum zone_stat_item ls = NR_LRU_BASE + l;
--			unsigned long lru_pages = zone_page_state(zone, ls);
--
--			/* For pass = 0, we don't shrink the active list */
--			if (pass == 0 && (l == LRU_ACTIVE_ANON ||
--						l == LRU_ACTIVE_FILE))
--				continue;
--
--			zone->lru[l].nr_scan += (lru_pages >> prio) + 1;
--			if (zone->lru[l].nr_scan >= nr_pages || pass > 3) {
--				unsigned long nr_to_scan;
--
--				zone->lru[l].nr_scan = 0;
--				nr_to_scan = min(nr_pages, lru_pages);
--				nr_reclaimed += shrink_list(l, nr_to_scan, zone,
--								sc, prio);
--				if (nr_reclaimed >= nr_pages) {
--					sc->nr_reclaimed += nr_reclaimed;
--					return;
--				}
--			}
--		}
--	}
--	sc->nr_reclaimed += nr_reclaimed;
--}
--
--/*
-- * Try to free `nr_pages' of memory, system-wide, and return the number of
-- * freed pages.
-- *
-- * Rather than trying to age LRUs the aim is to preserve the overall
-- * LRU order by reclaiming preferentially
-- * inactive > active > active referenced > active mapped
-- */
--unsigned long shrink_all_memory(unsigned long nr_pages)
--{
--	unsigned long lru_pages, nr_slab;
--	int pass;
--	struct reclaim_state reclaim_state;
--	struct scan_control sc = {
--		.gfp_mask = GFP_KERNEL,
--		.may_unmap = 0,
--		.may_writepage = 1,
--		.isolate_pages = isolate_pages_global,
--		.nr_reclaimed = 0,
--	};
--
--	current->reclaim_state = &reclaim_state;
--
--	lru_pages = global_lru_pages();
--	nr_slab = global_page_state(NR_SLAB_RECLAIMABLE);
--	/* If slab caches are huge, it's better to hit them first */
--	while (nr_slab >= lru_pages) {
--		reclaim_state.reclaimed_slab = 0;
--		shrink_slab(nr_pages, sc.gfp_mask, lru_pages);
--		if (!reclaim_state.reclaimed_slab)
--			break;
--
--		sc.nr_reclaimed += reclaim_state.reclaimed_slab;
--		if (sc.nr_reclaimed >= nr_pages)
--			goto out;
--
--		nr_slab -= reclaim_state.reclaimed_slab;
--	}
--
--	/*
--	 * We try to shrink LRUs in 5 passes:
--	 * 0 = Reclaim from inactive_list only
--	 * 1 = Reclaim from active list but don't reclaim mapped
--	 * 2 = 2nd pass of type 1
--	 * 3 = Reclaim mapped (normal reclaim)
--	 * 4 = 2nd pass of type 3
--	 */
--	for (pass = 0; pass < 5; pass++) {
--		int prio;
--
--		/* Force reclaiming mapped pages in the passes #3 and #4 */
--		if (pass > 2)
--			sc.may_unmap = 1;
--
--		for (prio = DEF_PRIORITY; prio >= 0; prio--) {
--			unsigned long nr_to_scan = nr_pages - sc.nr_reclaimed;
--
--			sc.nr_scanned = 0;
--			sc.swap_cluster_max = nr_to_scan;
--			shrink_all_zones(nr_to_scan, prio, pass, &sc);
--			if (sc.nr_reclaimed >= nr_pages)
--				goto out;
--
--			reclaim_state.reclaimed_slab = 0;
--			shrink_slab(sc.nr_scanned, sc.gfp_mask,
--					global_lru_pages());
--			sc.nr_reclaimed += reclaim_state.reclaimed_slab;
--			if (sc.nr_reclaimed >= nr_pages)
--				goto out;
--
--			if (sc.nr_scanned && prio < DEF_PRIORITY - 2)
--				congestion_wait(WRITE, HZ / 10);
--		}
--	}
--
--	/*
--	 * If sc.nr_reclaimed = 0, we could not shrink LRUs, but there may be
--	 * something in slab caches
--	 */
--	if (!sc.nr_reclaimed) {
--		do {
--			reclaim_state.reclaimed_slab = 0;
--			shrink_slab(nr_pages, sc.gfp_mask, global_lru_pages());
--			sc.nr_reclaimed += reclaim_state.reclaimed_slab;
--		} while (sc.nr_reclaimed < nr_pages &&
--				reclaim_state.reclaimed_slab > 0);
--	}
--
--
--out:
--	current->reclaim_state = NULL;
--
--	return sc.nr_reclaimed;
--}
--#endif
--
- /* It's optimal to keep kswapds on the same CPUs as their memory, but
-    not required for correctness.  So if the last cpu in a node goes
-    away, we get changed to run anywhere: as the first one comes back,
-Index: linux-2.6/kernel/power/main.c
-===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -188,9 +188,6 @@ static void suspend_test_finish(const ch
+ static inline unsigned int
+-alloc_highmem_image_pages(struct memory_bitmap *bm, unsigned int nr_highmem)
++alloc_highmem_pages(struct memory_bitmap *bm, unsigned int nr_highmem)
+ {
+ 	unsigned int to_alloc = count_free_highmem_pages();
  
- #endif
+@@ -1277,7 +1291,7 @@ alloc_highmem_image_pages(struct memory_
+ 	while (to_alloc-- > 0) {
+ 		struct page *page;
  
--/* This is just an arbitrary number */
--#define FREE_PAGE_NUMBER (100)
--
- static struct platform_suspend_ops *suspend_ops;
+-		page = alloc_image_page(__GFP_HIGHMEM);
++		page = alloc_image_page(__GFP_HIGHMEM | __GFP_NO_OOM_KILL);
+ 		memory_bm_set_bit(bm, page_to_pfn(page));
+ 	}
+ 	return nr_highmem;
+@@ -1286,7 +1300,7 @@ alloc_highmem_image_pages(struct memory_
+ static inline int get_highmem_buffer(int safe_needed) { return 0; }
+ 
+ static inline unsigned int
+-alloc_highmem_image_pages(struct memory_bitmap *bm, unsigned int n) { return 0; }
++alloc_highmem_pages(struct memory_bitmap *bm, unsigned int n) { return 0; }
+ #endif /* CONFIG_HIGHMEM */
  
  /**
-@@ -226,7 +223,6 @@ int suspend_valid_only_mem(suspend_state
- static int suspend_prepare(void)
+@@ -1305,51 +1319,36 @@ static int
+ swsusp_alloc(struct memory_bitmap *orig_bm, struct memory_bitmap *copy_bm,
+ 		unsigned int nr_pages, unsigned int nr_highmem)
  {
- 	int error;
--	unsigned int free_pages;
- 
- 	if (!suspend_ops || !suspend_ops->enter)
- 		return -EPERM;
-@@ -241,24 +237,10 @@ static int suspend_prepare(void)
- 	if (error)
- 		goto Finish;
- 
--	if (suspend_freeze_processes()) {
--		error = -EAGAIN;
--		goto Thaw;
--	}
+-	int error;
 -
--	free_pages = global_page_state(NR_FREE_PAGES);
--	if (free_pages < FREE_PAGE_NUMBER) {
--		pr_debug("PM: free some memory\n");
--		shrink_all_memory(FREE_PAGE_NUMBER - free_pages);
--		if (nr_free_pages() < FREE_PAGE_NUMBER) {
--			error = -ENOMEM;
--			printk(KERN_ERR "PM: No enough memory\n");
--		}
--	}
-+	error = suspend_freeze_processes();
- 	if (!error)
- 		return 0;
+-	error = memory_bm_create(orig_bm, GFP_ATOMIC | __GFP_COLD, PG_ANY);
+-	if (error)
+-		goto Free;
+-
+-	error = memory_bm_create(copy_bm, GFP_ATOMIC | __GFP_COLD, PG_ANY);
+-	if (error)
+-		goto Free;
++	int error = 0;
  
-- Thaw:
- 	suspend_thaw_processes();
- 	usermodehelper_enable();
+ 	if (nr_highmem > 0) {
+ 		error = get_highmem_buffer(PG_ANY);
+ 		if (error)
+-			goto Free;
+-
+-		nr_pages += alloc_highmem_image_pages(copy_bm, nr_highmem);
++			goto err_out;
++		if (nr_highmem > alloc_highmem) {
++			nr_highmem -= alloc_highmem;
++			nr_pages += alloc_highmem_pages(copy_bm, nr_highmem);
++		}
+ 	}
+-	while (nr_pages-- > 0) {
+-		struct page *page = alloc_image_page(GFP_ATOMIC | __GFP_COLD);
+-
+-		if (!page)
+-			goto Free;
++	if (nr_pages > alloc_normal) {
++		nr_pages -= alloc_normal;
++		while (nr_pages-- > 0) {
++			struct page *page;
+ 
+-		memory_bm_set_bit(copy_bm, page_to_pfn(page));
++			page = alloc_image_page(GFP_ATOMIC | __GFP_COLD);
++			if (!page)
++				goto err_out;
++			memory_bm_set_bit(copy_bm, page_to_pfn(page));
++		}
+ 	}
++
+ 	return 0;
+ 
+- Free:
++ err_out:
+ 	swsusp_free();
+-	return -ENOMEM;
++	return error;
+ }
+ 
+-/* Memory bitmap used for marking saveable pages (during suspend) or the
+- * suspend image pages (during resume)
+- */
+-static struct memory_bitmap orig_bm;
+-/* Memory bitmap used on suspend for marking allocated pages that will contain
+- * the copies of saveable pages.  During resume it is initially used for
+- * marking the suspend image pages, but then its set bits are duplicated in
+- * @orig_bm and it is released.  Next, on systems with high memory, it may be
+- * used for marking "safe" highmem pages, but it has to be reinitialized for
+- * this purpose.
+- */
+-static struct memory_bitmap copy_bm;
+-
+ asmlinkage int swsusp_save(void)
+ {
+ 	unsigned int nr_pages, nr_highmem;
+Index: linux-2.6/kernel/power/power.h
+===================================================================
+--- linux-2.6.orig/kernel/power/power.h
++++ linux-2.6/kernel/power/power.h
+@@ -74,7 +74,7 @@ extern asmlinkage int swsusp_arch_resume
+ 
+ extern int create_basic_memory_bitmaps(void);
+ extern void free_basic_memory_bitmaps(void);
+-extern int swsusp_shrink_memory(void);
++extern int hibernate_preallocate_memory(void);
+ 
+ /**
+  *	Auxiliary structure used for reading the snapshot image data and
+Index: linux-2.6/kernel/power/disk.c
+===================================================================
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -303,8 +303,8 @@ int hibernation_snapshot(int platform_mo
+ 	if (error)
+ 		return error;
+ 
+-	/* Free memory before shutting down devices. */
+-	error = swsusp_shrink_memory();
++	/* Preallocate image memory before shutting down devices. */
++	error = hibernate_preallocate_memory();
+ 	if (error)
+ 		goto Close;
+ 
+@@ -320,6 +320,10 @@ int hibernation_snapshot(int platform_mo
+ 	/* Control returns here after successful restore */
+ 
+  Resume_devices:
++	/* We may need to release the preallocated image pages here. */
++	if (error || !in_suspend)
++		swsusp_free();
++
+ 	device_resume(in_suspend ?
+ 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
+ 	resume_console();
+@@ -593,7 +597,10 @@ int hibernate(void)
+ 		goto Thaw;
+ 
+ 	error = hibernation_snapshot(hibernation_mode == HIBERNATION_PLATFORM);
+-	if (in_suspend && !error) {
++	if (error)
++		goto Thaw;
++
++	if (in_suspend) {
+ 		unsigned int flags = 0;
+ 
+ 		if (hibernation_mode == HIBERNATION_PLATFORM)
+@@ -605,8 +612,8 @@ int hibernate(void)
+ 			power_down();
+ 	} else {
+ 		pr_debug("PM: Image restored successfully.\n");
+-		swsusp_free();
+ 	}
++
+  Thaw:
+ 	thaw_processes();
   Finish:
-
