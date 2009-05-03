@@ -1,99 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbZECSLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZECSMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754151AbZECSLv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 14:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbZECSLl
+	id S1754855AbZECSMO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 14:12:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbZECSLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 14:11:41 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:34589 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753520AbZECSLl convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 14:11:41 -0400
-Date: Sun, 3 May 2009 14:07:35 -0400 (EDT)
-From: Anders Kaseorg <andersk@MIT.EDU>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Sam Ravnborg <sam@ravnborg.org>, Jean Delvare <khali@linux-fr.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] modpost: more complete endianness fixing
-In-Reply-To: <20090503204218.6c65c740.sfr@canb.auug.org.au>
-Message-ID: <alpine.DEB.2.00.0905031403300.28205@vinegar-pot.mit.edu>
-References: <20090503110517.6d09bca2@hyperion.delvare> <20090503103010.GA27978@uranus.ravnborg.org> <20090503204218.6c65c740.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 3 May 2009 14:11:51 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:33302 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754692AbZECSLt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 14:11:49 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 3 May 2009 11:07:26 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com
+Subject: Re: [KVM PATCH v3 2/2] kvm: add support for irqfd via eventfd-notification
+ interface
+In-Reply-To: <20090503064432.GS8633@ZenIV.linux.org.uk>
+Message-ID: <alpine.DEB.1.10.0905031103290.7899@makko.or.mcafeemobile.com>
+References: <20090427182540.6646.96740.stgit@dev.haskins.net> <20090427183334.6646.90800.stgit@dev.haskins.net> <20090503064432.GS8633@ZenIV.linux.org.uk>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix endianness of all the fields in the ELF header and section headers, 
-not just some of them.
+On Sun, 3 May 2009, Al Viro wrote:
 
-The missing TO_NATIVE(sechdrs[i].sh_flags) was causing many “unexpected 
-non-allocatable section” warnings when cross-compiling for an architecture 
-with a different endianness.
+> On Mon, Apr 27, 2009 at 02:33:34PM -0400, Gregory Haskins wrote:
+> > +	/* We re-use eventfd for irqfd */
+> > +	fd = sys_eventfd2(0, 0);
+> > +	if (fd < 0) {
+> > +		ret = fd;
+> > +		goto fail;
+> > +	}
+> > +
+> > +	/* We maintain a reference to eventfd for the irqfd lifetime */
+> > +	file = eventfd_fget(fd);
+> > +	if (IS_ERR(file)) {
+> > +		ret = PTR_ERR(file);
+> > +		goto fail;
+> > +	}
+> > +
+> > +	irqfd->file = file;
+> 
+> This is just plain wrong.  You have no promise whatsoever that caller of
+> that sucker won't race with e.g. dup2().  IOW, you can't assume that
+> file will be of the expected kind.
 
-Signed-off-by: Anders Kaseorg <andersk@mit.edu>
----
- scripts/mod/modpost.c |   35 +++++++++++++++++++++++------------
- 1 files changed, 23 insertions(+), 12 deletions(-)
+The eventfd_fget() checks for the file_operations pointer, before 
+returning the file*, and fails if the fd in not an eventfd. Or you have 
+other concerns?
 
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 936b6f8..a5c17db 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -384,11 +384,19 @@ static int parse_elf(struct elf_info *info, const char *filename)
- 		return 0;
- 	}
- 	/* Fix endianness in ELF header */
--	hdr->e_shoff    = TO_NATIVE(hdr->e_shoff);
--	hdr->e_shstrndx = TO_NATIVE(hdr->e_shstrndx);
--	hdr->e_shnum    = TO_NATIVE(hdr->e_shnum);
--	hdr->e_machine  = TO_NATIVE(hdr->e_machine);
--	hdr->e_type     = TO_NATIVE(hdr->e_type);
-+	hdr->e_type      = TO_NATIVE(hdr->e_type);
-+	hdr->e_machine   = TO_NATIVE(hdr->e_machine);
-+	hdr->e_version   = TO_NATIVE(hdr->e_version);
-+	hdr->e_entry     = TO_NATIVE(hdr->e_entry);
-+	hdr->e_phoff     = TO_NATIVE(hdr->e_phoff);
-+	hdr->e_shoff     = TO_NATIVE(hdr->e_shoff);
-+	hdr->e_flags     = TO_NATIVE(hdr->e_flags);
-+	hdr->e_ehsize    = TO_NATIVE(hdr->e_ehsize);
-+	hdr->e_phentsize = TO_NATIVE(hdr->e_phentsize);
-+	hdr->e_phnum     = TO_NATIVE(hdr->e_phnum);
-+	hdr->e_shentsize = TO_NATIVE(hdr->e_shentsize);
-+	hdr->e_shnum     = TO_NATIVE(hdr->e_shnum);
-+	hdr->e_shstrndx  = TO_NATIVE(hdr->e_shstrndx);
- 	sechdrs = (void *)hdr + hdr->e_shoff;
- 	info->sechdrs = sechdrs;
- 
-@@ -402,13 +410,16 @@ static int parse_elf(struct elf_info *info, const char *filename)
- 
- 	/* Fix endianness in section headers */
- 	for (i = 0; i < hdr->e_shnum; i++) {
--		sechdrs[i].sh_type   = TO_NATIVE(sechdrs[i].sh_type);
--		sechdrs[i].sh_offset = TO_NATIVE(sechdrs[i].sh_offset);
--		sechdrs[i].sh_size   = TO_NATIVE(sechdrs[i].sh_size);
--		sechdrs[i].sh_link   = TO_NATIVE(sechdrs[i].sh_link);
--		sechdrs[i].sh_name   = TO_NATIVE(sechdrs[i].sh_name);
--		sechdrs[i].sh_info   = TO_NATIVE(sechdrs[i].sh_info);
--		sechdrs[i].sh_addr   = TO_NATIVE(sechdrs[i].sh_addr);
-+		sechdrs[i].sh_name      = TO_NATIVE(sechdrs[i].sh_name);
-+		sechdrs[i].sh_type      = TO_NATIVE(sechdrs[i].sh_type);
-+		sechdrs[i].sh_flags     = TO_NATIVE(sechdrs[i].sh_flags);
-+		sechdrs[i].sh_addr      = TO_NATIVE(sechdrs[i].sh_addr);
-+		sechdrs[i].sh_offset    = TO_NATIVE(sechdrs[i].sh_offset);
-+		sechdrs[i].sh_size      = TO_NATIVE(sechdrs[i].sh_size);
-+		sechdrs[i].sh_link      = TO_NATIVE(sechdrs[i].sh_link);
-+		sechdrs[i].sh_info      = TO_NATIVE(sechdrs[i].sh_info);
-+		sechdrs[i].sh_addralign = TO_NATIVE(sechdrs[i].sh_addralign);
-+		sechdrs[i].sh_entsize   = TO_NATIVE(sechdrs[i].sh_entsize);
- 	}
- 	/* Find symbol table. */
- 	for (i = 1; i < hdr->e_shnum; i++) {
--- 
-1.6.2.4
+
+
+- Davide
+
 
