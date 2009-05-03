@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbZECQXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbZECQ2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756849AbZECQXL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 12:23:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbZECQWz
+	id S1756800AbZECQ2b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 12:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbZECQ2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 12:22:55 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35326 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753231AbZECQWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 12:22:54 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 3/4] PM/Hibernate: Use memory allocations to free memory (rev. 2)
-Date: Sun, 3 May 2009 18:22:54 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, pavel@ucw.cz,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905030224.21471.rjw@sisk.pl> <20090503115127.GA9661@localhost>
-In-Reply-To: <20090503115127.GA9661@localhost>
+	Sun, 3 May 2009 12:28:18 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:58958 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753231AbZECQ2R convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 12:28:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=YfjsyRHw6j2/LziKCew262NnxVi03Q23AatFJFuFXbdmovKCVu9b57TtMGto218g/t
+         hvI+7Cyh1cAWl1qEATgcXgziaogQ1yHIE6Hm7GjNW/wxF1ooQwHQO3YCvVMdIIN/dFMF
+         VZGgAkbjalG5ZPt3vltoUYZfesjYNDEuHMpzA=
+From: Florian Fainelli <florian@openwrt.org>
+To: Francis Moreau <francis.moro@gmail.com>, netdev@vger.kernel.org
+Subject: Re: v2.6.30-rc4: b44: eth0: BUG! Timeout waiting for bit 00000002 of  register 42c to clear.
+Date: Sun, 3 May 2009 18:28:14 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <38b2ab8a0905030922x722a45f3gf0790b5b90b0f2b3@mail.gmail.com>
+In-Reply-To: <38b2ab8a0905030922x722a45f3gf0790b5b90b0f2b3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
+Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200905031822.55260.rjw@sisk.pl>
+Message-Id: <200905031828.14468.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 03 May 2009, Wu Fengguang wrote:
-> On Sun, May 03, 2009 at 02:24:20AM +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Modify the hibernation memory shrinking code so that it will make
-> > memory allocations to free memory instead of using an artificial
-> > memory shrinking mechanism for that.  Remove the shrinking of
-> > memory from the suspend-to-RAM code, where it is not really
-> > necessary.  Finally, remove the no longer used memory shrinking
-> > functions from mm/vmscan.c .
-> > 
-> > [rev. 2: Use the existing memory bitmaps for marking preallocated
-> >  image pages and use swsusp_free() from releasing them, introduce
-> >  GFP_IMAGE, add comments describing the memory shrinking strategy.]
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  kernel/power/main.c     |   20 ------
-> >  kernel/power/snapshot.c |  132 +++++++++++++++++++++++++++++++++-----------
-> >  mm/vmscan.c             |  142 ------------------------------------------------
-> >  3 files changed, 101 insertions(+), 193 deletions(-)
-> > 
-> > Index: linux-2.6/kernel/power/snapshot.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/power/snapshot.c
-> > +++ linux-2.6/kernel/power/snapshot.c
-> > @@ -1066,41 +1066,97 @@ void swsusp_free(void)
-> >  	buffer = NULL;
-> >  }
-> >  
-> > +/* Helper functions used for the shrinking of memory. */
-> > +
-> > +#ifdef CONFIG_HIGHMEM
-> > +#define GFP_IMAGE	(GFP_KERNEL | __GFP_HIGHMEM | __GFP_NO_OOM_KILL)
-> > +#else
-> > +#define GFP_IMAGE	(GFP_KERNEL | __GFP_NO_OOM_KILL)
-> > +#endif
-> 
-> The CONFIG_HIGHMEM test is not necessary: __GFP_HIGHMEM is always defined.
-> 
-> > +#define SHRINK_BITE	10000
-> 
-> This is ~40MB. A full scan of (for example) 8G pages will be time
-> consuming, not to mention we have to do it 2*(8G-500M)/40M = 384 times!
-> 
-> Can we make it a LONG_MAX? 
+Hi Francis,
 
-No, I don't think so.  The problem is the number of pages we'll need to copy
-is generally shrinking  as we allocate memory, so we can't do that in one shot.
+(CC'ing netdev)
 
-We can make it a greater number, but I don't really think it would be a good
-idea to make it greater than 100 MB.
+Le Sunday 03 May 2009 18:22:18 Francis Moreau, vous avez écrit :
+> Hello,
+>
+> I got this since I updated my kernel from 2.6.29 to 2.6.30-rc4.
+>
+> Let me know if you need more information.
 
-Thanks,
-Rafael
+Is this seen on a Broadcom 47xx/53xx platform or on a computer with a PCI b44 
+card ?
+
+Thanks.
+-- 
+Best regards, Florian Fainelli
+Email : florian@openwrt.org
+http://openwrt.org
+-------------------------------
