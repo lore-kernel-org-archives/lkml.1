@@ -1,163 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754363AbZECH0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbZECH1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754363AbZECH0j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 03:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbZECH01
+	id S1754691AbZECH1Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 03:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754210AbZECH06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 03:26:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35946 "EHLO mx3.mail.elte.hu"
+	Sun, 3 May 2009 03:26:58 -0400
+Received: from mx33.mail.ru ([94.100.176.47]:13252 "EHLO mx33.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751796AbZECH00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 03:26:26 -0400
-Date: Sun, 3 May 2009 09:25:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Eric Dumazet <dada1@cosmosbay.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Paul Mackerras <paulus@samba.org>
-Cc: Christoph Lameter <cl@linux.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       jesse.brandeburg@intel.com, netdev@vger.kernel.org, haoki@redhat.com,
-       mchan@broadcom.com, davidel@xmailserver.org,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [BUG] perf_counter: change cpu frequencies
-Message-ID: <20090503072535.GA9455@elte.hu>
-References: <49F767FD.2040205@cosmosbay.com> <alpine.DEB.1.10.0904281629090.15947@qirst.com> <49F76F6C.80005@cosmosbay.com> <49F77108.7060509@cosmosbay.com> <20090429091130.GA27857@elte.hu> <49F9821C.5010802@cosmosbay.com> <20090430115736.GA24349@elte.hu> <49F9B0F0.40306@cosmosbay.com> <49F9CCD0.2080005@cosmosbay.com> <49FD347F.6030306@cosmosbay.com>
+	id S1753363AbZECH05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 03:26:57 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: dm-devel@redhat.com, linux-ide@vger.kernel.org
+Subject: dm-multipath completely breaks AHCI driver
+Date: Sun, 3 May 2009 11:26:52 +0400
+User-Agent: KMail/1.11.2 (Linux/2.6.29.1-server-4mnb; KDE/4.2.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49FD347F.6030306@cosmosbay.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: multipart/signed;
+  boundary="nextPart1671730.nJkCtfvTBF";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200905031126.52842.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart1671730.nJkCtfvTBF
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-* Eric Dumazet <dada1@cosmosbay.com> wrote:
+Yeah, me knows - it does sound weird.
 
-> Eric Dumazet a écrit :
-> > Eric Dumazet a écrit :
-> >  
-> >> But if I use plain "perf stat -a sleep 10"
-> >> it seems I get wrong values again (16 G cycles/sec) for all next perf sessions
-> >>
-> > 
-> > Well, I confirm all my cpus switched from 3GHz to 2GHz, after
-> > 
-> > "perf stat -a sleep 10"
-> > 
-> > (but "perf stat -e instructions -e cycles -a sleep 10" doesnt trigger this problem)
-> > 
-> > Nothing logged, and /proc/cpuinfo stills reports 3 GHz frequencies
-> > 
-> > # cat unit.c
-> > main() {
-> >   int i;
-> >   for (i = 0 ; i < 10000000; i++)
-> >         getppid();
-> > }
-> > # time ./unit
-> > 
-> > real    0m0.818s
-> > user    0m0.289s
-> > sys     0m0.529s
-> > # perf stat -a sleep 10 2>/dev/null
-> > # time ./unit
-> > 
-> > real    0m1.122s
-> > user    0m0.482s
-> > sys     0m0.640s
-> > 
-> > # tail -n 27 /proc/cpuinfo
-> > processor       : 7
-> > vendor_id       : GenuineIntel
-> > cpu family      : 6
-> > model           : 23
-> > model name      : Intel(R) Xeon(R) CPU           E5450  @ 3.00GHz
-> > stepping        : 6
-> > cpu MHz         : 3000.102
-> > cache size      : 6144 KB
-> > physical id     : 1
-> > siblings        : 1
-> > core id         : 3
-> > cpu cores       : 4
-> > apicid          : 7
-> > initial apicid  : 7
-> > fdiv_bug        : no
-> > hlt_bug         : no
-> > f00f_bug        : no
-> > coma_bug        : no
-> > fpu             : yes
-> > fpu_exception   : yes
-> > cpuid level     : 10
-> > wp              : yes
-> > flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe lm constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 lahf_lm tpr_shadow vnmi flexpriority
-> > bogomips        : 6000.01
-> > clflush size    : 64
-> > power management:
-> > 
-> > # grep CPU_FREQ .config
-> > # CONFIG_CPU_FREQ is not set
-> > 
-> > 
-> > perf_counter seems promising, but still... needs some bug hunting :)
-> > 
-> 
-> Update :
-> 
-> Mike Galbraith suggested me to try various things, and finally, I discovered
-> this frequency change was probably a BIOS problem on my HP BL460c G1
-> 
-> System Options -> Power regulator for Proliant
-> 
-> [*] HP Dynamic Power Savings Mode
-> [ ] HP Static Low Power Mode
-> [ ] HP Static High Performance Mode
-> [ ] OS Control Mode
-> 
-> 
-> I switched it to 'OS Control Mode'
-> 
-> Then acpi-cpufreq could load, and no more frequencies changes on a "perf -a sleep 10" 
-> session, using or not cpufreq.
-> (Supported cpufreq speeds on these cpus : 1999 & 2999 MHz)
-> 
-> So it was a BIOS issue
+I moved my system from to different notebook (it was pure rsync +=20
+mkinitrd + couple of adjustments in loaded modules). Older one was using=20
+pata_ali, new one is using AHCI (Intel ICH8).
 
-ah! That makes quite a bit of sense. The BIOS interfering with an OS 
-feature ... Was that the default setting in the BIOS?
+After booting it (using *the* *same* kernel, only different modules) for=20
+the first time I started to get random oopses, file system corruptions=20
+as well as scary HSM violations in logs.
 
-> # perf stat -a sleep 10
-> 
->  Performance counter stats for 'sleep':
-> 
->    80005.418223  task clock ticks     (msecs)
->           80266  context switches     (events)
->               3  CPU migrations       (events)
->             486  pagefaults           (events)
->    240013851624  CPU cycles           (events) << good >>
->    239076501419  instructions         (events)
->          679464  cache references     (events)
->   <not counted>  cache misses
-> 
->  Wall-clock time elapsed: 10000.468808 msecs
+Ubuntu live CD had no issues (even with relatively high IO load during=20
+kernel compilation); also my son used this notebook for several months=20
+under ArchLinux without any issues either.
 
-That looks perfect now.
+I compiled minimal stripped down kernel which worked. I tried to compile=20
+more feature reach one - and immediately got HSM violations. This time I=20
+noticed that "bad" one had dm-multipath and "good" one not ... well,=20
+removing /etc/mutipath.conf (to block loading of it) - and lo and=20
+behold! I am running without any issues ...
 
-It would also be really nice to have a sysrq-p dump of your PMU 
-state before you've done any profiling. Is there any trace of the 
-BIOS meddling with them, that we could detect (and warn about) 
-during bootup?
+So what I got in logs was:
 
-Thanks,
+[   18.593217] device-mapper: uevent: version 1.0.3
+[   18.593873] device-mapper: ioctl: 4.14.0-ioctl (2008-04-23)=20
+initialised: dm-devel@redhat.com
+[   18.664812] device-mapper: multipath: version 1.0.5 loaded
+[   19.070383] ata1.00: exception Emask 0x2 SAct 0x73 SErr 0x3000400=20
+action 0x6
+[   19.070389] ata1.00: irq_stat 0x45000008
+[   19.070395] ata1: SError: { Proto TrStaTrns UnrecFIS }
+[   19.070406] ata1.00: cmd 60/08:00:e2:e5:c3/00:00:01:00:00/40 tag 0=20
+ncq 4096 in
+[   19.070409]          res 40/00:38:00:00:00/00:00:00:00:00/40 Emask=20
+0x2 (HSM violation)
+[   19.070414] ata1.00: status: { DRDY }
+[   19.070424] ata1.00: cmd 60/40:08:12:60:40/00:00:01:00:00/40 tag 1=20
+ncq 32768 in
+[   19.070426]          res 40/00:38:00:00:00/00:00:00:00:00/40 Emask=20
+0x2 (HSM violation)
+[   19.070431] ata1.00: status: { DRDY }
+[   19.070442] ata1.00: cmd 60/18:20:42:c1:c4/00:00:01:00:00/40 tag 4=20
+ncq 12288 in
+[   19.070444]          res 41/84:18:59:c1:c4/03:00:01:00:00/61 Emask=20
+0x412 (ATA bus error) <F>
+[   19.070453] ata1.00: status: { DRDY ERR }
+[   19.070455] ata1.00: error: { ICRC ABRT }
+[   19.070460] ata1.00: cmd 60/28:28:22:c3:c4/00:00:01:00:00/40 tag 5=20
+ncq 20480 in
+[   19.070461]          res 40/00:38:00:00:00/00:00:00:00:00/40 Emask=20
+0x2 (HSM violation)
+[   19.070464] ata1.00: status: { DRDY }
+[   19.070469] ata1.00: cmd 60/80:30:c2:c3:c4/02:00:01:00:00/40 tag 6=20
+ncq 327680 in
+[   19.070470]          res 40/00:38:00:00:00/00:00:00:00:00/40 Emask=20
+0x2 (HSM violation)
+[   19.070473] ata1.00: status: { DRDY }
+[   19.070479] ata1: hard resetting link
+[   19.420110] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+[   19.485363] ata1.00: configured for UDMA/100
+[   19.485406] ata1: EH complete
+[   19.586193] device-mapper: multipath round-robin: version 1.0.0=20
+loaded
+[   19.586634] device-mapper: table: 254:0: multipath: error getting=20
+device
+[   19.586638] device-mapper: ioctl: error adding target to table
+[   31.932088] REISERFS (device sda7): found reiserfs format "3.6" with=20
+standard journal
+[   31.932111] REISERFS (device sda7): using ordered data mode
+[   31.932289] REISERFS (device sda7): journal params: device sda7, size=20
+8192, journal first block 18, max trans len 1024, max batch 900, max=20
+commit age 30, max trans age 30
+[   31.932559] REISERFS (device sda7): checking transaction log (sda7)
+[   31.999527] REISERFS (device sda7): Using r5 hash to sort names
+[   32.101614] loop: module loaded
+[   32.581870] Adding 4192924k swap on /dev/sda5.  Priority:-1 extents:1=20
+across:4192924k=20
+[   34.671257] iwl3945 0000:0c:00.0: firmware: requesting=20
+iwlwifi-3945-2.ucode
+[   34.924834] iwl3945 0000:0c:00.0: loaded firmware version 15.28.2.8
+[   34.941614] BUG: unable to handle kernel paging request at 08048154
+[   34.949359] IP: [<c0284711>] kmem_cache_alloc+0xa8/0xc1
+[   34.949359] *pde =3D 7f4b8067=20
+[   34.949359] Oops: 0003 [#1] SMP=20
+[   34.949359] last sysfs file: /sys/devices/virtual/dmi/id/board_serial
+[   34.949359] Modules linked in: loop ext2 mbcache dm_mirror=20
+dm_region_hash dm_log dm_round_robin dm_multipath dm_mod=20
+snd_hda_codec_idt iwl3945 snd_hda_intel snd_hda_codec iwlcore snd_hwdep=20
+btusb uvcvideo bluetooth snd_pcm videodev sdhci_pci ohci1394=20
+snd_page_alloc sdhci v4l1_compat iTCO_wdt ieee1394 lib80211 mmc_core=20
+dcdbas ricoh_mmc hid ata_piix ahci libata reiserfs
+[   34.949359]=20
+[   34.949359] Pid: 2151, comm: hald Tainted: G        W  (2.6.30-
+rc4-3avb #5) XPS M1330                      =20
+[   34.949359] EIP: 0060:[<c0284711>] EFLAGS: 00010246 CPU: 1
+[   34.949359] EIP is at kmem_cache_alloc+0xa8/0xc1
+[   34.949359] EAX: 00000000 EBX: 08048154 ECX: 00000025 EDX: 00000094
+[   34.949359] ESI: 00008050 EDI: 08048154 EBP: f5a26f2c ESP: f5a26f14
+[   34.949359]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+[   34.949359] Process hald (pid: 2151, ti=3Df5a26000 task=3Df5aabe30=20
+task.ti=3Df5a26000)
+[   34.949359] Stack:
+[   34.949359]  f7001000 c02eb6d5 00000094 f6601260 f5a21d80 00008050=20
+f5a26f44 c02eb6d5
+[   34.949359]  f5a21d90 f5a21d80 f71e4dec f71e4e08 f5a26f58 c02a9b43=20
+f6f71eec f71e4dec
+[   34.949359]  f5a21d80 f5a26f7c c02a9c6c f6f72100 f5a21db4 ffffffea=20
+c02aa7d6 fffffff4
+[   34.949359] Call Trace:
+[   34.949359]  [<c02eb6d5>] ? idr_pre_get+0x27/0x60
+[   34.949359]  [<c02eb6d5>] ? idr_pre_get+0x27/0x60
+[   34.949359]  [<c02a9b43>] ? inotify_handle_get_wd+0x19/0x54
+[   34.949359]  [<c02a9c6c>] ? inotify_add_watch+0x4d/0xe1
+[   34.949359]  [<c02aa7d6>] ? sys_inotify_add_watch+0xbb/0x16c
+[   34.949359]  [<c02aa815>] ? sys_inotify_add_watch+0xfa/0x16c
+[   34.949359]  [<c02029d4>] ? sysenter_do_call+0x12/0x32
+[   34.949359] Code: 02 00 00 75 09 57 9d e8 60 ca fb ff eb 07 e8 d1 de=20
+fb ff 57 9d 66 85 f6 79 20 85 db 74 1c 8b 4d f0 89 df c1 e9 02 31 c0 8b=20
+55 f0 <f3> ab f6 c2 02 74 02 66 ab f6 c2 01 74 01 aa 8d 65 f4 89 d8 5b=20
+[   34.949359] EIP: [<c0284711>] kmem_cache_alloc+0xa8/0xc1 SS:ESP=20
+0068:f5a26f14
+[   34.949359] CR2: 0000000008048154
+[   35.262159] ---[ end trace a499c68e391b7f63 ]---
+[   35.272994] Registered led device: iwl-phy0::radio
+[   35.282572] Registered led device: iwl-phy0::assoc
+[   35.292096] Registered led device: iwl-phy0::RX
+[   35.302859] Registered led device: iwl-phy0::TX
+[   35.317633] BUG: unable to handle kernel paging request at 62696c2f
+[   35.327346] IP: [<c02846c7>] kmem_cache_alloc+0x5e/0xc1
+[   35.327561] *pde =3D 00000000=20
+[   35.327561] Oops: 0000 [#2] SMP=20
+[   35.327561] last sysfs file: /sys/devices/virtual/dmi/id/board_serial
+[   35.327561] Modules linked in: loop ext2 mbcache dm_mirror=20
+dm_region_hash dm_log dm_round_robin dm_multipath dm_mod=20
+snd_hda_codec_idt iwl3945 snd_hda_intel snd_hda_codec iwlcore snd_hwdep=20
+btusb uvcvideo bluetooth snd_pcm videodev sdhci_pci ohci1394=20
+snd_page_alloc sdhci v4l1_compat iTCO_wdt ieee1394 lib80211 mmc_core=20
+dcdbas ricoh_mmc hid ata_piix ahci libata reiserfs
+[   35.327561]=20
+[   35.327561] Pid: 2267, comm: console-kit-dae Tainted: G      D W =20
+(2.6.30-rc4-3avb #5) XPS M1330                      =20
+[   35.327561] EIP: 0060:[<c02846c7>] EFLAGS: 00010002 CPU: 1
+[   35.327561] EIP is at kmem_cache_alloc+0x5e/0xc1
+[   35.327561] EAX: 00000000 EBX: 62696c2f ECX: f7001000 EDX: c22b34bc
+[   35.327561] ESI: 00008050 EDI: 00000246 EBP: f5a5cf2c ESP: f5a5cf14
+[   35.327561]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+[   35.327561] Process console-kit-dae (pid: 2267, ti=3Df5a5c000=20
+task=3Df59fa550 task.ti=3Df5a5c000)
+[   35.327561] Stack:
+[   35.327561]  f7001000 c02eb6d5 00000094 f67fe0c0 f67fe0c0 00008050=20
+f5a5cf44 c02eb6d5
+[   35.327561]  f67fe0d0 f67fe0c0 f71e4cd4 f71e4cf0 f5a5cf58 c02a9b43=20
+f6f7259c f71e4cd4
+[   35.327561]  f67fe0c0 f5a5cf7c c02a9c6c f6f727b0 f67fe0f4 ffffffea=20
+c02aa7d6 fffffff4
+[   35.327561] Call Trace:
+[   35.327561]  [<c02eb6d5>] ? idr_pre_get+0x27/0x60
+[   35.327561]  [<c02eb6d5>] ? idr_pre_get+0x27/0x60
+[   35.327561]  [<c02a9b43>] ? inotify_handle_get_wd+0x19/0x54
+[   35.327561]  [<c02a9c6c>] ? inotify_add_watch+0x4d/0xe1
+[   35.327561]  [<c02aa7d6>] ? sys_inotify_add_watch+0xbb/0x16c
+[   35.327561]  [<c02aa815>] ? sys_inotify_add_watch+0xfa/0x16c
+[   35.327561]  [<c02029d4>] ? sysenter_do_call+0x12/0x32
+[   35.327561] Code: 62 f5 21 00 9c 5f fa e8 aa ca fb ff 8b 4d e8 64 a1=20
+88 d4 66 c0 8b 94 81 a4 00 00 00 8b 42 10 89 45 f0 8b 1a 85 db 74 0a 8b=20
+42 0c <8b> 04 83 89 02 eb 15 52 83 c9 ff 89 f2 ff 75 ec 8b 45 e8 e8 4d=20
+[   35.327561] EIP: [<c02846c7>] kmem_cache_alloc+0x5e/0xc1 SS:ESP=20
+0068:f5a5cf14
+[   35.327561] CR2: 0000000062696c2f
+[   35.327561] ---[ end trace a499c68e391b7f64 ]---
+[   35.693405] ADDRCONF(NETDEV_UP): wlan0: link is not ready
 
-	Ingo
+The contents of /etc/mutipath.conf was:
+
+defaults {
+	getuid_callout	"/bin/echo -n 12345678"
+	path_checker	readsector0
+}
+multipaths {
+	multipath {
+		wwid		12345678
+		features	"1 queue_if_no_path"
+		no_path_retry	5
+		failback	immediate
+	}
+}
+
+I was experimenting with multipath-over-loop and completely forgot about=20
+it later.
+
+I understand that it sounds more like "doctor, it hurts when I stab=20
+myself in the eye". Still, even with this absolutely weird config result=20
+is rather unexpected (what is worse, it is near to impossible to find=20
+out the reason; I did it by pure accident). Also I have been running=20
+with *exactly* the same config for almost a year without any ill effects=20
+at all.
+
+I am ready to offer debugging aid if required.
+
+--nextPart1671730.nJkCtfvTBF
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkn9RzwACgkQR6LMutpd94wUCwCgxQ3fjlfyseiI+ixjv5fXQIU8
+WMUAn0GKbFNVzCxgO8UNgopVy61nsdYO
+=uu0T
+-----END PGP SIGNATURE-----
+
+--nextPart1671730.nJkCtfvTBF--
