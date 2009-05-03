@@ -1,122 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbZECNfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbZECNnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754244AbZECNfU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 09:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbZECNfF
+	id S1755254AbZECNnX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 09:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZECNnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 09:35:05 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:7541 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751627AbZECNfC (ORCPT
+	Sun, 3 May 2009 09:43:14 -0400
+Received: from lvps87-230-0-242.dedicated.hosteurope.de ([87.230.0.242]:39516
+	"EHLO lvps87-230-0-242.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752049AbZECNnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 09:35:02 -0400
-Message-ID: <49FD9CF3.5070005@panasas.com>
-Date: Sun, 03 May 2009 16:32:35 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
-MIME-Version: 1.0
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-CC: linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Hannes Reinecke <hare@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Douglas Gilbert <dgilbert@interlog.com>, Christoph Hellwig <hch@lst.de>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vladislav Bolkhovitin <vst@vlnb.net>
-Subject: Re: [PATCH] [Target_Core_Mod/pSCSI]: Add	block/blk-map.c:blk_rq_map_kern_sg()
- usage
-References: <1240965782.32740.309.camel@haakon2.linux-iscsi.org>	 <49F97157.4070901@panasas.com> <1241118643.32740.517.camel@haakon2.linux-iscsi.org>
-In-Reply-To: <1241118643.32740.517.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 3 May 2009 09:43:12 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 May 2009 09:43:12 EDT
+Message-Id: <50F164E7-D247-4FD6-B41B-BDAA8681166B@it-loops.com>
+From: Michael Guntsche <mike@it-loops.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 May 2009 13:33:27.0627 (UTC) FILETIME=[BDA999B0:01C9CBF3]
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: [BUG] 2.6.30-rc4: Kernel BUG under network load with gianfar
+Date: Sun, 3 May 2009 15:36:27 +0200
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/30/2009 10:10 PM, Nicholas A. Bellinger wrote:
-> On Thu, 2009-04-30 at 12:37 +0300, Boaz Harrosh wrote:
->>> Currently *without* the blk-map patches on v2.6.30-rc3, is target_core_mod/pSCSI export is
->>> limited to TYPE_DISK and TYPE_ROM that reference a struct block_device using the ConfigFS
->>> 'file descriptor' method.  This is because bio_add_page() expects struct block_device to be
->> Better use bio_add_pc_page(). bio_add_page is only meant for fs requests.
->>
-> 
-> <nod>, I was only using bio_add_page() in the pre v2.6.30 code for
-> target_core_mod/pSCSI because bio_add_pc_page() is not exported from
-> fs/bio.c.  Perhaps since bio_add_pc_page() is intended to be for SCSI
-> target mode with struct request it should be EXPORT_SYMBOL_GPL()..?
-> 
+Hello list,
 
-It is very much exported with plain EXPORT_SYMBOL(). If not then I would have
-trouble in exofs as a module and so will lots of other Kernel modules. It is
-used in more then one place.
 
->>> each struct bio associated with the struct request w/o Tejun's blk_rq_map_kern_sg().
->>>
->>> Thanks Tejun for this patch series!  Things have been stable so far and I hope to try some
->>> 'bare-metal' and IOV enabled Linux/SCSI target exports using this patch series, along with validating
->>> blk-map on some non TYPE_DISK exports using target_core_mod/pSCSI.  I believe you intend this series for
->>> v2.6.31 correct..? 
->>>
->>> Boaz, have you had a chance to port your stuff over to this yet..?  Other comments..?
->>>
->> No. As I said, these patches were not good for me. I do not have scatterlist at all.
->> I have a pre-made bio, both from filesystem and a block device. So my needs are different.
-> 
-> Understood..
-> 
->> Please note that the patches as last sent, were not good in my opinion, for regressing on
->> some robustness and performance issues.
->>
->> There might be another solution for you, BTW. I'll be reposting a James Bottomley's
->> patch in 1-2 days that makes blk_rq_map_kern() append the buffers it receives instead
->> of only supporting a single call. So you can allocate the request and call blk_rq_map_kern()
->> in a loop for-each-sg. The bad thing with this is that the biovec inside will be allocated
->> multiple times, jumping from small pools to bigger ones.
-> 
-> Ok, I will plan on testing both methods (single call
-> blk_rq_map_kern_sg() vs. appending buffers with blk_rq_map_kern()) using
-> the pSCSI export on v2.6.30-rc3..
-> 
->>  If only there was a way to specify a pre-allocated bio-size.
-> 
-> Hrrmm, can you explain a bit more about what this would entail..?  From
-> the SCSI target API side, mapping a contigious array of struct
+I recently tried 2.6.30-rc4 on a routerboard currently running 2.6.29  
+(it is running stable with this kernel).
 
-"contiguous" scatterlist array is only up to 128 max on x86_64. This is
-the trivial case that is easy to implement with direct bio_xxx exported
-calls. The problem start when we need chained scatterlist, to chained
-bios, and do not want to invent the block-layer for that.
+This board is used as a gateway and under load I see the following BUG  
+with 2.6.30-rc4.
 
-> scatterlist's from the caller into struct request (and struct bio) in
-> place of bvec would still make the most sense I think.
-> 
+------------[ cut here ]------------
+kernel BUG at net/core/skbuff.c:126!
+Oops: Exception in kernel mode, sig: 5 [#1]
+MikroTik RouterBOARD 600 series
+Modules linked in: nf_nat_rtsp nf_conntrack_rtsp
+NIP: c01abc68 LR: c01abc68 CTR: c015559c
+REGS: c7aa7b20 TRAP: 0700   Not tainted  (2.6.30-rc4)
+MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 24002424  XER: 20000000
+TASK = c7855bc0[588] 'pptpgw' THREAD: c7aa6000
+GPR00: c01abc68 c7aa7bd0 c7855bc0 00000085 0000295e ffffffff c0152b68  
+00000030
+GPR08: c03848d4 c0350000 0000295e c0380398 84002422 10029614 100de49c  
+100e0000
+GPR16: 100b45a0 00000040 c02f6260 c02f628c c7846380 c7aa6000 c7957800  
+00000000
+GPR24: 00000002 0000003e c7a12480 c7957a00 c7846000 000005e6 c7956240  
+c7a8b880
+NIP [c01abc68] skb_over_panic+0x48/0x5c
+LR [c01abc68] skb_over_panic+0x48/0x5c
+Call Trace:
+[c7aa7bd0] [c01abc68] skb_over_panic+0x48/0x5c (unreliable)
+[c7aa7be0] [c01ad468] skb_put+0x5c/0x60
+[c7aa7bf0] [c0187650] gfar_clean_rx_ring+0x204/0x42c
+[c7aa7c40] [c0189074] gfar_poll+0x258/0x338
+[c7aa7c90] [c01b8b8c] net_rx_action+0x9c/0x190
+[c7aa7cc0] [c002ddac] __do_softirq+0x84/0x100
+[c7aa7cf0] [c0006474] do_softirq+0x58/0x5c
+[c7aa7d00] [c002dc24] irq_exit+0x94/0x98
+[c7aa7d10] [c0006518] do_IRQ+0xa0/0xc4
+[c7aa7d30] [c0014448] ret_from_except+0x0/0x14
+--- Exception: 501 at ppp_asynctty_receive+0x1d8/0x550
+     LR = ppp_asynctty_receive+0x4a4/0x550
+[c7aa7df0] [c0197734] ppp_asynctty_receive+0x324/0x550 (unreliable)
+[c7aa7e40] [c014def4] pty_write+0x74/0x8c
+[c7aa7e50] [c0148f1c] n_tty_write+0x2b0/0x430
+[c7aa7eb0] [c0145f34] tty_write+0x188/0x268
+[c7aa7ef0] [c00903cc] vfs_write+0xb4/0x1a4
+[c7aa7f10] [c009096c] sys_write+0x4c/0x90
+[c7aa7f40] [c0013db0] ret_from_syscall+0x0/0x38
+--- Exception: c01 at 0xff2d5c4
+     LR = 0x10003a48
+Instruction dump:
+80a30054 2f800000 80e300a8 810300ac 816300a0 814300a4 419e0020 3c60c030
+7d695b78 90010008 3863901c 4be7d091 <0fe00000> 48000000 3d20c02d  
+380968b8
+Kernel panic - not syncing: Fatal exception in interrupt
+Call Trace:
+[c7aa7970] [c0008274] show_stack+0x4c/0x16c (unreliable)
+[c7aa79b0] [c0027d1c] panic+0x90/0x170
+[c7aa7a00] [c00118ac] die+0x19c/0x1d4
+[c7aa7a20] [c0011b80] _exception+0x138/0x15c
+[c7aa7b10] [c00143fc] ret_from_except_full+0x0/0x4c
+--- Exception: 700 at skb_over_panic+0x48/0x5c
+     LR = skb_over_panic+0x48/0x5c
+[c7aa7be0] [c01ad468] skb_put+0x5c/0x60
+[c7aa7bf0] [c0187650] gfar_clean_rx_ring+0x204/0x42c
+[c7aa7c40] [c0189074] gfar_poll+0x258/0x338
+[c7aa7c90] [c01b8b8c] net_rx_action+0x9c/0x190
+[c7aa7cc0] [c002ddac] __do_softirq+0x84/0x100
+[c7aa7cf0] [c0006474] do_softirq+0x58/0x5c
+[c7aa7d00] [c002dc24] irq_exit+0x94/0x98
+[c7aa7d10] [c0006518] do_IRQ+0xa0/0xc4
+[c7aa7d30] [c0014448] ret_from_except+0x0/0x14
+--- Exception: 501 at ppp_asynctty_receive+0x1d8/0x550
+     LR = ppp_asynctty_receive+0x4a4/0x550
+[c7aa7df0] [c0197734] ppp_asynctty_receive+0x324/0x550 (unreliable)
+[c7aa7e40] [c014def4] pty_write+0x74/0x8c
+[c7aa7e50] [c0148f1c] n_tty_write+0x2b0/0x430
+[c7aa7eb0] [c0145f34] tty_write+0x188/0x268
+[c7aa7ef0] [c00903cc] vfs_write+0xb4/0x1a4
+[c7aa7f10] [c009096c] sys_write+0x4c/0x90
+[c7aa7f40] [c0013db0] ret_from_syscall+0x0/0x38
+--- Exception: c01 at 0xff2d5c4
+     LR = 0x10003a48
 
-If you want to consider long term. Then I think Tejum's suggestion is best.
-That is: To separate scatterlist into a virtual-part and physical-dma-part.
-The former just being a reincarnation of bvec (Held at bio as you imagined)
-and the later filled and returned by IOMMUs.
+After that the Board reboots after 180 seconds. To reproduce this  
+problem I just have to stream audio or run some benchmarks on http://speedtest.net 
+.
 
-> In the OSD case where you are already passing into pre-formatted bio's
-> it would be up to the caller to format and validate the your pages via
-> an internally allocated (or preallocated) array of scatterlists.
-> 
+Doing the same with 2.6.29 does not inhibit this problem.
 
-No, in the OSD case I receive a bio that was either built by the block-layer
-itself, in the case of a stacking block device, or one built from a filesystem
-with the use of exported bio API, that is bio_alloc+bio_add_pc_page*128.
+Please CC me on any replies since I am not subscribed to the list. If  
+you need more information please just tell me.
 
-So if bio will use the new-scatterlist internally, it will not affect any of
-OSD code since it tries not to touch any bio internal parts.
-
-> Anyways, I will think about it some more and see what can be found..
-> 
-
-Yes, time will tell. One good thing is that things are chainging and
-a solution will present itself.
-
-Boaz
+Kind regards,
+Michael 
