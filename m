@@ -1,83 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbZECTsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756371AbZECT6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756307AbZECTsE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 15:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbZECTru
+	id S1756371AbZECT6k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 15:58:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbZECT6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 15:47:50 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:59196 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751837AbZECTrs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 15:47:48 -0400
-Subject: Re: New TRIM/UNMAP tree published (2009-05-02)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Jens Axboe <jens.axboe@oracle.com>,
-       Boaz Harrosh <bharrosh@panasas.com>, Hugh Dickins <hugh@veritas.com>,
-       Matthew Wilcox <willy@linux.intel.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Mark Lord <lkml@rtr.ca>
-In-Reply-To: <49FDEE64.5090302@garzik.org>
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com>
-	 <49D8A3D7.5070507@panasas.com> <20090503061150.GF10704@linux.intel.com>
-	 <20090503071619.GP8822@parisc-linux.org>
-	 <Pine.LNX.4.64.0905031346350.29671@blonde.anvils>
-	 <20090503144847.GR8822@parisc-linux.org> <49FDB21B.3080301@panasas.com>
-	 <20090503154216.GU8822@parisc-linux.org> <49FDC786.6070309@panasas.com>
-	 <49FDE3BB.505@garzik.org>  <49FDE50A.4060503@garzik.org>
-	 <1241377472.5596.88.camel@mulgrave.int.hansenpartnership.com>
-	 <49FDEE64.5090302@garzik.org>
-Content-Type: text/plain
-Date: Sun, 03 May 2009 14:47:47 -0500
-Message-Id: <1241380067.5596.103.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sun, 3 May 2009 15:58:30 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40307 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755305AbZECT6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 15:58:30 -0400
+Date: Sun, 3 May 2009 21:54:04 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptrace: do not use task->ptrace directly in core kernel
+Message-ID: <20090503195404.GA18889@redhat.com>
+References: <20090429122827.GA27838@redhat.com> <20090430202828.8A763FC3BF@magilla.sf.frob.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090430202828.8A763FC3BF@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-05-03 at 15:20 -0400, Jeff Garzik wrote:
-> [tangent...]
-> 
-> Does make you wonder if a ->init_rq_fn() would be helpful, one that 
-> could perform gfp_t allocations rather than GFP_ATOMIC?  The idea being 
-> to call ->init_rq_fn() almost immediately after creation of struct 
-> request, by the struct request creator.
+On 04/30, Roland McGrath wrote:
+>
+> That is fine, but doesn't buy much.
 
-Isn't that what the current prep_fn actually is?
+Yes this patch is only cosmetic. But it allows us to change the internals
+in ptrace.c without thinking about other kernel/*.c. The only goal is to
+make the further changes smaller and more reviewable.
 
-> I obviously have not thought in depth about this, but it does seem that 
-> init_rq_fn(), called earlier in struct request lifetime, could eliminate 
-> the need for ->prepare_flush, ->prepare_discard, and perhaps could be a 
-> better place for some of the ->prep_rq_fn logic.
+Honestly, I'd also like to temporary change ptrace.c too, see the patch
+below. But this is minor.
 
-It's hard to see how ... prep_rq_fn is already called pretty early ...
-almost as soon as the elevator has decided to spit out the request
+> i.e., we will be changing these again
+> before too long anyway I imagine.
 
-> The creator of struct request generally has more freedom to sleep, and 
-> it seems logical to give low-level drivers a "fill in LLD-specific info" 
-> hook BEFORE the request is ever added to a request_queue.
+Yes, agreed.
 
-Unfortunately it's not really possible to find a sleeping context in
-there:  The elevators have to operate from the current
-elv_next_request() context, which, in most drivers can either be user or
-interrupt.
+> The BUG_ON cases might as well just go away, probably.
 
-The way the block layer is designed is to pull allocations up the stack
-much closer to the process (usually at the bio creation point) because
-that allows the elevators to operate even in memory starved conditions.
-If we pushed the allocation down into the request level, we'd need some
-type of threading (bad for performance) and the request processing would
-stall when some GFP_KERNEL allocation went out to lunch finding memory.
+Agreed.
 
-The ideal for REQ_TYPE_DISCARD seems to be to force a page allocation
-tied to a bio when it's issued at the top.  That way everyone has enough
-memory when it comes down the stack (both extents and WRITE SAME sector
-will fit into a page ... although only just for WRITE SAME on 4k
-sectors).
+> ptrace_fork() is a wrapper that just calls arch_ptrace_fork(), which itself
+> is an empty macro on most configurations.  I think we might as well just
+> make ptrace_fork() an inline in linux/ptrace.h and put the test inside it.
+> (Thus any future changes touch ptrace.h and not fork.c.)
 
-James
+ptrace_fork() will die soon, so the change if fork.c will go away. Markus
+already has patches, hopefully they will be merged soon.
 
+Oleg.
+
+--- a/kernel/ptrace.c	2009-05-03 19:57:11.000000000 +0200
++++ b/kernel/ptrace.c	2009-05-03 21:24:36.000000000 +0200
+@@ -79,8 +79,6 @@ static void ptrace_untrace(struct task_s
+  */
+ void __ptrace_unlink(struct task_struct *child)
+ {
+-	BUG_ON(!child->ptrace);
+-
+ 	child->ptrace = 0;
+ 	child->parent = child->real_parent;
+ 	list_del_init(&child->ptrace_entry);
+@@ -105,7 +103,7 @@ int ptrace_check_attach(struct task_stru
+ 	 * be changed by us so it's not changing right after this.
+ 	 */
+ 	read_lock(&tasklist_lock);
+-	if ((child->ptrace & PT_PTRACED) && child->parent == current) {
++	if (task_ptrace(child) && child->parent == current) {
+ 		ret = 0;
+ 		/*
+ 		 * child->sighand can't be NULL, release_task()
+@@ -203,7 +201,7 @@ int ptrace_attach(struct task_struct *ta
+ 	retval = -EPERM;
+ 	if (unlikely(task->exit_state))
+ 		goto unlock_tasklist;
+-	if (task->ptrace)
++	if (task_ptrace(task))
+ 		goto unlock_tasklist;
+ 
+ 	task->ptrace = PT_PTRACED;
+@@ -233,7 +231,7 @@ int ptrace_traceme(void)
+ 
+ 	write_lock_irq(&tasklist_lock);
+ 	/* Are we already being traced? */
+-	if (!current->ptrace) {
++	if (!task_ptrace(current)) {
+ 		ret = security_ptrace_traceme(current->parent);
+ 		/*
+ 		 * Check PF_EXITING to ensure ->real_parent has not passed
+@@ -314,7 +312,7 @@ int ptrace_detach(struct task_struct *ch
+ 	 * This child can be already killed. Make sure de_thread() or
+ 	 * our sub-thread doing do_wait() didn't do release_task() yet.
+ 	 */
+-	if (child->ptrace) {
++	if (task_ptrace(child)) {
+ 		child->exit_code = data;
+ 		dead = __ptrace_detach(current, child);
+ 	}
+@@ -401,30 +399,35 @@ int ptrace_writedata(struct task_struct 
+ 
+ static int ptrace_setoptions(struct task_struct *child, long data)
+ {
+-	child->ptrace &= ~PT_TRACE_MASK;
++	unsigned int new_flags = 0;
++
++	if (data & ~PTRACE_O_MASK)
++		return -EINVAL;
+ 
+ 	if (data & PTRACE_O_TRACESYSGOOD)
+-		child->ptrace |= PT_TRACESYSGOOD;
++		new_flags |= PT_TRACESYSGOOD;
+ 
+ 	if (data & PTRACE_O_TRACEFORK)
+-		child->ptrace |= PT_TRACE_FORK;
++		new_flags |= PT_TRACE_FORK;
+ 
+ 	if (data & PTRACE_O_TRACEVFORK)
+-		child->ptrace |= PT_TRACE_VFORK;
++		new_flags |= PT_TRACE_VFORK;
+ 
+ 	if (data & PTRACE_O_TRACECLONE)
+-		child->ptrace |= PT_TRACE_CLONE;
++		new_flags |= PT_TRACE_CLONE;
+ 
+ 	if (data & PTRACE_O_TRACEEXEC)
+-		child->ptrace |= PT_TRACE_EXEC;
++		new_flags |= PT_TRACE_EXEC;
+ 
+ 	if (data & PTRACE_O_TRACEVFORKDONE)
+-		child->ptrace |= PT_TRACE_VFORK_DONE;
++		new_flags |= PT_TRACE_VFORK_DONE;
+ 
+ 	if (data & PTRACE_O_TRACEEXIT)
+-		child->ptrace |= PT_TRACE_EXIT;
++		new_flags |= PT_TRACE_EXIT;
+ 
+-	return (data & ~PTRACE_O_MASK) ? -EINVAL : 0;
++	child->ptrace &= ~PT_TRACE_MASK;
++	child->ptrace |= new_flags;
++	return 0;
+ }
+ 
+ static int ptrace_getsiginfo(struct task_struct *child, siginfo_t *info)
 
