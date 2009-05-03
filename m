@@ -1,49 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbZECPEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbZECPFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756684AbZECPEW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 11:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbZECPEG
+	id S1756298AbZECPFz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 11:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbZECPFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 11:04:06 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:16101 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753878AbZECPEE (ORCPT
+	Sun, 3 May 2009 11:05:44 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:60655 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753207AbZECPFn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 11:04:04 -0400
-Message-ID: <49FDB21B.3080301@panasas.com>
-Date: Sun, 03 May 2009 18:02:51 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
-MIME-Version: 1.0
+	Sun, 3 May 2009 11:05:43 -0400
+Date: Sun, 3 May 2009 16:05:08 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
 To: Matthew Wilcox <matthew@wil.cx>
-CC: Hugh Dickins <hugh@veritas.com>, Matthew Wilcox <willy@linux.intel.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jgarzik@redhat.com>, linux-scsi@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
+cc: Matthew Wilcox <willy@linux.intel.com>,
+       Boaz Harrosh <bharrosh@panasas.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
+       linux-scsi@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Mark Lord <lkml@rtr.ca>
 Subject: Re: New TRIM/UNMAP tree published (2009-05-02)
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <49D8A3D7.5070507@panasas.com> <20090503061150.GF10704@linux.intel.com> <20090503071619.GP8822@parisc-linux.org> <Pine.LNX.4.64.0905031346350.29671@blonde.anvils> <20090503144847.GR8822@parisc-linux.org>
 In-Reply-To: <20090503144847.GR8822@parisc-linux.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 May 2009 15:03:07.0105 (UTC) FILETIME=[4414CD10:01C9CC00]
+Message-ID: <Pine.LNX.4.64.0905031603150.32125@blonde.anvils>
+References: <1238683047-13588-1-git-send-email-willy@linux.intel.com>
+ <49D8A3D7.5070507@panasas.com> <20090503061150.GF10704@linux.intel.com>
+ <20090503071619.GP8822@parisc-linux.org> <Pine.LNX.4.64.0905031346350.29671@blonde.anvils>
+ <20090503144847.GR8822@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/03/2009 05:48 PM, Matthew Wilcox wrote:
-> On Sun, May 03, 2009 at 02:07:32PM +0100, Hugh Dickins wrote:
->> I notice OCZ hope to have updated Vertex firmware mid-May,
->> such that their TRIM support matches up with (y)ours.
-> 
-> Excellent.
-> 
->> You have GFP_KERNEL allocations in your discard_fn()s.  I believe that
->> allocations down at that level will need to be GFP_NOIO - the bio mempool
->> might be empty by this point, you don't want memory allocation to get into
->> submitting even more I/O to satisfy your discard_fn().  Does it need its
->> own mempool of reserve pages?  My guess is that you can get away without
->> that, since a failed discard, though regrettable, loses no data.
+On Sun, 3 May 2009, Matthew Wilcox wrote:
 > 
 > You make a good point.  There's definitely still work to be done around
 > error handling.  OTOH, we could always do what IDE does ...
@@ -55,25 +44,7 @@ On 05/03/2009 05:48 PM, Matthew Wilcox wrote:
 > 
 >         /* FIXME: map struct ide_taskfile on rq->cmd[] */
 >         BUG_ON(cmd == NULL);
-> 
-> 
-> 
 
-Out from the frying pan and into the fire. ;-)
+Oooh, you're winding me up.  Certainly not.  Off with the Top Of your Head!
 
-I agree with Hugh. The allocation is done at, too-low in the food chain.
-(And that free of buffer at upper layer allocated by lower layer).
-
-I think you need to separate the: "does lld need buffer, what size"
-from the "here is buffer prepare", so upper layer that can sleep does
-sleep.
-
-In all other buffer needing operations the allocation is done before
-submission of request, No?
-
-Just my $0.017
-Thanks
-Boaz
-
-BTW:
- I've not have time to review second round will "TODO"
+Hugh
