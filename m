@@ -1,87 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbZECUbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbZECUbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757014AbZECUbU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 16:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbZECUbK
+	id S1756307AbZECUbh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 16:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756822AbZECUbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 16:31:10 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:43211 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754186AbZECUbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 16:31:09 -0400
-Date: Sun, 3 May 2009 22:31:01 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] MMC fixes for next rc
-Message-ID: <20090503223101.06c20067@mjolnir.ossman.eu>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-10958-1241382664-0001-2"
+	Sun, 3 May 2009 16:31:15 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:34787 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756716AbZECUbO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 16:31:14 -0400
+Date: Sun, 3 May 2009 21:31:11 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com
+Subject: Re: [KVM PATCH v3 2/2] kvm: add support for irqfd via
+	eventfd-notification interface
+Message-ID: <20090503203111.GB8633@ZenIV.linux.org.uk>
+References: <20090427182540.6646.96740.stgit@dev.haskins.net> <20090427183334.6646.90800.stgit@dev.haskins.net> <20090503064432.GS8633@ZenIV.linux.org.uk> <alpine.DEB.1.10.0905031103290.7899@makko.or.mcafeemobile.com> <20090503190136.GY8633@ZenIV.linux.org.uk> <alpine.DEB.1.10.0905031252540.7899@makko.or.mcafeemobile.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0905031252540.7899@makko.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Sun, May 03, 2009 at 01:11:39PM -0700, Davide Libenzi wrote:
+> On Sun, 3 May 2009, Al Viro wrote:
+> 
+> > IOW, the sane solution would be to export something that returns your
+> > struct file *.  And stop playing with fd completely.
+> 
+> This builds but it's not tested at all.
+> 
+> - Make all the work of the old anon_inode_getfd(), done by a new 
+>   anon_inode_getfile(), with anon_inode_getfd() using its services
+> 
+> - Make all the work done by sys_eventfd(), done by a new 
+>   eventfd_file_create() (which in turn uses anon_inode_getfile()), with 
+>   sys_eventfd() using its services
+> 
+> IRQfd can use eventfd_file_create(), fget(), get_unused_fd_flags() and 
+> fd_install() just before returning.
+> Is that what you had in mind?
 
---=_freyr.ossman.eu-10958-1241382664-0001-2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Linus, please pull from
-
-        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-li=
-nus
-
-to receive assorted minor fixes:
-
- drivers/mmc/card/block.c     |    8 ++++++++
- drivers/mmc/core/core.c      |    4 ++--
- drivers/mmc/host/mmci.c      |    2 +-
- drivers/mmc/host/mvsdio.c    |   11 +++++------
- drivers/mmc/host/sdhci-pci.c |    8 +++++---
- drivers/mmc/host/sdhci.h     |    2 +-
- 6 files changed, 22 insertions(+), 13 deletions(-)
-
-Dan Carpenter (1):
-      sdhci-pci: bad error handling in probe function
-
-Jos=C3=A9 M. Fern=C3=A1ndez (1):
-      mmc: increase power up delay
-
-Pierre Ossman (2):
-      mmc_block: be prepared for oversized requests
-      sdhci: catch ADMA errors
-
-Rabin Vincent (2):
-      mmci: fix crash with debug enabled
-      mvsdio: fix CONFIG_PM=3Dy build
-
-
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-  TigerVNC, core developer          http://www.tigervnc.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-10958-1241382664-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkn9/wcACgkQ7b8eESbyJLhIkgCeL3UP0s7dzQXzZ516XmmcE8xe
-U1AAnRRRUPIaUfvr9MdPalncPGdJ/MGL
-=H4TM
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-10958-1241382664-0001-2--
+More or less, but I'd like to see the irqfd side of that...
