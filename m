@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbZECTCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756671AbZECTEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756840AbZECTCR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 15:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756837AbZECTBk
+	id S1756671AbZECTEq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 15:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbZECTEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 15:01:40 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:44579 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756816AbZECTBj (ORCPT
+	Sun, 3 May 2009 15:04:35 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:55142 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752183AbZECTEd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 15:01:39 -0400
-Date: Sun, 3 May 2009 20:01:36 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com
-Subject: Re: [KVM PATCH v3 2/2] kvm: add support for irqfd via
-	eventfd-notification interface
-Message-ID: <20090503190136.GY8633@ZenIV.linux.org.uk>
-References: <20090427182540.6646.96740.stgit@dev.haskins.net> <20090427183334.6646.90800.stgit@dev.haskins.net> <20090503064432.GS8633@ZenIV.linux.org.uk> <alpine.DEB.1.10.0905031103290.7899@makko.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0905031103290.7899@makko.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 3 May 2009 15:04:33 -0400
+Subject: Re: New TRIM/UNMAP tree published (2009-05-02)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Jens Axboe <jens.axboe@oracle.com>,
+       Boaz Harrosh <bharrosh@panasas.com>, Hugh Dickins <hugh@veritas.com>,
+       Matthew Wilcox <willy@linux.intel.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Mark Lord <lkml@rtr.ca>
+In-Reply-To: <49FDE50A.4060503@garzik.org>
+References: <1238683047-13588-1-git-send-email-willy@linux.intel.com>
+	 <49D8A3D7.5070507@panasas.com> <20090503061150.GF10704@linux.intel.com>
+	 <20090503071619.GP8822@parisc-linux.org>
+	 <Pine.LNX.4.64.0905031346350.29671@blonde.anvils>
+	 <20090503144847.GR8822@parisc-linux.org> <49FDB21B.3080301@panasas.com>
+	 <20090503154216.GU8822@parisc-linux.org> <49FDC786.6070309@panasas.com>
+	 <49FDE3BB.505@garzik.org>  <49FDE50A.4060503@garzik.org>
+Content-Type: text/plain
+Date: Sun, 03 May 2009 14:04:32 -0500
+Message-Id: <1241377472.5596.88.camel@mulgrave.int.hansenpartnership.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 03, 2009 at 11:07:26AM -0700, Davide Libenzi wrote:
-> On Sun, 3 May 2009, Al Viro wrote:
-> > On Mon, Apr 27, 2009 at 02:33:34PM -0400, Gregory Haskins wrote:
-> > > +	/* We re-use eventfd for irqfd */
-> > > +	fd = sys_eventfd2(0, 0);
-> > > +	if (fd < 0) {
-> > > +		ret = fd;
-> > > +		goto fail;
-> > > +	}
-> > > +
-> > > +	/* We maintain a reference to eventfd for the irqfd lifetime */
-> > > +	file = eventfd_fget(fd);
-> > > +	if (IS_ERR(file)) {
-> > > +		ret = PTR_ERR(file);
-> > > +		goto fail;
-> > > +	}
-> > > +
-> > > +	irqfd->file = file;
-> > 
-> > This is just plain wrong.  You have no promise whatsoever that caller of
-> > that sucker won't race with e.g. dup2().  IOW, you can't assume that
-> > file will be of the expected kind.
+On Sun, 2009-05-03 at 14:40 -0400, Jeff Garzik wrote:
+> Jeff Garzik wrote:
+> > (2) determine at init if queue (a) supports explicit DISCARD and/or (b) 
+> > supports DISCARD flag passed with READ or WRITE
 > 
-> The eventfd_fget() checks for the file_operations pointer, before 
-> returning the file*, and fails if the fd in not an eventfd. Or you have 
-> other concerns?
+> 
+> As an aside -- does any existing command set support case #b, above?
 
-OK, but... it's still wrong.  Descriptor numbers are purely for interaction
-with userland; using them that way violates very general race-prevention
-rules, even if you do paper over the worst of consequences with check in
-eventfd_fget().
+Not to my knowledge.
 
-General rules:
-	* descriptor you've generated is fit only for return to userland;
-	* descriptor you've got from userland is fit only for *single*
-fget() or equivalent, unless you are one of the core syscalls manipulating
-the descriptor table itself (dup2, etc.)
-	* once file is installed in descriptor table, you'd better be past
-the last failure exit; sys_close() on cleanup path is not acceptable.
-That's what reserving descriptors is for.
+I think discard was modelled on barrier (which can be associated with
+data or stand on its own).
 
-IOW, the sane solution would be to export something that returns your
-struct file *.  And stop playing with fd completely.
+> AFAICT, ATA, SCSI and NVMHCI all have a single, explicit hardware 
+> command to discard/deallocate unused sectors.
+> 
+> Therefore, creating REQ_TYPE_DISCARD seems to eliminate any need for new 
+> hook ->prepare_discard().
+
+Well, yes and no ... in the SCSI implementation of either UNMAP or WRITE
+SAME, we still need a data buffer to store either the extents or the
+actual same data.
+
+> This provides a 1:1 correspondence between hardware and struct request, 
+> most closely matching the setup of known hardware.
+
+Agreed ... but we still have to allocate the adjunct buffer
+somewhere ....
+
+James
+
+
