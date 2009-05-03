@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbZECXYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbZECXZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756689AbZECXYc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 19:24:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbZECXYY
+	id S1756922AbZECXZI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 19:25:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755584AbZECXYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 19:24:24 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:14913 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751800AbZECXYY (ORCPT
+	Sun, 3 May 2009 19:24:55 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:51664 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755394AbZECXYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 19:24:24 -0400
+	Sun, 3 May 2009 19:24:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=KpFKZDASVugA3p0xO/Op77IyYxIPmRotwXfEAoY2WwMSY2Zalod13j0Ivi08tXM4b0
-         rXJmZWuigjjfWD55I5nWF/JCbDuuCf/GADds79YkkGrdLoTg4J3GQvqooZynX/c7ndiE
-         3mzjBb/jfJnfTnKIKYeH06T3C3kwvo6ocbtUI=
-Date: Mon, 4 May 2009 03:25:10 +0400
+        b=hE5lUSOuMCGU6UrLnyuH9GqQgDiDPmmzVnCgxjn75DZZwWBobg/PT+T1aaLFz/ptEL
+         qkLFeb/JqxoGnkWfkLKGZbNzSUyQ2sVOLOHl5JqG9oJZdb1HEHykMIPch6z/tLnFafcm
+         zXMZcA329eRdshM9ae94IsgTzB4M3c3DeetXQ=
+Date: Mon, 4 May 2009 03:25:42 +0400
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: [PATCH] utsns: extract creeate_uts_ns()
-Message-ID: <20090503232510.GA16631@x200.localdomain>
+Subject: [PATCH 1/2] ipcns 1/2: remove useless get/put while CLONE_NEWIPC
+Message-ID: <20090503232542.GB16631@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,47 +31,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-create_uts_ns() will be used by C/R to create fresh uts_ns.
+copy_ipcs() doesn't actually copy anything. If new ipcns is created, it's
+created from scratch, in this case get/put on old ipcns isn't needed.
 
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 ---
- kernel/utsname.c |   13 +++++++++++--
- 1 files changed, 11 insertions(+), 2 deletions(-)
+ ipc/namespace.c |    6 +-----
+ 1 files changed, 1 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/utsname.c b/kernel/utsname.c
-index 815237a..8a82b4b 100644
---- a/kernel/utsname.c
-+++ b/kernel/utsname.c
-@@ -15,6 +15,16 @@
- #include <linux/err.h>
- #include <linux/slab.h>
- 
-+static struct uts_namespace *create_uts_ns(void)
-+{
-+	struct uts_namespace *uts_ns;
-+
-+	uts_ns = kmalloc(sizeof(struct uts_namespace), GFP_KERNEL);
-+	if (uts_ns)
-+		kref_init(&uts_ns->kref);
-+	return uts_ns;
-+}
-+
- /*
-  * Clone a new ns copying an original utsname, setting refcount to 1
-  * @old_ns: namespace to clone
-@@ -24,14 +34,13 @@ static struct uts_namespace *clone_uts_ns(struct uts_namespace *old_ns)
+diff --git a/ipc/namespace.c b/ipc/namespace.c
+index 4a5e752..a56fc59 100644
+--- a/ipc/namespace.c
++++ b/ipc/namespace.c
+@@ -50,15 +50,11 @@ struct ipc_namespace *copy_ipcs(unsigned long flags, struct ipc_namespace *ns)
  {
- 	struct uts_namespace *ns;
+ 	struct ipc_namespace *new_ns;
  
--	ns = kmalloc(sizeof(struct uts_namespace), GFP_KERNEL);
-+	ns = create_uts_ns();
- 	if (!ns)
- 		return ERR_PTR(-ENOMEM);
+-	BUG_ON(!ns);
+-	get_ipc_ns(ns);
+-
+ 	if (!(flags & CLONE_NEWIPC))
+-		return ns;
++		return get_ipc_ns(ns);
  
- 	down_read(&uts_sem);
- 	memcpy(&ns->name, &old_ns->name, sizeof(ns->name));
- 	up_read(&uts_sem);
--	kref_init(&ns->kref);
- 	return ns;
+ 	new_ns = clone_ipc_ns(ns);
+ 
+-	put_ipc_ns(ns);
+ 	return new_ns;
  }
  
