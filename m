@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbZECVsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbZECVsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753642AbZECVsS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 17:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbZECVsG
+	id S1754552AbZECVsx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 17:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbZECVsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 17:48:06 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59308
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750847AbZECVsE (ORCPT
+	Sun, 3 May 2009 17:48:41 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:53910 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752523AbZECVsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 17:48:04 -0400
-Date: Sun, 03 May 2009 14:47:58 -0700 (PDT)
-Message-Id: <20090503.144758.222061423.davem@davemloft.net>
-To: stlman@poczta.fm
-Cc: linux-kernel@vger.kernel.org, yoshfuji@linux-ipv6.org
-Subject: Re: [PATCH] Temporary IPv6 address asignment
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <49FE107A.4020406@poczta.fm>
-References: <49FE107A.4020406@poczta.fm>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 3 May 2009 17:48:39 -0400
+Date: Sun, 3 May 2009 15:48:37 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Boaz Harrosh <bharrosh@panasas.com>, Hugh Dickins <hugh@veritas.com>,
+       Matthew Wilcox <willy@linux.intel.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
+       linux-scsi@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Mark Lord <lkml@rtr.ca>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: New TRIM/UNMAP tree published (2009-05-02)
+Message-ID: <20090503214836.GV8822@parisc-linux.org>
+References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <49D8A3D7.5070507@panasas.com> <20090503061150.GF10704@linux.intel.com> <20090503071619.GP8822@parisc-linux.org> <Pine.LNX.4.64.0905031346350.29671@blonde.anvils> <20090503144847.GR8822@parisc-linux.org> <49FDB21B.3080301@panasas.com> <20090503154216.GU8822@parisc-linux.org> <49FDC786.6070309@panasas.com> <49FDE3BB.505@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49FDE3BB.505@garzik.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Lukasz Stelmach <stlman@poczta.fm>
-Date: Sun, 03 May 2009 23:45:30 +0200
+On Sun, May 03, 2009 at 02:34:35PM -0400, Jeff Garzik wrote:
+> Yes, the task of figuring out -what to do- in the queue's request  
+> function is quite complex, and discard makes it even more so.
+>
+> The API makes life difficult -- you have to pass temporary info to  
+> yourself in ->prepare_flush_fn() and ->prepare_discard_fn(), and the  
+> overall sum is a bewildering collection of opcodes, flags, and internal  
+> driver notes to itself.
+>
+> Add to this yet another prep function, ->prep_rq_fn()
+>
+> It definitely sucks, especially with regards to failed atomic  
+> allocations...   but I think fixing this quite a big more than Matthew  
+> probably willing to tackle ;-)
 
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Greetings.
-> 
-> I discovered recently and fixed some problems with IPv6 temporary
-> address asignment. I have described the problem at
-> http://bugzilla.kernel.org as bugs #13208 and #13221.
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=13208
-> http://bugzilla.kernel.org/show_bug.cgi?id=13221
-> 
-> The patch is available at:
-> 
-> http://bugzilla.kernel.org/attachment.cgi?id=21201
+I'm completely confused by the block layer API, to be honest.  Trying to
+deduce how to add a new feature at this stage is hard (compare it to
+adding the reflink operation to the VFS ...).  I'm definitely willing to
+tackle changing the block device API, but it may take a while.
 
-Nobody is going to look at this unless you post the patch
-with description and proper signoffs with netdev@vger.kernel.org
-CC:'d
+> My ideal block layer interface would be a lot more opcode-based, e.g.
+>
+> (1) create REQ_TYPE_DISCARD
+>
+> (2) determine at init if queue (a) supports explicit DISCARD and/or (b)  
+> supports DISCARD flag passed with READ or WRITE
+>
+> (3) when creating a discard request, use block helpers w/ queue-specific  
+> knowledge to create either
+> 	(a) one request, REQ_TYPE_FS, with discard flag or
+> 	(b) two requests, REQ_TYPE_FS followed by REQ_TYPE_DISCARD
+
+I'm not sure we need option 3b.
+
+> (4) blkdev_issue_discard() would function like an empty barrier, and  
+> unconditionally create REQ_TYPE_DISCARD.
+
+I can certainly prototype a replacement for discard_prep_fn along these lines.
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
