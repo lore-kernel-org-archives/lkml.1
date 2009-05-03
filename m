@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751573AbZECFmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751853AbZECFmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751573AbZECFmU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 01:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbZECFmM
+	id S1751853AbZECFmk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 01:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZECFm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 01:42:12 -0400
-Received: from mail.lang.hm ([64.81.33.126]:56247 "EHLO bifrost.lang.hm"
+	Sun, 3 May 2009 01:42:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47634 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953AbZECFmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 01:42:11 -0400
-Date: Sat, 2 May 2009 22:40:03 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: Willy Tarreau <w@1wt.eu>
-cc: Bart Van Assche <bart.vanassche@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Philipp Reisner <philipp.reisner@linbit.com>,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       Lars Marowsky-Bree <lmb@suse.de>, Kyle Moffett <kyle@moffetthome.net>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>
-Subject: Re: [PATCH 00/16] DRBD: a block device for HA clusters
-In-Reply-To: <20090503053557.GH570@1wt.eu>
-Message-ID: <alpine.DEB.1.10.0905022239100.15782@asgard>
-References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com> <20090501015902.ed8b56d3.akpm@linux-foundation.org> <e2e108260905020033h457ed97ayfd8392d1249a943a@mail.gmail.com> <20090503053557.GH570@1wt.eu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-201677387-1241329204=:15782"
+	id S1751290AbZECFm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 01:42:28 -0400
+Subject: [PATCH -tip] x86: cpufeature.h fix name for X86_FEATURE_MCE
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 03 May 2009 11:11:35 +0530
+Message-Id: <1241329295.6321.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---0-201677387-1241329204=:15782
-Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+X86_FEATURE_MCE = Machine Check Exception
+X86_FEATURE_MCA = Machine Check Architecture
 
-On Sun, 3 May 2009, Willy Tarreau wrote:
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/cpufeature.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> On Sat, May 02, 2009 at 09:33:35AM +0200, Bart Van Assche wrote:
->> On Fri, May 1, 2009 at 10:59 AM, Andrew Morton
->> <akpm@linux-foundation.org> wrote:
->>> On Thu, 30 Apr 2009 13:26:36 +0200 Philipp Reisner <philipp.reisner@linbit.com> wrote:
->>>
->>>> This is a repost of DRBD
->>>
->>> Is it being used anywhere for anything?  If so, where and what?
->>
->> One popular application is to run iSCSI and HA software on top of DRBD
->> in order to build a highly available iSCSI storage target.
->
-> Confirmed, I have several customers who're doing exactly that.
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index bb83b1c..ccc1061 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -22,7 +22,7 @@
+ #define X86_FEATURE_TSC		(0*32+ 4) /* Time Stamp Counter */
+ #define X86_FEATURE_MSR		(0*32+ 5) /* Model-Specific Registers */
+ #define X86_FEATURE_PAE		(0*32+ 6) /* Physical Address Extensions */
+-#define X86_FEATURE_MCE		(0*32+ 7) /* Machine Check Architecture */
++#define X86_FEATURE_MCE		(0*32+ 7) /* Machine Check Exception */
+ #define X86_FEATURE_CX8		(0*32+ 8) /* CMPXCHG8 instruction */
+ #define X86_FEATURE_APIC	(0*32+ 9) /* Onboard APIC */
+ #define X86_FEATURE_SEP		(0*32+11) /* SYSENTER/SYSEXIT */
+-- 
+1.6.0.6
 
-I will also say that there are a lot of us out here who would have a use 
-for DRDB in our HA setups, but have held off implementing it specificly 
-because it's not yet in the upstream kernel.
 
-David Lang
---0-201677387-1241329204=:15782--
+
