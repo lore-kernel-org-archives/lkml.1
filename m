@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756855AbZECUuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbZECU7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756855AbZECUuj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 16:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051AbZECUu2
+	id S1756553AbZECU7P (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 16:59:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbZECU66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 16:50:28 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:33310 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754543AbZECUu1 (ORCPT
+	Sun, 3 May 2009 16:58:58 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:51635 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755350AbZECU66 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 16:50:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Bkp/wBpm6jYYjhmgA355TDILpVzxLqB+gRHCVoe/4v0LoJWliDM3d6/OT88/NGTDjJ
-         JbgKbvdcvE7uOqndID3uR0G2LnO3seHK03MRHA1+NqNLPZ8GjNz828tKpshxKObWnAPG
-         euPSrmd1dAuV1F2b7zbrwTUQ5hxW0eqSXVhes=
-Message-ID: <49FE038F.2040704@gmail.com>
-Date: Sun, 03 May 2009 14:50:23 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 3 May 2009 16:58:58 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=ON8o5HMTBFfv5zHhBYUmV83kp6YnwBEcO1doAP5Ht1fHwzx17PdborzbtJTrVaGT6
+	FRlYsVlqCJQ6A0zabjfwQ==
+Date: Sun, 3 May 2009 13:58:49 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Jack Steiner <steiner@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: introducing __GFP_PANIC
+In-Reply-To: <20090503204542.GJ4615@lenovo>
+Message-ID: <alpine.DEB.2.00.0905031357140.17811@chino.kir.corp.google.com>
+References: <20090501203123.GA10878@sgi.com> <20090503084847.GA20394@elte.hu> <alpine.DEB.2.00.0905030203520.16287@chino.kir.corp.google.com> <84144f020905030259i59ea304ftdc9224e6a9b5c285@mail.gmail.com> <20090503121228.GC4615@lenovo> <1241353621.27683.3.camel@penberg-laptop>
+ <20090503143824.GF4615@lenovo> <84144f020905030954m434d0550l3ed7ef7436c803df@mail.gmail.com> <20090503172338.GG4615@lenovo> <84144f020905031038n751b48afsaefc3765ed632f82@mail.gmail.com> <20090503204542.GJ4615@lenovo>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alex Buell <alex.buell@munted.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: No NCQ support on X61s Ultrabay?  (Intel ICH8 SATA controller
- question)
-References: <E1LzLgA-0004j6-9W@closure.thunk.org> <49F90CA2.4080602@garzik.org> <20090430083309.437f9248@lithium.local.net> <49F95719.10701@kernel.org> <20090430144702.46415b90@lxorguk.ukuu.org.uk> <20090430153508.GA10704@linux.intel.com> <20090430154701.GA27737@srcf.ucam.org> <49FA5519.9000107@gmail.com> <49FCFC5D.5050303@kernel.org>
-In-Reply-To: <49FCFC5D.5050303@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Robert Hancock wrote:
->> Matthew Garrett wrote:
->>> On Thu, Apr 30, 2009 at 08:35:08AM -0700, Matthew Wilcox wrote:
->>>> On Thu, Apr 30, 2009 at 02:47:02PM +0100, Alan Cox wrote:
->>>>>> So, at the point of driver load, there just isn't much we can do about
->>>>>> the missing ABAR.  It's sad.  Dunno why some laptop manufacturers
->>>>>> still program the thing into piix mode.  :-(
->>>>> Forcing out of PIIX mode would need to go into the PCI quirks and be a
->>>>> boot option not a module one - at that point its doable as a header
->>>>> quirk.
->>>> I think Matthew Garrett already has code to do this.
->>> Yeah, but some testers reported that it broke after using it for a
->>> while. The most recent version I have is this:
->> We should likely have something like this in the kernel, but it should
->> default to off. For one thing, some machines seem to have BIOS code that
->> tries to poke the controller for some reason during suspend/shutdown
->> events, etc. which would likely go nuts if the controller was
->> unexpectedly in AHCI mode..
+On Mon, 4 May 2009, Cyrill Gorcunov wrote:
+
+> @@ -1685,7 +1687,9 @@ nopage:
+>  		dump_stack();
+>  		show_mem();
+>  	}
+> -	return page;
+> +	if (unlikely(gfp_mask & __GFP_PANIC))
+> +		panic("Out of memory: panic due to __GFP_PANIC\n");
+> +	return NULL;
+>  got_pg:
+>  	if (kmemcheck_enabled)
+>  		kmemcheck_pagealloc_alloc(page, order, gfp_mask);
 > 
-> Maybe, I don't know.  Matthew's patch seems clean enough for upstream
-> inclusion but I'm always a bit put off about including some feature
-> which should default to off.  It never gets used and tested a lot thus
-> ending up broken on many configurations further fueling the vicious
-> cycle.  After the initial interested users passed, it just becomes
-> dead weight none uses which often is quite annoying when trying to
-> change code around it because nobody at that point knows on which
-> configurations it worked and even whether it not working is a
-> regression or expected behavior.
 
-Well, it's a potential concern, but it's simple enough I doubt it would 
-really result in much of a burden. Having the force-AHCI option in place 
-would allow those interested to try it more easily and see just how 
-widely this can be done without breaking things.. It all really depends 
-on the BIOS implementation.
-
-> 
-> Given the wide variety of ich motherboards out in the wild and all
-> their different BIOS revisions and the fact that NCQ or not doesn't
-> make whole lot of difference for most desktop workload, I think why
-> bother.  A few years back some vendors seemed to use it for product
-> differentiation but nowadays it's just silly to disable ahci for that
-> purpose.
-
+If we really want a __GFP_PANIC flag for this purpose, I'd recommend also 
+emitting the order and gfpmask in the panic() message since it may not be 
+immediately obvious from the caller.
