@@ -1,100 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932072AbZEDR57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbZEDSAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932072AbZEDR57 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 13:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388AbZEDR5s
+	id S1758699AbZEDSAA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 14:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755811AbZEDR7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 13:57:48 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:34261 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754685AbZEDR5r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 13:57:47 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH v4 0/2] irqfd
-To: kvm@vger.kernel.org
-Cc: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davidel@xmailserver.org
-Date: Mon, 04 May 2009 13:57:40 -0400
-Message-ID: <20090504175657.26758.12503.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Mon, 4 May 2009 13:59:51 -0400
+Received: from mail.gmx.net ([213.165.64.20]:52125 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751282AbZEDR7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 13:59:49 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19WBhs8L8RWXkWWrsorSvbaLSrd9DorPUUB6kzQua
+	3QqIOIsbhZj+Kd
+Subject: Re: CFS not suitable for desktop computers
+From: Mike Galbraith <efault@gmx.de>
+To: Nico =?ISO-8859-1?Q?Sch=FCmann?= <spam@nico22.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <49FF06D0.80109@nico22.de>
+References: <49FDEFD1.8020608@nico22.de>
+	 <1241424835.26855.102.camel@marge.simson.net>  <49FF06D0.80109@nico22.de>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 04 May 2009 19:59:43 +0200
+Message-Id: <1241459983.5462.70.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Applies to kvm.git:7da2e3ba, plus you will also need Davide Libenzi's
-eventfd_file_create() patch, which you can find here:
+On Mon, 2009-05-04 at 17:16 +0200, Nico Schümann wrote:
+> Thank you Ray Lee and Mike Galbraith for your responses, I ran the 
+> script and attached its gathered information.
+> 
+> Mike Galbraith wrote:
+> > How hard is hard?  Can you describe the loads you're having trouble
+> > with, and the hardware you're running them on?
+> >
+> >   
+> I could reproduce "hard" load by just compiling the linux kernel, make 
+> -j3 while reading mails with Thunderbird, which is not that hard 
+> foreground load. Thunderbird starts reacting really slowly while compiling.
+> 
+> My system has a 1,3 GHz AMD Athlon CPU (32 bits) and 1 GB of RAM. Now 
+> you will say: That is not very much. Of course it is not, but with the 
+> old scheduler, the system felt way faster, so it seemed to be enough for 
+> compiling and reading mails.
 
-http://www.mail-archive.com/kvm@vger.kernel.org/msg13923.html
+Hm.  The load isn't extreme, but it appears to me that between X and
+Thunderbird, CPU demand is high enough that you WILL feel the slowdown
+when you toss in three competing CPU hogs plus other system activity all
+on one core.
 
-You can find my complete tree with kvm.git, Davide's patch, and this series
-here:
+> I hope you can find useful information in the attached log, I enabled 
+> SCHED_DEBUG and SCHEDSTATS, if you need any more information, just ask 
+> me, I will try to answer.
 
-http://git.kernel.org/?p=linux/kernel/git/ghaskins/vbus/linux-2.6.git;a=shortlog;h=irqfd
+I'll look closer tomorrow (ill).  For now, how much CPU does
+X/Thunderbird consume without the kbuild?
 
-----------------------
+(I know this isn't what you want to hear, but SCHED_IDLE is a major case
+of happiness for heavy lifting background loads, especially so on UP.)
 
-irqfd, v4
-
-This series implements a mechanism called "irqfd".  It lets you create
-an eventfd based file-desriptor to inject interrupts to a kvm guest. For
-more details, please see the prologue for patch 2/2.
-
-[ Changelog:
-
-   v4:
-        *) Changed allocation model to create the new fd last, after
-           we get past the last potential error point by using Davide's
-           new eventfd_file_create interface (Al Viro, Davide Libenzi)
-	*) We no longer export sys_eventfd2() since it is replaced
-           functionally with eventfd_file_create();
-        *) Rebased to kvm.git:7da2e3ba
-
-   v3:
-        *) The kernel now allocates the eventfd (need to export sys_eventfd2)
-        *) Added a flags field for future expansion to kvm_irqfd()
-        *) We properly toggle the irq level 1+0.
-        *) We re-use the USERSPACE_SRC_ID instead of creating our own
-        *) Properly check for failures establishing a poll-table with eventfd
-	*) Fixed fd/file leaks on failure
-	*) Rebased to lateste kvm.git::41b76d8d04
-
-   v2:
-	*) Dropped notifier_chain based callbacks in favor of
-	   wait_queue_t::func and file::poll based callbacks (Thanks to
-	   Davide for the suggestion)
-
-   v1:
-        *) Initial release
-
---------
-
-We do not have a user of this interface in this series, though note
-future version of virtual-bus (v4 and above) will be based on this.
-
-Note that this series requires userspace patches for qemu-kvm.git, v3, which
-you can find here: http://patchwork.kernel.org/patch/20213/
-
--Greg
-
----
-
-Gregory Haskins (2):
-      kvm: add support for irqfd via eventfd-notification interface
-      eventfd: export eventfd interfaces for module use
-
-
- arch/x86/kvm/Makefile    |    2 -
- arch/x86/kvm/x86.c       |    1 
- fs/eventfd.c             |    4 +
- include/linux/kvm.h      |    7 ++
- include/linux/kvm_host.h |    4 +
- virt/kvm/irqfd.c         |  159 ++++++++++++++++++++++++++++++++++++++++++++++
- virt/kvm/kvm_main.c      |   11 +++
- 7 files changed, 187 insertions(+), 1 deletions(-)
- create mode 100644 virt/kvm/irqfd.c
-
+	-Mike
 
