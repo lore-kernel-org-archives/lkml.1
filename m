@@ -1,92 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbZEDXpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756994AbZEDXtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756849AbZEDXpY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 19:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbZEDXpK
+	id S1756994AbZEDXtU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 19:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbZEDXtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 19:45:10 -0400
-Received: from mga03.intel.com ([143.182.124.21]:57001 "EHLO mga03.intel.com"
+	Mon, 4 May 2009 19:49:09 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:33406 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753946AbZEDXpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 19:45:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,293,1239001200"; 
-   d="scan'208";a="139130098"
-Date: Tue, 5 May 2009 07:44:55 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Cc: "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "riel@redhat.com" <riel@redhat.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] vmscan: ZVC updates in shrink_active_list() can be done
-	once
-Message-ID: <20090504234455.GA6324@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1752640AbZEDXtI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 19:49:08 -0400
+Date: Tue, 5 May 2009 09:48:45 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Paul Mackerras <paulus@samba.org>, Roel Kluin <roel.kluin@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] hvcs: remove driver_data direct access of struct device
+Message-Id: <20090505094845.6e9b5bab.sfr@canb.auug.org.au>
+In-Reply-To: <20090504195801.GA22677@kroah.com>
+References: <20090504195801.GA22677@kroah.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__5_May_2009_09_48_45_+1000_lzioYYRagQOGh_Q4"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This effectively lifts the unit of nr_inactive_* and pgdeactivate updates
-from PAGEVEC_SIZE=14 to SWAP_CLUSTER_MAX=32.
+--Signature=_Tue__5_May_2009_09_48_45_+1000_lzioYYRagQOGh_Q4
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/vmscan.c |   11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+On Mon, 4 May 2009 12:58:01 -0700 Greg Kroah-Hartman <gregkh@suse.de> wrote:
+>
+> From: Greg Kroah-Hartman <gregkh@suse.de>
+>=20
+> In the near future, the driver core is going to not allow direct access
+> to the driver_data pointer in struct device.  Instead, the functions
+> dev_get_drvdata() and dev_set_drvdata() should be used.  These functions
+> have been around since the beginning, so are backwards compatible with
+> all older kernel versions.
+>=20
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+> Cc: Roel Kluin <roel.kluin@gmail.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
---- linux.orig/mm/vmscan.c
-+++ linux/mm/vmscan.c
-@@ -1228,7 +1228,6 @@ static void shrink_active_list(unsigned 
- 			struct scan_control *sc, int priority, int file)
- {
- 	unsigned long pgmoved;
--	int pgdeactivate = 0;
- 	unsigned long pgscanned;
- 	LIST_HEAD(l_hold);	/* The pages which were snipped off */
- 	LIST_HEAD(l_inactive);
-@@ -1257,7 +1256,7 @@ static void shrink_active_list(unsigned 
- 		__mod_zone_page_state(zone, NR_ACTIVE_ANON, -pgmoved);
- 	spin_unlock_irq(&zone->lru_lock);
- 
--	pgmoved = 0;
-+	pgmoved = 0;  /* count referenced (mapping) mapped pages */
- 	while (!list_empty(&l_hold)) {
- 		cond_resched();
- 		page = lru_to_page(&l_hold);
-@@ -1291,7 +1290,7 @@ static void shrink_active_list(unsigned 
- 	 */
- 	reclaim_stat->recent_rotated[!!file] += pgmoved;
- 
--	pgmoved = 0;
-+	pgmoved = 0;  /* count pages moved to inactive list */
- 	while (!list_empty(&l_inactive)) {
- 		page = lru_to_page(&l_inactive);
- 		prefetchw_prev_lru_page(page, &l_inactive, flags);
-@@ -1304,10 +1303,7 @@ static void shrink_active_list(unsigned 
- 		mem_cgroup_add_lru_list(page, lru);
- 		pgmoved++;
- 		if (!pagevec_add(&pvec, page)) {
--			__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
- 			spin_unlock_irq(&zone->lru_lock);
--			pgdeactivate += pgmoved;
--			pgmoved = 0;
- 			if (buffer_heads_over_limit)
- 				pagevec_strip(&pvec);
- 			__pagevec_release(&pvec);
-@@ -1315,9 +1311,8 @@ static void shrink_active_list(unsigned 
- 		}
- 	}
- 	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
--	pgdeactivate += pgmoved;
- 	__count_zone_vm_events(PGREFILL, zone, pgscanned);
--	__count_vm_events(PGDEACTIVATE, pgdeactivate);
-+	__count_vm_events(PGDEACTIVATE, pgmoved);
- 	spin_unlock_irq(&zone->lru_lock);
- 	if (buffer_heads_over_limit)
- 		pagevec_strip(&pvec);
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__5_May_2009_09_48_45_+1000_lzioYYRagQOGh_Q4
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkn/ft0ACgkQjjKRsyhoI8xtFgCcD/hHJ7G7VDV4FHx+R9XIGlsV
+kBYAoJ8+qNjH7aBdr/9UEmZUYOOZDuMz
+=H5Ym
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__5_May_2009_09_48_45_+1000_lzioYYRagQOGh_Q4--
