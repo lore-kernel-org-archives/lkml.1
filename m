@@ -1,91 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbZEDSZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZEDS3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758280AbZEDSZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 14:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbZEDSZT
+	id S1754093AbZEDS3l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 14:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbZEDS3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 14:25:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60304 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754029AbZEDSZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 14:25:18 -0400
-Date: Mon, 4 May 2009 18:24:33 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, robert.richter@amd.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, robert.richter@amd.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1241002046-8832-28-git-send-email-robert.richter@amd.com>
-References: <1241002046-8832-28-git-send-email-robert.richter@amd.com>
-Subject: [tip:perfcounters/core] perf_counter: fix fixed-purpose counter support on v2 Intel-PERFMON
-Message-ID: <tip-066d7dea32c9bffe6decc0abe465627656cdd84e@git.kernel.org>
-Git-Commit-ID: 066d7dea32c9bffe6decc0abe465627656cdd84e
-X-Mailer: tip-git-log-daemon
+	Mon, 4 May 2009 14:29:31 -0400
+Received: from wa4ehsobe004.messaging.microsoft.com ([216.32.181.14]:58966
+	"EHLO WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751911AbZEDS3a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 14:29:30 -0400
+X-BigFish: VPS9(zzzz1202hzzz32i6bh15fn43j66h)
+X-Spam-TCS-SCL: 5:0
+X-FB-SS: 5,
+X-WSS-ID: 0KJ4U0Q-02-RC0-01
+Date: Mon, 4 May 2009 20:28:59 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: x86: changed output in /proc/cpuinfo for siblings
+Message-ID: <20090504182859.GA29045@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 04 May 2009 18:24:35 +0000 (UTC)
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 04 May 2009 18:29:20.0994 (UTC) FILETIME=[3DE82C20:01C9CCE6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  066d7dea32c9bffe6decc0abe465627656cdd84e
-Gitweb:     http://git.kernel.org/tip/066d7dea32c9bffe6decc0abe465627656cdd84e
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Mon, 4 May 2009 19:04:09 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 4 May 2009 20:17:31 +0200
+Commit 7ad728f98162cb1af06a85b2a5fc422dddd4fb78
+(cpumask: x86: convert cpu_sibling_map/cpu_core_map to cpumask_var_t)
+changed the output of /proc/cpuinfo for siblings:
 
-perf_counter: fix fixed-purpose counter support on v2 Intel-PERFMON
+Example on an AMD Phenom:
 
-Fixed-purpose counters stopped working in a simple 'perf stat ls' run:
+  physical id   : 0
+  siblings : 1
+  core id	   : 3
+  cpu cores  : 4
 
-   <not counted>  cache references
-   <not counted>  cache misses
+Before that commit it was:
 
-Due to:
+  physical id	: 0
+  siblings : 4
+  core id	   : 3
+  cpu cores  : 4
 
-  ef7b3e0: perf_counter, x86: remove vendor check in fixed_mode_idx()
+Instead of cpu_core_mask it now uses cpu_sibling_mask to count siblings.
+This is due to the following hunk of above commit:
 
-Which made x86_pmu.num_counters_fixed matter: if it's nonzero, the
-fixed-purpose counters are utilized.
+  --- a/arch/x86/kernel/cpu/proc.c
+  +++ b/arch/x86/kernel/cpu/proc.c
+  @@ -14,7 +14,7 @@ static void show_cpuinfo_core(struct seq_file *m, struct cpuinf
+          if (c->x86_max_cores * smp_num_siblings > 1) {
+                  seq_printf(m, "physical id\t: %d\n", c->phys_proc_id);
+                  seq_printf(m, "siblings\t: %d\n",
+  -                          cpus_weight(per_cpu(cpu_core_map, cpu)));
+  +                          cpumask_weight(cpu_sibling_mask(cpu)));
+                  seq_printf(m, "core id\t\t: %d\n", c->cpu_core_id);
+                  seq_printf(m, "cpu cores\t: %d\n", c->booted_cores);
+                  seq_printf(m, "apicid\t\t: %d\n", c->apicid);
 
-But on v2 perfmon this field is not set (despite there being
-fixed-purpose PMCs). So add a quirk to set the number of fixed-purpose
-counters to at least three.
+Was this the intention or just a mistake?
+In the latter case attached patch reverts this hunk.
 
-[ Impact: add quirk for three fixed-purpose counters on certain Intel CPUs ]
 
-Cc: Robert Richter <robert.richter@amd.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1241002046-8832-28-git-send-email-robert.richter@amd.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Regards,
 
+Andreas
 
 ---
- arch/x86/kernel/cpu/perf_counter.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+x86: show number of core_siblings instead of thread_siblings in /proc/cpuinfo
 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 196b58f..a6878b0 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -962,7 +962,13 @@ static int intel_pmu_init(void)
- 	x86_pmu = intel_pmu;
- 	x86_pmu.version = version;
- 	x86_pmu.num_counters = eax.split.num_counters;
--	x86_pmu.num_counters_fixed = edx.split.num_counters_fixed;
-+
-+	/*
-+	 * Quirk: v2 perfmon does not report fixed-purpose counters, so
-+	 * assume at least 3 counters:
-+	 */
-+	x86_pmu.num_counters_fixed = max((int)edx.split.num_counters_fixed, 3);
-+
- 	x86_pmu.counter_bits = eax.split.bit_width;
- 	x86_pmu.counter_mask = (1ULL << eax.split.bit_width) - 1;
- 
+Commit 7ad728f98162cb1af06a85b2a5fc422dddd4fb78 (cpumask: x86: convert
+cpu_sibling_map/cpu_core_map to cpumask_var_t) changed the value for
+siblings in /proc/cpuinfo to be the number of thread_siblings instead
+of core_siblings.
+
+Revert the respective hunk to restore the old behavior.
+
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
+index f93047f..d5e3039 100644
+--- a/arch/x86/kernel/cpu/proc.c
++++ b/arch/x86/kernel/cpu/proc.c
+@@ -14,7 +14,7 @@ static void show_cpuinfo_core(struct seq_file *m, struct cpuinfo_x86 *c,
+ 	if (c->x86_max_cores * smp_num_siblings > 1) {
+ 		seq_printf(m, "physical id\t: %d\n", c->phys_proc_id);
+ 		seq_printf(m, "siblings\t: %d\n",
+-			   cpumask_weight(cpu_sibling_mask(cpu)));
++			   cpumask_weight(cpu_core_mask(cpu)));
+ 		seq_printf(m, "core id\t\t: %d\n", c->cpu_core_id);
+ 		seq_printf(m, "cpu cores\t: %d\n", c->booted_cores);
+ 		seq_printf(m, "apicid\t\t: %d\n", c->apicid);
+
+
