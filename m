@@ -1,94 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbZEDMHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbZEDMKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755965AbZEDMHd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 08:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbZEDMHS
+	id S1755941AbZEDMKi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 08:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbZEDMK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 08:07:18 -0400
-Received: from h155.mvista.com ([63.81.120.155]:39362 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753969AbZEDMHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 08:07:17 -0400
-Message-ID: <49FEDAC0.3040503@ru.mvista.com>
-Date: Mon, 04 May 2009 16:08:32 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Mon, 4 May 2009 08:10:29 -0400
+Received: from mail-ew0-f224.google.com ([209.85.219.224]:57295 "EHLO
+	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753291AbZEDMK2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 08:10:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=WO6lWKQ8dV6614EnVQ6zaV6CxGH0ri0xis+t7Aop+vlP9ACzIcTtcPYQHRVUtVMel2
+         ihEmjWttGt5TB+SKhETQWA6zn6bM2O06CsJ23YlWWgjm/ZxZ+1ARzCTHeOUKIC44ao9u
+         WAEJEcctzHsoZoM4D4bnOz2FnBAhBE+pgKO64=
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
-       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
-       fujita.tomonori@lab.ntt.co.jp, zaitcev@redhat.com,
-       Geert.Uytterhoeven@sonycom.com, sfr@canb.auug.org.au,
-       grant.likely@secretlab.ca, paul.clements@steeleye.com, tim@cyberelk.net,
-       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
-       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
-       davem@davemloft.net, rusty@rustcorp.com.au,
-       Markus.Lidel@shadowconnect.com, bharrosh@panasas.com,
-       Doug Gilbert <dgilbert@interlog.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: [PATCH 03/11] block: add rq->resid_len
-References: <1241423927-11871-1-git-send-email-tj@kernel.org> <1241423927-11871-4-git-send-email-tj@kernel.org>
-In-Reply-To: <1241423927-11871-4-git-send-email-tj@kernel.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <208cbae30904300154n447deedbucbd7c56d2cc90079@mail.gmail.com>
+References: <208cbae30904190953t58105f13p6e11efca6d6f5322@mail.gmail.com>
+	 <200904272335.33060.rjw@sisk.pl>
+	 <208cbae30904290621m1fbf7bc5x27fa410a23ada3dc@mail.gmail.com>
+	 <200904292147.02441.rjw@sisk.pl>
+	 <208cbae30904300154n447deedbucbd7c56d2cc90079@mail.gmail.com>
+Date: Mon, 4 May 2009 14:10:27 +0200
+Message-ID: <b637ec0b0905040510m5035d6bbgc98573d782b8d623@mail.gmail.com>
+Subject: Re: [warn_once] warning: at kernel/hrtimer.c:625 hres_timers_resume+0x24/0x38()
+From: Fabio Comolli <fabio.comolli@gmail.com>
+To: Alexey Klimov <klimov.linux@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+I see the same message with 2.6.29.2 on a laptop with the same CPU
+model also with cpufreq_ondemand.
 
-Tejun Heo wrote:
+In my case the first hibernate attempt gives the message and succeeds.
+The system resumes ok.
 
-> rq->data_len served two purposes - the length of data buffer on issue
-> and the residual count on completion.  This duality creates some
-> headaches.
+A further hibernation/resume cycle results in a hang (power cycle required).
 
-> First of all, block layer and low level drivers can't really determine
-> what rq->data_len contains while a request is executing.  It could be
-> the total request length or it coulde be anything else one of the
-> lower layers is using to keep track of residual count.  This
-> complicates things because blk_rq_bytes() and thus
-> [__]blk_end_request_all() relies on rq->data_len for PC commands.
-> Drivers which want to report residual count should first cache the
-> total request length, update rq->data_len and then complete the
-> request with the cached data length.
+It' probably a regression wrt 2.6.28.7 (I'm not sure because with the
+version upgrade I  also changed my DRI driver from fglrx to radeon and
+also the X.org userspace).
 
-> Secondly, it makes requests default to reporting full residual count,
-> ie. reporting that no data transfer occurred.  The residual count is
-> an exception not the norm; however, the driver should clear
-> rq->data_len to zero to signify the normal cases while leaving it
-> alone means no data transfer occurred at all.  This reverse default
-> behavior complicates code unnecessarily and renders block PC on some
-> drivers (ide-tape/floppy) unuseable.
+Regards,
+Fabio
 
-> This patch adds rq->resid_len which is used only for residual count.
-
-> While at it, remove now unnecessasry blk_rq_bytes() caching in
-> ide_pc_intr() as rq->data_len is not changed anymore.
-
-> Boaz: spotted missing conversion in osd.
-
-> [ Impact: cleanup residual count handling, report 0 resid by default ]
-
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-
-[...]
-
-> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-> index 7149224..3813a0e 100644
-> --- a/drivers/ide/ide-tape.c
-> +++ b/drivers/ide/ide-tape.c
-> @@ -380,7 +380,7 @@ static int ide_tape_callback(ide_drive_t *drive, int dsc)
->  		}
->  
->  		tape->first_frame += blocks;
-> -		rq->data_len -= blocks * tape->blk_size;
-> +		rq->resid_len = blk_rq_bytes(rq) - blocks * tape->blk_size;
-
-    Is it already guaranteed that rq->data_len == blk_rq_bytes(rq) here?
-
-MBR, Sergei
+On Thu, Apr 30, 2009 at 10:54 AM, Alexey Klimov <klimov.linux@gmail.com> wrote:
+> Hello, Rafael
+>
+> On Wed, Apr 29, 2009 at 11:47 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> On Wednesday 29 April 2009, Alexey Klimov wrote:
+>>> Hello,
+>>>
+>>> On Tue, Apr 28, 2009 at 1:35 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>> > On Sunday 19 April 2009, Alexey Klimov wrote:
+>>> >> Hello all
+>>> >> When testing behaviour of radio-mr800 drvier when doing suspend/resume
+>>> >> to disk, using echo disk > /sys/power/state i have such warning in
+>>> >> dmesg(see below please).
+>>> >> Kernel is 30-rc2, up-to-date. If you need more information, feel free to ask.
+>>> >
+>>> > Can you please retest with the appended patch applied and report back?
+>>>
+>>> Of course. I applied your patch against up-to-date sources (30-rc3),
+>>> and have more messages after resume:
+>>
+>> Thanks!
+>>
+>>> ACPI: Preparing to enter system sleep state S4
+>>> PM: Saving platform NVS memory
+>>> ------------[ cut here ]------------
+>>> WARNING: at drivers/base/sys.c:405 sysdev_suspend+0xb6/0x21c()
+>>> Hardware name: TravelMate 2350
+>>> Interrupts enabled after cpufreq_suspend+0x0/0x113
+>>
+>> Well, it looks like cpufreq_suspend() left us with interrupts enabled and
+>> that caused the other warnings to be printed.  Not nice.
+>>
+>> What CPU is there in your box?
+>>
+>> Rafael
+>
+> Yes, cpufreq_ondemand enabled. It's 1.7 GHz pentium-m. The lowest
+> frequency is 600 MHz.
+> Here is my /proc/cpuinfo:
+>
+> processor       : 0
+> vendor_id       : GenuineIntel
+> cpu family      : 6
+> model           : 13
+> model name      : Intel(R) Pentium(R) M processor 1.70GHz
+> stepping        : 6
+> cpu MHz         : 600.000
+> cache size      : 2048 KB
+> fdiv_bug        : no
+> hlt_bug         : no
+> f00f_bug        : no
+> coma_bug        : no
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 2
+> wp              : yes
+> flags           : fpu vme de pse tsc msr mce cx8 apic sep mtrr pge mca
+> cmov clflush dts acpi mmx fxsr sse sse2 ss tm pbe bts est tm2
+> bogomips        : 1198.79
+> clflush size    : 64
+> power management:
+>
+>
+> --
+> Best regards, Klimov Alexey
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
