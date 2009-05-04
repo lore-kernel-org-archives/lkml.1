@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbZEDIOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbZEDIPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbZEDIOn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 04:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbZEDIKe
+	id S1756122AbZEDIPB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 04:15:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbZEDILX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 04:10:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41015 "EHLO hera.kernel.org"
+	Mon, 4 May 2009 04:11:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41059 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752688AbZEDIKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 04:10:13 -0400
+	id S1754812AbZEDILV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 04:11:21 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
        linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
@@ -22,143 +22,43 @@ To: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
        schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
        rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
        bharrosh@panasas.com
-Subject: [GIT PATCH] block,scsi,ide: unify sector and data_len, take#2
-Date: Mon,  4 May 2009 16:58:36 +0900
-Message-Id: <1241423927-11871-1-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 02/11] ide-tape: don't initialize rq->sector for rw requests
+Date: Mon,  4 May 2009 16:58:38 +0900
+Message-Id: <1241423927-11871-3-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 04 May 2009 07:59:01 +0000 (UTC)
+In-Reply-To: <1241423927-11871-1-git-send-email-tj@kernel.org>
+References: <1241423927-11871-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 04 May 2009 07:59:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+rq->sector is set to the tape->first_frame but it's never actually
+used and not even in the correct unit (512 byte sectors).  Don't set
+it.
 
-Upon ack, please pull from the following git tree.
+[ Impact: cleanup ]
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-unify-sector-and-data_len
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Acked-by: Borislav Petkov <petkovbb@gmail.com>
+Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-tape.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-This is the second take of block-unify-sector-and-data_len patchset.
-The primary goal of this patchset is to consolidate all the similar
-bug slightly different current position and data length fields in
-struct request.  For detailed description, please read the description
-in the last take[L].  Changes from the last take[L] are
+diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+index 8dfc688..7149224 100644
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -892,7 +892,6 @@ static int idetape_queue_rw_tail(ide_drive_t *drive, int cmd, int size)
+ 	rq->cmd_type = REQ_TYPE_SPECIAL;
+ 	rq->cmd[13] = cmd;
+ 	rq->rq_disk = tape->disk;
+-	rq->sector = tape->first_frame;
+ 
+ 	if (size) {
+ 		ret = blk_rq_map_kern(drive->queue, rq, tape->buf, size,
+-- 
+1.6.0.2
 
-* Acked-by:'s added
-
-* osd resid_len conversion was missing as pointed out by Boaz Harrosh,
-  fixed.
-
-* patch to cleanup request length accessor usages after the conversion
-  added.
-
-This patchset contains the following eleven patches.
-
-  0001-nbd-don-t-clear-rq-sector-and-nr_sectors-unnecessa.patch
-  0002-ide-tape-don-t-initialize-rq-sector-for-rw-request.patch
-  0003-block-add-rq-resid_len.patch
-  0004-block-implement-blk_rq_pos-cur_-sectors-and-conv.patch
-  0005-block-convert-to-pos-and-nr_sectors-accessors.patch
-  0006-ide-convert-to-rq-pos-and-nr_sectors-accessors.patch
-  0007-block-drop-request-hard_-and-nr_sectors.patch
-  0008-block-cleanup-rq-data_len-usages.patch
-  0009-ide-cleanup-rq-data_len-usages.patch
-  0010-block-hide-request-sector-and-data_len.patch
-  0011-block-blk_rq_-cur_-_-sectors-bytes-usage-cleanup.patch
-
-This patchset is on top of
-
-  linux-2.6-block#for-2.6.31	(f68adec3c7155a8bbf32a90cb4c4d0737df045d9)
-+ linux-2.6-ide#for-next	(03682411b1ccd38cbde2e9a6ab43884ff34fbefc)
-
-and contains the following changes.
-
- arch/um/drivers/ubd_kern.c               |    2 
- block/as-iosched.c                       |   18 +++--
- block/blk-barrier.c                      |    4 -
- block/blk-core.c                         |  100 ++++++++++++-------------------
- block/blk-map.c                          |    2 
- block/blk-merge.c                        |   46 ++------------
- block/blk.h                              |    1 
- block/bsg.c                              |    8 +-
- block/cfq-iosched.c                      |   30 ++++-----
- block/deadline-iosched.c                 |    2 
- block/elevator.c                         |   22 +++---
- block/scsi_ioctl.c                       |    2 
- drivers/ata/libata-scsi.c                |    2 
- drivers/block/DAC960.c                   |    6 -
- drivers/block/amiflop.c                  |    6 -
- drivers/block/ataflop.c                  |   10 +--
- drivers/block/cciss.c                    |   35 ++++------
- drivers/block/cpqarray.c                 |    9 +-
- drivers/block/floppy.c                   |   54 ++++++++--------
- drivers/block/hd.c                       |   14 ++--
- drivers/block/nbd.c                      |   19 +----
- drivers/block/paride/pcd.c               |    4 -
- drivers/block/paride/pd.c                |    8 +-
- drivers/block/paride/pf.c                |    8 +-
- drivers/block/ps3disk.c                  |    9 +-
- drivers/block/sunvdc.c                   |    2 
- drivers/block/swim3.c                    |   34 +++++-----
- drivers/block/sx8.c                      |    6 -
- drivers/block/ub.c                       |   16 ++--
- drivers/block/viodasd.c                  |    8 +-
- drivers/block/virtio_blk.c               |    2 
- drivers/block/xd.c                       |    4 -
- drivers/block/xen-blkfront.c             |   11 +--
- drivers/block/xsysace.c                  |   25 ++++---
- drivers/block/z2ram.c                    |    6 -
- drivers/cdrom/gdrom.c                    |    6 -
- drivers/cdrom/viocd.c                    |    2 
- drivers/ide/ide-atapi.c                  |   13 ----
- drivers/ide/ide-cd.c                     |   44 ++++---------
- drivers/ide/ide-disk.c                   |    8 +-
- drivers/ide/ide-dma.c                    |    2 
- drivers/ide/ide-floppy.c                 |   10 +--
- drivers/ide/ide-io.c                     |   10 +--
- drivers/ide/ide-lib.c                    |    2 
- drivers/ide/ide-tape.c                   |   11 +--
- drivers/ide/ide-taskfile.c               |    2 
- drivers/ide/pdc202xx_old.c               |    2 
- drivers/ide/tc86c001.c                   |    2 
- drivers/ide/tx4939ide.c                  |    2 
- drivers/memstick/core/mspro_block.c      |    6 -
- drivers/message/fusion/mptsas.c          |   21 +++---
- drivers/message/i2o/i2o_block.c          |   28 +++-----
- drivers/mmc/card/block.c                 |   10 +--
- drivers/mtd/mtd_blkdevs.c                |    7 +-
- drivers/s390/block/dasd.c                |    2 
- drivers/s390/block/dasd_diag.c           |    5 -
- drivers/s390/block/dasd_eckd.c           |    6 -
- drivers/s390/block/dasd_fba.c            |    7 +-
- drivers/s390/char/tape_34xx.c            |    2 
- drivers/s390/char/tape_3590.c            |    2 
- drivers/s390/char/tape_block.c           |    2 
- drivers/sbus/char/jsflash.c              |    4 -
- drivers/scsi/eata.c                      |   24 +++----
- drivers/scsi/libsas/sas_expander.c       |   14 +---
- drivers/scsi/libsas/sas_host_smp.c       |   52 ++++++++--------
- drivers/scsi/lpfc/lpfc_scsi.c            |   22 +++---
- drivers/scsi/mpt2sas/mpt2sas_transport.c |   23 +++----
- drivers/scsi/osd/osd_initiator.c         |    4 -
- drivers/scsi/scsi_lib.c                  |   46 ++++++--------
- drivers/scsi/scsi_tgt_lib.c              |    2 
- drivers/scsi/sd.c                        |   24 +++----
- drivers/scsi/sd_dif.c                    |    2 
- drivers/scsi/sg.c                        |    2 
- drivers/scsi/sr.c                        |   15 ++--
- drivers/scsi/st.c                        |    2 
- drivers/scsi/u14-34f.c                   |   22 +++---
- fs/exofs/osd.c                           |    4 -
- include/linux/bio.h                      |    6 -
- include/linux/blkdev.h                   |   56 ++++++++++-------
- include/linux/elevator.h                 |    2 
- include/scsi/scsi_cmnd.h                 |    2 
- kernel/trace/blktrace.c                  |   16 ++--
- 82 files changed, 508 insertions(+), 585 deletions(-)
-
-Thanks.
-
---
-tejun
-
-[L] http://lkml.org/lkml/2009/4/29/173
