@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbZEDOER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbZEDOJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756704AbZEDOER (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 10:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754860AbZEDOD5
+	id S1754860AbZEDOJX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 10:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZEDOJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 10:03:57 -0400
-Received: from smtp.infotech.no ([82.134.31.41]:35678 "EHLO
-	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750844AbZEDOD4 (ORCPT
+	Mon, 4 May 2009 10:09:15 -0400
+Received: from dallas.jonmasters.org ([72.29.103.172]:38578 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752589AbZEDOJO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 10:03:56 -0400
-Message-ID: <49FEF5C5.6010404@interlog.com>
-Date: Mon, 04 May 2009 16:03:49 +0200
-From: Douglas Gilbert <dgilbert@interlog.com>
-Reply-To: dgilbert@interlog.com
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
-       Jens Axboe <jens.axboe@oracle.com>, Boaz Harrosh <bharrosh@panasas.com>,
-       Hugh Dickins <hugh@veritas.com>, Matthew Wilcox <willy@linux.intel.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Mark Lord <lkml@rtr.ca>
-Subject: Re: New TRIM/UNMAP tree published (2009-05-02)
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com>	 <49D8A3D7.5070507@panasas.com> <20090503061150.GF10704@linux.intel.com>	 <20090503071619.GP8822@parisc-linux.org>	 <Pine.LNX.4.64.0905031346350.29671@blonde.anvils>	 <20090503144847.GR8822@parisc-linux.org> <49FDB21B.3080301@panasas.com>	 <20090503154216.GU8822@parisc-linux.org> <49FDC786.6070309@panasas.com>	 <49FDE3BB.505@garzik.org>  <49FDE50A.4060503@garzik.org>	 <1241377472.5596.88.camel@mulgrave.int.hansenpartnership.com>	 <49FDEE64.5090302@garzik.org> <1241379476.5596.92.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1241379476.5596.92.camel@mulgrave.int.hansenpartnership.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 4 May 2009 10:09:14 -0400
+Subject: ANNOUNCE: LKML Summary Podcast
+From: Jon Masters <jonathan@jonmasters.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Mon, 04 May 2009 10:08:15 -0400
+Message-Id: <1241446095.7268.6.camel@jcmlaptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Sun, 2009-05-03 at 15:20 -0400, Jeff Garzik wrote:
->> Is WRITE SAME associated with this current DISCARD work, or is that just 
->> a similar example?  I'm unfamiliar with its issues...
-> 
-> It's an adjunct body of work.  T10 apparently ratified both UNMAP and
-> the WRITE SAME extensions.  What WRITE SAME does is write the same data
-> block to multiple contiguous locations as specified in the CDB.  What
-> the thin provisioning update did for it is allow you to specify a flag
-> saying I want these sectors unmapped.   The perceived benefit of WRITE
-> SAME is that you specify (with the write same data ... presumably all
-> zeros) what an unmapped sector will return if it's ever read from again,
-> which was a big argument in the UNMAP case.
+Folks,
 
-James,
-Your presumption is correct. For the UNMAP bit to be honoured
-in the SCSI WRITE SAME command, the user data part of the
-data-out buffer needs to be all zeros, and, if present,
-the protection data part of the data-out buffer needs
-to be all 0xff_s (i.e. 8 bytes of 0xff). Otherwise the
-UNMAP bit in WRITE SAME command is ignored and it does a
-"normal" WRITE SAME.
+I'm /experimenting/ with recording a short 3-5 minute summary of LKML
+traffic for those of us who like to listen to Podcasts. It's modeled
+after e.g. the NYT Front Page Podcast, though not quite as cool.
 
-My $0.02's worth was a suggestion to report an error if the
-UNMAP bit was given to WRITE SAME and the data-out
-buffer did not comply with the above pattern. Alternatively
-the data-out buffer could just be ignored. The author
-of the WRITE SAME "unmap" facility duly noted my observations
-and rejected them :-) The wording in sbc3r18.pdf for WRITE SAME
-is contorted so there will be changes. And t10 is still
-having teleconferences about thin provisioning so there may be
-non-trivial changes in the near future.
+I am hoping this of use to some people who can't read LKML every day.
+Yesterday took 15-20 minutes to put together, and that's doable on a
+regular basis, subject to it being of use to anyone. I figured I'm
+reading LKML whether I do I summary recording or not. If it takes off,
+then I'll try forming a small team to share the effort out.
 
-Doug Gilbert
+Podcast: http://podcasts.jonmasters.org/kernel/kernel.xml
+
+(it'll show up in iTunes shortly for those with iPhones)
+
+Jon.
+
+
