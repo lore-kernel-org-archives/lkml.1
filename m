@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbZEDQPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757625AbZEDQQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758073AbZEDQPy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbZEDQPo
+	id S1757625AbZEDQQT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbZEDQQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 12:15:44 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:39216 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751207AbZEDQPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:15:43 -0400
-Date: Mon, 4 May 2009 09:10:24 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, tridge@samba.org,
-       Al Viro <viro@ZenIV.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steve French <smfrench@gmail.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090504161024.GC6740@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090504063431.GK7141@linux.vnet.ibm.com> <m11vr5jrba.fsf@fess.ebiederm.org> <20090504124129.GL7141@linux.vnet.ibm.com> <20090504124433.GW8822@parisc-linux.org> <20090504130638.GN7141@linux.vnet.ibm.com> <20090504132119.GX8822@parisc-linux.org> <20090504143919.GA6740@linux.vnet.ibm.com> <20090504150834.GZ8822@parisc-linux.org> <20090504153815.GB6740@linux.vnet.ibm.com> <20090504155505.GA8822@parisc-linux.org>
+	Mon, 4 May 2009 12:16:00 -0400
+Received: from [212.69.161.110] ([212.69.161.110]:56952 "EHLO
+	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1756593AbZEDQP7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 12:15:59 -0400
+Date: Mon, 4 May 2009 18:15:03 +0200
+From: Lars Ellenberg <lars.ellenberg@linbit.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Kyle Moffett <kyle@moffetthome.net>,
+       Philipp Reisner <philipp.reisner@linbit.com>,
+       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Lars Marowsky-Bree <lmb@suse.de>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: [PATCH 02/16] DRBD: lru_cache
+Message-ID: <20090504161503.GC8728@soda.linbit>
+References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com> <1241090812-13516-2-git-send-email-philipp.reisner@linbit.com> <1241090812-13516-3-git-send-email-philipp.reisner@linbit.com> <f73f7ab80905021651y54db1e69y87f0487bc06f0522@mail.gmail.com> <20090503062720.GA31340@racke> <f73f7ab80905030706i4afd0902ub42d42d60f01e6a2@mail.gmail.com> <20090503224809.GB6243@racke> <f73f7ab80905031748v2be95af8vcd07c6a77dc348f@mail.gmail.com> <f73f7ab80905031801n1e5ed6b6h84772baabda5f71e@mail.gmail.com> <49FF13D7.8070606@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090504155505.GA8822@parisc-linux.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <49FF13D7.8070606@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 09:55:06AM -0600, Matthew Wilcox wrote:
-> On Mon, May 04, 2009 at 08:38:15AM -0700, Paul E. McKenney wrote:
-> > On Mon, May 04, 2009 at 09:08:34AM -0600, Matthew Wilcox wrote:
-> > > On Mon, May 04, 2009 at 07:39:19AM -0700, Paul E. McKenney wrote:
-> > > > On Mon, May 04, 2009 at 07:21:19AM -0600, Matthew Wilcox wrote:
-> > > > > Bringing the patch to a public mailing list is a waste of time until
-> > > > > there's a reliable description of the problem you're trying to solve.
-> > > > 
-> > > > Please see the original patch.  It does describes what it is doing.
-> > > 
-> > > "What", but not "Why".  Which is only acceptable in GNU changelogs ;-)
-> > 
-> > ;-)
-> > 
-> > > Matthew Wilcox			Intel Open Source Technology Centre
-> > 
-> > Given your affiliation, you should have access to people with whom
-> > you can have a meaningful conversation on the non-technical issues,
-> > but without putting the Linux community at risk.
-> 
-> Indeed I do have access to lawyers.  But what use is that?  I could
-> presumably get an opinion for myself that I would not then be able to
-> share outside of Intel.
+On Mon, May 04, 2009 at 12:12:07PM -0400, Rik van Riel wrote:
+> Kyle Moffett wrote:
+>> On Sun, May 3, 2009 at 8:48 PM, Kyle Moffett <kyle@moffetthome.net> wrote:
+>>> There are a couple trivial tunables you can apply to the model I
+>>> provided to dramatically change the effect of memory pressure on the
+>>> LRU:
+>>>
+>>> [...]
+>>>
+>>
+>> Ooh, I forgot to mention another biggie:  There's a way to allocate a
+>> reserve pool of memory (I don't remember the exact API, sorry), which
+>> can be attached to a specific kmem_cache to be used by processes
+>> attempting writeout.  This would allow you to allocate more in-use
+>> elements to make forward progress, even if all of your existing
+>> elements are already in-use.
+>
+> Lars,
+>
+> is using a mempool for allocation, in combination with a
+> shrinker callback for freeing older entries an option for
+> DRBD?
+>
+> It looks like that could get rid of a fair amount of custom infrastructure.
 
-I am glad you understand our situation, then!  ;-)
+I'm going to look into it.
 
-> Can't you get the SFLC to issue a public legal opinion for you?  Or maybe
-> the Linux Foundation?
 
-I have no clue whether this would work, but it is certainly worth
-exploring.  Thank you for the tip!!!
-
-							Thanx, Paul
+	Lars
