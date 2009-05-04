@@ -1,172 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751334AbZEDCHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750918AbZEDC05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751334AbZEDCHD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 22:07:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbZEDCGx
+	id S1750918AbZEDC05 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 22:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZEDC0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 22:06:53 -0400
-Received: from services110.cs.uwaterloo.ca ([129.97.152.166]:34326 "EHLO
-	services110.cs.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751007AbZEDCGw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 22:06:52 -0400
-X-Greylist: delayed 1608 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 May 2009 22:06:52 EDT
-Message-ID: <49FE47A1.7070700@uwaterloo.ca>
-Date: Sun, 03 May 2009 21:40:49 -0400
-From: Elad Lahav <elahav@uwaterloo.ca>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+	Sun, 3 May 2009 22:26:46 -0400
+Received: from mx30.mail.ru ([94.100.176.44]:22511 "EHLO mx30.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751158AbZEDC0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 22:26:45 -0400
+X-Greylist: delayed 68388 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 May 2009 22:26:45 EDT
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Robert Hancock <hancockrwd@gmail.com>
+Subject: Re: dm-multipath completely breaks AHCI driver
+Date: Mon, 4 May 2009 06:26:34 +0400
+User-Agent: KMail/1.11.90 (Linux/2.6.30-rc4-3avb; KDE/4.2.70; i686; ; )
+Cc: dm-devel@redhat.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200905031126.52842.arvidjaar@mail.ru> <49FE01D5.1070901@gmail.com>
+In-Reply-To: <49FE01D5.1070901@gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Implementation of the sendgroup() system call
-Content-Type: multipart/mixed;
- boundary="------------030803040409090202090206"
-X-Miltered: at minos with ID 49FE4770.000 by Joe's j-chkmail (http://j-chkmail.ensmp.fr)!
-X-UUID: 78cabe69-bbc4-49ab-b3b4-0aad7cba80c0
+Content-Type: multipart/signed;
+  boundary="nextPart9270977.4KSa7zdeSn";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200905040626.38122.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030803040409090202090206
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+--nextPart9270977.4KSa7zdeSn
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The attached patch contains an implementation of sendgroup(), a system 
-call that allows a UDP packet to be transmitted efficiently to multiple 
-recipients. Use cases for this system call include live-streaming and 
-multi-player online games.
-The basic idea is that the caller maintains a group - a list of IP 
-addresses and UDP ports - and calls sendgroup() with the group list and 
-a common payload. Optionally, the call allows for per-recipient data to 
-be prepended or appended to the shared block. The data is copied once in 
-the kernel into an allocated page, and the per-recipient socket buffers 
-point to that page. Savings come from avoiding both the multiple calls 
-and the multiple copies of the data required with regular socket 
-operations. We have measured an improvement of 42% in CPU utilisation 
-when using this system call with the Helix multimedia server (reference: 
-http://simula.no/~griff/nossdav2008/27-32.pdf).
+On Monday 04 of May 2009 00:43:01 Robert Hancock wrote:
+> Andrey Borzenkov wrote:
+> > Yeah, me knows - it does sound weird.
+> >
+> > I moved my system from to different notebook (it was pure rsync +
+> > mkinitrd + couple of adjustments in loaded modules). Older one was
+> > using pata_ali, new one is using AHCI (Intel ICH8).
+> >
+> > After booting it (using *the* *same* kernel, only different
+> > modules) for the first time I started to get random oopses, file
+> > system corruptions as well as scary HSM violations in logs.
+> >
+> > Ubuntu live CD had no issues (even with relatively high IO load
+> > during kernel compilation); also my son used this notebook for
+> > several months under ArchLinux without any issues either.
+> >
+> > I compiled minimal stripped down kernel which worked. I tried to
+> > compile more feature reach one - and immediately got HSM
+> > violations. This time I noticed that "bad" one had dm-multipath and
+> > "good" one not ... well, removing /etc/mutipath.conf (to block
+> > loading of it) - and lo and behold! I am running without any issues
+> > ...
+> >
+> > So what I got in logs was:
+> >
+> > [   18.593217] device-mapper: uevent: version 1.0.3
+> > [   18.593873] device-mapper: ioctl: 4.14.0-ioctl (2008-04-23)
+> > initialised: dm-devel@redhat.com
+> > [   18.664812] device-mapper: multipath: version 1.0.5 loaded
+> > [   19.070383] ata1.00: exception Emask 0x2 SAct 0x73 SErr
+> > 0x3000400 action 0x6
+> > [   19.070389] ata1.00: irq_stat 0x45000008
+> > [   19.070395] ata1: SError: { Proto TrStaTrns UnrecFIS }
+> > [   19.070406] ata1.00: cmd 60/08:00:e2:e5:c3/00:00:01:00:00/40 tag
+> > 0 ncq 4096 in
+> > [   19.070409]          res 40/00:38:00:00:00/00:00:00:00:00/40
+> > Emask 0x2 (HSM violation)
+> > [   19.070414] ata1.00: status: { DRDY }
+> > [   19.070424] ata1.00: cmd 60/40:08:12:60:40/00:00:01:00:00/40 tag
+> > 1 ncq 32768 in
+> > [   19.070426]          res 40/00:38:00:00:00/00:00:00:00:00/40
+> > Emask 0x2 (HSM violation)
+> > [   19.070431] ata1.00: status: { DRDY }
+> > [   19.070442] ata1.00: cmd 60/18:20:42:c1:c4/00:00:01:00:00/40 tag
+> > 4 ncq 12288 in
+> > [   19.070444]          res 41/84:18:59:c1:c4/03:00:01:00:00/61
+> > Emask 0x412 (ATA bus error) <F>
+> > [   19.070453] ata1.00: status: { DRDY ERR }
+> > [   19.070455] ata1.00: error: { ICRC ABRT }
+> > [   19.070460] ata1.00: cmd 60/28:28:22:c3:c4/00:00:01:00:00/40 tag
+> > 5 ncq 20480 in
+> > [   19.070461]          res 40/00:38:00:00:00/00:00:00:00:00/40
+> > Emask 0x2 (HSM violation)
+> > [   19.070464] ata1.00: status: { DRDY }
+> > [   19.070469] ata1.00: cmd 60/80:30:c2:c3:c4/02:00:01:00:00/40 tag
+> > 6 ncq 327680 in
+> > [   19.070470]          res 40/00:38:00:00:00/00:00:00:00:00/40
+> > Emask 0x2 (HSM violation)
+> > [   19.070473] ata1.00: status: { DRDY }
+> > [   19.070479] ata1: hard resetting link
+> > [   19.420110] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl
+> > 300) [   19.485363] ata1.00: configured for UDMA/100
+> > [   19.485406] ata1: EH complete
+>
+> It seems really unlikely that dm-multipath could have this kind of
+> effect.
 
-The patch includes two implementations: one as described above and one 
-that uses the udp_sendmsg() function in a tight loop inside the kernel 
-(and thus saves on mode switches, but not on data copies). The latter is 
-provided for reference and benchmarking only.
+I could hardly beieve it myself.
 
-Feedback is welcome.
+> This really looks like a hardware problem of some type, as
+> the controller is seeing errors on the SATA link and the drive is
+> complaining about bad CRCs. Maybe whatever you were doing was
+> stressing something more than usual?
+>
 
---Elad
+I was booting :) Nothing more.
 
---------------030803040409090202090206
-Content-Type: application/gzip;
- name="sendgroup.tar.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="sendgroup.tar.gz"
+> > [   19.586193] device-mapper: multipath round-robin: version 1.0.0
+> > loaded
+> > [   19.586634] device-mapper: table: 254:0: multipath: error
+> > getting device
+> > [   19.586638] device-mapper: ioctl: error adding target to table
+> > [   31.932088] REISERFS (device sda7): found reiserfs format "3.6"
+> > with standard journal
+> > [   31.932111] REISERFS (device sda7): using ordered data mode
+> > [   31.932289] REISERFS (device sda7): journal params: device sda7,
+> > size 8192, journal first block 18, max trans len 1024, max batch
+> > 900, max commit age 30, max trans age 30
+> > [   31.932559] REISERFS (device sda7): checking transaction log
+> > (sda7) [   31.999527] REISERFS (device sda7): Using r5 hash to sort
+> > names [   32.101614] loop: module loaded
+> > [   32.581870] Adding 4192924k swap on /dev/sda5.  Priority:-1
+> > extents:1 across:4192924k
+> > [   34.671257] iwl3945 0000:0c:00.0: firmware: requesting
+> > iwlwifi-3945-2.ucode
+> > [   34.924834] iwl3945 0000:0c:00.0: loaded firmware version
+> > 15.28.2.8 [   34.941614] BUG: unable to handle kernel paging
+> > request at 08048154 [   34.949359] IP: [<c0284711>]
+> > kmem_cache_alloc+0xa8/0xc1 [   34.949359] *pde = 7f4b8067
+> > [   34.949359] Oops: 0003 [#1] SMP
+> > [   34.949359] last sysfs file:
+> > /sys/devices/virtual/dmi/id/board_serial [   34.949359] Modules
+> > linked in: loop ext2 mbcache dm_mirror dm_region_hash dm_log
+> > dm_round_robin dm_multipath dm_mod
+> > snd_hda_codec_idt iwl3945 snd_hda_intel snd_hda_codec iwlcore
+> > snd_hwdep btusb uvcvideo bluetooth snd_pcm videodev sdhci_pci
+> > ohci1394 snd_page_alloc sdhci v4l1_compat iTCO_wdt ieee1394
+> > lib80211 mmc_core dcdbas ricoh_mmc hid ata_piix ahci libata
+> > reiserfs
+> > [   34.949359]
+> > [   34.949359] Pid: 2151, comm: hald Tainted: G        W  (2.6.30-
+> > rc4-3avb #5) XPS M1330
+> > [   34.949359] EIP: 0060:[<c0284711>] EFLAGS: 00010246 CPU: 1
+> > [   34.949359] EIP is at kmem_cache_alloc+0xa8/0xc1
+> > [   34.949359] EAX: 00000000 EBX: 08048154 ECX: 00000025 EDX:
+> > 00000094 [   34.949359] ESI: 00008050 EDI: 08048154 EBP: f5a26f2c
+> > ESP: f5a26f14 [   34.949359]  DS: 007b ES: 007b FS: 00d8 GS: 0033
+> > SS: 0068 [   34.949359] Process hald (pid: 2151, ti=f5a26000
+> > task=f5aabe30 task.ti=f5a26000)
+> > [   34.949359] Stack:
+> > [   34.949359]  f7001000 c02eb6d5 00000094 f6601260 f5a21d80
+> > 00008050 f5a26f44 c02eb6d5
+> > [   34.949359]  f5a21d90 f5a21d80 f71e4dec f71e4e08 f5a26f58
+> > c02a9b43 f6f71eec f71e4dec
+> > [   34.949359]  f5a21d80 f5a26f7c c02a9c6c f6f72100 f5a21db4
+> > ffffffea c02aa7d6 fffffff4
+> > [   34.949359] Call Trace:
+> > [   34.949359]  [<c02eb6d5>] ? idr_pre_get+0x27/0x60
+> > [   34.949359]  [<c02eb6d5>] ? idr_pre_get+0x27/0x60
+> > [   34.949359]  [<c02a9b43>] ? inotify_handle_get_wd+0x19/0x54
+> > [   34.949359]  [<c02a9c6c>] ? inotify_add_watch+0x4d/0xe1
+> > [   34.949359]  [<c02aa7d6>] ? sys_inotify_add_watch+0xbb/0x16c
+> > [   34.949359]  [<c02aa815>] ? sys_inotify_add_watch+0xfa/0x16c
+> > [   34.949359]  [<c02029d4>] ? sysenter_do_call+0x12/0x32
+> > [   34.949359] Code: 02 00 00 75 09 57 9d e8 60 ca fb ff eb 07 e8
+> > d1 de fb ff 57 9d 66 85 f6 79 20 85 db 74 1c 8b 4d f0 89 df c1 e9
+> > 02 31 c0 8b 55 f0 <f3> ab f6 c2 02 74 02 66 ab f6 c2 01 74 01 aa 8d
+> > 65 f4 89 d8 5b [   34.949359] EIP: [<c0284711>]
+> > kmem_cache_alloc+0xa8/0xc1 SS:ESP 0068:f5a26f14
+> > [   34.949359] CR2: 0000000008048154
+> > [   35.262159] ---[ end trace a499c68e391b7f63 ]---
+> > [   35.272994] Registered led device: iwl-phy0::radio
+> > [   35.282572] Registered led device: iwl-phy0::assoc
+> > [   35.292096] Registered led device: iwl-phy0::RX
+> > [   35.302859] Registered led device: iwl-phy0::TX
+> > [   35.317633] BUG: unable to handle kernel paging request at
+> > 62696c2f [   35.327346] IP: [<c02846c7>] kmem_cache_alloc+0x5e/0xc1
+> > [   35.327561] *pde = 00000000
+> > [   35.327561] Oops: 0000 [#2] SMP
+> > [   35.327561] last sysfs file:
+> > /sys/devices/virtual/dmi/id/board_serial [   35.327561] Modules
+> > linked in: loop ext2 mbcache dm_mirror dm_region_hash dm_log
+> > dm_round_robin dm_multipath dm_mod
+> > snd_hda_codec_idt iwl3945 snd_hda_intel snd_hda_codec iwlcore
+> > snd_hwdep btusb uvcvideo bluetooth snd_pcm videodev sdhci_pci
+> > ohci1394 snd_page_alloc sdhci v4l1_compat iTCO_wdt ieee1394
+> > lib80211 mmc_core dcdbas ricoh_mmc hid ata_piix ahci libata
+> > reiserfs
+> > [   35.327561]
+> > [   35.327561] Pid: 2267, comm: console-kit-dae Tainted: G      D W
+> > (2.6.30-rc4-3avb #5) XPS M1330
+> > [   35.327561] EIP: 0060:[<c02846c7>] EFLAGS: 00010002 CPU: 1
+> > [   35.327561] EIP is at kmem_cache_alloc+0x5e/0xc1
+> > [   35.327561] EAX: 00000000 EBX: 62696c2f ECX: f7001000 EDX:
+> > c22b34bc [   35.327561] ESI: 00008050 EDI: 00000246 EBP: f5a5cf2c
+> > ESP: f5a5cf14 [   35.327561]  DS: 007b ES: 007b FS: 00d8 GS: 0033
+> > SS: 0068 [   35.327561] Process console-kit-dae (pid: 2267,
+> > ti=f5a5c000 task=f59fa550 task.ti=f5a5c000)
+> > [   35.327561] Stack:
+> > [   35.327561]  f7001000 c02eb6d5 00000094 f67fe0c0 f67fe0c0
+> > 00008050 f5a5cf44 c02eb6d5
+> > [   35.327561]  f67fe0d0 f67fe0c0 f71e4cd4 f71e4cf0 f5a5cf58
+> > c02a9b43 f6f7259c f71e4cd4
+> > [   35.327561]  f67fe0c0 f5a5cf7c c02a9c6c f6f727b0 f67fe0f4
+> > ffffffea c02aa7d6 fffffff4
+> > [   35.327561] Call Trace:
+> > [   35.327561]  [<c02eb6d5>] ? idr_pre_get+0x27/0x60
+> > [   35.327561]  [<c02eb6d5>] ? idr_pre_get+0x27/0x60
+> > [   35.327561]  [<c02a9b43>] ? inotify_handle_get_wd+0x19/0x54
+> > [   35.327561]  [<c02a9c6c>] ? inotify_add_watch+0x4d/0xe1
+> > [   35.327561]  [<c02aa7d6>] ? sys_inotify_add_watch+0xbb/0x16c
+> > [   35.327561]  [<c02aa815>] ? sys_inotify_add_watch+0xfa/0x16c
+> > [   35.327561]  [<c02029d4>] ? sysenter_do_call+0x12/0x32
+> > [   35.327561] Code: 62 f5 21 00 9c 5f fa e8 aa ca fb ff 8b 4d e8
+> > 64 a1 88 d4 66 c0 8b 94 81 a4 00 00 00 8b 42 10 89 45 f0 8b 1a 85
+> > db 74 0a 8b 42 0c <8b> 04 83 89 02 eb 15 52 83 c9 ff 89 f2 ff 75 ec
+> > 8b 45 e8 e8 4d [   35.327561] EIP: [<c02846c7>]
+> > kmem_cache_alloc+0x5e/0xc1 SS:ESP 0068:f5a5cf14
+> > [   35.327561] CR2: 0000000062696c2f
+> > [   35.327561] ---[ end trace a499c68e391b7f64 ]---
+> > [   35.693405] ADDRCONF(NETDEV_UP): wlan0: link is not ready
+> >
+> > The contents of /etc/mutipath.conf was:
+> >
+> > defaults {
+> > 	getuid_callout	"/bin/echo -n 12345678"
+> > 	path_checker	readsector0
+> > }
+> > multipaths {
+> > 	multipath {
+> > 		wwid		12345678
+> > 		features	"1 queue_if_no_path"
+> > 		no_path_retry	5
+> > 		failback	immediate
+> > 	}
+> > }
+> >
+> > I was experimenting with multipath-over-loop and completely forgot
+> > about it later.
+> >
+> > I understand that it sounds more like "doctor, it hurts when I stab
+> > myself in the eye". Still, even with this absolutely weird config
+> > result is rather unexpected (what is worse, it is near to
+> > impossible to find out the reason; I did it by pure accident). Also
+> > I have been running with *exactly* the same config for almost a
+> > year without any ill effects at all.
+> >
+> > I am ready to offer debugging aid if required.
 
-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
---------------030803040409090202090206--
+
+--nextPart9270977.4KSa7zdeSn
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkn+UloACgkQR6LMutpd94yWAwCgkSGdJKhwUKN/QtMDzKfc4pV3
+laIAn1yZDxUPpw3dTBfHKUZACvUOdtrF
+=b6Fh
+-----END PGP SIGNATURE-----
+
+--nextPart9270977.4KSa7zdeSn--
