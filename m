@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbZEDOB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbZEDOCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756552AbZEDOB7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 10:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbZEDOBt
+	id S1756933AbZEDOCX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 10:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbZEDOCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 10:01:49 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:48478 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754365AbZEDOBs (ORCPT
+	Mon, 4 May 2009 10:02:06 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:53195 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754367AbZEDOCF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 10:01:48 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] usb: use memdup_user()
-Date: Mon, 4 May 2009 16:01:51 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: Li Hong <lihong.hi@gmail.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <3a3680030905030900x672af596mc2ebc3c38f119c92@mail.gmail.com> <200905040854.03329.oliver@neukum.org> <200905040002.38304.david-b@pacbell.net>
-In-Reply-To: <200905040002.38304.david-b@pacbell.net>
+	Mon, 4 May 2009 10:02:05 -0400
+Date: Mon, 4 May 2009 09:50:29 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Wu Fengguang <fengguang.wu@intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [RFC][PATCH] vmscan: don't export nr_saved_scan in
+ /proc/zoneinfo
+In-Reply-To: <20090502024719.GA29730@localhost>
+Message-ID: <alpine.DEB.1.10.0905040950200.9553@qirst.com>
+References: <200904302208.n3UM8t9R016687@imap1.linux-foundation.org> <20090501012212.GA5848@localhost> <20090430194907.82b31565.akpm@linux-foundation.org> <20090502023125.GA29674@localhost> <20090502024719.GA29730@localhost>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905041601.51789.oliver@neukum.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 4. Mai 2009 09:02:38 schrieb David Brownell:
-> On Sunday 03 May 2009, Oliver Neukum wrote:
-> > No. To make it plain. To me any use of memdup_user() in USB code
-> > is a bad idea. I don't want to have to think about a new primitive.
->
-> Unless it's incorrect to use that, I have to say that it
-> makes more sense to use that utility than recreate it by
-> open-coding...
 
-I want people to be forced to think about memory allocations.
-We had endless trouble during 2.4 with storage deadlocking.
-We simply need full control of this.
 
-I prefer the explicite way for the same reason I prefer
+Acked-by: Christoph Lameter <cl@linux-foundation.org>
 
-if (rv < 0)
-	goto err_out;
-
-over
-
-if (rv < 0)
-	return rv;
-
-In the former version you need to think about what you need to do
-to cleanup.
-
-	Regards
-		Oliver
 
