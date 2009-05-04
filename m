@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757625AbZEDQQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758080AbZEDQRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757625AbZEDQQT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbZEDQQA
+	id S1758080AbZEDQRX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbZEDQRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 12:16:00 -0400
-Received: from [212.69.161.110] ([212.69.161.110]:56952 "EHLO
-	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1756593AbZEDQP7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:15:59 -0400
-Date: Mon, 4 May 2009 18:15:03 +0200
-From: Lars Ellenberg <lars.ellenberg@linbit.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Kyle Moffett <kyle@moffetthome.net>,
-       Philipp Reisner <philipp.reisner@linbit.com>,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       Lars Marowsky-Bree <lmb@suse.de>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: [PATCH 02/16] DRBD: lru_cache
-Message-ID: <20090504161503.GC8728@soda.linbit>
-References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com> <1241090812-13516-2-git-send-email-philipp.reisner@linbit.com> <1241090812-13516-3-git-send-email-philipp.reisner@linbit.com> <f73f7ab80905021651y54db1e69y87f0487bc06f0522@mail.gmail.com> <20090503062720.GA31340@racke> <f73f7ab80905030706i4afd0902ub42d42d60f01e6a2@mail.gmail.com> <20090503224809.GB6243@racke> <f73f7ab80905031748v2be95af8vcd07c6a77dc348f@mail.gmail.com> <f73f7ab80905031801n1e5ed6b6h84772baabda5f71e@mail.gmail.com> <49FF13D7.8070606@redhat.com>
+	Mon, 4 May 2009 12:17:09 -0400
+Received: from kroah.org ([198.145.64.141]:41713 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751631AbZEDQRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 12:17:08 -0400
+Date: Mon, 4 May 2009 09:12:32 -0700
+From: Greg KH <greg@kroah.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for May 4 (staging/comedi)
+Message-ID: <20090504161232.GB11723@kroah.com>
+References: <20090504170810.64cdceb4.sfr@canb.auug.org.au> <49FF0EEA.1010605@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49FF13D7.8070606@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49FF0EEA.1010605@oracle.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 12:12:07PM -0400, Rik van Riel wrote:
-> Kyle Moffett wrote:
->> On Sun, May 3, 2009 at 8:48 PM, Kyle Moffett <kyle@moffetthome.net> wrote:
->>> There are a couple trivial tunables you can apply to the model I
->>> provided to dramatically change the effect of memory pressure on the
->>> LRU:
->>>
->>> [...]
->>>
->>
->> Ooh, I forgot to mention another biggie:  There's a way to allocate a
->> reserve pool of memory (I don't remember the exact API, sorry), which
->> can be attached to a specific kmem_cache to be used by processes
->> attempting writeout.  This would allow you to allocate more in-use
->> elements to make forward progress, even if all of your existing
->> elements are already in-use.
->
-> Lars,
->
-> is using a mempool for allocation, in combination with a
-> shrinker callback for freeing older entries an option for
-> DRBD?
->
-> It looks like that could get rid of a fair amount of custom infrastructure.
+On Mon, May 04, 2009 at 08:51:06AM -0700, Randy Dunlap wrote:
+> Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > Changes since 20090501:
+> 
+> 
+> build-r4048.out:ERROR: "ni_tio_rinsn" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+> build-r4048.out:ERROR: "ni_tio_winsn" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+> build-r4048.out:ERROR: "ni_tio_insn_config" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+> build-r4048.out:ERROR: "ni_tio_init_counter" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+> build-r4048.out:ERROR: "ni_gpct_device_construct" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+> build-r4048.out:ERROR: "ni_gpct_device_destroy" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+> build-r4048.out:ERROR: "labpc_1200_is_unipolar" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+> build-r4048.out:ERROR: "labpc_1200_ai_gain_bits" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+> build-r4048.out:ERROR: "range_labpc_1200_ai" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+> build-r4048.out:ERROR: "labpc_common_detach" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+> build-r4048.out:ERROR: "labpc_common_attach" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+> build-r4048.out:ERROR: "das08_cs_boards" [drivers/staging/comedi/drivers/das08_cs.ko] undefined!
+> build-r4048.out:ERROR: "das08_common_detach" [drivers/staging/comedi/drivers/das08_cs.ko] undefined!
+> build-r4048.out:ERROR: "das08_common_attach" [drivers/staging/comedi/drivers/das08_cs.ko] undefined!
+> 
+> 
+> config attached.
 
-I'm going to look into it.
+CONFIG_PCMCIA is allowed to be set without CONFIG_PCI?  That sounds like
+the problem there (not to mention pretty much an impossible real-world
+combination...)
 
+thanks,
 
-	Lars
+greg k-h
