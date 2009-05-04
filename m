@@ -1,116 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757672AbZEDRHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbZEDRPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757672AbZEDRHb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 13:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZEDRHT
+	id S1755913AbZEDRPZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 13:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZEDRPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 13:07:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52335 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752142AbZEDRHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 13:07:16 -0400
-Date: Mon, 4 May 2009 17:06:30 GMT
-From: tip-bot for Peter Zijlstra <peterz@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1241455664.7620.4938.camel@twins>
-References: <1241455664.7620.4938.camel@twins>
-Subject: [tip:perfcounters/core] perf_counter: x86: fixup nmi_watchdog vs perf_counter boo-boo
-Message-ID: <tip-dea47c786c4a4198f4d6e6ba860ce59729c45481@git.kernel.org>
-Git-Commit-ID: dea47c786c4a4198f4d6e6ba860ce59729c45481
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 04 May 2009 17:06:32 +0000 (UTC)
+	Mon, 4 May 2009 13:15:09 -0400
+Received: from [192.16.179.4] ([192.16.179.4]:47019 "EHLO sh.osrg.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754227AbZEDRPI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 13:15:08 -0400
+Date: Tue, 05 May 2009 02:11:29 +0900 (JST)
+Message-Id: <20090505.021129.103520156.ryusuke@osrg.net>
+To: viro@ZenIV.linux.org.uk
+Cc: konishi.ryusuke@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: sget() misuse in nilfs
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <20090503225136.GC8633@ZenIV.linux.org.uk>
+References: <20090503225136.GC8633@ZenIV.linux.org.uk>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 05 May 2009 02:11:30 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  dea47c786c4a4198f4d6e6ba860ce59729c45481
-Gitweb:     http://git.kernel.org/tip/dea47c786c4a4198f4d6e6ba860ce59729c45481
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Mon, 4 May 2009 18:47:44 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 4 May 2009 19:04:46 +0200
+Hi,
+On Sun, 3 May 2009 23:51:36 +0100, Al Viro wrote:
+> OK, I give up; what _is_ get_sb/remount code supposed to implement?
 
-perf_counter: x86: fixup nmi_watchdog vs perf_counter boo-boo
+Oh, these functions lack spec comments.
 
-Invert the atomic_inc_not_zero() test so that we will indeed detect the
-first activation.
+I first explain some specs. (I think part of them should be added on
+the code, later)
 
-Also rename the global num_counters, since its easy to confuse with
-x86_pmu.num_counters.
+The nilfs_get_sb() allocates a new super_block struct (sb) or assigns
+an existing sb to the mount point through sget().  For newly allocated
+sb it calls nilfs_fill_super() for initialization.
 
-[ Impact: fix non-working perfcounters on AMD CPUs, cleanup ]
+The following things are supposed here:
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1241455664.7620.4938.camel@twins>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+ 1) Every rw-mount on a device shares the same sb (as usual).
 
+ 2) Every sb of snapshot is independent with that of rw-mount or other
+    snapshots if their checkpoint numbers differ.  On the other hand,
+    two or more snapshots having the same checkpoint number share a sb
+    wherever possible.
 
----
- arch/x86/kernel/cpu/perf_counter.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ 3) Snapshots are mountable concurrently with a rw-mount, but a
+    ro-mount is not so because the ro-mount cannot follow changes
+    brought by the rw-mount.
 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index d4c0cc9..196b58f 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -171,7 +171,7 @@ again:
- 	return new_raw_count;
- }
+ 4) Every sb on a device shares the same nilfs struct
+    (i.e. the_nilfs), which stores their common information.
+
+    The existing nilfs struct is acquired from an existing sb.
+    Otherwise, a new nilfs struct is allocated through alloc_nilfs()
+    function.  The lifetime of the nilfs struct is managed with a
+    reference counter.
+
+The nilfs_remount() function follows the change by given mount
+options.  This does not replace sb, so it involves the following
+actions and confirmation:
+
+ a) A segment constructor (i.e. log writer of nilfs) is invoked on
+    ro->rw remount, and it is shut down for ro->rw remount.
+
+ b) ro->rw remount is possible only if there is no rw-mount on the
+    device and the checkpoint number of the ro-mount is latest.
+
+ c) Remounting snapshot to different checkpoints or rw-mount is not
+    allowed.
+
+> Not to mention the reliability of down_read_trylock() in there (what
+> happens if somebody tries to e.g. remount fs we are looking at the
+> time?  That's right, s_umount held exclusive, down_read_trulock()
+> failing, fs instance skipped during the search), what is all that
+> stuff trying to achieve?
+
+It tries to find out the existing snapshot instance having a
+checkpoint number which equals with the specified cp number (2).
+
+Yeah, it may fail in the situation.  I allow the miss at present
+because it's harmless and rare though it wastes memory due to unwanted
+duplication of the snapshot instance.
+
+> What protects MS_RDONLY in sd->s_flags during these searches?
+
+sd->s_flags is a local variable of the call sites of sget(), but, ugh,
+s->s_flags is not protected.  It may have problem...
+
+BTW, MS_RDONLY in s->s_flags is also referred to in get_sb_bdev() and
+do_remount_sb().  How is the protection achieved for these functions?
+
+For example, ext3_remount() or ext3_handle_error() manipulates this
+flag, and get_sb_bdev() or do_remount_sb() could see it for other
+existing fs-instances.
+
+> What makes parse_options() in remount straight into sb (with reversal
+> if we'd done something bad) safe?
+
+Well, it's not protected except lock_kernel() in the call sites.
+I should add an argument to the parse_options() in order to forbid
+destructive changes like ext3/4 does.
+
+> Do we ever reassign snapshot_cno
+> other than on sb creation and remounting between r/o and r/w?
+
+We don't allow reassigning the snapshot_cno.
+But, ugh, nilfs_remount() is rewriting it temporarily. It seems bad.
+I'll fix it.
+
+> Is there any reason why we free sbi early (== in put_super()) and
+> not after kill_block_super() in ->kill_sb() of your own?
+
+No, just I didn't think we have to delay it until ->kill_sb() because
+bdev->bd_mount_sem and s->s_umount are protecting ->s_fs_info until
+removing the sb from the type->fs_supers list and the super_blocks
+list.
+
+> That alone would make sbi stay with superblock for as long as it
+> could be found by any means, killing the locking mess in your test
+> callbacks.
+
+If the advice turned out to be required or help for simplification,
+I'll take it in.  I need some time to think about it.
+
+> Can SNAPSHOT even be there unless you have MS_RDONLY?
+
+Yes, it can.  Nilfs snapshots can exist concurrently with rw-mount.
  
--static atomic_t num_counters;
-+static atomic_t active_counters;
- static DEFINE_MUTEX(pmc_reserve_mutex);
- 
- static bool reserve_pmc_hardware(void)
-@@ -224,7 +224,7 @@ static void release_pmc_hardware(void)
- 
- static void hw_perf_counter_destroy(struct perf_counter *counter)
- {
--	if (atomic_dec_and_mutex_lock(&num_counters, &pmc_reserve_mutex)) {
-+	if (atomic_dec_and_mutex_lock(&active_counters, &pmc_reserve_mutex)) {
- 		release_pmc_hardware();
- 		mutex_unlock(&pmc_reserve_mutex);
- 	}
-@@ -248,12 +248,12 @@ static int __hw_perf_counter_init(struct perf_counter *counter)
- 		return -ENODEV;
- 
- 	err = 0;
--	if (atomic_inc_not_zero(&num_counters)) {
-+	if (!atomic_inc_not_zero(&active_counters)) {
- 		mutex_lock(&pmc_reserve_mutex);
--		if (atomic_read(&num_counters) == 0 && !reserve_pmc_hardware())
-+		if (atomic_read(&active_counters) == 0 && !reserve_pmc_hardware())
- 			err = -EBUSY;
- 		else
--			atomic_inc(&num_counters);
-+			atomic_inc(&active_counters);
- 		mutex_unlock(&pmc_reserve_mutex);
- 	}
- 	if (err)
-@@ -280,7 +280,7 @@ static int __hw_perf_counter_init(struct perf_counter *counter)
- 	if (capable(CAP_SYS_ADMIN) && hw_event->nmi)
- 		hwc->nmi = 1;
- 
--	hwc->irq_period		= hw_event->irq_period;
-+	hwc->irq_period	= hw_event->irq_period;
- 	if ((s64)hwc->irq_period <= 0 || hwc->irq_period > x86_pmu.max_period)
- 		hwc->irq_period = x86_pmu.max_period;
- 
-@@ -871,7 +871,7 @@ perf_counter_nmi_handler(struct notifier_block *self,
- 	struct pt_regs *regs;
- 	int ret;
- 
--	if (!atomic_read(&num_counters))
-+	if (!atomic_read(&active_counters))
- 		return NOTIFY_DONE;
- 
- 	switch (cmd) {
+> And what are the rules for exclusion in case of r/w mounts?
+
+(answered in the first explanation)
+
+> What, do we get -EBUSY on attempt to mount r/w something that is
+> already mounted r/w (instead of simply sharing superblock, as other
+> filesystems would do)?
+>
+> Or am I misreading that
+>         } else if (!(s->s_flags & MS_RDONLY)) {
+>                 err = -EBUSY;
+>         }
+> in there?
+
+Hmm, this looks strange to me, too.  Nilfs is sharing a r/w-mount as
+described in (1).  I'll confirm the -EBUSY case.
+
+> 						Very confused Al...
+
+Sorry.  I recongize these are rather confusing.
+The use of sget() and the test routines should be reduced to a minimum
+if feasible.
+
+Anyway, thanks for many questions and comments.
+
+Regards,
+Ryusuke Konishi
