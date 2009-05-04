@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbZEDIMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbZEDINW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755349AbZEDIMz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 04:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZEDIKA
+	id S1755444AbZEDINW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 04:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbZEDIKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 04:10:00 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40988 "EHLO hera.kernel.org"
+	Mon, 4 May 2009 04:10:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57226 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753104AbZEDIJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 04:09:51 -0400
+	id S1754238AbZEDIJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 04:09:39 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
        linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
@@ -22,539 +22,310 @@ To: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
        schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
        rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
        bharrosh@panasas.com
-Cc: Tejun Heo <tj@kernel.org>, Doug Gilbert <dgilbert@interlog.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: [PATCH 03/11] block: add rq->resid_len
-Date: Mon,  4 May 2009 16:58:39 +0900
-Message-Id: <1241423927-11871-4-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 04/11] block: implement blk_rq_pos/[cur_]sectors() and convert obvious ones
+Date: Mon,  4 May 2009 16:58:40 +0900
+Message-Id: <1241423927-11871-5-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1241423927-11871-1-git-send-email-tj@kernel.org>
 References: <1241423927-11871-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 04 May 2009 07:59:02 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 04 May 2009 07:59:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-rq->data_len served two purposes - the length of data buffer on issue
-and the residual count on completion.  This duality creates some
-headaches.
+Implement accessors - blk_rq_pos(), blk_rq_sectors() and
+blk_rq_cur_sectors() which return rq->sector, rq->hard_nr_sectors and
+rq->hard_cur_sectors respectively and convert direct references of the
+said fields to the accessors.
 
-First of all, block layer and low level drivers can't really determine
-what rq->data_len contains while a request is executing.  It could be
-the total request length or it coulde be anything else one of the
-lower layers is using to keep track of residual count.  This
-complicates things because blk_rq_bytes() and thus
-[__]blk_end_request_all() relies on rq->data_len for PC commands.
-Drivers which want to report residual count should first cache the
-total request length, update rq->data_len and then complete the
-request with the cached data length.
+This is in preparation of request data length handling cleanup.
 
-Secondly, it makes requests default to reporting full residual count,
-ie. reporting that no data transfer occurred.  The residual count is
-an exception not the norm; however, the driver should clear
-rq->data_len to zero to signify the normal cases while leaving it
-alone means no data transfer occurred at all.  This reverse default
-behavior complicates code unnecessarily and renders block PC on some
-drivers (ide-tape/floppy) unuseable.
+const added to struct request * parameter to accessors as suggested by
+Geert Uytterhoeven.
 
-This patch adds rq->resid_len which is used only for residual count.
-
-While at it, remove now unnecessasry blk_rq_bytes() caching in
-ide_pc_intr() as rq->data_len is not changed anymore.
-
-Boaz: spotted missing conversion in osd.
-
-[ Impact: cleanup residual count handling, report 0 resid by default ]
+[ Impact: cleanup ]
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Tested-by: Grant Likely <grant.likely@secretlab.ca>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Cc: Borislav Petkov <petkovbb@googlemail.com>
 Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Mike Miller <mike.miller@hp.com>
-Cc: Eric Moore <Eric.Moore@lsi.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Doug Gilbert <dgilbert@interlog.com>
-Cc: Mike Miller <mike.miller@hp.com>
-Cc: Eric Moore <Eric.Moore@lsi.com>
-Cc: Darrick J. Wong <djwong@us.ibm.com>
-Cc: Pete Zaitcev <zaitcev@redhat.com>
-Cc: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
 ---
- block/bsg.c                              |    8 +++---
- block/scsi_ioctl.c                       |    2 +-
- drivers/block/cciss.c                    |   13 +++-------
- drivers/block/ub.c                       |    6 +---
- drivers/ide/ide-atapi.c                  |    9 +------
- drivers/ide/ide-cd.c                     |   13 ++++------
- drivers/ide/ide-tape.c                   |    4 +-
- drivers/message/fusion/mptsas.c          |    3 +-
- drivers/scsi/libsas/sas_expander.c       |    6 +----
- drivers/scsi/libsas/sas_host_smp.c       |   38 +++++++++++++++--------------
- drivers/scsi/mpt2sas/mpt2sas_transport.c |    4 +--
- drivers/scsi/scsi_lib.c                  |   24 +++++++++---------
- drivers/scsi/sg.c                        |    2 +-
- drivers/scsi/st.c                        |    2 +-
- fs/exofs/osd.c                           |    4 +-
- include/linux/blkdev.h                   |    1 +
- 16 files changed, 59 insertions(+), 80 deletions(-)
+ block/blk-barrier.c             |    2 +-
+ block/blk-core.c                |    2 +-
+ block/cfq-iosched.c             |    2 +-
+ drivers/block/ps3disk.c         |    2 +-
+ drivers/block/viodasd.c         |    6 +++---
+ drivers/block/xsysace.c         |   10 +++++-----
+ drivers/ide/ide-cd.c            |    8 ++++----
+ drivers/ide/ide-io.c            |    4 ++--
+ drivers/message/i2o/i2o_block.c |    2 +-
+ drivers/scsi/scsi_lib.c         |    2 +-
+ include/linux/blkdev.h          |   23 ++++++++++++++++++++---
+ kernel/trace/blktrace.c         |    4 ++--
+ 12 files changed, 42 insertions(+), 25 deletions(-)
 
-diff --git a/block/bsg.c b/block/bsg.c
-index 206060e..2d746e3 100644
---- a/block/bsg.c
-+++ b/block/bsg.c
-@@ -445,14 +445,14 @@ static int blk_complete_sgv4_hdr_rq(struct request *rq, struct sg_io_v4 *hdr,
- 	}
- 
- 	if (rq->next_rq) {
--		hdr->dout_resid = rq->data_len;
--		hdr->din_resid = rq->next_rq->data_len;
-+		hdr->dout_resid = rq->resid_len;
-+		hdr->din_resid = rq->next_rq->resid_len;
- 		blk_rq_unmap_user(bidi_bio);
- 		blk_put_request(rq->next_rq);
- 	} else if (rq_data_dir(rq) == READ)
--		hdr->din_resid = rq->data_len;
-+		hdr->din_resid = rq->resid_len;
- 	else
--		hdr->dout_resid = rq->data_len;
-+		hdr->dout_resid = rq->resid_len;
- 
- 	/*
- 	 * If the request generated a negative error number, return it
-diff --git a/block/scsi_ioctl.c b/block/scsi_ioctl.c
-index 58cf456..a9670dd 100644
---- a/block/scsi_ioctl.c
-+++ b/block/scsi_ioctl.c
-@@ -230,7 +230,7 @@ static int blk_complete_sghdr_rq(struct request *rq, struct sg_io_hdr *hdr,
- 	hdr->info = 0;
- 	if (hdr->masked_status || hdr->host_status || hdr->driver_status)
- 		hdr->info |= SG_INFO_CHECK;
--	hdr->resid = rq->data_len;
-+	hdr->resid = rq->resid_len;
- 	hdr->sb_len_wr = 0;
- 
- 	if (rq->sense_len && hdr->sbp) {
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 4d4d5e0..f22d493 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -1299,7 +1299,6 @@ static void cciss_softirq_done(struct request *rq)
+diff --git a/block/blk-barrier.c b/block/blk-barrier.c
+index c8d0876..c167de5 100644
+--- a/block/blk-barrier.c
++++ b/block/blk-barrier.c
+@@ -163,7 +163,7 @@ static inline bool start_ordered(struct request_queue *q, struct request **rqp)
+ 	 * For an empty barrier, there's no actual BAR request, which
+ 	 * in turn makes POSTFLUSH unnecessary.  Mask them off.
+ 	 */
+-	if (!rq->hard_nr_sectors) {
++	if (!blk_rq_sectors(rq)) {
+ 		q->ordered &= ~(QUEUE_ORDERED_DO_BAR |
+ 				QUEUE_ORDERED_DO_POSTFLUSH);
+ 		/*
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 394c5bd..895e55b 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1683,7 +1683,7 @@ static void blk_account_io_done(struct request *req)
+ unsigned int blk_rq_bytes(struct request *rq)
  {
- 	CommandList_struct *cmd = rq->completion_data;
- 	ctlr_info_t *h = hba[cmd->ctlr];
--	unsigned int nr_bytes;
- 	unsigned long flags;
- 	u64bit temp64;
- 	int i, ddir;
-@@ -1321,15 +1320,11 @@ static void cciss_softirq_done(struct request *rq)
- 	printk("Done with %p\n", rq);
- #endif				/* CCISS_DEBUG */
+ 	if (blk_fs_request(rq))
+-		return rq->hard_nr_sectors << 9;
++		return blk_rq_sectors(rq) << 9;
  
--	/*
--	 * Store the full size and set the residual count for pc requests
--	 */
--	nr_bytes = blk_rq_bytes(rq);
-+	/* set the residual count for pc requests */
- 	if (blk_pc_request(rq))
--		rq->data_len = cmd->err_info->ResidualCnt;
-+		rq->resid_len = cmd->err_info->ResidualCnt;
+ 	return rq->data_len;
+ }
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index def0c69..575083a 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -760,7 +760,7 @@ static void cfq_activate_request(struct request_queue *q, struct request *rq)
+ 	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "activate rq, drv=%d",
+ 						cfqd->rq_in_driver);
  
--	if (blk_end_request(rq, (rq->errors == 0) ? 0 : -EIO, nr_bytes))
--		BUG();
-+	blk_end_request_all(rq, (rq->errors == 0) ? 0 : -EIO);
+-	cfqd->last_position = rq->hard_sector + rq->hard_nr_sectors;
++	cfqd->last_position = blk_rq_pos(rq) + blk_rq_sectors(rq);
+ }
  
- 	spin_lock_irqsave(&h->lock, flags);
- 	cmd_free(h, cmd, 1);
-@@ -2691,7 +2686,7 @@ static inline void complete_command(ctlr_info_t *h, CommandList_struct *cmd,
- 			printk(KERN_WARNING "cciss: cmd %p has"
- 			       " completed with data underrun "
- 			       "reported\n", cmd);
--			cmd->rq->data_len = cmd->err_info->ResidualCnt;
-+			cmd->rq->resid_len = cmd->err_info->ResidualCnt;
+ static void cfq_deactivate_request(struct request_queue *q, struct request *rq)
+diff --git a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
+index f6586e4..c238867 100644
+--- a/drivers/block/ps3disk.c
++++ b/drivers/block/ps3disk.c
+@@ -136,7 +136,7 @@ static int ps3disk_submit_request_sg(struct ps3_storage_device *dev,
+ 	dev_dbg(&dev->sbd.core,
+ 		"%s:%u: %s req has %u bvecs for %lu sectors %lu hard sectors\n",
+ 		__func__, __LINE__, op, n, req->nr_sectors,
+-		req->hard_nr_sectors);
++		blk_rq_sectors(req));
+ #endif
+ 
+ 	start_sector = req->sector * priv->blocking_factor;
+diff --git a/drivers/block/viodasd.c b/drivers/block/viodasd.c
+index ecccf65..e821eed 100644
+--- a/drivers/block/viodasd.c
++++ b/drivers/block/viodasd.c
+@@ -368,12 +368,12 @@ static void do_viodasd_request(struct request_queue *q)
+ 		blkdev_dequeue_request(req);
+ 		/* check that request contains a valid command */
+ 		if (!blk_fs_request(req)) {
+-			viodasd_end_request(req, -EIO, req->hard_nr_sectors);
++			viodasd_end_request(req, -EIO, blk_rq_sectors(req));
+ 			continue;
  		}
- 		break;
- 	case CMD_DATA_OVERRUN:
-diff --git a/drivers/block/ub.c b/drivers/block/ub.c
-index 689cd27..8c2cc71 100644
---- a/drivers/block/ub.c
-+++ b/drivers/block/ub.c
-@@ -783,10 +783,8 @@ static void ub_rw_cmd_done(struct ub_dev *sc, struct ub_scsi_cmd *cmd)
- 
- 	if (cmd->error == 0) {
- 		if (blk_pc_request(rq)) {
--			if (cmd->act_len >= rq->data_len)
--				rq->data_len = 0;
--			else
--				rq->data_len -= cmd->act_len;
-+			if (cmd->act_len < rq->data_len)
-+				rq->resid_len = rq->data_len - cmd->act_len;
- 			scsi_status = 0;
- 		} else {
- 			if (cmd->act_len != cmd->len) {
-diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-index afe5a43..e4a02a0 100644
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -367,7 +367,6 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
- 	/* No more interrupts */
- 	if ((stat & ATA_DRQ) == 0) {
- 		int uptodate, error;
--		unsigned int done;
- 
- 		debug_log("Packet command completed, %d bytes transferred\n",
- 			  pc->xferred);
-@@ -406,12 +405,6 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
- 		if ((pc->flags & PC_FLAG_WAIT_FOR_DSC) && (stat & ATA_DSC) == 0)
- 			dsc = 1;
- 
--		/*
--		 * ->pc_callback() might change rq->data_len for
--		 * residual count, cache total length.
--		 */
--		done = blk_rq_bytes(rq);
--
- 		/* Command finished - Call the callback function */
- 		uptodate = drive->pc_callback(drive, dsc);
- 
-@@ -431,7 +424,7 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
- 			error = uptodate ? 0 : -EIO;
- 		}
- 
--		ide_complete_rq(drive, error, done);
-+		ide_complete_rq(drive, error, blk_rq_bytes(rq));
- 		return ide_stopped;
+ 		/* Try sending the request */
+ 		if (send_request(req) != 0)
+-			viodasd_end_request(req, -EIO, req->hard_nr_sectors);
++			viodasd_end_request(req, -EIO, blk_rq_sectors(req));
  	}
+ }
  
+@@ -590,7 +590,7 @@ static int viodasd_handle_read_write(struct vioblocklpevent *bevent)
+ 		err = vio_lookup_rc(viodasd_err_table, bevent->sub_result);
+ 		printk(VIOD_KERN_WARNING "read/write error %d:0x%04x (%s)\n",
+ 				event->xRc, bevent->sub_result, err->msg);
+-		num_sect = req->hard_nr_sectors;
++		num_sect = blk_rq_sectors(req);
+ 	}
+ 	qlock = req->q->queue_lock;
+ 	spin_lock_irqsave(qlock, irq_flags);
+diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
+index b1e1d7e..5722931 100644
+--- a/drivers/block/xsysace.c
++++ b/drivers/block/xsysace.c
+@@ -645,8 +645,8 @@ static void ace_fsm_dostate(struct ace_device *ace)
+ 
+ 		/* Okay, it's a data request, set it up for transfer */
+ 		dev_dbg(ace->dev,
+-			"request: sec=%llx hcnt=%lx, ccnt=%x, dir=%i\n",
+-			(unsigned long long) req->sector, req->hard_nr_sectors,
++			"request: sec=%llx hcnt=%x, ccnt=%x, dir=%i\n",
++			(unsigned long long) req->sector, blk_rq_sectors(req),
+ 			req->current_nr_sectors, rq_data_dir(req));
+ 
+ 		ace->req = req;
+@@ -654,7 +654,7 @@ static void ace_fsm_dostate(struct ace_device *ace)
+ 		ace->data_count = req->current_nr_sectors * ACE_BUF_PER_SECTOR;
+ 		ace_out32(ace, ACE_MPULBA, req->sector & 0x0FFFFFFF);
+ 
+-		count = req->hard_nr_sectors;
++		count = blk_rq_sectors(req);
+ 		if (rq_data_dir(req)) {
+ 			/* Kick off write request */
+ 			dev_dbg(ace->dev, "write data\n");
+@@ -719,8 +719,8 @@ static void ace_fsm_dostate(struct ace_device *ace)
+ 		/* bio finished; is there another one? */
+ 		if (__blk_end_request(ace->req, 0,
+ 					blk_rq_cur_bytes(ace->req))) {
+-			/* dev_dbg(ace->dev, "next block; h=%li c=%i\n",
+-			 *      ace->req->hard_nr_sectors,
++			/* dev_dbg(ace->dev, "next block; h=%u c=%u\n",
++			 *      blk_rq_sectors(ace->req),
+ 			 *      ace->req->current_nr_sectors);
+ 			 */
+ 			ace->data_ptr = ace->req->buffer;
 diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index a75e4ee..cc8ac5b 100644
+index cc8ac5b..474b283 100644
 --- a/drivers/ide/ide-cd.c
 +++ b/drivers/ide/ide-cd.c
-@@ -518,7 +518,7 @@ int ide_cd_queue_pc(ide_drive_t *drive, const unsigned char *cmd,
- 		error = blk_execute_rq(drive->queue, info->disk, rq, 0);
+@@ -729,7 +729,7 @@ out_end:
+ 		if (blk_pc_request(rq))
+ 			nsectors = (rq->data_len + 511) >> 9;
+ 		else
+-			nsectors = rq->hard_nr_sectors;
++			nsectors = blk_rq_sectors(rq);
  
- 		if (buffer)
--			*bufflen = rq->data_len;
-+			*bufflen = rq->resid_len;
- 
- 		flags = rq->cmd_flags;
- 		blk_put_request(rq);
-@@ -706,11 +706,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
- 
- out_end:
- 	if (blk_pc_request(rq) && rc == 0) {
--		unsigned int dlen = rq->data_len;
--
--		rq->data_len = 0;
--
--		if (blk_end_request(rq, 0, dlen))
-+		if (blk_end_request(rq, 0, rq->data_len))
- 			BUG();
- 
- 		hwif->rq = NULL;
-@@ -739,9 +735,10 @@ out_end:
+ 		if (nsectors == 0)
  			nsectors = 1;
+@@ -874,7 +874,7 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
  
- 		if (blk_fs_request(rq) == 0) {
--			rq->data_len -= (cmd->nbytes - cmd->nleft);
-+			rq->resid_len = rq->data_len -
-+				(cmd->nbytes - cmd->nleft);
- 			if (uptodate == 0 && (cmd->tf_flags & IDE_TFLAG_WRITE))
--				rq->data_len += cmd->last_xfer_len;
-+				rq->resid_len += cmd->last_xfer_len;
- 		}
+ 	return ide_issue_pc(drive, &cmd);
+ out_end:
+-	nsectors = rq->hard_nr_sectors;
++	nsectors = blk_rq_sectors(rq);
  
- 		ide_complete_rq(drive, uptodate ? 0 : -EIO, nsectors << 9);
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index 7149224..3813a0e 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -380,7 +380,7 @@ static int ide_tape_callback(ide_drive_t *drive, int dsc)
- 		}
- 
- 		tape->first_frame += blocks;
--		rq->data_len -= blocks * tape->blk_size;
-+		rq->resid_len = blk_rq_bytes(rq) - blocks * tape->blk_size;
- 
- 		if (pc->error) {
- 			uptodate = 0;
-@@ -903,7 +903,7 @@ static int idetape_queue_rw_tail(ide_drive_t *drive, int cmd, int size)
- 	blk_execute_rq(drive->queue, tape->disk, rq, 0);
- 
- 	/* calculate the number of transferred bytes and update buffer state */
--	size -= rq->data_len;
-+	size -= rq->resid_len;
- 	tape->cur = tape->buf;
- 	if (cmd == REQ_IDETAPE_READ)
- 		tape->valid = size;
-diff --git a/drivers/message/fusion/mptsas.c b/drivers/message/fusion/mptsas.c
-index a9019f0..5d5f347 100644
---- a/drivers/message/fusion/mptsas.c
-+++ b/drivers/message/fusion/mptsas.c
-@@ -1357,8 +1357,7 @@ static int mptsas_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
- 		smprep = (SmpPassthroughReply_t *)ioc->sas_mgmt.reply;
- 		memcpy(req->sense, smprep, sizeof(*smprep));
- 		req->sense_len = sizeof(*smprep);
--		req->data_len = 0;
--		rsp->data_len -= smprep->ResponseDataLength;
-+		rsp->resid_len = rsp->data_len - smprep->ResponseDataLength;
- 	} else {
- 		printk(MYIOC_s_ERR_FMT "%s: smp passthru reply failed to be returned\n",
- 		    ioc->name, __func__);
-diff --git a/drivers/scsi/libsas/sas_expander.c b/drivers/scsi/libsas/sas_expander.c
-index 3da02e4..6605ec9 100644
---- a/drivers/scsi/libsas/sas_expander.c
-+++ b/drivers/scsi/libsas/sas_expander.c
-@@ -1936,12 +1936,8 @@ int sas_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
- 			       bio_data(rsp->bio), rsp->data_len);
- 	if (ret > 0) {
- 		/* positive number is the untransferred residual */
--		rsp->data_len = ret;
--		req->data_len = 0;
-+		rsp->resid_len = ret;
- 		ret = 0;
--	} else if (ret == 0) {
--		rsp->data_len = 0;
--		req->data_len = 0;
- 	}
- 
- 	return ret;
-diff --git a/drivers/scsi/libsas/sas_host_smp.c b/drivers/scsi/libsas/sas_host_smp.c
-index d110a36..89952ed 100644
---- a/drivers/scsi/libsas/sas_host_smp.c
-+++ b/drivers/scsi/libsas/sas_host_smp.c
-@@ -134,7 +134,7 @@ int sas_smp_host_handler(struct Scsi_Host *shost, struct request *req,
+ 	if (nsectors == 0)
+ 		nsectors = 1;
+@@ -1358,8 +1358,8 @@ static int ide_cdrom_probe_capabilities(ide_drive_t *drive)
+ static int ide_cdrom_prep_fs(struct request_queue *q, struct request *rq)
  {
- 	u8 *req_data = NULL, *resp_data = NULL, *buf;
- 	struct sas_ha_struct *sas_ha = SHOST_TO_SAS_HA(shost);
--	int error = -EINVAL, resp_data_len = rsp->data_len;
-+	int error = -EINVAL;
+ 	int hard_sect = queue_hardsect_size(q);
+-	long block = (long)rq->hard_sector / (hard_sect >> 9);
+-	unsigned long blocks = rq->hard_nr_sectors / (hard_sect >> 9);
++	long block = (long)blk_rq_pos(rq) / (hard_sect >> 9);
++	unsigned long blocks = blk_rq_sectors(rq) / (hard_sect >> 9);
  
- 	/* eight is the minimum size for request and response frames */
- 	if (req->data_len < 8 || rsp->data_len < 8)
-@@ -176,17 +176,20 @@ int sas_smp_host_handler(struct Scsi_Host *shost, struct request *req,
- 	resp_data[1] = req_data[1];
- 	resp_data[2] = SMP_RESP_FUNC_UNK;
+ 	memset(rq->cmd, 0, BLK_MAX_CDB);
  
-+	req->resid_len = req->data_len;
-+	rsp->resid_len = rsp->data_len;
-+
- 	switch (req_data[1]) {
- 	case SMP_REPORT_GENERAL:
--		req->data_len -= 8;
--		resp_data_len -= 32;
-+		req->resid_len -= 8;
-+		rsp->resid_len -= 32;
- 		resp_data[2] = SMP_RESP_FUNC_ACC;
- 		resp_data[9] = sas_ha->num_phys;
- 		break;
+diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+index a0309ea..df23bcb 100644
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -118,7 +118,7 @@ unsigned int ide_rq_bytes(struct request *rq)
+ 	if (blk_pc_request(rq))
+ 		return rq->data_len;
+ 	else
+-		return rq->hard_cur_sectors << 9;
++		return blk_rq_cur_sectors(rq) << 9;
+ }
+ EXPORT_SYMBOL_GPL(ide_rq_bytes);
  
- 	case SMP_REPORT_MANUF_INFO:
--		req->data_len -= 8;
--		resp_data_len -= 64;
-+		req->resid_len -= 8;
-+		rsp->resid_len -= 64;
- 		resp_data[2] = SMP_RESP_FUNC_ACC;
- 		memcpy(resp_data + 12, shost->hostt->name,
- 		       SAS_EXPANDER_VENDOR_ID_LEN);
-@@ -199,13 +202,13 @@ int sas_smp_host_handler(struct Scsi_Host *shost, struct request *req,
- 		break;
- 
- 	case SMP_DISCOVER:
--		req->data_len -= 16;
--		if ((int)req->data_len < 0) {
--			req->data_len = 0;
-+		req->resid_len -= 16;
-+		if ((int)req->resid_len < 0) {
-+			req->resid_len = 0;
- 			error = -EINVAL;
- 			goto out;
- 		}
--		resp_data_len -= 56;
-+		rsp->resid_len -= 56;
- 		sas_host_smp_discover(sas_ha, resp_data, req_data[9]);
- 		break;
- 
-@@ -215,13 +218,13 @@ int sas_smp_host_handler(struct Scsi_Host *shost, struct request *req,
- 		break;
- 
- 	case SMP_REPORT_PHY_SATA:
--		req->data_len -= 16;
--		if ((int)req->data_len < 0) {
--			req->data_len = 0;
-+		req->resid_len -= 16;
-+		if ((int)req->resid_len < 0) {
-+			req->resid_len = 0;
- 			error = -EINVAL;
- 			goto out;
- 		}
--		resp_data_len -= 60;
-+		rsp->resid_len -= 60;
- 		sas_report_phy_sata(sas_ha, resp_data, req_data[9]);
- 		break;
- 
-@@ -238,13 +241,13 @@ int sas_smp_host_handler(struct Scsi_Host *shost, struct request *req,
- 		break;
- 
- 	case SMP_PHY_CONTROL:
--		req->data_len -= 44;
--		if ((int)req->data_len < 0) {
--			req->data_len = 0;
-+		req->resid_len -= 44;
-+		if ((int)req->resid_len < 0) {
-+			req->resid_len = 0;
- 			error = -EINVAL;
- 			goto out;
- 		}
--		resp_data_len -= 8;
-+		rsp->resid_len -= 8;
- 		sas_phy_control(sas_ha, req_data[9], req_data[10],
- 				req_data[32] >> 4, req_data[33] >> 4,
- 				resp_data);
-@@ -265,7 +268,6 @@ int sas_smp_host_handler(struct Scsi_Host *shost, struct request *req,
- 	flush_kernel_dcache_page(bio_page(rsp->bio));
- 	kunmap_atomic(buf - bio_offset(rsp->bio), KM_USER0);
- 	local_irq_enable();
--	rsp->data_len = resp_data_len;
- 
-  out:
- 	kfree(req_data);
-diff --git a/drivers/scsi/mpt2sas/mpt2sas_transport.c b/drivers/scsi/mpt2sas/mpt2sas_transport.c
-index e03dc0b..53759c5 100644
---- a/drivers/scsi/mpt2sas/mpt2sas_transport.c
-+++ b/drivers/scsi/mpt2sas/mpt2sas_transport.c
-@@ -1170,9 +1170,7 @@ transport_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
- 
- 		memcpy(req->sense, mpi_reply, sizeof(*mpi_reply));
- 		req->sense_len = sizeof(*mpi_reply);
--		req->data_len = 0;
--		rsp->data_len -= mpi_reply->ResponseDataLength;
--
-+		rsp->resid_len = rsp->data_len - mpi_reply->ResponseDataLength;
- 	} else {
- 		dtransportprintk(ioc, printk(MPT2SAS_DEBUG_FMT
- 		    "%s - no reply\n", ioc->name, __func__));
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index aa9fc57..7d49ef5 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -240,11 +240,11 @@ int scsi_execute(struct scsi_device *sdev, const unsigned char *cmd,
- 	 * is invalid.  Prevent the garbage from being misinterpreted
- 	 * and prevent security leaks by zeroing out the excess data.
+@@ -133,7 +133,7 @@ int ide_complete_rq(ide_drive_t *drive, int error, unsigned int nr_bytes)
+ 	 * and complete the whole request right now
  	 */
--	if (unlikely(req->data_len > 0 && req->data_len <= bufflen))
--		memset(buffer + (bufflen - req->data_len), 0, req->data_len);
-+	if (unlikely(req->resid_len > 0 && req->resid_len <= bufflen))
-+		memset(buffer + (bufflen - req->resid_len), 0, req->resid_len);
+ 	if (blk_noretry_request(rq) && error <= 0)
+-		nr_bytes = rq->hard_nr_sectors << 9;
++		nr_bytes = blk_rq_sectors(rq) << 9;
  
- 	if (resid)
--		*resid = req->data_len;
-+		*resid = req->resid_len;
- 	ret = req->errors;
-  out:
- 	blk_put_request(req);
-@@ -549,7 +549,7 @@ static struct scsi_cmnd *scsi_end_request(struct scsi_cmnd *cmd, int error,
- 		int leftover = (req->hard_nr_sectors << 9);
+ 	rc = ide_end_rq(drive, rq, error, nr_bytes);
+ 	if (rc == 0)
+diff --git a/drivers/message/i2o/i2o_block.c b/drivers/message/i2o/i2o_block.c
+index 221317e..56e60f0 100644
+--- a/drivers/message/i2o/i2o_block.c
++++ b/drivers/message/i2o/i2o_block.c
+@@ -427,7 +427,7 @@ static void i2o_block_end_request(struct request *req, int error,
+ 	unsigned long flags;
+ 
+ 	if (blk_end_request(req, error, nr_bytes)) {
+-		int leftover = (req->hard_nr_sectors << KERNEL_SECTOR_SHIFT);
++		int leftover = (blk_rq_sectors(req) << KERNEL_SECTOR_SHIFT);
  
  		if (blk_pc_request(req))
--			leftover = req->data_len;
-+			leftover = req->resid_len;
+ 			leftover = req->data_len;
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 7d49ef5..9ff0ca9 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -546,7 +546,7 @@ static struct scsi_cmnd *scsi_end_request(struct scsi_cmnd *cmd, int error,
+ 	 * to queue the remainder of them.
+ 	 */
+ 	if (blk_end_request(req, error, bytes)) {
+-		int leftover = (req->hard_nr_sectors << 9);
++		int leftover = blk_rq_sectors(req) << 9;
  
- 		/* kill remainder if no retrys */
- 		if (error && scsi_noretry_cmd(cmd))
-@@ -673,11 +673,11 @@ void scsi_release_buffers(struct scsi_cmnd *cmd)
- EXPORT_SYMBOL(scsi_release_buffers);
- 
- /*
-- * Bidi commands Must be complete as a whole, both sides at once.
-- * If part of the bytes were written and lld returned
-- * scsi_in()->resid and/or scsi_out()->resid this information will be left
-- * in req->data_len and req->next_rq->data_len. The upper-layer driver can
-- * decide what to do with this information.
-+ * Bidi commands Must be complete as a whole, both sides at once.  If
-+ * part of the bytes were written and lld returned scsi_in()->resid
-+ * and/or scsi_out()->resid this information will be left in
-+ * req->resid_len and req->next_rq->resid_len. The upper-layer driver
-+ * can decide what to do with this information.
-  */
- static void scsi_end_bidi_request(struct scsi_cmnd *cmd)
- {
-@@ -685,8 +685,8 @@ static void scsi_end_bidi_request(struct scsi_cmnd *cmd)
- 	unsigned int dlen = req->data_len;
- 	unsigned int next_dlen = req->next_rq->data_len;
- 
--	req->data_len = scsi_out(cmd)->resid;
--	req->next_rq->data_len = scsi_in(cmd)->resid;
-+	req->resid_len = scsi_out(cmd)->resid;
-+	req->next_rq->resid_len = scsi_in(cmd)->resid;
- 
- 	/* The req and req->next_rq have not been completed */
- 	BUG_ON(blk_end_bidi_request(req, 0, dlen, next_dlen));
-@@ -778,7 +778,7 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
- 			scsi_end_bidi_request(cmd);
- 			return;
- 		}
--		req->data_len = scsi_get_resid(cmd);
-+		req->resid_len = scsi_get_resid(cmd);
- 	}
- 
- 	BUG_ON(blk_bidi_rq(req)); /* bidi not support for !blk_pc_request yet */
-diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
-index 82312df..dec4c70 100644
---- a/drivers/scsi/sg.c
-+++ b/drivers/scsi/sg.c
-@@ -1260,7 +1260,7 @@ static void sg_rq_end_io(struct request *rq, int uptodate)
- 
- 	sense = rq->sense;
- 	result = rq->errors;
--	resid = rq->data_len;
-+	resid = rq->resid_len;
- 
- 	SCSI_LOG_TIMEOUT(4, printk("sg_cmd_done: %s, pack_id=%d, res=0x%x\n",
- 		sdp->disk->disk_name, srp->header.pack_id, result));
-diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
-index eb24efe..8681b70 100644
---- a/drivers/scsi/st.c
-+++ b/drivers/scsi/st.c
-@@ -463,7 +463,7 @@ static void st_scsi_execute_end(struct request *req, int uptodate)
- 	struct scsi_tape *STp = SRpnt->stp;
- 
- 	STp->buffer->cmdstat.midlevel_result = SRpnt->result = req->errors;
--	STp->buffer->cmdstat.residual = req->data_len;
-+	STp->buffer->cmdstat.residual = req->resid_len;
- 
- 	if (SRpnt->waiting)
- 		complete(SRpnt->waiting);
-diff --git a/fs/exofs/osd.c b/fs/exofs/osd.c
-index b249ae9..06ca926 100644
---- a/fs/exofs/osd.c
-+++ b/fs/exofs/osd.c
-@@ -50,10 +50,10 @@ int exofs_check_ok_resid(struct osd_request *or, u64 *in_resid, u64 *out_resid)
- 
- 	/* FIXME: should be include in osd_sense_info */
- 	if (in_resid)
--		*in_resid = or->in.req ? or->in.req->data_len : 0;
-+		*in_resid = or->in.req ? or->in.req->resid_len : 0;
- 
- 	if (out_resid)
--		*out_resid = or->out.req ? or->out.req->data_len : 0;
-+		*out_resid = or->out.req ? or->out.req->resid_len : 0;
- 
- 	return ret;
- }
+ 		if (blk_pc_request(req))
+ 			leftover = req->resid_len;
 diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index e3726d6..7ab93d9 100644
+index 7ab93d9..b921d91 100644
 --- a/include/linux/blkdev.h
 +++ b/include/linux/blkdev.h
-@@ -229,6 +229,7 @@ struct request {
- 	unsigned int data_len;
- 	unsigned int extra_len;	/* length of alignment and padding */
- 	unsigned int sense_len;
-+	unsigned int resid_len;	/* residual count */
- 	void *sense;
+@@ -833,13 +833,30 @@ static inline void blk_run_address_space(struct address_space *mapping)
+ extern void blkdev_dequeue_request(struct request *req);
  
- 	unsigned long deadline;
+ /*
+- * blk_end_request() takes bytes instead of sectors as a complete size.
+- * blk_rq_bytes() returns bytes left to complete in the entire request.
+- * blk_rq_cur_bytes() returns bytes left to complete in the current segment.
++ * blk_rq_pos()		: the current sector
++ * blk_rq_bytes()	: bytes left in the entire request
++ * blk_rq_cur_bytes()	: bytes left in the current segment
++ * blk_rq_sectors()	: sectors left in the entire request
++ * blk_rq_cur_sectors()	: sectors left in the current segment
+  */
++static inline sector_t blk_rq_pos(const struct request *rq)
++{
++	return rq->hard_sector;
++}
++
+ extern unsigned int blk_rq_bytes(struct request *rq);
+ extern unsigned int blk_rq_cur_bytes(struct request *rq);
+ 
++static inline unsigned int blk_rq_sectors(const struct request *rq)
++{
++	return rq->hard_nr_sectors;
++}
++
++static inline unsigned int blk_rq_cur_sectors(const struct request *rq)
++{
++	return rq->hard_cur_sectors;
++}
++
+ /*
+  * Request completion related functions.
+  *
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index 921ef5d..42f1c11 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -646,7 +646,7 @@ static void blk_add_trace_rq(struct request_queue *q, struct request *rq,
+ 				rq->cmd_len, rq->cmd);
+ 	} else  {
+ 		what |= BLK_TC_ACT(BLK_TC_FS);
+-		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9,
++		__blk_add_trace(bt, blk_rq_pos(rq), blk_rq_sectors(rq) << 9,
+ 				rw, what, rq->errors, 0, NULL);
+ 	}
+ }
+@@ -857,7 +857,7 @@ void blk_add_driver_data(struct request_queue *q,
+ 		__blk_add_trace(bt, 0, rq->data_len, 0, BLK_TA_DRV_DATA,
+ 				rq->errors, len, data);
+ 	else
+-		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9,
++		__blk_add_trace(bt, blk_rq_pos(rq), blk_rq_sectors(rq) << 9,
+ 				0, BLK_TA_DRV_DATA, rq->errors, len, data);
+ }
+ EXPORT_SYMBOL_GPL(blk_add_driver_data);
 -- 
 1.6.0.2
 
