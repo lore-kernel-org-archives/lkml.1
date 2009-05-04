@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754362AbZEDJ7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbZEDKA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754362AbZEDJ7y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 05:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZEDJ7a
+	id S1754449AbZEDKA6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 06:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbZEDKAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 05:59:30 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48638 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751894AbZEDJ73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 05:59:29 -0400
-Message-ID: <49FEBC4E.5040805@redhat.com>
-Date: Mon, 04 May 2009 12:58:38 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 4 May 2009 06:00:45 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:43528 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753513AbZEDKAn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 06:00:43 -0400
+Message-ID: <49FEBBC9.9000708@cosmosbay.com>
+Date: Mon, 04 May 2009 11:56:25 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
 To: Andi Kleen <andi@firstfloor.org>
-CC: Elad Lahav <elahav@uwaterloo.ca>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
+CC: Avi Kivity <avi@redhat.com>, Elad Lahav <elahav@uwaterloo.ca>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Subject: Re: [PATCH] Implementation of the sendgroup() system call
 References: <49FE47A1.7070700@uwaterloo.ca> <87eiv5ibnd.fsf@basil.nowhere.org> <49FE9999.7090103@redhat.com> <20090504095300.GF23223@one.firstfloor.org>
 In-Reply-To: <20090504095300.GF23223@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 04 May 2009 11:56:25 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>> My guess it's more the copies than the calls? It sounds like
->>> you want sendfile() for UDP. I think that would be a cleaner solution
->>> than such a specific hack for your application. It would
->>> have the advantage of saving the first copy too and be 
->>> truly zero copy on capable NICs.
->>>  
->>>       
->> An aio udp send could accomplish both multiple packets per call, and 
->>     
->
-> AIO sockets are a lot of work. There have been various attempts
-> over the years, but they are very difficult. This was mostly
-> for TCP -- possibly UDP would be a bit easier -- but still
-> many complications. It would also need a lot of changes and
-> you would need to convince the network maintainers that they
-> are a good idea.
->   
+Andi Kleen a écrit :
 
-I would love them for kvm.  As far as I understand, the only 
-complication is proper socket destructors so we can put_page() the memory.
-
-Right now sendfile() is only usable for read-only files.  It's not 
-usable for files that change, or non-file memory.
-
->   
 >>> Or perhaps simple send to a local multicast group and let
 >>> some netfilter module turn that into regular UDP.
 >>>  
->>>       
 >> Sounds hacky and rooty.
->>     
->
+> 
 > rooty? Everyone can send to all directions anyways.
->
+> 
 > It wouldn't be perfect, but quite usable as a short term solution
 > for a production server.
->   
 
-I meant, you need root to insert that netfiler module.  It's workable as 
-a one off but it's not something reusable.
+Anyway, a netfilter module doesnt fit the needs (separate header/footer
+for each destination)
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
