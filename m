@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758458AbZEDR3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbZEDReT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758458AbZEDR3X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 13:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbZEDR3P
+	id S1756798AbZEDReT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 13:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbZEDReF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 13:29:15 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:55307 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbZEDR3O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 13:29:14 -0400
-Subject: Re: btusb auto suspend
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Oliver Neukum <oliver@neukum.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1241433271.7620.4748.camel@twins>
-References: <1241433271.7620.4748.camel@twins>
-Content-Type: text/plain
-Date: Mon, 04 May 2009 10:29:02 -0700
-Message-Id: <1241458142.2903.35.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 May 2009 13:34:05 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:34495
+	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752911AbZEDReE convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 13:34:04 -0400
+X-BigFish: VPS7(zzzz1202hzzz32i6bh15fn61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KJ4RG9-02-P26-01
+Date: Mon, 4 May 2009 19:33:30 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] x86: adapt CPU topology detection for AMD Magny-Cours
+Message-ID: <20090504173330.GF28728@alberich.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 04 May 2009 17:33:51.0874 (UTC) FILETIME=[7D98C620:01C9CCDE]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+Hi,
 
-> What is the current status of btusb auto suspend? btusb not having this
-> feature basically renders BT useless on mobile devices.
-> 
-> I found some rfc patches and discussion over on linux-pm/-usb but
-> couldn't find a clear consensus.
+Following patches add support for AMD Magny-Cours CPU.
 
-I think none of the patches apply anymore. So they have to be redone
-against the latest -rc4 kernel or bluetooth-testing.git.
+I slightly change struct cpuinfo where I'd like to introduce
+cpu_node_id to reflect CPU topology for AMD Magny-Cours CPU which
+consists of two internal-nodes.
 
-We had some battles with broken Bluetooth hardware that requires to keep
-the interrupt and bulk URBs in fly, because otherwise the firmware
-inside the controller can't sync them up and times out. These are all
-fixed now, but nobody has looked at the auto suspend stuff. Feel free to
-pick Oliver's patches up and send them for review. If you do so, please
-use linux-bluetooth@vger.kernel.org since I do miss posting on LKML from
-time to time.
+For all cores on the same multi-node CPU (Magny-Cours) /proc/cpuinfo
+will show:
+- same phys_proc_id
+- cpu_node_id of the internal node (0 or 1)
+- cpu_core_id (e.g. in range of 0 to 5)
 
-Regards
+I also change identification of core siblings (and thread siblings)
+which will also be based on cpu_node_id in addition to phys_proc_id.
 
-Marcel
+Furthermore I adapt the L3 cache information to reflect the cache
+characteristics of one internal node instead of the entire package.
+
+Primarily this changes are needed to correct core sibling information
+for Magny-Cours. This CPU has two NBs on one physical package -- each
+internal node has its own processor configuration space (i.e. set of
+northbridge PCI functions).
+
+Patches are against tip/master as of today.
+Please consider patches 1 and 2 for .30.
+Patch 3 should be applied to tip/x86/cpu where all the recent
+cacheinfo changes reside (e.g. commit
+6265ff19ca08df0d96c859ae5e4dc2d9ad07070e).
+
+
+Regards,
+Andreas
+
+-- 
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
 
