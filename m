@@ -1,45 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbZEDQGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757840AbZEDQIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756881AbZEDQGE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZEDQFv
+	id S1757840AbZEDQIE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:08:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbZEDQHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 12:05:51 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:36001 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755973AbZEDQFu (ORCPT
+	Mon, 4 May 2009 12:07:49 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:60664 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754860AbZEDQHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:05:50 -0400
-Date: Mon, 4 May 2009 11:54:53 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH -tip] mm: introduce __GFP_PANIC modifier
-In-Reply-To: <20090504152026.GO4173@lenovo>
-Message-ID: <alpine.DEB.1.10.0905041148490.10044@qirst.com>
-References: <20090504122740.GH4173@lenovo> <20090504131311.GA23330@elte.hu> <20090504131638.GJ4173@lenovo> <alpine.DEB.1.10.0905040940490.9553@qirst.com> <20090504141256.GK4173@lenovo> <alpine.DEB.1.10.0905041011200.17937@qirst.com> <20090504142903.GM4173@lenovo>
- <20090504152026.GO4173@lenovo>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 4 May 2009 12:07:48 -0400
+Subject: Re: [PATCH 2/2] mac80211: pid, fix memory corruption
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1241453096-8517-2-git-send-email-jirislaby@gmail.com>
+References: <1241453096-8517-1-git-send-email-jirislaby@gmail.com>
+	 <1241453096-8517-2-git-send-email-jirislaby@gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Pj2+d931gA64YYIw1mXp"
+Date: Mon, 04 May 2009 18:07:17 +0200
+Message-Id: <1241453238.8683.52.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 May 2009, Cyrill Gorcunov wrote:
 
-> You know I only found a message in case if page is already
-> not granted (ie NULL is going to be returned) and right
-> before that we print a warning about that (nopage: label).
-> Which means - no panic here and with (__GFP_NOFAIL | __GFP_REPEAT)
-> just spinning around in attepmt to allocate new memory. And how
-> to behave on atomic allocations. Almost give up... :)
+--=-Pj2+d931gA64YYIw1mXp
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Could you check for __GFP_FAIL|__GFP_REPEAT somewheres and panic? Not sure
-if __GFP_REPEAT is the right second flag to use.
+On Mon, 2009-05-04 at 18:04 +0200, Jiri Slaby wrote:
+
+> +	for (i =3D 0; i < IEEE80211_NUM_BANDS; i++) {
+> +		sband =3D hw->wiphy->bands[i];
+> +		if (sband->n_bitrates > max_rates)
+> +			max_rates =3D sband->n_bitrates;
+> +	}
+> +
+>  	/* We can safely assume that sband won't change unless we get
+>  	 * reinitialized. */
+> -	rinfo =3D kmalloc(sizeof(*rinfo) * sband->n_bitrates, GFP_ATOMIC);
+> +	rinfo =3D kmalloc(sizeof(*rinfo) * max_rates, GFP_ATOMIC);
+
+I suppose you should remove the comment...
+
+johannes
+
+--=-Pj2+d931gA64YYIw1mXp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJ/xKzAAoJEKVg1VMiehFYsIAP/AshTex9OcRJ160LwDYGGRQ9
+0nXeI7+dJmuG+mVJ1rjOaX/K1gk/BP9eZxnao6N5HKKYDSn2FJU5STt4LbAdF78R
+Nusk8BuTJin2vrfAu8dDf5iIwpMXalyuNt4iY4C7SMjvD+KO3JlSTUfQHPBU9w3R
+QhgmmsyWevESQl7hTdakSj5jVFzoiVp/vHsZ1IteaxL//VabQnx4hA8R/uExFTRH
+j1NEQX5J4eR9uvGnEjfe4hWU4VAgb7VKpIOe+R08UuoQG4n2QlHg9e08/n6zYsQh
+Z58ysCLpPjhn2qvhHJH3MUSXTkxhDIOiPNiQt4rsQmWLPCW+QGv2Yc5yGynw24nd
+VvRp59cnZnhiq8bIcPW1j4w4YS2AhRUSuqqMy481OGRDmCLUcws8hE6cwffh+TnR
+RMvagoIxuSdrvmOz6n0cslgzrFkDXsgmL1hXtJ5Y0CEINIaagSZHV2CIh6d7jmpk
+a0Er0ndWQXNJKH3gJfjtVqc6bBvydlPP+JmwYNKwvkq7e3kM9VzZlt3HX6mayQ4p
+XZbpQ7sQ3dmfbuVgRtSfQ9bOY0Ty1tvxRWMLxT4Xkk4D7m2jAEumVctCShi38qnX
+15mJq0L4PLDcnI3jVVBCaIAMY0T2AGokO9UTI3nx9Hxg8K6rZ2iexvhkwNGWEIHP
+rDoAwVs/9fuJFpBegavJ
+=ffNT
+-----END PGP SIGNATURE-----
+
+--=-Pj2+d931gA64YYIw1mXp--
 
