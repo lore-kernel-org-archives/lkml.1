@@ -1,113 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbZEDErf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752100AbZEDEvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751896AbZEDErf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 00:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZEDErZ
+	id S1752100AbZEDEvt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 00:51:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZEDEvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 00:47:25 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:2384 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751251AbZEDErZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 00:47:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=gaw2VckB+CZGDvJx0qTgyza8SGlJWf0Zx8/t8JJP3KOwp/JMwVFDN8q73KmcCwjEzO
-         ZDydbB901yaKCEuwmCxyyDo+5zmbZ8oNDrIJKY7H93Ml5PtvSJeES5iMUOsRVmjTGl5t
-         pGoogtyWS/LOR+iRtfybtV+Tuv/sVBjMr7IKM=
-Subject: Re: [PATCH 0/2][GIT PULL] tracing/filters: adjustements for strings
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>
-In-Reply-To: <1241315433-7225-1-git-send-email-fweisbec@gmail.com>
-References: <1241315433-7225-1-git-send-email-fweisbec@gmail.com>
-Content-Type: text/plain
-Date: Sun, 03 May 2009 23:47:22 -0500
-Message-Id: <1241412442.5844.10.camel@tropicana>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Mon, 4 May 2009 00:51:39 -0400
+Received: from cantor.suse.de ([195.135.220.2]:55631 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751251AbZEDEvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 00:51:38 -0400
+Message-ID: <49FE7448.2040302@suse.com>
+Date: Mon, 04 May 2009 00:51:20 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       David <david@unsolicited.net>
+Subject: Re: [PATCH] reiserfs: Expand i_mutex to enclose lookup_one_len
+References: <49FB1F20.8040400@suse.com> <20090503085236.GT8633@ZenIV.linux.org.uk> <20090503091507.GU8633@ZenIV.linux.org.uk>
+In-Reply-To: <20090503091507.GU8633@ZenIV.linux.org.uk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Sun, 2009-05-03 at 03:50 +0200, Frederic Weisbecker wrote:
-> Hi,
+Al Viro wrote:
+> On Sun, May 03, 2009 at 09:52:36AM +0100, Al Viro wrote:
+>> On Fri, May 01, 2009 at 12:11:12PM -0400, Jeff Mahoney wrote:
+>>>  2.6.30-rc3 introduced some sanity checks in the VFS code to avoid NFS
+>>>  bugs by ensuring that lookup_one_len is always called under i_mutex.
+>>>
+>>>  This patch expands the i_mutex locking to enclose lookup_one_len. This was
+>>>  always required, but not not enforced in the reiserfs code since it
+>>>  does locking around the xattr interactions with the xattr_sem.
+>>>
+>>>  This is obvious enough, but it survived an overnight 50 thread ACL test.
+>> It's not enough, unfortunately ;-/  It deals with the warning, but it
+>> leaves an actual hole in there.
+>>
+>> Look: what happens if we mount it r/o without that directory and then
+>> remount r/w?  We get dentry for privroot, hash it (negative at that point),
+>> then do actual mkdir, unlock root and modify the ->d_compare() of root
+>> to reject lookups on that sucker.  Too late - in the meanwhile lookups
+>> might very well come and find privroot in dcache.
+>>
+>> BTW, the way ->d_compare() is done in there is rather dumb -
+>> 	if (q1 == &priv_root->d_name)
+>> 		return -ENOENT;
+>> 	...
+>> would do just as well.  Why don't we do that lookup *once* (on ->get_sb(),
+>> before anything can come and race with us), and then just keep negative
+>> dentry if the directory hadn't been around?  And set d_compare() for root
+>> immediately after that lookup...
+>>
+>> I've applied your patch as-is, and unless you have objections to the
+>> variant above I'll do that as incremental.  Comments?
 > 
-> The following patchset includes two little peas of features
-> for tracing filters, making them able to filter every kind of strings.
-> 
-> Now I can do this:
-> 
-> cd /debug/tracing
-> echo > trace
-> echo stacktrace > trace_options
-> 
-> cd events/lockdep
-> echo 'name == "&REISERFS_SB(s)->lock" && wait_usec > 0' > lock_acquired/filter
-> 
-> echo 1 > lock_acquired/enable
-> sleep 1
-> echo 0 > lock_acquired/enable
-> 
-> cat trace
-> 
->  # tracer: nop
->  #
->  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
->  #              | |       |          |         |
->            <...>-6464  [000]   327.448232: lock_acquired: &REISERFS_SB(s)->lock (25058.984 us)
->            <...>-6464  [000]   327.448233: 
->  <= reiserfs_get_block
->  <= __block_prepare_write
->  <= block_write_begin
->  <= reiserfs_write_begin
->  <= generic_file_buffered_write
->  <= __generic_file_aio_write_nolock
->  <= generic_file_aio_write
->            <...>-6470  [000]   327.448422: lock_acquired: &REISERFS_SB(s)->lock (25112.702 us)
->            <...>-6470  [000]   327.448425: 
->  <= reiserfs_update_sd_size
->  <= reiserfs_write_end
->  <= generic_file_buffered_write
->  <= __generic_file_aio_write_nolock
->  <= generic_file_aio_write
->  <= do_sync_write
->  <= reiserfs_file_write
-> 
-> 
-> Tom, your filter framework is awesome and very useful!
-> Thanks :-)
+> BTW, what in the name of everything unholy is ->xattr_root?  Never
+> assigned a non-NULL value...
 
-Thanks!  And thanks for adding these new useful features, too - the
-patches look good to me...
+Huh. I didn't see that still in there. That's an artifact of an earlier
+version of the code where I kept a reference to /.reiserfs_priv/xattrs.
+Then I decided that .reiserfs_priv was all I needed to cache (to avoid
+recursive i_mutex locking on the fs root) and dropped the caching of
+xattrs. Looks like it didn't get totally cleared out.
 
-Acked-by: Tom Zanussi <tzanussi@gmail.com>
+- -Jeff
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-Tom
-
-> 
-> Frederic.
-> ---
-> 
-> The following changes since commit a0e39ed378fb6ba916522764cd508fa7d42ad495:
->   Heiko Carstens (1):
->         tracing: fix build failure on s390
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git tracing/filters
-> 
-> Frederic Weisbecker (2):
->       tracing/filters: support for filters of dynamic sized arrays
->       tracing/filters: support for operator reserved characters in strings
-> 
->  kernel/trace/trace_events_filter.c |   54 ++++++++++++++++++++++++++++++++++--
->  1 files changed, 51 insertions(+), 3 deletions(-)
-
+iEYEARECAAYFAkn+dEgACgkQLPWxlyuTD7J4/ACggM4bSYzp8zuS8KXf2WaFSpS4
+458An1YCcTf4hYXjFXuU8ZS2eEWJCpaa
+=ZDpK
+-----END PGP SIGNATURE-----
