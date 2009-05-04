@@ -1,84 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753117AbZEDUFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbZEDUFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753117AbZEDUFZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 16:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbZEDUFF
+	id S1756504AbZEDUFn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 16:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbZEDUFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 16:05:05 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:43493 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752842AbZEDUFD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 16:05:03 -0400
-Date: Mon, 4 May 2009 15:05:01 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] utsns: extract creeate_uts_ns()
-Message-ID: <20090504200501.GA29833@us.ibm.com>
-References: <20090503232510.GA16631@x200.localdomain>
+	Mon, 4 May 2009 16:05:06 -0400
+Received: from kroah.org ([198.145.64.141]:56005 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753629AbZEDUFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 16:05:04 -0400
+Date: Mon, 4 May 2009 12:58:01 -0700
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: Paul Mackerras <paulus@samba.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Roel Kluin <roel.kluin@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] hvcs: remove driver_data direct access of struct device
+Message-ID: <20090504195801.GA22677@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090503232510.GA16631@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> create_uts_ns() will be used by C/R to create fresh uts_ns.
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+In the near future, the driver core is going to not allow direct access
+to the driver_data pointer in struct device.  Instead, the functions
+dev_get_drvdata() and dev_set_drvdata() should be used.  These functions
+have been around since the beginning, so are backwards compatible with
+all older kernel versions.
 
-thanks,
--serge
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Roel Kluin <roel.kluin@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/char/hvcs.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-> ---
->  kernel/utsname.c |   13 +++++++++++--
->  1 files changed, 11 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/utsname.c b/kernel/utsname.c
-> index 815237a..8a82b4b 100644
-> --- a/kernel/utsname.c
-> +++ b/kernel/utsname.c
-> @@ -15,6 +15,16 @@
->  #include <linux/err.h>
->  #include <linux/slab.h>
-> 
-> +static struct uts_namespace *create_uts_ns(void)
-> +{
-> +	struct uts_namespace *uts_ns;
-> +
-> +	uts_ns = kmalloc(sizeof(struct uts_namespace), GFP_KERNEL);
-> +	if (uts_ns)
-> +		kref_init(&uts_ns->kref);
-> +	return uts_ns;
-> +}
-> +
->  /*
->   * Clone a new ns copying an original utsname, setting refcount to 1
->   * @old_ns: namespace to clone
-> @@ -24,14 +34,13 @@ static struct uts_namespace *clone_uts_ns(struct uts_namespace *old_ns)
->  {
->  	struct uts_namespace *ns;
-> 
-> -	ns = kmalloc(sizeof(struct uts_namespace), GFP_KERNEL);
-> +	ns = create_uts_ns();
->  	if (!ns)
->  		return ERR_PTR(-ENOMEM);
-> 
->  	down_read(&uts_sem);
->  	memcpy(&ns->name, &old_ns->name, sizeof(ns->name));
->  	up_read(&uts_sem);
-> -	kref_init(&ns->kref);
->  	return ns;
->  }
-> 
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+--- a/drivers/char/hvcs.c
++++ b/drivers/char/hvcs.c
+@@ -347,7 +347,7 @@ static void __exit hvcs_module_exit(void
+ 
+ static inline struct hvcs_struct *from_vio_dev(struct vio_dev *viod)
+ {
+-	return viod->dev.driver_data;
++	return dev_get_drvdata(&viod->dev);
+ }
+ /* The sysfs interface for the driver and devices */
+ 
+@@ -785,7 +785,7 @@ static int __devinit hvcs_probe(
+ 	kref_init(&hvcsd->kref);
+ 
+ 	hvcsd->vdev = dev;
+-	dev->dev.driver_data = hvcsd;
++	dev_set_drvdata(&dev->dev, hvcsd);
+ 
+ 	hvcsd->index = index;
+ 
+@@ -831,7 +831,7 @@ static int __devinit hvcs_probe(
+ 
+ static int __devexit hvcs_remove(struct vio_dev *dev)
+ {
+-	struct hvcs_struct *hvcsd = dev->dev.driver_data;
++	struct hvcs_struct *hvcsd = dev_get_drvdata(&dev->dev);
+ 	unsigned long flags;
+ 	struct tty_struct *tty;
+ 
