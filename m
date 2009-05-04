@@ -1,156 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757796AbZEDPUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757803AbZEDPVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757796AbZEDPUr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 11:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbZEDPUV
+	id S1757803AbZEDPVH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 11:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756827AbZEDPUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 11:20:21 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:45288 "EHLO
+	Mon, 4 May 2009 11:20:22 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:45314 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754778AbZEDPUT (ORCPT
+	with ESMTP id S1754885AbZEDPUV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 11:20:19 -0400
-Message-Id: <20090504152019.023199789@goodmis.org>
+	Mon, 4 May 2009 11:20:21 -0400
+Message-Id: <20090504152019.461026995@goodmis.org>
 References: <20090504151933.728781787@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 04 May 2009 11:19:34 -0400
+Date: Mon, 04 May 2009 11:19:35 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 1/6] ring-buffer: add counters for commit overrun and nmi dropped entries
-Content-Disposition: inline; filename=0001-ring-buffer-add-counters-for-commit-overrun-and-nmi.patch
+Subject: [PATCH 2/6] tracing: export stats of ring buffers to userspace
+Content-Disposition: inline; filename=0002-tracing-export-stats-of-ring-buffers-to-userspace.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-The WARN_ON in the ring buffer when a commit is preempted and the
-buffer is filled by preceding writes can happen in normal operations.
-The WARN_ON makes it look like a bug, not to mention, because
-it does not stop tracing and calls printk which can also recurse, this
-is prone to deadlock (the WARN_ON is not in a position to recurse).
+This patch adds stats to the ftrace ring buffers:
 
-This patch removes the WARN_ON and replaces it with a counter that
-can be retrieved by a tracer. This counter is called commit_overrun.
+ # cat /debugfs/tracing/per_cpu/cpu0/stats
+ entries: 42360
+ overrun: 30509326
+ commit overrun: 0
+ nmi dropped: 0
 
-While at it, I added a nmi_dropped counter to count any time an NMI entry
-is dropped because the NMI could not take the spinlock.
+Where entries are the total number of data entries in the buffer.
 
-[ Impact: prevent deadlock by printing normal case warning ]
+overrun is the number of entries not consumed and were overwritten by
+the writer.
+
+commit overrun is the number of entries dropped due to nested writers
+wrapping the buffer before the initial writer finished the commit.
+
+nmi dropped is the number of entries dropped due to the ring buffer
+lock being held when an nmi was going to write to the ring buffer.
+Note, this field will be meaningless and will go away when the ring
+buffer becomes lockless.
+
+[ Impact: let userspace know what is happening in the ring buffers ]
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/ring_buffer.h |    2 +
- kernel/trace/ring_buffer.c  |   52 ++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 51 insertions(+), 3 deletions(-)
+ kernel/trace/trace.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 42 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
-index 1c2f809..f134582 100644
---- a/include/linux/ring_buffer.h
-+++ b/include/linux/ring_buffer.h
-@@ -153,6 +153,8 @@ unsigned long ring_buffer_entries(struct ring_buffer *buffer);
- unsigned long ring_buffer_overruns(struct ring_buffer *buffer);
- unsigned long ring_buffer_entries_cpu(struct ring_buffer *buffer, int cpu);
- unsigned long ring_buffer_overrun_cpu(struct ring_buffer *buffer, int cpu);
-+unsigned long ring_buffer_commit_overrun_cpu(struct ring_buffer *buffer, int cpu);
-+unsigned long ring_buffer_nmi_dropped_cpu(struct ring_buffer *buffer, int cpu);
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index f5427e0..74df029 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -3595,6 +3595,45 @@ static const struct file_operations tracing_buffers_fops = {
+ 	.llseek		= no_llseek,
+ };
  
- u64 ring_buffer_time_stamp(struct ring_buffer *buffer, int cpu);
- void ring_buffer_normalize_time_stamp(struct ring_buffer *buffer,
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index f4cc590..dc8b2ab 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -402,6 +402,8 @@ struct ring_buffer_per_cpu {
- 	struct buffer_page		*tail_page;	/* write to tail */
- 	struct buffer_page		*commit_page;	/* committed pages */
- 	struct buffer_page		*reader_page;
-+	unsigned long			nmi_dropped;
-+	unsigned long			commit_overrun;
- 	unsigned long			overrun;
- 	unsigned long			entries;
- 	u64				write_stamp;
-@@ -1216,8 +1218,10 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 		 * simply fail.
- 		 */
- 		if (unlikely(in_nmi())) {
--			if (!__raw_spin_trylock(&cpu_buffer->lock))
-+			if (!__raw_spin_trylock(&cpu_buffer->lock)) {
-+				cpu_buffer->nmi_dropped++;
- 				goto out_reset;
-+			}
- 		} else
- 			__raw_spin_lock(&cpu_buffer->lock);
- 
-@@ -1238,8 +1242,7 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 		 * about it.
- 		 */
- 		if (unlikely(next_page == commit_page)) {
--			/* This can easily happen on small ring buffers */
--			WARN_ON_ONCE(buffer->pages > 2);
-+			cpu_buffer->commit_overrun++;
- 			goto out_reset;
- 		}
- 
-@@ -1926,6 +1929,47 @@ unsigned long ring_buffer_overrun_cpu(struct ring_buffer *buffer, int cpu)
- EXPORT_SYMBOL_GPL(ring_buffer_overrun_cpu);
- 
- /**
-+ * ring_buffer_nmi_dropped_cpu - get the number of nmis that were dropped
-+ * @buffer: The ring buffer
-+ * @cpu: The per CPU buffer to get the number of overruns from
-+ */
-+unsigned long ring_buffer_nmi_dropped_cpu(struct ring_buffer *buffer, int cpu)
++static ssize_t
++tracing_stats_read(struct file *filp, char __user *ubuf,
++		   size_t count, loff_t *ppos)
 +{
-+	struct ring_buffer_per_cpu *cpu_buffer;
-+	unsigned long ret;
++	unsigned long cpu = (unsigned long)filp->private_data;
++	struct trace_array *tr = &global_trace;
++	struct trace_seq *s;
++	unsigned long cnt;
 +
-+	if (!cpumask_test_cpu(cpu, buffer->cpumask))
-+		return 0;
++	s = kmalloc(sizeof(*s), GFP_ATOMIC);
++	if (!s)
++		return ENOMEM;
 +
-+	cpu_buffer = buffer->buffers[cpu];
-+	ret = cpu_buffer->nmi_dropped;
++	trace_seq_init(s);
 +
-+	return ret;
++	cnt = ring_buffer_entries_cpu(tr->buffer, cpu);
++	trace_seq_printf(s, "entries: %ld\n", cnt);
++
++	cnt = ring_buffer_overrun_cpu(tr->buffer, cpu);
++	trace_seq_printf(s, "overrun: %ld\n", cnt);
++
++	cnt = ring_buffer_commit_overrun_cpu(tr->buffer, cpu);
++	trace_seq_printf(s, "commit overrun: %ld\n", cnt);
++
++	cnt = ring_buffer_nmi_dropped_cpu(tr->buffer, cpu);
++	trace_seq_printf(s, "nmi dropped: %ld\n", cnt);
++
++	count = simple_read_from_buffer(ubuf, count, ppos, s->buffer, s->len);
++
++	kfree(s);
++
++	return count;
 +}
-+EXPORT_SYMBOL_GPL(ring_buffer_nmi_dropped_cpu);
 +
-+/**
-+ * ring_buffer_commit_overrun_cpu - get the number of overruns caused by commits
-+ * @buffer: The ring buffer
-+ * @cpu: The per CPU buffer to get the number of overruns from
-+ */
-+unsigned long
-+ring_buffer_commit_overrun_cpu(struct ring_buffer *buffer, int cpu)
-+{
-+	struct ring_buffer_per_cpu *cpu_buffer;
-+	unsigned long ret;
++static const struct file_operations tracing_stats_fops = {
++	.open		= tracing_open_generic,
++	.read		= tracing_stats_read,
++};
 +
-+	if (!cpumask_test_cpu(cpu, buffer->cpumask))
-+		return 0;
-+
-+	cpu_buffer = buffer->buffers[cpu];
-+	ret = cpu_buffer->commit_overrun;
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(ring_buffer_commit_overrun_cpu);
-+
-+/**
-  * ring_buffer_entries - get the number of entries in a buffer
-  * @buffer: The ring buffer
-  *
-@@ -2595,6 +2639,8 @@ rb_reset_cpu(struct ring_buffer_per_cpu *cpu_buffer)
- 	local_set(&cpu_buffer->reader_page->page->commit, 0);
- 	cpu_buffer->reader_page->read = 0;
+ #ifdef CONFIG_DYNAMIC_FTRACE
  
-+	cpu_buffer->nmi_dropped = 0;
-+	cpu_buffer->commit_overrun = 0;
- 	cpu_buffer->overrun = 0;
- 	cpu_buffer->entries = 0;
+ int __weak ftrace_arch_read_dyn_info(char *buf, int size)
+@@ -3708,6 +3747,9 @@ static void tracing_init_debugfs_percpu(long cpu)
  
+ 	trace_create_file("trace_pipe_raw", 0444, d_cpu,
+ 			(void *) cpu, &tracing_buffers_fops);
++
++	trace_create_file("stats", 0444, d_cpu,
++			(void *) cpu, &tracing_stats_fops);
+ }
+ 
+ #ifdef CONFIG_FTRACE_SELFTEST
 -- 
 1.6.2.4
 
