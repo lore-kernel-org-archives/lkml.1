@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758343AbZEDQL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758363AbZEDQMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758343AbZEDQL4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:11:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756507AbZEDQLo
+	id S1758363AbZEDQMx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755245AbZEDQMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 12:11:44 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:39806 "EHLO e8.ny.us.ibm.com"
+	Mon, 4 May 2009 12:12:44 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51482 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757944AbZEDQLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:11:43 -0400
-Date: Mon, 4 May 2009 09:11:37 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-       tridge@samba.org, Al Viro <viro@ZenIV.linux.org.uk>,
-       Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
-       Steve French <smfrench@gmail.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090504161137.GE6740@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090502013729.GI6996@linux.vnet.ibm.com> <20090503225616.GD8633@ZenIV.linux.org.uk> <20090504124129.GL7141@linux.vnet.ibm.com> <20090504124433.GW8822@parisc-linux.org> <20090504130638.GN7141@linux.vnet.ibm.com> <20090504132119.GX8822@parisc-linux.org> <20090504143919.GA6740@linux.vnet.ibm.com> <20090504150834.GZ8822@parisc-linux.org> <1241451391.20170.12.camel@norville.austin.ibm.com> <m14ow0hnal.fsf@fess.ebiederm.org>
+	id S1753628AbZEDQMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 12:12:43 -0400
+Message-ID: <49FF13D7.8070606@redhat.com>
+Date: Mon, 04 May 2009 12:12:07 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m14ow0hnal.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Kyle Moffett <kyle@moffetthome.net>
+CC: Lars Ellenberg <lars.ellenberg@linbit.com>,
+       Philipp Reisner <philipp.reisner@linbit.com>,
+       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Lars Marowsky-Bree <lmb@suse.de>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: [PATCH 02/16] DRBD: lru_cache
+References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com>	 <1241090812-13516-2-git-send-email-philipp.reisner@linbit.com>	 <1241090812-13516-3-git-send-email-philipp.reisner@linbit.com>	 <f73f7ab80905021651y54db1e69y87f0487bc06f0522@mail.gmail.com>	 <20090503062720.GA31340@racke>	 <f73f7ab80905030706i4afd0902ub42d42d60f01e6a2@mail.gmail.com>	 <20090503224809.GB6243@racke>	 <f73f7ab80905031748v2be95af8vcd07c6a77dc348f@mail.gmail.com> <f73f7ab80905031801n1e5ed6b6h84772baabda5f71e@mail.gmail.com>
+In-Reply-To: <f73f7ab80905031801n1e5ed6b6h84772baabda5f71e@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 08:59:14AM -0700, Eric W. Biederman wrote:
-> Dave Kleikamp <shaggy@linux.vnet.ibm.com> writes:
+Kyle Moffett wrote:
+> On Sun, May 3, 2009 at 8:48 PM, Kyle Moffett <kyle@moffetthome.net> wrote:
+>> There are a couple trivial tunables you can apply to the model I
+>> provided to dramatically change the effect of memory pressure on the
+>> LRU:
+>>
+>> [...]
+>>
 > 
-> > On Mon, 2009-05-04 at 09:08 -0600, Matthew Wilcox wrote:
-> >> On Mon, May 04, 2009 at 07:39:19AM -0700, Paul E. McKenney wrote:
-> >> > On Mon, May 04, 2009 at 07:21:19AM -0600, Matthew Wilcox wrote:
-> >> > > Bringing the patch to a public mailing list is a waste of time until
-> >> > > there's a reliable description of the problem you're trying to solve.
-> >> > 
-> >> > Please see the original patch.  It does describes what it is doing.
-> >> 
-> >> "What", but not "Why".  Which is only acceptable in GNU changelogs ;-)
-> >
-> > Please understand the "Why" is a sticky subject that we can't and won't
-> > discuss in a public forum.  However, we believe the maintainers
-> > understand the "Why" of it well enough to consider whether or not to
-> > include such a patch.  The "What" should be pretty clear from the patch
-> > description.  The "How" is a technical question that can be discussed
-> > here.
-> 
-> If the "Why" can not be discussed then you don't have a "Why" you can
-> stand behind.
+> Ooh, I forgot to mention another biggie:  There's a way to allocate a
+> reserve pool of memory (I don't remember the exact API, sorry), which
+> can be attached to a specific kmem_cache to be used by processes
+> attempting writeout.  This would allow you to allocate more in-use
+> elements to make forward progress, even if all of your existing
+> elements are already in-use.
 
-Nice try.
+Lars,
 
-> If you don't have a "Why" you can stand behind the "Why" sucks and does
-> not appear to be an appropriate justification for a patch applied to
-> a public piece of code.
+is using a mempool for allocation, in combination with a
+shrinker callback for freeing older entries an option for
+DRBD?
 
-Again, nice try.
+It looks like that could get rid of a fair amount of custom infrastructure.
 
-							Thanx, Paul
+-- 
+All rights reversed.
