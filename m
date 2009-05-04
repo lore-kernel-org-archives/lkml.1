@@ -1,157 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbZEDIte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbZEDJEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752669AbZEDIte (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 04:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZEDItX
+	id S1752125AbZEDJEo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 05:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbZEDJEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 04:49:23 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:34536 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750942AbZEDItW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 04:49:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=e58qYQMkloidwdqyAdCAxv63cpZtxFhFXH+FDYvUsP8oDHf4FAXXuq4BK4gDfzs1vZ
-         QkGkuRVNGmSV8OqbPuGb100Q7CGh2PL5+ec49mQcXpuewXzmO4me2PSXemr9aRdfCsQk
-         QUwICz9mgVQQUA2aL0b0rDbWKu8IY+v1ZbQbs=
-Date: Mon, 4 May 2009 12:49:16 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: David Rientjes <rientjes@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Jack Steiner <steiner@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: introducing __GFP_PANIC
-Message-ID: <20090504084916.GB4173@lenovo>
-References: <20090503121228.GC4615@lenovo> <1241353621.27683.3.camel@penberg-laptop> <20090503143824.GF4615@lenovo> <84144f020905030954m434d0550l3ed7ef7436c803df@mail.gmail.com> <20090503172338.GG4615@lenovo> <84144f020905031038n751b48afsaefc3765ed632f82@mail.gmail.com> <20090503204542.GJ4615@lenovo> <alpine.DEB.2.00.0905031357140.17811@chino.kir.corp.google.com> <20090504081454.GA4173@lenovo> <1241425941.21088.19.camel@penberg-laptop>
+	Mon, 4 May 2009 05:04:33 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58467 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751238AbZEDJEc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 05:04:32 -0400
+Message-ID: <49FEAFD0.30106@cn.fujitsu.com>
+Date: Mon, 04 May 2009 17:05:20 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241425941.21088.19.camel@penberg-laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/6] tracing: increase size of number of possible events
+References: <20090424043005.338878133@goodmis.org> <20090424043111.983189535@goodmis.org> <49F15607.1090707@cn.fujitsu.com> <alpine.DEB.2.00.0904241004000.24293@gandalf.stny.rr.com> <alpine.DEB.2.00.0904241004490.24293@gandalf.stny.rr.com> <49F404E4.6040907@cn.fujitsu.com> <alpine.DEB.2.00.0904260919370.24293@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0904260919370.24293@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Pekka Enberg - Mon, May 04, 2009 at 11:32:21AM +0300]
-| Hi Cyrill,
-| 
-| On Mon, 2009-05-04 at 12:14 +0400, Cyrill Gorcunov wrote:
-| > mm: introduce __GFP_PANIC
-| > 
-| > Sometime we need that memory obtained via kmalloc
-| > should always be granted. If there is no enough
-| > memory we just can't go further.
-| > 
-| > For such a case we introduce __GFP_PANIC panic
-| > modificator. If memory can't be granted -- we just
-| > panic.
-| > 
-| > Note that __GFP_PANIC implicitly turn off failslab
-| > facility on such kind calls.
-| > 
-| > Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-| > ---
-| >  include/linux/gfp.h      |   13 ++++++++++---
-| >  include/linux/slab_def.h |    1 +
-| >  mm/failslab.c            |    3 +++
-| >  mm/page_alloc.c          |   17 +++++++++++++++--
-| >  4 files changed, 29 insertions(+), 5 deletions(-)
-| > 
-| > Index: linux-2.6.git/include/linux/gfp.h
-| > =====================================================================
-| > --- linux-2.6.git.orig/include/linux/gfp.h
-| > +++ linux-2.6.git/include/linux/gfp.h
-| > @@ -7,6 +7,7 @@
-| >  #include <linux/topology.h>
-| >  
-| >  struct vm_area_struct;
-| > +void oom_panic(gfp_t gfp_mask, unsigned int order);
-| >  
-| >  /*
-| >   * GFP bitmasks..
-| > @@ -58,7 +59,9 @@ struct vm_area_struct;
-| >  #define __GFP_NOTRACK	((__force gfp_t)0)
-| >  #endif
-| >  
-| > -#define __GFP_BITS_SHIFT 22	/* Room for 22 __GFP_FOO bits */
-| > +#define __GFP_PANIC	((__force gfp_t)0x400000u) /* Panic on page alloction failure */
-| > +
-| > +#define __GFP_BITS_SHIFT 23	/* Room for 23 __GFP_FOO bits */
-| >  #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
-| >  
-| >  /* This equals 0, but use constants in case they ever change */
-| > @@ -196,8 +199,10 @@ __alloc_pages_nodemask(gfp_t gfp_mask, u
-| >  static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
-| >  						unsigned int order)
-| >  {
-| > -	if (unlikely(order >= MAX_ORDER))
-| > +	if (unlikely(order >= MAX_ORDER)) {
-| > +		oom_panic(gfp_mask, order);
-| 
-| This...
-| 
-| >  		return NULL;
-| > +	}
-| >  
-| >  	/* Unknown node is current node */
-| >  	if (nid < 0)
-| > @@ -212,8 +217,10 @@ extern struct page *alloc_pages_current(
-| >  static inline struct page *
-| >  alloc_pages(gfp_t gfp_mask, unsigned int order)
-| >  {
-| > -	if (unlikely(order >= MAX_ORDER))
-| > +	if (unlikely(order >= MAX_ORDER)) {
-| > +		oom_panic(gfp_mask, order);
-| 
-| ...this...
-| 
-| >  		return NULL;
-| > +	}
-| >  
-| >  	return alloc_pages_current(gfp_mask, order);
-| >  }
-| > Index: linux-2.6.git/include/linux/slab_def.h
-| > =====================================================================
-| > --- linux-2.6.git.orig/include/linux/slab_def.h
-| > +++ linux-2.6.git/include/linux/slab_def.h
-| > @@ -143,6 +143,7 @@ static __always_inline void *kmalloc(siz
-| >  			i++;
-| >  #include <linux/kmalloc_sizes.h>
-| >  #undef CACHE
-| > +		oom_panic(flags, get_order(size));
-| 
-| ...and this look fishy. They're static inlines that get expanded
-| everywhere and they're known to be performance sensitive paths. I don't
-| see much point in checking for >= MAX_ORDER at all because we will get a
-| nice oops anyway for that.
+(Sorry for the delayed reply)
 
-Yep, I noticed that it is really ugly cases to put oom_panic
-here. But shouldn't we cover all the sites? If I'm not missing
-something, for slab with builtin constant greater then KMALLOC_MAX_SIZE
-the kmalloc caller could get NULL even if __GFP_PANIC specified.
-Which in turn means __GFP_PANIC just doesn't work properly here.
+Steven Rostedt wrote:
+> Hi Li,
+> 
+> 
+> On Sun, 26 Apr 2009, Li Zefan wrote:
+> 
+>> Steven Rostedt wrote:
+>>> On Fri, 24 Apr 2009, Steven Rostedt wrote:
+>>>
+>>>> On Fri, 24 Apr 2009, Li Zefan wrote:
+>>>>> console 1:
+>>>>>  # cat /debug/tracing/trace_pipe
+>>>>>
+>>>>> console 2:
+>>>>> while (1) {
+>>>>> 	insmod trace-events-sample.ko
+>>>>> 	echo foo_bar > /debug/tracing/set_event
+>>>>> 	rmmod trace-events-sample.ko
+>>>>> }
+>>>>>
+>>>>> I got this immediately:
+>>>>>
+>>>>> BUG: unable to handle kernel NULL pointer dereference at 0000006f
+>>>>> IP: [<c05210f3>] bstr_printf+0x2ce/0x302
+>>>>> ...
+>>>>> Call Trace:
+>>>>>  [<c0476d12>] ? trace_seq_bprintf+0x28/0x41
+>>>>>  [<c0477569>] ? trace_bprint_print+0x58/0x6c
+>>>>>  [<c0472ffc>] ? print_trace_line+0x2c5/0x2df
+>>>>>  [<c0428a41>] ? sub_preempt_count+0x85/0xa0
+>>>>>  [<c04758cf>] ? tracing_read_pipe+0x118/0x191
+>>>>>  [<c04757b7>] ? tracing_read_pipe+0x0/0x191
+>>>>>  [<c04b09f9>] ? vfs_read+0x8f/0x136
+>>>>>  [<c04b0da3>] ? sys_read+0x40/0x65
+>>>>>  [<c0402a68>] ? sysenter_do_call+0x12/0x36
+>>>>>
+>>>>> (We can even get other crashes..)
+>>>>>
+>>>> Can you send me your full bootlog and config. I'm not able to reproduce 
+>>>> this.
+>>> And the SHA1 of the HEAD of the git repo you are using.
+>>>
+>>> Thanks,
+>>>
+>> the HEAD: 9ce5424d75e56891905b77d1589924765e62059a + this patch
+>>
+>> (I commented out "hi" from the sample module)
+> 
+> I found that commenting out the "hi" too helped in causing races.
+> 
+>> I think it's because "type" is wrapped back to 0. I changed the test script
+>> like this:
+>>
+>> while (foo_bar.id < 65536)
+>> {
+>> 	insmod trace-events-sample.ko
+>> 	rmmod trace-events-sample.ko
+>> }
+>>
+>> for ((; ;))
+>> {
+>>         insmod /home/lizf/linux-2.6-tip/samples/trace_events/*.ko
+>>         echo trace-events-sample:foo_bar > /mnt/tracing/set_event
+>>         sleep 1
+>>         cat /mnt/tracing/trace
+>>         rmmod /home/lizf/linux-2.6-tip/samples/trace_events/*.ko
+>> }
+>>
+> 
+> Could you try my git repo with my latest changes?
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> 
+>  branch: rfc/debugfs
+> 
 
-Anyway, I'll update the patch with fixes you proposed should be done.
-Wait a bit :)
+The bug won't be triggered with your latest changes, but it has nothing
+to do with the debugfs patch, it's because this patch:
+	"tracing/events: reuse trace event ids after overflow"
 
-| 
-| __GFP_PANIC is an annotation saying that it's okay for a particular
-| call-site not to check for NULL because we never expect to run out of
-| memory at that point. But we don't really need to panic() for all the
-| possible *errors*, just for the out-of-memory case.
-| 
-| 			Pekka
-| 
+But that patch just hides the bug not fixes it.. I thought I explained
+the bug clearly. :(
 
-Which means, __GFP_PANIC will not grant the guarantee to a caller
-that he will not get NULL deref even with __GFP_PANIC specified?
+I think the bug is triggered because a wrong trace_event->trace() is called.
 
-Perhaps I missing something...
 
-	-- Cyrill
+Before the above patch:
+   id overflowed
+ =>foo_bar.id == 6 == TRACE_BPRINT
+ =>echo foo_bar > set_event
+ =>sleep N secs
+ =>rmmod sample
+ =>cat trace
+   =>trace_bprint_event->trace() is called!!
+     =>oops!!!
+
+
+After the above patch:
+
+   Suppose id 0 ~ 65534 are used, only 65535 is left, and we have 2 different
+   sample module trace_event subsystems foo and bar.
+ =>insmod foo.ko, and foo.id == 65535
+ =>echo foo > set_event
+ =>sleep N secs
+ =>rmmod foo.ko
+ =>insmod bar.ko, and bar.id == 65535
+ =>cat trace
+   =>bar->trace() will be called on events which were generated by foo!
+
+So is it possible/sane to discard corresponding events from ring buffer when
+we unload a module?
+
+Correct me if I'm wrong..
+
