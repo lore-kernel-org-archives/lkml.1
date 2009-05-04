@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbZEDOks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbZEDOka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757374AbZEDOks (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 10:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757427AbZEDOk2
+	id S1757415AbZEDOka (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 10:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbZEDOkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 10:40:28 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:36469 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757319AbZEDOkS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 10:40:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Pgq6JkHQt2B2w5oUZx6ddkg6YZPVDFa/q7fGNXhEFKmooZpKHSHX6Yt1vyPFpNlTbk
-         v7956pvN+1Jcpr0G9kckTh9sGFKkP+KX6glC3uTaC8nCjmPIvgW7HN7n/toqXzujuHev
-         vFXIjKDY3M7/R12GSwXH+7VGAhwWO9XLVKpCY=
+	Mon, 4 May 2009 10:40:15 -0400
+Received: from h155.mvista.com ([63.81.120.155]:43050 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756107AbZEDOkN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 10:40:13 -0400
+Message-ID: <49FEFE9C.9060102@ru.mvista.com>
+Date: Mon, 04 May 2009 18:41:32 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-In-Reply-To: <20090502024719.GA29730@localhost>
-References: <200904302208.n3UM8t9R016687@imap1.linux-foundation.org>
-	 <20090501012212.GA5848@localhost>
-	 <20090430194907.82b31565.akpm@linux-foundation.org>
-	 <20090502023125.GA29674@localhost> <20090502024719.GA29730@localhost>
-Date: Mon, 4 May 2009 23:40:18 +0900
-X-Google-Sender-Auth: 3cc249b2e443da7c
-Message-ID: <2f11576a0905040740m779464fdobd435a9b88a4ae67@mail.gmail.com>
-Subject: Re: [RFC][PATCH] vmscan: don't export nr_saved_scan in /proc/zoneinfo
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Tejun Heo <tj@kernel.org>
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
+       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
+       fujita.tomonori@lab.ntt.co.jp, zaitcev@redhat.com,
+       Geert.Uytterhoeven@sonycom.com, sfr@canb.auug.org.au,
+       grant.likely@secretlab.ca, paul.clements@steeleye.com, tim@cyberelk.net,
+       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
+       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
+       davem@davemloft.net, rusty@rustcorp.com.au,
+       Markus.Lidel@shadowconnect.com, bharrosh@panasas.com,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH 08/11] block: cleanup rq->data_len usages
+References: <1241423927-11871-1-git-send-email-tj@kernel.org> <1241423927-11871-9-git-send-email-tj@kernel.org>
+In-Reply-To: <1241423927-11871-9-git-send-email-tj@kernel.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The lru->nr_saved_scan's are not meaningful counters for even kernel
-> developers.  They typically are smaller than 32 and are always 0 for
-> large lists. So remove them from /proc/zoneinfo.
->
-> Hopefully this interface change won't break too many scripts.
-> /proc/zoneinfo is too unstructured to be script friendly, and I wonder
-> the affected scripts - if there are any - are still bleeding since the
-> not long ago commit "vmscan: split LRU lists into anon & file sets",
-> which also touched the "scanned" line :)
->
-> If we are to re-export accumulated vmscan counts in the future, they
-> can go to new lines in /proc/zoneinfo instead of the current form, or
-> to /sys/devices/system/node/node0/meminfo?
->
-> CC: Christoph Lameter <cl@linux-foundation.org>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+Tejun Heo wrote:
 
- Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> With recent unification of fields, it's now guaranteed that
+> rq->data_len always equals blk_rq_bytes().  Convert all non-IDE direct
+> users to accessors.  IDE will be converted in a separate patch.
+
+> Boaz: spotted incorrect data_len/resid_len conversion in osd.
+
+> [ Impact: convert direct rq->data_len usages to blk_rq_bytes() ]
+
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+MBR, Sergei
