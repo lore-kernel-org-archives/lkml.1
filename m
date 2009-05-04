@@ -1,53 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbZEDRG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757672AbZEDRHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259AbZEDRG4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 13:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZEDRGr
+	id S1757672AbZEDRHb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 13:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZEDRHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 13:06:47 -0400
-Received: from dspnet.fr.eu.org ([213.186.44.138]:3626 "EHLO dspnet.fr.eu.org"
+	Mon, 4 May 2009 13:07:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52335 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752320AbZEDRGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 13:06:46 -0400
-Date: Mon, 4 May 2009 19:06:37 +0200
-From: Olivier Galibert <galibert@pobox.com>
-To: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090504170636.GA56325@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <20090504124129.GL7141@linux.vnet.ibm.com> <20090504124433.GW8822@parisc-linux.org> <20090504130638.GN7141@linux.vnet.ibm.com> <20090504132119.GX8822@parisc-linux.org> <20090504143919.GA6740@linux.vnet.ibm.com> <20090504150834.GZ8822@parisc-linux.org> <1241451391.20170.12.camel@norville.austin.ibm.com> <m14ow0hnal.fsf@fess.ebiederm.org> <1241453259.20170.17.camel@norville.austin.ibm.com> <m1k54wal0j.fsf@fess.ebiederm.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752142AbZEDRHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 13:07:16 -0400
+Date: Mon, 4 May 2009 17:06:30 GMT
+From: tip-bot for Peter Zijlstra <peterz@infradead.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, peterz@infradead.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, peterz@infradead.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1241455664.7620.4938.camel@twins>
+References: <1241455664.7620.4938.camel@twins>
+Subject: [tip:perfcounters/core] perf_counter: x86: fixup nmi_watchdog vs perf_counter boo-boo
+Message-ID: <tip-dea47c786c4a4198f4d6e6ba860ce59729c45481@git.kernel.org>
+Git-Commit-ID: dea47c786c4a4198f4d6e6ba860ce59729c45481
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <m1k54wal0j.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.4.2.3i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 04 May 2009 17:06:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 09:30:20AM -0700, Eric W. Biederman wrote:
-> When all of the pieces are public how can having secret veiled reasons
-> make sense?
+Commit-ID:  dea47c786c4a4198f4d6e6ba860ce59729c45481
+Gitweb:     http://git.kernel.org/tip/dea47c786c4a4198f4d6e6ba860ce59729c45481
+Author:     Peter Zijlstra <peterz@infradead.org>
+AuthorDate: Mon, 4 May 2009 18:47:44 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 4 May 2009 19:04:46 +0200
 
-Because knowingly violating a patent triples the damages, among other
-things.
+perf_counter: x86: fixup nmi_watchdog vs perf_counter boo-boo
 
-There's a persistent rumor that a valid microsoft US software patent
-exists that covers the standard method of handling long file names on
-FAT filesystems.  It seems that such a patent is used by microsoft in
-litigations, the latest being against tomtom.  I think all of these
-litigations have been settled, but I can easily be wrong.
+Invert the atomic_inc_not_zero() test so that we will indeed detect the
+first activation.
 
-I have no idea whether such a patent actually exists, and even knowing
-the reference (I don't) I am not competent to judge what it covers or
-whether it would actually hold up in court.
+Also rename the global num_counters, since its easy to confuse with
+x86_pmu.num_counters.
 
-But knowingly violating a patent is consider way worse in US courts
-than simple independant recreation.  So I guess the knowingly part is
-what the "you need a local lawyer" crowd tries to avoid.
+[ Impact: fix non-working perfcounters on AMD CPUs, cleanup ]
 
-  OG.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1241455664.7620.4938.camel@twins>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
+
+---
+ arch/x86/kernel/cpu/perf_counter.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+index d4c0cc9..196b58f 100644
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@ -171,7 +171,7 @@ again:
+ 	return new_raw_count;
+ }
+ 
+-static atomic_t num_counters;
++static atomic_t active_counters;
+ static DEFINE_MUTEX(pmc_reserve_mutex);
+ 
+ static bool reserve_pmc_hardware(void)
+@@ -224,7 +224,7 @@ static void release_pmc_hardware(void)
+ 
+ static void hw_perf_counter_destroy(struct perf_counter *counter)
+ {
+-	if (atomic_dec_and_mutex_lock(&num_counters, &pmc_reserve_mutex)) {
++	if (atomic_dec_and_mutex_lock(&active_counters, &pmc_reserve_mutex)) {
+ 		release_pmc_hardware();
+ 		mutex_unlock(&pmc_reserve_mutex);
+ 	}
+@@ -248,12 +248,12 @@ static int __hw_perf_counter_init(struct perf_counter *counter)
+ 		return -ENODEV;
+ 
+ 	err = 0;
+-	if (atomic_inc_not_zero(&num_counters)) {
++	if (!atomic_inc_not_zero(&active_counters)) {
+ 		mutex_lock(&pmc_reserve_mutex);
+-		if (atomic_read(&num_counters) == 0 && !reserve_pmc_hardware())
++		if (atomic_read(&active_counters) == 0 && !reserve_pmc_hardware())
+ 			err = -EBUSY;
+ 		else
+-			atomic_inc(&num_counters);
++			atomic_inc(&active_counters);
+ 		mutex_unlock(&pmc_reserve_mutex);
+ 	}
+ 	if (err)
+@@ -280,7 +280,7 @@ static int __hw_perf_counter_init(struct perf_counter *counter)
+ 	if (capable(CAP_SYS_ADMIN) && hw_event->nmi)
+ 		hwc->nmi = 1;
+ 
+-	hwc->irq_period		= hw_event->irq_period;
++	hwc->irq_period	= hw_event->irq_period;
+ 	if ((s64)hwc->irq_period <= 0 || hwc->irq_period > x86_pmu.max_period)
+ 		hwc->irq_period = x86_pmu.max_period;
+ 
+@@ -871,7 +871,7 @@ perf_counter_nmi_handler(struct notifier_block *self,
+ 	struct pt_regs *regs;
+ 	int ret;
+ 
+-	if (!atomic_read(&num_counters))
++	if (!atomic_read(&active_counters))
+ 		return NOTIFY_DONE;
+ 
+ 	switch (cmd) {
