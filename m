@@ -1,71 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757957AbZEECTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbZEECVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757957AbZEECTM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 22:19:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbZEECSz
+	id S1756460AbZEECVg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 22:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbZEECV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 22:18:55 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:48917 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753901AbZEECSy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 22:18:54 -0400
-Date: Mon, 4 May 2009 20:18:53 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       tridge@samba.org, Al Viro <viro@ZenIV.linux.org.uk>,
-       Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
-       Steve French <smfrench@gmail.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090505021853.GF8822@parisc-linux.org>
-References: <20090504132119.GX8822@parisc-linux.org> <20090504143919.GA6740@linux.vnet.ibm.com> <20090504150834.GZ8822@parisc-linux.org> <20090504153815.GB6740@linux.vnet.ibm.com> <20090504155505.GA8822@parisc-linux.org> <20090504161024.GC6740@linux.vnet.ibm.com> <20090504162252.GB8822@parisc-linux.org> <20090504221208.GB29402@kroah.com> <20090505020149.GE8822@parisc-linux.org> <20090505021121.GA6982@linux.vnet.ibm.com>
+	Mon, 4 May 2009 22:21:26 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:32848 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752577AbZEECV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 22:21:26 -0400
+Date: Mon, 4 May 2009 22:08:06 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: nishimura@mxp.nes.nec.co.jp
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hugh@veritas.com" <hugh@veritas.com>, d-nishimura@mtf.biglobe.ne.jp
+Subject: Re: [PATCH] memcg: fix stale swap cache leak v5
+Message-ID: <20090504163806.GA4407@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090430161627.0ccce565.kamezawa.hiroyu@jp.fujitsu.com> <20090430163539.7a882cef.kamezawa.hiroyu@jp.fujitsu.com> <20090430180426.25ae2fa6.kamezawa.hiroyu@jp.fujitsu.com> <20090430094252.GG4430@balbir.in.ibm.com> <20090430184738.752858ea.kamezawa.hiroyu@jp.fujitsu.com> <20090430181246.GM4430@balbir.in.ibm.com> <20090501133317.9c372d38.d-nishimura@mtf.biglobe.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090505021121.GA6982@linux.vnet.ibm.com>
+In-Reply-To: <20090501133317.9c372d38.d-nishimura@mtf.biglobe.ne.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 07:11:21PM -0700, Paul E. McKenney wrote:
-> On Mon, May 04, 2009 at 08:01:49PM -0600, Matthew Wilcox wrote:
-> > On Mon, May 04, 2009 at 03:12:08PM -0700, Greg KH wrote:
-> > > But what was wrong with what they told us to do with regards to how to
-> > > specify the copyright on a file?  I don't recall seeing anything that
-> > > contridicted what I was told, but that was many many years ago, so I
-> > > probably am forgetting...
-> > 
-> > I don't remember exactly, and can't be bothered to look it up.  It was
-> > something along the lines of you saying an IBM lawyer had told you
-> > that in:
-> > 
-> > Copyright (c) 2009
-> > 
-> > the (c) was a non-optional part.  I found something that said the (c)
-> > had no legal meaning.
+* Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> [2009-05-01 13:33:17]:
+
+>               processA                   |           processB
+>     -------------------------------------+-------------------------------------
+>       (page_remove_rmap())               |  (shrink_page_list())
+>          mem_cgroup_uncharge_page()      |
+>             ->uncharged because it's not |
+>               PageSwapCache yet.         |
+>               So, both mem/memsw.usage   |
+>               are decremented.           |
+>                                          |    add_to_swap() -> added to swap cache.
 > 
-> http://www.copyright.gov/circs/circ1.pdf
+>     If this page goes thorough without being freed for some reason, this page
+>     doesn't goes back to memcg's LRU because of !PageCgroupUsed.
+
+For some reason could use some clarification.
+
 > 
-> Page 4, bottom of first column through second column.
+> These swap cache cannot be freed in memcg's LRU scanning, and swp_entry cannot
+> be freed properly as a result.
+> This patch adds a hook after add_to_swap() to check the page is mapped by a
+> process or not, and frees it if it has been unmapped already.
+> 
+> If a page has been on swap cache already when the owner process calls
+> page_remove_rmap() -> mem_cgroup_uncharge_page(), the page is not uncharged.
+> It goes back to memcg's LRU even if it goes through shrink_page_list()
+> without being freed, so this patch ignores these case.
+> 
+> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> ---
+>  include/linux/swap.h |   12 ++++++++++++
+>  mm/memcontrol.c      |   14 ++++++++++++++
+>  mm/vmscan.c          |    8 ++++++++
+>  3 files changed, 34 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/swap.h b/include/linux/swap.h
+> index caf0767..8e75d7a 100644
+> --- a/include/linux/swap.h
+> +++ b/include/linux/swap.h
+> @@ -336,11 +336,17 @@ static inline void disable_swap_token(void)
+> 
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+>  extern void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent);
+> +extern int memcg_free_unused_swapcache(struct page *page);
+>  #else
+>  static inline void
+>  mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+>  {
+>  }
+> +static inline int
+> +memcg_free_unused_swapcache(struct page *page)
+> +{
+> +	return 0;
+> +}
+>  #endif
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+>  extern void mem_cgroup_uncharge_swap(swp_entry_t ent);
+> @@ -431,6 +437,12 @@ static inline swp_entry_t get_swap_page(void)
+>  #define has_swap_token(x) 0
+>  #define disable_swap_token() do { } while(0)
+> 
+> +static inline int
+> +memcg_free_unused_swapcache(struct page *page)
+> +{
+> +	return 0;
+> +}
+> +
+>  #endif /* CONFIG_SWAP */
+>  #endif /* __KERNEL__*/
+>  #endif /* _LINUX_SWAP_H */
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 01c2d8f..4f7e5b6 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -1488,6 +1488,7 @@ void mem_cgroup_uncharge_cache_page(struct page *page)
+>  	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
+>  }
+> 
+> +#ifdef CONFIG_SWAP
+>  /*
+>   * called from __delete_from_swap_cache() and drop "page" account.
+>   * memcg information is recorded to swap_cgroup of "ent"
+> @@ -1507,6 +1508,19 @@ void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+>  		css_put(&memcg->css);
+>  }
+> 
+> +int memcg_free_unused_swapcache(struct page *page)
+> +{
+> +	VM_BUG_ON(!PageLocked(page));
+> +	VM_BUG_ON(!PageSwapCache(page));
+> +
+> +	if (mem_cgroup_disabled())
+> +		return 0;
+> +	if (!PageAnon(page) || page_mapped(page))
+> +		return 0;
 
-That notices actually aren't needed any more?  Yes.  The bit I was
-referring to was this:
+Do we need these checks? Isn't PageSwapCache() check and
+page_swapcount() check enough in try_to_free_swap()?
 
-1	 The symbol © (the letter C in a circle), or the word
-  "Copyright," or the abbreviation "Copr."; and
+> +	return try_to_free_swap(page);	/* checks page_swapcount */
 
-In particular, I've seen elsewhere that (c) is not a valid representation
-of 'the letter C in a circle'.
+try_to_free_swap() marks the page as dirty, do you know why?
+
+> +}
+> +#endif /* CONFIG_SWAP */
+> +
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+>  /*
+>   * called from swap_entry_free(). remove record in swap_cgroup and
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index eac9577..c1a7a6f 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -656,6 +656,14 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+>  				goto keep_locked;
+>  			if (!add_to_swap(page))
+>  				goto activate_locked;
+> +			/*
+> +			 * The owner process might have uncharged the page
+> +			 * (by page_remove_rmap()) before it has been added
+> +			 * to swap cache.
+> +			 * Check it here to avoid making it stale.
+> +			 */
+> +			if (memcg_free_unused_swapcache(page))
+> +				goto keep_locked;
+
+Seems reasonable, but I think it is better to check for
+scan_global_lru().. no?
+
+>  			may_enter_fs = 1;
+>  		}
+> 
+> 
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+	Balbir
