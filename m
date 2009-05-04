@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757509AbZEDWeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbZEDWfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757509AbZEDWeq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 18:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZEDWeg
+	id S1757446AbZEDWfa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 18:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbZEDWfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 18:34:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44413 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753117AbZEDWef (ORCPT
+	Mon, 4 May 2009 18:35:18 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:54932 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753192AbZEDWfQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 18:34:35 -0400
-Date: Mon, 4 May 2009 15:24:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
-       security@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Matt Mackall <mpm@selenic.com>
-Subject: Re: [Security] [PATCH] proc: avoid information leaks to non-privileged
- processes
-In-Reply-To: <m1vdogbows.fsf@fess.ebiederm.org>
-Message-ID: <alpine.LFD.2.01.0905041514350.4983@localhost.localdomain>
-References: <20090504125114.5e391564@chukar> <alpine.LFD.2.01.0905041159480.4983@localhost.localdomain> <20090504125124.0f469970@infradead.org> <m1vdogbows.fsf@fess.ebiederm.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 4 May 2009 18:35:16 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=wN+nPj3j4/slTCsGt/F491PhNZscMey0sfYf+Mx+PMWMacXFDLiB7bcYx4oWh2WN+
+	ajVhUtkphQ7I2M8G3PWNg==
+Date: Mon, 4 May 2009 15:35:08 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Greg KH <greg@kroah.com>
+cc: =?UTF-8?Q?Arve_Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, San Mehat <san@android.com>,
+       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>
+Subject: Re: [patch 1/5] oom: cleanup android low memory killer
+In-Reply-To: <20090504220905.GA29402@kroah.com>
+Message-ID: <alpine.DEB.2.00.0905041529570.2310@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0905031305130.18426@chino.kir.corp.google.com> <d6200be20905041448p1ca2d068r5ba8348488842b5c@mail.gmail.com> <20090504220905.GA29402@kroah.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 4 May 2009, Greg KH wrote:
 
-
-On Mon, 4 May 2009, Eric W. Biederman wrote:
-
-> Arjan van de Ven <arjan@infradead.org> writes:
+> Are these the patches already in my tree?
 > 
-> > On Mon, 4 May 2009 12:00:12 -0700 (PDT)
-> > Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> >
-> >> 
-> >> 
-> >> On Mon, 4 May 2009, Jake Edge wrote:
-> >> >
-> >> > This is essentially v2 of "[PATCH] proc: avoid leaking eip, esp, or
-> >> > wchan to non-privileged processes", adding some of Eric Biederman's
-> >> > suggestions as well as the start_stack change (only give out that
-> >> > address if the process is ptrace()-able).  This has been tested
-> >> > with ps and top without any ill effects being seen.
-> >> 
-> >> Looks sane to me. Anybody objects?
-> >> 
-> >
-> > Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+> If so, David, just respin your patches against the linux-next tree and
+> resend them, that should be sufficient.
 > 
-> Looks sane here.
+
+This patch in the series is really more of a convenience than anything 
+else since it doesn't change anything functionally.  I had to modify the 
+lowmemorykiller later because there's a potential for a NULL pointer from 
+dereferencing p->mm without holding task_lock(p) and also because I moved 
+oomkilladj from struct task_struct to struct mm_struct.
+
+The entire patchset is really based on the move of p->oomkilladj since it 
+allows us to prevent an oom killer livelock when killing a task that 
+shares memory with an OOM_DISABLE task.  That change obviously has to go 
+through Andrew but lowmemorykiller.c must be also be changed accordingly.
+
+I'd be fine with dropping my lowmemorykiller changes if they'd like to fix 
+this up themselves.  Otherwise, I need to know the path to which these get 
+into the kernel.
+
+> If not, Arve, can you send me your patches first?
 > 
-> Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+> David, in the future, can you cc: me anything under drivers/staging/ so
+> that I know to pick the patches up?
+> 
 
-Ok, applied.
-
-Also, does anybody have any commentary or opinion on the patch by Matt 
-Mackall to use stronger random numbers than "get_random_int()". I wonder 
-what the performance impact of that is - "get_random_int()" is very cheap 
-by design, and many users may consider calling "get_random_bytes()" to be 
-overkill and a potential performance issue.
-
-Quite frankly, the way "get_random_bytes()" works now (it does a _full_ 
-sha thing every time), I think it's insane overkill. But I do have to 
-admit that our current "get_random_int()" is insane _underkill_.
-
-I'd like to improve the latter without going to quie the extreme that 
-matt's patch did.
-
-		Linus
+Sure.
