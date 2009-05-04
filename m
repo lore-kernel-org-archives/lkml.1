@@ -1,166 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbZEDOMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756400AbZEDONV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756673AbZEDOMz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 10:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZEDOMr
+	id S1756400AbZEDONV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 10:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbZEDOND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 10:12:47 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:59172 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751412AbZEDOMq (ORCPT
+	Mon, 4 May 2009 10:13:03 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:10315 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755435AbZEDONB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 10:12:46 -0400
-Date: Mon, 4 May 2009 10:12:45 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Li Zefan <lizf@cn.fujitsu.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/6] tracing: increase size of number of possible
- events
-In-Reply-To: <49FEAFD0.30106@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0905041003570.12811@gandalf.stny.rr.com>
-References: <20090424043005.338878133@goodmis.org> <20090424043111.983189535@goodmis.org> <49F15607.1090707@cn.fujitsu.com> <alpine.DEB.2.00.0904241004000.24293@gandalf.stny.rr.com> <alpine.DEB.2.00.0904241004490.24293@gandalf.stny.rr.com>
- <49F404E4.6040907@cn.fujitsu.com> <alpine.DEB.2.00.0904260919370.24293@gandalf.stny.rr.com> <49FEAFD0.30106@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 4 May 2009 10:13:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=VgIXcrhR81EsSGZTdbIeQxw0Pr6zJ/IL8oShMsogyWRdxfhPInaqL10cmVwgS0c8Sw
+         pkn+VnTo6B30SfAghyv3jY4f8xxEIbmAAU+ngrvqgdPQanfmtX09aPox3kNYIudP2143
+         aNrlkXNCR+x0hP9oWbK9nIKglpuZADpM2Qfx4=
+Date: Mon, 4 May 2009 18:12:56 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Christoph Lameter <cl@linux.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [PATCH -tip] mm: introduce __GFP_PANIC modifier
+Message-ID: <20090504141256.GK4173@lenovo>
+References: <20090504122740.GH4173@lenovo> <20090504131311.GA23330@elte.hu> <20090504131638.GJ4173@lenovo> <alpine.DEB.1.10.0905040940490.9553@qirst.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0905040940490.9553@qirst.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Christoph Lameter - Mon, May 04, 2009 at 09:47:45AM -0400]
+| 
+| 
+| Could you try to avoid consuming another GFP flag? __GFP_BITS_SHIFT is
+| used elsewhere to figure out where to put miscellanous flags into the gfp
+| mask. This is pretty limited right now and so the patch does work.
+| 
+| But maybe we can combine some flags __GFP_NOFAIL | __GFP_REPEAT or so?
+| 
+| __GFP_NOFAIL already has the semantics that the allocation cannot fail and
+| that the page allocator must never return NULL.
+| 
+| 
 
-On Mon, 4 May 2009, Li Zefan wrote:
-> >>>>>  # cat /debug/tracing/trace_pipe
-> >>>>>
-> >>>>> console 2:
-> >>>>> while (1) {
-> >>>>> 	insmod trace-events-sample.ko
-> >>>>> 	echo foo_bar > /debug/tracing/set_event
-> >>>>> 	rmmod trace-events-sample.ko
-> >>>>> }
-> >>>>>
-> >>>>> I got this immediately:
-> >>>>>
-> >>>>> BUG: unable to handle kernel NULL pointer dereference at 0000006f
-> >>>>> IP: [<c05210f3>] bstr_printf+0x2ce/0x302
-> >>>>> ...
-> >>>>> Call Trace:
-> >>>>>  [<c0476d12>] ? trace_seq_bprintf+0x28/0x41
-> >>>>>  [<c0477569>] ? trace_bprint_print+0x58/0x6c
-> >>>>>  [<c0472ffc>] ? print_trace_line+0x2c5/0x2df
-> >>>>>  [<c0428a41>] ? sub_preempt_count+0x85/0xa0
-> >>>>>  [<c04758cf>] ? tracing_read_pipe+0x118/0x191
-> >>>>>  [<c04757b7>] ? tracing_read_pipe+0x0/0x191
-> >>>>>  [<c04b09f9>] ? vfs_read+0x8f/0x136
-> >>>>>  [<c04b0da3>] ? sys_read+0x40/0x65
-> >>>>>  [<c0402a68>] ? sysenter_do_call+0x12/0x36
-> >>>>>
-> >>>>> (We can even get other crashes..)
-> >>>>>
-> >>>> Can you send me your full bootlog and config. I'm not able to reproduce 
-> >>>> this.
-> >>> And the SHA1 of the HEAD of the git repo you are using.
-> >>>
-> >>> Thanks,
-> >>>
-> >> the HEAD: 9ce5424d75e56891905b77d1589924765e62059a + this patch
-> >>
-> >> (I commented out "hi" from the sample module)
-> > 
-> > I found that commenting out the "hi" too helped in causing races.
-> > 
-> >> I think it's because "type" is wrapped back to 0. I changed the test script
-> >> like this:
-> >>
-> >> while (foo_bar.id < 65536)
-> >> {
-> >> 	insmod trace-events-sample.ko
-> >> 	rmmod trace-events-sample.ko
-> >> }
-> >>
-> >> for ((; ;))
-> >> {
-> >>         insmod /home/lizf/linux-2.6-tip/samples/trace_events/*.ko
-> >>         echo trace-events-sample:foo_bar > /mnt/tracing/set_event
-> >>         sleep 1
-> >>         cat /mnt/tracing/trace
-> >>         rmmod /home/lizf/linux-2.6-tip/samples/trace_events/*.ko
-> >> }
-> >>
-> > 
-> > Could you try my git repo with my latest changes?
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> > 
-> >  branch: rfc/debugfs
-> > 
-> 
-> The bug won't be triggered with your latest changes, but it has nothing
-> to do with the debugfs patch, it's because this patch:
-> 	"tracing/events: reuse trace event ids after overflow"
-> 
-> But that patch just hides the bug not fixes it.. I thought I explained
-> the bug clearly. :(
-> 
-> I think the bug is triggered because a wrong trace_event->trace() is called.
-> 
-> 
-> Before the above patch:
->    id overflowed
->  =>foo_bar.id == 6 == TRACE_BPRINT
->  =>echo foo_bar > set_event
->  =>sleep N secs
->  =>rmmod sample
->  =>cat trace
->    =>trace_bprint_event->trace() is called!!
->      =>oops!!!
-> 
-> 
-> After the above patch:
-> 
->    Suppose id 0 ~ 65534 are used, only 65535 is left, and we have 2 different
->    sample module trace_event subsystems foo and bar.
->  =>insmod foo.ko, and foo.id == 65535
->  =>echo foo > set_event
->  =>sleep N secs
->  =>rmmod foo.ko
->  =>insmod bar.ko, and bar.id == 65535
->  =>cat trace
->    =>bar->trace() will be called on events which were generated by foo!
-> 
-> So is it possible/sane to discard corresponding events from ring buffer when
-> we unload a module?
-> 
-> Correct me if I'm wrong..
+As I see page allocator already quite modified in -mm tree.
+Christoph will kmalloc with (__GFP_NOFAIL | __GFP_REPEAT)
+inform us on exhausted memory? Or we just stuck with blank
+screen instead (not blank actually but with previous messages)?
 
-OK, I understand what you are saying.
-
-You are saying that if we reuse the event id, then there is a case that 
-the event can be used by another module, and if we have old data in the 
-ring buffer the other module's callback will be called with the previous 
-module's data.
-
-Right?
-
-
-A module should not be storing pointers into the ring buffer. We do 
-that with the trace_print, but I think we were suppose to do something 
-special if we detect that it is a module being called.
-
-  Frederic?
-
-If the module only stores data and never a pointer, then the worst thing 
-stale data would do is show junk.
-
-Scanning the ring buffer and discarding the module data can be very racy. 
-We would need to disable the ring buffer while doing this. Probably the 
-best thing to do is to simpy reset the ring buffers if it detects that a 
-module is being unloaded and has callbacks. The data in the ring buffer is 
-garbage anyway, so might as well reset it.
-
--- Steve
-
+	-- Cyrill
