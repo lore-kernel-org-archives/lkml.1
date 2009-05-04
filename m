@@ -1,58 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756174AbZEDNPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbZEDNQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756174AbZEDNPd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 09:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbZEDNPZ
+	id S1756280AbZEDNQM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 09:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbZEDNPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 09:15:25 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57253 "EHLO mx3.mail.elte.hu"
+	Mon, 4 May 2009 09:15:55 -0400
+Received: from cmpxchg.org ([85.214.51.133]:52879 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754335AbZEDNPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 09:15:24 -0400
-Date: Mon, 4 May 2009 15:14:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tobias Doerffel <tobias.doerffel@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Willy Tarreau <w@1wt.eu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Specific support for Intel Atom architecture
-Message-ID: <20090504131457.GA25844@elte.hu>
-References: <200904301408.09370.tobias.doerffel@gmail.com> <20090503053821.GI570@1wt.eu> <49FD3E56.3010803@zytor.com> <200905031308.51316.tobias.doerffel@gmail.com>
-MIME-Version: 1.0
+	id S1754789AbZEDNPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 09:15:54 -0400
+Date: Mon, 4 May 2009 15:13:59 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Magnus Damm <magnus.damm@gmail.com>, linux-media@vger.kernel.org,
+       Hans Verkuil <hverkuil@xs4all.nl>, Paul Mundt <lethal@linux-sh.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [patch 3/3 v2] mm: introduce follow_pfn()
+Message-ID: <20090504131359.GA17887@cmpxchg.org>
+References: <20090501181449.GA8912@cmpxchg.org> <1241430874-12667-3-git-send-email-hannes@cmpxchg.org> <20090504110841.GA19646@infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200905031308.51316.tobias.doerffel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090504110841.GA19646@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Analoguous to follow_phys(), add a helper that looks up the PFN at a
+user virtual address in an IO mapping or a raw PFN mapping.
 
-* Tobias Doerffel <tobias.doerffel@gmail.com> wrote:
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+---
+ include/linux/mm.h |    2 ++
+ mm/memory.c        |   29 +++++++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+), 0 deletions(-)
 
-> Am Sonntag, 3. Mai 2009 08:48:54 schrieb H. Peter Anvin:
-> > Willy Tarreau wrote:
-> > >> $(call cc-option,-march=atom,-march=i686)
-> > >
-> > > if it's an in-order architecture, wouldn't it be better to tune for i386
-> > > or i486 instead ?
-> >
-> > Possibly.  It would be worth measuring.
->
-> How would one do that (never benchmarked kernel stuff before)?
+On Mon, May 04, 2009 at 07:08:41AM -0400, Christoph Hellwig wrote:
+> On Mon, May 04, 2009 at 11:54:34AM +0200, Johannes Weiner wrote:
+> > Analoguous to follow_phys(), add a helper that looks up the PFN
+> > instead.  It also only allows IO mappings or PFN mappings.
+> 
+> A kerneldoc describing what it does and the limitations would be
+> extremly helpful.
 
-A standard method is to run lmbench and compare the results - 
-lmbench has a built-in 'report comparison between two runs' feature.
+Agreed.  How is this?
 
-	Ingo
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index bff1f0d..1cca8b6 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -794,6 +794,8 @@ int copy_page_range(struct mm_struct *dst, struct mm_struct *src,
+ 			struct vm_area_struct *vma);
+ void unmap_mapping_range(struct address_space *mapping,
+ 		loff_t const holebegin, loff_t const holelen, int even_cows);
++int follow_pfn(struct vm_area_struct *vma, unsigned long address,
++	unsigned long *pfn);
+ int follow_phys(struct vm_area_struct *vma, unsigned long address,
+ 		unsigned int flags, unsigned long *prot, resource_size_t *phys);
+ int generic_access_phys(struct vm_area_struct *vma, unsigned long addr,
+diff --git a/mm/memory.c b/mm/memory.c
+index c047950..f86aee1 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3046,6 +3046,35 @@ out:
+ 	return -EINVAL;
+ }
+ 
++/**
++ * follow_pfn - look up PFN at a user virtual address
++ * @vma: memory mapping
++ * @address: user virtual address
++ * @pfn: location to store found PFN
++ *
++ * Only IO mappings and raw PFN mappings are allowed.
++ *
++ * Returns zero and the pfn at @pfn on success, -ve otherwise.
++ */
++int follow_pfn(struct vm_area_struct *vma, unsigned long address,
++	unsigned long *pfn)
++{
++	int ret = -EINVAL;
++	spinlock_t *ptl;
++	pte_t *ptep;
++
++	if (!(vma->vm_flags & (VM_IO | VM_PFNMAP)))
++		return ret;
++
++	ret = follow_pte(vma->vm_mm, address, &ptep, &ptl);
++	if (ret)
++		return ret;
++	*pfn = pte_pfn(*ptep);
++	pte_unmap_unlock(ptep, ptl);
++	return 0;
++}
++EXPORT_SYMBOL(follow_pfn);
++
+ #ifdef CONFIG_HAVE_IOREMAP_PROT
+ int follow_phys(struct vm_area_struct *vma,
+ 		unsigned long address, unsigned int flags,
+-- 
+1.6.2.1.135.gde769
+
