@@ -1,60 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751586AbZEDBmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751334AbZEDCHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751586AbZEDBmI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 21:42:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbZEDBly
+	id S1751334AbZEDCHD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 May 2009 22:07:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbZEDCGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 21:41:54 -0400
-Received: from mga03.intel.com ([143.182.124.21]:55963 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797AbZEDBlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 21:41:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,289,1239001200"; 
-   d="scan'208";a="138739676"
-Date: Mon, 4 May 2009 09:41:51 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: "kawime@gmx.de" <kawime@gmx.de>
-Cc: Jerome Glisse <glisse@freedesktop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
-       Dave Airlie <airlied@linux.ie>, "stable@kernel.org" <stable@kernel.org>
-Subject: Re: PROBLEM: 2.6.29.2 - AGP doesn't work anymore on my nforce2
-Message-ID: <20090504014151.GA22872@sli10-desk.sh.intel.com>
-References: <op.us6ywl2jgp7xae@127.0.0.1> <20090430175927.a89f1cd3.akpm@linux-foundation.org> <1241179733.2606.1.camel@localhost.localdomain> <55bc079c-5c3d-465a-be28-0e38c0b48b14@rrsmsx603.amr.corp.intel.com>
+	Sun, 3 May 2009 22:06:53 -0400
+Received: from services110.cs.uwaterloo.ca ([129.97.152.166]:34326 "EHLO
+	services110.cs.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751007AbZEDCGw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 May 2009 22:06:52 -0400
+X-Greylist: delayed 1608 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 May 2009 22:06:52 EDT
+Message-ID: <49FE47A1.7070700@uwaterloo.ca>
+Date: Sun, 03 May 2009 21:40:49 -0400
+From: Elad Lahav <elahav@uwaterloo.ca>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <55bc079c-5c3d-465a-be28-0e38c0b48b14@rrsmsx603.amr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Implementation of the sendgroup() system call
+Content-Type: multipart/mixed;
+ boundary="------------030803040409090202090206"
+X-Miltered: at minos with ID 49FE4770.000 by Joe's j-chkmail (http://j-chkmail.ensmp.fr)!
+X-UUID: 78cabe69-bbc4-49ab-b3b4-0aad7cba80c0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 01, 2009 at 09:22:19PM +0800, kawime@gmx.de wrote:
-> > On Thu, 2009-04-30 at 17:59 -0700, Andrew Morton wrote:
-> >> On Thu, 30 Apr 2009 10:51:47 +0200
-> >> Karsten Mehrhoff <kawime@gmx.de> wrote:
-> >>
-> >>> [1.]
-> >>> PROBLEM: No more agp card functionality with the patch 2.6.29.2 of  
-> >> 'a/drivers/char/agp/generic.c'
-> >>>
-> >>> [2.]
-> >>> I compiled the kernel 2.6.29.2 with my .config of 2.6.29.1 and run  
-> >> into problems with the speed of my ATI RADEON 9600 (rv350)
-> >>>
-> >>
-> >
-> > Is your problem speed issue ? ie just a slowdown ? Or does AGP stop
-> > working with this patch ? Slowdown is expected from this patch but
-> > it should hurt too much.
-> >
-> 
->                         2.6.29.1  | 2.6.29.2
->                         --------  |  --------
-> glxgears             ~ 2900 FPS  |  ~ 75 FPS
-> glxgears -fullscreen ~  500 FPS  |  ~ 11 FPS
-Does this patch alone give so huge slowdown? From my little knowledge, xserver
-does agp pages allocation only at startup.
+This is a multi-part message in MIME format.
+--------------030803040409090202090206
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+The attached patch contains an implementation of sendgroup(), a system 
+call that allows a UDP packet to be transmitted efficiently to multiple 
+recipients. Use cases for this system call include live-streaming and 
+multi-player online games.
+The basic idea is that the caller maintains a group - a list of IP 
+addresses and UDP ports - and calls sendgroup() with the group list and 
+a common payload. Optionally, the call allows for per-recipient data to 
+be prepended or appended to the shared block. The data is copied once in 
+the kernel into an allocated page, and the per-recipient socket buffers 
+point to that page. Savings come from avoiding both the multiple calls 
+and the multiple copies of the data required with regular socket 
+operations. We have measured an improvement of 42% in CPU utilisation 
+when using this system call with the Helix multimedia server (reference: 
+http://simula.no/~griff/nossdav2008/27-32.pdf).
+
+The patch includes two implementations: one as described above and one 
+that uses the udp_sendmsg() function in a tight loop inside the kernel 
+(and thus saves on mode switches, but not on data copies). The latter is 
+provided for reference and benchmarking only.
+
+Feedback is welcome.
+
+--Elad
+
+--------------030803040409090202090206
+Content-Type: application/gzip;
+ name="sendgroup.tar.gz"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="sendgroup.tar.gz"
+
+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
+--------------030803040409090202090206--
