@@ -1,151 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbZEDUf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbZEDUjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755189AbZEDUf3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 16:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZEDUfR
+	id S1756326AbZEDUjo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 16:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZEDUjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 16:35:17 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:47110 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751667AbZEDUfQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 16:35:16 -0400
-Message-ID: <49FF517C.7000503@hp.com>
-Date: Mon, 04 May 2009 16:35:08 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+	Mon, 4 May 2009 16:39:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58505 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751491AbZEDUjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 16:39:35 -0400
+Message-ID: <49FF522B.3050403@redhat.com>
+Date: Mon, 04 May 2009 17:38:03 -0300
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
 MIME-Version: 1.0
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-btrace <linux-btrace@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: [PATCH 2/2] from-sector redundant in trace_block_remap
-References: <49FF4FAE.3000301@hp.com>
-In-Reply-To: <49FF4FAE.3000301@hp.com>
-Content-Type: multipart/mixed;
- boundary="------------000205030007050505000701"
+To: Borislav Petkov <borislav.petkov@amd.com>
+CC: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu,
+       tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 03/21] amd64_edac: add driver structs
+References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> <1241024107-14535-4-git-send-email-borislav.petkov@amd.com>
+In-Reply-To: <1241024107-14535-4-git-send-email-borislav.petkov@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000205030007050505000701
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Borislav Petkov escreveu:
+> From: Doug Thompson <dougthompson@xmission.com>
+>
+> Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+> ---
+>  drivers/edac/amd64_edac.c |  264 +++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 264 insertions(+), 0 deletions(-)
+> +/*
+> + * amd64 family unique informatoin
+> + */
+>   
 
+There's a typo above:
+    s/informatoin/information/
 
+Except for that, the patch looks sane to my eyes.
 
---------------000205030007050505000701
-Content-Type: text/x-diff;
- name="0002-from-sector-redundant-in-trace_block_remap.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0002-from-sector-redundant-in-trace_block_remap.patch"
-
-Removed redundant from-sector parameter: it's /always/ the bio's sector
-passed in.
-
-Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- block/blk-core.c        |    5 ++---
- drivers/md/dm.c         |    3 +--
- include/trace/block.h   |    4 ++--
- kernel/trace/blktrace.c |    8 ++++----
- 4 files changed, 9 insertions(+), 11 deletions(-)
-
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 2998fe3..d028baf 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -1277,7 +1277,7 @@ static inline void blk_partition_remap(struct bio *bio)
- 		bio->bi_bdev = bdev->bd_contains;
- 
- 		trace_block_remap(bdev_get_queue(bio->bi_bdev), bio,
--				    bdev->bd_dev, bio->bi_sector,
-+				    bdev->bd_dev,
- 				    bio->bi_sector - p->start_sect);
- 	}
- }
-@@ -1446,8 +1446,7 @@ static inline void __generic_make_request(struct bio *bio)
- 			goto end_io;
- 
- 		if (old_sector != -1)
--			trace_block_remap(q, bio, old_dev, bio->bi_sector,
--					    old_sector);
-+			trace_block_remap(q, bio, old_dev, old_sector);
- 
- 		trace_block_bio_queue(q, bio);
- 
-diff --git a/drivers/md/dm.c b/drivers/md/dm.c
-index 424f7b0..e2ee4a7 100644
---- a/drivers/md/dm.c
-+++ b/drivers/md/dm.c
-@@ -656,8 +656,7 @@ static void __map_bio(struct dm_target *ti, struct bio *clone,
- 		/* the bio has been remapped so dispatch it */
- 
- 		trace_block_remap(bdev_get_queue(clone->bi_bdev), clone,
--				    tio->io->bio->bi_bdev->bd_dev,
--				    clone->bi_sector, sector);
-+				    tio->io->bio->bi_bdev->bd_dev, sector);
- 
- 		generic_make_request(clone);
- 	} else if (r < 0 || r == DM_MAPIO_REQUEUE) {
-diff --git a/include/trace/block.h b/include/trace/block.h
-index 87f6456..8ac945b 100644
---- a/include/trace/block.h
-+++ b/include/trace/block.h
-@@ -70,7 +70,7 @@ DECLARE_TRACE(block_split,
- 
- DECLARE_TRACE(block_remap,
- 	TP_PROTO(struct request_queue *q, struct bio *bio, dev_t dev,
--		 sector_t to, sector_t from),
--	      TP_ARGS(q, bio, dev, to, from));
-+		 sector_t to),
-+	      TP_ARGS(q, bio, dev, to));
- 
- #endif
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index bc72d53..4c1ed52 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -808,7 +808,6 @@ static void blk_add_trace_split(struct request_queue *q, struct bio *bio,
-  * @q:		queue the io is for
-  * @bio:	the source bio
-  * @dev:	target device
-- * @to:		target sector
-  * @from:	source sector
-  *
-  * Description:
-@@ -817,7 +816,7 @@ static void blk_add_trace_split(struct request_queue *q, struct bio *bio,
-  *
-  **/
- static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
--				       dev_t dev, sector_t to, sector_t from)
-+				       dev_t dev, sector_t from)
- {
- 	struct blk_trace *bt = q->blk_trace;
- 	struct blk_io_trace_remap r;
-@@ -829,8 +828,9 @@ static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
- 	r.device_to   = cpu_to_be32(bio->bi_bdev->bd_dev);
- 	r.sector_from = cpu_to_be64(from);
- 
--	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP,
--			!bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
-+	__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw,
-+			BLK_TA_REMAP, !bio_flagged(bio, BIO_UPTODATE),
-+			sizeof(r), &r);
- }
- 
- /**
--- 
-1.6.0.4
-
-
---------------000205030007050505000701--
+Reviewed-by: Mauro Carvalho Chehab
