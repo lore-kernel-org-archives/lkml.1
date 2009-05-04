@@ -1,147 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbZEDJEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbZEDJFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752125AbZEDJEo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 05:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbZEDJEd
+	id S1753336AbZEDJFa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 05:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbZEDJFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 05:04:33 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58467 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751238AbZEDJEc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 05:04:32 -0400
-Message-ID: <49FEAFD0.30106@cn.fujitsu.com>
-Date: Mon, 04 May 2009 17:05:20 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 4 May 2009 05:05:09 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:36616 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751824AbZEDJFI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 05:05:08 -0400
+Message-ID: <49FEAF6B.5090308@cosmosbay.com>
+Date: Mon, 04 May 2009 11:03:39 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/6] tracing: increase size of number of possible events
-References: <20090424043005.338878133@goodmis.org> <20090424043111.983189535@goodmis.org> <49F15607.1090707@cn.fujitsu.com> <alpine.DEB.2.00.0904241004000.24293@gandalf.stny.rr.com> <alpine.DEB.2.00.0904241004490.24293@gandalf.stny.rr.com> <49F404E4.6040907@cn.fujitsu.com> <alpine.DEB.2.00.0904260919370.24293@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0904260919370.24293@gandalf.stny.rr.com>
+To: Elad Lahav <elahav@uwaterloo.ca>
+CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH] Implementation of the sendgroup() system call
+References: <49FE47A1.7070700@uwaterloo.ca> <49FE9C8C.6090705@cosmosbay.com>
+In-Reply-To: <49FE9C8C.6090705@cosmosbay.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 04 May 2009 11:03:45 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Sorry for the delayed reply)
-
-Steven Rostedt wrote:
-> Hi Li,
-> 
-> 
-> On Sun, 26 Apr 2009, Li Zefan wrote:
-> 
->> Steven Rostedt wrote:
->>> On Fri, 24 Apr 2009, Steven Rostedt wrote:
->>>
->>>> On Fri, 24 Apr 2009, Li Zefan wrote:
->>>>> console 1:
->>>>>  # cat /debug/tracing/trace_pipe
->>>>>
->>>>> console 2:
->>>>> while (1) {
->>>>> 	insmod trace-events-sample.ko
->>>>> 	echo foo_bar > /debug/tracing/set_event
->>>>> 	rmmod trace-events-sample.ko
->>>>> }
->>>>>
->>>>> I got this immediately:
->>>>>
->>>>> BUG: unable to handle kernel NULL pointer dereference at 0000006f
->>>>> IP: [<c05210f3>] bstr_printf+0x2ce/0x302
->>>>> ...
->>>>> Call Trace:
->>>>>  [<c0476d12>] ? trace_seq_bprintf+0x28/0x41
->>>>>  [<c0477569>] ? trace_bprint_print+0x58/0x6c
->>>>>  [<c0472ffc>] ? print_trace_line+0x2c5/0x2df
->>>>>  [<c0428a41>] ? sub_preempt_count+0x85/0xa0
->>>>>  [<c04758cf>] ? tracing_read_pipe+0x118/0x191
->>>>>  [<c04757b7>] ? tracing_read_pipe+0x0/0x191
->>>>>  [<c04b09f9>] ? vfs_read+0x8f/0x136
->>>>>  [<c04b0da3>] ? sys_read+0x40/0x65
->>>>>  [<c0402a68>] ? sysenter_do_call+0x12/0x36
->>>>>
->>>>> (We can even get other crashes..)
->>>>>
->>>> Can you send me your full bootlog and config. I'm not able to reproduce 
->>>> this.
->>> And the SHA1 of the HEAD of the git repo you are using.
->>>
->>> Thanks,
->>>
->> the HEAD: 9ce5424d75e56891905b77d1589924765e62059a + this patch
+Eric Dumazet a écrit :
+> Elad Lahav a écrit :
+>> The attached patch contains an implementation of sendgroup(), a system
+>> call that allows a UDP packet to be transmitted efficiently to multiple
+>> recipients. Use cases for this system call include live-streaming and
+>> multi-player online games.
+>> The basic idea is that the caller maintains a group - a list of IP
+>> addresses and UDP ports - and calls sendgroup() with the group list and
+>> a common payload. Optionally, the call allows for per-recipient data to
+>> be prepended or appended to the shared block. The data is copied once in
+>> the kernel into an allocated page, and the per-recipient socket buffers
+>> point to that page. Savings come from avoiding both the multiple calls
+>> and the multiple copies of the data required with regular socket
+>> operations. We have measured an improvement of 42% in CPU utilisation
+>> when using this system call with the Helix multimedia server (reference:
+>> http://simula.no/~griff/nossdav2008/27-32.pdf).
 >>
->> (I commented out "hi" from the sample module)
-> 
-> I found that commenting out the "hi" too helped in causing races.
-> 
->> I think it's because "type" is wrapped back to 0. I changed the test script
->> like this:
+>> The patch includes two implementations: one as described above and one
+>> that uses the udp_sendmsg() function in a tight loop inside the kernel
+>> (and thus saves on mode switches, but not on data copies). The latter is
+>> provided for reference and benchmarking only.
 >>
->> while (foo_bar.id < 65536)
->> {
->> 	insmod trace-events-sample.ko
->> 	rmmod trace-events-sample.ko
->> }
->>
->> for ((; ;))
->> {
->>         insmod /home/lizf/linux-2.6-tip/samples/trace_events/*.ko
->>         echo trace-events-sample:foo_bar > /mnt/tracing/set_event
->>         sleep 1
->>         cat /mnt/tracing/trace
->>         rmmod /home/lizf/linux-2.6-tip/samples/trace_events/*.ko
->> }
+>> Feedback is welcome.
 >>
 > 
-> Could you try my git repo with my latest changes?
+> Hi Elad
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> Patch is not inlined, this is really asking for troubles, I doubt many people
+> will actually read your patch...
 > 
->  branch: rfc/debugfs
+> My comments are :
 > 
+> 1) Lack of latency checks. Sending UDP on 1000 destinations is expensive.
+>   A syscall is not preemptable unless special conditions are met.
+> 
+> 2) Lack of a 32/64 bits aware API. A 64bit kernel should be able to 
+> run a 32bit application using a sendgroup() syscall.
+> 
+> 3) Are footer/header differents for each calls ? Maybe you need
+>   something better to avoid extra copies for them at each sendgroup() systemcall
+> 
+> 4) One expensive thing on UDP sends is the route cache lookups. You could avoid
+> this cost using 'connected' group setup (see point 3)
+>  
+> ie using a different syscall to setup the group (and compute/lookup all needed routes)
+>   (this syscall would be able to add/delete members (with their footer/header) to socket group)
+>   
+> Then sendgroup() would be really light, since it would provide a group identifier
+> (can be a file descriptor -> mapping one group), and the UDP message to send.
 
-The bug won't be triggered with your latest changes, but it has nothing
-to do with the debugfs patch, it's because this patch:
-	"tracing/events: reuse trace event ids after overflow"
+Ah some other points : You forgot to include netdev  (CCed on my message),
+as some network guys dont read lkml every day :)
 
-But that patch just hides the bug not fixes it.. I thought I explained
-the bug clearly. :(
+On your experiments, did you change NIC txqueue length ? (default being 1000)
+Using sendgroup() or sendmsg(), you'll hit pretty fast the NIC queue limit anyway...
 
-I think the bug is triggered because a wrong trace_event->trace() is called.
+Also, since 2.6.25 added memory accounting on UDP sockets, you'll probably need to
+increase SO_SNDBUF to avoid being blocked on sendmsg()/sendgroup() call
 
-
-Before the above patch:
-   id overflowed
- =>foo_bar.id == 6 == TRACE_BPRINT
- =>echo foo_bar > set_event
- =>sleep N secs
- =>rmmod sample
- =>cat trace
-   =>trace_bprint_event->trace() is called!!
-     =>oops!!!
-
-
-After the above patch:
-
-   Suppose id 0 ~ 65534 are used, only 65535 is left, and we have 2 different
-   sample module trace_event subsystems foo and bar.
- =>insmod foo.ko, and foo.id == 65535
- =>echo foo > set_event
- =>sleep N secs
- =>rmmod foo.ko
- =>insmod bar.ko, and bar.id == 65535
- =>cat trace
-   =>bar->trace() will be called on events which were generated by foo!
-
-So is it possible/sane to discard corresponding events from ring buffer when
-we unload a module?
-
-Correct me if I'm wrong..
 
