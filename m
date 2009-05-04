@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752461AbZEDDkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751521AbZEDEbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752461AbZEDDkz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 May 2009 23:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZEDDkq
+	id S1751521AbZEDEbX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 00:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbZEDEbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 May 2009 23:40:46 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36014 "EHLO mx2.suse.de"
+	Mon, 4 May 2009 00:31:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60863 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751251AbZEDDkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 May 2009 23:40:46 -0400
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: [PATCH] Fix a typo in a printk message
-Date: Mon, 4 May 2009 09:08:26 +0530
-User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
+	id S1750851AbZEDEbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 00:31:09 -0400
+Message-ID: <49FE6CEC.2060802@kernel.org>
+Date: Mon, 04 May 2009 13:19:56 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>, axboe@kernel.dk,
+       linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
+       mike.miller@hp.com, chirag.kantharia@hp.com, Eric.Moore@lsi.com,
+       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, jesper.juhl@gmail.com, tim@cyberelk.net,
+       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
+       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
+       davem@davemloft.net, rusty@rustcorp.com.au,
+       Markus.Lidel@shadowconnect.com, "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH 08/10] block: cleanup rq->data_len usages
+References: <1240996428-10159-1-git-send-email-tj@kernel.org>	 <1240996428-10159-9-git-send-email-tj@kernel.org>	 <49F9AC04.9060403@panasas.com> <1241105757.3320.1.camel@mulgrave.int.hansenpartnership.com> <49FCF423.7040609@kernel.org> <49FDA164.3030806@panasas.com>
+In-Reply-To: <49FDA164.3030806@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905040908.27299.knikanth@suse.de>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 04 May 2009 04:20:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a typo in a printk message.
+Hello,
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+Boaz Harrosh wrote:
+> OK, NP. But in this case please note on the side all the places you
+> think might be suspect for blk_rq_bytes()/blk_rq_sectors()
+> cosolidation and post the list. Because it is now that you are going
+> over the code and it is now that you touch exactly all these places.
+> 
+> You could even put a "TODO:" comments on all these places in this
+> patch. So to draw later patches that audit and remove the TODO:.
 
----
+Heh... okay.  I'll add a patch for the sweep conversion.
 
-diff --git a/arch/x86/mm/srat_32.c b/arch/x86/mm/srat_32.c
-index 16ae70f..29a0e37 100644
---- a/arch/x86/mm/srat_32.c
-+++ b/arch/x86/mm/srat_32.c
-@@ -216,7 +216,7 @@ int __init get_memcfg_from_srat(void)
- 
- 	if (num_memory_chunks == 0) {
- 		printk(KERN_WARNING
--			 "could not finy any ACPI SRAT memory areas.\n");
-+			 "could not find any ACPI SRAT memory areas.\n");
- 		goto out_fail;
- 	}
- 
+> (Or in trivial places like above that are safe even before these
+> patches, just convert them silently, in the sense of least traffic)
 
+I really don't want to do that.  Things which might look trivial often
+break things and this part of API has been quite fragile, so I'd
+rather put those changes after the actual unification for, if nothing
+else, documentation.
+
+> But sure I will see what I can help and send patches for. Tell me
+> when you think this is stable enough for me to add patches on top
+> of.
+
+Yeap, I just finished saving the wasteland, so the refreshed patchset
+will be posted later today.  :-)
+
+Thanks.
+
+-- 
+tejun
