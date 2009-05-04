@@ -1,102 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755700AbZEDNmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbZEDNoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755700AbZEDNmY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 09:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZEDNmO
+	id S1756326AbZEDNoX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 09:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbZEDNoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 09:42:14 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:54430 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbZEDNmO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 09:42:14 -0400
-Date: Mon, 4 May 2009 09:42:11 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Theodore Tso <tytso@mit.edu>
-Subject: Re: [PATCH 0/2][GIT PULL] tracing/filters: adjustements for
- strings
-In-Reply-To: <1241315433-7225-1-git-send-email-fweisbec@gmail.com>
-Message-ID: <alpine.DEB.2.00.0905040937350.3785@gandalf.stny.rr.com>
-References: <1241315433-7225-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 4 May 2009 09:44:09 -0400
+Received: from h155.mvista.com ([63.81.120.155]:41910 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750979AbZEDNoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 09:44:07 -0400
+Message-ID: <49FEF174.6040505@ru.mvista.com>
+Date: Mon, 04 May 2009 17:45:24 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tejun Heo <tj@kernel.org>
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
+       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
+       fujita.tomonori@lab.ntt.co.jp, zaitcev@redhat.com,
+       Geert.Uytterhoeven@sonycom.com, sfr@canb.auug.org.au,
+       grant.likely@secretlab.ca, paul.clements@steeleye.com, tim@cyberelk.net,
+       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
+       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
+       davem@davemloft.net, rusty@rustcorp.com.au,
+       Markus.Lidel@shadowconnect.com, bharrosh@panasas.com
+Subject: Re: [PATCH 04/11] block: implement blk_rq_pos/[cur_]sectors() and
+ convert obvious ones
+References: <1241423927-11871-1-git-send-email-tj@kernel.org> <1241423927-11871-5-git-send-email-tj@kernel.org>
+In-Reply-To: <1241423927-11871-5-git-send-email-tj@kernel.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tejun Heo wrote:
 
+> Implement accessors - blk_rq_pos(), blk_rq_sectors() and
+> blk_rq_cur_sectors() which return rq->sector, rq->hard_nr_sectors and
 
-On Sun, 3 May 2009, Frederic Weisbecker wrote:
+    Well, blk_rq_pos() returns rq->hard_sector, not rq->sector, doesn't it?
 
-> Hi,
-> 
-> The following patchset includes two little peas of features
-> for tracing filters, making them able to filter every kind of strings.
-> 
-> Now I can do this:
-> 
-> cd /debug/tracing
-> echo > trace
-> echo stacktrace > trace_options
-> 
-> cd events/lockdep
-> echo 'name == "&REISERFS_SB(s)->lock" && wait_usec > 0' > lock_acquired/filter
-> 
-> echo 1 > lock_acquired/enable
-> sleep 1
-> echo 0 > lock_acquired/enable
-> 
-> cat trace
-> 
->  # tracer: nop
->  #
->  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
->  #              | |       |          |         |
->            <...>-6464  [000]   327.448232: lock_acquired: &REISERFS_SB(s)->lock (25058.984 us)
->            <...>-6464  [000]   327.448233: 
->  <= reiserfs_get_block
->  <= __block_prepare_write
->  <= block_write_begin
->  <= reiserfs_write_begin
->  <= generic_file_buffered_write
->  <= __generic_file_aio_write_nolock
->  <= generic_file_aio_write
->            <...>-6470  [000]   327.448422: lock_acquired: &REISERFS_SB(s)->lock (25112.702 us)
->            <...>-6470  [000]   327.448425: 
->  <= reiserfs_update_sd_size
->  <= reiserfs_write_end
->  <= generic_file_buffered_write
->  <= __generic_file_aio_write_nolock
->  <= generic_file_aio_write
->  <= do_sync_write
->  <= reiserfs_file_write
-> 
-> 
-> Tom, your filter framework is awesome and very useful!
-> Thanks :-)
+> rq->hard_cur_sectors respectively and convert direct references of the
+> said fields to the accessors.
 
-I totally agree, and also like Frederic's changes.
+> This is in preparation of request data length handling cleanup.
 
-But...
+> const added to struct request * parameter to accessors as suggested by
+> Geert Uytterhoeven.
 
+> [ Impact: cleanup ]
 
-This is all useless unless people know it exists and more importantly, how 
-to use it.
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Tested-by: Grant Likely <grant.likely@secretlab.ca>
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-Ted Tso already started a Documentation/trace/events.txt. We need to add 
-documentation of this feature either in Doc../trace/events.txt or add a 
-new file called Doc../trace/filters.txt.  Probably would be better to add 
-a separate file, and add a "See filters.txt" in events.txt.
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-Tom or Frederic, could either of you write something up? I could when I 
-have time. The git logs seems to be pretty good at explaining it.
+> diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+> index 7ab93d9..b921d91 100644
+> --- a/include/linux/blkdev.h
+> +++ b/include/linux/blkdev.h
+> @@ -833,13 +833,30 @@ static inline void blk_run_address_space(struct address_space *mapping)
+>  extern void blkdev_dequeue_request(struct request *req);
+>  
+>  /*
+> - * blk_end_request() takes bytes instead of sectors as a complete size.
+> - * blk_rq_bytes() returns bytes left to complete in the entire request.
+> - * blk_rq_cur_bytes() returns bytes left to complete in the current segment.
+> + * blk_rq_pos()		: the current sector
+> + * blk_rq_bytes()	: bytes left in the entire request
+> + * blk_rq_cur_bytes()	: bytes left in the current segment
+> + * blk_rq_sectors()	: sectors left in the entire request
+> + * blk_rq_cur_sectors()	: sectors left in the current segment
+>   */
+> +static inline sector_t blk_rq_pos(const struct request *rq)
+> +{
+> +	return rq->hard_sector;
+> +}
+> +
 
-Thanks,
+[...]
 
--- Steve
-
+MBR, Sergei
