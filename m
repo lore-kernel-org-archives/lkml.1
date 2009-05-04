@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbZEDNbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbZEDNfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756332AbZEDNbp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 09:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbZEDNbe
+	id S1756099AbZEDNfj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 09:35:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754896AbZEDNfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 09:31:34 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60381 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754908AbZEDNbd (ORCPT
+	Mon, 4 May 2009 09:35:30 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56814 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754799AbZEDNf3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 09:31:33 -0400
-Date: Mon, 4 May 2009 06:32:58 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tobias Doerffel <tobias.doerffel@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Willy Tarreau <w@1wt.eu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Specific support for Intel Atom architecture
-Message-ID: <20090504063258.00d035b2@infradead.org>
-In-Reply-To: <20090504131457.GA25844@elte.hu>
-References: <200904301408.09370.tobias.doerffel@gmail.com>
-	<20090503053821.GI570@1wt.eu>
-	<49FD3E56.3010803@zytor.com>
-	<200905031308.51316.tobias.doerffel@gmail.com>
-	<20090504131457.GA25844@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 4 May 2009 09:35:29 -0400
+Date: Mon, 4 May 2009 15:35:21 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, linux-pm@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, jens.axboe@oracle.com,
+       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org
+Subject: Re: [PATCH 2/5] PM/Hibernate: Move memory shrinking to snapshot.c
+	(rev. 2)
+Message-ID: <20090504133520.GA1393@ucw.cz>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905031830.49690.rjw@sisk.pl> <200905040208.43040.rjw@sisk.pl> <200905040211.03569.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905040211.03569.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 May 2009 15:14:57 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
-
+On Mon 2009-05-04 02:11:02, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> * Tobias Doerffel <tobias.doerffel@gmail.com> wrote:
+> The next patch is going to modify the memory shrinking code so that
+> it will make memory allocations to free memory instead of using an
+> artificial memory shrinking mechanism for that.  For this purpose it
+> is convenient to move swsusp_shrink_memory() from
+> kernel/power/swsusp.c to kernel/power/snapshot.c, because the new
+> memory-shrinking code is going to use things that are local to
+> kernel/power/snapshot.c .
 > 
-> > Am Sonntag, 3. Mai 2009 08:48:54 schrieb H. Peter Anvin:
-> > > Willy Tarreau wrote:
-> > > >> $(call cc-option,-march=atom,-march=i686)
-> > > >
-> > > > if it's an in-order architecture, wouldn't it be better to tune
-> > > > for i386 or i486 instead ?
-> > >
-> > > Possibly.  It would be worth measuring.
-> >
-> > How would one do that (never benchmarked kernel stuff before)?
+> [rev. 2: Make some functions static and remove their headers from
+>  kernel/power/power.h]
 > 
-> A standard method is to run lmbench and compare the results - 
-> lmbench has a built-in 'report comparison between two runs' feature.
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-well... you're normally REALLY hard pressed to measure compiler
-differences this way..... 
-
-normally compiler options get benchmarked using speccpu and the like....
-
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
