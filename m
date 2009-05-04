@@ -1,84 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbZEDRpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758208AbZEDRto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758225AbZEDRpl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 13:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756029AbZEDRpc
+	id S1758208AbZEDRto (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 13:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbZEDRte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 13:45:32 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:6140 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754760AbZEDRpb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 13:45:31 -0400
-X-BigFish: VPS-18(zz1432R98dR1805M936fJzz1202hzzz32i6bh15fn43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KJ4RZD-02-PHY-01
-Date: Mon, 4 May 2009 19:44:58 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] x86: adapt CPU topology detection for AMD
-	Magny-Cours
-Message-ID: <20090504174458.GJ28728@alberich.amd.com>
-References: <20090504173330.GF28728@alberich.amd.com>
+	Mon, 4 May 2009 13:49:34 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:35930 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755107AbZEDRtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 13:49:33 -0400
+Date: Mon, 4 May 2009 10:49:31 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
+       tridge@samba.org, Al Viro <viro@ZenIV.linux.org.uk>,
+       Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
+       Steve French <smfrench@gmail.com>,
+       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
+Message-ID: <20090504174931.GG6740@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090504124129.GL7141@linux.vnet.ibm.com> <20090504124433.GW8822@parisc-linux.org> <20090504130638.GN7141@linux.vnet.ibm.com> <20090504132119.GX8822@parisc-linux.org> <20090504143919.GA6740@linux.vnet.ibm.com> <20090504150834.GZ8822@parisc-linux.org> <1241451391.20170.12.camel@norville.austin.ibm.com> <m14ow0hnal.fsf@fess.ebiederm.org> <1241453259.20170.17.camel@norville.austin.ibm.com> <m1d4ao4wj2.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090504173330.GF28728@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 04 May 2009 17:45:20.0158 (UTC) FILETIME=[17D893E0:01C9CCE0]
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <m1d4ao4wj2.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 07:33:30PM +0200, Andreas Herrmann wrote:
-> Hi,
+On Mon, May 04, 2009 at 10:18:09AM -0700, Eric W. Biederman wrote:
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
 > 
-> Following patches add support for AMD Magny-Cours CPU.
+> > On Mon, May 04, 2009 at 09:30:20AM -0700, Eric W. Biederman wrote:
+> >> Dave Kleikamp <shaggy@linux.vnet.ibm.com> writes:
+> >> 
+> >> > That's for the maintainers to decide.  If they agree it has worth, maybe
+> >> > it's a good idea to answer "How".
+> >> 
+> >> Al and Christoph said essentially the same thing and they generally
+> >> are considered the general area filesystem maintainers.
+> >> 
+> >> This kind of thing does not appear to have come up before and
+> >> so procedurally you guys are setting are attempting to set
+> >> a precedent.
+> >> 
+> >> All I know is that doing it the way you are doing seems like a bad
+> >> idea.  Not discussing things or even the reason you can't discuss them
+> >> seems foolish and leaves no one satisfied.
+> >> 
+> >> Maybe there are good reasons but so far this whole thing just stinks.
+> >> 
+> >> When all of the pieces are public how can having secret veiled reasons
+> >> make sense?
+> >> 
+> >> And if secret magic consultations with lawyers are going to be invoked
+> >> I expect we should have a Signed-off-by from those lawyers.
+> >
+> > ;-)
+> >
+> > Matthew's idea of checking with SFLC seems to me to have some merit.
+> > I am looking into this from my end.  Of course, you and Al and Christoph
+> > have just as much standing to ask SFLC as do I, and perhaps more.
 > 
-> I slightly change struct cpuinfo where I'd like to introduce
-> cpu_node_id to reflect CPU topology for AMD Magny-Cours CPU which
-> consists of two internal-nodes.
+> Reasonable.  Of course it still misses one interesting point.
 > 
-> For all cores on the same multi-node CPU (Magny-Cours) /proc/cpuinfo
-> will show:
-> - same phys_proc_id
-> - cpu_node_id of the internal node (0 or 1)
-> - cpu_core_id (e.g. in range of 0 to 5)
+> Typically when reviewing code if the code looks suspicious you ask the
+> poster why they did X.  If the author of the code has a good answer
+> you can tell that they have done their homework, and you can verify it.
+> If the author doesn't have a good answer typically that means they haven't
+> thought through all of the details and the code has problems.
 > 
-> I also change identification of core siblings (and thread siblings)
-> which will also be based on cpu_node_id in addition to phys_proc_id.
+> In this case we ask why and get stone-walling.  Which typically would
+> mean either that IBM has a good reason for doing this that they are
+> keeping hidden.  Or that we have programmers reacting to news stories
+> who have not done all of their homework.
 > 
-> Furthermore I adapt the L3 cache information to reflect the cache
-> characteristics of one internal node instead of the entire package.
+> So far my feeling has been, that there are people handling this mess
+> on other fronts and that if it was a real issue they would be coming
+> out of the wood work, and giving guidance.
 > 
-> Primarily this changes are needed to correct core sibling information
-> for Magny-Cours. This CPU has two NBs on one physical package -- each
-> internal node has its own processor configuration space (i.e. set of
-> northbridge PCI functions).
+> Now perhaps no one is because this is a cross disciplinary thing and no
+> one has sufficient legal, technical and business expertise.
 
-I should have mentioned that first two patches fix topology information
-provided in /sys/devices/cpu/cpuX/topology (core_sibling information).
+It certainly is a cross-disciplinary thing.
 
-I think, the internal node information should also be exposed
-there. E.g. introducing cpu_node_siblings and cpu_node_sibling_list.
+> Right now my hypothesis that best fits the facts is programmers reacting
+> on their own to news stories, without having done all of their homework.
 
-But that affects other architectures (the code in
-drivers/base/topology is not x86-specific) and probably needs some
-more discussion. Patches to address this will follow.
+Not the case, I assure you.  However, you are of course free to believe
+whatever you choose.
 
+> Asking others to go to the SFLC or other places and do your homework
+> for you is an interesting reaction.  The SFLC does seem like an
+> appropriate group to get an opinion from.
 
+Ah, but you are not simply asking us to -do- our homework, but also to
+make that homework public on LKML.  Please note that Matthew's earlier
+email indicates that he does not expect to be able to convince his
+employer to make such homework public.
 
-Regards,
-Andreas
+As to requesting that SFLC weigh in, those of you from smaller
+organizations might be able to accelerate this process significantly
+should you care to do so.
 
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
-
+							Thanx, Paul
