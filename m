@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbZEDJ5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753513AbZEDJ44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755143AbZEDJ5U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 05:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbZEDJ4V
+	id S1753513AbZEDJ44 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 05:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbZEDJ4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 05:56:21 -0400
-Received: from cmpxchg.org ([85.214.51.133]:49972 "EHLO cmpxchg.org"
+	Mon, 4 May 2009 05:56:19 -0400
+Received: from cmpxchg.org ([85.214.51.133]:49969 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753554AbZEDJ4R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 05:56:17 -0400
+	id S1754094AbZEDJ4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 05:56:16 -0400
 From: Johannes Weiner <hannes@cmpxchg.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Magnus Damm <magnus.damm@gmail.com>, linux-media@vger.kernel.org,
        Hans Verkuil <hverkuil@xs4all.nl>, Paul Mundt <lethal@linux-sh.org>,
        linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [patch 1/3] mm: introduce follow_pte()
-Date: Mon,  4 May 2009 11:54:32 +0200
-Message-Id: <1241430874-12667-1-git-send-email-hannes@cmpxchg.org>
+Subject: [patch 3/3] mm: introduce follow_pfn()
+Date: Mon,  4 May 2009 11:54:34 +0200
+Message-Id: <1241430874-12667-3-git-send-email-hannes@cmpxchg.org>
 X-Mailer: git-send-email 1.6.2.1.135.gde769
 In-Reply-To: <20090501181449.GA8912@cmpxchg.org>
 References: <20090501181449.GA8912@cmpxchg.org>
@@ -24,58 +24,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A generic readonly page table lookup helper to map an address space
-and an address from it to a pte.
+Analoguous to follow_phys(), add a helper that looks up the PFN
+instead.  It also only allows IO mappings or PFN mappings.
 
 Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
 ---
- mm/memory.c |   37 +++++++++++++++++++++++++++++++++++++
- 1 files changed, 37 insertions(+), 0 deletions(-)
+ include/linux/mm.h |    2 ++
+ mm/memory.c        |   19 +++++++++++++++++++
+ 2 files changed, 21 insertions(+), 0 deletions(-)
 
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index bff1f0d..1cca8b6 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -794,6 +794,8 @@ int copy_page_range(struct mm_struct *dst, struct mm_struct *src,
+ 			struct vm_area_struct *vma);
+ void unmap_mapping_range(struct address_space *mapping,
+ 		loff_t const holebegin, loff_t const holelen, int even_cows);
++int follow_pfn(struct vm_area_struct *vma, unsigned long address,
++	unsigned long *pfn);
+ int follow_phys(struct vm_area_struct *vma, unsigned long address,
+ 		unsigned int flags, unsigned long *prot, resource_size_t *phys);
+ int generic_access_phys(struct vm_area_struct *vma, unsigned long addr,
 diff --git a/mm/memory.c b/mm/memory.c
-index cf6873e..a621319 100644
+index aee167d..05fc8e5 100644
 --- a/mm/memory.c
 +++ b/mm/memory.c
-@@ -3009,6 +3009,43 @@ int in_gate_area_no_task(unsigned long addr)
+@@ -3046,6 +3046,25 @@ out:
+ 	return -EINVAL;
+ }
  
- #endif	/* __HAVE_ARCH_GATE_AREA */
- 
-+static int follow_pte(struct mm_struct *mm, unsigned long address,
-+		pte_t **ptepp, spinlock_t **ptlp)
++int follow_pfn(struct vm_area_struct *vma, unsigned long address,
++	unsigned long *pfn)
 +{
-+	pgd_t *pgd;
-+	pud_t *pud;
-+	pmd_t *pmd;
++	int ret = -EINVAL;
++	spinlock_t *ptl;
 +	pte_t *ptep;
 +
-+	pgd = pgd_offset(mm, address);
-+	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
-+		goto out;
++	if (!(vma->vm_flags & (VM_IO | VM_PFNMAP)))
++		return ret;
 +
-+	pud = pud_offset(pgd, address);
-+	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
-+		goto out;
-+
-+	pmd = pmd_offset(pud, address);
-+	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
-+		goto out;
-+
-+	/* We cannot handle huge page PFN maps. Luckily they don't exist. */
-+	if (pmd_huge(*pmd))
-+		goto out;
-+
-+	ptep = pte_offset_map_lock(mm, pmd, address, ptlp);
-+	if (!ptep)
-+		goto out;
-+	if (!pte_present(*ptep))
-+		goto unlock;
-+	*ptepp = ptep;
++	ret = follow_pte(vma->vm_mm, address, &ptep, &ptl);
++	if (ret)
++		return ret;
++	*pfn = pte_pfn(*ptep);
++	pte_unmap_unlock(ptep, ptl);
 +	return 0;
-+unlock:
-+	pte_unmap_unlock(ptep, *ptlp);
-+out:
-+	return -EINVAL;
 +}
++EXPORT_SYMBOL(follow_pfn);
 +
  #ifdef CONFIG_HAVE_IOREMAP_PROT
  int follow_phys(struct vm_area_struct *vma,
