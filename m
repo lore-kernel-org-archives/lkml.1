@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932065AbZEDPWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757676AbZEDPYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932065AbZEDPWA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 11:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757234AbZEDPUZ
+	id S1757676AbZEDPYT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 11:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbZEDPYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 11:20:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:45334 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756156AbZEDPUV (ORCPT
+	Mon, 4 May 2009 11:24:00 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:46766 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754011AbZEDPX6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 11:20:21 -0400
-Message-Id: <20090504152021.349097001@goodmis.org>
-References: <20090504151933.728781787@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Mon, 04 May 2009 11:19:39 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 6/6] ring-buffer: disable writers when resetting buffers
-Content-Disposition: inline; filename=0006-ring-buffer-disable-writers-when-resetting-buffers.patch
+	Mon, 4 May 2009 11:23:58 -0400
+Subject: Re: New TRIM/UNMAP tree published (2009-05-02)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: dgilbert@interlog.com
+Cc: Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
+       Jens Axboe <jens.axboe@oracle.com>, Boaz Harrosh <bharrosh@panasas.com>,
+       Hugh Dickins <hugh@veritas.com>, Matthew Wilcox <willy@linux.intel.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Mark Lord <lkml@rtr.ca>
+In-Reply-To: <49FF05AB.5020801@interlog.com>
+References: <1238683047-13588-1-git-send-email-willy@linux.intel.com>
+	 <49D8A3D7.5070507@panasas.com> <20090503061150.GF10704@linux.intel.com>
+	 <20090503071619.GP8822@parisc-linux.org>
+	 <Pine.LNX.4.64.0905031346350.29671@blonde.anvils>
+	 <20090503144847.GR8822@parisc-linux.org> <49FDB21B.3080301@panasas.com>
+	 <20090503154216.GU8822@parisc-linux.org> <49FDC786.6070309@panasas.com>
+	 <49FDE3BB.505@garzik.org>  <49FDE50A.4060503@garzik.org>
+	 <1241377472.5596.88.camel@mulgrave.int.hansenpartnership.com>
+	 <49FDEE64.5090302@garzik.org>
+	 <1241379476.5596.92.camel@mulgrave.int.hansenpartnership.com>
+	 <49FEF5C5.6010404@interlog.com>
+	 <1241448038.3315.19.camel@mulgrave.int.hansenpartnership.com>
+	 <49FF05AB.5020801@interlog.com>
+Content-Type: text/plain
+Date: Mon, 04 May 2009 15:23:56 +0000
+Message-Id: <1241450637.3315.32.camel@mulgrave.int.hansenpartnership.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+On Mon, 2009-05-04 at 17:11 +0200, Douglas Gilbert wrote:
+> Another aspect, especially if a large amount of storage
+> is to be trimmed, is how long will it take? This relates
+> to the timeout value we should associate with such an
+> invocation. The FORMAT UNIT and START STOP UNIT commands
+> have an IMMED bit, but not WRITE SAME.
 
-As a precaution, it is best to disable writing to the ring buffers
-when reseting them.
+I was assuming it would be more or less instantaneous ... if it's not
+then the plan of trying to keep thin provisioning happy just by sending
+down a maximal trim from the filesystem is going to run into trouble.
 
-[ Impact: prevent weird things if write happens during reset ]
+> Speaking of FORMAT UNIT, some words were added into sbc3r18
+> that suggest a FORMAT UNIT command could be interpreted as
+> unmap/trim the whole disk.
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/ring_buffer.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Seems reasonable ... if you format the device it could be argued you're
+not relying on the data contents any more ...
 
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 7ff1f57..24372d1 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -2649,6 +2649,8 @@ void ring_buffer_reset_cpu(struct ring_buffer *buffer, int cpu)
- 	if (!cpumask_test_cpu(cpu, buffer->cpumask))
- 		return;
- 
-+	atomic_inc(&cpu_buffer->record_disabled);
-+
- 	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
- 
- 	__raw_spin_lock(&cpu_buffer->lock);
-@@ -2658,6 +2660,8 @@ void ring_buffer_reset_cpu(struct ring_buffer *buffer, int cpu)
- 	__raw_spin_unlock(&cpu_buffer->lock);
- 
- 	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
-+
-+	atomic_dec(&cpu_buffer->record_disabled);
- }
- EXPORT_SYMBOL_GPL(ring_buffer_reset_cpu);
- 
--- 
-1.6.2.4
+James
 
--- 
+
