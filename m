@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbZEDHYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753431AbZEDHbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754068AbZEDHYc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 03:24:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbZEDHYV
+	id S1753431AbZEDHbn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 03:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbZEDHba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 03:24:21 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:61347 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751824AbZEDHYU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 03:24:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=n5g27iBGBR+H58u6Ots7IzEqdPshs94pKlWeY7n3akr6m9gTErZOOTzkFrF+THE5SO
-         oX48dY3n1rq3F6SLXEgR4F4Uzje5sn48kE3tbEGtmeGZj57/tl88497zFUMkryP+OWhd
-         WdeIBwYndufr9ARXP9flg+/ogaCeIIQtAJMXU=
+	Mon, 4 May 2009 03:31:30 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41057 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752600AbZEDHb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 03:31:29 -0400
+Message-ID: <49FE9999.7090103@redhat.com>
+Date: Mon, 04 May 2009 10:30:33 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <45b4644e80c27b9d042b3960e3d99f0d444e0d92.1241105648.git.arnd@arndb.de>
-References: <cover.1241105648.git.arnd@arndb.de>
-	 <45b4644e80c27b9d042b3960e3d99f0d444e0d92.1241105648.git.arnd@arndb.de>
-Date: Mon, 4 May 2009 09:24:19 +0200
-X-Google-Sender-Auth: 58041eee445c7196
-Message-ID: <10f740e80905040024w65493f4cvb0fa0f0bbd432e65@mail.gmail.com>
-Subject: Re: [PATCH 12/27] asm-generic: add a NOMMU uaccess.h
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
-       Remis Lima Baima <remis.developer@googlemail.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+To: Andi Kleen <andi@firstfloor.org>
+CC: Elad Lahav <elahav@uwaterloo.ca>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] Implementation of the sendgroup() system call
+References: <49FE47A1.7070700@uwaterloo.ca> <87eiv5ibnd.fsf@basil.nowhere.org>
+In-Reply-To: <87eiv5ibnd.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 6, 2008 at 17:31, Arnd Bergmann <arnd@arndb.de> wrote:
-> index 549cb3a..ebeacd9 100644
-> --- a/include/asm-generic/uaccess.h
-> +++ b/include/asm-generic/uaccess.h
+Andi Kleen wrote:
+> Elad Lahav <elahav@uwaterloo.ca> writes:
+>
+>   
+>> The attached patch contains an implementation of sendgroup(), a system
+>> call that allows a UDP packet to be transmitted efficiently to
+>> multiple recipients. Use cases for this system call include
+>> live-streaming and multi-player online games.
+>> The basic idea is that the caller maintains a group - a list of IP
+>> addresses and UDP ports - and calls sendgroup() with the group list
+>> and a common payload. Optionally, the call allows for per-recipient
+>> data to be prepended or appended to the shared block. The data is
+>> copied once in the kernel into an allocated page, and the
+>> per-recipient socket buffers point to that page. Savings come from
+>> avoiding both the multiple calls and the multiple copies of the data
+>> required with regular socket operations.
+>>     
+>
+> My guess it's more the copies than the calls? It sounds like
+> you want sendfile() for UDP. I think that would be a cleaner solution
+> than such a specific hack for your application. It would
+> have the advantage of saving the first copy too and be 
+> truly zero copy on capable NICs.
+>   
 
-> +/*
-> + * User space memory access functions, these should work
-> + * on a ny machine that has kernel and user data in the same
-         any
+An aio udp send could accomplish both multiple packets per call, and 
+zero-copy, without adding new syscalls.  You could send the same packet 
+to multiple recipients, or multiple packets to the same recipicent, or 
+combinations thereof.
 
-> + * address space, e.g. all NOMMU machines.
-> + */
+> Or perhaps simple send to a local multicast group and let
+> some netfilter module turn that into regular UDP.
+>   
 
-Gr{oetje,eeting}s,
+Sounds hacky and rooty.
 
-						Geert
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
