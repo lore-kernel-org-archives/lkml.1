@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbZEDXdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbZEDXf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756978AbZEDXdW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 19:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756306AbZEDXdM
+	id S1757390AbZEDXf2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 19:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbZEDXfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 19:33:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47737 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754984AbZEDXdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 19:33:11 -0400
-Message-ID: <49FF7B02.9050608@redhat.com>
-Date: Mon, 04 May 2009 19:32:18 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Greg KH <greg@kroah.com>,
-       =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, San Mehat <san@android.com>,
-       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>
-Subject: Re: [patch 1/5] oom: cleanup android low memory killer
-References: <alpine.DEB.2.00.0905031305130.18426@chino.kir.corp.google.com> <d6200be20905041448p1ca2d068r5ba8348488842b5c@mail.gmail.com> <20090504220905.GA29402@kroah.com> <alpine.DEB.2.00.0905041529570.2310@chino.kir.corp.google.com> <20090504225936.GA9876@kroah.com> <alpine.DEB.2.00.0905041607170.6073@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0905041607170.6073@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 4 May 2009 19:35:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51818 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754710AbZEDXfK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 19:35:10 -0400
+Date: Mon, 4 May 2009 16:31:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: oleg@redhat.com, jdike@addtoit.com, utrace-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC, PATCH 0/2] utrace/ptrace: simplify/cleanup ptrace attach
+Message-Id: <20090504163154.f3672a83.akpm@linux-foundation.org>
+In-Reply-To: <20090504194348.BC0EBFC32F@magilla.sf.frob.com>
+References: <20090503185537.GA17071@redhat.com>
+	<20090504184951.623CEFC32F@magilla.sf.frob.com>
+	<20090504193016.GA17076@redhat.com>
+	<20090504194348.BC0EBFC32F@magilla.sf.frob.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
+On Mon,  4 May 2009 12:43:48 -0700 (PDT)
+Roland McGrath <roland@redhat.com> wrote:
 
-> There was an interest in a low mem userspace notifier that applications 
-> can poll() on at configurable low mem levels to react accordingly.  This 
-> would probably address the problem that the Android team is trying to fix.
+> > > When those are on their way,
+> > > we'll update the utrace patches not to conflict.  I don't think it makes
+> > > sense to include utrace.patch's little ptrace.c change in the baseline tree
+> > > for your ptrace cleanup patches.
+> > 
+> > Yes, but in this case, how can we push it before utrace-core.patch ?
+> > 
+> > The first patch is only for -mm, to avoid the painful dependencies.
+> 
+> I guess we should take Andrew's advice on this.  To me, it makes most sense
+> just to order the -mm patches so utrace comes later, and replace the utrace
+> patch as necessary with a compatible version.  Perhaps things would be
+> simpler if we made a separate standalone series or git tree (tip/ptrace?)
+> for ptrace cleanups.
 
-This would also make it easier for virtual machines to be
-ballooned down to size when the host experiences memory
-pressure.
+Staging the utrace patch at end-of-series would make sense if utrace is
+not on track for a 2.6.31 merge.
 
-The low memory notification could also be useful for JVMs,
-databases that do (some of) their own caching and any garbage
-collected program in general.
+And afaict, this is indeed the case - things seem to have gone a bit
+quiet on the utrace front lately.
 
--- 
-All rights reversed.
