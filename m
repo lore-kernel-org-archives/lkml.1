@@ -1,114 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbZEDKz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755051AbZEDK42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836AbZEDKz0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 06:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbZEDKzO
+	id S1755051AbZEDK42 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 06:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbZEDK4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 06:55:14 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:34536 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751250AbZEDKzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 06:55:12 -0400
-Message-ID: <49FEC98E.4050906@msgid.tls.msk.ru>
-Date: Mon, 04 May 2009 14:55:10 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 4 May 2009 06:56:19 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:60854 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751250AbZEDK4S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 06:56:18 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=BVao//Dd3gtpkoci2wFf5S7/5dLqDZYiBI985u76q25f/QXbqnP3I8JBUe+lmMQis
+	1wEit6xmaY4mvuyr+RlPQ==
+Date: Mon, 4 May 2009 03:56:10 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Jack Steiner <steiner@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: introducing __GFP_PANIC
+In-Reply-To: <20090504101121.GE4173@lenovo>
+Message-ID: <alpine.DEB.2.00.0905040353290.24987@chino.kir.corp.google.com>
+References: <84144f020905030954m434d0550l3ed7ef7436c803df@mail.gmail.com> <20090503172338.GG4615@lenovo> <84144f020905031038n751b48afsaefc3765ed632f82@mail.gmail.com> <20090503204542.GJ4615@lenovo> <alpine.DEB.2.00.0905031357140.17811@chino.kir.corp.google.com>
+ <20090504081454.GA4173@lenovo> <1241425941.21088.19.camel@penberg-laptop> <20090504090825.GC4173@lenovo> <1241431031.21088.21.camel@penberg-laptop> <20090504100106.GD4173@lenovo> <20090504101121.GE4173@lenovo>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: compat ioctl32 for /dev/snapshot?
-References: <49FEB572.4010909@msgid.tls.msk.ru> <87prepgqhc.fsf@basil.nowhere.org>
-In-Reply-To: <87prepgqhc.fsf@basil.nowhere.org>
-Content-Type: multipart/mixed;
- boundary="------------090604020208010303050009"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090604020208010303050009
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Mon, 4 May 2009, Cyrill Gorcunov wrote:
 
-Andi Kleen wrote:
-> Michael Tokarev <mjt@tls.msk.ru> writes:
+> @@ -1685,7 +1687,12 @@ nopage:
+>  		dump_stack();
+>  		show_mem();
+>  	}
+> -	return page;
+> +	if (unlikely((gfp_mask & __GFP_PANIC))) {
+
+Too many parentheses and this doesn't need the unnecessary braces.
+
+> +		panic("Out of memory: panic due to __GFP_PANIC.\n"
+> +			"%s order:%d, mode:0x%x\n", p->comm,
+> +			order, gfp_mask);
+
+The extra newline in this statement doesn't seem necessary, it's just one 
+less line that will be visible on the frozen screen.  I also think calling 
+this 'gfp_mask' instead of 'mode' is more appropriate just like the oom 
+killer does.
+
+> +	}
+> +	return NULL;
+>  got_pg:
+>  	if (kmemcheck_enabled)
+>  		kmemcheck_pagealloc_alloc(page, order, gfp_mask);
 > 
->> Is there any reason why 32-bit uswsusp &Friends does not work
->> on 64bits kernel?
->>
->> For one, 32bits s2disk produces the following when trying to
->> suspend:
->>
->>  ioctl32(s2disk:4134): Unknown cmd fd(4) cmd(400c330d){t:'3';sz:12} arg(ff853554) on /dev/snapshot
->>  ioctl32(s2disk:4134): Unknown cmd fd(4) cmd(4004330a){t:'3';sz:4} arg(00000805) on /dev/snapshot
->>
-[]
-> It's probably just that nobody has written the code yet. In general all
-> missing compat_ioctls are bugs.
-
-Oh well.
-
-Is the following patch ok?  I just pulled all the SNAPSHOT_* stuff from
-include/linux/suspend_ioctls.h and added them into fs/compat_ioctl.c.
-The ioctls are:
-  o argument-less (most of them are)
-  o have single loff_t argument (other ioctls with the same argument are
-    marked as COMPAT_IOCTL
-  o have single int argument - they's also marked as COMPAT_IOCTL,
-  o and one othem, SNAPSHOT_SET_SWAP_AREA, has argument pointing to
-    the following structure (include/linux/suspend_ioctls.h):
-     struct resume_swap_area {
-         loff_t offset;
-         u_int32_t dev;
-     } __attribute__((packed));
-    so I think it also does not need any translation layer.
-
-I can't test it so far, because uswsusp tools are broken in mixed
-32/64bit case in other places.  But at least it compiles fine and
-does not complain anymore.
-
-I never touched this area before so I may be wrong... but if it's ok...
-
-Signed-Off-By: Michael Tokarev <mjt@tls.msk.ru>
-
-Thanks!
-
-/mjt
-
---------------090604020208010303050009
-Content-Type: text/x-patch;
- name="snapshot-compat-ioctl.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="snapshot-compat-ioctl.patch"
-
-Signed-Off-By: Michael Tokarev <mjt@tls.msk.ru>
-
---- linux-2.6.29/fs/compat_ioctl.c.orig	2009-03-24 02:12:14.000000000 +0300
-+++ linux-2.6.29/fs/compat_ioctl.c	2009-05-04 14:46:49.906169841 +0400
-@@ -112,2 +112,4 @@
- 
-+#include <linux/suspend_ioctls.h>
-+
- #ifdef CONFIG_SPARC
-@@ -2301,2 +2303,17 @@ COMPATIBLE_IOCTL(SOUND_MIXER_SETLEVELS)
- COMPATIBLE_IOCTL(OSS_GETVERSION)
-+/* SNAPSHOT */
-+COMPATIBLE_IOCTL(SNAPSHOT_FREEZE)
-+COMPATIBLE_IOCTL(SNAPSHOT_UNFREEZE)
-+COMPATIBLE_IOCTL(SNAPSHOT_ATOMIC_RESTORE)
-+COMPATIBLE_IOCTL(SNAPSHOT_FREE)
-+COMPATIBLE_IOCTL(SNAPSHOT_FREE_SWAP_PAGES)
-+COMPATIBLE_IOCTL(SNAPSHOT_S2RAM)
-+COMPATIBLE_IOCTL(SNAPSHOT_SET_SWAP_AREA)	/* struct resume_swap_area */
-+COMPATIBLE_IOCTL(SNAPSHOT_GET_IMAGE_SIZE)
-+COMPATIBLE_IOCTL(SNAPSHOT_PLATFORM_SUPPORT)
-+COMPATIBLE_IOCTL(SNAPSHOT_POWER_OFF)
-+COMPATIBLE_IOCTL(SNAPSHOT_CREATE_IMAGE)
-+COMPATIBLE_IOCTL(SNAPSHOT_PREF_IMAGE_SIZE)
-+COMPATIBLE_IOCTL(SNAPSHOT_AVAIL_SWAP_SIZE)
-+COMPATIBLE_IOCTL(SNAPSHOT_ALLOC_SWAP_PAGE)
- /* AUTOFS */
-
---------------090604020208010303050009--
