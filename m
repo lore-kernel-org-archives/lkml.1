@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbZEDPwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757801AbZEDPyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757446AbZEDPwm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 11:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755454AbZEDPwd
+	id S1757801AbZEDPyx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 11:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755454AbZEDPyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 11:52:33 -0400
-Received: from mga14.intel.com ([143.182.124.37]:14822 "EHLO mga14.intel.com"
+	Mon, 4 May 2009 11:54:44 -0400
+Received: from mga03.intel.com ([143.182.124.21]:33292 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751631AbZEDPwc convert rfc822-to-8bit (ORCPT
+	id S1754729AbZEDPyo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 11:52:32 -0400
+	Mon, 4 May 2009 11:54:44 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.40,292,1239001200"; 
-   d="scan'208";a="138963337"
+   d="scan'208";a="138964206"
 From: "Styner, Douglas W" <douglas.w.styner@intel.com>
 To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 CC: "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
@@ -31,10 +31,11 @@ CC: "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
        "Garg, Anil K" <anil.k.garg@intel.com>,
        "Chilukuri, Harita" <harita.chilukuri@intel.com>,
        "chris.mason@oracle.com" <chris.mason@oracle.com>
-Date: Mon, 4 May 2009 08:52:21 -0700
-Subject: 
+Date: Mon, 4 May 2009 08:54:42 -0700
+Subject: Mainline kernel OLTP performance update
+Thread-Topic: Mainline kernel OLTP performance update
 Thread-Index: AcnM0E+Nwe+14GGkR56q7IVjkGSrWw==
-Message-ID: <D7C42C27E6CB1E4D8CBDF2F81EA92A260345BCC181@azsmsx501.amr.corp.intel.com>
+Message-ID: <D7C42C27E6CB1E4D8CBDF2F81EA92A260345BCC195@azsmsx501.amr.corp.intel.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -47,6 +48,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+<this time with subject line>
 Summary: Measured the mainline kernel from kernel.org (2.6.30-rc4). 
 
 The regression for 2.6.30-rc4 against the baseline, 2.6.24.2 is 2.15% (2.6.30-rc3 regression was 1.91%).  Oprofile reports 70.1204% user, 29.874% system. 
