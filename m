@@ -1,77 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbZEDKFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbZEDKJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754483AbZEDKFw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 06:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbZEDKFn
+	id S1754664AbZEDKJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 06:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbZEDKJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 06:05:43 -0400
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:58561 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbZEDKFn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 06:05:43 -0400
-Date: Mon, 4 May 2009 12:05:42 +0200
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Anders Kaseorg <andersk@mit.edu>, LKML <linux-kernel@vger.kernel.org>,
-       Linux-MIPS <linux-mips@linux-mips.org>
-Subject: Re: Lots of unexpected non-allocatable section warnings
-Message-ID: <20090504100542.GA26150@roarinelk.homelinux.net>
-References: <20090503110517.6d09bca2@hyperion.delvare> <20090503103010.GA27978@uranus.ravnborg.org> <20090503124848.276b437f@hyperion.delvare> <20090503180332.GA31820@uranus.ravnborg.org> <20090503202939.GA1237@uranus.ravnborg.org> <20090504082816.GA25378@roarinelk.homelinux.net> <20090504094928.GA6157@uranus.ravnborg.org>
-MIME-Version: 1.0
+	Mon, 4 May 2009 06:09:47 -0400
+Received: from cmpxchg.org ([85.214.51.133]:48142 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751007AbZEDKJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 06:09:46 -0400
+Date: Mon, 4 May 2009 12:08:03 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-media@vger.kernel.org,
+       Hans Verkuil <hverkuil@xs4all.nl>, Paul Mundt <lethal@linux-sh.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/3] mm: use generic follow_pte() in follow_phys()
+Message-ID: <20090504100803.GA12726@cmpxchg.org>
+References: <20090501181449.GA8912@cmpxchg.org> <1241430874-12667-2-git-send-email-hannes@cmpxchg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090504094928.GA6157@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1241430874-12667-2-git-send-email-hannes@cmpxchg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
-
-On Mon, May 04, 2009 at 11:49:28AM +0200, Sam Ravnborg wrote:
-> On Mon, May 04, 2009 at 10:28:16AM +0200, Manuel Lauss wrote:
-> > Hi Sam,
-> > 
-> > On Sun, May 03, 2009 at 10:29:39PM +0200, Sam Ravnborg wrote:
-> > > This is due to the SUSE specific section as you expected.
-> > > We ignore sections named ".comment" but not ".comment" sections
-> > > with something appended to the name.
-> > 
-> > 
-> > On a related note, I see tons of the following warnings cross-building for
-> > MIPS:
-> > 
-> > WARNING: init/mounts.o (.mdebug.abi32): unexpected non-allocatable section.
-> > Did you forget to use "ax"/"aw" in a .S file?                              
-> > Note that for example <linux/init.h> contains                              
-> > section definitions for use in .S files.                                   
-> > 
-> > WARNING: init/mounts.o (.pdr): unexpected non-allocatable section.
-> > Did you forget to use "ax"/"aw" in a .S file?                     
-> > Note that for example <linux/init.h> contains                     
-> > section definitions for use in .S files. 
-> > 
-> > 
-> > I added ".pdr" and ".mdebug*" to the whitelist;  the resulting kernels still
-> > work.  (gcc-4.3.3, binutils-2.19.1)
+On Mon, May 04, 2009 at 11:54:33AM +0200, Johannes Weiner wrote:
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> ---
+>  mm/memory.c |   37 ++++++-------------------------------
+>  1 files changed, 6 insertions(+), 31 deletions(-)
 > 
-> Hi Manuel - thanks for reporting!
-> 
-> Is your mips target little or big endian?
-> If it is a big-endian target (which I expect) then the right fix
-> is the patch posted by Anders.
+> diff --git a/mm/memory.c b/mm/memory.c
+> index a621319..aee167d 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -3051,50 +3051,25 @@ int follow_phys(struct vm_area_struct *vma,
+>  		unsigned long address, unsigned int flags,
+>  		unsigned long *prot, resource_size_t *phys)
+>  {
+> -	pgd_t *pgd;
+> -	pud_t *pud;
+> -	pmd_t *pmd;
+> +	int ret = -EINVAL;
+>  	pte_t *ptep, pte;
+>  	spinlock_t *ptl;
+> -	resource_size_t phys_addr = 0;
+> -	struct mm_struct *mm = vma->vm_mm;
+> -	int ret = -EINVAL;
+>  
+>  	if (!(vma->vm_flags & (VM_IO | VM_PFNMAP)))
+>  		goto out;
+>  
+> -	pgd = pgd_offset(mm, address);
+> -	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
+> -		goto out;
+> -
+> -	pud = pud_offset(pgd, address);
+> -	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
+> -		goto out;
+> -
+> -	pmd = pmd_offset(pud, address);
+> -	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
+> -		goto out;
+> -
+> -	/* We cannot handle huge page PFN maps. Luckily they don't exist. */
+> -	if (pmd_huge(*pmd))
+> +	if (follow_pte(vma->vm_mm, address, &ptep, &ptl))
+>  		goto out;
+> -
+> -	ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
+> -	if (!ptep)
+> -		goto out;
+> -
+>  	pte = *ptep;
+> -	if (!pte_present(pte))
+> -		goto unlock;
+> +
+>  	if ((flags & FOLL_WRITE) && !pte_write(pte))
+>  		goto unlock;
+> -	phys_addr = pte_pfn(pte);
+> -	phys_addr <<= PAGE_SHIFT; /* Shift here to avoid overflow on PAE */
+>  
+>  	*prot = pgprot_val(pte_pgprot(pte));
+> -	*phys = phys_addr;
+> -	ret = 0;
+> +	/* Shift here to avoid overflow on PAE */
+> +	*phys = pte_pfn(pte) << PAGE_SHIFT;
 
-No, it's little-endian.  Cross-compiling on x86_64 to mipsel.
+Yuk, had my head in the butt here.  Changed to
 
+	*phys = (resource_size_t)pte_pfn(pte) << PAGE_SHIFT;
+
+---
+From: Johannes Weiner <hannes@cmpxchg.org>
+Subject: mm: use generic follow_pte() in follow_phys()
+
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+---
+ mm/memory.c |   36 +++++-------------------------------
+ 1 files changed, 5 insertions(+), 31 deletions(-)
+
+diff --git a/mm/memory.c b/mm/memory.c
+index a621319..c047950 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3051,50 +3051,24 @@ int follow_phys(struct vm_area_struct *vma,
+ 		unsigned long address, unsigned int flags,
+ 		unsigned long *prot, resource_size_t *phys)
+ {
+-	pgd_t *pgd;
+-	pud_t *pud;
+-	pmd_t *pmd;
++	int ret = -EINVAL;
+ 	pte_t *ptep, pte;
+ 	spinlock_t *ptl;
+-	resource_size_t phys_addr = 0;
+-	struct mm_struct *mm = vma->vm_mm;
+-	int ret = -EINVAL;
  
-> In other words - what happens if you back out your change
-> and apply the appended patch.
+ 	if (!(vma->vm_flags & (VM_IO | VM_PFNMAP)))
+ 		goto out;
+ 
+-	pgd = pgd_offset(mm, address);
+-	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
+-		goto out;
+-
+-	pud = pud_offset(pgd, address);
+-	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
+-		goto out;
+-
+-	pmd = pmd_offset(pud, address);
+-	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
+-		goto out;
+-
+-	/* We cannot handle huge page PFN maps. Luckily they don't exist. */
+-	if (pmd_huge(*pmd))
++	if (follow_pte(vma->vm_mm, address, &ptep, &ptl))
+ 		goto out;
+-
+-	ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
+-	if (!ptep)
+-		goto out;
+-
+ 	pte = *ptep;
+-	if (!pte_present(pte))
+-		goto unlock;
++
+ 	if ((flags & FOLL_WRITE) && !pte_write(pte))
+ 		goto unlock;
+-	phys_addr = pte_pfn(pte);
+-	phys_addr <<= PAGE_SHIFT; /* Shift here to avoid overflow on PAE */
+ 
+ 	*prot = pgprot_val(pte_pgprot(pte));
+-	*phys = phys_addr;
+-	ret = 0;
++	*phys = (resource_size_t)pte_pfn(pte) << PAGE_SHIFT;
+ 
++	ret = 0;
+ unlock:
+ 	pte_unmap_unlock(ptep, ptl);
+ out:
+-- 
+1.6.2.1.135.gde769
 
-no change.
-
-(Did you attach the wrong patch?  It does indentation fixes and adds a few
-more entries)
-
-Thanks!
-	Manuel Lauss
