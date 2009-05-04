@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756522AbZEDVlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756162AbZEDVoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756522AbZEDVlO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 17:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbZEDVk6
+	id S1756162AbZEDVoz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 17:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbZEDVoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 17:40:58 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36627 "EHLO mx2.redhat.com"
+	Mon, 4 May 2009 17:44:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41781 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753582AbZEDVk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 17:40:57 -0400
-Message-ID: <49FF60AB.7060700@redhat.com>
-Date: Mon, 04 May 2009 18:39:55 -0300
+	id S1752104AbZEDVoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 17:44:46 -0400
+Message-ID: <49FF617B.8030100@redhat.com>
+Date: Mon, 04 May 2009 18:43:23 -0300
 From: Mauro Carvalho Chehab <mchehab@redhat.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
 MIME-Version: 1.0
@@ -18,9 +18,9 @@ To: Borislav Petkov <borislav.petkov@amd.com>
 CC: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu,
        tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 07/21] amd64_edac: add DRAM address type conversion facilities
-References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> <1241024107-14535-8-git-send-email-borislav.petkov@amd.com>
-In-Reply-To: <1241024107-14535-8-git-send-email-borislav.petkov@amd.com>
+Subject: Re: [PATCH 08/21] amd64_edac: add helper to dump relevant registers
+References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> <1241024107-14535-9-git-send-email-borislav.petkov@amd.com>
+In-Reply-To: <1241024107-14535-9-git-send-email-borislav.petkov@amd.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
