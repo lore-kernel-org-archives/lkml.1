@@ -1,50 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbZEDHHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753525AbZEDHIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753691AbZEDHHg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 03:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbZEDHH0
+	id S1753525AbZEDHIZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 03:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZEDHIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 03:07:26 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:41432 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752590AbZEDHHZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 03:07:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=BUubZiInb8sOMFbdy9EpH9tTZ40pBNP07k1kaP7Ym765hyhLOFZnzIUSIcpeSfeB2L
-         oL8fGV6XhAgaZ6ZJBgWwK/jft2N53XY6jy4S4RZiRiy5HIRfTcLrkXrSPO+l7YHwMkRj
-         XL4hsITE8WXBMxm3+4GUEWHjTj5++zuNAGqb4=
-MIME-Version: 1.0
-In-Reply-To: <19d8a91dbf3456f9eb0b0bb2f92b302b88a1c672.1241105648.git.arnd@arndb.de>
-References: <cover.1241105648.git.arnd@arndb.de>
-	 <19d8a91dbf3456f9eb0b0bb2f92b302b88a1c672.1241105648.git.arnd@arndb.de>
-Date: Mon, 4 May 2009 09:07:23 +0200
-X-Google-Sender-Auth: 9283bcf923f12aaa
-Message-ID: <10f740e80905040007x38dfcdc5i4a7d351e59db71e9@mail.gmail.com>
-Subject: Re: [PATCH 05/27] asm-generic: add generic io.h
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
-       Remis Lima Baima <remis.developer@googlemail.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Mon, 4 May 2009 03:08:15 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:53380 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753043AbZEDHIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 03:08:13 -0400
+Date: Mon, 4 May 2009 17:08:10 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for May 4
+Message-Id: <20090504170810.64cdceb4.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__4_May_2009_17_08_10_+1000_Cv9D5GRa9Z1O50EW"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n4477fqu015864
 
-On Thu, Nov 6, 2008 at 15:38, Arnd Bergmann <arnd@arndb.de> wrote:> --- /dev/null> +++ b/include/asm-generic/io.h
-> +static inline void insb(unsigned long addr, void *buffer, int count)> +{> +       if (count) {> +               u8 *buf = buffer;> +               do {> +                       u8 x = inb(addr);> +                       *buf++ = x;> +               } while (--count);> +       }> +}> +> +static inline void insw(unsigned long addr, void *buffer, int count)> +{> +       if (count) {> +               u16 *buf = buffer;> +               do {> +                       u16 x = inw(addr);> +                       *buf++ = x;> +               } while (--count);> +       }> +}> +> +static inline void insl(unsigned long addr, void *buffer, int count)> +{> +       if (count) {> +               u32 *buf = buffer;> +               do {> +                       u32 x = inl(addr);> +                       *buf++ = x;> +               } while (--count);> +       }> +}> +> +static inline void outsb(unsigned long addr, const void *buffer, int count)> +{> +       if (count) {> +               const u8 *buf = buffer;> +               do {> +                       outb(*buf++, addr);> +               } while (--count);> +       }> +}> +> +static inline void outsw(unsigned long addr, const void *buffer, int count)> +{> +       if (count) {> +               const u16 *buf = buffer;> +               do {> +                       outw(*buf++, addr);> +               } while (--count);> +       }> +}> +> +static inline void outsl(unsigned long addr, const void *buffer, int count)> +{> +       if (count) {> +               const u32 *buf = buffer;> +               do {> +                       outl(*buf++, addr);> +               } while (--count);> +       }> +}
-Do we ever call these with count == 0?
-> +/*> + * Change "struct page" to physical address.> + */
-Which `struct page'?
-> +static inline void *__ioremap(unsigned long offset, unsigned long size,> +                             unsigned long flags)> +{> +       return (void *) offset;> +}> +> +static inline void *ioremap(unsigned long offset, unsigned long size)> +{> +       return (void *) offset;> +}
-Gr{oetje,eeting}s,
-						Geert
---Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-In personal conversations with technical people, I call myself a hacker. Butwhen I'm talking to journalists I just say "programmer" or something like that.							    -- Linus Torvalds���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+--Signature=_Mon__4_May_2009_17_08_10_+1000_Cv9D5GRa9Z1O50EW
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi all,
+
+Changes since 20090501:
+
+Changed tree:
+	the mfd tree changed location
+
+The ide tree lost its conflict.
+
+The vfs tree gained a conflict against Linus' tree.
+
+The driver-core tree gained a build failure for which I reverted a commit.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 135 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging configfs/linux-next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging ubifs/linux-next
+Merging xfs/master
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging tracing/auto-tracing-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging kbuild/master
+Merging ide/for-next
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+CONFLICT (content): Merge conflict in include/Kbuild
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in include/linux/mmc/sdio_ids.h
+Merging wireless/master
+[master 9867f6c] Revert "rfkill: remove user_claim stuff"
+Merging mtd/master
+Merging crypto/master
+Merging vfs/for-next
+CONFLICT (content): Merge conflict in fs/autofs4/expire.c
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
+req.c
+Merging cifs/master
+Merging mmc/next
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging lsm/for-next
+Merging block/for-next
+CONFLICT (content): Merge conflict in drivers/block/hd.c
+CONFLICT (content): Merge conflict in drivers/block/mg_disk.c
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging generic-ipi/auto-generic-ipi-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging suspend/linux-next
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in init/main.c
+[master 703dd2e] Revert "Driver Core: devtmpfs - driver core maintained /de=
+v tmpfs"
+Merging quilt/usb
+CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
+Merging quilt/staging
+CONFLICT (content): Merge conflict in drivers/staging/rt2860/common/mlme.c
+CONFLICT (content): Merge conflict in drivers/staging/rt2870/common/mlme.c
+CONFLICT (content): Merge conflict in drivers/staging/rt3070/common/mlme.c
+Merging scsi-post-merge/master
+
+--Signature=_Mon__4_May_2009_17_08_10_+1000_Cv9D5GRa9Z1O50EW
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkn+lFoACgkQjjKRsyhoI8y+ugCdFFpKKfZ1LY4ETyFyPOL8Rf3T
+fiEAnRNWmU6OZUVJ9fOCT5i8lixMk9tY
+=wg/s
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__4_May_2009_17_08_10_+1000_Cv9D5GRa9Z1O50EW--
