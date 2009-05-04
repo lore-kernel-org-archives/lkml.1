@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbZEDWAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbZEDWFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757040AbZEDWAs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 18:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbZEDWAj
+	id S1756621AbZEDWFD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 18:05:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZEDWEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 18:00:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54735 "EHLO mx2.redhat.com"
+	Mon, 4 May 2009 18:04:47 -0400
+Received: from kroah.org ([198.145.64.141]:60297 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751912AbZEDWAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 18:00:38 -0400
-Message-ID: <49FF6532.7040206@redhat.com>
-Date: Mon, 04 May 2009 18:59:14 -0300
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
-MIME-Version: 1.0
-To: Borislav Petkov <borislav.petkov@amd.com>
-CC: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu,
-       tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com,
+	id S1751283AbZEDWEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 18:04:46 -0400
+Date: Mon, 4 May 2009 14:53:25 -0700
+From: Greg KH <greg@kroah.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Dave Airlie <airlied@gmail.com>, stable@kernel.org,
+       Dave Airlie <airlied@redhat.com>, linux-i2c@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 09/21] amd64_edac: assign DRAM chip select base and mask
- in a family-specific way
-References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> <1241024107-14535-10-git-send-email-borislav.petkov@amd.com>
-In-Reply-To: <1241024107-14535-10-git-send-email-borislav.petkov@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: [stable] [PATCH] i2c: fix bit algorithm timeout for low values.
+Message-ID: <20090504215325.GA31248@kroah.com>
+References: <1240528153-5370-1-git-send-email-airlied@gmail.com> <20090424114259.70f74ccd@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090424114259.70f74ccd@hyperion.delvare>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov escreveu:
-> +	for (cs = 0; cs < CHIPSELECT_COUNT; cs++) {
-> +		reg = K8_DCSB0 + (cs * 4);
-> +		err = pci_read_config_dword(pvt->dram_f2_ctl, reg,
-> +						&pvt->dcsb0[cs]);
-> +		if (err != 0)
-> +			debugf0("%s() Reading K8_DCSB0[%d] failed\n",
-> +				__func__, cs);
-> +
-> +		debugf0("  DCSB0[%d]=0x%08x reg: F2x%x\n",
-> +			cs, pvt->dcsb0[cs], reg);
->   
+On Fri, Apr 24, 2009 at 11:42:59AM +0200, Jean Delvare wrote:
+> Hi Dave,
+> 
+> On Fri, 24 Apr 2009 09:09:13 +1000, Dave Airlie wrote:
+> > From: Dave Airlie <airlied@redhat.com>
+> > 
+> > When fetching DDC using i2c algo bit, we were often seeing timeouts
+> > before getting valid EDID on a retry. The VESA spec states 2ms is the
+> > DDC timeout, so when this translates into 1 jiffie and we are close
+> > to the end of the time period, it could return with a timeout less than
+> > 2ms.
+> > 
+> > Change this code to use time_after instead of time_after_eq.
+> > 
+> > Signed-off-by: Dave Airlie <airlied@redhat.com>
+> > ---
+> >  drivers/i2c/algos/i2c-algo-bit.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/i2c/algos/i2c-algo-bit.c b/drivers/i2c/algos/i2c-algo-bit.c
+> > index d420cc5..e25e139 100644
+> > --- a/drivers/i2c/algos/i2c-algo-bit.c
+> > +++ b/drivers/i2c/algos/i2c-algo-bit.c
+> > @@ -104,7 +104,7 @@ static int sclhi(struct i2c_algo_bit_data *adap)
+> >  		 * chips may hold it low ("clock stretching") while they
+> >  		 * are processing data internally.
+> >  		 */
+> > -		if (time_after_eq(jiffies, start + adap->timeout))
+> > +		if (time_after(jiffies, start + adap->timeout))
+> >  			return -ETIMEDOUT;
+> >  		cond_resched();
+> >  	}
+> 
+> Applied, thanks. I agree this should go in stable.
 
-Hmm... I suspect that there's a missing else before the debugf0(). If 
-you got an error while reading it, you shouldn't be showing the results. 
-> +
-> +		/* If DCT are NOT ganged, then read in DCT1's base */
-> +		if (boot_cpu_data.x86 >= 0x10 && !dct_ganging_enabled(pvt)) {
-> +			reg = F10_DCSB1 + (cs * 4);
-> +			err = pci_read_config_dword(pvt->dram_f2_ctl, reg,
-> +							&pvt->dcsb1[cs]);
-> +			if (err != 0)
-> +				debugf0("%s() Reading F10_DCSB1[%d] failed\n",
-> +					__func__, cs);
-> +			debugf0("  DCSB1[%d]=0x%08x reg: F2x%x\n",
-> +				cs, pvt->dcsb1[cs], reg);
->   
-The same issue here: if you got an error while reading it, you shouldn't 
-be showing the results. 
+I don't see this in Linus's tree anywhere, am I just missing it?
 
-Cheers,
-Mauro.
+thanks,
+
+greg k-h
