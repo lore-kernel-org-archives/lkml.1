@@ -1,68 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbZEDMGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbZEDMHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755674AbZEDMGB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 08:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbZEDMFv
+	id S1755965AbZEDMHd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 08:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbZEDMHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 08:05:51 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:32716 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751894AbZEDMFv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 08:05:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=izMY8xGrfAreqFdVoYvjchsW2pnMsaHlj2fJ82sfKysxw4i7vmGZT/DG0Hs0omrdrd
-         X3lkvvFLE0bhWjmg/zMoiR67cyXVxv9qC/9Y3pG7Cjp4n8lzAeqwMZGztve08GrEGklV
-         kOe4bLFIYNpLsV0RYHyqZlrJwnhPK9w6viEPA=
-Date: Mon, 4 May 2009 14:05:45 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Subject: Re: [PATCH 4/7] blkio-cgroup: The body of blkio-cgroup
-Message-ID: <20090504120544.GA3986@linux>
-References: <20090428.214423.193684619.ryov@valinux.co.jp> <20090428.214457.226801820.ryov@valinux.co.jp> <20090428.214535.71090234.ryov@valinux.co.jp> <20090428.214604.104034341.ryov@valinux.co.jp>
+	Mon, 4 May 2009 08:07:18 -0400
+Received: from h155.mvista.com ([63.81.120.155]:39362 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753969AbZEDMHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 08:07:17 -0400
+Message-ID: <49FEDAC0.3040503@ru.mvista.com>
+Date: Mon, 04 May 2009 16:08:32 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090428.214604.104034341.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Tejun Heo <tj@kernel.org>
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
+       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
+       fujita.tomonori@lab.ntt.co.jp, zaitcev@redhat.com,
+       Geert.Uytterhoeven@sonycom.com, sfr@canb.auug.org.au,
+       grant.likely@secretlab.ca, paul.clements@steeleye.com, tim@cyberelk.net,
+       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
+       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
+       davem@davemloft.net, rusty@rustcorp.com.au,
+       Markus.Lidel@shadowconnect.com, bharrosh@panasas.com,
+       Doug Gilbert <dgilbert@interlog.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH 03/11] block: add rq->resid_len
+References: <1241423927-11871-1-git-send-email-tj@kernel.org> <1241423927-11871-4-git-send-email-tj@kernel.org>
+In-Reply-To: <1241423927-11871-4-git-send-email-tj@kernel.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 09:46:04PM +0900, Ryo Tsuruta wrote:
-> The body of bio-cgroup.
-> 
-> Based on 2.6.30-rc3-git3
-> Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
-> Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
+Hello.
 
-Hi Ryo,
+Tejun Heo wrote:
 
-few minor coding style issues reported by checkpatch.pl:
+> rq->data_len served two purposes - the length of data buffer on issue
+> and the residual count on completion.  This duality creates some
+> headaches.
 
-WARNING: line over 80 characters
-#138: FILE: include/linux/biotrack.h:67:
-+static inline void blkio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
+> First of all, block layer and low level drivers can't really determine
+> what rq->data_len contains while a request is executing.  It could be
+> the total request length or it coulde be anything else one of the
+> lower layers is using to keep track of residual count.  This
+> complicates things because blk_rq_bytes() and thus
+> [__]blk_end_request_all() relies on rq->data_len for PC commands.
+> Drivers which want to report residual count should first cache the
+> total request length, update rq->data_len and then complete the
+> request with the cached data length.
 
-WARNING: line over 80 characters
-#152: FILE: include/linux/biotrack.h:81:
-+static inline void blkio_cgroup_copy_owner(struct page *page, struct page *opage)
+> Secondly, it makes requests default to reporting full residual count,
+> ie. reporting that no data transfer occurred.  The residual count is
+> an exception not the norm; however, the driver should clear
+> rq->data_len to zero to signify the normal cases while leaving it
+> alone means no data transfer occurred at all.  This reverse default
+> behavior complicates code unnecessarily and renders block PC on some
+> drivers (ide-tape/floppy) unuseable.
 
-WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
-#513: FILE: mm/biotrack.c:265:
-+EXPORT_SYMBOL(get_blkio_cgroup_id);
+> This patch adds rq->resid_len which is used only for residual count.
 
-WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
-#514: FILE: mm/biotrack.c:266:
-+EXPORT_SYMBOL(blkio_cgroup_lookup);
+> While at it, remove now unnecessasry blk_rq_bytes() caching in
+> ide_pc_intr() as rq->data_len is not changed anymore.
 
-total: 0 errors, 4 warnings, 515 lines checked
+> Boaz: spotted missing conversion in osd.
 
--Andrea
+> [ Impact: cleanup residual count handling, report 0 resid by default ]
+
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+
+[...]
+
+> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+> index 7149224..3813a0e 100644
+> --- a/drivers/ide/ide-tape.c
+> +++ b/drivers/ide/ide-tape.c
+> @@ -380,7 +380,7 @@ static int ide_tape_callback(ide_drive_t *drive, int dsc)
+>  		}
+>  
+>  		tape->first_frame += blocks;
+> -		rq->data_len -= blocks * tape->blk_size;
+> +		rq->resid_len = blk_rq_bytes(rq) - blocks * tape->blk_size;
+
+    Is it already guaranteed that rq->data_len == blk_rq_bytes(rq) here?
+
+MBR, Sergei
