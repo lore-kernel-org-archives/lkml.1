@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755187AbZEDT2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753948AbZEDTal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755187AbZEDT2e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 15:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbZEDT2Y
+	id S1753948AbZEDTal (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 15:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbZEDTaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 15:28:24 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:35983 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751643AbZEDT2Y (ORCPT
+	Mon, 4 May 2009 15:30:30 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:33284 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751643AbZEDTa3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 15:28:24 -0400
-Date: Mon, 4 May 2009 21:30:33 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tim Abbott <tabbott@MIT.EDU>, Steven Rostedt <srostedt@redhat.com>
-Cc: Steven Rostedt <srostedt@redhat.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>
-Subject: Re: [PATCH] ftrace: use .sched.text, not .text.sched in recordmcount.pl.
-Message-ID: <20090504193033.GA10382@uranus.ravnborg.org>
-References: <1241136371-10768-1-git-send-email-tabbott@mit.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241136371-10768-1-git-send-email-tabbott@mit.edu>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 4 May 2009 15:30:29 -0400
+Message-ID: <49FF4249.7030907@oracle.com>
+Date: Mon, 04 May 2009 12:30:17 -0700
+From: Sunil Mushran <sunil.mushran@oracle.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Jan Kucera <xatrix101@gmail.com>
+CC: mfasheh@suse.com, joel.becker@oracle.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [Ocfs2-devel] Deadlock in dlmmaster.c
+References: <ef67228d0905031333i782ad1efhe532cd555e58b604@mail.gmail.com>
+In-Reply-To: <ef67228d0905031333i782ad1efhe532cd555e58b604@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt001.oracle.com [141.146.116.10]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010209.49FF424B.02D8,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 08:06:11PM -0400, Tim Abbott wrote:
-> The only references in the kernel to the .text.sched section are in
-> recordmcount.pl.  Since the code it has is intended to be example code
-> it should refer to real kernel sections.  So change it to .sched.text
-> instead.
-> 
-> Signed-off-by: Tim Abbott <tabbott@mit.edu>
-> Cc: Steven Rostedt <srostedt@redhat.com>
+Jan Kucera wrote:
+> I've found some possible deadlock in fs/ocfs2/dlm/dlmmaster.c - 
+> version 2.6.28 (probably this code is in newer versions too).
+> Could someone confirm this? Thank you.
+>
+>
+> fs/ocfs2/dlm/dlmmaster.c
+> ==================
+>
+> function dlm_master_request_handler: (res->spinlock <- dlm->master_lock)
+> -----------------------------------
+> spin_lock(&res->spinlock); at line 1427
+> spin_lock(&dlm->master_lock); at line 1475
+>
+> function dlm_migrate_request_handler: (dlm->master_lock <- res->spinlock)
+> -------------------------------------------------------
+> spin_lock(&dlm->master_lock) at line 3036
+> spin_lock(&res->spinlock); at line 3039
 
-Steven - this change is independent of the ongoing
-section rework and is a pure documentation fix.
+So this should not happen.
 
-Please apply it with my ack.
+The first condition can only be hit if the resource has no master and is in
+the process of being mastered.
 
-	Sam
+The second condition will only be hit if the resource has a master and is
+currently being migrated (remastered) from one node to another.
 
-[Kept whole patch for reference]
+The two appear to be mutually exclusive. But feel free to file a bugzilla
+so that I remember to look into it more carefully when I have more time.
+http://oss.oracle.com/bugzilla
 
-> ---
->  scripts/recordmcount.pl |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index 409596e..0fae7da 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-> @@ -26,7 +26,7 @@
->  # which will also be the location of that section after final link.
->  # e.g.
->  #
-> -#  .section ".text.sched"
-> +#  .section ".sched.text", "ax"
->  #  .globl my_func
->  #  my_func:
->  #        [...]
-> @@ -39,7 +39,7 @@
->  #        [...]
->  #
->  # Both relocation offsets for the mcounts in the above example will be
-> -# offset from .text.sched. If we make another file called tmp.s with:
-> +# offset from .sched.text. If we make another file called tmp.s with:
->  #
->  #  .section __mcount_loc
->  #  .quad  my_func + 0x5
-> @@ -51,7 +51,7 @@
->  # But this gets hard if my_func is not globl (a static function).
->  # In such a case we have:
->  #
-> -#  .section ".text.sched"
-> +#  .section ".sched.text", "ax"
->  #  my_func:
->  #        [...]
->  #        call mcount  (offset: 0x5)
-> -- 
-> 1.6.2.1
-> 
+Thanks
+Sunil
