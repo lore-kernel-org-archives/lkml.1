@@ -1,60 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZEDTug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbZEDTw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838AbZEDTug (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 15:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbZEDTu1
+	id S1755196AbZEDTw3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 15:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbZEDTwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 15:50:27 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45697 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752588AbZEDTu0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 15:50:26 -0400
-Date: Mon, 4 May 2009 12:51:24 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jake Edge <jake@lwn.net>, security@kernel.org,
-       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Roland McGrath <roland@redhat.com>,
-       mingo@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [Security] [PATCH] proc: avoid information leaks to
- non-privileged processes
-Message-ID: <20090504125124.0f469970@infradead.org>
-In-Reply-To: <alpine.LFD.2.01.0905041159480.4983@localhost.localdomain>
-References: <20090504125114.5e391564@chukar>
-	<alpine.LFD.2.01.0905041159480.4983@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 4 May 2009 15:52:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43750 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752962AbZEDTwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 15:52:17 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 3/4] PM/Hibernate: Use memory allocations to free memory (rev. 2)
+Date: Mon, 4 May 2009 21:52:14 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, jens.axboe@oracle.com,
+       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905031822.55260.rjw@sisk.pl> <20090504093121.GB30306@elf.ucw.cz>
+In-Reply-To: <20090504093121.GB30306@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200905042152.15564.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 May 2009 12:00:12 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Monday 04 May 2009, Pavel Machek wrote:
+> On Sun 2009-05-03 18:22:54, Rafael J. Wysocki wrote:
+> > On Sunday 03 May 2009, Wu Fengguang wrote:
+> > > On Sun, May 03, 2009 at 02:24:20AM +0200, Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > Modify the hibernation memory shrinking code so that it will make
+> > > > memory allocations to free memory instead of using an artificial
+> > > > memory shrinking mechanism for that.  Remove the shrinking of
+> > > > memory from the suspend-to-RAM code, where it is not really
+> > > > necessary.  Finally, remove the no longer used memory shrinking
+> > > > functions from mm/vmscan.c .
+> > > > 
+> > > > [rev. 2: Use the existing memory bitmaps for marking preallocated
+> > > >  image pages and use swsusp_free() from releasing them, introduce
+> > > >  GFP_IMAGE, add comments describing the memory shrinking strategy.]
+> > > > 
+> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > ---
+> > > >  kernel/power/main.c     |   20 ------
+> > > >  kernel/power/snapshot.c |  132 +++++++++++++++++++++++++++++++++-----------
+> > > >  mm/vmscan.c             |  142 ------------------------------------------------
+> > > >  3 files changed, 101 insertions(+), 193 deletions(-)
+> > > > 
+> > > > Index: linux-2.6/kernel/power/snapshot.c
+> > > > ===================================================================
+> > > > --- linux-2.6.orig/kernel/power/snapshot.c
+> > > > +++ linux-2.6/kernel/power/snapshot.c
+> > > > @@ -1066,41 +1066,97 @@ void swsusp_free(void)
+> > > >  	buffer = NULL;
+> > > >  }
+> > > >  
+> > > > +/* Helper functions used for the shrinking of memory. */
+> > > > +
+> > > > +#ifdef CONFIG_HIGHMEM
+> > > > +#define GFP_IMAGE	(GFP_KERNEL | __GFP_HIGHMEM | __GFP_NO_OOM_KILL)
+> > > > +#else
+> > > > +#define GFP_IMAGE	(GFP_KERNEL | __GFP_NO_OOM_KILL)
+> > > > +#endif
+> > > 
+> > > The CONFIG_HIGHMEM test is not necessary: __GFP_HIGHMEM is always defined.
+> > > 
+> > > > +#define SHRINK_BITE	10000
+> > > 
+> > > This is ~40MB. A full scan of (for example) 8G pages will be time
+> > > consuming, not to mention we have to do it 2*(8G-500M)/40M = 384 times!
+> > > 
+> > > Can we make it a LONG_MAX? 
+> > 
+> > No, I don't think so.  The problem is the number of pages we'll need to copy
+> > is generally shrinking  as we allocate memory, so we can't do that in one shot.
+> > 
+> > We can make it a greater number, but I don't really think it would be a good
+> > idea to make it greater than 100 MB.
+> 
+> Well, even 100MB is quite big: on 128MB machine, that will probably
+> mean freeing all the memory (instead of "as much as needed"). And that
+> memory needs to go to disk, so it will be slow.
 
-> 
-> 
-> On Mon, 4 May 2009, Jake Edge wrote:
-> >
-> > This is essentially v2 of "[PATCH] proc: avoid leaking eip, esp, or
-> > wchan to non-privileged processes", adding some of Eric Biederman's
-> > suggestions as well as the start_stack change (only give out that
-> > address if the process is ptrace()-able).  This has been tested
-> > with ps and top without any ill effects being seen.
-> 
-> Looks sane to me. Anybody objects?
-> 
+But we're going to free it anyway?
 
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Rafael
