@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbZEDJ5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754362AbZEDJ7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755357AbZEDJ5g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 05:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbZEDJ5N
+	id S1754362AbZEDJ7y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 05:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZEDJ7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 05:57:13 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:39549 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755051AbZEDJ5M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 05:57:12 -0400
-Subject: Re: introducing __GFP_PANIC
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: David Rientjes <rientjes@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Jack Steiner <steiner@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <20090504090825.GC4173@lenovo>
-References: <20090503121228.GC4615@lenovo>
-	 <1241353621.27683.3.camel@penberg-laptop> <20090503143824.GF4615@lenovo>
-	 <84144f020905030954m434d0550l3ed7ef7436c803df@mail.gmail.com>
-	 <20090503172338.GG4615@lenovo>
-	 <84144f020905031038n751b48afsaefc3765ed632f82@mail.gmail.com>
-	 <20090503204542.GJ4615@lenovo>
-	 <alpine.DEB.2.00.0905031357140.17811@chino.kir.corp.google.com>
-	 <20090504081454.GA4173@lenovo> <1241425941.21088.19.camel@penberg-laptop>
-	 <20090504090825.GC4173@lenovo>
-Date: Mon, 04 May 2009 12:57:11 +0300
-Message-Id: <1241431031.21088.21.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 4 May 2009 05:59:30 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48638 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751894AbZEDJ73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 05:59:29 -0400
+Message-ID: <49FEBC4E.5040805@redhat.com>
+Date: Mon, 04 May 2009 12:58:38 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Elad Lahav <elahav@uwaterloo.ca>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] Implementation of the sendgroup() system call
+References: <49FE47A1.7070700@uwaterloo.ca> <87eiv5ibnd.fsf@basil.nowhere.org> <49FE9999.7090103@redhat.com> <20090504095300.GF23223@one.firstfloor.org>
+In-Reply-To: <20090504095300.GF23223@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-04 at 13:08 +0400, Cyrill Gorcunov wrote:
-> Index: linux-2.6.git/mm/oom_kill.c
-> =====================================================================
-> --- linux-2.6.git.orig/mm/oom_kill.c
-> +++ linux-2.6.git/mm/oom_kill.c
-> @@ -422,6 +422,16 @@ static int oom_kill_process(struct task_
->  	return oom_kill_task(p);
->  }
->  
-> +void oom_panic(gfp_t gfp_mask, unsigned int order)
-> +{
-> +	if (likely(!(gfp_mask & __GFP_PANIC)))
-> +		return;
-> +
-> +	panic("Out of memory: panic due to __GFP_PANIC.\n"
-> +		"%s order:%d, mode:0x%x\n", current->comm,
-> +		order, gfp_mask);
-> +}
+Andi Kleen wrote:
+>>> My guess it's more the copies than the calls? It sounds like
+>>> you want sendfile() for UDP. I think that would be a cleaner solution
+>>> than such a specific hack for your application. It would
+>>> have the advantage of saving the first copy too and be 
+>>> truly zero copy on capable NICs.
+>>>  
+>>>       
+>> An aio udp send could accomplish both multiple packets per call, and 
+>>     
+>
+> AIO sockets are a lot of work. There have been various attempts
+> over the years, but they are very difficult. This was mostly
+> for TCP -- possibly UDP would be a bit easier -- but still
+> many complications. It would also need a lot of changes and
+> you would need to convince the network maintainers that they
+> are a good idea.
+>   
 
-I think this just makes things harder to follow. It has one call-site so
-why not inline this there?
+I would love them for kvm.  As far as I understand, the only 
+complication is proper socket destructors so we can put_page() the memory.
+
+Right now sendfile() is only usable for read-only files.  It's not 
+usable for files that change, or non-file memory.
+
+>   
+>>> Or perhaps simple send to a local multicast group and let
+>>> some netfilter module turn that into regular UDP.
+>>>  
+>>>       
+>> Sounds hacky and rooty.
+>>     
+>
+> rooty? Everyone can send to all directions anyways.
+>
+> It wouldn't be perfect, but quite usable as a short term solution
+> for a production server.
+>   
+
+I meant, you need root to insert that netfiler module.  It's workable as 
+a one off but it's not something reusable.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
