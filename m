@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755832AbZEDTMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZEDTOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755832AbZEDTMP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 15:12:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbZEDTL5
+	id S1754838AbZEDTOV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 15:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbZEDTOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 15:11:57 -0400
-Received: from mx32b01.es6.egwn.net ([195.10.6.123]:39266 "EHLO
-	mx1.es6.egwn.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753045AbZEDTL4 convert rfc822-to-8bit (ORCPT
+	Mon, 4 May 2009 15:14:10 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:38686 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751830AbZEDTOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 15:11:56 -0400
-Date: Mon, 4 May 2009 21:11:51 +0200
-From: Matthias Saou 
-	<thias@spam.spam.spam.spam.spam.spam.spam.egg.and.spam.freshrpms.net>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Wrong network usage reported by /proc
-Message-ID: <20090504211151.74622f29@python3.es.egwn.lan>
-In-Reply-To: <49FF2BB2.4030700@cosmosbay.com>
-References: <20090504171408.3e13822c@python3.es.egwn.lan>
-	<49FF2BB2.4030700@cosmosbay.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 4 May 2009 15:14:09 -0400
+MIME-Version: 1.0
+In-Reply-To: <49FF3A26.3030407@googlemail.com>
+References: <20090501061701.GB19234@kroah.com> <ac3eb2510905010624k891f680s7255af8ae185b5d5@mail.gmail.com> 
+	<49FC8EE4.6040408@googlemail.com> <9b2b86520905021255t4a4812dcrcbcc32f36acd6039@mail.gmail.com> 
+	<ac3eb2510905021447m1fad2382h342b4d4279b75d3d@mail.gmail.com> 
+	<20090504162011.GO17956@suse.de> <ac3eb2510905040953t29e104eel1f820516195c623a@mail.gmail.com> 
+	<49FF2BD4.3070409@googlemail.com> <ac3eb2510905041113x58bdb807od7dd4a6ce258e317@mail.gmail.com> 
+	<49FF3A26.3030407@googlemail.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Mon, 4 May 2009 21:13:53 +0200
+Message-ID: <ac3eb2510905041213m24aec237y1f3b5648df3106e0@mail.gmail.com>
+Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
+To: Michael Riepe <michael.riepe@googlemail.com>
+Cc: Lars Marowsky-Bree <lmb@suse.de>,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jan Blunck <jblunck@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote :
+On Mon, May 4, 2009 at 20:55, Michael Riepe
+<michael.riepe@googlemail.com> wrote:
+>> Dynamic device numbers! A static /dev does not work at all for many
+>> subsystems, not to mention the risk you take by talking to the wrong
+>> device pointed to, by your incorrect static device nodes. It's not an
+>> option at all today, and it will get much worse in the future.
+>
+> Maybe it's just me, but my devices end up being numbered the same after
+> every reboot. Unless I add or remove devices to/from the system, of course.
 
-> Matthias Saou a écrit :
-> > Hi,
-> > 
-> > I'm posting here as a last resort. I've got lots of heavily used RHEL5
-> > servers (2.6.18 based) that are reporting all sorts of impossible
-> > network usage values through /proc, leading to unrealistic snmp/cacti
-> > graphs where the outgoing bandwidth used it higher than the physical
-> > interface's maximum speed.
-> > 
-> > For some details and a test script which compares values from /proc
-> > with values from tcpdump :
-> > https://bugzilla.redhat.com/show_bug.cgi?id=489541
-> > 
-> > The values collected using tcpdump always seem realistic and match the
-> > values seen on the remote network equipments. So my obvious conclusion
-> > (but possibly wrong given my limited knowledge) is that something is
-> > wrong in the kernel, since it's the one exposing the /proc interface.
-> > 
-> > I've reproduced what seems to be the same problem on recent kernels,
-> > including the 2.6.27.21-170.2.56.fc10.x86_64 I'm running right now. The
-> > simple python script available here allows to see it quite easily :
-> > https://www.redhat.com/archives/rhelv5-list/2009-February/msg00166.html
-> > 
-> >  * I run the script on my Workstation, I have an FTP server enabled
-> >  * I download a DVD ISO from a remote workstation : The values match
-> >  * I start ping floods from remote workstations : The values reported
-> >    by /proc are much higher than the ones reported by tcpdump. I used
-> >    "ping -s 500 -f myworkstation" from two remote workstations
-> > 
-> > If there's anything flawed in my debugging, I'd love to have someone
-> > point it out to me. TIA to anyone willing to have a look.
-> > 
-> > Matthias
-> > 
-> 
-> I could not reproduce this here... what kind of NIC are you using on
-> affected systems ? Some ethernet drivers report stats from card itself,
-> and I remember seeing some strange stats on some hardware, but I cannot
-> remember which one it was (we were reading NULL values instead of
-> real ones, once in a while, maybe it was a firmware issue...)
+Sure, that works fine for most things, and will continue to do so. But
+there are entire subsystems in the kernel, mostly newer ones, which do
+not have any static number assignment and require dynamic /dev
+support.
 
-My workstation has a Broadcom BCM5752 (tg3 module). The servers which
-are most affected have Intel 82571EB (e1000e). But the issue is that
-with /proc, the values are a lot _higher_ than with tcpdump, and the
-tcpdump values seem to be the correct ones.
+It's not about /dev/null and /dev/tty and such, that will not change,
+but there is already an option in the upstream kernel to assign
+dynamic numbers to sd* disks to allow more than 15 partitions, and the
+numbers of subsystem requiring dynamic numbers will likely grow.
 
-Matthias
+The thing today is that userspace on distro systems messes around in
+/dev and assigns access control lists to grant device-access to
+specific users, udev creates many symlinks there to identify your
+devices, because the kernel names get reordered, and nothing will ever
+revert /dev to the state where it came from at boot.
+    So the wider support for a static /dev is kind of fading away,
+stuff that works today statically will likely continue to work, but
+all the new stuff will not work with a static /dev. That's one part of
+what devtmpfs addresses.
 
--- 
-Clean custom Red Hat Linux rpm packages : http://freshrpms.net/
-Fedora release 10 (Cambridge) - Linux kernel
-2.6.27.21-170.2.56.fc10.x86_64 Load : 2.20 0.88 0.42
+Thanks,
+Kay
