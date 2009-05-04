@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932219AbZEDQsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932085AbZEDQul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932219AbZEDQsw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757331AbZEDQsk
+	id S932085AbZEDQul (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbZEDQuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 12:48:40 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:46066 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756849AbZEDQsi convert rfc822-to-8bit (ORCPT
+	Mon, 4 May 2009 12:50:32 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:51181 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755520AbZEDQub (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:48:38 -0400
+	Mon, 4 May 2009 12:50:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ByLP6I+heFzu90p/rx/fG2+zKPRrSJ7iN0hvJMWFZ0wcqKj2H5JHz8BRcAejcwhVqv
-         OUBbb5clVhLeTyq0XQ/+XnJ8nPlBRWYkPUKIctQU08j6vNw5vLSHft1aWQBtqsGkEVEu
-         ROxsvLJILSK32XdChP5V4HdXIvj6ojrw9lAQg=
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=R2TsxNV14jy9DYHBzI8PC11LcfjBSozrg69RXh+8lyZdBrd0fziupd8hdrrPXNL9PK
+         gY9skhJEQSMr/4ViUM1itda+EAw7pAI0mti2hUsLm5hk5VicWoNxT7IpX5bEIglAKJvP
+         E6gONW0zWgFjP1g0D4imDNfFxpc03TfXRcyLI=
 MIME-Version: 1.0
-In-Reply-To: <49FEA127.1000905@kernel.org>
-References: <1233456951-992-1-git-send-email-tj@kernel.org>
-	 <49F902CF.7080307@garzik.org> <49F903DD.8040707@kernel.org>
-	 <49FA0349.3090706@garzik.org>
-	 <e9c3a7c20904301415t621670a0l1bd64c7d74d369f@mail.gmail.com>
-	 <49FEA127.1000905@kernel.org>
-Date: Mon, 4 May 2009 09:48:37 -0700
-Message-ID: <e9c3a7c20905040948m572e23dj1aa197dbd20ff037@mail.gmail.com>
-Subject: Re: [PATCHSET] block,scsi,libata: implement alt_size
-From: Dan Williams <dan.j.williams@gmail.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, James.Bottomley@hansenpartnership.com,
-       Mauelshagen@redhat.com, dm-devel@redhat.com
+Date: Mon, 4 May 2009 12:50:31 -0400
+Message-ID: <a44ae5cd0905040950l43a1cce1xb5f3aa494e420de2@mail.gmail.com>
+Subject: 2.6.30-rc4-git1 -- [drm:i915_get_vblank_counter] *ERROR* trying to 
+	get vblank count for disabled pipe 0
+From: Miles Lane <miles.lane@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>, David Airlie <airlied@linux.ie>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 4, 2009 at 1:02 AM, Tejun Heo <tj@kernel.org> wrote:
->> Couldn't the "fix" also just be a note to users to disable ignore_hpa
->> if they notice that there raid arrays are not assembling correctly?
->
-> I don't know.  If it doesn't work automatically, the solution really
-> isn't worth much.  People generally don't (shouldn't need to) have any
-> idea what HPA is.  It basically boils down to "Linux doesn't support
-> RAID".  :-)
->
-> Maybe we should just put this issue to the rest and strongly advise
-> people against BIOS raids.
+I see this error when I suspend my laptop.  As far as I can tell,
+everything is working fine when it resumes.
 
-That's a bit too far :-).  The real issue is that Linux is ignoring a
-property of the platform.  To me ignoring HPA is like ignoring an e820
-reserved memory region.  You might be able to get away with it
-sometimes, but other times it breaks.
+# dmesg | grep -i drm
+[    0.775429] [drm] Initialized drm 1.1.0 20060810
+[   32.312209] [drm] Initialized i915 1.6.0 20080730 for 0000:00:02.0 on minor 0
+[ 1229.487441] [drm:i915_get_vblank_counter] *ERROR* trying to get
+vblank count for disabled pipe 0
 
-However, in the end I think having 'alt_size' available is a useful
-mechanism for discovering and handling the ignore_hpa=1 case.   The
-policy about when to trust it can be left to userspace.
+Linux ubuntu 2.6.30-rc4-git1 #5 SMP PREEMPT Mon May 4 12:01:41 EDT
+2009 x86_64 GNU/Linux
 
-Thanks,
-Dan
+Gnu C                  4.3.3
+Gnu make               3.81
+binutils               2.19.1
+util-linux             2.14.2
+mount                  support
+module-init-tools      3.7-pre9
+e2fsprogs              1.41.4
+reiserfsprogs          3.6.19
+pcmciautils            014
+PPP                    2.4.5
+Linux C Library        2.9
+Dynamic linker (ldd)   2.9
+Procps                 3.2.7
+Net-tools              1.60
+Kbd                    1.14.1
+Sh-utils               6.10
+wireless-tools         29
+Modules Loaded         cpufreq_ondemand i915 ipv6 snd_hda_codec_si3054
+snd_hda_codec_idt snd_hda_intel snd_hda_codec snd_hwdep snd_pcm_oss
+snd_mixer_oss snd_pcm pcmcia iwl3945 iwlcore snd_seq_dummy snd_seq_oss
+iTCO_wdt iTCO_vendor_support rfkill tifm_7xx1 snd_seq_midi_event
+tifm_core yenta_socket rsrc_nonstatic pcmcia_core mac80211 snd_seq
+snd_timer snd_seq_device cfg80211 snd soundcore snd_page_alloc
+rtc_cmos rtc_core rtc_lib intel_agp sd_mod sg ehci_hcd sr_mod cdrom
+sky2 uhci_hcd
