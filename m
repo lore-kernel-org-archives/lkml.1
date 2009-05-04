@@ -1,218 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbZEDUZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbZEDU0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756169AbZEDUZm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 16:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbZEDUZc
+	id S1756037AbZEDU0u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 16:26:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbZEDU0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 16:25:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53360 "EHLO mx2.redhat.com"
+	Mon, 4 May 2009 16:26:38 -0400
+Received: from kroah.org ([198.145.64.141]:37867 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751041AbZEDUZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 16:25:31 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [PATCH] crypto: add ctr(aes) test vectors
-Date: Mon, 4 May 2009 16:24:44 -0400
-User-Agent: KMail/1.11.2 (Linux/2.6.29.1-102.fc11.x86_64; KDE/4.2.2; x86_64; ; )
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Neil Horman <nhorman@tuxdriver.com>
-References: <200904282118.22823.jarod@redhat.com> <20090504111010.GA4991@gondor.apana.org.au>
-In-Reply-To: <20090504111010.GA4991@gondor.apana.org.au>
+	id S1753012AbZEDU0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 16:26:37 -0400
+Date: Mon, 4 May 2009 13:13:23 -0700
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Arnd Bergmann <arnd@arndb.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Paul Mackerras <paulus@samba.org>, Matthias Fuchs <mfuchs@ma-fu.de>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] of_serial: remove driver_data direct access of struct
+	device
+Message-ID: <20090504201323.GA23069@kroah.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905041624.45060.jarod@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 May 2009 07:10:10 Herbert Xu wrote:
-> On Tue, Apr 28, 2009 at 09:18:22PM -0400, Jarod Wilson wrote:
-> > Per the NIST AESAVS document, Appendix A[1], it isn't possible to
-> > have automated self-tests for counter-mode AES, but people are
-> > misled to believe something is wrong by the message that says there
-> > is no test for ctr(aes). Simply suppress all 'no test for ctr(aes*'
-> > messages if fips_enabled is set to avoid confusion.
-> 
-> This is not true at all.  In our implementation the counter is
-> set through the IV so it definitely is possible to test counter
-> mode algorithms in Linux.
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-Indeed, the first enc/dec operation after we set the counter *is*
-completely deterministic across all implementations, the AESAVS
-is referring to tests with multiple operations, which aren't
-possible, due to varying implementations of counter increment
-routines. This patch adds test vectors for ctr(aes), using the
-first block input values from Appendix F.5 of NIST Special Pub
-800-38A.
+In the near future, the driver core is going to not allow direct access
+to the driver_data pointer in struct device.  Instead, the functions
+dev_get_drvdata() and dev_set_drvdata() should be used.  These functions
+have been around since the beginning, so are backwards compatible with
+all older kernel versions.
 
-Was also necessary to rename the rfc3686(ctr(aes)) components
-slightly, to resolve a namespace collision.
-
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
-
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Matthias Fuchs <mfuchs@ma-fu.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- crypto/testmgr.c |   23 +++++++++++--
- crypto/testmgr.h |   92 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 109 insertions(+), 6 deletions(-)
+ drivers/serial/of_serial.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-index ffe7963..0efdda7 100644
---- a/crypto/testmgr.c
-+++ b/crypto/testmgr.c
-@@ -1518,6 +1518,21 @@ static const struct alg_test_desc alg_test_descs[] = {
- 			}
- 		}
- 	}, {
-+		.alg = "ctr(aes)",
-+		.test = alg_test_skcipher,
-+		.suite = {
-+			.cipher = {
-+				.enc = {
-+					.vecs = aes_ctr_enc_tv_template,
-+					.count = AES_CTR_ENC_TEST_VECTORS
-+				},
-+				.dec = {
-+					.vecs = aes_ctr_dec_tv_template,
-+					.count = AES_CTR_DEC_TEST_VECTORS
-+				}
-+			}
-+		}
-+	}, {
- 		.alg = "cts(cbc(aes))",
- 		.test = alg_test_skcipher,
- 		.suite = {
-@@ -1967,12 +1982,12 @@ static const struct alg_test_desc alg_test_descs[] = {
- 		.suite = {
- 			.cipher = {
- 				.enc = {
--					.vecs = aes_ctr_enc_tv_template,
--					.count = AES_CTR_ENC_TEST_VECTORS
-+					.vecs = aes_ctr_rfc3686_enc_tv_template,
-+					.count = AES_CTR_3686_ENC_TEST_VECTORS
- 				},
- 				.dec = {
--					.vecs = aes_ctr_dec_tv_template,
--					.count = AES_CTR_DEC_TEST_VECTORS
-+					.vecs = aes_ctr_rfc3686_dec_tv_template,
-+					.count = AES_CTR_3686_DEC_TEST_VECTORS
- 				}
- 			}
- 		}
-diff --git a/crypto/testmgr.h b/crypto/testmgr.h
-index c1c709b..0a11285 100644
---- a/crypto/testmgr.h
-+++ b/crypto/testmgr.h
-@@ -2854,8 +2854,10 @@ static struct cipher_testvec cast6_dec_tv_template[] = {
- #define AES_LRW_DEC_TEST_VECTORS 8
- #define AES_XTS_ENC_TEST_VECTORS 4
- #define AES_XTS_DEC_TEST_VECTORS 4
--#define AES_CTR_ENC_TEST_VECTORS 7
--#define AES_CTR_DEC_TEST_VECTORS 6
-+#define AES_CTR_ENC_TEST_VECTORS 3
-+#define AES_CTR_DEC_TEST_VECTORS 3
-+#define AES_CTR_3686_ENC_TEST_VECTORS 7
-+#define AES_CTR_3686_DEC_TEST_VECTORS 6
- #define AES_GCM_ENC_TEST_VECTORS 9
- #define AES_GCM_DEC_TEST_VECTORS 8
- #define AES_CCM_ENC_TEST_VECTORS 7
-@@ -3998,6 +4000,92 @@ static struct cipher_testvec aes_xts_dec_tv_template[] = {
+--- a/drivers/serial/of_serial.c
++++ b/drivers/serial/of_serial.c
+@@ -122,7 +122,7 @@ static int __devinit of_platform_serial_
  
- 
- static struct cipher_testvec aes_ctr_enc_tv_template[] = {
-+	{ /* From NIST Special Publication 800-38A, Appendix F.5 */
-+		.key	= "\x2b\x7e\x15\x16\x28\xae\xd2\xa6"
-+			  "\xab\xf7\x15\x88\x09\xcf\x4f\x3c",
-+		.klen	= 16,
-+		.iv	= "\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7"
-+			  "\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff",
-+		.input	= "\x6b\xc1\xbe\xe2\x2e\x40\x9f\x96"
-+			  "\xe9\x3d\x7e\x11\x73\x93\x17\x2a",
-+		.ilen	= 16,
-+		.result	= "\x87\x4d\x61\x91\xb6\x20\xe3\x26"
-+			  "\x1b\xef\x68\x64\x99\x0d\xb6\xce",
-+		.rlen	= 16,
-+	}, {
-+		.key	= "\x8e\x73\xb0\xf7\xda\x0e\x64\x52"
-+			  "\xc8\x10\xf3\x2b\x80\x90\x79\xe5"
-+			  "\x62\xf8\xea\xd2\x52\x2c\x6b\x7b",
-+		.klen	= 24,
-+		.iv	= "\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7"
-+			  "\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff",
-+		.input	= "\x6b\xc1\xbe\xe2\x2e\x40\x9f\x96"
-+			  "\xe9\x3d\x7e\x11\x73\x93\x17\x2a",
-+		.ilen	= 16,
-+		.result	= "\x1a\xbc\x93\x24\x17\x52\x1c\xa2"
-+			  "\x4f\x2b\x04\x59\xfe\x7e\x6e\x0b",
-+		.rlen	= 16,
-+	}, {
-+		.key	= "\x60\x3d\xeb\x10\x15\xca\x71\xbe"
-+			  "\x2b\x73\xae\xf0\x85\x7d\x77\x81"
-+			  "\x1f\x35\x2c\x07\x3b\x61\x08\xd7"
-+			  "\x2d\x98\x10\xa3\x09\x14\xdf\xf4",
-+		.klen	= 32,
-+		.iv	= "\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7"
-+			  "\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff",
-+		.input	= "\x6b\xc1\xbe\xe2\x2e\x40\x9f\x96"
-+			  "\xe9\x3d\x7e\x11\x73\x93\x17\x2a",
-+		.ilen	= 16,
-+		.result	= "\x60\x1e\xc3\x13\x77\x57\x89\xa5"
-+			  "\xb7\xa7\xf5\x04\xbb\xf3\xd2\x28",
-+		.rlen	= 16,
-+	}
-+};
-+
-+static struct cipher_testvec aes_ctr_dec_tv_template[] = {
-+	{ /* From NIST Special Publication 800-38A, Appendix F.5 */
-+		.key	= "\x2b\x7e\x15\x16\x28\xae\xd2\xa6"
-+			  "\xab\xf7\x15\x88\x09\xcf\x4f\x3c",
-+		.klen	= 16,
-+		.iv	= "\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7"
-+			  "\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff",
-+		.input	= "\x87\x4d\x61\x91\xb6\x20\xe3\x26"
-+			  "\x1b\xef\x68\x64\x99\x0d\xb6\xce",
-+		.ilen	= 16,
-+		.result	= "\x6b\xc1\xbe\xe2\x2e\x40\x9f\x96"
-+			  "\xe9\x3d\x7e\x11\x73\x93\x17\x2a",
-+		.rlen	= 16,
-+	}, {
-+		.key	= "\x8e\x73\xb0\xf7\xda\x0e\x64\x52"
-+			  "\xc8\x10\xf3\x2b\x80\x90\x79\xe5"
-+			  "\x62\xf8\xea\xd2\x52\x2c\x6b\x7b",
-+		.klen	= 24,
-+		.iv	= "\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7"
-+			  "\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff",
-+		.input	= "\x1a\xbc\x93\x24\x17\x52\x1c\xa2"
-+			  "\x4f\x2b\x04\x59\xfe\x7e\x6e\x0b",
-+		.ilen	= 16,
-+		.result	= "\x6b\xc1\xbe\xe2\x2e\x40\x9f\x96"
-+			  "\xe9\x3d\x7e\x11\x73\x93\x17\x2a",
-+		.rlen	= 16,
-+	}, {
-+		.key	= "\x60\x3d\xeb\x10\x15\xca\x71\xbe"
-+			  "\x2b\x73\xae\xf0\x85\x7d\x77\x81"
-+			  "\x1f\x35\x2c\x07\x3b\x61\x08\xd7"
-+			  "\x2d\x98\x10\xa3\x09\x14\xdf\xf4",
-+		.klen	= 32,
-+		.iv	= "\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7"
-+			  "\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff",
-+		.input	= "\x60\x1e\xc3\x13\x77\x57\x89\xa5"
-+			  "\xb7\xa7\xf5\x04\xbb\xf3\xd2\x28",
-+		.ilen	= 16,
-+		.result	= "\x6b\xc1\xbe\xe2\x2e\x40\x9f\x96"
-+			  "\xe9\x3d\x7e\x11\x73\x93\x17\x2a",
-+		.rlen	= 16,
-+	}
-+};
-+
-+static struct cipher_testvec aes_ctr_rfc3686_enc_tv_template[] = {
- 	{ /* From RFC 3686 */
- 		.key	= "\xae\x68\x52\xf8\x12\x10\x67\xcc"
- 			  "\x4b\xf7\xa5\x76\x55\x77\xf3\x9e"
-
--- 
-Jarod Wilson
-jarod@redhat.com
+ 	info->type = port_type;
+ 	info->line = ret;
+-	ofdev->dev.driver_data = info;
++	dev_set_drvdata(&ofdev->dev, info);
+ 	return 0;
+ out:
+ 	kfree(info);
+@@ -135,7 +135,7 @@ out:
+  */
+ static int of_platform_serial_remove(struct of_device *ofdev)
+ {
+-	struct of_serial_info *info = ofdev->dev.driver_data;
++	struct of_serial_info *info = dev_get_drvdata(&ofdev->dev);
+ 	switch (info->type) {
+ #ifdef CONFIG_SERIAL_8250
+ 	case PORT_8250 ... PORT_MAX_8250:
