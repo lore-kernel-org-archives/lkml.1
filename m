@@ -1,95 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbZEDKs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbZEDKwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754425AbZEDKs4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 06:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZEDKsq
+	id S1754591AbZEDKwV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 06:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZEDKwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 06:48:46 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:63224 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751813AbZEDKsp convert rfc822-to-8bit (ORCPT
+	Mon, 4 May 2009 06:52:12 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:15379 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751800AbZEDKwL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 06:48:45 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 05/27] asm-generic: add generic io.h
-Date: Mon, 4 May 2009 12:48:28 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
-       Remis Lima Baima <remis.developer@googlemail.com>,
-       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
-References: <cover.1241105648.git.arnd@arndb.de> <19d8a91dbf3456f9eb0b0bb2f92b302b88a1c672.1241105648.git.arnd@arndb.de> <10f740e80905040007x38dfcdc5i4a7d351e59db71e9@mail.gmail.com>
-In-Reply-To: <10f740e80905040007x38dfcdc5i4a7d351e59db71e9@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 4 May 2009 06:52:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Cr3jq8AOOiCU04c6n43fHhNXOvPNNH6GCb+e9sVyYCh/gX3vnFFqwQSSMDiJZAFTtM
+         bnhxfrU7sOx+vSM+NCYpzLyY6PXuSs+5UFyDVILcaKXUB1iMvLZheMVOnp/K25woZa1T
+         nUoUynPAeJN/9YoAdrWfGb5TzAAvA18hcD9go=
+Date: Mon, 4 May 2009 14:52:06 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: David Rientjes <rientjes@google.com>, Ingo Molnar <mingo@elte.hu>,
+       Jack Steiner <steiner@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: introducing __GFP_PANIC
+Message-ID: <20090504105206.GF4173@lenovo>
+References: <84144f020905031038n751b48afsaefc3765ed632f82@mail.gmail.com> <20090503204542.GJ4615@lenovo> <alpine.DEB.2.00.0905031357140.17811@chino.kir.corp.google.com> <20090504081454.GA4173@lenovo> <1241425941.21088.19.camel@penberg-laptop> <20090504090825.GC4173@lenovo> <1241431031.21088.21.camel@penberg-laptop> <20090504100106.GD4173@lenovo> <20090504101121.GE4173@lenovo> <1241433188.21088.22.camel@penberg-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905041248.29400.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18jvqpdcBWOJsblIHHHAuOKuxWymgcngGlr5j8
- CEmH1sf97xWKH0BEJduEBrHk1j99FmzNB7MY1kza/6+QKaJI3Y
- Kt76EacqwYb9xaqDQGz9w==
+In-Reply-To: <1241433188.21088.22.camel@penberg-laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-io.h is more or less a straight copy from the mn10300 code,
-so maybe David Howells is interested in this as well.
+[Pekka Enberg - Mon, May 04, 2009 at 01:33:08PM +0300]
+| On Mon, 2009-05-04 at 14:11 +0400, Cyrill Gorcunov wrote:
+| > I believe this version should be correct (still RFC).
+| > __GFP_NOWARN has printk limit so instead of making
+| > additional checks (while combining those prink in
+| > original code) just adding panic with order and flags
+| > should be cleaner (as it done at moment :)
+| 
+| Looks good to me!
+| 
+| Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+| 
+| I suspect the patch needs some additional work for -mm due to Mel
+| Gorman's page allocator cleanup and optimization patches.
+| 
+| 			Pekka
+| 
 
-On Monday 04 May 2009, Geert Uytterhoeven wrote:
-> On Thu, Nov 6, 2008 at 15:38, Arnd Bergmann <arnd@arndb.de> wrote:
-> > +static inline void outsw(unsigned long addr, const void *buffer, int count)
-> > +{
-> > +       if (count) {
-> > +               const u16 *buf = buffer;
-> > +               do {
-> > +                       outw(*buf++, addr);
-> > +               } while (--count);
-> > +       }
-> > +}
-> > +
-> > +static inline void outsl(unsigned long addr, const void *buffer, int count)
-> > +{
-> > +       if (count) {
-> > +               const u32 *buf = buffer;
-> > +               do {
-> > +                       outl(*buf++, addr);
-> > +               } while (--count);
-> > +       }
-> > +}
-> 
-> Do we ever call these with count == 0?
+Thanks a lot, Pekka! I'll resend this one with Mel CC'ed so he
+could take a look (and a couple of people I know involved in
+memory management as well).
 
-I don't think it can, but code is still more correct if it can handle it.
-It could of course be written as
-
-	const u32 *buf;
-	for (buf = buffer; count; count--)
-		outl(*buf++, addr);
-
-
-> > +/*
-> > + * Change "struct page" to physical address.
-> > + */
-> 
-> Which `struct page'?
-
-I can change the comment to what avr32 and m32r have:
-
-arch/avr32/include/asm/io.h-/*
-arch/avr32/include/asm/io.h: * ioremap  -   map bus memory into CPU space
-arch/avr32/include/asm/io.h- * @offset  bus address of the memory
-arch/avr32/include/asm/io.h- * @size    size of the resource to map
-arch/avr32/include/asm/io.h- *
-arch/avr32/include/asm/io.h: * ioremap performs a platform specific sequence of operations to make
-arch/avr32/include/asm/io.h- * bus memory CPU accessible via the readb/.../writel functions and
-arch/avr32/include/asm/io.h- * the other mmio helpers. The returned address is not guaranteed to
-arch/avr32/include/asm/io.h- * be usable directly as a virtual address.
-arch/avr32/include/asm/io.h- */
-
-
-	Arnd <><
+	-- Cyrill
