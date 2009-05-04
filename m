@@ -1,64 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758122AbZEDPe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbZEDPg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758122AbZEDPe4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 11:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbZEDPeq
+	id S1758108AbZEDPg2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 11:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbZEDPgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 11:34:46 -0400
-Received: from mx32b01.es6.egwn.net ([195.10.6.123]:43547 "EHLO
-	mx1.es6.egwn.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754591AbZEDPep (ORCPT
+	Mon, 4 May 2009 11:36:18 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41497 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755965AbZEDPgS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 11:34:45 -0400
-X-Greylist: delayed 1236 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 May 2009 11:34:45 EDT
-Date: Mon, 4 May 2009 17:14:08 +0200
-From: Matthias Saou 
-	<thias@spam.spam.spam.spam.spam.spam.spam.egg.and.spam.freshrpms.net>
-To: linux-kernel@vger.kernel.org
-Subject: Wrong network usage reported by /proc
-Message-ID: <20090504171408.3e13822c@python3.es.egwn.lan>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 4 May 2009 11:36:18 -0400
+Subject: Re: [PATCH] sched: rt: document the risk of small values in the
+ bandwidth settings
+From: Peter Zijlstra <peterz@infradead.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <49FF0AFF.8030303@oracle.com>
+References: <1241449678.7620.4931.camel@twins> <49FF0AFF.8030303@oracle.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Mon, 04 May 2009 17:36:09 +0200
+Message-Id: <1241451369.7620.4934.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 2009-05-04 at 08:34 -0700, Randy Dunlap wrote:
+> > +Fiddling with these settings can result in an unusable system, the knobs are
+> > +root only and assume root knows what he's on about.
+> 
+> I know that my English is limited, but I don't know what this means:
+>   "what he's on about."
 
-I'm posting here as a last resort. I've got lots of heavily used RHEL5
-servers (2.6.18 based) that are reporting all sorts of impossible
-network usage values through /proc, leading to unrealistic snmp/cacti
-graphs where the outgoing bandwidth used it higher than the physical
-interface's maximum speed.
+Hehe, OK, how about we write it like:
 
-For some details and a test script which compares values from /proc
-with values from tcpdump :
-https://bugzilla.redhat.com/show_bug.cgi?id=489541
+Fiddling with these settings can result in an unstable system, the knobs are
+root only and assumes root knows what he is doing.
 
-The values collected using tcpdump always seem realistic and match the
-values seen on the remote network equipments. So my obvious conclusion
-(but possibly wrong given my limited knowledge) is that something is
-wrong in the kernel, since it's the one exposing the /proc interface.
-
-I've reproduced what seems to be the same problem on recent kernels,
-including the 2.6.27.21-170.2.56.fc10.x86_64 I'm running right now. The
-simple python script available here allows to see it quite easily :
-https://www.redhat.com/archives/rhelv5-list/2009-February/msg00166.html
-
- * I run the script on my Workstation, I have an FTP server enabled
- * I download a DVD ISO from a remote workstation : The values match
- * I start ping floods from remote workstations : The values reported
-   by /proc are much higher than the ones reported by tcpdump. I used
-   "ping -s 500 -f myworkstation" from two remote workstations
-
-If there's anything flawed in my debugging, I'd love to have someone
-point it out to me. TIA to anyone willing to have a look.
-
-Matthias
-
--- 
-Clean custom Red Hat Linux rpm packages : http://freshrpms.net/
-Fedora release 10 (Cambridge) - Linux kernel
-2.6.27.21-170.2.56.fc10.x86_64 Load : 0.39 0.30 0.34
+Does that work better for you?
