@@ -1,44 +1,461 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbZEDGel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752840AbZEDGsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbZEDGel (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 02:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbZEDGea
+	id S1752840AbZEDGsQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 02:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZEDGry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 02:34:30 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:58968 "EHLO e7.ny.us.ibm.com"
+	Mon, 4 May 2009 02:47:54 -0400
+Received: from mga01.intel.com ([192.55.52.88]:32635 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751590AbZEDGe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 02:34:29 -0400
-Date: Sun, 3 May 2009 23:34:31 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: tridge@samba.org, Al Viro <viro@ZenIV.linux.org.uk>,
-       Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
-       Matthew Wilcox <matthew@wil.cx>, Steve French <smfrench@gmail.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090504063431.GK7141@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <524f69650905011318m34e0027dt57877d225b3fe2da@mail.gmail.com> <20090501210109.GA3079@infradead.org> <20090502013729.GI6996@linux.vnet.ibm.com> <20090503225616.GD8633@ZenIV.linux.org.uk> <18942.9606.411013.714178@samba.org> <m1ljpdl8yr.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1ljpdl8yr.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1751590AbZEDGrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 02:47:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,290,1239001200"; 
+   d="asc'?scan'208";a="453814458"
+Subject: [PATCH -v3] KVM: MCE: Add MCE support to KVM
+From: Huang Ying <ying.huang@intel.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-cxMmJrD8896Vl9wmDYt8"
+Date: Mon, 04 May 2009 14:47:52 +0800
+Message-Id: <1241419672.8815.41.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 03, 2009 at 10:42:52PM -0700, Eric W. Biederman wrote:
-> The only reason I can see for not ultimately talking about things publicly
-> is if this is one company making shady deals with another company in which
-> case I do not see why the maintenance burden for those decision should
-> fall on the linux community as a whole.
 
-Another reason is that past experience would indicate that anything we
-say in public and and will be used against us.
+--=-cxMmJrD8896Vl9wmDYt8
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-							Thanx, Paul
+The related MSRs are emulated. MCE capability is exported via
+extension KVM_CAP_MCE and ioctl KVM_X86_GET_MCE_CAP_SUPPORTED.  A new
+vcpu ioctl command KVM_X86_SETUP_MCE is used to setup MCE emulation
+such as the mcg_cap. MCE is injected via vcpu ioctl command
+KVM_X86_SET_MCE. Extended machine-check state (MCG_EXT_P) and CMCI are
+not implemented.
+
+
+ChangeLog:
+
+v3:
+
+- Fix KVM_CAP_MCE declaration
+
+v2:
+
+- Add MCE capability exportation support.
+- Allocate MCE banks registers simulation backing memory during VCPU
+  initialization.
+
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+
+---
+ arch/x86/include/asm/kvm.h      |    1=20
+ arch/x86/include/asm/kvm_host.h |    5=20
+ arch/x86/kvm/x86.c              |  220 +++++++++++++++++++++++++++++++++++=
+-----
+ include/linux/kvm.h             |   21 +++
+ 4 files changed, 223 insertions(+), 24 deletions(-)
+
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -42,6 +42,7 @@
+ #include <asm/msr.h>
+ #include <asm/desc.h>
+ #include <asm/mtrr.h>
++#include <asm/mce.h>
+=20
+ #define MAX_IO_MSRS 256
+ #define CR0_RESERVED_BITS						\
+@@ -55,6 +56,10 @@
+ 			  | X86_CR4_OSXMMEXCPT | X86_CR4_VMXE))
+=20
+ #define CR8_RESERVED_BITS (~(unsigned long)X86_CR8_TPR)
++
++#define KVM_MAX_MCE_BANKS 32
++#define KVM_MCE_CAP_SUPPORTED MCG_CTL_P
++
+ /* EFER defaults:
+  * - enable syscall per default because its emulated by KVM
+  * - enable LME and LMA per default on 64 bit KVM
+@@ -738,23 +743,43 @@ static int set_msr_mtrr(struct kvm_vcpu=20
+ 	return 0;
+ }
+=20
+-int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data)
++static int set_msr_mce(struct kvm_vcpu *vcpu, u32 msr, u64 data)
+ {
++	u64 mcg_cap =3D vcpu->arch.mcg_cap;
++	unsigned bank_num =3D mcg_cap & 0xff;
++
+ 	switch (msr) {
+-	case MSR_EFER:
+-		set_efer(vcpu, data);
+-		break;
+-	case MSR_IA32_MC0_STATUS:
+-		pr_unimpl(vcpu, "%s: MSR_IA32_MC0_STATUS 0x%llx, nop\n",
+-		       __func__, data);
+-		break;
+ 	case MSR_IA32_MCG_STATUS:
+-		pr_unimpl(vcpu, "%s: MSR_IA32_MCG_STATUS 0x%llx, nop\n",
+-			__func__, data);
++		vcpu->arch.mcg_status =3D data;
+ 		break;
+ 	case MSR_IA32_MCG_CTL:
+-		pr_unimpl(vcpu, "%s: MSR_IA32_MCG_CTL 0x%llx, nop\n",
+-			__func__, data);
++		if (!(mcg_cap & MCG_CTL_P))
++			return 1;
++		if (data !=3D 0 && data !=3D ~(u64)0)
++			return -1;
++		vcpu->arch.mcg_ctl =3D data;
++		break;
++	default:
++		if (msr >=3D MSR_IA32_MC0_CTL &&
++		    msr < MSR_IA32_MC0_CTL + 4 * bank_num) {
++			u32 offset =3D msr - MSR_IA32_MC0_CTL;
++			/* only 0 or all 1s can be written to IA32_MCi_CTL */
++			if ((offset & 0x3) =3D=3D 0 &&
++			    data !=3D 0 && data !=3D ~(u64)0)
++				return -1;
++			vcpu->arch.mce_banks[offset] =3D data;
++			break;
++		}
++		return 1;
++	}
++	return 0;
++}
++
++int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data)
++{
++	switch (msr) {
++	case MSR_EFER:
++		set_efer(vcpu, data);
+ 		break;
+ 	case MSR_IA32_DEBUGCTLMSR:
+ 		if (!data) {
+@@ -810,6 +835,10 @@ int kvm_set_msr_common(struct kvm_vcpu *
+ 		kvm_request_guest_time_update(vcpu);
+ 		break;
+ 	}
++	case MSR_IA32_MCG_CTL:
++	case MSR_IA32_MCG_STATUS:
++	case MSR_IA32_MC0_CTL ... MSR_IA32_MC0_CTL + 4 * KVM_MAX_MCE_BANKS - 1:
++		return set_msr_mce(vcpu, msr, data);
+ 	default:
+ 		pr_unimpl(vcpu, "unhandled wrmsr: 0x%x data %llx\n", msr, data);
+ 		return 1;
+@@ -865,26 +894,49 @@ static int get_msr_mtrr(struct kvm_vcpu=20
+ 	return 0;
+ }
+=20
+-int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
++static int get_msr_mce(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
+ {
+ 	u64 data;
++	u64 mcg_cap =3D vcpu->arch.mcg_cap;
++	unsigned bank_num =3D mcg_cap & 0xff;
+=20
+ 	switch (msr) {
+-	case 0xc0010010: /* SYSCFG */
+-	case 0xc0010015: /* HWCR */
+-	case MSR_IA32_PLATFORM_ID:
+ 	case MSR_IA32_P5_MC_ADDR:
+ 	case MSR_IA32_P5_MC_TYPE:
+-	case MSR_IA32_MC0_CTL:
+-	case MSR_IA32_MCG_STATUS:
++		data =3D 0;
++		break;
+ 	case MSR_IA32_MCG_CAP:
++		data =3D vcpu->arch.mcg_cap;
++		break;
+ 	case MSR_IA32_MCG_CTL:
+-	case MSR_IA32_MC0_MISC:
+-	case MSR_IA32_MC0_MISC+4:
+-	case MSR_IA32_MC0_MISC+8:
+-	case MSR_IA32_MC0_MISC+12:
+-	case MSR_IA32_MC0_MISC+16:
+-	case MSR_IA32_MC0_MISC+20:
++		if (!(mcg_cap & MCG_CTL_P))
++			return 1;
++		data =3D vcpu->arch.mcg_ctl;
++		break;
++	case MSR_IA32_MCG_STATUS:
++		data =3D vcpu->arch.mcg_status;
++		break;
++	default:
++		if (msr >=3D MSR_IA32_MC0_CTL &&
++		    msr < MSR_IA32_MC0_CTL + 4 * bank_num) {
++			u32 offset =3D msr - MSR_IA32_MC0_CTL;
++			data =3D vcpu->arch.mce_banks[offset];
++			break;
++		}
++		return 1;
++	}
++	*pdata =3D data;
++	return 0;
++}
++
++int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
++{
++	u64 data;
++
++	switch (msr) {
++	case 0xc0010010: /* SYSCFG */
++	case 0xc0010015: /* HWCR */
++	case MSR_IA32_PLATFORM_ID:
+ 	case MSR_IA32_UCODE_REV:
+ 	case MSR_IA32_EBL_CR_POWERON:
+ 	case MSR_IA32_DEBUGCTLMSR:
+@@ -926,6 +978,13 @@ int kvm_get_msr_common(struct kvm_vcpu *
+ 	case MSR_KVM_SYSTEM_TIME:
+ 		data =3D vcpu->arch.time;
+ 		break;
++	case MSR_IA32_P5_MC_ADDR:
++	case MSR_IA32_P5_MC_TYPE:
++	case MSR_IA32_MCG_CAP:
++	case MSR_IA32_MCG_CTL:
++	case MSR_IA32_MCG_STATUS:
++	case MSR_IA32_MC0_CTL ... MSR_IA32_MC0_CTL + 4 * KVM_MAX_MCE_BANKS - 1:
++		return get_msr_mce(vcpu, msr, pdata);
+ 	default:
+ 		pr_unimpl(vcpu, "unhandled rdmsr: 0x%x\n", msr);
+ 		return 1;
+@@ -1047,6 +1106,9 @@ int kvm_dev_ioctl_check_extension(long e
+ 	case KVM_CAP_IOMMU:
+ 		r =3D iommu_found();
+ 		break;
++	case KVM_CAP_MCE:
++		r =3D KVM_MAX_MCE_BANKS;
++		break;
+ 	default:
+ 		r =3D 0;
+ 		break;
+@@ -1107,6 +1169,16 @@ long kvm_arch_dev_ioctl(struct file *fil
+ 		r =3D 0;
+ 		break;
+ 	}
++	case KVM_X86_GET_MCE_CAP_SUPPORTED: {
++		u64 mce_cap;
++
++		mce_cap =3D KVM_MCE_CAP_SUPPORTED;
++		r =3D -EFAULT;
++		if (copy_to_user(argp, &mce_cap, sizeof mce_cap))
++			goto out;
++		r =3D 0;
++		break;
++	}
+ 	default:
+ 		r =3D -EINVAL;
+ 	}
+@@ -1450,6 +1522,80 @@ static int vcpu_ioctl_tpr_access_reporti
+ 	return 0;
+ }
+=20
++static int kvm_vcpu_ioctl_x86_setup_mce(struct kvm_vcpu *vcpu,
++					u64 mcg_cap)
++{
++	int r;
++	unsigned bank_num =3D mcg_cap & 0xff, bank;
++
++	r =3D -EINVAL;
++	if (!bank_num)
++		goto out;
++	if (mcg_cap & ~(KVM_MCE_CAP_SUPPORTED | 0xff | 0xff0000))
++		goto out;
++	r =3D 0;
++	vcpu->arch.mcg_cap =3D mcg_cap;
++	/* Init IA32_MCG_CTL to all 1s */
++	if (mcg_cap & MCG_CTL_P)
++		vcpu->arch.mcg_ctl =3D ~(u64)0;
++	/* Init IA32_MCi_CTL to all 1s */
++	for (bank =3D 0; bank < bank_num; bank++)
++		vcpu->arch.mce_banks[bank*4] =3D ~(u64)0;
++out:
++	return r;
++}
++
++static int kvm_vcpu_ioctl_x86_set_mce(struct kvm_vcpu *vcpu,
++				      struct kvm_x86_mce *mce)
++{
++	u64 mcg_cap =3D vcpu->arch.mcg_cap;
++	unsigned bank_num =3D mcg_cap & 0xff;
++	u64 *banks =3D vcpu->arch.mce_banks;
++
++	if (mce->bank >=3D bank_num || !(mce->status & MCI_STATUS_VAL))
++		return -EINVAL;
++	/*
++	 * if IA32_MCG_CTL is not all 1s, the uncorrected error
++	 * reporting is disabled
++	 */
++	if ((mce->status & MCI_STATUS_UC) && (mcg_cap & MCG_CTL_P) &&
++	    vcpu->arch.mcg_ctl !=3D ~(u64)0)
++		return 0;
++	banks +=3D 4 * mce->bank;
++	/*
++	 * if IA32_MCi_CTL is not all 1s, the uncorrected error
++	 * reporting is disabled for the bank
++	 */
++	if ((mce->status & MCI_STATUS_UC) && banks[0] !=3D ~(u64)0)
++		return 0;
++	if (mce->status & MCI_STATUS_UC) {
++		if ((vcpu->arch.mcg_status & MCG_STATUS_MCIP) ||
++		    !(vcpu->arch.cr4 & X86_CR4_MCE)) {
++			printk(KERN_DEBUG "kvm: set_mce: "
++			       "injects mce exception while "
++			       "previous one is in progress!\n");
++			set_bit(KVM_REQ_TRIPLE_FAULT, &vcpu->requests);
++			return 0;
++		}
++		if (banks[1] & MCI_STATUS_VAL)
++			mce->status |=3D MCI_STATUS_OVER;
++		banks[2] =3D mce->addr;
++		banks[3] =3D mce->misc;
++		vcpu->arch.mcg_status =3D mce->mcg_status;
++		banks[1] =3D mce->status;
++		kvm_queue_exception(vcpu, MC_VECTOR);
++	} else if (!(banks[1] & MCI_STATUS_VAL)
++		   || !(banks[1] & MCI_STATUS_UC)) {
++		if (banks[1] & MCI_STATUS_VAL)
++			mce->status |=3D MCI_STATUS_OVER;
++		banks[2] =3D mce->addr;
++		banks[3] =3D mce->misc;
++		banks[1] =3D mce->status;
++	} else
++		banks[1] |=3D MCI_STATUS_OVER;
++	return 0;
++}
++
+ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 			 unsigned int ioctl, unsigned long arg)
+ {
+@@ -1583,6 +1729,24 @@ long kvm_arch_vcpu_ioctl(struct file *fi
+ 		kvm_lapic_set_vapic_addr(vcpu, va.vapic_addr);
+ 		break;
+ 	}
++	case KVM_X86_SETUP_MCE: {
++		u64 mcg_cap;
++
++		r =3D -EFAULT;
++		if (copy_from_user(&mcg_cap, argp, sizeof mcg_cap))
++			goto out;
++		r =3D kvm_vcpu_ioctl_x86_setup_mce(vcpu, mcg_cap);
++		break;
++	}
++	case KVM_X86_SET_MCE: {
++		struct kvm_x86_mce mce;
++
++		r =3D -EFAULT;
++		if (copy_from_user(&mce, argp, sizeof mce))
++			goto out;
++		r =3D kvm_vcpu_ioctl_x86_set_mce(vcpu, &mce);
++		break;
++	}
+ 	default:
+ 		r =3D -EINVAL;
+ 	}
+@@ -4402,6 +4566,14 @@ int kvm_arch_vcpu_init(struct kvm_vcpu *
+ 			goto fail_mmu_destroy;
+ 	}
+=20
++	vcpu->arch.mce_banks =3D kzalloc(KVM_MAX_MCE_BANKS * sizeof(u64) * 4,
++				       GFP_KERNEL);
++	if (!vcpu->arch.mce_banks) {
++		r =3D -ENOMEM;
++		goto fail_mmu_destroy;
++	}
++	vcpu->arch.mcg_cap =3D KVM_MAX_MCE_BANKS;
++
+ 	return 0;
+=20
+ fail_mmu_destroy:
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -371,6 +371,11 @@ struct kvm_vcpu_arch {
+ 	unsigned long dr6;
+ 	unsigned long dr7;
+ 	unsigned long eff_db[KVM_NR_DB_REGS];
++
++	u64 mcg_cap;
++	u64 mcg_status;
++	u64 mcg_ctl;
++	u64 *mce_banks;
+ };
+=20
+ struct kvm_mem_alias {
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -415,6 +415,9 @@ struct kvm_trace_rec {
+ #define KVM_CAP_ASSIGN_DEV_IRQ 29
+ /* Another bug in KVM_SET_USER_MEMORY_REGION fixed: */
+ #define KVM_CAP_JOIN_MEMORY_REGIONS_WORKS 30
++#ifdef __KVM_HAVE_MCE
++#define KVM_CAP_MCE 31
++#endif
+=20
+ #ifdef KVM_CAP_IRQ_ROUTING
+=20
+@@ -454,6 +457,20 @@ struct kvm_irq_routing {
+=20
+ #endif
+=20
++#ifdef KVM_CAP_MCE
++/* x86 MCE */
++struct kvm_x86_mce {
++	__u64 status;
++	__u64 addr;
++	__u64 misc;
++	__u64 mcg_status;
++	__u8 bank;
++	__u8 pad1;
++	__u16 pad2;
++	__u32 pad3;
++};
++#endif
++
+ /*
+  * ioctls for VM fds
+  */
+@@ -541,6 +558,10 @@ struct kvm_irq_routing {
+ #define KVM_NMI                   _IO(KVMIO,  0x9a)
+ /* Available with KVM_CAP_SET_GUEST_DEBUG */
+ #define KVM_SET_GUEST_DEBUG       _IOW(KVMIO,  0x9b, struct kvm_guest_debu=
+g)
++/* MCE for x86 */
++#define KVM_X86_SETUP_MCE         _IOW(KVMIO,  0x9c, __u64)
++#define KVM_X86_GET_MCE_CAP_SUPPORTED _IOR(KVMIO,  0x9d, __u64)
++#define KVM_X86_SET_MCE           _IOW(KVMIO,  0x9e, struct kvm_x86_mce)
+=20
+ /*
+  * Deprecated interfaces
+--- a/arch/x86/include/asm/kvm.h
++++ b/arch/x86/include/asm/kvm.h
+@@ -17,6 +17,7 @@
+ #define __KVM_HAVE_USER_NMI
+ #define __KVM_HAVE_GUEST_DEBUG
+ #define __KVM_HAVE_MSIX
++#define __KVM_HAVE_MCE
+=20
+ /* Architectural interrupt line count. */
+ #define KVM_NR_INTERRUPTS 256
+
+
+--=-cxMmJrD8896Vl9wmDYt8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkn+j5UACgkQKhFGF+eHlpj5zQCfbo3LnFlLpJs+CveK1CfYTJPC
+ay4An2hFQfI5r3IOmHEZ/wrN1AM7B7xh
+=G85y
+-----END PGP SIGNATURE-----
+
+--=-cxMmJrD8896Vl9wmDYt8--
+
