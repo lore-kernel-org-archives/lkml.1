@@ -1,58 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbZEDU1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756855AbZEDU1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756405AbZEDU1M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 16:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523AbZEDU0k
+	id S1756855AbZEDU1p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 16:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbZEDU1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 16:26:40 -0400
-Received: from kroah.org ([198.145.64.141]:37877 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755094AbZEDU0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 16:26:39 -0400
-Date: Mon, 4 May 2009 13:14:29 -0700
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Greg KH <greg@kroah.com>
-Subject: [PATCH] parport: remove driver_data direct access of struct device
-Message-ID: <20090504201429.GA23129@kroah.com>
+	Mon, 4 May 2009 16:27:33 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:12492 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753867AbZEDU1c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 16:27:32 -0400
+Message-ID: <49FF4FAE.3000301@hp.com>
+Date: Mon, 04 May 2009 16:27:26 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: linux-btrace <linux-btrace@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: [PATCH 1/2] blktrace: correct remap names
+Content-Type: multipart/mixed;
+ boundary="------------030402030707010405070806"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
+This is a multi-part message in MIME format.
+--------------030402030707010405070806
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-In the near future, the driver core is going to not allow direct access
-to the driver_data pointer in struct device.  Instead, the functions
-dev_get_drvdata() and dev_set_drvdata() should be used.  These functions
-have been around since the beginning, so are backwards compatible with
-all older kernel versions.
 
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+--------------030402030707010405070806
+Content-Type: text/x-diff;
+ name="0001-blktrace-correct-remap-names.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-blktrace-correct-remap-names.patch"
+
+This attempts to clarify names utilized during block I/O remap
+operations (partition, volume manager). It correctly matches up the
+/from/ information for both device & sector. This takes in the concept
+from Kosaki Motohiro and extends it to include better naming for the
+"device_from" field.
+
+Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 ---
- drivers/parport/parport_gsc.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ include/linux/blktrace_api.h |    4 ++--
+ include/trace/block.h        |    4 ++--
+ kernel/trace/blktrace.c      |   24 ++++++++++++------------
+ 3 files changed, 16 insertions(+), 16 deletions(-)
 
---- a/drivers/parport/parport_gsc.c
-+++ b/drivers/parport/parport_gsc.c
-@@ -376,14 +376,14 @@ static int __devinit parport_init_chip(s
- 			/* PARPORT_IRQ_NONE */ PARPORT_DMA_NONE, NULL);
- 	if (p)
- 		parport_count++;
--	dev->dev.driver_data = p;
-+	dev_set_drvdata(&dev->dev, p);
+diff --git a/include/linux/blktrace_api.h b/include/linux/blktrace_api.h
+index d960889..da1a14e 100644
+--- a/include/linux/blktrace_api.h
++++ b/include/linux/blktrace_api.h
+@@ -116,9 +116,9 @@ struct blk_io_trace {
+  * The remap event
+  */
+ struct blk_io_trace_remap {
+-	__be32 device;
+ 	__be32 device_from;
+-	__be64 sector;
++	__be32 device_to;
++	__be64 sector_from;
+ };
  
- 	return 0;
+ enum {
+diff --git a/include/trace/block.h b/include/trace/block.h
+index 25b7068..87f6456 100644
+--- a/include/trace/block.h
++++ b/include/trace/block.h
+@@ -70,7 +70,7 @@ DECLARE_TRACE(block_split,
+ 
+ DECLARE_TRACE(block_remap,
+ 	TP_PROTO(struct request_queue *q, struct bio *bio, dev_t dev,
+-		 sector_t from, sector_t to),
+-	      TP_ARGS(q, bio, dev, from, to));
++		 sector_t to, sector_t from),
++	      TP_ARGS(q, bio, dev, to, from));
+ 
+ #endif
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index 921ef5d..bc72d53 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -808,8 +808,8 @@ static void blk_add_trace_split(struct request_queue *q, struct bio *bio,
+  * @q:		queue the io is for
+  * @bio:	the source bio
+  * @dev:	target device
+- * @from:	source sector
+  * @to:		target sector
++ * @from:	source sector
+  *
+  * Description:
+  *     Device mapper or raid target sometimes need to split a bio because
+@@ -817,7 +817,7 @@ static void blk_add_trace_split(struct request_queue *q, struct bio *bio,
+  *
+  **/
+ static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
+-				       dev_t dev, sector_t from, sector_t to)
++				       dev_t dev, sector_t to, sector_t from)
+ {
+ 	struct blk_trace *bt = q->blk_trace;
+ 	struct blk_io_trace_remap r;
+@@ -825,9 +825,9 @@ static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
+ 	if (likely(!bt))
+ 		return;
+ 
+-	r.device = cpu_to_be32(dev);
+-	r.device_from = cpu_to_be32(bio->bi_bdev->bd_dev);
+-	r.sector = cpu_to_be64(to);
++	r.device_from = cpu_to_be32(dev);
++	r.device_to   = cpu_to_be32(bio->bi_bdev->bd_dev);
++	r.sector_from = cpu_to_be64(from);
+ 
+ 	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP,
+ 			!bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
+@@ -996,11 +996,11 @@ static void get_pdu_remap(const struct trace_entry *ent,
+ 			  struct blk_io_trace_remap *r)
+ {
+ 	const struct blk_io_trace_remap *__r = pdu_start(ent);
+-	__u64 sector = __r->sector;
++	__u64 sector_from = __r->sector_from;
+ 
+-	r->device = be32_to_cpu(__r->device);
+ 	r->device_from = be32_to_cpu(__r->device_from);
+-	r->sector = be64_to_cpu(sector);
++	r->device_to   = be32_to_cpu(__r->device_to);
++	r->sector_from = be64_to_cpu(sector_from);
  }
  
- static int __devexit parport_remove_chip(struct parisc_device *dev)
+ typedef int (blk_log_action_t) (struct trace_iterator *iter, const char *act);
+@@ -1054,13 +1054,13 @@ static int blk_log_with_error(struct trace_seq *s,
+ 
+ static int blk_log_remap(struct trace_seq *s, const struct trace_entry *ent)
  {
--	struct parport *p = dev->dev.driver_data;
-+	struct parport *p = dev_get_drvdata(&dev->dev)
- 	if (p) {
- 		struct parport_gsc_private *priv = p->private_data;
- 		struct parport_operations *ops = p->ops;
+-	struct blk_io_trace_remap r = { .device = 0, };
++	struct blk_io_trace_remap r = { .device_from = 0, };
+ 
+ 	get_pdu_remap(ent, &r);
+ 	return trace_seq_printf(s, "%llu + %u <- (%d,%d) %llu\n",
+-			       t_sector(ent),
+-			       t_sec(ent), MAJOR(r.device), MINOR(r.device),
+-			       (unsigned long long)r.sector);
++				t_sector(ent), t_sec(ent),
++				MAJOR(r.device_from), MINOR(r.device_from),
++				(unsigned long long)r.sector_from);
+ }
+ 
+ static int blk_log_plug(struct trace_seq *s, const struct trace_entry *ent)
+-- 
+1.6.0.4
+
+
+--------------030402030707010405070806--
