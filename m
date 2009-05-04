@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757840AbZEDQIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbZEDQI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757840AbZEDQIE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:08:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbZEDQHt
+	id S1758064AbZEDQI0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbZEDQHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 12:07:49 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:60664 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754860AbZEDQHs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:07:48 -0400
-Subject: Re: [PATCH 2/2] mac80211: pid, fix memory corruption
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1241453096-8517-2-git-send-email-jirislaby@gmail.com>
-References: <1241453096-8517-1-git-send-email-jirislaby@gmail.com>
-	 <1241453096-8517-2-git-send-email-jirislaby@gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Pj2+d931gA64YYIw1mXp"
-Date: Mon, 04 May 2009 18:07:17 +0200
-Message-Id: <1241453238.8683.52.camel@johannes.local>
+	Mon, 4 May 2009 12:07:55 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:50926 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757578AbZEDQHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 12:07:53 -0400
+Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tridge@samba.org,
+       Al Viro <viro@ZenIV.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steve French <smfrench@gmail.com>,
+       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <m14ow0hnal.fsf@fess.ebiederm.org>
+References: <20090501210109.GA3079@infradead.org>
+	 <20090502013729.GI6996@linux.vnet.ibm.com>
+	 <20090503225616.GD8633@ZenIV.linux.org.uk>
+	 <20090504063431.GK7141@linux.vnet.ibm.com>
+	 <m11vr5jrba.fsf@fess.ebiederm.org>
+	 <20090504124129.GL7141@linux.vnet.ibm.com>
+	 <20090504124433.GW8822@parisc-linux.org>
+	 <20090504130638.GN7141@linux.vnet.ibm.com>
+	 <20090504132119.GX8822@parisc-linux.org>
+	 <20090504143919.GA6740@linux.vnet.ibm.com>
+	 <20090504150834.GZ8822@parisc-linux.org>
+	 <1241451391.20170.12.camel@norville.austin.ibm.com>
+	 <m14ow0hnal.fsf@fess.ebiederm.org>
+Content-Type: text/plain
+Date: Mon, 04 May 2009 11:07:39 -0500
+Message-Id: <1241453259.20170.17.camel@norville.austin.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+X-Mailer: Evolution 2.24.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-05-04 at 08:59 -0700, Eric W. Biederman wrote:
+> Dave Kleikamp <shaggy@linux.vnet.ibm.com> writes:
+> 
+> > On Mon, 2009-05-04 at 09:08 -0600, Matthew Wilcox wrote:
+> >> On Mon, May 04, 2009 at 07:39:19AM -0700, Paul E. McKenney wrote:
+> >> > On Mon, May 04, 2009 at 07:21:19AM -0600, Matthew Wilcox wrote:
+> >> > > Bringing the patch to a public mailing list is a waste of time until
+> >> > > there's a reliable description of the problem you're trying to solve.
+> >> > 
+> >> > Please see the original patch.  It does describes what it is doing.
+> >> 
+> >> "What", but not "Why".  Which is only acceptable in GNU changelogs ;-)
+> >
+> > Please understand the "Why" is a sticky subject that we can't and won't
+> > discuss in a public forum.  However, we believe the maintainers
+> > understand the "Why" of it well enough to consider whether or not to
+> > include such a patch.  The "What" should be pretty clear from the patch
+> > description.  The "How" is a technical question that can be discussed
+> > here.
+> 
+> If the "Why" can not be discussed then you don't have a "Why" you can
+> stand behind.
 
---=-Pj2+d931gA64YYIw1mXp
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+That's for the maintainers to decide.  If they agree it has worth, maybe
+it's a good idea to answer "How".
 
-On Mon, 2009-05-04 at 18:04 +0200, Jiri Slaby wrote:
+> If you don't have a "Why" you can stand behind the "Why" sucks and does
+> not appear to be an appropriate justification for a patch applied to
+> a public piece of code.
 
-> +	for (i =3D 0; i < IEEE80211_NUM_BANDS; i++) {
-> +		sband =3D hw->wiphy->bands[i];
-> +		if (sband->n_bitrates > max_rates)
-> +			max_rates =3D sband->n_bitrates;
-> +	}
-> +
->  	/* We can safely assume that sband won't change unless we get
->  	 * reinitialized. */
-> -	rinfo =3D kmalloc(sizeof(*rinfo) * sband->n_bitrates, GFP_ATOMIC);
-> +	rinfo =3D kmalloc(sizeof(*rinfo) * max_rates, GFP_ATOMIC);
-
-I suppose you should remove the comment...
-
-johannes
-
---=-Pj2+d931gA64YYIw1mXp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJ/xKzAAoJEKVg1VMiehFYsIAP/AshTex9OcRJ160LwDYGGRQ9
-0nXeI7+dJmuG+mVJ1rjOaX/K1gk/BP9eZxnao6N5HKKYDSn2FJU5STt4LbAdF78R
-Nusk8BuTJin2vrfAu8dDf5iIwpMXalyuNt4iY4C7SMjvD+KO3JlSTUfQHPBU9w3R
-QhgmmsyWevESQl7hTdakSj5jVFzoiVp/vHsZ1IteaxL//VabQnx4hA8R/uExFTRH
-j1NEQX5J4eR9uvGnEjfe4hWU4VAgb7VKpIOe+R08UuoQG4n2QlHg9e08/n6zYsQh
-Z58ysCLpPjhn2qvhHJH3MUSXTkxhDIOiPNiQt4rsQmWLPCW+QGv2Yc5yGynw24nd
-VvRp59cnZnhiq8bIcPW1j4w4YS2AhRUSuqqMy481OGRDmCLUcws8hE6cwffh+TnR
-RMvagoIxuSdrvmOz6n0cslgzrFkDXsgmL1hXtJ5Y0CEINIaagSZHV2CIh6d7jmpk
-a0Er0ndWQXNJKH3gJfjtVqc6bBvydlPP+JmwYNKwvkq7e3kM9VzZlt3HX6mayQ4p
-XZbpQ7sQ3dmfbuVgRtSfQ9bOY0Ty1tvxRWMLxT4Xkk4D7m2jAEumVctCShi38qnX
-15mJq0L4PLDcnI3jVVBCaIAMY0T2AGokO9UTI3nx9Hxg8K6rZ2iexvhkwNGWEIHP
-rDoAwVs/9fuJFpBegavJ
-=ffNT
------END PGP SIGNATURE-----
-
---=-Pj2+d931gA64YYIw1mXp--
+You're entitled to your opinion.
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
