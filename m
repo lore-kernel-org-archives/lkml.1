@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbZEDS54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbZEDTCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755373AbZEDS54 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 14:57:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbZEDS5r
+	id S1753555AbZEDTCK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 15:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZEDTBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 14:57:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58809 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751765AbZEDS5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 14:57:46 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [PATCH] crypto: don't raise alarm for no ctr(aes*) tests in fips mode
-Date: Mon, 4 May 2009 14:56:58 -0400
-User-Agent: KMail/1.11.2 (Linux/2.6.29.1-102.fc11.x86_64; KDE/4.2.2; x86_64; ; )
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Neil Horman <nhorman@tuxdriver.com>
-References: <200904282118.22823.jarod@redhat.com> <20090504111010.GA4991@gondor.apana.org.au>
-In-Reply-To: <20090504111010.GA4991@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Mon, 4 May 2009 15:01:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48197 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751448AbZEDTBy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 15:01:54 -0400
+Date: Mon, 4 May 2009 11:53:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <cl@linux.com>
+Cc: gorcunov@gmail.com, mingo@elte.hu, mel@csn.ul.ie,
+       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi, riel@redhat.com,
+       rientjes@google.com, xemul@openvz.org
+Subject: Re: [PATCH -tip] mm: introduce __GFP_PANIC modifier
+Message-Id: <20090504115335.9bc08587.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0905040940490.9553@qirst.com>
+References: <20090504122740.GH4173@lenovo>
+	<20090504131311.GA23330@elte.hu>
+	<20090504131638.GJ4173@lenovo>
+	<alpine.DEB.1.10.0905040940490.9553@qirst.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905041456.59427.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 May 2009 07:10:10 Herbert Xu wrote:
-> On Tue, Apr 28, 2009 at 09:18:22PM -0400, Jarod Wilson wrote:
-> > Per the NIST AESAVS document, Appendix A[1], it isn't possible to
-> > have automated self-tests for counter-mode AES, but people are
-> > misled to believe something is wrong by the message that says there
-> > is no test for ctr(aes). Simply suppress all 'no test for ctr(aes*'
-> > messages if fips_enabled is set to avoid confusion.
+On Mon, 4 May 2009 09:47:45 -0400 (EDT)
+Christoph Lameter <cl@linux.com> wrote:
+
 > 
-> This is not true at all.  In our implementation the counter is
-> set through the IV so it definitely is possible to test counter
-> mode algorithms in Linux.
+> 
+> Could you try to avoid consuming another GFP flag? __GFP_BITS_SHIFT is
+> used elsewhere to figure out where to put miscellanous flags into the gfp
+> mask. This is pretty limited right now and so the patch does work.
 
-Ah... Now I think I see... We can provide an initial counter w/o a
-problem, but counter incrementation is implementation-specific, so
-we can't have automated tests that cover multiple enc/dec ops, but
-if we limit ourselves to just one op, self-tests should be perfectly
-doable, and NIST SP 800-38A, Appendix F.5 has vectors we could make
-use of (using just the block #1 values). At least, spot-checking
-the vectors, I'm getting the expected results for the 1st block.
+hm, yes, there are seven bits left.
 
-Okay, I'll whip something up in a sec.
+afaict bit 3 (0x08) is unused?
 
--- 
-Jarod Wilson
-jarod@redhat.com
+Is __GFP_PANIC very useful?  I expect it will permit a very small code
+saving at a relatively small number of callsites, all of which are
+__init anyway?
+
