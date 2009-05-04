@@ -1,56 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbZEDXf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbZEDXgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757390AbZEDXf2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 19:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbZEDXfL
+	id S1757304AbZEDXgv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 19:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755787AbZEDXgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 19:35:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51818 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754710AbZEDXfK (ORCPT
+	Mon, 4 May 2009 19:36:41 -0400
+Received: from ru.mvista.com ([213.79.90.228]:12902 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754984AbZEDXgk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 19:35:10 -0400
-Date: Mon, 4 May 2009 16:31:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: oleg@redhat.com, jdike@addtoit.com, utrace-devel@redhat.com,
+	Mon, 4 May 2009 19:36:40 -0400
+Date: Tue, 5 May 2009 03:36:35 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: galak@kernel.crashing.org, dbrownell@users.sourceforge.net,
+       linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Subject: Re: [RFC, PATCH 0/2] utrace/ptrace: simplify/cleanup ptrace attach
-Message-Id: <20090504163154.f3672a83.akpm@linux-foundation.org>
-In-Reply-To: <20090504194348.BC0EBFC32F@magilla.sf.frob.com>
-References: <20090503185537.GA17071@redhat.com>
-	<20090504184951.623CEFC32F@magilla.sf.frob.com>
-	<20090504193016.GA17076@redhat.com>
-	<20090504194348.BC0EBFC32F@magilla.sf.frob.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 9/9] spi_mpc8xxx: s/83xx/8xxx/g
+Message-ID: <20090504233635.GA5892@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090430234739.GA27709@oksana.dev.rtsoft.ru> <20090430234833.GI7901@oksana.dev.rtsoft.ru> <20090504135327.13cd42af.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20090504135327.13cd42af.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon,  4 May 2009 12:43:48 -0700 (PDT)
-Roland McGrath <roland@redhat.com> wrote:
-
-> > > When those are on their way,
-> > > we'll update the utrace patches not to conflict.  I don't think it makes
-> > > sense to include utrace.patch's little ptrace.c change in the baseline tree
-> > > for your ptrace cleanup patches.
-> > 
-> > Yes, but in this case, how can we push it before utrace-core.patch ?
-> > 
-> > The first patch is only for -mm, to avoid the painful dependencies.
+On Mon, May 04, 2009 at 01:53:27PM -0700, Andrew Morton wrote:
+> On Fri, 1 May 2009 03:48:33 +0400
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 > 
-> I guess we should take Andrew's advice on this.  To me, it makes most sense
-> just to order the -mm patches so utrace comes later, and replace the utrace
-> patch as necessary with a compatible version.  Perhaps things would be
-> simpler if we made a separate standalone series or git tree (tip/ptrace?)
-> for ptrace cleanups.
+> > Since we renamed the file, we might want to rename the file
+> > internals too.
+> > 
+> > Though we don't bother with changing platform driver name and
+> > platform module alias. The stuff is legacy and hopefully we'll
+> > remove it soon.
+> > 
+> 
+> but but but
+> 
+> >
+> > -static struct of_platform_driver of_mpc83xx_spi_driver = {
+> > -	.name		= "mpc83xx_spi",
+> > -	.match_table	= of_mpc83xx_spi_match,
+> > -	.probe		= of_mpc83xx_spi_probe,
+> > -	.remove		= __devexit_p(of_mpc83xx_spi_remove),
+> > +static struct of_platform_driver of_mpc8xxx_spi_driver = {
+> > +	.name		= "mpc8xxx_spi",
+> > +	.match_table	= of_mpc8xxx_spi_match,
+> > +	.probe		= of_mpc8xxx_spi_probe,
+> > +	.remove		= __devexit_p(of_mpc8xxx_spi_remove),
+> >  };
+> 
+> It _did_ change the platform driver name, didn't it?
 
-Staging the utrace patch at end-of-series would make sense if utrace is
-not on track for a 2.6.31 merge.
+This is an OF platform driver, here it is safe to change
+the name. But I didn't change the pure platform driver,
+here:
 
-And afaict, this is indeed the case - things seem to have gone a bit
-quiet on the utrace front lately.
+| -static struct platform_driver mpc83xx_spi_driver = {
+| -       .probe = plat_mpc83xx_spi_probe,
+| -       .remove = __exit_p(plat_mpc83xx_spi_remove),
+| +static struct platform_driver mpc8xxx_spi_driver = {
+| +       .probe = plat_mpc8xxx_spi_probe,
+| +       .remove = __exit_p(plat_mpc8xxx_spi_remove),
+|         .driver = {
+|                 .name = "mpc83xx_spi",
 
+------------------^
+
+> This patch series had quite a lot of conflicts with the already-pending
+> 
+> spi-move-common-spi_setup-functionality-into-core.patch
+> spi-move-more-spi_setup-functionality-into-core.patch
+> 
+> which I beleive I successfully fixed up.
+
+Thanks a lot, I'll test it soon.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
