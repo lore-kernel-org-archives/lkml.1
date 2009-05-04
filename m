@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756855AbZEDU1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbZEDUf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756855AbZEDU1p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 16:27:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbZEDU1d
+	id S1755189AbZEDUf3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 16:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZEDUfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 16:27:33 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:12492 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753867AbZEDU1c (ORCPT
+	Mon, 4 May 2009 16:35:17 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:47110 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667AbZEDUfQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 16:27:32 -0400
-Message-ID: <49FF4FAE.3000301@hp.com>
-Date: Mon, 04 May 2009 16:27:26 -0400
+	Mon, 4 May 2009 16:35:16 -0400
+Message-ID: <49FF517C.7000503@hp.com>
+Date: Mon, 04 May 2009 16:35:08 -0400
 From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: linux-btrace <linux-btrace@vger.kernel.org>,
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-btrace <linux-btrace@vger.kernel.org>,
        Jens Axboe <jens.axboe@oracle.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Li Zefan <lizf@cn.fujitsu.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: [PATCH 1/2] blktrace: correct remap names
+Subject: [PATCH 2/2] from-sector redundant in trace_block_remap
+References: <49FF4FAE.3000301@hp.com>
+In-Reply-To: <49FF4FAE.3000301@hp.com>
 Content-Type: multipart/mixed;
- boundary="------------030402030707010405070806"
+ boundary="------------000205030007050505000701"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------030402030707010405070806
+--------------000205030007050505000701
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
 
---------------030402030707010405070806
+
+--------------000205030007050505000701
 Content-Type: text/x-diff;
- name="0001-blktrace-correct-remap-names.patch"
+ name="0002-from-sector-redundant-in-trace_block_remap.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="0001-blktrace-correct-remap-names.patch"
+ filename*0="0002-from-sector-redundant-in-trace_block_remap.patch"
 
-This attempts to clarify names utilized during block I/O remap
-operations (partition, volume manager). It correctly matches up the
-/from/ information for both device & sector. This takes in the concept
-from Kosaki Motohiro and extends it to include better naming for the
-"device_from" field.
+Removed redundant from-sector parameter: it's /always/ the bio's sector
+passed in.
 
 Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
 Cc: Jens Axboe <jens.axboe@oracle.com>
@@ -53,112 +54,98 @@ Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
 Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 ---
- include/linux/blktrace_api.h |    4 ++--
- include/trace/block.h        |    4 ++--
- kernel/trace/blktrace.c      |   24 ++++++++++++------------
- 3 files changed, 16 insertions(+), 16 deletions(-)
+ block/blk-core.c        |    5 ++---
+ drivers/md/dm.c         |    3 +--
+ include/trace/block.h   |    4 ++--
+ kernel/trace/blktrace.c |    8 ++++----
+ 4 files changed, 9 insertions(+), 11 deletions(-)
 
-diff --git a/include/linux/blktrace_api.h b/include/linux/blktrace_api.h
-index d960889..da1a14e 100644
---- a/include/linux/blktrace_api.h
-+++ b/include/linux/blktrace_api.h
-@@ -116,9 +116,9 @@ struct blk_io_trace {
-  * The remap event
-  */
- struct blk_io_trace_remap {
--	__be32 device;
- 	__be32 device_from;
--	__be64 sector;
-+	__be32 device_to;
-+	__be64 sector_from;
- };
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 2998fe3..d028baf 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1277,7 +1277,7 @@ static inline void blk_partition_remap(struct bio *bio)
+ 		bio->bi_bdev = bdev->bd_contains;
  
- enum {
+ 		trace_block_remap(bdev_get_queue(bio->bi_bdev), bio,
+-				    bdev->bd_dev, bio->bi_sector,
++				    bdev->bd_dev,
+ 				    bio->bi_sector - p->start_sect);
+ 	}
+ }
+@@ -1446,8 +1446,7 @@ static inline void __generic_make_request(struct bio *bio)
+ 			goto end_io;
+ 
+ 		if (old_sector != -1)
+-			trace_block_remap(q, bio, old_dev, bio->bi_sector,
+-					    old_sector);
++			trace_block_remap(q, bio, old_dev, old_sector);
+ 
+ 		trace_block_bio_queue(q, bio);
+ 
+diff --git a/drivers/md/dm.c b/drivers/md/dm.c
+index 424f7b0..e2ee4a7 100644
+--- a/drivers/md/dm.c
++++ b/drivers/md/dm.c
+@@ -656,8 +656,7 @@ static void __map_bio(struct dm_target *ti, struct bio *clone,
+ 		/* the bio has been remapped so dispatch it */
+ 
+ 		trace_block_remap(bdev_get_queue(clone->bi_bdev), clone,
+-				    tio->io->bio->bi_bdev->bd_dev,
+-				    clone->bi_sector, sector);
++				    tio->io->bio->bi_bdev->bd_dev, sector);
+ 
+ 		generic_make_request(clone);
+ 	} else if (r < 0 || r == DM_MAPIO_REQUEUE) {
 diff --git a/include/trace/block.h b/include/trace/block.h
-index 25b7068..87f6456 100644
+index 87f6456..8ac945b 100644
 --- a/include/trace/block.h
 +++ b/include/trace/block.h
 @@ -70,7 +70,7 @@ DECLARE_TRACE(block_split,
  
  DECLARE_TRACE(block_remap,
  	TP_PROTO(struct request_queue *q, struct bio *bio, dev_t dev,
--		 sector_t from, sector_t to),
--	      TP_ARGS(q, bio, dev, from, to));
-+		 sector_t to, sector_t from),
-+	      TP_ARGS(q, bio, dev, to, from));
+-		 sector_t to, sector_t from),
+-	      TP_ARGS(q, bio, dev, to, from));
++		 sector_t to),
++	      TP_ARGS(q, bio, dev, to));
  
  #endif
 diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 921ef5d..bc72d53 100644
+index bc72d53..4c1ed52 100644
 --- a/kernel/trace/blktrace.c
 +++ b/kernel/trace/blktrace.c
-@@ -808,8 +808,8 @@ static void blk_add_trace_split(struct request_queue *q, struct bio *bio,
+@@ -808,7 +808,6 @@ static void blk_add_trace_split(struct request_queue *q, struct bio *bio,
   * @q:		queue the io is for
   * @bio:	the source bio
   * @dev:	target device
-- * @from:	source sector
-  * @to:		target sector
-+ * @from:	source sector
+- * @to:		target sector
+  * @from:	source sector
   *
   * Description:
-  *     Device mapper or raid target sometimes need to split a bio because
-@@ -817,7 +817,7 @@ static void blk_add_trace_split(struct request_queue *q, struct bio *bio,
+@@ -817,7 +816,7 @@ static void blk_add_trace_split(struct request_queue *q, struct bio *bio,
   *
   **/
  static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
--				       dev_t dev, sector_t from, sector_t to)
-+				       dev_t dev, sector_t to, sector_t from)
+-				       dev_t dev, sector_t to, sector_t from)
++				       dev_t dev, sector_t from)
  {
  	struct blk_trace *bt = q->blk_trace;
  	struct blk_io_trace_remap r;
-@@ -825,9 +825,9 @@ static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
- 	if (likely(!bt))
- 		return;
+@@ -829,8 +828,9 @@ static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
+ 	r.device_to   = cpu_to_be32(bio->bi_bdev->bd_dev);
+ 	r.sector_from = cpu_to_be64(from);
  
--	r.device = cpu_to_be32(dev);
--	r.device_from = cpu_to_be32(bio->bi_bdev->bd_dev);
--	r.sector = cpu_to_be64(to);
-+	r.device_from = cpu_to_be32(dev);
-+	r.device_to   = cpu_to_be32(bio->bi_bdev->bd_dev);
-+	r.sector_from = cpu_to_be64(from);
- 
- 	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP,
- 			!bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
-@@ -996,11 +996,11 @@ static void get_pdu_remap(const struct trace_entry *ent,
- 			  struct blk_io_trace_remap *r)
- {
- 	const struct blk_io_trace_remap *__r = pdu_start(ent);
--	__u64 sector = __r->sector;
-+	__u64 sector_from = __r->sector_from;
- 
--	r->device = be32_to_cpu(__r->device);
- 	r->device_from = be32_to_cpu(__r->device_from);
--	r->sector = be64_to_cpu(sector);
-+	r->device_to   = be32_to_cpu(__r->device_to);
-+	r->sector_from = be64_to_cpu(sector_from);
+-	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP,
+-			!bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
++	__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw,
++			BLK_TA_REMAP, !bio_flagged(bio, BIO_UPTODATE),
++			sizeof(r), &r);
  }
  
- typedef int (blk_log_action_t) (struct trace_iterator *iter, const char *act);
-@@ -1054,13 +1054,13 @@ static int blk_log_with_error(struct trace_seq *s,
- 
- static int blk_log_remap(struct trace_seq *s, const struct trace_entry *ent)
- {
--	struct blk_io_trace_remap r = { .device = 0, };
-+	struct blk_io_trace_remap r = { .device_from = 0, };
- 
- 	get_pdu_remap(ent, &r);
- 	return trace_seq_printf(s, "%llu + %u <- (%d,%d) %llu\n",
--			       t_sector(ent),
--			       t_sec(ent), MAJOR(r.device), MINOR(r.device),
--			       (unsigned long long)r.sector);
-+				t_sector(ent), t_sec(ent),
-+				MAJOR(r.device_from), MINOR(r.device_from),
-+				(unsigned long long)r.sector_from);
- }
- 
- static int blk_log_plug(struct trace_seq *s, const struct trace_entry *ent)
+ /**
 -- 
 1.6.0.4
 
 
---------------030402030707010405070806--
+--------------000205030007050505000701--
