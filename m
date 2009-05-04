@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbZEDQnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932251AbZEDQpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758300AbZEDQnI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:43:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757290AbZEDQmw
+	id S932251AbZEDQpG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:45:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbZEDQoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 12:42:52 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:56028 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757221AbZEDQmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:42:51 -0400
-Date: Mon, 4 May 2009 09:42:50 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-       tridge@samba.org, Al Viro <viro@ZenIV.linux.org.uk>,
-       Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
-       Steve French <smfrench@gmail.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090504164250.GF6740@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090504124129.GL7141@linux.vnet.ibm.com> <20090504124433.GW8822@parisc-linux.org> <20090504130638.GN7141@linux.vnet.ibm.com> <20090504132119.GX8822@parisc-linux.org> <20090504143919.GA6740@linux.vnet.ibm.com> <20090504150834.GZ8822@parisc-linux.org> <1241451391.20170.12.camel@norville.austin.ibm.com> <m14ow0hnal.fsf@fess.ebiederm.org> <1241453259.20170.17.camel@norville.austin.ibm.com> <m1k54wal0j.fsf@fess.ebiederm.org>
+	Mon, 4 May 2009 12:44:54 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:24116 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756107AbZEDQox (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 12:44:53 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=IwHz/9AdqVWX9ctTkwTZprTUNdj+YJqWOZ/YPDAbeokpWqvrdhcS7ydGxEYj7r87N
+	vo+FxIM5GjwLpZJ6Sqb0Q==
+Date: Mon, 4 May 2009 09:44:46 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Wu Fengguang <fengguang.wu@intel.com>, linux-pm@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>, pavel@ucw.cz,
+       torvalds@linux-foundation.org, jens.axboe@oracle.com,
+       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+In-Reply-To: <200905041702.23291.rjw@sisk.pl>
+Message-ID: <alpine.DEB.2.00.0905040939400.10707@chino.kir.corp.google.com>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905040210.10153.rjw@sisk.pl> <alpine.DEB.2.00.0905031734190.24114@chino.kir.corp.google.com> <200905041702.23291.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1k54wal0j.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 09:30:20AM -0700, Eric W. Biederman wrote:
-> Dave Kleikamp <shaggy@linux.vnet.ibm.com> writes:
-> 
-> > That's for the maintainers to decide.  If they agree it has worth, maybe
-> > it's a good idea to answer "How".
-> 
-> Al and Christoph said essentially the same thing and they generally
-> are considered the general area filesystem maintainers.
-> 
-> This kind of thing does not appear to have come up before and
-> so procedurally you guys are setting are attempting to set
-> a precedent.
-> 
-> All I know is that doing it the way you are doing seems like a bad
-> idea.  Not discussing things or even the reason you can't discuss them
-> seems foolish and leaves no one satisfied.
-> 
-> Maybe there are good reasons but so far this whole thing just stinks.
-> 
-> When all of the pieces are public how can having secret veiled reasons
-> make sense?
-> 
-> And if secret magic consultations with lawyers are going to be invoked
-> I expect we should have a Signed-off-by from those lawyers.
+On Mon, 4 May 2009, Rafael J. Wysocki wrote:
 
-;-)
+> > > Index: linux-2.6/mm/page_alloc.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/mm/page_alloc.c
+> > > +++ linux-2.6/mm/page_alloc.c
+> > > @@ -1620,7 +1620,8 @@ nofail_alloc:
+> > >  		}
+> > >  
+> > >  		/* The OOM killer will not help higher order allocs so fail */
+> > > -		if (order > PAGE_ALLOC_COSTLY_ORDER) {
+> > > +		if (order > PAGE_ALLOC_COSTLY_ORDER ||
+> > > +				(gfp_mask & __GFP_NO_OOM_KILL)) {
+> > >  			clear_zonelist_oom(zonelist, gfp_mask);
+> > >  			goto nopage;
+> > >  		}
+> > 
+> > This is inconsistent because __GFP_NO_OOM_KILL now implies __GFP_NORETRY 
+> > (the "goto nopage" above), but only for allocations with __GFP_FS set and 
+> > __GFP_NORETRY clear.
+> 
+> Well, what would you suggest?
+> 
 
-Matthew's idea of checking with SFLC seems to me to have some merit.
-I am looking into this from my end.  Of course, you and Al and Christoph
-have just as much standing to ask SFLC as do I, and perhaps more.
+A couple things:
 
-							Thanx, Paul
+ - rebase this on mmotm so that it doesn't conflict with Mel Gorman's page
+   allocator speedup changes, and
+
+ - avoid the final call to get_page_from_freelist() for 
+   !(gfp_mask & __GFP_NO_OOM_KILL) by adding a check for it alongside 
+   (gfp_mask & __GFP_FS) and !(gfp_mask & __GFP_NORETRY) because it should
+   really only catch parallel oom killings which won't happen in your 
+   suspend case since it uses ALLOC_WMARK_HIGH.
+
+The latter is important to avoid unnecessary dependencies among low-level 
+__GFP_* flags (although all __GFP_NO_OOM_KILL allocations should really 
+all be passing __GFP_NORETRY too to avoid relying too heavily on direct 
+reclaim).
