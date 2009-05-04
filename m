@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbZEDGNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbZEDGYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753091AbZEDGNi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 02:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbZEDGN2
+	id S1752600AbZEDGYV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 02:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbZEDGYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 02:13:28 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:45463 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751733AbZEDGN2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 02:13:28 -0400
-Date: Mon, 4 May 2009 07:13:27 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       David <david@unsolicited.net>
-Subject: Re: [PATCH] reiserfs: Expand i_mutex to enclose lookup_one_len
-Message-ID: <20090504061327.GG8633@ZenIV.linux.org.uk>
-References: <49FB1F20.8040400@suse.com> <20090503085236.GT8633@ZenIV.linux.org.uk> <20090503091507.GU8633@ZenIV.linux.org.uk> <49FE7448.2040302@suse.com>
-MIME-Version: 1.0
+	Mon, 4 May 2009 02:24:09 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63679 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752126AbZEDGYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 02:24:08 -0400
+To: pavel@ucw.cz
+Cc: jmorris@namei.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [TOMOYO 1/2] tomoyo: add Documentation/tomoyo.txt
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20090410171001.GA26156@elf.ucw.cz>
+	<200904130204.n3D24JNk095583@www262.sakura.ne.jp>
+	<20090501102438.GA7470@elf.ucw.cz>
+	<200905012207.BFC60616.QStOHOMJFOLFFV@I-love.SAKURA.ne.jp>
+	<20090503215615.GA1368@ucw.cz>
+In-Reply-To: <20090503215615.GA1368@ucw.cz>
+Message-Id: <200905041524.GGH52160.FFFVMSJOOLtHOQ@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Mon, 4 May 2009 15:24:02 +0900
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49FE7448.2040302@suse.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 12:51:20AM -0400, Jeff Mahoney wrote:
+Pavel Machek wrote:
+> The document above says otherwise. 'There is no way except rebooting
+> the system that can free unneeded memory' certainly looks like memory
+> leak. Plus it sounds like if you change the policy, it will not free
+> the old one, either.
 
-> Huh. I didn't see that still in there. That's an artifact of an earlier
-> version of the code where I kept a reference to /.reiserfs_priv/xattrs.
-> Then I decided that .reiserfs_priv was all I needed to cache (to avoid
-> recursive i_mutex locking on the fs root) and dropped the caching of
-> xattrs. Looks like it didn't get totally cleared out.
+Comments on documentation are also appreciated.
+Let me explain it with below examle.
 
-It's not that simple ;-/  You check it in journalling code, AFAICS in order
-to decide how much will that sucker take (due to extra mkdir?) and something
-will need to be done with that check.
+# echo 'allow_read /lib/libc-2.5.so' | ccs-loadpolicy -e
+# echo 'delete allow_read /lib/libc-2.5.so' | ccs-loadpolicy -e
+# echo 'allow_read /lib/libc-2.5.so' | ccs-loadpolicy -e
+# echo 'allow_read /lib/libc-2.6.so' | ccs-loadpolicy -e
 
-Anyway, I'm going to push all that stuff to #for-next, so that -next would
-pick it.  I have *not* touched the xattr_root logics, so if you could do
-that on top of your patch + my incremental...
+In the first line, new memory is allocated because that element has never been
+added to the list before.
+In the second line, memory used for the deleted element is not released.
+In the third line, new memory is not allocated because that element has been
+added in the past.
+In the fourth line, new memory is allocated because that element has never been
+added to the list before.
+
+Memory which becomes garbage (which some people call as "memory leak") is
+quite little because a sane administrator won't add random elements and delete
+them.
+
+TOMOYO has cursors used for resuming list traversal from arbitrary elements.
+I tried to add refcounter to each element, but the code became too ugly to
+maintain. Thus, I simplified list traversal by guaranteeing all elements
+pointed by cursors are permanent. As of now, we can't release memory used by
+the deleted element because we don't manage the list of cursors to make sure
+that there is no cursor which refers the deleted element. But if we can find
+a way to detect no longer referenced elements, we would be able to add some
+garbage collector. (Before we start implementing garbage collector, I'd like to
+hear end-user's opinion whether TOMOYO wants garbage collector or not.)
+
+Thanks.
