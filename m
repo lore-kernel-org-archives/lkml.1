@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbZEDWIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbZEDWMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757415AbZEDWIW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 18:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbZEDWIJ
+	id S1757201AbZEDWMR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 18:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbZEDWME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 18:08:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48476 "EHLO mx2.redhat.com"
+	Mon, 4 May 2009 18:12:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58563 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752104AbZEDWIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 18:08:07 -0400
-Message-ID: <49FF66ED.9070107@redhat.com>
-Date: Mon, 04 May 2009 19:06:37 -0300
+	id S1753964AbZEDWMC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 18:12:02 -0400
+Message-ID: <49FF67F2.8090106@redhat.com>
+Date: Mon, 04 May 2009 19:10:58 -0300
 From: Mauro Carvalho Chehab <mchehab@redhat.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
 MIME-Version: 1.0
@@ -18,9 +18,9 @@ To: Borislav Petkov <borislav.petkov@amd.com>
 CC: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu,
        tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 10/21] amd64_edac: add k8-specific methods
-References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> <1241024107-14535-11-git-send-email-borislav.petkov@amd.com>
-In-Reply-To: <1241024107-14535-11-git-send-email-borislav.petkov@amd.com>
+Subject: Re: [PATCH 11/21] amd64_edac: add f10-and-later methods-p1
+References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> <1241024107-14535-12-git-send-email-borislav.petkov@amd.com>
+In-Reply-To: <1241024107-14535-12-git-send-email-borislav.petkov@amd.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,4 +34,5 @@ Borislav Petkov escreveu:
 > Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 > ---
 >   
+
 Reviewed-by: Mauro Carvalho Chehab <mchehab@redhat.com>
