@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758275AbZEDQLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758343AbZEDQL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758275AbZEDQLi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758007AbZEDQLV
+	id S1758343AbZEDQL4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756507AbZEDQLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 12:11:21 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:51798 "EHLO e7.ny.us.ibm.com"
+	Mon, 4 May 2009 12:11:44 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:39806 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758037AbZEDQLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:11:20 -0400
-Date: Mon, 4 May 2009 09:11:15 -0700
+	id S1757944AbZEDQLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 12:11:43 -0400
+Date: Mon, 4 May 2009 09:11:37 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, tridge@samba.org,
-       Al Viro <viro@ZenIV.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
+       tridge@samba.org, Al Viro <viro@ZenIV.linux.org.uk>,
+       Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
        Steve French <smfrench@gmail.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
        Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
        Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090504161115.GD6740@linux.vnet.ibm.com>
+Message-ID: <20090504161137.GE6740@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090504063431.GK7141@linux.vnet.ibm.com> <m11vr5jrba.fsf@fess.ebiederm.org> <20090504124129.GL7141@linux.vnet.ibm.com> <20090504124433.GW8822@parisc-linux.org> <20090504130638.GN7141@linux.vnet.ibm.com> <20090504132119.GX8822@parisc-linux.org> <20090504143919.GA6740@linux.vnet.ibm.com> <20090504150834.GZ8822@parisc-linux.org> <20090504153815.GB6740@linux.vnet.ibm.com> <20090504155541.GA3391@infradead.org>
+References: <20090502013729.GI6996@linux.vnet.ibm.com> <20090503225616.GD8633@ZenIV.linux.org.uk> <20090504124129.GL7141@linux.vnet.ibm.com> <20090504124433.GW8822@parisc-linux.org> <20090504130638.GN7141@linux.vnet.ibm.com> <20090504132119.GX8822@parisc-linux.org> <20090504143919.GA6740@linux.vnet.ibm.com> <20090504150834.GZ8822@parisc-linux.org> <1241451391.20170.12.camel@norville.austin.ibm.com> <m14ow0hnal.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090504155541.GA3391@infradead.org>
+In-Reply-To: <m14ow0hnal.fsf@fess.ebiederm.org>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 11:55:41AM -0400, Christoph Hellwig wrote:
-> On Mon, May 04, 2009 at 08:38:15AM -0700, Paul E. McKenney wrote:
-> > Given your affiliation, you should have access to people with whom
-> > you can have a meaningful conversation on the non-technical issues,
-> > but without putting the Linux community at risk.
+On Mon, May 04, 2009 at 08:59:14AM -0700, Eric W. Biederman wrote:
+> Dave Kleikamp <shaggy@linux.vnet.ibm.com> writes:
 > 
-> You could please stop that elitest crap?  Either you guys come up
-> with a good explanation for that patch or you go away, thanks.
+> > On Mon, 2009-05-04 at 09:08 -0600, Matthew Wilcox wrote:
+> >> On Mon, May 04, 2009 at 07:39:19AM -0700, Paul E. McKenney wrote:
+> >> > On Mon, May 04, 2009 at 07:21:19AM -0600, Matthew Wilcox wrote:
+> >> > > Bringing the patch to a public mailing list is a waste of time until
+> >> > > there's a reliable description of the problem you're trying to solve.
+> >> > 
+> >> > Please see the original patch.  It does describes what it is doing.
+> >> 
+> >> "What", but not "Why".  Which is only acceptable in GNU changelogs ;-)
+> >
+> > Please understand the "Why" is a sticky subject that we can't and won't
+> > discuss in a public forum.  However, we believe the maintainers
+> > understand the "Why" of it well enough to consider whether or not to
+> > include such a patch.  The "What" should be pretty clear from the patch
+> > description.  The "How" is a technical question that can be discussed
+> > here.
+> 
+> If the "Why" can not be discussed then you don't have a "Why" you can
+> stand behind.
 
-Where you would be the sole arbiter of "good", I take it?  You had best
-get trained up on non-technical topics, then.  ;-)
+Nice try.
+
+> If you don't have a "Why" you can stand behind the "Why" sucks and does
+> not appear to be an appropriate justification for a patch applied to
+> a public piece of code.
+
+Again, nice try.
 
 							Thanx, Paul
