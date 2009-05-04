@@ -1,113 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbZEDRfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758613AbZEDRgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758701AbZEDRfh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 13:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758577AbZEDRep
+	id S1758613AbZEDRgV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 13:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758676AbZEDRf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 13:34:45 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54714 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758578AbZEDRen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 13:34:43 -0400
-Date: Mon, 4 May 2009 17:34:06 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter: convert perf_resource_mutex to a spinlock
-Message-ID: <tip-1dce8d99b85aba6eddb8b8260baea944922e6fe7@git.kernel.org>
-Git-Commit-ID: 1dce8d99b85aba6eddb8b8260baea944922e6fe7
-X-Mailer: tip-git-log-daemon
+	Mon, 4 May 2009 13:35:27 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:28207 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758666AbZEDRfZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 13:35:25 -0400
+X-BigFish: VPS2(z34a4jz936eQzz1202hzzz32i6bh15fn43j64h)
+X-Spam-TCS-SCL: 3:0
+X-WSS-ID: 0KJ4RII-01-2H6-01
+Date: Mon, 4 May 2009 19:34:50 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] x86: introduce cpuinfo->cpu_node_id to reflect
+	topology of multi-node CPU
+Message-ID: <20090504173450.GG28728@alberich.amd.com>
+References: <20090504173330.GF28728@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 04 May 2009 17:34:08 +0000 (UTC)
+In-Reply-To: <20090504173330.GF28728@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 04 May 2009 17:35:11.0476 (UTC) FILETIME=[AD0B1340:01C9CCDE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1dce8d99b85aba6eddb8b8260baea944922e6fe7
-Gitweb:     http://git.kernel.org/tip/1dce8d99b85aba6eddb8b8260baea944922e6fe7
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Mon, 4 May 2009 19:23:18 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 4 May 2009 19:30:42 +0200
 
-perf_counter: convert perf_resource_mutex to a spinlock
-
-Now percpu counters can be initialized very early. But the init
-sequence uses mutex_lock(). Fortunately, perf_resource_mutex should
-be a spinlock anyway, so convert it.
-
-[ Impact: fix crash due to early init mutex use ]
-
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
- kernel/perf_counter.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+ arch/x86/include/asm/processor.h |    2 ++
+ arch/x86/kernel/cpu/common.c     |    2 ++
+ arch/x86/kernel/cpu/proc.c       |    1 +
+ arch/x86/kernel/smpboot.c        |    5 ++++-
+ 4 files changed, 9 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index fcdafa2..5f86a11 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -46,9 +46,9 @@ static atomic_t nr_comm_tracking __read_mostly;
- int sysctl_perf_counter_priv __read_mostly; /* do we need to be privileged */
- 
- /*
-- * Mutex for (sysadmin-configurable) counter reservations:
-+ * Lock for (sysadmin-configurable) counter reservations:
-  */
--static DEFINE_MUTEX(perf_resource_mutex);
-+static DEFINE_SPINLOCK(perf_resource_lock);
- 
- /*
-  * Architecture provided APIs - weak aliases:
-@@ -3207,9 +3207,9 @@ static void __cpuinit perf_counter_init_cpu(int cpu)
- 	cpuctx = &per_cpu(perf_cpu_context, cpu);
- 	__perf_counter_init_context(&cpuctx->ctx, NULL);
- 
--	mutex_lock(&perf_resource_mutex);
-+	spin_lock(&perf_resource_lock);
- 	cpuctx->max_pertask = perf_max_counters - perf_reserved_percpu;
--	mutex_unlock(&perf_resource_mutex);
-+	spin_unlock(&perf_resource_lock);
- 
- 	hw_perf_counter_setup(cpu);
- }
-@@ -3292,7 +3292,7 @@ perf_set_reserve_percpu(struct sysdev_class *class,
- 	if (val > perf_max_counters)
- 		return -EINVAL;
- 
--	mutex_lock(&perf_resource_mutex);
-+	spin_lock(&perf_resource_lock);
- 	perf_reserved_percpu = val;
- 	for_each_online_cpu(cpu) {
- 		cpuctx = &per_cpu(perf_cpu_context, cpu);
-@@ -3302,7 +3302,7 @@ perf_set_reserve_percpu(struct sysdev_class *class,
- 		cpuctx->max_pertask = mpt;
- 		spin_unlock_irq(&cpuctx->ctx.lock);
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 0b2fab0..b49d72b 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -106,6 +106,8 @@ struct cpuinfo_x86 {
+ 	u16			booted_cores;
+ 	/* Physical processor id: */
+ 	u16			phys_proc_id;
++	/* Node id in case of multi-node processor: */
++	u16			cpu_node_id;
+ 	/* Core id: */
+ 	u16			cpu_core_id;
+ 	/* Index into per_cpu list: */
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 591012f..9bff330 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -470,6 +470,8 @@ out:
+ 	if ((c->x86_max_cores * smp_num_siblings) > 1) {
+ 		printk(KERN_INFO  "CPU: Physical Processor ID: %d\n",
+ 		       c->phys_proc_id);
++		printk(KERN_INFO  "CPU: Processor Node ID: %d\n",
++		       c->cpu_node_id);
+ 		printk(KERN_INFO  "CPU: Processor Core ID: %d\n",
+ 		       c->cpu_core_id);
  	}
--	mutex_unlock(&perf_resource_mutex);
-+	spin_unlock(&perf_resource_lock);
+diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
+index f93047f..e761c90 100644
+--- a/arch/x86/kernel/cpu/proc.c
++++ b/arch/x86/kernel/cpu/proc.c
+@@ -13,6 +13,7 @@ static void show_cpuinfo_core(struct seq_file *m, struct cpuinfo_x86 *c,
+ #ifdef CONFIG_SMP
+ 	if (c->x86_max_cores * smp_num_siblings > 1) {
+ 		seq_printf(m, "physical id\t: %d\n", c->phys_proc_id);
++		seq_printf(m, "node id\t\t: %d\n", c->cpu_node_id);
+ 		seq_printf(m, "siblings\t: %d\n",
+ 			   cpumask_weight(cpu_sibling_mask(cpu)));
+ 		seq_printf(m, "core id\t\t: %d\n", c->cpu_core_id);
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index d2e8de9..dc0e735 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -374,6 +374,7 @@ void __cpuinit set_cpu_sibling_map(int cpu)
+ 			struct cpuinfo_x86 *o = &cpu_data(i);
  
- 	return count;
+ 			if (c->phys_proc_id == o->phys_proc_id &&
++			    c->cpu_node_id == o->cpu_node_id &&
+ 			    c->cpu_core_id == o->cpu_core_id) {
+ 				cpumask_set_cpu(i, cpu_sibling_mask(cpu));
+ 				cpumask_set_cpu(cpu, cpu_sibling_mask(i));
+@@ -401,7 +402,8 @@ void __cpuinit set_cpu_sibling_map(int cpu)
+ 			cpumask_set_cpu(i, c->llc_shared_map);
+ 			cpumask_set_cpu(cpu, cpu_data(i).llc_shared_map);
+ 		}
+-		if (c->phys_proc_id == cpu_data(i).phys_proc_id) {
++		if (c->phys_proc_id == cpu_data(i).phys_proc_id &&
++		    c->cpu_node_id == cpu_data(i).cpu_node_id) {
+ 			cpumask_set_cpu(i, cpu_core_mask(cpu));
+ 			cpumask_set_cpu(cpu, cpu_core_mask(i));
+ 			/*
+@@ -1218,6 +1220,7 @@ static void remove_siblinginfo(int cpu)
+ 	cpumask_clear(cpu_sibling_mask(cpu));
+ 	cpumask_clear(cpu_core_mask(cpu));
+ 	c->phys_proc_id = 0;
++	c->cpu_node_id = 0;
+ 	c->cpu_core_id = 0;
+ 	cpumask_clear_cpu(cpu, cpu_sibling_setup_mask);
  }
-@@ -3324,9 +3324,9 @@ perf_set_overcommit(struct sysdev_class *class, const char *buf, size_t count)
- 	if (val > 1)
- 		return -EINVAL;
- 
--	mutex_lock(&perf_resource_mutex);
-+	spin_lock(&perf_resource_lock);
- 	perf_overcommit = val;
--	mutex_unlock(&perf_resource_mutex);
-+	spin_unlock(&perf_resource_lock);
- 
- 	return count;
- }
+-- 
+1.6.2
+
+
+
