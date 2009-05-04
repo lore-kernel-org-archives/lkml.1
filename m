@@ -1,115 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758001AbZEDQlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932206AbZEDQlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758001AbZEDQlO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbZEDQk5
+	id S932206AbZEDQlb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757723AbZEDQk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 4 May 2009 12:40:58 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52001 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756849AbZEDQk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 4 May 2009 12:40:57 -0400
-Received: from darkcity.gna.ch ([195.226.6.51]:53831 "EHLO mail.gna.ch"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756595AbZEDQk4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:40:56 -0400
-Subject: Re: PROBLEM: 2.6.29.2 - AGP doesn't work anymore on my nforce2
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Karsten Mehrhoff <kawime@gmx.de>
-Cc: Shaohua Li <shaohua.li@intel.com>, linux-kernel@vger.kernel.org,
+Message-ID: <49FF1A7F.4010307@suse.com>
+Date: Mon, 04 May 2009 12:40:31 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       dri-devel@lists.sourceforge.net, stable@kernel.org
-In-Reply-To: <op.uteygpgpgp7xae@127.0.0.1>
-References: <op.us6ywl2jgp7xae@127.0.0.1>
-	 <20090430175927.a89f1cd3.akpm@linux-foundation.org>
-	 <1241179733.2606.1.camel@localhost.localdomain>
-	 <55bc079c-5c3d-465a-be28-0e38c0b48b14@rrsmsx603.amr.corp.intel.com>
-	 <20090504014151.GA22872@sli10-desk.sh.intel.com>
-	 <op.utd626zcgp7xae@127.0.0.1> <1241449660.24202.1041.camel@thor.local>
-	 <op.uteygpgpgp7xae@127.0.0.1>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Mon, 04 May 2009 18:40:52 +0200
-Message-Id: <1241455252.29445.49.camel@thor.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+       Al Viro <viro@ftp.linux.org.uk>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       David <david@unsolicited.net>
+Subject: Re: [PATCH] reiserfs: Expand i_mutex to enclose lookup_one_len
+References: <49FB1F20.8040400@suse.com> <20090503085236.GT8633@ZenIV.linux.org.uk> <20090503091507.GU8633@ZenIV.linux.org.uk> <49FE7448.2040302@suse.com> <20090504061327.GG8633@ZenIV.linux.org.uk>
+In-Reply-To: <20090504061327.GG8633@ZenIV.linux.org.uk>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-04 at 18:23 +0200, Karsten Mehrhoff wrote:
-> On Mon, 04 May 2009 17:07:40 +0200, Michel Dänzer wrote:
-> > On Mon, 2009-05-04 at 08:31 +0200, Karsten Mehrhoff wrote:
-> >> On Mon, 04 May 2009 03:41:51 +0200, Shaohua Li wrote:
-> >>> On Fri, May 01, 2009 at 09:22:19PM +0800, kawime@gmx.de wrote:
-> >>>>> On Thu, 2009-04-30 at 17:59 -0700, Andrew Morton wrote:
-> >>>>>> On Thu, 30 Apr 2009 10:51:47 +0200
-> >>>>>> Karsten Mehrhoff wrote:
-> >>>>>>
-> >>>>>>> [1.]
-> >>>>>>> PROBLEM: No more agp card functionality with the patch 2.6.29.2 of
-> >>>>>> 'a/drivers/char/agp/generic.c'
-> >>>>>>>
-> >>>>>>> [2.]
-> >>>>>>> I compiled the kernel 2.6.29.2 with my .config of 2.6.29.1 and run
-> >>>>>> into problems with the speed of my ATI RADEON 9600 (rv350)
-> >>>>>>>
-> >>>>>>
-> >>>>>
-> >>>>> Is your problem speed issue ? ie just a slowdown ? Or does AGP stop
-> >>>>> working with this patch ? Slowdown is expected from this patch but
-> >>>>> it should hurt too much.
-> >>>>>
-> >>>>
-> >>>>                        2.6.29.1  | 2.6.29.2
-> >>>>                         --------  |  --------
-> >>>> glxgears             ~ 2900 FPS  |  ~ 75 FPS
-> >>>> glxgears -fullscreen ~  500 FPS  |  ~ 11 FPS
-> >>> Does this patch alone give so huge slowdown? From my little knowledge,
-> >>> xserver
-> >>> does agp pages allocation only at startup.
-> >>
-> >> I only reverted this patch in the source file  
-> >> (/drivers/char/agp/generic.c) and got back my old speed on 2.6.29.2.
-> >
-> > Is the DRI enabled in both cases? Compare the Xorg.0.log file and the
-> > output of
-> >
-> > dmesg|grep -e agp -e drm
-> >
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Al Viro wrote:
+> On Mon, May 04, 2009 at 12:51:20AM -0400, Jeff Mahoney wrote:
 > 
+>> Huh. I didn't see that still in there. That's an artifact of an earlier
+>> version of the code where I kept a reference to /.reiserfs_priv/xattrs.
+>> Then I decided that .reiserfs_priv was all I needed to cache (to avoid
+>> recursive i_mutex locking on the fs root) and dropped the caching of
+>> xattrs. Looks like it didn't get totally cleared out.
 > 
-> *********************************
-> 2.6.29.2 (original) 
-> *********************************
-> 
-> $ dmesg|grep -e agp -e drm
-> $ dmesg|grep agp
-> [    0.861997] Linux agpgart interface v0.103
-> [   10.893793] agpgart: Detected NVIDIA nForce2 chipset
-> [   10.939070] agpgart-nvidia 0000:00:00.0: AGP aperture is 64M @ 0xe0000000
+> It's not that simple ;-/  You check it in journalling code, AFAICS in order
+> to decide how much will that sucker take (due to extra mkdir?) and something
+> will need to be done with that check.
 
-No drm lines?
+Yes, it's for an extra mkdir. Now that I've gotten some sleep and looked
+at the code again, I see what you're saying. At least it's broken in a
+performance way instead of causing a system crash or data corruption.
 
+> Anyway, I'm going to push all that stuff to #for-next, so that -next would
+> pick it.  I have *not* touched the xattr_root logics, so if you could do
+> that on top of your patch + my incremental...
 
-> $ glxinfo | grep direct
-> direct rendering: Yes
+Ok, I'll fix that up and get some testing in.
 
-This is not a sufficient test anymore since swrast_dri.so is direct
-rendering but not hardware accelerated. Something like
-
-glxinfo|grep render
-
-can be used to verify both direct rendering and hardware acceleration
-(the latter but not the former is also possible with AIGLX).
+- -Jeff
 
 
-> (EE) RADEON(0): [agp] AGP failed to initialize. Disabling the DRI.
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-[...]
-
-> For me it seems that agp failed to initialize because of the patch.
-
-Indeed.
-
-
--- 
-Earthling Michel Dänzer           |                http://www.vmware.com
-Libre software enthusiast         |          Debian, X and DRI developer
+iEYEARECAAYFAkn/Gn4ACgkQLPWxlyuTD7KclACeLNAOawW5fDxc2CqGZz4NUXpY
+21AAoJdsK3EEPweBCuv1131j3Lm8x3lk
+=0Iqb
+-----END PGP SIGNATURE-----
