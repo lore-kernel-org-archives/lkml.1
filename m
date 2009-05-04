@@ -1,63 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758363AbZEDQMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757801AbZEDQNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758363AbZEDQMx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755245AbZEDQMo
+	id S1757801AbZEDQNc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754748AbZEDQNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 12:12:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51482 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753628AbZEDQMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:12:43 -0400
-Message-ID: <49FF13D7.8070606@redhat.com>
-Date: Mon, 04 May 2009 12:12:07 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: Kyle Moffett <kyle@moffetthome.net>
-CC: Lars Ellenberg <lars.ellenberg@linbit.com>,
-       Philipp Reisner <philipp.reisner@linbit.com>,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
+	Mon, 4 May 2009 12:13:21 -0400
+Received: from gate.in-addr.de ([212.8.193.158]:49517 "EHLO mx.in-addr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753171AbZEDQNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 12:13:21 -0400
+Date: Mon, 4 May 2009 18:12:52 +0200
+From: Lars Marowsky-Bree <lmb@suse.de>
+To: Lars Ellenberg <lars.ellenberg@linbit.com>, Neil Brown <neilb@suse.de>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
        Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
        Nikanth Karthikesan <knikanth@suse.de>,
-       Lars Marowsky-Bree <lmb@suse.de>,
        "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Kyle Moffett <kyle@moffetthome.net>,
        Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: [PATCH 02/16] DRBD: lru_cache
-References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com>	 <1241090812-13516-2-git-send-email-philipp.reisner@linbit.com>	 <1241090812-13516-3-git-send-email-philipp.reisner@linbit.com>	 <f73f7ab80905021651y54db1e69y87f0487bc06f0522@mail.gmail.com>	 <20090503062720.GA31340@racke>	 <f73f7ab80905030706i4afd0902ub42d42d60f01e6a2@mail.gmail.com>	 <20090503224809.GB6243@racke>	 <f73f7ab80905031748v2be95af8vcd07c6a77dc348f@mail.gmail.com> <f73f7ab80905031801n1e5ed6b6h84772baabda5f71e@mail.gmail.com>
-In-Reply-To: <f73f7ab80905031801n1e5ed6b6h84772baabda5f71e@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 00/16] DRBD: a block device for HA clusters
+Message-ID: <20090504161252.GN17956@suse.de>
+References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com> <18941.12645.590037.589600@notabene.brown> <20090503082931.GD31340@racke> <18941.31069.695554.862567@notabene.brown> <20090503213231.GA6243@racke>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090503213231.GA6243@racke>
+X-Ctuhulu: HASTUR
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett wrote:
-> On Sun, May 3, 2009 at 8:48 PM, Kyle Moffett <kyle@moffetthome.net> wrote:
->> There are a couple trivial tunables you can apply to the model I
->> provided to dramatically change the effect of memory pressure on the
->> LRU:
->>
->> [...]
->>
-> 
-> Ooh, I forgot to mention another biggie:  There's a way to allocate a
-> reserve pool of memory (I don't remember the exact API, sorry), which
-> can be attached to a specific kmem_cache to be used by processes
-> attempting writeout.  This would allow you to allocate more in-use
-> elements to make forward progress, even if all of your existing
-> elements are already in-use.
+On 2009-05-03T23:32:31, Lars Ellenberg <lars.ellenberg@linbit.com> wrote:
 
-Lars,
+> Which it could not be while replication link is down,
+> so once replication link is back (or remote node is back,
+> which is not easily distinguishable just there, blablabla),
+> you'd need to fetch the remote bitmap, and merge it with the local
+> bitmap (feeding it into bitmap_set_bits),
+> then re-attach the "failed" mirror.
 
-is using a mempool for allocation, in combination with a
-shrinker callback for freeing older entries an option for
-DRBD?
+Note that this sacrifices transactional consistency on the sync target;
+an understandable trade-off (versus recording the stream of writes
+entirely, which consumes space and possibly more resync bandwidth), but
+a noteworthy one.
 
-It looks like that could get rid of a fair amount of custom infrastructure.
+> But DRBD as of now does the connection handshake and bitmap exchange in
+> kernel.  We wanted to have a fast compression scheme suitable for
+> bitmaps, without cpu or memory overhead.  This does it quite nicely.
+
+Sharing the connection between meta- and regular data also avoids some
+ordering issues between channels, which probably helps simplify some
+aspects of drbd.
+
+Conceivably, the kernel could escalate such metadata/out-of-band
+communications to user-space for handling, and user-space would then
+afterwards instruct the continuation of the stream processing.
+
+> or the link has been down,
+> and the remote side decided to go active with it.
+
+That is arguably a horrible failure on behalf of the cluster stack being
+used, but indeed something drbd must be able to recover from.
+
+
+Regards,
+    Lars
 
 -- 
-All rights reversed.
+SuSE Labs, OPS Engineering, Novell, Inc.
+SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
+
