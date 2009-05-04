@@ -1,55 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbZEDRyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbZEDRyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758647AbZEDRyl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 13:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932196AbZEDRyR
+	id S1758576AbZEDRyy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 13:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758331AbZEDRye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 13:54:17 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:45484 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758413AbZEDRyQ (ORCPT
+	Mon, 4 May 2009 13:54:34 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:36396 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758564AbZEDRyc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 13:54:16 -0400
-Date: Mon, 4 May 2009 11:54:14 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, tridge@samba.org,
-       Al Viro <viro@ZenIV.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steve French <smfrench@gmail.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090504175414.GC8822@parisc-linux.org>
-References: <20090504124433.GW8822@parisc-linux.org> <20090504130638.GN7141@linux.vnet.ibm.com> <20090504132119.GX8822@parisc-linux.org> <20090504143919.GA6740@linux.vnet.ibm.com> <20090504150834.GZ8822@parisc-linux.org> <1241451391.20170.12.camel@norville.austin.ibm.com> <m14ow0hnal.fsf@fess.ebiederm.org> <1241453259.20170.17.camel@norville.austin.ibm.com> <m1d4ao4wj2.fsf@fess.ebiederm.org> <20090504174931.GG6740@linux.vnet.ibm.com>
+	Mon, 4 May 2009 13:54:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
+         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=s38zx/GXae1eNSXK7HjluyTQHem+ahBfEUdvL1aPgbs4p7GPq+5s0XZSp08UckLRWc
+         /bB9h6LKVN42Q37GRplv4GjOH6J0ts9NaSxQiRMJYQ+bXaA+xU1lCGk1SpaabqEr1qHw
+         HgsnWSE45eukk3q5VcSLFvjnz8CKF22ibuV90=
+Message-ID: <49FF2BD4.3070409@googlemail.com>
+Date: Mon, 04 May 2009 19:54:28 +0200
+From: Michael Riepe <michael.riepe@googlemail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: de-de, de, en-us, en
 MIME-Version: 1.0
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: Lars Marowsky-Bree <lmb@suse.de>,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jan Blunck <jblunck@suse.de>
+Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
+References: <20090501061701.GB19234@kroah.com> <20090501065527.GA19773@kroah.com> 	<20090501120359.05bacb48@lxorguk.ukuu.org.uk> <ac3eb2510905010411r2c1a2be5s449aaf485a76a8c4@mail.gmail.com> 	<20090501141846.4b833700@lxorguk.ukuu.org.uk> <ac3eb2510905010624k891f680s7255af8ae185b5d5@mail.gmail.com> 	<49FC8EE4.6040408@googlemail.com> <9b2b86520905021255t4a4812dcrcbcc32f36acd6039@mail.gmail.com> 	<ac3eb2510905021447m1fad2382h342b4d4279b75d3d@mail.gmail.com> 	<20090504162011.GO17956@suse.de> <ac3eb2510905040953t29e104eel1f820516195c623a@mail.gmail.com>
+In-Reply-To: <ac3eb2510905040953t29e104eel1f820516195c623a@mail.gmail.com>
+X-Enigmail-Version: 0.91.0.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090504174931.GG6740@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 10:49:31AM -0700, Paul E. McKenney wrote:
-> Ah, but you are not simply asking us to -do- our homework, but also to
-> make that homework public on LKML.  Please note that Matthew's earlier
-> email indicates that he does not expect to be able to convince his
-> employer to make such homework public.
+Hi!
 
-I have no data upon which to make a judgement as to the probability
-of my lawyer doing anything.  The implication I took away from your
-words earlier in this thread is that _no_ lawyer is going to permit
-this homework to be published.  Maybe Intel's lawyers differ with IBM's
-lawyers on this point.  I wouldn't know.
+Kay Sievers wrote:
 
-But all you're hearing from me is an echo of your own assertions, not
-a concurrence.
+> The problem is not the missing events, they could be pretty easily
+> recovered from sysfs with just another special hack to run at bootup -
+> it's the time it takes to bring up the engine to bootstrap /dev, to
+> allow us to start any other process which looks for devices. Today,
+> udev mounts /dev as a tmpfs, and at that point it is obviously empty,
+> and needs to be filled, and nothing else can reliably run at that
+> time.
+
+And what about mounting /dev from an already populated image? Or, even
+faster, using the /dev directory of the root fs? That way, the device
+nodes would be present as soon as / is mounted, without any additional
+overhead, except the very first time the system boots (in case you
+choose not to populate /dev with a default set of device nodes in advance).
+
+I know, not using tmpfs is a security risk and whatever. But does that
+really matter in an embedded system where you have no user accounts?
+
+[...]
+>   The plan is to start udevd, but run the coldplug in the background
+> and start other stuff in parallel, because you can be sure that all
+> currently known devices are already there, and the missing meaningful
+> symlinks created by udev will show up soon, along with a new event to
+> hook into. There will be no hard checkpoint anymore to wait for the
+> basic environment..
+
+You can do that with a persistent /dev as well. It will even keep the
+symlinks udev created before the system rebooted. The only drawback is
+that you have to wait for device nodes that belong to new devices which
+were connected to the system while it was down. But that rarely happens,
+and will eventually be fixed by udev.
+
+> The other important reason besides that it saves us from coming up
+> with just another custom hack to fill the initial /dev, is that it is
+> damn simple and very reliable.
+
+Pardon me, but I have to ask this: Isn't your patch a custom hack, too?
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Michael "Tired" Riepe <michael.riepe@googlemail.com>
+X-Tired: Each morning I get up I die a little
