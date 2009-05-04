@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbZEDOqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757643AbZEDOtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757069AbZEDOqt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 10:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbZEDOqi
+	id S1757643AbZEDOtV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 10:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbZEDOtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 10:46:38 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60615 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751631AbZEDOqh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 10:46:37 -0400
-Date: Mon, 4 May 2009 10:46:34 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 7/7] kconfig: search for a config to base the
- local(mod|yes)config on
-In-Reply-To: <1241440086.7620.4877.camel@twins>
-Message-ID: <alpine.DEB.2.00.0905041043330.12811@gandalf.stny.rr.com>
-References: <20090430185022.122124349@goodmis.org>  <20090430185223.792841532@goodmis.org>  <87fxflgj2q.fsf@basil.nowhere.org> <1241440086.7620.4877.camel@twins>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 4 May 2009 10:49:09 -0400
+Received: from kroah.org ([198.145.64.141]:42585 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752877AbZEDOtI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 10:49:08 -0400
+Date: Mon, 4 May 2009 07:38:01 -0700
+From: Greg KH <greg@kroah.com>
+To: Jake Edge <jake@lwn.net>
+Cc: James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>, Eric Paris <eparis@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Roland McGrath <roland@redhat.com>,
+       mingo@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: avoid leaking eip, esp, or wchan to
+	non-privileged processes (fwd)
+Message-ID: <20090504143801.GA10217@kroah.com>
+References: <alpine.LRH.2.00.0905040917240.20251@tundra.namei.org> <20090503191124.27b3bf45@chukar>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090503191124.27b3bf45@chukar>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 4 May 2009, Peter Zijlstra wrote:
-
-> On Mon, 2009-05-04 at 14:15 +0200, Andi Kleen wrote:
-> > Steven Rostedt <rostedt@goodmis.org> writes:
-> > 
-> > > Here's the list and order of search:
-> > >
-> > >   /proc/config.gz
-> > >   /boot/vmlinuz-`uname -r`
-> > >   vmlinux  # local to the directory
-> > >   /lib/modules/`uname -r`/kernel/kernel/configs.ko
-> > >   kernel/configs.ko
-> > >   kernel/configs.o
-> > >   .config
-> > 
-> > 
-> > That seems like the wrong order. ./.config should always be first for
-> > compatibility. 
-> > 
-> > That order would completely wreck all my build scripts, and I suspect
-> > others too.
+On Sun, May 03, 2009 at 07:11:24PM -0600, Jake Edge wrote:
+> On Mon, 4 May 2009 09:27:29 +1000 (EST) James Morris wrote:
+> > This patch needs some review.
 > 
-> Quite, except that I hardly ever have a ./.config since I make extensive
-> use of O=foo
+> Indeed.
+> 
+> > Note that stable@kernel.org typically backport already-reviewed and 
+> > applied patches.  I think security@kernel.org is for reporting
+> > problems in a non-public way (whereas, this is already public
+> > knowledge).
+> 
+> I realize (now :) that I didn't get this out to all of the right folks,
+> thanks for doing that.  I didn't realize security@kernel.org was only
+> for non-public security problems, though.  Maybe there needs to be a
+> 'security maintainer' separate from that list?  Or maybe there is one
+> and I just didn't find that person in MAINTAINERS?
 
-I'm fine with using .config as first choice (that is what the script 
-originally did) but I wanted to make it as easy for non developers as 
-possible. Taking from /proc or /boot was most likely the best to give a 
-minimal boot environment.
+No, you did it correctly, as per Documentation/SecurityBugs.
 
-But I can see why .config is probably the best choice for having the most 
-power with the tool. It is how you can always force it to do something you 
-want, and is the most logical place to expect the script to read from.
+And, from the MAINTAINERS file:
+	SECURITY CONTACT
+	P:      Security Officers
+	M:      security@kernel.org
+	S:      Supported
 
-I'll update it.
+thanks,
 
-Thanks,
-
--- Steve
-
+greg k-h
