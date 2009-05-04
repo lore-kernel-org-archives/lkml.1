@@ -1,81 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbZEDQI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbZEDQKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758064AbZEDQI0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbZEDQHz
+	id S1758133AbZEDQKp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756271AbZEDQKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 12:07:55 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:50926 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757578AbZEDQHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:07:53 -0400
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tridge@samba.org,
-       Al Viro <viro@ZenIV.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steve French <smfrench@gmail.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <m14ow0hnal.fsf@fess.ebiederm.org>
-References: <20090501210109.GA3079@infradead.org>
-	 <20090502013729.GI6996@linux.vnet.ibm.com>
-	 <20090503225616.GD8633@ZenIV.linux.org.uk>
-	 <20090504063431.GK7141@linux.vnet.ibm.com>
-	 <m11vr5jrba.fsf@fess.ebiederm.org>
-	 <20090504124129.GL7141@linux.vnet.ibm.com>
-	 <20090504124433.GW8822@parisc-linux.org>
-	 <20090504130638.GN7141@linux.vnet.ibm.com>
-	 <20090504132119.GX8822@parisc-linux.org>
-	 <20090504143919.GA6740@linux.vnet.ibm.com>
-	 <20090504150834.GZ8822@parisc-linux.org>
-	 <1241451391.20170.12.camel@norville.austin.ibm.com>
-	 <m14ow0hnal.fsf@fess.ebiederm.org>
-Content-Type: text/plain
-Date: Mon, 04 May 2009 11:07:39 -0500
-Message-Id: <1241453259.20170.17.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 May 2009 12:10:33 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:55707 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756735AbZEDQKc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 12:10:32 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: johannes@sipsolutions.net
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH v2 2/2] mac80211: pid, fix memory corruption
+Date: Mon,  4 May 2009 18:10:28 +0200
+Message-Id: <1241453428-9029-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.2.4
+In-Reply-To: <1241453238.8683.52.camel@johannes.local>
+References: <1241453238.8683.52.camel@johannes.local>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-04 at 08:59 -0700, Eric W. Biederman wrote:
-> Dave Kleikamp <shaggy@linux.vnet.ibm.com> writes:
-> 
-> > On Mon, 2009-05-04 at 09:08 -0600, Matthew Wilcox wrote:
-> >> On Mon, May 04, 2009 at 07:39:19AM -0700, Paul E. McKenney wrote:
-> >> > On Mon, May 04, 2009 at 07:21:19AM -0600, Matthew Wilcox wrote:
-> >> > > Bringing the patch to a public mailing list is a waste of time until
-> >> > > there's a reliable description of the problem you're trying to solve.
-> >> > 
-> >> > Please see the original patch.  It does describes what it is doing.
-> >> 
-> >> "What", but not "Why".  Which is only acceptable in GNU changelogs ;-)
-> >
-> > Please understand the "Why" is a sticky subject that we can't and won't
-> > discuss in a public forum.  However, we believe the maintainers
-> > understand the "Why" of it well enough to consider whether or not to
-> > include such a patch.  The "What" should be pretty clear from the patch
-> > description.  The "How" is a technical question that can be discussed
-> > here.
-> 
-> If the "Why" can not be discussed then you don't have a "Why" you can
-> stand behind.
+pid doesn't count with some band having more bitrates than the one
+associated the first time.
+Fix that by counting the maximal available bitrate count and allocate
+big enough space.
 
-That's for the maintainers to decide.  If they agree it has worth, maybe
-it's a good idea to answer "How".
+Secondly, fix touching uninitialized memory which causes panics.
+Index sucked from this random memory points to the hell.
+The fix is to sort the rates on each band change.
 
-> If you don't have a "Why" you can stand behind the "Why" sucks and does
-> not appear to be an appropriate justification for a patch applied to
-> a public piece of code.
+[v2]
+ - remove comment which is wrong now
 
-You're entitled to your opinion.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ net/mac80211/rc80211_pid_algo.c |   73 +++++++++++++++++++++------------------
+ 1 files changed, 39 insertions(+), 34 deletions(-)
+
+diff --git a/net/mac80211/rc80211_pid_algo.c b/net/mac80211/rc80211_pid_algo.c
+index b16801c..01d59a8 100644
+--- a/net/mac80211/rc80211_pid_algo.c
++++ b/net/mac80211/rc80211_pid_algo.c
+@@ -317,13 +317,44 @@ rate_control_pid_rate_init(void *priv, struct ieee80211_supported_band *sband,
+ 			   struct ieee80211_sta *sta, void *priv_sta)
+ {
+ 	struct rc_pid_sta_info *spinfo = priv_sta;
++	struct rc_pid_info *pinfo = priv;
++	struct rc_pid_rateinfo *rinfo = pinfo->rinfo;
+ 	struct sta_info *si;
++	int i, j, tmp;
++	bool s;
+ 
+ 	/* TODO: This routine should consider using RSSI from previous packets
+ 	 * as we need to have IEEE 802.1X auth succeed immediately after assoc..
+ 	 * Until that method is implemented, we will use the lowest supported
+ 	 * rate as a workaround. */
+ 
++	/* Sort the rates. This is optimized for the most common case (i.e.
++	 * almost-sorted CCK+OFDM rates). Kind of bubble-sort with reversed
++	 * mapping too. */
++	for (i = 0; i < sband->n_bitrates; i++) {
++		rinfo[i].index = i;
++		rinfo[i].rev_index = i;
++		if (RC_PID_FAST_START)
++			rinfo[i].diff = 0;
++		else
++			rinfo[i].diff = i * pinfo->norm_offset;
++	}
++	for (i = 1; i < sband->n_bitrates; i++) {
++		s = 0;
++		for (j = 0; j < sband->n_bitrates - i; j++)
++			if (unlikely(sband->bitrates[rinfo[j].index].bitrate >
++				     sband->bitrates[rinfo[j + 1].index].bitrate)) {
++				tmp = rinfo[j].index;
++				rinfo[j].index = rinfo[j + 1].index;
++				rinfo[j + 1].index = tmp;
++				rinfo[rinfo[j].index].rev_index = j;
++				rinfo[rinfo[j + 1].index].rev_index = j + 1;
++				s = 1;
++			}
++		if (!s)
++			break;
++	}
++
+ 	spinfo->txrate_idx = rate_lowest_index(sband, sta);
+ 	/* HACK */
+ 	si = container_of(sta, struct sta_info, sta);
+@@ -336,21 +367,22 @@ static void *rate_control_pid_alloc(struct ieee80211_hw *hw,
+ 	struct rc_pid_info *pinfo;
+ 	struct rc_pid_rateinfo *rinfo;
+ 	struct ieee80211_supported_band *sband;
+-	int i, j, tmp;
+-	bool s;
++	int i, max_rates = 0;
+ #ifdef CONFIG_MAC80211_DEBUGFS
+ 	struct rc_pid_debugfs_entries *de;
+ #endif
+ 
+-	sband = hw->wiphy->bands[hw->conf.channel->band];
+-
+ 	pinfo = kmalloc(sizeof(*pinfo), GFP_ATOMIC);
+ 	if (!pinfo)
+ 		return NULL;
+ 
+-	/* We can safely assume that sband won't change unless we get
+-	 * reinitialized. */
+-	rinfo = kmalloc(sizeof(*rinfo) * sband->n_bitrates, GFP_ATOMIC);
++	for (i = 0; i < IEEE80211_NUM_BANDS; i++) {
++		sband = hw->wiphy->bands[i];
++		if (sband->n_bitrates > max_rates)
++			max_rates = sband->n_bitrates;
++	}
++
++	rinfo = kmalloc(sizeof(*rinfo) * max_rates, GFP_ATOMIC);
+ 	if (!rinfo) {
+ 		kfree(pinfo);
+ 		return NULL;
+@@ -368,33 +400,6 @@ static void *rate_control_pid_alloc(struct ieee80211_hw *hw,
+ 	pinfo->rinfo = rinfo;
+ 	pinfo->oldrate = 0;
+ 
+-	/* Sort the rates. This is optimized for the most common case (i.e.
+-	 * almost-sorted CCK+OFDM rates). Kind of bubble-sort with reversed
+-	 * mapping too. */
+-	for (i = 0; i < sband->n_bitrates; i++) {
+-		rinfo[i].index = i;
+-		rinfo[i].rev_index = i;
+-		if (RC_PID_FAST_START)
+-			rinfo[i].diff = 0;
+-		else
+-			rinfo[i].diff = i * pinfo->norm_offset;
+-	}
+-	for (i = 1; i < sband->n_bitrates; i++) {
+-		s = 0;
+-		for (j = 0; j < sband->n_bitrates - i; j++)
+-			if (unlikely(sband->bitrates[rinfo[j].index].bitrate >
+-				     sband->bitrates[rinfo[j + 1].index].bitrate)) {
+-				tmp = rinfo[j].index;
+-				rinfo[j].index = rinfo[j + 1].index;
+-				rinfo[j + 1].index = tmp;
+-				rinfo[rinfo[j].index].rev_index = j;
+-				rinfo[rinfo[j + 1].index].rev_index = j + 1;
+-				s = 1;
+-			}
+-		if (!s)
+-			break;
+-	}
+-
+ #ifdef CONFIG_MAC80211_DEBUGFS
+ 	de = &pinfo->dentries;
+ 	de->target = debugfs_create_u32("target_pf", S_IRUSR | S_IWUSR,
 -- 
-David Kleikamp
-IBM Linux Technology Center
+1.6.2.4
 
