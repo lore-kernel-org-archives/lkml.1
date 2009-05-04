@@ -1,199 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbZEDKYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbZEDKcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224AbZEDKYi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 06:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbZEDKY3
+	id S1754095AbZEDKcm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 06:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZEDKcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 06:24:29 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36391 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751231AbZEDKY2 (ORCPT
+	Mon, 4 May 2009 06:32:32 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:63258 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751813AbZEDKcb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 06:24:28 -0400
-Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       elladan@eskimo.com, linux-kernel@vger.kernel.org, tytso@mit.edu,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
-In-Reply-To: <20090503031539.GC5702@localhost>
-References: <1240987349.4512.18.camel@laptop>
-	 <20090429114708.66114c03@cuia.bos.redhat.com>
-	 <20090430072057.GA4663@eskimo.com>
-	 <20090430174536.d0f438dd.akpm@linux-foundation.org>
-	 <20090430205936.0f8b29fc@riellaptop.surriel.com>
-	 <20090430181340.6f07421d.akpm@linux-foundation.org>
-	 <20090430215034.4748e615@riellaptop.surriel.com>
-	 <20090430195439.e02edc26.akpm@linux-foundation.org>
-	 <49FB01C1.6050204@redhat.com>
-	 <20090501123541.7983a8ae.akpm@linux-foundation.org>
-	 <20090503031539.GC5702@localhost>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 04 May 2009 12:23:55 +0200
-Message-Id: <1241432635.7620.4732.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 4 May 2009 06:32:31 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
+Subject: Re: [PATCH V3] asm-generic: add a generic uaccess.h
+Date: Mon, 4 May 2009 12:32:22 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-arch@vger.kernel.org,
+       Remis Lima Baima <remis.developer@googlemail.com>,
+       linux-kernel@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>
+References: <cover.1241105648.git.arnd@arndb.de> <200905011513.25344.arnd@arndb.de> <49FE861D.5050808@monstr.eu>
+In-Reply-To: <49FE861D.5050808@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200905041232.22732.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18fY+vpXoP1pjGyJf/s2VDOjDpnSlo3wWVFVdF
+ sdUB4nVI/zhvp/TfHoodU38yfiBNeNEOlU6OfjkWzS02XFoI4t
+ TLbpU3FFtdQrfUSXgO8qA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-05-03 at 11:15 +0800, Wu Fengguang wrote:
-> On Fri, May 01, 2009 at 12:35:41PM -0700, Andrew Morton wrote:
-> > On Fri, 01 May 2009 10:05:53 -0400
-> > Rik van Riel <riel@redhat.com> wrote:
-> > 
-> > > Andrew Morton wrote:
-> > > 
-> > > >> When we implement working set protection, we might as well
-> > > >> do it for frequently accessed unmapped pages too.  There is
-> > > >> no reason to restrict this protection to mapped pages.
-> > > > 
-> > > > Well.  Except for empirical observation, which tells us that biasing
-> > > > reclaim to prefer to retain mapped memory produces a better result.
-> > > 
-> > > That used to be the case because file-backed and
-> > > swap-backed pages shared the same set of LRUs,
-> > > while each following a different page reclaim
-> > > heuristic!
-> > 
-> > No, I think it still _is_ the case.  When reclaim is treating mapped
-> > and non-mapped pages equally, the end result sucks.  Applications get
-> > all laggy and humans get irritated.  It may be that the system was
-> > optimised from an overall throughput POV, but the result was
-> > *irritating*.
-> > 
-> > Which led us to prefer to retain mapped pages.  This had nothing at all
-> > to do with internal impementation details - it was a design objective
-> > based upon empirical observation of system behaviour.
+On Monday 04 May 2009, Michal Simek wrote:
+> #define MAKE_MM_SEG(s)  ((mm_segment_t) { (s) })
 > 
-> Heartily Agreed. We shall try hard to protect the running applications.
+> #ifndef KERNEL_DS
+> #define KERNEL_DS       MAKE_MM_SEG(~0UL)
+> #endif
 > 
-> Commit 7e9cd484204f(vmscan: fix pagecache reclaim referenced bit check)
-> tries to address scalability problem when every page get mapped and
-> referenced, so that logic(which lowed the priority of mapped pages)
-> could be enabled only on conditions like (priority < DEF_PRIORITY).
+> #ifndef USER_DS
+> #define USER_DS         MAKE_MM_SEG(TASK_SIZE - 1)
+> #endif
 > 
-> Or preferably we can explicitly protect the mapped executables,
-> as illustrated by this patch (a quick prototype).
+> 
+> #ifndef get_fs
+> #define get_ds() (KERNEL_DS)
+> #define get_fs() (current_thread_info()->addr_limit)
+> 
+> static inline void set_fs(mm_segment_t fs)
+> {
+>         current_thread_info()->addr_limit = fs;
+> }
+> #endif
+> 
 
-Ah, nice, this re-instates the young bit for PROT_EXEC pages.
-I very much like this.
+yes, looks good. Thanks for the suggestion.
 
-
-> Thanks,
-> Fengguang
-> ---
->  include/linux/pagemap.h |    1 +
->  mm/mmap.c               |    2 ++
->  mm/nommu.c              |    2 ++
->  mm/vmscan.c             |   37 +++++++++++++++++++++++++++++++++++--
->  4 files changed, 40 insertions(+), 2 deletions(-)
-> 
-> --- linux.orig/include/linux/pagemap.h
-> +++ linux/include/linux/pagemap.h
-> @@ -25,6 +25,7 @@ enum mapping_flags {
->  #ifdef CONFIG_UNEVICTABLE_LRU
->  	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
->  #endif
-> +	AS_EXEC		= __GFP_BITS_SHIFT + 4,	/* mapped PROT_EXEC somewhere */
->  };
->  
->  static inline void mapping_set_error(struct address_space *mapping, int error)
-> --- linux.orig/mm/mmap.c
-> +++ linux/mm/mmap.c
-> @@ -1198,6 +1198,8 @@ munmap_back:
->  			goto unmap_and_free_vma;
->  		if (vm_flags & VM_EXECUTABLE)
->  			added_exe_file_vma(mm);
-> +		if (vm_flags & VM_EXEC)
-> +			set_bit(AS_EXEC, &file->f_mapping->flags);
->  	} else if (vm_flags & VM_SHARED) {
->  		error = shmem_zero_setup(vma);
->  		if (error)
-> --- linux.orig/mm/vmscan.c
-> +++ linux/mm/vmscan.c
-> @@ -1220,6 +1220,7 @@ static void shrink_active_list(unsigned 
->  	int pgdeactivate = 0;
->  	unsigned long pgscanned;
->  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
-> +	LIST_HEAD(l_active);
->  	LIST_HEAD(l_inactive);
->  	struct page *page;
->  	struct pagevec pvec;
-> @@ -1259,8 +1260,15 @@ static void shrink_active_list(unsigned 
->  
->  		/* page_referenced clears PageReferenced */
->  		if (page_mapping_inuse(page) &&
-> -		    page_referenced(page, 0, sc->mem_cgroup))
-> +		    page_referenced(page, 0, sc->mem_cgroup)) {
-> +			struct address_space *mapping = page_mapping(page);
-> +
->  			pgmoved++;
-> +			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
-> +				list_add(&page->lru, &l_active);
-> +				continue;
-> +			}
-> +		}
->  
->  		list_add(&page->lru, &l_inactive);
->  	}
-> @@ -1269,7 +1277,6 @@ static void shrink_active_list(unsigned 
->  	 * Move the pages to the [file or anon] inactive list.
->  	 */
->  	pagevec_init(&pvec, 1);
-> -	lru = LRU_BASE + file * LRU_FILE;
->  
->  	spin_lock_irq(&zone->lru_lock);
->  	/*
-> @@ -1281,6 +1288,7 @@ static void shrink_active_list(unsigned 
->  	reclaim_stat->recent_rotated[!!file] += pgmoved;
->  
->  	pgmoved = 0;
-> +	lru = LRU_BASE + file * LRU_FILE;
->  	while (!list_empty(&l_inactive)) {
->  		page = lru_to_page(&l_inactive);
->  		prefetchw_prev_lru_page(page, &l_inactive, flags);
-> @@ -1305,6 +1313,31 @@ static void shrink_active_list(unsigned 
->  	}
->  	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
->  	pgdeactivate += pgmoved;
-> +
-> +	pgmoved = 0;
-> +	lru = LRU_ACTIVE + file * LRU_FILE;
-> +	while (!list_empty(&l_active)) {
-> +		page = lru_to_page(&l_active);
-> +		prefetchw_prev_lru_page(page, &l_active, flags);
-> +		VM_BUG_ON(PageLRU(page));
-> +		SetPageLRU(page);
-> +		VM_BUG_ON(!PageActive(page));
-> +
-> +		list_move(&page->lru, &zone->lru[lru].list);
-> +		mem_cgroup_add_lru_list(page, lru);
-> +		pgmoved++;
-> +		if (!pagevec_add(&pvec, page)) {
-> +			__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
-> +			pgmoved = 0;
-> +			spin_unlock_irq(&zone->lru_lock);
-> +			if (buffer_heads_over_limit)
-> +				pagevec_strip(&pvec);
-> +			__pagevec_release(&pvec);
-> +			spin_lock_irq(&zone->lru_lock);
-> +		}
-> +	}
-> +	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
-> +
->  	__count_zone_vm_events(PGREFILL, zone, pgscanned);
->  	__count_vm_events(PGDEACTIVATE, pgdeactivate);
->  	spin_unlock_irq(&zone->lru_lock);
-> --- linux.orig/mm/nommu.c
-> +++ linux/mm/nommu.c
-> @@ -1220,6 +1220,8 @@ unsigned long do_mmap_pgoff(struct file 
->  			added_exe_file_vma(current->mm);
->  			vma->vm_mm = current->mm;
->  		}
-> +		if (vm_flags & VM_EXEC)
-> +			set_bit(AS_EXEC, &file->f_mapping->flags);
->  	}
->  
->  	down_write(&nommu_region_sem);
+	Arnd <><
