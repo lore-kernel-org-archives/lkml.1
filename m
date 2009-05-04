@@ -1,88 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbZEDXgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757859AbZEDXhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbZEDXgv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 19:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755787AbZEDXgl
+	id S1757859AbZEDXhN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 19:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757739AbZEDXgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 19:36:41 -0400
-Received: from ru.mvista.com ([213.79.90.228]:12902 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754984AbZEDXgk (ORCPT
+	Mon, 4 May 2009 19:36:48 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:60937 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757676AbZEDXgr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 19:36:40 -0400
-Date: Tue, 5 May 2009 03:36:35 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: galak@kernel.crashing.org, dbrownell@users.sourceforge.net,
-       linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 9/9] spi_mpc8xxx: s/83xx/8xxx/g
-Message-ID: <20090504233635.GA5892@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090430234739.GA27709@oksana.dev.rtsoft.ru> <20090430234833.GI7901@oksana.dev.rtsoft.ru> <20090504135327.13cd42af.akpm@linux-foundation.org>
+	Mon, 4 May 2009 19:36:47 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20090504135327.13cd42af.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090504231626.GA27123@kroah.com>
+References: <alpine.DEB.2.00.0905031305130.18426@chino.kir.corp.google.com>
+	 <d6200be20905041448p1ca2d068r5ba8348488842b5c@mail.gmail.com>
+	 <20090504220905.GA29402@kroah.com>
+	 <alpine.DEB.2.00.0905041529570.2310@chino.kir.corp.google.com>
+	 <20090504225936.GA9876@kroah.com>
+	 <alpine.DEB.2.00.0905041607170.6073@chino.kir.corp.google.com>
+	 <20090504231626.GA27123@kroah.com>
+Date: Mon, 4 May 2009 16:36:47 -0700
+Message-ID: <d6200be20905041636v4a1743e1mdbb5af53621e9cb3@mail.gmail.com>
+Subject: Re: [patch 1/5] oom: cleanup android low memory killer
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Greg KH <greg@kroah.com>
+Cc: David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, San Mehat <san@android.com>,
+       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 01:53:27PM -0700, Andrew Morton wrote:
-> On Fri, 1 May 2009 03:48:33 +0400
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > Since we renamed the file, we might want to rename the file
-> > internals too.
-> > 
-> > Though we don't bother with changing platform driver name and
-> > platform module alias. The stuff is legacy and hopefully we'll
-> > remove it soon.
-> > 
-> 
-> but but but
-> 
-> >
-> > -static struct of_platform_driver of_mpc83xx_spi_driver = {
-> > -	.name		= "mpc83xx_spi",
-> > -	.match_table	= of_mpc83xx_spi_match,
-> > -	.probe		= of_mpc83xx_spi_probe,
-> > -	.remove		= __devexit_p(of_mpc83xx_spi_remove),
-> > +static struct of_platform_driver of_mpc8xxx_spi_driver = {
-> > +	.name		= "mpc8xxx_spi",
-> > +	.match_table	= of_mpc8xxx_spi_match,
-> > +	.probe		= of_mpc8xxx_spi_probe,
-> > +	.remove		= __devexit_p(of_mpc8xxx_spi_remove),
-> >  };
-> 
-> It _did_ change the platform driver name, didn't it?
+On Mon, May 4, 2009 at 4:16 PM, Greg KH <greg@kroah.com> wrote:
+> On Mon, May 04, 2009 at 04:12:57PM -0700, David Rientjes wrote:
+>> On Mon, 4 May 2009, Greg KH wrote:
+>>
+>> > > This patch in the series is really more of a convenience than anything
+>> > > else since it doesn't change anything functionally.  I had to modify the
+>> > > lowmemorykiller later because there's a potential for a NULL pointer from
+>> > > dereferencing p->mm without holding task_lock(p) and also because I moved
+>> > > oomkilladj from struct task_struct to struct mm_struct.
+>> >
+>> > Is this still the case on top of Arve's changes?
+>> >
+>>
+>> Yeah, the first of two patches Arve just sent is broken:
+>
+> Ok, care to work with Arve to come up with a series that both of you
+> agree will work properly?
 
-This is an OF platform driver, here it is safe to change
-the name. But I didn't change the pure platform driver,
-here:
+Yes, that patch only addresses the issues brought up last time this
+driver was discussed.
 
-| -static struct platform_driver mpc83xx_spi_driver = {
-| -       .probe = plat_mpc83xx_spi_probe,
-| -       .remove = __exit_p(plat_mpc83xx_spi_remove),
-| +static struct platform_driver mpc8xxx_spi_driver = {
-| +       .probe = plat_mpc8xxx_spi_probe,
-| +       .remove = __exit_p(plat_mpc8xxx_spi_remove),
-|         .driver = {
-|                 .name = "mpc83xx_spi",
+>
+>> > Right now, people are still arguing that the android low memory driver
+>> > is not needed, but something is, yet no one has proposed a viable
+>> > solution for all parties :(
+>> >
+>>
+>> There was an interest in a low mem userspace notifier that applications
+>> can poll() on at configurable low mem levels to react accordingly.  This
+>> would probably address the problem that the Android team is trying to fix.
+>
+> Yes, I think it would.
+>
 
-------------------^
+Possibly, but waking up a user space code when running out of memory
+may need even more memory to be freed.
 
-> This patch series had quite a lot of conflicts with the already-pending
-> 
-> spi-move-common-spi_setup-functionality-into-core.patch
-> spi-move-more-spi_setup-functionality-into-core.patch
-> 
-> which I beleive I successfully fixed up.
+>> Regardless, my patchset includes two fixes for current bugs in the oom
+>> killer: a possible NULL pointer when /proc/sys/vm/oom_dump_tasks is
+>> enabled and a possible livelock when killing a task that shares memory
+>> with an OOM_DISABLE task.  I'm not really interested in seeing who can get
+>> their patches into the staging tree first, I'm more concerned about fixing
+>> the oom killer.
+>
+> Agreed, working with Arve on this would be most appreciated.
 
-Thanks a lot, I'll test it soon.
+I have no problem with the patch that adds task_lock and I can add the
+same change myself if you prefer, but the code cleanup patch will
+cause unnecessary conflicts for us.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Arve Hjønnevåg
