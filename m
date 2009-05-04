@@ -1,161 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbZEDRPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758129AbZEDRS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913AbZEDRPZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 13:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZEDRPJ
+	id S1758129AbZEDRS2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 13:18:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbZEDRSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 13:15:09 -0400
-Received: from [192.16.179.4] ([192.16.179.4]:47019 "EHLO sh.osrg.net"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754227AbZEDRPI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 13:15:08 -0400
-Date: Tue, 05 May 2009 02:11:29 +0900 (JST)
-Message-Id: <20090505.021129.103520156.ryusuke@osrg.net>
-To: viro@ZenIV.linux.org.uk
-Cc: konishi.ryusuke@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: sget() misuse in nilfs
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-In-Reply-To: <20090503225136.GC8633@ZenIV.linux.org.uk>
-References: <20090503225136.GC8633@ZenIV.linux.org.uk>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 05 May 2009 02:11:30 +0900 (JST)
+	Mon, 4 May 2009 13:18:17 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:49333 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751631AbZEDRSQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 13:18:16 -0400
+To: paulmck@linux.vnet.ibm.com
+Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
+       tridge@samba.org, Al Viro <viro@ZenIV.linux.org.uk>,
+       Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
+       Steve French <smfrench@gmail.com>,
+       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
+References: <20090504124129.GL7141@linux.vnet.ibm.com>
+	<20090504124433.GW8822@parisc-linux.org>
+	<20090504130638.GN7141@linux.vnet.ibm.com>
+	<20090504132119.GX8822@parisc-linux.org>
+	<20090504143919.GA6740@linux.vnet.ibm.com>
+	<20090504150834.GZ8822@parisc-linux.org>
+	<1241451391.20170.12.camel@norville.austin.ibm.com>
+	<m14ow0hnal.fsf@fess.ebiederm.org>
+	<1241453259.20170.17.camel@norville.austin.ibm.com>
+	<m1k54wal0j.fsf@fess.ebiederm.org>
+	<20090504164250.GF6740@linux.vnet.ibm.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 04 May 2009 10:18:09 -0700
+In-Reply-To: <20090504164250.GF6740@linux.vnet.ibm.com> (Paul E. McKenney's message of "Mon\, 4 May 2009 09\:42\:50 -0700")
+Message-ID: <m1d4ao4wj2.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mjt@tls.msk.ru, linux-fsdevel@vger.kernel.org, hirofumi@mail.parknet.co.jp, smfrench@gmail.com, hch@infradead.org, pavel@ucw.cz, viro@ZenIV.linux.org.uk, tridge@samba.org, matthew@wil.cx, shaggy@linux.vnet.ibm.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;paulmck@linux.vnet.ibm.com
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4877]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.1 XMSolicitRefs_0 Weightloss drug
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-On Sun, 3 May 2009 23:51:36 +0100, Al Viro wrote:
-> OK, I give up; what _is_ get_sb/remount code supposed to implement?
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
 
-Oh, these functions lack spec comments.
-
-I first explain some specs. (I think part of them should be added on
-the code, later)
-
-The nilfs_get_sb() allocates a new super_block struct (sb) or assigns
-an existing sb to the mount point through sget().  For newly allocated
-sb it calls nilfs_fill_super() for initialization.
-
-The following things are supposed here:
-
- 1) Every rw-mount on a device shares the same sb (as usual).
-
- 2) Every sb of snapshot is independent with that of rw-mount or other
-    snapshots if their checkpoint numbers differ.  On the other hand,
-    two or more snapshots having the same checkpoint number share a sb
-    wherever possible.
-
- 3) Snapshots are mountable concurrently with a rw-mount, but a
-    ro-mount is not so because the ro-mount cannot follow changes
-    brought by the rw-mount.
-
- 4) Every sb on a device shares the same nilfs struct
-    (i.e. the_nilfs), which stores their common information.
-
-    The existing nilfs struct is acquired from an existing sb.
-    Otherwise, a new nilfs struct is allocated through alloc_nilfs()
-    function.  The lifetime of the nilfs struct is managed with a
-    reference counter.
-
-The nilfs_remount() function follows the change by given mount
-options.  This does not replace sb, so it involves the following
-actions and confirmation:
-
- a) A segment constructor (i.e. log writer of nilfs) is invoked on
-    ro->rw remount, and it is shut down for ro->rw remount.
-
- b) ro->rw remount is possible only if there is no rw-mount on the
-    device and the checkpoint number of the ro-mount is latest.
-
- c) Remounting snapshot to different checkpoints or rw-mount is not
-    allowed.
-
-> Not to mention the reliability of down_read_trylock() in there (what
-> happens if somebody tries to e.g. remount fs we are looking at the
-> time?  That's right, s_umount held exclusive, down_read_trulock()
-> failing, fs instance skipped during the search), what is all that
-> stuff trying to achieve?
-
-It tries to find out the existing snapshot instance having a
-checkpoint number which equals with the specified cp number (2).
-
-Yeah, it may fail in the situation.  I allow the miss at present
-because it's harmless and rare though it wastes memory due to unwanted
-duplication of the snapshot instance.
-
-> What protects MS_RDONLY in sd->s_flags during these searches?
-
-sd->s_flags is a local variable of the call sites of sget(), but, ugh,
-s->s_flags is not protected.  It may have problem...
-
-BTW, MS_RDONLY in s->s_flags is also referred to in get_sb_bdev() and
-do_remount_sb().  How is the protection achieved for these functions?
-
-For example, ext3_remount() or ext3_handle_error() manipulates this
-flag, and get_sb_bdev() or do_remount_sb() could see it for other
-existing fs-instances.
-
-> What makes parse_options() in remount straight into sb (with reversal
-> if we'd done something bad) safe?
-
-Well, it's not protected except lock_kernel() in the call sites.
-I should add an argument to the parse_options() in order to forbid
-destructive changes like ext3/4 does.
-
-> Do we ever reassign snapshot_cno
-> other than on sb creation and remounting between r/o and r/w?
-
-We don't allow reassigning the snapshot_cno.
-But, ugh, nilfs_remount() is rewriting it temporarily. It seems bad.
-I'll fix it.
-
-> Is there any reason why we free sbi early (== in put_super()) and
-> not after kill_block_super() in ->kill_sb() of your own?
-
-No, just I didn't think we have to delay it until ->kill_sb() because
-bdev->bd_mount_sem and s->s_umount are protecting ->s_fs_info until
-removing the sb from the type->fs_supers list and the super_blocks
-list.
-
-> That alone would make sbi stay with superblock for as long as it
-> could be found by any means, killing the locking mess in your test
-> callbacks.
-
-If the advice turned out to be required or help for simplification,
-I'll take it in.  I need some time to think about it.
-
-> Can SNAPSHOT even be there unless you have MS_RDONLY?
-
-Yes, it can.  Nilfs snapshots can exist concurrently with rw-mount.
- 
-> And what are the rules for exclusion in case of r/w mounts?
-
-(answered in the first explanation)
-
-> What, do we get -EBUSY on attempt to mount r/w something that is
-> already mounted r/w (instead of simply sharing superblock, as other
-> filesystems would do)?
+> On Mon, May 04, 2009 at 09:30:20AM -0700, Eric W. Biederman wrote:
+>> Dave Kleikamp <shaggy@linux.vnet.ibm.com> writes:
+>> 
+>> > That's for the maintainers to decide.  If they agree it has worth, maybe
+>> > it's a good idea to answer "How".
+>> 
+>> Al and Christoph said essentially the same thing and they generally
+>> are considered the general area filesystem maintainers.
+>> 
+>> This kind of thing does not appear to have come up before and
+>> so procedurally you guys are setting are attempting to set
+>> a precedent.
+>> 
+>> All I know is that doing it the way you are doing seems like a bad
+>> idea.  Not discussing things or even the reason you can't discuss them
+>> seems foolish and leaves no one satisfied.
+>> 
+>> Maybe there are good reasons but so far this whole thing just stinks.
+>> 
+>> When all of the pieces are public how can having secret veiled reasons
+>> make sense?
+>> 
+>> And if secret magic consultations with lawyers are going to be invoked
+>> I expect we should have a Signed-off-by from those lawyers.
 >
-> Or am I misreading that
->         } else if (!(s->s_flags & MS_RDONLY)) {
->                 err = -EBUSY;
->         }
-> in there?
+> ;-)
+>
+> Matthew's idea of checking with SFLC seems to me to have some merit.
+> I am looking into this from my end.  Of course, you and Al and Christoph
+> have just as much standing to ask SFLC as do I, and perhaps more.
 
-Hmm, this looks strange to me, too.  Nilfs is sharing a r/w-mount as
-described in (1).  I'll confirm the -EBUSY case.
+Reasonable.  Of course it still misses one interesting point.
 
-> 						Very confused Al...
+Typically when reviewing code if the code looks suspicious you ask the
+poster why they did X.  If the author of the code has a good answer
+you can tell that they have done their homework, and you can verify it.
+If the author doesn't have a good answer typically that means they haven't
+thought through all of the details and the code has problems.
 
-Sorry.  I recongize these are rather confusing.
-The use of sget() and the test routines should be reduced to a minimum
-if feasible.
+In this case we ask why and get stone-walling.  Which typically would
+mean either that IBM has a good reason for doing this that they are
+keeping hidden.  Or that we have programmers reacting to news stories
+who have not done all of their homework.
 
-Anyway, thanks for many questions and comments.
+So far my feeling has been, that there are people handling this mess
+on other fronts and that if it was a real issue they would be coming
+out of the wood work, and giving guidance.
 
-Regards,
-Ryusuke Konishi
+Now perhaps no one is because this is a cross disciplinary thing and no
+one has sufficient legal, technical and business expertise.
+
+Right now my hypothesis that best fits the facts is programmers reacting
+on their own to news stories, without having done all of their homework.
+
+Asking others to go to the SFLC or other places and do your homework
+for you is an interesting reaction.  The SFLC does seem like an
+appropriate group to get an opinion from.
+
+Eric
