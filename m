@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbZEDV7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbZEDWAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755523AbZEDV7G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 17:59:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbZEDV6y
+	id S1757040AbZEDWAs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 18:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbZEDWAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 17:58:54 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44349 "EHLO ogre.sisk.pl"
+	Mon, 4 May 2009 18:00:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54735 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751912AbZEDV6x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 17:58:53 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Subject: Re: compat ioctl32 for /dev/snapshot?
-Date: Mon, 4 May 2009 23:58:56 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
-Cc: "Linux-kernel" <linux-kernel@vger.kernel.org>
-References: <49FEB572.4010909@msgid.tls.msk.ru>
-In-Reply-To: <49FEB572.4010909@msgid.tls.msk.ru>
+	id S1751912AbZEDWAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 18:00:38 -0400
+Message-ID: <49FF6532.7040206@redhat.com>
+Date: Mon, 04 May 2009 18:59:14 -0300
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Borislav Petkov <borislav.petkov@amd.com>
+CC: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu,
+       tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/21] amd64_edac: assign DRAM chip select base and mask
+ in a family-specific way
+References: <1241024107-14535-1-git-send-email-borislav.petkov@amd.com> <1241024107-14535-10-git-send-email-borislav.petkov@amd.com>
+In-Reply-To: <1241024107-14535-10-git-send-email-borislav.petkov@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905042358.56943.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 May 2009, Michael Tokarev wrote:
-> Is there any reason why 32-bit uswsusp &Friends does not work
-> on 64bits kernel?
-> 
-> For one, 32bits s2disk produces the following when trying to
-> suspend:
-> 
->   ioctl32(s2disk:4134): Unknown cmd fd(4) cmd(400c330d){t:'3';sz:12} arg(ff853554) on /dev/snapshot
->   ioctl32(s2disk:4134): Unknown cmd fd(4) cmd(4004330a){t:'3';sz:4} arg(00000805) on /dev/snapshot
-> 
-> this is coming from:
-> 
->      error = ioctl(dev, SNAPSHOT_SET_SWAP_AREA, &swap);
->      if (error && !offset)
->              error = ioctl(dev, SNAPSHOT_SET_SWAP_FILE, blkdev);
-> 
-> but I guess (just guess!) that other SNAPSHOT_* operations will
-> also fail the same way.
-> 
-> Is there a reason why those are not in compat_ioctl?
+Borislav Petkov escreveu:
+> +	for (cs = 0; cs < CHIPSELECT_COUNT; cs++) {
+> +		reg = K8_DCSB0 + (cs * 4);
+> +		err = pci_read_config_dword(pvt->dram_f2_ctl, reg,
+> +						&pvt->dcsb0[cs]);
+> +		if (err != 0)
+> +			debugf0("%s() Reading K8_DCSB0[%d] failed\n",
+> +				__func__, cs);
+> +
+> +		debugf0("  DCSB0[%d]=0x%08x reg: F2x%x\n",
+> +			cs, pvt->dcsb0[cs], reg);
+>   
 
-The user land hasn't been designed with that in mind.  You'd most likely have
-to modify it too.
+Hmm... I suspect that there's a missing else before the debugf0(). If 
+you got an error while reading it, you shouldn't be showing the results. 
+> +
+> +		/* If DCT are NOT ganged, then read in DCT1's base */
+> +		if (boot_cpu_data.x86 >= 0x10 && !dct_ganging_enabled(pvt)) {
+> +			reg = F10_DCSB1 + (cs * 4);
+> +			err = pci_read_config_dword(pvt->dram_f2_ctl, reg,
+> +							&pvt->dcsb1[cs]);
+> +			if (err != 0)
+> +				debugf0("%s() Reading F10_DCSB1[%d] failed\n",
+> +					__func__, cs);
+> +			debugf0("  DCSB1[%d]=0x%08x reg: F2x%x\n",
+> +				cs, pvt->dcsb1[cs], reg);
+>   
+The same issue here: if you got an error while reading it, you shouldn't 
+be showing the results. 
 
-Thanks,
-Rafael
+Cheers,
+Mauro.
