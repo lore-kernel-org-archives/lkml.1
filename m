@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932124AbZEDQSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757900AbZEDQVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932124AbZEDQSX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbZEDQSJ
+	id S1757900AbZEDQVH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbZEDQUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 12:18:09 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:49982 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756743AbZEDQSH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:18:07 -0400
-Message-ID: <49FF1596.2020503@oracle.com>
-Date: Mon, 04 May 2009 09:19:34 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 4 May 2009 12:20:53 -0400
+Received: from gate.in-addr.de ([212.8.193.158]:49552 "EHLO mx.in-addr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752586AbZEDQUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 12:20:52 -0400
+Date: Mon, 4 May 2009 18:20:11 +0200
+From: Lars Marowsky-Bree <lmb@suse.de>
+To: Kay Sievers <kay.sievers@vrfy.org>,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Cc: Michael Riepe <michael.riepe@googlemail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jan Blunck <jblunck@suse.de>
+Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev
+	tmpfs
+Message-ID: <20090504162011.GO17956@suse.de>
+References: <20090501061701.GB19234@kroah.com> <20090430234312.a63fa5cf.akpm@linux-foundation.org> <20090501065527.GA19773@kroah.com> <20090501120359.05bacb48@lxorguk.ukuu.org.uk> <ac3eb2510905010411r2c1a2be5s449aaf485a76a8c4@mail.gmail.com> <20090501141846.4b833700@lxorguk.ukuu.org.uk> <ac3eb2510905010624k891f680s7255af8ae185b5d5@mail.gmail.com> <49FC8EE4.6040408@googlemail.com> <9b2b86520905021255t4a4812dcrcbcc32f36acd6039@mail.gmail.com> <ac3eb2510905021447m1fad2382h342b4d4279b75d3d@mail.gmail.com>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for May 4 (staging/comedi)
-References: <20090504170810.64cdceb4.sfr@canb.auug.org.au> <49FF0EEA.1010605@oracle.com> <20090504161232.GB11723@kroah.com>
-In-Reply-To: <20090504161232.GB11723@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt007.oracle.com [141.146.116.16]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.49FF1536.0204,ss=1,fgs=0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ac3eb2510905021447m1fad2382h342b4d4279b75d3d@mail.gmail.com>
+X-Ctuhulu: HASTUR
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Mon, May 04, 2009 at 08:51:06AM -0700, Randy Dunlap wrote:
->> Stephen Rothwell wrote:
->>> Hi all,
->>>
->>> Changes since 20090501:
->>
->> build-r4048.out:ERROR: "ni_tio_rinsn" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
->> build-r4048.out:ERROR: "ni_tio_winsn" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
->> build-r4048.out:ERROR: "ni_tio_insn_config" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
->> build-r4048.out:ERROR: "ni_tio_init_counter" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
->> build-r4048.out:ERROR: "ni_gpct_device_construct" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
->> build-r4048.out:ERROR: "ni_gpct_device_destroy" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
->> build-r4048.out:ERROR: "labpc_1200_is_unipolar" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
->> build-r4048.out:ERROR: "labpc_1200_ai_gain_bits" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
->> build-r4048.out:ERROR: "range_labpc_1200_ai" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
->> build-r4048.out:ERROR: "labpc_common_detach" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
->> build-r4048.out:ERROR: "labpc_common_attach" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
->> build-r4048.out:ERROR: "das08_cs_boards" [drivers/staging/comedi/drivers/das08_cs.ko] undefined!
->> build-r4048.out:ERROR: "das08_common_detach" [drivers/staging/comedi/drivers/das08_cs.ko] undefined!
->> build-r4048.out:ERROR: "das08_common_attach" [drivers/staging/comedi/drivers/das08_cs.ko] undefined!
->>
->>
->> config attached.
-> 
-> CONFIG_PCMCIA is allowed to be set without CONFIG_PCI?  That sounds like
-> the problem there (not to mention pretty much an impossible real-world
-> combination...)
+On 2009-05-02T23:47:03, Kay Sievers <kay.sievers@vrfy.org> wrote:
 
-PCMCIA is (was?) a 16-bit ISA-like bus.
-That's not PCCard (PCI-like).
+> It is not about missing events, it is about the bootstrap step we
+> would like to avoid. Buffering events, or reading all device
+> information from sysfs at this stage introduces a hard checkpoint,
+> where we need to bring a process up process these events and create
+> nodes for them. Only after that we can start other things in userspace
+> which depend on a working /dev, and with the kernel populated one, we
+> can just go ahead.
 
+So if udevd was present before the kernel started scanning devices this
+would not be as much of a problem, would it? 
+
+(Couldn't udevd trigger the device scan? Could it be started so early as
+for this not to matter?)
+
+And isn't part of the problem that you have a choke point in the
+dependency graph - namely "/dev working" as a predicate for running
+certain services/scripts - instead of more fine-grained dependencies for
+just the devices they need?
+
+
+Regards,
+    Lars
 
 -- 
-~Randy
+SuSE Labs, OPS Engineering, Novell, Inc.
+SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
+
