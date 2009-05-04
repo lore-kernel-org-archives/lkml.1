@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757801AbZEDQNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbZEDQPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757801AbZEDQNc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:13:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754748AbZEDQNV
+	id S1758073AbZEDQPy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbZEDQPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 12:13:21 -0400
-Received: from gate.in-addr.de ([212.8.193.158]:49517 "EHLO mx.in-addr.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753171AbZEDQNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:13:21 -0400
-Date: Mon, 4 May 2009 18:12:52 +0200
-From: Lars Marowsky-Bree <lmb@suse.de>
-To: Lars Ellenberg <lars.ellenberg@linbit.com>, Neil Brown <neilb@suse.de>
-Cc: Philipp Reisner <philipp.reisner@linbit.com>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: [PATCH 00/16] DRBD: a block device for HA clusters
-Message-ID: <20090504161252.GN17956@suse.de>
-References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com> <18941.12645.590037.589600@notabene.brown> <20090503082931.GD31340@racke> <18941.31069.695554.862567@notabene.brown> <20090503213231.GA6243@racke>
+	Mon, 4 May 2009 12:15:44 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:39216 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751207AbZEDQPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 12:15:43 -0400
+Date: Mon, 4 May 2009 09:10:24 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, tridge@samba.org,
+       Al Viro <viro@ZenIV.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steve French <smfrench@gmail.com>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
+Message-ID: <20090504161024.GC6740@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090504063431.GK7141@linux.vnet.ibm.com> <m11vr5jrba.fsf@fess.ebiederm.org> <20090504124129.GL7141@linux.vnet.ibm.com> <20090504124433.GW8822@parisc-linux.org> <20090504130638.GN7141@linux.vnet.ibm.com> <20090504132119.GX8822@parisc-linux.org> <20090504143919.GA6740@linux.vnet.ibm.com> <20090504150834.GZ8822@parisc-linux.org> <20090504153815.GB6740@linux.vnet.ibm.com> <20090504155505.GA8822@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090503213231.GA6243@racke>
-X-Ctuhulu: HASTUR
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090504155505.GA8822@parisc-linux.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-05-03T23:32:31, Lars Ellenberg <lars.ellenberg@linbit.com> wrote:
+On Mon, May 04, 2009 at 09:55:06AM -0600, Matthew Wilcox wrote:
+> On Mon, May 04, 2009 at 08:38:15AM -0700, Paul E. McKenney wrote:
+> > On Mon, May 04, 2009 at 09:08:34AM -0600, Matthew Wilcox wrote:
+> > > On Mon, May 04, 2009 at 07:39:19AM -0700, Paul E. McKenney wrote:
+> > > > On Mon, May 04, 2009 at 07:21:19AM -0600, Matthew Wilcox wrote:
+> > > > > Bringing the patch to a public mailing list is a waste of time until
+> > > > > there's a reliable description of the problem you're trying to solve.
+> > > > 
+> > > > Please see the original patch.  It does describes what it is doing.
+> > > 
+> > > "What", but not "Why".  Which is only acceptable in GNU changelogs ;-)
+> > 
+> > ;-)
+> > 
+> > > Matthew Wilcox			Intel Open Source Technology Centre
+> > 
+> > Given your affiliation, you should have access to people with whom
+> > you can have a meaningful conversation on the non-technical issues,
+> > but without putting the Linux community at risk.
+> 
+> Indeed I do have access to lawyers.  But what use is that?  I could
+> presumably get an opinion for myself that I would not then be able to
+> share outside of Intel.
 
-> Which it could not be while replication link is down,
-> so once replication link is back (or remote node is back,
-> which is not easily distinguishable just there, blablabla),
-> you'd need to fetch the remote bitmap, and merge it with the local
-> bitmap (feeding it into bitmap_set_bits),
-> then re-attach the "failed" mirror.
+I am glad you understand our situation, then!  ;-)
 
-Note that this sacrifices transactional consistency on the sync target;
-an understandable trade-off (versus recording the stream of writes
-entirely, which consumes space and possibly more resync bandwidth), but
-a noteworthy one.
+> Can't you get the SFLC to issue a public legal opinion for you?  Or maybe
+> the Linux Foundation?
 
-> But DRBD as of now does the connection handshake and bitmap exchange in
-> kernel.  We wanted to have a fast compression scheme suitable for
-> bitmaps, without cpu or memory overhead.  This does it quite nicely.
+I have no clue whether this would work, but it is certainly worth
+exploring.  Thank you for the tip!!!
 
-Sharing the connection between meta- and regular data also avoids some
-ordering issues between channels, which probably helps simplify some
-aspects of drbd.
-
-Conceivably, the kernel could escalate such metadata/out-of-band
-communications to user-space for handling, and user-space would then
-afterwards instruct the continuation of the stream processing.
-
-> or the link has been down,
-> and the remote side decided to go active with it.
-
-That is arguably a horrible failure on behalf of the cluster stack being
-used, but indeed something drbd must be able to recover from.
-
-
-Regards,
-    Lars
-
--- 
-SuSE Labs, OPS Engineering, Novell, Inc.
-SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
-"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
-
+							Thanx, Paul
