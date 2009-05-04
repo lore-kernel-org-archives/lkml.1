@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbZEDNVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbZEDNWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbZEDNVb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 09:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbZEDNVV
+	id S1755984AbZEDNWv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 09:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbZEDNWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 09:21:21 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:55369 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752496AbZEDNVU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 09:21:20 -0400
-Date: Mon, 4 May 2009 07:21:19 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, tridge@samba.org,
-       Al Viro <viro@ZenIV.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steve French <smfrench@gmail.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090504132119.GX8822@parisc-linux.org>
-References: <524f69650905011318m34e0027dt57877d225b3fe2da@mail.gmail.com> <20090501210109.GA3079@infradead.org> <20090502013729.GI6996@linux.vnet.ibm.com> <20090503225616.GD8633@ZenIV.linux.org.uk> <20090504063431.GK7141@linux.vnet.ibm.com> <m11vr5jrba.fsf@fess.ebiederm.org> <20090504124129.GL7141@linux.vnet.ibm.com> <20090504124433.GW8822@parisc-linux.org> <20090504130638.GN7141@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090504130638.GN7141@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 4 May 2009 09:22:41 -0400
+Received: from vena.lwn.net ([206.168.112.25]:59546 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754356AbZEDNWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 09:22:40 -0400
+Date: Mon, 4 May 2009 07:22:37 -0600
+From: Jake Edge <jake@lwn.net>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>, Eric Paris <eparis@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Roland McGrath <roland@redhat.com>,
+       mingo@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: avoid leaking eip, esp, or wchan to
+ non-privileged processes (fwd)
+Message-ID: <20090504072237.4045721f@chukar>
+In-Reply-To: <m1r5z5jt63.fsf@fess.ebiederm.org>
+References: <alpine.LRH.2.00.0905040917240.20251@tundra.namei.org>
+	<m1r5z5jt63.fsf@fess.ebiederm.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 06:06:38AM -0700, Paul E. McKenney wrote:
-> On Mon, May 04, 2009 at 06:44:33AM -0600, Matthew Wilcox wrote:
-> > On Mon, May 04, 2009 at 05:41:29AM -0700, Paul E. McKenney wrote:
-> > > I am not sure that I correctly parsed these three sentences, but the
-> > > justification should be pretty clear to anyone who has been paying any
-> > > attention at all to recent industry news.
-> > 
-> > I think if there's one thing less reliable than an engineer's opinion
-> > on a patent, it's a journalist's opinion on a patent lawsuit.
+On Sun, 03 May 2009 23:09:24 -0700 Eric W. Biederman wrote:
+> James Morris <jmorris@namei.org> writes:
 > 
-> And hence discussing these sorts of non-technical issues on LKML is kind
-> of pointless, you are saying?  I certainly cannot disagree with that!
+> > diff --git a/fs/proc/base.c b/fs/proc/base.c
+> > index aa763ab..cd3c0d7 100644
+> > --- a/fs/proc/base.c
+> > +++ b/fs/proc/base.c
+> > @@ -319,6 +319,9 @@ static int proc_pid_wchan(struct task_struct
+> > *task, char *buffer)
+> >  	unsigned long wchan;
+> >  	char symname[KSYM_NAME_LEN];
+> >
+> > +	if (!ptrace_may_access(task, PTRACE_MODE_READ))
+> > +		return 0;
+> > +
+> >  	wchan = get_wchan(task);
+> >
+> >  	if (lookup_symbol_name(wchan, symname) < 0)
+> 
+> If the symbol is in the kernel it should be safe to return it's
+> name, all that is an information leak of a different sort.
+> Overall I expect we should return  -EPERM here and not simply
+> an empty file.
 
-Bringing the patch to a public mailing list is a waste of time until
-there's a reliable description of the problem you're trying to solve.
-All this innuendo is terribly unbecoming.
+Ah, so if lookup_symbol_name() fails, it should return nothing or an
+error?
+
+This was "modeled" after the maps and smaps behavior, in that
+they return an empty file if there is insufficient permission rather
+than EPERM ... 
+
+> Have you tested these patches against ps top and similar common
+> tools?
+
+both ps and top seem to operate just fine ... any of the default values
+coming out of stat should be OK as they can be returned under other
+circumstances ... the wchan file is a bit different, but it is not
+clear to me what uses that rather than the wchan value in the stat file
+
+thanks,
+
+jake
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Jake Edge - LWN - jake@lwn.net - http://lwn.net
