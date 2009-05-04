@@ -1,103 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671AbZEDKUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbZEDKYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754671AbZEDKUx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 06:20:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbZEDKUl
+	id S1754224AbZEDKYi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 06:24:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbZEDKY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 06:20:41 -0400
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:30906
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755091AbZEDKUk convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 06:20:40 -0400
-X-BigFish: VPS-8(z21eW5edJzzz1202hzzz32i6bh15fn43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KJ47E4-04-LVF-01
-Date: Mon, 4 May 2009 12:20:28 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: mingo@redhat.com
-CC: linux-kernel@vger.kernel.org
-Subject: [git pull] amd iommu updates for 2.6.30-rc4
-Message-ID: <20090504102028.GA30307@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 04 May 2009 10:20:29.0090 (UTC) FILETIME=[F2BAD020:01C9CCA1]
+	Mon, 4 May 2009 06:24:29 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36391 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751231AbZEDKY2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 06:24:28 -0400
+Subject: Re: [PATCH] vmscan: evict use-once pages first (v2)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       elladan@eskimo.com, linux-kernel@vger.kernel.org, tytso@mit.edu,
+       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
+In-Reply-To: <20090503031539.GC5702@localhost>
+References: <1240987349.4512.18.camel@laptop>
+	 <20090429114708.66114c03@cuia.bos.redhat.com>
+	 <20090430072057.GA4663@eskimo.com>
+	 <20090430174536.d0f438dd.akpm@linux-foundation.org>
+	 <20090430205936.0f8b29fc@riellaptop.surriel.com>
+	 <20090430181340.6f07421d.akpm@linux-foundation.org>
+	 <20090430215034.4748e615@riellaptop.surriel.com>
+	 <20090430195439.e02edc26.akpm@linux-foundation.org>
+	 <49FB01C1.6050204@redhat.com>
+	 <20090501123541.7983a8ae.akpm@linux-foundation.org>
+	 <20090503031539.GC5702@localhost>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 04 May 2009 12:23:55 +0200
+Message-Id: <1241432635.7620.4732.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Sun, 2009-05-03 at 11:15 +0800, Wu Fengguang wrote:
+> On Fri, May 01, 2009 at 12:35:41PM -0700, Andrew Morton wrote:
+> > On Fri, 01 May 2009 10:05:53 -0400
+> > Rik van Riel <riel@redhat.com> wrote:
+> > 
+> > > Andrew Morton wrote:
+> > > 
+> > > >> When we implement working set protection, we might as well
+> > > >> do it for frequently accessed unmapped pages too.  There is
+> > > >> no reason to restrict this protection to mapped pages.
+> > > > 
+> > > > Well.  Except for empirical observation, which tells us that biasing
+> > > > reclaim to prefer to retain mapped memory produces a better result.
+> > > 
+> > > That used to be the case because file-backed and
+> > > swap-backed pages shared the same set of LRUs,
+> > > while each following a different page reclaim
+> > > heuristic!
+> > 
+> > No, I think it still _is_ the case.  When reclaim is treating mapped
+> > and non-mapped pages equally, the end result sucks.  Applications get
+> > all laggy and humans get irritated.  It may be that the system was
+> > optimised from an overall throughput POV, but the result was
+> > *irritating*.
+> > 
+> > Which led us to prefer to retain mapped pages.  This had nothing at all
+> > to do with internal impementation details - it was a design objective
+> > based upon empirical observation of system behaviour.
+> 
+> Heartily Agreed. We shall try hard to protect the running applications.
+> 
+> Commit 7e9cd484204f(vmscan: fix pagecache reclaim referenced bit check)
+> tries to address scalability problem when every page get mapped and
+> referenced, so that logic(which lowed the priority of mapped pages)
+> could be enabled only on conditions like (priority < DEF_PRIORITY).
+> 
+> Or preferably we can explicitly protect the mapped executables,
+> as illustrated by this patch (a quick prototype).
 
-The following changes since commit 19c1a6f5764d787113fa323ffb18be7991208f82:
-  FUJITA Tomonori (1):
-        x86 gart: reimplement IOMMU_LEAK feature by using DMA_API_DEBUG
+Ah, nice, this re-instates the young bit for PROT_EXEC pages.
+I very much like this.
 
-are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu/fixes-2.6.30
-
-Joerg Roedel (1):
-      amd-iommu: fix iommu flag masks
-
- arch/x86/kernel/amd_iommu_init.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
-
-The patch fixes a minor issue with wrong evaluated iommu flags read from
-the ACPI table. Please pull.
-
-Here is the full diff:
-
-diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index 42c33ce..8c0be09 100644
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -49,10 +49,10 @@
- #define IVHD_DEV_EXT_SELECT             0x46
- #define IVHD_DEV_EXT_SELECT_RANGE       0x47
- 
--#define IVHD_FLAG_HT_TUN_EN             0x00
--#define IVHD_FLAG_PASSPW_EN             0x01
--#define IVHD_FLAG_RESPASSPW_EN          0x02
--#define IVHD_FLAG_ISOC_EN               0x03
-+#define IVHD_FLAG_HT_TUN_EN_MASK        0x01
-+#define IVHD_FLAG_PASSPW_EN_MASK        0x02
-+#define IVHD_FLAG_RESPASSPW_EN_MASK     0x04
-+#define IVHD_FLAG_ISOC_EN_MASK          0x08
- 
- #define IVMD_FLAG_EXCL_RANGE            0x08
- #define IVMD_FLAG_UNITY_MAP             0x01
-@@ -569,19 +569,19 @@ static void __init init_iommu_from_acpi(struct amd_iommu *iommu,
- 	 * First set the recommended feature enable bits from ACPI
- 	 * into the IOMMU control registers
- 	 */
--	h->flags & IVHD_FLAG_HT_TUN_EN ?
-+	h->flags & IVHD_FLAG_HT_TUN_EN_MASK ?
- 		iommu_feature_enable(iommu, CONTROL_HT_TUN_EN) :
- 		iommu_feature_disable(iommu, CONTROL_HT_TUN_EN);
- 
--	h->flags & IVHD_FLAG_PASSPW_EN ?
-+	h->flags & IVHD_FLAG_PASSPW_EN_MASK ?
- 		iommu_feature_enable(iommu, CONTROL_PASSPW_EN) :
- 		iommu_feature_disable(iommu, CONTROL_PASSPW_EN);
- 
--	h->flags & IVHD_FLAG_RESPASSPW_EN ?
-+	h->flags & IVHD_FLAG_RESPASSPW_EN_MASK ?
- 		iommu_feature_enable(iommu, CONTROL_RESPASSPW_EN) :
- 		iommu_feature_disable(iommu, CONTROL_RESPASSPW_EN);
- 
--	h->flags & IVHD_FLAG_ISOC_EN ?
-+	h->flags & IVHD_FLAG_ISOC_EN_MASK ?
- 		iommu_feature_enable(iommu, CONTROL_ISOC_EN) :
- 		iommu_feature_disable(iommu, CONTROL_ISOC_EN);
- 
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
-
+> Thanks,
+> Fengguang
+> ---
+>  include/linux/pagemap.h |    1 +
+>  mm/mmap.c               |    2 ++
+>  mm/nommu.c              |    2 ++
+>  mm/vmscan.c             |   37 +++++++++++++++++++++++++++++++++++--
+>  4 files changed, 40 insertions(+), 2 deletions(-)
+> 
+> --- linux.orig/include/linux/pagemap.h
+> +++ linux/include/linux/pagemap.h
+> @@ -25,6 +25,7 @@ enum mapping_flags {
+>  #ifdef CONFIG_UNEVICTABLE_LRU
+>  	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
+>  #endif
+> +	AS_EXEC		= __GFP_BITS_SHIFT + 4,	/* mapped PROT_EXEC somewhere */
+>  };
+>  
+>  static inline void mapping_set_error(struct address_space *mapping, int error)
+> --- linux.orig/mm/mmap.c
+> +++ linux/mm/mmap.c
+> @@ -1198,6 +1198,8 @@ munmap_back:
+>  			goto unmap_and_free_vma;
+>  		if (vm_flags & VM_EXECUTABLE)
+>  			added_exe_file_vma(mm);
+> +		if (vm_flags & VM_EXEC)
+> +			set_bit(AS_EXEC, &file->f_mapping->flags);
+>  	} else if (vm_flags & VM_SHARED) {
+>  		error = shmem_zero_setup(vma);
+>  		if (error)
+> --- linux.orig/mm/vmscan.c
+> +++ linux/mm/vmscan.c
+> @@ -1220,6 +1220,7 @@ static void shrink_active_list(unsigned 
+>  	int pgdeactivate = 0;
+>  	unsigned long pgscanned;
+>  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
+> +	LIST_HEAD(l_active);
+>  	LIST_HEAD(l_inactive);
+>  	struct page *page;
+>  	struct pagevec pvec;
+> @@ -1259,8 +1260,15 @@ static void shrink_active_list(unsigned 
+>  
+>  		/* page_referenced clears PageReferenced */
+>  		if (page_mapping_inuse(page) &&
+> -		    page_referenced(page, 0, sc->mem_cgroup))
+> +		    page_referenced(page, 0, sc->mem_cgroup)) {
+> +			struct address_space *mapping = page_mapping(page);
+> +
+>  			pgmoved++;
+> +			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
+> +				list_add(&page->lru, &l_active);
+> +				continue;
+> +			}
+> +		}
+>  
+>  		list_add(&page->lru, &l_inactive);
+>  	}
+> @@ -1269,7 +1277,6 @@ static void shrink_active_list(unsigned 
+>  	 * Move the pages to the [file or anon] inactive list.
+>  	 */
+>  	pagevec_init(&pvec, 1);
+> -	lru = LRU_BASE + file * LRU_FILE;
+>  
+>  	spin_lock_irq(&zone->lru_lock);
+>  	/*
+> @@ -1281,6 +1288,7 @@ static void shrink_active_list(unsigned 
+>  	reclaim_stat->recent_rotated[!!file] += pgmoved;
+>  
+>  	pgmoved = 0;
+> +	lru = LRU_BASE + file * LRU_FILE;
+>  	while (!list_empty(&l_inactive)) {
+>  		page = lru_to_page(&l_inactive);
+>  		prefetchw_prev_lru_page(page, &l_inactive, flags);
+> @@ -1305,6 +1313,31 @@ static void shrink_active_list(unsigned 
+>  	}
+>  	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+>  	pgdeactivate += pgmoved;
+> +
+> +	pgmoved = 0;
+> +	lru = LRU_ACTIVE + file * LRU_FILE;
+> +	while (!list_empty(&l_active)) {
+> +		page = lru_to_page(&l_active);
+> +		prefetchw_prev_lru_page(page, &l_active, flags);
+> +		VM_BUG_ON(PageLRU(page));
+> +		SetPageLRU(page);
+> +		VM_BUG_ON(!PageActive(page));
+> +
+> +		list_move(&page->lru, &zone->lru[lru].list);
+> +		mem_cgroup_add_lru_list(page, lru);
+> +		pgmoved++;
+> +		if (!pagevec_add(&pvec, page)) {
+> +			__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+> +			pgmoved = 0;
+> +			spin_unlock_irq(&zone->lru_lock);
+> +			if (buffer_heads_over_limit)
+> +				pagevec_strip(&pvec);
+> +			__pagevec_release(&pvec);
+> +			spin_lock_irq(&zone->lru_lock);
+> +		}
+> +	}
+> +	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+> +
+>  	__count_zone_vm_events(PGREFILL, zone, pgscanned);
+>  	__count_vm_events(PGDEACTIVATE, pgdeactivate);
+>  	spin_unlock_irq(&zone->lru_lock);
+> --- linux.orig/mm/nommu.c
+> +++ linux/mm/nommu.c
+> @@ -1220,6 +1220,8 @@ unsigned long do_mmap_pgoff(struct file 
+>  			added_exe_file_vma(current->mm);
+>  			vma->vm_mm = current->mm;
+>  		}
+> +		if (vm_flags & VM_EXEC)
+> +			set_bit(AS_EXEC, &file->f_mapping->flags);
+>  	}
+>  
+>  	down_write(&nommu_region_sem);
