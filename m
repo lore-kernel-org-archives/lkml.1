@@ -1,54 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbZEDNfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755700AbZEDNmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756099AbZEDNfj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 09:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754896AbZEDNfa
+	id S1755700AbZEDNmY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 09:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZEDNmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 09:35:30 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56814 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754799AbZEDNf3 (ORCPT
+	Mon, 4 May 2009 09:42:14 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:54430 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbZEDNmO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 09:35:29 -0400
-Date: Mon, 4 May 2009 15:35:21 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org
-Subject: Re: [PATCH 2/5] PM/Hibernate: Move memory shrinking to snapshot.c
-	(rev. 2)
-Message-ID: <20090504133520.GA1393@ucw.cz>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905031830.49690.rjw@sisk.pl> <200905040208.43040.rjw@sisk.pl> <200905040211.03569.rjw@sisk.pl>
+	Mon, 4 May 2009 09:42:14 -0400
+Date: Mon, 4 May 2009 09:42:11 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Theodore Tso <tytso@mit.edu>
+Subject: Re: [PATCH 0/2][GIT PULL] tracing/filters: adjustements for
+ strings
+In-Reply-To: <1241315433-7225-1-git-send-email-fweisbec@gmail.com>
+Message-ID: <alpine.DEB.2.00.0905040937350.3785@gandalf.stny.rr.com>
+References: <1241315433-7225-1-git-send-email-fweisbec@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905040211.03569.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-05-04 02:11:02, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> The next patch is going to modify the memory shrinking code so that
-> it will make memory allocations to free memory instead of using an
-> artificial memory shrinking mechanism for that.  For this purpose it
-> is convenient to move swsusp_shrink_memory() from
-> kernel/power/swsusp.c to kernel/power/snapshot.c, because the new
-> memory-shrinking code is going to use things that are local to
-> kernel/power/snapshot.c .
-> 
-> [rev. 2: Make some functions static and remove their headers from
->  kernel/power/power.h]
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Sun, 3 May 2009, Frederic Weisbecker wrote:
+
+> Hi,
+> 
+> The following patchset includes two little peas of features
+> for tracing filters, making them able to filter every kind of strings.
+> 
+> Now I can do this:
+> 
+> cd /debug/tracing
+> echo > trace
+> echo stacktrace > trace_options
+> 
+> cd events/lockdep
+> echo 'name == "&REISERFS_SB(s)->lock" && wait_usec > 0' > lock_acquired/filter
+> 
+> echo 1 > lock_acquired/enable
+> sleep 1
+> echo 0 > lock_acquired/enable
+> 
+> cat trace
+> 
+>  # tracer: nop
+>  #
+>  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+>  #              | |       |          |         |
+>            <...>-6464  [000]   327.448232: lock_acquired: &REISERFS_SB(s)->lock (25058.984 us)
+>            <...>-6464  [000]   327.448233: 
+>  <= reiserfs_get_block
+>  <= __block_prepare_write
+>  <= block_write_begin
+>  <= reiserfs_write_begin
+>  <= generic_file_buffered_write
+>  <= __generic_file_aio_write_nolock
+>  <= generic_file_aio_write
+>            <...>-6470  [000]   327.448422: lock_acquired: &REISERFS_SB(s)->lock (25112.702 us)
+>            <...>-6470  [000]   327.448425: 
+>  <= reiserfs_update_sd_size
+>  <= reiserfs_write_end
+>  <= generic_file_buffered_write
+>  <= __generic_file_aio_write_nolock
+>  <= generic_file_aio_write
+>  <= do_sync_write
+>  <= reiserfs_file_write
+> 
+> 
+> Tom, your filter framework is awesome and very useful!
+> Thanks :-)
+
+I totally agree, and also like Frederic's changes.
+
+But...
+
+
+This is all useless unless people know it exists and more importantly, how 
+to use it.
+
+Ted Tso already started a Documentation/trace/events.txt. We need to add 
+documentation of this feature either in Doc../trace/events.txt or add a 
+new file called Doc../trace/filters.txt.  Probably would be better to add 
+a separate file, and add a "See filters.txt" in events.txt.
+
+Tom or Frederic, could either of you write something up? I could when I 
+have time. The git logs seems to be pretty good at explaining it.
+
+Thanks,
+
+-- Steve
+
