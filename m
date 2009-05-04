@@ -1,88 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbZEDOlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbZEDOlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757524AbZEDOlF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 10:41:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757482AbZEDOkl
+	id S1757596AbZEDOlo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 10:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbZEDOle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 10:40:41 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:32901 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757475AbZEDOkj (ORCPT
+	Mon, 4 May 2009 10:41:34 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:35445 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751449AbZEDOle convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 10:40:39 -0400
-Subject: Re: New TRIM/UNMAP tree published (2009-05-02)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: dgilbert@interlog.com
-Cc: Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
-       Jens Axboe <jens.axboe@oracle.com>, Boaz Harrosh <bharrosh@panasas.com>,
-       Hugh Dickins <hugh@veritas.com>, Matthew Wilcox <willy@linux.intel.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Mark Lord <lkml@rtr.ca>
-In-Reply-To: <49FEF5C5.6010404@interlog.com>
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com>
-	 <49D8A3D7.5070507@panasas.com> <20090503061150.GF10704@linux.intel.com>
-	 <20090503071619.GP8822@parisc-linux.org>
-	 <Pine.LNX.4.64.0905031346350.29671@blonde.anvils>
-	 <20090503144847.GR8822@parisc-linux.org> <49FDB21B.3080301@panasas.com>
-	 <20090503154216.GU8822@parisc-linux.org> <49FDC786.6070309@panasas.com>
-	 <49FDE3BB.505@garzik.org>  <49FDE50A.4060503@garzik.org>
-	 <1241377472.5596.88.camel@mulgrave.int.hansenpartnership.com>
-	 <49FDEE64.5090302@garzik.org>
-	 <1241379476.5596.92.camel@mulgrave.int.hansenpartnership.com>
-	 <49FEF5C5.6010404@interlog.com>
-Content-Type: text/plain
-Date: Mon, 04 May 2009 14:40:37 +0000
-Message-Id: <1241448038.3315.19.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 May 2009 10:41:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=PmfjMx5DADZDhTLAYPICUOPZKolbBoykJDDFsyb6rBYKDPZCs0eqOfuaZxIrwHS4zF
+         Rw2sPs0I7MSJcGndCvxUvC8WeaWCF5ZkKWzmY0mm1sfvkk6T467SnqVEexlXBXOwDrU0
+         NTpYpcwEpVZc7EZB0N7O4VX0hQPRO6DUoQj80=
+MIME-Version: 1.0
+In-Reply-To: <20090502023125.GA29674@localhost>
+References: <200904302208.n3UM8t9R016687@imap1.linux-foundation.org>
+	 <20090501012212.GA5848@localhost>
+	 <20090430194907.82b31565.akpm@linux-foundation.org>
+	 <20090502023125.GA29674@localhost>
+Date: Mon, 4 May 2009 23:41:29 +0900
+X-Google-Sender-Auth: 00ae8b649eb90c0b
+Message-ID: <2f11576a0905040741n6aadd323sfcc559209045ef44@mail.gmail.com>
+Subject: Re: [PATCH] vmscan: cleanup the scan batching code
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-04 at 16:03 +0200, Douglas Gilbert wrote:
-> James Bottomley wrote:
-> > On Sun, 2009-05-03 at 15:20 -0400, Jeff Garzik wrote:
-> >> Is WRITE SAME associated with this current DISCARD work, or is that just 
-> >> a similar example?  I'm unfamiliar with its issues...
-> > 
-> > It's an adjunct body of work.  T10 apparently ratified both UNMAP and
-> > the WRITE SAME extensions.  What WRITE SAME does is write the same data
-> > block to multiple contiguous locations as specified in the CDB.  What
-> > the thin provisioning update did for it is allow you to specify a flag
-> > saying I want these sectors unmapped.   The perceived benefit of WRITE
-> > SAME is that you specify (with the write same data ... presumably all
-> > zeros) what an unmapped sector will return if it's ever read from again,
-> > which was a big argument in the UNMAP case.
-> 
-> James,
-> Your presumption is correct. For the UNMAP bit to be honoured
-> in the SCSI WRITE SAME command, the user data part of the
-> data-out buffer needs to be all zeros, and, if present,
-> the protection data part of the data-out buffer needs
-> to be all 0xff_s (i.e. 8 bytes of 0xff). Otherwise the
-> UNMAP bit in WRITE SAME command is ignored and it does a
-> "normal" WRITE SAME.
-> 
-> My $0.02's worth was a suggestion to report an error if the
-> UNMAP bit was given to WRITE SAME and the data-out
-> buffer did not comply with the above pattern. Alternatively
-> the data-out buffer could just be ignored. The author
-> of the WRITE SAME "unmap" facility duly noted my observations
-> and rejected them :-) The wording in sbc3r18.pdf for WRITE SAME
-> is contorted so there will be changes. And t10 is still
-> having teleconferences about thin provisioning so there may be
-> non-trivial changes in the near future.
+> The vmscan batching logic is twisting. Move it into a standalone
+> function nr_scan_try_batch() and document it.  No behavior change.
+>
+> CC: Nick Piggin <npiggin@suse.de>
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: Christoph Lameter <cl@linux-foundation.org>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 
-Actually, I'd just like something far more basic: forcing a thin
-provisioned array to support all of the three possible mechanisms.  It's
-going to be a real mess trying to work out for any given array do you
-support UNMAP or WRITE SAME(16) or WRITE SAME(32)?  We can only do this
-currently by trying the commands ... then we have to have support for
-all three built into sd just in case ... and we get precisely the same
-functionality in each case ...
-
-James
-
-
+ Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
