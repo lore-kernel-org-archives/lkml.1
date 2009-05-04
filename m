@@ -1,66 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757670AbZEDQi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758001AbZEDQlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757670AbZEDQi4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758291AbZEDQie
+	id S1758001AbZEDQlO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbZEDQk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 12:38:34 -0400
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:34271 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758212AbZEDQic (ORCPT
+	Mon, 4 May 2009 12:40:57 -0400
+Received: from darkcity.gna.ch ([195.226.6.51]:53831 "EHLO mail.gna.ch"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756595AbZEDQk4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:38:32 -0400
-X-Loopcount0: from 10.9.160.254
-Message-ID: <49FF1A14.8090501@dell.com>
-Date: Mon, 04 May 2009 11:38:44 -0500
-From: Mario Limonciello <mario_limonciello@dell.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
-MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Add support for more dell-wmi hotkeys
-References: <49ECBAE2.2080308@dell.com> <49EE09D9.2060209@dell.com> <20090429171508.GA717@srcf.ucam.org> <49F89A5C.2090508@dell.com> <20090429182914.GB2325@srcf.ucam.org>
-In-Reply-To: <20090429182914.GB2325@srcf.ucam.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig12D0C14451FA86A8EC1E8244"
+	Mon, 4 May 2009 12:40:56 -0400
+Subject: Re: PROBLEM: 2.6.29.2 - AGP doesn't work anymore on my nforce2
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Karsten Mehrhoff <kawime@gmx.de>
+Cc: Shaohua Li <shaohua.li@intel.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       dri-devel@lists.sourceforge.net, stable@kernel.org
+In-Reply-To: <op.uteygpgpgp7xae@127.0.0.1>
+References: <op.us6ywl2jgp7xae@127.0.0.1>
+	 <20090430175927.a89f1cd3.akpm@linux-foundation.org>
+	 <1241179733.2606.1.camel@localhost.localdomain>
+	 <55bc079c-5c3d-465a-be28-0e38c0b48b14@rrsmsx603.amr.corp.intel.com>
+	 <20090504014151.GA22872@sli10-desk.sh.intel.com>
+	 <op.utd626zcgp7xae@127.0.0.1> <1241449660.24202.1041.camel@thor.local>
+	 <op.uteygpgpgp7xae@127.0.0.1>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Mon, 04 May 2009 18:40:52 +0200
+Message-Id: <1241455252.29445.49.camel@thor.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig12D0C14451FA86A8EC1E8244
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2009-05-04 at 18:23 +0200, Karsten Mehrhoff wrote:
+> On Mon, 04 May 2009 17:07:40 +0200, Michel Dänzer wrote:
+> > On Mon, 2009-05-04 at 08:31 +0200, Karsten Mehrhoff wrote:
+> >> On Mon, 04 May 2009 03:41:51 +0200, Shaohua Li wrote:
+> >>> On Fri, May 01, 2009 at 09:22:19PM +0800, kawime@gmx.de wrote:
+> >>>>> On Thu, 2009-04-30 at 17:59 -0700, Andrew Morton wrote:
+> >>>>>> On Thu, 30 Apr 2009 10:51:47 +0200
+> >>>>>> Karsten Mehrhoff wrote:
+> >>>>>>
+> >>>>>>> [1.]
+> >>>>>>> PROBLEM: No more agp card functionality with the patch 2.6.29.2 of
+> >>>>>> 'a/drivers/char/agp/generic.c'
+> >>>>>>>
+> >>>>>>> [2.]
+> >>>>>>> I compiled the kernel 2.6.29.2 with my .config of 2.6.29.1 and run
+> >>>>>> into problems with the speed of my ATI RADEON 9600 (rv350)
+> >>>>>>>
+> >>>>>>
+> >>>>>
+> >>>>> Is your problem speed issue ? ie just a slowdown ? Or does AGP stop
+> >>>>> working with this patch ? Slowdown is expected from this patch but
+> >>>>> it should hurt too much.
+> >>>>>
+> >>>>
+> >>>>                        2.6.29.1  | 2.6.29.2
+> >>>>                         --------  |  --------
+> >>>> glxgears             ~ 2900 FPS  |  ~ 75 FPS
+> >>>> glxgears -fullscreen ~  500 FPS  |  ~ 11 FPS
+> >>> Does this patch alone give so huge slowdown? From my little knowledge,
+> >>> xserver
+> >>> does agp pages allocation only at startup.
+> >>
+> >> I only reverted this patch in the source file  
+> >> (/drivers/char/agp/generic.c) and got back my old speed on 2.6.29.2.
+> >
+> > Is the DRI enabled in both cases? Compare the Xorg.0.log file and the
+> > output of
+> >
+> > dmesg|grep -e agp -e drm
+> >
+> 
+> 
+> *********************************
+> 2.6.29.2 (original) 
+> *********************************
+> 
+> $ dmesg|grep -e agp -e drm
+> $ dmesg|grep agp
+> [    0.861997] Linux agpgart interface v0.103
+> [   10.893793] agpgart: Detected NVIDIA nForce2 chipset
+> [   10.939070] agpgart-nvidia 0000:00:00.0: AGP aperture is 64M @ 0xe0000000
 
-Hi Matthew:
-
-Matthew Garrett wrote:
-> Oh, hmm, that's true. I'll rework it with that in mind.
->  =20
-Any updates on the rework?  What's wrong the approach I proposed before
-to just tie them to a dummy key type until something better is available?=
+No drm lines?
 
 
---=20
-Mario Limonciello
-*Dell | Linux Engineering*
-mario_limonciello@dell.com
+> $ glxinfo | grep direct
+> direct rendering: Yes
+
+This is not a sufficient test anymore since swrast_dri.so is direct
+rendering but not hardware accelerated. Something like
+
+glxinfo|grep render
+
+can be used to verify both direct rendering and hardware acceleration
+(the latter but not the former is also possible with AIGLX).
 
 
---------------enig12D0C14451FA86A8EC1E8244
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> (EE) RADEON(0): [agp] AGP failed to initialize. Disabling the DRI.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+[...]
 
-iEYEARECAAYFAkn/GhQACgkQ2CrZjkA73Yu6YwCeKlO1SghNAzXHxn/r1m5QlMF8
-Fh8An0t7NUPa5iHS6A1BgZl3hXJDrvWY
-=fAll
------END PGP SIGNATURE-----
+> For me it seems that agp failed to initialize because of the patch.
 
---------------enig12D0C14451FA86A8EC1E8244--
+Indeed.
+
+
+-- 
+Earthling Michel Dänzer           |                http://www.vmware.com
+Libre software enthusiast         |          Debian, X and DRI developer
