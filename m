@@ -1,65 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbZEDMlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbZEDMmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756156AbZEDMlf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 08:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbZEDMlZ
+	id S1756113AbZEDMmU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 08:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbZEDMmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 08:41:25 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:55947 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753969AbZEDMlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 08:41:24 -0400
-Date: Mon, 4 May 2009 05:41:29 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: tridge@samba.org, Al Viro <viro@ZenIV.linux.org.uk>,
-       Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
-       Matthew Wilcox <matthew@wil.cx>, Steve French <smfrench@gmail.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090504124129.GL7141@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <524f69650905011318m34e0027dt57877d225b3fe2da@mail.gmail.com> <20090501210109.GA3079@infradead.org> <20090502013729.GI6996@linux.vnet.ibm.com> <20090503225616.GD8633@ZenIV.linux.org.uk> <20090504063431.GK7141@linux.vnet.ibm.com> <m11vr5jrba.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m11vr5jrba.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 4 May 2009 08:42:06 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36422 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754472AbZEDMmF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 08:42:05 -0400
+Date: Mon, 4 May 2009 13:39:42 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Subject: Re: [PATCH 4/7] blkio-cgroup: The body of blkio-cgroup
+Message-ID: <20090504133942.35dbe7cc@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090504120544.GA3986@linux>
+References: <20090428.214423.193684619.ryov@valinux.co.jp>
+	<20090428.214457.226801820.ryov@valinux.co.jp>
+	<20090428.214535.71090234.ryov@valinux.co.jp>
+	<20090428.214604.104034341.ryov@valinux.co.jp>
+	<20090504120544.GA3986@linux>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 03, 2009 at 11:49:29PM -0700, Eric W. Biederman wrote:
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
-> 
-> > On Sun, May 03, 2009 at 10:42:52PM -0700, Eric W. Biederman wrote:
-> >> The only reason I can see for not ultimately talking about things publicly
-> >> is if this is one company making shady deals with another company in which
-> >> case I do not see why the maintenance burden for those decision should
-> >> fall on the linux community as a whole.
-> >
-> > Another reason is that past experience would indicate that anything we
-> > say in public and and will be used against us.
-> 
-> Which is a fine reason to be careful what you say, and to say
-> reasonable things.
+> few minor coding style issues reported by checkpatch.pl:
 
-I am glad you agree.
-
->                    It is not a reason to submit a patch without
-> justification.
-> 
-> If the reason for submitting a patch is not sufficiently good to be
-> held to then it appears insufficient to merge the patch.
-> 
-> Why should the commit to a position at your urging that you aren't
-> willing to commit to?
-
-I am not sure that I correctly parsed these three sentences, but the
-justification should be pretty clear to anyone who has been paying any
-attention at all to recent industry news.
-
-							Thanx, Paul
+checkpatch is a *guide* not some dictator of style. If it's more readable
+the way it is, or it's following existing style (eg with the export
+symbols in a group at the bottom) then checkpatch is best ignored.
