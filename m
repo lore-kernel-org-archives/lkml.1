@@ -1,23 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbZEDU0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbZEDU1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756037AbZEDU0u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 16:26:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbZEDU0i
+	id S1756405AbZEDU1M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 16:27:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523AbZEDU0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 16:26:38 -0400
-Received: from kroah.org ([198.145.64.141]:37867 "EHLO coco.kroah.org"
+	Mon, 4 May 2009 16:26:40 -0400
+Received: from kroah.org ([198.145.64.141]:37877 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753012AbZEDU0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 16:26:37 -0400
-Date: Mon, 4 May 2009 13:13:23 -0700
+	id S1755094AbZEDU0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 16:26:39 -0400
+Date: Mon, 4 May 2009 13:14:29 -0700
 From: Greg Kroah-Hartman <gregkh@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Arnd Bergmann <arnd@arndb.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Paul Mackerras <paulus@samba.org>, Matthias Fuchs <mfuchs@ma-fu.de>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] of_serial: remove driver_data direct access of struct
-	device
-Message-ID: <20090504201323.GA23069@kroah.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg KH <greg@kroah.com>
+Subject: [PATCH] parport: remove driver_data direct access of struct device
+Message-ID: <20090504201429.GA23129@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,33 +31,28 @@ dev_get_drvdata() and dev_set_drvdata() should be used.  These functions
 have been around since the beginning, so are backwards compatible with
 all older kernel versions.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Matthias Fuchs <mfuchs@ma-fu.de>
+Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/serial/of_serial.c |    4 ++--
+ drivers/parport/parport_gsc.c |    4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/serial/of_serial.c
-+++ b/drivers/serial/of_serial.c
-@@ -122,7 +122,7 @@ static int __devinit of_platform_serial_
+--- a/drivers/parport/parport_gsc.c
++++ b/drivers/parport/parport_gsc.c
+@@ -376,14 +376,14 @@ static int __devinit parport_init_chip(s
+ 			/* PARPORT_IRQ_NONE */ PARPORT_DMA_NONE, NULL);
+ 	if (p)
+ 		parport_count++;
+-	dev->dev.driver_data = p;
++	dev_set_drvdata(&dev->dev, p);
  
- 	info->type = port_type;
- 	info->line = ret;
--	ofdev->dev.driver_data = info;
-+	dev_set_drvdata(&ofdev->dev, info);
  	return 0;
- out:
- 	kfree(info);
-@@ -135,7 +135,7 @@ out:
-  */
- static int of_platform_serial_remove(struct of_device *ofdev)
+ }
+ 
+ static int __devexit parport_remove_chip(struct parisc_device *dev)
  {
--	struct of_serial_info *info = ofdev->dev.driver_data;
-+	struct of_serial_info *info = dev_get_drvdata(&ofdev->dev);
- 	switch (info->type) {
- #ifdef CONFIG_SERIAL_8250
- 	case PORT_8250 ... PORT_MAX_8250:
+-	struct parport *p = dev->dev.driver_data;
++	struct parport *p = dev_get_drvdata(&dev->dev)
+ 	if (p) {
+ 		struct parport_gsc_private *priv = p->private_data;
+ 		struct parport_operations *ops = p->ops;
