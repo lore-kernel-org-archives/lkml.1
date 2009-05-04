@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755042AbZEDKM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbZEDKNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755042AbZEDKM1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 06:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZEDKML
+	id S1754493AbZEDKNw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 06:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbZEDKNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 06:12:11 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:31636 "EHLO
-	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751231AbZEDKMJ (ORCPT
+	Mon, 4 May 2009 06:13:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41194 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751894AbZEDKNj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 06:12:09 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KJ46ZO-03-6FG-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: stable@kernel.org
-CC: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH] amd-iommu: fix iommu flag masks
-Date: Mon, 4 May 2009 12:11:47 +0200
-Message-ID: <1241431907-30225-1-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.6.2.4
-X-OriginalArrivalTime: 04 May 2009 10:11:48.0256 (UTC) FILETIME=[BC49DA00:01C9CCA0]
-MIME-Version: 1.0
-Content-Type: text/plain
+	Mon, 4 May 2009 06:13:39 -0400
+Date: Mon, 4 May 2009 12:18:14 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Avi Kivity <avi@redhat.com>,
+       Elad Lahav <elahav@uwaterloo.ca>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] Implementation of the sendgroup() system call
+Message-ID: <20090504101814.GG23223@one.firstfloor.org>
+References: <49FE47A1.7070700@uwaterloo.ca> <87eiv5ibnd.fsf@basil.nowhere.org> <49FE9999.7090103@redhat.com> <20090504095300.GF23223@one.firstfloor.org> <49FEBBC9.9000708@cosmosbay.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49FEBBC9.9000708@cosmosbay.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix initialization of iommu flags
+On Mon, May 04, 2009 at 11:56:25AM +0200, Eric Dumazet wrote:
+> Andi Kleen a écrit :
+> 
+> >>> Or perhaps simple send to a local multicast group and let
+> >>> some netfilter module turn that into regular UDP.
+> >>>  
+> >> Sounds hacky and rooty.
+> > 
+> > rooty? Everyone can send to all directions anyways.
+> > 
+> > It wouldn't be perfect, but quite usable as a short term solution
+> > for a production server.
+> 
+> Anyway, a netfilter module doesnt fit the needs (separate header/footer
+> for each destination)
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/amd_iommu_init.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+netfilter modues can create new skbs that reference the main data and replace 
+the header.
 
-diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index 42c33ce..8c0be09 100644
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -49,10 +49,10 @@
- #define IVHD_DEV_EXT_SELECT             0x46
- #define IVHD_DEV_EXT_SELECT_RANGE       0x47
- 
--#define IVHD_FLAG_HT_TUN_EN             0x00
--#define IVHD_FLAG_PASSPW_EN             0x01
--#define IVHD_FLAG_RESPASSPW_EN          0x02
--#define IVHD_FLAG_ISOC_EN               0x03
-+#define IVHD_FLAG_HT_TUN_EN_MASK        0x01
-+#define IVHD_FLAG_PASSPW_EN_MASK        0x02
-+#define IVHD_FLAG_RESPASSPW_EN_MASK     0x04
-+#define IVHD_FLAG_ISOC_EN_MASK          0x08
- 
- #define IVMD_FLAG_EXCL_RANGE            0x08
- #define IVMD_FLAG_UNITY_MAP             0x01
-@@ -569,19 +569,19 @@ static void __init init_iommu_from_acpi(struct amd_iommu *iommu,
- 	 * First set the recommended feature enable bits from ACPI
- 	 * into the IOMMU control registers
- 	 */
--	h->flags & IVHD_FLAG_HT_TUN_EN ?
-+	h->flags & IVHD_FLAG_HT_TUN_EN_MASK ?
- 		iommu_feature_enable(iommu, CONTROL_HT_TUN_EN) :
- 		iommu_feature_disable(iommu, CONTROL_HT_TUN_EN);
- 
--	h->flags & IVHD_FLAG_PASSPW_EN ?
-+	h->flags & IVHD_FLAG_PASSPW_EN_MASK ?
- 		iommu_feature_enable(iommu, CONTROL_PASSPW_EN) :
- 		iommu_feature_disable(iommu, CONTROL_PASSPW_EN);
- 
--	h->flags & IVHD_FLAG_RESPASSPW_EN ?
-+	h->flags & IVHD_FLAG_RESPASSPW_EN_MASK ?
- 		iommu_feature_enable(iommu, CONTROL_RESPASSPW_EN) :
- 		iommu_feature_disable(iommu, CONTROL_RESPASSPW_EN);
- 
--	h->flags & IVHD_FLAG_ISOC_EN ?
-+	h->flags & IVHD_FLAG_ISOC_EN_MASK ?
- 		iommu_feature_enable(iommu, CONTROL_ISOC_EN) :
- 		iommu_feature_disable(iommu, CONTROL_ISOC_EN);
- 
+-Andi
+
 -- 
-1.6.2.4
-
-
+ak@linux.intel.com -- Speaking for myself only.
