@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932122AbZEDQRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932124AbZEDQSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932122AbZEDQRi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 12:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758171AbZEDQRW
+	id S932124AbZEDQSX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 12:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbZEDQSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 12:17:22 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:34003 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757318AbZEDQRU (ORCPT
+	Mon, 4 May 2009 12:18:09 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:49982 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756743AbZEDQSH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 12:17:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=MG3+nHVIyV/XJj4/9c8uYHtuun/4mmEeQGPMM2KG8YMOG1u0adMUXXqpasoMlnC2hX
-         h+yP8ZhiLOSHdwzJ65IWBZ2OkA/Ifm3Lh39cOa0/qMWw3TEmx7Dw9xRoW3b3vso/kICN
-         VRcGgQOd9Wsoz+wIh1Bkzw8u8HoAIQWslhK2Y=
+	Mon, 4 May 2009 12:18:07 -0400
+Message-ID: <49FF1596.2020503@oracle.com>
+Date: Mon, 04 May 2009 09:19:34 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-In-Reply-To: <1241453096-8517-1-git-send-email-jirislaby@gmail.com>
-References: <1241453096-8517-1-git-send-email-jirislaby@gmail.com>
-Date: Mon, 4 May 2009 12:17:19 -0400
-X-Google-Sender-Auth: 3eda8b11ed909c75
-Message-ID: <b6c5339f0905040917s72b9f515h40be93fbf04c2182@mail.gmail.com>
-Subject: Re: [PATCH 1/2] mac80211: minstrel, fix memory corruption
-From: Bob Copeland <me@bobcopeland.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: johannes@sipsolutions.net, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Felix Fietkau <nbd@openwrt.org>
+To: Greg KH <greg@kroah.com>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for May 4 (staging/comedi)
+References: <20090504170810.64cdceb4.sfr@canb.auug.org.au> <49FF0EEA.1010605@oracle.com> <20090504161232.GB11723@kroah.com>
+In-Reply-To: <20090504161232.GB11723@kroah.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt007.oracle.com [141.146.116.16]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.49FF1536.0204,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 4, 2009 at 12:04 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> minstrel doesn't count max rate count in fact, since it doesn't use
-> a loop variable `i' and hence allocs space only for bitrates found in
-> the first band.
+Greg KH wrote:
+> On Mon, May 04, 2009 at 08:51:06AM -0700, Randy Dunlap wrote:
+>> Stephen Rothwell wrote:
+>>> Hi all,
+>>>
+>>> Changes since 20090501:
+>>
+>> build-r4048.out:ERROR: "ni_tio_rinsn" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+>> build-r4048.out:ERROR: "ni_tio_winsn" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+>> build-r4048.out:ERROR: "ni_tio_insn_config" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+>> build-r4048.out:ERROR: "ni_tio_init_counter" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+>> build-r4048.out:ERROR: "ni_gpct_device_construct" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+>> build-r4048.out:ERROR: "ni_gpct_device_destroy" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+>> build-r4048.out:ERROR: "labpc_1200_is_unipolar" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+>> build-r4048.out:ERROR: "labpc_1200_ai_gain_bits" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+>> build-r4048.out:ERROR: "range_labpc_1200_ai" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+>> build-r4048.out:ERROR: "labpc_common_detach" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+>> build-r4048.out:ERROR: "labpc_common_attach" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+>> build-r4048.out:ERROR: "das08_cs_boards" [drivers/staging/comedi/drivers/das08_cs.ko] undefined!
+>> build-r4048.out:ERROR: "das08_common_detach" [drivers/staging/comedi/drivers/das08_cs.ko] undefined!
+>> build-r4048.out:ERROR: "das08_common_attach" [drivers/staging/comedi/drivers/das08_cs.ko] undefined!
+>>
+>>
+>> config attached.
+> 
+> CONFIG_PCMCIA is allowed to be set without CONFIG_PCI?  That sounds like
+> the problem there (not to mention pretty much an impossible real-world
+> combination...)
 
-Nice catch, I don't know how many times I read that and didn't see
-it.  Hopefully that has some bearing on this long standing bug:
+PCMCIA is (was?) a 16-bit ISA-like bus.
+That's not PCCard (PCI-like).
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12490
 
 -- 
-Bob Copeland %% www.bobcopeland.com
+~Randy
