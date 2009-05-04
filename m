@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbZEDLhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbZEDLsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754253AbZEDLhH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 07:37:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbZEDLgx
+	id S1754165AbZEDLsV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 07:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbZEDLsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 07:36:53 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:56725 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752746AbZEDLgw (ORCPT
+	Mon, 4 May 2009 07:48:09 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:39752 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752518AbZEDLsI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 07:36:52 -0400
-Date: Mon, 4 May 2009 13:37:52 +0200
-From: Thierry Reding <thierry.reding@avionic-design.de>
-To: Kwangwoo Lee <kwangwoo.lee@gmail.com>
-Cc: Trilok Soni <soni.trilok@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
-Subject: Re: [PATCH] input: Add support for the TSC2003 controller.
-Message-ID: <20090504113751.GA22603@avionic-design.de>
-References: <1241006627-22811-1-git-send-email-thierry.reding@avionic-design.de> <5d5443650904290623n3712cd7dja653a139cff2cf6d@mail.gmail.com> <483a38b80904291835p51044741p9bd83d33a40031c@mail.gmail.com>
+	Mon, 4 May 2009 07:48:08 -0400
+Date: Mon, 4 May 2009 19:48:03 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Jarod Wilson <jarod@redhat.com>, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] add infrastructure for ansi_cprng self-tests
+Message-ID: <20090504114803.GA5445@gondor.apana.org.au>
+References: <200904282127.33190.jarod@redhat.com> <200904282128.14153.jarod@redhat.com> <20090429105501.GE7227@hmsreliant.think-freely.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <483a38b80904291835p51044741p9bd83d33a40031c@mail.gmail.com>
+In-Reply-To: <20090429105501.GE7227@hmsreliant.think-freely.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Provags-ID: V01U2FsdGVkX1+pRCVkshR4jWSWDa28N9yK6MSESw22qpaz3nh
- x9vlvFx81OwSV9D06RZOPWgO88HVvpwgxwY+IYqf1MkwMKOD31
- z1gSbPzkNOlJntaTyitFQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kwangwoo Lee wrote:
-> Hi Thierry and Trilok,
-> 
-> On Wed, Apr 29, 2009 at 10:23 PM, Trilok Soni <soni.trilok@gmail.com> wrote:
-> > Hi Thierry,
-> >
-> > I have added linux-omap community. How different is this chip from
-> > tsc2007. It looks to me that this chip is not much different from
-> > tsc2007 (this is just quick look at the driver). If they
-> > are similar please consider using i2c_device_id feature in tsc2007 to
-> > accommodate this chip.
-> 
-> I agree with the Trilok's opinion.
-[snip]
+On Wed, Apr 29, 2009 at 06:55:01AM -0400, Neil Horman wrote:
+> On Tue, Apr 28, 2009 at 09:28:13PM -0400, Jarod Wilson wrote:
+> > Add some necessary infrastructure to make it possible to run
+> > self-tests for ansi_cprng. The bits are likely very specific
+> > to the ANSI X9.31 CPRNG in AES mode, and thus perhaps should
+> > be named more specifically if/when we grow additional CPRNG
+> > support...
+> > 
+> > Successfully tested against the cryptodev-2.6 tree and a
+> > Red Hat Enterprise Linux 5.x kernel with the follow-on
+> > patch that adds the actual test vectors.
+> > 
+> > Signed-off-by: Jarod Wilson <jarod@redhat.com>
+> > 
+> Thanks Jarod!
+> Acked-by: Neil Horman <nhorman@tuxdriver.com>
 
-I only noticed the tsc2007 driver some time ago, when the tsc2003 was already
-finished (it's actually pretty old, I just never got around to submitting
-it). However I never got the tsc2007 to work on my platform because it uses
-sleeping functions inside the timer handler, which results in an oops right
-after the first touchscreen interrupt.
+Both patches applied.  Thanks!
 
-I guess I could try and fix the tsc2007 properly instead of having a second,
-pretty similar driver in the tree.
+In future this should be moved to user-space where we can perform
+more complicated tests such as entropy testing.
+
+Of course we need to finish the user-space API first :)
 
 Cheers,
-Thierry
-
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
