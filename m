@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758531AbZEEWaD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759071AbZEEWeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758531AbZEEWaD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 18:30:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbZEEW3v
+	id S1759071AbZEEWeS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 18:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbZEEWeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 18:29:51 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:54172 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754316AbZEEW3u convert rfc822-to-8bit (ORCPT
+	Tue, 5 May 2009 18:34:04 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51104 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752100AbZEEWeD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 18:29:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=utr60PQpgxHvgt7ZPYs4xibunUnlIyD87r/mMxP0fvn4P9E4ZMwnkD8o2p5juJsacp
-         KkecX8biOeOvUP+y+jf+c8WfaTlRt9lughfPQkxKzpb4OjooEtlp/S6p6VaFNKhSn+1Q
-         IFUJs3BGhIQUCWO4Gwtz2KDVEMJTRXdwJyF2Y=
-MIME-Version: 1.0
-In-Reply-To: <20090505210438.GA1325@infradead.org>
-References: <20090504132119.GX8822@parisc-linux.org>
-	 <20090504150834.GZ8822@parisc-linux.org>
-	 <1241451391.20170.12.camel@norville.austin.ibm.com>
-	 <m14ow0hnal.fsf@fess.ebiederm.org>
-	 <1241453259.20170.17.camel@norville.austin.ibm.com>
-	 <m1k54wal0j.fsf@fess.ebiederm.org> <20090504230357.GI6766@mit.edu>
-	 <4A001E51.4070903@davidnewall.com>
-	 <109151.1241556990@turing-police.cc.vt.edu>
-	 <20090505210438.GA1325@infradead.org>
-Date: Tue, 5 May 2009 17:29:49 -0500
-Message-ID: <524f69650905051529i6d48a63au9d71b07de06ab196@mail.gmail.com>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-From: Steve French <smfrench@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Valdis.Kletnieks@vt.edu, David Newall <davidn@davidnewall.com>,
-       Theodore Tso <tytso@mit.edu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Matthew Wilcox <matthew@wil.cx>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tridge@samba.org,
-       Al Viro <viro@zeniv.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>,
-       Olivier Galibert <galibert@pobox.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 5 May 2009 18:34:03 -0400
+Date: Tue, 5 May 2009 23:33:39 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akataria@vmware.com
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Reduce the default HZ value
+Message-ID: <20090505233339.542880f8@lxorguk.ukuu.org.uk>
+In-Reply-To: <1241561394.8665.31.camel@alok-dev1>
+References: <1241462661.412.8.camel@alok-dev1>
+	<4A00ADDE.9000908@zytor.com>
+	<20090505224417.0f00c2f0@lxorguk.ukuu.org.uk>
+	<1241561394.8665.31.camel@alok-dev1>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 5, 2009 at 4:04 PM, Christoph Hellwig <hch@infradead.org> wrote:
-> On Tue, May 05, 2009 at 04:56:30PM -0400, Valdis.Kletnieks@vt.edu wrote:
->> Well, VFAT was in Windows for Workgroups 3.11 or so, back in 1982, and a patent
->
-> VFAT was introduced in Windows 95.  OS/2 had it's own long filename
-> extensions longe before as did Linux (umsdos)
-Yes, Christoph is correct we did implement long file name support long
-ago in OS/2.
+> IMO, one of the main motives of HRT implementation apart from getting
+> higher precision timers was that we now don't necessarily need to rely
 
-OS/2 long filenames for FAT were stored as the .LONGFILE extended
-attribute.  With
-extended attribute emulation on vfat a similar approach could be used, although
-presumably with different ondisk format for "EA DATA. SF" system file (which
-stores extended attributes).   If anyone is interested in more detail on this
-(probably would be boring to most), we can explain the details.
+Timer frequency and HZ are two entirely different things nowdyas
+
+> on a high timer frequency. If you see problems with Desktop feel and
+> responsiveness don't you think there would be other problem which might
+> be causing that ?  Your argument about the "desktop feel and
+> responsiveness" doesn't explain what actual problem did you see.
+
+People spent months poking at the differences before HZ=1000 became the
+default. It wasn't due for amusement values - but this is irrelevant
+anyway on a modern kernel as HZ=1000 is simply a precision setting that
+affects things like poll()
+
+HZ on a tickless system has no meaningful relationship to wakup rates -
+which are what I assume you actually care about.
+
+So do you want to change the precision of poll() and other
+functionality ? or do you want to change the wakeup rates and
+corresponding virtualisation overhead ?
+
+If the latter then HZ is not the thing to touch.
+
+What are you *actually* trying to achieve ?
+What measurements have you done that make you think HZ is relevant in a
+tickless kernel ?
 
 
-
--- 
-Thanks,
-
-Steve
+Alan
