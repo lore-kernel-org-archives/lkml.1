@@ -1,63 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758202AbZEEBOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbZEEBa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758202AbZEEBOU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 21:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbZEEBOK
+	id S1756326AbZEEBa3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 21:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbZEEBaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 21:14:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33910 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753644AbZEEBOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 21:14:09 -0400
+	Mon, 4 May 2009 21:30:19 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:34913 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754203AbZEEBaR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 21:30:17 -0400
+Message-ID: <49FF96A7.5040401@snapgear.com>
+Date: Tue, 05 May 2009 11:30:15 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: David Howells <dhowells@redhat.com>
+CC: linux-kernel@vger.kernel.org
+Subject: BUG: failure at mm/nommu.c:518/add_nommu_region()
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: oleg@redhat.com, jdike@addtoit.com, utrace-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC, PATCH 0/2] utrace/ptrace: simplify/cleanup ptrace attach
-In-Reply-To: Andrew Morton's message of  Monday, 4 May 2009 16:31:54 -0700 <20090504163154.f3672a83.akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-References: <20090503185537.GA17071@redhat.com>
-	<20090504184951.623CEFC32F@magilla.sf.frob.com>
-	<20090504193016.GA17076@redhat.com>
-	<20090504194348.BC0EBFC32F@magilla.sf.frob.com>
-	<20090504163154.f3672a83.akpm@linux-foundation.org>
-X-Zippy-Says: Is the EIGHTIES when they had ART DECO and GERALD McBOING-BOING
-    lunch boxes??
-Message-Id: <20090505011244.2BAE1FC2BD@magilla.sf.frob.com>
-Date: Mon,  4 May 2009 18:12:44 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Staging the utrace patch at end-of-series would make sense if utrace is
-> not on track for a 2.6.31 merge.
-> 
-> And afaict, this is indeed the case - things seem to have gone a bit
-> quiet on the utrace front lately.
 
-I don't think that is really accurate.  There has been a lack of any
-reviewer comments on the actual content of the utrace patch (aside from
-Oleg's own), which is indeed quieter on that front than I had expected.
+Hi David,
 
-The comments we did get, e.g. from hch, were that a compelling user of the
-API should go in, such as converting ptrace.  Oleg's current ptrace revamp
-work will culminate in replacing its innards with utrace calls.  It's my
-hope that all this work will be ready in time for 2.6.31.
-
-The reason the utrace patch should appear later in the series is that the
-bulk of the ptrace cleanup series (including all patches done so far) will
-not depend on utrace at all and will be mergeable independent of the fate
-of utrace or that of any later utrace-dependent ptrace patches.  We expect
-the utrace patch will get more updates that we hash out in the course of
-the ptrace work.  That being so, it makes more sense (to me) to plan to
-replace it later before merge time rather than include the old patch
-earlier in the series and have other patches (including ones unrelated to
-it) need to do incremental updates relative to it.
+I am getting this BUG_ON with linux-2.6.30-rc4-git1, that I wasn't
+getting with linux-2.6.30-rc3:
 
 
-Thanks,
-Roland
+uClinux/COLDFIRE(m520x)
+COLDFIRE port done by Greg Ungerer, gerg@snapgear.com
+Flat model support (C) 1998,1999 Kenneth Albanowski, D. Jeff Dionne
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 8128
+Kernel command line: root=/dev/mtdblock0
+NR_IRQS:256
+PID hash table entries: 128 (order: 7, 512 bytes)
+Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)
+Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)
+Memory available: 30160k/32768k RAM, (1144k kernel code, 159k data)
+SLUB: Genslabs=13, HWalign=16, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+Calibrating delay loop... 109.36 BogoMIPS (lpj=546816)
+Mount-cache hash table entries: 512
+net_namespace: 520 bytes
+NET: Registered protocol family 16
+bio: create slab <bio-0> at 0
+NET: Registered protocol family 2
+IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+TCP established hash table entries: 1024 (order: 1, 8192 bytes)
+TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
+TCP: Hash tables configured (established 1024 bind 1024)
+TCP reno registered
+NET: Registered protocol family 1
+ROMFS MTD (C) 2007 Red Hat, Inc.
+io scheduler noop registered (default)
+ColdFire internal UART serial driver
+ttyS0 at MMIO 0xfc060000 (irq = 90) is a ColdFire UART
+console [ttyS0] enabled
+ttyS1 at MMIO 0xfc064000 (irq = 91) is a ColdFire UART
+ttyS2 at MMIO 0xfc068000 (irq = 92) is a ColdFire UART
+brd: module loaded
+FEC Ethernet Driver
+fec: PHY @ 0x1, ID 0x20005c90 -- DP83848
+eth0 (fec): not using net_device_ops yet
+uclinux[mtd]: RAM probe address=0x40165e98 size=0xdc000
+Creating 1 MTD partitions on "RAM":
+0x000000000000-0x0000000dc000 : "ROMfs"
+TCP cubic registered
+NET: Registered protocol family 17
+VFS: Mounted root (romfs filesystem) readonly on device 31:0.
+Freeing unused kernel memory: 44k freed (0x40150000 - 0x4015a000)
+BUG: failure at mm/nommu.c:518/add_nommu_region()!
+Kernel panic - not syncing: BUG!
+
+
+This is on a ColdFire non-MMU target (using ROMfs with MTD backing
+store).
+
+Could it be related to the recent changes to mm/nommu.c?
+I didn't revert those to see yet...
+
+Removing the BUG_ON() I can boot all the way up, not sure if it
+is still a valid check.
+
+Regards
+Greg
+
+
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
