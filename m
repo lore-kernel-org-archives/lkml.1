@@ -1,52 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757803AbZEEAX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757866AbZEEA1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757803AbZEEAX4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 20:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbZEEAXr
+	id S1757866AbZEEA1O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 20:27:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbZEEA05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 20:23:47 -0400
-Received: from services110.cs.uwaterloo.ca ([129.97.152.166]:44304 "EHLO
-	services110.cs.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754098AbZEEAXr (ORCPT
+	Mon, 4 May 2009 20:26:57 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:37079 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755523AbZEEA04 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 20:23:47 -0400
-Message-ID: <49FF8743.1090704@uwaterloo.ca>
-Date: Mon, 04 May 2009 20:24:35 -0400
-From: Elad Lahav <elahav@uwaterloo.ca>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+	Mon, 4 May 2009 20:26:56 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
+	mime-version:content-type:content-id:x-system-of-record;
+	b=RMViXyXZPre7xM2UplKcQp9qS+IqZ5r3oWKk3eSRl6DFZcSFsMv26utPC/0MYFdaS
+	+zyc37pP+C0DqZE7ArjdA==
+Date: Mon, 4 May 2009 17:26:50 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+cc: Nick Piggin <npiggin@suse.de>, San Mehat <san@android.com>,
+       =?UTF-8?Q?Arve_Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
+       linux-kernel@vger.kernel.org
+Subject: [patch 1/7] lowmemorykiller: Only iterate over process list when
+ needed.
+Message-ID: <alpine.DEB.2.00.0905041722040.11756@chino.kir.corp.google.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Elad Lahav <elahav@cs.uwaterloo.ca>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] Implementation of the sendgroup() system call
-References: <49FE47A1.7070700@uwaterloo.ca> <87eiv5ibnd.fsf@basil.nowhere.org> <20090504094431.174745mb0jhhm3s4@www.nexusmail.uwaterloo.ca> <20090504145046.GI23223@one.firstfloor.org>
-In-Reply-To: <20090504145046.GI23223@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Miltered: at mailchk-m03 with ID 49FF870A.000 by Joe's j-chkmail (http://j-chkmail.ensmp.fr)!
-X-UUID: 1d953e2b-ec58-4336-857b-545d64e2ebd3
+Content-Type: MULTIPART/MIXED; BOUNDARY="497827084-1936054025-1241483037=:11756"
+Content-ID: <alpine.DEB.2.00.0905041726500.11756@chino.kir.corp.google.com>
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> How much is non negligible in your case?
-Please see the following link
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-http://www.cs.uwaterloo.ca/~elahav/sendgroup/mb_pkt_size.pdf
+--497827084-1936054025-1241483037=:11756
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <alpine.DEB.2.00.0905041726501.11756@chino.kir.corp.google.com>
 
-for a graph showing the (amortised) cost of sending a single packet to a 
-group of 1000 recipients, using one of the three following methods:
+From: Arve Hjønnevåg <arve@android.com>
 
-1. A user-mode loop of sendmsg() calls
-2. A kernel-mode loop of udp_sendmsg() calls
-3. A single call to sendgroup()
-The cost is measured in cycles and was determined using performance 
-counters.
+Use NR_ACTIVE plus NR_INACTIVE as a size estimate for our fake cache
+instead the sum of rss. Neither method is accurate.
 
-In this benchmark, savings introduced by sendgroup() are primarily due 
-to the aviodence of multiple system calls, up to a packet size of about 
-1000 bytes. Obviously, proportions change for different group sizes 
-(though we were able to outperform method 1 with a group size as small 
-as 2).
+Also skip the process scan, if the amount of memory available is above
+the largest threshold set.
 
---Elad
+Signed-off-by: Arve Hjønnevåg <arve@android.com>
+---
+ drivers/staging/android/lowmemorykiller.c |   35 +++++++++++++++++-----------
+ 1 files changed, 21 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/staging/android/lowmemorykiller.c b/drivers/staging/android/lowmemorykiller.c
+--- a/drivers/staging/android/lowmemorykiller.c
++++ b/drivers/staging/android/lowmemorykiller.c
+@@ -71,23 +71,30 @@ static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
+ 	}
+ 	if(nr_to_scan > 0)
+ 		lowmem_print(3, "lowmem_shrink %d, %x, ofree %d, ma %d\n", nr_to_scan, gfp_mask, other_free, min_adj);
++	rem = global_page_state(NR_ACTIVE) + global_page_state(NR_INACTIVE);
++	if (nr_to_scan <= 0 || min_adj == OOM_ADJUST_MAX + 1) {
++		lowmem_print(5, "lowmem_shrink %d, %x, return %d\n", nr_to_scan, gfp_mask, rem);
++		return rem;
++	}
++
+ 	read_lock(&tasklist_lock);
+ 	for_each_process(p) {
+-		if(p->oomkilladj >= 0 && p->mm) {
+-			tasksize = get_mm_rss(p->mm);
+-			if(nr_to_scan > 0 && tasksize > 0 && p->oomkilladj >= min_adj) {
+-				if(selected == NULL ||
+-				   p->oomkilladj > selected->oomkilladj ||
+-				   (p->oomkilladj == selected->oomkilladj &&
+-				    tasksize > selected_tasksize)) {
+-					selected = p;
+-					selected_tasksize = tasksize;
+-					lowmem_print(2, "select %d (%s), adj %d, size %d, to kill\n",
+-					             p->pid, p->comm, p->oomkilladj, tasksize);
+-				}
+-			}
+-			rem += tasksize;
++		if (p->oomkilladj < min_adj || !p->mm)
++			continue;
++		tasksize = get_mm_rss(p->mm);
++		if (tasksize <= 0)
++			continue;
++		if (selected) {
++			if (p->oomkilladj < selected->oomkilladj)
++				continue;
++			if (p->oomkilladj == selected->oomkilladj &&
++			    tasksize <= selected_tasksize)
++				continue;
+ 		}
++		selected = p;
++		selected_tasksize = tasksize;
++		lowmem_print(2, "select %d (%s), adj %d, size %d, to kill\n",
++		             p->pid, p->comm, p->oomkilladj, tasksize);
+ 	}
+ 	if(selected != NULL) {
+ 		lowmem_print(1, "send sigkill to %d (%s), adj %d, size %d\n",
+--497827084-1936054025-1241483037=:11756--
