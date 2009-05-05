@@ -1,76 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbZEEO1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbZEEOcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756399AbZEEO1z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 10:27:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbZEEO1j
+	id S1755321AbZEEOcY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 10:32:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZEEOcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 10:27:39 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:56244 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754375AbZEEO1i (ORCPT
+	Tue, 5 May 2009 10:32:14 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:39947 "EHLO
+	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751267AbZEEOcO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 10:27:38 -0400
-Message-ID: <4A004CD3.5050104@novell.com>
-Date: Tue, 05 May 2009 10:27:31 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Tue, 5 May 2009 10:32:14 -0400
+Date: Tue, 5 May 2009 16:32:12 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+cc: Greg KH <gregkh@suse.de>, axboe@kernel.dk,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] block/ps3: remove driver_data direct access of struct
+ device
+In-Reply-To: <49FFFBAF.4040808@gmail.com>
+Message-ID: <alpine.LRH.2.00.0905051629060.21255@vixen.sonytel.be>
+References: <49FFFBAF.4040808@gmail.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: kvm@vger.kernel.org, viro@ZenIV.linux.org.uk,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com
-Subject: Re: [KVM PATCH v4 0/2] irqfd
-References: <20090504175657.26758.12503.stgit@dev.haskins.net> <alpine.DEB.1.10.0905050713160.25206@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0905050713160.25206@makko.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig4BBFFECBC663D92123965CDF"
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4BBFFECBC663D92123965CDF
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, 5 May 2009, Roel Kluin wrote:
+> In the near future, the driver core is going to not allow direct access
+> to the driver_data pointer in struct device.  Instead, the functions
+> dev_get_drvdata() and dev_set_drvdata() should be used.  These functions
+> have been around since the beginning, so are backwards compatible with
+> all older kernel versions.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 
-Davide Libenzi wrote:
-> On Mon, 4 May 2009, Gregory Haskins wrote:
->
->  =20
->> (Applies to kvm.git:7da2e3ba, plus you will also need Davide Libenzi's=
+Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
->> eventfd_file_create() patch, which you can find here:
->>
->> http://www.mail-archive.com/kvm@vger.kernel.org/msg13923.html
->>    =20
->
-> Ping me back if Al acks the irqfd thing, that I'll take a better look a=
-t=20
-> the patch above and make an official post. Without any users, I'd rathe=
-r=20
-> leave the current code as is.
->  =20
+Thanks, I'll add it to my list of ps3* patches for 2.6.31...
 
-Will do, Davide.  Thank you.
+> diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
+> index 8eddef3..8ecf1e0 100644
+> --- a/drivers/block/ps3vram.c
+> +++ b/drivers/block/ps3vram.c
 
--Greg
+> @@ -615,9 +615,9 @@ static int __devinit ps3vram_probe(struct ps3_system_bus_device *dev)
+>  	}
+>  
+>  	mutex_init(&priv->lock);
+> -	dev->core.driver_data = priv;
+> +	dev_set_drvdata(&dev->core, priv);
+>  
+> -	priv = dev->core.driver_data;
+> +	priv = dev_get_drvdata(&dev->core);
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+This line can actually be removed, while we're at it...
 
+>  	/* Allocate XDR buffer (1MiB aligned) */
+>  	priv->xdr_buf = (void *)__get_free_pages(GFP_KERNEL,
 
---------------enig4BBFFECBC663D92123965CDF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+With kind regards,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
 
-iEYEARECAAYFAkoATNMACgkQlOSOBdgZUxltPACgj4Fr4O5exptSaeREMNmnVor5
-O8sAn1DgXcUIxR9/BxHDWOHE90cq2u/X
-=08fX
------END PGP SIGNATURE-----
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
---------------enig4BBFFECBC663D92123965CDF--
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
