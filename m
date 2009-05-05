@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbZEET2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbZEET3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757456AbZEET2T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 15:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbZEET2E
+	id S1757215AbZEET3R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 15:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZEET3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 15:28:04 -0400
-Received: from web50101.mail.re2.yahoo.com ([206.190.38.29]:21084 "HELO
-	web50101.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752491AbZEET2D convert rfc822-to-8bit
+	Tue, 5 May 2009 15:29:00 -0400
+Received: from web50112.mail.re2.yahoo.com ([206.190.39.149]:21972 "HELO
+	web50112.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751438AbZEET27 convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 15:28:03 -0400
+	Tue, 5 May 2009 15:28:59 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
   h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=xYFKnSmOu1rO8moucaQ1G1CvLiIKvSOw1Lt1/k+1B9k7cEUuKIsM6SwbXu16uzM+Sl33ZZVzXlNyr4jAOQcdL2RR/WoOZZ6q+VSBV0HTJAZF11q3sj8ltQTXOumOj0imU5nuUjaykbVvR4JpkToWNyyInxyx4SIHRScHxGHdECs=;
-Message-ID: <824989.5191.qm@web50101.mail.re2.yahoo.com>
-X-YMail-OSG: CciFDNoVM1mgYwOfq0rzsToh.odbottq6ONFeXgwFv8HBZodrA22ajl6j4XsNPCzzhGTUeqMigVLrP6d9zbQWpRtl.WGG9SuWmhYxQIJF8bJwtsMVU2x2uUqP06fyX4wN_N2FVM9KHcpaZj8hS2wBN6y0mNttlt3r19j5Q4v6bXgihkHhNYoKFCOkldR6d5Qe2NGgD3ukIdUDzRqvkwBqIShoiVzf3MMEG3yvBgZ5VlCEgCynHrAvpJRmSvvNLL.ETDS1GmpCYCboRvtR2upDlsdGEP5hIPGHhR3Zn5te6uJU.xJBTg.4GajCUF6uEyI
+  b=1w8jH7cVYvEx+wD/3uNrZPCGiEfN0zNnkhuZssprgv7kwGyTl+d/ay81DGx/AfBqQk70LfnCuP2D+9tdZsrPZ1RND6pKbsWT9MjXDcf1sD7bA0eG8bnWP3FfpNLfITbegI7zsDris7Wuxl8Fp6CGlfqQdPIwjIX31Nb7XMMVqDw=;
+Message-ID: <651047.14146.qm@web50112.mail.re2.yahoo.com>
+X-YMail-OSG: 9sx.mlEVM1lq0BkSsIhKgx2U1vWD_.KTLyb2iyNLjfWX4H05EslXq0OP3lQR9hUq7uZ1QXvH461.ZlhBXFFwEc4vVVDREUnGRRTJHj26q1QwOEs0WhdXa7OHFBcqQAUCZFHutcAeFWyOsQtwFNrskI3SF_XIn_ZsmV.WBxme9icJrDvxNRYpX.BrJ3H3mWkG_g0SY.pFXZ19T86bh_ENaIPc5OQRqMx0m7DhbdEdJdanFu2nYiEo9E5UBp5Jyn2Mw7.jfBXjHISYHXXyxy9ffKm3vg1A6PdVE0ba
 X-Mailer: YahooMailClassic/5.3.9 YahooMailWebService/0.7.289.10
-Date: Tue, 5 May 2009 12:28:01 -0700 (PDT)
+Date: Tue, 5 May 2009 12:28:59 -0700 (PDT)
 From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [PATCH 09/21] amd64_edac: assign DRAM chip select base and mask in a family-specific way
+Subject: Re: [PATCH 12/21] amd64_edac: add f10-and-later methods-p2
 To: Borislav Petkov <borislav.petkov@amd.com>,
        Mauro Carvalho Chehab <mchehab@redhat.com>
 Cc: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu,
@@ -36,74 +36,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 --- On Mon, 5/4/09, Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
 
 > From: Mauro Carvalho Chehab <mchehab@redhat.com>
-> Subject: Re: [PATCH 09/21] amd64_edac: assign DRAM chip select base and mask in a family-specific way
+> Subject: Re: [PATCH 12/21] amd64_edac: add f10-and-later methods-p2
 > To: "Borislav Petkov" <borislav.petkov@amd.com>
 > Cc: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com, linux-kernel@vger.kernel.org
-> Date: Monday, May 4, 2009, 3:59 PM
+> Date: Monday, May 4, 2009, 5:25 PM
 > Borislav Petkov escreveu:
-> > +    for (cs = 0; cs <
-> CHIPSELECT_COUNT; cs++) {
-> > +        reg = K8_DCSB0
-> + (cs * 4);
-> > +        err =
-> pci_read_config_dword(pvt->dram_f2_ctl, reg,
-> > +       
->            
->     &pvt->dcsb0[cs]);
-> > +        if (err != 0)
-> > +       
->     debugf0("%s() Reading K8_DCSB0[%d]
-> failed\n",
-> > +       
->         __func__, cs);
+> > +/*
+> > + * f10_lookup_addr_in_dct
+> > + *
+> > + *    Iterate over the DRAM DCT "base"
+> and "mask" register looking for
+> > + *    a SystemAddr match on the
+> specified 'ChannelSelect' and 'NodeID'
+> > + *
+> > + * Return:
+> > + *    -1  NOT FOUND
+> > + *    0..csrow = Chip-Select Row
+> > + */
+> > +static int f10_lookup_addr_in_dct(u32 InputAddr, u32
+> NodeID, u32 ChannelSelect)
+> > +{
+> > +    struct mem_ctl_info *mci;
+> > +    struct amd64_pvt *pvt;
+> > +    u32 CSBase, CSMask;
+> > +    int CSFound = -1;
+> > +    int csrow;
 > > +
-> > +        debugf0(" 
-> DCSB0[%d]=0x%08x reg: F2x%x\n",
-> > +       
->     cs, pvt->dcsb0[cs], reg);
+> > +    mci = mci_lookup[NodeID];
+> > +    if (!mci)
+> > +        return
+> CSFound;
 > >   
 > 
-> Hmm... I suspect that there's a missing else before the
-> debugf0(). If you got an error while reading it, you
-> shouldn't be showing the results. 
-> > +
-> > +        /* If DCT are
-> NOT ganged, then read in DCT1's base */
-> > +        if
-> (boot_cpu_data.x86 >= 0x10 &&
-> !dct_ganging_enabled(pvt)) {
-> > +       
->     reg = F10_DCSB1 + (cs * 4);
-> > +       
->     err =
-> pci_read_config_dword(pvt->dram_f2_ctl, reg,
-> > +       
->            
->        
-> &pvt->dcsb1[cs]);
-> > +       
->     if (err != 0)
-> > +       
->         debugf0("%s() Reading
-> F10_DCSB1[%d] failed\n",
-> > +       
->            
-> __func__, cs);
-> > +       
->     debugf0("  DCSB1[%d]=0x%08x reg:
-> F2x%x\n",
-> > +       
->         cs, pvt->dcsb1[cs],
-> reg);
-> >   
-> The same issue here: if you got an error while reading it,
-> you shouldn't be showing the results. 
+> It is better to use a standard error code like -EINVAL
+> instead of using -1 for error.
+> 
+> 
 > Cheers,
 > Mauro.
 > 
 
-An 'else' could be inserted, but it is only under DEBUG state for development purposes.  
-
-BACKGROUND: The error checking of the pci config space read was added during the time when the kernel couldn't read the extended 4k config space via the AMD IOConfig port access function (12 bits of offset) not via MMCONFIG. 
+good point thanks
 
 doug t
+
