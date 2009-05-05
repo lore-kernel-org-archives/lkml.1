@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757104AbZEEHwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbZEEHwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757104AbZEEHwK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 03:52:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433AbZEEHvh
+	id S1758086AbZEEHwr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 03:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757252AbZEEHwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 03:51:37 -0400
-Received: from mail.gmx.net ([213.165.64.20]:35145 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754636AbZEEHvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 03:51:36 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18rFPB7HUQrIILTMte85+HSRqiUim/lvy0eGaorsH
-	OiE4JEZtuB0tLf
-Subject: Re: CFS not suitable for desktop computers
-From: Mike Galbraith <efault@gmx.de>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Nico =?ISO-8859-1?Q?Sch=FCmann?= <spam@nico22.de>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1241502128.5505.62.camel@marge.simson.net>
-References: <49FDEFD1.8020608@nico22.de>
-	 <1241424835.26855.102.camel@marge.simson.net> <49FF06D0.80109@nico22.de>
-	 <49FF57AC.7070104@nortel.com>  <1241502128.5505.62.camel@marge.simson.net>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 05 May 2009 09:51:32 +0200
-Message-Id: <1241509892.5531.36.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5600000000000001
+	Tue, 5 May 2009 03:52:11 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40262 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757093AbZEEHwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 03:52:10 -0400
+In-Reply-To: <1241316249.4243.22.camel@localhost.localdomain>
+References: <20090502001329.GA11549@oksana.dev.rtsoft.ru> <20090502001421.GA9342@oksana.dev.rtsoft.ru> <68B2EF73-0FD2-41F9-966B-9A54965AFBA6@kernel.crashing.org> <1241316249.4243.22.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6A6BE346-925C-4F73-ABFA-C6110070F071@kernel.crashing.org>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, Sam Ravnborg <sam@ravnborg.org>
+Content-Transfer-Encoding: 7bit
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely select CONFIG_FRAME_POINTER
+Date: Tue, 5 May 2009 09:56:02 +0200
+To: Steven Rostedt <srostedt@redhat.com>
+X-Mailer: Apple Mail (2.753.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-05 at 07:42 +0200, Mike Galbraith wrote:
-> On Mon, 2009-05-04 at 15:01 -0600, Chris Friesen wrote:
-> > Nico Schümann wrote:
-> > > Thank you Ray Lee and Mike Galbraith for your responses, I ran the 
-> > > script and attached its gathered information.
-> > > 
-> > > Mike Galbraith wrote:
-> > >> How hard is hard?  Can you describe the loads you're having trouble
-> > >> with, and the hardware you're running them on?
-> > >>
-> > >>   
-> > > I could reproduce "hard" load by just compiling the linux kernel, make 
-> > > -j3 while reading mails with Thunderbird, which is not that hard 
-> > > foreground load. Thunderbird starts reacting really slowly while compiling.
-> > 
-> > I wonder if this could be related to I/O rather than the task scheduler 
-> > proper.
-> 
-> That's something I was wondering as well, particularly when I noticed
-> he's using data=journal and anticipatory io-scheduler.
+> Yeah, I agree. This needs a better description. I only know what's  
+> going
+> on because I was there for the start of the discussion.
+>
+> But just to be sure, this is what I think is happening.
+>
+> When we add "-pg" to gcc, it automatically causes frame pointers to be
+> used.
 
-Well, I offlined 3 of 4 cores, set data=journal, and throttled down to
-1.6GHz to load test a bit, and it didn't make any difference with
-_Evolution_ and a make -j3 running.  Evolution remained responsive.
+Nope, it does no such thing.
 
-I can feel the load though. X here is unaccelerated (damn nvidia), so
-despite heftier core (Q6600), CPU usage while browsing mail is pretty
-similar to Nico's data, often heavier.  Behavior I see here isn't bad at
-all.. unless I move a window that is, X then becomes a major oinker, so
-I feel every bit of load.  That's unpleasant, but expected.
+> But with PPC, it always has frame pointers and there's no problem.
 
-I have an old P4 lying about (has X candy).  I'll update it and try some
-UP testing.  Can't test Thunderbird though.
+Well, what do you call a "frame pointer"?  In the general meaning
+of "some register that points to the incoming function arguments
+and the function local variables", PowerPC can _usually_ use GPR1,
+the stack pointer (and indeed it is called "stack frame pointer"
+in the ABI).  In the more narrow meaning of "what GCC calls the
+frame pointer", "the thing that -fomit-frame-pointer optimises
+away" -- on PowerPC (and many other targets), -fomit-frame-pointer
+is the *default* when optimisation is enabled!
 
-	-Mike
+There is a GCC bug here though: it won't allow both -pg and
+-fomit-frame-pointer be set at the command line at the same time,
+even on targets where that is not problematic.
+
+> But with Linux, when you add CONFIG_FRAME_POINTER, it automatically
+> adds:  -fno-omit-frame-pointer. Thus the config will add
+> "-fomit-frame-pointer" when CONFIG_FRAME_POINTER is not set, or it  
+> will
+> add "-fno-omit-frame-pointer" when it is set.
+>
+> The problem with PPC is that "-fno-omit-frame-pointer" is buggy and
+> causes gcc to produce bad code.
+
+It's a deeper problem that is only _exposed_ by -fno-o-f-p (and can be
+hidden by -mno-sched-epilog in the one spot where it hit us).
+
+> Perhaps a better name would be:
+>
+> HAVE_FRAME_POINTER_AS_DEFAULT
+
+NO_NO_OMIT_FRAME_POINTER ?  Or better, just never use -fno-o-f-p,
+I don't see why you would ever need it.
+
+
+Segher
 
