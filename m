@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbZEEUiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbZEEUkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbZEEUiq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 16:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbZEEUig
+	id S1757939AbZEEUkX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 16:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbZEEUkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 16:38:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45238 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753476AbZEEUig (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 16:38:36 -0400
-Date: Tue, 5 May 2009 13:24:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, vgoyal@redhat.com
-Subject: Re: IO scheduler based IO Controller V2
-Message-Id: <20090505132441.1705bfad.akpm@linux-foundation.org>
-In-Reply-To: <1241553525-28095-1-git-send-email-vgoyal@redhat.com>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 5 May 2009 16:40:07 -0400
+Received: from cmpxchg.org ([85.214.51.133]:38182 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752794AbZEEUkG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 16:40:06 -0400
+Date: Tue, 5 May 2009 22:38:07 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: magnus.damm@gmail.com, linux-media@vger.kernel.org, hverkuil@xs4all.nl,
+       lethal@linux-sh.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/3] mm: introduce follow_pte()
+Message-ID: <20090505203807.GB2428@cmpxchg.org>
+References: <20090501181449.GA8912@cmpxchg.org> <1241430874-12667-1-git-send-email-hannes@cmpxchg.org> <20090505122442.6271c7da.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090505122442.6271c7da.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue,  5 May 2009 15:58:27 -0400
-Vivek Goyal <vgoyal@redhat.com> wrote:
-
+On Tue, May 05, 2009 at 12:24:42PM -0700, Andrew Morton wrote:
+> On Mon,  4 May 2009 11:54:32 +0200
+> Johannes Weiner <hannes@cmpxchg.org> wrote:
 > 
-> Hi All,
+> > A generic readonly page table lookup helper to map an address space
+> > and an address from it to a pte.
 > 
-> Here is the V2 of the IO controller patches generated on top of 2.6.30-rc4.
-> ...
-> Currently primarily two other IO controller proposals are out there.
+> umm, OK.
 > 
-> dm-ioband
-> ---------
-> This patch set is from Ryo Tsuruta from valinux.
-> ...
-> IO-throttling
-> -------------
-> This patch set is from Andrea Righi provides max bandwidth controller.
+> Is there actually some point to these three patches?  If so, what is it?
 
-I'm thinking we need to lock you guys in a room and come back in 15 minutes.
+Magnus needs to check for physical contiguity of a VMAs backing pages
+to support zero-copy exportation of video data to userspace.
 
-Seriously, how are we to resolve this?  We could lock me in a room and
-cmoe back in 15 days, but there's no reason to believe that I'd emerge
-with the best answer.
+This series implements follow_pfn() so he can walk the VMA backing
+pages and ensure their PFNs are in linear order.
 
-I tend to think that a cgroup-based controller is the way to go. 
-Anything else will need to be wired up to cgroups _anyway_, and that
-might end up messy.
+[ This patch can be collapsed with 2/3, I just thought it would be
+  easier to read the diffs when having them separate. ]
 
+1/3 and 2/3: factor out the page table walk from follow_phys() into
+follow_pte().
+
+3/3: implement follow_pfn() on top of follow_pte().
