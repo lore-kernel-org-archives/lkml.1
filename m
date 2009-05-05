@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbZEEQ37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755919AbZEEQgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756557AbZEEQ37 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 12:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbZEEQ3u
+	id S1755919AbZEEQgW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 12:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbZEEQgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 12:29:50 -0400
-Received: from h5.dl5rb.org.uk ([81.2.74.5]:39189 "EHLO h5.dl5rb.org.uk"
+	Tue, 5 May 2009 12:36:12 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44721 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753128AbZEEQ3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 12:29:49 -0400
-X-Greylist: delayed 967 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 May 2009 12:29:49 EDT
-Date: Tue, 5 May 2009 17:13:22 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: coly.li@suse.de, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 5/7] mips cavium-octeon: add parameter to
-	octeon_cvmcount_read()
-Message-ID: <20090505161321.GA17945@linux-mips.org>
-References: <49EF6A9E.6080605@suse.de> <49EF7F34.9040401@caviumnetworks.com>
+	id S1752976AbZEEQgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 12:36:11 -0400
+Date: Tue, 5 May 2009 09:31:53 -0700
+From: Greg KH <gregkh@suse.de>
+To: Nick Piggin <npiggin@suse.de>
+Cc: David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, San Mehat <san@android.com>,
+       Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/7] lowmemorykiller: Only iterate over process list
+	when needed.
+Message-ID: <20090505163153.GA30292@suse.de>
+References: <alpine.DEB.2.00.0905041722040.11756@chino.kir.corp.google.com> <20090505102359.GD28917@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <49EF7F34.9040401@caviumnetworks.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090505102359.GD28917@wotan.suse.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 01:33:56PM -0700, David Daney wrote:
+On Tue, May 05, 2009 at 12:23:59PM +0200, Nick Piggin wrote:
+> On Mon, May 04, 2009 at 05:26:50PM -0700, David Rientjes wrote:
+> > From: Arve Hjønnevåg <arve@android.com>
+> > 
+> > Use NR_ACTIVE plus NR_INACTIVE as a size estimate for our fake cache
+> > instead the sum of rss. Neither method is accurate.
+> > 
+> > Also skip the process scan, if the amount of memory available is above
+> > the largest threshold set.
+> > 
+> > Signed-off-by: Arve Hjønnevåg <arve@android.com>
+> 
+> Didn't really look at the android stuff because I didn't even know
+> it was there before. But I asume it is going to be "submitted" to
+> the kernel proper at some stage (by some means other than a git rename) :)
 
-> Coly Li wrote:
->> This patch modifies parameter of octeon_cvmcount_read() from 'void' to 'struct
->> clocksource *cs', which fixes compile warning for incompatible parameter type.
->>
->> Signed-off-by: Coly Li <coly.li@suse.de>
->> Cc: David Daney <ddaney@caviumnetworks.com>
->> Cc: Ingo Molnar <mingo@elte.hu>
->
-> It looks good to me:
->
-> Reviewed-by: David Daney <ddaney@caviumnetworks.com>
+Yes it will, when everyone agrees that what it is doing is the "right"
+think to do :)
 
-Applied, thanks.
+But for now, it sits in staging, as there are a few hundred thousand
+devices using it...
 
-Coly, if you modify MIPS code, please cc the linux-mips mailing list and
-myself or generally consult the MAINTAINERS file for who to cc on patches.
+thanks,
 
-Thanks!
-
-  Ralf
+greg k-h
