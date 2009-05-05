@@ -1,123 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbZEETyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbZEET5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758585AbZEETyu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 15:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbZEETyl
+	id S1758702AbZEET5P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 15:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbZEET46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 15:54:41 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:61650 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753916AbZEETyl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 15:54:41 -0400
-Message-ID: <4A009974.6060504@gawab.com>
-Date: Tue, 05 May 2009 12:54:28 -0700
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+	Tue, 5 May 2009 15:56:58 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45752 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751619AbZEET45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 15:56:57 -0400
+Date: Tue, 5 May 2009 21:52:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Matt Mackall <mpm@selenic.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
+       security@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [Security] [PATCH] proc: avoid information leaks to
+	non-privileged processes
+Message-ID: <20090505195246.GC21973@elte.hu>
+References: <20090504125114.5e391564@chukar> <alpine.LFD.2.01.0905041159480.4983@localhost.localdomain> <20090504125124.0f469970@infradead.org> <m1vdogbows.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0905041514350.4983@localhost.localdomain> <20090505055011.GE31071@waste.org> <20090505063156.GA24504@elte.hu> <m14ow0ynjm.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-To: Eric Anholt <eric@anholt.net>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [.30-rc2 regression] garbled screen on video
-References: <49F10D49.5010604@gawab.com> <1240942714.13997.71.camel@gaiman.anholt.net>
-In-Reply-To: <1240942714.13997.71.camel@gaiman.anholt.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m14ow0ynjm.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Anholt wrote:
-> On Thu, 2009-04-23 at 17:52 -0700, Justin Madru wrote:
->   
->> Hi everyone,
->>
->> Summary:
->> After playing a video for a little bit, the screen gets garbled. The 
->> only way to fix it is to
->> switch to a virtual console and then back. The screen is fixed but 
->> unfortunately only for
->> less than a few minuets and the screen gets corrupted again.
->>
->> Effected Version: 2.6.30-rc2+
->> Picture showing a corrupt screen: 
->> http://ecs.fullerton.edu/~cs351a15/badscreen.jpg
->>
->> My System:
->> Ubuntu 9.4 with 943/940GML Express Integrated Graphics Controller 
->> [8086:27a2]
->> UXA/GEM/DRI2 enable. Full info at 
->> http://jdserver.homelinux.org/bugreports/004/
->>
->> Syslog Messages:
->> None, but switching virtual consoles gives
->> [drm:i915_get_vblank_counter] *ERROR* trying to get vblank count for 
->> disabled pipe 0
->> But I think that is another bug introduced with .30-rc1.
->>     
->
-> Interesting.  Could you open a bug at bugs.freedesktop.org against xorg,
-> driver/intel, to be sure this doesn't get lost?
->
-> However, I suspect that the commit in question isn't causing your issue,
-> but is just when tiling got reenabled on your platform so you got to see
-> other (likely userland) bugs.  To test, you could revert the patch you
-> bisected to and just apply one of the hunks with a little tweak:
->
-> diff --git a/drivers/gpu/drm/i915/i915_gem_tiling.c b/drivers/gpu/drm/i915/i915_gem_tiling.c
-> index 6be3f92..f27e523 100644
-> --- a/drivers/gpu/drm/i915/i915_gem_tiling.c
-> +++ b/drivers/gpu/drm/i915/i915_gem_tiling.c
-> @@ -127,8 +129,8 @@ i915_gem_detect_bit_6_swizzle(struct drm_device *dev)
->  				swizzle_y = I915_BIT_6_SWIZZLE_9_11;
->  			} else {
->  				/* Bit 17 swizzling by the CPU in addition. */
-> -				swizzle_x = I915_BIT_6_SWIZZLE_UNKNOWN;
-> -				swizzle_y = I915_BIT_6_SWIZZLE_UNKNOWN;
-> +				swizzle_x = I915_BIT_6_SWIZZLE_9_10;
-> +				swizzle_y = I915_BIT_6_SWIZZLE_9;
->  			}
->  			break;
->  		}
->
-> You'll get typical swizzling corruption if any tiled buffers get swapped
-> out, but that shouldn't happen because Ubuntu 9.04 is stuck with DRI1 so
-> all tiled buffers are pinned.  Note that DRI1 with compiz has many
-> graphical corruption and stability issues that are fixed with DRI2, but
-> I'm not sure that what you're seeing is one of those.
->
-> If that patch doesn't make things work, then to fix a giant pile of
-> userland bugs that might account for it, update to the 2.7.0 2D driver
-> and enable UXA, which will get you DRI2.
->
-> If the revert + small diff fixes things, I'm interested in seeing the
-> output of either reg_dumper from a compile of the 2D driver or a printk
-> of dcc in that function, combined with a screenshot of mesa's readpix
-> demo, on master (no reverts or anything).
->
->   
-Ok, I did some testing and found the following:
 
-No screen freezing
-    EXA
-    UXA + bisected commit
-    UXA + intel 2.7.99
-Screen freezing
-    UXA + intel 2.6/2.7
-    UXA + patch
+* Eric W. Biederman <ebiederm@xmission.com> wrote:
 
-So, your patch didn't fix the problem, actually it reintroduced it.
+> Ingo Molnar <mingo@elte.hu> writes:
+> 
+> > * Matt Mackall <mpm@selenic.com> wrote:
+> >
+> >> As to what's the appropriate sort of RNG for ASLR to use, finding 
+> >> a balance between too strong and too weak is tricky. [...]
+> >
+> > In exec-shield i mixed 'easily accessible and fast' semi-random 
+> > state to the get_random_int() result: xor-ed the cycle counter, the 
+> > pid and a kernel address to it. That strengthened the result in a 
+> > pretty practical way (without strengthening the theoretical 
+> > randomless - each of those items are considered guessable) and does 
+> > so without weakening the entropy of the random pool.
+> 
+> The trouble is, that thinking completely misses the problem, and I 
+> expect that is why we have a problem.  Throwing a bunch of 
+> possibly truly random values into the pot for luck is nice.  But 
+> you didn't throw in a pseudo random number generator.  An 
+> unpredictable sequence that is guaranteed to change from one 
+> invocation to the next.
 
+Alas, i did - it got 'reviewed' out of existence ;)
 
-I'm also experiencing a major memory leek whenever I enable UXA.
-It doesn't seem to matter if the kernel is 2.6.28 or 2.6.30-rc,
-it also doesn't matter if the intel driver is version 2.6, 2.7 or 2.7.99.
-After about 3-4 hours I have to restart the xserver because of major 
-swap usage.
-The two proccesses that are eating memory are Xorg and Compiz.
+I still have the backups, here's the original exec-shield RNG:
 
-Do you think this is a kernel or userspace issue?
++/*
++ * Get a random word:
++ */
++static inline unsigned int get_random_int(void)
++{
++       unsigned int val = 0;
++
++       if (!exec_shield_randomize)
++               return 0;
++
++#ifdef CONFIG_X86_HAS_TSC
++       rdtscl(val);
++#endif
++       val += current->pid + jiffies + (int)&val;
++
++       /*
++        * Use IP's RNG. It suits our purpose perfectly: it re-keys itself
++        * every second, from the entropy pool (and thus creates a limited
++        * drain on it), and uses halfMD4Transform within the second. We
++        * also spice it with the TSC (if available), jiffies, PID and the
++        * stack address:
++        */
++       return secure_ip_id(val);
++}
 
-Justin Madru
+I thought that basing it on the networking PRNG is proper design: 
+the networking folks have showed it time and again that they care 
+about the PRNG not being brute-forceable easily, while still staying 
+fast enough.
 
+I added the TSC and a few other pseudo-random details to increase 
+complexity of any brute-force attack. (in the hope of rendering it 
+less practical, at minimal cost)
 
+> In a very practical sense a pseudo random generator is completely 
+> sufficient.  Throwing in a few truly random numbers guards against 
+> attacks on the random number generator.
+> 
+> What we have now is a hash over an a value that changes every 5 
+> minutes and some well known values.
+
+Yes.
+
+	Ingo
