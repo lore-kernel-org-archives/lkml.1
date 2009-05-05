@@ -1,135 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbZEEQUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbZEEQTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757958AbZEEQUR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 12:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755669AbZEEQSN
+	id S1758064AbZEEQTv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 12:19:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZEEQSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 12:18:13 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49999 "EHLO
+	Tue, 5 May 2009 12:18:12 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50001 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754278AbZEEQSJ (ORCPT
+	with ESMTP id S1754324AbZEEQSJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 5 May 2009 12:18:09 -0400
-Message-Id: <20090505155437.112113632@chello.nl>
+Message-Id: <20090505155437.331556171@chello.nl>
 References: <20090505155020.309162852@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Tue, 05 May 2009 17:50:24 +0200
+Date: Tue, 05 May 2009 17:50:26 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Paul Mackerras <paulus@samba.org>,
        Corey Ashford <cjashfor@linux.vnet.ibm.com>,
        linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 4/7] perf_counter: provide an mlock threshold
-Content-Disposition: inline; filename=perf_counter-mlock-sysctl.patch
+Subject: [PATCH 6/7] perf_counter: inheritable sample counters
+Content-Disposition: inline; filename=perf_counter-inherit.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide a threshold to relax the mlock accounting, increasing usability.
-
-Each counter gets perf_counter_mlock_kb for free.
+Redirect the output to the parent counter and put in some sanity checks.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/perf_counter.h |    2 ++
- kernel/perf_counter.c        |   15 +++++++++++----
- kernel/sysctl.c              |    8 ++++++++
- 3 files changed, 21 insertions(+), 4 deletions(-)
+ kernel/perf_counter.c |   32 ++++++++++++++++++++++++++++++--
+ 1 file changed, 30 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/include/linux/perf_counter.h
-===================================================================
---- linux-2.6.orig/include/linux/perf_counter.h
-+++ linux-2.6/include/linux/perf_counter.h
-@@ -358,6 +358,7 @@ struct file;
- struct perf_mmap_data {
- 	struct rcu_head			rcu_head;
- 	int				nr_pages;	/* nr of data pages  */
-+	int				nr_locked;	/* nr pages mlocked  */
- 
- 	atomic_t			poll;		/* POLL_ for wakeups */
- 	atomic_t			head;		/* write position    */
-@@ -575,6 +576,7 @@ struct perf_callchain_entry {
- extern struct perf_callchain_entry *perf_callchain(struct pt_regs *regs);
- 
- extern int sysctl_perf_counter_priv;
-+extern int sysctl_perf_counter_mlock;
- 
- extern void perf_counter_init(void);
- 
 Index: linux-2.6/kernel/perf_counter.c
 ===================================================================
 --- linux-2.6.orig/kernel/perf_counter.c
 +++ linux-2.6/kernel/perf_counter.c
-@@ -44,6 +44,7 @@ static atomic_t nr_munmap_tracking __rea
- static atomic_t nr_comm_tracking __read_mostly;
+@@ -738,10 +738,18 @@ static void perf_counter_enable(struct p
+ 	spin_unlock_irq(&ctx->lock);
+ }
  
- int sysctl_perf_counter_priv __read_mostly; /* do we need to be privileged */
-+int sysctl_perf_counter_mlock __read_mostly = 128; /* 'free' kb per counter */
- 
- /*
-  * Lock for (sysadmin-configurable) counter reservations:
-@@ -1461,7 +1462,7 @@ static void perf_mmap_close(struct vm_ar
- 
- 	if (atomic_dec_and_mutex_lock(&counter->mmap_count,
- 				      &counter->mmap_mutex)) {
--		vma->vm_mm->locked_vm -= counter->data->nr_pages + 1;
-+		vma->vm_mm->locked_vm -= counter->data->nr_locked;
- 		perf_mmap_data_free(counter);
- 		mutex_unlock(&counter->mmap_mutex);
- 	}
-@@ -1480,6 +1481,7 @@ static int perf_mmap(struct file *file, 
- 	unsigned long nr_pages;
- 	unsigned long locked, lock_limit;
- 	int ret = 0;
-+	long extra;
- 
- 	if (!(vma->vm_flags & VM_SHARED) || (vma->vm_flags & VM_WRITE))
- 		return -EINVAL;
-@@ -1507,8 +1509,12 @@ static int perf_mmap(struct file *file, 
- 		goto unlock;
- 	}
- 
--	locked = vma->vm_mm->locked_vm;
--	locked += nr_pages + 1;
-+	extra = nr_pages /* + 1 only account the data pages */;
-+	extra -= sysctl_perf_counter_mlock >> (PAGE_SHIFT - 10);
-+	if (extra < 0)
-+		extra = 0;
+-static void perf_counter_refresh(struct perf_counter *counter, int refresh)
++static int perf_counter_refresh(struct perf_counter *counter, int refresh)
+ {
++	/*
++	 * not supported on inherited counters
++	 */
++	if (counter->hw_event.inherit)
++		return -EINVAL;
 +
-+	locked = vma->vm_mm->locked_vm + extra;
+ 	atomic_add(refresh, &counter->event_limit);
+ 	perf_counter_enable(counter);
++
++	return 0;
+ }
  
- 	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
- 	lock_limit >>= PAGE_SHIFT;
-@@ -1524,7 +1530,8 @@ static int perf_mmap(struct file *file, 
- 		goto unlock;
- 
- 	atomic_set(&counter->mmap_count, 1);
--	vma->vm_mm->locked_vm += nr_pages + 1;
-+	vma->vm_mm->locked_vm += extra;
-+	counter->data->nr_locked = extra;
- unlock:
- 	mutex_unlock(&counter->mmap_mutex);
- 
-Index: linux-2.6/kernel/sysctl.c
-===================================================================
---- linux-2.6.orig/kernel/sysctl.c
-+++ linux-2.6/kernel/sysctl.c
-@@ -924,6 +924,14 @@ static struct ctl_table kern_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "perf_counter_mlock_kb",
-+		.data		= &sysctl_perf_counter_mlock,
-+		.maxlen		= sizeof(sysctl_perf_counter_mlock),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
- #endif
  /*
-  * NOTE: do not add new entries to this table unless you have read
+@@ -1307,7 +1315,7 @@ static long perf_ioctl(struct file *file
+ 		perf_counter_disable_family(counter);
+ 		break;
+ 	case PERF_COUNTER_IOC_REFRESH:
+-		perf_counter_refresh(counter, arg);
++		err = perf_counter_refresh(counter, arg);
+ 		break;
+ 	case PERF_COUNTER_IOC_RESET:
+ 		perf_counter_reset(counter);
+@@ -1814,6 +1822,12 @@ static int perf_output_begin(struct perf
+ 	struct perf_mmap_data *data;
+ 	unsigned int offset, head;
+ 
++	/*
++	 * For inherited counters we send all the output towards the parent.
++	 */
++	if (counter->parent)
++		counter = counter->parent;
++
+ 	rcu_read_lock();
+ 	data = rcu_dereference(counter->data);
+ 	if (!data)
+@@ -1995,6 +2009,9 @@ static void perf_counter_output(struct p
+ 	if (record_type & PERF_RECORD_ADDR)
+ 		perf_output_put(&handle, addr);
+ 
++	/*
++	 * XXX PERF_RECORD_GROUP vs inherited counters seems difficult.
++	 */
+ 	if (record_type & PERF_RECORD_GROUP) {
+ 		struct perf_counter *leader, *sub;
+ 		u64 nr = counter->nr_siblings;
+@@ -2281,6 +2298,11 @@ int perf_counter_overflow(struct perf_co
+ 	int events = atomic_read(&counter->event_limit);
+ 	int ret = 0;
+ 
++	/*
++	 * XXX event_limit might not quite work as expected on inherited
++	 * counters
++	 */
++
+ 	counter->pending_kill = POLL_IN;
+ 	if (events && atomic_dec_and_test(&counter->event_limit)) {
+ 		ret = 1;
+@@ -2801,6 +2823,12 @@ perf_counter_alloc(struct perf_counter_h
+ 
+ 	pmu = NULL;
+ 
++	/*
++	 * we currently do not support PERF_RECORD_GROUP on inherited counters
++	 */
++	if (hw_event->inherit && (hw_event->record_type & PERF_RECORD_GROUP))
++		goto done;
++
+ 	if (perf_event_raw(hw_event)) {
+ 		pmu = hw_perf_counter_init(counter);
+ 		goto done;
 
 -- 
 
