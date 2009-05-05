@@ -1,81 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758345AbZEEVAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758422AbZEEVEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758345AbZEEVAc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 17:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbZEEVAU
+	id S1758422AbZEEVEa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 17:04:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZEEVEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 17:00:20 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:33347 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754637AbZEEVAT (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 17:00:19 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: paulmck@linux.vnet.ibm.com
-Cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, tridge@samba.org,
-       Al Viro <viro@ZenIV.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steve French <smfrench@gmail.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-In-Reply-To: Your message of "Tue, 05 May 2009 08:35:27 PDT."
-             <20090505153527.GA6890@linux.vnet.ibm.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20090504153815.GB6740@linux.vnet.ibm.com> <20090504155505.GA8822@parisc-linux.org> <20090504161024.GC6740@linux.vnet.ibm.com> <20090504162252.GB8822@parisc-linux.org> <20090504221208.GB29402@kroah.com> <20090505020149.GE8822@parisc-linux.org> <20090505021121.GA6982@linux.vnet.ibm.com> <20090505021853.GF8822@parisc-linux.org> <20090505033442.GB6982@linux.vnet.ibm.com> <74785.1241510758@turing-police.cc.vt.edu>
-            <20090505153527.GA6890@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1241557208_96868P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 05 May 2009 17:00:08 -0400
-Message-ID: <109333.1241557208@turing-police.cc.vt.edu>
+	Tue, 5 May 2009 17:04:21 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57856 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752856AbZEEVEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 17:04:21 -0400
+Date: Tue, 5 May 2009 13:53:09 -0700
+From: Greg KH <gregkh@suse.de>
+To: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+Cc: linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       dave@linux.vnet.ibm.com, ebmunson@us.ibm.com, mel@csn.ul.ie,
+       stable@kernel.org
+Subject: Re: patch
+	mm-fix-committed_as-underflow-on-large-nr_cpus-environment.patch
+	added to 2.6.29-stable tree
+Message-ID: <20090505205309.GA7141@suse.de>
+References: <20090504220454.3F71148FB8@coco.kroah.org> <200905052036.24106.s.L-H@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905052036.24106.s.L-H@gmx.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1241557208_96868P
-Content-Type: text/plain; charset=us-ascii
-
-On Tue, 05 May 2009 08:35:27 PDT, "Paul E. McKenney" said:
-
-> http://books.google.com/books?id=6je0tPcGMzYC&pg=PT822&lpg=PT822&dq=Videotron
-ics+v.+Bend+Electronics,+586+F.Supp.+478,+481+(D.+Nev.+1984)&source=bl&ots=ccxO
-5np_uQ&sig=Q0wj4k5uCpMiZybAQe12JlHhh0A&hl=en&ei=Z1kASu2ZJ8eLtgehupyNBw&sa=X&oi=
-book_result&ct=result&resnum=2#PPT822,M1
+On Tue, May 05, 2009 at 08:36:19PM +0200, Stefan Lippers-Hollmann wrote:
+> Hi
 > 
-> Dated 2005, cites a 1988 case in footnote 28.  Also claims that:
+> On Dienstag, 5. Mai 2009, gregkh@suse.de wrote:
+> [...]
+> > From 00a62ce91e554198ef28234c91c36f850f5a3bc9 Mon Sep 17 00:00:00 2001
+> > From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > Date: Thu, 30 Apr 2009 15:08:51 -0700
+> > Subject: mm: fix Committed_AS underflow on large NR_CPUS environment
+> > 
+> > From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > 
+> > commit 00a62ce91e554198ef28234c91c36f850f5a3bc9 upstream.
+> > 
+> > The Committed_AS field can underflow in certain situations:
+> > 
+> > >         # while true; do cat /proc/meminfo  | grep _AS; sleep 1; done | uniq -c
+> > >               1 Committed_AS: 18446744073709323392 kB
+> > >              11 Committed_AS: 18446744073709455488 kB
+> > >               6 Committed_AS:    35136 kB
+> > >               5 Committed_AS: 18446744073709454400 kB
+> > >               7 Committed_AS:    35904 kB
+> > >               3 Committed_AS: 18446744073709453248 kB
+> > >               2 Committed_AS:    34752 kB
+> > >               9 Committed_AS: 18446744073709453248 kB
+> > >               8 Committed_AS:    34752 kB
+> > >               3 Committed_AS: 18446744073709320960 kB
+> > >               7 Committed_AS: 18446744073709454080 kB
+> > >               3 Committed_AS: 18446744073709320960 kB
+> > >               5 Committed_AS: 18446744073709454080 kB
+> > >               6 Committed_AS: 18446744073709320960 kB
+> > 
+> > Because NR_CPUS can be greater than 1000 and meminfo_proc_show() does
+> > not check for underflow.
+> > 
+> > But NR_CPUS proportional isn't good calculation.  In general,
+> > possibility of lock contention is proportional to the number of online
+> > cpus, not theorical maximum cpus (NR_CPUS).
+> > 
+> > The current kernel has generic percpu-counter stuff.  using it is right
+> > way.  it makes code simplify and percpu_counter_read_positive() don't
+> > make underflow issue.
+> 
+> This patch reproducably panics on all systems I could test so far on 
+> 2.6.29.2 + the current stable queue:
+> - Acer Aspire One, Intel Atom N270, Intel 945GC chipset (i386)
+> - AMD64 3200+, nVidia nforce3 chipset (amd64)
+> - AMD64 X2 4200+, nVidia nforce4 chipset (amd64)
+> 
+> Kernel panic (sorry, this is from a bad webcam and only the last part of 
+> the messages scrolling by - I can try to get a serial console tomorrow), 
+> taken from an AMD64 3200+, nVidia nforce3 chipset (amd64).
+> http://sidux.com/slh/mm-fix-committed_as-underflow-on-large-nr_cpus-environment/panic.gif [198 KB]
+> 
+> Reverting just this patch fixes the problem for me.
+> 
+> Kernel configurations:
+> http://sidux.com/slh/mm-fix-committed_as-underflow-on-large-nr_cpus-environment/config-2.6.29-2.slh.5.3-sidux-686   [96 KB]
+> http://sidux.com/slh/mm-fix-committed_as-underflow-on-large-nr_cpus-environment/config-2.6.29-2.slh.5.6-sidux-amd64 [91 KB]
 
-That would be the same Neundorfer case I found.
 
-> Copyright Office II Compendium of Copyright Office Practices lists
-> acceptable variants to the C in a circle, including "(c)".
+Thanks for the report, I'm also getting some oopses on boot and am
+bisecting down the tree right now.  The error looks a bit like yours,
+but not identical enough for me to declare that it is the same thing
+just yet.
 
-http://www.copyright.gov/compendium/ - I ain't seeing it in there anyplace?
-Every occurrence of "(c)" is in either a USC or CFR citation. But of course
-that only shows the two chapters modified since 1998. Yee-hah. :)
+Give me a few more hours...
 
-I suspect it's one of those dark corners of the legal system that nobody
-really wants to explore, because there might be a Balrog hiding in the depths
-(sort of like the question "Which clause/theory of copyright law authorizes
-the copy of a webpage you make while downloading it to read it?" ;)
+thanks,
 
-
-
-
---==_Exmh_1241557208_96868P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKAKjYcC3lWbTT17ARAkAUAJ4lSgDE6lA29wIG7sOdYBPZm3pBQwCgp0y8
-ItLZHq9sv+ICoIad7JNamu8=
-=Hn1y
------END PGP SIGNATURE-----
-
---==_Exmh_1241557208_96868P--
+greg k-h
