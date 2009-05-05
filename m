@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbZEEIhm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758510AbZEEIiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756077AbZEEIhm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 04:37:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbZEEIhd
+	id S1758510AbZEEIiU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 04:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbZEEIiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 04:37:33 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:60949 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753534AbZEEIhc convert rfc822-to-8bit (ORCPT
+	Tue, 5 May 2009 04:38:08 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55826 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754782AbZEEIiG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 04:37:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=VUTfXo1JkRCu0cYpUgX0p7lYyyWv3BM5Eq7t4+gBc+fGVRhVd7BaO9YByy/RI1zjvB
-         hTiFO2HWqdiPLARTXaJomQUGrD7QbjJb3bVJZrb97OqMPTV2Kzm5fqrAkJIYlUfjO3cu
-         AN3m7lh/H5yE2Z+n/eb6rwLrV5q6M1QER3aqQ=
+	Tue, 5 May 2009 04:38:06 -0400
+Date: Tue, 5 May 2009 09:36:14 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, hartleys@visionengravers.com,
+       mcrapet@gmail.com, fred99@carolina.rr.com,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] Double check memmap is actually valid with a memmap
+	has unexpected holes
+Message-ID: <20090505083614.GA28688@n2100.arm.linux.org.uk>
+References: <20090505082944.GA25904@csn.ul.ie>
 MIME-Version: 1.0
-In-Reply-To: <20090505082545.GE30220@wotan.suse.de>
-References: <Pine.LNX.4.64.0905031514330.32397@melkki.cs.Helsinki.FI>
-	 <20090505082545.GE30220@wotan.suse.de>
-Date: Tue, 5 May 2009 11:37:32 +0300
-X-Google-Sender-Auth: 96cbc2f7f31cabfb
-Message-ID: <84144f020905050137k692fb9d6l3f25a03b12b65333@mail.gmail.com>
-Subject: Re: [PATCH] SLQB: Coding style cleanups
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090505082944.GA25904@csn.ul.ie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nick,
+On Tue, May 05, 2009 at 09:29:44AM +0100, Mel Gorman wrote:
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index e02b893..6d79051 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -925,10 +925,9 @@ config OABI_COMPAT
+>  	  UNPREDICTABLE (in fact it can be predicted that it won't work
+>  	  at all). If in doubt say Y.
+>  
+> -config ARCH_FLATMEM_HAS_HOLES
+> +config ARCH_HAS_HOLES_MEMORYMODEL
 
-On Tue, May 5, 2009 at 11:25 AM, Nick Piggin <npiggin@suse.de> wrote:
->> @@ -59,7 +59,7 @@ static inline void struct_slqb_page_wrong_size(void)
->>  /*
->>   * slqb_min_order: minimum allocation order for slabs
->>   */
->> -static int slqb_min_order = 0;
->> +static int slqb_min_order;
->
-> I actually like explicit zero initializers. I think it has been
-> a long time since this actually saved any memory with gcc.
->
-> Yes yes, I know that anybody who can "read C" will read the
-> implicit zero initializer anyway... however I just think it is
-> a stupid thing for checkpatch to warn against.
+Can we arrange for EP93xx to select this so we don't have it enabled for
+everyone.
 
-OK. I guess I can drop those hunks. But from coding style of point
-view we don't really do explicit zero initializers in the core
-kernel...
-
-                                       Pekka
+The other user of this was RPC when it was flatmem only, but since it has
+been converted to sparsemem it's no longer an issue there.
