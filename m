@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752123AbZEEEYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbZEEE1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752123AbZEEEYr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 00:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbZEEEYa
+	id S1756660AbZEEE1V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 00:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbZEEE1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 00:24:30 -0400
-Received: from ozlabs.org ([203.10.76.45]:53972 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751297AbZEEEY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 00:24:27 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Alex Williamson <alex.williamson@hp.com>
-Subject: Re: [PATCH] virtio_net: Cleanup command queue scatterlist usage
-Date: Tue, 5 May 2009 12:51:52 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: davem@davemloft.net, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-next@vger.kernel.org
-References: <20090426.233014.216353908.davem@davemloft.net> <20090427154925.4771.63651.stgit@debian.lart>
-In-Reply-To: <20090427154925.4771.63651.stgit@debian.lart>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	Tue, 5 May 2009 00:27:13 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43090
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750891AbZEEE1M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 00:27:12 -0400
+Date: Mon, 04 May 2009 21:27:07 -0700 (PDT)
+Message-Id: <20090504.212707.169008432.davem@davemloft.net>
+To: rusty@rustcorp.com.au
+Cc: grant.likely@secretlab.ca, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] virtio: add missing include to virtio_net.h
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200905051354.22713.rusty@rustcorp.com.au>
+References: <20090428154654.19053.92829.stgit@localhost.localdomain>
+	<200905051354.22713.rusty@rustcorp.com.au>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905051251.53271.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Apr 2009 01:20:03 am Alex Williamson wrote:
-> We were avoiding calling sg_init* on scatterlists passed
-> into virtnet_send_command to prevent extraneous end markers.
-> This caused build warnings for uninitialized variables.
-> Cleanup the code to create proper scatterlists.
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Tue, 5 May 2009 13:54:22 +0930
+
+> On Wed, 29 Apr 2009 01:16:54 am Grant Likely wrote:
+>> From: Grant Likely <grant.likely@secretlab.ca>
+>>
+>> virtio_net.h uses the macro ETH_ALEN which is defined in linux/if_ether.h.
+>> Discovered when hacking on virtio-over-pci patches.
 > 
-> Signed-off-by: Alex Williamson <alex.williamson@hp.com>
+> Thanks, I've applied this.
 
-Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+Rusty, all of this is in net-2.6 already.
 
-Thanks,
-Rusty.
+Thanks for paying attention! :-)
