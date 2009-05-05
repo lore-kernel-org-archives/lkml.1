@@ -1,163 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932181AbZEEBcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbZEEB6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932181AbZEEBcT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 21:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbZEEBcK
+	id S1756358AbZEEB6U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 21:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbZEEB6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 21:32:10 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62691 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754370AbZEEBcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 21:32:09 -0400
-Message-ID: <49FF9742.4090402@cn.fujitsu.com>
-Date: Tue, 05 May 2009 09:32:50 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 4 May 2009 21:58:10 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:43948 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752842AbZEEB6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 21:58:09 -0400
+Date: Mon, 4 May 2009 18:58:27 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, xemul@parallels.com
+Subject: Re: [PATCH 1/2] pidns 1/2: make create_pid_namespace() accept
+	parentpidns
+Message-ID: <20090505015827.GA6048@linux.vnet.ibm.com>
+References: <20090503232700.GD16631@x200.localdomain>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/6] tracing: increase size of number of possible events
-References: <20090424043005.338878133@goodmis.org> <20090424043111.983189535@goodmis.org> <49F15607.1090707@cn.fujitsu.com> <alpine.DEB.2.00.0904241004000.24293@gandalf.stny.rr.com> <alpine.DEB.2.00.0904241004490.24293@gandalf.stny.rr.com> <49F404E4.6040907@cn.fujitsu.com> <alpine.DEB.2.00.0904260919370.24293@gandalf.stny.rr.com> <49FEAFD0.30106@cn.fujitsu.com> <alpine.DEB.2.00.0905041003570.12811@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0905041003570.12811@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090503232700.GD16631@x200.localdomain>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Mon, 4 May 2009, Li Zefan wrote:
->>>>>>>  # cat /debug/tracing/trace_pipe
->>>>>>>
->>>>>>> console 2:
->>>>>>> while (1) {
->>>>>>> 	insmod trace-events-sample.ko
->>>>>>> 	echo foo_bar > /debug/tracing/set_event
->>>>>>> 	rmmod trace-events-sample.ko
->>>>>>> }
->>>>>>>
->>>>>>> I got this immediately:
->>>>>>>
->>>>>>> BUG: unable to handle kernel NULL pointer dereference at 0000006f
->>>>>>> IP: [<c05210f3>] bstr_printf+0x2ce/0x302
->>>>>>> ...
->>>>>>> Call Trace:
->>>>>>>  [<c0476d12>] ? trace_seq_bprintf+0x28/0x41
->>>>>>>  [<c0477569>] ? trace_bprint_print+0x58/0x6c
->>>>>>>  [<c0472ffc>] ? print_trace_line+0x2c5/0x2df
->>>>>>>  [<c0428a41>] ? sub_preempt_count+0x85/0xa0
->>>>>>>  [<c04758cf>] ? tracing_read_pipe+0x118/0x191
->>>>>>>  [<c04757b7>] ? tracing_read_pipe+0x0/0x191
->>>>>>>  [<c04b09f9>] ? vfs_read+0x8f/0x136
->>>>>>>  [<c04b0da3>] ? sys_read+0x40/0x65
->>>>>>>  [<c0402a68>] ? sysenter_do_call+0x12/0x36
->>>>>>>
->>>>>>> (We can even get other crashes..)
->>>>>>>
->>>>>> Can you send me your full bootlog and config. I'm not able to reproduce 
->>>>>> this.
->>>>> And the SHA1 of the HEAD of the git repo you are using.
->>>>>
->>>>> Thanks,
->>>>>
->>>> the HEAD: 9ce5424d75e56891905b77d1589924765e62059a + this patch
->>>>
->>>> (I commented out "hi" from the sample module)
->>> I found that commenting out the "hi" too helped in causing races.
->>>
->>>> I think it's because "type" is wrapped back to 0. I changed the test script
->>>> like this:
->>>>
->>>> while (foo_bar.id < 65536)
->>>> {
->>>> 	insmod trace-events-sample.ko
->>>> 	rmmod trace-events-sample.ko
->>>> }
->>>>
->>>> for ((; ;))
->>>> {
->>>>         insmod /home/lizf/linux-2.6-tip/samples/trace_events/*.ko
->>>>         echo trace-events-sample:foo_bar > /mnt/tracing/set_event
->>>>         sleep 1
->>>>         cat /mnt/tracing/trace
->>>>         rmmod /home/lizf/linux-2.6-tip/samples/trace_events/*.ko
->>>> }
->>>>
->>> Could you try my git repo with my latest changes?
->>>
->>> git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
->>>
->>>  branch: rfc/debugfs
->>>
->> The bug won't be triggered with your latest changes, but it has nothing
->> to do with the debugfs patch, it's because this patch:
->> 	"tracing/events: reuse trace event ids after overflow"
->>
->> But that patch just hides the bug not fixes it.. I thought I explained
->> the bug clearly. :(
->>
->> I think the bug is triggered because a wrong trace_event->trace() is called.
->>
->>
->> Before the above patch:
->>    id overflowed
->>  =>foo_bar.id == 6 == TRACE_BPRINT
->>  =>echo foo_bar > set_event
->>  =>sleep N secs
->>  =>rmmod sample
->>  =>cat trace
->>    =>trace_bprint_event->trace() is called!!
->>      =>oops!!!
->>
->>
->> After the above patch:
->>
->>    Suppose id 0 ~ 65534 are used, only 65535 is left, and we have 2 different
->>    sample module trace_event subsystems foo and bar.
->>  =>insmod foo.ko, and foo.id == 65535
->>  =>echo foo > set_event
->>  =>sleep N secs
->>  =>rmmod foo.ko
->>  =>insmod bar.ko, and bar.id == 65535
->>  =>cat trace
->>    =>bar->trace() will be called on events which were generated by foo!
->>
->> So is it possible/sane to discard corresponding events from ring buffer when
->> we unload a module?
->>
->> Correct me if I'm wrong..
-> 
-> OK, I understand what you are saying.
-> 
-> You are saying that if we reuse the event id, then there is a case that 
-> the event can be used by another module, and if we have old data in the 
-> ring buffer the other module's callback will be called with the previous 
-> module's data.
-> 
-> Right?
-> 
+Alexey Dobriyan [adobriyan@gmail.com] wrote:
+| create_pid_namespace() creates everything, but caller has to assign parent
+| pidns by hand, which is unnatural. At the moment of call new ->level has
+| to be taken from somewhere and parent pidns is already available.
+| 
+| Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
-You got it. :)
+Acked-By: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-> 
-> A module should not be storing pointers into the ring buffer. We do 
-> that with the trace_print, but I think we were suppose to do something 
-> special if we detect that it is a module being called.
-> 
->   Frederic?
-> 
-> If the module only stores data and never a pointer, then the worst thing 
-> stale data would do is show junk.
-> 
-> Scanning the ring buffer and discarding the module data can be very racy. 
-> We would need to disable the ring buffer while doing this. Probably the 
-> best thing to do is to simpy reset the ring buffers if it detects that a 
-> module is being unloaded and has callbacks. The data in the ring buffer is 
-> garbage anyway, so might as well reset it.
-> 
-
-I agree, if no better way.
+| ---
+|  kernel/pid_namespace.c |    8 ++++----
+|  1 files changed, 4 insertions(+), 4 deletions(-)
+| 
+| diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
+| index 2d1001b..495d5de 100644
+| --- a/kernel/pid_namespace.c
+| +++ b/kernel/pid_namespace.c
+| @@ -67,9 +67,10 @@ err_alloc:
+|  	return NULL;
+|  }
+| 
+| -static struct pid_namespace *create_pid_namespace(unsigned int level)
+| +static struct pid_namespace *create_pid_namespace(struct pid_namespace *parent_pid_ns)
+|  {
+|  	struct pid_namespace *ns;
+| +	unsigned int level = parent_pid_ns->level + 1;
+|  	int i;
+| 
+|  	ns = kmem_cache_zalloc(pid_ns_cachep, GFP_KERNEL);
+| @@ -86,6 +87,7 @@ static struct pid_namespace *create_pid_namespace(unsigned int level)
+| 
+|  	kref_init(&ns->kref);
+|  	ns->level = level;
+| +	ns->parent = get_pid_ns(parent_pid_ns);
+| 
+|  	set_bit(0, ns->pidmap[0].page);
+|  	atomic_set(&ns->pidmap[0].nr_free, BITS_PER_PAGE - 1);
+| @@ -125,9 +127,7 @@ struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *old
+|  	if (flags & CLONE_THREAD)
+|  		goto out_put;
+| 
+| -	new_ns = create_pid_namespace(old_ns->level + 1);
+| -	if (!IS_ERR(new_ns))
+| -		new_ns->parent = get_pid_ns(old_ns);
+| +	new_ns = create_pid_namespace(old_ns);
+| 
+|  out_put:
+|  	put_pid_ns(old_ns);
+| --
+| To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+| the body of a message to majordomo@vger.kernel.org
+| More majordomo info at  http://vger.kernel.org/majordomo-info.html
+| Please read the FAQ at  http://www.tux.org/lkml/
