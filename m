@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757011AbZEETAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbZEETCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757011AbZEETAy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 15:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbZEETAk
+	id S1757279AbZEETCT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 15:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbZEETCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 15:00:40 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58762
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752557AbZEETAj (ORCPT
+	Tue, 5 May 2009 15:02:09 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:51291 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752600AbZEETCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 15:00:39 -0400
-Date: Tue, 05 May 2009 12:00:34 -0700 (PDT)
-Message-Id: <20090505.120034.213663073.davem@davemloft.net>
-To: linville@tuxdriver.com
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2009-05-05
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090505181009.GA2788@tuxdriver.com>
-References: <20090505181009.GA2788@tuxdriver.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 5 May 2009 15:02:08 -0400
+Date: Tue, 5 May 2009 21:04:16 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Manuel Lauss <mano@roarinelk.homelinux.net>,
+       Jean Delvare <khali@linux-fr.org>, Anders Kaseorg <andersk@mit.edu>,
+       Sean MacLennan <smaclennan@pikatech.com>
+Subject: [GIT] kbuild fixes
+Message-ID: <20090505190416.GA19475@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "John W. Linville" <linville@tuxdriver.com>
-Date: Tue, 5 May 2009 14:10:09 -0400
+Hi Linus.
 
-> Yet another round of fixes intended for 2.6.30...
-> 
-> Included is the removal of another unnecessary EXPORT_SYMBOL that seems
-> to be irritating some versions of GCC, the correction of a WARN_ON check
-> that generates spurious log noise, a fix for a missing length value that
-> leads to bad data being passed to userland, the correction of a WARN in
-> iwl_set_tkip_dynamic_key_info, fixes for a couple of cfg80211 Oopsen, a
-> one-line comment correction in cfg80211, and a couple of memory
-> corruption fixes related to mac80211 rate control algorithms.  One of
-> these last two looks a little big, but it is mostly moving a hunk of
-> code around.
- ...
->   git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+This fixes an annoying warning "unexpected non-allocatable section",
+that shows up in certain combinations of targets/gccs.
 
-Pulled, thanks!
+The tree commit fixes three different sources of the warnings.
+This has now been in -next for a day or two with no additional comlains.
+
+Please pull.
+
+	Sam
+
+The following changes since commit b4348f32dae3cb6eb4bc21c7ed8f76c0b11e9d6a:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://oss.sgi.com/xfs/xfs
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
+
+Anders Kaseorg (1):
+      kbuild, modpost: fix unexpected non-allocatable section when cross compiling
+
+Sam Ravnborg (2):
+      kbuild, modpost: fix "unexpected non-allocatable" warning with SUSE gcc
+      kbuild, modpost: fix unexpected non-allocatable warning with mips
+
+ scripts/mod/modpost.c |   47 ++++++++++++++++++++++++++++++++++-------------
+ 1 files changed, 34 insertions(+), 13 deletions(-)
