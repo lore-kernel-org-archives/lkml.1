@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758381AbZEEJge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbZEEJqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758381AbZEEJge (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 05:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbZEEJgZ
+	id S1754782AbZEEJqj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 05:46:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbZEEJq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 05:36:25 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:16082 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753695AbZEEJgY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 05:36:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=cELP+K9KHDu0i16QpoD8TNKElC9+srY3xfljVtVMFkLECZY2TjR6cc0Ra1Kgm4F3Gy
-         cqB3ivSdaxRj8/UMqnhYmLoojueUc0TE2ziGOnYZhejw7AesSDb3v2IZTcEYU/SCVQn1
-         KVoHzrf32bhLU/DWJjuy5KPw4SVNbzQ84YPVY=
-Message-ID: <4A000891.3070109@gmail.com>
-Date: Tue, 05 May 2009 11:36:17 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.7 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@linux-foundation.org>, shaohua.li@intel.com,
-       arjan@infradead.org, James.Bottomley@HansenPartnership.com
-Subject: kexec defunct -- sd-async-shutdown [mmotm 2009-04-30-17-55]
-References: <200905010114.n411EV3X022247@imap1.linux-foundation.org>
-In-Reply-To: <200905010114.n411EV3X022247@imap1.linux-foundation.org>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+	Tue, 5 May 2009 05:46:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42892 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752748AbZEEJq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 05:46:26 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200905041802.30527.hannes.hering@linux.vnet.ibm.com>
+References: <200905041802.30527.hannes.hering@linux.vnet.ibm.com>
+To: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+Cc: dhowells@redhat.com, David Miller <davem@davemloft.net>,
+       themann@de.ibm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, raisch@de.ibm.com,
+       ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+       ossthema@de.ibm.com, osstklei@de.ibm.com
+Subject: Re: [PATCH 2.6.30-rc5] ehea: fix invalid pointer access
+Date: Tue, 05 May 2009 10:11:27 +0100
+Message-ID: <25628.1241514687@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/01/2009 02:55 AM, akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2009-04-30-17-55 has been uploaded to
-...
-> sd-async-shutdown.patch
+Hannes Hering <hannes.hering@linux.vnet.ibm.com> wrote:
 
-Hi,
+>  	pref = skb_array[x];
+> -	prefetchw(pref);
+> -	prefetchw(pref + EHEA_CACHE_LINE);
+> +	if (pref) {
+> +		prefetchw(pref);
+> +		prefetchw(pref + EHEA_CACHE_LINE);
 
-this one causes kexec to hang.
+Ummm...  Is prefetch() or prefetchw() faulting?
+
+David
