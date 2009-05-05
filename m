@@ -1,82 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbZEET3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758352AbZEET3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757215AbZEET3R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 15:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZEET3A
+	id S1758352AbZEET3u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 15:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZEET3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 15:29:00 -0400
-Received: from web50112.mail.re2.yahoo.com ([206.190.39.149]:21972 "HELO
-	web50112.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751438AbZEET27 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 15:28:59 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=1w8jH7cVYvEx+wD/3uNrZPCGiEfN0zNnkhuZssprgv7kwGyTl+d/ay81DGx/AfBqQk70LfnCuP2D+9tdZsrPZ1RND6pKbsWT9MjXDcf1sD7bA0eG8bnWP3FfpNLfITbegI7zsDris7Wuxl8Fp6CGlfqQdPIwjIX31Nb7XMMVqDw=;
-Message-ID: <651047.14146.qm@web50112.mail.re2.yahoo.com>
-X-YMail-OSG: 9sx.mlEVM1lq0BkSsIhKgx2U1vWD_.KTLyb2iyNLjfWX4H05EslXq0OP3lQR9hUq7uZ1QXvH461.ZlhBXFFwEc4vVVDREUnGRRTJHj26q1QwOEs0WhdXa7OHFBcqQAUCZFHutcAeFWyOsQtwFNrskI3SF_XIn_ZsmV.WBxme9icJrDvxNRYpX.BrJ3H3mWkG_g0SY.pFXZ19T86bh_ENaIPc5OQRqMx0m7DhbdEdJdanFu2nYiEo9E5UBp5Jyn2Mw7.jfBXjHISYHXXyxy9ffKm3vg1A6PdVE0ba
-X-Mailer: YahooMailClassic/5.3.9 YahooMailWebService/0.7.289.10
-Date: Tue, 5 May 2009 12:28:59 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [PATCH 12/21] amd64_edac: add f10-and-later methods-p2
-To: Borislav Petkov <borislav.petkov@amd.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu,
-       tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com,
-       linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 5 May 2009 15:29:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41180 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751438AbZEET3h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 15:29:37 -0400
+Date: Tue, 5 May 2009 12:24:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: magnus.damm@gmail.com, linux-media@vger.kernel.org, hverkuil@xs4all.nl,
+       lethal@linux-sh.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/3] mm: introduce follow_pte()
+Message-Id: <20090505122442.6271c7da.akpm@linux-foundation.org>
+In-Reply-To: <1241430874-12667-1-git-send-email-hannes@cmpxchg.org>
+References: <20090501181449.GA8912@cmpxchg.org>
+	<1241430874-12667-1-git-send-email-hannes@cmpxchg.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon,  4 May 2009 11:54:32 +0200
+Johannes Weiner <hannes@cmpxchg.org> wrote:
 
---- On Mon, 5/4/09, Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
+> A generic readonly page table lookup helper to map an address space
+> and an address from it to a pte.
 
-> From: Mauro Carvalho Chehab <mchehab@redhat.com>
-> Subject: Re: [PATCH 12/21] amd64_edac: add f10-and-later methods-p2
-> To: "Borislav Petkov" <borislav.petkov@amd.com>
-> Cc: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com, linux-kernel@vger.kernel.org
-> Date: Monday, May 4, 2009, 5:25 PM
-> Borislav Petkov escreveu:
-> > +/*
-> > + * f10_lookup_addr_in_dct
-> > + *
-> > + *    Iterate over the DRAM DCT "base"
-> and "mask" register looking for
-> > + *    a SystemAddr match on the
-> specified 'ChannelSelect' and 'NodeID'
-> > + *
-> > + * Return:
-> > + *    -1  NOT FOUND
-> > + *    0..csrow = Chip-Select Row
-> > + */
-> > +static int f10_lookup_addr_in_dct(u32 InputAddr, u32
-> NodeID, u32 ChannelSelect)
-> > +{
-> > +    struct mem_ctl_info *mci;
-> > +    struct amd64_pvt *pvt;
-> > +    u32 CSBase, CSMask;
-> > +    int CSFound = -1;
-> > +    int csrow;
-> > +
-> > +    mci = mci_lookup[NodeID];
-> > +    if (!mci)
-> > +        return
-> CSFound;
-> >   
-> 
-> It is better to use a standard error code like -EINVAL
-> instead of using -1 for error.
-> 
-> 
-> Cheers,
-> Mauro.
-> 
+umm, OK.
 
-good point thanks
-
-doug t
-
+Is there actually some point to these three patches?  If so, what is it?
