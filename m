@@ -1,98 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbZEEItn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbZEEIvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758068AbZEEItn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 04:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZEEItd
+	id S1758250AbZEEIvA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 04:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbZEEIuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 04:49:33 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:51534 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752159AbZEEItb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 04:49:31 -0400
-Date: Tue, 5 May 2009 09:49:28 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, hartleys@visionengravers.com,
-       mcrapet@gmail.com, fred99@carolina.rr.com,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] Double check memmap is actually valid with a memmap
-	has unexpected holes
-Message-ID: <20090505084928.GC25904@csn.ul.ie>
-References: <20090505082944.GA25904@csn.ul.ie> <20090505083614.GA28688@n2100.arm.linux.org.uk>
+	Tue, 5 May 2009 04:50:50 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:55843 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751970AbZEEIut (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 04:50:49 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] usb: use memdup_user()
+Date: Tue, 5 May 2009 10:50:52 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Brownell <david-b@pacbell.net>, Li Hong <lihong.hi@gmail.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <3a3680030905030900x672af596mc2ebc3c38f119c92@mail.gmail.com> <84144f020905040041n721336a0t4c0f4c25eb272abf@mail.gmail.com> <20090504145348.GA10545@kroah.com>
+In-Reply-To: <20090504145348.GA10545@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090505083614.GA28688@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200905051050.52768.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 05, 2009 at 09:36:14AM +0100, Russell King - ARM Linux wrote:
-> On Tue, May 05, 2009 at 09:29:44AM +0100, Mel Gorman wrote:
-> > diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> > index e02b893..6d79051 100644
-> > --- a/arch/arm/Kconfig
-> > +++ b/arch/arm/Kconfig
-> > @@ -925,10 +925,9 @@ config OABI_COMPAT
-> >  	  UNPREDICTABLE (in fact it can be predicted that it won't work
-> >  	  at all). If in doubt say Y.
-> >  
-> > -config ARCH_FLATMEM_HAS_HOLES
-> > +config ARCH_HAS_HOLES_MEMORYMODEL
-> 
-> Can we arrange for EP93xx to select this so we don't have it enabled for
-> everyone.
-> 
-> The other user of this was RPC when it was flatmem only, but since it has
-> been converted to sparsemem it's no longer an issue there.
-> 
+Am Montag, 4. Mai 2009 16:53:48 schrieb Greg KH:
+> > On Mon, May 4, 2009 at 10:02 AM, David Brownell <david-b@pacbell.net> 
+wrote:
+> > > Unless it's incorrect to use that, I have to say that it
+> > > makes more sense to use that utility than recreate it by
+> > > open-coding...
+> >
+> > Yup, and I don't really see how anyone can avoid "thinking about a new
+> > primitive" anyway. We have it in the kernel now and surely it will
+> > appear under drivers/usb/ sooner or later...
+>
+> Well, how about passing the GPF flags down to memdup_user() so that we
+> can use it in the usb subsystem, and Oliver's complaint will be resolve?
 
-This problem is hitting SPARSEMEM, at least according to reports I have
-been cc'd on so it's not a SPARSEMEM vs FLATMEM thing. From the leader --
-"This was caught before for FLATMEM and hacked around but it hits again for
-SPARSEMEM because the page_zone linkages can look ok where the PFN linkages
-are totally screwed."
+It would always be GFP_KERNEL. Unless you can use GFP_KERNEL you must
+not use copy_to/from_user. It would not make sense for all other users of that
+API. I don't think that the API as such is bad, just that USB needs extra care
+with memory allocations (and user memory access)
 
-If you feel that this problem is only encountered on the EP93xx, then the
-option could be made more conservative with the following (untested) patch
-and then wait to see who complains.
+We are limited to GFP_NOIO during pre/post_reset and suspend/resume
+and while we hold any locks these methods take. This is not simple and
+people need to be reminded.
 
-==== CUT HERE ====
+	Regards
+		Oliver
 
-arm: Only select ARCH_HAS_HOLES_MEMORYMODEL on the EP93xx
-
-ARM frees unused memmap to save memory but this can collide with the core
-VM's view of the memory model when walking what it views to be valid PFNs in
-the system. ARM selects ARCH_HAS_HOLES_MEMORYMODEL for all architectures to
-double check the memmap being examined is valid but it has been asserted
-that this may only be needed on EP93xx in practice. This patch selects
-ARCH_HAS_HOLES_MEMORYMODEL only for that sub-architecture.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- arch/arm/Kconfig |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 6d79051..a4c195c 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -273,6 +273,7 @@ config ARCH_EP93XX
- 	select HAVE_CLK
- 	select COMMON_CLKDEV
- 	select ARCH_REQUIRE_GPIOLIB
-+	select ARCH_HAS_HOLES_MEMORYMODEL
- 	help
- 	  This enables support for the Cirrus EP93xx series of CPUs.
- 
-@@ -927,7 +928,7 @@ config OABI_COMPAT
- 
- config ARCH_HAS_HOLES_MEMORYMODEL
- 	bool
--	default y
-+	default n
- 
- # Discontigmem is deprecated
- config ARCH_DISCONTIGMEM_ENABLE
