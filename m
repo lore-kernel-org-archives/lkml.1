@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbZEENW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753029AbZEENYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752823AbZEENW7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 09:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbZEENWt
+	id S1753029AbZEENYz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 09:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbZEENYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 09:22:49 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:39977 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750856AbZEENWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 09:22:48 -0400
-Date: Tue, 5 May 2009 15:22:43 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: richard@rsk.demon.co.uk, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: p80211wext.c: problem with IW_ENCODE_ALG_WEP
-Message-ID: <Pine.LNX.4.64.0905051522010.9552@pc-004.diku.dk>
+	Tue, 5 May 2009 09:24:43 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:46070 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751329AbZEENYm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 09:24:42 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [RFC PATCH 0/3] generic hypercall support
+To: linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org, avi@redhat.com
+Date: Tue, 05 May 2009 09:24:32 -0400
+Message-ID: <20090505132005.19891.78436.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+(Applies to Linus' tree, b4348f32dae3cb6eb4bc21c7ed8f76c0b11e9d6a)
 
-The expression !(ext->alg & IW_ENCODE_ALG_WEP) appears to be incorrect,
-because there are several possible values for ext->alg that give 1 when
-bit-anded with IW_ENCODE_ALG_WEP.  Therefore Richard Kennedy suggested to
-rewrite the code with !=
+Please see patch 1/3 for a description.  This has been tested with a KVM
+guest on x86_64 and appears to work properly.  Comments, please.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+-Greg
 
 ---
- .../drivers/staging/wlan-ng/p80211wext.c           |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/staging/wlan-ng/p80211wext.c b/drivers/staging/wlan-ng/p80211wext.c
-index 96078b0..e00e305 100644
---- a/drivers/staging/wlan-ng/p80211wext.c
-+++ b/drivers/staging/wlan-ng/p80211wext.c
-@@ -1487,7 +1487,7 @@ static int p80211wext_set_encodeext(struct net_device *dev,
- 	}
- 
- 	if (ext->ext_flags & IW_ENCODE_EXT_SET_TX_KEY) {
--		if (!(ext->alg & IW_ENCODE_ALG_WEP)) {
-+		if (ext->alg != IW_ENCODE_ALG_WEP) {
- 			pr_debug("asked to set a non wep key :(");
- 			return -EINVAL;
- 		}
+Gregory Haskins (3):
+      kvm: add pv_cpu_ops.hypercall support to the guest
+      x86: add generic hypercall support
+      add generic hypercall support
+
+
+ arch/Kconfig                     |    3 +
+ arch/x86/Kconfig                 |    1 
+ arch/x86/include/asm/paravirt.h  |   13 ++++++
+ arch/x86/include/asm/processor.h |    6 +++
+ arch/x86/kernel/kvm.c            |   22 ++++++++++
+ include/linux/hypercall.h        |   83 ++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 128 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/hypercall.h
+
+-- 
+Signature
