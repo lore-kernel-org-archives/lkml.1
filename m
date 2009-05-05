@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbZEEVFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbZEEVJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755149AbZEEVFW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 17:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZEEVFG
+	id S1758683AbZEEVJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 17:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbZEEVJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 17:05:06 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42046 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752856AbZEEVFE (ORCPT
+	Tue, 5 May 2009 17:09:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42242 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751438AbZEEVJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 17:05:04 -0400
-Date: Tue, 5 May 2009 17:04:38 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: David Newall <davidn@davidnewall.com>, Theodore Tso <tytso@mit.edu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Matthew Wilcox <matthew@wil.cx>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tridge@samba.org,
-       Al Viro <viro@ZenIV.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steve French <smfrench@gmail.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>,
-       Olivier Galibert <galibert@pobox.com>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090505210438.GA1325@infradead.org>
-References: <20090504132119.GX8822@parisc-linux.org> <20090504143919.GA6740@linux.vnet.ibm.com> <20090504150834.GZ8822@parisc-linux.org> <1241451391.20170.12.camel@norville.austin.ibm.com> <m14ow0hnal.fsf@fess.ebiederm.org> <1241453259.20170.17.camel@norville.austin.ibm.com> <m1k54wal0j.fsf@fess.ebiederm.org> <20090504230357.GI6766@mit.edu> <4A001E51.4070903@davidnewall.com> <109151.1241556990@turing-police.cc.vt.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <109151.1241556990@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 5 May 2009 17:09:48 -0400
+Date: Tue, 5 May 2009 14:05:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: magnus.damm@gmail.com, linux-media@vger.kernel.org, hverkuil@xs4all.nl,
+       lethal@linux-sh.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/3] mm: introduce follow_pte()
+Message-Id: <20090505140517.bef78dd3.akpm@linux-foundation.org>
+In-Reply-To: <20090505203807.GB2428@cmpxchg.org>
+References: <20090501181449.GA8912@cmpxchg.org>
+	<1241430874-12667-1-git-send-email-hannes@cmpxchg.org>
+	<20090505122442.6271c7da.akpm@linux-foundation.org>
+	<20090505203807.GB2428@cmpxchg.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 05, 2009 at 04:56:30PM -0400, Valdis.Kletnieks@vt.edu wrote:
-> Well, VFAT was in Windows for Workgroups 3.11 or so, back in 1982, and a patent
+On Tue, 5 May 2009 22:38:07 +0200
+Johannes Weiner <hannes@cmpxchg.org> wrote:
 
-VFAT was introduced in Windows 95.  OS/2 had it's own long filename
-extensions longe before as did Linux (umsdos)
+> On Tue, May 05, 2009 at 12:24:42PM -0700, Andrew Morton wrote:
+> > On Mon,  4 May 2009 11:54:32 +0200
+> > Johannes Weiner <hannes@cmpxchg.org> wrote:
+> > 
+> > > A generic readonly page table lookup helper to map an address space
+> > > and an address from it to a pte.
+> > 
+> > umm, OK.
+> > 
+> > Is there actually some point to these three patches?  If so, what is it?
+> 
+> Magnus needs to check for physical contiguity of a VMAs backing pages
+> to support zero-copy exportation of video data to userspace.
+> 
+> This series implements follow_pfn() so he can walk the VMA backing
+> pages and ensure their PFNs are in linear order.
+> 
+> [ This patch can be collapsed with 2/3, I just thought it would be
+>   easier to read the diffs when having them separate. ]
+> 
+> 1/3 and 2/3: factor out the page table walk from follow_phys() into
+> follow_pte().
+> 
+> 3/3: implement follow_pfn() on top of follow_pte().
+
+So we could bundle these patches with Magnus's patchset, or we could
+consider these three patches as a cleanup or something.
+
+Given that 3/3 introduces an unused function, I'm inclined to sit tight
+and await Magnus's work.
 
