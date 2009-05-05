@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbZEETRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbZEET1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756593AbZEETRT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 15:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbZEETRH
+	id S1756860AbZEET1j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 15:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbZEET1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 15:17:07 -0400
-Received: from mga14.intel.com ([143.182.124.37]:59023 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752503AbZEETRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 15:17:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,299,1239001200"; 
-   d="scan'208";a="139473538"
-Date: Tue, 5 May 2009 12:16:58 -0700
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 15/15] PCI: remove deprecated pci_find_slot() interface
-Message-ID: <20090505121658.11e881bb@hobbes>
-In-Reply-To: <20090331152422.26622.85161.stgit@bob.kio>
-References: <20090331150158.26622.45423.stgit@bob.kio>
-	<20090331152422.26622.85161.stgit@bob.kio>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+	Tue, 5 May 2009 15:27:23 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47575
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753152AbZEET1X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 15:27:23 -0400
+Date: Tue, 05 May 2009 12:27:18 -0700 (PDT)
+Message-Id: <20090505.122718.51237316.davem@davemloft.net>
+To: jpirko@redhat.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
+       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
+       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
+Subject: Re: [PATCH] net: introduce a list of device addresses
+ dev_addr_list (v6)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090505124827.GB3473@psychotron.englab.brq.redhat.com>
+References: <20090418085848.GC3370@psychotron.englab.brq.redhat.com>
+	<20090504111417.GE3402@psychotron.englab.brq.redhat.com>
+	<20090505124827.GB3473@psychotron.englab.brq.redhat.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Mar 2009 09:24:22 -0600
-Alex Chiang <achiang@hp.com> wrote:
+From: Jiri Pirko <jpirko@redhat.com>
+Date: Tue, 5 May 2009 14:48:28 +0200
 
-> The last in-tree caller of pci_find_slot has been converted, so
-> let's get rid of this deprecated interface.
+> This patch introduces a new list in struct net_device and brings a set of
+> functions to handle the work with device address list. The list is a replacement
+> for the original dev_addr field and because in some situations there is need to
+> carry several device addresses with the net device. To be backward compatible,
+> dev_addr is made to point to the first member of the list so original drivers
+> sees no difference.
 > 
-> Signed-off-by: Alex Chiang <achiang@hp.com>
+> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
 
-Ok applied this series.  No more pci_find_slot, yay!
-
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Applied to net-next-2.6, thanks!
