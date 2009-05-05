@@ -1,80 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbZEEPfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbZEEPjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755329AbZEEPfn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 11:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbZEEPfd
+	id S1754948AbZEEPjo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 11:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbZEEPjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 11:35:33 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:56782 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752500AbZEEPfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 11:35:32 -0400
-Date: Tue, 5 May 2009 08:35:27 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, tridge@samba.org,
-       Al Viro <viro@ZenIV.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steve French <smfrench@gmail.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090505153527.GA6890@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090504153815.GB6740@linux.vnet.ibm.com> <20090504155505.GA8822@parisc-linux.org> <20090504161024.GC6740@linux.vnet.ibm.com> <20090504162252.GB8822@parisc-linux.org> <20090504221208.GB29402@kroah.com> <20090505020149.GE8822@parisc-linux.org> <20090505021121.GA6982@linux.vnet.ibm.com> <20090505021853.GF8822@parisc-linux.org> <20090505033442.GB6982@linux.vnet.ibm.com> <74785.1241510758@turing-police.cc.vt.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <74785.1241510758@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 5 May 2009 11:39:33 -0400
+Received: from [192.16.179.4] ([192.16.179.4]:38526 "EHLO sh.osrg.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751103AbZEEPjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 11:39:32 -0400
+Date: Wed, 06 May 2009 00:37:29 +0900 (JST)
+Message-Id: <20090506.003729.89601025.ryusuke@osrg.net>
+To: viro@ZenIV.linux.org.uk
+Cc: konishi.ryusuke@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: sget() misuse in nilfs
+From: Ryusuke Konishi <ryusuke@osrg.net>
+In-Reply-To: <20090505081811.GK8633@ZenIV.linux.org.uk>
+References: <20090503225136.GC8633@ZenIV.linux.org.uk>
+	<20090505.021129.103520156.ryusuke@osrg.net>
+	<20090505081811.GK8633@ZenIV.linux.org.uk>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 06 May 2009 00:37:29 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 05, 2009 at 04:05:58AM -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 04 May 2009 20:34:42 PDT, "Paul E. McKenney" said:
+On Tue, 5 May 2009 09:18:11 +0100, Al Viro wrote:
+> On Tue, May 05, 2009 at 02:11:29AM +0900, Ryusuke Konishi wrote:
+> > Hi,
+> > On Sun, 3 May 2009 23:51:36 +0100, Al Viro wrote:
+> > > OK, I give up; what _is_ get_sb/remount code supposed to implement?
+> > 
+> > Oh, these functions lack spec comments.
+> > 
+> > I first explain some specs. (I think part of them should be added on
+> > the code, later)
+> > 
+> > The nilfs_get_sb() allocates a new super_block struct (sb) or assigns
+> > an existing sb to the mount point through sget().  For newly allocated
+> > sb it calls nilfs_fill_super() for initialization.
+> > 
+> > The following things are supposed here:
 > 
-> > I am more than happy to let you search the case law on this one.
+> >  1) Every rw-mount on a device shares the same sb (as usual).
 > 
-> Ya know, it's that same "I'll let your lawyers rediscover the stuff that mine
-> already found" issue that's making this thread a pain.
-
-My apologies for the pain, however, Matthew said that he "never trusted
-advice from IBM laywers", so there didn't seem to be any point in
-consulting them.
-
-> Case saying (C) *possibly* sufficient (ruling 'c-in-hexagon' was sufficient):
-> Videotronics v. Bend Electronics, 586 F.Supp. 478, 481 (D. Nev. 1984)
+> OK.  That's the first kind of sb; no MS_RDONLY, no SNAPSHOT, snapshot_cno is 0.
 > 
-> Case saying it might not be:
-> Forry v. Neundorfer, 837 F.2d 259, 266 (6th Cir., 1988)
+> >  2) Every sb of snapshot is independent with that of rw-mount or other
+> >     snapshots if their checkpoint numbers differ.  On the other hand,
+> >     two or more snapshots having the same checkpoint number share a sb
+> >     wherever possible.
 > 
-> Neundorfer says:
+> Umm...  That's what, MS_RDONLY, SNAPSHOT, snapshot_cno > 0?
+
+Yes, exactly.
+ 
+> >  3) Snapshots are mountable concurrently with a rw-mount, but a
+> >     ro-mount is not so because the ro-mount cannot follow changes
+> >     brought by the rw-mount.
 > 
-> "Videotronics, Inc. v. Bend Electronics, 586 F.Supp. 478 (D.Nev.1984) held that
-> a letter "C" enclosed within a hexagon met the statutory requirements, but
-> suggested in dicta that the symbol "(C)" might not be sufficient because
-> parentheses, unlike a hexagon or a circle, would not completely enclose the
-> "C". Id. at 481. However, if a "C" in a hexagon is sufficient, an argument
-> exists that a "C" in parentheses is sufficient. Defendants here had actual
-> notice of copyright. The trial of this action may provide a better record on
-> which to finally decide whether the symbol "(C)" is sufficiently similar to a
-> "C" in a circle to serve as notice of a copyright. Plaintiff is apparently now
-> using the "C" in a circle. It may therefore be entitled to rely on 405(a)(2)
-> even if the earlier symbol was not sufficient."
+> And ro-mount would be MS_RDONLY, no SNAPSHOT, snapshot_cno equal to the
+> nilfs_last_cno()?
+
+Yes.
+  
+> >  b) ro->rw remount is possible only if there is no rw-mount on the
+> >     device and the checkpoint number of the ro-mount is latest.
 > 
-> Clear as mud, unless you have a more recent cite. :)
+> Er...  How could there be an rw-mount while we have ro one?  Your
+> (3) above would seem to prohibit that situation...
 
-http://books.google.com/books?id=6je0tPcGMzYC&pg=PT822&lpg=PT822&dq=Videotronics+v.+Bend+Electronics,+586+F.Supp.+478,+481+(D.+Nev.+1984)&source=bl&ots=ccxO5np_uQ&sig=Q0wj4k5uCpMiZybAQe12JlHhh0A&hl=en&ei=Z1kASu2ZJ8eLtgehupyNBw&sa=X&oi=book_result&ct=result&resnum=2#PPT822,M1
+Oh, meaning of the (b) was ambiguous.  How about the following one?
 
-Dated 2005, cites a 1988 case in footnote 28.  Also claims that:
-Copyright Office II Compendium of Copyright Office Practices lists
-acceptable variants to the C in a circle, including "(c)".
+ b) Remounting an ro-mount to read-only is possible only if the
+    checkpoint number of the target ro-mount is latest and there is no
+    existent rw-mount.
 
-But this is a USA publication.  Perhaps Matthew is thinking in terms of
-some other geography.  And perhaps things have changed since 2005.
+> >     device and the checkpoint number of the ro-mount is latest.
+ 
+> >  c) Remounting snapshot to different checkpoints or rw-mount is not
+> >     allowed.
+> 
+> Where is the second part checked in the current code?
 
-							Thanx, Paul
+Ah, the second part was wrong.  The snapshot with latest checkpoint
+number can be remounted into an rw-mount.  So it should be:
+
+ c) Remounting a snapshot to a different checkpoint is not allowed.
+    Remounting a snapshot to an rw-mount is possible only if the
+    target snapshot equals to the latest checkpoint.
+  
+> > > Can SNAPSHOT even be there unless you have MS_RDONLY?
+> > 
+> > Yes, it can.  Nilfs snapshots can exist concurrently with rw-mount.
+> 
+> On the same superblock, that is...  And AFAICS the answer's "no, it can't"
+> (we can have rw superblock and snapshot superblock at the same time, but
+> those will be different instances of struct superblock).
+
+You are right. It's my misunderstanding.
+
+You meant SNAPSHOT for the NILFS_MOUNT_SNAPSHOT flag on
+sb->s_mount_opt (it does appear as SNAPSHOT on the code).  So, the
+answer is "no, it can't".
+
+Regards,
+Ryusuke Konishi
