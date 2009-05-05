@@ -1,121 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbZEENZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751931AbZEENfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755611AbZEENZn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 09:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbZEENY7
+	id S1751931AbZEENfP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 09:35:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbZEENe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 09:24:59 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:45790 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753335AbZEENY5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 09:24:57 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH 2/3] x86: add generic hypercall support
-To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, avi@redhat.com
-Date: Tue, 05 May 2009 09:24:42 -0400
-Message-ID: <20090505132442.19891.12762.stgit@dev.haskins.net>
-In-Reply-To: <20090505132005.19891.78436.stgit@dev.haskins.net>
-References: <20090505132005.19891.78436.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Tue, 5 May 2009 09:34:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37895 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751329AbZEENe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 09:34:58 -0400
+Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely
+	select CONFIG_FRAME_POINTER
+From: Steven Rostedt <srostedt@redhat.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <6A6BE346-925C-4F73-ABFA-C6110070F071@kernel.crashing.org>
+References: <20090502001329.GA11549@oksana.dev.rtsoft.ru>
+	 <20090502001421.GA9342@oksana.dev.rtsoft.ru>
+	 <68B2EF73-0FD2-41F9-966B-9A54965AFBA6@kernel.crashing.org>
+	 <1241316249.4243.22.camel@localhost.localdomain>
+	 <6A6BE346-925C-4F73-ABFA-C6110070F071@kernel.crashing.org>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Tue, 05 May 2009 09:33:02 -0400
+Message-Id: <1241530382.11379.12.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds a hypercall() vector to x86 pv_cpu_ops to be optionally filled in
-by a hypervisor driver as it loads its other pv_ops components.  We also
-declare x86 as CONFIG_HAVE_HYPERCALL to enable the generic hypercall code
-whenever the user builds for x86.
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+On Tue, 2009-05-05 at 09:56 +0200, Segher Boessenkool wrote:
+> > Yeah, I agree. This needs a better description. I only know what's  
+> > going
+> > on because I was there for the start of the discussion.
+> >
+> > But just to be sure, this is what I think is happening.
+> >
+> > When we add "-pg" to gcc, it automatically causes frame pointers to be
+> > used.
+> 
+> Nope, it does no such thing.
 
- arch/Kconfig                     |    3 +++
- arch/x86/Kconfig                 |    1 +
- arch/x86/include/asm/paravirt.h  |   13 +++++++++++++
- arch/x86/include/asm/processor.h |    6 ++++++
- 4 files changed, 23 insertions(+), 0 deletions(-)
+Well, mcount is expected to be able to get to not just who called
+mcount, but also the parent of that function. The way mcount is
+implemented does not let you do that. If mcount was the first thing to
+be called in a function, then it would have been perfect. We could get
+to the caller, its parent, and even the parameters. But unfortunately,
+mcount is called after the stack is set up. Thus, without frame pointers
+(the way to find a previous frame) there's no way (on some archs) to
+find the parent. Nor can we figure out the parameters, which really
+sucks.
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 78a35e9..239b658 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -112,3 +112,6 @@ config HAVE_DMA_API_DEBUG
- 
- config HAVE_DEFAULT_NO_SPIN_MUTEXES
- 	bool
-+
-+config HAVE_HYPERCALL
-+        bool
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index df9e885..3c609cf 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -46,6 +46,7 @@ config X86
- 	select HAVE_KERNEL_GZIP
- 	select HAVE_KERNEL_BZIP2
- 	select HAVE_KERNEL_LZMA
-+	select HAVE_HYPERCALL
- 
- config ARCH_DEFCONFIG
- 	string
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index 378e369..ed22c84 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -6,6 +6,7 @@
- #ifdef CONFIG_PARAVIRT
- #include <asm/pgtable_types.h>
- #include <asm/asm.h>
-+#include <asm/errno.h>
- 
- /* Bitmask of what can be clobbered: usually at least eax. */
- #define CLBR_NONE 0
-@@ -203,6 +204,8 @@ struct pv_cpu_ops {
- 
- 	void (*swapgs)(void);
- 
-+	long (*hypercall)(unsigned long nr, unsigned long *args, size_t count);
-+
- 	struct pv_lazy_ops lazy_mode;
- };
- 
-@@ -723,6 +726,16 @@ static inline void __cpuid(unsigned int *eax, unsigned int *ebx,
- 	PVOP_VCALL4(pv_cpu_ops.cpuid, eax, ebx, ecx, edx);
- }
- 
-+static inline long hypercall(unsigned long nr,
-+			     unsigned long *args,
-+			     size_t count)
-+{
-+	if (!pv_cpu_ops.hypercall)
-+		return -EINVAL;
-+
-+	return pv_cpu_ops.hypercall(nr, args, count);
-+}
-+
- /*
-  * These special macros can be used to get or set a debugging register
-  */
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index c2cceae..8fa988d 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -570,6 +570,12 @@ static inline void native_swapgs(void)
- #define __cpuid			native_cpuid
- #define paravirt_enabled()	0
- 
-+static inline long
-+hypercall(unsigned long nr, unsigned long *args, size_t count)
-+{
-+	return -EINVAL;
-+}
-+
- /*
-  * These special macros can be used to get or set a debugging register
-  */
+
+> 
+> > But with PPC, it always has frame pointers and there's no problem.
+> 
+> Well, what do you call a "frame pointer"?  In the general meaning
+> of "some register that points to the incoming function arguments
+> and the function local variables", PowerPC can _usually_ use GPR1,
+> the stack pointer (and indeed it is called "stack frame pointer"
+> in the ABI).  In the more narrow meaning of "what GCC calls the
+> frame pointer", "the thing that -fomit-frame-pointer optimises
+> away" -- on PowerPC (and many other targets), -fomit-frame-pointer
+> is the *default* when optimisation is enabled!
+> 
+> There is a GCC bug here though: it won't allow both -pg and
+> -fomit-frame-pointer be set at the command line at the same time,
+> even on targets where that is not problematic.
+> 
+> > But with Linux, when you add CONFIG_FRAME_POINTER, it automatically
+> > adds:  -fno-omit-frame-pointer. Thus the config will add
+> > "-fomit-frame-pointer" when CONFIG_FRAME_POINTER is not set, or it  
+> > will
+> > add "-fno-omit-frame-pointer" when it is set.
+> >
+> > The problem with PPC is that "-fno-omit-frame-pointer" is buggy and
+> > causes gcc to produce bad code.
+> 
+> It's a deeper problem that is only _exposed_ by -fno-o-f-p (and can be
+> hidden by -mno-sched-epilog in the one spot where it hit us).
+> 
+> > Perhaps a better name would be:
+> >
+> > HAVE_FRAME_POINTER_AS_DEFAULT
+> 
+> NO_NO_OMIT_FRAME_POINTER ?  Or better, just never use -fno-o-f-p,
+> I don't see why you would ever need it.
+
+Because on x86_64 it gives better back traces. x86_64 has no way to get
+to the previous frames without it. There's code to use other debug
+metadata to get back tracing, but for uses of things like the stack
+tracer, we need to be able to use the actual stack frames.
+
+As you said above, -fomit-frame-pointer is default when we optimize, and
+that is how the kernel is built. If we optimize on x86_64 and do not use
+-fno-omit-frame-pointer, the stack tracer is useless.
+
+-- Steve
+
 
