@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbZEEJau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757192AbZEEJb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755675AbZEEJau (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 05:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZEEJal
+	id S1757192AbZEEJb7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 05:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbZEEJbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 05:30:41 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35306 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752748AbZEEJal (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 05:30:41 -0400
-Date: Tue, 5 May 2009 11:35:20 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] x86: adapt CPU topology detection for AMD Magny-Cours
-Message-ID: <20090505093520.GL23223@one.firstfloor.org>
-References: <20090504173330.GF28728@alberich.amd.com> <87vdogbp4g.fsf@basil.nowhere.org> <20090505092238.GB29045@alberich.amd.com>
-Mime-Version: 1.0
+	Tue, 5 May 2009 05:31:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53494 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752239AbZEEJbu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 05:31:50 -0400
+Date: Tue, 5 May 2009 11:31:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] tracing fixes
+Message-ID: <20090505093134.GA7014@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090505092238.GB29045@alberich.amd.com>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Best example is node interleaving. Usually you won't get a SRAT table
-> on such a system.
+Linus,
 
-That sounds like a BIOS bug. It should supply a suitable SLIT/SRAT
-even for this case. Or perhaps if the BIOS are really that broken
-add a suitable quirk that provides distances, but better fix the BIOSes.
+Please pull the latest tracing-fixes-for-linus git tree from:
 
- Thus you see just one NUMA node in
-> /sys/devices/system/node.  But on such a configuration you still see
-> (and you want to see) the correct CPU topology information in
-> /sys/devices/system/cpu/cpuX/topology. Based on that you always can
-> figure out which cores are on the same physical package independent of
-> availability and contents of SRAT and even with kernels that are
-> compiled w/o NUMA support.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
 
-So you're adding a x86 specific mini NUMA for kernels without NUMA
-(which btw becomes more and more an exotic case -- modern distros
-are normally unconditionally NUMA) Doesn't seem very useful.
+ Thanks,
 
-My problem with that is that imho the x86 topology information is already
-too complicated -- i suspect very few people can make sense of it --
-and you're making it even worse, adding another strange special case.
+	Ingo
 
-On the other hand NUMA topology is comparatively straight forward and well 
-understood and it's flexible enough to express your case too.
+------------------>
+Steven Rostedt (1):
+      tracing: fix ref count in splice pages
 
->    physical package == two northbridges (two nodes)
-> 
-> and this needs to be represented somehow in the kernel.
+Stuart Bennett (1):
+      tracing: x86, mmiotrace: fix range test
 
-It's just two nodes with a very fast interconnect.
 
-> 
-> > Who needs this additional information?
-> 
-> The kernel needs to know this when accessing processor configuration
-> space, when accessing shared MSRs or for counting northbridge specific
-> events.
+ arch/x86/mm/kmmio.c  |    2 +-
+ kernel/trace/trace.c |    1 +
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-You're saying there are MSRs shared between the two in package nodes?
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+diff --git a/arch/x86/mm/kmmio.c b/arch/x86/mm/kmmio.c
+index 4f115e0..50dc802 100644
+--- a/arch/x86/mm/kmmio.c
++++ b/arch/x86/mm/kmmio.c
+@@ -87,7 +87,7 @@ static struct kmmio_probe *get_kmmio_probe(unsigned long addr)
+ {
+ 	struct kmmio_probe *p;
+ 	list_for_each_entry_rcu(p, &kmmio_probes, list) {
+-		if (addr >= p->addr && addr <= (p->addr + p->len))
++		if (addr >= p->addr && addr < (p->addr + p->len))
+ 			return p;
+ 	}
+ 	return NULL;
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 1ce5dc6..a884c09 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -3448,6 +3448,7 @@ tracing_buffers_splice_read(struct file *file, loff_t *ppos,
+ 		if (!ref)
+ 			break;
+ 
++		ref->ref = 1;
+ 		ref->buffer = info->tr->buffer;
+ 		ref->page = ring_buffer_alloc_read_page(ref->buffer);
+ 		if (!ref->page) {
