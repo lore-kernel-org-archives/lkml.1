@@ -1,106 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbZEEU0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbZEEU1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756891AbZEEU0U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 16:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbZEEU0E
+	id S1757137AbZEEU1m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 16:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbZEEU1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 16:26:04 -0400
-Received: from waste.org ([66.93.16.53]:36824 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752557AbZEEU0D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 16:26:03 -0400
-Date: Tue, 5 May 2009 15:22:19 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
-       security@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [Security] [PATCH] proc: avoid information leaks to non-privileged processes
-Message-ID: <20090505202219.GL31071@waste.org>
-References: <20090504125114.5e391564@chukar> <alpine.LFD.2.01.0905041159480.4983@localhost.localdomain> <20090504125124.0f469970@infradead.org> <m1vdogbows.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0905041514350.4983@localhost.localdomain> <20090505055011.GE31071@waste.org> <20090505063156.GA24504@elte.hu> <m14ow0ynjm.fsf@fess.ebiederm.org> <20090505195246.GC21973@elte.hu>
-MIME-Version: 1.0
+	Tue, 5 May 2009 16:27:33 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:37897 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753187AbZEEU1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 16:27:33 -0400
+Date: Tue, 5 May 2009 15:27:30 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, alex.shi@intel.com,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] Fix early panic issue on machines with memless node
+Message-ID: <20090505202730.GA9831@sgi.com>
+References: <1241493327.27664.17.camel@ymzhang> <alpine.DEB.2.00.0905042026010.29856@chino.kir.corp.google.com> <20090505163608.GA20385@sgi.com> <alpine.DEB.2.00.0905051250510.20021@chino.kir.corp.google.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090505195246.GC21973@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <alpine.DEB.2.00.0905051250510.20021@chino.kir.corp.google.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 05, 2009 at 09:52:46PM +0200, Ingo Molnar wrote:
+On Tue, May 05, 2009 at 12:52:54PM -0700, David Rientjes wrote:
+> On Tue, 5 May 2009, Jack Steiner wrote:
 > 
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
-> 
-> > Ingo Molnar <mingo@elte.hu> writes:
+> > I was able to duplicate your original problem. Your patch below solves the
+> > problem. AFAICT, it causes no new reqgressions to the various configurations
+> > that I'm testing. (I'll add the "mem=2G" to my configs that I test).
 > > 
-> > > * Matt Mackall <mpm@selenic.com> wrote:
-> > >
-> > >> As to what's the appropriate sort of RNG for ASLR to use, finding 
-> > >> a balance between too strong and too weak is tricky. [...]
-> > >
-> > > In exec-shield i mixed 'easily accessible and fast' semi-random 
-> > > state to the get_random_int() result: xor-ed the cycle counter, the 
-> > > pid and a kernel address to it. That strengthened the result in a 
-> > > pretty practical way (without strengthening the theoretical 
-> > > randomless - each of those items are considered guessable) and does 
-> > > so without weakening the entropy of the random pool.
+> 
+> Great, it would be helpful to catch these problems before 2.6.30 is 
+> released.  I've passed my patch along to Ingo.
+> 
+> > However, I see a new regression that was not present a couple of weeks ago.
+> > Configurations that have nodes with cpus and no memory panic during
+> > boot. This occurs both with and without your patch and is not related to "mem=".
 > > 
-> > The trouble is, that thinking completely misses the problem, and I 
-> > expect that is why we have a problem.  Throwing a bunch of 
-> > possibly truly random values into the pot for luck is nice.  But 
-> > you didn't throw in a pseudo random number generator.  An 
-> > unpredictable sequence that is guaranteed to change from one 
-> > invocation to the next.
+> > I need to isolate the problem but here is the stack trace. :
+> > 	Pid: 0, comm: swapper Not tainted 2.6.30-rc4-next-20090505-medusa #12
+> > 	Call Trace:
+> > 	 [<ffffffff806b919e>] early_idt_handler+0x5e/0x71
+> > 	 [<ffffffff802920fe>] ? build_zonelists_node+0x4c/0x8d
+> > 	 [<ffffffff8029333f>] __build_all_zonelists+0x1ae/0x55a
+> > 	 [<ffffffff80293932>] build_all_zonelists+0x1b5/0x263
+> > 	 [<ffffffff806b9b6e>] start_kernel+0x17a/0x3c5
+> > 	 [<ffffffff806b9140>] ? early_idt_handler+0x0/0x71
+> > 	 [<ffffffff806b92a7>] x86_64_start_reservations+0xae/0xb2
+> > 	 [<ffffffff806b93fd>] x86_64_start_kernel+0x152/0x161
+> > 
 > 
-> Alas, i did - it got 'reviewed' out of existence ;)
-> 
-> I still have the backups, here's the original exec-shield RNG:
-> 
-> +/*
-> + * Get a random word:
-> + */
-> +static inline unsigned int get_random_int(void)
-> +{
-> +       unsigned int val = 0;
-> +
-> +       if (!exec_shield_randomize)
-> +               return 0;
-> +
-> +#ifdef CONFIG_X86_HAS_TSC
-> +       rdtscl(val);
-> +#endif
-> +       val += current->pid + jiffies + (int)&val;
-> +
-> +       /*
-> +        * Use IP's RNG. It suits our purpose perfectly: it re-keys itself
-> +        * every second, from the entropy pool (and thus creates a limited
-> +        * drain on it), and uses halfMD4Transform within the second. We
-> +        * also spice it with the TSC (if available), jiffies, PID and the
-> +        * stack address:
-> +        */
-> +       return secure_ip_id(val);
-> +}
+> Please post your .config since it apparently differs from x86_64 defconfig 
+> judging by my debugging symbols and also the full output of the panic.
 
-Ingo, what are you on about? On every architecture but X86 with TSC
-this is identical to the broken code.
+I suspect I mislead you when I mentioned "configurations". I did not mean
+the .config file. I use a more-or-less standard .config file.
 
-TSC only helps matters slightly - the timescales involved in process
-creation are very short and we can probably brute-force attack it with
-a useful probability of success. ie:
+I do much of my testing on a system simulator. Using a simulator config file,
+I specify the system configuration such as number of nodes, sockets per node,
+cpus per socket, memory per socket, address map, boot options, etc. This
+makes it easy to quickly test a lot of strange (but real) configurations.
 
-a) record TSC
-b) fork target process
-c) record TSC
-d) guess TSC value 
-e) attempt attack
-f) repeat
+The configuration above that is failing is a 2-socket Nehelem blade that has no
+memory on socket 0. All memory is located on socket 1.  The panic is caused by a
+null dereference of NODE_DATA(0).
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Still looking....
+
+
+
+
+--- jack
+
