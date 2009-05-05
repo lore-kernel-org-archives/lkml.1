@@ -1,97 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbZEEBa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932181AbZEEBcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756326AbZEEBa3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 21:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbZEEBaT
+	id S932181AbZEEBcT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 21:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbZEEBcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 21:30:19 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:34913 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754203AbZEEBaR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 21:30:17 -0400
-Message-ID: <49FF96A7.5040401@snapgear.com>
-Date: Tue, 05 May 2009 11:30:15 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 4 May 2009 21:32:10 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62691 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754370AbZEEBcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 21:32:09 -0400
+Message-ID: <49FF9742.4090402@cn.fujitsu.com>
+Date: Tue, 05 May 2009 09:32:50 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: linux-kernel@vger.kernel.org
-Subject: BUG: failure at mm/nommu.c:518/add_nommu_region()
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/6] tracing: increase size of number of possible events
+References: <20090424043005.338878133@goodmis.org> <20090424043111.983189535@goodmis.org> <49F15607.1090707@cn.fujitsu.com> <alpine.DEB.2.00.0904241004000.24293@gandalf.stny.rr.com> <alpine.DEB.2.00.0904241004490.24293@gandalf.stny.rr.com> <49F404E4.6040907@cn.fujitsu.com> <alpine.DEB.2.00.0904260919370.24293@gandalf.stny.rr.com> <49FEAFD0.30106@cn.fujitsu.com> <alpine.DEB.2.00.0905041003570.12811@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0905041003570.12811@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Steven Rostedt wrote:
+> On Mon, 4 May 2009, Li Zefan wrote:
+>>>>>>>  # cat /debug/tracing/trace_pipe
+>>>>>>>
+>>>>>>> console 2:
+>>>>>>> while (1) {
+>>>>>>> 	insmod trace-events-sample.ko
+>>>>>>> 	echo foo_bar > /debug/tracing/set_event
+>>>>>>> 	rmmod trace-events-sample.ko
+>>>>>>> }
+>>>>>>>
+>>>>>>> I got this immediately:
+>>>>>>>
+>>>>>>> BUG: unable to handle kernel NULL pointer dereference at 0000006f
+>>>>>>> IP: [<c05210f3>] bstr_printf+0x2ce/0x302
+>>>>>>> ...
+>>>>>>> Call Trace:
+>>>>>>>  [<c0476d12>] ? trace_seq_bprintf+0x28/0x41
+>>>>>>>  [<c0477569>] ? trace_bprint_print+0x58/0x6c
+>>>>>>>  [<c0472ffc>] ? print_trace_line+0x2c5/0x2df
+>>>>>>>  [<c0428a41>] ? sub_preempt_count+0x85/0xa0
+>>>>>>>  [<c04758cf>] ? tracing_read_pipe+0x118/0x191
+>>>>>>>  [<c04757b7>] ? tracing_read_pipe+0x0/0x191
+>>>>>>>  [<c04b09f9>] ? vfs_read+0x8f/0x136
+>>>>>>>  [<c04b0da3>] ? sys_read+0x40/0x65
+>>>>>>>  [<c0402a68>] ? sysenter_do_call+0x12/0x36
+>>>>>>>
+>>>>>>> (We can even get other crashes..)
+>>>>>>>
+>>>>>> Can you send me your full bootlog and config. I'm not able to reproduce 
+>>>>>> this.
+>>>>> And the SHA1 of the HEAD of the git repo you are using.
+>>>>>
+>>>>> Thanks,
+>>>>>
+>>>> the HEAD: 9ce5424d75e56891905b77d1589924765e62059a + this patch
+>>>>
+>>>> (I commented out "hi" from the sample module)
+>>> I found that commenting out the "hi" too helped in causing races.
+>>>
+>>>> I think it's because "type" is wrapped back to 0. I changed the test script
+>>>> like this:
+>>>>
+>>>> while (foo_bar.id < 65536)
+>>>> {
+>>>> 	insmod trace-events-sample.ko
+>>>> 	rmmod trace-events-sample.ko
+>>>> }
+>>>>
+>>>> for ((; ;))
+>>>> {
+>>>>         insmod /home/lizf/linux-2.6-tip/samples/trace_events/*.ko
+>>>>         echo trace-events-sample:foo_bar > /mnt/tracing/set_event
+>>>>         sleep 1
+>>>>         cat /mnt/tracing/trace
+>>>>         rmmod /home/lizf/linux-2.6-tip/samples/trace_events/*.ko
+>>>> }
+>>>>
+>>> Could you try my git repo with my latest changes?
+>>>
+>>> git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+>>>
+>>>  branch: rfc/debugfs
+>>>
+>> The bug won't be triggered with your latest changes, but it has nothing
+>> to do with the debugfs patch, it's because this patch:
+>> 	"tracing/events: reuse trace event ids after overflow"
+>>
+>> But that patch just hides the bug not fixes it.. I thought I explained
+>> the bug clearly. :(
+>>
+>> I think the bug is triggered because a wrong trace_event->trace() is called.
+>>
+>>
+>> Before the above patch:
+>>    id overflowed
+>>  =>foo_bar.id == 6 == TRACE_BPRINT
+>>  =>echo foo_bar > set_event
+>>  =>sleep N secs
+>>  =>rmmod sample
+>>  =>cat trace
+>>    =>trace_bprint_event->trace() is called!!
+>>      =>oops!!!
+>>
+>>
+>> After the above patch:
+>>
+>>    Suppose id 0 ~ 65534 are used, only 65535 is left, and we have 2 different
+>>    sample module trace_event subsystems foo and bar.
+>>  =>insmod foo.ko, and foo.id == 65535
+>>  =>echo foo > set_event
+>>  =>sleep N secs
+>>  =>rmmod foo.ko
+>>  =>insmod bar.ko, and bar.id == 65535
+>>  =>cat trace
+>>    =>bar->trace() will be called on events which were generated by foo!
+>>
+>> So is it possible/sane to discard corresponding events from ring buffer when
+>> we unload a module?
+>>
+>> Correct me if I'm wrong..
+> 
+> OK, I understand what you are saying.
+> 
+> You are saying that if we reuse the event id, then there is a case that 
+> the event can be used by another module, and if we have old data in the 
+> ring buffer the other module's callback will be called with the previous 
+> module's data.
+> 
+> Right?
+> 
 
-Hi David,
+You got it. :)
 
-I am getting this BUG_ON with linux-2.6.30-rc4-git1, that I wasn't
-getting with linux-2.6.30-rc3:
+> 
+> A module should not be storing pointers into the ring buffer. We do 
+> that with the trace_print, but I think we were suppose to do something 
+> special if we detect that it is a module being called.
+> 
+>   Frederic?
+> 
+> If the module only stores data and never a pointer, then the worst thing 
+> stale data would do is show junk.
+> 
+> Scanning the ring buffer and discarding the module data can be very racy. 
+> We would need to disable the ring buffer while doing this. Probably the 
+> best thing to do is to simpy reset the ring buffers if it detects that a 
+> module is being unloaded and has callbacks. The data in the ring buffer is 
+> garbage anyway, so might as well reset it.
+> 
 
-
-uClinux/COLDFIRE(m520x)
-COLDFIRE port done by Greg Ungerer, gerg@snapgear.com
-Flat model support (C) 1998,1999 Kenneth Albanowski, D. Jeff Dionne
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 8128
-Kernel command line: root=/dev/mtdblock0
-NR_IRQS:256
-PID hash table entries: 128 (order: 7, 512 bytes)
-Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)
-Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)
-Memory available: 30160k/32768k RAM, (1144k kernel code, 159k data)
-SLUB: Genslabs=13, HWalign=16, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
-Calibrating delay loop... 109.36 BogoMIPS (lpj=546816)
-Mount-cache hash table entries: 512
-net_namespace: 520 bytes
-NET: Registered protocol family 16
-bio: create slab <bio-0> at 0
-NET: Registered protocol family 2
-IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
-TCP established hash table entries: 1024 (order: 1, 8192 bytes)
-TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
-TCP: Hash tables configured (established 1024 bind 1024)
-TCP reno registered
-NET: Registered protocol family 1
-ROMFS MTD (C) 2007 Red Hat, Inc.
-io scheduler noop registered (default)
-ColdFire internal UART serial driver
-ttyS0 at MMIO 0xfc060000 (irq = 90) is a ColdFire UART
-console [ttyS0] enabled
-ttyS1 at MMIO 0xfc064000 (irq = 91) is a ColdFire UART
-ttyS2 at MMIO 0xfc068000 (irq = 92) is a ColdFire UART
-brd: module loaded
-FEC Ethernet Driver
-fec: PHY @ 0x1, ID 0x20005c90 -- DP83848
-eth0 (fec): not using net_device_ops yet
-uclinux[mtd]: RAM probe address=0x40165e98 size=0xdc000
-Creating 1 MTD partitions on "RAM":
-0x000000000000-0x0000000dc000 : "ROMfs"
-TCP cubic registered
-NET: Registered protocol family 17
-VFS: Mounted root (romfs filesystem) readonly on device 31:0.
-Freeing unused kernel memory: 44k freed (0x40150000 - 0x4015a000)
-BUG: failure at mm/nommu.c:518/add_nommu_region()!
-Kernel panic - not syncing: BUG!
-
-
-This is on a ColdFire non-MMU target (using ROMfs with MTD backing
-store).
-
-Could it be related to the recent changes to mm/nommu.c?
-I didn't revert those to see yet...
-
-Removing the BUG_ON() I can boot all the way up, not sure if it
-is still a valid check.
-
-Regards
-Greg
-
-
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+I agree, if no better way.
