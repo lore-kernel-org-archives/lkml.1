@@ -1,97 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbZEEIG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZEEIKJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758028AbZEEIG3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 04:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbZEEIGO
+	id S1755218AbZEEIKJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 04:10:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbZEEIJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 04:06:14 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:51161 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752050AbZEEIGM (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 04:06:12 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: paulmck@linux.vnet.ibm.com
-Cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, tridge@samba.org,
-       Al Viro <viro@ZenIV.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steve French <smfrench@gmail.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-In-Reply-To: Your message of "Mon, 04 May 2009 20:34:42 PDT."
-             <20090505033442.GB6982@linux.vnet.ibm.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20090504143919.GA6740@linux.vnet.ibm.com> <20090504150834.GZ8822@parisc-linux.org> <20090504153815.GB6740@linux.vnet.ibm.com> <20090504155505.GA8822@parisc-linux.org> <20090504161024.GC6740@linux.vnet.ibm.com> <20090504162252.GB8822@parisc-linux.org> <20090504221208.GB29402@kroah.com> <20090505020149.GE8822@parisc-linux.org> <20090505021121.GA6982@linux.vnet.ibm.com> <20090505021853.GF8822@parisc-linux.org>
-            <20090505033442.GB6982@linux.vnet.ibm.com>
+	Tue, 5 May 2009 04:09:44 -0400
+Received: from mx32b01.es6.egwn.net ([195.10.6.123]:51074 "EHLO
+	mx1.es6.egwn.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754341AbZEEIJl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 04:09:41 -0400
+Date: Tue, 5 May 2009 10:09:39 +0200
+From: Matthias Saou 
+	<thias@spam.spam.spam.spam.spam.spam.spam.egg.and.spam.freshrpms.net>
+To: Willy Tarreau <w@1wt.eu>
+Cc: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Wrong network usage reported by /proc
+Message-ID: <20090505100939.1e0932c4@python3.es.egwn.lan>
+In-Reply-To: <20090505055032.GA29582@1wt.eu>
+References: <20090504171408.3e13822c@python3.es.egwn.lan>
+	<49FF2BB2.4030700@cosmosbay.com>
+	<20090504211151.74622f29@python3.es.egwn.lan>
+	<20090505050435.GK570@1wt.eu>
+	<49FFCD08.7050600@cosmosbay.com>
+	<20090505055032.GA29582@1wt.eu>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1241510758_53910P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 05 May 2009 04:05:58 -0400
-Message-ID: <74785.1241510758@turing-police.cc.vt.edu>
+Content-Type: multipart/mixed; boundary="MP_/l6Kc96JmQ=e_4SXVT+=usdR"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1241510758_53910P
-Content-Type: text/plain; charset=iso-8859-1
+--MP_/l6Kc96JmQ=e_4SXVT+=usdR
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Mon, 04 May 2009 20:34:42 PDT, =22Paul E. McKenney=22 said:
+Willy Tarreau wrote :
 
-> I am more than happy to let you search the case law on this one.
+> On Tue, May 05, 2009 at 07:22:16AM +0200, Eric Dumazet wrote:
+> > Willy Tarreau a =E9crit :
+> > > On Mon, May 04, 2009 at 09:11:51PM +0200, Matthias Saou wrote:
+> > >> Eric Dumazet wrote :
+> > >>
+> > >>> Matthias Saou a =E9crit :
+> > >>>> Hi,
+> > >>>>
+> > >>>> I'm posting here as a last resort. I've got lots of heavily used R=
+HEL5
+> > >>>> servers (2.6.18 based) that are reporting all sorts of impossible
+> > >>>> network usage values through /proc, leading to unrealistic snmp/ca=
+cti
+> > >>>> graphs where the outgoing bandwidth used it higher than the physic=
+al
+> > >>>> interface's maximum speed.
+> > >>>>
+> > >>>> For some details and a test script which compares values from /proc
+> > >>>> with values from tcpdump :
+> > >>>> https://bugzilla.redhat.com/show_bug.cgi?id=3D489541
+> > >>>>
+> > >>>> The values collected using tcpdump always seem realistic and match=
+ the
+> > >>>> values seen on the remote network equipments. So my obvious conclu=
+sion
+> > >>>> (but possibly wrong given my limited knowledge) is that something =
+is
+> > >>>> wrong in the kernel, since it's the one exposing the /proc interfa=
+ce.
+> > >>>>
+> > >>>> I've reproduced what seems to be the same problem on recent kernel=
+s,
+> > >>>> including the 2.6.27.21-170.2.56.fc10.x86_64 I'm running right now=
+. The
+> > >>>> simple python script available here allows to see it quite easily :
+> > >>>> https://www.redhat.com/archives/rhelv5-list/2009-February/msg00166=
+.html
+> > >>>>
+> > >>>>  * I run the script on my Workstation, I have an FTP server enabled
+> > >>>>  * I download a DVD ISO from a remote workstation : The values mat=
+ch
+> > >>>>  * I start ping floods from remote workstations : The values repor=
+ted
+> > >>>>    by /proc are much higher than the ones reported by tcpdump. I u=
+sed
+> > >>>>    "ping -s 500 -f myworkstation" from two remote workstations
+> > >>>>
+> > >>>> If there's anything flawed in my debugging, I'd love to have someo=
+ne
+> > >>>> point it out to me. TIA to anyone willing to have a look.
+> > >>>>
+> > >>>> Matthias
+> > >>>>
+> > >>> I could not reproduce this here... what kind of NIC are you using on
+> > >>> affected systems ? Some ethernet drivers report stats from card its=
+elf,
+> > >>> and I remember seeing some strange stats on some hardware, but I ca=
+nnot
+> > >>> remember which one it was (we were reading NULL values instead of
+> > >>> real ones, once in a while, maybe it was a firmware issue...)
+> > >> My workstation has a Broadcom BCM5752 (tg3 module). The servers which
+> > >> are most affected have Intel 82571EB (e1000e). But the issue is that
+> > >> with /proc, the values are a lot _higher_ than with tcpdump, and the
+> > >> tcpdump values seem to be the correct ones.
+> > >=20
+> > > the e1000 chip reports stats every 2 seconds. So you have to collect
+> > > stats every 2 seconds otherwise you get "camel-looking" stats.
+> > >=20
+> >=20
+> > I looked at e1000e driver, and apparently tx_packets & tx_bytes are com=
+puted
+> > by the TX completion routine, not by the chip.
+>=20
+> Ah I thought that was the chip which returned those stats every 2 seconds,
+> otherwise I don't see the reason to delay their reporting. Wait, I'm spea=
+king
+> about e1000, never tried e1000e. Maybe there have been changes there. Any=
+way,
+> Matthias talked about RHEL5's 2.6.18 in which I don't think there was e10=
+00e.
+>=20
+> Anyway we did not get any concrete data for now, so it's hard to tell (I
+> haven't copy-pasted the links above in my browser yet).
 
-Ya know, it's that same =22I'll let your lawyers rediscover the stuff tha=
-t mine
-already found=22 issue that's making this thread a pain.
+If you need any more data, please just ask. What makes me wonder most,
+though, is that tcpdump and iptraf report what seem to be correct
+bandwidth values (they seem to use the same low level access for their
+counters) whereas snmp and ifconfig (which seem to use /proc for
+theirs) report unrealistically high values.
 
-Case saying (C) *possibly* sufficient (ruling 'c-in-hexagon' was sufficie=
-nt):
-Videotronics v. Bend Electronics, 586 F.Supp. 478, 481 (D. Nev. 1984)
+The tcpdump vs. /proc would be the first thing to look at, since it
+might give hints as to where the problem might lie, no?
 
-Case saying it might not be:
-Forry v. Neundorfer, 837 F.2d 259, 266 (6th Cir., 1988)
+=46rom there, I could collect any data one might find relevant to
+diagnose further.
 
-Neundorfer says:
+I'm attaching the simple python script I've used for testing.
 
-=22Videotronics, Inc. v. Bend Electronics, 586 F.Supp. 478 (D.Nev.1984) h=
-eld that
-a letter =22C=22 enclosed within a hexagon met the statutory requirements=
-, but
-suggested in dicta that the symbol =22(C)=22 might not be sufficient beca=
-use
-parentheses, unlike a hexagon or a circle, would not completely enclose t=
-he
-=22C=22. Id. at 481. However, if a =22C=22 in a hexagon is sufficient, an=
- argument
-exists that a =22C=22 in parentheses is sufficient. Defendants here had a=
-ctual
-notice of copyright. The trial of this action may provide a better record=
- on
-which to finally decide whether the symbol =22(C)=22 is sufficiently simi=
-lar to a
-=22C=22 in a circle to serve as notice of a copyright. Plaintiff is appar=
-ently now
-using the =22C=22 in a circle. It may therefore be entitled to rely on 40=
-5(a)(2)
-even if the earlier symbol was not sufficient.=22
+Matthias
 
-Clear as mud, unless you have a more recent cite. :)
+--=20
+Clean custom Red Hat Linux rpm packages : http://freshrpms.net/
+Fedora release 10 (Cambridge) - Linux kernel
+2.6.27.21-170.2.56.fc10.x86_64 Load : 0.19 0.15 0.05
 
---==_Exmh_1241510758_53910P
-Content-Type: application/pgp-signature
+--MP_/l6Kc96JmQ=e_4SXVT+=usdR
+Content-Type: text/x-python
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=bandwidth-monitor.py
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+#!/usr/bin/python
+import re
+import time
+import thread
+import getopt
+import signal
+import sys
+from subprocess import Popen, PIPE, STDOUT
 
-iD8DBQFJ//NmcC3lWbTT17ARAprzAKDtRMwHywpLiVwg1TTdTKYyHSWW/gCgyTgo
-NoSVc0m9SJiXDVZAqBKwpBs=
-=QXy9
------END PGP SIGNATURE-----
+# TODO print not refreshing correctly
 
---==_Exmh_1241510758_53910P--
+def get_bytes_from_tcpdump(interface, src, byte_values):
+    command = Popen(['tcpdump', '-n', '-e', '-p', '-l', '-v', '-i',
+                     interface, 'src', src], stdout=PIPE, stderr=PIPE,
+                     bufsize=0)
+    while 1:
+        line = command.stdout.readline()
+        if not line:
+            # time.sleep(1)
+            continue
+        bytes_pattern = re.search('length \d*', line)
+        # dest_pattern = re.search('> .*: ', line)
+
+        if bytes_pattern:
+            s = bytes_pattern.group(0)
+            bytes = int(s[7:]) + 5
+        else:
+            # ARP packet
+            bytes = 28 + 14
+
+        byte_values[0] += bytes
+        byte_values[1] += 1
+        # time.sleep(1)
+
+        # if dest_pattern:
+        #     s = dest_pattern.group()
+        #     dest = s[2:len(s)-2]
+
+def get_bytes_from_proc(interface, byte_values):
+    wrap = 2**32
+    offset = read_proc(interface)
+    while(1):
+        current_bytes = read_proc(interface)
+        increase = current_bytes - offset
+        if increase < 0:
+            increase = (wrap - (byte_values[0] % wrap)) + current_bytes
+        byte_values[0] += increase
+        offset = current_bytes
+        time.sleep(1)
+
+def get_bytes_from_ifconfig(interface, byte_values):
+    offset = read_ifconfig(interface)
+    while(1):
+        bytes = read_ifconfig(interface)
+        byte_values[0] += (bytes - offset)
+        offset = bytes
+        time.sleep(1)
+
+def read_ifconfig(interface):
+    command = Popen(['/sbin/ifconfig', interface], stdout=PIPE, stderr=PIPE)
+    # received bytes
+    # lines = command.communicate()[0].split()[34]
+    # transmitted bytes
+    try:
+        s = command.communicate()
+    except Exception, e:
+        print "failed: %r" % e
+    bytes = int(s[0].split()[38].split(':')[1])
+    return bytes
+
+def read_proc(interface):
+    f = open('/proc/net/dev')
+    for line in f:
+        values = line.split()
+        i = values[0].split(':')[0]
+        if interface == i:
+            bytes = int(values[8])
+            # received bytes
+            # bytes = int(values[0].split(':')[1])
+            f.close()
+            return bytes
+    f.close()
+
+def signal_handler(signum, frame):
+#    print "bye"
+    sys.exit(0)
+
+def main(interface, host):
+    signal.signal(signal.SIGINT, signal_handler)
+
+    byte_value_tcpdump = [0, 0]
+    byte_value_proc = [0]
+    byte_value_ifconfig = [0]
+
+    thread.start_new_thread(get_bytes_from_tcpdump,
+                            (interface, host, byte_value_tcpdump))
+    thread.start_new_thread(get_bytes_from_proc, (interface, byte_value_proc))
+    # thread.start_new_thread(get_bytes_from_ifconfig, (interface,
+    #                                                   byte_value_ifconfig))
+
+    while 1:
+        s = "TCPDUMP: %d (%d packets)\nPROC:    %d" % (byte_value_tcpdump[0],
+                                                       byte_value_tcpdump[1],
+                                                       byte_value_proc[0])
+        print s
+        time.sleep(1)
+
+def usage():
+    print "Usage: monitor -i interface (e.g. eth0) -m host_ip"
+
+if __name__ == "__main__":
+    interface = None
+    ip = None
+    opts, args = getopt.getopt(sys.argv[1:], "hi:m:", ["help"])
+    for o, a in opts:
+        if o == '-i':
+            interface = a
+        elif o == '-m':
+            ip = a
+        elif o in ['-h', '--help']:
+            usage()
+            sys.exit()
+    if not interface or not ip:
+        usage()
+        sys.exit()
+
+    main(interface, ip)
+
+
+--MP_/l6Kc96JmQ=e_4SXVT+=usdR--
