@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbZEENSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbZEENW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755621AbZEENSu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 09:18:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbZEENSk
+	id S1752823AbZEENW7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 09:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbZEENWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 09:18:40 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:52464 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750935AbZEENSj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 09:18:39 -0400
-Date: Tue, 5 May 2009 21:18:35 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jarod Wilson <jarod@redhat.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: [PATCH] crypto: add ctr(aes) test vectors
-Message-ID: <20090505131835.GA18659@gondor.apana.org.au>
-References: <200904282118.22823.jarod@redhat.com> <20090504111010.GA4991@gondor.apana.org.au> <200905041624.45060.jarod@redhat.com>
+	Tue, 5 May 2009 09:22:49 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:39977 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750856AbZEENWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 09:22:48 -0400
+Date: Tue, 5 May 2009 15:22:43 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: richard@rsk.demon.co.uk, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: p80211wext.c: problem with IW_ENCODE_ALG_WEP
+Message-ID: <Pine.LNX.4.64.0905051522010.9552@pc-004.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905041624.45060.jarod@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 04:24:44PM -0400, Jarod Wilson wrote:
->
-> Indeed, the first enc/dec operation after we set the counter *is*
-> completely deterministic across all implementations, the AESAVS
-> is referring to tests with multiple operations, which aren't
-> possible, due to varying implementations of counter increment
-> routines. This patch adds test vectors for ctr(aes), using the
-> first block input values from Appendix F.5 of NIST Special Pub
-> 800-38A.
+From: Julia Lawall <julia@diku.dk>
 
-Well, our ctr(aes) must be completely deterministic as it is
-used as the base for CCM and GCM.  In fact, if it weren't so
-then you can't use it for anything since two implementations
-may produces different outputs.
+The expression !(ext->alg & IW_ENCODE_ALG_WEP) appears to be incorrect,
+because there are several possible values for ext->alg that give 1 when
+bit-anded with IW_ENCODE_ALG_WEP.  Therefore Richard Kennedy suggested to
+rewrite the code with !=
 
-So if you could resend some vectors that test multiple blocks
-then I'll happily add them.
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+---
+ .../drivers/staging/wlan-ng/p80211wext.c           |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/staging/wlan-ng/p80211wext.c b/drivers/staging/wlan-ng/p80211wext.c
+index 96078b0..e00e305 100644
+--- a/drivers/staging/wlan-ng/p80211wext.c
++++ b/drivers/staging/wlan-ng/p80211wext.c
+@@ -1487,7 +1487,7 @@ static int p80211wext_set_encodeext(struct net_device *dev,
+ 	}
+ 
+ 	if (ext->ext_flags & IW_ENCODE_EXT_SET_TX_KEY) {
+-		if (!(ext->alg & IW_ENCODE_ALG_WEP)) {
++		if (ext->alg != IW_ENCODE_ALG_WEP) {
+ 			pr_debug("asked to set a non wep key :(");
+ 			return -EINVAL;
+ 		}
