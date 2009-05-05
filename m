@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbZEEVXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758807AbZEEVY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755670AbZEEVXv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 17:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZEEVXj
+	id S1758807AbZEEVY3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 17:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbZEEVYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 17:23:39 -0400
-Received: from cmpxchg.org ([85.214.51.133]:56493 "EHLO cmpxchg.org"
+	Tue, 5 May 2009 17:24:20 -0400
+Received: from kroah.org ([198.145.64.141]:39225 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752600AbZEEVXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 17:23:38 -0400
-Date: Tue, 5 May 2009 23:21:39 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: magnus.damm@gmail.com, linux-media@vger.kernel.org, hverkuil@xs4all.nl,
-       lethal@linux-sh.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/3] mm: introduce follow_pte()
-Message-ID: <20090505212139.GA2559@cmpxchg.org>
-References: <20090501181449.GA8912@cmpxchg.org> <1241430874-12667-1-git-send-email-hannes@cmpxchg.org> <20090505122442.6271c7da.akpm@linux-foundation.org> <20090505203807.GB2428@cmpxchg.org> <20090505140517.bef78dd3.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	id S1754063AbZEEVYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 17:24:19 -0400
+Date: Tue, 5 May 2009 07:55:31 -0700
+From: Greg KH <greg@kroah.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: stable@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [stable] [PATCH] amd-iommu: fix iommu flag masks
+Message-ID: <20090505145531.GA4579@kroah.com>
+References: <1241431907-30225-1-git-send-email-joerg.roedel@amd.com> <20090504230147.GA10086@kroah.com> <20090505102137.GD4059@amd.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090505140517.bef78dd3.akpm@linux-foundation.org>
+In-Reply-To: <20090505102137.GD4059@amd.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 05, 2009 at 02:05:17PM -0700, Andrew Morton wrote:
-> On Tue, 5 May 2009 22:38:07 +0200
-> Johannes Weiner <hannes@cmpxchg.org> wrote:
+On Tue, May 05, 2009 at 12:21:37PM +0200, Joerg Roedel wrote:
+> On Mon, May 04, 2009 at 04:01:47PM -0700, Greg KH wrote:
+> > On Mon, May 04, 2009 at 12:11:47PM +0200, Joerg Roedel wrote:
+> > > Impact: fix initialization of iommu flags
+> > > 
+> > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> > 
+> > This patch does not look to be in Linus's tree yet.
+> > 
+> > What is the plan for it to get there?
 > 
-> > On Tue, May 05, 2009 at 12:24:42PM -0700, Andrew Morton wrote:
-> > > On Mon,  4 May 2009 11:54:32 +0200
-> > > Johannes Weiner <hannes@cmpxchg.org> wrote:
-> > > 
-> > > > A generic readonly page table lookup helper to map an address space
-> > > > and an address from it to a pte.
-> > > 
-> > > umm, OK.
-> > > 
-> > > Is there actually some point to these three patches?  If so, what is it?
-> > 
-> > Magnus needs to check for physical contiguity of a VMAs backing pages
-> > to support zero-copy exportation of video data to userspace.
-> > 
-> > This series implements follow_pfn() so he can walk the VMA backing
-> > pages and ensure their PFNs are in linear order.
-> > 
-> > [ This patch can be collapsed with 2/3, I just thought it would be
-> >   easier to read the diffs when having them separate. ]
-> > 
-> > 1/3 and 2/3: factor out the page table walk from follow_phys() into
-> > follow_pte().
-> > 
-> > 3/3: implement follow_pfn() on top of follow_pte().
-> 
-> So we could bundle these patches with Magnus's patchset, or we could
-> consider these three patches as a cleanup or something.
->
-> Given that 3/3 introduces an unused function, I'm inclined to sit tight
-> and await Magnus's work.
+> I sent it to Ingo for 2.6.30. I think it will be upstream soon.
 
-Yeah, I didn't see the video guys responding on Magnus' patch yet, so
-let's wait for them.
+Please send it to stable@kernel.org when it goes into Linus's tree, so
+we know to apply it then.
 
-Magnus, the actual conversion of your code should be trivial, could
-you respin it on top of these three patches using follow_pfn() then?
+thanks,
 
-	Thanks, Hannes
+greg k-h
