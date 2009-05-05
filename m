@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757238AbZEENlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbZEENp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757238AbZEENlY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 09:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbZEENlO
+	id S1752600AbZEENp1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 09:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbZEENpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 09:41:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44807 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751774AbZEENlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 09:41:13 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <49FF96A7.5040401@snapgear.com>
-References: <49FF96A7.5040401@snapgear.com>
-To: Greg Ungerer <gerg@snapgear.com>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: BUG: failure at mm/nommu.c:518/add_nommu_region()
-Date: Tue, 05 May 2009 14:41:01 +0100
-Message-ID: <3662.1241530861@redhat.com>
+	Tue, 5 May 2009 09:45:09 -0400
+Received: from mtagate2.uk.ibm.com ([194.196.100.162]:38836 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751558AbZEENpH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 09:45:07 -0400
+From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+Organization: IBM
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 2.6.30-rc5] ehea: fix invalid pointer access
+Date: Tue, 5 May 2009 15:45:05 +0200
+User-Agent: KMail/1.9.9
+Cc: David Miller <davem@davemloft.net>, themann@de.ibm.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, raisch@de.ibm.com,
+       ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+       ossthema@de.ibm.com, osstklei@de.ibm.com
+References: <200905051319.05806.hannes.hering@linux.vnet.ibm.com> <25628.1241514687@redhat.com> <26110.1241525994@redhat.com>
+In-Reply-To: <26110.1241525994@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905051545.05877.hannes.hering@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg Ungerer <gerg@snapgear.com> wrote:
+On Tuesday 05 May 2009 14:19:54 David Howells wrote:
+> In that case, you might want to move the prefetchw() calls in the following:
+> 
+> 		pref = skb_array[x];
+> 	-	prefetchw(pref);
+> 	-	prefetchw(pref + EHEA_CACHE_LINE);
+> 	+	if (pref) {
+> 	+		prefetchw(pref);
+> 	+		prefetchw(pref + EHEA_CACHE_LINE);
+> 
+> to before the if-statement.  That way the CPU can be attempting the prefetch
+> whilst it's chewing over the test and branch.  prefetching shouldn't fault on
+> a bad address.
+> 
+> David
+Hi David,
 
-> BUG: failure at mm/nommu.c:518/add_nommu_region()!
+you are right so far, but actually the prefetch calls on POWER also contain
+an if statement to check if the address is valid (i. e. non-zero). We never
+have the case that the pref != NULL and pref->data == NULL. And the situation
+of pref==NULL is very rare. This means there is no benefit moving our if
+statement down from performance perspective if we assume that our if does not
+take longer then the if in the prefetch command. We can add an
+if(likely(pref) if you like. In fact doing the if statement as we do it now
+we actually save the prefetch if statements in case we hit the situation of
+pref==NULL.
 
-Can you find out some more information about the region in question, perhaps
-with the attached patch?
+Regards
 
-Also if you can check to see whether the region is within the ROMFS image.
-
-David
----
-diff --git a/mm/nommu.c b/mm/nommu.c
-index cdc6f60..ba9e230 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -515,7 +515,18 @@ static void add_nommu_region(struct vm_region *region)
- 
- 	validate_nommu_regions();
- 
--	BUG_ON(region->vm_start & ~PAGE_MASK);
-+	if (region->vm_start & ~PAGE_MASK) {
-+		printk(KERN_ERR "___ REGION ERROR ___\n");
-+		printk(KERN_ERR "%lx-%lx\n", region->vm_start, region->vm_end);
-+		printk(KERN_ERR "fs=%s file=%s\n",
-+		       region->vm_file ?
-+		       region->vm_file->f_path.dentry->d_inode->i_sb->s_type->name :
-+		       "*anon*",
-+		       region->vm_file ?
-+		       region->vm_file->f_path.dentry->d_name.name :
-+		       (const unsigned char *) "*anon*");
-+		BUG();
-+	}
- 
- 	parent = NULL;
- 	p = &nommu_region_tree.rb_node;
+Hannes
