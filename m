@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759282AbZEEXvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758947AbZEEXxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759282AbZEEXvp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 19:51:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbZEEXvb
+	id S1758947AbZEEXxq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 19:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbZEEXxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 19:51:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55269 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759061AbZEEXva (ORCPT
+	Tue, 5 May 2009 19:53:37 -0400
+Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:32136
+	"EHLO WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753464AbZEEXxg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 19:51:30 -0400
-Date: Tue, 5 May 2009 16:47:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: chrisw@sous-sol.org, roland@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] ptrace: ptrace_attach: check PF_KTHREAD +
- exit_state instead of ->mm
-Message-Id: <20090505164733.54cd4ca4.akpm@linux-foundation.org>
-In-Reply-To: <20090505224722.GA954@redhat.com>
-References: <20090505224722.GA954@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 5 May 2009 19:53:36 -0400
+X-BigFish: VS28(zzzz1202h10c0jzzz2dh6bh15fn87il62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-DOMAIN-IP-MATCH: fail
+Message-ID: <4A00D16A.3000908@am.sony.com>
+Date: Tue, 5 May 2009 16:53:14 -0700
+From: Frank Rowand <frank.rowand@am.sony.com>
+Reply-To: frank.rowand@am.sony.com
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: mingo@redhat.com
+CC: tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: [patch] RT: calc_load() uses wrong variable to calculate RT load
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 May 2009 23:53:22.0949 (UTC) FILETIME=[ACA0D350:01C9CDDC]
+X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 May 2009 00:47:22 +0200
-Oleg Nesterov <oleg@redhat.com> wrote:
+In calc_load() use RT tasks to calculate the RT load.
 
-> - Add PF_KTHREAD check to prevent attaching to the kernel thread
->   with a borrowed ->mm.
-> 
->   With or without this change we can race with daemonize() which
->   can set PF_KTHREAD or clear ->mm after ptrace_attach() does the
->   check, but this doesn't matter because reparent_to_kthreadd()
->   does ptrace_unlink().
-> 
-> - Kill "!task->mm" check. We don't really care about ->mm != NULL,
->   and the task can call exit_mm() right after we drop task_lock().
->   What we need is to make sure we can't attach after exit_notify(),
->   check task->exit_state != 0 instead.
-> 
+Signed-off-by: Frank Rowand <frank.rowand@am.sony.com>
 
-These patches make a mess of utrace-core.patch.  Do we really want to do that?
+---
+
+Ingo,
+
+In calc_load():
+
+#ifdef CONFIG_PREEMPT_RT
+                active_rt_tasks = count_active_rt_tasks();
+#endif
+
+but active_rt_tasks is then not used.  I have not read through enough code
+to verify my supposition, but the obvious use of this variable would be for
+the calculation of the RT load average.
+
+If my supposition is correct, this patch fixes the problem.
+
+The patch is compile tested only.
+
+-Frank Rowand
+Sony Corporation of America
+
+
+Index: linux-2.6.29.2/kernel/timer.c
+===================================================================
+--- linux-2.6.29.2.orig/kernel/timer.c
++++ linux-2.6.29.2/kernel/timer.c
+@@ -1249,9 +1249,9 @@ static inline void calc_load(unsigned lo
+ 			CALC_LOAD(avenrun[1], EXP_5, active_tasks);
+ 			CALC_LOAD(avenrun[2], EXP_15, active_tasks);
+ #ifdef CONFIG_PREEMPT_RT
+-			CALC_LOAD(avenrun_rt[0], EXP_1, active_tasks);
+-			CALC_LOAD(avenrun_rt[1], EXP_5, active_tasks);
+-			CALC_LOAD(avenrun_rt[2], EXP_15, active_tasks);
++			CALC_LOAD(avenrun_rt[0], EXP_1, active_rt_tasks);
++			CALC_LOAD(avenrun_rt[1], EXP_5, active_rt_tasks);
++			CALC_LOAD(avenrun_rt[2], EXP_15, active_rt_tasks);
+ #endif
+ 			count += LOAD_FREQ;
+ 
+
