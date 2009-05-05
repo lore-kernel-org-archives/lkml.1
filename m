@@ -1,111 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbZEEP1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754282AbZEEP1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752676AbZEEP1Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 11:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbZEEP1P
+	id S1754282AbZEEP1l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 11:27:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbZEEP1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 11:27:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42350 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751197AbZEEP1O (ORCPT
+	Tue, 5 May 2009 11:27:23 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:52847 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752912AbZEEP1W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 11:27:14 -0400
-Date: Tue, 5 May 2009 08:17:43 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: security@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric Paris <eparis@redhat.com>, Jake Edge <jake@lwn.net>,
-       linux-security-module@vger.kernel.org, mingo@redhat.com,
-       Roland McGrath <roland@redhat.com>, Matt Mackall <mpm@selenic.com>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [Security] [PATCH] proc: avoid information leaks to non-privileged
- processes
-In-Reply-To: <m1r5z40yyr.fsf@fess.ebiederm.org>
-Message-ID: <alpine.LFD.2.01.0905050755310.4983@localhost.localdomain>
-References: <20090504125114.5e391564@chukar> <alpine.LFD.2.01.0905041159480.4983@localhost.localdomain> <20090504125124.0f469970@infradead.org> <m1vdogbows.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0905041514350.4983@localhost.localdomain>
- <alpine.LFD.2.01.0905041646240.4983@localhost.localdomain> <m1r5z40yyr.fsf@fess.ebiederm.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 5 May 2009 11:27:22 -0400
+Date: Tue, 5 May 2009 17:31:59 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] x86: adapt CPU topology detection for AMD Magny-Cours
+Message-ID: <20090505153159.GN23223@one.firstfloor.org>
+References: <20090504173330.GF28728@alberich.amd.com> <87vdogbp4g.fsf@basil.nowhere.org> <20090505092238.GB29045@alberich.amd.com> <20090505093520.GL23223@one.firstfloor.org> <20090505104848.GC29045@alberich.amd.com> <20090505144027.GD29045@alberich.amd.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090505144027.GD29045@alberich.amd.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 05, 2009 at 04:40:27PM +0200, Andreas Herrmann wrote:
 
+I think the general problem with your patchset is that it seems
+more like a solution in search of a problem, instead of the proper other
+way around.
 
-On Tue, 5 May 2009, Eric W. Biederman wrote:
+> > > > > Thus you see just one NUMA node in
+> > > > > /sys/devices/system/node.  But on such a configuration you still see
+> > > > > (and you want to see) the correct CPU topology information in
+> > > > > /sys/devices/system/cpu/cpuX/topology. Based on that you always can
+> > > > > figure out which cores are on the same physical package independent of
+> > > > > availability and contents of SRAT and even with kernels that are
+> > > > > compiled w/o NUMA support.
+> > > > 
+> > > > So you're adding a x86 specific mini NUMA for kernels without NUMA
+> > > > (which btw becomes more and more an exotic case -- modern distros
+> > > > are normally unconditionally NUMA) Doesn't seem very useful.
+> > > 
+> > > No, I just tried to give an example why you can't derive CPU topology
+> > 
+> > First I must say it's unclear to me if CPU topology is really generally
+> > useful to export to the user.
 > 
-> Yes, not mixing the result back (which would give us some kind of
-> pseudo random number generator) is the problem.
+> I think it is useful.
 
-Guys, so how about this?
+You forgot to state for what?
 
-It's a really simple patch that basically just open-codes the current 
-"secure_ip_id()" call, but when open-coding it we now use a _static_ 
-hashing area, so that it gets updated every time.
+> 
+> (Linux already provides this kind of information.  But it should pass
+> only useful/correct information to user space. For Magny-Cours sibling
+> information provided by current Linux kernel is not very useful.)
+> 
+> > If they want to know how far cores
+> > are away they should look at cache sharing and NUMA distances (especially
+> > cache topology gives a very good approximation anyways). For other
+> > purposes like power management just having arbitary sets (x is shared
+> > with y in a set without hierarchy) seems to work just fine.
+> 
+> (a) Are you saying that users have to check NUMA distances when they
+>     want to pin tasks on certain CPUs?
 
-And to make sure somebody can't just start from the same original seed of 
-all-zeroes, and then do the "half_md4_transform()" over and over until 
-they get the same sequence as the kernel has, each iteration also mixes in 
-the same old "current->pid + jiffies" we used - so we should now have a 
-regular strong pseudo-number generator, but we also have one that doesn't 
-have a single seed.
+CPU == core ? No you just bind to that CPU. Was that a trick question?
 
-Note: the "pid + jiffies" is just meant to be a tiny tiny bit of noise. It 
-has no real meaning. It could be anything. I just picked the previous 
-seed, it's just that now we keep the state in between calls and that will 
-feed into the next result, and that should make all the difference.
+If you mean package -- they should probably just bind to one of the two nodes.
 
-I made that hash be a per-cpu data just to avoid cache-line ping-pong: 
-having multiple CPU's write to the same data would be fine for randomness, 
-and add yet another layer of chaos to it, but since get_random_int() is 
-supposed to be a fast interface I did it that way instead. I considered 
-using "__raw_get_cpu_var()" to avoid any preemption overhead while still 
-getting the hash be _mostly_ ping-pong free, but in the end good taste won 
-out.
+> 
+> (b) Just an example, if SRAT describes
+> 
+>     "Either a memory less node with 10 distance (which seems to be
+>      envogue recently for some reason) or multiple nodes with 10
+>      distance."
+> 
+>     how would you do (a) to pin tasks say on the same internal node or
 
-I have _not_ tested this. Somebody obviously should, and I'm not checking 
-it in without ack's and somebody testing it.
+Even if they have 10 distance the internal nodes would be still
+different. So you can just say "bind to node N" and that would
+be one of the internal nodes.
 
-		Linus
----
- drivers/char/random.c |   19 ++++++++++++-------
- 1 files changed, 12 insertions(+), 7 deletions(-)
+>     on the same physical package? That is not straightforward. But
 
-diff --git a/drivers/char/random.c b/drivers/char/random.c
-index f824ef8..9f8fd5b 100644
---- a/drivers/char/random.c
-+++ b/drivers/char/random.c
-@@ -1665,15 +1665,20 @@ EXPORT_SYMBOL(secure_dccp_sequence_number);
-  * value is not cryptographically secure but for several uses the cost of
-  * depleting entropy is too high
-  */
-+DEFINE_PER_CPU(__u32 [4], get_random_int_hash);
- unsigned int get_random_int(void)
- {
--	/*
--	 * Use IP's RNG. It suits our purpose perfectly: it re-keys itself
--	 * every second, from the entropy pool (and thus creates a limited
--	 * drain on it), and uses halfMD4Transform within the second. We
--	 * also mix it with jiffies and the PID:
--	 */
--	return secure_ip_id((__force __be32)(current->pid + jiffies));
-+	struct keydata *keyptr;
-+	__u32 *hash = get_cpu_var(get_random_int_hash);
-+	int ret;
-+
-+	keyptr = get_keyptr();
-+	hash[0] += current->pid + jiffies;
-+
-+	ret = half_md4_transform(hash, keyptr->secret);
-+	put_cpu_var(get_random_int_hash);
-+
-+	return ret;
- }
- 
- /*
+Bind to all nodes with zero distance from me.
+
+>     representing entire CPU topology in sysfs makes this obvious.
+
+You didn't do that.
+
+> 
+> > Then traditionally there were special cases for SMT and for packages
+> > (for error containment etc.) and some hacks for licensing, but these
+> > don't really apply in your case or can be already expressed in other
+> > ways.
+> 
+> Yes, it's a new "special case" which can't be expressed in other ways.
+
+You seem to assume that it's obviously useful to express. Perhaps
+I'm dumb, but can you explain for what?
+
+
+> SLIT and SRAT are not sufficient.
+> 
+> The kernel 
+
+Which part of the kernel?
+
+> needs to know which cores are on same internal node. The
+
+If internal core is a north bridge then that's just a NUMA node.
+
+> > > > and you're making it even worse, adding another strange special case.
+> > > 
+> > > It's an abstraction -- I think of it just as another level in the CPU
+> > 
+> > It's not a general abstraction, just another ad-hoc hack.
+> 
+> Fine.
+> But do you have any coNSTructive and usable suggestion how Linux
+
+Yes, sysfs and arbitary SLIT like topology like above. But of course a use 
+case would need to be established for it first. If there's no use case
+there shouldn't be any code either.
+
+> should handle topology information for multi-node processors?
+> 
+> > > hierarchy -- where existing CPUs and multi-node CPUs fit in:
+> > > 
+> > >   physical package --> processor node --> processor core --> thread
+> > > 
+> > > I guess the problem is that you are associating node always with NUMA.
+> > > Would it help to rename cpu_node_id to something else?
+> > 
+> > Nope. It's a general problem, renaming it won't make it better.
+> 
+> I don't see "a general problem". There is just a new CPU introducing a
+> topology that slightly differs from what we had so far. Adapting the
+> kernel shouldn't be that problematic.
+
+The general problem is that you're trying to stretch an old ad-hoc
+hack (siblings etc. in /proc/cpuinfo) to a complicated new graph structure
+and the interface is just not up to that.
+
+As a exercise you can try to write a user space program that uses
+these fields to query the topology. It will be a mess.
+
+We went through the same with the caches. Initially /proc/cpuinfo
+tried to express the caches. At some point it just became too messy
+and cpuinfo now only gives a very simplified "legacy" field and
+the real information is in /sys. It went into /sys because there 
+was a clear use case. If there's a clear use case for exposing
+complex CPU topology (so far that's still an open question
+due to lack of good examples) then also a new proper non hacky
+interface in /sys would make sense.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
