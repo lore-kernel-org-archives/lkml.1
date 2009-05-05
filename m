@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbZEENp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbZEENqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752600AbZEENp1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 09:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbZEENpJ
+	id S1756065AbZEENqP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 09:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbZEENp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 09:45:09 -0400
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:38836 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751558AbZEENpH (ORCPT
+	Tue, 5 May 2009 09:45:58 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:36942 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751558AbZEENp5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 09:45:07 -0400
-From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-Organization: IBM
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 2.6.30-rc5] ehea: fix invalid pointer access
-Date: Tue, 5 May 2009 15:45:05 +0200
-User-Agent: KMail/1.9.9
-Cc: David Miller <davem@davemloft.net>, themann@de.ibm.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, raisch@de.ibm.com,
-       ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-       ossthema@de.ibm.com, osstklei@de.ibm.com
-References: <200905051319.05806.hannes.hering@linux.vnet.ibm.com> <25628.1241514687@redhat.com> <26110.1241525994@redhat.com>
-In-Reply-To: <26110.1241525994@redhat.com>
+	Tue, 5 May 2009 09:45:57 -0400
+Date: Tue, 5 May 2009 09:45:47 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: vgoyal@redhat.com, ebiederm@xmission.com, akpm@linux-foundation.org,
+       nhorman@tuxdriver.com
+Subject: [PATCH] sysrq: Simplify sysrq-c handler
+Message-ID: <20090505134547.GA11780@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905051545.05877.hannes.hering@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 May 2009 14:19:54 David Howells wrote:
-> In that case, you might want to move the prefetchw() calls in the following:
-> 
-> 		pref = skb_array[x];
-> 	-	prefetchw(pref);
-> 	-	prefetchw(pref + EHEA_CACHE_LINE);
-> 	+	if (pref) {
-> 	+		prefetchw(pref);
-> 	+		prefetchw(pref + EHEA_CACHE_LINE);
-> 
-> to before the if-statement.  That way the CPU can be attempting the prefetch
-> whilst it's chewing over the test and branch.  prefetching shouldn't fault on
-> a bad address.
-> 
-> David
-Hi David,
+Currently the sysrq-c handler is bit over-engineered.  Its behavior is dependent
+on a few compile time and run time factors that alter its behavior which is
+really unnecessecary.  If CONFIG_KEXEC is not configured, sysrq-c, crashes the
+system with a NULL pointer dereference.  If CONFIG_KEXEC is configured, it calls
+crash_kexec directly, which implies that the kexec kernel will either be booted
+(if its been previously loaded), or it will simply do nothing (the no kexec
+kernel has been loaded).  It would be much easier to just simplify the whole
+thing to dereference a NULL pointer all the time regardless of configuration.
+That way, it will always try to crash the system, and if a kexec kernel has been
+loaded into reserved space, it will still boot from the page fault trap handler
+(assuming panic_on_oops is set appropriately).
 
-you are right so far, but actually the prefetch calls on POWER also contain
-an if statement to check if the address is valid (i. e. non-zero). We never
-have the case that the pref != NULL and pref->data == NULL. And the situation
-of pref==NULL is very rare. This means there is no benefit moving our if
-statement down from performance perspective if we assume that our if does not
-take longer then the if in the prefetch command. We can add an
-if(likely(pref) if you like. In fact doing the if statement as we do it now
-we actually save the prefetch if statements in case we hit the situation of
-pref==NULL.
+Neil
 
-Regards
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
-Hannes
+
+ sysrq.c |   15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
+
+
+diff --git a/drivers/char/sysrq.c b/drivers/char/sysrq.c
+index b0a6a3e..9319e75 100644
+--- a/drivers/char/sysrq.c
++++ b/drivers/char/sysrq.c
+@@ -120,20 +120,17 @@ static struct sysrq_key_op sysrq_unraw_op = {
+ #define sysrq_unraw_op (*(struct sysrq_key_op *)0)
+ #endif /* CONFIG_VT */
+ 
+-#ifdef CONFIG_KEXEC
+-static void sysrq_handle_crashdump(int key, struct tty_struct *tty)
++static void sysrq_handle_crash(int key, struct tty_struct *tty)
+ {
+-	crash_kexec(get_irq_regs());
++	void *killer = NULL;
++	*killer = 1;
+ }
+ static struct sysrq_key_op sysrq_crashdump_op = {
+-	.handler	= sysrq_handle_crashdump,
+-	.help_msg	= "Crashdump",
+-	.action_msg	= "Trigger a crashdump",
++	.handler	= sysrq_handle_crash,
++	.help_msg	= "Crash",
++	.action_msg	= "Trigger a crash",
+ 	.enable_mask	= SYSRQ_ENABLE_DUMP,
+ };
+-#else
+-#define sysrq_crashdump_op (*(struct sysrq_key_op *)0)
+-#endif
+ 
+ static void sysrq_handle_reboot(int key, struct tty_struct *tty)
+ {
