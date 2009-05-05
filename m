@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754635AbZEESaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756855AbZEESbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754635AbZEESaS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 14:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbZEESaE
+	id S1756855AbZEESbe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 14:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZEESb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 14:30:04 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9993 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751438AbZEESaB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 14:30:01 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=MP9TThD58zYs3xyMxexQ2RFwRTffdyqBcw11isL4jkMem74JZ1wkK6a5OqxMaEcXM
-	OEapQIAnI/MaC3aDdcUTQ==
-Date: Tue, 5 May 2009 11:29:52 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, San Mehat <san@android.com>,
-       =?UTF-8?Q?Arve_Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 6/7] oom: move oom_adj value from task_struct to
- mm_struct
-In-Reply-To: <20090505101834.GB28917@wotan.suse.de>
-Message-ID: <alpine.DEB.2.00.0905051104060.26060@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0905041722040.11756@chino.kir.corp.google.com> <alpine.DEB.2.00.0905041725590.11756@chino.kir.corp.google.com> <20090505101834.GB28917@wotan.suse.de>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 5 May 2009 14:31:26 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:40905 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752139AbZEESb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 14:31:26 -0400
+Message-ID: <4A0085FC.2060200@linux.vnet.ibm.com>
+Date: Tue, 05 May 2009 11:31:24 -0700
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/7] perf_counter: ioctl(PERF_COUNTER_IOC_RESET)
+References: <20090505155020.309162852@chello.nl> <20090505155437.022272933@chello.nl>
+In-Reply-To: <20090505155437.022272933@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 May 2009, Nick Piggin wrote:
+Hi Peter,
 
-> Hmm, not particularly bad to do any of this, but I guess the way to
-> do it without changing userspace APIs would be to take the lowest
-> value of oomkilladj for any thread in the mm and use that.
-> 
+Peter Zijlstra wrote:
 
-Then /proc/pid/oom_adj (and, thus, what /proc/pid/oom_score reports) will 
-be inconsistent.  In other words, it would be possible for a task to have 
-an oom_adj value of +15, meaning to prefer killing it above all others, 
-and it turns out to be immune from oom killing because it shares memory 
-with an OOM_DISABLE task.  You could argue that's broken in userspace, but 
-this patchset actually makes oom_adj values a trait of the memory it 
-represents rather than the task itself so not only is it consistent but it 
-doesn't cause any surprises when your system (or memcg or cpuset) is oom.
+> +static void perf_counter_reset(struct perf_counter *counter)
+> +{
+> +	atomic_set(&counter->count, 0);
+> +}
+> +
 
-Taking the lowest oom_adj value would also require more than one expensive 
-tasklist scan or an internal oom killer stack of eligible tasks to kill so 
-we can pop a task that shares ineligible memory and still kill a task that 
-has a higher priority as defined by the user.
 
-> I guess the previous behaviour was basically quite random anyway if
-> multiple threads each have different oomkilladj variables so it
-> probably doesn't matter.
-> 
+Thanks for posting a patch for this issue.
 
-Exactly, and this is what the patchset addresses: oom_adj values become a 
-trait of the memory it describes and not tasks that may happen to share 
-it.  It also fixes a livelock if the highest priority task actually can't 
-be killed because it shares memory with an OOM_DISABLE task.
+As Ingo said, I think the hardware counter needs to be reset as well as 
+the value saved in the perf_counter struct.
 
-> I don't suppose you'd ever get a significantly advanced (aka crazy)
-> userspace app that would want to deliberately set *one* of its threads
-> as OOM_DISABLE and others allowed to be killed, would we?
-> 
 
-You could argue that's totally broken in userspace, but there's no reason 
-for the kernel to not expose a consistent API that describes the actual 
-oom priority.  oomkilladj really is inappropriate as a per task value.
+Regards,
+
+- Corey
+
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+cjashfor@us.ibm.com
+
+
