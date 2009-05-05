@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbZEEP3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbZEEPef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753128AbZEEP3t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 11:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZEEP3l
+	id S1753845AbZEEPef (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 11:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbZEEPeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 11:29:41 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:54093 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750915AbZEEP3k (ORCPT
+	Tue, 5 May 2009 11:34:23 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:7237 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751975AbZEEPeW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 11:29:40 -0400
-Date: Tue, 5 May 2009 17:31:50 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Daniel =?iso-8859-1?Q?Gl=F6ckner?= <dg@emlix.com>
-Cc: Chris Zankel <chris@zankel.net>, linux-kernel@vger.kernel.org,
-       linux-xtensa@linux-xtensa.org
-Subject: Re: [PATCH] xtensa: generalize logic for variant/irq.h inclusion
-Message-ID: <20090505153150.GA18084@uranus.ravnborg.org>
-References: <4A0054A0.3030104@emlix.com> <1241535734-17479-1-git-send-email-dg@emlix.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1241535734-17479-1-git-send-email-dg@emlix.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 5 May 2009 11:34:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KwOoANw1n98Faxzcb+wU/K2CWAqaqMDxbA965NCA8QCbPQIBvxRzBvZGQZhKkroeNM
+         HdiL/VOieAC0Rn5kNr63YgH+uW7CxArNGBdJnViOOWjFA95eiXjTXE/+/OjzPwR2KM2z
+         j6lvTBuLDc/jxlY9UMIo/JLa5RIzmwdY7mMGc=
+MIME-Version: 1.0
+In-Reply-To: <49FFB275.7000507@kernel.org>
+References: <1233456951-992-1-git-send-email-tj@kernel.org>
+	 <49F902CF.7080307@garzik.org> <49F903DD.8040707@kernel.org>
+	 <49FA0349.3090706@garzik.org>
+	 <e9c3a7c20904301415t621670a0l1bd64c7d74d369f@mail.gmail.com>
+	 <49FEA127.1000905@kernel.org>
+	 <e9c3a7c20905040948m572e23dj1aa197dbd20ff037@mail.gmail.com>
+	 <49FFB275.7000507@kernel.org>
+Date: Tue, 5 May 2009 08:34:21 -0700
+Message-ID: <e9c3a7c20905050834t79a1c03dt83df288b2f38ed76@mail.gmail.com>
+Subject: Re: [PATCHSET] block,scsi,libata: implement alt_size
+From: Dan Williams <dan.j.williams@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, James.Bottomley@hansenpartnership.com,
+       Mauelshagen@redhat.com, dm-devel@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 05, 2009 at 05:02:14PM +0200, Daniel Glöckner wrote:
-> CONFIG_VARIANT_IRQ_SWITCH has been replaced by CONFIG_VARIANT_IRQ_EXT
-> and a #define VARIANT_HAS_IRQ_ENABLE in variant/irq.h.
-> 
-> This change was made to allow further extensions to the irq handling by
-> the variant in variant/irq.h independent of the CONFIG_VARIANT_IRQ_SWITCH
-> functionality and without forcing all variants to provide this header.
-> 
-> Signed-off-by: Daniel Glöckner <dg@emlix.com>
-> ---
->  arch/xtensa/Kconfig                              |    4 ++--
->  arch/xtensa/configs/s6105_defconfig              |    2 +-
->  arch/xtensa/include/asm/irq.h                    |    6 ++++--
->  arch/xtensa/variants/s6000/include/variant/irq.h |    1 +
->  4 files changed, 8 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
-> index ac02f3c..76dee02 100644
-> --- a/arch/xtensa/Kconfig
-> +++ b/arch/xtensa/Kconfig
-> @@ -57,7 +57,7 @@ source "kernel/Kconfig.freezer"
->  config MMU
->  	def_bool n
->  
-> -config VARIANT_IRQ_SWITCH
-> +config VARIANT_IRQ_EXT
->  	def_bool n
+On Mon, May 4, 2009 at 8:28 PM, Tejun Heo <tj@kernel.org> wrote:
+> Pushing this in the kernel without updating dm-raid is kind of
+> pointless.  Who should I be poking to get the userland part moving?
 
-Common practice is to name such symbols "HAVE_*".
-So in your case:
+Dmraid is not the only potential user.  Mdadm will also care about
+this as I have seen a report that points to a user having what looks
+like an HPA issue with an Intel(R) Matrix array.  So, there are two
+immediate users for this interface.  Heinz is the right person to poke
+for dmraid updates.  I'll handle the mdadm update.
 
-config HAVE_VARIANT_IRQ_EXT
-
-	Sam
+Thanks,
+Dan
