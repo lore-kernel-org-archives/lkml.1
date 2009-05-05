@@ -1,114 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758184AbZEECZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbZEECqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758184AbZEECZW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 22:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbZEECZH
+	id S1757418AbZEECqW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 22:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbZEECqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 22:25:07 -0400
-Received: from mga14.intel.com ([143.182.124.37]:64411 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752423AbZEECZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 22:25:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,294,1239001200"; 
-   d="scan'208";a="139169708"
-Date: Tue, 5 May 2009 10:24:27 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "pavel@ucw.cz" <pavel@ucw.cz>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release preallocated memory
-	unnecessarily (rev. 2)
-Message-ID: <20090505022427.GA10880@localhost>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905031830.49690.rjw@sisk.pl> <200905040208.43040.rjw@sisk.pl> <200905040222.39062.rjw@sisk.pl>
+	Mon, 4 May 2009 22:46:13 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:44758 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752676AbZEECqM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 22:46:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=gCv1yQEHOGq4rGdj3pZ1Oc/TqUgoMVJ5RLUzL/WrUERhA5O5crejZK2Q2jFY5xV4TI
+         gs89MZUG2syaFGIXVFFnKShQBSz/9o5TABAa5RdS4zuSdO+ycB1E5PdFyqtNFi+BiEaG
+         M3aaK3Jc3jFOGsxbGnL5qrWs/YZtIHHo9RLOI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905040222.39062.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090504234455.GA6324@localhost>
+References: <20090504234455.GA6324@localhost>
+Date: Tue, 5 May 2009 11:46:10 +0900
+Message-ID: <44c63dc40905041946g1b1ea5cah21b5c2882ecd90fd@mail.gmail.com>
+Subject: Re: [PATCH] vmscan: ZVC updates in shrink_active_list() can be done 
+	once
+From: Minchan Kim <barrioskmc@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
+       "cl@linux-foundation.org" <cl@linux-foundation.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "riel@redhat.com" <riel@redhat.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Since the hibernation code is now going to use allocations of memory
-> to create enough room for the image, it can also use the page frames
-> allocated at this stage as image page frames.  The low-level
-> hibernation code needs to be rearranged for this purpose, but it
-> allows us to avoid freeing a great number of pages and allocating
-> these same pages once again later, so it generally is worth doing.
-> 
-> [rev. 2: Change the strategy of preallocating memory to allocate as
->  many pages as needed to get the right image size in one shot (the
->  excessive allocated pages are released afterwards).]
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 
-Rafael, I tried out your patches and found doubled memory shrink speed!
+This fine-grained ZVC update in shrink_active_list was made for
+determination problem of the dirty
+ratio(c878538598d1e7ab41ecc0de8894e34e2fdef630).
+The 32 page reclaim time in normal reclaim situation is too short to
+change current VM behavior.
+So I think this make sense to me.
 
-[  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
-[  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
+On Tue, May 5, 2009 at 8:44 AM, Wu Fengguang <fengguang.wu@intel.com> wrote:
+> This effectively lifts the unit of nr_inactive_* and pgdeactivate updates
+> from PAGEVEC_SIZE=14 to SWAP_CLUSTER_MAX=32.
+>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  mm/vmscan.c |   11 +++--------
+>  1 file changed, 3 insertions(+), 8 deletions(-)
+>
+> --- linux.orig/mm/vmscan.c
+> +++ linux/mm/vmscan.c
+> @@ -1228,7 +1228,6 @@ static void shrink_active_list(unsigned
+>                        struct scan_control *sc, int priority, int file)
+>  {
+>        unsigned long pgmoved;
+> -       int pgdeactivate = 0;
+>        unsigned long pgscanned;
+>        LIST_HEAD(l_hold);      /* The pages which were snipped off */
+>        LIST_HEAD(l_inactive);
+> @@ -1257,7 +1256,7 @@ static void shrink_active_list(unsigned
+>                __mod_zone_page_state(zone, NR_ACTIVE_ANON, -pgmoved);
+>        spin_unlock_irq(&zone->lru_lock);
+>
+> -       pgmoved = 0;
+> +       pgmoved = 0;  /* count referenced (mapping) mapped pages */
+>        while (!list_empty(&l_hold)) {
+>                cond_resched();
+>                page = lru_to_page(&l_hold);
+> @@ -1291,7 +1290,7 @@ static void shrink_active_list(unsigned
+>         */
+>        reclaim_stat->recent_rotated[!!file] += pgmoved;
+>
+> -       pgmoved = 0;
+> +       pgmoved = 0;  /* count pages moved to inactive list */
+>        while (!list_empty(&l_inactive)) {
+>                page = lru_to_page(&l_inactive);
+>                prefetchw_prev_lru_page(page, &l_inactive, flags);
+> @@ -1304,10 +1303,7 @@ static void shrink_active_list(unsigned
+>                mem_cgroup_add_lru_list(page, lru);
+>                pgmoved++;
+>                if (!pagevec_add(&pvec, page)) {
+> -                       __mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+>                        spin_unlock_irq(&zone->lru_lock);
+> -                       pgdeactivate += pgmoved;
+> -                       pgmoved = 0;
+>                        if (buffer_heads_over_limit)
+>                                pagevec_strip(&pvec);
+>                        __pagevec_release(&pvec);
+> @@ -1315,9 +1311,8 @@ static void shrink_active_list(unsigned
+>                }
+>        }
+>        __mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+> -       pgdeactivate += pgmoved;
+>        __count_zone_vm_events(PGREFILL, zone, pgscanned);
+> -       __count_vm_events(PGDEACTIVATE, pgdeactivate);
+> +       __count_vm_events(PGDEACTIVATE, pgmoved);
+>        spin_unlock_irq(&zone->lru_lock);
+>        if (buffer_heads_over_limit)
+>                pagevec_strip(&pvec);
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
 
-For you reference, here is the free memory before/after
-hibernate_preallocate_memory():
 
-        # free
-                     total       used       free     shared    buffers     cached
-        Mem:          1933       1917         15          0          0       1845
-        -/+ buffers/cache:         72       1861
-        Swap:            0          0          0
 
-        # free
-                     total       used       free     shared    buffers     cached
-        Mem:          1933        920       1012          0          0        356
-        -/+ buffers/cache:        563       1369
-        Swap:            0          0          0
-
-It seems that the preallocated memory is not freed on -ENOMEM.
-
-+       error = memory_bm_create(&orig_bm, GFP_IMAGE, PG_ANY);
-+       if (error)
-+               goto err_out;
-+
-+       error = memory_bm_create(&copy_bm, GFP_IMAGE, PG_ANY);
-+       if (error)
-+               goto err_out;
-
-memory_bm_create() is called a number of times, each time it will
-call create_mem_extents()/memory_bm_free(). Can they be optimized to
-be called only once?
-
-A side note: there are somehow duplicated *_extent_*() logics in the
-filesystems, is it possible that we abstract out some of the common code?
-
-+       for_each_populated_zone(zone) {
-+               size += snapshot_additional_pages(zone);
-+               count += zone_page_state(zone, NR_FREE_PAGES);
-+               if (!is_highmem(zone))
-+                       count -= zone->lowmem_reserve[ZONE_NORMAL];
-+       }
-
-Why [ZONE_NORMAL] instead of [zone]? ZONE_NORMAL may not always be the largest zone,
-for example, My 4GB laptop has a tiny ZONE_NORMAL and a large ZONE_DMA32.
-
-+       /* If size < max_size, preallocating enough memory may be impossible. */
-+       if (count > 0 && size == max_size)
-+               error = -ENOMEM;
-+       if (error)
-+               goto err_out;
-
-The two if()s can be merged.
-
-At last, I'd express my major concern about the transition to preallocate
-based memory shrinking: will it lead to more random swapping IOs?
-
+-- 
 Thanks,
-Fengguang
-
+Minchan Kim
