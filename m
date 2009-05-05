@@ -1,74 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbZEENuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbZEENwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756413AbZEENuL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 09:50:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbZEENt5
+	id S1754637AbZEENwZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 09:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbZEENwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 09:49:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54041 "EHLO mx2.mail.elte.hu"
+	Tue, 5 May 2009 09:52:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56415 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751509AbZEENt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 09:49:56 -0400
-Date: Tue, 5 May 2009 15:49:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Robert Richter <robert.richter@amd.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: round-robining per-cpu counters
-Message-ID: <20090505134943.GA19122@elte.hu>
-References: <18943.47474.963294.862139@drongo.ozlabs.ibm.com> <20090505064051.GA27191@elte.hu> <18944.10637.877638.642187@cargo.ozlabs.ibm.com>
+	id S1752600AbZEENwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 09:52:14 -0400
+Date: Tue, 5 May 2009 10:57:06 -0300
+From: Glauber Costa <glommer@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] deal with interrupt shadow state for emulated
+	instruction
+Message-ID: <20090505135706.GA26401@poweredge.glommer>
+References: <1240929045-6970-1-git-send-email-glommer@redhat.com> <49F99095.7060503@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18944.10637.877638.642187@cargo.ozlabs.ibm.com>
+In-Reply-To: <49F99095.7060503@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Hmm, if the guest runs an infinite emulated 'mov ss', it will keep  
+> toggling the MOV_SS bit, but STI will remain set, so we'll never allow  
+> an interrupt into the guest kernel.
+We have no choice but returning both flags, since svm does not differentiate
+between them.
 
-* Paul Mackerras <paulus@samba.org> wrote:
+But see below for an alternative path that makes it a non-issue.
 
-> > I think a better general solution would be to have a single 
-> > round-robin list for all currently active counters (both percpu 
-> > and task counters) - and fairly round-robin all of them. The 
-> > scaling information makes it obvious when this is happening.
-> 
-> Sounds good, but I'm having trouble visualizing how we combine a 
-> fairly static set of per-cpu counters with several sets of 
-> per-task counters that come and go as their tasks get scheduled in 
-> and out. Is there some clever scheduling technique that sorts all 
-> that out?
+>
+>> diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
+>> index d2664fc..797d41f 100644
+>> --- a/arch/x86/kvm/x86_emulate.c
+>> +++ b/arch/x86/kvm/x86_emulate.c
+>> @@ -1618,6 +1618,16 @@ special_insn:
+>>  		int err;
+>>   		sel = c->src.val;
+>> +		if (c->modrm_reg == VCPU_SREG_SS) {
+>> +			u32 int_shadow =
+>> +				kvm_x86_ops->get_interrupt_shadow(ctxt->vcpu);
+>> +			/* See sti emulation for an explanation of this */
+>> +			if ((int_shadow & X86_SHADOW_INT_MOV_SS))
+>> +				ctxt->interruptibility &= ~X86_SHADOW_INT_MOV_SS;
+>> +			else
+>> +				ctxt->interruptibility |= X86_SHADOW_INT_MOV_SS;
+>> +		}
+>>   
+>
+> ^=
+ =p \o/
 
-Fair scheduling techniques would import the complexity of 
-kernel/sched*.c into kernel/perf_counter.c - not sure we want that 
-(at this stage at least).
+After re-reading this, masking the flags in here makes no sense.
 
-So i'd go for the second best option: the simplest one.
+I am moving to an approach in which I do
 
-One simple option would be to 'interleave' the two lists on sched-in 
-(take a counter from one list, then from the other, then from the 
-first, etc.), combined with the alternate rotation of both lists.
+                        if (!(int_shadow & X86_SHADOW_INT_MOV_SS))
+                                ctxt->interruptibility = X86_SHADOW_INT_MOV_SS;
 
-Another, perhaps even simpler option would be to do the alternation 
-on a per list basis: rotate which of the two lists go first on 
-sched-in, from the task tick.
+Since if the next instruction is an sti, it is certainly not an sti; sti instruction
+(the current is mov ss, after all). So we should mask it anyway. This also solves
+nicely the problem you raised at svm.c.
+>
+>> @@ -1846,10 +1856,23 @@ special_insn:
+>>  		ctxt->eflags &= ~X86_EFLAGS_IF;
+>>  		c->dst.type = OP_NONE;	/* Disable writeback. */
+>>  		break;
+>> -	case 0xfb: /* sti */
+>> +	case 0xfb: { /* sti */
+>> +		u32 int_shadow = kvm_x86_ops->get_interrupt_shadow(ctxt->vcpu);
+>> +		/*
+>> +		 * an sti; sti; sequence only disable interrupts for the first
+>> +		 * instruction. So, if the last instruction, be it emulated or
+>> +		 * not, left the system with the INT_STI flag enabled, it
+>> +		 * means that the last instruction is an sti. We should not
+>> +		 * leave the flag on in this case
+>> +		 */
+>> +		if ((int_shadow & X86_SHADOW_INT_STI))
+>> +			ctxt->interruptibility &= ~X86_SHADOW_INT_STI;
+>> +		else
+>> +			ctxt->interruptibility |= X86_SHADOW_INT_STI;
+>>   
+>
+> ^=
+ditto
 
-Can you see any showstopper artifacts in this scheme?
-
-Later on, if anyone finds this method lacking it can be improved 
-gradually either by making the accounting/statistics smarter, or by 
-increasing the frequency of rotation events and coupling it not to 
-the scheduler tick but to a counter perhaps.
-
-	Ingo
