@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbZEEDe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbZEEDna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756235AbZEEDe4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 23:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbZEEDep
+	id S1756881AbZEEDna (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 23:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbZEEDnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 23:34:45 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:55968 "EHLO e8.ny.us.ibm.com"
+	Mon, 4 May 2009 23:43:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52527 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751807AbZEEDep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 23:34:45 -0400
-Date: Mon, 4 May 2009 20:34:42 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       tridge@samba.org, Al Viro <viro@ZenIV.linux.org.uk>,
-       Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
-       Steve French <smfrench@gmail.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-Message-ID: <20090505033442.GB6982@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090504143919.GA6740@linux.vnet.ibm.com> <20090504150834.GZ8822@parisc-linux.org> <20090504153815.GB6740@linux.vnet.ibm.com> <20090504155505.GA8822@parisc-linux.org> <20090504161024.GC6740@linux.vnet.ibm.com> <20090504162252.GB8822@parisc-linux.org> <20090504221208.GB29402@kroah.com> <20090505020149.GE8822@parisc-linux.org> <20090505021121.GA6982@linux.vnet.ibm.com> <20090505021853.GF8822@parisc-linux.org>
+	id S1751716AbZEEDnO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 23:43:14 -0400
+Message-ID: <49FFB55B.9060902@kernel.org>
+Date: Tue, 05 May 2009 12:41:15 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090505021853.GF8822@parisc-linux.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+CC: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
+       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
+       fujita.tomonori@lab.ntt.co.jp, zaitcev@redhat.com,
+       Geert.Uytterhoeven@sonycom.com, sfr@canb.auug.org.au,
+       grant.likely@secretlab.ca, paul.clements@steeleye.com, tim@cyberelk.net,
+       jeremy@xensource.com, adrian@mcmen.demon.co.uk, oakad@yahoo.com,
+       dwmw2@infradead.org, schwidefsky@de.ibm.com, ballabio_dario@emc.com,
+       davem@davemloft.net, rusty@rustcorp.com.au,
+       Markus.Lidel@shadowconnect.com, bharrosh@panasas.com,
+       Doug Gilbert <dgilbert@interlog.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH 03/11] block: add rq->resid_len
+References: <1241423927-11871-1-git-send-email-tj@kernel.org> <1241423927-11871-4-git-send-email-tj@kernel.org> <49FEDAC0.3040503@ru.mvista.com>
+In-Reply-To: <49FEDAC0.3040503@ru.mvista.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 05 May 2009 03:40:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 08:18:53PM -0600, Matthew Wilcox wrote:
-> On Mon, May 04, 2009 at 07:11:21PM -0700, Paul E. McKenney wrote:
-> > On Mon, May 04, 2009 at 08:01:49PM -0600, Matthew Wilcox wrote:
-> > > On Mon, May 04, 2009 at 03:12:08PM -0700, Greg KH wrote:
-> > > > But what was wrong with what they told us to do with regards to how to
-> > > > specify the copyright on a file?  I don't recall seeing anything that
-> > > > contridicted what I was told, but that was many many years ago, so I
-> > > > probably am forgetting...
-> > > 
-> > > I don't remember exactly, and can't be bothered to look it up.  It was
-> > > something along the lines of you saying an IBM lawyer had told you
-> > > that in:
-> > > 
-> > > Copyright (c) 2009
-> > > 
-> > > the (c) was a non-optional part.  I found something that said the (c)
-> > > had no legal meaning.
-> > 
-> > http://www.copyright.gov/circs/circ1.pdf
-> > 
-> > Page 4, bottom of first column through second column.
+Sergei Shtylyov wrote:
+>> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+>> index 7149224..3813a0e 100644
+>> --- a/drivers/ide/ide-tape.c
+>> +++ b/drivers/ide/ide-tape.c
+>> @@ -380,7 +380,7 @@ static int ide_tape_callback(ide_drive_t *drive,
+>> int dsc)
+>>          }
+>>  
+>>          tape->first_frame += blocks;
+>> -        rq->data_len -= blocks * tape->blk_size;
+>> +        rq->resid_len = blk_rq_bytes(rq) - blocks * tape->blk_size;
 > 
-> That notices actually aren't needed any more?  Yes.  The bit I was
-> referring to was this:
-> 
-> 1	 The symbol © (the letter C in a circle), or the word
->   "Copyright," or the abbreviation "Copr."; and
-> 
-> In particular, I've seen elsewhere that (c) is not a valid representation
-> of 'the letter C in a circle'.
+>    Is it already guaranteed that rq->data_len == blk_rq_bytes(rq) here?
 
-I am more than happy to let you search the case law on this one.
+Oops, no.  I'll move it to later ide-cleanup-rq-data_len-usages patch.
 
-							Thanx, Paul
+Thanks.
+
+-- 
+tejun
