@@ -1,111 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757053AbZEERfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbZEERjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757053AbZEERfB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 13:35:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZEEReu
+	id S1755867AbZEERjl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 13:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZEERjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 13:34:50 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:55689 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751978AbZEEReu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 13:34:50 -0400
-Message-ID: <4A0078B5.7030509@novell.com>
-Date: Tue, 05 May 2009 13:34:45 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Tue, 5 May 2009 13:39:32 -0400
+Received: from gate.in-addr.de ([212.8.193.158]:54568 "EHLO mx.in-addr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750908AbZEERjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 13:39:31 -0400
+Date: Tue, 5 May 2009 19:38:54 +0200
+From: Lars Marowsky-Bree <lmb@suse.de>
+To: Philipp Reisner <philipp.reisner@linbit.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, david@lang.hm,
+       Willy Tarreau <w@1wt.eu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
+       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>
+Subject: Re: [PATCH 00/16] DRBD: a block device for HA clusters
+Message-ID: <20090505173854.GC14192@suse.de>
+References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com> <200905051021.33461.philipp.reisner@linbit.com> <e2e108260905050803m4d474702o5ddc741b29325f54@mail.gmail.com> <200905051757.17100.philipp.reisner@linbit.com>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: kvm@vger.kernel.org, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
-       davidel@xmailserver.org
-Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via	eventfd-notification
- interface
-References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net> <4A005F05.30409@redhat.com>
-In-Reply-To: <4A005F05.30409@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE95B3931FB0CE5443C7463AD"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200905051757.17100.philipp.reisner@linbit.com>
+X-Ctuhulu: HASTUR
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE95B3931FB0CE5443C7463AD
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On 2009-05-05T17:57:15, Philipp Reisner <philipp.reisner@linbit.com> wrote:
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->> KVM provides a complete virtual system environment for guests, includi=
-ng
->> support for injecting interrupts modeled after the real
->> exception/interrupt
->> facilities present on the native platform (such as the IDT on x86).
->> Virtual interrupts can come from a variety of sources (emulated device=
-s,
->> pass-through devices, etc) but all must be injected to the guest via
->> the KVM infrastructure.  This patch adds a new mechanism to inject a
->> specific
->> interrupt to a guest using a decoupled eventfd mechnanism:  Any legal
->> signal
->> on the irqfd (using eventfd semantics from either userspace or
->> kernel) will
->> translate into an injected interrupt in the guest at the next availabl=
-e
->> interrupt window.
->>
->> =20
->> +struct kvm_irqfd {
->> +    __u32 gsi;
->> +    __u32 flags;
->> +};
->> +
->>  =20
->
-> Please add some reserved space here.
+> Up to now we do not offer barrier support for the layers above us.
+> That will follow sooner or later.
+> 
+> Here is an example, why it is not completely trivial:
+> 
+>   Imagine DRBD on top of a dm-linear on both nodes. When you start,
+>   both dm-linear mappings sit on top of something that supports 
+>   barriers itself. -- Then the user replaces the backing device
+>   below the dm-linear on the secondary node with something that
+>   does not support barriers.
 
-Ack.  Any rule of thumb here?  How about a "__u8 pad[16]" ?
+The same problem exists essentially for md raid1 as well, and I'd not
+consider it objectionable if you took a brutal approach:
 
->
->> +int
->> +kvm_irqfd(struct kvm *kvm, int gsi, int flags)
->> +{
->> +    struct _irqfd *irqfd;
->> +    struct file *file =3D NULL;
->> +    int fd =3D -1;
->> +    int ret;
->> +
->> +    irqfd =3D kzalloc(sizeof(*irqfd), GFP_KERNEL);
->> +    if (!irqfd)
->> +        return -ENOMEM;
->> +
->> +    irqfd->kvm =3D kvm;
->>  =20
->
-> You need to increase the refcount on struct kvm here.  Otherwise evil
-> userspace will create an irqfd, close the vm and vcpu fds, and inject
-> an interrupt.
+>   When we get a write request with the BIO_RW_BARRIER flag set
+>   in from the FS, we submit this locally, ship it over to the
+>   peer and submit it there. Unfortunately it fails now with
+>   ENOTSUP on the peer. 
+> 
+>   We can not ship that error back to the upper layer, because
+>   our mirror is already inconsistent.
 
-Good catch.  Will fix.
-
-Thanks Avi,
--Greg
+Disconnect the secondary with a loud error as to why (incompatible
+change of the device below). (Re-)negotiate barrier capability at
+connect time; then, resync.
 
 
+Regards,
+    Lars
 
---------------enigE95B3931FB0CE5443C7463AD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+-- 
+SuSE Labs, OPS Engineering, Novell, Inc.
+SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkoAeLUACgkQlOSOBdgZUxmvbwCcDl85FCaMfMjJLTAqImxn1vvy
-uPwAmwUujtd/j9GAYplLZiOoziOxRpNu
-=YjR9
------END PGP SIGNATURE-----
-
---------------enigE95B3931FB0CE5443C7463AD--
