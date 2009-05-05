@@ -1,86 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754308AbZEEIOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZEEISe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754308AbZEEIOb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 04:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbZEEIOO
+	id S1757472AbZEEISe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 04:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbZEEISQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 04:14:14 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:36247 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751171AbZEEIOL (ORCPT
+	Tue, 5 May 2009 04:18:16 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:47581 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751807AbZEEISO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 04:14:11 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Matt Mackall <mpm@selenic.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
-       security@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Dave Jones <davej@redhat.com>
-References: <20090504125114.5e391564@chukar>
-	<alpine.LFD.2.01.0905041159480.4983@localhost.localdomain>
-	<20090504125124.0f469970@infradead.org>
-	<m1vdogbows.fsf@fess.ebiederm.org>
-	<alpine.LFD.2.01.0905041514350.4983@localhost.localdomain>
-	<20090505055011.GE31071@waste.org> <20090505063156.GA24504@elte.hu>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 05 May 2009 01:14:05 -0700
-In-Reply-To: <20090505063156.GA24504@elte.hu> (Ingo Molnar's message of "Tue\, 5 May 2009 08\:31\:56 +0200")
-Message-ID: <m14ow0ynjm.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 5 May 2009 04:18:14 -0400
+Date: Tue, 5 May 2009 09:18:11 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: sget() misuse in nilfs
+Message-ID: <20090505081811.GK8633@ZenIV.linux.org.uk>
+References: <20090503225136.GC8633@ZenIV.linux.org.uk> <20090505.021129.103520156.ryusuke@osrg.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: mingo@elte.hu, davej@redhat.com, greg@kroah.com, akpm@linux-foundation.org, mingo@redhat.com, roland@redhat.com, alan@lxorguk.ukuu.org.uk, eparis@redhat.com, linux-security-module@vger.kernel.org, jmorris@namei.org, linux-kernel@vger.kernel.org, security@kernel.org, jake@lwn.net, arjan@infradead.org, torvalds@linux-foundation.org, mpm@selenic.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Ingo Molnar <mingo@elte.hu>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4337]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [Security] [PATCH] proc: avoid information leaks to non-privileged processes
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20090505.021129.103520156.ryusuke@osrg.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+On Tue, May 05, 2009 at 02:11:29AM +0900, Ryusuke Konishi wrote:
+> Hi,
+> On Sun, 3 May 2009 23:51:36 +0100, Al Viro wrote:
+> > OK, I give up; what _is_ get_sb/remount code supposed to implement?
+> 
+> Oh, these functions lack spec comments.
+> 
+> I first explain some specs. (I think part of them should be added on
+> the code, later)
+> 
+> The nilfs_get_sb() allocates a new super_block struct (sb) or assigns
+> an existing sb to the mount point through sget().  For newly allocated
+> sb it calls nilfs_fill_super() for initialization.
+> 
+> The following things are supposed here:
 
-> * Matt Mackall <mpm@selenic.com> wrote:
->
->> As to what's the appropriate sort of RNG for ASLR to use, finding 
->> a balance between too strong and too weak is tricky. [...]
->
-> In exec-shield i mixed 'easily accessible and fast' semi-random 
-> state to the get_random_int() result: xor-ed the cycle counter, the 
-> pid and a kernel address to it. That strengthened the result in a 
-> pretty practical way (without strengthening the theoretical 
-> randomless - each of those items are considered guessable) and does 
-> so without weakening the entropy of the random pool.
+>  1) Every rw-mount on a device shares the same sb (as usual).
 
-The trouble is, that thinking completely misses the problem, and I
-expect that is why we have a problem.  Throwing a bunch of possibly
-truly random values into the pot for luck is nice.  But you didn't
-throw in a pseudo random number generator.  An unpredictable sequence
-that is guaranteed to change from one invocation to the next.
+OK.  That's the first kind of sb; no MS_RDONLY, no SNAPSHOT, snapshot_cno is 0.
 
-In a very practical sense a pseudo random generator is completely
-sufficient.  Throwing in a few truly random numbers guards against
-attacks on the random number generator.
+>  2) Every sb of snapshot is independent with that of rw-mount or other
+>     snapshots if their checkpoint numbers differ.  On the other hand,
+>     two or more snapshots having the same checkpoint number share a sb
+>     wherever possible.
 
-What we have now is a hash over an a value that changes every 5 minutes
-and some well known values.
+Umm...  That's what, MS_RDONLY, SNAPSHOT, snapshot_cno > 0?
 
-Eric
+>  3) Snapshots are mountable concurrently with a rw-mount, but a
+>     ro-mount is not so because the ro-mount cannot follow changes
+>     brought by the rw-mount.
+
+And ro-mount would be MS_RDONLY, no SNAPSHOT, snapshot_cno equal to the
+nilfs_last_cno()?
+ 
+>  b) ro->rw remount is possible only if there is no rw-mount on the
+>     device and the checkpoint number of the ro-mount is latest.
+
+Er...  How could there be an rw-mount while we have ro one?  Your
+(3) above would seem to prohibit that situation...
+
+>  c) Remounting snapshot to different checkpoints or rw-mount is not
+>     allowed.
+
+Where is the second part checked in the current code?
+ 
+> > Can SNAPSHOT even be there unless you have MS_RDONLY?
+> 
+> Yes, it can.  Nilfs snapshots can exist concurrently with rw-mount.
+
+On the same superblock, that is...  And AFAICS the answer's "no, it can't"
+(we can have rw superblock and snapshot superblock at the same time, but
+those will be different instances of struct superblock).
