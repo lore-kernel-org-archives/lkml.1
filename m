@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbZEERNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755005AbZEERUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757562AbZEERNq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 13:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756968AbZEERNa
+	id S1755005AbZEERUl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 13:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbZEERUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 13:13:30 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:36614 "EHLO e3.ny.us.ibm.com"
+	Tue, 5 May 2009 13:20:31 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52621 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757272AbZEERN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 13:13:29 -0400
-Subject: [PATCH] integrity: remove __setup auditing msgs
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: James Morris <jmorris@namei.org>, david safford <safford@watson.ibm.com>
-Content-Type: text/plain
-Date: Tue, 05 May 2009 13:13:10 -0400
-Message-Id: <1241543590.6101.12.camel@dyn9002018117.watson.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	id S1751810AbZEERUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 13:20:31 -0400
+Message-ID: <4A00759D.3070806@suse.de>
+Date: Wed, 06 May 2009 01:21:33 +0800
+From: Coly Li <coly.li@suse.de>
+Reply-To: coly.li@suse.de
+Organization: SuSE Labs
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+MIME-Version: 1.0
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: David Daney <ddaney@caviumnetworks.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 5/7] mips cavium-octeon: add parameter to	octeon_cvmcount_read()
+References: <49EF6A9E.6080605@suse.de> <49EF7F34.9040401@caviumnetworks.com> <20090505161321.GA17945@linux-mips.org>
+In-Reply-To: <20090505161321.GA17945@linux-mips.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove integrity audit messages from __setup()
-
-Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
-
-Index: security-testing-2.6/security/integrity/ima/ima_audit.c
-===================================================================
---- security-testing-2.6.orig/security/integrity/ima/ima_audit.c
-+++ security-testing-2.6/security/integrity/ima/ima_audit.c
-@@ -22,18 +22,9 @@ static int ima_audit;
- static int __init ima_audit_setup(char *str)
- {
- 	unsigned long audit;
--	int rc, result = 0;
--	char *op = "ima_audit";
--	char *cause;
- 
--	rc = strict_strtoul(str, 0, &audit);
--	if (rc || audit > 1)
--		result = 1;
--	else
--		ima_audit = audit;
--	cause = ima_audit ? "enabled" : "not_enabled";
--	integrity_audit_msg(AUDIT_INTEGRITY_STATUS, NULL, NULL,
--			    op, cause, result, 0);
-+	if (!strict_strtoul(str, 0, &audit))
-+		ima_audit = audit ? 1 : 0;
- 	return 1;
- }
- __setup("ima_audit=", ima_audit_setup);
-Index: security-testing-2.6/security/integrity/ima/ima_main.c
-===================================================================
---- security-testing-2.6.orig/security/integrity/ima/ima_main.c
-+++ security-testing-2.6/security/integrity/ima/ima_main.c
-@@ -29,20 +29,8 @@ int ima_initialized;
- char *ima_hash = "sha1";
- static int __init hash_setup(char *str)
- {
--	const char *op = "hash_setup";
--	const char *hash = "sha1";
--	int result = 0;
--	int audit_info = 0;
--
--	if (strncmp(str, "md5", 3) == 0) {
--		hash = "md5";
--		ima_hash = str;
--	} else if (strncmp(str, "sha1", 4) != 0) {
--		hash = "invalid_hash_type";
--		result = 1;
--	}
--	integrity_audit_msg(AUDIT_INTEGRITY_HASH, NULL, NULL, op, hash,
--			    result, audit_info);
-+	if (strncmp(str, "md5", 3) == 0)
-+		ima_hash = "md5";
- 	return 1;
- }
- __setup("ima_hash=", hash_setup);
 
 
+Ralf Baechle Wrote:
+> On Wed, Apr 22, 2009 at 01:33:56PM -0700, David Daney wrote:
+> 
+>> Coly Li wrote:
+>>> This patch modifies parameter of octeon_cvmcount_read() from 'void' to 'struct
+>>> clocksource *cs', which fixes compile warning for incompatible parameter type.
+>>>
+>>> Signed-off-by: Coly Li <coly.li@suse.de>
+>>> Cc: David Daney <ddaney@caviumnetworks.com>
+>>> Cc: Ingo Molnar <mingo@elte.hu>
+>> It looks good to me:
+>>
+>> Reviewed-by: David Daney <ddaney@caviumnetworks.com>
+> 
+> Applied, thanks.
+> 
+> Coly, if you modify MIPS code, please cc the linux-mips mailing list and
+> myself or generally consult the MAINTAINERS file for who to cc on patches.
+> 
+Ralf, I keep you advice in mind. Thanks.
+
+-- 
+Coly Li
+SuSE Labs
