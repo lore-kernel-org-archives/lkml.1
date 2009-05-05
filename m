@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbZEEDTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbZEEDaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbZEEDTh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 23:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbZEEDT1
+	id S1754456AbZEEDaf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 23:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbZEEDaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 23:19:27 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50045 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752970AbZEEDT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 23:19:26 -0400
-Message-ID: <49FFB010.9000309@cn.fujitsu.com>
-Date: Tue, 05 May 2009 11:18:40 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Mon, 4 May 2009 23:30:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59186 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751807AbZEEDaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 23:30:22 -0400
+Message-ID: <49FFB275.7000507@kernel.org>
+Date: Tue, 05 May 2009 12:28:53 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Nauman Rafique <nauman@google.com>
-CC: Vivek Goyal <vgoyal@redhat.com>, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, arozansk@redhat.com,
-       jmoyer@redhat.com, oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
-       menage@google.com, peterz@infradead.org
-Subject: Re: [RFC] IO Controller
-References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com> <49DF1256.7080403@cn.fujitsu.com> <20090413130958.GB18007@redhat.com> <49EE895A.1060101@cn.fujitsu.com> <20090422132307.GA23098@redhat.com> <49F9FE3C.3070000@google.com>
-In-Reply-To: <49F9FE3C.3070000@google.com>
-Content-Type: text/plain; charset=UTF-8
+To: Dan Williams <dan.j.williams@gmail.com>
+CC: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, James.Bottomley@hansenpartnership.com,
+       Mauelshagen@redhat.com, dm-devel@redhat.com
+Subject: Re: [PATCHSET] block,scsi,libata: implement alt_size
+References: <1233456951-992-1-git-send-email-tj@kernel.org>	 <49F902CF.7080307@garzik.org> <49F903DD.8040707@kernel.org>	 <49FA0349.3090706@garzik.org>	 <e9c3a7c20904301415t621670a0l1bd64c7d74d369f@mail.gmail.com>	 <49FEA127.1000905@kernel.org> <e9c3a7c20905040948m572e23dj1aa197dbd20ff037@mail.gmail.com>
+In-Reply-To: <e9c3a7c20905040948m572e23dj1aa197dbd20ff037@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 05 May 2009 03:28:58 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nauman Rafique wrote:
-...
-> Hi Gui,
-> This patch should solve the problems reported by you. Please let me know if it does not work.
-> @Vivek, this has a few more changes after the patch I sent you separately.
+Hello,
+
+Dan Williams wrote:
+> On Mon, May 4, 2009 at 1:02 AM, Tejun Heo <tj@kernel.org> wrote:
+>>> Couldn't the "fix" also just be a note to users to disable ignore_hpa
+>>> if they notice that there raid arrays are not assembling correctly?
+>> I don't know.  If it doesn't work automatically, the solution really
+>> isn't worth much.  People generally don't (shouldn't need to) have any
+>> idea what HPA is.  It basically boils down to "Linux doesn't support
+>> RAID".  :-)
+>>
+>> Maybe we should just put this issue to the rest and strongly advise
+>> people against BIOS raids.
 > 
+> That's a bit too far :-).  The real issue is that Linux is ignoring a
+> property of the platform.  To me ignoring HPA is like ignoring an e820
+> reserved memory region.  You might be able to get away with it
+> sometimes, but other times it breaks.
 
-  Hi Nauman,
+Well, somewhat but not quite.  The difference is with backward
+compatibility and the fact that HPA has been used for many different
+creative ;-) purposes including working around BIOS limitations.
 
-  I'v tried your patch, seems the bug has been fixed. thanks!
+> However, in the end I think having 'alt_size' available is a useful
+> mechanism for discovering and handling the ignore_hpa=1 case.   The
+> policy about when to trust it can be left to userspace.
 
-> DESC
-> Add ref counting for io_group.
-> EDESC
->     
->         Reference counting for io_group solves many problems, most of which
->         occured when we tried to delete the cgroup. Earlier, ioqs were being
->         moved out of cgroup to root cgroup. That is problematic in many ways:
->         First, the pending requests in queues might get unfair service, and
->         will also cause unfairness for other cgroups at the root level. This
->         problem can become signficant if cgroups are created and destroyed
->         relatively frequently. Second, moving queues to root cgroups was
->         complicated and was causing many BUG_ON's to trigger. Third, there is
->         a single io queue in AS, Deadline and Noop within a cgroup; and it
->         does not make sense to move it to the root cgroup. The same is true of
->         async queues.
->     
->         Requests already keep a reference on ioq, so queues keep a reference on
->         cgroup. For async queues in CFQ, and single ioq in other schedulers,
->         io_group also keeps are reference on io_queue. This reference on ioq
->         is dropped when the queue is released (elv_release_ioq). So the queue
->         can be freed.
->     
->         When a queue is released, it puts the reference to io_group and the
->         io_group is released after all the queues are released. Child groups
->         also take reference on parent groups, and release it when they are
->         destroyed.
->     
->         Also we no longer need to maintain a seprate linked list of idle
->         entities, which was maintained only to help release the ioq references
->         during elevator switch. The code for releasing io_groups is reused for
->         elevator switch, resulting in simpler and tight code.
-> 
- 
+Pushing this in the kernel without updating dm-raid is kind of
+pointless.  Who should I be poking to get the userland part moving?
+
+Thanks.
 
 -- 
-Regards
-Gui Jianfeng
-
+tejun
