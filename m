@@ -1,122 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbZEEMoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758551AbZEEMsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758272AbZEEMoK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 08:44:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757111AbZEEMno
+	id S1758551AbZEEMsQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 08:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbZEEMsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 08:43:44 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:45569 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756402AbZEEMnn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 08:43:43 -0400
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-kernel@vger.kernel.org
-Cc: Daniel Mack <daniel@caiaq.de>, Ville Syrjala <syrjala@sci.fi>
-Subject: [PATCH] w1-gpio: add external pull-up enable callback
-Date: Tue,  5 May 2009 14:43:33 +0200
-Message-Id: <1241527413-22920-1-git-send-email-daniel@caiaq.de>
-X-Mailer: git-send-email 1.6.2.1
+	Tue, 5 May 2009 08:48:00 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46090 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755890AbZEEMr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 08:47:59 -0400
+Date: Tue, 5 May 2009 14:47:54 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Oliver Neukum <oliver@neukum.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input <linux-input@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Oleg Nesterov <oleg@redhat.com>
+Subject: Re: lockdep report at resume
+In-Reply-To: <1240323968.17388.22.camel@johannes.local>
+Message-ID: <alpine.LNX.2.00.0905051446520.22532@wotan.suse.de>
+References: <1234022517.4175.107.camel@johannes.local>  <1238578840.5970.178.camel@johannes.local>  <alpine.LNX.2.00.0904211550280.13028@wotan.suse.de>  <200904211559.43497.oliver@neukum.org>  <alpine.LNX.2.00.0904211609220.13028@wotan.suse.de>
+ <1240323968.17388.22.camel@johannes.local>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On embedded devices, sleep mode conditions can be tricky to handle,
-Especially when processors tend to pull-down the w1 bus during sleep.
-Bus slaves (such as the ds2760) may interpret this as a reason for
-power-down conditions and entirely switch off the device.
+On Tue, 21 Apr 2009, Johannes Berg wrote:
 
-This patch adds a callback function pointer to let users switch on and
-off the external pull-up resistor. This lets the outside world know
-whether the processor is currently actively driving the bus or not.
+> > > > [ thanks for the analysis Johannes ... involving also Oliver here; really
+> > > >   seems like a false positive to me ]
+> > > I think he's right. But as a matter of principle I'd like to see 
+> > > flush_scheduled_work() avoided where possible, hence the patch.
+> > I am not entirely sure that this is the same issue as the one from #13136 
+> > of kernel.org bugzilla.
+> > Anyway, for reference, the patch Oliver mentioned here is below.
+> Thanks. Unfortunately I have another problem that turns off lockdep so I
+> can't test this right now, sorry.
 
-When this callback is not provided, the code behaviour won't change.
+Are you able to reproduce the problem with current git (the expected fix 
+is 89092ddd7a).
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Ville Syrjala <syrjala@sci.fi>
----
- drivers/w1/masters/w1-gpio.c |   35 +++++++++++++++++++++++++++++++++++
- include/linux/w1-gpio.h      |    1 +
- 2 files changed, 36 insertions(+), 0 deletions(-)
+Thanks,
 
-diff --git a/drivers/w1/masters/w1-gpio.c b/drivers/w1/masters/w1-gpio.c
-index a411702..6f8866d 100644
---- a/drivers/w1/masters/w1-gpio.c
-+++ b/drivers/w1/masters/w1-gpio.c
-@@ -74,6 +74,9 @@ static int __init w1_gpio_probe(struct platform_device *pdev)
- 	if (err)
- 		goto free_gpio;
- 
-+	if (pdata->enable_external_pullup)
-+		pdata->enable_external_pullup(1);
-+
- 	platform_set_drvdata(pdev, master);
- 
- 	return 0;
-@@ -91,6 +94,9 @@ static int __exit w1_gpio_remove(struct platform_device *pdev)
- 	struct w1_bus_master *master = platform_get_drvdata(pdev);
- 	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
- 
-+	if (pdata->enable_external_pullup)
-+		pdata->enable_external_pullup(0);
-+
- 	w1_remove_master_device(master);
- 	gpio_free(pdata->pin);
- 	kfree(master);
-@@ -98,12 +104,41 @@ static int __exit w1_gpio_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_PM
-+
-+static int w1_gpio_suspend(struct platform_device *pdev, pm_message_t state)
-+{
-+	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
-+
-+	if (pdata->enable_external_pullup)
-+		pdata->enable_external_pullup(0);
-+
-+	return 0;
-+}
-+
-+static int w1_gpio_resume(struct platform_device *pdev)
-+{
-+	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
-+
-+	if (pdata->enable_external_pullup)
-+		pdata->enable_external_pullup(1);
-+
-+	return 0;
-+}
-+
-+#else
-+#define w1_gpio_suspend	NULL
-+#define w1_gpio_resume	NULL
-+#endif
-+
- static struct platform_driver w1_gpio_driver = {
- 	.driver = {
- 		.name	= "w1-gpio",
- 		.owner	= THIS_MODULE,
- 	},
- 	.remove	= __exit_p(w1_gpio_remove),
-+	.suspend = w1_gpio_suspend,
-+	.resume = w1_gpio_resume,
- };
- 
- static int __init w1_gpio_init(void)
-diff --git a/include/linux/w1-gpio.h b/include/linux/w1-gpio.h
-index 9797fec..3adeff8 100644
---- a/include/linux/w1-gpio.h
-+++ b/include/linux/w1-gpio.h
-@@ -18,6 +18,7 @@
- struct w1_gpio_platform_data {
- 	unsigned int pin;
- 	unsigned int is_open_drain:1;
-+	void (*enable_external_pullup)(int enable);
- };
- 
- #endif /* _LINUX_W1_GPIO_H */
 -- 
-1.6.2.1
-
+Jiri Kosina
+SUSE Labs
