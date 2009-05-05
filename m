@@ -1,130 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758080AbZEETaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758662AbZEETar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758080AbZEETaS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 15:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756549AbZEET35
+	id S1758662AbZEETar (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 15:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758408AbZEETaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 15:29:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35080 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754832AbZEET3z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 15:29:55 -0400
-Date: Tue, 5 May 2009 12:27:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Guntsche <mike@it-loops.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [BUG] 2.6.30-rc4: Kernel BUG under network load with gianfar
-Message-Id: <20090505122735.b87dd129.akpm@linux-foundation.org>
-In-Reply-To: <50F164E7-D247-4FD6-B41B-BDAA8681166B@it-loops.com>
-References: <50F164E7-D247-4FD6-B41B-BDAA8681166B@it-loops.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 5 May 2009 15:30:20 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49058 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758450AbZEETaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 15:30:16 -0400
+Message-ID: <4A00938F.9080602@suse.com>
+Date: Tue, 05 May 2009 15:29:19 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       David <david@unsolicited.net>
+Subject: Re: [PATCH] reiserfs: Expand i_mutex to enclose lookup_one_len
+References: <49FB1F20.8040400@suse.com> <20090503085236.GT8633@ZenIV.linux.org.uk> <20090503091507.GU8633@ZenIV.linux.org.uk> <49FE7448.2040302@suse.com> <20090504061327.GG8633@ZenIV.linux.org.uk> <49FF1A7F.4010307@suse.com>
+In-Reply-To: <49FF1A7F.4010307@suse.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc netdev)
+Jeff Mahoney wrote:
+> Al Viro wrote:
+>> On Mon, May 04, 2009 at 12:51:20AM -0400, Jeff Mahoney wrote:
+> 
+>>> Huh. I didn't see that still in there. That's an artifact of an earlier
+>>> version of the code where I kept a reference to /.reiserfs_priv/xattrs.
+>>> Then I decided that .reiserfs_priv was all I needed to cache (to avoid
+>>> recursive i_mutex locking on the fs root) and dropped the caching of
+>>> xattrs. Looks like it didn't get totally cleared out.
+>> It's not that simple ;-/  You check it in journalling code, AFAICS in order
+>> to decide how much will that sucker take (due to extra mkdir?) and something
+>> will need to be done with that check.
+> 
+> Yes, it's for an extra mkdir. Now that I've gotten some sleep and looked
+> at the code again, I see what you're saying. At least it's broken in a
+> performance way instead of causing a system crash or data corruption.
+> 
+>> Anyway, I'm going to push all that stuff to #for-next, so that -next would
+>> pick it.  I have *not* touched the xattr_root logics, so if you could do
+>> that on top of your patch + my incremental...
+> 
+> Ok, I'll fix that up and get some testing in.
 
-On Sun, 3 May 2009 15:36:27 +0200
-Michael Guntsche <mike@it-loops.com> wrote:
+Here's the patch to fix up the xattr root caching. I have two more that do some
+cleanups that I'll post separately. The early load of the privroot means we can
+get rid of some of the mess with hiding the entry during readdir and lookup.
 
-> Hello list,
-> 
-> 
-> I recently tried 2.6.30-rc4 on a routerboard currently running 2.6.29  
-> (it is running stable with this kernel).
-> 
-> This board is used as a gateway and under load I see the following BUG  
-> with 2.6.30-rc4.
-> 
-> ------------[ cut here ]------------
-> kernel BUG at net/core/skbuff.c:126!
+I'll send all three as a series, separately as well.
 
-skb_over_panic().  There should have been some additional information
-printed before the "cut here" text.  That might be useful in fixing
-this regression.
+-Jeff
 
+---
 
-> Oops: Exception in kernel mode, sig: 5 [#1]
-> MikroTik RouterBOARD 600 series
-> Modules linked in: nf_nat_rtsp nf_conntrack_rtsp
-> NIP: c01abc68 LR: c01abc68 CTR: c015559c
-> REGS: c7aa7b20 TRAP: 0700   Not tainted  (2.6.30-rc4)
-> MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 24002424  XER: 20000000
-> TASK = c7855bc0[588] 'pptpgw' THREAD: c7aa6000
-> GPR00: c01abc68 c7aa7bd0 c7855bc0 00000085 0000295e ffffffff c0152b68  
-> 00000030
-> GPR08: c03848d4 c0350000 0000295e c0380398 84002422 10029614 100de49c  
-> 100e0000
-> GPR16: 100b45a0 00000040 c02f6260 c02f628c c7846380 c7aa6000 c7957800  
-> 00000000
-> GPR24: 00000002 0000003e c7a12480 c7957a00 c7846000 000005e6 c7956240  
-> c7a8b880
-> NIP [c01abc68] skb_over_panic+0x48/0x5c
-> LR [c01abc68] skb_over_panic+0x48/0x5c
-> Call Trace:
-> [c7aa7bd0] [c01abc68] skb_over_panic+0x48/0x5c (unreliable)
-> [c7aa7be0] [c01ad468] skb_put+0x5c/0x60
-> [c7aa7bf0] [c0187650] gfar_clean_rx_ring+0x204/0x42c
-> [c7aa7c40] [c0189074] gfar_poll+0x258/0x338
-> [c7aa7c90] [c01b8b8c] net_rx_action+0x9c/0x190
-> [c7aa7cc0] [c002ddac] __do_softirq+0x84/0x100
-> [c7aa7cf0] [c0006474] do_softirq+0x58/0x5c
-> [c7aa7d00] [c002dc24] irq_exit+0x94/0x98
-> [c7aa7d10] [c0006518] do_IRQ+0xa0/0xc4
-> [c7aa7d30] [c0014448] ret_from_except+0x0/0x14
-> --- Exception: 501 at ppp_asynctty_receive+0x1d8/0x550
->      LR = ppp_asynctty_receive+0x4a4/0x550
-> [c7aa7df0] [c0197734] ppp_asynctty_receive+0x324/0x550 (unreliable)
-> [c7aa7e40] [c014def4] pty_write+0x74/0x8c
-> [c7aa7e50] [c0148f1c] n_tty_write+0x2b0/0x430
-> [c7aa7eb0] [c0145f34] tty_write+0x188/0x268
-> [c7aa7ef0] [c00903cc] vfs_write+0xb4/0x1a4
-> [c7aa7f10] [c009096c] sys_write+0x4c/0x90
-> [c7aa7f40] [c0013db0] ret_from_syscall+0x0/0x38
-> --- Exception: c01 at 0xff2d5c4
->      LR = 0x10003a48
-> Instruction dump:
-> 80a30054 2f800000 80e300a8 810300ac 816300a0 814300a4 419e0020 3c60c030
-> 7d695b78 90010008 3863901c 4be7d091 <0fe00000> 48000000 3d20c02d  
-> 380968b8
-> Kernel panic - not syncing: Fatal exception in interrupt
-> Call Trace:
-> [c7aa7970] [c0008274] show_stack+0x4c/0x16c (unreliable)
-> [c7aa79b0] [c0027d1c] panic+0x90/0x170
-> [c7aa7a00] [c00118ac] die+0x19c/0x1d4
-> [c7aa7a20] [c0011b80] _exception+0x138/0x15c
-> [c7aa7b10] [c00143fc] ret_from_except_full+0x0/0x4c
-> --- Exception: 700 at skb_over_panic+0x48/0x5c
->      LR = skb_over_panic+0x48/0x5c
-> [c7aa7be0] [c01ad468] skb_put+0x5c/0x60
-> [c7aa7bf0] [c0187650] gfar_clean_rx_ring+0x204/0x42c
-> [c7aa7c40] [c0189074] gfar_poll+0x258/0x338
-> [c7aa7c90] [c01b8b8c] net_rx_action+0x9c/0x190
-> [c7aa7cc0] [c002ddac] __do_softirq+0x84/0x100
-> [c7aa7cf0] [c0006474] do_softirq+0x58/0x5c
-> [c7aa7d00] [c002dc24] irq_exit+0x94/0x98
-> [c7aa7d10] [c0006518] do_IRQ+0xa0/0xc4
-> [c7aa7d30] [c0014448] ret_from_except+0x0/0x14
-> --- Exception: 501 at ppp_asynctty_receive+0x1d8/0x550
->      LR = ppp_asynctty_receive+0x4a4/0x550
-> [c7aa7df0] [c0197734] ppp_asynctty_receive+0x324/0x550 (unreliable)
-> [c7aa7e40] [c014def4] pty_write+0x74/0x8c
-> [c7aa7e50] [c0148f1c] n_tty_write+0x2b0/0x430
-> [c7aa7eb0] [c0145f34] tty_write+0x188/0x268
-> [c7aa7ef0] [c00903cc] vfs_write+0xb4/0x1a4
-> [c7aa7f10] [c009096c] sys_write+0x4c/0x90
-> [c7aa7f40] [c0013db0] ret_from_syscall+0x0/0x38
-> --- Exception: c01 at 0xff2d5c4
->      LR = 0x10003a48
-> 
-> After that the Board reboots after 180 seconds. To reproduce this  
-> problem I just have to stream audio or run some benchmarks on http://speedtest.net 
-> .
-> 
-> Doing the same with 2.6.29 does not inhibit this problem.
-> 
+ The xattr_root caching was broken from my previous patch set. It wouldn't
+ cause corruption, but could cause decreased performance due to allocating
+ a larger chunk of the journal (~ 27 blocks) than it would actually use.
 
+ This patch loads the xattr root dentry at xattr initialization and creates
+ it on-demand. Since we're using the cached dentry, there's no point
+ in keeping lookup_or_create_dir around, so that's removed.
+
+Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/reiserfs/xattr.c            |   73 +++++++++++++++++++++++++----------------
+ include/linux/reiserfs_fs_sb.h |    2 -
+ include/linux/reiserfs_xattr.h |    2 -
+ 3 files changed, 48 insertions(+), 29 deletions(-)
+
+--- a/fs/reiserfs/xattr.c
++++ b/fs/reiserfs/xattr.c
+@@ -113,36 +113,28 @@ static int xattr_rmdir(struct inode *dir
+ 
+ #define xattr_may_create(flags)	(!flags || flags & XATTR_CREATE)
+ 
+-/* Returns and possibly creates the xattr dir. */
+-static struct dentry *lookup_or_create_dir(struct dentry *parent,
+-					    const char *name, int flags)
++static struct dentry *open_xa_root(struct super_block *sb, int flags)
+ {
+-	struct dentry *dentry;
+-	BUG_ON(!parent);
++	struct dentry *privroot = REISERFS_SB(sb)->priv_root;
++	struct dentry *xaroot;
++	if (!privroot->d_inode)
++		return ERR_PTR(-ENODATA);
+ 
+-	mutex_lock_nested(&parent->d_inode->i_mutex, I_MUTEX_XATTR);
+-	dentry = lookup_one_len(name, parent, strlen(name));
+-	if (!IS_ERR(dentry) && !dentry->d_inode) {
+-		int err = -ENODATA;
++	mutex_lock_nested(&privroot->d_inode->i_mutex, I_MUTEX_XATTR);
+ 
++	xaroot = dget(REISERFS_SB(sb)->xattr_root);
++	if (!xaroot->d_inode) {
++		int err = -ENODATA;
+ 		if (xattr_may_create(flags))
+-			err = xattr_mkdir(parent->d_inode, dentry, 0700);
+-
++			err = xattr_mkdir(privroot->d_inode, xaroot, 0700);
+ 		if (err) {
+-			dput(dentry);
+-			dentry = ERR_PTR(err);
++			dput(xaroot);
++			xaroot = ERR_PTR(err);
+ 		}
+ 	}
+-	mutex_unlock(&parent->d_inode->i_mutex);
+-	return dentry;
+-}
+ 
+-static struct dentry *open_xa_root(struct super_block *sb, int flags)
+-{
+-	struct dentry *privroot = REISERFS_SB(sb)->priv_root;
+-	if (!privroot)
+-		return ERR_PTR(-ENODATA);
+-	return lookup_or_create_dir(privroot, XAROOT_NAME, flags);
++	mutex_unlock(&privroot->d_inode->i_mutex);
++	return xaroot;
+ }
+ 
+ static struct dentry *open_xa_dir(const struct inode *inode, int flags)
+@@ -158,10 +150,22 @@ static struct dentry *open_xa_dir(const
+ 		 le32_to_cpu(INODE_PKEY(inode)->k_objectid),
+ 		 inode->i_generation);
+ 
+-	xadir = lookup_or_create_dir(xaroot, namebuf, flags);
++	mutex_lock_nested(&xaroot->d_inode->i_mutex, I_MUTEX_XATTR);
++
++	xadir = lookup_one_len(namebuf, xaroot, strlen(namebuf));
++	if (!IS_ERR(xadir) && !xadir->d_inode) {
++		int err = -ENODATA;
++		if (xattr_may_create(flags))
++			err = xattr_mkdir(xaroot->d_inode, xadir, 0700);
++		if (err) {
++			dput(xadir);
++			xadir = ERR_PTR(err);
++		}
++	}
++
++	mutex_unlock(&xaroot->d_inode->i_mutex);
+ 	dput(xaroot);
+ 	return xadir;
+-
+ }
+ 
+ /* The following are side effects of other operations that aren't explicitly
+@@ -986,19 +990,33 @@ int reiserfs_lookup_privroot(struct supe
+ int reiserfs_xattr_init(struct super_block *s, int mount_flags)
+ {
+ 	int err = 0;
++	struct dentry *privroot = REISERFS_SB(s)->priv_root;
+ 
+ #ifdef CONFIG_REISERFS_FS_XATTR
+ 	err = xattr_mount_check(s);
+ 	if (err)
+ 		goto error;
+
+-	if (!REISERFS_SB(s)->priv_root->d_inode && !(mount_flags & MS_RDONLY)) {
++	if (!privroot->d_inode && !(mount_flags & MS_RDONLY)) {
+ 		mutex_lock(&s->s_root->d_inode->i_mutex);
+ 		err = create_privroot(REISERFS_SB(s)->priv_root);
+ 		mutex_unlock(&s->s_root->d_inode->i_mutex);
+ 	}
+-	if (!err)
++
++	if (privroot->d_inode) {
+ 		s->s_xattr = reiserfs_xattr_handlers;
++		mutex_lock(&privroot->d_inode->i_mutex);
++		if (!REISERFS_SB(s)->xattr_root) {
++			struct dentry *dentry;
++			dentry = lookup_one_len(XAROOT_NAME, privroot,
++						strlen(XAROOT_NAME));
++			if (!IS_ERR(dentry))
++				REISERFS_SB(s)->xattr_root = dentry;
++			else
++				err = PTR_ERR(dentry);
++		}
++		mutex_unlock(&privroot->d_inode->i_mutex);
++	}
+ 
+ error:
+ 	if (err) {
+@@ -1008,11 +1026,12 @@ error:
+ #endif
+ 
+ 	/* The super_block MS_POSIXACL must mirror the (no)acl mount option. */
+-	s->s_flags = s->s_flags & ~MS_POSIXACL;
+ #ifdef CONFIG_REISERFS_FS_POSIX_ACL
+ 	if (reiserfs_posixacl(s))
+ 		s->s_flags |= MS_POSIXACL;
++	else
+ #endif
++		s->s_flags &= ~MS_POSIXACL;
+ 
+ 	return err;
+ }
+--- a/include/linux/reiserfs_fs_sb.h
++++ b/include/linux/reiserfs_fs_sb.h
+@@ -402,7 +402,7 @@ struct reiserfs_sb_info {
+ 	int reserved_blocks;	/* amount of blocks reserved for further allocations */
+ 	spinlock_t bitmap_lock;	/* this lock on now only used to protect reserved_blocks variable */
+ 	struct dentry *priv_root;	/* root of /.reiserfs_priv */
+-	struct dentry *xattr_root;	/* root of /.reiserfs_priv/.xa */
++	struct dentry *xattr_root;	/* root of /.reiserfs_priv/xattrs */
+ 	int j_errno;
+ #ifdef CONFIG_QUOTA
+ 	char *s_qf_names[MAXQUOTAS];
+--- a/include/linux/reiserfs_xattr.h
++++ b/include/linux/reiserfs_xattr.h
+@@ -98,7 +98,7 @@ static inline size_t reiserfs_xattr_jcre
+ 
+ 	if ((REISERFS_I(inode)->i_flags & i_has_xattr_dir) == 0) {
+ 		nblocks += JOURNAL_BLOCKS_PER_OBJECT(inode->i_sb);
+-		if (REISERFS_SB(inode->i_sb)->xattr_root == NULL)
++		if (!REISERFS_SB(inode->i_sb)->xattr_root->d_inode)
+ 			nblocks += JOURNAL_BLOCKS_PER_OBJECT(inode->i_sb);
+ 	}
+ 
+-- 
+Jeff Mahoney
+SUSE Labs
