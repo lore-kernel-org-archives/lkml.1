@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758435AbZEEUeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbZEEUiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758435AbZEEUeS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 16:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbZEEUeH
+	id S1758025AbZEEUiq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 16:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbZEEUig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 16:34:07 -0400
-Received: from dallas.jonmasters.org ([72.29.103.172]:42288 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753772AbZEEUeF (ORCPT
+	Tue, 5 May 2009 16:38:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45238 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753476AbZEEUig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 16:34:05 -0400
-Subject: Re: ANNOUNCE: LKML Summary Podcast
-From: Jon Masters <jonathan@jonmasters.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A0098FF.7000509@garzik.org>
-References: <1241446095.7268.6.camel@jcmlaptop>
-	 <4A0098FF.7000509@garzik.org>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Tue, 05 May 2009 16:33:22 -0400
-Message-Id: <1241555602.5880.41.camel@jcmlaptop>
+	Tue, 5 May 2009 16:38:36 -0400
+Date: Tue, 5 May 2009 13:24:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, vgoyal@redhat.com
+Subject: Re: IO scheduler based IO Controller V2
+Message-Id: <20090505132441.1705bfad.akpm@linux-foundation.org>
+In-Reply-To: <1241553525-28095-1-git-send-email-vgoyal@redhat.com>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-05 at 15:52 -0400, Jeff Garzik wrote:
-> Jon Masters wrote:
-> > Folks,
-> > 
-> > I'm /experimenting/ with recording a short 3-5 minute summary of LKML
-> > traffic for those of us who like to listen to Podcasts. It's modeled
-> > after e.g. the NYT Front Page Podcast, though not quite as cool.
-> > 
-> > I am hoping this of use to some people who can't read LKML every day.
-> > Yesterday took 15-20 minutes to put together, and that's doable on a
-> > regular basis, subject to it being of use to anyone. I figured I'm
-> > reading LKML whether I do I summary recording or not. If it takes off,
-> > then I'll try forming a small team to share the effort out.
-> > 
-> > Podcast: http://podcasts.jonmasters.org/kernel/kernel.xml
-> > 
-> > (it'll show up in iTunes shortly for those with iPhones)
+On Tue,  5 May 2009 15:58:27 -0400
+Vivek Goyal <vgoyal@redhat.com> wrote:
+
 > 
-> So... you're using a non-free audio format to podcast about open source?
+> Hi All,
+> 
+> Here is the V2 of the IO controller patches generated on top of 2.6.30-rc4.
+> ...
+> Currently primarily two other IO controller proposals are out there.
+> 
+> dm-ioband
+> ---------
+> This patch set is from Ryo Tsuruta from valinux.
+> ...
+> IO-throttling
+> -------------
+> This patch set is from Andrea Righi provides max bandwidth controller.
 
-As I said in the LWN article, there will be oggs shortly - I just need
-some time on the weekend to get around to scripting the production[0]. I
-will add a second feed with oggs in it, and also post the script (each
-podcast is created by first writing a script, which if placed on a wiki
-can then be a collaborative exercise, and translated too). I really
-would like this to eventually be a daily collaborative thing.
+I'm thinking we need to lock you guys in a room and come back in 15 minutes.
 
-Yesterday's podcast had around 3,500 listeners, which is nice. Nice
-enough that I'm looking for mirrors and alternative hosting if this
-interest level continues - happy to add a "brought to you by blah". But
-anyway, I'd love it if bandwidth were a problem as that would confirm
-that there's a real "market" for this/that it's useful.
+Seriously, how are we to resolve this?  We could lock me in a room and
+cmoe back in 15 days, but there's no reason to believe that I'd emerge
+with the best answer.
 
-Today, it showed up in iTunes...
-
-Jon.
-
-[0] The (unfortunate) reason behind the mp3s is that most car stereos,
-(i)Phones, and other devices still don't play oggs, whereas even my car
-has a Linux-based empeg mp3 player installed in it. I know, it's a
-cycle/circle of doom, and I don't want to overly encourage that.
-
+I tend to think that a cgroup-based controller is the way to go. 
+Anything else will need to be wired up to cgroups _anyway_, and that
+might end up messy.
 
