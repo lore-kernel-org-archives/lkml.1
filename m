@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbZEEPzC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbZEEP5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755507AbZEEPzC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 11:55:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbZEEPyw
+	id S1754832AbZEEP5R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 11:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbZEEP5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 11:54:52 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:49290 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751767AbZEEPyv (ORCPT
+	Tue, 5 May 2009 11:57:03 -0400
+Received: from gv-out-0910.google.com ([216.239.58.185]:19283 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752775AbZEEP5B convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 11:54:51 -0400
-Date: Tue, 5 May 2009 11:43:58 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, torvalds@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, lee.schermerhorn@hp.com,
-       riel@redhat.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       npiggin@suse.de
-Subject: Re: [RFC][PATCH] vmscan: don't export nr_saved_scan in
- /proc/zoneinfo
-In-Reply-To: <1241509090.11059.31.camel@twins>
-Message-ID: <alpine.DEB.1.10.0905051142580.11830@qirst.com>
-References: <200904302208.n3UM8t9R016687@imap1.linux-foundation.org>  <20090501012212.GA5848@localhost>  <20090430194907.82b31565.akpm@linux-foundation.org>  <20090502023125.GA29674@localhost> <20090502024719.GA29730@localhost>  <20090504144915.8d0716d7.akpm@linux-foundation.org>
- <1241509090.11059.31.camel@twins>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 5 May 2009 11:57:01 -0400
+To: Vitaly Wool <vitalywool@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [linux-pm] [PATCH] PM: suspend_device_irqs(): don't disable  wakeup IRQs
+References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
+	<20090504235405.647772ed.akpm@linux-foundation.org>
+	<acd2a5930905050711j57cbf81du2fe4dbb4e408e877@mail.gmail.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Tue, 05 May 2009 08:56:56 -0700
+In-Reply-To: <acd2a5930905050711j57cbf81du2fe4dbb4e408e877@mail.gmail.com> (Vitaly Wool's message of "Tue\, 5 May 2009 18\:11\:31 +0400")
+Message-ID: <87bpq7a6gn.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 May 2009, Peter Zijlstra wrote:
+Vitaly Wool <vitalywool@gmail.com> writes:
 
-> > /proc/zoneinfo is unsalvageable :( Shifting future work over to
-> > /sys/devices/system/node/nodeN/meminfo and deprecating /proc/zoneinfo
-> > sounds good to me.
+> On Tue, May 5, 2009 at 10:54 AM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+>> On Mon,  4 May 2009 17:27:04 -0700 Kevin Hilman <khilman@deeprootsystems.com> wrote:
+>>
+>>> Interrupts that are flagged as wakeup sources via set_irq_wake()
+>>> should not be disabled for suspend.
+>>>
+>>
+>> Why not?
 >
-> If only one could find things put in sysfs :-)
+> Sounds like an interesting problem. If a wakeup depends on the
+> interrupt line, then no they definitely should not be disabled, as no
+> wakeup would happen otherwise. 
 
-Write a "zoneinfo" command line tool to show this information? If we
-cannot output large texts via /proc or /sys then we need small tools for
-all sorts of statistics.
+Agreed.
 
+> OTOH, this is not necessarily the case; some SoCs configure wakeup
+> sources as GPIOs (i.MXs do AFAIR) so it's not clear if we should
+> change generic source code in this case.
+
+In the case of GPIO IRQs, then the call to __disable_irq() in
+suspend_device_irqs() will trickle down to the irq_chip disable hook
+in the GPIO code.  If that code stops the GPIO from triggering
+interrupts, which it should, then my guess is your GPIO will no longer
+wake the system either.
+
+Kevin
