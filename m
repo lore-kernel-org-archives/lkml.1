@@ -1,129 +1,358 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbZEEGVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbZEEGWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754686AbZEEGVQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 02:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbZEEGU6
+	id S1758061AbZEEGWB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 02:22:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbZEEGVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 02:20:58 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:62768 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752000AbZEEGU4 (ORCPT
+	Tue, 5 May 2009 02:21:51 -0400
+Received: from mga05.intel.com ([192.55.52.89]:28934 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754122AbZEEGVu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 02:20:56 -0400
-Date: Tue, 5 May 2009 08:22:05 +0200
-From: Thierry Reding <thierry.reding@avionic-design.de>
-To: Trilok Soni <soni.trilok@gmail.com>
-Cc: Kwangwoo Lee <kwangwoo.lee@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
-Subject: Re: [PATCH] input: Add support for the TSC2003 controller.
-Message-ID: <20090505062205.GA28440@avionic-design.de>
-References: <1241006627-22811-1-git-send-email-thierry.reding@avionic-design.de> <5d5443650904290623n3712cd7dja653a139cff2cf6d@mail.gmail.com> <483a38b80904291835p51044741p9bd83d33a40031c@mail.gmail.com> <20090504113751.GA22603@avionic-design.de> <5d5443650905040503n501e3b47qc890dc4c71a85b1c@mail.gmail.com> <20090504145700.GA875@avionic-design.de> <5d5443650905041021n1f709ce1y382440d1285b09ec@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="A6N2fC+uXW/VQSAv"
-Content-Disposition: inline
-In-Reply-To: <5d5443650905041021n1f709ce1y382440d1285b09ec@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Provags-ID: V01U2FsdGVkX18tgXVIptsXduS4jWIa1EZ4rV2KsL/R6whmHzd
- BNf3Nt70ydlJ6CWIrnTUiQJK6DTtmu4b7ni73NAI6nl9sx1Yjg
- /Tgp/qcAKqb5tswXXW42g==
+	Tue, 5 May 2009 02:21:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,295,1239001200"; 
+   d="scan'208";a="687539957"
+Subject: [PATCH 1/3] pci: Provide Multiple Error Received and no error
+	source id support on AER
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 05 May 2009 14:22:12 +0800
+Message-Id: <1241504532.27664.45.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Based on PCI Express AER specs, a root port might receive multiple
+TLP errors while it could only save a correctable error source id
+and an uncorrectable error source id at the same time. In addition,
+some root port hardware might be unable to provide a correct source
+id, i.e., the source id provided by root port might be equal to 0.
 
---A6N2fC+uXW/VQSAv
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The patchset implements the support in kernel by searching the device
+tree under the root port.
 
-* Trilok Soni wrote:
-> Hi Therry,
-> 
-> On Mon, May 4, 2009 at 8:27 PM, Thierry Reding
-> <thierry.reding@avionic-design.de> wrote:
-> > * Trilok Soni wrote:
-> >> Hi Thierry,
-> >>
-> >> On Mon, May 4, 2009 at 5:07 PM, Thierry Reding
-> >> <thierry.reding@avionic-design.de> wrote:
-> >> > * Kwangwoo Lee wrote:
-> >> >> Hi Thierry and Trilok,
-> >> >>
-> >> >> On Wed, Apr 29, 2009 at 10:23 PM, Trilok Soni <soni.trilok@gmail.com> wrote:
-> >> >> > Hi Thierry,
-> >> >> >
-> >> >> > I have added linux-omap community. How different is this chip from
-> >> >> > tsc2007. It looks to me that this chip is not much different from
-> >> >> > tsc2007 (this is just quick look at the driver). If they
-> >> >> > are similar please consider using i2c_device_id feature in tsc2007 to
-> >> >> > accommodate this chip.
-> >> >>
-> >> >> I agree with the Trilok's opinion.
-> >> > [snip]
-> >> >
-> >> > I only noticed the tsc2007 driver some time ago, when the tsc2003 was already
-> >> > finished (it's actually pretty old, I just never got around to submitting
-> >> > it). However I never got the tsc2007 to work on my platform because it uses
-> >> > sleeping functions inside the timer handler, which results in an oops right
-> >> > after the first touchscreen interrupt.
-> >> >
-> >> > I guess I could try and fix the tsc2007 properly instead of having a second,
-> >> > pretty similar driver in the tree.
-> >> >
-> >>
-> >> This could be because of improper locking? If you share a crash we can
-> >> have look at it.
-> >
-> > Attached is a patch that fixes things for me. The problem was that the I2C
-> > transfers were done in interrupt context which fails for the controller I use
-> > (PXA270). The attached patch uses a struct work_struct to schedule the I2C
-> > transfers so they are executed in non-interrupt context.
-> >
-> > I've tested the patch on a minimal system with tslib and it work fine with
-> > ts_calibrate and friends.
-> 
-> Thanks for the patch. It looks good. Let's wait for Kwangwoo Lee to
-> verify it on his platform. Also please add "tsc2003" entry into
-> i2c_device_ids so that i2c_board_info can specify the .name as
-> "tsc2003".
+Patch 1 changes parameter cb of function pci_walk_bus to return a value.
+When cb return non-zero, pci_walk_bus stops more searching on the
+device tree.
 
-A second patch is attached that merely adds the tsc2003 to the list of
-supported device IDs. I've split the patch off because it has nothing to do
-with the other changes.
-
-Thierry
-
-
---A6N2fC+uXW/VQSAv
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: inline; filename="tsc003.patch"
-Content-Transfer-Encoding: quoted-printable
-
-=46rom: Thierry Reding <thierry.reding@avionic-design.de>
-Subject: [PATCH] tsc2007: Add support for TSC2003 chips.
-
-The TSC2003 is very similar to the TSC2007 an can be supported by the same
-driver with no additional changes.
-
-Signed-off-by: Thierry Reding <thierry.reding@avionic-design.de>
+﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
 
 ---
- drivers/input/touchscreen/tsc2007.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/input/touchscreen/tsc2007.c b/drivers/input/touchscree=
-n/tsc2007.c
-index 6efb54d..599aa67 100644
---- a/drivers/input/touchscreen/tsc2007.c
-+++ b/drivers/input/touchscreen/tsc2007.c
-@@ -360,6 +360,7 @@ static int tsc2007_remove(struct i2c_client *client)
-=20
- static struct i2c_device_id tsc2007_idtable[] =3D {
- 	{ "tsc2007", 0 },
-+	{ "tsc2003", 0 },
- 	{ }
- };
-=20
---=20
-tg: (84e274c..) adx/input/tsc2003 (depends on: adx/input/tsc2007)
+--- linux-2.6.30-rc3/arch/powerpc/platforms/pseries/eeh_driver.c	2009-04-27 15:48:28.000000000 +0800
++++ linux-2.6.30-rc3_pciwalk/arch/powerpc/platforms/pseries/eeh_driver.c	2009-04-29 10:39:41.000000000 +0800
+@@ -122,7 +122,7 @@ static void eeh_enable_irq(struct pci_de
+  * passed back in "userdata".
+  */
+ 
+-static void eeh_report_error(struct pci_dev *dev, void *userdata)
++static int eeh_report_error(struct pci_dev *dev, void *userdata)
+ {
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver = dev->driver;
+@@ -130,19 +130,21 @@ static void eeh_report_error(struct pci_
+ 	dev->error_state = pci_channel_io_frozen;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	eeh_disable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->error_detected)
+-		return;
++		return 0;
+ 
+ 	rc = driver->err_handler->error_detected (dev, pci_channel_io_frozen);
+ 
+ 	/* A driver that needs a reset trumps all others */
+ 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
++
++	return 0;
+ }
+ 
+ /**
+@@ -153,7 +155,7 @@ static void eeh_report_error(struct pci_
+  * Cumulative response passed back in "userdata".
+  */
+ 
+-static void eeh_report_mmio_enabled(struct pci_dev *dev, void *userdata)
++static int eeh_report_mmio_enabled(struct pci_dev *dev, void *userdata)
+ {
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver = dev->driver;
+@@ -161,26 +163,28 @@ static void eeh_report_mmio_enabled(stru
+ 	if (!driver ||
+ 	    !driver->err_handler ||
+ 	    !driver->err_handler->mmio_enabled)
+-		return;
++		return 0;
+ 
+ 	rc = driver->err_handler->mmio_enabled (dev);
+ 
+ 	/* A driver that needs a reset trumps all others */
+ 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
++
++	return 0;
+ }
+ 
+ /**
+  * eeh_report_reset - tell device that slot has been reset
+  */
+ 
+-static void eeh_report_reset(struct pci_dev *dev, void *userdata)
++static int eeh_report_reset(struct pci_dev *dev, void *userdata)
+ {
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver = dev->driver;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	dev->error_state = pci_channel_io_normal;
+ 
+@@ -188,35 +192,39 @@ static void eeh_report_reset(struct pci_
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->slot_reset)
+-		return;
++		return 0;
+ 
+ 	rc = driver->err_handler->slot_reset(dev);
+ 	if ((*res == PCI_ERS_RESULT_NONE) ||
+ 	    (*res == PCI_ERS_RESULT_RECOVERED)) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_DISCONNECT &&
+ 	     rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
++
++	return 0;
+ }
+ 
+ /**
+  * eeh_report_resume - tell device to resume normal operations
+  */
+ 
+-static void eeh_report_resume(struct pci_dev *dev, void *userdata)
++static int eeh_report_resume(struct pci_dev *dev, void *userdata)
+ {
+ 	struct pci_driver *driver = dev->driver;
+ 
+ 	dev->error_state = pci_channel_io_normal;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	eeh_enable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->resume)
+-		return;
++		return 0;
+ 
+ 	driver->err_handler->resume(dev);
++
++	return 0;
+ }
+ 
+ /**
+@@ -226,22 +234,24 @@ static void eeh_report_resume(struct pci
+  * dead, and that no further recovery attempts will be made on it.
+  */
+ 
+-static void eeh_report_failure(struct pci_dev *dev, void *userdata)
++static int eeh_report_failure(struct pci_dev *dev, void *userdata)
+ {
+ 	struct pci_driver *driver = dev->driver;
+ 
+ 	dev->error_state = pci_channel_io_perm_failure;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	eeh_disable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->error_detected)
+-		return;
++		return 0;
+ 
+ 	driver->err_handler->error_detected(dev, pci_channel_io_perm_failure);
++
++	return 0;
+ }
+ 
+ /* ------------------------------------------------------- */
+--- linux-2.6.30-rc3/drivers/pci/bus.c	2009-04-27 15:48:31.000000000 +0800
++++ linux-2.6.30-rc3_pciwalk/drivers/pci/bus.c	2009-05-05 14:10:36.000000000 +0800
+@@ -201,13 +201,18 @@ void pci_enable_bridges(struct pci_bus *
+  *  Walk the given bus, including any bridged devices
+  *  on buses under this bus.  Call the provided callback
+  *  on each device found.
++ *
++ *  We check the return of @cb each time. If it returns anything
++ *  other than 0, we break out.
++ *
+  */
+-void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
++void pci_walk_bus(struct pci_bus *top, int (*cb)(struct pci_dev *, void *),
+ 		  void *userdata)
+ {
+ 	struct pci_dev *dev;
+ 	struct pci_bus *bus;
+ 	struct list_head *next;
++	int retval;
+ 
+ 	bus = top;
+ 	down_read(&pci_bus_sem);
+@@ -231,8 +236,10 @@ void pci_walk_bus(struct pci_bus *top, v
+ 
+ 		/* Run device routines with the device locked */
+ 		down(&dev->dev.sem);
+-		cb(dev, userdata);
++		retval = cb(dev, userdata);
+ 		up(&dev->dev.sem);
++		if (retval)
++			break;
+ 	}
+ 	up_read(&pci_bus_sem);
+ }
+--- linux-2.6.30-rc3/drivers/pci/pcie/aer/aerdrv_core.c	2009-04-27 15:48:31.000000000 +0800
++++ linux-2.6.30-rc3_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c	2009-04-29 10:37:16.000000000 +0800
+@@ -109,19 +109,21 @@ int pci_cleanup_aer_correct_error_status
+ #endif  /*  0  */
+ 
+ 
+-static void set_device_error_reporting(struct pci_dev *dev, void *data)
++static int set_device_error_reporting(struct pci_dev *dev, void *data)
+ {
+ 	bool enable = *((bool *)data);
+ 
+ 	if (dev->pcie_type != PCIE_RC_PORT &&
+ 	    dev->pcie_type != PCIE_SW_UPSTREAM_PORT &&
+ 	    dev->pcie_type != PCIE_SW_DOWNSTREAM_PORT)
+-		return;
++		return 0;
+ 
+ 	if (enable)
+ 		pci_enable_pcie_error_reporting(dev);
+ 	else
+ 		pci_disable_pcie_error_reporting(dev);
++
++	return 0;
+ }
+ 
+ /**
+@@ -205,7 +207,7 @@ static struct device* find_source_device
+ 	return NULL;
+ }
+ 
+-static void report_error_detected(struct pci_dev *dev, void *data)
++static int report_error_detected(struct pci_dev *dev, void *data)
+ {
+ 	pci_ers_result_t vote;
+ 	struct pci_error_handlers *err_handler;
+@@ -230,16 +232,16 @@ static void report_error_detected(struct
+ 				   dev->driver ?
+ 				   "no AER-aware driver" : "no driver");
+ 		}
+-		return;
++		return 0;
+ 	}
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	vote = err_handler->error_detected(dev, result_data->state);
+ 	result_data->result = merge_result(result_data->result, vote);
+-	return;
++	return 0;
+ }
+ 
+-static void report_mmio_enabled(struct pci_dev *dev, void *data)
++static int report_mmio_enabled(struct pci_dev *dev, void *data)
+ {
+ 	pci_ers_result_t vote;
+ 	struct pci_error_handlers *err_handler;
+@@ -249,15 +251,15 @@ static void report_mmio_enabled(struct p
+ 	if (!dev->driver ||
+ 		!dev->driver->err_handler ||
+ 		!dev->driver->err_handler->mmio_enabled)
+-		return;
++		return 0;
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	vote = err_handler->mmio_enabled(dev);
+ 	result_data->result = merge_result(result_data->result, vote);
+-	return;
++	return 0;
+ }
+ 
+-static void report_slot_reset(struct pci_dev *dev, void *data)
++static int report_slot_reset(struct pci_dev *dev, void *data)
+ {
+ 	pci_ers_result_t vote;
+ 	struct pci_error_handlers *err_handler;
+@@ -267,15 +269,15 @@ static void report_slot_reset(struct pci
+ 	if (!dev->driver ||
+ 		!dev->driver->err_handler ||
+ 		!dev->driver->err_handler->slot_reset)
+-		return;
++		return 0;
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	vote = err_handler->slot_reset(dev);
+ 	result_data->result = merge_result(result_data->result, vote);
+-	return;
++	return 0;
+ }
+ 
+-static void report_resume(struct pci_dev *dev, void *data)
++static int report_resume(struct pci_dev *dev, void *data)
+ {
+ 	struct pci_error_handlers *err_handler;
+ 
+@@ -284,11 +286,11 @@ static void report_resume(struct pci_dev
+ 	if (!dev->driver ||
+ 		!dev->driver->err_handler ||
+ 		!dev->driver->err_handler->resume)
+-		return;
++		return 0;
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	err_handler->resume(dev);
+-	return;
++	return 0;
+ }
+ 
+ /**
+@@ -305,7 +307,7 @@ static void report_resume(struct pci_dev
+ static pci_ers_result_t broadcast_error_message(struct pci_dev *dev,
+ 	enum pci_channel_state state,
+ 	char *error_mesg,
+-	void (*cb)(struct pci_dev *, void *))
++	int (*cb)(struct pci_dev *, void *))
+ {
+ 	struct aer_broadcast_data result_data;
+ 
+--- linux-2.6.30-rc3/include/linux/pci.h	2009-04-27 15:48:33.000000000 +0800
++++ linux-2.6.30-rc3_pciwalk/include/linux/pci.h	2009-04-29 10:31:58.000000000 +0800
+@@ -790,7 +790,7 @@ const struct pci_device_id *pci_match_id
+ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
+ 		    int pass);
+ 
+-void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
++void pci_walk_bus(struct pci_bus *top, int (*cb)(struct pci_dev *, void *),
+ 		  void *userdata);
+ int pci_cfg_space_size_ext(struct pci_dev *dev);
+ int pci_cfg_space_size(struct pci_dev *dev);
 
---A6N2fC+uXW/VQSAv--
+
