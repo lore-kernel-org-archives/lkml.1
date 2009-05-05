@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbZEETCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbZEETRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279AbZEETCT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 15:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbZEETCJ
+	id S1756593AbZEETRT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 15:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbZEETRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 15:02:09 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:51291 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752600AbZEETCI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 15:02:08 -0400
-Date: Tue, 5 May 2009 21:04:16 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Manuel Lauss <mano@roarinelk.homelinux.net>,
-       Jean Delvare <khali@linux-fr.org>, Anders Kaseorg <andersk@mit.edu>,
-       Sean MacLennan <smaclennan@pikatech.com>
-Subject: [GIT] kbuild fixes
-Message-ID: <20090505190416.GA19475@uranus.ravnborg.org>
+	Tue, 5 May 2009 15:17:07 -0400
+Received: from mga14.intel.com ([143.182.124.37]:59023 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752503AbZEETRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 15:17:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,299,1239001200"; 
+   d="scan'208";a="139473538"
+Date: Tue, 5 May 2009 12:16:58 -0700
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 15/15] PCI: remove deprecated pci_find_slot() interface
+Message-ID: <20090505121658.11e881bb@hobbes>
+In-Reply-To: <20090331152422.26622.85161.stgit@bob.kio>
+References: <20090331150158.26622.45423.stgit@bob.kio>
+	<20090331152422.26622.85161.stgit@bob.kio>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus.
+On Tue, 31 Mar 2009 09:24:22 -0600
+Alex Chiang <achiang@hp.com> wrote:
 
-This fixes an annoying warning "unexpected non-allocatable section",
-that shows up in certain combinations of targets/gccs.
+> The last in-tree caller of pci_find_slot has been converted, so
+> let's get rid of this deprecated interface.
+> 
+> Signed-off-by: Alex Chiang <achiang@hp.com>
 
-The tree commit fixes three different sources of the warnings.
-This has now been in -next for a day or two with no additional comlains.
+Ok applied this series.  No more pci_find_slot, yay!
 
-Please pull.
-
-	Sam
-
-The following changes since commit b4348f32dae3cb6eb4bc21c7ed8f76c0b11e9d6a:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://oss.sgi.com/xfs/xfs
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
-
-Anders Kaseorg (1):
-      kbuild, modpost: fix unexpected non-allocatable section when cross compiling
-
-Sam Ravnborg (2):
-      kbuild, modpost: fix "unexpected non-allocatable" warning with SUSE gcc
-      kbuild, modpost: fix unexpected non-allocatable warning with mips
-
- scripts/mod/modpost.c |   47 ++++++++++++++++++++++++++++++++++-------------
- 1 files changed, 34 insertions(+), 13 deletions(-)
+-- 
+Jesse Barnes, Intel Open Source Technology Center
