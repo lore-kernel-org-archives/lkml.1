@@ -1,80 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756954AbZEEWxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923AbZEEWxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756954AbZEEWxg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 18:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbZEEWxO
+	id S1752923AbZEEWxw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 18:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbZEEWxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 18:53:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33766 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753402AbZEEWxN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 18:53:13 -0400
-Date: Tue, 5 May 2009 15:49:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: viro@ZenIV.linux.org.uk, knobi@knobisoft.de, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, tigran@aivazian.fsnet.co.uk
-Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
-Message-Id: <20090505154911.e0309a4f.akpm@linux-foundation.org>
-In-Reply-To: <1241014725.15095.19.camel@marge.simson.net>
-References: <409142.83316.qm@web32605.mail.mud.yahoo.com>
-	<20090428182837.62c51f26.akpm@linux-foundation.org>
-	<1240977096.5478.3.camel@marge.simson.net>
-	<20090429011755.c141c599.akpm@linux-foundation.org>
-	<20090429120827.GI8633@ZenIV.linux.org.uk>
-	<1241014725.15095.19.camel@marge.simson.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 May 2009 18:53:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60128 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754109AbZEEWxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 18:53:23 -0400
+Date: Wed, 6 May 2009 00:47:27 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 2/3] ptrace: cleanup check/set of PT_PTRACED during attach
+Message-ID: <20090505224727.GA958@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Apr 2009 16:18:45 +0200
-Mike Galbraith <efault@gmx.de> wrote:
+ptrace_attach() and ptrace_traceme() are the last functions which look as
+if the untraced task can have task->ptrace != 0, this must not be possible.
+Change the code to just check ->ptrace != 0 and s/|=/=/ to set PT_PTRACED.
 
-> On Wed, 2009-04-29 at 13:08 +0100, Al Viro wrote:
-> > On Wed, Apr 29, 2009 at 01:17:55AM -0700, Andrew Morton wrote:
-> > 
-> > > > > > Questions remains: was this intentional? It breaks existing userspace and should therefore be considered a regression - right? On the other hand, it will never be a problem for RHEL-4/5 kernels, unless the change in 2.6.29 gets backported. Any ideas?
-> > > > > 
-> > > > > afaik that was unintentional and was probably a mistake.
-> > > > > 
-> > > > > I wonder how we did that.
-> > > > 
-> > > > <paste>
-> > > > > [hotplug]# grep sysfs /proc/mounts
-> > > > > none /sys sysfs rw,relatime 0 0
-> > > > > /sys /sys sysfs rw,relatime 0 0
-> > > > 
-> > > > ___(I wonder how the heck that is accomplished)
-> > > 
-> > > Beats me.  I'm not seeing likely changes in fs/proc/base.c or around
-> > > show_mountinfo().  Maybe sysfs broke in an ingenious way.  (hopefully
-> > > cc's viro).
-> > 
-> > Er...  Somebody mounting sysfs twice?  From some init script and from
-> > /etc/fstab, perhaps?  That definitely looks like two mount(2) had to
-> > have been done to cause that...
-> 
-> Yeah, but how does one go about doing that?
-> 
-> Using mount -f, I can convince mount to succeed, but I still have only
-> one entry in /proc/mounts, despite what my mount binary imagines.
-> 
-> marge:..sys/vm # grep sysfs /proc/mounts
-> sysfs /sys sysfs rw,relatime 0 0
-> 
-> marge:..sys/vm # mount|grep sysfs
-> sysfs on /sys type sysfs (rw)
-> sys on /sys type sysfs (rw)
-> /sys on /sys type sysfs (rw)
-> 
+Also, a couple of trivial whitespace cleanups in ptrace_attach().
 
-So /proc/mounts is OK and /etc/mtab is wrong?
+And move ptrace_traceme() up near ptrace_attach() to keep them close to each
+other.
 
-Obvious next step is to strace `mount -f', see what's happening around
-sys_mount(), please.
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
+
+ kernel/ptrace.c |  102 ++++++++++++++++++++++++++++----------------------------
+ 1 file changed, 51 insertions(+), 51 deletions(-)
+
+--- PTRACE/kernel/ptrace.c~2_PTRACE	2009-05-05 23:17:53.000000000 +0200
++++ PTRACE/kernel/ptrace.c	2009-05-05 23:49:15.000000000 +0200
+@@ -186,12 +186,12 @@ int ptrace_attach(struct task_struct *ta
+ 		goto out;
+ 	if (same_thread_group(task, current))
+ 		goto out;
+-
+-	/* Protect exec's credential calculations against our interference;
++	/*
++	 * Protect exec's credential calculations against our interference;
+ 	 * SUID, SGID and LSM creds get determined differently under ptrace.
+ 	 */
+ 	retval = mutex_lock_interruptible(&task->cred_exec_mutex);
+-	if (retval  < 0)
++	if (retval < 0)
+ 		goto out;
+ repeat:
+ 	/*
+@@ -219,10 +219,10 @@ repeat:
+ 	retval = -EPERM;
+ 	if (unlikely(task->exit_state))
+ 		goto bad;
+-	if (task->ptrace & PT_PTRACED)
++	if (task->ptrace)
+ 		goto bad;
+ 
+-	task->ptrace |= PT_PTRACED;
++	task->ptrace = PT_PTRACED;
+ 	if (capable(CAP_SYS_PTRACE))
+ 		task->ptrace |= PT_PTRACE_CAP;
+ 
+@@ -238,6 +238,52 @@ out:
+ 	return retval;
+ }
+ 
++/**
++ * ptrace_traceme  --  helper for PTRACE_TRACEME
++ *
++ * Performs checks and sets PT_PTRACED.
++ * Should be used by all ptrace implementations for PTRACE_TRACEME.
++ */
++int ptrace_traceme(void)
++{
++	int ret = -EPERM;
++
++	/*
++	 * Are we already being traced?
++	 */
++repeat:
++	task_lock(current);
++	if (!current->ptrace) {
++		/*
++		 * See ptrace_attach() comments about the locking here.
++		 */
++		unsigned long flags;
++		if (!write_trylock_irqsave(&tasklist_lock, flags)) {
++			task_unlock(current);
++			do {
++				cpu_relax();
++			} while (!write_can_lock(&tasklist_lock));
++			goto repeat;
++		}
++
++		ret = security_ptrace_traceme(current->parent);
++
++		/*
++		 * Check PF_EXITING to ensure ->real_parent has not passed
++		 * exit_ptrace(). Otherwise we don't report the error but
++		 * pretend ->real_parent untraces us right after return.
++		 */
++		if (!ret && !(current->real_parent->flags & PF_EXITING)) {
++			current->ptrace = PT_PTRACED;
++			__ptrace_link(current, current->real_parent);
++		}
++
++		write_unlock_irqrestore(&tasklist_lock, flags);
++	}
++	task_unlock(current);
++	return ret;
++}
++
+ /*
+  * Called with irqs disabled, returns true if childs should reap themselves.
+  */
+@@ -575,52 +621,6 @@ int ptrace_request(struct task_struct *c
+ }
+ 
+ /**
+- * ptrace_traceme  --  helper for PTRACE_TRACEME
+- *
+- * Performs checks and sets PT_PTRACED.
+- * Should be used by all ptrace implementations for PTRACE_TRACEME.
+- */
+-int ptrace_traceme(void)
+-{
+-	int ret = -EPERM;
+-
+-	/*
+-	 * Are we already being traced?
+-	 */
+-repeat:
+-	task_lock(current);
+-	if (!(current->ptrace & PT_PTRACED)) {
+-		/*
+-		 * See ptrace_attach() comments about the locking here.
+-		 */
+-		unsigned long flags;
+-		if (!write_trylock_irqsave(&tasklist_lock, flags)) {
+-			task_unlock(current);
+-			do {
+-				cpu_relax();
+-			} while (!write_can_lock(&tasklist_lock));
+-			goto repeat;
+-		}
+-
+-		ret = security_ptrace_traceme(current->parent);
+-
+-		/*
+-		 * Check PF_EXITING to ensure ->real_parent has not passed
+-		 * exit_ptrace(). Otherwise we don't report the error but
+-		 * pretend ->real_parent untraces us right after return.
+-		 */
+-		if (!ret && !(current->real_parent->flags & PF_EXITING)) {
+-			current->ptrace |= PT_PTRACED;
+-			__ptrace_link(current, current->real_parent);
+-		}
+-
+-		write_unlock_irqrestore(&tasklist_lock, flags);
+-	}
+-	task_unlock(current);
+-	return ret;
+-}
+-
+-/**
+  * ptrace_get_task_struct  --  grab a task struct reference for ptrace
+  * @pid:       process id to grab a task_struct reference of
+  *
 
