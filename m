@@ -1,168 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbZEECVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758184AbZEECZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756460AbZEECVg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 22:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbZEECV0
+	id S1758184AbZEECZW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 22:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbZEECZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 22:21:26 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:32848 "EHLO e9.ny.us.ibm.com"
+	Mon, 4 May 2009 22:25:07 -0400
+Received: from mga14.intel.com ([143.182.124.37]:64411 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752577AbZEECV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 22:21:26 -0400
-Date: Mon, 4 May 2009 22:08:06 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: nishimura@mxp.nes.nec.co.jp
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	id S1752423AbZEECZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 22:25:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,294,1239001200"; 
+   d="scan'208";a="139169708"
+Date: Tue, 5 May 2009 10:24:27 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "pavel@ucw.cz" <pavel@ucw.cz>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hugh@veritas.com" <hugh@veritas.com>, d-nishimura@mtf.biglobe.ne.jp
-Subject: Re: [PATCH] memcg: fix stale swap cache leak v5
-Message-ID: <20090504163806.GA4407@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090430161627.0ccce565.kamezawa.hiroyu@jp.fujitsu.com> <20090430163539.7a882cef.kamezawa.hiroyu@jp.fujitsu.com> <20090430180426.25ae2fa6.kamezawa.hiroyu@jp.fujitsu.com> <20090430094252.GG4430@balbir.in.ibm.com> <20090430184738.752858ea.kamezawa.hiroyu@jp.fujitsu.com> <20090430181246.GM4430@balbir.in.ibm.com> <20090501133317.9c372d38.d-nishimura@mtf.biglobe.ne.jp>
+       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>
+Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release preallocated memory
+	unnecessarily (rev. 2)
+Message-ID: <20090505022427.GA10880@localhost>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905031830.49690.rjw@sisk.pl> <200905040208.43040.rjw@sisk.pl> <200905040222.39062.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090501133317.9c372d38.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <200905040222.39062.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> [2009-05-01 13:33:17]:
+On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Since the hibernation code is now going to use allocations of memory
+> to create enough room for the image, it can also use the page frames
+> allocated at this stage as image page frames.  The low-level
+> hibernation code needs to be rearranged for this purpose, but it
+> allows us to avoid freeing a great number of pages and allocating
+> these same pages once again later, so it generally is worth doing.
+> 
+> [rev. 2: Change the strategy of preallocating memory to allocate as
+>  many pages as needed to get the right image size in one shot (the
+>  excessive allocated pages are released afterwards).]
 
->               processA                   |           processB
->     -------------------------------------+-------------------------------------
->       (page_remove_rmap())               |  (shrink_page_list())
->          mem_cgroup_uncharge_page()      |
->             ->uncharged because it's not |
->               PageSwapCache yet.         |
->               So, both mem/memsw.usage   |
->               are decremented.           |
->                                          |    add_to_swap() -> added to swap cache.
-> 
->     If this page goes thorough without being freed for some reason, this page
->     doesn't goes back to memcg's LRU because of !PageCgroupUsed.
+Rafael, I tried out your patches and found doubled memory shrink speed!
 
-For some reason could use some clarification.
+[  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
+[  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
 
-> 
-> These swap cache cannot be freed in memcg's LRU scanning, and swp_entry cannot
-> be freed properly as a result.
-> This patch adds a hook after add_to_swap() to check the page is mapped by a
-> process or not, and frees it if it has been unmapped already.
-> 
-> If a page has been on swap cache already when the owner process calls
-> page_remove_rmap() -> mem_cgroup_uncharge_page(), the page is not uncharged.
-> It goes back to memcg's LRU even if it goes through shrink_page_list()
-> without being freed, so this patch ignores these case.
-> 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> ---
->  include/linux/swap.h |   12 ++++++++++++
->  mm/memcontrol.c      |   14 ++++++++++++++
->  mm/vmscan.c          |    8 ++++++++
->  3 files changed, 34 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/swap.h b/include/linux/swap.h
-> index caf0767..8e75d7a 100644
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -336,11 +336,17 @@ static inline void disable_swap_token(void)
-> 
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR
->  extern void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent);
-> +extern int memcg_free_unused_swapcache(struct page *page);
->  #else
->  static inline void
->  mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
->  {
->  }
-> +static inline int
-> +memcg_free_unused_swapcache(struct page *page)
-> +{
-> +	return 0;
-> +}
->  #endif
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->  extern void mem_cgroup_uncharge_swap(swp_entry_t ent);
-> @@ -431,6 +437,12 @@ static inline swp_entry_t get_swap_page(void)
->  #define has_swap_token(x) 0
->  #define disable_swap_token() do { } while(0)
-> 
-> +static inline int
-> +memcg_free_unused_swapcache(struct page *page)
-> +{
-> +	return 0;
-> +}
-> +
->  #endif /* CONFIG_SWAP */
->  #endif /* __KERNEL__*/
->  #endif /* _LINUX_SWAP_H */
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 01c2d8f..4f7e5b6 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -1488,6 +1488,7 @@ void mem_cgroup_uncharge_cache_page(struct page *page)
->  	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
->  }
-> 
-> +#ifdef CONFIG_SWAP
->  /*
->   * called from __delete_from_swap_cache() and drop "page" account.
->   * memcg information is recorded to swap_cgroup of "ent"
-> @@ -1507,6 +1508,19 @@ void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
->  		css_put(&memcg->css);
->  }
-> 
-> +int memcg_free_unused_swapcache(struct page *page)
-> +{
-> +	VM_BUG_ON(!PageLocked(page));
-> +	VM_BUG_ON(!PageSwapCache(page));
-> +
-> +	if (mem_cgroup_disabled())
-> +		return 0;
-> +	if (!PageAnon(page) || page_mapped(page))
-> +		return 0;
+For you reference, here is the free memory before/after
+hibernate_preallocate_memory():
 
-Do we need these checks? Isn't PageSwapCache() check and
-page_swapcount() check enough in try_to_free_swap()?
+        # free
+                     total       used       free     shared    buffers     cached
+        Mem:          1933       1917         15          0          0       1845
+        -/+ buffers/cache:         72       1861
+        Swap:            0          0          0
 
-> +	return try_to_free_swap(page);	/* checks page_swapcount */
+        # free
+                     total       used       free     shared    buffers     cached
+        Mem:          1933        920       1012          0          0        356
+        -/+ buffers/cache:        563       1369
+        Swap:            0          0          0
 
-try_to_free_swap() marks the page as dirty, do you know why?
+It seems that the preallocated memory is not freed on -ENOMEM.
 
-> +}
-> +#endif /* CONFIG_SWAP */
-> +
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->  /*
->   * called from swap_entry_free(). remove record in swap_cgroup and
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index eac9577..c1a7a6f 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -656,6 +656,14 @@ static unsigned long shrink_page_list(struct list_head *page_list,
->  				goto keep_locked;
->  			if (!add_to_swap(page))
->  				goto activate_locked;
-> +			/*
-> +			 * The owner process might have uncharged the page
-> +			 * (by page_remove_rmap()) before it has been added
-> +			 * to swap cache.
-> +			 * Check it here to avoid making it stale.
-> +			 */
-> +			if (memcg_free_unused_swapcache(page))
-> +				goto keep_locked;
++       error = memory_bm_create(&orig_bm, GFP_IMAGE, PG_ANY);
++       if (error)
++               goto err_out;
++
++       error = memory_bm_create(&copy_bm, GFP_IMAGE, PG_ANY);
++       if (error)
++               goto err_out;
 
-Seems reasonable, but I think it is better to check for
-scan_global_lru().. no?
+memory_bm_create() is called a number of times, each time it will
+call create_mem_extents()/memory_bm_free(). Can they be optimized to
+be called only once?
 
->  			may_enter_fs = 1;
->  		}
-> 
-> 
+A side note: there are somehow duplicated *_extent_*() logics in the
+filesystems, is it possible that we abstract out some of the common code?
 
--- 
-	Balbir
++       for_each_populated_zone(zone) {
++               size += snapshot_additional_pages(zone);
++               count += zone_page_state(zone, NR_FREE_PAGES);
++               if (!is_highmem(zone))
++                       count -= zone->lowmem_reserve[ZONE_NORMAL];
++       }
+
+Why [ZONE_NORMAL] instead of [zone]? ZONE_NORMAL may not always be the largest zone,
+for example, My 4GB laptop has a tiny ZONE_NORMAL and a large ZONE_DMA32.
+
++       /* If size < max_size, preallocating enough memory may be impossible. */
++       if (count > 0 && size == max_size)
++               error = -ENOMEM;
++       if (error)
++               goto err_out;
+
+The two if()s can be merged.
+
+At last, I'd express my major concern about the transition to preallocate
+based memory shrinking: will it lead to more random swapping IOs?
+
+Thanks,
+Fengguang
+
