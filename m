@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932139AbZEEKot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932273AbZEEKpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932139AbZEEKot (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 06:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZEEKoJ
+	id S932273AbZEEKpL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 06:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932131AbZEEKoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 06:44:09 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:34382 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754655AbZEEKn5 (ORCPT
+	Tue, 5 May 2009 06:44:20 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:55377 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932107AbZEEKoT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 06:43:57 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] usb: use memdup_user()
-Date: Tue, 5 May 2009 12:44:01 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: David Brownell <david-b@pacbell.net>, Li Hong <lihong.hi@gmail.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <3a3680030905030900x672af596mc2ebc3c38f119c92@mail.gmail.com> <200905041601.51789.oliver@neukum.org> <20090504231157.1ff2cf15.akpm@linux-foundation.org>
-In-Reply-To: <20090504231157.1ff2cf15.akpm@linux-foundation.org>
+	Tue, 5 May 2009 06:44:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ELeWjbkevNe0dbSeUJdNQQGspQNoaAWYq1vnk4d70rq107CkVwk+FJnC72q82C7q2r
+         SNlw3yd7Tv74vczQT6F22PBoyDo+2A0KmbOKjetvulsjP4EqyjC3B9bVt5Imui/cCX0u
+         ZqUVi7RIKrruobbgAlXJXLb00KMIS2EV+TQps=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905051244.01698.oliver@neukum.org>
+In-Reply-To: <20090504.182628.216265620.wl@gnu.org>
+References: <20090503.132958.227862405.wl@gnu.org>
+	 <20090504.182628.216265620.wl@gnu.org>
+Date: Tue, 5 May 2009 20:44:18 +1000
+Message-ID: <21d7e9970905050344x2a92f9c6l8569b68bff905370@mail.gmail.com>
+Subject: Re: some kernel issues
+From: Dave Airlie <airlied@gmail.com>
+To: Werner LEMBERG <wl@gnu.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 5. Mai 2009 08:11:57 schrieb Andrew Morton:
-> On Mon, 4 May 2009 16:01:51 +0200 Oliver Neukum <oliver@neukum.org> wrote:
-
-> > I want people to be forced to think about memory allocations.
-> > We had endless trouble during 2.4 with storage deadlocking.
-> > We simply need full control of this.
+On Tue, May 5, 2009 at 2:26 AM, Werner LEMBERG <wl@gnu.org> wrote:
 >
-> thou-shalt-use-GFP_NOFS is a very common pattern in many filesystems.
-> And thou-shalt-use-GFP_NOIO is a very common pattern in block drivers.
+> [kernel 2.6.30-rc4-14-vanilla from openSuSE factory on top of
+> openSuSE 11.1]
+>
+>
+> With my 945GM intel graphics card, I don't get TTYs which I could
+> switch to with Ctrl-Alt-Shift-F1, for example, after X has started.
+> Only F7 to switch back to graphics mode works fine.  In particular, I
+> don't see any boot messages at start-up.  This has worked fine with a
+> previous kernel like 2.6.27.21.
+>
+> Are there new boot parameters to add or is this a bug?  It seems that
+> `vga=0x31a' fails (which openSuSE's yast installer provides) since
+> without it I can see boot messages.
+>
+> BTW, for `vga=0x31a' I get
+>
+>  Console: colour dummy device 80x25
+>
+> in the log file, while without this parameter I get
+>
+>  Console: colour VGA+ 80x25
 
-USB drivers are interface level yet some functions, reset and power
-management, are on a device level. As it is unpredictable whether
-a driver will share a device with a storage driver, all USB drivers as far as
-these functions are concerned must be considered block device drivers.
-That's the reason GFP_NOIO is so prevalent in USB.
+Make sure you haven't enabled kernel mode setting.
 
-> I wonder how hard it would be to add runtime debugging checks?  If
+CONFIG_DRM_I915_KMS
 
-I'd prefer compile time checks. Ideally we'd annotate a function with an
-attribute making the compiler barf if copy_to/from_user or an inappropriate
-kmalloc is used. It can't be perfect due to function pointers, but it would
-be a good start.
+Dave.
 
-	Regards
-		Oliver
-
+>
+>
+>    Werner
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
