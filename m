@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758698AbZEEWKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbZEEWST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758698AbZEEWKI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 18:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbZEEWJy
+	id S1757499AbZEEWST (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 18:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbZEEWSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 18:09:54 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:59662 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754240AbZEEWJx (ORCPT
+	Tue, 5 May 2009 18:18:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36529 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753357AbZEEWSI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 18:09:53 -0400
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090505224417.0f00c2f0@lxorguk.ukuu.org.uk>
-References: <1241462661.412.8.camel@alok-dev1>	<4A00ADDE.9000908@zytor.com>
-	 <20090505224417.0f00c2f0@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Tue, 05 May 2009 15:09:54 -0700
-Message-Id: <1241561394.8665.31.camel@alok-dev1>
+	Tue, 5 May 2009 18:18:08 -0400
+Date: Tue, 5 May 2009 15:15:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, npiggin@suse.de, gerg@snapgear.com,
+       linux-kernel@vger.kernel.org, dhowells@redhat.com
+Subject: Re: [PATCH 3/3] NOMMU: Make the initial mmap allocation excess
+ behaviour Kconfig configurable
+Message-Id: <20090505151520.070c84c1.akpm@linux-foundation.org>
+In-Reply-To: <20090505212648.17034.18375.stgit@warthog.procyon.org.uk>
+References: <20090505212638.17034.10989.stgit@warthog.procyon.org.uk>
+	<20090505212648.17034.18375.stgit@warthog.procyon.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 05 May 2009 22:26:48 +0100
+David Howells <dhowells@redhat.com> wrote:
 
-On Tue, 2009-05-05 at 14:44 -0700, Alan Cox wrote:
-> > What is the benefit of this?
+> NOMMU mmap() has an option controlled by a sysctl variable that determines
+> whether the allocations made by do_mmap_private() should have the excess space
+> trimmed off and returned to the allocator.  Make the initial setting of this
+> variable a Kconfig configuration option.
 > 
-> I believe the "benefit" is that a certain posters proprietary
-> virtualisation product works better.
-
-Hi Alan, 
-
-I posted numbers that I had, and I don't think that the problem is
-limited just to virtualization or our platform. 
-
-> > I can see at least one immediate downside: some timeout values in the 
-> > kernel are still maintained in units of HZ (like poll, I believe), and 
-> > so with a lower HZ value we'll have higher roundoff errors.
+> The reason there can be excess space is that the allocator only allocates in
+> power-of-2 size chunks, but mmap()'s can be made in sizes that aren't a power
+> of 2.
 > 
-> And HZ=100 actually causes real problems for some video work (not in
-> Europe where its just peachy). We switched to 1000Hz a very long time ago
-> because it improved desktop feel and responsiveness. We switched to
-> tickless to keep that behaviour with good power and idle behaviour.
+> There are two alternatives:
+> 
+>  (1) Keep the excess as dead space.  The dead space then remains unused for the
+>      lifetime of the mapping.  Mappings of shared objects such as libc, ld.so
+>      or busybox's text segment may retain their dead space forever.
+> 
+>  (2) Return the excess to the allocator.  This means that the dead space is
+>      limited to less than a page per mapping, but it means that for a transient
+>      process, there's more chance of fragmentation as the excess space may be
+>      reused fairly quickly.
+> 
+> During the boot process, a lot of transient processes are created, and this can
+> cause a lot of fragmentation as the pagecache and various slabs grow greatly
+> during this time.
+> 
+> By turning off the trimming of excess space during boot and disabling batching
+> of frees, Coldfire can manage to boot.
+> 
+> A better way of doing things might be to have /sbin/init turn this option off.
+> By that point libc, ld.so and init - which are all long-duration processes -
+> have all been loaded and trimmed.
+> 
 
-IMO, one of the main motives of HRT implementation apart from getting
-higher precision timers was that we now don't necessarily need to rely
-on a high timer frequency. If you see problems with Desktop feel and
-responsiveness don't you think there would be other problem which might
-be causing that ?  Your argument about the "desktop feel and
-responsiveness" doesn't explain what actual problem did you see.
-Also there are lots of distribution kernels which ship with a lower HZ
-value anyway, so I don't see why is HZ=1000 such a big requirement for
-your desktop use case.
+Nasty problem.
 
-Alok
+> --- a/mm/nommu.c
+> +++ b/mm/nommu.c
+> @@ -66,7 +66,7 @@ struct percpu_counter vm_committed_as;
+>  int sysctl_overcommit_memory = OVERCOMMIT_GUESS; /* heuristic overcommit */
+>  int sysctl_overcommit_ratio = 50; /* default is 50% */
+>  int sysctl_max_map_count = DEFAULT_MAX_MAP_COUNT;
+> -int sysctl_nr_trim_pages = 1; /* page trimming behaviour */
+> +int sysctl_nr_trim_pages = CONFIG_NOMMU_INITIAL_TRIM_EXCESS;
+>  int heap_stack_gap = 0;
+>  
+
+But there's a risk of -ENOMEM regression on other system here?
+
+It's unlikely to be a huge problem for real-world embedded developers,
+as long as they know about this change.  And because you set the
+Kconfig default to "no change" then I guess they'll be none the wiser.
+
+I think that patches 2 and 3 (and #1 unless I reorder and redo things)
+are 2.6.30 material.  Agree?
 
