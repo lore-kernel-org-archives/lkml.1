@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758713AbZEEUlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbZEEUoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758713AbZEEUlg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 16:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbZEEUl2
+	id S1758619AbZEEUoQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 16:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZEEUn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 16:41:28 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:3890 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753328AbZEEUl1 (ORCPT
+	Tue, 5 May 2009 16:43:58 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38156 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752854AbZEEUn5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 16:41:27 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=GBEPxZ22HvF/mDIqPzvJUK/LQeiYH4UJeG7WB6giZ4qUkFrMh3ybMBLBp7RMHsVv5
-	M5CDGouG8Q5hE6PRFpVNw==
-Date: Tue, 5 May 2009 13:41:23 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Jack Steiner <steiner@sgi.com>
-cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, alex.shi@intel.com,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Fix early panic issue on machines with memless node
-In-Reply-To: <20090505202730.GA9831@sgi.com>
-Message-ID: <alpine.DEB.2.00.0905051336110.22577@chino.kir.corp.google.com>
-References: <1241493327.27664.17.camel@ymzhang> <alpine.DEB.2.00.0905042026010.29856@chino.kir.corp.google.com> <20090505163608.GA20385@sgi.com> <alpine.DEB.2.00.0905051250510.20021@chino.kir.corp.google.com> <20090505202730.GA9831@sgi.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 5 May 2009 16:43:57 -0400
+Date: Tue, 5 May 2009 16:43:52 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Alessio Igor Bogani <abogani@texware.it>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LFSDEV <linux-fsdevel@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH vfs-2.6:for-next] vfs: remount_fs BKL pushdown
+Message-ID: <20090505204352.GA23343@infradead.org>
+References: <1240646945-7970-1-git-send-email-abogani@texware.it> <20090425082349.GA2475@infradead.org> <20090505133743.GA663@infradead.org> <63a49ef40905051239r61fe7f4cg6f24e13df30dc940@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <63a49ef40905051239r61fe7f4cg6f24e13df30dc940@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 May 2009, Jack Steiner wrote:
-
-> I suspect I mislead you when I mentioned "configurations". I did not mean
-> the .config file. I use a more-or-less standard .config file.
+On Tue, May 05, 2009 at 09:39:38PM +0200, Alessio Igor Bogani wrote:
+> >> Please also push down lock_super, no need to have two locking changes in
+> >> this area just after another.
+> >
+> > Do you plan to do that respin? ?I will need the lock_super pushdown for
+> > some sync work. ?I can wait for you if you plan to submit it, otherwise
+> > I'll out it on my TODO list.
 > 
-
-Your .config would still let me build a kernel with debugging symbols so 
-that your offsets actually made sense to my gdb.
-
-> I do much of my testing on a system simulator. Using a simulator config file,
-> I specify the system configuration such as number of nodes, sockets per node,
-> cpus per socket, memory per socket, address map, boot options, etc. This
-> makes it easy to quickly test a lot of strange (but real) configurations.
+> Apologize I have completely missed your first replay.
 > 
-> The configuration above that is failing is a 2-socket Nehelem blade that has no
-> memory on socket 0. All memory is located on socket 1.  The panic is caused by a
-> null dereference of NODE_DATA(0).
-> 
+> Let me two days for finish that task and for do build and boot tests.
 
-A NULL dereference of NODE_DATA(0) should never happen even with 
-!CONFIG_NEED_MULTIPLE_NODES.  So when you say the panic is caused by that 
-(and I'm speculating since all I've seen is a call trace and not the 
-entire panic), I'm assuming it's because NODE_DATA(0)->node_zones + offset 
-is NULL because node 0 has no memory?
+Great!  Thanks a lot for the effort.
+
