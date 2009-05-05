@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbZEEMQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbZEEMS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754834AbZEEMQy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 08:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbZEEMQp
+	id S1756661AbZEEMS1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 08:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbZEEMSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 08:16:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55872 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751631AbZEEMQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 08:16:44 -0400
-Message-ID: <4A002DD4.4080401@redhat.com>
-Date: Tue, 05 May 2009 08:15:16 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Tue, 5 May 2009 08:18:18 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:40702 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752059AbZEEMSR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 08:18:17 -0400
+Date: Tue, 5 May 2009 13:18:16 +0100
+From: Andy Whitcroft <apw@canonical.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SLQB: Coding style cleanups
+Message-ID: <20090505121816.GB23775@shadowen.org>
+References: <Pine.LNX.4.64.0905031514330.32397@melkki.cs.Helsinki.FI> <20090505082545.GE30220@wotan.suse.de> <84144f020905050137k692fb9d6l3f25a03b12b65333@mail.gmail.com> <20090505091750.GA14181@wotan.suse.de>
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "npiggin@suse.de" <npiggin@suse.de>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] vmscan: ZVC updates in shrink_active_list() can be done
- once
-References: <20090504234455.GA6324@localhost>
-In-Reply-To: <20090504234455.GA6324@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090505091750.GA14181@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
-> This effectively lifts the unit of nr_inactive_* and pgdeactivate updates
-> from PAGEVEC_SIZE=14 to SWAP_CLUSTER_MAX=32.
+On Tue, May 05, 2009 at 11:17:50AM +0200, Nick Piggin wrote:
+> On Tue, May 05, 2009 at 11:37:32AM +0300, Pekka Enberg wrote:
+> > Hi Nick,
+> > 
+> > On Tue, May 5, 2009 at 11:25 AM, Nick Piggin <npiggin@suse.de> wrote:
+> > >> @@ -59,7 +59,7 @@ static inline void struct_slqb_page_wrong_size(void)
+> > >>  /*
+> > >>   * slqb_min_order: minimum allocation order for slabs
+> > >>   */
+> > >> -static int slqb_min_order = 0;
+> > >> +static int slqb_min_order;
+> > >
+> > > I actually like explicit zero initializers. I think it has been
+> > > a long time since this actually saved any memory with gcc.
+> > >
+> > > Yes yes, I know that anybody who can "read C" will read the
+> > > implicit zero initializer anyway... however I just think it is
+> > > a stupid thing for checkpatch to warn against.
+> > 
+> > OK. I guess I can drop those hunks. But from coding style of point
+> > view we don't really do explicit zero initializers in the core
+> > kernel...
 > 
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> Well... it's not a big deal, but I just don't think it is a big
+> enough deal to have checkpatch complain about it. Whatever you
+> like. If you have already committed that version, then don't
+> worry about changing it.
 
-Acked-by: Rik van Riel <riel@redhat.com>
+Yeah we did talk about it once before.  At that time I did some
+experiments and confirmed that there was no space to be saved.  However
+the discussion never came to a conclusion.  For myself I am happy to
+remove this check if it has outlived its usefulness.
 
--- 
-All rights reversed.
+-apw
