@@ -1,112 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbZEEPC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774AbZEEPCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612AbZEEPC2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 11:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZEEPCQ
+	id S1752774AbZEEPCn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 11:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbZEEPCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 11:02:16 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:59433 "EHLO mx1.emlix.com"
+	Tue, 5 May 2009 11:02:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55744 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751424AbZEEPCP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 11:02:15 -0400
-From: =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
-To: Chris Zankel <chris@zankel.net>
-Cc: linux-kernel@vger.kernel.org, linux-xtensa@linux-xtensa.org,
-       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
-Subject: [PATCH] xtensa: generalize logic for variant/irq.h inclusion
-Date: Tue,  5 May 2009 17:02:14 +0200
-Message-Id: <1241535734-17479-1-git-send-email-dg@emlix.com>
-In-Reply-To: <4A0054A0.3030104@emlix.com>
-References: <4A0054A0.3030104@emlix.com>
+	id S1752996AbZEEPCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 11:02:18 -0400
+Message-ID: <4A0054F6.30701@redhat.com>
+Date: Tue, 05 May 2009 18:02:14 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Organization: emlix gmbh, Goettingen, Germany
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com>
+In-Reply-To: <4A0049CD.3080003@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CONFIG_VARIANT_IRQ_SWITCH has been replaced by CONFIG_VARIANT_IRQ_EXT
-and a #define VARIANT_HAS_IRQ_ENABLE in variant/irq.h.
+Gregory Haskins wrote:
+> I see.  I had designed it slightly different where KVM could assign any
+> top level vector it wanted and thus that drove the guest-side interface
+> you see here to be more "generic hypercall".  However, I think your
+> proposal is perfectly fine too and it makes sense to more narrowly focus
+> these calls as specifically "dynamic"...as thats the only vectors that
+> we could technically use like this anyway.
+>
+> So rather than allocate a top-level vector, I will add "KVM_HC_DYNAMIC"
+> to kvm_para.h, and I will change the interface to follow suit (something
+> like s/hypercall/dynhc).  Sound good?
+>   
 
-This change was made to allow further extensions to the irq handling by
-the variant in variant/irq.h independent of the CONFIG_VARIANT_IRQ_SWITCH
-functionality and without forcing all variants to provide this header.
+Yeah.
 
-Signed-off-by: Daniel Glöckner <dg@emlix.com>
----
- arch/xtensa/Kconfig                              |    4 ++--
- arch/xtensa/configs/s6105_defconfig              |    2 +-
- arch/xtensa/include/asm/irq.h                    |    6 ++++--
- arch/xtensa/variants/s6000/include/variant/irq.h |    1 +
- 4 files changed, 8 insertions(+), 5 deletions(-)
+Another couple of points:
 
-diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
-index ac02f3c..76dee02 100644
---- a/arch/xtensa/Kconfig
-+++ b/arch/xtensa/Kconfig
-@@ -57,7 +57,7 @@ source "kernel/Kconfig.freezer"
- config MMU
- 	def_bool n
- 
--config VARIANT_IRQ_SWITCH
-+config VARIANT_IRQ_EXT
- 	def_bool n
- 
- menu "Processor type and features"
-@@ -78,7 +78,7 @@ config XTENSA_VARIANT_DC232B
- 
- config XTENSA_VARIANT_S6000
- 	bool "s6000 - Stretch software configurable processor"
--	select VARIANT_IRQ_SWITCH
-+	select VARIANT_IRQ_EXT
- 	select ARCH_REQUIRE_GPIOLIB
- 	select XTENSA_CALIBRATE_CCOUNT
- endchoice
-diff --git a/arch/xtensa/configs/s6105_defconfig b/arch/xtensa/configs/s6105_defconfig
-index 768bee0..51d4bae 100644
---- a/arch/xtensa/configs/s6105_defconfig
-+++ b/arch/xtensa/configs/s6105_defconfig
-@@ -103,7 +103,7 @@ CONFIG_DEFAULT_CFQ=y
- CONFIG_DEFAULT_IOSCHED="cfq"
- # CONFIG_FREEZER is not set
- # CONFIG_MMU is not set
--CONFIG_VARIANT_IRQ_SWITCH=y
-+CONFIG_VARIANT_IRQ_EXT=y
- 
- #
- # Processor type and features
-diff --git a/arch/xtensa/include/asm/irq.h b/arch/xtensa/include/asm/irq.h
-index dfac82d..4a39bb5 100644
---- a/arch/xtensa/include/asm/irq.h
-+++ b/arch/xtensa/include/asm/irq.h
-@@ -14,9 +14,11 @@
- #include <platform/hardware.h>
- #include <variant/core.h>
- 
--#ifdef CONFIG_VARIANT_IRQ_SWITCH
-+#ifdef CONFIG_VARIANT_IRQ_EXT
- #include <variant/irq.h>
--#else
-+#endif
-+
-+#ifndef VARIANT_HAS_IRQ_ENABLE
- static inline void variant_irq_enable(unsigned int irq) { }
- static inline void variant_irq_disable(unsigned int irq) { }
- #endif
-diff --git a/arch/xtensa/variants/s6000/include/variant/irq.h b/arch/xtensa/variants/s6000/include/variant/irq.h
-index fa031cb..bcd496d 100644
---- a/arch/xtensa/variants/s6000/include/variant/irq.h
-+++ b/arch/xtensa/variants/s6000/include/variant/irq.h
-@@ -3,6 +3,7 @@
- 
- #define NO_IRQ		(-1)
- 
-+#define VARIANT_HAS_IRQ_ENABLE
- extern void variant_irq_enable(unsigned int irq);
- extern void variant_irq_disable(unsigned int irq);
- 
+- on the host side, we'd rig this to hit an eventfd.  Nothing stops us 
+from rigging pio to hit an eventfd as well, giving us kernel handling 
+for pio trigger points.
+- pio actually has an advantage over hypercalls with nested guests.  
+Since hypercalls don't have an associated port number, the lowermost 
+hypervisor must interpret a hypercall as going to a guest's hypervisor, 
+and not any lower-level hypervisors.  What it boils down to is that you 
+cannot use device assignment to give a guest access to a virtio/vbus 
+device from a lower level hypervisor.
+
+(Bah, that's totally unreadable.  What I want is
+
+instead of
+
+   hypervisor[eth0/virtio-server]   ----> 
+intermediate[virtio-driver/virtio-server]  ----> guest[virtio-driver]
+
+do
+
+   hypervisor[eth0/virtio-server]   ----> intermediate[assign virtio 
+device]  ----> guest[virtio-driver]
+
+well, it's probably still unreadable)
+
 -- 
-1.6.1.3
+error compiling committee.c: too many arguments to function
 
