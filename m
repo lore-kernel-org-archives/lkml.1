@@ -1,106 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbZEEV3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbZEEVlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758909AbZEEV3r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 17:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756948AbZEEV3h
+	id S1757450AbZEEVlV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 17:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZEEVlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 17:29:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55339 "EHLO mx2.redhat.com"
+	Tue, 5 May 2009 17:41:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36415 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756330AbZEEV3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 17:29:36 -0400
-Date: Tue, 5 May 2009 17:28:56 -0400
-From: Rik van Riel <riel@redhat.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: linux-mm@kvack.org, mingo@redhat.com, akpm@linux-foundation.org
-Subject: [PATCH] x86: 46 bit PAE support
-Message-ID: <20090505172856.6820db22@cuia.bos.redhat.com>
-Organization: Red Hat, Inc
+	id S1751619AbZEEVlK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 17:41:10 -0400
+Date: Tue, 5 May 2009 18:39:27 -0300
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Doug Thompson <norsk5@yahoo.com>
+Cc: Borislav Petkov <borislav.petkov@amd.com>, akpm@linux-foundation.org,
+       greg@kroah.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       dougthompson@xmission.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/21] amd64_edac: assign DRAM chip select base and mask
+ in a family-specific way
+Message-ID: <20090505183927.33eda184@pedra.chehab.org>
+In-Reply-To: <824989.5191.qm@web50101.mail.re2.yahoo.com>
+References: <824989.5191.qm@web50101.mail.re2.yahoo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Extend the maximum addressable memory on x86-64 from 2^44 to
-2^46 bytes. This requires some shuffling around of the vmalloc
-and virtual memmap memory areas, to keep them away from the
-direct mapping of up to 64TB of physical memory.
+Em Tue, 5 May 2009 12:28:01 -0700 (PDT)
+Doug Thompson <norsk5@yahoo.com> escreveu:
 
-This patch also introduces a guard hole between the vmalloc
-area and the virtual memory map space.  There's really no
-good reason why we wouldn't have a guard hole there.
+> 
+> --- On Mon, 5/4/09, Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
+> 
+> > From: Mauro Carvalho Chehab <mchehab@redhat.com>
+> > Subject: Re: [PATCH 09/21] amd64_edac: assign DRAM chip select base and mask in a family-specific way
+> > To: "Borislav Petkov" <borislav.petkov@amd.com>
+> > Cc: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com, linux-kernel@vger.kernel.org
+> > Date: Monday, May 4, 2009, 3:59 PM
+> > Borislav Petkov escreveu:
+> > > +    for (cs = 0; cs <
+> > CHIPSELECT_COUNT; cs++) {
+> > > +        reg = K8_DCSB0
+> > + (cs * 4);
+> > > +        err =
+> > pci_read_config_dword(pvt->dram_f2_ctl, reg,
+> > > +       
+> >            
+> >     &pvt->dcsb0[cs]);
+> > > +        if (err != 0)
+> > > +       
+> >     debugf0("%s() Reading K8_DCSB0[%d]
+> > failed\n",
+> > > +       
+> >         __func__, cs);
+> > > +
+> > > +        debugf0(" 
+> > DCSB0[%d]=0x%08x reg: F2x%x\n",
+> > > +       
+> >     cs, pvt->dcsb0[cs], reg);
+> > >   
+> > 
+> > Hmm... I suspect that there's a missing else before the
+> > debugf0(). If you got an error while reading it, you
+> > shouldn't be showing the results. 
+> > > +
+> > > +        /* If DCT are
+> > NOT ganged, then read in DCT1's base */
+> > > +        if
+> > (boot_cpu_data.x86 >= 0x10 &&
+> > !dct_ganging_enabled(pvt)) {
+> > > +       
+> >     reg = F10_DCSB1 + (cs * 4);
+> > > +       
+> >     err =
+> > pci_read_config_dword(pvt->dram_f2_ctl, reg,
+> > > +       
+> >            
+> >        
+> > &pvt->dcsb1[cs]);
+> > > +       
+> >     if (err != 0)
+> > > +       
+> >         debugf0("%s() Reading
+> > F10_DCSB1[%d] failed\n",
+> > > +       
+> >            
+> > __func__, cs);
+> > > +       
+> >     debugf0("  DCSB1[%d]=0x%08x reg:
+> > F2x%x\n",
+> > > +       
+> >         cs, pvt->dcsb1[cs],
+> > reg);
+> > >   
+> > The same issue here: if you got an error while reading it,
+> > you shouldn't be showing the results. 
+> > Cheers,
+> > Mauro.
+> > 
+> 
+> An 'else' could be inserted, but it is only under DEBUG state for development purposes.  
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
+Yet, it seems worthy to have it.
+> 
+> BACKGROUND: The error checking of the pci config space read was added during the time when the kernel couldn't read the extended 4k config space via the AMD IOConfig port access function (12 bits of offset) not via MMCONFIG. 
 
----
-Testing: booted it on an x86-64 system with 6GB RAM.  Did you really think
-I had access to a system with 64TB of RAM? :)
+As this is unlikely to happen, I would also replace the:
+	if (err != 0)
 
-diff --git a/Documentation/x86/x86_64/mm.txt b/Documentation/x86/x86_64/mm.txt
-index 29b52b1..5394132 100644
---- a/Documentation/x86/x86_64/mm.txt
-+++ b/Documentation/x86/x86_64/mm.txt
-@@ -6,10 +6,11 @@ Virtual memory map with 4 level page tables:
- 0000000000000000 - 00007fffffffffff (=47 bits) user space, different per mm
- hole caused by [48:63] sign extension
- ffff800000000000 - ffff80ffffffffff (=40 bits) guard hole
--ffff880000000000 - ffffc0ffffffffff (=57 TB) direct mapping of all phys. memory
--ffffc10000000000 - ffffc1ffffffffff (=40 bits) hole
--ffffc20000000000 - ffffe1ffffffffff (=45 bits) vmalloc/ioremap space
--ffffe20000000000 - ffffe2ffffffffff (=40 bits) virtual memory map (1TB)
-+ffff880000000000 - ffffc8ffffffffff (=64 TB) direct mapping of all phys. memory
-+ffffc80000000000 - ffffc8ffffffffff (=40 bits) hole
-+ffffc90000000000 - ffffe8ffffffffff (=45 bits) vmalloc/ioremap space
-+ffffe90000000000 - ffffe9ffffffffff (=40 bits) hole
-+ffffea0000000000 - ffffeaffffffffff (=40 bits) virtual memory map (1TB)
- ... unused hole ...
- ffffffff80000000 - ffffffffa0000000 (=512 MB)  kernel text mapping, from phys 0
- ffffffffa0000000 - fffffffffff00000 (=1536 MB) module mapping space
-diff --git a/arch/x86/include/asm/page_64_types.h b/arch/x86/include/asm/page_64_types.h
-index d38c91b..786306c 100644
---- a/arch/x86/include/asm/page_64_types.h
-+++ b/arch/x86/include/asm/page_64_types.h
-@@ -47,7 +47,7 @@
- #define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
- #define __START_KERNEL_map	_AC(0xffffffff80000000, UL)
- 
--/* See Documentation/x86_64/mm.txt for a description of the memory map. */
-+/* See Documentation/x86/x86_64/mm.txt for a description of the memory map. */
- #define __PHYSICAL_MASK_SHIFT	46
- #define __VIRTUAL_MASK_SHIFT	48
- 
-diff --git a/arch/x86/include/asm/pgtable_64_types.h b/arch/x86/include/asm/pgtable_64_types.h
-index fbf42b8..766ea16 100644
---- a/arch/x86/include/asm/pgtable_64_types.h
-+++ b/arch/x86/include/asm/pgtable_64_types.h
-@@ -51,11 +51,11 @@ typedef struct { pteval_t pte; } pte_t;
- #define PGDIR_SIZE	(_AC(1, UL) << PGDIR_SHIFT)
- #define PGDIR_MASK	(~(PGDIR_SIZE - 1))
- 
--
-+/* See Documentation/x86/x86_64/mm.txt for a description of the memory map. */
- #define MAXMEM		 _AC(__AC(1, UL) << MAX_PHYSMEM_BITS, UL)
--#define VMALLOC_START    _AC(0xffffc20000000000, UL)
--#define VMALLOC_END      _AC(0xffffe1ffffffffff, UL)
--#define VMEMMAP_START	 _AC(0xffffe20000000000, UL)
-+#define VMALLOC_START    _AC(0xffffc90000000000, UL)
-+#define VMALLOC_END      _AC(0xffffe8ffffffffff, UL)
-+#define VMEMMAP_START	 _AC(0xffffea0000000000, UL)
- #define MODULES_VADDR    _AC(0xffffffffa0000000, UL)
- #define MODULES_END      _AC(0xffffffffff000000, UL)
- #define MODULES_LEN   (MODULES_END - MODULES_VADDR)
-diff --git a/arch/x86/include/asm/sparsemem.h b/arch/x86/include/asm/sparsemem.h
-index e3cc3c0..4517d6b 100644
---- a/arch/x86/include/asm/sparsemem.h
-+++ b/arch/x86/include/asm/sparsemem.h
-@@ -27,7 +27,7 @@
- #else /* CONFIG_X86_32 */
- # define SECTION_SIZE_BITS	27 /* matt - 128 is convenient right now */
- # define MAX_PHYSADDR_BITS	44
--# define MAX_PHYSMEM_BITS	44 /* Can be max 45 bits */
-+# define MAX_PHYSMEM_BITS	46
- #endif
- 
- #endif /* CONFIG_SPARSEMEM */
+by:
+	if (unlikely(err))
+
+in order to optimize the tests a little bit, avoiding the risk of cache flushes due to the branches.
+
+Cheers,
+Mauro
