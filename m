@@ -1,51 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757093AbZEESdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbZEESef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757093AbZEESdT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 14:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbZEESdL
+	id S1757345AbZEESef (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 14:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbZEESe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 14:33:11 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:10298 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752676AbZEESdK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 14:33:10 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=k4E7lkHeUFojStxA2ue1KHx3YLEpEWlLcbQboXY55j3etV6sA/x+GPBnTE9BJA8fH
-	s91AWMBbCbQ1IOoCnaxOw==
-Date: Tue, 5 May 2009 11:33:05 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, San Mehat <san@android.com>,
-       =?UTF-8?Q?Arve_Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 7/7] oom: prevent possible OOM_DISABLE livelock
-In-Reply-To: <20090505102250.GC28917@wotan.suse.de>
-Message-ID: <alpine.DEB.2.00.0905051130120.26060@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0905041722040.11756@chino.kir.corp.google.com> <alpine.DEB.2.00.0905041726170.11756@chino.kir.corp.google.com> <20090505102250.GC28917@wotan.suse.de>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 5 May 2009 14:34:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37549 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752461AbZEESe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 14:34:26 -0400
+Date: Tue, 5 May 2009 18:33:49 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090505155436.863098054@chello.nl>
+References: <20090505155436.863098054@chello.nl>
+Subject: [tip:sched/core] sched: rt: document the risk of small values in the bandwidth settings
+Message-ID: <tip-60aa605dfce2976e54fa76e805ab0f221372d4d9@git.kernel.org>
+Git-Commit-ID: 60aa605dfce2976e54fa76e805ab0f221372d4d9
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 05 May 2009 18:33:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 May 2009, Nick Piggin wrote:
+Commit-ID:  60aa605dfce2976e54fa76e805ab0f221372d4d9
+Gitweb:     http://git.kernel.org/tip/60aa605dfce2976e54fa76e805ab0f221372d4d9
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Tue, 5 May 2009 17:50:21 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 5 May 2009 20:07:57 +0200
 
-> On Mon, May 04, 2009 at 05:27:07PM -0700, David Rientjes wrote:
-> > It is currently possible to livelock the oom killer if a task is chosen
-> > for oom kill and another thread sharing the same memory has an oom_adj
-> > value of OOM_DISABLE.  This occurs because oom_kill_task() repeatedly
-> 
-> Hmm, but didn't the last patch make it a per-mm value?
-> 
+sched: rt: document the risk of small values in the bandwidth settings
 
-Yes, but this avoids taking task_lock(p) in select_bad_process() and moves 
-all locking to badness().  It also introduces new behavior that anything 
-with a badness score of 0 won't be killed, which wasn't explicit before 
-(we relied on oom_kill_task() to reject it).
+Thomas noted that we should disallow sysctl_sched_rt_runtime == 0 for
+(!RT_GROUP) since the root group always has some RT tasks in it.
+
+Further, update the documentation to inspire clue.
+
+[ Impact: exclude corner-case sysctl_sched_rt_runtime value ]
+
+Reported-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <20090505155436.863098054@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ Documentation/scheduler/sched-rt-group.txt |   18 ++++++++++++++++++
+ kernel/sched.c                             |    7 +++++++
+ 2 files changed, 25 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
+index 5ba4d3f..eb74b01 100644
+--- a/Documentation/scheduler/sched-rt-group.txt
++++ b/Documentation/scheduler/sched-rt-group.txt
+@@ -4,6 +4,7 @@
+ CONTENTS
+ ========
+ 
++0. WARNING
+ 1. Overview
+   1.1 The problem
+   1.2 The solution
+@@ -14,6 +15,23 @@ CONTENTS
+ 3. Future plans
+ 
+ 
++0. WARNING
++==========
++
++ Fiddling with these settings can result in an unstable system, the knobs are
++ root only and assumes root knows what he is doing.
++
++Most notable:
++
++ * very small values in sched_rt_period_us can result in an unstable
++   system when the period is smaller than either the available hrtimer
++   resolution, or the time it takes to handle the budget refresh itself.
++
++ * very small values in sched_rt_runtime_us can result in an unstable
++   system when the runtime is so small the system has difficulty making
++   forward progress (NOTE: the migration thread and kstopmachine both
++   are real-time processes).
++
+ 1. Overview
+ ===========
+ 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 54d67b9..2a43a58 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -9917,6 +9917,13 @@ static int sched_rt_global_constraints(void)
+ 	if (sysctl_sched_rt_period <= 0)
+ 		return -EINVAL;
+ 
++	/*
++	 * There's always some RT tasks in the root group
++	 * -- migration, kstopmachine etc..
++	 */
++	if (sysctl_sched_rt_runtime == 0)
++		return -EBUSY;
++
+ 	spin_lock_irqsave(&def_rt_bandwidth.rt_runtime_lock, flags);
+ 	for_each_possible_cpu(i) {
+ 		struct rt_rq *rt_rq = &cpu_rq(i)->rt;
