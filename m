@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756459AbZEER6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbZEESAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756459AbZEER6A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 13:58:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbZEER5u
+	id S1754805AbZEESAv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 14:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZEESAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 13:57:50 -0400
-Received: from outbound-mail-141.bluehost.com ([67.222.38.31]:54851 "HELO
-	outbound-mail-141.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753151AbZEER5t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 13:57:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=BC9N3/QxNo+A7Qd07XxDMjfkHy/Mm9rjKFQMs5TPAWO59UKZi/0b0lOnrC717XHeHU5dTss/N8zUoZQC/41GzbXbsrdUKRQ8A/pV2Zs6jef+TzprBfWLKwz5ePrVLOLl;
-Date: Tue, 5 May 2009 10:57:44 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ed Swierk <eswierk@aristanetworks.com>
-Cc: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [RFC] [PATCH] PCI mmconfig without ACPI
-Message-ID: <20090505105744.4268e341@hobbes>
-In-Reply-To: <1234812741.28801.4.camel@localhost.localdomain>
-References: <1233766786.16414.26.camel@localhost.localdomain>
-	<20090204181738.GA16174@elte.hu>
-	<1234812741.28801.4.camel@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+	Tue, 5 May 2009 14:00:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35294 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751103AbZEESAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 14:00:39 -0400
+Subject: Re: [PATCH] integrity: use audit_log_string
+From: Eric Paris <eparis@redhat.com>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
+       david safford <safford@watson.ibm.com>
+In-Reply-To: <1241543580.6101.11.camel@dyn9002018117.watson.ibm.com>
+References: <1241543580.6101.11.camel@dyn9002018117.watson.ibm.com>
+Content-Type: text/plain
+Date: Tue, 05 May 2009 13:59:20 -0400
+Message-Id: <1241546360.1997.0.camel@dhcp231-142.rdu.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Feb 2009 11:32:21 -0800
-Ed Swierk <eswierk@aristanetworks.com> wrote:
-
-> Here's another attempt at decoupling the setup of memory-mapped PCI
-> configuration space from ACPI.  I implemented your suggestions for
-> moving the ACPI-specific code to a separate file.  I left the
-> definition of struct acpi_mcfg_allocation alone, and created a new
-> struct pci_mcfg_allocation.  The former is now used only for parsing
-> the actual ACPI MCFG table, while the latter is used to store
-> information about mmcfg regions regardless of where they came from.
+On Tue, 2009-05-05 at 13:13 -0400, Mimi Zohar wrote:
+> Based on a request from Eric Paris to simplify parsing, replace
+> audit_log_format statements containing "%s" with audit_log_string().
 > 
-> (This is still an RFC; the code is pretty much untested.)
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+
+As long as you don't mind that change from hash= to cause= I'm ok with
+it too:
+
+Acked-by: Eric Paris <eparis@redhat.com>
+
+> 
+> Index: security-testing-2.6/security/integrity/ima/ima_audit.c
+> ===================================================================
+> --- security-testing-2.6.orig/security/integrity/ima/ima_audit.c
+> +++ security-testing-2.6/security/integrity/ima/ima_audit.c
+> @@ -54,19 +54,10 @@ void integrity_audit_msg(int audit_msgno
+>  			 audit_get_loginuid(current),
+>  			 audit_get_sessionid(current));
+>  	audit_log_task_context(ab);
+> -	switch (audit_msgno) {
+> -	case AUDIT_INTEGRITY_DATA:
+> -	case AUDIT_INTEGRITY_METADATA:
+> -	case AUDIT_INTEGRITY_PCR:
+> -	case AUDIT_INTEGRITY_STATUS:
+> -		audit_log_format(ab, " op=%s cause=%s", op, cause);
+> -		break;
+> -	case AUDIT_INTEGRITY_HASH:
+> -		audit_log_format(ab, " op=%s hash=%s", op, cause);
+> -		break;
+> -	default:
+> -		audit_log_format(ab, " op=%s", op);
+> -	}
+> +	audit_log_format(ab, " op=");
+> +	audit_log_string(ab, op);
+> +	audit_log_format(ab, " cause=");
+> +	audit_log_string(ab, cause);
+>  	audit_log_format(ab, " comm=");
+>  	audit_log_untrustedstring(ab, current->comm);
+>  	if (fname) {
+> 
 > 
 
-I'm still a bit dubious about this; does it solve a real issue?  Or
-just remove the ACPI dependency for its own sake?
-
--- 
-Jesse Barnes, Intel Open Source Technology Center
