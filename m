@@ -1,380 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbZEESQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbZEESVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756024AbZEESQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 14:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbZEESQL
+	id S1756577AbZEESVq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 14:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbZEESVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 14:16:11 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:41641 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752000AbZEESQI (ORCPT
+	Tue, 5 May 2009 14:21:35 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:14915 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbZEESVe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 14:16:08 -0400
-Date: Tue, 5 May 2009 14:10:09 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: davem@davemloft.net
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: pull request: wireless-2.6 2009-05-05
-Message-ID: <20090505181009.GA2788@tuxdriver.com>
+	Tue, 5 May 2009 14:21:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=dKP6xWD4N2yYZnjf3qSPHIDqjN3kTmCxoq1Gfiu8os+ugLQcaE+HrhoXLdxIQz9o/6
+         X5S7P4eyHx6t4Xryy6JuozKzvKdP56psa/N7NoPZDNKAdgCHhkjjnTZsvDBKASue0vND
+         qHmsiAC/Cx3b+8KKApO+uGUhsKv9OjukRbZ1o=
+Message-ID: <4A0083A9.8020900@gmail.com>
+Date: Tue, 05 May 2009 14:21:29 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Avi Kivity <avi@redhat.com>
+CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
+       davidel@xmailserver.org
+Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via	eventfd-notification
+ interface
+References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net> <4A005F05.30409@redhat.com> <4A007DDA.5000302@novell.com> <4A008127.7060406@redhat.com>
+In-Reply-To: <4A008127.7060406@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigC0E17A9DE20751204F0D8DB5"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigC0E17A9DE20751204F0D8DB5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Yet another round of fixes intended for 2.6.30...
+Avi Kivity wrote:
+> Gregory Haskins wrote:
+>> Avi Kivity wrote:
+>> =20
+>>> Gregory Haskins wrote:
+>>>
+>>>   =20
+>>>> +int
+>>>> +kvm_irqfd(struct kvm *kvm, int gsi, int flags)
+>>>> +{
+>>>> +    struct _irqfd *irqfd;
+>>>> +    struct file *file =3D NULL;
+>>>> +    int fd =3D -1;
+>>>> +    int ret;
+>>>> +
+>>>> +    irqfd =3D kzalloc(sizeof(*irqfd), GFP_KERNEL);
+>>>> +    if (!irqfd)
+>>>> +        return -ENOMEM;
+>>>> +
+>>>> +    irqfd->kvm =3D kvm;
+>>>>        =20
+>>> You need to increase the refcount on struct kvm here.  Otherwise evil=
 
-Included is the removal of another unnecessary EXPORT_SYMBOL that seems
-to be irritating some versions of GCC, the correction of a WARN_ON check
-that generates spurious log noise, a fix for a missing length value that
-leads to bad data being passed to userland, the correction of a WARN in
-iwl_set_tkip_dynamic_key_info, fixes for a couple of cfg80211 Oopsen, a
-one-line comment correction in cfg80211, and a couple of memory
-corruption fixes related to mac80211 rate control algorithms.  One of
-these last two looks a little big, but it is mostly moving a hunk of
-code around.
+>>> userspace will create an irqfd, close the vm and vcpu fds, and inject=
 
-Please let me know if there are problems!
+>>> an interrupt.
+>>>    =20
+>>
+>> I just reviewed the code in prep for v5, and now I remember why I didn=
+t
+>> take a reference:  I designed it the opposite direction:  the vm-fd ow=
+ns
+>> a reference to the irqfd, and will decouple the kvm context from the
+>> eventfd on shutdown  (see kvm_irqfd_release()).   I still need to spin=
+ a
+>> v5 regardless in order to add the padding as previously discussed.  Bu=
+t
+>> let me know if you still see any holes in light of this alternate obje=
+ct
+>> lifetime approach I am using.
+>>  =20
+>
+> Right, irqfd_release works.  But I think refcounting is simpler, since
+> we already kvm_get_kvm() and kvm_put_kvm(), and you wouldn't need the
+> irqfd list.  On the other hand, I'm not sure you get a callback from
+> eventfd on close(), so refcounting may not be implementable.
 
-Thanks,
+;)
 
-John
+>
+> Drat, irqfd_release doesn't work.  You reference kvm->lock in
+> irqfd_inject without taking any locks.
 
----
+I *think* this is ok, tho.  I remove myself from the waitq, and then
+flush any potentially scheduled deferred work before returning.  This
+all happens synchronously to the vm_release() code when the vm-fd is
+bring dropped, but before we actually release the struct kvm*.=20
+Therefore, I think kvm->lock is guaranteed to remain valid for the
+duration of the irqfd_release(), and we guarantee it wont be accessed
+after the irqfd_release() completes.  Or do you have a different concern?=
 
-Individual patches are available here:
 
-	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+On this topic of proper ref counts, though....
 
----
+I wonder if I need an extra fget() in there.  I presume that the
+evenfd_file_create() returns with only a single reference, which
+presumably I am handing one to userspace, and one to the irqfd.... which
+is broken.  Or does fd_install() bump that for me (doesnt look like
+it)?  Al, Davide, any comments?
 
-The following changes since commit 379b026ecc20c4657d37e40ead789f7f28f1a1c1:
-  Lubomir Rintel (1):
-        ne2k-pci: Do not register device until initialized.
+>
+> btw, there's still your original idea of creating the eventfd in
+> userspace and passing it down.  That would be workable if we can see a
+> way to both signal the eventfd and get called back in irq context.=20
+> Maybe that's preferable to what we're doing here, but we need to see
+> how it would work.
 
-are available in the git repository at:
+We can do that, but I don't see it as changing the general problem
+here.  However, I think if you find that the above comments about the
+kvm->lock w.r.t. irqfd_release() are ok, we don't need to worry about
+it.  If you prefer the userspace allocation of eventfd() for other
+reasons, we can easily go back to that model as well...but its not
+strictly necessary for this particular issue iiuc.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+-Greg
 
-Andreas Schwab (1):
-      iwlwifi: remove EXPORT_SYMBOL for static symbol
 
-Jiri Slaby (2):
-      mac80211: minstrel, fix memory corruption
-      mac80211: pid, fix memory corruption
+--------------enigC0E17A9DE20751204F0D8DB5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Johannes Berg (2):
-      mac80211: correct fragmentation threshold check
-      cfg80211: fix truncated IEs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-Luis R. Rodriguez (3):
-      cfg80211: fix race condition with wiphy_apply_custom_regulatory()
-      cfg80211: fix bug while trying to process beacon hints on init
-      cfg80211: fix comment on regulatory hint processing
+iEYEARECAAYFAkoAg6kACgkQP5K2CMvXmqEZiQCeOCfZ6sRGe9vcAJGFCZyAIFCG
+rtUAn30atdHcydwc1BfIa5QFjFcp4QVQ
+=w+pM
+-----END PGP SIGNATURE-----
 
-Reinette Chatre (1):
-      iwlwifi: update key flags at time key is set
-
- drivers/net/wireless/iwlwifi/iwl-sta.c      |   21 ++++----
- drivers/net/wireless/iwlwifi/iwl3945-base.c |    1 -
- net/mac80211/rc80211_minstrel.c             |    2 +-
- net/mac80211/rc80211_pid_algo.c             |   73 ++++++++++++++------------
- net/mac80211/tx.c                           |    2 +-
- net/wireless/reg.c                          |   17 ++++++-
- net/wireless/scan.c                         |    1 +
- 7 files changed, 68 insertions(+), 49 deletions(-)
-
-diff --git a/drivers/net/wireless/iwlwifi/iwl-sta.c b/drivers/net/wireless/iwlwifi/iwl-sta.c
-index 5798fe4..44ab03a 100644
---- a/drivers/net/wireless/iwlwifi/iwl-sta.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-sta.c
-@@ -719,6 +719,14 @@ static int iwl_set_tkip_dynamic_key_info(struct iwl_priv *priv,
- {
- 	unsigned long flags;
- 	int ret = 0;
-+	__le16 key_flags = 0;
-+
-+	key_flags |= (STA_KEY_FLG_TKIP | STA_KEY_FLG_MAP_KEY_MSK);
-+	key_flags |= cpu_to_le16(keyconf->keyidx << STA_KEY_FLG_KEYID_POS);
-+	key_flags &= ~STA_KEY_FLG_INVALID;
-+
-+	if (sta_id == priv->hw_params.bcast_sta_id)
-+		key_flags |= STA_KEY_MULTICAST_MSK;
- 
- 	keyconf->flags |= IEEE80211_KEY_FLAG_GENERATE_IV;
- 	keyconf->flags |= IEEE80211_KEY_FLAG_GENERATE_MMIC;
-@@ -738,6 +746,9 @@ static int iwl_set_tkip_dynamic_key_info(struct iwl_priv *priv,
- 	WARN(priv->stations[sta_id].sta.key.key_offset == WEP_INVALID_OFFSET,
- 		"no space for a new key");
- 
-+	priv->stations[sta_id].sta.key.key_flags = key_flags;
-+
-+
- 	/* This copy is acutally not needed: we get the key with each TX */
- 	memcpy(priv->stations[sta_id].keyinfo.key, keyconf->key, 16);
- 
-@@ -754,9 +765,7 @@ void iwl_update_tkip_key(struct iwl_priv *priv,
- {
- 	u8 sta_id = IWL_INVALID_STATION;
- 	unsigned long flags;
--	__le16 key_flags = 0;
- 	int i;
--	DECLARE_MAC_BUF(mac);
- 
- 	sta_id = iwl_find_station(priv, addr);
- 	if (sta_id == IWL_INVALID_STATION) {
-@@ -771,16 +780,8 @@ void iwl_update_tkip_key(struct iwl_priv *priv,
- 		return;
- 	}
- 
--	key_flags |= (STA_KEY_FLG_TKIP | STA_KEY_FLG_MAP_KEY_MSK);
--	key_flags |= cpu_to_le16(keyconf->keyidx << STA_KEY_FLG_KEYID_POS);
--	key_flags &= ~STA_KEY_FLG_INVALID;
--
--	if (sta_id == priv->hw_params.bcast_sta_id)
--		key_flags |= STA_KEY_MULTICAST_MSK;
--
- 	spin_lock_irqsave(&priv->sta_lock, flags);
- 
--	priv->stations[sta_id].sta.key.key_flags = key_flags;
- 	priv->stations[sta_id].sta.key.tkip_rx_tsc_byte2 = (u8) iv32;
- 
- 	for (i = 0; i < 5; i++)
-diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-index 70a00c8..4cce661 100644
---- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
-+++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-@@ -1744,7 +1744,6 @@ static void iwl3945_rx_queue_free(struct iwl_priv *priv, struct iwl_rx_queue *rx
- 	rxq->bd = NULL;
- 	rxq->rb_stts  = NULL;
- }
--EXPORT_SYMBOL(iwl3945_rx_queue_free);
- 
- 
- /* Convert linear signal-to-noise ratio into dB */
-diff --git a/net/mac80211/rc80211_minstrel.c b/net/mac80211/rc80211_minstrel.c
-index 3824990..70df3dc 100644
---- a/net/mac80211/rc80211_minstrel.c
-+++ b/net/mac80211/rc80211_minstrel.c
-@@ -476,7 +476,7 @@ minstrel_alloc_sta(void *priv, struct ieee80211_sta *sta, gfp_t gfp)
- 		return NULL;
- 
- 	for (i = 0; i < IEEE80211_NUM_BANDS; i++) {
--		sband = hw->wiphy->bands[hw->conf.channel->band];
-+		sband = hw->wiphy->bands[i];
- 		if (sband->n_bitrates > max_rates)
- 			max_rates = sband->n_bitrates;
- 	}
-diff --git a/net/mac80211/rc80211_pid_algo.c b/net/mac80211/rc80211_pid_algo.c
-index b16801c..01d59a8 100644
---- a/net/mac80211/rc80211_pid_algo.c
-+++ b/net/mac80211/rc80211_pid_algo.c
-@@ -317,13 +317,44 @@ rate_control_pid_rate_init(void *priv, struct ieee80211_supported_band *sband,
- 			   struct ieee80211_sta *sta, void *priv_sta)
- {
- 	struct rc_pid_sta_info *spinfo = priv_sta;
-+	struct rc_pid_info *pinfo = priv;
-+	struct rc_pid_rateinfo *rinfo = pinfo->rinfo;
- 	struct sta_info *si;
-+	int i, j, tmp;
-+	bool s;
- 
- 	/* TODO: This routine should consider using RSSI from previous packets
- 	 * as we need to have IEEE 802.1X auth succeed immediately after assoc..
- 	 * Until that method is implemented, we will use the lowest supported
- 	 * rate as a workaround. */
- 
-+	/* Sort the rates. This is optimized for the most common case (i.e.
-+	 * almost-sorted CCK+OFDM rates). Kind of bubble-sort with reversed
-+	 * mapping too. */
-+	for (i = 0; i < sband->n_bitrates; i++) {
-+		rinfo[i].index = i;
-+		rinfo[i].rev_index = i;
-+		if (RC_PID_FAST_START)
-+			rinfo[i].diff = 0;
-+		else
-+			rinfo[i].diff = i * pinfo->norm_offset;
-+	}
-+	for (i = 1; i < sband->n_bitrates; i++) {
-+		s = 0;
-+		for (j = 0; j < sband->n_bitrates - i; j++)
-+			if (unlikely(sband->bitrates[rinfo[j].index].bitrate >
-+				     sband->bitrates[rinfo[j + 1].index].bitrate)) {
-+				tmp = rinfo[j].index;
-+				rinfo[j].index = rinfo[j + 1].index;
-+				rinfo[j + 1].index = tmp;
-+				rinfo[rinfo[j].index].rev_index = j;
-+				rinfo[rinfo[j + 1].index].rev_index = j + 1;
-+				s = 1;
-+			}
-+		if (!s)
-+			break;
-+	}
-+
- 	spinfo->txrate_idx = rate_lowest_index(sband, sta);
- 	/* HACK */
- 	si = container_of(sta, struct sta_info, sta);
-@@ -336,21 +367,22 @@ static void *rate_control_pid_alloc(struct ieee80211_hw *hw,
- 	struct rc_pid_info *pinfo;
- 	struct rc_pid_rateinfo *rinfo;
- 	struct ieee80211_supported_band *sband;
--	int i, j, tmp;
--	bool s;
-+	int i, max_rates = 0;
- #ifdef CONFIG_MAC80211_DEBUGFS
- 	struct rc_pid_debugfs_entries *de;
- #endif
- 
--	sband = hw->wiphy->bands[hw->conf.channel->band];
--
- 	pinfo = kmalloc(sizeof(*pinfo), GFP_ATOMIC);
- 	if (!pinfo)
- 		return NULL;
- 
--	/* We can safely assume that sband won't change unless we get
--	 * reinitialized. */
--	rinfo = kmalloc(sizeof(*rinfo) * sband->n_bitrates, GFP_ATOMIC);
-+	for (i = 0; i < IEEE80211_NUM_BANDS; i++) {
-+		sband = hw->wiphy->bands[i];
-+		if (sband->n_bitrates > max_rates)
-+			max_rates = sband->n_bitrates;
-+	}
-+
-+	rinfo = kmalloc(sizeof(*rinfo) * max_rates, GFP_ATOMIC);
- 	if (!rinfo) {
- 		kfree(pinfo);
- 		return NULL;
-@@ -368,33 +400,6 @@ static void *rate_control_pid_alloc(struct ieee80211_hw *hw,
- 	pinfo->rinfo = rinfo;
- 	pinfo->oldrate = 0;
- 
--	/* Sort the rates. This is optimized for the most common case (i.e.
--	 * almost-sorted CCK+OFDM rates). Kind of bubble-sort with reversed
--	 * mapping too. */
--	for (i = 0; i < sband->n_bitrates; i++) {
--		rinfo[i].index = i;
--		rinfo[i].rev_index = i;
--		if (RC_PID_FAST_START)
--			rinfo[i].diff = 0;
--		else
--			rinfo[i].diff = i * pinfo->norm_offset;
--	}
--	for (i = 1; i < sband->n_bitrates; i++) {
--		s = 0;
--		for (j = 0; j < sband->n_bitrates - i; j++)
--			if (unlikely(sband->bitrates[rinfo[j].index].bitrate >
--				     sband->bitrates[rinfo[j + 1].index].bitrate)) {
--				tmp = rinfo[j].index;
--				rinfo[j].index = rinfo[j + 1].index;
--				rinfo[j + 1].index = tmp;
--				rinfo[rinfo[j].index].rev_index = j;
--				rinfo[rinfo[j + 1].index].rev_index = j + 1;
--				s = 1;
--			}
--		if (!s)
--			break;
--	}
--
- #ifdef CONFIG_MAC80211_DEBUGFS
- 	de = &pinfo->dentries;
- 	de->target = debugfs_create_u32("target_pf", S_IRUSR | S_IWUSR,
-diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index 3fb04a8..6365626 100644
---- a/net/mac80211/tx.c
-+++ b/net/mac80211/tx.c
-@@ -772,7 +772,7 @@ ieee80211_tx_h_fragment(struct ieee80211_tx_data *tx)
- 	hdrlen = ieee80211_hdrlen(hdr->frame_control);
- 
- 	/* internal error, why is TX_FRAGMENTED set? */
--	if (WARN_ON(skb->len <= frag_threshold))
-+	if (WARN_ON(skb->len + FCS_LEN <= frag_threshold))
- 		return TX_DROP;
- 
- 	/*
-diff --git a/net/wireless/reg.c b/net/wireless/reg.c
-index 6c1993d..08265ca 100644
---- a/net/wireless/reg.c
-+++ b/net/wireless/reg.c
-@@ -907,6 +907,7 @@ EXPORT_SYMBOL(freq_reg_info);
- int freq_reg_info(struct wiphy *wiphy, u32 center_freq, u32 *bandwidth,
- 			 const struct ieee80211_reg_rule **reg_rule)
- {
-+	assert_cfg80211_lock();
- 	return freq_reg_info_regd(wiphy, center_freq,
- 		bandwidth, reg_rule, NULL);
- }
-@@ -1133,7 +1134,8 @@ static bool reg_is_world_roaming(struct wiphy *wiphy)
- 	if (is_world_regdom(cfg80211_regdomain->alpha2) ||
- 	    (wiphy->regd && is_world_regdom(wiphy->regd->alpha2)))
- 		return true;
--	if (last_request->initiator != NL80211_REGDOM_SET_BY_COUNTRY_IE &&
-+	if (last_request &&
-+	    last_request->initiator != NL80211_REGDOM_SET_BY_COUNTRY_IE &&
- 	    wiphy->custom_regulatory)
- 		return true;
- 	return false;
-@@ -1142,6 +1144,12 @@ static bool reg_is_world_roaming(struct wiphy *wiphy)
- /* Reap the advantages of previously found beacons */
- static void reg_process_beacons(struct wiphy *wiphy)
- {
-+	/*
-+	 * Means we are just firing up cfg80211, so no beacons would
-+	 * have been processed yet.
-+	 */
-+	if (!last_request)
-+		return;
- 	if (!reg_is_world_roaming(wiphy))
- 		return;
- 	wiphy_update_beacon_reg(wiphy);
-@@ -1176,6 +1184,8 @@ static void handle_channel_custom(struct wiphy *wiphy,
- 	struct ieee80211_supported_band *sband;
- 	struct ieee80211_channel *chan;
- 
-+	assert_cfg80211_lock();
-+
- 	sband = wiphy->bands[band];
- 	BUG_ON(chan_idx >= sband->n_channels);
- 	chan = &sband->channels[chan_idx];
-@@ -1214,10 +1224,13 @@ void wiphy_apply_custom_regulatory(struct wiphy *wiphy,
- 				   const struct ieee80211_regdomain *regd)
- {
- 	enum ieee80211_band band;
-+
-+	mutex_lock(&cfg80211_mutex);
- 	for (band = 0; band < IEEE80211_NUM_BANDS; band++) {
- 		if (wiphy->bands[band])
- 			handle_band_custom(wiphy, band, regd);
- 	}
-+	mutex_unlock(&cfg80211_mutex);
- }
- EXPORT_SYMBOL(wiphy_apply_custom_regulatory);
- 
-@@ -1423,7 +1436,7 @@ new_request:
- 	return call_crda(last_request->alpha2);
- }
- 
--/* This currently only processes user and driver regulatory hints */
-+/* This processes *all* regulatory hints */
- static void reg_process_hint(struct regulatory_request *reg_request)
- {
- 	int r = 0;
-diff --git a/net/wireless/scan.c b/net/wireless/scan.c
-index 2ae65b3..1f260c4 100644
---- a/net/wireless/scan.c
-+++ b/net/wireless/scan.c
-@@ -395,6 +395,7 @@ cfg80211_bss_update(struct cfg80211_registered_device *dev,
- 					memcpy(ies, res->pub.information_elements, ielen);
- 					found->ies_allocated = true;
- 					found->pub.information_elements = ies;
-+					found->pub.len_information_elements = ielen;
- 				}
- 			}
- 		}
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+--------------enigC0E17A9DE20751204F0D8DB5--
