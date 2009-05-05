@@ -1,73 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbZEEP5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757238AbZEEP57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756648AbZEEP5i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 11:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbZEEP51
+	id S1757238AbZEEP57 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 11:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbZEEP5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 11:57:27 -0400
-Received: from [212.69.161.110] ([212.69.161.110]:54255 "EHLO
-	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754373AbZEEP50 (ORCPT
+	Tue, 5 May 2009 11:57:48 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:23233 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754397AbZEEP5r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 11:57:26 -0400
-From: Philipp Reisner <philipp.reisner@linbit.com>
-Organization: LINBIT
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH 00/16] DRBD: a block device for HA clusters
-Date: Tue, 5 May 2009 17:56:28 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: david@lang.hm, Willy Tarreau <w@1wt.eu>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
-       Neil Brown <neilb@suse.de>, Sam Ravnborg <sam@ravnborg.org>,
-       Dave Jones <davej@redhat.com>, Nikanth Karthikesan <knikanth@suse.de>,
-       "Lars Marowsky-Bree" <lmb@suse.de>, Kyle Moffett <kyle@moffetthome.net>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>
-References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com> <200905051021.33461.philipp.reisner@linbit.com> <1241532585.3312.13.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1241532585.3312.13.camel@mulgrave.int.hansenpartnership.com>
-X-OTRS-FollowUp-SenderType: agent
+	Tue, 5 May 2009 11:57:47 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -12.589
+Message-ID: <4A0061F3.5030506@tremplin-utc.net>
+Date: Tue, 05 May 2009 17:57:39 +0200
+From: =?UTF-8?B?w4lyaWMgUGllbA==?= <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090319 Mandriva/2.0.0.21-1mdv2009.1 (2009.1) Thunderbird/2.0.0.21 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@linux.intel.com>
+Subject: [PATCH] Clean up messages related to initramfs unpacking
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905051756.29703.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 May 2009 16:09:45 James Bottomley wrote:
-> On Tue, 2009-05-05 at 10:21 +0200, Philipp Reisner wrote:
-> > > > When you do asynchronous replication, how do you ensure that implicit
-> > > > write-after-write dependencies in the stream of writes you get from
-> > > > the file system above, are not violated on the secondary ?
-> > >
-[...]
-> > > The way nbd does it (in the updated tools is to use DIRECT_IO and
-> > > fsync).
-> >
-[...]
-> I think you'll find the dio/fsync method above actually does solve all
-> of these issues (mainly because it enforces the semantics from top to
-> bottom in the stack).  I agree one could use more elaborate semantics
-> like you do for drbd, but since the simple ones worked efficiently for
-> md/nbd, there didn't seem to be much point.
->
+With the removal of duplicate unpack_to_rootfs() (commit
+df52092f3c97788592ef72501a43fb7ac6a3cfe0) the messages displayed do not
+actually correspond to what the kernel is doing. In addition, depending
+if ramdisks are supported or not, the messages are not at all the same.
 
-Do I get it right, that you enforce the exact same write order on the 
-secondary node as the stream of writes was comming in on the primary?
+So keep the messages more in sync with what is really doing the kernel,
+and only display a second message in case of failure. This also ensure
+that the printk message cannot be split by other printk's.
 
-Using either DIRECT_IO or fsync() calls ?
+Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
+---
+ init/initramfs.c |   13 ++++---------
+ 1 files changed, 4 insertions(+), 9 deletions(-)
 
-Is DIRECT_IO/fsync() enabled by default ?
-
--Phil
+diff --git a/init/initramfs.c b/init/initramfs.c
+index 9ee7b78..4c00edc 100644
+--- a/init/initramfs.c
++++ b/init/initramfs.c
+@@ -574,11 +574,10 @@ static int __init populate_rootfs(void)
+ 	if (initrd_start) {
+ #ifdef CONFIG_BLK_DEV_RAM
+ 		int fd;
+-		printk(KERN_INFO "checking if image is initramfs...\n");
++		printk(KERN_INFO "Trying to unpack rootfs image as initramfs...\n");
+ 		err = unpack_to_rootfs((char *)initrd_start,
+ 			initrd_end - initrd_start);
+ 		if (!err) {
+-			printk(KERN_INFO "rootfs image is initramfs; unpacking...\n");
+ 			free_initrd();
+ 			return 0;
+ 		} else {
+@@ -596,15 +595,11 @@ static int __init populate_rootfs(void)
+ 			free_initrd();
+ 		}
+ #else
+-		printk(KERN_INFO "Unpacking initramfs...");
++		printk(KERN_INFO "Unpacking initramfs...\n");
+ 		err = unpack_to_rootfs((char *)initrd_start,
+ 			initrd_end - initrd_start);
+-		if (err) {
+-			printk(" failed!\n");
+-			printk(KERN_EMERG "%s\n", err);
+-		} else {
+-			printk(" done\n");
+-		}
++		if (err)
++			printk(KERN_EMERG "Initramfs unpacking failed: %s\n", err);
+ 		free_initrd();
+ #endif
+ 	}
 -- 
-: Dipl-Ing Philipp Reisner
-: LINBIT | Your Way to High Availability
-: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
-: http://www.linbit.com
+1.6.2.4
 
-DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
 
