@@ -1,80 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbZEENqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbZEENrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756065AbZEENqP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 09:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbZEENp6
+	id S1754775AbZEENrW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 09:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbZEENrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 09:45:58 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:36942 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751558AbZEENp5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 09:45:57 -0400
-Date: Tue, 5 May 2009 09:45:47 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: vgoyal@redhat.com, ebiederm@xmission.com, akpm@linux-foundation.org,
-       nhorman@tuxdriver.com
-Subject: [PATCH] sysrq: Simplify sysrq-c handler
-Message-ID: <20090505134547.GA11780@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+	Tue, 5 May 2009 09:47:10 -0400
+Received: from gate.crashing.org ([63.228.1.57]:53819 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752868AbZEENrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 09:47:09 -0400
+In-Reply-To: <1241530382.11379.12.camel@localhost.localdomain>
+References: <20090502001329.GA11549@oksana.dev.rtsoft.ru> <20090502001421.GA9342@oksana.dev.rtsoft.ru> <68B2EF73-0FD2-41F9-966B-9A54965AFBA6@kernel.crashing.org> <1241316249.4243.22.camel@localhost.localdomain> <6A6BE346-925C-4F73-ABFA-C6110070F071@kernel.crashing.org> <1241530382.11379.12.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <299D7402-29D3-4602-8F42-58FDF034DEC5@kernel.crashing.org>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, Sam Ravnborg <sam@ravnborg.org>
+Content-Transfer-Encoding: 7bit
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely select CONFIG_FRAME_POINTER
+Date: Tue, 5 May 2009 15:51:48 +0200
+To: Steven Rostedt <srostedt@redhat.com>
+X-Mailer: Apple Mail (2.753.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the sysrq-c handler is bit over-engineered.  Its behavior is dependent
-on a few compile time and run time factors that alter its behavior which is
-really unnecessecary.  If CONFIG_KEXEC is not configured, sysrq-c, crashes the
-system with a NULL pointer dereference.  If CONFIG_KEXEC is configured, it calls
-crash_kexec directly, which implies that the kexec kernel will either be booted
-(if its been previously loaded), or it will simply do nothing (the no kexec
-kernel has been loaded).  It would be much easier to just simplify the whole
-thing to dereference a NULL pointer all the time regardless of configuration.
-That way, it will always try to crash the system, and if a kexec kernel has been
-loaded into reserved space, it will still boot from the page fault trap handler
-(assuming panic_on_oops is set appropriately).
+>>> When we add "-pg" to gcc, it automatically causes frame pointers  
+>>> to be
+>>> used.
+>>
+>> Nope, it does no such thing.
+>
+> Well, mcount is expected to be able to get to not just who called
+> mcount, but also the parent of that function. The way mcount is
+> implemented does not let you do that. If mcount was the first thing to
+> be called in a function, then it would have been perfect. We could get
+> to the caller, its parent, and even the parameters. But unfortunately,
+> mcount is called after the stack is set up. Thus, without frame  
+> pointers
+> (the way to find a previous frame) there's no way (on some archs) to
+> find the parent. Nor can we figure out the parameters, which really
+> sucks.
 
-Neil
+Yes, and this is (supposedly) why GCC does not like seeing -pg and
+-fomit-frame-pointer at the same time -- because that cannot work
+*on some architectures*.  These are the same architectures that
+do not enable -fomit-frame-pointer automatically at -O.
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+>> NO_NO_OMIT_FRAME_POINTER ?  Or better, just never use -fno-o-f-p,
+>> I don't see why you would ever need it.
+>
+> Because on x86_64 it gives better back traces. x86_64 has no way to  
+> get
+> to the previous frames without it. There's code to use other debug
+> metadata to get back tracing, but for uses of things like the stack
+> tracer, we need to be able to use the actual stack frames.
+>
+> As you said above, -fomit-frame-pointer is default when we  
+> optimize, and
+> that is how the kernel is built. If we optimize on x86_64 and do  
+> not use
+> -fno-omit-frame-pointer, the stack tracer is useless.
+
+No.  -fomit-frame-pointer is only the default when optimising on
+archs/ABIs where it doesn't hinder debugging and -pg and all that
+goodness; specifically, you do not get it by default on x86, not
+at any optimisation level.
 
 
- sysrq.c |   15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
+Segher
 
-
-diff --git a/drivers/char/sysrq.c b/drivers/char/sysrq.c
-index b0a6a3e..9319e75 100644
---- a/drivers/char/sysrq.c
-+++ b/drivers/char/sysrq.c
-@@ -120,20 +120,17 @@ static struct sysrq_key_op sysrq_unraw_op = {
- #define sysrq_unraw_op (*(struct sysrq_key_op *)0)
- #endif /* CONFIG_VT */
- 
--#ifdef CONFIG_KEXEC
--static void sysrq_handle_crashdump(int key, struct tty_struct *tty)
-+static void sysrq_handle_crash(int key, struct tty_struct *tty)
- {
--	crash_kexec(get_irq_regs());
-+	void *killer = NULL;
-+	*killer = 1;
- }
- static struct sysrq_key_op sysrq_crashdump_op = {
--	.handler	= sysrq_handle_crashdump,
--	.help_msg	= "Crashdump",
--	.action_msg	= "Trigger a crashdump",
-+	.handler	= sysrq_handle_crash,
-+	.help_msg	= "Crash",
-+	.action_msg	= "Trigger a crash",
- 	.enable_mask	= SYSRQ_ENABLE_DUMP,
- };
--#else
--#define sysrq_crashdump_op (*(struct sysrq_key_op *)0)
--#endif
- 
- static void sysrq_handle_reboot(int key, struct tty_struct *tty)
- {
