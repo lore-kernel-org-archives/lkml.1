@@ -1,109 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbZEEWoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbZEEWxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128AbZEEWoA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 18:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbZEEWnt
+	id S1753442AbZEEWxU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 18:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZEEWxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 18:43:49 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:59867 "EHLO mx2.suse.de"
+	Tue, 5 May 2009 18:53:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60125 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752579AbZEEWnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 18:43:49 -0400
-Date: Tue, 5 May 2009 15:40:31 -0700
-From: Greg KH <gregkh@suse.de>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Stefan Lippers-Hollmann <s.L-H@gmx.de>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       dave@linux.vnet.ibm.com, ebmunson@us.ibm.com, mel@csn.ul.ie,
-       stable@kernel.org
-Subject: Re: patch
-	mm-fix-committed_as-underflow-on-large-nr_cpus-environment.patch
-	added to 2.6.29-stable tree
-Message-ID: <20090505224031.GA4052@suse.de>
-References: <20090504220454.3F71148FB8@coco.kroah.org> <200905052036.24106.s.L-H@gmx.de> <20090505221403.GA4714@suse.de> <2f11576a0905051526j73dd1570nb440e4b78e3b35a9@mail.gmail.com>
+	id S1752012AbZEEWxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 18:53:09 -0400
+Date: Wed, 6 May 2009 00:47:29 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 3/3] ptrace: do not use task_lock() for attach
+Message-ID: <20090505224729.GA965@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2f11576a0905051526j73dd1570nb440e4b78e3b35a9@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 07:26:51AM +0900, KOSAKI Motohiro wrote:
-> 2009/5/6 Greg KH <gregkh@suse.de>:
-> > On Tue, May 05, 2009 at 08:36:19PM +0200, Stefan Lippers-Hollmann wrote:
-> >> Hi
-> >>
-> >> On Dienstag, 5. Mai 2009, gregkh@suse.de wrote:
-> >> [...]
-> >> > From 00a62ce91e554198ef28234c91c36f850f5a3bc9 Mon Sep 17 00:00:00 2001
-> >> > From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> >> > Date: Thu, 30 Apr 2009 15:08:51 -0700
-> >> > Subject: mm: fix Committed_AS underflow on large NR_CPUS environment
-> >> >
-> >> > From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> >> >
-> >> > commit 00a62ce91e554198ef28234c91c36f850f5a3bc9 upstream.
-> >> >
-> >> > The Committed_AS field can underflow in certain situations:
-> >> >
-> >> > >         # while true; do cat /proc/meminfo  | grep _AS; sleep 1; done | uniq -c
-> >> > >               1 Committed_AS: 18446744073709323392 kB
-> >> > >              11 Committed_AS: 18446744073709455488 kB
-> >> > >               6 Committed_AS:    35136 kB
-> >> > >               5 Committed_AS: 18446744073709454400 kB
-> >> > >               7 Committed_AS:    35904 kB
-> >> > >               3 Committed_AS: 18446744073709453248 kB
-> >> > >               2 Committed_AS:    34752 kB
-> >> > >               9 Committed_AS: 18446744073709453248 kB
-> >> > >               8 Committed_AS:    34752 kB
-> >> > >               3 Committed_AS: 18446744073709320960 kB
-> >> > >               7 Committed_AS: 18446744073709454080 kB
-> >> > >               3 Committed_AS: 18446744073709320960 kB
-> >> > >               5 Committed_AS: 18446744073709454080 kB
-> >> > >               6 Committed_AS: 18446744073709320960 kB
-> >> >
-> >> > Because NR_CPUS can be greater than 1000 and meminfo_proc_show() does
-> >> > not check for underflow.
-> >> >
-> >> > But NR_CPUS proportional isn't good calculation.  In general,
-> >> > possibility of lock contention is proportional to the number of online
-> >> > cpus, not theorical maximum cpus (NR_CPUS).
-> >> >
-> >> > The current kernel has generic percpu-counter stuff.  using it is right
-> >> > way.  it makes code simplify and percpu_counter_read_positive() don't
-> >> > make underflow issue.
-> >>
-> >> This patch reproducably panics on all systems I could test so far on
-> >> 2.6.29.2 + the current stable queue:
-> >> - Acer Aspire One, Intel Atom N270, Intel 945GC chipset (i386)
-> >> - AMD64 3200+, nVidia nforce3 chipset (amd64)
-> >> - AMD64 X2 4200+, nVidia nforce4 chipset (amd64)
-> >>
-> >> Kernel panic (sorry, this is from a bad webcam and only the last part of
-> >> the messages scrolling by - I can try to get a serial console tomorrow),
-> >> taken from an AMD64 3200+, nVidia nforce3 chipset (amd64).
-> >> http://sidux.com/slh/mm-fix-committed_as-underflow-on-large-nr_cpus-environment/panic.gif [198 KB]
-> >>
-> >> Reverting just this patch fixes the problem for me.
-> >>
-> >> Kernel configurations:
-> >> http://sidux.com/slh/mm-fix-committed_as-underflow-on-large-nr_cpus-environment/config-2.6.29-2.slh.5.3-sidux-686   [96 KB]
-> >> http://sidux.com/slh/mm-fix-committed_as-underflow-on-large-nr_cpus-environment/config-2.6.29-2.slh.5.6-sidux-amd64 [91 KB]
-> >
-> > Yes, I just confirmed this on my machines as well, so I'm going to drop
-> > it from the stable queue.
-> >
-> > If anyone thinks it is really necessary for the 2.6.29-stable tree,
-> > please resubmit it after fixing it and testing that it works :)
-> >
-> > thanks,
-> 
-> Could you please post oops log?
-> current mmotm (include this patch) works fine on my x86_64 box. Then,
-> I have no hint now ;-)
+Remove the "Nasty, nasty" lock dance in ptrace_attach()/ptrace_traceme().
+>From now task_lock() has nothing to do with ptrace at all.
 
-Ok, I'll apply the patch and reboot and take a picture of it...
+With the recent changes nobody uses task_lock() to serialize with ptrace,
+but in fact it was never needed and it was never used consistently.
+
+However ptrace_attach() calls __ptrace_may_access() and needs task_lock()
+to pin task->mm for get_dumpable(). But we can call __ptrace_may_access()
+before we take tasklist_lock, ->cred_exec_mutex protects us against
+do_execve() path which can change creds and MMF_DUMP* flags.
+
+(ugly, but we can't use ptrace_may_access() because it hides the error
+ code, so we have to take task_lock() and use __ptrace_may_access()).
+
+NOTE: this change assumes that LSM hooks, security_ptrace_may_access() and
+security_ptrace_traceme(), can be called without task_lock() held.
+
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
+
+ kernel/ptrace.c |   59 ++++++++++++--------------------------------------------
+ 1 file changed, 13 insertions(+), 46 deletions(-)
+
+--- PTRACE/kernel/ptrace.c~3_TASK_LOCK	2009-05-05 23:49:15.000000000 +0200
++++ PTRACE/kernel/ptrace.c	2009-05-06 00:16:17.000000000 +0200
+@@ -177,7 +177,6 @@ bool ptrace_may_access(struct task_struc
+ int ptrace_attach(struct task_struct *task)
+ {
+ 	int retval;
+-	unsigned long flags;
+ 
+ 	audit_ptrace(task);
+ 
+@@ -193,34 +192,19 @@ int ptrace_attach(struct task_struct *ta
+ 	retval = mutex_lock_interruptible(&task->cred_exec_mutex);
+ 	if (retval < 0)
+ 		goto out;
+-repeat:
+-	/*
+-	 * Nasty, nasty.
+-	 *
+-	 * We want to hold both the task-lock and the
+-	 * tasklist_lock for writing at the same time.
+-	 * But that's against the rules (tasklist_lock
+-	 * is taken for reading by interrupts on other
+-	 * cpu's that may have task_lock).
+-	 */
+-	task_lock(task);
+-	if (!write_trylock_irqsave(&tasklist_lock, flags)) {
+-		task_unlock(task);
+-		do {
+-			cpu_relax();
+-		} while (!write_can_lock(&tasklist_lock));
+-		goto repeat;
+-	}
+ 
++	task_lock(task);
+ 	retval = __ptrace_may_access(task, PTRACE_MODE_ATTACH);
++	task_unlock(task);
+ 	if (retval)
+-		goto bad;
++		goto unlock_creds;
+ 
++	write_lock_irq(&tasklist_lock);
+ 	retval = -EPERM;
+ 	if (unlikely(task->exit_state))
+-		goto bad;
++		goto unlock_tasklist;
+ 	if (task->ptrace)
+-		goto bad;
++		goto unlock_tasklist;
+ 
+ 	task->ptrace = PT_PTRACED;
+ 	if (capable(CAP_SYS_PTRACE))
+@@ -230,9 +214,9 @@ repeat:
+ 	send_sig_info(SIGSTOP, SEND_SIG_FORCED, task);
+ 
+ 	retval = 0;
+-bad:
+-	write_unlock_irqrestore(&tasklist_lock, flags);
+-	task_unlock(task);
++unlock_tasklist:
++	write_unlock_irq(&tasklist_lock);
++unlock_creds:
+ 	mutex_unlock(&task->cred_exec_mutex);
+ out:
+ 	return retval;
+@@ -248,26 +232,10 @@ int ptrace_traceme(void)
+ {
+ 	int ret = -EPERM;
+ 
+-	/*
+-	 * Are we already being traced?
+-	 */
+-repeat:
+-	task_lock(current);
++	write_lock_irq(&tasklist_lock);
++	/* Are we already being traced? */
+ 	if (!current->ptrace) {
+-		/*
+-		 * See ptrace_attach() comments about the locking here.
+-		 */
+-		unsigned long flags;
+-		if (!write_trylock_irqsave(&tasklist_lock, flags)) {
+-			task_unlock(current);
+-			do {
+-				cpu_relax();
+-			} while (!write_can_lock(&tasklist_lock));
+-			goto repeat;
+-		}
+-
+ 		ret = security_ptrace_traceme(current->parent);
+-
+ 		/*
+ 		 * Check PF_EXITING to ensure ->real_parent has not passed
+ 		 * exit_ptrace(). Otherwise we don't report the error but
+@@ -277,10 +245,9 @@ repeat:
+ 			current->ptrace = PT_PTRACED;
+ 			__ptrace_link(current, current->real_parent);
+ 		}
+-
+-		write_unlock_irqrestore(&tasklist_lock, flags);
+ 	}
+-	task_unlock(current);
++	write_unlock_irq(&tasklist_lock);
++
+ 	return ret;
+ }
+ 
 
