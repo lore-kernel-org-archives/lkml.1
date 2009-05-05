@@ -1,87 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbZEEGle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbZEEGtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548AbZEEGle (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 02:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757748AbZEEGlK
+	id S1754803AbZEEGtX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 02:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbZEEGtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 02:41:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48236 "EHLO mx3.mail.elte.hu"
+	Tue, 5 May 2009 02:49:14 -0400
+Received: from www.tglx.de ([62.245.132.106]:50809 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758116AbZEEGlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 02:41:08 -0400
-Date: Tue, 5 May 2009 08:40:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Robert Richter <robert.richter@amd.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: round-robining per-cpu counters
-Message-ID: <20090505064051.GA27191@elte.hu>
-References: <18943.47474.963294.862139@drongo.ozlabs.ibm.com>
+	id S1750714AbZEEGtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 02:49:13 -0400
+Date: Tue, 5 May 2009 08:48:28 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: john stultz <johnstul@us.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Sanity check sysfs clocksource changes
+In-Reply-To: <1241493035.7444.115.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0905050839560.3375@localhost.localdomain>
+References: <1239759163.6064.25.camel@localhost>  <1239759251.6064.27.camel@localhost> <1239759393.6064.30.camel@localhost>  <20090501131006.fa631417.akpm@linux-foundation.org> <1241493035.7444.115.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18943.47474.963294.862139@drongo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 4 May 2009, john stultz wrote:
 
-* Paul Mackerras <paulus@samba.org> wrote:
-
-> It used to be, and as far as I can see still is, the case that 
-> per-cpu counters take priority over per-task counters by virtue of 
-> being scheduled in first.  That is, if you have N hardware 
-> counters and >= N per-cpu counters, then no per-task counters will 
-> ever get scheduled onto the PMU.
+> On Fri, 2009-05-01 at 13:10 -0700, Andrew Morton wrote:
+> > What's the status of
+> > clocksource-sanity-check-sysfs-clocksource-changes.patch, btw?  I have
+> > it marked as "still an RFC", but it's been sitting here since January?
 > 
-> That being the case, I don't see what the point of having the 
-> perf_reserved_percpu variable is.  It doesn't do anything except 
-> set cpuctx->max_pertask, which isn't actually used anywhere.  In 
-> any case with the current counter scheduling system there's no 
-> need to "reserve" hardware counters for use by per-cpu counters 
-> since any new per-cpu counters will just bump existing per-task 
-> counters off - if not immediately then the next time that 
-> perf_counter_task_tick gets called.
+> Thanks for reminding me! I lost track of that one. Still waiting on
+> feedback from Thomas.
 > 
-> What was the intended meaning of perf_reserved_percpu?  I presume 
-> it was that there would always be that many hardware counters 
-> available for per-cpu counters regardless of how many per-task 
-> counters there are.  But that doesn't answer the complementary 
-> question - how many hardware counters can we rely on being 
-> available for per-task counters?  At the moment the answer is 0, 
-> but I don't think that is a good answer.
+> Thomas? What do you think? Original patch below, applies with fuzz and
+> builds.
 > 
-> Does anyone have any good ideas about what the scheduling policy 
-> should be?
+> -john
+> 
+> 
+> Hey all,
+> 	Thomas, Andrew and Ingo pointed out that we don't have any safety
+> checks in the clocksource sysfs entries to make sure sysadmins don't try
+> to change the clocksource to a non high-res timer capable clocksource
+> (such as jiffies) when high-res timers (HRT) is enabled. Doing so will
+> likely hang a system.
+> 
+> This patch tries to correct this by filtering non HRT clocksources from
+> available_clocksources and not accepting non HRT clocksources with HRT
+> is is enabled.
+> 
+> This has been lightly tested, and seems to work, but there may be some
+> drawbacks.
+> 
+> One issue I realized was that when TSCs disqualified, they are marked as
+> not CLOCK_SOURCE_VALID_FOR_HRES. This means on boxes with unsycned TSCs,
+> the only available clocksource may be the slower acpi_pm and the user
+> will not be able to override it with the TSC as is currently possible.
+> (even if that seems ill-advised).
+> 
+> So Thomas, what do you think? Should we just use
+> CLOCK_SOURCE_IS_CONTINUOUS flag or is CLOCK_SOURCE_VALID_FOR_HRES really
+> what we want?
 
-The reservation mechanism really suffered from not being used by 
-anything or anyone, and it thus bit-rotted across 300 follow-on 
-commits.
+Hmm. If we switched to highres and discarded TSC already then we
+should not go back to it. 
+ 
+> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> 
+> 
+> diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
+> index bd37078..05f67f0 100644
+> --- a/include/linux/hrtimer.h
+> +++ b/include/linux/hrtimer.h
+> @@ -305,7 +305,7 @@ static inline int hrtimer_is_hres_active(struct hrtimer *timer)
+>  
+>  extern ktime_t ktime_get(void);
+>  extern ktime_t ktime_get_real(void);
+> -
+> +extern int hrtimer_hres_active(void);
+>  
+>  DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
+>  
+> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+> index 2dc30c5..fa4abdc 100644
+> --- a/kernel/hrtimer.c
+> +++ b/kernel/hrtimer.c
+> @@ -476,7 +476,7 @@ static inline int hrtimer_is_hres_enabled(void)
+>  /*
+>   * Is the high resolution mode active ?
+>   */
+> -static inline int hrtimer_hres_active(void)
+> +int hrtimer_hres_active(void)
+>  {
+>  	return __get_cpu_var(hrtimer_bases).hres_active;
+>  }
+> @@ -689,7 +689,7 @@ static int hrtimer_switch_to_hres(void)
+>  
+>  #else
+>  
+> -static inline int hrtimer_hres_active(void) { return 0; }
+> +int hrtimer_hres_active(void) { return 0; }
 
-What would be the primary usecase? Allow admin to set aside (and 
-guarantee) space for task counters? Allow admin to 'force' 
-exclusivity of counter ownership?
+We want to keep that static inline and move it to hrtimer.h to allow
+gcc to optimize stuff out.
 
-I think a better general solution would be to have a single 
-round-robin list for all currently active counters (both percpu and 
-task counters) - and fairly round-robin all of them. The scaling 
-information makes it obvious when this is happening.
+Thanks,
 
-If admin wants stronger ownership of counters then the 
-pinned/exclusive attribute can be used.
+	tglx
 
-We really want to keep the counter-scheduler simple, and we also 
-want to make the default to be as permissive as possible.
 
-	Ingo
+
+
