@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbZEEX54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbZEFADg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755977AbZEEX54 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 19:57:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZEEX5r
+	id S1755839AbZEFADg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 20:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbZEFAD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 19:57:47 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:11456 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753464AbZEEX5q convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 19:57:46 -0400
+	Tue, 5 May 2009 20:03:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43525 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751810AbZEFADZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 20:03:25 -0400
+Date: Wed, 6 May 2009 01:57:36 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: chrisw@sous-sol.org, roland@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] ptrace: ptrace_attach: check PF_KTHREAD +
+	exit_state instead of ->mm
+Message-ID: <20090505235736.GA7526@redhat.com>
+References: <20090505224722.GA954@redhat.com> <20090505164733.54cd4ca4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-In-Reply-To: <87eiv35eg6.fsf@deeprootsystems.com>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
-	 <20090504235405.647772ed.akpm@linux-foundation.org>
-	 <87ocu7a6ng.fsf@deeprootsystems.com>
-	 <d6200be20905051358m34c2be02ped84ad4158cd9865@mail.gmail.com>
-	 <87eiv35eg6.fsf@deeprootsystems.com>
-Date: Tue, 5 May 2009 16:57:45 -0700
-Message-ID: <d6200be20905051657p31349e5ara8ad1ad9eb755c6b@mail.gmail.com>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable wakeup IRQs
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090505164733.54cd4ca4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/5 Kevin Hilman <khilman@deeprootsystems.com>:
-> Arve Hjønnevåg <arve@android.com> writes:
+On 05/05, Andrew Morton wrote:
 >
->> On Tue, May 5, 2009 at 8:52 AM, Kevin Hilman
-> [...]
+> On Wed, 6 May 2009 00:47:22 +0200
+> Oleg Nesterov <oleg@redhat.com> wrote:
 >
->> By leaving the interrupt enabled you prevent check_wakeup_irqs from
->> aborting suspend.
+> > - Add PF_KTHREAD check to prevent attaching to the kernel thread
+> >   with a borrowed ->mm.
+> >
+> >   With or without this change we can race with daemonize() which
+> >   can set PF_KTHREAD or clear ->mm after ptrace_attach() does the
+> >   check, but this doesn't matter because reparent_to_kthreadd()
+> >   does ptrace_unlink().
+> >
+> > - Kill "!task->mm" check. We don't really care about ->mm != NULL,
+> >   and the task can call exit_mm() right after we drop task_lock().
+> >   What we need is to make sure we can't attach after exit_notify(),
+> >   check task->exit_state != 0 instead.
+> >
 >
-> Yes, but it doesn't prevent platform-specific code from aborting
-> suspend.  On OMAP, the platform-specific suspend enter hook does a
-> last check for pending enabled interrupts very late in the sequence.
-> It seems to me that the platform specific code is the best place to do
-> this.
+> These patches make a mess of utrace-core.patch.  Do we really want to do that?
 
-It will not be pending anymore if the interrupt triggered before all
-interrupts were masked at the cpu.
+Aaaah. Sorry! forgot to clearify...
 
-> On a related note, what happens if your device triggers an interrupt
-> between check_wakeup_irqs() and the actual suspend?  Since it is a
-> wakeup IRQ, wouldn't you want it to abort the suspend too?
->
+These patches depend on
 
-check_wakeup_irqs is called after masking interrupts, so your existing
-platform specific check should catch it.
+	utrace-core-kill-exclude_xtrace-logic.patch
 
--- 
-Arve Hjønnevåg
+which hopefully can be folded into utrace-core.patch. In that case these
+changes do not depend on utrace, and they can go ahead of utrace.
+
+Is this acceptable for you ?
+
+Oleg.
+
