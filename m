@@ -1,89 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbZEEIyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbZEEI6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758617AbZEEIyQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 04:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbZEEIyA
+	id S1756113AbZEEI6a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 04:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbZEEI6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 04:54:00 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53670 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752050AbZEEIx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 04:53:59 -0400
-Message-ID: <49FFFEDC.2040701@cn.fujitsu.com>
-Date: Tue, 05 May 2009 16:54:52 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 5 May 2009 04:58:20 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50347 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753234AbZEEI6T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 04:58:19 -0400
+To: Matt Mackall <mpm@selenic.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
+       security@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
+Subject: Re: [Security] [PATCH] proc: avoid information leaks to non-privileged processes
+From: Andi Kleen <andi@firstfloor.org>
+References: <20090504125114.5e391564@chukar>
+	<alpine.LFD.2.01.0905041159480.4983@localhost.localdomain>
+	<20090504125124.0f469970@infradead.org>
+	<m1vdogbows.fsf@fess.ebiederm.org>
+	<alpine.LFD.2.01.0905041514350.4983@localhost.localdomain>
+	<20090505055011.GE31071@waste.org>
+Date: Tue, 05 May 2009 10:58:10 +0200
+In-Reply-To: <20090505055011.GE31071@waste.org> (Matt Mackall's message of "Tue, 5 May 2009 00:50:11 -0500")
+Message-ID: <87my9sncyl.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-To: mingo@elte.hu
-CC: linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, fweisbec@gmail.com,
-       rostedt@goodmis.org, Li Zefan <lizf@cn.fujitsu.com>,
-       zhaolei@cn.fujitsu.com, laijs@cn.fujitsu.com
-Subject: [PATCH v2] tracepoint: trace_sched_migrate_task(): remove parameter
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Matt Mackall <mpm@selenic.com> writes:
+>
+> Looking forward:
+>
+> A faster-but-weakened RNG for ASLR (and similar purposes) 
 
-This patch is modified from Mathieu Desnoyers' patch. The original patch
-can be found here: 
-	http://marc.info/?l=linux-kernel&m=123791201716239&w=2
+We really need it for the user space interface too, right now
+recent glibc drains your entropy pool on every exec, and worse
+recent kernels drain it now even with old glibc too. So any
+system which doesn't have a active high frequency random number
+source (which is most systems) doesn't have much real entropy
+left for the applications that really need it.
 
-The orig_cpu parameter in trace_sched_migrate_task() is not necessary, 
-it can be got by using task_cpu(p) in the probe. 
+-Andi (who always thought it was a bad idea to let ASLR weaken
+your SSL/SSH session keys)
 
-Changelog for v1 -> v2: 
-Rebase the patch against latest tip tree. 
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-
----
- include/trace/events/sched.h |    6 +++---
- kernel/sched.c               |    2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
-index ffa1cab..dd4033c 100644
---- a/include/trace/events/sched.h
-+++ b/include/trace/events/sched.h
-@@ -180,9 +180,9 @@ TRACE_EVENT(sched_switch,
-  */
- TRACE_EVENT(sched_migrate_task,
- 
--	TP_PROTO(struct task_struct *p, int orig_cpu, int dest_cpu),
-+	TP_PROTO(struct task_struct *p, int dest_cpu),
- 
--	TP_ARGS(p, orig_cpu, dest_cpu),
-+	TP_ARGS(p, dest_cpu),
- 
- 	TP_STRUCT__entry(
- 		__array(	char,	comm,	TASK_COMM_LEN	)
-@@ -196,7 +196,7 @@ TRACE_EVENT(sched_migrate_task,
- 		memcpy(__entry->comm, p->comm, TASK_COMM_LEN);
- 		__entry->pid		= p->pid;
- 		__entry->prio		= p->prio;
--		__entry->orig_cpu	= orig_cpu;
-+		__entry->orig_cpu	= task_cpu(p);
- 		__entry->dest_cpu	= dest_cpu;
- 	),
- 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 57125f8..1677f93 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1956,7 +1956,7 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
- 
- 	clock_offset = old_rq->clock - new_rq->clock;
- 
--	trace_sched_migrate_task(p, task_cpu(p), new_cpu);
-+	trace_sched_migrate_task(p, new_cpu);
- 
- #ifdef CONFIG_SCHEDSTATS
- 	if (p->se.wait_start)
 -- 
-1.6.1.2
-
+ak@linux.intel.com -- Speaking for myself only.
