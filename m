@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbZEEJ5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756381AbZEEKJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757415AbZEEJ5v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 05:57:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbZEEJ5k
+	id S1756381AbZEEKJp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 06:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZEEKJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 05:57:40 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:45603 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754503AbZEEJ5j (ORCPT
+	Tue, 5 May 2009 06:09:35 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:59766 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753495AbZEEKJf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 05:57:39 -0400
-Date: Tue, 5 May 2009 12:57:21 +0300
-From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-To: "ext Gadiyar, Anand" <gadiyar@ti.com>
-Cc: "pierre@ossman.eu" <pierre@ossman.eu>, Tony Lindgren <tony@atomide.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Subject: Re: [PATCH] OMAP: HSMMC: Do not enable buffer ready interrupt if
-	using DMA
-Message-ID: <20090505095721.GA12287@angel.research.nokia.com>
-Reply-To: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-References: <5A47E75E594F054BAF48C5E4FC4B92AB02FB2F2A90@dbde02.ent.ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB02FB2F2A90@dbde02.ent.ti.com>
-X-Operating-System: GNU/Linux angel.research.nokia.com
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 05 May 2009 09:57:23.0308 (UTC) FILETIME=[E32702C0:01C9CD67]
-X-Nokia-AV: Clean
+	Tue, 5 May 2009 06:09:35 -0400
+From: Daniel Mack <daniel@caiaq.de>
+To: linux-kernel@vger.kernel.org
+Cc: Daniel Mack <daniel@caiaq.de>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] isl29003: fix resume functionality
+Date: Tue,  5 May 2009 12:09:25 +0200
+Message-Id: <1241518165-12469-1-git-send-email-daniel@caiaq.de>
+X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 09:39:22AM +0200, ext Gadiyar, Anand wrote:
-> From: Anand Gadiyar <gadiyar@ti.com>
-> 
-> OMAP: HSMMC: Do not enable buffer ready interrupt if using DMA
-> 
-> This considerably reduces the number of interrupts during a transfer
-> and ought to result in some power saving.
+The isl29003 does not interpret the return value of
+i2c_smbus_write_byte_data() correctly and hence causes an error on
+system resume.
 
-I tried the patch with reading from the raw mmc block device to
-/dev/null with dd (with bs 32k and 1M).  I cannot see any
-difference in interrupt count from /proc/interrupts or in read
-speed. At least the patch works. Cpu was 34340es3.
+Also introduce power_state_before_suspend and restore the chip's power
+state upon wakeup.
 
-I also trid without the patch just disabling the Buffer
-Read/write Ready bits from INT_EN_MASK which is then written to
-both MMCHS_IE and MMCHS_ISE.  Still no change in read speed nor
-mmc irq count.
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ drivers/misc/isl29003.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
-Cheers
-Jarkko Lavinen
+diff --git a/drivers/misc/isl29003.c b/drivers/misc/isl29003.c
+index 2e2a592..a71e245 100644
+--- a/drivers/misc/isl29003.c
++++ b/drivers/misc/isl29003.c
+@@ -64,6 +64,7 @@ struct isl29003_data {
+ 	struct i2c_client *client;
+ 	struct mutex lock;
+ 	u8 reg_cache[ISL29003_NUM_CACHABLE_REGS];
++	u8 power_state_before_suspend;
+ };
+ 
+ static int gain_range[] = {
+@@ -411,6 +412,9 @@ static int __devexit isl29003_remove(struct i2c_client *client)
+ #ifdef CONFIG_PM
+ static int isl29003_suspend(struct i2c_client *client, pm_message_t mesg)
+ {
++	struct isl29003_data *data = i2c_get_clientdata(client);
++
++	data->power_state_before_suspend = isl29003_get_power_state(client);
+ 	return isl29003_set_power_state(client, 0);
+ }
+ 
+@@ -421,10 +425,11 @@ static int isl29003_resume(struct i2c_client *client)
+ 
+ 	/* restore registers from cache */
+ 	for (i = 0; i < ARRAY_SIZE(data->reg_cache); i++)
+-		if (!i2c_smbus_write_byte_data(client, i, data->reg_cache[i]))
++		if (i2c_smbus_write_byte_data(client, i, data->reg_cache[i]))
+ 			return -EIO;
+ 
+-	return 0;
++	return isl29003_set_power_state(client,
++		data->power_state_before_suspend);
+ }
+ 
+ #else
+-- 
+1.6.2.1
+
