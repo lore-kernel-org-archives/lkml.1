@@ -1,131 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbZEEFz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbZEEGCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbZEEFz3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 01:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbZEEFzT
+	id S1754898AbZEEGCz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 02:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZEEGCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 01:55:19 -0400
-Received: from mga10.intel.com ([192.55.52.92]:43879 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751965AbZEEFzT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 01:55:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,295,1239001200"; 
-   d="scan'208";a="687534908"
-Subject: Re: [PATCH] Fix early panic issue on machines with memless node
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Jack Steiner <steiner@sgi.com>, alex.shi@intel.com,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <alpine.DEB.2.00.0905042026010.29856@chino.kir.corp.google.com>
-References: <1241493327.27664.17.camel@ymzhang>
-	 <alpine.DEB.2.00.0905042026010.29856@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 05 May 2009 13:55:41 +0800
-Message-Id: <1241502941.27664.19.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Tue, 5 May 2009 02:02:44 -0400
+Received: from waste.org ([66.93.16.53]:54952 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751378AbZEEGCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 02:02:43 -0400
+Date: Tue, 5 May 2009 00:50:11 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
+       security@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
+Subject: Re: [Security] [PATCH] proc: avoid information leaks to non-privileged processes
+Message-ID: <20090505055011.GE31071@waste.org>
+References: <20090504125114.5e391564@chukar> <alpine.LFD.2.01.0905041159480.4983@localhost.localdomain> <20090504125124.0f469970@infradead.org> <m1vdogbows.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0905041514350.4983@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0905041514350.4983@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-04 at 20:32 -0700, David Rientjes wrote:
-> On Tue, 5 May 2009, Zhang, Yanmin wrote:
-> 
-> > Kernel 2.6.30-rc4 panic with boot parameter mem=2G on Nehalem machine.
-> > The machines has 2 nodes and every node has about 3G memory.
-> > 
-> > Alex Shi did a good bisect and located the bad patch.
-> > 
-> > commit dc098551918093901d8ac8936e9d1a1b891b56ed
-> > Author: Jack Steiner <steiner@sgi.com>
-> > Date:   Fri Apr 17 09:22:42 2009 -0500
-> > 
-> >     x86/uv: fix init of memory-less nodes
-> >     
-> >     Add support for nodes that have cpus but no memory.
-> >     The current code was failing to add these nodes
-> >     to the nodes_present_map.
-> >     
-> >     v2: Fixes case caught by David Rientjes - missed support
-> >         for the x2apic SRAT table.
-> >     
-> >     [ Impact: fix potential boot crash on memory-less UV nodes. ]
-> >     
-> >     Reported-by: David Rientjes <rientjes@google.com>
-> >     Signed-off-by: Jack Steiner <steiner@sgi.com>
-> >     LKML-Reference: <20090417142242.GA23743@sgi.com>
-> >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > 
-> > 
-> > 
-> > With earlyprintk boot parameter, we captured below dump info.
-> > 
-> > <6>bootmem::alloc_bootmem_core nid=0 size=0 [0 pages] align=1000 goal=1000000 lim0
-> > PANIC: early exception 06 rip 10:ffffffff80a2fbe4 error 0 cr2 0
-> > Pid: 0, comm: swapper Not tainted 2.6.30-rc4-ymz #3
-> > Call Trace:                                        
-> >  [<ffffffff80a1a195>] ? early_idt_handler+0x55/0x68  
-> >  [<ffffffff80a2fbe4>] ? alloc_bootmem_core+0x91/0x2ae
-> >  [<ffffffff80a2fbdc>] ? alloc_bootmem_core+0x89/0x2ae     
-> >  [<ffffffff80a2fe74>] ? ___alloc_bootmem_nopanic+0x73/0xab
-> >  [<ffffffff80a2af73>] ? early_node_mem+0x54/0x78      
-> >  [<ffffffff80a2b0ed>] ? setup_node_bootmem+0x156/0x282
-> >  [<ffffffff80a2b880>] ? acpi_scan_nodes+0x207/0x303
-> >  [<ffffffff80a2b255>] ? initmem_init+0x3c/0x14c
-> >  [<ffffffff80a1e33b>] ? setup_arch+0x5ba/0x760       
-> >  [<ffffffff80a2e904>] ? cgroup_init_subsys+0xfc/0x105
-> >  [<ffffffff80a2ea5f>] ? cgroup_init_early+0x152/0x163
-> >  [<ffffffff80a1a915>] ? start_kernel+0x84/0x35e      
-> >  [<ffffffff80a1a37e>] ? x86_64_start_kernel+0xe5/0xeb
-> > RIP alloc_bootmem_core+0x91/0x2ae
-> > 
-> > Consider below call chain:
-> > acpi_scan_nodes =>
-> > 		﻿setup_node_bootmem
-> > 			﻿ (twice) => ﻿early_node_mem
-> > 
-> > At begining, acpi_scan_nodes filters out memless nodes by calling
-> > unparse_node. Patch ﻿dc098551918 adds the node back actually.
-> > ﻿acpi_scan_nodes has many comments around ﻿unparse_node.
-> > 
-> > Below patch fixes it with node memory checking. Another method is just
-> > to revert the bad patch.
-> > 
-> > ﻿David Rientjes, ﻿Jack Steiner,
-> > Would you check if below patch satisfy your original objective?
-> > 
-> 
-> Could you try this instead?
+On Mon, May 04, 2009 at 03:24:15PM -0700, Linus Torvalds wrote:
 > 
 > 
-> srat: do not register nodes beyond e820 map
+> On Mon, 4 May 2009, Eric W. Biederman wrote:
 > 
-> The mem= option will truncate the memory map at a specified address so 
-> it's not possible to register nodes with memory beyond the e820 upper 
-> bound.
+> > Arjan van de Ven <arjan@infradead.org> writes:
+> > 
+> > > On Mon, 4 May 2009 12:00:12 -0700 (PDT)
+> > > Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > >
+> > >> 
+> > >> 
+> > >> On Mon, 4 May 2009, Jake Edge wrote:
+> > >> >
+> > >> > This is essentially v2 of "[PATCH] proc: avoid leaking eip, esp, or
+> > >> > wchan to non-privileged processes", adding some of Eric Biederman's
+> > >> > suggestions as well as the start_stack change (only give out that
+> > >> > address if the process is ptrace()-able).  This has been tested
+> > >> > with ps and top without any ill effects being seen.
+> > >> 
+> > >> Looks sane to me. Anybody objects?
+> > >> 
+> > >
+> > > Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+> > 
+> > Looks sane here.
+> > 
+> > Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 > 
-> unparse_node() is only called when then node had memory associated with 
-> it, although with the mem= option it is no longer addressable.
+> Ok, applied.
 > 
-> Signed-off-by: David Rientjes <rientjes@google.com>
-Your patch does fix the hang issue.
+> Also, does anybody have any commentary or opinion on the patch by Matt 
+> Mackall to use stronger random numbers than "get_random_int()". I wonder 
+> what the performance impact of that is - "get_random_int()" is very cheap 
+> by design, and many users may consider calling "get_random_bytes()" to be 
+> overkill and a potential performance issue.
+> 
+> Quite frankly, the way "get_random_bytes()" works now (it does a _full_ 
+> sha thing every time), I think it's insane overkill. But I do have to 
+> admit that our current "get_random_int()" is insane _underkill_.
+> 
+> I'd like to improve the latter without going to quie the extreme that 
+> matt's patch did.
 
+ASLR aside, get_random_u32 is the right interface (strong,
+well-defined type) for random.c to export and get_random_int (weak,
+ambiguous type) is the wrong one.
 
+As to what's the appropriate sort of RNG for ASLR to use, finding a
+balance between too strong and too weak is tricky. I'd rather move
+things to a known safe point and back it off to acceptable performance
+from there if anyone complains. So let's do my patch now.
 
-> ---
-> diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
-> --- a/arch/x86/mm/srat_64.c
-> +++ b/arch/x86/mm/srat_64.c
-> @@ -361,6 +361,7 @@ static void __init unparse_node(int node)
->  {
->  	int i;
->  	node_clear(node, nodes_parsed);
-> +	node_clear(node, cpu_nodes_parsed);
->  	for (i = 0; i < MAX_LOCAL_APIC; i++) {
->  		if (apicid_to_node[i] == node)
->  			apicid_to_node[i] = NUMA_NO_NODE;
+Looking forward:
 
+A faster-but-weakened RNG for ASLR (and similar purposes) will still
+need to be strong in the cryptographic sense. Which probably means
+having secret state (per cpu?) that changes at every call via a strong
+cipher or hash (though lighter than the full RNG). Alternately, we use
+a weak primitive (eg halfmd4) with per-task secrets. Not really keen
+on the latter as a user may expose outputs across task boundaries that
+allow backtracking attacks against the ASLR. In other words, the
+latter requires disciplined users, while the former doesn't.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
