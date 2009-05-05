@@ -1,70 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbZEEOAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbZEEOBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946AbZEEOAi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 10:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZEEOA1
+	id S1754583AbZEEOBb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 10:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZEEOBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 10:00:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41638 "EHLO mx2.redhat.com"
+	Tue, 5 May 2009 10:01:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47145 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750993AbZEEOA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 10:00:26 -0400
-Message-ID: <4A004676.4050604@redhat.com>
-Date: Tue, 05 May 2009 17:00:22 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1751358AbZEEOBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 10:01:22 -0400
+To: dri-devel@lists.sourceforge.net
+Subject: [PATCH resend] drm: ignore LVDS on intel graphics systems that lie about having it
+Cc: linux-kernel@vger.kernel.org, xorg-devel@lists.x.org, notting@redhat.com,
+       Eric Anholt <eric@anholt.net>
+Content-Disposition: inline
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+Date: Tue, 5 May 2009 10:00:25 -0400
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com>
-In-Reply-To: <4A0041BA.6060106@novell.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200905051000.26701.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> Avi Kivity wrote:
->   
->> Gregory Haskins wrote:
->>     
->>> (Applies to Linus' tree, b4348f32dae3cb6eb4bc21c7ed8f76c0b11e9d6a)
->>>
->>> Please see patch 1/3 for a description.  This has been tested with a KVM
->>> guest on x86_64 and appears to work properly.  Comments, please.
->>>   
->>>       
->> What about the hypercalls in include/asm/kvm_para.h?
->>
->> In general, hypercalls cannot be generic since each hypervisor
->> implements its own ABI.
->>     
-> Please see the prologue to 1/3.  Its all described there, including a
-> use case which I think answers your questions.  If there is still
-> ambiguity, let me know.
->
->   
+There are a number of small form factor desktop systems with Intel mobile
+graphics chips that lie and say they have an LVDS. With kernel mode-setting,
+this becomes a problem, and makes native resolution boot go haywire -- for
+example, my Dell Studio Hybrid, hooked to a 1920x1080 display claims to
+have a 1024x768 LVDS, and the resulting graphical boot on the 1920x1080
+display uses only the top left 1024x768, and auto-configured X will end
+up only 1024x768 as well. With this change, graphical boot and X
+both do 1920x1080 as expected.
 
-Yeah, sorry.
+Note that we're simply embracing and extending the early bail-out code
+in place for the Mac Mini here. The xorg intel driver uses pci subsystem
+device and vendor id for matching, while we're using dmi lookups here.
+The MSI addition is courtesy of and tested by Bill Nottingham.
 
->>   The abstraction needs to be at a higher level (pv_ops is such a level).
->>     
-> Yep, agreed.  Thats exactly what this series is doing, actually.
->   
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+Tested-by: Bill Nottingham <notting@redhat.com>
 
-No, it doesn't.  It makes "making hypercalls" a pv_op, but hypervisors 
-don't implement the same ABI.
+Resending at Jesse Barnes' request:
+> > > The 2D driver has a similar set of quirks, but since we started
+> > > that list we've found that the VBIOS should contain a pretty
+> > > reliable table indicating which outputs are available, including
+> > > LVDS.  I think if we can figure out how to parse it reliably
+> > > (accounting for VBIOS versioning and structure size changes) we
+> > > shouldn't need this patch. If we can't get that done in time for
+> > > 2.6.30 though I'm all for including this.
+> > 
+> > Sounds like a plan to me. Either way, would this patch still make
+> > sense for submission to the 2.6.29.x stable series? I've already
+> > tacked it onto the Fedora 2.6.29 kernel builds, fwiw.
+> 
+> Yeah would be fine for 2.6.29 as far as I'm concerned, but there's an
+> "upstream first" policy for the stable series that might get in the
+> way...
 
-pv_ops all _use_ hypercalls to implement higher level operations, like 
-set_pte (probably the only place set_pte can be considered a high level 
-operation).
+Ok we've failed on this one, so we should go ahead an add the LVDS
+quirk.  Can you resend this to Eric so it gets into 2.6.30-final?
 
-In this case, the higher level event could be 
-hypervisor_dynamic_event(number); each pv_ops implementation would use 
-its own hypercalls to implement that.
+---
+ drivers/gpu/drm/i915/intel_lvds.c |   46 ++++++++++++++++++++++++++++++------
+ 1 files changed, 38 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/intel_lvds.c b/drivers/gpu/drm/i915/intel_lvds.c
+index 6619f26..4d64686 100644
+--- a/drivers/gpu/drm/i915/intel_lvds.c
++++ b/drivers/gpu/drm/i915/intel_lvds.c
+@@ -384,7 +384,51 @@ static const struct drm_encoder_funcs intel_lvds_enc_funcs = {
+ 	.destroy = intel_lvds_enc_destroy,
+ };
+ 
++static int __init intel_no_lvds_dmi_callback(const struct dmi_system_id *id)
++{
++	DRM_DEBUG("Skipping LVDS initialization for %s\n", id->ident);
++	return 1;
++}
+ 
++/* These systems claim to have LVDS, but really don't */
++static const struct dmi_system_id __initdata intel_no_lvds[] = {
++	{
++		.callback = intel_no_lvds_dmi_callback,
++		.ident = "Apple Mac Mini (Core series)",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Macmini1,1"),
++		},
++	},
++	{
++		.callback = intel_no_lvds_dmi_callback,
++		.ident = "Apple Mac Mini (Core 2 series)",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Macmini2,1"),
++		},
++	},
++	{
++		.callback = intel_no_lvds_dmi_callback,
++		.ident = "MSI IM-945GSE-A",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "MSI"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "A9830IMS"),
++		},
++	},
++	{
++		.callback = intel_no_lvds_dmi_callback,
++		.ident = "Dell Studio Hybrid",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Studio Hybrid 140g"),
++		},
++	},
++
++	/* FIXME: add a check for the Aopen Mini PC */
++
++	{ }	/* terminating entry */
++};
+ 
+ /**
+  * intel_lvds_init - setup LVDS connectors on this device
+@@ -404,15 +440,9 @@ void intel_lvds_init(struct drm_device *dev)
+ 	u32 lvds;
+ 	int pipe;
+ 
+-	/* Blacklist machines that we know falsely report LVDS. */
+-	/* FIXME: add a check for the Aopen Mini PC */
+-
+-	/* Apple Mac Mini Core Duo and Mac Mini Core 2 Duo */
+-	if(dmi_match(DMI_PRODUCT_NAME, "Macmini1,1") ||
+-	   dmi_match(DMI_PRODUCT_NAME, "Macmini2,1")) {
+-		DRM_DEBUG("Skipping LVDS initialization for Apple Mac Mini\n");
++	/* Skip init on machines we know falsely report LVDS */
++	if (dmi_check_system(intel_no_lvds))
+ 		return;
+-	}
+ 
+ 	intel_output = kzalloc(sizeof(struct intel_output), GFP_KERNEL);
+ 	if (!intel_output) {
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Jarod Wilson
+jarod@redhat.com
