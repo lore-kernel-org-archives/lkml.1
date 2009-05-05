@@ -1,109 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757929AbZEFAJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbZEFAK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757929AbZEFAJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 20:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZEFAJD
+	id S1754781AbZEFAK5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 20:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZEFAKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 20:09:03 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:52397 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752923AbZEFAJC (ORCPT
+	Tue, 5 May 2009 20:10:46 -0400
+Received: from exprod7og118.obsmtp.com ([64.18.2.8]:39561 "EHLO
+	exprod7og118.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752923AbZEFAKp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 20:09:02 -0400
-Message-ID: <4A00D51D.4080707@snapgear.com>
-Date: Wed, 06 May 2009 10:09:01 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 5 May 2009 20:10:45 -0400
+X-Greylist: delayed 864 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 May 2009 20:10:45 EDT
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Austria, Winston" <Winston.Austria@lsi.com>
+Date: Tue, 5 May 2009 17:55:24 -0600
+Subject: [PATCH 1/10] scsi: megaraid_sas - tape drive support fix
+Thread-Topic: [PATCH 1/10] scsi: megaraid_sas - tape drive support fix
+Thread-Index: AciIcSnS7H5xFQtCQzyNHR19nlBrTUImYsQgDzPsVNA=
+Message-ID: <4B6A08C587958942AA3002690DD4F8C354F61C22@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C33A07FB03@cosmail02.lsi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-       npiggin@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] NOMMU: Make the initial mmap allocation excess behaviour
- Kconfig configurable
-References: <20090505212638.17034.10989.stgit@warthog.procyon.org.uk>	<20090505212648.17034.18375.stgit@warthog.procyon.org.uk> <20090505151520.070c84c1.akpm@linux-foundation.org>
-In-Reply-To: <20090505151520.070c84c1.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add the Tape drive fix to the megaraid_sas driver: If the command is for the tape device, set the FW pthru timeout to the os layer timeout value.
 
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-Andrew Morton wrote:
-> On Tue, 05 May 2009 22:26:48 +0100
-> David Howells <dhowells@redhat.com> wrote:
-> 
->> NOMMU mmap() has an option controlled by a sysctl variable that determines
->> whether the allocations made by do_mmap_private() should have the excess space
->> trimmed off and returned to the allocator.  Make the initial setting of this
->> variable a Kconfig configuration option.
->>
->> The reason there can be excess space is that the allocator only allocates in
->> power-of-2 size chunks, but mmap()'s can be made in sizes that aren't a power
->> of 2.
->>
->> There are two alternatives:
->>
->>  (1) Keep the excess as dead space.  The dead space then remains unused for the
->>      lifetime of the mapping.  Mappings of shared objects such as libc, ld.so
->>      or busybox's text segment may retain their dead space forever.
->>
->>  (2) Return the excess to the allocator.  This means that the dead space is
->>      limited to less than a page per mapping, but it means that for a transient
->>      process, there's more chance of fragmentation as the excess space may be
->>      reused fairly quickly.
->>
->> During the boot process, a lot of transient processes are created, and this can
->> cause a lot of fragmentation as the pagecache and various slabs grow greatly
->> during this time.
->>
->> By turning off the trimming of excess space during boot and disabling batching
->> of frees, Coldfire can manage to boot.
+---
+drivers/scsi/megaraid/megaraid_sas.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-To put that in perspective better. Its not that all ColdFire platforms
-don't boot. It depends very much on what you try to run from user space.
-Typical small setups (which realistically is most ColdFire systems)
-just don't try to run that much. As with anything embedded there is a
-great variance on what people try to do...
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-05-04 20:06:29.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-05-04 20:08:26.000000000 -0400
+@@ -687,6 +687,17 @@ megasas_build_dcdb(struct megasas_instan
+        memcpy(pthru->cdb, scp->cmnd, scp->cmd_len);
 
-Regards
-Greg
-
-
-
->> A better way of doing things might be to have /sbin/init turn this option off.
->> By that point libc, ld.so and init - which are all long-duration processes -
->> have all been loaded and trimmed.
->>
-> 
-> Nasty problem.
-> 
->> --- a/mm/nommu.c
->> +++ b/mm/nommu.c
->> @@ -66,7 +66,7 @@ struct percpu_counter vm_committed_as;
->>  int sysctl_overcommit_memory = OVERCOMMIT_GUESS; /* heuristic overcommit */
->>  int sysctl_overcommit_ratio = 50; /* default is 50% */
->>  int sysctl_max_map_count = DEFAULT_MAX_MAP_COUNT;
->> -int sysctl_nr_trim_pages = 1; /* page trimming behaviour */
->> +int sysctl_nr_trim_pages = CONFIG_NOMMU_INITIAL_TRIM_EXCESS;
->>  int heap_stack_gap = 0;
->>  
-> 
-> But there's a risk of -ENOMEM regression on other system here?
-> 
-> It's unlikely to be a huge problem for real-world embedded developers,
-> as long as they know about this change.  And because you set the
-> Kconfig default to "no change" then I guess they'll be none the wiser.
-> 
-> I think that patches 2 and 3 (and #1 unless I reorder and redo things)
-> are 2.6.30 material.  Agree?
-> 
-> 
-
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+        /*
++       * If the command is for the tape device, set the
++       * pthru timeout to the os layer timeout value.
++       */
++       if (scp->device->type == TYPE_TAPE) {
++               if ((scp->request->timeout / HZ) > 0xFFFF)
++                       pthru->timeout = 0xFFFF;
++               else
++                       pthru->timeout = scp->request->timeout / HZ;
++       }
++
++       /*
+         * Construct SGL
+         */
+        if (IS_DMA64) {
