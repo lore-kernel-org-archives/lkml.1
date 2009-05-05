@@ -1,195 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbZEEFqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbZEEFuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbZEEFqt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 01:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbZEEFqf
+	id S1755256AbZEEFuw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 01:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbZEEFul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 01:46:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44194
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753975AbZEEFqe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 01:46:34 -0400
-Date: Mon, 04 May 2009 22:46:28 -0700 (PDT)
-Message-Id: <20090504.224628.160654802.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 5 May 2009 01:50:41 -0400
+Received: from 1wt.eu ([62.212.114.60]:4274 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751245AbZEEFuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 01:50:40 -0400
+Date: Tue, 5 May 2009 07:50:32 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Matthias Saou 
+	<thias@spam.spam.spam.spam.spam.spam.spam.egg.and.spam.freshrpms.net>,
+       linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Wrong network usage reported by /proc
+Message-ID: <20090505055032.GA29582@1wt.eu>
+References: <20090504171408.3e13822c@python3.es.egwn.lan> <49FF2BB2.4030700@cosmosbay.com> <20090504211151.74622f29@python3.es.egwn.lan> <20090505050435.GK570@1wt.eu> <49FFCD08.7050600@cosmosbay.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49FFCD08.7050600@cosmosbay.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n455lGqu029578
 
+On Tue, May 05, 2009 at 07:22:16AM +0200, Eric Dumazet wrote:
+> Willy Tarreau a Ècrit :
+> > On Mon, May 04, 2009 at 09:11:51PM +0200, Matthias Saou wrote:
+> >> Eric Dumazet wrote :
+> >>
+> >>> Matthias Saou a Ècrit :
+> >>>> Hi,
+> >>>>
+> >>>> I'm posting here as a last resort. I've got lots of heavily used RHEL5
+> >>>> servers (2.6.18 based) that are reporting all sorts of impossible
+> >>>> network usage values through /proc, leading to unrealistic snmp/cacti
+> >>>> graphs where the outgoing bandwidth used it higher than the physical
+> >>>> interface's maximum speed.
+> >>>>
+> >>>> For some details and a test script which compares values from /proc
+> >>>> with values from tcpdump :
+> >>>> https://bugzilla.redhat.com/show_bug.cgi?id=489541
+> >>>>
+> >>>> The values collected using tcpdump always seem realistic and match the
+> >>>> values seen on the remote network equipments. So my obvious conclusion
+> >>>> (but possibly wrong given my limited knowledge) is that something is
+> >>>> wrong in the kernel, since it's the one exposing the /proc interface.
+> >>>>
+> >>>> I've reproduced what seems to be the same problem on recent kernels,
+> >>>> including the 2.6.27.21-170.2.56.fc10.x86_64 I'm running right now. The
+> >>>> simple python script available here allows to see it quite easily :
+> >>>> https://www.redhat.com/archives/rhelv5-list/2009-February/msg00166.html
+> >>>>
+> >>>>  * I run the script on my Workstation, I have an FTP server enabled
+> >>>>  * I download a DVD ISO from a remote workstation : The values match
+> >>>>  * I start ping floods from remote workstations : The values reported
+> >>>>    by /proc are much higher than the ones reported by tcpdump. I used
+> >>>>    "ping -s 500 -f myworkstation" from two remote workstations
+> >>>>
+> >>>> If there's anything flawed in my debugging, I'd love to have someone
+> >>>> point it out to me. TIA to anyone willing to have a look.
+> >>>>
+> >>>> Matthias
+> >>>>
+> >>> I could not reproduce this here... what kind of NIC are you using on
+> >>> affected systems ? Some ethernet drivers report stats from card itself,
+> >>> and I remember seeing some strange stats on some hardware, but I cannot
+> >>> remember which one it was (we were reading NULL values instead of
+> >>> real ones, once in a while, maybe it was a firmware issue...)
+> >> My workstation has a Broadcom BCM5752 (tg3 module). The servers which
+> >> are most affected have Intel 82571EB (e1000e). But the issue is that
+> >> with /proc, the values are a lot _higher_ than with tcpdump, and the
+> >> tcpdump values seem to be the correct ones.
+> > 
+> > the e1000 chip reports stats every 2 seconds. So you have to collect
+> > stats every 2 seconds otherwise you get "camel-looking" stats.
+> > 
+> 
+> I looked at e1000e driver, and apparently tx_packets & tx_bytes are computed
+> by the TX completion routine, not by the chip.
 
-1) virtio_net fixes:
+Ah I thought that was the chip which returned those stats every 2 seconds,
+otherwise I don't see the reason to delay their reporting. Wait, I'm speaking
+about e1000, never tried e1000e. Maybe there have been changes there. Anyway,
+Matthias talked about RHEL5's 2.6.18 in which I don't think there was e1000e.
 
-   Garbage in on-stack scatterlist entries.
-   Missing include breaks some builds.
+Anyway we did not get any concrete data for now, so it's hard to tell (I
+haven't copy-pasted the links above in my browser yet).
 
-2) Unloading network device driver can hang because netconsole doesn't
-   properly listen for unregister events.
+Regards,
+Willy
 
-3) skb_tx_hash()'s hash distribution regressed in 2.6.30 hurting performance
-   for forwarding workloads.
-
-4) EHEA oops fixes.
-
-5) splice() skb->sk oops fix, regression from 2.6.29.
-
-6) ALB mode locking in bonding driver is busted.
-
-7) Netfilter's xt_socket has broken Kconfig deps, causing build bustage.
-
-8) ne2k-pci registers devices too early, before it sets the MAC
-   address in the netdevice structure.
-
-9) New CDC EEM USB network driver.
-
-10) New smsc95xx device IDs and unbolix LEDs.
-
-11) Packet classifier filter stores priorities wrongly such that deletion
-    of entries becomes impossible.
-
-12) TCP uses wrong RTO (constant TCP_RTO_MIN, instead of what the stack
-    has computed over time) in tcp_prequeue().
-
-13) Several wireless (modprobe deadlock in mac80211, ath5k debugging code
-    buffer overrun) and bluetooth (sysfs synchronization problems wrt.
-    workqueues) fixes.
-
-14) br2684 ATM driver is busted due to error in netdev_ops conversion.
-
-Please pull, thanks a lot!
-
-The following changes since commit b4348f32dae3cb6eb4bc21c7ed8f76c0b11e9d6a:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://oss.sgi.com/xfs/xfs
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Alan Jenkins (1):
-      mac80211: fix modprobe deadlock by not calling wep_init under rtnl_lock
-
-Alex Williamson (2):
-      virtio_net: Cleanup command queue scatterlist usage
-      virtio_net: Fix function name typo
-
-Bob Copeland (1):
-      ath5k: fix buffer overrun in rate debug code
-
-Bruno Pr√©mont (1):
-      netconsole: take care of NETDEV_UNREGISTER event
-
-David S. Miller (2):
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-      Merge branch 'master' of git://git.kernel.org/.../holtmann/bluetooth-2.6
-
-Eric Dumazet (3):
-      net: Fix skb_tx_hash() for forwarding workloads.
-      netfilter: use likely() in xt_info_rdlock_bh()
-      bonding: bond_slave_info_query() fix
-
-Grant Likely (1):
-      virtio: add missing include to virtio_net.h
-
-Hannes Hering (1):
-      ehea: fix invalid pointer access
-
-Jarek Poplawski (1):
-      net: Fix oops when splicing skbs from a frag_list.
-
-Jay Vosburgh (1):
-      bonding: fix alb mode locking regression
-
-Jesse Brandeburg (1):
-      e1000: fix virtualization bug
-
-Jiri Pirko (1):
-      bonding: correct the cleanup in bond_create()
-
-Johannes Berg (2):
-      iwlwifi: notify on scan completion even when shutting down
-      mac80211: default to automatic power control
-
-Jussi Kivilinna (1):
-      rndis_wlan: fix initialization order for workqueue&workers
-
-Laszlo Attila Toth (1):
-      xt_socket: checks for the state of nf_conntrack
-
-Lennert Buytenhek (2):
-      mv643xx_eth: OOM handling fixes
-      mv643xx_eth: 64bit mib counter read fix
-
-Lubomir Rintel (1):
-      ne2k-pci: Do not register device until initialized.
-
-Marcel Holtmann (1):
-      Bluetooth: Fix issue with sysfs handling for connections
-
-Omar Laazimani (1):
-      usbnet: CDC EEM support (v5)
-
-Rabin Vincent (1):
-      Subject: [PATCH] br2684: restore net_dev initialization
-
-Robert Love (1):
-      net: Only store high 16 bits of kernel generated filter priorities
-
-Satoru SATOH (1):
-      tcp: Fix tcp_prequeue() to get correct rto_min value
-
-Sergey Senozhatsky (1):
-      cxgb3: fixing gcc 4.4 compiler warning: suggest parentheses around operand of ‚Äò!‚Äô
-
-Stephen Rothwell (1):
-      wireless: remove unneeded EXPORT_SYMBOL the tickles a powerpc compiler bug
-
-Steve Glendinning (2):
-      smsc95xx: configure LED outputs
-      smsc95xx: add support for LAN9512 and LAN9514
-
- drivers/net/bonding/bond_alb.c              |   12 +-
- drivers/net/bonding/bond_main.c             |   36 +--
- drivers/net/cxgb3/t3_hw.c                   |    2 +-
- drivers/net/e1000/e1000_main.c              |    2 +-
- drivers/net/ehea/ehea.h                     |    2 +-
- drivers/net/ehea/ehea_main.c                |   31 ++-
- drivers/net/mv643xx_eth.c                   |   24 +-
- drivers/net/ne2k-pci.c                      |    7 +-
- drivers/net/netconsole.c                    |   11 +-
- drivers/net/usb/Kconfig                     |   14 +
- drivers/net/usb/Makefile                    |    1 +
- drivers/net/usb/cdc_eem.c                   |  381 +++++++++++++++++++++++++++
- drivers/net/usb/smsc95xx.c                  |   15 +
- drivers/net/usb/smsc95xx.h                  |    3 +
- drivers/net/virtio_net.c                    |   24 +-
- drivers/net/wireless/ath5k/debug.c          |    2 +-
- drivers/net/wireless/iwlwifi/iwl-scan.c     |    4 +-
- drivers/net/wireless/iwlwifi/iwl3945-base.c |    1 -
- drivers/net/wireless/rndis_wlan.c           |   14 +-
- include/linux/netfilter/x_tables.h          |    4 +-
- include/linux/usb/cdc.h                     |    3 +
- include/linux/virtio_net.h                  |    1 +
- include/net/bluetooth/hci_core.h            |    1 +
- include/net/tcp.h                           |   14 +-
- net/atm/br2684.c                            |    1 +
- net/bluetooth/hci_conn.c                    |    2 +
- net/bluetooth/hci_sysfs.c                   |   74 +++---
- net/core/dev.c                              |    9 +-
- net/core/skbuff.c                           |   27 +-
- net/ipv4/tcp_input.c                        |   10 -
- net/mac80211/main.c                         |   20 +-
- net/netfilter/Kconfig                       |    1 +
- net/sched/cls_api.c                         |    2 +-
- 33 files changed, 598 insertions(+), 157 deletions(-)
- create mode 100644 drivers/net/usb/cdc_eem.c
-ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
