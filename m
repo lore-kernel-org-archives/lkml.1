@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756381AbZEEKJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbZEEKLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756381AbZEEKJp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 06:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZEEKJf
+	id S1757016AbZEEKLS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 06:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbZEEKLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 06:09:35 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:59766 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753495AbZEEKJf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 06:09:35 -0400
-From: Daniel Mack <daniel@caiaq.de>
+	Tue, 5 May 2009 06:11:05 -0400
+Received: from mail.gmx.net ([213.165.64.20]:46186 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753495AbZEEKLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 06:11:03 -0400
+X-Authenticated: #54312696
+X-Provags-ID: V01U2FsdGVkX18zciwejaAzLumY/672B36AMIp8Xapm3A9QguwcaC
+	O1/JYkw3BOl5BF
+Date: Tue, 05 May 2009 12:11:01 +0200 (CEST)
+Message-Id: <20090505.121101.258772493.wl@gnu.org>
 To: linux-kernel@vger.kernel.org
-Cc: Daniel Mack <daniel@caiaq.de>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] isl29003: fix resume functionality
-Date: Tue,  5 May 2009 12:09:25 +0200
-Message-Id: <1241518165-12469-1-git-send-email-daniel@caiaq.de>
-X-Mailer: git-send-email 1.6.2.1
+Cc: opensuse-kernel@opensuse.org
+Subject: Re: some kernel issues
+From: Werner LEMBERG <wl@gnu.org>
+In-Reply-To: <20090504.182628.216265620.wl@gnu.org>
+References: <20090503.132958.227862405.wl@gnu.org>
+	<20090504.182628.216265620.wl@gnu.org>
+X-Mailer: Mew version 6.2.50 on Emacs 22.3.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.62
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The isl29003 does not interpret the return value of
-i2c_smbus_write_byte_data() correctly and hence causes an error on
-system resume.
 
-Also introduce power_state_before_suspend and restore the chip's power
-state upon wakeup.
+> [kernel 2.6.30-rc4-14-vanilla from openSuSE factory on top of
+> openSuSE 11.1]
+> 
+> 
+> With my 945GM intel graphics card, I don't get TTYs which I could
+> switch to with Ctrl-Alt-Shift-F1, for example, after X has started.
+> Only F7 to switch back to graphics mode works fine.  In particular,
+> I don't see any boot messages at start-up.  This has worked fine
+> with a previous kernel like 2.6.27.21.
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- drivers/misc/isl29003.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+I've filed a bug report.
 
-diff --git a/drivers/misc/isl29003.c b/drivers/misc/isl29003.c
-index 2e2a592..a71e245 100644
---- a/drivers/misc/isl29003.c
-+++ b/drivers/misc/isl29003.c
-@@ -64,6 +64,7 @@ struct isl29003_data {
- 	struct i2c_client *client;
- 	struct mutex lock;
- 	u8 reg_cache[ISL29003_NUM_CACHABLE_REGS];
-+	u8 power_state_before_suspend;
- };
- 
- static int gain_range[] = {
-@@ -411,6 +412,9 @@ static int __devexit isl29003_remove(struct i2c_client *client)
- #ifdef CONFIG_PM
- static int isl29003_suspend(struct i2c_client *client, pm_message_t mesg)
- {
-+	struct isl29003_data *data = i2c_get_clientdata(client);
-+
-+	data->power_state_before_suspend = isl29003_get_power_state(client);
- 	return isl29003_set_power_state(client, 0);
- }
- 
-@@ -421,10 +425,11 @@ static int isl29003_resume(struct i2c_client *client)
- 
- 	/* restore registers from cache */
- 	for (i = 0; i < ARRAY_SIZE(data->reg_cache); i++)
--		if (!i2c_smbus_write_byte_data(client, i, data->reg_cache[i]))
-+		if (i2c_smbus_write_byte_data(client, i, data->reg_cache[i]))
- 			return -EIO;
- 
--	return 0;
-+	return isl29003_set_power_state(client,
-+		data->power_state_before_suspend);
- }
- 
- #else
--- 
-1.6.2.1
+  http://bugzilla.kernel.org/show_bug.cgi?id=13249
 
+
+     Werner
