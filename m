@@ -1,79 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbZEEOVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbZEEOX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754537AbZEEOVj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 10:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbZEEOV2
+	id S1752676AbZEEOX3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 10:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbZEEOXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 10:21:28 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:46535 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751972AbZEEOV1 (ORCPT
+	Tue, 5 May 2009 10:23:15 -0400
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:41869 "EHLO
+	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751539AbZEEOXO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 10:21:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=USQDmpqlbaJ9xb+VXurafK1JC4+bSxfNE8YX0hT4OT+uix4jiy22DyXy5wHDz9iXGD
-         wokQ8/ray43xoypbdQeg1NKlxNGhzPkHeT1l73csXtNstBWBST9wuKpXnpqWGC5J2J3V
-         0Xud/xS/hoSVO9LwG+bHc4TIQ1r16P3AxyEds=
-Message-ID: <4A004B62.1080801@gmail.com>
-Date: Tue, 05 May 2009 10:21:22 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Tue, 5 May 2009 10:23:14 -0400
+X-Greylist: delayed 909 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 May 2009 10:23:00 EDT
+X-BigFish: VPS5(zz936fJzz1202hzzz32i6bh15fn)
+X-FB-SS: 5,
+X-WSS-ID: 0KJ6CKA-02-1KJ-01
+From: Mark Langsdorf <mark.langsdorf@amd.com>
+To: joerg.roedel@amd.com, linux-kernel@vger.kernel.org
+Subject: [PATCH][KVM] Add support for Pause Filtering to AMD SVM
+Date: Tue, 5 May 2009 09:09:58 -0500
+User-Agent: KMail/1.9.10
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com>
-In-Reply-To: <4A0049CD.3080003@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig8C30C3C40E64130130BA0FA7"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-ID: <200905050909.58583.mark.langsdorf@amd.com>
+X-OriginalArrivalTime: 05 May 2009 14:07:26.0290 (UTC) FILETIME=[D1A06320:01C9CD8A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig8C30C3C40E64130130BA0FA7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+commit 6f15c833f56267baf5abdd0fbc90a81489573053
+Author: Mark Langsdorf <mlangsdo@wshpnow.amd.com>
+Date:   Mon May 4 15:02:38 2009 -0500
 
-Gregory Haskins wrote:
-> So rather than allocate a top-level vector, I will add "KVM_HC_DYNAMIC"=
+    New AMD processors will support the Pause Filter Feature.
+    This feature creates a new field in the VMCB called Pause
+    Filter Count.  If Pause Filter Count is greater than 0 and
+    ntercepting PAUSEs is enabled, the processor will increment
+    an internal counter when a PAUSE instruction occurs instead
+    of intercepting.  When the internal counter reaches the
+    Pause Filter Count value, a PAUSE intercept will occur.
+    
+    This feature can be used to detect contended spinlocks,
+    especially when the lock holding VCPU is not scheduled.
+    Rescheduling another VCPU prevents the VCPU seeking the
+    lock from wasting its quantum by spinning idly.
+    
+    Experimental results show that most spinlocks are held
+    for less than 1000 PAUSE cycles or more than a few
+    thousand.  Default the Pause Filter Counter to 3000 to
+    detect the contended spinlocks.
+    
+    Processor support for this feature is indicated by a CPUID
+    bit.
+    
+    On a 24 core system running 4 guests each with 16 VCPUs,
+    this patch improved overall performance of each guest's
+    32 job kernbench by approximately 1%.  Further performance
+    improvement may be possible with a more sophisticated
+    yield algorithm.
+    
+    -Mark Langsdorf
+    Operating System Research Center
+    AMD
+    
+    Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
 
-> to kvm_para.h, and I will change the interface to follow suit (somethin=
-g
-> like s/hypercall/dynhc).  Sound good?
->  =20
+diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
+index 85574b7..1fecb7e 100644
+--- a/arch/x86/include/asm/svm.h
++++ b/arch/x86/include/asm/svm.h
+@@ -57,7 +57,8 @@ struct __attribute__ ((__packed__)) vmcb_control_area {
+ 	u16 intercept_dr_write;
+ 	u32 intercept_exceptions;
+ 	u64 intercept;
+-	u8 reserved_1[44];
++	u8 reserved_1[42];
++	u16 pause_filter_count;
+ 	u64 iopm_base_pa;
+ 	u64 msrpm_base_pa;
+ 	u64 tsc_offset;
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index ef43a18..14dab13 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -45,6 +45,7 @@ MODULE_LICENSE("GPL");
+ #define SVM_FEATURE_NPT  (1 << 0)
+ #define SVM_FEATURE_LBRV (1 << 1)
+ #define SVM_FEATURE_SVML (1 << 2)
++#define SVM_FEATURE_PAUSE_FILTER (1 << 10)
+ 
+ #define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
+ 
+@@ -575,6 +576,12 @@ static void init_vmcb(struct vcpu_svm *svm)
+ 
+ 	svm->nested_vmcb = 0;
+ 	svm->vcpu.arch.hflags = HF_GIF_MASK;
++
++	if (svm_has(SVM_FEATURE_PAUSE_FILTER)) {
++		control->pause_filter_count = 5000;
++		control->intercept |= (1ULL << INTERCEPT_PAUSE);
++	}
++
+ }
+ 
+ static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
+@@ -2087,6 +2094,15 @@ static int interrupt_window_interception(struct vcpu_svm *svm,
+ 	return 1;
+ }
+ 
++static int pause_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
++{
++	/* Simple yield */
++	vcpu_put(&svm->vcpu);
++	schedule();
++	vcpu_load(&svm->vcpu);
++	return 1;
++}
++
+ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+ 				      struct kvm_run *kvm_run) = {
+ 	[SVM_EXIT_READ_CR0]           		= emulate_on_interception,
+@@ -2123,6 +2139,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+ 	[SVM_EXIT_CPUID]			= cpuid_interception,
+ 	[SVM_EXIT_IRET]                         = iret_interception,
+ 	[SVM_EXIT_INVD]                         = emulate_on_interception,
++	[SVM_EXIT_PAUSE]			= pause_interception,
+ 	[SVM_EXIT_HLT]				= halt_interception,
+ 	[SVM_EXIT_INVLPG]			= invlpg_interception,
+ 	[SVM_EXIT_INVLPGA]			= invalid_op_interception,
+@@ -2227,6 +2244,7 @@ static void pre_svm_run(struct vcpu_svm *svm)
+ 	if (svm->vcpu.cpu != cpu ||
+ 	    svm->asid_generation != svm_data->asid_generation)
+ 		new_asid(svm, svm_data);
++
+ }
+ 
+ static void svm_drop_interrupt_shadow(struct kvm_vcpu *vcpu)
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 2b73e19..e2b730d 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -710,6 +710,7 @@ void vcpu_load(struct kvm_vcpu *vcpu)
+ 	kvm_arch_vcpu_load(vcpu, cpu);
+ 	put_cpu();
+ }
++EXPORT_SYMBOL_GPL(vcpu_load);
+ 
+ void vcpu_put(struct kvm_vcpu *vcpu)
+ {
+@@ -719,6 +720,7 @@ void vcpu_put(struct kvm_vcpu *vcpu)
+ 	preempt_enable();
+ 	mutex_unlock(&vcpu->mutex);
+ }
++EXPORT_SYMBOL_GPL(vcpu_put);
+ 
+ static void ack_flush(void *_completed)
+ {
 
-A small ramification of this change will be that I will need to do
-something like add a feature-bit to cpuid for detecting if HC_DYNAMIC is
-supported on the backend or not.  The current v1 design doesn't suffer
-from this requirement because the presence of the dynamic vector itself
-is enough to know its supported.  I like Avi's proposal enough to say
-that its worth this minor inconvenience, but FYI I will have to
-additionally submit a userspace patch for v2 if we go this route.
-
--Greg
-
-
-
-
---------------enig8C30C3C40E64130130BA0FA7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkoAS2IACgkQP5K2CMvXmqFuogCfY13vIZBbCww35+GreZzhbGQh
-El0AnAp4yKPhudwhw1ZOVaJZcErO+5ta
-=Tm9w
------END PGP SIGNATURE-----
-
---------------enig8C30C3C40E64130130BA0FA7--
