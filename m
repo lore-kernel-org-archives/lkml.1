@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbZEERVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbZEER1B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754805AbZEERVb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 13:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbZEERVW
+	id S1756757AbZEER1B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 13:27:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbZEER0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 13:21:22 -0400
-Received: from mga09.intel.com ([134.134.136.24]:33233 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751828AbZEERVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 13:21:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,298,1239001200"; 
-   d="scan'208";a="512728293"
-Subject: Re: [PATCH] iwl3945: fix ia64/ppc build
-From: reinette chatre <reinette.chatre@intel.com>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: "ilw@linux.intel.com" <ilw@linux.intel.com>,
-       "linville@tuxdriver.com" <linville@tuxdriver.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A00525C.76EA.0078.0@novell.com>
-References: <4A00525C.76EA.0078.0@novell.com>
-Content-Type: text/plain
-Date: Tue, 05 May 2009 10:27:29 -0700
-Message-Id: <1241544449.6198.4.camel@rc-desk>
+	Tue, 5 May 2009 13:26:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33115 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751024AbZEER0t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 13:26:49 -0400
+Date: Tue, 5 May 2009 10:22:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: David Brownell <david-b@pacbell.net>, Li Hong <lihong.hi@gmail.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] usb: use memdup_user()
+Message-Id: <20090505102253.6993f381.akpm@linux-foundation.org>
+In-Reply-To: <200905051244.01698.oliver@neukum.org>
+References: <3a3680030905030900x672af596mc2ebc3c38f119c92@mail.gmail.com>
+	<200905041601.51789.oliver@neukum.org>
+	<20090504231157.1ff2cf15.akpm@linux-foundation.org>
+	<200905051244.01698.oliver@neukum.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan,
+On Tue, 5 May 2009 12:44:01 +0200 Oliver Neukum <oliver@neukum.org> wrote:
 
-On Tue, 2009-05-05 at 05:51 -0700, Jan Beulich wrote:
-> Exporting static and non-static symbols in the same compilation unit
-> results, on some architectures, in section mismatch errors from the
-> compiler. Since exporting static symbols is bogus altogether, simply
-> remove the offending export. Once at it, also remove the other export
-> commit df833b1d73680f9f9dc72cbc3215edbbc6ab740d pointlessly added.
+> Am Dienstag, 5. Mai 2009 08:11:57 schrieb Andrew Morton:
+> > On Mon, 4 May 2009 16:01:51 +0200 Oliver Neukum <oliver@neukum.org> wrote:
 > 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> Cc: Reinette Chatre <reinette.chatre@intel.com>
-> Cc: John W. Linville <linville@tuxdriver.com>
+> > > I want people to be forced to think about memory allocations.
+> > > We had endless trouble during 2.4 with storage deadlocking.
+> > > We simply need full control of this.
+> >
+> > thou-shalt-use-GFP_NOFS is a very common pattern in many filesystems.
+> > And thou-shalt-use-GFP_NOIO is a very common pattern in block drivers.
 > 
-> ---
->  drivers/net/wireless/iwlwifi/iwl3945-base.c |    2 --
->  1 file changed, 2 deletions(-)
-> 
-> --- linux-2.6.30-rc4/drivers/net/wireless/iwlwifi/iwl3945-base.c	2009-04-30 09:42:55.000000000 +0200
-> +++ 2.6.30-rc4-iwl3945-build/drivers/net/wireless/iwlwifi/iwl3945-base.c	2009-05-05 14:25:43.000000000 +0200
-> @@ -1694,7 +1694,6 @@ void iwl3945_rx_queue_reset(struct iwl_p
->  	rxq->free_count = 0;
->  	spin_unlock_irqrestore(&rxq->lock, flags);
->  }
-> -EXPORT_SYMBOL(iwl3945_rx_queue_reset);
->  
->  /*
->   * this should be called while priv->lock is locked
-> @@ -1745,7 +1744,6 @@ static void iwl3945_rx_queue_free(struct
->  	rxq->bd = NULL;
->  	rxq->rb_stts  = NULL;
->  }
-> -EXPORT_SYMBOL(iwl3945_rx_queue_free);
->  
-> 
->  /* Convert linear signal-to-noise ratio into dB */
-> 
-> 
-> 
+> USB drivers are interface level yet some functions, reset and power
+> management, are on a device level. As it is unpredictable whether
+> a driver will share a device with a storage driver, all USB drivers as far as
+> these functions are concerned must be considered block device drivers.
+> That's the reason GFP_NOIO is so prevalent in USB.
 
-These changes are already queued for 2.6.30 in wireless-2.6 as commit
-6269b731560d69c5eaa929909891edec39496d71 and
-3ee59f8d0dcab2e114546038b2b224776c82b7f7
+There must be some particular action which flips the thread of control
+from one state to the other.  eg, taking of a lock.
 
-Reinette
+> > I wonder how hard it would be to add runtime debugging checks?  If
+> 
+> I'd prefer compile time checks. Ideally we'd annotate a function with an
+> attribute making the compiler barf if copy_to/from_user or an inappropriate
+> kmalloc is used. It can't be perfect due to function pointers, but it would
+> be a good start.
+
+I don't think that would have enough coverage - bugs in this area tend
+to come from calling some function which looks innocent, but which
+calls some function which calls some function which calls some function
+which uses GFP_KERNEL.
+
+And then there's stuff like "usb takes a mutex which is also taken by
+some other thread which does a GFP_KERNEL allocation while holding that
+mutex".
 
