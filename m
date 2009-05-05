@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758312AbZEEVXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbZEEVXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758312AbZEEVXT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 17:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbZEEVXK
+	id S1755670AbZEEVXv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 17:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZEEVXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 17:23:10 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:56437 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752491AbZEEVXJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 17:23:09 -0400
-Message-ID: <4A00ADDE.9000908@zytor.com>
-Date: Tue, 05 May 2009 14:21:34 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: akataria@vmware.com
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-References: <1241462661.412.8.camel@alok-dev1>
-In-Reply-To: <1241462661.412.8.camel@alok-dev1>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 5 May 2009 17:23:39 -0400
+Received: from cmpxchg.org ([85.214.51.133]:56493 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752600AbZEEVXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 17:23:38 -0400
+Date: Tue, 5 May 2009 23:21:39 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: magnus.damm@gmail.com, linux-media@vger.kernel.org, hverkuil@xs4all.nl,
+       lethal@linux-sh.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/3] mm: introduce follow_pte()
+Message-ID: <20090505212139.GA2559@cmpxchg.org>
+References: <20090501181449.GA8912@cmpxchg.org> <1241430874-12667-1-git-send-email-hannes@cmpxchg.org> <20090505122442.6271c7da.akpm@linux-foundation.org> <20090505203807.GB2428@cmpxchg.org> <20090505140517.bef78dd3.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090505140517.bef78dd3.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria wrote:
-> Hi,
+On Tue, May 05, 2009 at 02:05:17PM -0700, Andrew Morton wrote:
+> On Tue, 5 May 2009 22:38:07 +0200
+> Johannes Weiner <hannes@cmpxchg.org> wrote:
 > 
-> Given that there were no major objections that came up regarding
-> reducing the HZ value in http://lkml.org/lkml/2009/4/27/499. 
+> > On Tue, May 05, 2009 at 12:24:42PM -0700, Andrew Morton wrote:
+> > > On Mon,  4 May 2009 11:54:32 +0200
+> > > Johannes Weiner <hannes@cmpxchg.org> wrote:
+> > > 
+> > > > A generic readonly page table lookup helper to map an address space
+> > > > and an address from it to a pte.
+> > > 
+> > > umm, OK.
+> > > 
+> > > Is there actually some point to these three patches?  If so, what is it?
+> > 
+> > Magnus needs to check for physical contiguity of a VMAs backing pages
+> > to support zero-copy exportation of video data to userspace.
+> > 
+> > This series implements follow_pfn() so he can walk the VMA backing
+> > pages and ensure their PFNs are in linear order.
+> > 
+> > [ This patch can be collapsed with 2/3, I just thought it would be
+> >   easier to read the diffs when having them separate. ]
+> > 
+> > 1/3 and 2/3: factor out the page table walk from follow_phys() into
+> > follow_pte().
+> > 
+> > 3/3: implement follow_pfn() on top of follow_pte().
 > 
-> Below is the patch which actually reduces it, please consider for tip.
-> 
+> So we could bundle these patches with Magnus's patchset, or we could
+> consider these three patches as a cleanup or something.
+>
+> Given that 3/3 introduces an unused function, I'm inclined to sit tight
+> and await Magnus's work.
 
-What is the benefit of this?
+Yeah, I didn't see the video guys responding on Magnus' patch yet, so
+let's wait for them.
 
-I can see at least one immediate downside: some timeout values in the 
-kernel are still maintained in units of HZ (like poll, I believe), and 
-so with a lower HZ value we'll have higher roundoff errors.
+Magnus, the actual conversion of your code should be trivial, could
+you respin it on top of these three patches using follow_pfn() then?
 
-	-hpa
+	Thanks, Hannes
