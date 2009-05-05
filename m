@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758945AbZEEUCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759233AbZEEUCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758945AbZEEUCL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 16:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758663AbZEEUAZ
+	id S1759233AbZEEUCs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 16:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758216AbZEEUA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 16:00:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33213 "EHLO mx2.redhat.com"
+	Tue, 5 May 2009 16:00:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33223 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752700AbZEEUAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 16:00:22 -0400
+	id S1758427AbZEEUAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 16:00:23 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
        mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
@@ -19,61 +19,126 @@ To: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
        righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
        snitzer@redhat.com, m-ikeda@ds.jp.nec.com
 Cc: vgoyal@redhat.com, akpm@linux-foundation.org
-Subject: [PATCH 11/18] io-controller: noop changes for hierarchical fair queuing
-Date: Tue,  5 May 2009 15:58:38 -0400
-Message-Id: <1241553525-28095-12-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 06/18] io-controller: cfq changes to use hierarchical fair queuing code in elevaotor layer
+Date: Tue,  5 May 2009 15:58:33 -0400
+Message-Id: <1241553525-28095-7-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1241553525-28095-1-git-send-email-vgoyal@redhat.com>
 References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes noop to use queue scheduling code from elevator layer.
-One can go back to old noop by deselecting CONFIG_IOSCHED_NOOP_HIER.
+Make cfq hierarhical.
 
 Signed-off-by: Nauman Rafique <nauman@google.com>
+Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
+Signed-off-by: Paolo Valente <paolo.valente@unimore.it>
+Signed-off-by: Aristeu Rozanski <aris@redhat.com>
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- block/Kconfig.iosched |   11 +++++++++++
- block/noop-iosched.c  |    3 +++
- 2 files changed, 14 insertions(+), 0 deletions(-)
+ block/Kconfig.iosched |    8 ++++++++
+ block/cfq-iosched.c   |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
+ init/Kconfig          |    2 +-
+ 3 files changed, 57 insertions(+), 1 deletions(-)
 
 diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-index a91a807..9da6657 100644
+index dd5224d..a91a807 100644
 --- a/block/Kconfig.iosched
 +++ b/block/Kconfig.iosched
-@@ -25,6 +25,17 @@ config IOSCHED_NOOP
- 	  that do their own scheduling and require only minimal assistance from
- 	  the kernel.
+@@ -54,6 +54,14 @@ config IOSCHED_CFQ
+ 	  working environment, suitable for desktop systems.
+ 	  This is the default I/O scheduler.
  
-+config IOSCHED_NOOP_HIER
-+	bool "Noop Hierarchical Scheduling support"
-+	depends on IOSCHED_NOOP && CGROUPS
-+	select ELV_FAIR_QUEUING
++config IOSCHED_CFQ_HIER
++	bool "CFQ Hierarchical Scheduling support"
++	depends on IOSCHED_CFQ && CGROUPS
 +	select GROUP_IOSCHED
 +	default n
 +	---help---
-+	  Enable hierarhical scheduling in noop. In this mode noop keeps
-+	  one IO queue per cgroup instead of a global queue. Elevator
-+	  fair queuing logic ensures fairness among various queues.
++	  Enable hierarhical scheduling in cfq.
 +
- config IOSCHED_AS
- 	tristate "Anticipatory I/O scheduler"
- 	default y
-diff --git a/block/noop-iosched.c b/block/noop-iosched.c
-index d587832..73e571d 100644
---- a/block/noop-iosched.c
-+++ b/block/noop-iosched.c
-@@ -92,6 +92,9 @@ static struct elevator_type elevator_noop = {
- 		.elevator_alloc_sched_queue_fn	= noop_alloc_noop_queue,
- 		.elevator_free_sched_queue_fn	= noop_free_noop_queue,
- 	},
-+#ifdef CONFIG_IOSCHED_NOOP_HIER
-+	.elevator_features = ELV_IOSCHED_NEED_FQ | ELV_IOSCHED_SINGLE_IOQ,
+ choice
+ 	prompt "Default I/O scheduler"
+ 	default DEFAULT_CFQ
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index f90c534..1e9dd5b 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1229,6 +1229,50 @@ static void cfq_ioc_set_ioprio(struct io_context *ioc)
+ 	ioc->ioprio_changed = 0;
+ }
+ 
++#ifdef CONFIG_IOSCHED_CFQ_HIER
++static void changed_cgroup(struct io_context *ioc, struct cfq_io_context *cic)
++{
++	struct cfq_queue *async_cfqq = cic_to_cfqq(cic, 0);
++	struct cfq_queue *sync_cfqq = cic_to_cfqq(cic, 1);
++	struct cfq_data *cfqd = cic->key;
++	struct io_group *iog, *__iog;
++	unsigned long flags;
++	struct request_queue *q;
++
++	if (unlikely(!cfqd))
++		return;
++
++	q = cfqd->queue;
++
++	spin_lock_irqsave(q->queue_lock, flags);
++
++	iog = io_lookup_io_group_current(q);
++
++	if (async_cfqq != NULL) {
++		__iog = cfqq_to_io_group(async_cfqq);
++
++		if (iog != __iog) {
++			cic_set_cfqq(cic, NULL, 0);
++			cfq_put_queue(async_cfqq);
++		}
++	}
++
++	if (sync_cfqq != NULL) {
++		__iog = cfqq_to_io_group(sync_cfqq);
++		if (iog != __iog)
++			io_ioq_move(q->elevator, sync_cfqq->ioq, iog);
++	}
++
++	spin_unlock_irqrestore(q->queue_lock, flags);
++}
++
++static void cfq_ioc_set_cgroup(struct io_context *ioc)
++{
++	call_for_each_cic(ioc, changed_cgroup);
++	ioc->cgroup_changed = 0;
++}
++#endif  /* CONFIG_IOSCHED_CFQ_HIER */
++
+ static struct cfq_queue *
+ cfq_find_alloc_queue(struct cfq_data *cfqd, int is_sync,
+ 				struct io_context *ioc, gfp_t gfp_mask)
+@@ -1494,6 +1538,10 @@ out:
+ 	smp_read_barrier_depends();
+ 	if (unlikely(ioc->ioprio_changed))
+ 		cfq_ioc_set_ioprio(ioc);
++#ifdef CONFIG_IOSCHED_CFQ_HIER
++	if (unlikely(ioc->cgroup_changed))
++		cfq_ioc_set_cgroup(ioc);
 +#endif
- 	.elevator_name = "noop",
- 	.elevator_owner = THIS_MODULE,
- };
+ 	return cic;
+ err_free:
+ 	cfq_cic_free(cic);
+diff --git a/init/Kconfig b/init/Kconfig
+index ab76477..1a4686d 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -607,7 +607,7 @@ config CGROUP_MEM_RES_CTLR_SWAP
+ 	  size is 4096bytes, 512k per 1Gbytes of swap.
+ 
+ config GROUP_IOSCHED
+-	bool "Group IO Scheduler"
++	bool
+ 	depends on CGROUPS && ELV_FAIR_QUEUING
+ 	default n
+ 	---help---
 -- 
 1.6.0.1
 
