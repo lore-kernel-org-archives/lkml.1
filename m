@@ -1,160 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbZEEOX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZEEOZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752676AbZEEOX3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 10:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbZEEOXP
+	id S1754373AbZEEOZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 10:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbZEEOZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 10:23:15 -0400
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:41869 "EHLO
-	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751539AbZEEOXO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 10:23:14 -0400
-X-Greylist: delayed 909 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 May 2009 10:23:00 EDT
-X-BigFish: VPS5(zz936fJzz1202hzzz32i6bh15fn)
-X-FB-SS: 5,
-X-WSS-ID: 0KJ6CKA-02-1KJ-01
-From: Mark Langsdorf <mark.langsdorf@amd.com>
-To: joerg.roedel@amd.com, linux-kernel@vger.kernel.org
-Subject: [PATCH][KVM] Add support for Pause Filtering to AMD SVM
-Date: Tue, 5 May 2009 09:09:58 -0500
-User-Agent: KMail/1.9.10
+	Tue, 5 May 2009 10:25:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57951 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751975AbZEEOZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 10:25:13 -0400
+Date: Tue, 5 May 2009 10:23:59 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       ebiederm@xmission.com, akpm@linux-foundation.org
+Subject: Re: [PATCH] sysrq: Simplify sysrq-c handler
+Message-ID: <20090505142359.GB9909@redhat.com>
+References: <20090505134547.GA11780@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-ID: <200905050909.58583.mark.langsdorf@amd.com>
-X-OriginalArrivalTime: 05 May 2009 14:07:26.0290 (UTC) FILETIME=[D1A06320:01C9CD8A]
+In-Reply-To: <20090505134547.GA11780@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 6f15c833f56267baf5abdd0fbc90a81489573053
-Author: Mark Langsdorf <mlangsdo@wshpnow.amd.com>
-Date:   Mon May 4 15:02:38 2009 -0500
+On Tue, May 05, 2009 at 09:45:47AM -0400, Neil Horman wrote:
+> Currently the sysrq-c handler is bit over-engineered.  Its behavior is dependent
+> on a few compile time and run time factors that alter its behavior which is
+> really unnecessecary.  If CONFIG_KEXEC is not configured, sysrq-c, crashes the
+> system with a NULL pointer dereference.  If CONFIG_KEXEC is configured, it calls
+> crash_kexec directly, which implies that the kexec kernel will either be booted
+> (if its been previously loaded), or it will simply do nothing (the no kexec
+> kernel has been loaded).  It would be much easier to just simplify the whole
+> thing to dereference a NULL pointer all the time regardless of configuration.
+> That way, it will always try to crash the system, and if a kexec kernel has been
+> loaded into reserved space, it will still boot from the page fault trap handler
+> (assuming panic_on_oops is set appropriately).
+> 
 
-    New AMD processors will support the Pause Filter Feature.
-    This feature creates a new field in the VMCB called Pause
-    Filter Count.  If Pause Filter Count is greater than 0 and
-    ntercepting PAUSEs is enabled, the processor will increment
-    an internal counter when a PAUSE instruction occurs instead
-    of intercepting.  When the internal counter reaches the
-    Pause Filter Count value, a PAUSE intercept will occur.
-    
-    This feature can be used to detect contended spinlocks,
-    especially when the lock holding VCPU is not scheduled.
-    Rescheduling another VCPU prevents the VCPU seeking the
-    lock from wasting its quantum by spinning idly.
-    
-    Experimental results show that most spinlocks are held
-    for less than 1000 PAUSE cycles or more than a few
-    thousand.  Default the Pause Filter Counter to 3000 to
-    detect the contended spinlocks.
-    
-    Processor support for this feature is indicated by a CPUID
-    bit.
-    
-    On a 24 core system running 4 guests each with 16 VCPUs,
-    this patch improved overall performance of each guest's
-    32 job kernbench by approximately 1%.  Further performance
-    improvement may be possible with a more sophisticated
-    yield algorithm.
-    
-    -Mark Langsdorf
-    Operating System Research Center
-    AMD
-    
-    Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+Neil,
 
-diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
-index 85574b7..1fecb7e 100644
---- a/arch/x86/include/asm/svm.h
-+++ b/arch/x86/include/asm/svm.h
-@@ -57,7 +57,8 @@ struct __attribute__ ((__packed__)) vmcb_control_area {
- 	u16 intercept_dr_write;
- 	u32 intercept_exceptions;
- 	u64 intercept;
--	u8 reserved_1[44];
-+	u8 reserved_1[42];
-+	u16 pause_filter_count;
- 	u64 iopm_base_pa;
- 	u64 msrpm_base_pa;
- 	u64 tsc_offset;
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index ef43a18..14dab13 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -45,6 +45,7 @@ MODULE_LICENSE("GPL");
- #define SVM_FEATURE_NPT  (1 << 0)
- #define SVM_FEATURE_LBRV (1 << 1)
- #define SVM_FEATURE_SVML (1 << 2)
-+#define SVM_FEATURE_PAUSE_FILTER (1 << 10)
- 
- #define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
- 
-@@ -575,6 +576,12 @@ static void init_vmcb(struct vcpu_svm *svm)
- 
- 	svm->nested_vmcb = 0;
- 	svm->vcpu.arch.hflags = HF_GIF_MASK;
-+
-+	if (svm_has(SVM_FEATURE_PAUSE_FILTER)) {
-+		control->pause_filter_count = 5000;
-+		control->intercept |= (1ULL << INTERCEPT_PAUSE);
-+	}
-+
- }
- 
- static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
-@@ -2087,6 +2094,15 @@ static int interrupt_window_interception(struct vcpu_svm *svm,
- 	return 1;
- }
- 
-+static int pause_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
-+{
-+	/* Simple yield */
-+	vcpu_put(&svm->vcpu);
-+	schedule();
-+	vcpu_load(&svm->vcpu);
-+	return 1;
-+}
-+
- static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
- 				      struct kvm_run *kvm_run) = {
- 	[SVM_EXIT_READ_CR0]           		= emulate_on_interception,
-@@ -2123,6 +2139,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
- 	[SVM_EXIT_CPUID]			= cpuid_interception,
- 	[SVM_EXIT_IRET]                         = iret_interception,
- 	[SVM_EXIT_INVD]                         = emulate_on_interception,
-+	[SVM_EXIT_PAUSE]			= pause_interception,
- 	[SVM_EXIT_HLT]				= halt_interception,
- 	[SVM_EXIT_INVLPG]			= invlpg_interception,
- 	[SVM_EXIT_INVLPGA]			= invalid_op_interception,
-@@ -2227,6 +2244,7 @@ static void pre_svm_run(struct vcpu_svm *svm)
- 	if (svm->vcpu.cpu != cpu ||
- 	    svm->asid_generation != svm_data->asid_generation)
- 		new_asid(svm, svm_data);
-+
- }
- 
- static void svm_drop_interrupt_shadow(struct kvm_vcpu *vcpu)
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 2b73e19..e2b730d 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -710,6 +710,7 @@ void vcpu_load(struct kvm_vcpu *vcpu)
- 	kvm_arch_vcpu_load(vcpu, cpu);
- 	put_cpu();
- }
-+EXPORT_SYMBOL_GPL(vcpu_load);
- 
- void vcpu_put(struct kvm_vcpu *vcpu)
- {
-@@ -719,6 +720,7 @@ void vcpu_put(struct kvm_vcpu *vcpu)
- 	preempt_enable();
- 	mutex_unlock(&vcpu->mutex);
- }
-+EXPORT_SYMBOL_GPL(vcpu_put);
- 
- static void ack_flush(void *_completed)
- {
+Would it make sense to call panic() directly so that we are not dependent
+on panic_on_oops being set?
 
+Thanks
+Vivek
+
+> Neil
+> 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> 
+> 
+>  sysrq.c |   15 ++++++---------
+>  1 file changed, 6 insertions(+), 9 deletions(-)
+> 
+> 
+> diff --git a/drivers/char/sysrq.c b/drivers/char/sysrq.c
+> index b0a6a3e..9319e75 100644
+> --- a/drivers/char/sysrq.c
+> +++ b/drivers/char/sysrq.c
+> @@ -120,20 +120,17 @@ static struct sysrq_key_op sysrq_unraw_op = {
+>  #define sysrq_unraw_op (*(struct sysrq_key_op *)0)
+>  #endif /* CONFIG_VT */
+>  
+> -#ifdef CONFIG_KEXEC
+> -static void sysrq_handle_crashdump(int key, struct tty_struct *tty)
+> +static void sysrq_handle_crash(int key, struct tty_struct *tty)
+>  {
+> -	crash_kexec(get_irq_regs());
+> +	void *killer = NULL;
+> +	*killer = 1;
+>  }
+>  static struct sysrq_key_op sysrq_crashdump_op = {
+> -	.handler	= sysrq_handle_crashdump,
+> -	.help_msg	= "Crashdump",
+> -	.action_msg	= "Trigger a crashdump",
+> +	.handler	= sysrq_handle_crash,
+> +	.help_msg	= "Crash",
+> +	.action_msg	= "Trigger a crash",
+>  	.enable_mask	= SYSRQ_ENABLE_DUMP,
+>  };
+> -#else
+> -#define sysrq_crashdump_op (*(struct sysrq_key_op *)0)
+> -#endif
+>  
+>  static void sysrq_handle_reboot(int key, struct tty_struct *tty)
+>  {
