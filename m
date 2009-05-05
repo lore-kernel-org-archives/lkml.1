@@ -1,46 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932397AbZEEAac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932331AbZEEAbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932397AbZEEAac (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 20:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758365AbZEEAaM
+	id S932331AbZEEAbk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 20:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756326AbZEEAbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 20:30:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42270 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757254AbZEEAaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 20:30:10 -0400
-Message-ID: <49FF87F1.4090403@redhat.com>
-Date: Mon, 04 May 2009 20:27:29 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Mon, 4 May 2009 20:31:24 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:62304 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753299AbZEEAbW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 20:31:22 -0400
+X-IronPort-AV: E=Sophos;i="4.40,294,1238976000"; 
+   d="scan'208";a="298252917"
+Date: Mon, 4 May 2009 17:31:23 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Sergey Vlasov <vsu@altlinux.ru>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-usb@vger.kernel.org, greg@kroah.com, linux-scsi@vger.kernel.org,
+       netdev@vger.kernel.org, arjan@infradead.org
+Subject: Re: [PATCH 1/5] initdev:kernel: Asynchronously-discovered
+	devicesynchronization, v5
+Message-ID: <20090505003123.GD29124@cuplxvomd02.corp.sa.net>
+References: <20090502022551.GA15600@cuplxvomd02.corp.sa.net> <20090502133153.GA8116@atlas.home>
 MIME-Version: 1.0
-To: john stultz <johnstul@us.ibm.com>
-CC: lkml <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Clark Williams <williams@redhat.com>, linux@horizon.com,
-       Ulrich Windl <ulrich.windl@rz.uni-regensburg.de>
-Subject: Re: [RFC][PATCH] Adjust SHIFT_PLL to improve NTP convergence.
-References: <1241471016.7444.80.camel@localhost.localdomain>
-In-Reply-To: <1241471016.7444.80.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090502133153.GA8116@atlas.home>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-3; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-john stultz wrote:
-> With the v2.6.19 Linux kenrel, Roman converted the in-kernel NTP code to
-> the NTPv4 reference model. 
+On Sat, May 02, 2009 at 09:31:53AM -0400, Sergey Vlasov wrote:
+> On Fri, May 01, 2009 at 07:25:51PM -0700, David VomLehn wrote:
+> > supported on USB and SCII buses.
+>                        ^^^^ typo
 
-> I then modified the SHIFT_PLL value (which defines how stiff NTP's freq
-> correction is), setting it to 2, and created the second attached image
-> (2.6.30-pll2.png), comparing against the 2.6.18 numbers in the first
-> chart.
+Yes.
 
-> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> > +initdev_found(int initdev_mask)
+> > +	This function must be called each time a possible init device device
+> > +	is found.  It is passed a bit mask created by ORing any of the
+> > +	following flags that apply to the device found:
+> > +		BOOTDEV_CONSOLE_MASK
+> > +		BOOTDEV_NETDEV_MASK
+> > +		BOOTDEV_BLOCK_MASK
+> 
+> Should these also be renamed to INITDEV_* ?
 
-Acked-by: Rik van Riel <riel@redhat.com>
+Absolutely.
 
--- 
-All rights reversed.
+> > +initdev_type_found(int initdev_mask, enum initdev_type type)
+> > +	If the type of a init device could not be found, but was determined
+> > +	later, this function can be used to indicate the device type. It
+> > +	is passed the mask that was originally passed to initdev_found.
+> > +	Note that, if a device for which initdev_found is called is
+> > +	subsequently determine not to be a possible init device, this function
+> > +	should not be called. Instead, initdev_probe_done should be
+> > +	called.
+> 
+> This function is never used in your patches - maybe drop it for now
+> and introduce when a need for it arises?
+
+Agreed.
+
+> > diff --git a/drivers/base/initdev.c b/drivers/base/initdev.c
+> > new file mode 100644
+> > index 0000000..eaf53e3
+> > --- /dev/null
+> > +++ b/drivers/base/initdev.c
+...
+> > +__init int initdevs_init(void)
+> > +{
+> > +	int	i;
+> > +
+> > +	for (i = 0; i < ARRAY_SIZE(initdev_info); i++) {
+> > +		atomic_set(&initdev_info[i].pending, 0);
+> > +		init_waitqueue_head(&initdev_info[i].wq);
+> > +	}
+> > +
+> > +	return 0;
+> 
+> The return value is useless - it is never checked.
+
+Yes, it should be a void function.
+
+> > +#ifdef CONFIG_NETCONSOLE
+> > +static int initdev_add_netconsole(int initdev_mask)
+> > +{
+> > +	return (initdev_mask & BOOTDEV_NETDEV_MASK) ?
+> > +		initdev_mask | BOOTDEV_CONSOLE : initdev_mask;
+> 
+> This should be BOOTDEV_CONSOLE_MASK.
+
+Ouch. Good catch.
+> > +			if (atomic_dec_return(&initdev_info[i].pending) == 0)
+...
+> 
+> May be replaced by a more commonly used atomic function:
+> 
+> 			if (atomic_dec_and_test(&initdev_info[i].pending))
+
+Definitely better.
+...
+> What if type == BOOTDEV_NETDEV, and CONFIG_NETCONSOLE is defined?
+> In this case we must keep both BOOTDEV_NETDEV and BOOTDEV_CONSOLE
+> (otherwise the subsequent initdev_probe_done(BOOTDEV_NETDEV_MASK) will
+> mess up the pending counter for BOOTDEV_CONSOLE).
+> 
+> Or, as noted above, just drop this function if is it not actually
+> needed anywhere.
+
+The function is gone. If it gets resurrected, we'll just have to deal with it.
+
+> > +			if (atomic_dec_return(&initdev_info[i].pending) == 0)
+> 
+> 			if (atomic_dec_and_test(&initdev_info[i].pending))
+
+Yes.
+> > +void initdev_wait(enum initdev_type type, bool (*done)(void))
+> 
+> This function should probably be __init - there is no point to invoke
+> it outside of the boot-time initialization code.
+
+True.
+
+> Unfortunately, the rest of code and data in this file (which will be
+> useless after the boot-time initialization is complete) cannot be
+> discarded, which will cause typical complaints that the kernel gets
+> more and more bloated with each release.
+
+And I'll be one of the complainers. Still, the one sure way to stop kernel
+growth is to stop adding functionality and stop fixing bugs. I console
+myself wth the observation Michael Opdenacker made at this year's
+System Size BOF at this year's ELC: system size is growing at a slower rate
+than Moore's Law. So, even though the kernel grows each year, the memory it
+uses gets cheaper and cheaper.
+
+Thanks for your comments!
+
+David VomLehn
+
