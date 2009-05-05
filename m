@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758310AbZEEIYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbZEEIZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758310AbZEEIYK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 04:24:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbZEEIXx
+	id S1756587AbZEEIZz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 04:25:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbZEEIZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 04:23:53 -0400
-Received: from verein.lst.de ([213.95.11.210]:56315 "EHLO verein.lst.de"
+	Tue, 5 May 2009 04:25:46 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:40511 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752050AbZEEIXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 04:23:52 -0400
-Date: Tue, 5 May 2009 10:23:44 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: xfs-masters@oss.sgi.com,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [xfs-masters] fs/xfs/xfs_mount.c:1483: warning: array subscript is above array bounds
-Message-ID: <20090505082344.GA21212@lst.de>
-References: <Pine.LNX.4.64.0905051001260.4192@anakin>
+	id S1751686AbZEEIZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 04:25:45 -0400
+Date: Tue, 5 May 2009 10:25:45 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SLQB: Coding style cleanups
+Message-ID: <20090505082545.GE30220@wotan.suse.de>
+References: <Pine.LNX.4.64.0905031514330.32397@melkki.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0905051001260.4192@anakin>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+In-Reply-To: <Pine.LNX.4.64.0905031514330.32397@melkki.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 05, 2009 at 10:05:05AM +0200, Geert Uytterhoeven wrote:
+On Sun, May 03, 2009 at 03:15:10PM +0300, Pekka Enberg wrote:
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
 > 
-> http://kisskb.ellerman.id.au/kisskb/buildresult/407608/:
-> fs/xfs/xfs_mount.c:1483: warning: array subscript is above array bounds
-> 
-> xfs_mod_sb(xfs_trans_t *tp, __int64_t fields)
-> {
-> 	xfs_sb_field_t  f;
-> 
-> 	...
-> 	first = xfs_sb_info[f].offset;
-> 	...
-> }
-> 
-> xfs_sb_field_t is an enum with 47 values.
-> xfs_sb_info[] has at least 47 entries.
+> This patch cleans up SQLB to make the code checkpatch clean.
 
-That's the conclusion I came to.   I also see similar bogus warnings in
-a couple of other places in a full kernel build (not in xfs).
+Thanks!
+
+> 
+> Cc: Nick Piggin <npiggin@suse.de>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> ---
+>  mm/slqb.c |   21 ++++++++++++---------
+>  1 files changed, 12 insertions(+), 9 deletions(-)
+> 
+> diff --git a/mm/slqb.c b/mm/slqb.c
+> index f538f2c..44a91c0 100644
+> --- a/mm/slqb.c
+> +++ b/mm/slqb.c
+> @@ -59,7 +59,7 @@ static inline void struct_slqb_page_wrong_size(void)
+>  /*
+>   * slqb_min_order: minimum allocation order for slabs
+>   */
+> -static int slqb_min_order = 0;
+> +static int slqb_min_order;
+
+I actually like explicit zero initializers. I think it has been
+a long time since this actually saved any memory with gcc.
+
+Yes yes, I know that anybody who can "read C" will read the
+implicit zero initializer anyway... however I just think it is
+a stupid thing for checkpatch to warn against.
 
