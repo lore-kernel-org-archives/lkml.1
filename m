@@ -1,94 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757722AbZEEVqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbZEEVyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757722AbZEEVqx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 17:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756486AbZEEVqQ
+	id S1758913AbZEEVyQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 17:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZEEVx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 17:46:16 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51907 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753559AbZEEVqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 17:46:14 -0400
-Message-Id: <20090505214433.946117208@suse.de>
-User-Agent: quilt/0.47-14.10
-Date: Tue, 05 May 2009 23:32:04 +0200
-From: jblunck@suse.de
-To: Arnd Bergmann <arndb@de.ibm.com>
-Cc: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Subject: [patch 1/2] spufs: make dentry reference count and locking symmetric
-References: <20090505213203.797397821@suse.de>
-Content-Disposition: inline; filename=spufs-make-dput-and-locking-symmetric.diff
+	Tue, 5 May 2009 17:53:59 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:41039 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753382AbZEEVx7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 17:53:59 -0400
+Subject: Re: [PATCH 00/16] DRBD: a block device for HA clusters
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: david@lang.hm, Willy Tarreau <w@1wt.eu>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
+       Neil Brown <neilb@suse.de>, Sam Ravnborg <sam@ravnborg.org>,
+       Dave Jones <davej@redhat.com>, Nikanth Karthikesan <knikanth@suse.de>,
+       Lars Marowsky-Bree <lmb@suse.de>, Kyle Moffett <kyle@moffetthome.net>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>
+In-Reply-To: <200905052345.20515.philipp.reisner@linbit.com>
+References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com>
+	 <200905051756.29703.philipp.reisner@linbit.com>
+	 <1241543146.3312.57.camel@mulgrave.int.hansenpartnership.com>
+	 <200905052345.20515.philipp.reisner@linbit.com>
+Content-Type: text/plain
+Date: Tue, 05 May 2009 21:53:57 +0000
+Message-Id: <1241560437.3312.159.camel@mulgrave.int.hansenpartnership.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch moves the dput() and the parent inode locking to the same function.
+On Tue, 2009-05-05 at 23:45 +0200, Philipp Reisner wrote:
+> > I also think you're not quite looking at the important case: if you
+> > think about it, the real necessity for the ordered domain is the
+> > network, not so much the actual secondary server.  The reason is that
+> > it's very hard to find a failure case where the write order on the
+> > secondary from the network tap to disk actually matters (as long as the
+> > flight into the network tap was in order).  The standard failure is of
+> > the primary, not the secondary, so the network stream stops and so does
+> > the secondary writing: as long as we guarantee to stop at a consistent
+> > point in flight, everything works.  If the secondary fails while the
+> > primary is still up, that's just a standard replay to bring the
+> > secondary back into replication, so the issue doesn't arise there
+> > either.
+> 
+> A common power failure is possible. We aim for an HA system, we can
+> not ignore a possible failure scenario. No user will buy: Well in most
+> scenarios we do it correctly, in the unlikely case of a common power
+> failure, and you loose your former primary at the same time, you might
+> have a secondary with the last write but not that one write before!
+> 
+> Correctness before efficiency!
 
-Signed-off-by: Jan Blunck <jblunck@suse.de>
----
- arch/powerpc/platforms/cell/spufs/inode.c |   14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+Well, you have to agree that during a resync from the activity log,
+which plays up the primary disk from one end to another, the secondary
+is completely corrupt if a primary failure occurs before the resync
+completes.  That's something that's triggered by a network outage, and
+so is a far more common event than cascading dual failures.  It's all
+really a question of where you focus your effort to eliminate the corner
+cases.
 
-Index: b/arch/powerpc/platforms/cell/spufs/inode.c
-===================================================================
---- a/arch/powerpc/platforms/cell/spufs/inode.c
-+++ b/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -450,16 +450,16 @@ spufs_create_context(struct inode *inode
- 	ret = -EPERM;
- 	if ((flags & SPU_CREATE_NOSCHED) &&
- 	    !capable(CAP_SYS_NICE))
--		goto out_unlock;
-+		goto out;
- 
- 	ret = -EINVAL;
- 	if ((flags & (SPU_CREATE_NOSCHED | SPU_CREATE_ISOLATE))
- 	    == SPU_CREATE_ISOLATE)
--		goto out_unlock;
-+		goto out;
- 
- 	ret = -ENODEV;
- 	if ((flags & SPU_CREATE_ISOLATE) && !isolated_loader)
--		goto out_unlock;
-+		goto out;
- 
- 	gang = NULL;
- 	neighbor = NULL;
-@@ -468,7 +468,7 @@ spufs_create_context(struct inode *inode
- 		gang = SPUFS_I(inode)->i_gang;
- 		ret = -EINVAL;
- 		if (!gang)
--			goto out_unlock;
-+			goto out;
- 		mutex_lock(&gang->aff_mutex);
- 		neighbor = spufs_assert_affinity(flags, gang, aff_filp);
- 		if (IS_ERR(neighbor)) {
-@@ -505,10 +505,7 @@ spufs_create_context(struct inode *inode
- out_aff_unlock:
- 	if (affinity)
- 		mutex_unlock(&gang->aff_mutex);
--out_unlock:
--	mutex_unlock(&inode->i_mutex);
- out:
--	dput(dentry);
- 	return ret;
- }
- 
-@@ -595,8 +592,6 @@ static int spufs_create_gang(struct inod
- 	}
- 
- out:
--	mutex_unlock(&inode->i_mutex);
--	dput(dentry);
- 	return ret;
- }
- 
-@@ -645,7 +640,6 @@ long spufs_create(struct nameidata *nd,
- 					    filp);
- 	if (ret >= 0)
- 		fsnotify_mkdir(nd->path.dentry->d_inode, dentry);
--	return ret;
- 
- out_dput:
- 	dput(dentry);
+> But I will now stop this discussion now. Proving that DRBD does some
+> details better than the md/nbd approch gets pointless, when we agreed
+> that DRBD can get merged as a driver. We will focus on the necessary
+> code cleanups.
+
+I agree.  Also HA is full of corner cases like this and opinion is
+endlessly divided over which corner cases are more important than which
+others.
+
+James
 
 
