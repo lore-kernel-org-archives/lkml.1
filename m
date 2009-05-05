@@ -1,86 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbZEER5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756459AbZEER6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754683AbZEER5M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 13:57:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbZEER4z
+	id S1756459AbZEER6A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 13:58:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbZEER5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 13:56:55 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:33375 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751623AbZEER4y (ORCPT
+	Tue, 5 May 2009 13:57:50 -0400
+Received: from outbound-mail-141.bluehost.com ([67.222.38.31]:54851 "HELO
+	outbound-mail-141.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753151AbZEER5t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 13:56:54 -0400
-Message-ID: <4A007DDA.5000302@novell.com>
-Date: Tue, 05 May 2009 13:56:42 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: kvm@vger.kernel.org, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
-       davidel@xmailserver.org
-Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via	eventfd-notification
- interface
-References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net> <4A005F05.30409@redhat.com>
-In-Reply-To: <4A005F05.30409@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig8406AA151DE63FDE9D82D1B2"
+	Tue, 5 May 2009 13:57:49 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=BC9N3/QxNo+A7Qd07XxDMjfkHy/Mm9rjKFQMs5TPAWO59UKZi/0b0lOnrC717XHeHU5dTss/N8zUoZQC/41GzbXbsrdUKRQ8A/pV2Zs6jef+TzprBfWLKwz5ePrVLOLl;
+Date: Tue, 5 May 2009 10:57:44 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ed Swierk <eswierk@aristanetworks.com>
+Cc: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org, lenb@kernel.org,
+       linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [RFC] [PATCH] PCI mmconfig without ACPI
+Message-ID: <20090505105744.4268e341@hobbes>
+In-Reply-To: <1234812741.28801.4.camel@localhost.localdomain>
+References: <1233766786.16414.26.camel@localhost.localdomain>
+	<20090204181738.GA16174@elte.hu>
+	<1234812741.28801.4.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig8406AA151DE63FDE9D82D1B2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Mon, 16 Feb 2009 11:32:21 -0800
+Ed Swierk <eswierk@aristanetworks.com> wrote:
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->
->> +int
->> +kvm_irqfd(struct kvm *kvm, int gsi, int flags)
->> +{
->> +    struct _irqfd *irqfd;
->> +    struct file *file =3D NULL;
->> +    int fd =3D -1;
->> +    int ret;
->> +
->> +    irqfd =3D kzalloc(sizeof(*irqfd), GFP_KERNEL);
->> +    if (!irqfd)
->> +        return -ENOMEM;
->> +
->> +    irqfd->kvm =3D kvm;
->>  =20
->
-> You need to increase the refcount on struct kvm here.  Otherwise evil
-> userspace will create an irqfd, close the vm and vcpu fds, and inject
-> an interrupt.
+> Here's another attempt at decoupling the setup of memory-mapped PCI
+> configuration space from ACPI.  I implemented your suggestions for
+> moving the ACPI-specific code to a separate file.  I left the
+> definition of struct acpi_mcfg_allocation alone, and created a new
+> struct pci_mcfg_allocation.  The former is now used only for parsing
+> the actual ACPI MCFG table, while the latter is used to store
+> information about mmcfg regions regardless of where they came from.
+> 
+> (This is still an RFC; the code is pretty much untested.)
+> 
 
-I just reviewed the code in prep for v5, and now I remember why I didnt
-take a reference:  I designed it the opposite direction:  the vm-fd owns
-a reference to the irqfd, and will decouple the kvm context from the
-eventfd on shutdown  (see kvm_irqfd_release()).   I still need to spin a
-v5 regardless in order to add the padding as previously discussed.  But
-let me know if you still see any holes in light of this alternate object
-lifetime approach I am using.
+I'm still a bit dubious about this; does it solve a real issue?  Or
+just remove the ACPI dependency for its own sake?
 
--Greg
-
-
-
---------------enig8406AA151DE63FDE9D82D1B2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkoAfdoACgkQlOSOBdgZUxkVZACeLHaDzq4IHpj9NF2YcLEByErG
-hxMAoIyCIdUcV4sRdKbdQ2pJFIBtIOrk
-=DAz8
------END PGP SIGNATURE-----
-
---------------enig8406AA151DE63FDE9D82D1B2--
+-- 
+Jesse Barnes, Intel Open Source Technology Center
