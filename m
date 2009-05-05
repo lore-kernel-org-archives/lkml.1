@@ -1,124 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758879AbZEEV2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbZEEV3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758879AbZEEV2t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 17:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757722AbZEEV2J
+	id S1758909AbZEEV3r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 17:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756948AbZEEV3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 17:28:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55319 "EHLO mx2.redhat.com"
+	Tue, 5 May 2009 17:29:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55339 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756297AbZEEV2H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 17:28:07 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 3/3] NOMMU: Make the initial mmap allocation excess behaviour
-	Kconfig configurable
-To: torvalds@osdl.org, akpm@linux-foundation.org, npiggin@suse.de
-Cc: gerg@snapgear.com, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>
-Date: Tue, 05 May 2009 22:26:48 +0100
-Message-ID: <20090505212648.17034.18375.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090505212638.17034.10989.stgit@warthog.procyon.org.uk>
-References: <20090505212638.17034.10989.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	id S1756330AbZEEV3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 17:29:36 -0400
+Date: Tue, 5 May 2009 17:28:56 -0400
+From: Rik van Riel <riel@redhat.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: linux-mm@kvack.org, mingo@redhat.com, akpm@linux-foundation.org
+Subject: [PATCH] x86: 46 bit PAE support
+Message-ID: <20090505172856.6820db22@cuia.bos.redhat.com>
+Organization: Red Hat, Inc
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NOMMU mmap() has an option controlled by a sysctl variable that determines
-whether the allocations made by do_mmap_private() should have the excess space
-trimmed off and returned to the allocator.  Make the initial setting of this
-variable a Kconfig configuration option.
+Extend the maximum addressable memory on x86-64 from 2^44 to
+2^46 bytes. This requires some shuffling around of the vmalloc
+and virtual memmap memory areas, to keep them away from the
+direct mapping of up to 64TB of physical memory.
 
-The reason there can be excess space is that the allocator only allocates in
-power-of-2 size chunks, but mmap()'s can be made in sizes that aren't a power
-of 2.
+This patch also introduces a guard hole between the vmalloc
+area and the virtual memory map space.  There's really no
+good reason why we wouldn't have a guard hole there.
 
-There are two alternatives:
+Signed-off-by: Rik van Riel <riel@redhat.com>
 
- (1) Keep the excess as dead space.  The dead space then remains unused for the
-     lifetime of the mapping.  Mappings of shared objects such as libc, ld.so
-     or busybox's text segment may retain their dead space forever.
-
- (2) Return the excess to the allocator.  This means that the dead space is
-     limited to less than a page per mapping, but it means that for a transient
-     process, there's more chance of fragmentation as the excess space may be
-     reused fairly quickly.
-
-During the boot process, a lot of transient processes are created, and this can
-cause a lot of fragmentation as the pagecache and various slabs grow greatly
-during this time.
-
-By turning off the trimming of excess space during boot and disabling batching
-of frees, Coldfire can manage to boot.
-
-A better way of doing things might be to have /sbin/init turn this option off.
-By that point libc, ld.so and init - which are all long-duration processes -
-have all been loaded and trimmed.
-
-Reported-by: Lanttor Guo <lanttor.guo@freescale.com>
-Signed-off-by: David Howells <dhowells@redhat.com>
-Tested-by: Lanttor Guo <lanttor.guo@freescale.com>
 ---
+Testing: booted it on an x86-64 system with 6GB RAM.  Did you really think
+I had access to a system with 64TB of RAM? :)
 
- mm/Kconfig |   28 ++++++++++++++++++++++++++++
- mm/nommu.c |    2 +-
- 2 files changed, 29 insertions(+), 1 deletions(-)
-
-
-diff --git a/mm/Kconfig b/mm/Kconfig
-index 57971d2..c2b57d8 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -225,3 +225,31 @@ config HAVE_MLOCKED_PAGE_BIT
+diff --git a/Documentation/x86/x86_64/mm.txt b/Documentation/x86/x86_64/mm.txt
+index 29b52b1..5394132 100644
+--- a/Documentation/x86/x86_64/mm.txt
++++ b/Documentation/x86/x86_64/mm.txt
+@@ -6,10 +6,11 @@ Virtual memory map with 4 level page tables:
+ 0000000000000000 - 00007fffffffffff (=47 bits) user space, different per mm
+ hole caused by [48:63] sign extension
+ ffff800000000000 - ffff80ffffffffff (=40 bits) guard hole
+-ffff880000000000 - ffffc0ffffffffff (=57 TB) direct mapping of all phys. memory
+-ffffc10000000000 - ffffc1ffffffffff (=40 bits) hole
+-ffffc20000000000 - ffffe1ffffffffff (=45 bits) vmalloc/ioremap space
+-ffffe20000000000 - ffffe2ffffffffff (=40 bits) virtual memory map (1TB)
++ffff880000000000 - ffffc8ffffffffff (=64 TB) direct mapping of all phys. memory
++ffffc80000000000 - ffffc8ffffffffff (=40 bits) hole
++ffffc90000000000 - ffffe8ffffffffff (=45 bits) vmalloc/ioremap space
++ffffe90000000000 - ffffe9ffffffffff (=40 bits) hole
++ffffea0000000000 - ffffeaffffffffff (=40 bits) virtual memory map (1TB)
+ ... unused hole ...
+ ffffffff80000000 - ffffffffa0000000 (=512 MB)  kernel text mapping, from phys 0
+ ffffffffa0000000 - fffffffffff00000 (=1536 MB) module mapping space
+diff --git a/arch/x86/include/asm/page_64_types.h b/arch/x86/include/asm/page_64_types.h
+index d38c91b..786306c 100644
+--- a/arch/x86/include/asm/page_64_types.h
++++ b/arch/x86/include/asm/page_64_types.h
+@@ -47,7 +47,7 @@
+ #define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
+ #define __START_KERNEL_map	_AC(0xffffffff80000000, UL)
  
- config MMU_NOTIFIER
- 	bool
-+
-+config NOMMU_INITIAL_TRIM_EXCESS
-+	int "Turn on mmap() excess space trimming before booting"
-+	depends on !MMU
-+	default 1
-+	help
-+	  The NOMMU mmap() frequently needs to allocate large contiguous chunks
-+	  of memory on which to store mappings, but it can only ask the system
-+	  allocator for chunks in 2^N*PAGE_SIZE amounts - which is frequently
-+	  more than it requires.  To deal with this, mmap() is able to trim off
-+	  the excess and return it to the allocator.
-+
-+	  If trimming is enabled, the excess is trimmed off and returned to the
-+	  system allocator, which can cause extra fragmentation, particularly
-+	  if there are a lot of transient processes.
-+
-+	  If trimming is disabled, the excess is kept, but not used, which for
-+	  long-term mappings means that the space is wasted.
-+
-+	  Trimming can be dynamically controlled through a sysctl option
-+	  (/proc/sys/vm/nr_trim_pages) which specifies the minimum number of
-+	  excess pages there must be before trimming should occur, or zero if
-+	  no trimming is to occur.
-+
-+	  This option specifies the initial value of this option.  The default
-+	  of 1 says that all excess pages should be trimmed.
-+
-+	  See Documentation/nommu-mmap.txt for more information.
-diff --git a/mm/nommu.c b/mm/nommu.c
-index 41dc127..cdc6f60 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -66,7 +66,7 @@ struct percpu_counter vm_committed_as;
- int sysctl_overcommit_memory = OVERCOMMIT_GUESS; /* heuristic overcommit */
- int sysctl_overcommit_ratio = 50; /* default is 50% */
- int sysctl_max_map_count = DEFAULT_MAX_MAP_COUNT;
--int sysctl_nr_trim_pages = 1; /* page trimming behaviour */
-+int sysctl_nr_trim_pages = CONFIG_NOMMU_INITIAL_TRIM_EXCESS;
- int heap_stack_gap = 0;
+-/* See Documentation/x86_64/mm.txt for a description of the memory map. */
++/* See Documentation/x86/x86_64/mm.txt for a description of the memory map. */
+ #define __PHYSICAL_MASK_SHIFT	46
+ #define __VIRTUAL_MASK_SHIFT	48
  
- atomic_long_t mmap_pages_allocated;
-
+diff --git a/arch/x86/include/asm/pgtable_64_types.h b/arch/x86/include/asm/pgtable_64_types.h
+index fbf42b8..766ea16 100644
+--- a/arch/x86/include/asm/pgtable_64_types.h
++++ b/arch/x86/include/asm/pgtable_64_types.h
+@@ -51,11 +51,11 @@ typedef struct { pteval_t pte; } pte_t;
+ #define PGDIR_SIZE	(_AC(1, UL) << PGDIR_SHIFT)
+ #define PGDIR_MASK	(~(PGDIR_SIZE - 1))
+ 
+-
++/* See Documentation/x86/x86_64/mm.txt for a description of the memory map. */
+ #define MAXMEM		 _AC(__AC(1, UL) << MAX_PHYSMEM_BITS, UL)
+-#define VMALLOC_START    _AC(0xffffc20000000000, UL)
+-#define VMALLOC_END      _AC(0xffffe1ffffffffff, UL)
+-#define VMEMMAP_START	 _AC(0xffffe20000000000, UL)
++#define VMALLOC_START    _AC(0xffffc90000000000, UL)
++#define VMALLOC_END      _AC(0xffffe8ffffffffff, UL)
++#define VMEMMAP_START	 _AC(0xffffea0000000000, UL)
+ #define MODULES_VADDR    _AC(0xffffffffa0000000, UL)
+ #define MODULES_END      _AC(0xffffffffff000000, UL)
+ #define MODULES_LEN   (MODULES_END - MODULES_VADDR)
+diff --git a/arch/x86/include/asm/sparsemem.h b/arch/x86/include/asm/sparsemem.h
+index e3cc3c0..4517d6b 100644
+--- a/arch/x86/include/asm/sparsemem.h
++++ b/arch/x86/include/asm/sparsemem.h
+@@ -27,7 +27,7 @@
+ #else /* CONFIG_X86_32 */
+ # define SECTION_SIZE_BITS	27 /* matt - 128 is convenient right now */
+ # define MAX_PHYSADDR_BITS	44
+-# define MAX_PHYSMEM_BITS	44 /* Can be max 45 bits */
++# define MAX_PHYSMEM_BITS	46
+ #endif
+ 
+ #endif /* CONFIG_SPARSEMEM */
