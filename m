@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757736AbZEELCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbZEELIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757736AbZEELCf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 07:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755026AbZEELC1
+	id S1756272AbZEELIT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 07:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbZEELIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 07:02:27 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43877 "HELO mail.gmx.net"
+	Tue, 5 May 2009 07:08:09 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35303 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754106AbZEELC0 convert rfc822-to-8bit (ORCPT
+	id S1754403AbZEELIG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 07:02:26 -0400
+	Tue, 5 May 2009 07:08:06 -0400
 X-Authenticated: #54312696
-X-Provags-ID: V01U2FsdGVkX19zVF0RVDhzmCpxLwq2KPVDKAxhGJPU/9zgUu7EQ8
-	LEg3+JrL7h/rLF
-Date: Tue, 05 May 2009 13:02:25 +0200 (CEST)
-Message-Id: <20090505.130225.42780711.wl@gnu.org>
+X-Provags-ID: V01U2FsdGVkX1/vt7djbZXvv/l8n6kgBDjVRcyYY+qywHXM7kwdtm
+	jTYwPI9xc6Sfhb
+Date: Tue, 05 May 2009 13:08:07 +0200 (CEST)
+Message-Id: <20090505.130807.121297262.wl@gnu.org>
 To: airlied@gmail.com
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, opensuse-kernel@opensuse.org
 Subject: Re: some kernel issues
 From: Werner LEMBERG <wl@gnu.org>
 In-Reply-To: <21d7e9970905050344x2a92f9c6l8569b68bff905370@mail.gmail.com>
@@ -28,14 +28,10 @@ Mime-Version: 1.0
 Content-Type: Text/Plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8BIT
 X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-From: Dave Airlie <airlied@gmail.com>
-Subject: Re: some kernel issues
-Date: Tue, 5 May 2009 20:44:18 +1000
 
 >> With my 945GM intel graphics card, I don't get TTYs which I could
 >> switch to with Ctrl-Alt-Shift-F1, for example, after X has started.
@@ -47,7 +43,7 @@ Date: Tue, 5 May 2009 20:44:18 +1000
 > 
 > CONFIG_DRM_I915_KMS
 
-Uuuuh, completely undocumented.  Thanks!  Will check soon.
+It's not set.  BTW, CONFIG_DRM_I915 is set to `m'.
 
 
     Werner
