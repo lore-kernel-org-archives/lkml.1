@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761392AbZEFPSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760129AbZEFPYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761392AbZEFPSi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 11:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760387AbZEFPSJ
+	id S1760129AbZEFPYa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 11:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbZEFPYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 11:18:09 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:35093 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1759451AbZEFPSI (ORCPT
+	Wed, 6 May 2009 11:24:21 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47025 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752981AbZEFPYU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 11:18:08 -0400
-Date: Wed, 6 May 2009 11:18:07 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jason Wessel <jason.wessel@windriver.com>
-cc: greg@kroah.com, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/5] usb_debug: EXPERIMENTAL - poll hcd device to force
- writes
-In-Reply-To: <1241575205-12199-6-git-send-email-jason.wessel@windriver.com>
-Message-ID: <Pine.LNX.4.44L0.0905061058230.3227-100000@iolanthe.rowland.org>
+	Wed, 6 May 2009 11:24:20 -0400
+Date: Tue, 5 May 2009 21:49:02 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Bank screen after resume on Dell XPS M1330
+Message-ID: <20090505194902.GC1379@ucw.cz>
+References: <200905031111.50789.arvidjaar@mail.ru> <200905031543.28977.arvidjaar@mail.ru> <20090503115603.GA18880@srcf.ucam.org> <200905040627.36297.arvidjaar@mail.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905040627.36297.arvidjaar@mail.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 May 2009, Jason Wessel wrote:
-
-> The problem that this patch tries to solve is that data is lost
-> because there are too many outstanding transmit urb's.
+On Mon 2009-05-04 06:27:35, Andrey Borzenkov wrote:
+> On Sunday 03 of May 2009 15:56:03 Matthew Garrett wrote:
+> > On Sun, May 03, 2009 at 03:43:28PM +0400, Andrey Borzenkov wrote:
+> > > On Sunday 03 of May 2009 14:59:32 Matthew Garrett wrote:
+> > > > On Sun, May 03, 2009 at 11:11:47AM +0400, Andrey Borzenkov wrote:
+> > > > > 01:00.0 VGA compatible controller: nVidia Corporation GeForce
+> > > > > 8400M GS (rev a1)
+> > > >
+> > > > We don't know how to reinitialise nvidia graphics hardware.
+> > >
+> > > Just in case - same issue also after resume from hibernation. I was
+> > > under impression, that hibernation does not have these issues as
+> > > card goes via normal POST routine.
+> >
+> > Hm. That sounds a bit weirder.
+> >
 > 
-> The question is what is the right way to force the controller to catch
-> up, and ideally let the kernel do some other things in the mean time?
+> Is it worth further debugging? Anything I can provide?
 
-What do standard serial port drivers do?
 
-> This patch takes the route of forcibly polling the hcd device to drain
-> the urb queue and initiate the bulk write call backs.
-> 
-> NOTE this patch is not signed off, it is a question of what is the
-> right way to do this?
+Try it with minimum config, init=/bin/bash? Switch to plain vga
+console?
+								Pavel
 
-This patch is highly questionable.
-
-Is the idea to force the HCD to search for completed URBs before the
-host controller has issued a completion interrupt?  Wouldn't it be
-better instead to use more URBs?
-
-Besides, why should there be too many outstanding transmit URBs?  A
-normal serial debugging port running at 115200 baud can transmit no
-more than 12 bytes per ms.  You should be able to surpass that using
-only three URBs!  In fact, if you buffer up to 8 bytes per URB then
-with only two URBs you could send 64 bytes per ms, which is equivalent
-to 640000 baud.  Do you really need to go more than (say) ten times
-faster than that?
-
-Even if people do agree this is a reasonable thing to do (which I
-doubt), the poll_hcd_irq() code doesn't belong hidden away in
-serial/usb_debug.c.  It belongs in core/hcd.c.
-
-Alan Stern
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
