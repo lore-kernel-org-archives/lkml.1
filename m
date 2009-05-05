@@ -1,66 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbZEEVJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757245AbZEEVUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758683AbZEEVJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 17:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbZEEVJt
+	id S1757245AbZEEVUc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 17:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbZEEVUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 17:09:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42242 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751438AbZEEVJs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 17:09:48 -0400
-Date: Tue, 5 May 2009 14:05:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: magnus.damm@gmail.com, linux-media@vger.kernel.org, hverkuil@xs4all.nl,
-       lethal@linux-sh.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/3] mm: introduce follow_pte()
-Message-Id: <20090505140517.bef78dd3.akpm@linux-foundation.org>
-In-Reply-To: <20090505203807.GB2428@cmpxchg.org>
-References: <20090501181449.GA8912@cmpxchg.org>
-	<1241430874-12667-1-git-send-email-hannes@cmpxchg.org>
-	<20090505122442.6271c7da.akpm@linux-foundation.org>
-	<20090505203807.GB2428@cmpxchg.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 May 2009 17:20:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36251 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751808AbZEEVUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 17:20:22 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090502163423.GA1633@linux.vnet.ibm.com>
+References: <20090502163423.GA1633@linux.vnet.ibm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, niv@us.ibm.com, dvhltc@us.ibm.com,
+       lethal@linux-sh.org, kernel@wantstofly.org, matthew@wil.cx
+Subject: Re: [PATCH] v4 RCU: the bloatwatch edition
+Date: Tue, 05 May 2009 22:18:47 +0100
+Message-ID: <12234.1241558327@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 May 2009 22:38:07 +0200
-Johannes Weiner <hannes@cmpxchg.org> wrote:
+Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-> On Tue, May 05, 2009 at 12:24:42PM -0700, Andrew Morton wrote:
-> > On Mon,  4 May 2009 11:54:32 +0200
-> > Johannes Weiner <hannes@cmpxchg.org> wrote:
-> > 
-> > > A generic readonly page table lookup helper to map an address space
-> > > and an address from it to a pte.
-> > 
-> > umm, OK.
-> > 
-> > Is there actually some point to these three patches?  If so, what is it?
-> 
-> Magnus needs to check for physical contiguity of a VMAs backing pages
-> to support zero-copy exportation of video data to userspace.
-> 
-> This series implements follow_pfn() so he can walk the VMA backing
-> pages and ensure their PFNs are in linear order.
-> 
-> [ This patch can be collapsed with 2/3, I just thought it would be
->   easier to read the diffs when having them separate. ]
-> 
-> 1/3 and 2/3: factor out the page table walk from follow_phys() into
-> follow_pte().
-> 
-> 3/3: implement follow_pfn() on top of follow_pte().
+> This patch is a version of RCU designed for (!SMP && EMBEDDED)
+> provided as a proof of concept of a small-footprint RCU implementation.
+> In particular, the implementation of synchronize_rcu() is extremely
+> lightweight and high performance.  It passes rcutorture testing in each
+> of the four relevant configurations (combinations of NO_HZ and PREEMPT)
+> on x86.  This saves about 900 bytes compared to Classic RCU, and a
+> couple kilobytes compared to Hierarchical RCU (updated to 2.6.29):
+> ...
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-So we could bundle these patches with Magnus's patchset, or we could
-consider these three patches as a cleanup or something.
-
-Given that 3/3 introduces an unused function, I'm inclined to sit tight
-and await Magnus's work.
-
+Acked-by: David Howells <dhowells@redhat.com>
