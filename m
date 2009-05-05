@@ -1,52 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbZEEEGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261AbZEEEZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755038AbZEEEGW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 00:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbZEEEGM
+	id S1753261AbZEEEZF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 00:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbZEEEYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 00:06:12 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:64313 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750941AbZEEEGL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 00:06:11 -0400
-Date: Mon, 4 May 2009 21:05:41 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Lars Marowsky-Bree <lmb@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Philipp Reisner <philipp.reisner@linbit.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>
-Subject: Re: [PATCH 00/16] DRBD: a block device for HA clusters
-In-Reply-To: <20090501111554.GW12180@suse.de>
-Message-ID: <alpine.DEB.2.01.0905042103010.6162@bogon.housecafe.de>
-References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com> <20090501015902.ed8b56d3.akpm@linux-foundation.org> <20090501111554.GW12180@suse.de>
-User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
+	Tue, 5 May 2009 00:24:31 -0400
+Received: from ozlabs.org ([203.10.76.45]:53977 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751440AbZEEEY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 00:24:28 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] virtio: add missing include to virtio_net.h
+Date: Tue, 5 May 2009 13:54:22 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <20090428154654.19053.92829.stgit@localhost.localdomain>
+In-Reply-To: <20090428154654.19053.92829.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX18JEqh3fWD81IsyjpIt0mC/bP1k1jMcy1EmG8a
- 4bFE9QgYCcyiYBEYD6MiA8Qpfo1fer8QsX5jOhiLWrSijUA1t3
- zkde/flaSLkdm+98fW0yQ==
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905051354.22713.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 May 2009, Lars Marowsky-Bree wrote:
-> It is used by many customers (thousands world-wide, I'm sure) to
-> replicate block device data locally (to replace more expensive SANs
-> while achieving higher availablity) or async/remotely (for disaster
-> recovery).
+On Wed, 29 Apr 2009 01:16:54 am Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+> virtio_net.h uses the macro ETH_ALEN which is defined in linux/if_ether.h.
+> Discovered when hacking on virtio-over-pci patches.
 
-While covering Linux-HA success stories really, most of them are using 
-DRBD as well: http://moin.linux-ha.org/lha/SuccessStories
+Thanks, I've applied this.
 
-C.
--- 
-Bruce Schneier does not sleep. He prempts everything.
+Rusty.
