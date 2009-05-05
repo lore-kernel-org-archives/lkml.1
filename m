@@ -1,152 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbZEEDOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbZEEDPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbZEEDOT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 23:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbZEEDOJ
+	id S1755192AbZEEDPU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 23:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbZEEDPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 23:14:09 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:40695 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752962AbZEEDOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 23:14:06 -0400
-Subject: [PATCH] Sanity check sysfs clocksource changes
-From: john stultz <johnstul@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090501131006.fa631417.akpm@linux-foundation.org>
-References: <1239759163.6064.25.camel@localhost>
-	 <1239759251.6064.27.camel@localhost> <1239759393.6064.30.camel@localhost>
-	 <20090501131006.fa631417.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 04 May 2009 20:10:35 -0700
-Message-Id: <1241493035.7444.115.camel@localhost.localdomain>
+	Mon, 4 May 2009 23:15:06 -0400
+Received: from mga10.intel.com ([192.55.52.92]:11002 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751570AbZEEDPF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 23:15:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,294,1239001200"; 
+   d="scan'208";a="454118894"
+Subject: [PATCH] Fix early panic issue on machines with memless node
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Jack Steiner <steiner@sgi.com>, David Rientjes <rientjes@google.com>
+Cc: alex.shi@intel.com, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 05 May 2009 11:15:26 +0800
+Message-Id: <1241493327.27664.17.camel@ymzhang>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-01 at 13:10 -0700, Andrew Morton wrote:
-> What's the status of
-> clocksource-sanity-check-sysfs-clocksource-changes.patch, btw?  I have
-> it marked as "still an RFC", but it's been sitting here since January?
+Kernel 2.6.30-rc4 panic with boot parameter mem=2G on Nehalem machine.
+The machines has 2 nodes and every node has about 3G memory.
 
-Thanks for reminding me! I lost track of that one. Still waiting on
-feedback from Thomas.
+Alex Shi did a good bisect and located the bad patch.
 
-Thomas? What do you think? Original patch below, applies with fuzz and
-builds.
+commit dc098551918093901d8ac8936e9d1a1b891b56ed
+Author: Jack Steiner <steiner@sgi.com>
+Date:   Fri Apr 17 09:22:42 2009 -0500
 
--john
-
-
-Hey all,
-	Thomas, Andrew and Ingo pointed out that we don't have any safety
-checks in the clocksource sysfs entries to make sure sysadmins don't try
-to change the clocksource to a non high-res timer capable clocksource
-(such as jiffies) when high-res timers (HRT) is enabled. Doing so will
-likely hang a system.
-
-This patch tries to correct this by filtering non HRT clocksources from
-available_clocksources and not accepting non HRT clocksources with HRT
-is is enabled.
-
-This has been lightly tested, and seems to work, but there may be some
-drawbacks.
-
-One issue I realized was that when TSCs disqualified, they are marked as
-not CLOCK_SOURCE_VALID_FOR_HRES. This means on boxes with unsycned TSCs,
-the only available clocksource may be the slower acpi_pm and the user
-will not be able to override it with the TSC as is currently possible.
-(even if that seems ill-advised).
-
-So Thomas, what do you think? Should we just use
-CLOCK_SOURCE_IS_CONTINUOUS flag or is CLOCK_SOURCE_VALID_FOR_HRES really
-what we want?
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
+    x86/uv: fix init of memory-less nodes
+    
+    Add support for nodes that have cpus but no memory.
+    The current code was failing to add these nodes
+    to the nodes_present_map.
+    
+    v2: Fixes case caught by David Rientjes - missed support
+        for the x2apic SRAT table.
+    
+    [ Impact: fix potential boot crash on memory-less UV nodes. ]
+    
+    Reported-by: David Rientjes <rientjes@google.com>
+    Signed-off-by: Jack Steiner <steiner@sgi.com>
+    LKML-Reference: <20090417142242.GA23743@sgi.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-index bd37078..05f67f0 100644
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -305,7 +305,7 @@ static inline int hrtimer_is_hres_active(struct hrtimer *timer)
+
+With earlyprintk boot parameter, we captured below dump info.
+
+<6>bootmem::alloc_bootmem_core nid=0 size=0 [0 pages] align=1000 goal=1000000 lim0
+PANIC: early exception 06 rip 10:ffffffff80a2fbe4 error 0 cr2 0
+Pid: 0, comm: swapper Not tainted 2.6.30-rc4-ymz #3
+Call Trace:                                        
+ [<ffffffff80a1a195>] ? early_idt_handler+0x55/0x68  
+ [<ffffffff80a2fbe4>] ? alloc_bootmem_core+0x91/0x2ae
+ [<ffffffff80a2fbdc>] ? alloc_bootmem_core+0x89/0x2ae     
+ [<ffffffff80a2fe74>] ? ___alloc_bootmem_nopanic+0x73/0xab
+ [<ffffffff80a2af73>] ? early_node_mem+0x54/0x78      
+ [<ffffffff80a2b0ed>] ? setup_node_bootmem+0x156/0x282
+ [<ffffffff80a2b880>] ? acpi_scan_nodes+0x207/0x303
+ [<ffffffff80a2b255>] ? initmem_init+0x3c/0x14c
+ [<ffffffff80a1e33b>] ? setup_arch+0x5ba/0x760       
+ [<ffffffff80a2e904>] ? cgroup_init_subsys+0xfc/0x105
+ [<ffffffff80a2ea5f>] ? cgroup_init_early+0x152/0x163
+ [<ffffffff80a1a915>] ? start_kernel+0x84/0x35e      
+ [<ffffffff80a1a37e>] ? x86_64_start_kernel+0xe5/0xeb
+RIP alloc_bootmem_core+0x91/0x2ae
+
+Consider below call chain:
+acpi_scan_nodes =>
+		﻿setup_node_bootmem
+			﻿ (twice) => ﻿early_node_mem
+
+At begining, acpi_scan_nodes filters out memless nodes by calling
+unparse_node. Patch ﻿dc098551918 adds the node back actually.
+﻿acpi_scan_nodes has many comments around ﻿unparse_node.
+
+Below patch fixes it with node memory checking. Another method is just
+to revert the bad patch.
+
+﻿David Rientjes, ﻿Jack Steiner,
+Would you check if below patch satisfy your original objective?
+
+
+﻿﻿Signed-off-by: ﻿Shi Alex <alex.shi@intel.com>
+﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
+
+
+---
+
+--- linux-2.6.30-rc4/arch/x86/mm/numa_64.c	2009-05-05 09:20:05.000000000 +0800
++++ linux-2.6.30-rc4_memlessnode/arch/x86/mm/numa_64.c	2009-05-05 10:28:34.000000000 +0800
+@@ -199,6 +199,10 @@ void __init setup_node_bootmem(int nodei
+ 	start_pfn = start >> PAGE_SHIFT;
+ 	last_pfn = end >> PAGE_SHIFT;
  
- extern ktime_t ktime_get(void);
- extern ktime_t ktime_get_real(void);
--
-+extern int hrtimer_hres_active(void);
- 
- DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
- 
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index 2dc30c5..fa4abdc 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -476,7 +476,7 @@ static inline int hrtimer_is_hres_enabled(void)
- /*
-  * Is the high resolution mode active ?
-  */
--static inline int hrtimer_hres_active(void)
-+int hrtimer_hres_active(void)
- {
- 	return __get_cpu_var(hrtimer_bases).hres_active;
- }
-@@ -689,7 +689,7 @@ static int hrtimer_switch_to_hres(void)
- 
- #else
- 
--static inline int hrtimer_hres_active(void) { return 0; }
-+int hrtimer_hres_active(void) { return 0; }
- static inline int hrtimer_is_hres_enabled(void) { return 0; }
- static inline int hrtimer_switch_to_hres(void) { return 0; }
- static inline void hrtimer_force_reprogram(struct hrtimer_cpu_base *base) { }
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index ca89e15..1bb1161 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -30,6 +30,7 @@
- #include <linux/module.h>
- #include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
- #include <linux/tick.h>
-+#include <linux/hrtimer.h>
- 
- /* XXX - Would like a better way for initializing curr_clocksource */
- extern struct clocksource clocksource_jiffies;
-@@ -436,6 +437,17 @@ static ssize_t sysfs_override_clocksource(struct sys_device *dev,
- 		}
- 	}
- 
-+	/* Check to make sure we don't switch to a non-HRT usable
-+	 * clocksource if HRT is enabled and running
-+	 */
-+	if (hrtimer_hres_active() &&
-+	    !(ovr->flags & CLOCK_SOURCE_VALID_FOR_HRES)) {
-+		printk(KERN_WARNING "%s clocksource is not HRT compatible. "
-+			"Cannot switch while in HRT mode\n", ovr->name);
-+		ovr = NULL;
-+		override_name[0] = 0;
-+	}
++	bootmap_pages = bootmem_bootmap_pages(last_pfn - start_pfn);
++	if (bootmap_pages == 0)
++		return;
 +
- 	/* Reselect, when the override name has changed */
- 	if (ovr != clocksource_override) {
- 		clocksource_override = ovr;
-@@ -464,7 +476,10 @@ sysfs_show_available_clocksources(struct sys_device *dev,
- 
- 	spin_lock_irq(&clocksource_lock);
- 	list_for_each_entry(src, &clocksource_list, list) {
--		count += snprintf(buf + count,
-+		/* Don't show non-HRES clocksource if HRES is enabled */
-+		if (!hrtimer_hres_active() ||
-+				(src->flags & CLOCK_SOURCE_VALID_FOR_HRES))
-+			count += snprintf(buf + count,
- 				  max((ssize_t)PAGE_SIZE - count, (ssize_t)0),
- 				  "%s ", src->name);
- 	}
-
-
+ 	node_data[nodeid] = early_node_mem(nodeid, start, end, pgdat_size,
+ 					   SMP_CACHE_BYTES);
+ 	if (node_data[nodeid] == NULL)
+@@ -219,7 +223,6 @@ void __init setup_node_bootmem(int nodei
+ 	 * early_node_mem will get that with find_e820_area instead
+ 	 * of alloc_bootmem, that could clash with reserved range
+ 	 */
+-	bootmap_pages = bootmem_bootmap_pages(last_pfn - start_pfn);
+ 	nid = phys_to_nid(nodedata_phys);
+ 	if (nid == nodeid)
+ 		bootmap_start = roundup(nodedata_phys + pgdat_size, PAGE_SIZE);
 
 
