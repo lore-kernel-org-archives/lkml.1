@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbZEEB6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757655AbZEEB6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756358AbZEEB6U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 21:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbZEEB6K
+	id S1757655AbZEEB6p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 21:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbZEEB6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 21:58:10 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:43948 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752842AbZEEB6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 21:58:09 -0400
-Date: Mon, 4 May 2009 18:58:27 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, xemul@parallels.com
-Subject: Re: [PATCH 1/2] pidns 1/2: make create_pid_namespace() accept
-	parentpidns
-Message-ID: <20090505015827.GA6048@linux.vnet.ibm.com>
-References: <20090503232700.GD16631@x200.localdomain>
+	Mon, 4 May 2009 21:58:33 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:4826 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754098AbZEEB6c convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 21:58:32 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=jk5+txF4m8gFi4fgLGsmQKGFXPnTABnvgqCVbmZsLGQ+7y8/7qsbQxiVcnsiC11D2
+	VQ/fo2+9tkNyBWhhsrw5A==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090503232700.GD16631@x200.localdomain>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <db2b43030905032227u73a41ec3wa511efcef6a22169@mail.gmail.com>
+References: <egHshlwQQFE.A.8CD.mpE9JB@chimera>
+	 <20090428172845R.fujita.tomonori@lab.ntt.co.jp>
+	 <db2b43030904280218v61fded68rc585ce9c58ba1cce@mail.gmail.com>
+	 <20090428184431Z.fujita.tomonori@lab.ntt.co.jp>
+	 <db2b43030905032227u73a41ec3wa511efcef6a22169@mail.gmail.com>
+Date: Mon, 4 May 2009 18:58:27 -0700
+Message-ID: <da824cf30905041858t2cbd0fa2x4075f387973e2700@mail.gmail.com>
+Subject: Re: [Bug #13001] PCI-DMA: Out of IOMMU space
+From: Grant Grundler <grundler@google.com>
+To: =?UTF-8?B?0JTQsNC90LjQu9CwINCW0YPQutC+0YbQutC40Lk=?= 
+	<optimusgd@gmail.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan [adobriyan@gmail.com] wrote:
-| create_pid_namespace() creates everything, but caller has to assign parent
-| pidns by hand, which is unnatural. At the moment of call new ->level has
-| to be taken from somewhere and parent pidns is already available.
-| 
-| Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+2009/5/3 Данила Жукоцкий <optimusgd@gmail.com>:
+...
+> WARNING: at lib/dma-debug.c:607 check_unmap+0x542/0x610()
+> Hardware name: HP xw9400 Workstation
+> 3w-9xxx 0001:45:00.0: DMA-API: device driver tries to free DMA memory
+> it has not allocated [device address=0x0000000000000000] [size=36
+> bytes]
 
-Acked-By: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+This is definitely a driver bug. Just follow the stack trace back to
+the device driver.
 
-| ---
-|  kernel/pid_namespace.c |    8 ++++----
-|  1 files changed, 4 insertions(+), 4 deletions(-)
-| 
-| diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
-| index 2d1001b..495d5de 100644
-| --- a/kernel/pid_namespace.c
-| +++ b/kernel/pid_namespace.c
-| @@ -67,9 +67,10 @@ err_alloc:
-|  	return NULL;
-|  }
-| 
-| -static struct pid_namespace *create_pid_namespace(unsigned int level)
-| +static struct pid_namespace *create_pid_namespace(struct pid_namespace *parent_pid_ns)
-|  {
-|  	struct pid_namespace *ns;
-| +	unsigned int level = parent_pid_ns->level + 1;
-|  	int i;
-| 
-|  	ns = kmem_cache_zalloc(pid_ns_cachep, GFP_KERNEL);
-| @@ -86,6 +87,7 @@ static struct pid_namespace *create_pid_namespace(unsigned int level)
-| 
-|  	kref_init(&ns->kref);
-|  	ns->level = level;
-| +	ns->parent = get_pid_ns(parent_pid_ns);
-| 
-|  	set_bit(0, ns->pidmap[0].page);
-|  	atomic_set(&ns->pidmap[0].nr_free, BITS_PER_PAGE - 1);
-| @@ -125,9 +127,7 @@ struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *old
-|  	if (flags & CLONE_THREAD)
-|  		goto out_put;
-| 
-| -	new_ns = create_pid_namespace(old_ns->level + 1);
-| -	if (!IS_ERR(new_ns))
-| -		new_ns->parent = get_pid_ns(old_ns);
-| +	new_ns = create_pid_namespace(old_ns);
-| 
-|  out_put:
-|  	put_pid_ns(old_ns);
-| --
-| To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-| the body of a message to majordomo@vger.kernel.org
-| More majordomo info at  http://vger.kernel.org/majordomo-info.html
-| Please read the FAQ at  http://www.tux.org/lkml/
+thanks!
+grant
