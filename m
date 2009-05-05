@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932309AbZEEA2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932397AbZEEAac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932309AbZEEA2t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 20:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757136AbZEEA1J
+	id S932397AbZEEAac (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 20:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758365AbZEEAaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 20:27:09 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:20311 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932097AbZEEA1G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 20:27:06 -0400
-From: Kevin Hilman <khilman@deeprootsystems.com>
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>
-Subject: [PATCH] PM: suspend_device_irqs(): don't disable wakeup IRQs
-Date: Mon,  4 May 2009 17:27:04 -0700
-Message-Id: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
-X-Mailer: git-send-email 1.6.2.2
+	Mon, 4 May 2009 20:30:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42270 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757254AbZEEAaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 20:30:10 -0400
+Message-ID: <49FF87F1.4090403@redhat.com>
+Date: Mon, 04 May 2009 20:27:29 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: john stultz <johnstul@us.ibm.com>
+CC: lkml <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Clark Williams <williams@redhat.com>, linux@horizon.com,
+       Ulrich Windl <ulrich.windl@rz.uni-regensburg.de>
+Subject: Re: [RFC][PATCH] Adjust SHIFT_PLL to improve NTP convergence.
+References: <1241471016.7444.80.camel@localhost.localdomain>
+In-Reply-To: <1241471016.7444.80.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Interrupts that are flagged as wakeup sources via set_irq_wake()
-should not be disabled for suspend.
+john stultz wrote:
+> With the v2.6.19 Linux kenrel, Roman converted the in-kernel NTP code to
+> the NTPv4 reference model. 
 
-Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
----
- kernel/irq/pm.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+> I then modified the SHIFT_PLL value (which defines how stiff NTP's freq
+> correction is), setting it to 2, and created the second attached image
+> (2.6.30-pll2.png), comparing against the 2.6.18 numbers in the first
+> chart.
 
-diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-index 638d8be..99113bd 100644
---- a/kernel/irq/pm.c
-+++ b/kernel/irq/pm.c
-@@ -28,6 +28,9 @@ void suspend_device_irqs(void)
- 	for_each_irq_desc(irq, desc) {
- 		unsigned long flags;
- 
-+		if (desc->status & IRQ_WAKEUP)
-+			continue;
-+
- 		spin_lock_irqsave(&desc->lock, flags);
- 		__disable_irq(desc, irq, true);
- 		spin_unlock_irqrestore(&desc->lock, flags);
+> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+Acked-by: Rik van Riel <riel@redhat.com>
+
 -- 
-1.6.2.2
-
+All rights reversed.
