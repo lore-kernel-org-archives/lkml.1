@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbZEENfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbZEENgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345AbZEENfk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 09:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbZEENfK
+	id S1754467AbZEENgX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 09:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbZEENgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 09:35:10 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:59335 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752135AbZEENfI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 09:35:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=AxUCQIa4GJqmyFInTyYjXlFbkdaXsCM612Ei/5UPiTznzF89JckyE6W+WBNAkBzz47
-         XABfXGEKOcID7GpauphvjjJBQlRhTVkiVPsEpzkI+vcP+3CMtlQa9B85r8f2OfAvp8IJ
-         vUddL1Bm81OZCPZOVkC0sqpCowLMadHvy/5GU=
-Message-ID: <4A004088.7000907@gmail.com>
-Date: Tue, 05 May 2009 15:35:04 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.7 Thunderbird/3.0b2
+	Tue, 5 May 2009 09:36:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37931 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751974AbZEENgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 09:36:05 -0400
+Message-ID: <4A0040C0.1080102@redhat.com>
+Date: Tue, 05 May 2009 16:36:00 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Julia Lawall <julia@diku.dk>
-CC: richard@rsk.demon.co.uk, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: p80211wext.c: problem with IW_ENCODE_ALG_WEP
-References: <Pine.LNX.4.64.0905051522010.9552@pc-004.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0905051522010.9552@pc-004.diku.dk>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
+To: Gregory Haskins <ghaskins@novell.com>
+CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <20090505132005.19891.78436.stgit@dev.haskins.net>
+In-Reply-To: <20090505132005.19891.78436.stgit@dev.haskins.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/05/2009 03:22 PM, Julia Lawall wrote:
-> -		if (!(ext->alg & IW_ENCODE_ALG_WEP)) {
-> +		if (ext->alg != IW_ENCODE_ALG_WEP) {
->  			pr_debug("asked to set a non wep key :(");
+Gregory Haskins wrote:
+> (Applies to Linus' tree, b4348f32dae3cb6eb4bc21c7ed8f76c0b11e9d6a)
+>
+> Please see patch 1/3 for a description.  This has been tested with a KVM
+> guest on x86_64 and appears to work properly.  Comments, please.
+>   
 
-While you're at it, there is a missing \n. Care to post a fix for that too?
+What about the hypercalls in include/asm/kvm_para.h?
+
+In general, hypercalls cannot be generic since each hypervisor 
+implements its own ABI.  The abstraction needs to be at a higher level 
+(pv_ops is such a level).
+
+
+-- 
+error compiling committee.c: too many arguments to function
+
