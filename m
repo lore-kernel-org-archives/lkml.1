@@ -1,340 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757039AbZEEIld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbZEEItn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757039AbZEEIld (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 04:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbZEEIlY
+	id S1758068AbZEEItn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 04:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZEEItd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 04:41:24 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:52820 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752613AbZEEIlW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 04:41:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=GwQKXdS0GADtLqmytFKcK80Y+2rVs9fmFKWNb25wHdE1QV0vYFkFxxyvq1yq0Fi4HE
-         aCgbEr1Fje4Abah7BKKBJ8LdAYj+8GBxY+xzl0sHOH5fhdqyknCnOVWVENkUcht0lROI
-         NzZvMh6OYyjDwAhHZ7oGgRYeMGpIsU92nBBVo=
-Message-ID: <49FFFBAF.4040808@gmail.com>
-Date: Tue, 05 May 2009 10:41:19 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Tue, 5 May 2009 04:49:33 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:51534 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752159AbZEEItb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 04:49:31 -0400
+Date: Tue, 5 May 2009 09:49:28 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, hartleys@visionengravers.com,
+       mcrapet@gmail.com, fred99@carolina.rr.com,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] Double check memmap is actually valid with a memmap
+	has unexpected holes
+Message-ID: <20090505084928.GC25904@csn.ul.ie>
+References: <20090505082944.GA25904@csn.ul.ie> <20090505083614.GA28688@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>, axboe@kernel.dk
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] block/ps3: remove driver_data direct access of struct device
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090505083614.GA28688@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the near future, the driver core is going to not allow direct access
-to the driver_data pointer in struct device.  Instead, the functions
-dev_get_drvdata() and dev_set_drvdata() should be used.  These functions
-have been around since the beginning, so are backwards compatible with
-all older kernel versions.
+On Tue, May 05, 2009 at 09:36:14AM +0100, Russell King - ARM Linux wrote:
+> On Tue, May 05, 2009 at 09:29:44AM +0100, Mel Gorman wrote:
+> > diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> > index e02b893..6d79051 100644
+> > --- a/arch/arm/Kconfig
+> > +++ b/arch/arm/Kconfig
+> > @@ -925,10 +925,9 @@ config OABI_COMPAT
+> >  	  UNPREDICTABLE (in fact it can be predicted that it won't work
+> >  	  at all). If in doubt say Y.
+> >  
+> > -config ARCH_FLATMEM_HAS_HOLES
+> > +config ARCH_HAS_HOLES_MEMORYMODEL
+> 
+> Can we arrange for EP93xx to select this so we don't have it enabled for
+> everyone.
+> 
+> The other user of this was RPC when it was flatmem only, but since it has
+> been converted to sparsemem it's no longer an issue there.
+> 
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Changelog was from Greg. Please review. In particular, is this required?
+This problem is hitting SPARSEMEM, at least according to reports I have
+been cc'd on so it's not a SPARSEMEM vs FLATMEM thing. From the leader --
+"This was caught before for FLATMEM and hacked around but it hits again for
+SPARSEMEM because the page_zone linkages can look ok where the PFN linkages
+are totally screwed."
 
--	dev->core.driver_data = NULL;
-+	dev_set_drvdata(&dev->core, NULL);
+If you feel that this problem is only encountered on the EP93xx, then the
+option could be made more conservative with the following (untested) patch
+and then wait to see who complains.
 
+==== CUT HERE ====
 
- drivers/block/ps3disk.c |   18 +++++++++---------
- drivers/block/ps3vram.c |   46 +++++++++++++++++++++++-----------------------
- 2 files changed, 32 insertions(+), 32 deletions(-)
+arm: Only select ARCH_HAS_HOLES_MEMORYMODEL on the EP93xx
 
-diff --git a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
-index bccc42b..4f707d6 100644
---- a/drivers/block/ps3disk.c
-+++ b/drivers/block/ps3disk.c
-@@ -120,7 +120,7 @@ static void ps3disk_scatter_gather(struct ps3_storage_device *dev,
- static int ps3disk_submit_request_sg(struct ps3_storage_device *dev,
- 				     struct request *req)
- {
--	struct ps3disk_private *priv = dev->sbd.core.driver_data;
-+	struct ps3disk_private *priv = dev_get_drvdata(&dev->sbd.core);
- 	int write = rq_data_dir(req), res;
- 	const char *op = write ? "write" : "read";
- 	u64 start_sector, sectors;
-@@ -169,7 +169,7 @@ static int ps3disk_submit_request_sg(struct ps3_storage_device *dev,
- static int ps3disk_submit_flush_request(struct ps3_storage_device *dev,
- 					struct request *req)
- {
--	struct ps3disk_private *priv = dev->sbd.core.driver_data;
-+	struct ps3disk_private *priv = dev_get_drvdata(&dev->sbd.core);
- 	u64 res;
+ARM frees unused memmap to save memory but this can collide with the core
+VM's view of the memory model when walking what it views to be valid PFNs in
+the system. ARM selects ARCH_HAS_HOLES_MEMORYMODEL for all architectures to
+double check the memmap being examined is valid but it has been asserted
+that this may only be needed on EP93xx in practice. This patch selects
+ARCH_HAS_HOLES_MEMORYMODEL only for that sub-architecture.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ arch/arm/Kconfig |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 6d79051..a4c195c 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -273,6 +273,7 @@ config ARCH_EP93XX
+ 	select HAVE_CLK
+ 	select COMMON_CLKDEV
+ 	select ARCH_REQUIRE_GPIOLIB
++	select ARCH_HAS_HOLES_MEMORYMODEL
+ 	help
+ 	  This enables support for the Cirrus EP93xx series of CPUs.
  
- 	dev_dbg(&dev->sbd.core, "%s:%u: flush request\n", __func__, __LINE__);
-@@ -214,7 +214,7 @@ static void ps3disk_do_request(struct ps3_storage_device *dev,
- static void ps3disk_request(struct request_queue *q)
- {
- 	struct ps3_storage_device *dev = q->queuedata;
--	struct ps3disk_private *priv = dev->sbd.core.driver_data;
-+	struct ps3disk_private *priv = dev_get_drvdata(&dev->sbd.core);
+@@ -927,7 +928,7 @@ config OABI_COMPAT
  
- 	if (priv->req) {
- 		dev_dbg(&dev->sbd.core, "%s:%u busy\n", __func__, __LINE__);
-@@ -247,7 +247,7 @@ static irqreturn_t ps3disk_interrupt(int irq, void *data)
- 		return IRQ_HANDLED;
- 	}
+ config ARCH_HAS_HOLES_MEMORYMODEL
+ 	bool
+-	default y
++	default n
  
--	priv = dev->sbd.core.driver_data;
-+	priv = dev_get_drvdata(&dev->sbd.core);
- 	req = priv->req;
- 	if (!req) {
- 		dev_dbg(&dev->sbd.core,
-@@ -368,7 +368,7 @@ static void ata_id_c_string(const u16 *id, unsigned char *s, unsigned int ofs,
- 
- static int ps3disk_identify(struct ps3_storage_device *dev)
- {
--	struct ps3disk_private *priv = dev->sbd.core.driver_data;
-+	struct ps3disk_private *priv = dev_get_drvdata(&dev->sbd.core);
- 	struct lv1_ata_cmnd_block ata_cmnd;
- 	u16 *id = dev->bounce_buf;
- 	u64 res;
-@@ -449,7 +449,7 @@ static int __devinit ps3disk_probe(struct ps3_system_bus_device *_dev)
- 		goto fail;
- 	}
- 
--	dev->sbd.core.driver_data = priv;
-+	dev_set_drvdata(&dev->sbd.core, priv);
- 	spin_lock_init(&priv->lock);
- 
- 	dev->bounce_size = BOUNCE_SIZE;
-@@ -527,7 +527,7 @@ fail_free_bounce:
- 	kfree(dev->bounce_buf);
- fail_free_priv:
- 	kfree(priv);
--	dev->sbd.core.driver_data = NULL;
-+	dev_set_drvdata(&dev->sbd.core, NULL);
- fail:
- 	mutex_lock(&ps3disk_mask_mutex);
- 	__clear_bit(devidx, &ps3disk_mask);
-@@ -538,7 +538,7 @@ fail:
- static int ps3disk_remove(struct ps3_system_bus_device *_dev)
- {
- 	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
--	struct ps3disk_private *priv = dev->sbd.core.driver_data;
-+	struct ps3disk_private *priv = dev_get_drvdata(&dev->sbd.core);
- 
- 	mutex_lock(&ps3disk_mask_mutex);
- 	__clear_bit(MINOR(disk_devt(priv->gendisk)) / PS3DISK_MINORS,
-@@ -552,7 +552,7 @@ static int ps3disk_remove(struct ps3_system_bus_device *_dev)
- 	ps3stor_teardown(dev);
- 	kfree(dev->bounce_buf);
- 	kfree(priv);
--	dev->sbd.core.driver_data = NULL;
-+	dev_set_drvdata(&dev->sbd.core, NULL);
- 	return 0;
- }
- 
-diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
-index 8eddef3..8ecf1e0 100644
---- a/drivers/block/ps3vram.c
-+++ b/drivers/block/ps3vram.c
-@@ -111,7 +111,7 @@ static u32 *ps3vram_get_notifier(u32 *reports, int notifier)
- 
- static void ps3vram_notifier_reset(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 	u32 *notify = ps3vram_get_notifier(priv->reports, NOTIFIER);
- 	int i;
- 
-@@ -122,7 +122,7 @@ static void ps3vram_notifier_reset(struct ps3_system_bus_device *dev)
- static int ps3vram_notifier_wait(struct ps3_system_bus_device *dev,
- 				 unsigned int timeout_ms)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 	u32 *notify = ps3vram_get_notifier(priv->reports, NOTIFIER);
- 	unsigned long timeout = jiffies + msecs_to_jiffies(timeout_ms);
- 
-@@ -137,7 +137,7 @@ static int ps3vram_notifier_wait(struct ps3_system_bus_device *dev,
- 
- static void ps3vram_init_ring(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 
- 	priv->ctrl[CTRL_PUT] = FIFO_BASE + FIFO_OFFSET;
- 	priv->ctrl[CTRL_GET] = FIFO_BASE + FIFO_OFFSET;
-@@ -146,7 +146,7 @@ static void ps3vram_init_ring(struct ps3_system_bus_device *dev)
- static int ps3vram_wait_ring(struct ps3_system_bus_device *dev,
- 			     unsigned int timeout_ms)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 	unsigned long timeout = jiffies + msecs_to_jiffies(timeout_ms);
- 
- 	do {
-@@ -175,7 +175,7 @@ static void ps3vram_begin_ring(struct ps3vram_priv *priv, u32 chan, u32 tag,
- 
- static void ps3vram_rewind_ring(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 	int status;
- 
- 	ps3vram_out_ring(priv, 0x20000000 | (FIFO_BASE + FIFO_OFFSET));
-@@ -196,7 +196,7 @@ static void ps3vram_rewind_ring(struct ps3_system_bus_device *dev)
- 
- static void ps3vram_fire_ring(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 	int status;
- 
- 	mutex_lock(&ps3_gpu_mutex);
-@@ -225,7 +225,7 @@ static void ps3vram_fire_ring(struct ps3_system_bus_device *dev)
- 
- static void ps3vram_bind(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 
- 	ps3vram_begin_ring(priv, UPLOAD_SUBCH, 0, 1);
- 	ps3vram_out_ring(priv, 0x31337303);
-@@ -248,7 +248,7 @@ static int ps3vram_upload(struct ps3_system_bus_device *dev,
- 			  unsigned int src_offset, unsigned int dst_offset,
- 			  int len, int count)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 
- 	ps3vram_begin_ring(priv, UPLOAD_SUBCH,
- 			   NV_MEMORY_TO_MEMORY_FORMAT_OFFSET_IN, 8);
-@@ -280,7 +280,7 @@ static int ps3vram_download(struct ps3_system_bus_device *dev,
- 			    unsigned int src_offset, unsigned int dst_offset,
- 			    int len, int count)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 
- 	ps3vram_begin_ring(priv, DOWNLOAD_SUBCH,
- 			   NV_MEMORY_TO_MEMORY_FORMAT_OFFSET_IN, 8);
-@@ -310,7 +310,7 @@ static int ps3vram_download(struct ps3_system_bus_device *dev,
- 
- static void ps3vram_cache_evict(struct ps3_system_bus_device *dev, int entry)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 	struct ps3vram_cache *cache = &priv->cache;
- 
- 	if (!(cache->tags[entry].flags & CACHE_PAGE_DIRTY))
-@@ -332,7 +332,7 @@ static void ps3vram_cache_evict(struct ps3_system_bus_device *dev, int entry)
- static void ps3vram_cache_load(struct ps3_system_bus_device *dev, int entry,
- 			       unsigned int address)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 	struct ps3vram_cache *cache = &priv->cache;
- 
- 	dev_dbg(&dev->core, "Fetching %d: 0x%08x\n", entry, address);
-@@ -352,7 +352,7 @@ static void ps3vram_cache_load(struct ps3_system_bus_device *dev, int entry,
- 
- static void ps3vram_cache_flush(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 	struct ps3vram_cache *cache = &priv->cache;
- 	int i;
- 
-@@ -366,7 +366,7 @@ static void ps3vram_cache_flush(struct ps3_system_bus_device *dev)
- static unsigned int ps3vram_cache_match(struct ps3_system_bus_device *dev,
- 					loff_t address)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 	struct ps3vram_cache *cache = &priv->cache;
- 	unsigned int base;
- 	unsigned int offset;
-@@ -400,7 +400,7 @@ static unsigned int ps3vram_cache_match(struct ps3_system_bus_device *dev,
- 
- static int ps3vram_cache_init(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 
- 	priv->cache.page_count = CACHE_PAGE_COUNT;
- 	priv->cache.page_size = CACHE_PAGE_SIZE;
-@@ -419,7 +419,7 @@ static int ps3vram_cache_init(struct ps3_system_bus_device *dev)
- 
- static void ps3vram_cache_cleanup(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 
- 	ps3vram_cache_flush(dev);
- 	kfree(priv->cache.tags);
-@@ -428,7 +428,7 @@ static void ps3vram_cache_cleanup(struct ps3_system_bus_device *dev)
- static int ps3vram_read(struct ps3_system_bus_device *dev, loff_t from,
- 			size_t len, size_t *retlen, u_char *buf)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 	unsigned int cached, count;
- 
- 	dev_dbg(&dev->core, "%s: from=0x%08x len=0x%zx\n", __func__,
-@@ -476,7 +476,7 @@ static int ps3vram_read(struct ps3_system_bus_device *dev, loff_t from,
- static int ps3vram_write(struct ps3_system_bus_device *dev, loff_t to,
- 			 size_t len, size_t *retlen, const u_char *buf)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 	unsigned int cached, count;
- 
- 	if (to >= priv->size)
-@@ -543,7 +543,7 @@ static const struct file_operations ps3vram_proc_fops = {
- 
- static void __devinit ps3vram_proc_init(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 	struct proc_dir_entry *pde;
- 
- 	pde = proc_create(DEVICE_NAME, 0444, NULL, &ps3vram_proc_fops);
-@@ -615,9 +615,9 @@ static int __devinit ps3vram_probe(struct ps3_system_bus_device *dev)
- 	}
- 
- 	mutex_init(&priv->lock);
--	dev->core.driver_data = priv;
-+	dev_set_drvdata(&dev->core, priv);
- 
--	priv = dev->core.driver_data;
-+	priv = dev_get_drvdata(&dev->core);
- 
- 	/* Allocate XDR buffer (1MiB aligned) */
- 	priv->xdr_buf = (void *)__get_free_pages(GFP_KERNEL,
-@@ -787,14 +787,14 @@ out_free_xdr_buf:
- 	free_pages((unsigned long) priv->xdr_buf, get_order(XDR_BUF_SIZE));
- fail_free_priv:
- 	kfree(priv);
--	dev->core.driver_data = NULL;
-+	dev_set_drvdata(&dev->core, NULL);
- fail:
- 	return error;
- }
- 
- static int ps3vram_remove(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = dev->core.driver_data;
-+	struct ps3vram_priv *priv = dev_get_drvdata(&dev->core);
- 
- 	del_gendisk(priv->gendisk);
- 	put_disk(priv->gendisk);
-@@ -809,7 +809,7 @@ static int ps3vram_remove(struct ps3_system_bus_device *dev)
- 	ps3_close_hv_device(dev);
- 	free_pages((unsigned long) priv->xdr_buf, get_order(XDR_BUF_SIZE));
- 	kfree(priv);
--	dev->core.driver_data = NULL;
-+	dev_set_drvdata(&dev->core, NULL);
- 	return 0;
- }
- 
+ # Discontigmem is deprecated
+ config ARCH_DISCONTIGMEM_ENABLE
