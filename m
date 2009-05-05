@@ -1,319 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbZEEPDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbZEEP1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756778AbZEEPDz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 11:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbZEEPDY
+	id S1752676AbZEEP1Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 11:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbZEEP1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 11:03:24 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:50813 "EHLO mx1.emlix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755929AbZEEPDW convert rfc822-to-8bit (ORCPT
+	Tue, 5 May 2009 11:27:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42350 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751197AbZEEP1O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 11:03:22 -0400
-From: =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
-To: Chris Zankel <chris@zankel.net>
-Cc: linux-kernel@vger.kernel.org, linux-xtensa@linux-xtensa.org,
-       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>,
-       Johannes Weiner <jw@emlix.com>
-Subject: [PATCH v2 2/2] xtensa: support s6000 gpio irqs and alternate function selection
-Date: Tue,  5 May 2009 17:03:22 +0200
-Message-Id: <1241535802-17516-2-git-send-email-dg@emlix.com>
-In-Reply-To: <1241535802-17516-1-git-send-email-dg@emlix.com>
-References: <1237816990-29108-1-git-send-email-dg@emlix.com>
- <1241535802-17516-1-git-send-email-dg@emlix.com>
+	Tue, 5 May 2009 11:27:14 -0400
+Date: Tue, 5 May 2009 08:17:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: security@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Paris <eparis@redhat.com>, Jake Edge <jake@lwn.net>,
+       linux-security-module@vger.kernel.org, mingo@redhat.com,
+       Roland McGrath <roland@redhat.com>, Matt Mackall <mpm@selenic.com>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [Security] [PATCH] proc: avoid information leaks to non-privileged
+ processes
+In-Reply-To: <m1r5z40yyr.fsf@fess.ebiederm.org>
+Message-ID: <alpine.LFD.2.01.0905050755310.4983@localhost.localdomain>
+References: <20090504125114.5e391564@chukar> <alpine.LFD.2.01.0905041159480.4983@localhost.localdomain> <20090504125124.0f469970@infradead.org> <m1vdogbows.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0905041514350.4983@localhost.localdomain>
+ <alpine.LFD.2.01.0905041646240.4983@localhost.localdomain> <m1r5z40yyr.fsf@fess.ebiederm.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Organization: emlix gmbh, Goettingen, Germany
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement an irq chip to handle interrupts via gpio.  The GPIO chip
-initialization function now takes a bitmask denoting pins that should
-be configured for their alternate function.
 
-changes compared to v1:
-- fixed bug on edge interrupt configuration
-- accommodated to function name change
-- moved definition of VARIANT_NR_IRQS to this patch
-- renamed __XTENSA_S6000_IRQ_H to _XTENSA_S6000_IRQ_H as requested
 
-Signed-off-by: Daniel Glöckner <dg@emlix.com>
-Signed-off-by: Johannes Weiner <jw@emlix.com>
+On Tue, 5 May 2009, Eric W. Biederman wrote:
+> 
+> Yes, not mixing the result back (which would give us some kind of
+> pseudo random number generator) is the problem.
+
+Guys, so how about this?
+
+It's a really simple patch that basically just open-codes the current 
+"secure_ip_id()" call, but when open-coding it we now use a _static_ 
+hashing area, so that it gets updated every time.
+
+And to make sure somebody can't just start from the same original seed of 
+all-zeroes, and then do the "half_md4_transform()" over and over until 
+they get the same sequence as the kernel has, each iteration also mixes in 
+the same old "current->pid + jiffies" we used - so we should now have a 
+regular strong pseudo-number generator, but we also have one that doesn't 
+have a single seed.
+
+Note: the "pid + jiffies" is just meant to be a tiny tiny bit of noise. It 
+has no real meaning. It could be anything. I just picked the previous 
+seed, it's just that now we keep the state in between calls and that will 
+feed into the next result, and that should make all the difference.
+
+I made that hash be a per-cpu data just to avoid cache-line ping-pong: 
+having multiple CPU's write to the same data would be fine for randomness, 
+and add yet another layer of chaos to it, but since get_random_int() is 
+supposed to be a fast interface I did it that way instead. I considered 
+using "__raw_get_cpu_var()" to avoid any preemption overhead while still 
+getting the hash be _mostly_ ping-pong free, but in the end good taste won 
+out.
+
+I have _not_ tested this. Somebody obviously should, and I'm not checking 
+it in without ack's and somebody testing it.
+
+		Linus
 ---
- arch/xtensa/include/asm/gpio.h                    |    8 +-
- arch/xtensa/platforms/s6105/setup.c               |    2 +-
- arch/xtensa/variants/s6000/gpio.c                 |  163 ++++++++++++++++++++-
- arch/xtensa/variants/s6000/include/variant/gpio.h |    2 +-
- arch/xtensa/variants/s6000/include/variant/irq.h  |    5 +-
- 5 files changed, 171 insertions(+), 9 deletions(-)
+ drivers/char/random.c |   19 ++++++++++++-------
+ 1 files changed, 12 insertions(+), 7 deletions(-)
 
-diff --git a/arch/xtensa/include/asm/gpio.h b/arch/xtensa/include/asm/gpio.h
-index 0763b07..a8c9fc4 100644
---- a/arch/xtensa/include/asm/gpio.h
-+++ b/arch/xtensa/include/asm/gpio.h
-@@ -38,14 +38,14 @@ static inline int gpio_cansleep(unsigned int gpio)
- 	return __gpio_cansleep(gpio);
- }
- 
--/*
-- * Not implemented, yet.
-- */
- static inline int gpio_to_irq(unsigned int gpio)
- {
--	return -ENOSYS;
-+	return __gpio_to_irq(gpio);
- }
- 
-+/*
-+ * Not implemented, yet.
-+ */
- static inline int irq_to_gpio(unsigned int irq)
- {
- 	return -EINVAL;
-diff --git a/arch/xtensa/platforms/s6105/setup.c b/arch/xtensa/platforms/s6105/setup.c
-index 855ddea..95fa23c 100644
---- a/arch/xtensa/platforms/s6105/setup.c
-+++ b/arch/xtensa/platforms/s6105/setup.c
-@@ -49,7 +49,7 @@ void __init platform_setup(char **cmdline)
- 
- void __init platform_init(bp_tag_t *first)
- {
--	s6_gpio_init();
-+	s6_gpio_init(0);
- 	gpio_request(GPIO_LED1_NGREEN, "led1_green");
- 	gpio_request(GPIO_LED1_RED, "led1_red");
- 	gpio_direction_output(GPIO_LED1_NGREEN, 1);
-diff --git a/arch/xtensa/variants/s6000/gpio.c b/arch/xtensa/variants/s6000/gpio.c
-index 79317fd..380a70f 100644
---- a/arch/xtensa/variants/s6000/gpio.c
-+++ b/arch/xtensa/variants/s6000/gpio.c
-@@ -4,15 +4,20 @@
-  * Copyright (c) 2009 emlix GmbH
-  * Authors:	Oskar Schirmer <os@emlix.com>
-  *		Johannes Weiner <jw@emlix.com>
-+ *		Daniel Gloeckner <dg@emlix.com>
+diff --git a/drivers/char/random.c b/drivers/char/random.c
+index f824ef8..9f8fd5b 100644
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -1665,15 +1665,20 @@ EXPORT_SYMBOL(secure_dccp_sequence_number);
+  * value is not cryptographically secure but for several uses the cost of
+  * depleting entropy is too high
   */
-+#include <linux/bitops.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/io.h>
-+#include <linux/irq.h>
- #include <linux/gpio.h>
- 
- #include <variant/hardware.h>
- 
-+#define IRQ_BASE XTENSA_NR_IRQS
-+
- #define S6_GPIO_DATA		0x000
- #define S6_GPIO_IS		0x404
- #define S6_GPIO_IBE		0x408
-@@ -52,19 +57,175 @@ static void set(struct gpio_chip *chip, unsigned int off, int val)
- 	writeb(val ? ~0 : 0, S6_REG_GPIO + S6_GPIO_DATA + S6_GPIO_OFFSET(off));
- }
- 
-+static int to_irq(struct gpio_chip *chip, unsigned offset)
-+{
-+	if (offset < 8)
-+		return offset + IRQ_BASE;
-+	return -EINVAL;
-+}
-+
- static struct gpio_chip gpiochip = {
- 	.owner = THIS_MODULE,
- 	.direction_input = direction_input,
- 	.get = get,
- 	.direction_output = direction_output,
- 	.set = set,
-+	.to_irq = to_irq,
- 	.base = 0,
- 	.ngpio = 24,
- 	.can_sleep = 0, /* no blocking io needed */
- 	.exported = 0, /* no exporting to userspace */
- };
- 
--int s6_gpio_init(void)
-+int s6_gpio_init(u32 afsel)
++DEFINE_PER_CPU(__u32 [4], get_random_int_hash);
+ unsigned int get_random_int(void)
  {
-+	writeb(afsel, S6_REG_GPIO + S6_GPIO_BANK(0) + S6_GPIO_AFSEL);
-+	writeb(afsel >> 8, S6_REG_GPIO + S6_GPIO_BANK(1) + S6_GPIO_AFSEL);
-+	writeb(afsel >> 16, S6_REG_GPIO + S6_GPIO_BANK(2) + S6_GPIO_AFSEL);
- 	return gpiochip_add(&gpiochip);
+-	/*
+-	 * Use IP's RNG. It suits our purpose perfectly: it re-keys itself
+-	 * every second, from the entropy pool (and thus creates a limited
+-	 * drain on it), and uses halfMD4Transform within the second. We
+-	 * also mix it with jiffies and the PID:
+-	 */
+-	return secure_ip_id((__force __be32)(current->pid + jiffies));
++	struct keydata *keyptr;
++	__u32 *hash = get_cpu_var(get_random_int_hash);
++	int ret;
++
++	keyptr = get_keyptr();
++	hash[0] += current->pid + jiffies;
++
++	ret = half_md4_transform(hash, keyptr->secret);
++	put_cpu_var(get_random_int_hash);
++
++	return ret;
  }
-+
-+static void ack(unsigned int irq)
-+{
-+	writeb(1 << (irq - IRQ_BASE), S6_REG_GPIO + S6_GPIO_IC);
-+}
-+
-+static void mask(unsigned int irq)
-+{
-+	u8 r = readb(S6_REG_GPIO + S6_GPIO_IE);
-+	r &= ~(1 << (irq - IRQ_BASE));
-+	writeb(r, S6_REG_GPIO + S6_GPIO_IE);
-+}
-+
-+static void unmask(unsigned int irq)
-+{
-+	u8 m = readb(S6_REG_GPIO + S6_GPIO_IE);
-+	m |= 1 << (irq - IRQ_BASE);
-+	writeb(m, S6_REG_GPIO + S6_GPIO_IE);
-+}
-+
-+static int set_type(unsigned int irq, unsigned int type)
-+{
-+	const u8 m = 1 << (irq - IRQ_BASE);
-+	irq_flow_handler_t handler;
-+	struct irq_desc *desc;
-+	u8 reg;
-+
-+	if (type == IRQ_TYPE_PROBE) {
-+		if ((readb(S6_REG_GPIO + S6_GPIO_BANK(0) + S6_GPIO_AFSEL) & m)
-+		    || (readb(S6_REG_GPIO + S6_GPIO_BANK(0) + S6_GPIO_IE) & m)
-+		    || readb(S6_REG_GPIO + S6_GPIO_BANK(0) + S6_GPIO_DIR
-+			      + S6_GPIO_MASK(irq - IRQ_BASE)))
-+			return 0;
-+		type = IRQ_TYPE_EDGE_BOTH;
-+	}
-+
-+	reg = readb(S6_REG_GPIO + S6_GPIO_BANK(0) + S6_GPIO_IS);
-+	if (type & (IRQ_TYPE_LEVEL_LOW | IRQ_TYPE_LEVEL_HIGH)) {
-+		reg |= m;
-+		handler = handle_level_irq;
-+	} else {
-+		reg &= ~m;
-+		handler = handle_edge_irq;
-+	}
-+	writeb(reg, S6_REG_GPIO + S6_GPIO_BANK(0) + S6_GPIO_IS);
-+	desc = irq_to_desc(irq);
-+	desc->handle_irq = handler;
-+
-+	reg = readb(S6_REG_GPIO + S6_GPIO_BANK(0) + S6_GPIO_IEV);
-+	if (type & (IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_EDGE_RISING))
-+		reg |= m;
-+	else
-+		reg &= ~m;
-+	writeb(reg, S6_REG_GPIO + S6_GPIO_BANK(0) + S6_GPIO_IEV);
-+
-+	reg = readb(S6_REG_GPIO + S6_GPIO_BANK(0) + S6_GPIO_IBE);
-+	if ((type & IRQ_TYPE_EDGE_BOTH) == IRQ_TYPE_EDGE_BOTH)
-+		reg |= m;
-+	else
-+		reg &= ~m;
-+	writeb(reg, S6_REG_GPIO + S6_GPIO_BANK(0) + S6_GPIO_IBE);
-+	return 0;
-+}
-+
-+static struct irq_chip gpioirqs = {
-+	.name = "GPIO",
-+	.ack = ack,
-+	.mask = mask,
-+	.unmask = unmask,
-+	.set_type = set_type,
-+};
-+
-+static u8 demux_masks[4];
-+
-+static void demux_irqs(unsigned int irq, struct irq_desc *desc)
-+{
-+	u8 *mask = get_irq_desc_data(desc);
-+	u8 pending;
-+	int cirq;
-+
-+	desc->chip->mask(irq);
-+	desc->chip->ack(irq);
-+	pending = readb(S6_REG_GPIO + S6_GPIO_BANK(0) + S6_GPIO_MIS) & *mask;
-+	cirq = IRQ_BASE - 1;
-+	while (pending) {
-+		int n = ffs(pending);
-+		cirq += n;
-+		pending >>= n;
-+		generic_handle_irq(cirq);
-+	}
-+	desc->chip->unmask(irq);
-+}
-+
-+extern const signed char *platform_irq_mappings[XTENSA_NR_IRQS];
-+
-+void __init variant_init_irq(void)
-+{
-+	int irq, n;
-+	writeb(0, S6_REG_GPIO + S6_GPIO_BANK(0) + S6_GPIO_IE);
-+	for (irq = n = 0; irq < XTENSA_NR_IRQS; irq++) {
-+		const signed char *mapping = platform_irq_mappings[irq];
-+		int alone = 1;
-+		u8 mask;
-+		if (!mapping)
-+			continue;
-+		for(mask = 0; *mapping != -1; mapping++)
-+			switch (*mapping) {
-+			case S6_INTC_GPIO(0):
-+				mask |= 1 << 0;
-+				break;
-+			case S6_INTC_GPIO(1):
-+				mask |= 1 << 1;
-+				break;
-+			case S6_INTC_GPIO(2):
-+				mask |= 1 << 2;
-+				break;
-+			case S6_INTC_GPIO(3):
-+				mask |= 0x1f << 3;
-+				break;
-+			default:
-+				alone = 0;
-+			}
-+		if (mask) {
-+			int cirq, i;
-+			if (!alone) {
-+				printk(KERN_ERR "chained irq chips can't share"
-+					" parent irq %i\n", irq);
-+				continue;
-+			}
-+			demux_masks[n] = mask;
-+			cirq = IRQ_BASE - 1;
-+			do {
-+				i = ffs(mask);
-+				cirq += i;
-+				mask >>= i;
-+				set_irq_chip(cirq, &gpioirqs);
-+				set_irq_type(irq, IRQ_TYPE_LEVEL_LOW);
-+			} while (mask);
-+			set_irq_data(irq, demux_masks + n);
-+			set_irq_chained_handler(irq, demux_irqs);
-+			if (++n == ARRAY_SIZE(demux_masks))
-+				break;
-+		}
-+	}
-+}
-diff --git a/arch/xtensa/variants/s6000/include/variant/gpio.h b/arch/xtensa/variants/s6000/include/variant/gpio.h
-index 8327f62..8484ab0 100644
---- a/arch/xtensa/variants/s6000/include/variant/gpio.h
-+++ b/arch/xtensa/variants/s6000/include/variant/gpio.h
-@@ -1,6 +1,6 @@
- #ifndef _XTENSA_VARIANT_S6000_GPIO_H
- #define _XTENSA_VARIANT_S6000_GPIO_H
  
--extern int s6_gpio_init(void);
-+extern int s6_gpio_init(u32 afsel);
- 
- #endif /* _XTENSA_VARIANT_S6000_GPIO_H */
-diff --git a/arch/xtensa/variants/s6000/include/variant/irq.h b/arch/xtensa/variants/s6000/include/variant/irq.h
-index bcd496d..1a69d33 100644
---- a/arch/xtensa/variants/s6000/include/variant/irq.h
-+++ b/arch/xtensa/variants/s6000/include/variant/irq.h
-@@ -1,7 +1,8 @@
--#ifndef __XTENSA_S6000_IRQ_H
--#define __XTENSA_S6000_IRQ_H
-+#ifndef _XTENSA_S6000_IRQ_H
-+#define _XTENSA_S6000_IRQ_H
- 
- #define NO_IRQ		(-1)
-+#define VARIANT_NR_IRQS 8 /* GPIO interrupts */
- 
- #define VARIANT_HAS_IRQ_ENABLE
- extern void variant_irq_enable(unsigned int irq);
--- 
-1.6.1.3
-
+ /*
