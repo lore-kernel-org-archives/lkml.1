@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773AbZEED7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbZEED7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753773AbZEED7U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 May 2009 23:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbZEED7A
+	id S1755032AbZEED7g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 May 2009 23:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZEED7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 May 2009 23:59:00 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:39172 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751039AbZEED67 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 May 2009 23:58:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=kAmJ38BYHbmLCrGhNGnnh58MEU3s8T9sMoO+UduaopkBDnSHDAgbiahDjG/BPiIPD/
-         JVL0QzfLCFpqYAsEsUesbFWnXfrXlaucFO24v3EzT9awD1+fltLdbCztpdH2Jh/8nyZ6
-         umq2RHeh0vekhsFkM2dpWe3l9j0d+PSE7rj70=
-Message-ID: <49FFB9BE.1090709@gmail.com>
-Date: Tue, 05 May 2009 12:59:58 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 4 May 2009 23:59:06 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:45384 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753773AbZEED7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 May 2009 23:59:04 -0400
 MIME-Version: 1.0
-To: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
-       sshtylyov@ru.mvista.com, mike.miller@hp.com, Eric.Moore@lsi.com,
-       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
-       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
-       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
-       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
-       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
-       bharrosh@panasas.com
-Subject: Re: [GIT PATCH] block,scsi,ide: unify sector and data_len, take#2
-References: <1241423927-11871-1-git-send-email-tj@kernel.org>
-In-Reply-To: <1241423927-11871-1-git-send-email-tj@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18943.47474.963294.862139@drongo.ozlabs.ibm.com>
+Date: Tue, 5 May 2009 13:58:42 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Robert Richter <robert.richter@amd.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: round-robining per-cpu counters
+X-Mailer: VM 8.0.12 under 22.3.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+It used to be, and as far as I can see still is, the case that per-cpu
+counters take priority over per-task counters by virtue of being
+scheduled in first.  That is, if you have N hardware counters and >= N
+per-cpu counters, then no per-task counters will ever get scheduled
+onto the PMU.
 
-Tejun Heo wrote:
-> Upon ack, please pull from the following git tree.
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-unify-sector-and-data_len
+That being the case, I don't see what the point of having the
+perf_reserved_percpu variable is.  It doesn't do anything except set
+cpuctx->max_pertask, which isn't actually used anywhere.  In any case
+with the current counter scheduling system there's no need to
+"reserve" hardware counters for use by per-cpu counters since any new
+per-cpu counters will just bump existing per-task counters off - if
+not immediately then the next time that perf_counter_task_tick gets
+called.
 
-git tree has been updated as per comments.
+What was the intended meaning of perf_reserved_percpu?  I presume it
+was that there would always be that many hardware counters available
+for per-cpu counters regardless of how many per-task counters there
+are.  But that doesn't answer the complementary question - how many
+hardware counters can we rely on being available for per-task
+counters?  At the moment the answer is 0, but I don't think that is a
+good answer.
 
-* Acked-by:'s added.
+Does anyone have any good ideas about what the scheduling policy
+should be?
 
-* Too early blk_rq_bytes() conversion in ide-tape pushed to later
-  patch.
-
-Both changes are minor and don't make any difference to the final
-result.  The new commit is f7ff5f0d7cda0b0da5e7de36dd97ff75412bbe16.
-
-Thanks.
-
--- 
-tejun
+Paul.
