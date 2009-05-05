@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbZEEUoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbZEEU5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758619AbZEEUoQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 16:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZEEUn6
+	id S1754992AbZEEU5q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 16:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbZEEU5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 16:43:58 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38156 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752854AbZEEUn5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 16:43:57 -0400
-Date: Tue, 5 May 2009 16:43:52 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Alessio Igor Bogani <abogani@texware.it>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LFSDEV <linux-fsdevel@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH vfs-2.6:for-next] vfs: remount_fs BKL pushdown
-Message-ID: <20090505204352.GA23343@infradead.org>
-References: <1240646945-7970-1-git-send-email-abogani@texware.it> <20090425082349.GA2475@infradead.org> <20090505133743.GA663@infradead.org> <63a49ef40905051239r61fe7f4cg6f24e13df30dc940@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <63a49ef40905051239r61fe7f4cg6f24e13df30dc940@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 5 May 2009 16:57:35 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:39918 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753309AbZEEU5e (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 16:57:34 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: David Newall <davidn@davidnewall.com>
+Cc: Theodore Tso <tytso@mit.edu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Matthew Wilcox <matthew@wil.cx>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tridge@samba.org,
+       Al Viro <viro@ZenIV.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steve French <smfrench@gmail.com>,
+       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Michael Tokarev <mjt@tls.msk.ru>, LKML <linux-kernel@vger.kernel.org>,
+       Olivier Galibert <galibert@pobox.com>
+Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
+In-Reply-To: Your message of "Tue, 05 May 2009 20:39:05 +0930."
+             <4A001E51.4070903@davidnewall.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20090504124129.GL7141@linux.vnet.ibm.com> <20090504124433.GW8822@parisc-linux.org> <20090504130638.GN7141@linux.vnet.ibm.com> <20090504132119.GX8822@parisc-linux.org> <20090504143919.GA6740@linux.vnet.ibm.com> <20090504150834.GZ8822@parisc-linux.org> <1241451391.20170.12.camel@norville.austin.ibm.com> <m14ow0hnal.fsf@fess.ebiederm.org> <1241453259.20170.17.camel@norville.austin.ibm.com> <m1k54wal0j.fsf@fess.ebiederm.org> <20090504230357.GI6766@mit.edu>
+            <4A001E51.4070903@davidnewall.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1241556990_96868P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 05 May 2009 16:56:30 -0400
+Message-ID: <109151.1241556990@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 05, 2009 at 09:39:38PM +0200, Alessio Igor Bogani wrote:
-> >> Please also push down lock_super, no need to have two locking changes in
-> >> this area just after another.
-> >
-> > Do you plan to do that respin? ?I will need the lock_super pushdown for
-> > some sync work. ?I can wait for you if you plan to submit it, otherwise
-> > I'll out it on my TODO list.
-> 
-> Apologize I have completely missed your first replay.
-> 
-> Let me two days for finish that task and for do build and boot tests.
+--==_Exmh_1241556990_96868P
+Content-Type: text/plain; charset=us-ascii
 
-Great!  Thanks a lot for the effort.
+On Tue, 05 May 2009 20:39:05 +0930, David Newall said:
 
+> Whether your patch goes in; whether it doesn't; it now seems there's
+> something fishy about long filenames, and to be safe, perhaps it would
+> be better to just turn off anything to do with FAT filesystems.  Who
+> would care, right?  Unless i turns out that Linux no longer has the
+> essential features.
+> 
+> Unless disrupting Linux was the point, and of course it isn't, it seems
+> that full disclosure is required.  And that's before any patch should
+> even be looked at.
+
+Well, VFAT was in Windows for Workgroups 3.11 or so, back in 1982, and a patent
+only runs 17 years.  So that clock's been ticking for quite some time.  Heck,
+one could probably make a case that if Microsoft hasn't officially squawked
+*yet* about code that infringes on anything that was released in '82, that
+they've basically estoppell'd themselves.
+
+Of course, some spoil-sport is going to come along and say that submarine
+patents don't work that way. ;)
+
+
+
+--==_Exmh_1241556990_96868P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKAKf+cC3lWbTT17ARAnb3AJ9xfeShW5wJGMuG8BMIEeqEmaqChACeIr0G
+PT55JFxpP0DzBhf1RsBuohQ=
+=ldZ2
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1241556990_96868P--
