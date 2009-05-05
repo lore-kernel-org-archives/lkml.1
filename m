@@ -1,161 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755504AbZEEFq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbZEEFqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755504AbZEEFq0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 01:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbZEEFqR
+	id S1757311AbZEEFqt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 01:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbZEEFqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 01:46:17 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:65071 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752680AbZEEFqQ convert rfc822-to-8bit (ORCPT
+	Tue, 5 May 2009 01:46:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44194
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753975AbZEEFqe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 01:46:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=NttJYY55uyA/ja8OCZm/CHVJjjED5Bn9QXOyb+bK/mQTW5MvFf4oSt5Z76ISCXBzdn
-         aletQ7+4uKWRlTFNBUF56RLyI8QxCO1KqbkI/073VO+n80Y5Sm3KtYaUoBkrr8ziw62a
-         tbrPleAFhzgg5s3519zbxPxsRf0j4mvGKQJho=
-MIME-Version: 1.0
-In-Reply-To: <b1bc6a000905042131t3656f14arc98dc4a518543a86@mail.gmail.com>
-References: <egHshlwQQFE.A.8CD.mpE9JB@chimera>
-	 <20090428172845R.fujita.tomonori@lab.ntt.co.jp>
-	 <db2b43030904280218v61fded68rc585ce9c58ba1cce@mail.gmail.com>
-	 <20090428184431Z.fujita.tomonori@lab.ntt.co.jp>
-	 <db2b43030905032227u73a41ec3wa511efcef6a22169@mail.gmail.com>
-	 <da824cf30905041858t2cbd0fa2x4075f387973e2700@mail.gmail.com>
-	 <b1bc6a000905042131t3656f14arc98dc4a518543a86@mail.gmail.com>
-Date: Tue, 5 May 2009 10:46:16 +0500
-Message-ID: <db2b43030905042246j770578e0xeb8d8ce8c01853d6@mail.gmail.com>
-Subject: Re: [Bug #13001] PCI-DMA: Out of IOMMU space
-From: =?UTF-8?B?0JTQsNC90LjQu9CwINCW0YPQutC+0YbQutC40Lk=?= 
-	<optimusgd@gmail.com>
-To: adam radford <aradford@gmail.com>
-Cc: Grant Grundler <grundler@google.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 5 May 2009 01:46:34 -0400
+Date: Mon, 04 May 2009 22:46:28 -0700 (PDT)
+Message-Id: <20090504.224628.160654802.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-Full dmesg there: http://bugzilla.kernel.org/attachment.cgi?id=21222
-Got this:
-------------[ cut here ]------------
-WARNING: at fs/namei.c:1251 lookup_one_len+0xe9/0x100()
-Hardware name: HP xw9400 Workstation
-Modules linked in: fuse nfs auth_rpcgss lockd sunrpc scsi_wait_scan
-usbhid ohci_hcd usb_storage usb_libusual ehci_hcd usbcore
-Pid: 2717, comm: mount Not tainted 2.6.30-rc4-git1 #1
-Call Trace:
- [<ffffffff8023ceca>] ? warn_slowpath+0xea/0x160
- [<ffffffff80564d06>] ? printk+0x4e/0x58
- [<ffffffff8032daea>] ? prepare_error_buf+0x51a/0x610
- [<ffffffff802a0cfe>] ? new_slab+0x1ee/0x330
- [<ffffffff8032dcc1>] ? reiserfs_info+0x71/0xa0
- [<ffffffff802b3df9>] ? lookup_one_len+0xe9/0x100
- [<ffffffff8033eaed>] ? reiserfs_xattr_init+0x3d/0xb0
- [<ffffffff8032c4e3>] ? reiserfs_fill_super+0x663/0xb50
- [<ffffffff805678f2>] ? __down_write_nested+0xb2/0xc0
- [<ffffffff802a39e5>] ? kmem_cache_alloc+0x65/0xa0
- [<ffffffff802acb22>] ? sget+0x3c2/0x410
- [<ffffffff802ace94>] ? get_sb_bdev+0x174/0x1a0
- [<ffffffff8032be80>] ? reiserfs_fill_super+0x0/0xb50
- [<ffffffff802ab926>] ? vfs_kern_mount+0x56/0xd0
- [<ffffffff802aba03>] ? do_kern_mount+0x53/0x120
- [<ffffffff802c474a>] ? do_mount+0x2ba/0x8c0
- [<ffffffff805691c8>] ? bad_gs+0xc34/0x1e0c
- [<ffffffff802c4e1d>] ? sys_mount+0xcd/0x100
- [<ffffffff8020b4eb>] ? system_call_fastpath+0x16/0x1b
----[ end trace 93edef2de057a0ed ]---
-
-and
-
-------------[ cut here ]------------
-WARNING: at lib/dma-debug.c:625 check_unmap+0x3b3/0x610()
-Hardware name: HP xw9400 Workstation
-forcedeth 0000:00:09.0: DMA-API: device driver frees DMA memory with
-wrong function [device address=0x0000000023780c02] [size=42 bytes]
-[mapped as single] [unmapped as page]
-Modules linked in: nfsd exportfs iptable_filter iptable_mangle
-ip_tables x_tables snd_seq snd_seq_device vboxnetflt vboxdrv
-snd_hda_codec_realtek snd_hda_intel snd_hda_codec nvidia(P) snd_pcm
-snd_timer snd firewire_ohci firewire_core soundcore snd_page_alloc
-tpm_infineon tpm forcedeth floppy tpm_bios fuse nfs auth_rpcgss lockd
-sunrpc scsi_wait_scan usbhid ohci_hcd usb_storage usb_libusual
-ehci_hcd usbcore
-Pid: 0, comm: swapper Tainted: P        W  2.6.30-rc4-git1 #1
-Call Trace:
- <IRQ>  [<ffffffff8023ceca>] ? warn_slowpath+0xea/0x160
- [<ffffffff80231ad7>] ? task_rq_lock+0x47/0x90
- [<ffffffff8029b287>] ? dma_pool_alloc+0x1b7/0x2d0
- [<ffffffffa0059692>] ? ohci_urb_enqueue+0x1a2/0x980 [ohci_hcd]
- [<ffffffff80231a63>] ? __wake_up+0x43/0x70
- [<ffffffff802343f4>] ? find_busiest_group+0x244/0x920
- [<ffffffffa00073b7>] ? usb_hcd_submit_urb+0x117/0xa40 [usbcore]
- [<ffffffff803f0bb3>] ? check_unmap+0x3b3/0x610
- [<ffffffff803f0e58>] ? debug_dma_unmap_page+0x48/0x50
- [<ffffffffa014e639>] ? nv_tx_done_optimized+0xd9/0x2c0 [forcedeth]
- [<ffffffffa0151346>] ? nv_napi_poll+0x76/0x630 [forcedeth]
- [<ffffffff80256a1b>] ? hrtimer_get_next_event+0xdb/0xf0
- [<ffffffff804dcc47>] ? net_rx_action+0x87/0x130
- [<ffffffff802421fb>] ? __do_softirq+0x7b/0x110
- [<ffffffff8020c56c>] ? call_softirq+0x1c/0x30
- [<ffffffff8020e315>] ? do_softirq+0x35/0x80
- [<ffffffff80242055>] ? irq_exit+0x95/0xa0
- [<ffffffff8020db05>] ? do_IRQ+0x85/0xf0
- [<ffffffff8020be13>] ? ret_from_intr+0x0/0xa
- <EOI>  [<ffffffff80213182>] ? default_idle+0x42/0x50
- [<ffffffff802131c4>] ? c1e_idle+0x34/0x100
- [<ffffffff80258279>] ? __atomic_notifier_call_chain+0x19/0x50
- [<ffffffff8020a09a>] ? cpu_idle+0x5a/0xc0
----[ end trace 93edef2de057a0ee ]---
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n455lGqu029578
 
 
+1) virtio_net fixes:
 
-2009/5/5 adam radford <aradford@gmail.com>:
-> 2009/5/4 Grant Grundler <grundler@google.com>:
->> 2009/5/3 –î–∞–Ω–∏–ª–∞ –ñ—É–∫–æ—Ü–∫–∏–π <optimusgd@gmail.com>:
->> ...
->>> WARNING: at lib/dma-debug.c:607 check_unmap+0x542/0x610()
->>> Hardware name: HP xw9400 Workstation
->>> 3w-9xxx 0001:45:00.0: DMA-API: device driver tries to free DMA memory
->>> it has not allocated [device address=0x0000000000000000] [size=36
->>> bytes]
->>
->> This is definitely a driver bug. Just follow the stack trace back to
->> the device driver.
->>
->
-> I think this is a regression from the scsi_dma_map()/unmap() changes a while
-> back.
->
-> Can you try this patch?
->
-> Thanks,
->
-> -Adam
->
-> diff -Naur linux-2.6.30-rc4/drivers/scsi/3w-9xxx.c
-> linux-2.6.30-rc4.new/drivers/scsi/3w-9xxx.c
-> --- linux-2.6.30-rc4/drivers/scsi/3w-9xxx.c ¬† ¬† 2009-05-04 21:19:49.000000000 -0700
-> +++ linux-2.6.30-rc4.new/drivers/scsi/3w-9xxx.c 2009-05-04
-> 21:23:59.000000000 -0700
-> @@ -1978,7 +1978,8 @@
-> ¬†{
-> ¬† ¬† ¬† ¬†struct scsi_cmnd *cmd = tw_dev->srb[request_id];
->
-> - ¬† ¬† ¬† scsi_dma_unmap(cmd);
-> + ¬† ¬† ¬† if (cmd->SCp.phase == TW_PHASE_SGLIST)
-> + ¬† ¬† ¬† ¬† ¬† ¬† ¬† scsi_dma_unmap(cmd);
-> ¬†} /* End twa_unmap_scsi_data() */
->
-> ¬†/* scsi_host_template initializer */
->
+   Garbage in on-stack scatterlist entries.
+   Missing include breaks some builds.
 
+2) Unloading network device driver can hang because netconsole doesn't
+   properly listen for unregister events.
 
+3) skb_tx_hash()'s hash distribution regressed in 2.6.30 hurting performance
+   for forwarding workloads.
 
--- 
-–° —É–≤–∞–∂–µ–Ω–∏–µ–º –î–∞–Ω–∏–ª–∞ –ñ—É–∫–æ—Ü–∫–∏–π, —Å–∏—Å—Ç–µ–º–Ω—ã–π –∞–¥–º–∏–Ω–∏—Å—Ç—Ä–∞—Ç–æ—Ä –ó–ê–û "–†–æ—Å–Ω–µ—Ñ—Ç–µ–≥–∞–∑–º–∞—à"
+4) EHEA oops fixes.
+
+5) splice() skb->sk oops fix, regression from 2.6.29.
+
+6) ALB mode locking in bonding driver is busted.
+
+7) Netfilter's xt_socket has broken Kconfig deps, causing build bustage.
+
+8) ne2k-pci registers devices too early, before it sets the MAC
+   address in the netdevice structure.
+
+9) New CDC EEM USB network driver.
+
+10) New smsc95xx device IDs and unbolix LEDs.
+
+11) Packet classifier filter stores priorities wrongly such that deletion
+    of entries becomes impossible.
+
+12) TCP uses wrong RTO (constant TCP_RTO_MIN, instead of what the stack
+    has computed over time) in tcp_prequeue().
+
+13) Several wireless (modprobe deadlock in mac80211, ath5k debugging code
+    buffer overrun) and bluetooth (sysfs synchronization problems wrt.
+    workqueues) fixes.
+
+14) br2684 ATM driver is busted due to error in netdev_ops conversion.
+
+Please pull, thanks a lot!
+
+The following changes since commit b4348f32dae3cb6eb4bc21c7ed8f76c0b11e9d6a:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://oss.sgi.com/xfs/xfs
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Alan Jenkins (1):
+      mac80211: fix modprobe deadlock by not calling wep_init under rtnl_lock
+
+Alex Williamson (2):
+      virtio_net: Cleanup command queue scatterlist usage
+      virtio_net: Fix function name typo
+
+Bob Copeland (1):
+      ath5k: fix buffer overrun in rate debug code
+
+Bruno Pr√©mont (1):
+      netconsole: take care of NETDEV_UNREGISTER event
+
+David S. Miller (2):
+      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+      Merge branch 'master' of git://git.kernel.org/.../holtmann/bluetooth-2.6
+
+Eric Dumazet (3):
+      net: Fix skb_tx_hash() for forwarding workloads.
+      netfilter: use likely() in xt_info_rdlock_bh()
+      bonding: bond_slave_info_query() fix
+
+Grant Likely (1):
+      virtio: add missing include to virtio_net.h
+
+Hannes Hering (1):
+      ehea: fix invalid pointer access
+
+Jarek Poplawski (1):
+      net: Fix oops when splicing skbs from a frag_list.
+
+Jay Vosburgh (1):
+      bonding: fix alb mode locking regression
+
+Jesse Brandeburg (1):
+      e1000: fix virtualization bug
+
+Jiri Pirko (1):
+      bonding: correct the cleanup in bond_create()
+
+Johannes Berg (2):
+      iwlwifi: notify on scan completion even when shutting down
+      mac80211: default to automatic power control
+
+Jussi Kivilinna (1):
+      rndis_wlan: fix initialization order for workqueue&workers
+
+Laszlo Attila Toth (1):
+      xt_socket: checks for the state of nf_conntrack
+
+Lennert Buytenhek (2):
+      mv643xx_eth: OOM handling fixes
+      mv643xx_eth: 64bit mib counter read fix
+
+Lubomir Rintel (1):
+      ne2k-pci: Do not register device until initialized.
+
+Marcel Holtmann (1):
+      Bluetooth: Fix issue with sysfs handling for connections
+
+Omar Laazimani (1):
+      usbnet: CDC EEM support (v5)
+
+Rabin Vincent (1):
+      Subject: [PATCH] br2684: restore net_dev initialization
+
+Robert Love (1):
+      net: Only store high 16 bits of kernel generated filter priorities
+
+Satoru SATOH (1):
+      tcp: Fix tcp_prequeue() to get correct rto_min value
+
+Sergey Senozhatsky (1):
+      cxgb3: fixing gcc 4.4 compiler warning: suggest parentheses around operand of ‚Äò!‚Äô
+
+Stephen Rothwell (1):
+      wireless: remove unneeded EXPORT_SYMBOL the tickles a powerpc compiler bug
+
+Steve Glendinning (2):
+      smsc95xx: configure LED outputs
+      smsc95xx: add support for LAN9512 and LAN9514
+
+ drivers/net/bonding/bond_alb.c              |   12 +-
+ drivers/net/bonding/bond_main.c             |   36 +--
+ drivers/net/cxgb3/t3_hw.c                   |    2 +-
+ drivers/net/e1000/e1000_main.c              |    2 +-
+ drivers/net/ehea/ehea.h                     |    2 +-
+ drivers/net/ehea/ehea_main.c                |   31 ++-
+ drivers/net/mv643xx_eth.c                   |   24 +-
+ drivers/net/ne2k-pci.c                      |    7 +-
+ drivers/net/netconsole.c                    |   11 +-
+ drivers/net/usb/Kconfig                     |   14 +
+ drivers/net/usb/Makefile                    |    1 +
+ drivers/net/usb/cdc_eem.c                   |  381 +++++++++++++++++++++++++++
+ drivers/net/usb/smsc95xx.c                  |   15 +
+ drivers/net/usb/smsc95xx.h                  |    3 +
+ drivers/net/virtio_net.c                    |   24 +-
+ drivers/net/wireless/ath5k/debug.c          |    2 +-
+ drivers/net/wireless/iwlwifi/iwl-scan.c     |    4 +-
+ drivers/net/wireless/iwlwifi/iwl3945-base.c |    1 -
+ drivers/net/wireless/rndis_wlan.c           |   14 +-
+ include/linux/netfilter/x_tables.h          |    4 +-
+ include/linux/usb/cdc.h                     |    3 +
+ include/linux/virtio_net.h                  |    1 +
+ include/net/bluetooth/hci_core.h            |    1 +
+ include/net/tcp.h                           |   14 +-
+ net/atm/br2684.c                            |    1 +
+ net/bluetooth/hci_conn.c                    |    2 +
+ net/bluetooth/hci_sysfs.c                   |   74 +++---
+ net/core/dev.c                              |    9 +-
+ net/core/skbuff.c                           |   27 +-
+ net/ipv4/tcp_input.c                        |   10 -
+ net/mac80211/main.c                         |   20 +-
+ net/netfilter/Kconfig                       |    1 +
+ net/sched/cls_api.c                         |    2 +-
+ 33 files changed, 598 insertions(+), 157 deletions(-)
+ create mode 100644 drivers/net/usb/cdc_eem.c
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
