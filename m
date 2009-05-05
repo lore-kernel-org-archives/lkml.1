@@ -1,140 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbZEELJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758521AbZEELPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756264AbZEELJi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 07:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757912AbZEELJQ
+	id S1758521AbZEELPf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 07:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbZEELPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 07:09:16 -0400
-Received: from cmpxchg.org ([85.214.51.133]:52338 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756499AbZEELJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 07:09:13 -0400
-Date: Tue, 5 May 2009 13:06:53 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, hartleys@visionengravers.com,
-       mcrapet@gmail.com, linux@arm.linux.org.uk, fred99@carolina.rr.com,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] Double check memmap is actually valid with a memmap has unexpected holes
-Message-ID: <20090505110653.GA16649@cmpxchg.org>
-References: <20090505082944.GA25904@csn.ul.ie>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090505082944.GA25904@csn.ul.ie>
+	Tue, 5 May 2009 07:15:25 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:19329 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752338AbZEELPZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 07:15:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=gYyHs7yzZ4CAjYcgIqC6Km6AAX2JLgi5aGfMETavgb0jbu4vy8BiXMjf5xvmPzBbSr
+         EwH3npCjDPMgFKd/ev0mH9T+GrRFm4l+hQQz77EjS4LojLeFDHUAurFKYDQ28ZiuRuj8
+         UvpEhw3iYwgc7yFwhNSTqARbTUdZEFcg39/ic=
+MIME-Version: 1.0
+In-Reply-To: <20090505.130225.42780711.wl@gnu.org>
+References: <20090503.132958.227862405.wl@gnu.org>
+	 <20090504.182628.216265620.wl@gnu.org>
+	 <21d7e9970905050344x2a92f9c6l8569b68bff905370@mail.gmail.com>
+	 <20090505.130225.42780711.wl@gnu.org>
+Date: Tue, 5 May 2009 21:15:25 +1000
+Message-ID: <21d7e9970905050415s19201731s4907824ec340e8ee@mail.gmail.com>
+Subject: Re: some kernel issues
+From: Dave Airlie <airlied@gmail.com>
+To: Werner LEMBERG <wl@gnu.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mel,
+On Tue, May 5, 2009 at 9:02 PM, Werner LEMBERG <wl@gnu.org> wrote:
+> From: Dave Airlie <airlied@gmail.com>
+> Subject: Re: some kernel issues
+> Date: Tue, 5 May 2009 20:44:18 +1000
+>
+>>> With my 945GM intel graphics card, I don't get TTYs which I could
+>>> switch to with Ctrl-Alt-Shift-F1, for example, after X has started.
+>>> Only F7 to switch back to graphics mode works fine.  In particular,
+>>> I don't see any boot messages at start-up.  This has worked fine
+>>> with a previous kernel like 2.6.27.21.
+>>
+>> Make sure you haven't enabled kernel mode setting.
+>>
+>> CONFIG_DRM_I915_KMS
+>
+> Uuuuh, completely undocumented.  Thanks!  Will check soon.
+>
 
-On Tue, May 05, 2009 at 09:29:44AM +0100, Mel Gorman wrote:
-> pfn_valid() is meant to be able to tell if a given PFN has valid memmap
-> associated with it or not. In FLATMEM, it is expected that holes always
-> have valid memmap as long as there is valid PFNs either side of the hole.
-> In SPARSEMEM, it is assumed that a valid section has a memmap for the
-> entire section.
-> 
-> However, ARM and maybe other embedded architectures in the future free
-> memmap backing holes to save memory on the assumption the memmap is never
-> used. The page_zone() linkages are then broken even though pfn_valid()
-> returns true. A walker of the full memmap in this case must do additional
-> check to ensure the memmap they are looking at is sane by making sure the
-> zone and PFN linkages are still valid. This is expensive, but walkers of
-> the full memmap are extremely rare.
-> 
-> This was caught before for FLATMEM and hacked around but it hits again
-> for SPARSEMEM because the page_zone() linkages can look ok where the PFN
-> linkages are totally screwed. This looks like a hatchet job but the reality
-> is that any clean solution would end up consuming all the memory saved
-> by punching these unexpected holes in the memmap. For example, we tried
-> marking the memmap within the section invalid but the section size exceeds
-> the size of the hole in most cases so pfn_valid() starts returning false
-> where valid memmap exists. Shrinking the size of the section would increase
-> memory consumption offsetting the gains.
-> 
-> This patch identifies when an architecture is punching unexpected holes
-> in the memmap that the memory model cannot automatically detect. When set,
-> walkers of the full memmap must call memmap_valid_within() for each PFN and
-> passing in what it expects the page and zone to be for that PFN. If it finds
-> the linkages to be broken, it assumes the memmap is invalid for that PFN.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Huh?
 
-I think we also need to fix up show_mem().  Attached is a
-compile-tested patch, please have a look.  I am not sure about memory
-hotplug issues but on a quick glance the vmstat stuff seems to be
-optimistic as well.
+ Choose this option if you want kernel modesetting enabled by default,
+ and you have a new enough userspace to support this. Running old
+ userspaces with this enabled will cause pain.  Note that this causes
+ the driver to bind to PCI devices, which precludes loading things
+ like intelfb.
 
----
-From: Johannes Weiner <hannes@cmpxchg.org>
-Subject: lib: adjust show_mem() to support memmap holes
+But as you don't have it, it doesn't seem like that is the issue
 
-Some architectures free the backing of mem_map holes.  pfn_valid() is
-not able to report this properly, so a stronger check is needed if the
-caller is about to use the page descriptor derived from a pfn.
-
-Change the node walking to zone walking and use memmap_valid_within()
-to check for holes.  This is reliable as it additionally checks for
-page_zone() and page_to_pfn() coherency.
-
-Not-yet-signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
----
- lib/show_mem.c |   21 +++++++++------------
- 1 files changed, 9 insertions(+), 12 deletions(-)
-
-diff --git a/lib/show_mem.c b/lib/show_mem.c
-index 238e72a..ed3c3ec 100644
---- a/lib/show_mem.c
-+++ b/lib/show_mem.c
-@@ -11,29 +11,27 @@
- 
- void show_mem(void)
- {
--	pg_data_t *pgdat;
- 	unsigned long total = 0, reserved = 0, shared = 0,
- 		nonshared = 0, highmem = 0;
-+	struct zone *zone;
- 
- 	printk(KERN_INFO "Mem-Info:\n");
- 	show_free_areas();
- 
--	for_each_online_pgdat(pgdat) {
--		unsigned long i, flags;
-+	for_each_populated_zone(zone) {
-+		unsigned long start = zone->zone_start_pfn;
-+		unsigned long end = start + zone->spanned_pages;
-+		unsigned long pfn;
- 
--		pgdat_resize_lock(pgdat, &flags);
--		for (i = 0; i < pgdat->node_spanned_pages; i++) {
--			struct page *page;
--			unsigned long pfn = pgdat->node_start_pfn + i;
-+		for (pfn = start; pfn < end; pfn++) {
-+			struct page *page = pfn_to_page(pfn);
- 
--			if (unlikely(!(i % MAX_ORDER_NR_PAGES)))
-+			if (unlikely(!(pfn % MAX_ORDER_NR_PAGES)))
- 				touch_nmi_watchdog();
- 
--			if (!pfn_valid(pfn))
-+			if (!memmap_valid_within(pfn, page, zone))
- 				continue;
- 
--			page = pfn_to_page(pfn);
--
- 			if (PageHighMem(page))
- 				highmem++;
- 
-@@ -46,7 +44,6 @@ void show_mem(void)
- 
- 			total++;
- 		}
--		pgdat_resize_unlock(pgdat, &flags);
- 	}
- 
- 	printk(KERN_INFO "%lu pages RAM\n", total);
--- 
-1.6.2.1.135.gde769
-
+Dave.
