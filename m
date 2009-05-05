@@ -1,84 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbZEEFFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702AbZEEFQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756090AbZEEFFB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 01:05:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbZEEFEs
+	id S1753702AbZEEFQy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 01:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZEEFQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 01:04:48 -0400
-Received: from 1wt.eu ([62.212.114.60]:4269 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751515AbZEEFEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 01:04:47 -0400
-Date: Tue, 5 May 2009 07:04:37 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Matthias Saou 
-	<thias@spam.spam.spam.spam.spam.spam.spam.egg.and.spam.freshrpms.net>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Wrong network usage reported by /proc
-Message-ID: <20090505050435.GK570@1wt.eu>
-References: <20090504171408.3e13822c@python3.es.egwn.lan> <49FF2BB2.4030700@cosmosbay.com> <20090504211151.74622f29@python3.es.egwn.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090504211151.74622f29@python3.es.egwn.lan>
-User-Agent: Mutt/1.5.11
+	Tue, 5 May 2009 01:16:45 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:4718 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751059AbZEEFQp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 01:16:45 -0400
+MIME-Version: 1.0
+In-Reply-To: <1241499317.10504.59.camel@pasglop>
+References: <1241499317.10504.59.camel@pasglop>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 4 May 2009 23:16:29 -0600
+Message-ID: <fa686aa40905042216n4d12fba7y21704fba1a201f59@mail.gmail.com>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       akpm <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 09:11:51PM +0200, Matthias Saou wrote:
-> Eric Dumazet wrote :
-> 
-> > Matthias Saou a écrit :
-> > > Hi,
-> > > 
-> > > I'm posting here as a last resort. I've got lots of heavily used RHEL5
-> > > servers (2.6.18 based) that are reporting all sorts of impossible
-> > > network usage values through /proc, leading to unrealistic snmp/cacti
-> > > graphs where the outgoing bandwidth used it higher than the physical
-> > > interface's maximum speed.
-> > > 
-> > > For some details and a test script which compares values from /proc
-> > > with values from tcpdump :
-> > > https://bugzilla.redhat.com/show_bug.cgi?id=489541
-> > > 
-> > > The values collected using tcpdump always seem realistic and match the
-> > > values seen on the remote network equipments. So my obvious conclusion
-> > > (but possibly wrong given my limited knowledge) is that something is
-> > > wrong in the kernel, since it's the one exposing the /proc interface.
-> > > 
-> > > I've reproduced what seems to be the same problem on recent kernels,
-> > > including the 2.6.27.21-170.2.56.fc10.x86_64 I'm running right now. The
-> > > simple python script available here allows to see it quite easily :
-> > > https://www.redhat.com/archives/rhelv5-list/2009-February/msg00166.html
-> > > 
-> > >  * I run the script on my Workstation, I have an FTP server enabled
-> > >  * I download a DVD ISO from a remote workstation : The values match
-> > >  * I start ping floods from remote workstations : The values reported
-> > >    by /proc are much higher than the ones reported by tcpdump. I used
-> > >    "ping -s 500 -f myworkstation" from two remote workstations
-> > > 
-> > > If there's anything flawed in my debugging, I'd love to have someone
-> > > point it out to me. TIA to anyone willing to have a look.
-> > > 
-> > > Matthias
-> > > 
-> > 
-> > I could not reproduce this here... what kind of NIC are you using on
-> > affected systems ? Some ethernet drivers report stats from card itself,
-> > and I remember seeing some strange stats on some hardware, but I cannot
-> > remember which one it was (we were reading NULL values instead of
-> > real ones, once in a while, maybe it was a firmware issue...)
-> 
-> My workstation has a Broadcom BCM5752 (tg3 module). The servers which
-> are most affected have Intel 82571EB (e1000e). But the issue is that
-> with /proc, the values are a lot _higher_ than with tcpdump, and the
-> tcpdump values seem to be the correct ones.
+Hey Ben,
 
-the e1000 chip reports stats every 2 seconds. So you have to collect
-stats every 2 seconds otherwise you get "camel-looking" stats.
+Can you please also pull in my merge branch?
 
-Willy
+http://ozlabs.org/pipermail/linuxppc-dev/2009-May/071626.html
 
+Thanks,
+g.
+
+On Mon, May 4, 2009 at 10:55 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> Hi Linus !
+>
+> Here are a few things still for .30 for you to merge !
+>
+> Cheers,
+> Ben.
+>
+> The following changes since commit 091438dd5668396328a3419abcbc6591159eb8d1:
+>  Linus Torvalds (1):
+>        Linux 2.6.30-rc4
+>
+> are available in the git repository at:
+>
+>  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+>
+> Benjamin Herrenschmidt (1):
+>      powerpc: Fix setting of oprofile cpu type
+>
+> Grant Likely (1):
+>      powerpc: Update MPC5xxx and Xilinx Virtex maintainer entries
+>
+> Michael Wolf (1):
+>      powerpc adjust oprofile_cpu_type version 3
+>
+>  MAINTAINERS                    |    4 ++--
+>  arch/powerpc/kernel/cputable.c |   15 ++++++++++-----
+>  2 files changed, 12 insertions(+), 7 deletions(-)
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
