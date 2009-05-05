@@ -1,280 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZEEIKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754308AbZEEIOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218AbZEEIKJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 04:10:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbZEEIJo
+	id S1754308AbZEEIOb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 04:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbZEEIOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 04:09:44 -0400
-Received: from mx32b01.es6.egwn.net ([195.10.6.123]:51074 "EHLO
-	mx1.es6.egwn.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754341AbZEEIJl (ORCPT
+	Tue, 5 May 2009 04:14:14 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:36247 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751171AbZEEIOL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 04:09:41 -0400
-Date: Tue, 5 May 2009 10:09:39 +0200
-From: Matthias Saou 
-	<thias@spam.spam.spam.spam.spam.spam.spam.egg.and.spam.freshrpms.net>
-To: Willy Tarreau <w@1wt.eu>
-Cc: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Wrong network usage reported by /proc
-Message-ID: <20090505100939.1e0932c4@python3.es.egwn.lan>
-In-Reply-To: <20090505055032.GA29582@1wt.eu>
-References: <20090504171408.3e13822c@python3.es.egwn.lan>
-	<49FF2BB2.4030700@cosmosbay.com>
-	<20090504211151.74622f29@python3.es.egwn.lan>
-	<20090505050435.GK570@1wt.eu>
-	<49FFCD08.7050600@cosmosbay.com>
-	<20090505055032.GA29582@1wt.eu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="MP_/l6Kc96JmQ=e_4SXVT+=usdR"
+	Tue, 5 May 2009 04:14:11 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Matt Mackall <mpm@selenic.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
+       security@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Dave Jones <davej@redhat.com>
+References: <20090504125114.5e391564@chukar>
+	<alpine.LFD.2.01.0905041159480.4983@localhost.localdomain>
+	<20090504125124.0f469970@infradead.org>
+	<m1vdogbows.fsf@fess.ebiederm.org>
+	<alpine.LFD.2.01.0905041514350.4983@localhost.localdomain>
+	<20090505055011.GE31071@waste.org> <20090505063156.GA24504@elte.hu>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 05 May 2009 01:14:05 -0700
+In-Reply-To: <20090505063156.GA24504@elte.hu> (Ingo Molnar's message of "Tue\, 5 May 2009 08\:31\:56 +0200")
+Message-ID: <m14ow0ynjm.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: mingo@elte.hu, davej@redhat.com, greg@kroah.com, akpm@linux-foundation.org, mingo@redhat.com, roland@redhat.com, alan@lxorguk.ukuu.org.uk, eparis@redhat.com, linux-security-module@vger.kernel.org, jmorris@namei.org, linux-kernel@vger.kernel.org, security@kernel.org, jake@lwn.net, arjan@infradead.org, torvalds@linux-foundation.org, mpm@selenic.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Ingo Molnar <mingo@elte.hu>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4337]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [Security] [PATCH] proc: avoid information leaks to non-privileged processes
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---MP_/l6Kc96JmQ=e_4SXVT+=usdR
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Ingo Molnar <mingo@elte.hu> writes:
 
-Willy Tarreau wrote :
+> * Matt Mackall <mpm@selenic.com> wrote:
+>
+>> As to what's the appropriate sort of RNG for ASLR to use, finding 
+>> a balance between too strong and too weak is tricky. [...]
+>
+> In exec-shield i mixed 'easily accessible and fast' semi-random 
+> state to the get_random_int() result: xor-ed the cycle counter, the 
+> pid and a kernel address to it. That strengthened the result in a 
+> pretty practical way (without strengthening the theoretical 
+> randomless - each of those items are considered guessable) and does 
+> so without weakening the entropy of the random pool.
 
-> On Tue, May 05, 2009 at 07:22:16AM +0200, Eric Dumazet wrote:
-> > Willy Tarreau a =E9crit :
-> > > On Mon, May 04, 2009 at 09:11:51PM +0200, Matthias Saou wrote:
-> > >> Eric Dumazet wrote :
-> > >>
-> > >>> Matthias Saou a =E9crit :
-> > >>>> Hi,
-> > >>>>
-> > >>>> I'm posting here as a last resort. I've got lots of heavily used R=
-HEL5
-> > >>>> servers (2.6.18 based) that are reporting all sorts of impossible
-> > >>>> network usage values through /proc, leading to unrealistic snmp/ca=
-cti
-> > >>>> graphs where the outgoing bandwidth used it higher than the physic=
-al
-> > >>>> interface's maximum speed.
-> > >>>>
-> > >>>> For some details and a test script which compares values from /proc
-> > >>>> with values from tcpdump :
-> > >>>> https://bugzilla.redhat.com/show_bug.cgi?id=3D489541
-> > >>>>
-> > >>>> The values collected using tcpdump always seem realistic and match=
- the
-> > >>>> values seen on the remote network equipments. So my obvious conclu=
-sion
-> > >>>> (but possibly wrong given my limited knowledge) is that something =
-is
-> > >>>> wrong in the kernel, since it's the one exposing the /proc interfa=
-ce.
-> > >>>>
-> > >>>> I've reproduced what seems to be the same problem on recent kernel=
-s,
-> > >>>> including the 2.6.27.21-170.2.56.fc10.x86_64 I'm running right now=
-. The
-> > >>>> simple python script available here allows to see it quite easily :
-> > >>>> https://www.redhat.com/archives/rhelv5-list/2009-February/msg00166=
-.html
-> > >>>>
-> > >>>>  * I run the script on my Workstation, I have an FTP server enabled
-> > >>>>  * I download a DVD ISO from a remote workstation : The values mat=
-ch
-> > >>>>  * I start ping floods from remote workstations : The values repor=
-ted
-> > >>>>    by /proc are much higher than the ones reported by tcpdump. I u=
-sed
-> > >>>>    "ping -s 500 -f myworkstation" from two remote workstations
-> > >>>>
-> > >>>> If there's anything flawed in my debugging, I'd love to have someo=
-ne
-> > >>>> point it out to me. TIA to anyone willing to have a look.
-> > >>>>
-> > >>>> Matthias
-> > >>>>
-> > >>> I could not reproduce this here... what kind of NIC are you using on
-> > >>> affected systems ? Some ethernet drivers report stats from card its=
-elf,
-> > >>> and I remember seeing some strange stats on some hardware, but I ca=
-nnot
-> > >>> remember which one it was (we were reading NULL values instead of
-> > >>> real ones, once in a while, maybe it was a firmware issue...)
-> > >> My workstation has a Broadcom BCM5752 (tg3 module). The servers which
-> > >> are most affected have Intel 82571EB (e1000e). But the issue is that
-> > >> with /proc, the values are a lot _higher_ than with tcpdump, and the
-> > >> tcpdump values seem to be the correct ones.
-> > >=20
-> > > the e1000 chip reports stats every 2 seconds. So you have to collect
-> > > stats every 2 seconds otherwise you get "camel-looking" stats.
-> > >=20
-> >=20
-> > I looked at e1000e driver, and apparently tx_packets & tx_bytes are com=
-puted
-> > by the TX completion routine, not by the chip.
->=20
-> Ah I thought that was the chip which returned those stats every 2 seconds,
-> otherwise I don't see the reason to delay their reporting. Wait, I'm spea=
-king
-> about e1000, never tried e1000e. Maybe there have been changes there. Any=
-way,
-> Matthias talked about RHEL5's 2.6.18 in which I don't think there was e10=
-00e.
->=20
-> Anyway we did not get any concrete data for now, so it's hard to tell (I
-> haven't copy-pasted the links above in my browser yet).
+The trouble is, that thinking completely misses the problem, and I
+expect that is why we have a problem.  Throwing a bunch of possibly
+truly random values into the pot for luck is nice.  But you didn't
+throw in a pseudo random number generator.  An unpredictable sequence
+that is guaranteed to change from one invocation to the next.
 
-If you need any more data, please just ask. What makes me wonder most,
-though, is that tcpdump and iptraf report what seem to be correct
-bandwidth values (they seem to use the same low level access for their
-counters) whereas snmp and ifconfig (which seem to use /proc for
-theirs) report unrealistically high values.
+In a very practical sense a pseudo random generator is completely
+sufficient.  Throwing in a few truly random numbers guards against
+attacks on the random number generator.
 
-The tcpdump vs. /proc would be the first thing to look at, since it
-might give hints as to where the problem might lie, no?
+What we have now is a hash over an a value that changes every 5 minutes
+and some well known values.
 
-=46rom there, I could collect any data one might find relevant to
-diagnose further.
-
-I'm attaching the simple python script I've used for testing.
-
-Matthias
-
---=20
-Clean custom Red Hat Linux rpm packages : http://freshrpms.net/
-Fedora release 10 (Cambridge) - Linux kernel
-2.6.27.21-170.2.56.fc10.x86_64 Load : 0.19 0.15 0.05
-
---MP_/l6Kc96JmQ=e_4SXVT+=usdR
-Content-Type: text/x-python
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=bandwidth-monitor.py
-
-#!/usr/bin/python
-import re
-import time
-import thread
-import getopt
-import signal
-import sys
-from subprocess import Popen, PIPE, STDOUT
-
-# TODO print not refreshing correctly
-
-def get_bytes_from_tcpdump(interface, src, byte_values):
-    command = Popen(['tcpdump', '-n', '-e', '-p', '-l', '-v', '-i',
-                     interface, 'src', src], stdout=PIPE, stderr=PIPE,
-                     bufsize=0)
-    while 1:
-        line = command.stdout.readline()
-        if not line:
-            # time.sleep(1)
-            continue
-        bytes_pattern = re.search('length \d*', line)
-        # dest_pattern = re.search('> .*: ', line)
-
-        if bytes_pattern:
-            s = bytes_pattern.group(0)
-            bytes = int(s[7:]) + 5
-        else:
-            # ARP packet
-            bytes = 28 + 14
-
-        byte_values[0] += bytes
-        byte_values[1] += 1
-        # time.sleep(1)
-
-        # if dest_pattern:
-        #     s = dest_pattern.group()
-        #     dest = s[2:len(s)-2]
-
-def get_bytes_from_proc(interface, byte_values):
-    wrap = 2**32
-    offset = read_proc(interface)
-    while(1):
-        current_bytes = read_proc(interface)
-        increase = current_bytes - offset
-        if increase < 0:
-            increase = (wrap - (byte_values[0] % wrap)) + current_bytes
-        byte_values[0] += increase
-        offset = current_bytes
-        time.sleep(1)
-
-def get_bytes_from_ifconfig(interface, byte_values):
-    offset = read_ifconfig(interface)
-    while(1):
-        bytes = read_ifconfig(interface)
-        byte_values[0] += (bytes - offset)
-        offset = bytes
-        time.sleep(1)
-
-def read_ifconfig(interface):
-    command = Popen(['/sbin/ifconfig', interface], stdout=PIPE, stderr=PIPE)
-    # received bytes
-    # lines = command.communicate()[0].split()[34]
-    # transmitted bytes
-    try:
-        s = command.communicate()
-    except Exception, e:
-        print "failed: %r" % e
-    bytes = int(s[0].split()[38].split(':')[1])
-    return bytes
-
-def read_proc(interface):
-    f = open('/proc/net/dev')
-    for line in f:
-        values = line.split()
-        i = values[0].split(':')[0]
-        if interface == i:
-            bytes = int(values[8])
-            # received bytes
-            # bytes = int(values[0].split(':')[1])
-            f.close()
-            return bytes
-    f.close()
-
-def signal_handler(signum, frame):
-#    print "bye"
-    sys.exit(0)
-
-def main(interface, host):
-    signal.signal(signal.SIGINT, signal_handler)
-
-    byte_value_tcpdump = [0, 0]
-    byte_value_proc = [0]
-    byte_value_ifconfig = [0]
-
-    thread.start_new_thread(get_bytes_from_tcpdump,
-                            (interface, host, byte_value_tcpdump))
-    thread.start_new_thread(get_bytes_from_proc, (interface, byte_value_proc))
-    # thread.start_new_thread(get_bytes_from_ifconfig, (interface,
-    #                                                   byte_value_ifconfig))
-
-    while 1:
-        s = "TCPDUMP: %d (%d packets)\nPROC:    %d" % (byte_value_tcpdump[0],
-                                                       byte_value_tcpdump[1],
-                                                       byte_value_proc[0])
-        print s
-        time.sleep(1)
-
-def usage():
-    print "Usage: monitor -i interface (e.g. eth0) -m host_ip"
-
-if __name__ == "__main__":
-    interface = None
-    ip = None
-    opts, args = getopt.getopt(sys.argv[1:], "hi:m:", ["help"])
-    for o, a in opts:
-        if o == '-i':
-            interface = a
-        elif o == '-m':
-            ip = a
-        elif o in ['-h', '--help']:
-            usage()
-            sys.exit()
-    if not interface or not ip:
-        usage()
-        sys.exit()
-
-    main(interface, ip)
-
-
---MP_/l6Kc96JmQ=e_4SXVT+=usdR--
+Eric
