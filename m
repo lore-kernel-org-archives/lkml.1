@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759122AbZEFDwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752402AbZEFEXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759122AbZEFDwB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 23:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756133AbZEFDvq
+	id S1752402AbZEFEXs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 00:23:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbZEFEXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 23:51:46 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39760 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758873AbZEFDvp (ORCPT
+	Wed, 6 May 2009 00:23:35 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51086 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750789AbZEFEXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 23:51:45 -0400
-Date: Wed, 6 May 2009 04:51:38 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Alessio Igor Bogani <abogani@texware.it>, Jonathan Corbet <corbet@lwn.net>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LFSDEV <linux-fsdevel@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH vfs-2.6:for-next] vfs: remount_fs BKL pushdown
-Message-ID: <20090506035138.GP8633@ZenIV.linux.org.uk>
-References: <1240646945-7970-1-git-send-email-abogani@texware.it> <20090425082349.GA2475@infradead.org> <20090505133743.GA663@infradead.org> <63a49ef40905051239r61fe7f4cg6f24e13df30dc940@mail.gmail.com> <20090505204352.GA23343@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090505204352.GA23343@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 6 May 2009 00:23:34 -0400
+Message-Id: <20090506042101.231470089@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 06 May 2009 00:21:01 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 00/11] [GIT PULL] tracing/ring-buffer: various updates
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 05, 2009 at 04:43:52PM -0400, Christoph Hellwig wrote:
-> On Tue, May 05, 2009 at 09:39:38PM +0200, Alessio Igor Bogani wrote:
-> > >> Please also push down lock_super, no need to have two locking changes in
-> > >> this area just after another.
-> > >
-> > > Do you plan to do that respin? ?I will need the lock_super pushdown for
-> > > some sync work. ?I can wait for you if you plan to submit it, otherwise
-> > > I'll out it on my TODO list.
-> > 
-> > Apologize I have completely missed your first replay.
-> > 
-> > Let me two days for finish that task and for do build and boot tests.
-> 
-> Great!  Thanks a lot for the effort.
 
-Actually, I'm not sure that you are right.  Especially if we go for your
-"always hold s_umount for sync_filesystem()"; in that case we are guaranteed
-that we'll have an exclusion between ->write_super() and that sucker, so
-there's no reason to push it down into filesystems that do not use lock_super()
-at all.  And that'd be most of them...
+Ingo,
 
-Note that I've taken all callers of remount under exclusive s_umount (see
-#untested in the vfs tree).
+I rebased again (using ftrace-2 now) and made some minor clean
+ups to the patches, as well as added several new ones.
+
+The last patch of the series adds a benchmark/tester for the 
+ring buffer. It creates a producer and consumer and measures the time
+and number of entries recorded. It prints out the results via
+pr_info every 10 seconds.
+
+Please pull the latest tip/tracing/ftrace-2 tree, which can be found at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/ftrace-2
+
+
+Steven Rostedt (10):
+      ring-buffer: export symbols
+      ring-buffer: add counters for commit overrun and nmi dropped entries
+      tracing: export stats of ring buffers to userspace
+      ring-buffer: convert cpu buffer entries to local_t
+      ring-buffer: record page entries in buffer page descriptor
+      ring-buffer: have read page swap increment counter with page entries
+      ring-buffer: disable writers when resetting buffers
+      tracing: use proper export symbol for tracing api
+      ring-buffer: move big if statement down
+      ring-buffer: add benchmark and tester
+
+Tim Abbott (1):
+      ftrace: use .sched.text, not .text.sched in recordmcount.pl
+
+----
+ include/linux/ring_buffer.h          |    2 +
+ kernel/trace/Kconfig                 |   16 ++
+ kernel/trace/Makefile                |    1 +
+ kernel/trace/ring_buffer.c           |  339 ++++++++++++++++--------------
+ kernel/trace/ring_buffer_benchmark.c |  379 ++++++++++++++++++++++++++++++++++
+ kernel/trace/trace.c                 |   48 ++++-
+ scripts/recordmcount.pl              |    6 +-
+ 7 files changed, 628 insertions(+), 163 deletions(-)
+-- 
