@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756459AbZEFHOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbZEFHQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756459AbZEFHOn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 03:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbZEFHOe
+	id S1757095AbZEFHQw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 03:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbZEFHQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 03:14:34 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44507 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751020AbZEFHOe (ORCPT
+	Wed, 6 May 2009 03:16:43 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:35271 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752032AbZEFHQm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 03:14:34 -0400
-Date: Wed, 6 May 2009 03:14:01 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ptrace_get_task_struct: s/tasklist/rcu/, make it static
-Message-ID: <20090506071400.GB3223@infradead.org>
-References: <20090505232820.GA4377@redhat.com>
+	Wed, 6 May 2009 03:16:42 -0400
+Date: Wed, 6 May 2009 08:15:48 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Jean Delvare <khali@linux-fr.org>, linux-next@vger.kernel.org,
+       Nicolas Pitre <nico@cam.org>, Wolfram Sang <w.sang@pengutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: manual merge of the i2c tree with the arm-current
+	tree
+Message-ID: <20090506071547.GA29466@flint.arm.linux.org.uk>
+References: <20090506131031.83f1b04d.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090505232820.GA4377@redhat.com>
+In-Reply-To: <20090506131031.83f1b04d.sfr@canb.auug.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 01:28:20AM +0200, Oleg Nesterov wrote:
-> - Use rcu_read_lock() instead of tasklist_lock to find/get the task
->   in ptrace_get_task_struct().
+On Wed, May 06, 2009 at 01:10:31PM +1000, Stephen Rothwell wrote:
+> Hi Jean,
 > 
-> - Make it static, it has no callers outside of ptrace.c.
+> Today's linux-next merge of the i2c tree got a conflict in
+> arch/arm/configs/kirkwood_defconfig arch/arm/configs/mv78xx0_defconfig
+> arch/arm/configs/orion5x_defconfig between various commits from the
+> arm-current tree and commit c637675d24618d8e0afe344096a1ad96986c4f50
+> ("i2c/chips: Move max6875 to drivers/misc/eeprom") from the i2c tree.
 
-FYI, there are a couple of other functions in ptrace.c that can be
-static now that everyone uses the common sys_ptrace implementation,
-e.g. ptrace_traceme and ptrace_attach.
+Since defconfig updates are always going to create lots of noise, and
+the files are normally out of date, the *only* sensible way to handle
+updates is to have one tree dealing with them per architecture.
 
-> - The comment doesn't match the reality, this helper does not do
->   any checks. Beacuse it is really trivial and static I removed the
->   whole comment.
+Spreading them across multiple trees and then expecting merges to sort
+out the resulting mess is unreasonable; they just change far too much
+when updates happen.  Moreover, defconfig updates should be in their
+own separate commit and not combined with other changes.
 
-Yeah, when I added the helper it did those checks and it was non-static
-for the various arch ptrace implementations.  Now that it's a private
-helper with just two callers not doing much anymore it's not needed.
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
