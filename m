@@ -1,151 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761299AbZEFO5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbZEFO4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761299AbZEFO5J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 10:57:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932129AbZEFOtn
+	id S1761335AbZEFO4r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 10:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932097AbZEFOtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 10:49:43 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:55910 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760329AbZEFOtd (ORCPT
+	Wed, 6 May 2009 10:49:42 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:55328 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760319AbZEFOtR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 10:49:33 -0400
-Date: Wed, 6 May 2009 10:49:30 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jaswinder@kernel.org, jaswinderrajput@gmail.com, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/core] tracing: trace_output.c, fix false positive
- compiler warning
-In-Reply-To: <20090506143608.GA29044@elte.hu>
-Message-ID: <alpine.DEB.2.00.0905061041450.3239@gandalf.stny.rr.com>
-References: <tip-48dd0fed90e2b1f1ba87401439b85942181c6df3@git.kernel.org> <alpine.DEB.2.00.0905061018260.3239@gandalf.stny.rr.com> <20090506143608.GA29044@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 6 May 2009 10:49:17 -0400
+Date: Wed, 6 May 2009 15:46:31 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, chrisw@redhat.com, device@lanana.org,
+       linux-mm@kvack.org, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 2/6] ksm: dont allow overlap memory addresses registrations.
+In-Reply-To: <20090506152100.41266e4c@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.64.0905061532240.25289@blonde.anvils>
+References: <1241475935-21162-1-git-send-email-ieidus@redhat.com>
+ <1241475935-21162-2-git-send-email-ieidus@redhat.com>
+ <1241475935-21162-3-git-send-email-ieidus@redhat.com> <4A00DD4F.8010101@redhat.com>
+ <4A015C69.7010600@redhat.com> <4A0181EA.3070600@redhat.com>
+ <20090506131735.GW16078@random.random> <Pine.LNX.4.64.0905061424480.19190@blonde.anvils>
+ <20090506140904.GY16078@random.random> <20090506152100.41266e4c@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 6 May 2009, Alan Cox wrote:
+> > the max number of ksm pages that can be allocated at any given time so
+> > to avoid OOM conditions, like the swap-compress logic that limits the
+> > swapdevice size to less than ram.
 
-On Wed, 6 May 2009, Ingo Molnar wrote:
-> > > ---
-> > >  kernel/trace/trace_output.c |    2 +-
-> > >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > > 
-> > > diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-> > > index 5fc51f0..8bd9a2c 100644
-> > > --- a/kernel/trace/trace_output.c
-> > > +++ b/kernel/trace/trace_output.c
-> > > @@ -541,7 +541,7 @@ int register_ftrace_event(struct trace_event *event)
-> > >  	INIT_LIST_HEAD(&event->list);
-> > >  
-> > >  	if (!event->type) {
-> > > -		struct list_head *list;
-> > > +		struct list_head *list = NULL;
-> > 
-> > Actually this is the wrong place to initialize. The correct place 
-> > is in the function that is expected to.
+(I don't know anything about that swap-compress logic and limitation.)
+
 > 
-> does it really matter? It's far more robust to initialize at the 
-> definition site, because there we can be sure there's no 
-> side-effects. This one:
-> 
-> >  	/* Did we used up all 65 thousand events??? */
-> > -	if ((last + 1) > FTRACE_MAX_EVENT)
-> > +	if ((last + 1) > FTRACE_MAX_EVENT) {
-> > +		*list = NULL;
-> >  		return 0;
-> > +	}
-> 
-> Is correct too but needs a semantic check (and ongoing maintenance, 
-> etc.).
+> Are those pages accounted for in the vm_overcommit logic, as if you
+> allocate a big chunk of memory as KSM will do you need the worst case
+> vm_overcommit behaviour preserved and that means keeping the stats
+> correct.
 
-Actually, to answer this, we need to look at the entire code. Just looking 
-at the changes of a patch does not include the big picture.
+As I understand it, KSM won't affect the vm_overcommit behaviour at all.
+Those pages Izik refers to are not allocated up front, they're just a
+limit on the number of process pages which may get held in core at any
+one time, through being shared via the KSM mechanism.
 
-The original code is:
+KSM is not evading vm_committed_space at all, not opening a backdoor
+away from the ordinary mmaps: just collapsing duplicated pages in
+what's been mapped in the usual way, down to single copies.
 
-static int trace_search_list(struct list_head **list)
-{
-        struct trace_event *e;
-        int last = __TRACE_LAST_TYPE;
+So the vm_commited_space accounting is exactly as before: it would
+be a bit odd to be running KSM along with OVERCOMMIT_NEVER, but it
+doesn't change its calculations at all - it will and will have to
+be as pessimistic as it ever was.
 
-        if (list_empty(&ftrace_event_list)) {
-                *list = &ftrace_event_list;
-                return last + 1;
-        }
+The only difference would be in how much memory (mostly lowmem)
+KSM's own data structures will take up - as usual, the kernel
+data structures aren't being accounted, but do take up memory.
 
-        /*
-         * We used up all possible max events,
-         * lets see if somebody freed one.
-         */
-        list_for_each_entry(e, &ftrace_event_list, list) {
-                if (e->type != last + 1)
-                        break;
-                last++;
-        }
-
-        /* Did we used up all 65 thousand events??? */
-        if ((last + 1) > FTRACE_MAX_EVENT)
-                return 0;
-
-        *list = &e->list;
-        return last + 1;
-}
-
-[...]
-                struct list_head *list;
-
-                if (next_event_type > FTRACE_MAX_EVENT) {
-
-                        event->type = trace_search_list(&list);
-                        if (!event->type)
-                                goto out;
-
-                } else {
-
-                        event->type = next_event_type++;
-                        list = &ftrace_event_list;
-                }
-
-                if (WARN_ON(ftrace_find_event(event->type)))
-                        goto out;
-
-                list_add_tail(&event->list, list);
-
-
-
-The caller is:
-
-	struct list_head *list;
-
-	if () {
-		event->type = trace_seach_list(&list);
-	} else {
-		[...]
-		list = &ftrace_event_list;
-	}
-
-This code shows that list is initialized by either trace_seach_list() or 
-set manually.
-
-Thus, my change makes trace_search_list always initialize the list 
-variable. Thus if trace_search_list() is used someplace else, it will not 
-cause us this error again.
-
-If gcc can not figure out that trace_search_list initializes the code 
-(from the original code), the
-
-	struct list_head *list = NULL;
-
-will always be performed, because gcc thinks that's the only way to 
-guarantee that it will be initialized.
-
-My solution, gcc can easily see that trace_search_list will always 
-initialize list, and will not set it needlessly to NULL.
-
--- Steve
-
+Hugh
