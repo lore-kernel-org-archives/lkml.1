@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbZEFOzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761199AbZEFO4B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760948AbZEFOzU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 10:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760376AbZEFOth
+	id S1761199AbZEFO4B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 10:56:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932119AbZEFOtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 10:49:37 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:59280 "EHLO crca.org.au"
+	Wed, 6 May 2009 10:49:40 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:58124 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760228AbZEFOs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 10:48:59 -0400
+	id S1760054AbZEFOtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 10:49:00 -0400
 X-Bogosity: Ham, spamicity=0.000000
 From: Nigel Cunningham <nigel@tuxonice.net>
 To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        tuxonice-devel@lists.tuxonice.net
 Cc: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 15/19] TuxOnIce: Userspace user interface support.
-Date: Thu,  7 May 2009 00:39:11 +1000
-Message-Id: <1241620755-22133-16-git-send-email-nigel@tuxonice.net>
+Subject: [PATCH 13/19] TuxOnIce: File allocator.
+Date: Thu,  7 May 2009 00:39:09 +1000
+Message-Id: <1241620755-22133-14-git-send-email-nigel@tuxonice.net>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
@@ -24,741 +24,1292 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide support for a userspace user interface helper, via which
-progress can be displayed and the user can modify settings for powering
-down or rebooting, cancel hibernation / resuming and interactively debug
-the software.
+Support for writing an image to a single (non-swap) file using the block
+I/O backend. The main advantage over swap support is that it works
+irrespective of how much swap is in use.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- include/linux/netlink.h        |    1 +
- kernel/power/Kconfig           |   17 +
- kernel/power/Makefile          |    2 +
- kernel/power/tuxonice_userui.c |  662 ++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 682 insertions(+), 0 deletions(-)
- create mode 100644 kernel/power/tuxonice_userui.c
+ kernel/power/Kconfig         |    9 +
+ kernel/power/Makefile        |    2 +
+ kernel/power/tuxonice_file.c | 1235 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 1246 insertions(+), 0 deletions(-)
+ create mode 100644 kernel/power/tuxonice_file.c
 
-diff --git a/include/linux/netlink.h b/include/linux/netlink.h
-index d597e15..f220828 100644
---- a/include/linux/netlink.h
-+++ b/include/linux/netlink.h
-@@ -24,6 +24,7 @@
- /* leave room for NETLINK_DM (DM Events) */
- #define NETLINK_SCSITRANSPORT	18	/* SCSI Transports */
- #define NETLINK_ECRYPTFS	19
-+#define NETLINK_TOI_USERUI	20	/* TuxOnIce's userui */
- #define NETLINK_TOI_USM		21	/* Userspace storage manager */
- 
- #define MAX_LINKS 32		
 diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index d8e62b6..f669cdd 100644
+index 1b474a6..51d57d4 100644
 --- a/kernel/power/Kconfig
 +++ b/kernel/power/Kconfig
-@@ -227,6 +227,23 @@ menuconfig TOI_CORE
- 	comment "No compression support available without Cryptoapi support."
- 		depends on TOI_CORE && !CRYPTO
+@@ -192,6 +192,15 @@ menuconfig TOI_CORE
+ 	comment "Image Storage (you need at least one allocator)"
+ 		depends on TOI_CORE
  
-+	config TOI_USERUI
-+		bool "Userspace User Interface support"
-+		depends on TOI_CORE && NET && (VT || SERIAL_CONSOLE)
++	config TOI_FILE
++		bool "File Allocator"
++		depends on TOI_CORE
 +		default y
 +		---help---
-+		  This option enabled support for a userspace based user interface
-+		  to TuxOnIce, which allows you to have a nice display while suspending
-+		  and resuming, and also enables features such as pressing escape to
-+		  cancel a cycle or interactive debugging.
++		  This option enables support for storing an image in a
++		  simple file. This should be possible, but we're still
++		  testing it.
 +
-+	config TOI_USERUI_DEFAULT_PATH
-+		string "Default userui program location"
-+		default "/usr/local/sbin/tuxoniceui_text"
-+		depends on TOI_USERUI
-+		---help---
-+		  This entry allows you to specify a default path to the userui binary.
-+
- 	config TOI_KEEP_IMAGE
- 		bool "Allow Keep Image Mode"
+ 	comment "General Options"
  		depends on TOI_CORE
+ 
 diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-index 9f6d06f..d67a242 100644
+index 3803866..41daada 100644
 --- a/kernel/power/Makefile
 +++ b/kernel/power/Makefile
-@@ -20,6 +20,8 @@ obj-$(CONFIG_TOI_CRYPTO)	+= tuxonice_compress.o
- obj-$(CONFIG_TOI_SWAP)		+= tuxonice_block_io.o tuxonice_swap.o
- obj-$(CONFIG_TOI_FILE)		+= tuxonice_block_io.o tuxonice_file.o
+@@ -17,6 +17,8 @@ endif
+ obj-$(CONFIG_TOI_CORE)		+= tuxonice_core.o
+ obj-$(CONFIG_TOI_CRYPTO)	+= tuxonice_compress.o
  
-+obj-$(CONFIG_TOI_USERUI)	+= tuxonice_userui.o
++obj-$(CONFIG_TOI_FILE)		+= tuxonice_block_io.o tuxonice_file.o
 +
  obj-$(CONFIG_PM)		+= main.o
  obj-$(CONFIG_PM_SLEEP)		+= console.o
  obj-$(CONFIG_FREEZER)		+= process.o
-diff --git a/kernel/power/tuxonice_userui.c b/kernel/power/tuxonice_userui.c
+diff --git a/kernel/power/tuxonice_file.c b/kernel/power/tuxonice_file.c
 new file mode 100644
-index 0000000..c7b1053
+index 0000000..5ceb20a
 --- /dev/null
-+++ b/kernel/power/tuxonice_userui.c
-@@ -0,0 +1,662 @@
++++ b/kernel/power/tuxonice_file.c
+@@ -0,0 +1,1235 @@
 +/*
-+ * kernel/power/user_ui.c
++ * kernel/power/tuxonice_file.c
 + *
-+ * Copyright (C) 2005-2007 Bernard Blackham
-+ * Copyright (C) 2002-2008 Nigel Cunningham (nigel at tuxonice net)
++ * Copyright (C) 2005-2008 Nigel Cunningham (nigel at tuxonice net)
 + *
-+ * This file is released under the GPLv2.
++ * Distributed under GPLv2.
 + *
-+ * Routines for TuxOnIce's user interface.
++ * This file encapsulates functions for usage of a simple file as a
++ * backing store. It is based upon the swapallocator, and shares the
++ * same basic working. Here, though, we have nothing to do with
++ * swapspace, and only one device to worry about.
 + *
-+ * The user interface code talks to a userspace program via a
-+ * netlink socket.
++ * The user can just
 + *
-+ * The kernel side:
-+ * - starts the userui program;
-+ * - sends text messages and progress bar status;
++ * echo TuxOnIce > /path/to/my_file
 + *
-+ * The user space side:
-+ * - passes messages regarding user requests (abort, toggle reboot etc)
++ * dd if=/dev/zero bs=1M count=<file_size_desired> >> /path/to/my_file
 + *
++ * and
++ *
++ * echo /path/to/my_file > /sys/power/tuxonice/file/target
++ *
++ * then put what they find in /sys/power/tuxonice/resume
++ * as their resume= parameter in lilo.conf (and rerun lilo if using it).
++ *
++ * Having done this, they're ready to hibernate and resume.
++ *
++ * TODO:
++ * - File resizing.
 + */
-+
-+#define __KERNEL_SYSCALLS__
 +
 +#include <linux/suspend.h>
-+#include <linux/freezer.h>
-+#include <linux/console.h>
-+#include <linux/ctype.h>
-+#include <linux/tty.h>
-+#include <linux/vt_kern.h>
-+#include <linux/reboot.h>
-+#include <linux/kmod.h>
-+#include <linux/security.h>
++#include <linux/blkdev.h>
++#include <linux/file.h>
++#include <linux/stat.h>
++#include <linux/mount.h>
++#include <linux/statfs.h>
 +#include <linux/syscalls.h>
++#include <linux/namei.h>
++#include <linux/fs.h>
++#include <linux/root_dev.h>
 +
++#include "tuxonice.h"
 +#include "tuxonice_sysfs.h"
 +#include "tuxonice_modules.h"
-+#include "tuxonice.h"
 +#include "tuxonice_ui.h"
-+#include "tuxonice_netlink.h"
-+#include "tuxonice_power_off.h"
++#include "tuxonice_extent.h"
++#include "tuxonice_io.h"
++#include "tuxonice_storage.h"
++#include "tuxonice_block_io.h"
++#include "tuxonice_alloc.h"
++#include "tuxonice_builtin.h"
 +
-+static char local_printf_buf[1024];	/* Same as printk - should be safe */
++static struct toi_module_ops toi_fileops;
 +
-+static struct user_helper_data ui_helper_data;
-+static struct toi_module_ops userui_ops;
-+static int orig_kmsg;
++/* Details of our target.  */
 +
-+static char lastheader[512];
-+static int lastheader_message_len;
-+static int ui_helper_changed; /* Used at resume-time so don't overwrite value
-+				set from initrd/ramfs. */
++static char toi_file_target[256];
++static struct inode *target_inode;
++static struct file *target_file;
++static struct block_device *toi_file_target_bdev;
++static dev_t resume_file_dev_t;
++static int used_devt;
++static int setting_toi_file_target;
++static sector_t target_firstblock, target_header_start;
++static int target_storage_available;
++static int target_claim;
 +
-+/* Number of distinct progress amounts that userspace can display */
-+static int progress_granularity = 30;
++/* Old signatures */
++static char HaveImage[] = "HaveImage\n";
++static char NoImage[] =   "TuxOnIce\n";
++#define sig_size (sizeof(HaveImage) + 1)
 +
-+static DECLARE_WAIT_QUEUE_HEAD(userui_wait_for_key);
++struct toi_file_header {
++	char sig[sig_size];
++	int resumed_before;
++	unsigned long first_header_block;
++	int have_image;
++};
 +
-+/**
-+ * ui_nl_set_state - Update toi_action based on a message from userui.
-+ *
-+ * @n: The bit (1 << bit) to set.
-+ */
-+static void ui_nl_set_state(int n)
-+{
-+	/* Only let them change certain settings */
-+	static const u32 toi_action_mask =
-+		(1 << TOI_REBOOT) | (1 << TOI_PAUSE) |
-+		(1 << TOI_LOGALL) |
-+		(1 << TOI_SINGLESTEP) |
-+		(1 << TOI_PAUSE_NEAR_PAGESET_END);
++/* Header Page Information */
++static int header_pages_reserved;
 +
-+	toi_bkd.toi_action = (toi_bkd.toi_action & (~toi_action_mask)) |
-+		(n & toi_action_mask);
++/* Main Storage Pages */
++static int main_pages_allocated, main_pages_requested;
 +
-+	if (!test_action_state(TOI_PAUSE) &&
-+			!test_action_state(TOI_SINGLESTEP))
-+		wake_up_interruptible(&userui_wait_for_key);
-+}
++#define target_is_normal_file() (S_ISREG(target_inode->i_mode))
 +
-+/**
-+ * userui_post_atomic_restore - Tell userui that atomic restore just happened.
-+ *
-+ * Tell userui that atomic restore just occured, so that it can do things like
-+ * redrawing the screen, re-getting settings and so on.
-+ */
-+static void userui_post_atomic_restore(void)
-+{
-+	toi_send_netlink_message(&ui_helper_data,
-+			USERUI_MSG_POST_ATOMIC_RESTORE, NULL, 0);
-+}
++static struct toi_bdev_info devinfo;
 +
-+/**
-+ * userui_storage_needed - Report how much memory in image header is needed.
-+ */
-+static int userui_storage_needed(void)
-+{
-+	return sizeof(ui_helper_data.program) + 1 + sizeof(int);
-+}
++/* Extent chain for blocks */
++static struct hibernate_extent_chain block_chain;
++
++/* Signature operations */
++enum {
++	GET_IMAGE_EXISTS,
++	INVALIDATE,
++	MARK_RESUME_ATTEMPTED,
++	UNMARK_RESUME_ATTEMPTED,
++};
 +
 +/**
-+ * userui_save_config_info - Fill buffer with config info for image header.
++ * set_devinfo - populate device information
++ * @bdev:		Block device on which the file is.
++ * @target_blkbits:	Number of bits in the page block size of the target
++ *			file inode.
 + *
-+ * @buf: Buffer into which to put the config info we want to save.
++ * Populate the devinfo structure about the target device.
++ *
++ * Background: a sector represents a fixed amount of data (generally 512 bytes).
++ * The hard drive sector size and the filesystem block size may be different.
++ * If fs_blksize mesures the filesystem block size and hd_blksize the hard drive
++ * sector size:
++ *
++ * sector << (fs_blksize - hd_blksize) converts hd sector into fs block
++ * fs_block >> (fs_blksize - hd_blksize) converts fs block into hd sector number
++ *
++ * Here target_blkbits == fs_blksize and hd_blksize == 9, hence:
++ *
++ *	(fs_blksize - hd_blksize) == devinfo.bmap_shift
++ *
++ * The memory page size is defined by PAGE_SHIFT. devinfo.blocks_per_page is the
++ * number of filesystem blocks per memory page.
++ *
++ * Note that blocks are stored after >>. They are used after being <<.
++ * We always only use PAGE_SIZE aligned blocks.
++ *
++ * Side effects:
++ *	devinfo.bdev, devinfo.bmap_shift and devinfo.blocks_per_page are set.
 + */
-+static int userui_save_config_info(char *buf)
++static void set_devinfo(struct block_device *bdev, int target_blkbits)
 +{
-+	*((int *) buf) = progress_granularity;
-+	memcpy(buf + sizeof(int), ui_helper_data.program,
-+			sizeof(ui_helper_data.program));
-+	return sizeof(ui_helper_data.program) + sizeof(int) + 1;
-+}
-+
-+/**
-+ * userui_load_config_info - Restore config info from buffer.
-+ *
-+ * @buf: Buffer containing header info loaded.
-+ * @size: Size of data loaded for this module.
-+ */
-+static void userui_load_config_info(char *buf, int size)
-+{
-+	progress_granularity = *((int *) buf);
-+	size -= sizeof(int);
-+
-+	/* Don't load the saved path if one has already been set */
-+	if (ui_helper_changed)
-+		return;
-+
-+	if (size > sizeof(ui_helper_data.program))
-+		size = sizeof(ui_helper_data.program);
-+
-+	memcpy(ui_helper_data.program, buf + sizeof(int), size);
-+	ui_helper_data.program[sizeof(ui_helper_data.program)-1] = '\0';
-+}
-+
-+/**
-+ * set_ui_program_set: Record that userui program was changed.
-+ *
-+ * Side effect routine for when the userui program is set. In an initrd or
-+ * ramfs, the user may set a location for the userui program. If this happens,
-+ * we don't want to reload the value that was saved in the image header. This
-+ * routine allows us to flag that we shouldn't restore the program name from
-+ * the image header.
-+ */
-+static void set_ui_program_set(void)
-+{
-+	ui_helper_changed = 1;
-+}
-+
-+/**
-+ * userui_memory_needed - Tell core how much memory to reserve for us.
-+ */
-+static int userui_memory_needed(void)
-+{
-+	/* ball park figure of 128 pages */
-+	return 128 * PAGE_SIZE;
-+}
-+
-+/**
-+ * userui_update_status - Update the progress bar and (if on) in-bar message.
-+ *
-+ * @value: Current progress percentage numerator.
-+ * @maximum: Current progress percentage denominator.
-+ * @fmt: Message to be displayed in the middle of the progress bar.
-+ *
-+ * Note that a NULL message does not mean that any previous message is erased!
-+ * For that, you need toi_prepare_status with clearbar on.
-+ *
-+ * Returns an unsigned long, being the next numerator (as determined by the
-+ * maximum and progress granularity) where status needs to be updated.
-+ * This is to reduce unnecessary calls to update_status.
-+ */
-+static u32 userui_update_status(u32 value, u32 maximum, const char *fmt, ...)
-+{
-+	static u32 last_step = 9999;
-+	struct userui_msg_params msg;
-+	u32 this_step, next_update;
-+	int bitshift;
-+
-+	if (ui_helper_data.pid == -1)
-+		return 0;
-+
-+	if ((!maximum) || (!progress_granularity))
-+		return maximum;
-+
-+	if (value < 0)
-+		value = 0;
-+
-+	if (value > maximum)
-+		value = maximum;
-+
-+	/* Try to avoid math problems - we can't do 64 bit math here
-+	 * (and shouldn't need it - anyone got screen resolution
-+	 * of 65536 pixels or more?) */
-+	bitshift = fls(maximum) - 16;
-+	if (bitshift > 0) {
-+		u32 temp_maximum = maximum >> bitshift;
-+		u32 temp_value = value >> bitshift;
-+		this_step = (u32)
-+			(temp_value * progress_granularity / temp_maximum);
-+		next_update = (((this_step + 1) * temp_maximum /
-+					progress_granularity) + 1) << bitshift;
++	devinfo.bdev = bdev;
++	if (!target_blkbits) {
++		devinfo.bmap_shift = 0;
++		devinfo.blocks_per_page = 0;
 +	} else {
-+		this_step = (u32) (value * progress_granularity / maximum);
-+		next_update = ((this_step + 1) * maximum /
-+				progress_granularity) + 1;
++		/* We are assuming a hard disk with 512 (2^9) bytes/sector */
++		devinfo.bmap_shift = target_blkbits - 9;
++		devinfo.blocks_per_page = (1 << (PAGE_SHIFT - target_blkbits));
++	}
++}
++
++static long raw_to_real(long raw)
++{
++	long result;
++
++	result = raw - (raw * (sizeof(unsigned long) + sizeof(int)) +
++		(PAGE_SIZE + sizeof(unsigned long) + sizeof(int) + 1)) /
++		(PAGE_SIZE + sizeof(unsigned long) + sizeof(int));
++
++	return result < 0 ? 0 : result;
++}
++
++static int toi_file_storage_available(void)
++{
++	int result = 0;
++	struct block_device *bdev = toi_file_target_bdev;
++
++	if (!target_inode)
++		return 0;
++
++	switch (target_inode->i_mode & S_IFMT) {
++	case S_IFSOCK:
++	case S_IFCHR:
++	case S_IFIFO: /* Socket, Char, Fifo */
++		return -1;
++	case S_IFREG: /* Regular file: current size - holes + free
++			 space on part */
++		result = target_storage_available;
++		break;
++	case S_IFBLK: /* Block device */
++		if (!bdev->bd_disk) {
++			printk(KERN_INFO "bdev->bd_disk null.\n");
++			return 0;
++		}
++
++		result = (bdev->bd_part ?
++			bdev->bd_part->nr_sects :
++			get_capacity(bdev->bd_disk)) >> (PAGE_SHIFT - 9);
 +	}
 +
-+	if (this_step == last_step)
-+		return next_update;
++	return raw_to_real(result);
++}
 +
-+	memset(&msg, 0, sizeof(msg));
++static int has_contiguous_blocks(int page_num)
++{
++	int j;
++	sector_t last = 0;
 +
-+	msg.a = this_step;
-+	msg.b = progress_granularity;
++	for (j = 0; j < devinfo.blocks_per_page; j++) {
++		sector_t this = bmap(target_inode,
++				page_num * devinfo.blocks_per_page + j);
 +
-+	if (fmt) {
-+		va_list args;
-+		va_start(args, fmt);
-+		vsnprintf(msg.text, sizeof(msg.text), fmt, args);
-+		va_end(args);
-+		msg.text[sizeof(msg.text)-1] = '\0';
++		if (!this || (last && (last + 1) != this))
++			break;
++
++		last = this;
 +	}
 +
-+	toi_send_netlink_message(&ui_helper_data, USERUI_MSG_PROGRESS,
-+			&msg, sizeof(msg));
-+	last_step = this_step;
++	return j == devinfo.blocks_per_page;
++}
 +
-+	return next_update;
++static int size_ignoring_ignored_pages(void)
++{
++	int mappable = 0, i;
++
++	if (!target_is_normal_file())
++		return toi_file_storage_available();
++
++	for (i = 0; i < (target_inode->i_size >> PAGE_SHIFT) ; i++)
++		if (has_contiguous_blocks(i))
++			mappable++;
++
++	return mappable;
 +}
 +
 +/**
-+ * userui_message - Display a message without necessarily logging it.
++ * __populate_block_list - add an extent to the chain
++ * @min:	Start of the extent (first physical block = sector)
++ * @max:	End of the extent (last physical block = sector)
 + *
-+ * @section: Type of message. Messages can be filtered by type.
-+ * @level: Degree of importance of the message. Lower values = higher priority.
-+ * @normally_logged: Whether logged even if log_everything is off.
-+ * @fmt: Message (and parameters).
-+ *
-+ * This function is intended to do the same job as printk, but without normally
-+ * logging what is printed. The point is to be able to get debugging info on
-+ * screen without filling the logs with "1/534. ^M 2/534^M. 3/534^M"
-+ *
-+ * It may be called from an interrupt context - can't sleep!
-+ */
-+static void userui_message(u32 section, u32 level, u32 normally_logged,
-+		const char *fmt, ...)
++ * If TOI_TEST_BIO is set, print a debug message, outputting the min and max
++ * fs block numbers.
++ **/
++static int __populate_block_list(int min, int max)
 +{
-+	struct userui_msg_params msg;
++	if (test_action_state(TOI_TEST_BIO))
++		printk(KERN_INFO "Adding extent %d-%d.\n",
++			min << devinfo.bmap_shift,
++			((max + 1) << devinfo.bmap_shift) - 1);
 +
-+	if ((level) && (level > console_loglevel))
++	return toi_add_to_extent_chain(&block_chain, min, max);
++}
++
++static int apply_header_reservation(void)
++{
++	int i;
++
++	/* Apply header space reservation */
++	toi_extent_state_goto_start(&toi_writer_posn);
++
++	for (i = 0; i < header_pages_reserved; i++)
++		if (toi_bio_ops.forward_one_page(1, 0))
++			return -ENOSPC;
++
++	/* The end of header pages will be the start of pageset 2 */
++	toi_extent_state_save(&toi_writer_posn, &toi_writer_posn_save[2]);
++
++	return 0;
++}
++
++static int populate_block_list(void)
++{
++	int i, extent_min = -1, extent_max = -1, got_header = 0, result = 0;
++
++	if (block_chain.first)
++		toi_put_extent_chain(&block_chain);
++
++	if (!target_is_normal_file()) {
++		result = (target_storage_available > 0) ?
++			__populate_block_list(devinfo.blocks_per_page,
++				(target_storage_available + 1) *
++				devinfo.blocks_per_page - 1) : 0;
++		if (result)
++			return result;
++		goto out;
++	}
++
++	for (i = 0; i < (target_inode->i_size >> PAGE_SHIFT); i++) {
++		sector_t new_sector;
++
++		if (!has_contiguous_blocks(i))
++			continue;
++
++		new_sector = bmap(target_inode, (i * devinfo.blocks_per_page));
++
++		/*
++		 * Ignore the first block in the file.
++		 * It gets the header.
++		 */
++		if (new_sector == target_firstblock >> devinfo.bmap_shift) {
++			got_header = 1;
++			continue;
++		}
++
++		/*
++		 * I'd love to be able to fill in holes and resize
++		 * files, but not yet...
++		 */
++
++		if (new_sector == extent_max + 1)
++			extent_max += devinfo.blocks_per_page;
++		else {
++			if (extent_min > -1) {
++				result = __populate_block_list(extent_min,
++						extent_max);
++				if (result)
++					return result;
++			}
++
++			extent_min = new_sector;
++			extent_max = extent_min +
++				devinfo.blocks_per_page - 1;
++		}
++	}
++
++	if (extent_min > -1) {
++		result = __populate_block_list(extent_min, extent_max);
++		if (result)
++			return result;
++	}
++
++out:
++	return apply_header_reservation();
++}
++
++static void toi_file_cleanup(int finishing_cycle)
++{
++	if (toi_file_target_bdev) {
++		if (target_claim) {
++			bd_release(toi_file_target_bdev);
++			target_claim = 0;
++		}
++
++		if (used_devt) {
++			blkdev_put(toi_file_target_bdev,
++					FMODE_READ | FMODE_NDELAY);
++			used_devt = 0;
++		}
++		toi_file_target_bdev = NULL;
++		target_inode = NULL;
++		set_devinfo(NULL, 0);
++		target_storage_available = 0;
++	}
++
++	if (target_file && !IS_ERR(target_file))
++		filp_close(target_file, NULL);
++
++	target_file = NULL;
++}
++
++/**
++ * reopen_resume_devt - reset the devinfo struct
++ *
++ * Having opened resume= once, we remember the major and
++ * minor nodes and use them to reopen the bdev for checking
++ * whether an image exists (possibly when starting a resume).
++ **/
++static void reopen_resume_devt(void)
++{
++	toi_file_target_bdev = toi_open_by_devnum(resume_file_dev_t,
++			FMODE_READ | FMODE_NDELAY);
++	if (IS_ERR(toi_file_target_bdev)) {
++		printk(KERN_INFO "Got a dev_num (%lx) but failed to open it.\n",
++				(unsigned long) resume_file_dev_t);
++		return;
++	}
++	target_inode = toi_file_target_bdev->bd_inode;
++	set_devinfo(toi_file_target_bdev, target_inode->i_blkbits);
++}
++
++static void toi_file_get_target_info(char *target, int get_size,
++		int resume_param)
++{
++	if (target_file)
++		toi_file_cleanup(0);
++
++	if (!target || !strlen(target))
 +		return;
 +
-+	memset(&msg, 0, sizeof(msg));
++	target_file = filp_open(target, O_RDONLY|O_LARGEFILE, 0);
 +
-+	msg.a = section;
-+	msg.b = level;
-+	msg.c = normally_logged;
++	if (IS_ERR(target_file) || !target_file) {
 +
-+	if (fmt) {
-+		va_list args;
-+		va_start(args, fmt);
-+		vsnprintf(msg.text, sizeof(msg.text), fmt, args);
-+		va_end(args);
-+		msg.text[sizeof(msg.text)-1] = '\0';
++		if (!resume_param) {
++			printk(KERN_INFO "Open file %s returned %p.\n",
++					target, target_file);
++			target_file = NULL;
++			return;
++		}
++
++		target_file = NULL;
++		wait_for_device_probe();
++		resume_file_dev_t = name_to_dev_t(target);
++		if (!resume_file_dev_t) {
++			struct kstat stat;
++			int error = vfs_stat(target, &stat);
++			printk(KERN_INFO "Open file %s returned %p and "
++					"name_to_devt failed.\n", target,
++					target_file);
++			if (error)
++				printk(KERN_INFO "Stating the file also failed."
++					" Nothing more we can do.\n");
++			else
++				resume_file_dev_t = stat.rdev;
++			return;
++		}
++
++		toi_file_target_bdev = toi_open_by_devnum(resume_file_dev_t,
++				FMODE_READ | FMODE_NDELAY);
++		if (IS_ERR(toi_file_target_bdev)) {
++			printk(KERN_INFO "Got a dev_num (%lx) but failed to "
++					"open it.\n",
++					(unsigned long) resume_file_dev_t);
++			return;
++		}
++		used_devt = 1;
++		target_inode = toi_file_target_bdev->bd_inode;
++	} else
++		target_inode = target_file->f_mapping->host;
++
++	if (S_ISLNK(target_inode->i_mode) || S_ISDIR(target_inode->i_mode) ||
++	    S_ISSOCK(target_inode->i_mode) || S_ISFIFO(target_inode->i_mode)) {
++		printk(KERN_INFO "File support works with regular files,"
++				" character files and block devices.\n");
++		goto cleanup;
 +	}
 +
-+	if (test_action_state(TOI_LOGALL))
-+		printk(KERN_INFO "%s\n", msg.text);
++	if (!used_devt) {
++		if (S_ISBLK(target_inode->i_mode)) {
++			toi_file_target_bdev = I_BDEV(target_inode);
++			if (!bd_claim(toi_file_target_bdev, &toi_fileops))
++				target_claim = 1;
++		} else
++			toi_file_target_bdev = target_inode->i_sb->s_bdev;
++		resume_file_dev_t = toi_file_target_bdev->bd_dev;
++	}
 +
-+	toi_send_netlink_message(&ui_helper_data, USERUI_MSG_MESSAGE,
-+			&msg, sizeof(msg));
++	set_devinfo(toi_file_target_bdev, target_inode->i_blkbits);
++
++	if (get_size)
++		target_storage_available = size_ignoring_ignored_pages();
++
++	if (!resume_param)
++		target_firstblock = bmap(target_inode, 0) << devinfo.bmap_shift;
++
++	return;
++cleanup:
++	target_inode = NULL;
++	if (target_file) {
++		filp_close(target_file, NULL);
++		target_file = NULL;
++	}
++	set_devinfo(NULL, 0);
++	target_storage_available = 0;
++}
++
++static void toi_file_noresume_reset(void)
++{
++	toi_bio_ops.rw_cleanup(READ);
 +}
 +
 +/**
-+ * wait_for_key_via_userui - Wait for userui to receive a keypress.
-+ */
-+static void wait_for_key_via_userui(void)
-+{
-+	DECLARE_WAITQUEUE(wait, current);
-+
-+	add_wait_queue(&userui_wait_for_key, &wait);
-+	set_current_state(TASK_INTERRUPTIBLE);
-+
-+	interruptible_sleep_on(&userui_wait_for_key);
-+
-+	set_current_state(TASK_RUNNING);
-+	remove_wait_queue(&userui_wait_for_key, &wait);
-+}
-+
-+/**
-+ * userui_prepare_status - Display high level messages.
++ * parse_signature - check if the file is suitable for resuming
++ * @header:	Signature of the file
 + *
-+ * @clearbar: Whether to clear the progress bar.
-+ * @fmt...: New message for the title.
-+ *
-+ * Prepare the 'nice display', drawing the header and version, along with the
-+ * current action and perhaps also resetting the progress bar.
-+ */
-+static void userui_prepare_status(int clearbar, const char *fmt, ...)
++ * Given a file header, check the content of the file. Return true if it
++ * contains a valid hibernate image.
++ * TOI_RESUMED_BEFORE is set accordingly.
++ **/
++static int parse_signature(struct toi_file_header *header)
 +{
-+	va_list args;
++	int have_image = !memcmp(HaveImage, header->sig, sizeof(HaveImage) - 1);
++	int no_image_header = !memcmp(NoImage, header->sig,
++			sizeof(NoImage) - 1);
++	int binary_sig = !memcmp(tuxonice_signature, header->sig,
++			sizeof(tuxonice_signature));
 +
-+	if (fmt) {
-+		va_start(args, fmt);
-+		lastheader_message_len = vsnprintf(lastheader, 512, fmt, args);
-+		va_end(args);
-+	}
++	if (no_image_header || (binary_sig && !header->have_image))
++		return 0;
 +
-+	if (clearbar)
-+		toi_update_status(0, 1, NULL);
++	if (!have_image && !binary_sig)
++		return -1;
 +
-+	if (ui_helper_data.pid == -1)
-+		printk(KERN_EMERG "%s\n", lastheader);
++	if (header->resumed_before)
++		set_toi_state(TOI_RESUMED_BEFORE);
 +	else
-+		toi_message(0, TOI_STATUS, 1, lastheader, NULL);
-+}
++		clear_toi_state(TOI_RESUMED_BEFORE);
 +
-+/**
-+ * toi_wait_for_keypress - Wait for keypress via userui.
-+ *
-+ * @timeout: Maximum time to wait.
-+ *
-+ * Wait for a keypress from userui.
-+ *
-+ * FIXME: Implement timeout?
-+ */
-+static char userui_wait_for_keypress(int timeout)
-+{
-+	char key = '\0';
-+
-+	if (ui_helper_data.pid != -1) {
-+		wait_for_key_via_userui();
-+		key = ' ';
-+	}
-+
-+	return key;
-+}
-+
-+/**
-+ * userui_abort_hibernate - Abort a cycle & tell user if they didn't request it.
-+ *
-+ * @result_code: Reason why we're aborting (1 << bit).
-+ * @fmt: Message to display if telling the user what's going on.
-+ *
-+ * Abort a cycle. If this wasn't at the user's request (and we're displaying
-+ * output), tell the user why and wait for them to acknowledge the message.
-+ */
-+static void userui_abort_hibernate(int result_code, const char *fmt, ...)
-+{
-+	va_list args;
-+	int printed_len = 0;
-+
-+	set_result_state(result_code);
-+
-+	if (test_result_state(TOI_ABORTED))
-+		return;
-+
-+	set_result_state(TOI_ABORTED);
-+
-+	if (test_result_state(TOI_ABORT_REQUESTED))
-+		return;
-+
-+	va_start(args, fmt);
-+	printed_len = vsnprintf(local_printf_buf,  sizeof(local_printf_buf),
-+			fmt, args);
-+	va_end(args);
-+	if (ui_helper_data.pid != -1)
-+		printed_len = sprintf(local_printf_buf + printed_len,
-+					" (Press SPACE to continue)");
-+
-+	toi_prepare_status(CLEAR_BAR, "%s", local_printf_buf);
-+
-+	if (ui_helper_data.pid != -1)
-+		userui_wait_for_keypress(0);
-+}
-+
-+/**
-+ * request_abort_hibernate - Abort hibernating or resuming at user request.
-+ *
-+ * Handle the user requesting the cancellation of a hibernation or resume by
-+ * pressing escape.
-+ */
-+static void request_abort_hibernate(void)
-+{
-+	if (test_result_state(TOI_ABORT_REQUESTED))
-+		return;
-+
-+	if (test_toi_state(TOI_NOW_RESUMING)) {
-+		toi_prepare_status(CLEAR_BAR, "Escape pressed. "
-+					"Powering down again.");
-+		set_toi_state(TOI_STOP_RESUME);
-+		while (!test_toi_state(TOI_IO_STOPPED))
-+			schedule();
-+		if (toiActiveAllocator->mark_resume_attempted)
-+			toiActiveAllocator->mark_resume_attempted(0);
-+		toi_power_down();
-+	}
-+
-+	toi_prepare_status(CLEAR_BAR, "--- ESCAPE PRESSED :"
-+					" ABORTING HIBERNATION ---");
-+	set_abort_result(TOI_ABORT_REQUESTED);
-+	wake_up_interruptible(&userui_wait_for_key);
-+}
-+
-+/**
-+ * userui_user_rcv_msg - Receive a netlink message from userui.
-+ *
-+ * @skb: skb received.
-+ * @nlh: Netlink header received.
-+ */
-+static int userui_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
-+{
-+	int type;
-+	int *data;
-+
-+	type = nlh->nlmsg_type;
-+
-+	/* A control message: ignore them */
-+	if (type < NETLINK_MSG_BASE)
-+		return 0;
-+
-+	/* Unknown message: reply with EINVAL */
-+	if (type >= USERUI_MSG_MAX)
-+		return -EINVAL;
-+
-+	/* All operations require privileges, even GET */
-+	if (security_netlink_recv(skb, CAP_NET_ADMIN))
-+		return -EPERM;
-+
-+	/* Only allow one task to receive NOFREEZE privileges */
-+	if (type == NETLINK_MSG_NOFREEZE_ME && ui_helper_data.pid != -1) {
-+		printk(KERN_INFO "Got NOFREEZE_ME request when "
-+			"ui_helper_data.pid is %d.\n", ui_helper_data.pid);
-+		return -EBUSY;
-+	}
-+
-+	data = (int *) NLMSG_DATA(nlh);
-+
-+	switch (type) {
-+	case USERUI_MSG_ABORT:
-+		request_abort_hibernate();
-+		return 0;
-+	case USERUI_MSG_GET_STATE:
-+		toi_send_netlink_message(&ui_helper_data,
-+				USERUI_MSG_GET_STATE, &toi_bkd.toi_action,
-+				sizeof(toi_bkd.toi_action));
-+		return 0;
-+	case USERUI_MSG_GET_DEBUG_STATE:
-+		toi_send_netlink_message(&ui_helper_data,
-+				USERUI_MSG_GET_DEBUG_STATE,
-+				&toi_bkd.toi_debug_state,
-+				sizeof(toi_bkd.toi_debug_state));
-+		return 0;
-+	case USERUI_MSG_SET_STATE:
-+		if (nlh->nlmsg_len < NLMSG_LENGTH(sizeof(int)))
-+			return -EINVAL;
-+		ui_nl_set_state(*data);
-+		return 0;
-+	case USERUI_MSG_SET_DEBUG_STATE:
-+		if (nlh->nlmsg_len < NLMSG_LENGTH(sizeof(int)))
-+			return -EINVAL;
-+		toi_bkd.toi_debug_state = (*data);
-+		return 0;
-+	case USERUI_MSG_SPACE:
-+		wake_up_interruptible(&userui_wait_for_key);
-+		return 0;
-+	case USERUI_MSG_GET_POWERDOWN_METHOD:
-+		toi_send_netlink_message(&ui_helper_data,
-+				USERUI_MSG_GET_POWERDOWN_METHOD,
-+				&toi_poweroff_method,
-+				sizeof(toi_poweroff_method));
-+		return 0;
-+	case USERUI_MSG_SET_POWERDOWN_METHOD:
-+		if (nlh->nlmsg_len != NLMSG_LENGTH(sizeof(char)))
-+			return -EINVAL;
-+		toi_poweroff_method = (unsigned long)(*data);
-+		return 0;
-+	case USERUI_MSG_GET_LOGLEVEL:
-+		toi_send_netlink_message(&ui_helper_data,
-+				USERUI_MSG_GET_LOGLEVEL,
-+				&toi_bkd.toi_default_console_level,
-+				sizeof(toi_bkd.toi_default_console_level));
-+		return 0;
-+	case USERUI_MSG_SET_LOGLEVEL:
-+		if (nlh->nlmsg_len < NLMSG_LENGTH(sizeof(int)))
-+			return -EINVAL;
-+		toi_bkd.toi_default_console_level = (*data);
-+		return 0;
-+	case USERUI_MSG_PRINTK:
-+		printk(KERN_INFO "%s", (char *) data);
-+		return 0;
-+	}
-+
-+	/* Unhandled here */
++	target_header_start = header->first_header_block;
 +	return 1;
 +}
 +
 +/**
-+ * userui_cond_pause - Possibly pause at user request.
-+ *
-+ * @pause: Whether to pause or just display the message.
-+ * @message: Message to display at the start of pausing.
-+ *
-+ * Potentially pause and wait for the user to tell us to continue. We normally
-+ * only pause when @pause is set. While paused, the user can do things like
-+ * changing the loglevel, toggling the display of debugging sections and such
-+ * like.
-+ */
-+static void userui_cond_pause(int pause, char *message)
++ * prepare_signature - populate the signature structure
++ * @current_header:	Signature structure to populate
++ * @first_header_block:	Sector with the header containing the extents
++ **/
++static int prepare_signature(struct toi_file_header *current_header,
++		unsigned long first_header_block)
 +{
-+	int displayed_message = 0, last_key = 0;
-+
-+	while (last_key != 32 &&
-+		ui_helper_data.pid != -1 &&
-+		((test_action_state(TOI_PAUSE) && pause) ||
-+		 (test_action_state(TOI_SINGLESTEP)))) {
-+		if (!displayed_message) {
-+			toi_prepare_status(DONT_CLEAR_BAR,
-+			   "%s Press SPACE to continue.%s",
-+			   message ? message : "",
-+			   (test_action_state(TOI_SINGLESTEP)) ?
-+			   " Single step on." : "");
-+			displayed_message = 1;
-+		}
-+		last_key = userui_wait_for_keypress(0);
-+	}
-+	schedule();
++	memcpy(current_header->sig, tuxonice_signature,
++			sizeof(tuxonice_signature));
++	current_header->resumed_before = 0;
++	current_header->first_header_block = first_header_block;
++	current_header->have_image = 1;
++	return 0;
 +}
 +
-+/**
-+ * userui_prepare_console - Prepare the console for use.
-+ *
-+ * Prepare a console for use, saving current kmsg settings and attempting to
-+ * start userui. Console loglevel changes are handled by userui.
-+ */
-+static void userui_prepare_console(void)
++static int toi_file_storage_allocated(void)
 +{
-+	orig_kmsg = kmsg_redirect;
-+	kmsg_redirect = fg_console + 1;
++	if (!target_inode)
++		return 0;
 +
-+	ui_helper_data.pid = -1;
-+
-+	if (!userui_ops.enabled) {
-+		printk(KERN_INFO "TuxOnIce: Userui disabled.\n");
-+		return;
-+	}
-+
-+	if (*ui_helper_data.program)
-+		toi_netlink_setup(&ui_helper_data);
++	if (target_is_normal_file())
++		return (int) raw_to_real(target_storage_available);
 +	else
-+		printk(KERN_INFO "TuxOnIce: Userui program not configured.\n");
++		return (int) raw_to_real(main_pages_requested);
 +}
 +
 +/**
-+ * userui_cleanup_console - Cleanup after a cycle.
-+ *
-+ * Tell userui to cleanup, and restore kmsg_redirect to its original value.
-+ */
-+
-+static void userui_cleanup_console(void)
++ * toi_file_release_storage - deallocate the block chain
++ **/
++static int toi_file_release_storage(void)
 +{
-+	if (ui_helper_data.pid > -1)
-+		toi_netlink_close(&ui_helper_data);
++	toi_put_extent_chain(&block_chain);
 +
-+	kmsg_redirect = orig_kmsg;
++	header_pages_reserved = 0;
++	main_pages_allocated = 0;
++	main_pages_requested = 0;
++	return 0;
 +}
 +
-+/*
-+ * User interface specific /sys/power/tuxonice entries.
-+ */
++static void toi_file_reserve_header_space(int request)
++{
++	header_pages_reserved = request;
++}
 +
-+static struct toi_sysfs_data sysfs_params[] = {
-+#if defined(CONFIG_NET) && defined(CONFIG_SYSFS)
-+	SYSFS_BIT("enable_escape", SYSFS_RW, &toi_bkd.toi_action,
-+			TOI_CAN_CANCEL, 0),
-+	SYSFS_BIT("pause_between_steps", SYSFS_RW, &toi_bkd.toi_action,
-+			TOI_PAUSE, 0),
-+	SYSFS_INT("enabled", SYSFS_RW, &userui_ops.enabled, 0, 1, 0, NULL),
-+	SYSFS_INT("progress_granularity", SYSFS_RW, &progress_granularity, 1,
-+			2048, 0, NULL),
-+	SYSFS_STRING("program", SYSFS_RW, ui_helper_data.program, 255, 0,
-+			set_ui_program_set),
-+	SYSFS_INT("debug", SYSFS_RW, &ui_helper_data.debug, 0, 1, 0, NULL)
-+#endif
-+};
++static int toi_file_allocate_storage(int main_space_requested)
++{
++	int result = 0;
 +
-+static struct toi_module_ops userui_ops = {
-+	.type				= MISC_MODULE,
-+	.name				= "userui",
-+	.shared_directory		= "user_interface",
-+	.module				= THIS_MODULE,
-+	.storage_needed			= userui_storage_needed,
-+	.save_config_info		= userui_save_config_info,
-+	.load_config_info		= userui_load_config_info,
-+	.memory_needed			= userui_memory_needed,
-+	.sysfs_data			= sysfs_params,
-+	.num_sysfs_entries		= sizeof(sysfs_params) /
-+		sizeof(struct toi_sysfs_data),
-+};
++	int extra_pages = DIV_ROUND_UP(main_space_requested *
++			(sizeof(unsigned long) + sizeof(int)), PAGE_SIZE);
++	int pages_to_get = main_space_requested + extra_pages +
++		header_pages_reserved;
++	int blocks_to_get = pages_to_get - block_chain.size;
 +
-+static struct ui_ops my_ui_ops = {
-+	.post_atomic_restore		= userui_post_atomic_restore,
-+	.update_status			= userui_update_status,
-+	.message			= userui_message,
-+	.prepare_status			= userui_prepare_status,
-+	.abort				= userui_abort_hibernate,
-+	.cond_pause			= userui_cond_pause,
-+	.prepare			= userui_prepare_console,
-+	.cleanup			= userui_cleanup_console,
-+	.wait_for_key			= userui_wait_for_keypress,
-+};
++	/* Only release_storage reduces the size */
++	if (blocks_to_get < 1)
++		return apply_header_reservation();
++
++	result = populate_block_list();
++
++	if (result)
++		return result;
++
++	toi_message(TOI_WRITER, TOI_MEDIUM, 0,
++		"Finished with block_chain.size == %d.\n",
++		block_chain.size);
++
++	if (block_chain.size < pages_to_get) {
++		printk(KERN_INFO "Block chain size (%d) < header pages (%d) + "
++				 "extra pages (%d) + main pages (%d) (=%d "
++				 "pages).\n",
++				 block_chain.size, header_pages_reserved,
++				 extra_pages, main_space_requested,
++				 pages_to_get);
++		result = -ENOSPC;
++	}
++
++	main_pages_requested = main_space_requested;
++	main_pages_allocated = main_space_requested + extra_pages;
++	return result;
++}
 +
 +/**
-+ * toi_user_ui_init - Boot time initialisation for user interface.
-+ *
-+ * Invoked from the core init routine.
-+ */
-+static __init int toi_user_ui_init(void)
++ * toi_file_write_header_init - save the header on the image
++ **/
++static int toi_file_write_header_init(void)
 +{
 +	int result;
 +
-+	ui_helper_data.nl = NULL;
-+	strncpy(ui_helper_data.program, CONFIG_TOI_USERUI_DEFAULT_PATH, 255);
-+	ui_helper_data.pid = -1;
-+	ui_helper_data.skb_size = sizeof(struct userui_msg_params);
-+	ui_helper_data.pool_limit = 6;
-+	ui_helper_data.netlink_id = NETLINK_TOI_USERUI;
-+	ui_helper_data.name = "userspace ui";
-+	ui_helper_data.rcv_msg = userui_user_rcv_msg;
-+	ui_helper_data.interface_version = 8;
-+	ui_helper_data.must_init = 0;
-+	ui_helper_data.not_ready = userui_cleanup_console;
-+	init_completion(&ui_helper_data.wait_for_process);
-+	result = toi_register_module(&userui_ops);
-+	if (!result)
-+		result = toi_register_ui_ops(&my_ui_ops);
++	toi_bio_ops.rw_init(WRITE, 0);
++	toi_writer_buffer_posn = 0;
++
++	/* Info needed to bootstrap goes at the start of the header.
++	 * First we save the basic info needed for reading, including the number
++	 * of header pages. Then we save the structs containing data needed
++	 * for reading the header pages back.
++	 * Note that even if header pages take more than one page, when we
++	 * read back the info, we will have restored the location of the
++	 * next header page by the time we go to use it.
++	 */
++
++	result = toi_bio_ops.rw_header_chunk(WRITE, &toi_fileops,
++			(char *) &toi_writer_posn_save,
++			sizeof(toi_writer_posn_save));
++
 +	if (result)
-+		toi_unregister_module(&userui_ops);
++		return result;
++
++	result = toi_bio_ops.rw_header_chunk(WRITE, &toi_fileops,
++			(char *) &devinfo, sizeof(devinfo));
++
++	if (result)
++		return result;
++
++	/* Flush the chain */
++	toi_serialise_extent_chain(&toi_fileops, &block_chain);
++
++	return 0;
++}
++
++static int toi_file_write_header_cleanup(void)
++{
++	struct toi_file_header *header;
++	int result, result2;
++	unsigned long sig_page = toi_get_zeroed_page(38, TOI_ATOMIC_GFP);
++
++	/* Write any unsaved data */
++	result = toi_bio_ops.write_header_chunk_finish();
++
++	if (result)
++		goto out;
++
++	toi_extent_state_goto_start(&toi_writer_posn);
++	toi_bio_ops.forward_one_page(1, 1);
++
++	/* Adjust image header */
++	result = toi_bio_ops.bdev_page_io(READ, toi_file_target_bdev,
++			target_firstblock,
++			virt_to_page(sig_page));
++	if (result)
++		goto out;
++
++	header = (struct toi_file_header *) sig_page;
++
++	prepare_signature(header,
++			toi_writer_posn.current_offset <<
++			devinfo.bmap_shift);
++
++	result = toi_bio_ops.bdev_page_io(WRITE, toi_file_target_bdev,
++			target_firstblock,
++			virt_to_page(sig_page));
++
++out:
++	result2 = toi_bio_ops.finish_all_io();
++	toi_free_page(38, sig_page);
++
++	return result ? result : result2;
++}
++
++/* HEADER READING */
++
++/**
++ * toi_file_read_header_init - check content of signature
++ *
++ * Entry point of the resume path.
++ * 1. Attempt to read the device specified with resume=.
++ * 2. Check the contents of the header for our signature.
++ * 3. Warn, ignore, reset and/or continue as appropriate.
++ * 4. If continuing, read the toi_file configuration section
++ *    of the header and set up block device info so we can read
++ *    the rest of the header & image.
++ *
++ * Returns:
++ *	May not return if user choose to reboot at a warning.
++ *	-EINVAL if cannot resume at this time. Booting should continue
++ *	normally.
++ **/
++static int toi_file_read_header_init(void)
++{
++	int result;
++	struct block_device *tmp;
++
++	/* Allocate toi_writer_buffer */
++	toi_bio_ops.read_header_init();
++
++	/*
++	 * Read toi_file configuration (header containing metadata).
++	 * target_header_start is the first sector of the header. It has been
++	 * set when checking if the file was suitable for resuming, see
++	 * do_toi_step(STEP_RESUME_CAN_RESUME).
++	 */
++	result = toi_bio_ops.bdev_page_io(READ, toi_file_target_bdev,
++			target_header_start,
++			virt_to_page((unsigned long) toi_writer_buffer));
++
++	if (result) {
++		printk(KERN_ERR "FileAllocator read header init: Failed to "
++				"initialise reading the first page of data.\n");
++		toi_bio_ops.rw_cleanup(READ);
++		return result;
++	}
++
++	/* toi_writer_posn_save[0] contains the header */
++	memcpy(&toi_writer_posn_save, toi_writer_buffer,
++	       sizeof(toi_writer_posn_save));
++
++	/* Save the position in the buffer */
++	toi_writer_buffer_posn = sizeof(toi_writer_posn_save);
++
++	tmp = devinfo.bdev;
++
++	/* See tuxonice_block_io.h */
++	memcpy(&devinfo,
++	       toi_writer_buffer + toi_writer_buffer_posn,
++	       sizeof(devinfo));
++
++	devinfo.bdev = tmp;
++	toi_writer_buffer_posn += sizeof(devinfo);
++
++	/* Reinitialize the extent pointer */
++	toi_extent_state_goto_start(&toi_writer_posn);
++	/* Jump to the next page */
++	toi_bio_ops.set_extra_page_forward();
++
++	/* Bring back the chain from disk: this will read
++	 * all extents.
++	 */
++	return toi_load_extent_chain(&block_chain);
++}
++
++static int toi_file_read_header_cleanup(void)
++{
++	toi_bio_ops.rw_cleanup(READ);
++	return 0;
++}
++
++/**
++ * toi_file_signature_op - perform an operation on the file signature
++ * @op:	operation to perform
++ *
++ * op is either GET_IMAGE_EXISTS, INVALIDATE, MARK_RESUME_ATTEMPTED or
++ * UNMARK_RESUME_ATTEMPTED.
++ * If the signature is changed, an I/O operation is performed.
++ * The signature exists iff toi_file_signature_op(GET_IMAGE_EXISTS)>-1.
++ **/
++static int toi_file_signature_op(int op)
++{
++	char *cur;
++	int result = 0, result2, changed = 0;
++	struct toi_file_header *header;
++
++	if (!toi_file_target_bdev || IS_ERR(toi_file_target_bdev))
++		return -1;
++
++	cur = (char *) toi_get_zeroed_page(17, TOI_ATOMIC_GFP);
++	if (!cur) {
++		printk(KERN_INFO "Unable to allocate a page for reading the "
++				 "image signature.\n");
++		return -ENOMEM;
++	}
++
++	result = toi_bio_ops.bdev_page_io(READ, toi_file_target_bdev,
++			target_firstblock,
++			virt_to_page(cur));
++
++	if (result)
++		goto out;
++
++	header = (struct toi_file_header *) cur;
++	result = parse_signature(header);
++
++	switch (op) {
++	case INVALIDATE:
++		if (result == -1)
++			goto out;
++
++		memcpy(header->sig, tuxonice_signature,
++				sizeof(tuxonice_signature));
++		header->resumed_before = 0;
++		header->have_image = 0;
++		result = 1;
++		changed = 1;
++		break;
++	case MARK_RESUME_ATTEMPTED:
++		if (result == 1) {
++			header->resumed_before = 1;
++			changed = 1;
++		}
++		break;
++	case UNMARK_RESUME_ATTEMPTED:
++		if (result == 1) {
++			header->resumed_before = 0;
++			changed = 1;
++		}
++		break;
++	}
++
++	if (changed) {
++		int io_result = toi_bio_ops.bdev_page_io(WRITE,
++				toi_file_target_bdev, target_firstblock,
++				virt_to_page(cur));
++		if (io_result)
++			result = io_result;
++	}
++
++out:
++	result2 = toi_bio_ops.finish_all_io();
++	toi_free_page(17, (unsigned long) cur);
++	return result ? result : result2;
++}
++
++/**
++ * toi_file_print_debug_stats - print debug info
++ * @buffer:	Buffer to data to populate
++ * @size:	Size of the buffer
++ **/
++static int toi_file_print_debug_stats(char *buffer, int size)
++{
++	int len = 0;
++
++	if (toiActiveAllocator != &toi_fileops) {
++		len = scnprintf(buffer, size,
++				"- FileAllocator inactive.\n");
++		return len;
++	}
++
++	len = scnprintf(buffer, size, "- FileAllocator active.\n");
++
++	len += scnprintf(buffer+len, size-len, "  Storage available for "
++			"image: %d pages.\n",
++			toi_file_storage_allocated());
++
++	return len;
++}
++
++/**
++ * toi_file_storage_needed - storage needed
++ *
++ * Returns amount of space in the image header required
++ * for the toi_file's data.
++ *
++ * We ensure the space is allocated, but actually save the
++ * data from write_header_init and therefore don't also define a
++ * save_config_info routine.
++ **/
++static int toi_file_storage_needed(void)
++{
++	return strlen(toi_file_target) + 1 +
++		sizeof(toi_writer_posn_save) +
++		sizeof(devinfo) +
++		2 * sizeof(int) +
++		(2 * sizeof(unsigned long) * block_chain.num_extents);
++}
++
++/**
++ * toi_file_remove_image - invalidate the image
++ **/
++static int toi_file_remove_image(void)
++{
++	toi_file_release_storage();
++	return toi_file_signature_op(INVALIDATE);
++}
++
++/**
++ * toi_file_image_exists - test if an image exists
++ *
++ * Repopulate toi_file_target_bdev if needed.
++ **/
++static int toi_file_image_exists(int quiet)
++{
++	if (!toi_file_target_bdev)
++		reopen_resume_devt();
++	return toi_file_signature_op(GET_IMAGE_EXISTS);
++}
++
++/**
++ * toi_file_mark_resume_attempted - mark resume attempted if so
++ * @mark:	attempted flag
++ *
++ * Record that we tried to resume from this image. Resuming
++ * multiple times from the same image may be dangerous
++ * (possible filesystem corruption).
++ **/
++static int toi_file_mark_resume_attempted(int mark)
++{
++	return toi_file_signature_op(mark ? MARK_RESUME_ATTEMPTED :
++		UNMARK_RESUME_ATTEMPTED);
++}
++
++/**
++ * toi_file_set_resume_param - validate the specified resume file
++ *
++ * Given a target filename, populate the resume parameter. This is
++ * meant to be used by the user to populate the kernel command line.
++ * By setting /sys/power/tuxonice/file/target, the valid resume
++ * parameter to use is set and accessible through
++ * /sys/power/tuxonice/resume.
++ *
++ * If the file could be located, we check if it contains a valid
++ * signature.
++ **/
++static void toi_file_set_resume_param(void)
++{
++	char *buffer = (char *) toi_get_zeroed_page(18, TOI_ATOMIC_GFP);
++	char *buffer2 = (char *) toi_get_zeroed_page(19, TOI_ATOMIC_GFP);
++	unsigned long sector = bmap(target_inode, 0);
++	int offset = 0;
++
++	if (!buffer || !buffer2) {
++		if (buffer)
++			toi_free_page(18, (unsigned long) buffer);
++		if (buffer2)
++			toi_free_page(19, (unsigned long) buffer2);
++		printk(KERN_ERR "TuxOnIce: Failed to allocate memory while "
++				"setting resume= parameter.\n");
++		return;
++	}
++
++	if (toi_file_target_bdev) {
++		set_devinfo(toi_file_target_bdev, target_inode->i_blkbits);
++
++		bdevname(toi_file_target_bdev, buffer2);
++		offset += snprintf(buffer + offset, PAGE_SIZE - offset,
++				"/dev/%s", buffer2);
++
++		if (sector)
++			/* The offset is: sector << (inode->i_blkbits - 9) */
++			offset += snprintf(buffer + offset, PAGE_SIZE - offset,
++				":0x%lx", sector << devinfo.bmap_shift);
++	} else
++		offset += snprintf(buffer + offset, PAGE_SIZE - offset,
++				"%s is not a valid target.", toi_file_target);
++
++	sprintf(resume_file, "file:%s", buffer);
++
++	toi_free_page(18, (unsigned long) buffer);
++	toi_free_page(19, (unsigned long) buffer2);
++
++	toi_attempt_to_parse_resume_device(1);
++}
++
++/**
++ * __test_toi_file_target - is the file target valid for hibernating?
++ * @target:		target file
++ * @resume_param:	whether resume= has been specified
++ * @quiet:		quiet flag
++ *
++ * Test whether the file target can be used for hibernating: valid target
++ * and signature.
++ * The resume parameter is set if needed.
++ **/
++static int __test_toi_file_target(char *target, int resume_param, int quiet)
++{
++	toi_file_get_target_info(target, 0, resume_param);
++	if (toi_file_signature_op(GET_IMAGE_EXISTS) > -1) {
++		if (!quiet)
++			printk(KERN_INFO "TuxOnIce: FileAllocator: File "
++					 "signature found.\n");
++		if (!resume_param)
++			toi_file_set_resume_param();
++
++		toi_bio_ops.set_devinfo(&devinfo);
++		toi_writer_posn.chains = &block_chain;
++		toi_writer_posn.num_chains = 1;
++
++		if (!resume_param)
++			set_toi_state(TOI_CAN_HIBERNATE);
++		return 0;
++	}
++
++	/*
++	 * Target unaccessible or no signature found
++	 * Most errors have already been reported
++	 */
++
++	clear_toi_state(TOI_CAN_HIBERNATE);
++
++	if (quiet)
++		return 1;
++
++	if (*target)
++		printk(KERN_INFO "TuxOnIce: FileAllocator: Sorry. No signature "
++				 "found at  %s.\n", target);
++	else
++		if (!resume_param)
++			printk(KERN_INFO "TuxOnIce: FileAllocator: Sorry. "
++					"Target is not set for hibernating.\n");
++
++	return 1;
++}
++
++/**
++ * test_toi_file_target - sysfs callback for /sys/power/tuxonince/file/target
++ *
++ * Test wheter the target file is valid for hibernating.
++ **/
++static void test_toi_file_target(void)
++{
++	setting_toi_file_target = 1;
++
++	printk(KERN_INFO "TuxOnIce: Hibernating %sabled.\n",
++			__test_toi_file_target(toi_file_target, 0, 1) ?
++			"dis" : "en");
++
++	setting_toi_file_target = 0;
++}
++
++/**
++ * toi_file_parse_sig_location - parse image Location
++ * @commandline:	the resume parameter
++ * @only_writer:	??
++ * @quiet:		quiet flag
++ *
++ * Attempt to parse a resume= parameter.
++ * File Allocator accepts:
++ *	resume=file:DEVNAME[:FIRSTBLOCK]
++ *
++ * Where:
++ *	DEVNAME is convertable to a dev_t by name_to_dev_t
++ *	FIRSTBLOCK is the location of the first block in the file.
++ *	BLOCKSIZE is the logical blocksize >= SECTOR_SIZE &
++ *					<= PAGE_SIZE,
++ *	mod SECTOR_SIZE == 0 of the device.
++ *
++ * Data is validated by attempting to read a header from the
++ * location given. Failure will result in toi_file refusing to
++ * save an image, and a reboot with correct parameters will be
++ * necessary.
++ **/
++static int toi_file_parse_sig_location(char *commandline,
++		int only_writer, int quiet)
++{
++	char *thischar, *devstart = NULL, *colon = NULL, *at_symbol = NULL;
++	int result = -EINVAL, target_blocksize = 0;
++
++	if (strncmp(commandline, "file:", 5)) {
++		if (!only_writer)
++			return 1;
++	} else
++		commandline += 5;
++
++	/*
++	 * Don't check signature again if we're beginning a cycle. If we already
++	 * did the initialisation successfully, assume we'll be okay when it
++	 * comes to resuming.
++	 */
++	if (toi_file_target_bdev)
++		return 0;
++
++	devstart = commandline;
++	thischar = commandline;
++	while ((*thischar != ':') && (*thischar != '@') &&
++		((thischar - commandline) < 250) && (*thischar))
++		thischar++;
++
++	if (*thischar == ':') {
++		colon = thischar;
++		*colon = 0;
++		thischar++;
++	}
++
++	while ((*thischar != '@') && ((thischar - commandline) < 250)
++			&& (*thischar))
++		thischar++;
++
++	if (*thischar == '@') {
++		at_symbol = thischar;
++		*at_symbol = 0;
++	}
++
++	/*
++	 * For the toi_file, you can be able to resume, but not hibernate,
++	 * because the resume= is set correctly, but the toi_file_target
++	 * isn't.
++	 *
++	 * We may have come here as a result of setting resume or
++	 * toi_file_target. We only test the toi_file target in the
++	 * former case (it's already done in the later), and we do it before
++	 * setting the block number ourselves. It will overwrite the values
++	 * given on the command line if we don't.
++	 */
++
++	if (!setting_toi_file_target) /* Concurrent write via /sys? */
++		__test_toi_file_target(toi_file_target, 1, 0);
++
++	if (colon) {
++		unsigned long block;
++		result = strict_strtoul(colon + 1, 0, &block);
++		if (result)
++			goto out;
++		target_firstblock = (int) block;
++	} else
++		target_firstblock = 0;
++
++	if (at_symbol) {
++		unsigned long block_size;
++		result = strict_strtoul(at_symbol + 1, 0, &block_size);
++		if (result)
++			goto out;
++		target_blocksize = (int) block_size;
++		if (target_blocksize & (SECTOR_SIZE - 1)) {
++			printk(KERN_INFO "FileAllocator: Blocksizes are "
++					 "multiples of %d.\n", SECTOR_SIZE);
++			result = -EINVAL;
++			goto out;
++		}
++	}
++
++	if (!quiet)
++		printk(KERN_INFO "TuxOnIce FileAllocator: Testing whether you "
++				 "can resume:\n");
++
++	toi_file_get_target_info(commandline, 0, 1);
++
++	if (!toi_file_target_bdev || IS_ERR(toi_file_target_bdev)) {
++		toi_file_target_bdev = NULL;
++		result = -1;
++		goto out;
++	}
++
++	if (target_blocksize)
++		set_devinfo(toi_file_target_bdev, ffs(target_blocksize));
++
++	result = __test_toi_file_target(commandline, 1, quiet);
++
++out:
++	if (result)
++		clear_toi_state(TOI_CAN_HIBERNATE);
++
++	if (!quiet)
++		printk(KERN_INFO "Resuming %sabled.\n",  result ? "dis" : "en");
++
++	if (colon)
++		*colon = ':';
++	if (at_symbol)
++		*at_symbol = '@';
 +
 +	return result;
 +}
 +
-+#ifdef MODULE
 +/**
-+ * toi_user_ui_ext - Cleanup code for if the core is unloaded.
-+ */
-+static __exit void toi_user_ui_exit(void)
++ * toi_file_save_config_info - populate toi_file_target
++ * @buffer:	Pointer to a buffer of size PAGE_SIZE.
++ *
++ * Save the target's name, not for resume time, but for
++ * all_settings.
++ * Returns:
++ *	Number of bytes used for saving our data.
++ **/
++static int toi_file_save_config_info(char *buffer)
 +{
-+	toi_netlink_close_complete(&ui_helper_data);
-+	toi_remove_ui_ops(&my_ui_ops);
-+	toi_unregister_module(&userui_ops);
++	strcpy(buffer, toi_file_target);
++	return strlen(toi_file_target) + 1;
 +}
 +
-+module_init(toi_user_ui_init);
-+module_exit(toi_user_ui_exit);
-+MODULE_AUTHOR("Nigel Cunningham");
-+MODULE_DESCRIPTION("TuxOnIce Userui Support");
-+MODULE_LICENSE("GPL");
-+#else
-+late_initcall(toi_user_ui_init);
-+#endif
++/**
++ * toi_file_load_config_info - reload target's name
++ * @buffer:	pointer to the start of the data
++ * @size:	number of bytes that were saved
++ *
++ * toi_file_target is set to buffer.
++ **/
++static void toi_file_load_config_info(char *buffer, int size)
++{
++	strlcpy(toi_file_target, buffer, size);
++}
++
++static int toi_file_initialise(int starting_cycle)
++{
++	if (starting_cycle) {
++		if (toiActiveAllocator != &toi_fileops)
++			return 0;
++
++		if (starting_cycle & SYSFS_HIBERNATE && !*toi_file_target) {
++			printk(KERN_INFO "FileAllocator is the active writer,  "
++					"but no filename has been set.\n");
++			return 1;
++		}
++	}
++
++	if (*toi_file_target)
++		toi_file_get_target_info(toi_file_target, starting_cycle, 0);
++
++	if (starting_cycle && (toi_file_image_exists(1) == -1)) {
++		printk("%s is does not have a valid signature for "
++				"hibernating.\n", toi_file_target);
++		return 1;
++	}
++
++	return 0;
++}
++
++static struct toi_sysfs_data sysfs_params[] = {
++
++	SYSFS_STRING("target", SYSFS_RW, toi_file_target, 256,
++		SYSFS_NEEDS_SM_FOR_WRITE, test_toi_file_target),
++	SYSFS_INT("enabled", SYSFS_RW, &toi_fileops.enabled, 0, 1, 0,
++		attempt_to_parse_resume_device2)
++};
++
++static struct toi_module_ops toi_fileops = {
++	.type					= WRITER_MODULE,
++	.name					= "file storage",
++	.directory				= "file",
++	.module					= THIS_MODULE,
++	.print_debug_info			= toi_file_print_debug_stats,
++	.save_config_info			= toi_file_save_config_info,
++	.load_config_info			= toi_file_load_config_info,
++	.storage_needed				= toi_file_storage_needed,
++	.initialise				= toi_file_initialise,
++	.cleanup				= toi_file_cleanup,
++
++	.noresume_reset		= toi_file_noresume_reset,
++	.storage_available 	= toi_file_storage_available,
++	.storage_allocated	= toi_file_storage_allocated,
++	.reserve_header_space	= toi_file_reserve_header_space,
++	.allocate_storage	= toi_file_allocate_storage,
++	.image_exists		= toi_file_image_exists,
++	.mark_resume_attempted	= toi_file_mark_resume_attempted,
++	.write_header_init	= toi_file_write_header_init,
++	.write_header_cleanup	= toi_file_write_header_cleanup,
++	.read_header_init	= toi_file_read_header_init,
++	.read_header_cleanup	= toi_file_read_header_cleanup,
++	.remove_image		= toi_file_remove_image,
++	.parse_sig_location	= toi_file_parse_sig_location,
++
++	.sysfs_data		= sysfs_params,
++	.num_sysfs_entries	= sizeof(sysfs_params) /
++		sizeof(struct toi_sysfs_data),
++};
++
++/* ---- Registration ---- */
++static __init int toi_file_load(void)
++{
++	toi_fileops.rw_init = toi_bio_ops.rw_init;
++	toi_fileops.rw_cleanup = toi_bio_ops.rw_cleanup;
++	toi_fileops.read_page = toi_bio_ops.read_page;
++	toi_fileops.write_page = toi_bio_ops.write_page;
++	toi_fileops.rw_header_chunk = toi_bio_ops.rw_header_chunk;
++	toi_fileops.rw_header_chunk_noreadahead =
++		toi_bio_ops.rw_header_chunk_noreadahead;
++	toi_fileops.io_flusher = toi_bio_ops.io_flusher;
++	toi_fileops.update_throughput_throttle =
++		toi_bio_ops.update_throughput_throttle;
++	toi_fileops.finish_all_io = toi_bio_ops.finish_all_io;
++
++	return toi_register_module(&toi_fileops);
++}
++
++late_initcall(toi_file_load);
 -- 
 1.5.6.3
 
