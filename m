@@ -1,82 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbZEFKMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbZEFKOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756342AbZEFKMf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 06:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZEFKM0
+	id S1758762AbZEFKOU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 06:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbZEFKOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 06:12:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44939 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751268AbZEFKMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 06:12:25 -0400
-Date: Wed, 6 May 2009 12:12:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Rientjes <rientjes@google.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch] sched: emit thread info flags with stack trace
-Message-ID: <20090506101211.GD15323@elte.hu>
-References: <alpine.DEB.2.00.0905040136390.15831@chino.kir.corp.google.com>
-MIME-Version: 1.0
+	Wed, 6 May 2009 06:14:10 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:37773 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751889AbZEFKOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 06:14:09 -0400
+Date: Wed, 6 May 2009 12:20:30 +0200
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, m-ikeda@ds.jp.nec.com
+Subject: Re: IO scheduler based IO Controller V2
+Message-ID: <20090506102030.GB20544@gandalf.sssup.it>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <1241562049.11059.921.camel@twins> <20090506034254.GD4416@balbir.in.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0905040136390.15831@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090506034254.GD4416@balbir.in.ibm.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* David Rientjes <rientjes@google.com> wrote:
-
-> When a thread is oom killed and fails to exit, it's helpful to know which
-> threads have access to memory reserves if the machine livelocks.  This is
-> done by testing for the TIF_MEMDIE thread info flag and should be
-> displayed alongside stack traces to identify tasks that have access to
-> such reserves but are still stuck allocating pages, for instance.
+> From: Balbir Singh <balbir@linux.vnet.ibm.com>
+> Date: Wed, May 06, 2009 09:12:54AM +0530
+>
+> * Peter Zijlstra <peterz@infradead.org> [2009-05-06 00:20:49]:
 > 
-> It would probably be helpful in other cases as well, so all thread info
-> flags are emitted when showing a task.
+> > On Tue, 2009-05-05 at 13:24 -0700, Andrew Morton wrote:
+> > > On Tue,  5 May 2009 15:58:27 -0400
+> > > Vivek Goyal <vgoyal@redhat.com> wrote:
+> > > 
+> > > > 
+> > > > Hi All,
+> > > > 
+> > > > Here is the V2 of the IO controller patches generated on top of 2.6.30-rc4.
+> > > > ...
+> > > > Currently primarily two other IO controller proposals are out there.
+> > > > 
+> > > > dm-ioband
+> > > > ---------
+> > > > This patch set is from Ryo Tsuruta from valinux.
+> > > > ...
+> > > > IO-throttling
+> > > > -------------
+> > > > This patch set is from Andrea Righi provides max bandwidth controller.
+> > > 
+> > > I'm thinking we need to lock you guys in a room and come back in 15 minutes.
+> > > 
+> > > Seriously, how are we to resolve this?  We could lock me in a room and
+> > > cmoe back in 15 days, but there's no reason to believe that I'd emerge
+> > > with the best answer.
+> > > 
+> > > I tend to think that a cgroup-based controller is the way to go. 
+> > > Anything else will need to be wired up to cgroups _anyway_, and that
+> > > might end up messy.
+> > 
+> > FWIW I subscribe to the io-scheduler faith as opposed to the
+> > device-mapper cult ;-)
+> > 
+> > Also, I don't think a simple throttle will be very useful, a more mature
+> > solution should cater to more use cases.
+> >
 > 
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  kernel/sched.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -6490,8 +6490,9 @@ void sched_show_task(struct task_struct *p)
->  #ifdef CONFIG_DEBUG_STACK_USAGE
->  	free = stack_not_used(p);
->  #endif
-> -	printk(KERN_CONT "%5lu %5d %6d\n", free,
-> -		task_pid_nr(p), task_pid_nr(p->real_parent));
-> +	printk(KERN_CONT "%5lu %5d %6d 0x%08x\n", free,
-> +		task_pid_nr(p), task_pid_nr(p->real_parent),
-> +		task_thread_info(p)->flags);
+> I tend to agree, unless Andrea can prove us wrong. I don't think
+> throttling a task (not letting it consume CPU, memory when its IO
+> quota is exceeded) is a good idea. I've asked that question to Andrea
+> a few times, but got no response.
 >  
->  	show_stack(p, NULL);
->  }
 
-ok. We just seem to have enough space to do that with 
-printk-timestamps enabled, without wrapping the line:
+  from what I can see, the principle used by io-throttling is not too
+different to what happens when bandwidth differentiation with synchronous
+access patterns is achieved using idling at the io scheduler level.
 
-Before:
+When an io scheduler anticipates requests from a task/cgroup, all the
+other tasks with pending (synchronous) requests are in fact blocked, and
+the fact that the task being anticipated is allowed to submit additional
+io while they remain blocked is what creates the bandwidth differentiation
+among them.
 
- [62034.343909] as            R  running task     6240 27598  27596
-
-After:
-
- [62034.343909] as            R  running task     6240 27598  27596 0x12345678
-
-Applied to tip/sched/core, thanks David!
-
-	Ingo
+Of course there are many differences, in particular related to the
+latencies introduced by the two mechanisms, the granularity they use to
+allocate disk service, and to what throttling and proportional share io
+scheduling can or cannot guarantee, but FWIK both of them rely on
+blocking tasks to create bandwidth differentiation.
