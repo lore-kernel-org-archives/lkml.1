@@ -1,119 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbZEFEY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbZEFEY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753874AbZEFEY0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 00:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbZEFEXh
+	id S1756082AbZEFEY7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 00:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbZEFEXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 00:23:37 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:39798 "EHLO
+	Wed, 6 May 2009 00:23:39 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:39805 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750917AbZEFEXe (ORCPT
+	with ESMTP id S1750980AbZEFEXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 May 2009 00:23:34 -0400
-Message-Id: <20090506042333.402933098@goodmis.org>
+Message-Id: <20090506042333.838488694@goodmis.org>
 References: <20090506042101.231470089@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 06 May 2009 00:21:04 -0400
+Date: Wed, 06 May 2009 00:21:06 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 03/11] tracing: export stats of ring buffers to userspace
-Content-Disposition: inline; filename=0003-tracing-export-stats-of-ring-buffers-to-userspace.patch
+Subject: [PATCH 05/11] ring-buffer: record page entries in buffer page descriptor
+Content-Disposition: inline; filename=0005-ring-buffer-record-page-entries-in-buffer-page-desc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-This patch adds stats to the ftrace ring buffers:
+Currently, when the ring buffer writer overflows the buffer and must
+write over non consumed data, we increment the overrun counter by
+reading the entries on the page we are about to overwrite. This reads
+the entries one by one.
 
- # cat /debugfs/tracing/per_cpu/cpu0/stats
- entries: 42360
- overrun: 30509326
- commit overrun: 0
- nmi dropped: 0
+This is not very effecient. This patch adds another entry counter
+into each buffer page descriptor that keeps track of the number of
+entries on the page. Now on overwrite, the overrun counter simply
+needs to add the number of entries that is on the page it is about
+to overwrite.
 
-Where entries are the total number of data entries in the buffer.
-
-overrun is the number of entries not consumed and were overwritten by
-the writer.
-
-commit overrun is the number of entries dropped due to nested writers
-wrapping the buffer before the initial writer finished the commit.
-
-nmi dropped is the number of entries dropped due to the ring buffer
-lock being held when an nmi was going to write to the ring buffer.
-Note, this field will be meaningless and will go away when the ring
-buffer becomes lockless.
-
-[ Impact: let userspace know what is happening in the ring buffers ]
+[ Impact: speed up of ring buffer in overwrite mode ]
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/trace.c |   42 ++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 42 insertions(+), 0 deletions(-)
+ kernel/trace/ring_buffer.c |   39 +++++++++++++--------------------------
+ 1 files changed, 13 insertions(+), 26 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index f5427e0..74df029 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3595,6 +3595,45 @@ static const struct file_operations tracing_buffers_fops = {
- 	.llseek		= no_llseek,
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index c792ea8..342eacc 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -321,9 +321,10 @@ struct buffer_data_page {
  };
  
-+static ssize_t
-+tracing_stats_read(struct file *filp, char __user *ubuf,
-+		   size_t count, loff_t *ppos)
-+{
-+	unsigned long cpu = (unsigned long)filp->private_data;
-+	struct trace_array *tr = &global_trace;
-+	struct trace_seq *s;
-+	unsigned long cnt;
-+
-+	s = kmalloc(sizeof(*s), GFP_ATOMIC);
-+	if (!s)
-+		return ENOMEM;
-+
-+	trace_seq_init(s);
-+
-+	cnt = ring_buffer_entries_cpu(tr->buffer, cpu);
-+	trace_seq_printf(s, "entries: %ld\n", cnt);
-+
-+	cnt = ring_buffer_overrun_cpu(tr->buffer, cpu);
-+	trace_seq_printf(s, "overrun: %ld\n", cnt);
-+
-+	cnt = ring_buffer_commit_overrun_cpu(tr->buffer, cpu);
-+	trace_seq_printf(s, "commit overrun: %ld\n", cnt);
-+
-+	cnt = ring_buffer_nmi_dropped_cpu(tr->buffer, cpu);
-+	trace_seq_printf(s, "nmi dropped: %ld\n", cnt);
-+
-+	count = simple_read_from_buffer(ubuf, count, ppos, s->buffer, s->len);
-+
-+	kfree(s);
-+
-+	return count;
-+}
-+
-+static const struct file_operations tracing_stats_fops = {
-+	.open		= tracing_open_generic,
-+	.read		= tracing_stats_read,
-+};
-+
- #ifdef CONFIG_DYNAMIC_FTRACE
+ struct buffer_page {
++	struct list_head list;		/* list of buffer pages */
+ 	local_t		 write;		/* index for next write */
+ 	unsigned	 read;		/* index for next read */
+-	struct list_head list;		/* list of free pages */
++	local_t		 entries;	/* entries on this page */
+ 	struct buffer_data_page *page;	/* Actual data page */
+ };
  
- int __weak ftrace_arch_read_dyn_info(char *buf, int size)
-@@ -3708,6 +3747,9 @@ static void tracing_init_debugfs_percpu(long cpu)
- 
- 	trace_create_file("trace_pipe_raw", 0444, d_cpu,
- 			(void *) cpu, &tracing_buffers_fops);
-+
-+	trace_create_file("stats", 0444, d_cpu,
-+			(void *) cpu, &tracing_stats_fops);
+@@ -977,30 +978,6 @@ static inline unsigned rb_head_size(struct ring_buffer_per_cpu *cpu_buffer)
+ 	return rb_page_commit(cpu_buffer->head_page);
  }
  
- #ifdef CONFIG_FTRACE_SELFTEST
+-/*
+- * When the tail hits the head and the buffer is in overwrite mode,
+- * the head jumps to the next page and all content on the previous
+- * page is discarded. But before doing so, we update the overrun
+- * variable of the buffer.
+- */
+-static void rb_update_overflow(struct ring_buffer_per_cpu *cpu_buffer)
+-{
+-	struct ring_buffer_event *event;
+-	unsigned long head;
+-
+-	for (head = 0; head < rb_head_size(cpu_buffer);
+-	     head += rb_event_length(event)) {
+-
+-		event = __rb_page_index(cpu_buffer->head_page, head);
+-		if (RB_WARN_ON(cpu_buffer, rb_null_event(event)))
+-			return;
+-		/* Only count data entries */
+-		if (event->type_len > RINGBUF_TYPE_DATA_TYPE_LEN_MAX)
+-			continue;
+-		cpu_buffer->overrun++;
+-	}
+-}
+-
+ static inline void rb_inc_page(struct ring_buffer_per_cpu *cpu_buffer,
+ 			       struct buffer_page **bpage)
+ {
+@@ -1253,7 +1230,8 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
+ 			/* tail_page has not moved yet? */
+ 			if (tail_page == cpu_buffer->tail_page) {
+ 				/* count overflows */
+-				rb_update_overflow(cpu_buffer);
++				cpu_buffer->overrun +=
++					local_read(&head_page->entries);
+ 
+ 				rb_inc_page(cpu_buffer, &head_page);
+ 				cpu_buffer->head_page = head_page;
+@@ -1268,6 +1246,7 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
+ 		 */
+ 		if (tail_page == cpu_buffer->tail_page) {
+ 			local_set(&next_page->write, 0);
++			local_set(&next_page->entries, 0);
+ 			local_set(&next_page->page->commit, 0);
+ 			cpu_buffer->tail_page = next_page;
+ 
+@@ -1313,6 +1292,10 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
+ 	event = __rb_page_index(tail_page, tail);
+ 	rb_update_event(event, type, length);
+ 
++	/* The passed in type is zero for DATA */
++	if (likely(!type))
++		local_inc(&tail_page->entries);
++
+ 	/*
+ 	 * If this is a commit and the tail is zero, then update
+ 	 * this page's time stamp.
+@@ -2183,6 +2166,7 @@ rb_get_reader_page(struct ring_buffer_per_cpu *cpu_buffer)
+ 	cpu_buffer->reader_page->list.prev = reader->list.prev;
+ 
+ 	local_set(&cpu_buffer->reader_page->write, 0);
++	local_set(&cpu_buffer->reader_page->entries, 0);
+ 	local_set(&cpu_buffer->reader_page->page->commit, 0);
+ 
+ 	/* Make the reader page now replace the head */
+@@ -2629,6 +2613,7 @@ rb_reset_cpu(struct ring_buffer_per_cpu *cpu_buffer)
+ 	cpu_buffer->head_page
+ 		= list_entry(cpu_buffer->pages.next, struct buffer_page, list);
+ 	local_set(&cpu_buffer->head_page->write, 0);
++	local_set(&cpu_buffer->head_page->entries, 0);
+ 	local_set(&cpu_buffer->head_page->page->commit, 0);
+ 
+ 	cpu_buffer->head_page->read = 0;
+@@ -2638,6 +2623,7 @@ rb_reset_cpu(struct ring_buffer_per_cpu *cpu_buffer)
+ 
+ 	INIT_LIST_HEAD(&cpu_buffer->reader_page->list);
+ 	local_set(&cpu_buffer->reader_page->write, 0);
++	local_set(&cpu_buffer->reader_page->entries, 0);
+ 	local_set(&cpu_buffer->reader_page->page->commit, 0);
+ 	cpu_buffer->reader_page->read = 0;
+ 
+@@ -2996,6 +2982,7 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
+ 		bpage = reader->page;
+ 		reader->page = *data_page;
+ 		local_set(&reader->write, 0);
++		local_set(&reader->entries, 0);
+ 		reader->read = 0;
+ 		*data_page = bpage;
+ 
 -- 
 1.6.2.4
 
