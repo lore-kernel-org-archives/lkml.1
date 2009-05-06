@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760572AbZEFOux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760421AbZEFOvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760572AbZEFOux (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 10:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760275AbZEFOtF
+	id S1760421AbZEFOvT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 10:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760295AbZEFOtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 10:49:05 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:55049 "EHLO crca.org.au"
+	Wed, 6 May 2009 10:49:07 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:47670 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752355AbZEFOs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758525AbZEFOs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 May 2009 10:48:57 -0400
-X-Greylist: delayed 637 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 May 2009 10:48:57 EDT
 X-Bogosity: Ham, spamicity=0.000000
 From: Nigel Cunningham <nigel@tuxonice.net>
 To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        tuxonice-devel@lists.tuxonice.net
 Cc: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 12/19] TuxOnIce: Compression support.
-Date: Thu,  7 May 2009 00:39:08 +1000
-Message-Id: <1241620755-22133-13-git-send-email-nigel@tuxonice.net>
+Subject: [PATCH 10/19] TuxOnIce: Storage manager support.
+Date: Thu,  7 May 2009 00:39:06 +1000
+Message-Id: <1241620755-22133-11-git-send-email-nigel@tuxonice.net>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
@@ -25,495 +24,361 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Multithreaded support for compressing pages using cryptoapi algorithms
-and passing them to whatever code is writing the image.
+Add support for a userspace storage manager. This can be used - for
+example - to provide nbd support, establishing a connection when we
+begin to hibernate or resume and reestablishing the connection after the
+atomic restore at resume time.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- kernel/power/Kconfig             |   15 ++
- kernel/power/Makefile            |    1 +
- kernel/power/tuxonice_compress.c |  434 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 450 insertions(+), 0 deletions(-)
- create mode 100644 kernel/power/tuxonice_compress.c
+ include/linux/netlink.h         |    1 +
+ kernel/power/Makefile           |    2 +-
+ kernel/power/tuxonice_storage.c |  282 +++++++++++++++++++++++++++++++++++++++
+ kernel/power/tuxonice_storage.h |   10 ++
+ 4 files changed, 294 insertions(+), 1 deletions(-)
+ create mode 100644 kernel/power/tuxonice_storage.c
 
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 498b5c2..1b474a6 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -195,6 +195,21 @@ menuconfig TOI_CORE
- 	comment "General Options"
- 		depends on TOI_CORE
+diff --git a/include/linux/netlink.h b/include/linux/netlink.h
+index 5ba398e..d597e15 100644
+--- a/include/linux/netlink.h
++++ b/include/linux/netlink.h
+@@ -24,6 +24,7 @@
+ /* leave room for NETLINK_DM (DM Events) */
+ #define NETLINK_SCSITRANSPORT	18	/* SCSI Transports */
+ #define NETLINK_ECRYPTFS	19
++#define NETLINK_TOI_USM		21	/* Userspace storage manager */
  
-+	config TOI_CRYPTO
-+		bool "Compression support"
-+		depends on TOI_CORE && CRYPTO
-+		default y
-+		---help---
-+		  This option adds support for using cryptoapi compression
-+		  algorithms. Compression is particularly useful as it can
-+		  more than double your suspend and resume speed (depending
-+		  upon how well your image compresses).
-+
-+		  You probably want this, so say Y here.
-+
-+	comment "No compression support available without Cryptoapi support."
-+		depends on TOI_CORE && !CRYPTO
-+
- 	config TOI_KEEP_IMAGE
- 		bool "Allow Keep Image Mode"
- 		depends on TOI_CORE
+ #define MAX_LINKS 32		
+ 
 diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-index 9ad139e..3803866 100644
+index 180b89a..9ad139e 100644
 --- a/kernel/power/Makefile
 +++ b/kernel/power/Makefile
-@@ -15,6 +15,7 @@ tuxonice_core-objs		+= tuxonice_storage.o tuxonice_netlink.o
+@@ -11,7 +11,7 @@ tuxonice_core-objs := tuxonice_modules.o tuxonice_sysfs.o tuxonice_highlevel.o \
+ obj-$(CONFIG_TOI)		+= tuxonice_builtin.o
+ 
+ ifdef CONFIG_NET
+-tuxonice_core-objs		+= tuxonice_netlink.o
++tuxonice_core-objs		+= tuxonice_storage.o tuxonice_netlink.o
  endif
  
  obj-$(CONFIG_TOI_CORE)		+= tuxonice_core.o
-+obj-$(CONFIG_TOI_CRYPTO)	+= tuxonice_compress.o
- 
- obj-$(CONFIG_PM)		+= main.o
- obj-$(CONFIG_PM_SLEEP)		+= console.o
-diff --git a/kernel/power/tuxonice_compress.c b/kernel/power/tuxonice_compress.c
+diff --git a/kernel/power/tuxonice_storage.c b/kernel/power/tuxonice_storage.c
 new file mode 100644
-index 0000000..1ce3d02
+index 0000000..5dafc95
 --- /dev/null
-+++ b/kernel/power/tuxonice_compress.c
-@@ -0,0 +1,434 @@
++++ b/kernel/power/tuxonice_storage.c
+@@ -0,0 +1,282 @@
 +/*
-+ * kernel/power/compression.c
++ * kernel/power/tuxonice_storage.c
 + *
-+ * Copyright (C) 2003-2008 Nigel Cunningham (nigel at tuxonice net)
++ * Copyright (C) 2005-2008 Nigel Cunningham (nigel at tuxonice net)
 + *
 + * This file is released under the GPLv2.
 + *
-+ * This file contains data compression routines for TuxOnIce,
-+ * using cryptoapi.
++ * Routines for talking to a userspace program that manages storage.
++ *
++ * The kernel side:
++ * - starts the userspace program;
++ * - sends messages telling it when to open and close the connection;
++ * - tells it when to quit;
++ *
++ * The user space side:
++ * - passes messages regarding status;
++ *
 + */
 +
 +#include <linux/suspend.h>
-+#include <linux/highmem.h>
-+#include <linux/vmalloc.h>
-+#include <linux/crypto.h>
++#include <linux/freezer.h>
 +
-+#include "tuxonice_builtin.h"
-+#include "tuxonice.h"
-+#include "tuxonice_modules.h"
 +#include "tuxonice_sysfs.h"
-+#include "tuxonice_io.h"
++#include "tuxonice_modules.h"
++#include "tuxonice_netlink.h"
++#include "tuxonice_storage.h"
 +#include "tuxonice_ui.h"
-+#include "tuxonice_alloc.h"
 +
-+static int toi_expected_compression;
++static struct user_helper_data usm_helper_data;
++static struct toi_module_ops usm_ops;
++static int message_received, usm_prepare_count;
++static int storage_manager_last_action, storage_manager_action;
 +
-+static struct toi_module_ops toi_compression_ops;
-+static struct toi_module_ops *next_driver;
-+
-+static char toi_compressor_name[32] = "lzo";
-+
-+static DEFINE_MUTEX(stats_lock);
-+
-+struct cpu_context {
-+	u8 *page_buffer;
-+	struct crypto_comp *transform;
-+	unsigned int len;
-+	char *buffer_start;
-+	char *output_buffer;
-+};
-+
-+static DEFINE_PER_CPU(struct cpu_context, contexts);
-+
-+static int toi_compress_prepare_result;
-+
-+/*
-+ * toi_compress_cleanup
-+ *
-+ * Frees memory allocated for our labours.
-+ */
-+static void toi_compress_cleanup(int toi_or_resume)
++static int usm_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
 +{
-+	int cpu;
++	int type;
++	int *data;
 +
-+	if (!toi_or_resume)
-+		return;
++	type = nlh->nlmsg_type;
 +
-+	for_each_online_cpu(cpu) {
-+		struct cpu_context *this = &per_cpu(contexts, cpu);
-+		if (this->transform) {
-+			crypto_free_comp(this->transform);
-+			this->transform = NULL;
-+		}
++	/* A control message: ignore them */
++	if (type < NETLINK_MSG_BASE)
++		return 0;
 +
-+		if (this->page_buffer)
-+			toi_free_page(16, (unsigned long) this->page_buffer);
++	/* Unknown message: reply with EINVAL */
++	if (type >= USM_MSG_MAX)
++		return -EINVAL;
 +
-+		this->page_buffer = NULL;
++	/* All operations require privileges, even GET */
++	if (security_netlink_recv(skb, CAP_NET_ADMIN))
++		return -EPERM;
 +
-+		if (this->output_buffer)
-+			vfree(this->output_buffer);
++	/* Only allow one task to receive NOFREEZE privileges */
++	if (type == NETLINK_MSG_NOFREEZE_ME && usm_helper_data.pid != -1)
++		return -EBUSY;
 +
-+		this->output_buffer = NULL;
++	data = (int *) NLMSG_DATA(nlh);
++
++	switch (type) {
++	case USM_MSG_SUCCESS:
++	case USM_MSG_FAILED:
++		message_received = type;
++		complete(&usm_helper_data.wait_for_process);
++		break;
++	default:
++		printk(KERN_INFO "Storage manager doesn't recognise "
++				"message %d.\n", type);
 +	}
++
++	return 1;
 +}
 +
-+/*
-+ * toi_crypto_prepare
-+ *
-+ * Prepare to do some work by allocating buffers and transforms.
-+ */
-+static int toi_compress_crypto_prepare(void)
-+{
-+	int cpu;
++#ifdef CONFIG_NET
++static int activations;
 +
-+	if (!*toi_compressor_name) {
-+		printk(KERN_INFO "TuxOnIce: Compression enabled but no "
-+				"compressor name set.\n");
++int toi_activate_storage(int force)
++{
++	int tries = 1;
++
++	if (usm_helper_data.pid == -1 || !usm_ops.enabled)
++		return 0;
++
++	message_received = 0;
++	activations++;
++
++	if (activations > 1 && !force)
++		return 0;
++
++	while ((!message_received || message_received == USM_MSG_FAILED) &&
++			tries < 2) {
++		toi_prepare_status(DONT_CLEAR_BAR, "Activate storage attempt "
++				"%d.\n", tries);
++
++		init_completion(&usm_helper_data.wait_for_process);
++
++		toi_send_netlink_message(&usm_helper_data,
++			USM_MSG_CONNECT,
++			NULL, 0);
++
++		/* Wait 2 seconds for the userspace process to make contact */
++		wait_for_completion_timeout(&usm_helper_data.wait_for_process,
++				2*HZ);
++
++		tries++;
++	}
++
++	return 0;
++}
++
++int toi_deactivate_storage(int force)
++{
++	if (usm_helper_data.pid == -1 || !usm_ops.enabled)
++		return 0;
++
++	message_received = 0;
++	activations--;
++
++	if (activations && !force)
++		return 0;
++
++	init_completion(&usm_helper_data.wait_for_process);
++
++	toi_send_netlink_message(&usm_helper_data,
++			USM_MSG_DISCONNECT,
++			NULL, 0);
++
++	wait_for_completion_timeout(&usm_helper_data.wait_for_process, 2*HZ);
++
++	if (!message_received || message_received == USM_MSG_FAILED) {
++		printk(KERN_INFO "Returning failure disconnecting storage.\n");
 +		return 1;
 +	}
 +
-+	for_each_online_cpu(cpu) {
-+		struct cpu_context *this = &per_cpu(contexts, cpu);
-+		this->transform = crypto_alloc_comp(toi_compressor_name, 0, 0);
-+		if (IS_ERR(this->transform)) {
-+			printk(KERN_INFO "TuxOnIce: Failed to initialise the "
-+					"%s compression transform.\n",
-+					toi_compressor_name);
-+			this->transform = NULL;
-+			return 1;
-+		}
-+
-+		this->page_buffer =
-+			(char *) toi_get_zeroed_page(16, TOI_ATOMIC_GFP);
-+
-+		if (!this->page_buffer) {
-+			printk(KERN_ERR
-+			  "Failed to allocate a page buffer for TuxOnIce "
-+			  "compression driver.\n");
-+			return -ENOMEM;
-+		}
-+
-+		this->output_buffer =
-+			(char *) vmalloc_32(2 * PAGE_SIZE);
-+
-+		if (!this->output_buffer) {
-+			printk(KERN_ERR
-+			  "Failed to allocate a output buffer for TuxOnIce "
-+			  "compression driver.\n");
-+			return -ENOMEM;
-+		}
-+
-+	}
-+
 +	return 0;
 +}
++#endif
 +
-+/*
-+ * toi_compress_init
-+ */
-+
-+static int toi_compress_init(int toi_or_resume)
++static void storage_manager_simulate(void)
 +{
-+	if (!toi_or_resume)
-+		return 0;
-+
-+	toi_compress_bytes_in = 0;
-+	toi_compress_bytes_out = 0;
-+
-+	next_driver = toi_get_next_filter(&toi_compression_ops);
-+
-+	if (!next_driver)
-+		return -ECHILD;
-+
-+	toi_compress_prepare_result = toi_compress_crypto_prepare();
-+
-+	return 0;
++	printk(KERN_INFO "--- Storage manager simulate ---\n");
++	toi_prepare_usm();
++	schedule();
++	printk(KERN_INFO "--- Activate storage 1 ---\n");
++	toi_activate_storage(1);
++	schedule();
++	printk(KERN_INFO "--- Deactivate storage 1 ---\n");
++	toi_deactivate_storage(1);
++	schedule();
++	printk(KERN_INFO "--- Cleanup usm ---\n");
++	toi_cleanup_usm();
++	schedule();
++	printk(KERN_INFO "--- Storage manager simulate ends ---\n");
 +}
 +
-+/*
-+ * toi_compress_rw_init()
-+ */
-+
-+static int toi_compress_rw_init(int rw, int stream_number)
++static int usm_storage_needed(void)
 +{
-+	if (toi_compress_prepare_result) {
-+		printk(KERN_ERR "Failed to initialise compression "
-+				"algorithm.\n");
-+		if (rw == READ) {
-+			printk(KERN_INFO "Unable to read the image.\n");
-+			return -ENODEV;
-+		} else {
-+			printk(KERN_INFO "Continuing without "
-+				"compressing the image.\n");
-+			toi_compression_ops.enabled = 0;
-+		}
-+	}
-+
-+	return 0;
++	return strlen(usm_helper_data.program);
 +}
 +
-+/*
-+ * toi_compress_write_page()
-+ *
-+ * Compress a page of data, buffering output and passing on filled
-+ * pages to the next module in the pipeline.
-+ *
-+ * Buffer_page:	Pointer to a buffer of size PAGE_SIZE, containing
-+ * data to be compressed.
-+ *
-+ * Returns:	0 on success. Otherwise the error is that returned by later
-+ * 		modules, -ECHILD if we have a broken pipeline or -EIO if
-+ * 		zlib errs.
-+ */
-+static int toi_compress_write_page(unsigned long index,
-+		struct page *buffer_page, unsigned int buf_size)
++static int usm_save_config_info(char *buf)
 +{
-+	int ret, cpu = smp_processor_id();
-+	struct cpu_context *ctx = &per_cpu(contexts, cpu);
-+
-+	if (!ctx->transform)
-+		return next_driver->write_page(index, buffer_page, buf_size);
-+
-+	ctx->buffer_start = kmap(buffer_page);
-+
-+	ctx->len = buf_size;
-+
-+	ret = crypto_comp_compress(ctx->transform,
-+			ctx->buffer_start, buf_size,
-+			ctx->output_buffer, &ctx->len);
-+
-+	kunmap(buffer_page);
-+
-+	mutex_lock(&stats_lock);
-+	toi_compress_bytes_in += buf_size;
-+	toi_compress_bytes_out += ctx->len;
-+	mutex_unlock(&stats_lock);
-+
-+	if (!ret && ctx->len < buf_size) { /* some compression */
-+		memcpy(ctx->page_buffer, ctx->output_buffer, ctx->len);
-+		return next_driver->write_page(index,
-+				virt_to_page(ctx->page_buffer),
-+				ctx->len);
-+	} else
-+		return next_driver->write_page(index, buffer_page, buf_size);
-+}
-+
-+/*
-+ * toi_compress_read_page()
-+ * @buffer_page: struct page *. Pointer to a buffer of size PAGE_SIZE.
-+ *
-+ * Retrieve data from later modules and decompress it until the input buffer
-+ * is filled.
-+ * Zero if successful. Error condition from me or from downstream on failure.
-+ */
-+static int toi_compress_read_page(unsigned long *index,
-+		struct page *buffer_page, unsigned int *buf_size)
-+{
-+	int ret, cpu = smp_processor_id();
-+	unsigned int len;
-+	unsigned int outlen = PAGE_SIZE;
-+	char *buffer_start;
-+	struct cpu_context *ctx = &per_cpu(contexts, cpu);
-+
-+	if (!ctx->transform)
-+		return next_driver->read_page(index, buffer_page, buf_size);
-+
-+	/*
-+	 * All our reads must be synchronous - we can't decompress
-+	 * data that hasn't been read yet.
-+	 */
-+
-+	*buf_size = PAGE_SIZE;
-+
-+	ret = next_driver->read_page(index, buffer_page, &len);
-+
-+	/* Error or uncompressed data */
-+	if (ret || len == PAGE_SIZE)
-+		return ret;
-+
-+	buffer_start = kmap(buffer_page);
-+	memcpy(ctx->page_buffer, buffer_start, len);
-+	ret = crypto_comp_decompress(
-+			ctx->transform,
-+			ctx->page_buffer,
-+			len, buffer_start, &outlen);
-+	if (ret)
-+		abort_hibernate(TOI_FAILED_IO,
-+			"Compress_read returned %d.\n", ret);
-+	else if (outlen != PAGE_SIZE) {
-+		abort_hibernate(TOI_FAILED_IO,
-+			"Decompression yielded %d bytes instead of %ld.\n",
-+			outlen, PAGE_SIZE);
-+		printk(KERN_ERR "Decompression yielded %d bytes instead of "
-+				"%ld.\n", outlen, PAGE_SIZE);
-+		ret = -EIO;
-+		*buf_size = outlen;
-+	}
-+	kunmap(buffer_page);
-+	return ret;
-+}
-+
-+/*
-+ * toi_compress_print_debug_stats
-+ * @buffer: Pointer to a buffer into which the debug info will be printed.
-+ * @size: Size of the buffer.
-+ *
-+ * Print information to be recorded for debugging purposes into a buffer.
-+ * Returns: Number of characters written to the buffer.
-+ */
-+
-+static int toi_compress_print_debug_stats(char *buffer, int size)
-+{
-+	unsigned long pages_in = toi_compress_bytes_in >> PAGE_SHIFT,
-+		      pages_out = toi_compress_bytes_out >> PAGE_SHIFT;
-+	int len;
-+
-+	/* Output the compression ratio achieved. */
-+	if (*toi_compressor_name)
-+		len = scnprintf(buffer, size, "- Compressor is '%s'.\n",
-+				toi_compressor_name);
-+	else
-+		len = scnprintf(buffer, size, "- Compressor is not set.\n");
-+
-+	if (pages_in)
-+		len += scnprintf(buffer+len, size - len, "  Compressed "
-+			"%lu bytes into %lu (%ld percent compression).\n",
-+		  toi_compress_bytes_in,
-+		  toi_compress_bytes_out,
-+		  (pages_in - pages_out) * 100 / pages_in);
++	int len = strlen(usm_helper_data.program);
++	memcpy(buf, usm_helper_data.program, len);
 +	return len;
 +}
 +
-+/*
-+ * toi_compress_compression_memory_needed
-+ *
-+ * Tell the caller how much memory we need to operate during hibernate/resume.
-+ * Returns: Unsigned long. Maximum number of bytes of memory required for
-+ * operation.
-+ */
-+static int toi_compress_memory_needed(void)
++static void usm_load_config_info(char *buf, int size)
 +{
-+	return 2 * PAGE_SIZE;
++	/* Don't load the saved path if one has already been set */
++	if (usm_helper_data.program[0])
++		return;
++
++	memcpy(usm_helper_data.program, buf, size);
 +}
 +
-+static int toi_compress_storage_needed(void)
++static int usm_memory_needed(void)
 +{
-+	return 4 * sizeof(unsigned long) + strlen(toi_compressor_name) + 1;
++	/* ball park figure of 32 pages */
++	return 32 * PAGE_SIZE;
 +}
 +
-+/*
-+ * toi_compress_save_config_info
-+ * @buffer: Pointer to a buffer of size PAGE_SIZE.
-+ *
-+ * Save informaton needed when reloading the image at resume time.
-+ * Returns: Number of bytes used for saving our data.
++/* toi_prepare_usm
 + */
-+static int toi_compress_save_config_info(char *buffer)
++int toi_prepare_usm(void)
 +{
-+	int namelen = strlen(toi_compressor_name) + 1;
-+	int total_len;
++	usm_prepare_count++;
 +
-+	*((unsigned long *) buffer) = toi_compress_bytes_in;
-+	*((unsigned long *) (buffer + 1 * sizeof(unsigned long))) =
-+		toi_compress_bytes_out;
-+	*((unsigned long *) (buffer + 2 * sizeof(unsigned long))) =
-+		toi_expected_compression;
-+	*((unsigned long *) (buffer + 3 * sizeof(unsigned long))) = namelen;
-+	strncpy(buffer + 4 * sizeof(unsigned long), toi_compressor_name,
-+								namelen);
-+	total_len = 4 * sizeof(unsigned long) + namelen;
-+	return total_len;
++	if (usm_prepare_count > 1 || !usm_ops.enabled)
++		return 0;
++
++	usm_helper_data.pid = -1;
++
++	if (!*usm_helper_data.program)
++		return 0;
++
++	toi_netlink_setup(&usm_helper_data);
++
++	if (usm_helper_data.pid == -1)
++		printk(KERN_INFO "TuxOnIce Storage Manager wanted, but couldn't"
++				" start it.\n");
++
++	toi_activate_storage(0);
++
++	return usm_helper_data.pid != -1;
 +}
 +
-+/* toi_compress_load_config_info
-+ * @buffer: Pointer to the start of the data.
-+ * @size: Number of bytes that were saved.
-+ *
-+ * Description:	Reload information needed for decompressing the image at
-+ * resume time.
-+ */
-+static void toi_compress_load_config_info(char *buffer, int size)
++void toi_cleanup_usm(void)
 +{
-+	int namelen;
++	usm_prepare_count--;
 +
-+	toi_compress_bytes_in = *((unsigned long *) buffer);
-+	toi_compress_bytes_out = *((unsigned long *) (buffer + 1 *
-+				sizeof(unsigned long)));
-+	toi_expected_compression = *((unsigned long *) (buffer + 2 *
-+				sizeof(unsigned long)));
-+	namelen = *((unsigned long *) (buffer + 3 * sizeof(unsigned long)));
-+	if (strncmp(toi_compressor_name, buffer + 4 * sizeof(unsigned long),
-+				namelen)) {
-+		toi_compress_cleanup(1);
-+		strncpy(toi_compressor_name, buffer + 4 * sizeof(unsigned long),
-+			namelen);
-+		toi_compress_crypto_prepare();
++	if (usm_helper_data.pid > -1 && !usm_prepare_count) {
++		toi_deactivate_storage(0);
++		toi_netlink_close(&usm_helper_data);
 +	}
-+	return;
 +}
 +
-+/*
-+ * toi_expected_compression_ratio
-+ *
-+ * Description:	Returns the expected ratio between data passed into this module
-+ * 		and the amount of data output when writing.
-+ * Returns:	100 if the module is disabled. Otherwise the value set by the
-+ * 		user via our sysfs entry.
-+ */
-+
-+static int toi_compress_expected_ratio(void)
++static void storage_manager_activate(void)
 +{
-+	if (!toi_compression_ops.enabled)
-+		return 100;
++	if (storage_manager_action == storage_manager_last_action)
++		return;
++
++	if (storage_manager_action)
++		toi_prepare_usm();
 +	else
-+		return 100 - toi_expected_compression;
++		toi_cleanup_usm();
++
++	storage_manager_last_action = storage_manager_action;
 +}
 +
 +/*
-+ * data for our sysfs entries.
++ * User interface specific /sys/power/tuxonice entries.
 + */
++
 +static struct toi_sysfs_data sysfs_params[] = {
-+	SYSFS_INT("expected_compression", SYSFS_RW, &toi_expected_compression,
-+			0, 99, 0, NULL),
-+	SYSFS_INT("enabled", SYSFS_RW, &toi_compression_ops.enabled, 0, 1, 0,
-+			NULL),
-+	SYSFS_STRING("algorithm", SYSFS_RW, toi_compressor_name, 31, 0, NULL),
++	SYSFS_NONE("simulate_atomic_copy", storage_manager_simulate),
++	SYSFS_INT("enabled", SYSFS_RW, &usm_ops.enabled, 0, 1, 0, NULL),
++	SYSFS_STRING("program", SYSFS_RW, usm_helper_data.program, 254, 0,
++		NULL),
++	SYSFS_INT("activate_storage", SYSFS_RW , &storage_manager_action, 0, 1,
++			0, storage_manager_activate)
 +};
 +
-+/*
-+ * Ops structure.
-+ */
-+static struct toi_module_ops toi_compression_ops = {
-+	.type			= FILTER_MODULE,
-+	.name			= "compression",
-+	.directory		= "compression",
-+	.module			= THIS_MODULE,
-+	.initialise		= toi_compress_init,
-+	.cleanup		= toi_compress_cleanup,
-+	.memory_needed 		= toi_compress_memory_needed,
-+	.print_debug_info	= toi_compress_print_debug_stats,
-+	.save_config_info	= toi_compress_save_config_info,
-+	.load_config_info	= toi_compress_load_config_info,
-+	.storage_needed		= toi_compress_storage_needed,
-+	.expected_compression	= toi_compress_expected_ratio,
++static struct toi_module_ops usm_ops = {
++	.type				= MISC_MODULE,
++	.name				= "usm",
++	.directory			= "storage_manager",
++	.module				= THIS_MODULE,
++	.storage_needed			= usm_storage_needed,
++	.save_config_info		= usm_save_config_info,
++	.load_config_info		= usm_load_config_info,
++	.memory_needed			= usm_memory_needed,
 +
-+	.rw_init		= toi_compress_rw_init,
-+
-+	.write_page		= toi_compress_write_page,
-+	.read_page		= toi_compress_read_page,
-+
-+	.sysfs_data		= sysfs_params,
-+	.num_sysfs_entries	= sizeof(sysfs_params) /
++	.sysfs_data			= sysfs_params,
++	.num_sysfs_entries		= sizeof(sysfs_params) /
 +		sizeof(struct toi_sysfs_data),
 +};
 +
-+/* ---- Registration ---- */
-+
-+static __init int toi_compress_load(void)
++/* toi_usm_sysfs_init
++ * Description: Boot time initialisation for user interface.
++ */
++int toi_usm_init(void)
 +{
-+	return toi_register_module(&toi_compression_ops);
++	usm_helper_data.nl = NULL;
++	usm_helper_data.program[0] = '\0';
++	usm_helper_data.pid = -1;
++	usm_helper_data.skb_size = 0;
++	usm_helper_data.pool_limit = 6;
++	usm_helper_data.netlink_id = NETLINK_TOI_USM;
++	usm_helper_data.name = "userspace storage manager";
++	usm_helper_data.rcv_msg = usm_user_rcv_msg;
++	usm_helper_data.interface_version = 2;
++	usm_helper_data.must_init = 0;
++	init_completion(&usm_helper_data.wait_for_process);
++
++	return toi_register_module(&usm_ops);
 +}
 +
-+late_initcall(toi_compress_load);
++void toi_usm_exit(void)
++{
++	toi_netlink_close_complete(&usm_helper_data);
++	toi_unregister_module(&usm_ops);
++}
+diff --git a/kernel/power/tuxonice_storage.h b/kernel/power/tuxonice_storage.h
+index af48608..24f8e8a 100644
+--- a/kernel/power/tuxonice_storage.h
++++ b/kernel/power/tuxonice_storage.h
+@@ -6,6 +6,15 @@
+  * This file is released under the GPLv2.
+  */
+ 
++#ifdef CONFIG_NET
++int toi_prepare_usm(void);
++void toi_cleanup_usm(void);
++
++int toi_activate_storage(int force);
++int toi_deactivate_storage(int force);
++extern int toi_usm_init(void);
++extern void toi_usm_exit(void);
++#else
+ static inline int toi_usm_init(void) { return 0; }
+ static inline void toi_usm_exit(void) { }
+ 
+@@ -21,6 +30,7 @@ static inline int toi_deactivate_storage(int force)
+ 
+ static inline int toi_prepare_usm(void) { return 0; }
+ static inline void toi_cleanup_usm(void) { }
++#endif
+ 
+ enum {
+ 	USM_MSG_BASE = 0x10,
 -- 
 1.5.6.3
 
