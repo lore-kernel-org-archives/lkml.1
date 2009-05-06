@@ -1,111 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759004AbZEFKjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbZEFKmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759004AbZEFKjU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 06:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZEFKjK
+	id S1758817AbZEFKmy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 06:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZEFKmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 06:39:10 -0400
-Received: from verein.lst.de ([213.95.11.210]:48475 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754240AbZEFKjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 06:39:09 -0400
-Date: Wed, 6 May 2009 12:38:54 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: rostedt@goodmis.org, mingo@elte.hu, lethal@linux-sh.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] sh: remove stray markers
-Message-ID: <20090506103854.GA23811@lst.de>
+	Wed, 6 May 2009 06:42:44 -0400
+Received: from [192.16.179.4] ([192.16.179.4]:59646 "EHLO sh.osrg.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752981AbZEFKmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 06:42:44 -0400
+Date: Wed, 6 May 2009 19:39:29 +0900
+To: optimusgd@gmail.com
+Cc: fujita.tomonori@lab.ntt.co.jp, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, grundler@google.com
+Subject: Re: [Bug #13001] PCI-DMA: Out of IOMMU space
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <db2b43030905032227u73a41ec3wa511efcef6a22169@mail.gmail.com>
+References: <db2b43030904280218v61fded68rc585ce9c58ba1cce@mail.gmail.com>
+	<20090428184431Z.fujita.tomonori@lab.ntt.co.jp>
+	<db2b43030905032227u73a41ec3wa511efcef6a22169@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090506194012M.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 06 May 2009 19:39:29 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/sh has a couple of stray markers without any users introduced
-in commit 3d58695edbfac785161bf282dc11fd42a483d6c9.  Remove them in
-preparation of removing the markers in favour of the TRACE_EVENT
-macro (and also because we don't keep dead code around).
+On Mon, 4 May 2009 10:27:11 +0500
+**UNKNOWN CHARSET** <optimusgd@gmail.com> wrote:
 
-Paul, are you okay putting this in via the tracing tree?  I'd like
-to have all marker removals queued up there so we can kill it in one
-go once 2.6.31 opens.
+> 2009/4/28 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>:
+> > On Tue, 28 Apr 2009 14:18:57 +0500
+> > **UNKNOWN CHARSET** <optimusgd@gmail.com> wrote:
+> >
+> >> No, it is regression. I can reproduce that without allowdac and any
+> >> other unnecessary boot options.
+> >
+> > Hmm, in the bug repport, you said that you can't reproduce the problem:
+> >
+> > http://bugzilla.kernel.org/show_bug.cgi?id=13001#c15
+> >
+> > I can't find your comment like, "I can reproduce that without
+> > allowdac".
+> 
+> I was under a misapprehension. Later discussion was been in linux-pci
+> mailing list
+> http://markmail.org/message/pbng73ojpllln5fl
+
+You didn't CC to me so it was impossible for me to track this bug.
 
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+> >> In later discussion Grant Grundler ask
+> >> me apply patch that show 32 bit dma devices in my system. Results I
+> >> attached to bugreport. Looks like only one 32 bit dma device in my
+> >> system is ata controller, sata-nv.
+> >
+> > Hmm, looks like http://bugzilla.kernel.org/attachment.cgi?id=20895
+> > said that pata_amd and sata_nv use 32bit dma mask.
+> >
+> >
+> >> I can stable reproduce IOMMU out of space when I write data to sata
+> >> drive.
+> >
+> > Ok, let's figure out what's wrong.
+> >
+> > First, can you test v2.6.30-rc3 with the following patch?
+> >
+> > http://www.kernel.org/pub/linux/kernel/people/tomo/misc/gart-debug.diff
+> >
+> >
+> > Note that please enable CONFIG_DMA_API_DEBUG, CONFIG_IOMMU_DEBUG, and
+> > CONFIG_IOMMU_LEAK and see if you can reproduce the problem (of course,
+> > don't use any kernel option).
+> >
+> > When the kernel is out of IOMMU space, it prints some useful
+> > information.
+> >
+> 
+> I can't reproduce bug in 2.6.30-rc3. I read and wrote ~ 100gb data
+> from and to sata drive. Dmesg has two warnings during boot,
 
-Index: linux-2.6-tip/arch/sh/kernel/process_32.c
-===================================================================
---- linux-2.6-tip.orig/arch/sh/kernel/process_32.c	2009-05-06 10:35:22.000000000 +0000
-+++ linux-2.6-tip/arch/sh/kernel/process_32.c	2009-05-06 10:35:25.000000000 +0000
-@@ -119,8 +119,6 @@
- 	pid = do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0,
- 		      &regs, 0, NULL, NULL);
- 
--	trace_mark(kernel_arch_kthread_create, "pid %d fn %p", pid, fn);
--
- 	return pid;
- }
- 
-Index: linux-2.6-tip/arch/sh/kernel/process_64.c
-===================================================================
---- linux-2.6-tip.orig/arch/sh/kernel/process_64.c	2009-05-06 10:35:22.000000000 +0000
-+++ linux-2.6-tip/arch/sh/kernel/process_64.c	2009-05-06 10:35:36.000000000 +0000
-@@ -323,7 +323,6 @@
- int kernel_thread(int (*fn)(void *), void * arg, unsigned long flags)
- {
- 	struct pt_regs regs;
--	int pid;
- 
- 	memset(&regs, 0, sizeof(regs));
- 	regs.regs[2] = (unsigned long)arg;
-@@ -333,12 +332,8 @@
- 	regs.sr = (1 << 30);
- 
- 	/* Ok, create the new process.. */
--	pid = do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0,
-+	return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0,
- 		      &regs, 0, NULL, NULL);
--
--	trace_mark(kernel_arch_kthread_create, "pid %d fn %p", pid, fn);
--
--	return pid;
- }
- 
- /*
-Index: linux-2.6-tip/arch/sh/kernel/sys_sh.c
-===================================================================
---- linux-2.6-tip.orig/arch/sh/kernel/sys_sh.c	2009-05-06 10:35:22.000000000 +0000
-+++ linux-2.6-tip/arch/sh/kernel/sys_sh.c	2009-05-06 10:35:41.000000000 +0000
-@@ -79,8 +79,6 @@
- 	version = call >> 16; /* hack for backward compatibility */
- 	call &= 0xffff;
- 
--	trace_mark(kernel_arch_ipc_call, "call %u first %d", call, first);
--
- 	if (call <= SEMTIMEDOP)
- 		switch (call) {
- 		case SEMOP:
-Index: linux-2.6-tip/arch/sh/mm/fault_32.c
-===================================================================
---- linux-2.6-tip.orig/arch/sh/mm/fault_32.c	2009-05-06 10:35:22.000000000 +0000
-+++ linux-2.6-tip/arch/sh/mm/fault_32.c	2009-05-06 10:35:59.000000000 +0000
-@@ -249,9 +249,6 @@
- {
- 	int ret = 0;
- 
--	trace_mark(kernel_arch_trap_entry, "trap_id %d ip #p%ld",
--		   trap >> 5, instruction_pointer(regs));
--
- #ifdef CONFIG_KPROBES
- 	if (!user_mode(regs)) {
- 		preempt_disable();
-@@ -327,6 +324,5 @@
- 
- 	ret = 0;
- out:
--	trace_mark(kernel_arch_trap_exit, MARK_NOARGS);
- 	return ret;
- }
+Thanks, then let's debug 2.6.29.2.
+
+http://www.kernel.org/pub/linux/kernel/people/tomo/misc/gart-debug-2.6.29.diff
+
+As you did with 2.6.30-rc3, enable CONFIG_DMA_API_DEBUG,
+CONFIG_IOMMU_DEBUG, and CONFIG_IOMMU_LEAK and don't use any kernel
+boot option.
