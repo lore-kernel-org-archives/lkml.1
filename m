@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757061AbZEFG5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758763AbZEFG56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757061AbZEFG5F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 02:57:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbZEFG4x
+	id S1758763AbZEFG56 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 02:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbZEFG5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 02:56:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35146 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754034AbZEFG4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 02:56:52 -0400
-Date: Wed, 6 May 2009 06:55:31 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, rusty@rustcorp.com.au, benh@kernel.crashing.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org, yinghai@kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49F654E9.4070809@kernel.org>
-References: <49F654E9.4070809@kernel.org>
-Subject: [tip:irq/numa] irq: change ->set_affinity() to return status, fix
-Message-ID: <tip-b2e5d8588de0b5341eddad87dbe48d2185eaa3dd@git.kernel.org>
-Git-Commit-ID: b2e5d8588de0b5341eddad87dbe48d2185eaa3dd
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 6 May 2009 02:57:49 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:52239 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755802AbZEFG5s convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 02:57:48 -0400
+Message-Id: <4A015158.76EA.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Wed, 06 May 2009 07:59:04 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Cc: <mingo@elte.hu>, <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>,
+       <hpa@zytor.com>
+Subject: Re: [PATCH] x86-64: fix build with older binutils
+References: <4A0055B3.76EA.0078.0@novell.com>
+ <20090505163930.GA18579@uranus.ravnborg.org>
+In-Reply-To: <20090505163930.GA18579@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 06 May 2009 06:55:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b2e5d8588de0b5341eddad87dbe48d2185eaa3dd
-Gitweb:     http://git.kernel.org/tip/b2e5d8588de0b5341eddad87dbe48d2185eaa3dd
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Wed, 6 May 2009 07:55:33 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 6 May 2009 07:55:33 +0200
+>>> Sam Ravnborg <sam@ravnborg.org> 05.05.09 18:39 >>>
+>I like the way your patch simplies the linker scrip for x86.
+>We have recently merged the linker scripts for 32 and 64 bit,
+>and I tried to apply your patch on top of the unified version.
+>(Applied manually obviously).
+>
+>With a 64 bit defconfig build I got:
+>/home/sam/x-tools/x86_64-unknown-linux-gnu/bin/x86_64-unknown-linux-gnu-ld: section .vsyscall_0 [00000000016c6000 -> >00000000016c60e7] overlaps section .init.rodata [00000000016c5a00 -> 00000000016c6348]
+>make[1]: *** [.tmp_vmlinux1] Error 1
+>
+>I did not try to build a kernel with your original patch.
+>
+>Can you spot anything obvious wrong in my patch.
+>It is on top of x86/kbuild in -tip.
 
-irq: change ->set_affinity() to return status, fix
+Yeah, the placement of .init.start appears to be wrong - it should the
+SMP/x86-64 case of the per-CPU segment, and it should also be the
+one getting the :init attached. Hopefully that won't get us back to the
+binutils problem I was originally encountering - what is the extra .init.start
+section good for anyway? And why does __init_end continue to live
+outside of any section (this sort of thing causes problems with
+CONFIG_RELOCATABLE and older binutils afair, as such symbols get
+marked absolute by the latter)? While this was the case (and a mistake)
+for x86-64 prior to the merge, it was properly placed in a section for
+ix86, and hence I'd view it as a regression there.
 
-This build failure:
+Btw., why is .data.nosave being placed differently for 32- and 64-bit?
 
- arch/powerpc/sysdev/mpic.c:810: error: conflicting types for 'mpic_set_affinity'
- arch/powerpc/sysdev/mpic.h:39: error: previous declaration of 'mpic_set_affinity' was here
- make[2]: *** [arch/powerpc/sysdev/mpic.o] Error 1
- make[2]: *** Waiting for unfinished jobs....
+Jan
 
-Triggers because the function prototype was not updated when the
-function call signature got changed by:
-
-   d5dedd4: irq: change ->set_affinity() to return status
-
-[ Impact: build fix on powerpc ]
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-arch@vger.kernel.org
-LKML-Reference: <49F654E9.4070809@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/powerpc/sysdev/mpic.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/mpic.h b/arch/powerpc/sysdev/mpic.h
-index 3cef2af..eff433c 100644
---- a/arch/powerpc/sysdev/mpic.h
-+++ b/arch/powerpc/sysdev/mpic.h
-@@ -36,6 +36,6 @@ static inline int mpic_pasemi_msi_init(struct mpic *mpic)
- 
- extern int mpic_set_irq_type(unsigned int virq, unsigned int flow_type);
- extern void mpic_set_vector(unsigned int virq, unsigned int vector);
--extern void mpic_set_affinity(unsigned int irq, const struct cpumask *cpumask);
-+extern int mpic_set_affinity(unsigned int irq, const struct cpumask *cpumask);
- 
- #endif /* _POWERPC_SYSDEV_MPIC_H */
