@@ -1,51 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761164AbZEFPR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760988AbZEFPSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761164AbZEFPR2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 11:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760059AbZEFPRN
+	id S1760988AbZEFPSX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 11:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758638AbZEFPSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 11:17:13 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54967 "EHLO
-	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756336AbZEFPRM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 11:17:12 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] uml: UML net driver does not allow for vlans
-To: jdike@addtoit.com, linux-kernel@vger.kernel.org
-Date: Wed, 06 May 2009 17:16:27 +0100
-Message-ID: <20090506161616.24491.69282.stgit@t61.ukuu.org.uk>
-User-Agent: StGIT/0.14.3
+	Wed, 6 May 2009 11:18:07 -0400
+Received: from cantor.suse.de ([195.135.220.2]:45257 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757228AbZEFPSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 11:18:04 -0400
+Date: Wed, 6 May 2009 08:05:08 -0700
+From: Greg KH <gregkh@suse.de>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: linux-next <linux-next@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: next: parport: forgotten semicolon
+Message-ID: <20090506150508.GA4232@suse.de>
+References: <a4423d670905060758x32774671o796ae46fbb43997c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4423d670905060758x32774671o796ae46fbb43997c@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-See ancient discussion at
-http://marc.info/?l=user-mode-linux-devel&m=101990155831279&w=2
+On Wed, May 06, 2009 at 06:58:44PM +0400, Alexander Beregalov wrote:
+> Hi Greg
+> 
+> Please fix parport-remove-driver_data-direct-access-of-struct-device.patch
+> 
+> -       struct parport *p = dev_get_drvdata(&dev->dev)
+> +       struct parport *p = dev_get_drvdata(&dev->dev);
 
-and BUG #7854
+Great eye, thanks, I'll go fix that up.
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
-
- arch/um/include/shared/net_user.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-diff --git a/arch/um/include/shared/net_user.h b/arch/um/include/shared/net_user.h
-index 63bee15..3dabbe1 100644
---- a/arch/um/include/shared/net_user.h
-+++ b/arch/um/include/shared/net_user.h
-@@ -8,7 +8,7 @@
- 
- #define ETH_ADDR_LEN (6)
- #define ETH_HEADER_ETHERTAP (16)
--#define ETH_HEADER_OTHER (14)
-+#define ETH_HEADER_OTHER (26) /* 14 for ethernet + VLAN + MPLS for crazy people */
- #define ETH_MAX_PACKET (1500)
- 
- #define UML_NET_VERSION (4)
-
+greg k-h
