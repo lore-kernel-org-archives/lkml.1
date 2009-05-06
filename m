@@ -1,82 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbZEFGZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794AbZEFG0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757498AbZEFGZy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 02:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZEFGZa
+	id S1757794AbZEFG0u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 02:26:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZEFG0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 02:25:30 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:33163 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752560AbZEFGZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 02:25:29 -0400
-Date: Wed, 6 May 2009 09:12:54 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com
-Subject: Re: IO scheduler based IO Controller V2
-Message-ID: <20090506034254.GD4416@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <1241562049.11059.921.camel@twins>
+	Wed, 6 May 2009 02:26:39 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44897 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751253AbZEFG0i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 02:26:38 -0400
+Date: Wed, 6 May 2009 02:26:30 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LFSDEV <linux-fsdevel@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH vfs-2.6:for-next] vfs: remount_fs BKL pushdown
+Message-ID: <20090506062630.GA28560@infradead.org>
+References: <1240646945-7970-1-git-send-email-abogani@texware.it> <20090425082349.GA2475@infradead.org> <20090505133743.GA663@infradead.org> <63a49ef40905051239r61fe7f4cg6f24e13df30dc940@mail.gmail.com> <20090505204352.GA23343@infradead.org> <20090506035138.GP8633@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1241562049.11059.921.camel@twins>
+In-Reply-To: <20090506035138.GP8633@ZenIV.linux.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <peterz@infradead.org> [2009-05-06 00:20:49]:
+On Wed, May 06, 2009 at 04:51:38AM +0100, Al Viro wrote:
+> Actually, I'm not sure that you are right.  Especially if we go for your
+> "always hold s_umount for sync_filesystem()"; in that case we are guaranteed
+> that we'll have an exclusion between ->write_super() and that sucker, so
+> there's no reason to push it down into filesystems that do not use lock_super()
 
-> On Tue, 2009-05-05 at 13:24 -0700, Andrew Morton wrote:
-> > On Tue,  5 May 2009 15:58:27 -0400
-> > Vivek Goyal <vgoyal@redhat.com> wrote:
-> > 
-> > > 
-> > > Hi All,
-> > > 
-> > > Here is the V2 of the IO controller patches generated on top of 2.6.30-rc4.
-> > > ...
-> > > Currently primarily two other IO controller proposals are out there.
-> > > 
-> > > dm-ioband
-> > > ---------
-> > > This patch set is from Ryo Tsuruta from valinux.
-> > > ...
-> > > IO-throttling
-> > > -------------
-> > > This patch set is from Andrea Righi provides max bandwidth controller.
-> > 
-> > I'm thinking we need to lock you guys in a room and come back in 15 minutes.
-> > 
-> > Seriously, how are we to resolve this?  We could lock me in a room and
-> > cmoe back in 15 days, but there's no reason to believe that I'd emerge
-> > with the best answer.
-> > 
-> > I tend to think that a cgroup-based controller is the way to go. 
-> > Anything else will need to be wired up to cgroups _anyway_, and that
-> > might end up messy.
-> 
-> FWIW I subscribe to the io-scheduler faith as opposed to the
-> device-mapper cult ;-)
-> 
-> Also, I don't think a simple throttle will be very useful, a more mature
-> solution should cater to more use cases.
->
-
-I tend to agree, unless Andrea can prove us wrong. I don't think
-throttling a task (not letting it consume CPU, memory when its IO
-quota is exceeded) is a good idea. I've asked that question to Andrea
-a few times, but got no response.
- 
-
--- 
-	Balbir
+The interesting cases are locking against internal s_lock which at least
+extN needs or ->write_super.  And I'd really be rather safe than sorry
+and audit individual filesystems than introducing bug in an obscure one.
