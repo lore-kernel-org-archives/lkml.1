@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757752AbZEFQ7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758827AbZEFRBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757752AbZEFQ7x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 12:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760267AbZEFQ7l
+	id S1758827AbZEFRBJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 13:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZEFRAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 12:59:41 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:44662 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759566AbZEFQ7k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 12:59:40 -0400
-Date: Wed, 6 May 2009 17:57:14 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Chris Wright <chrisw@redhat.com>
-cc: Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       device@lanana.org, linux-mm@kvack.org, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
-In-Reply-To: <20090506164945.GD15712@x200.localdomain>
-Message-ID: <Pine.LNX.4.64.0905061754250.7350@blonde.anvils>
-References: <1241475935-21162-1-git-send-email-ieidus@redhat.com>
- <1241475935-21162-2-git-send-email-ieidus@redhat.com>
- <1241475935-21162-3-git-send-email-ieidus@redhat.com>
- <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com>
- <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils>
- <20090506133434.GX16078@random.random> <4A019719.7030504@redhat.com>
- <Pine.LNX.4.64.0905061739540.5934@blonde.anvils> <20090506164945.GD15712@x200.localdomain>
+	Wed, 6 May 2009 13:00:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50086 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753559AbZEFRAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 13:00:54 -0400
+Message-ID: <4A01C1AD.9060802@redhat.com>
+Date: Wed, 06 May 2009 19:58:21 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Hugh Dickins <hugh@veritas.com>
+CC: Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, aarcange@redhat.com, chrisw@redhat.com,
+       alan@lxorguk.ukuu.org.uk, device@lanana.org, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
+References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com> <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils> <4A01AC5E.6000906@redhat.com> <Pine.LNX.4.64.0905061706590.4005@blonde.anvils>
+In-Reply-To: <Pine.LNX.4.64.0905061706590.4005@blonde.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 May 2009, Chris Wright wrote:
-> 
-> I like merge.  For madvise() approach I had used:
-> 
-> +#define MADV_SHAREABLE 12              /* can share identical pages */
-> +#define MADV_UNSHAREABLE 13            /* can not share identical pages */
-> 
-> But those are maybe better put as MADV_(UN)MERGEABLE
-> (gets a bit confusing when you talk of merging vmas ;-)
-
-That's true, I hadn't remembered that.  Not _very_ confusing,
-but the last thing I'd want is to bully everyone into changing
-their familiar name for something, and the result just as poor.
-No need to decide today anyway: let's see how others feel.
-
-Hugh
+Hugh Dickins wrote:
+> On Wed, 6 May 2009, Izik Eidus wrote:
+>   
+>> We can first start with this ioctl interface, later when we add swapping to
+>> the pages, we can have madvice, and still (probably easily) support the ioctls
+>> by just calling from inside ksm the madvice functions for that specific
+>> address)
+>>
+>> I want to see ksm use madvice, but i believe it require some more changes to
+>> mm/*.c, so it probably better to start with merging it when it doesnt touch
+>> alot of stuff outisde ksm.c, and then to add swapping and after that add
+>> madvice support (when the pages are swappable, everyone can use it)
+>>
+>> What you think about that?
+>>     
+>
+> I think it's the wrong order to follow.
+>
+> The /dev/ksm interface is fine for your use while it's out of tree,
+> but we want to get the user interface right when bringing it into
+> mainline.  I recall Chris being very clear on that too.
+>
+> Changing from /dev/ksm to madvise() is not a lot of work, it's mainly
+> a matter of deleting code, and tidying up interfaces which would need
+> more work anyway (I haven't commented on your curious -EPERMs yet!).
+>
+> It doesn't involve whether you've enabled swapping or not - let's
+> forget the CAP_IPC_LOCK idea, and delegate that issue to limitation
+> via sysfs, along with the ability to limit wild overuse of the feature
+> - permissions on a sysfs node or something else?
+>
+> It does nudge towards making some decisions which need to be made
+> anyway - that tends to be what a correct interface forces upon you.
+> Like the issue of whether to go on covering unmapped areas or not -
+> though possibly we could put off that decision, if it's doc'ed
+> for now.
+>
+> And if it only covers mapped areas, then there will need to be a
+> VM_flag for it, mainly so mm can call into ksm.c when it's unmapped;
+> but I don't see it sinking hooks deeply into mm/*.c.
+>
+> Hugh
+>   
+Ok, i give up, lets move to madvice(), i will write a patch that move 
+the whole thing into madvice after i finish here something, but that 
+ofcurse only if Andrea agree for the move?
