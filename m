@@ -1,67 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762379AbZEFWUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763664AbZEFWUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762379AbZEFWUa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761856AbZEFV4a
+	id S1763664AbZEFWUx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761048AbZEFWBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:56:30 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53254 "EHLO mx2.mail.elte.hu"
+	Wed, 6 May 2009 18:01:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44652 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761944AbZEFV42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:56:28 -0400
-Date: Wed, 6 May 2009 23:54:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Markus Gutschke =?utf-8?B?KOmhp+Wtn+WLpCk=?= <markus@google.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       linux-mips@linux-mips.org, sparclinux@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
-Message-ID: <20090506215450.GA9537@elte.hu>
-References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com> <20090228030413.5B915FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902271932520.3111@localhost.localdomain> <alpine.LFD.2.00.0902271948570.3111@localhost.localdomain> <20090228072554.CFEA6FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902280916470.3111@localhost.localdomain> <904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com> <20090506212913.GC4861@elte.hu> <904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
+	id S1761801AbZEFWBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 18:01:04 -0400
+Date: Wed, 6 May 2009 17:58:33 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: "IKEDA, Munehiro" <m-ikeda@ds.jp.nec.com>
+Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 18/18] io-controller: Debug hierarchical IO scheduling
+Message-ID: <20090506215833.GK8180@redhat.com>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-19-git-send-email-vgoyal@redhat.com> <4A0203DB.1090809@ds.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
+In-Reply-To: <4A0203DB.1090809@ds.jp.nec.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Markus Gutschke (顧孟勤) <markus@google.com> wrote:
-
-> On Wed, May 6, 2009 at 14:29, Ingo Molnar <mingo@elte.hu> wrote:
-> > That's a pretty interesting usage. What would be fallback mode you
-> > are using if the kernel doesnt have seccomp built in? Completely
-> > non-sandboxed? Or a ptrace/PTRACE_SYSCALL based sandbox?
+On Wed, May 06, 2009 at 05:40:43PM -0400, IKEDA, Munehiro wrote:
+> Hi Vivek,
 > 
-> Ptrace has performance and/or reliability problems when used to 
-> sandbox threaded applications due to potential race conditions 
-> when inspecting system call arguments. We hope that we can avoid 
-> this problem with seccomp. It is very attractive that kernel 
-> automatically terminates any application that violates the very 
-> well-defined constraints of the sandbox.
+> Patching and compilation error occurred on the 18/18 patch.
+> I know this is a patch for debug but report them in case.
 > 
-> In general, we are currently exploring different options based on 
-> general availability, functionality, and complexity of 
-> implementation. Seccomp is a good middle ground that we expect to 
-> be able to use in the medium term to provide an acceptable 
-> solution for a large segment of Linux users. Although the 
-> restriction to just four unfiltered system calls is painful.
+> 
+> Vivek Goyal wrote:
+> > @@ -2203,6 +2241,25 @@ EXPORT_SYMBOL(elv_get_slice_idle);
+> >  void elv_ioq_served(struct io_queue *ioq, bfq_service_t served)
+> >  {
+> >  	entity_served(&ioq->entity, served, ioq->nr_sectors);
+> 
+> Patch failed due to this line.  I guess this should be
+> 
+> 	entity_served(&ioq->entity, served);
+> 
+> 
+> > +
+> > +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> > +		{
+> > +			struct elv_fq_data *efqd = ioq->efqd;
+> > +			char path[128];
+> > +			struct io_group *iog = ioq_to_io_group(ioq);
+> > +			io_group_path(iog, path, sizeof(path));
+> > +			elv_log_ioq(efqd, ioq, "ioq served: QSt=0x%lx QSs=0x%lx"
+> > +				" QTt=0x%lx QTs=0x%lx grp=%s GTt=0x%lx "
+> > +				" GTs=0x%lx rq_queued=%d",
+> > +				served, ioq->nr_sectors,
+> > +				ioq->entity.total_service,
+> > +				ioq->entity.total_sector_service,
+> > +				path,
+> > +				iog->entity.total_service,
+> > +				iog->entity.total_sector_service,
+> > +				ioq->nr_queued);
+> > +		}
+> > +#endif
+> >  }
+> 
+> Because
+>   io_entity::total_service
+> and
+>   io_entity::total_sector_service
+> are not defined, compilation failed if CONFIG_DEBUG_GROUP_IOSCHED=y
+> here. (and everywhere referencing entity.total_service or  entity.total_sector_service)
+> They need to be defined like:
+> 
+> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+> index 1ea4ff3..6d0a735 100644
+> --- a/block/elevator-fq.h
+> +++ b/block/elevator-fq.h
+> @@ -147,6 +147,10 @@ struct io_entity {
+>         unsigned short ioprio_class, new_ioprio_class;
+>  
+>         int ioprio_changed;
+> +
+> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> +       unsigned long total_service, total_sector_service;
+> +#endif
+>  };
+>  
+>  /*
+> 
+> Unfortunately I couldn't figure out where and how the members
+> should be calculated, sorry.
 
-Which other system calls would you like to use? Futexes might be 
-one, for fast synchronization primitives?
+Hi Ikeda,
 
-	Ingo
+I think there is some issue with applying the patch. I think you have
+forgotten to apply following patch and that's why seeing all the issues.
+
+"io-controller: Export disk time used and nr sectors dipatched through
+cgroups"
+
+This patch changes elv_ioq_served() at the same time introduced additional
+field of total_sector_service etc.
+
+Thanks
+Vivek
