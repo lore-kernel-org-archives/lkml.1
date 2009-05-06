@@ -1,48 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760364AbZEFPdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760562AbZEFPet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760364AbZEFPdu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 11:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757214AbZEFPdF
+	id S1760562AbZEFPet (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 11:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759813AbZEFPei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 11:33:05 -0400
-Received: from kroah.org ([198.145.64.141]:37485 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755650AbZEFPdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 11:33:01 -0400
-Date: Wed, 6 May 2009 08:26:53 -0700
-From: Greg KH <greg@kroah.com>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] usb_debug: implement multi urb write
-Message-ID: <20090506152653.GC4603@kroah.com>
-References: <1241575205-12199-1-git-send-email-jason.wessel@windriver.com> <1241575205-12199-2-git-send-email-jason.wessel@windriver.com>
+	Wed, 6 May 2009 11:34:38 -0400
+Received: from simmts5.bellnexxia.net ([206.47.199.163]:61047 "EHLO
+	simmts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755087AbZEFPeh convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 11:34:37 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArodANZJAUrOL8eh/2dsb2JhbACBUIt6JpFIsiOCMoE9BQ
+X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
+X-Originating-IP: [41.219.150.83]
+From: Camelot Office <hotnersgardencentre@bellnet.ca>
+Reply-To: c_group24@8u8.hk
+To: <info@winners.com>
+Subject: Contact Mr. Larry Whyte
+Date: Wed, 6 May 2009 11:34:36 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241575205-12199-2-git-send-email-jason.wessel@windriver.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20090506153436.TWDY1658.simmts5-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 05, 2009 at 09:00:01PM -0500, Jason Wessel wrote:
-> The usb_debug driver, when used as the console, will always fail to
-> insert the carriage return and new line sequence as well as randomly
-> drop console output.  This is a result of only having the single
-> write_urb and that the tty layer will have a lock that prevents the
-> processing of the back to back urb requests.
-> 
-> The solution is to allow more than one urb to be outstanding and have
-> a slightly deeper transmit queue.  The idea and some code is borrowed
-> from the ftdi_sio usb driver.
+You were selected for the sum of  £1,230,310 GBP. Verify this mail 
+immediately by sending in your information. This will include your name, address, age, phone number etc to  c_group24@8u8.hk
 
-Almost all usb-serial drivers need this functionality.
-
-As you are adding it to the usb_debug driver, why not just add this kind
-of functionality to the usb-serial core instead, that way we can share
-it with all of the drivers?  I'd much rather see that happen instead of
-us doing it individually again.
-
-thanks,
-
-greg k-h
