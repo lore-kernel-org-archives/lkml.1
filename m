@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932254AbZEFUog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761351AbZEFUqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932254AbZEFUog (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 16:44:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761234AbZEFUje
+	id S1761351AbZEFUqV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 16:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761047AbZEFUjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 16:39:34 -0400
-Received: from kroah.org ([198.145.64.141]:34028 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 16:39:44 -0400
+Received: from kroah.org ([198.145.64.141]:34075 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761036AbZEFUjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 16:39:33 -0400
+	id S1761236AbZEFUjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 16:39:42 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Wed May  6 13:31:31 2009
-Message-Id: <20090506203131.004637150@blue.kroah.org>
+Message-Id: <20090506203131.683958194@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 13:30:25 -0700
+Date: Wed, 06 May 2009 13:30:28 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mel Gorman <mel@csn.ul.ie>,
+       alan@lxorguk.ukuu.org.uk, Jussi Kivilinna <jussi.kivilinna@mbnet.fi>,
+       "John W. Linville" <linville@tuxdriver.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 15/18] Ignore madvise(MADV_WILLNEED) for hugetlbfs-backed regions
+Subject: [patch 18/18] rndis_wlan: fix initialization order for workqueue&workers
 References: <20090506203010.615363711@blue.kroah.org>
-Content-Disposition: inline; filename=ignore-madvise-for-hugetlbfs-backed-regions.patch
+Content-Disposition: inline; filename=rndis_wlan-fix-initialization-order-for-workqueue-workers.patch
 In-Reply-To: <20090506203353.GA14624@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,47 +40,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mel Gorman <mel@csn.ul.ie>
+From: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
 
-commit a425a638c858fd10370b573bde81df3ba500e271 upstream.
+commit e805e4d0b53506dff4255a2792483f094e7fcd2c upstream.
 
-madvise(MADV_WILLNEED) forces page cache readahead on a range of memory
-backed by a file.  The assumption is made that the page required is
-order-0 and "normal" page cache.
+rndis_wext_link_change() might be called from rndis_command() at
+initialization stage and priv->workqueue/priv->work have not been
+initialized yet. This causes invalid opcode at rndis_wext_bind on
+some brands of bcm4320.
 
-On hugetlbfs, this assumption is not true and order-0 pages are
-allocated and inserted into the hugetlbfs page cache.  This leaks
-hugetlbfs page reservations and can cause BUGs to trigger related to
-corrupted page tables.
+Fix by initializing workqueue/workers in rndis_wext_bind() before
+rndis_command is used.
 
-This patch causes MADV_WILLNEED to be ignored for hugetlbfs-backed
-regions.
+This bug has existed since 2.6.25, reported at:
+	http://bugzilla.kernel.org/show_bug.cgi?id=12794
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Cc: stable@kernel.org
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/madvise.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/net/wireless/rndis_wlan.c |   14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
---- a/mm/madvise.c
-+++ b/mm/madvise.c
-@@ -112,6 +112,14 @@ static long madvise_willneed(struct vm_a
- 	if (!file)
- 		return -EBADF;
+--- a/drivers/net/wireless/rndis_wlan.c
++++ b/drivers/net/wireless/rndis_wlan.c
+@@ -2556,6 +2556,11 @@ static int rndis_wext_bind(struct usbnet
+ 	mutex_init(&priv->command_lock);
+ 	spin_lock_init(&priv->stats_lock);
  
-+	/*
-+	 * Page cache readahead assumes page cache pages are order-0 which
-+	 * is not the case for hugetlbfs. Do not give a bad return value
-+	 * but ignore the advice.
-+	 */
-+	if (vma->vm_flags & VM_HUGETLB)
-+		return 0;
++	/* because rndis_command() sleeps we need to use workqueue */
++	priv->workqueue = create_singlethread_workqueue("rndis_wlan");
++	INIT_WORK(&priv->work, rndis_wext_worker);
++	INIT_DELAYED_WORK(&priv->stats_work, rndis_update_wireless_stats);
 +
- 	if (file->f_mapping->a_ops->get_xip_mem) {
- 		/* no bad return value, but ignore advice */
- 		return 0;
+ 	/* try bind rndis_host */
+ 	retval = generic_rndis_bind(usbdev, intf, FLAG_RNDIS_PHYM_WIRELESS);
+ 	if (retval < 0)
+@@ -2600,16 +2605,17 @@ static int rndis_wext_bind(struct usbnet
+ 	disassociate(usbdev, 1);
+ 	netif_carrier_off(usbdev->net);
+ 
+-	/* because rndis_command() sleeps we need to use workqueue */
+-	priv->workqueue = create_singlethread_workqueue("rndis_wlan");
+-	INIT_DELAYED_WORK(&priv->stats_work, rndis_update_wireless_stats);
+ 	queue_delayed_work(priv->workqueue, &priv->stats_work,
+ 		round_jiffies_relative(STATS_UPDATE_JIFFIES));
+-	INIT_WORK(&priv->work, rndis_wext_worker);
+ 
+ 	return 0;
+ 
+ fail:
++	cancel_delayed_work_sync(&priv->stats_work);
++	cancel_work_sync(&priv->work);
++	flush_workqueue(priv->workqueue);
++	destroy_workqueue(priv->workqueue);
++
+ 	kfree(priv);
+ 	return retval;
+ }
 
 
