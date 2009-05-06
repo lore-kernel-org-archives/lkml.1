@@ -1,92 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbZEFB0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757887AbZEFB2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754483AbZEFB0v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 21:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbZEFB0l
+	id S1757887AbZEFB2U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 21:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbZEFB2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 21:26:41 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:33420 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751290AbZEFB0l convert rfc822-to-8bit (ORCPT
+	Tue, 5 May 2009 21:28:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54765 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751290AbZEFB2L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 21:26:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Qsei117IJKagkBuY1ffm6FcaeF2mQW8lyMAH1sL4npaW4yCzfPE7QAUr106oZnKZHQ
-         GV/x5JswBF+sW+F1Zaxk6VFrI08OeWX7cqqklPQzLOiNtz8jCeNybWar9126DbeLk7uV
-         B/nEL9ulrgF/AwQaVAD5dbV7niUbzEj7ZHjhU=
-MIME-Version: 1.0
-In-Reply-To: <13a12eea0905040618u7fc48755hdbc3ea6d87c4d68c@mail.gmail.com>
-References: <2891419e0905040356x53643144of77eeaa8c210dce7@mail.gmail.com>
-	 <13a12eea0905040618u7fc48755hdbc3ea6d87c4d68c@mail.gmail.com>
-Date: Wed, 6 May 2009 10:26:39 +0900
-Message-ID: <2891419e0905051826p77cf211fmf5a6a0b8c65f5342@mail.gmail.com>
-Subject: Re: [PATCH 0/2] range-bw : Another I/O scheduling policy of dm-ioband 
-	(v1)
-From: Dong-Jae Kang <baramsori72@gmail.com>
-To: Chris Snook <chris.snook@gmail.com>
-Cc: Ryo Tsuruta <ryov@valinux.co.jp>, righi.andrea@gmail.com,
-       menage@google.com, balbir@linux.vnet.ibm.com,
-       guijianfeng@cn.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com,
-       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       chlunde@ping.uio.no, dave@linux.vnet.ibm.com, dpshah@google.com,
-       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, taka@valinux.co.jp,
-       lizf@cn.fujitsu.com, matt@bluehost.com, dradford@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, nauman@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, corsetproject@googlegroups.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 5 May 2009 21:28:11 -0400
+Date: Tue, 5 May 2009 18:24:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: chrisw@sous-sol.org, roland@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] ptrace: ptrace_attach: check PF_KTHREAD +
+ exit_state instead of ->mm
+Message-Id: <20090505182444.de4e0143.akpm@linux-foundation.org>
+In-Reply-To: <20090505235736.GA7526@redhat.com>
+References: <20090505224722.GA954@redhat.com>
+	<20090505164733.54cd4ca4.akpm@linux-foundation.org>
+	<20090505235736.GA7526@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Chris Snook
+On Wed, 6 May 2009 01:57:36 +0200 Oleg Nesterov <oleg@redhat.com> wrote:
 
-2009/5/4 Chris Snook <chris.snook@gmail.com>:
-> On Mon, May 4, 2009 at 6:56 AM, Dong-Jae Kang <baramsori72@gmail.com> wrote:
->> range-bw has two kinds of operation modes, min-max and max mode.
->> Min-max mode is to supports guaranteeing the minimum I/O requirement
->> and limitation of unnecessary I/O bandwidth at the same time. And max
->> mode is to support only limitation. So in case of min-max mode, you
->> need to configure min-bw and max-bw values and in case of max mode,
->> configure only max-bw.
->
-> Please forgive me if I missed a previous discussion, but how is max
-> mode different from min-max mode with a minimum of zero?  I understand
-> that there may be some special-case optimizations you can do
-> internally, but it's unclear to me why you need two different
-> interfaces.
->
+> On 05/05, Andrew Morton wrote:
+> >
+> > On Wed, 6 May 2009 00:47:22 +0200
+> > Oleg Nesterov <oleg@redhat.com> wrote:
+> >
+> > > - Add PF_KTHREAD check to prevent attaching to the kernel thread
+> > >   with a borrowed ->mm.
+> > >
+> > >   With or without this change we can race with daemonize() which
+> > >   can set PF_KTHREAD or clear ->mm after ptrace_attach() does the
+> > >   check, but this doesn't matter because reparent_to_kthreadd()
+> > >   does ptrace_unlink().
+> > >
+> > > - Kill "!task->mm" check. We don't really care about ->mm != NULL,
+> > >   and the task can call exit_mm() right after we drop task_lock().
+> > >   What we need is to make sure we can't attach after exit_notify(),
+> > >   check task->exit_state != 0 instead.
+> > >
+> >
+> > These patches make a mess of utrace-core.patch.  Do we really want to do that?
+> 
+> Aaaah. Sorry! forgot to clearify...
+> 
+> These patches depend on
+> 
+> 	utrace-core-kill-exclude_xtrace-logic.patch
+> 
+> which hopefully can be folded into utrace-core.patch. In that case these
+> changes do not depend on utrace, and they can go ahead of utrace.
+> 
 
-Thank you for your good comments,
+oic.  Strange that the patches applied, but utrace didn't apply on them.
 
-As you asked,
-max mode is actually same with min-max mode with a zero minimum value.
-It is only to consider the aspect of user interface now.
-the reason is as below
-according to the usage case, some users may be interested in
-guranteeing the minimum BW
-and limitation of maximum BW at the same time (the  basic
-fuctionalilty of range-bw), but, some
-users can be interested in only limitation of BW to reserve the BW for
-another service.
+I now have:
 
-actually, I was overlooking that users are confused with the two kinds
-of interface
+#
+# ptrace
+#
+ptrace-remove-pt_dtrace-from-arch-h8300.patch
+ptrace-remove-pt_dtrace-from-avr32-mn10300-parisc-s390-sh-xtensa.patch
+ptrace-remove-pt_dtrace-from-m68k-m68knommu.patch
+ptrace-remove-pt_dtrace-from-arch-m32r.patch
+ptrace-mm_need_new_owner-use-real_parent-to-search-in-the-siblings.patch
+ptrace-tracehook_unsafe_exec-remove-the-stale-comment.patch
+ptrace-tracehook_unsafe_exec-remove-the-stale-comment-fix.patch
+ptrace-do-not-use-task-ptrace-directly-in-core-kernel.patch
+#
+# utrace
+#
+signals-tracehook_notify_jctl-change.patch
+utrace-core.patch
+utrace-core-kill-exclude_xtrace-logic.patch
+#
+ptrace-ptrace_attach-check-pf_kthread-exit_state-instead-of-mm.patch
+ptrace-cleanup-check-set-of-pt_ptraced-during-attach.patch
+ptrace-do-not-use-task_lock-for-attach.patch
+ptrace_get_task_struct-s-tasklist-rcu-make-it-static.patch
 
-So, your comments will be related with my future work :)
-if two kinds of mode is confused or unnecessary to people,
-I will re-consider about supporting the unified interfaces as you pointed
-or I try to optimize the scheduling policy for max mode.
-and this work will be applied in next release of range-bw.
-
-Thank you, Chris Snook
-
--- 
-Best Regards,
-Dong-Jae Kang
