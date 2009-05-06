@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762992AbZEFWK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763057AbZEFWLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762992AbZEFWK7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761550AbZEFVy5
+	id S1763057AbZEFWLY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761558AbZEFVy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:54:57 -0400
-Received: from kroah.org ([198.145.64.141]:57274 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 17:54:58 -0400
+Received: from kroah.org ([198.145.64.141]:57283 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761515AbZEFVyx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:54:53 -0400
+	id S1761520AbZEFVyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:54:54 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed May  6 14:48:00 2009
-Message-Id: <20090506214800.693842620@mini.kroah.org>
+Message-Id: <20090506214800.844554430@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 14:46:07 -0700
+Date: Wed, 06 May 2009 14:46:08 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,9 +26,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Al Viro <viro@zeniv.linux.org.uk>
-Subject: [patch 39/58] Take fs_struct handling to new file (fs/fs_struct.c)
+Subject: [patch 40/58] New locking/refcounting for fs_struct
 References: <20090506214528.660389067@mini.kroah.org>
-Content-Disposition: inline; filename=take-fs_struct-handling-to-new-file.patch
+Content-Disposition: inline; filename=new-locking-refcounting-for-fs_struct.patch
 In-Reply-To: <20090506215017.GA21981@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,433 +40,399 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Al Viro <viro@zeniv.linux.org.uk>
 
-commit 3e93cd671813e204c258f1e6c797959920cf7772 upstream.
+commit 498052bba55ecaff58db6a1436b0e25bfd75a7ff upstream.
 
-Pure code move; two new helper functions for nfsd and daemonize
-(unshare_fs_struct() and daemonize_fs_struct() resp.; for now -
-the same code as used to be in callers).  unshare_fs_struct()
-exported (for nfsd, as copy_fs_struct()/exit_fs() used to be),
-copy_fs_struct() and exit_fs() don't need exports anymore.
+* all changes of current->fs are done under task_lock and write_lock of
+  old fs->lock
+* refcount is not atomic anymore (same protection)
+* its decrements are done when removing reference from current; at the
+  same time we decide whether to free it.
+* put_fs_struct() is gone
+* new field - ->in_exec.  Set by check_unsafe_exec() if we are trying to do
+  execve() and only subthreads share fs_struct.  Cleared when finishing exec
+  (success and failure alike).  Makes CLONE_FS fail with -EAGAIN if set.
+* check_unsafe_exec() may fail with -EAGAIN if another execve() from subthread
+  is in progress.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/Makefile               |    2 
- fs/fs_struct.c            |  141 ++++++++++++++++++++++++++++++++++++++++++++++
- fs/internal.h             |    6 +
- fs/namei.c                |    7 --
- fs/namespace.c            |   68 ----------------------
- fs/nfsd/nfssvc.c          |    7 --
- include/linux/fs_struct.h |    2 
- kernel/exit.c             |   31 ----------
- kernel/fork.c             |   29 ---------
- 9 files changed, 155 insertions(+), 138 deletions(-)
+ fs/compat.c               |   16 +++++++++-
+ fs/exec.c                 |   31 +++++++++++++++++---
+ fs/fs_struct.c            |   69 ++++++++++++++++++++++++++++++++--------------
+ fs/internal.h             |    2 -
+ fs/proc/task_nommu.c      |    2 -
+ include/linux/fs_struct.h |    8 ++---
+ kernel/fork.c             |   37 ++++++++++++++++++------
+ 7 files changed, 121 insertions(+), 44 deletions(-)
 
---- /dev/null
-+++ b/fs/fs_struct.c
-@@ -0,0 +1,141 @@
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+#include <linux/fs.h>
-+#include <linux/path.h>
-+#include <linux/slab.h>
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -51,6 +51,7 @@
+ #include <linux/poll.h>
+ #include <linux/mm.h>
+ #include <linux/eventpoll.h>
++#include <linux/fs_struct.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/mmu_context.h>
+@@ -1412,12 +1413,15 @@ int compat_do_execve(char * filename,
+ 	bprm->cred = prepare_exec_creds();
+ 	if (!bprm->cred)
+ 		goto out_unlock;
+-	check_unsafe_exec(bprm);
 +
-+/*
-+ * Replace the fs->{rootmnt,root} with {mnt,dentry}. Put the old values.
-+ * It can block.
-+ */
-+void set_fs_root(struct fs_struct *fs, struct path *path)
-+{
-+	struct path old_root;
++	retval = check_unsafe_exec(bprm);
++	if (retval)
++		goto out_unlock;
+ 
+ 	file = open_exec(filename);
+ 	retval = PTR_ERR(file);
+ 	if (IS_ERR(file))
+-		goto out_unlock;
++		goto out_unmark;
+ 
+ 	sched_exec();
+ 
+@@ -1459,6 +1463,9 @@ int compat_do_execve(char * filename,
+ 		goto out;
+ 
+ 	/* execve succeeded */
++	write_lock(&current->fs->lock);
++	current->fs->in_exec = 0;
++	write_unlock(&current->fs->lock);
+ 	mutex_unlock(&current->cred_exec_mutex);
+ 	acct_update_integrals(current);
+ 	free_bprm(bprm);
+@@ -1476,6 +1483,11 @@ out_file:
+ 		fput(bprm->file);
+ 	}
+ 
++out_unmark:
++	write_lock(&current->fs->lock);
++	current->fs->in_exec = 0;
++	write_unlock(&current->fs->lock);
 +
-+	write_lock(&fs->lock);
-+	old_root = fs->root;
-+	fs->root = *path;
-+	path_get(path);
-+	write_unlock(&fs->lock);
-+	if (old_root.dentry)
-+		path_put(&old_root);
-+}
-+
-+/*
-+ * Replace the fs->{pwdmnt,pwd} with {mnt,dentry}. Put the old values.
-+ * It can block.
-+ */
-+void set_fs_pwd(struct fs_struct *fs, struct path *path)
-+{
-+	struct path old_pwd;
-+
-+	write_lock(&fs->lock);
-+	old_pwd = fs->pwd;
-+	fs->pwd = *path;
-+	path_get(path);
-+	write_unlock(&fs->lock);
-+
-+	if (old_pwd.dentry)
-+		path_put(&old_pwd);
-+}
-+
-+void chroot_fs_refs(struct path *old_root, struct path *new_root)
-+{
-+	struct task_struct *g, *p;
-+	struct fs_struct *fs;
-+	int count = 0;
-+
-+	read_lock(&tasklist_lock);
-+	do_each_thread(g, p) {
-+		task_lock(p);
-+		fs = p->fs;
-+		if (fs) {
-+			write_lock(&fs->lock);
-+			if (fs->root.dentry == old_root->dentry
-+			    && fs->root.mnt == old_root->mnt) {
-+				path_get(new_root);
-+				fs->root = *new_root;
-+				count++;
-+			}
-+			if (fs->pwd.dentry == old_root->dentry
-+			    && fs->pwd.mnt == old_root->mnt) {
-+				path_get(new_root);
-+				fs->pwd = *new_root;
-+				count++;
-+			}
-+			write_unlock(&fs->lock);
-+		}
-+		task_unlock(p);
-+	} while_each_thread(g, p);
-+	read_unlock(&tasklist_lock);
-+	while (count--)
-+		path_put(old_root);
-+}
-+
-+void put_fs_struct(struct fs_struct *fs)
-+{
-+	/* No need to hold fs->lock if we are killing it */
-+	if (atomic_dec_and_test(&fs->count)) {
-+		path_put(&fs->root);
-+		path_put(&fs->pwd);
-+		kmem_cache_free(fs_cachep, fs);
+ out_unlock:
+ 	mutex_unlock(&current->cred_exec_mutex);
+ 
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1049,16 +1049,18 @@ EXPORT_SYMBOL(install_exec_creds);
+  * - the caller must hold current->cred_exec_mutex to protect against
+  *   PTRACE_ATTACH
+  */
+-void check_unsafe_exec(struct linux_binprm *bprm)
++int check_unsafe_exec(struct linux_binprm *bprm)
+ {
+ 	struct task_struct *p = current, *t;
+ 	unsigned long flags;
+ 	unsigned n_fs, n_sighand;
++	int res = 0;
+ 
+ 	bprm->unsafe = tracehook_unsafe_exec(p);
+ 
+ 	n_fs = 1;
+ 	n_sighand = 1;
++	write_lock(&p->fs->lock);
+ 	lock_task_sighand(p, &flags);
+ 	for (t = next_thread(p); t != p; t = next_thread(t)) {
+ 		if (t->fs == p->fs)
+@@ -1066,11 +1068,19 @@ void check_unsafe_exec(struct linux_binp
+ 		n_sighand++;
+ 	}
+ 
+-	if (atomic_read(&p->fs->count) > n_fs ||
+-	    atomic_read(&p->sighand->count) > n_sighand)
++	if (p->fs->users > n_fs ||
++	    atomic_read(&p->sighand->count) > n_sighand) {
+ 		bprm->unsafe |= LSM_UNSAFE_SHARE;
++	} else {
++		if (p->fs->in_exec)
++			res = -EAGAIN;
++		p->fs->in_exec = 1;
 +	}
-+}
-+
-+void exit_fs(struct task_struct *tsk)
-+{
-+	struct fs_struct * fs = tsk->fs;
-+
-+	if (fs) {
-+		task_lock(tsk);
-+		tsk->fs = NULL;
-+		task_unlock(tsk);
-+		put_fs_struct(fs);
-+	}
-+}
-+
-+struct fs_struct *copy_fs_struct(struct fs_struct *old)
-+{
-+	struct fs_struct *fs = kmem_cache_alloc(fs_cachep, GFP_KERNEL);
-+	/* We don't need to lock fs - think why ;-) */
-+	if (fs) {
-+		atomic_set(&fs->count, 1);
-+		rwlock_init(&fs->lock);
-+		fs->umask = old->umask;
-+		read_lock(&old->lock);
-+		fs->root = old->root;
-+		path_get(&old->root);
-+		fs->pwd = old->pwd;
-+		path_get(&old->pwd);
-+		read_unlock(&old->lock);
-+	}
-+	return fs;
-+}
-+
-+int unshare_fs_struct(void)
-+{
-+	struct fs_struct *fsp = copy_fs_struct(current->fs);
-+	if (!fsp)
-+		return -ENOMEM;
-+	exit_fs(current);
-+	current->fs = fsp;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(unshare_fs_struct);
-+
-+/* to be mentioned only in INIT_TASK */
-+struct fs_struct init_fs = {
-+	.count		= ATOMIC_INIT(1),
-+	.lock		= __RW_LOCK_UNLOCKED(init_fs.lock),
-+	.umask		= 0022,
-+};
-+
-+void daemonize_fs_struct(void)
-+{
-+	struct fs_struct *fs;
-+
-+	exit_fs(current);	/* current->fs->count--; */
-+	fs = &init_fs;
-+	current->fs = fs;
-+	atomic_inc(&fs->count);
-+}
---- a/fs/internal.h
-+++ b/fs/internal.h
-@@ -11,6 +11,7 @@
  
- struct super_block;
- struct linux_binprm;
-+struct path;
- 
- /*
-  * block_dev.c
-@@ -60,3 +61,8 @@ extern void umount_tree(struct vfsmount 
- extern struct vfsmount *copy_tree(struct vfsmount *, struct dentry *, int);
- 
- extern void __init mnt_init(void);
+ 	unlock_task_sighand(p, &flags);
++	write_unlock(&p->fs->lock);
 +
-+/*
-+ * fs_struct.c
-+ */
-+extern void chroot_fs_refs(struct path *, struct path *);
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -11,7 +11,7 @@ obj-y :=	open.o read_write.o file_table.
- 		attr.o bad_inode.o file.o filesystems.o namespace.o \
- 		seq_file.o xattr.o libfs.o fs-writeback.o \
- 		pnode.o drop_caches.o splice.o sync.o utimes.o \
--		stack.o
-+		stack.o fs_struct.o
- 
- ifeq ($(CONFIG_BLOCK),y)
- obj-y +=	buffer.o bio.o block_dev.o direct-io.o mpage.o ioprio.o
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -2891,10 +2891,3 @@ EXPORT_SYMBOL(vfs_symlink);
- EXPORT_SYMBOL(vfs_unlink);
- EXPORT_SYMBOL(dentry_unhash);
- EXPORT_SYMBOL(generic_readlink);
--
--/* to be mentioned only in INIT_TASK */
--struct fs_struct init_fs = {
--	.count		= ATOMIC_INIT(1),
--	.lock		= __RW_LOCK_UNLOCKED(init_fs.lock),
--	.umask		= 0022,
--};
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -2089,74 +2089,6 @@ out1:
++	return res;
  }
  
- /*
-- * Replace the fs->{rootmnt,root} with {mnt,dentry}. Put the old values.
-- * It can block. Requires the big lock held.
-- */
--void set_fs_root(struct fs_struct *fs, struct path *path)
--{
--	struct path old_root;
--
--	write_lock(&fs->lock);
--	old_root = fs->root;
--	fs->root = *path;
--	path_get(path);
--	write_unlock(&fs->lock);
--	if (old_root.dentry)
--		path_put(&old_root);
--}
--
--/*
-- * Replace the fs->{pwdmnt,pwd} with {mnt,dentry}. Put the old values.
-- * It can block. Requires the big lock held.
-- */
--void set_fs_pwd(struct fs_struct *fs, struct path *path)
--{
--	struct path old_pwd;
--
--	write_lock(&fs->lock);
--	old_pwd = fs->pwd;
--	fs->pwd = *path;
--	path_get(path);
--	write_unlock(&fs->lock);
--
--	if (old_pwd.dentry)
--		path_put(&old_pwd);
--}
--
--static void chroot_fs_refs(struct path *old_root, struct path *new_root)
--{
--	struct task_struct *g, *p;
--	struct fs_struct *fs;
--	int count = 0;
--
--	read_lock(&tasklist_lock);
--	do_each_thread(g, p) {
--		task_lock(p);
--		fs = p->fs;
--		if (fs) {
--			write_lock(&fs->lock);
--			if (fs->root.dentry == old_root->dentry
--			    && fs->root.mnt == old_root->mnt) {
--				path_get(new_root);
--				fs->root = *new_root;
--				count++;
--			}
--			if (fs->pwd.dentry == old_root->dentry
--			    && fs->pwd.mnt == old_root->mnt) {
--				path_get(new_root);
--				fs->pwd = *new_root;
--				count++;
--			}
--			write_unlock(&fs->lock);
--		}
--		task_unlock(p);
--	} while_each_thread(g, p);
--	read_unlock(&tasklist_lock);
--	while (count--)
--		path_put(old_root);
--}
--
--/*
-  * pivot_root Semantics:
-  * Moves the root file system of the current process to the directory put_old,
-  * makes new_root as the new root file system of the current process, and sets
---- a/fs/nfsd/nfssvc.c
-+++ b/fs/nfsd/nfssvc.c
-@@ -404,7 +404,6 @@ static int
- nfsd(void *vrqstp)
- {
- 	struct svc_rqst *rqstp = (struct svc_rqst *) vrqstp;
--	struct fs_struct *fsp;
- 	int err, preverr = 0;
- 
- 	/* Lock module and set up kernel thread */
-@@ -413,13 +412,11 @@ nfsd(void *vrqstp)
- 	/* At this point, the thread shares current->fs
- 	 * with the init process. We need to create files with a
- 	 * umask of 0 instead of init's umask. */
--	fsp = copy_fs_struct(current->fs);
--	if (!fsp) {
-+	if (unshare_fs_struct() < 0) {
- 		printk("Unable to start nfsd thread: out of memory\n");
- 		goto out;
- 	}
--	exit_fs(current);
--	current->fs = fsp;
+ /* 
+@@ -1285,12 +1295,15 @@ int do_execve(char * filename,
+ 	bprm->cred = prepare_exec_creds();
+ 	if (!bprm->cred)
+ 		goto out_unlock;
+-	check_unsafe_exec(bprm);
 +
- 	current->fs->umask = 0;
++	retval = check_unsafe_exec(bprm);
++	if (retval)
++		goto out_unlock;
  
- 	/*
---- a/include/linux/fs_struct.h
-+++ b/include/linux/fs_struct.h
-@@ -20,5 +20,7 @@ extern void set_fs_root(struct fs_struct
- extern void set_fs_pwd(struct fs_struct *, struct path *);
- extern struct fs_struct *copy_fs_struct(struct fs_struct *);
- extern void put_fs_struct(struct fs_struct *);
-+extern void daemonize_fs_struct(void);
-+extern int unshare_fs_struct(void);
+ 	file = open_exec(filename);
+ 	retval = PTR_ERR(file);
+ 	if (IS_ERR(file))
+-		goto out_unlock;
++		goto out_unmark;
  
- #endif /* _LINUX_FS_STRUCT_H */
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -429,7 +429,6 @@ EXPORT_SYMBOL(disallow_signal);
- void daemonize(const char *name, ...)
- {
- 	va_list args;
--	struct fs_struct *fs;
- 	sigset_t blocked;
+ 	sched_exec();
  
- 	va_start(args, name);
-@@ -462,11 +461,7 @@ void daemonize(const char *name, ...)
+@@ -1333,6 +1346,9 @@ int do_execve(char * filename,
+ 		goto out;
  
- 	/* Become as one with the init task */
- 
--	exit_fs(current);	/* current->fs->count--; */
--	fs = init_task.fs;
--	current->fs = fs;
--	atomic_inc(&fs->count);
--
-+	daemonize_fs_struct();
- 	exit_files(current);
- 	current->files = init_task.files;
- 	atomic_inc(&current->files->count);
-@@ -565,30 +560,6 @@ void exit_files(struct task_struct *tsk)
+ 	/* execve succeeded */
++	write_lock(&current->fs->lock);
++	current->fs->in_exec = 0;
++	write_unlock(&current->fs->lock);
+ 	mutex_unlock(&current->cred_exec_mutex);
+ 	acct_update_integrals(current);
+ 	free_bprm(bprm);
+@@ -1350,6 +1366,11 @@ out_file:
+ 		fput(bprm->file);
  	}
+ 
++out_unmark:
++	write_lock(&current->fs->lock);
++	current->fs->in_exec = 0;
++	write_unlock(&current->fs->lock);
++
+ out_unlock:
+ 	mutex_unlock(&current->cred_exec_mutex);
+ 
+--- a/fs/fs_struct.c
++++ b/fs/fs_struct.c
+@@ -72,25 +72,27 @@ void chroot_fs_refs(struct path *old_roo
+ 		path_put(old_root);
  }
  
 -void put_fs_struct(struct fs_struct *fs)
--{
++void free_fs_struct(struct fs_struct *fs)
+ {
 -	/* No need to hold fs->lock if we are killing it */
 -	if (atomic_dec_and_test(&fs->count)) {
 -		path_put(&fs->root);
 -		path_put(&fs->pwd);
 -		kmem_cache_free(fs_cachep, fs);
 -	}
--}
--
--void exit_fs(struct task_struct *tsk)
--{
--	struct fs_struct * fs = tsk->fs;
--
--	if (fs) {
--		task_lock(tsk);
--		tsk->fs = NULL;
--		task_unlock(tsk);
--		put_fs_struct(fs);
--	}
--}
--
--EXPORT_SYMBOL_GPL(exit_fs);
--
- #ifdef CONFIG_MM_OWNER
- /*
-  * Task p is exiting and it owned mm, lets find a new owner for it
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -676,38 +676,13 @@ fail_nomem:
- 	return retval;
++	path_put(&fs->root);
++	path_put(&fs->pwd);
++	kmem_cache_free(fs_cachep, fs);
  }
  
--static struct fs_struct *__copy_fs_struct(struct fs_struct *old)
--{
--	struct fs_struct *fs = kmem_cache_alloc(fs_cachep, GFP_KERNEL);
--	/* We don't need to lock fs - think why ;-) */
--	if (fs) {
+ void exit_fs(struct task_struct *tsk)
+ {
+-	struct fs_struct * fs = tsk->fs;
++	struct fs_struct *fs = tsk->fs;
+ 
+ 	if (fs) {
++		int kill;
+ 		task_lock(tsk);
++		write_lock(&fs->lock);
+ 		tsk->fs = NULL;
++		kill = !--fs->users;
++		write_unlock(&fs->lock);
+ 		task_unlock(tsk);
+-		put_fs_struct(fs);
++		if (kill)
++			free_fs_struct(fs);
+ 	}
+ }
+ 
+@@ -99,7 +101,8 @@ struct fs_struct *copy_fs_struct(struct 
+ 	struct fs_struct *fs = kmem_cache_alloc(fs_cachep, GFP_KERNEL);
+ 	/* We don't need to lock fs - think why ;-) */
+ 	if (fs) {
 -		atomic_set(&fs->count, 1);
--		rwlock_init(&fs->lock);
--		fs->umask = old->umask;
--		read_lock(&old->lock);
--		fs->root = old->root;
--		path_get(&old->root);
--		fs->pwd = old->pwd;
--		path_get(&old->pwd);
--		read_unlock(&old->lock);
--	}
--	return fs;
--}
--
--struct fs_struct *copy_fs_struct(struct fs_struct *old)
--{
--	return __copy_fs_struct(old);
--}
--
--EXPORT_SYMBOL_GPL(copy_fs_struct);
--
++		fs->users = 1;
++		fs->in_exec = 0;
+ 		rwlock_init(&fs->lock);
+ 		fs->umask = old->umask;
+ 		read_lock(&old->lock);
+@@ -114,28 +117,54 @@ struct fs_struct *copy_fs_struct(struct 
+ 
+ int unshare_fs_struct(void)
+ {
+-	struct fs_struct *fsp = copy_fs_struct(current->fs);
+-	if (!fsp)
++	struct fs_struct *fs = current->fs;
++	struct fs_struct *new_fs = copy_fs_struct(fs);
++	int kill;
++
++	if (!new_fs)
+ 		return -ENOMEM;
+-	exit_fs(current);
+-	current->fs = fsp;
++
++	task_lock(current);
++	write_lock(&fs->lock);
++	kill = !--fs->users;
++	current->fs = new_fs;
++	write_unlock(&fs->lock);
++	task_unlock(current);
++
++	if (kill)
++		free_fs_struct(fs);
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(unshare_fs_struct);
+ 
+ /* to be mentioned only in INIT_TASK */
+ struct fs_struct init_fs = {
+-	.count		= ATOMIC_INIT(1),
++	.users		= 1,
+ 	.lock		= __RW_LOCK_UNLOCKED(init_fs.lock),
+ 	.umask		= 0022,
+ };
+ 
+ void daemonize_fs_struct(void)
+ {
+-	struct fs_struct *fs;
++	struct fs_struct *fs = current->fs;
+ 
+-	exit_fs(current);	/* current->fs->count--; */
+-	fs = &init_fs;
+-	current->fs = fs;
+-	atomic_inc(&fs->count);
++	if (fs) {
++		int kill;
++
++		task_lock(current);
++
++		write_lock(&init_fs.lock);
++		init_fs.users++;
++		write_unlock(&init_fs.lock);
++
++		write_lock(&fs->lock);
++		current->fs = &init_fs;
++		kill = !--fs->users;
++		write_unlock(&fs->lock);
++
++		task_unlock(current);
++		if (kill)
++			free_fs_struct(fs);
++	}
+ }
+--- a/fs/internal.h
++++ b/fs/internal.h
+@@ -44,7 +44,7 @@ extern void __init chrdev_init(void);
+ /*
+  * exec.c
+  */
+-extern void check_unsafe_exec(struct linux_binprm *);
++extern int check_unsafe_exec(struct linux_binprm *);
+ 
+ /*
+  * namespace.c
+--- a/fs/proc/task_nommu.c
++++ b/fs/proc/task_nommu.c
+@@ -49,7 +49,7 @@ void task_mem(struct seq_file *m, struct
+ 	else
+ 		bytes += kobjsize(mm);
+ 	
+-	if (current->fs && atomic_read(&current->fs->count) > 1)
++	if (current->fs && current->fs->users > 1)
+ 		sbytes += kobjsize(current->fs);
+ 	else
+ 		bytes += kobjsize(current->fs);
+--- a/include/linux/fs_struct.h
++++ b/include/linux/fs_struct.h
+@@ -4,12 +4,10 @@
+ #include <linux/path.h>
+ 
+ struct fs_struct {
+-	atomic_t count;	/* This usage count is used by check_unsafe_exec() for
+-			 * security checking purposes - therefore it may not be
+-			 * incremented, except by clone(CLONE_FS).
+-			 */
++	int users;
+ 	rwlock_t lock;
+ 	int umask;
++	int in_exec;
+ 	struct path root, pwd;
+ };
+ 
+@@ -19,7 +17,7 @@ extern void exit_fs(struct task_struct *
+ extern void set_fs_root(struct fs_struct *, struct path *);
+ extern void set_fs_pwd(struct fs_struct *, struct path *);
+ extern struct fs_struct *copy_fs_struct(struct fs_struct *);
+-extern void put_fs_struct(struct fs_struct *);
++extern void free_fs_struct(struct fs_struct *);
+ extern void daemonize_fs_struct(void);
+ extern int unshare_fs_struct(void);
+ 
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -678,11 +678,19 @@ fail_nomem:
+ 
  static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)
  {
++	struct fs_struct *fs = current->fs;
  	if (clone_flags & CLONE_FS) {
- 		atomic_inc(&current->fs->count);
+-		atomic_inc(&current->fs->count);
++		/* tsk->fs is already what we want */
++		write_lock(&fs->lock);
++		if (fs->in_exec) {
++			write_unlock(&fs->lock);
++			return -EAGAIN;
++		}
++		fs->users++;
++		write_unlock(&fs->lock);
  		return 0;
  	}
--	tsk->fs = __copy_fs_struct(current->fs);
-+	tsk->fs = copy_fs_struct(current->fs);
+-	tsk->fs = copy_fs_struct(current->fs);
++	tsk->fs = copy_fs_struct(fs);
  	if (!tsk->fs)
  		return -ENOMEM;
  	return 0;
-@@ -1545,7 +1520,7 @@ static int unshare_fs(unsigned long unsh
+@@ -1518,12 +1526,16 @@ static int unshare_fs(unsigned long unsh
+ {
+ 	struct fs_struct *fs = current->fs;
  
- 	if ((unshare_flags & CLONE_FS) &&
- 	    (fs && atomic_read(&fs->count) > 1)) {
--		*new_fsp = __copy_fs_struct(current->fs);
-+		*new_fsp = copy_fs_struct(current->fs);
- 		if (!*new_fsp)
- 			return -ENOMEM;
- 	}
+-	if ((unshare_flags & CLONE_FS) &&
+-	    (fs && atomic_read(&fs->count) > 1)) {
+-		*new_fsp = copy_fs_struct(current->fs);
+-		if (!*new_fsp)
+-			return -ENOMEM;
+-	}
++	if (!(unshare_flags & CLONE_FS) || !fs)
++		return 0;
++
++	/* don't need lock here; in the worst case we'll do useless copy */
++	if (fs->users == 1)
++		return 0;
++
++	*new_fsp = copy_fs_struct(fs);
++	if (!*new_fsp)
++		return -ENOMEM;
+ 
+ 	return 0;
+ }
+@@ -1639,8 +1651,13 @@ SYSCALL_DEFINE1(unshare, unsigned long, 
+ 
+ 		if (new_fs) {
+ 			fs = current->fs;
++			write_lock(&fs->lock);
+ 			current->fs = new_fs;
+-			new_fs = fs;
++			if (--fs->users)
++				new_fs = NULL;
++			else
++				new_fs = fs;
++			write_unlock(&fs->lock);
+ 		}
+ 
+ 		if (new_mm) {
+@@ -1679,7 +1696,7 @@ bad_unshare_cleanup_sigh:
+ 
+ bad_unshare_cleanup_fs:
+ 	if (new_fs)
+-		put_fs_struct(new_fs);
++		free_fs_struct(new_fs);
+ 
+ bad_unshare_cleanup_thread:
+ bad_unshare_out:
 
 
