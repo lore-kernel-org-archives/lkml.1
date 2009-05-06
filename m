@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763298AbZEFWYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763975AbZEFWYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763298AbZEFWYT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760781AbZEFWWD
+	id S1763975AbZEFWYl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763941AbZEFWYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 18:22:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43325 "EHLO mx2.redhat.com"
+	Wed, 6 May 2009 18:24:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43380 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762568AbZEFWWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 18:22:00 -0400
-Message-ID: <4A020CD5.2000308@ds.jp.nec.com>
-Date: Wed, 06 May 2009 18:19:01 -0400
-From: "IKEDA, Munehiro" <m-ikeda@ds.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, akpm@linux-foundation.org
-Subject: Re: [PATCH 18/18] io-controller: Debug hierarchical IO scheduling
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-19-git-send-email-vgoyal@redhat.com> <4A0203DB.1090809@ds.jp.nec.com> <20090506215833.GK8180@redhat.com>
-In-Reply-To: <20090506215833.GK8180@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1763921AbZEFWYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 18:24:08 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090506112459.5edd0902.akpm@linux-foundation.org>
+References: <20090506112459.5edd0902.akpm@linux-foundation.org> <20090502163423.GA1633@linux.vnet.ibm.com> <12234.1241558327@redhat.com> <20090506120909.GR25203@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, Ingo Molnar <mingo@elte.hu>,
+       paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       niv@us.ibm.com, dvhltc@us.ibm.com, lethal@linux-sh.org,
+       kernel@wantstofly.org, matthew@wil.cx
+Subject: Re: [PATCH] v4 RCU: the bloatwatch edition
+Date: Wed, 06 May 2009 23:22:54 +0100
+Message-ID: <11979.1241648574@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Vivek Goyal wrote:
-> Hi Ikeda,
-> 
-> I think there is some issue with applying the patch. I think you have
-> forgotten to apply following patch and that's why seeing all the issues.
-> 
-> "io-controller: Export disk time used and nr sectors dipatched through
-> cgroups"
-> 
-> This patch changes elv_ioq_served() at the same time introduced additional
-> field of total_sector_service etc.
-> 
-> Thanks
-> Vivek
+> More like "concerns".  It's unobvious to me that the modest .text
+> savings justify the costs of an additional RCU implementation.  Where
+> those costs include
 
-Oh!  you are right.  I missed it because it is out of the
-thread...
-Thanks and please forgive my pointless reply.
-  
+It may be more than just modest .text savings.  Being optimised to be as
+simple as possible, and to only support one CPU, it may be quicker too.  I'm
+not sure how best to benchmark it though.
 
--- 
-IKEDA, Munehiro
-  NEC Corporation of America
-    m-ikeda@ds.jp.nec.com
-
+David
