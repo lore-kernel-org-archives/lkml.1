@@ -1,69 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761366AbZEFO5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760460AbZEFO7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761366AbZEFO5d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 10:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760780AbZEFOwe
+	id S1760460AbZEFO7D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 10:59:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757799AbZEFO6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 10:52:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38422 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760757AbZEFOwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 10:52:32 -0400
-Date: Wed, 6 May 2009 14:51:52 GMT
-From: tip-bot for Christoph Hellwig <hch@lst.de>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, hch@lst.de, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       hch@lst.de, rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:tracing/core] tracing: small trave_events sample Makefile cleanup
-Message-ID: <tip-35cf723e99c0e26ddf51f037dffaa4ff2c2c9106@git.kernel.org>
-Git-Commit-ID: 35cf723e99c0e26ddf51f037dffaa4ff2c2c9106
-X-Mailer: tip-git-log-daemon
+	Wed, 6 May 2009 10:58:47 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:44855 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753184AbZEFO6q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 10:58:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=L05/qaUzxfUA+ub9w1qQH5aBUDsDlLI+ELYqrAZW5HAcz3H9V4bBHWp2GmVytgftck
+         rd78j1ekihe4p6rac0bqXXyTjNFBeecmgHs0frSzD5LCadN8PPOJI8dmuv2hk7ushLMO
+         IAO2L6VGjgzpE9vNRPk+8JQjwD8nWC6DaRSYw=
 MIME-Version: 1.0
+Date: Wed, 6 May 2009 18:58:44 +0400
+Message-ID: <a4423d670905060758x32774671o796ae46fbb43997c@mail.gmail.com>
+Subject: next: parport: forgotten semicolon
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Greg KH <gregkh@suse.de>, linux-next <linux-next@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 06 May 2009 14:51:54 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  35cf723e99c0e26ddf51f037dffaa4ff2c2c9106
-Gitweb:     http://git.kernel.org/tip/35cf723e99c0e26ddf51f037dffaa4ff2c2c9106
-Author:     Christoph Hellwig <hch@lst.de>
-AuthorDate: Wed, 6 May 2009 12:33:38 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 6 May 2009 16:48:56 +0200
+Hi Greg
 
-tracing: small trave_events sample Makefile cleanup
+Please fix parport-remove-driver_data-direct-access-of-struct-device.patch
 
-Use -I$(src) to add the current directory the include path.
-
-[ Impact: cleanup ]
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- samples/trace_events/Makefile |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/samples/trace_events/Makefile b/samples/trace_events/Makefile
-index 06c6dea..0d428dc 100644
---- a/samples/trace_events/Makefile
-+++ b/samples/trace_events/Makefile
-@@ -1,8 +1,6 @@
- # builds the trace events example kernel modules;
- # then to use one (as root):  insmod <module_name.ko>
- 
--PWD := $(shell pwd)
--
--CFLAGS_trace-events-sample.o := -I$(PWD)/samples/trace_events/
-+CFLAGS_trace-events-sample.o := -I$(src)
- 
- obj-$(CONFIG_SAMPLE_TRACE_EVENTS) += trace-events-sample.o
+-       struct parport *p = dev_get_drvdata(&dev->dev)
++       struct parport *p = dev_get_drvdata(&dev->dev);
