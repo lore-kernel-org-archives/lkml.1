@@ -1,76 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbZEFVeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761349AbZEFVfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757594AbZEFVeu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 17:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbZEFVem
+	id S1761349AbZEFVfP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 17:35:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759040AbZEFVe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:34:42 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:33146 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752248AbZEFVel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:34:41 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [PATCH 9/19] TuxOnIce: Netlink support.
-From: Nigel Cunningham <nigel@tuxonice.net>
-Reply-To: nigel@tuxonice.net
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       tuxonice-devel@lists.tuxonice.net
-In-Reply-To: <20090506210330.GA29496@uranus.ravnborg.org>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	 <1241620755-22133-10-git-send-email-nigel@tuxonice.net>
-	 <20090506210330.GA29496@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Thu, 07 May 2009 07:35:38 +1000
-Message-Id: <1241645738.19600.97.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 6 May 2009 17:34:58 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:53079 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759251AbZEFVe5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:34:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=JS7iQoP4vu41qcD74QP9mCla03PzoNfnzzaVuvTF2mFhrV5Wm2absdrRjKjNmae+up
+         yd/32bSf7wwhVbxGAjQyaQNtzjEStW6nHV07ZZMu8LrgRy9BG7X5gvink9I+6w5V7SLE
+         PUv8qvvp5q9RWWmMZa1B5KAWkDydpVhruDwsc=
+Date: Wed, 6 May 2009 23:34:54 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
+       m-ikeda@ds.jp.nec.com, peterz@infradead.org
+Subject: Re: IO scheduler based IO Controller V2
+Message-ID: <20090506213453.GC4282@linux>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <20090506023332.GA1212@redhat.com> <20090506203228.GH8180@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090506203228.GH8180@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam.
-
-On Wed, 2009-05-06 at 23:03 +0200, Sam Ravnborg wrote:
-> On Thu, May 07, 2009 at 12:39:05AM +1000, Nigel Cunningham wrote:
-> > This patch adds support for communicating with a userspace helper via a
-> > netlink socket. It is used by the userspace user interface support and
-> > by the storage manager support.
-> > 
-> > Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
-> > ---
-> >  kernel/power/Makefile           |    4 +
-> >  kernel/power/tuxonice_netlink.c |  339 +++++++++++++++++++++++++++++++++++++++
-> >  2 files changed, 343 insertions(+), 0 deletions(-)
-> >  create mode 100644 kernel/power/tuxonice_netlink.c
-> > 
-> > diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-> > index 07efc8a..180b89a 100644
-> > --- a/kernel/power/Makefile
-> > +++ b/kernel/power/Makefile
-> > @@ -10,6 +10,10 @@ tuxonice_core-objs := tuxonice_modules.o tuxonice_sysfs.o tuxonice_highlevel.o \
-> >  
-> >  obj-$(CONFIG_TOI)		+= tuxonice_builtin.o
-> >  
-> > +ifdef CONFIG_NET
-> > +tuxonice_core-objs		+= tuxonice_netlink.o
-> > +endif
+On Wed, May 06, 2009 at 04:32:28PM -0400, Vivek Goyal wrote:
+> Hi Andrea and others,
 > 
-> If you replace tuxonice_core-objs with tuxonice_core-y in your MAkefile the
-> above can be simplified to:
-> tuxonice_core-$(CONFIG_NET) += tuxonice_netlink.o
+> I always had this doubt in mind that any kind of 2nd level controller will
+> have no idea about underlying IO scheduler queues/semantics. So while it
+> can implement a particular cgroup policy (max bw like io-throttle or
+> proportional bw like dm-ioband) but there are high chances that it will
+> break IO scheduler's semantics in one way or other.
 > 
-> (On the assumption that CONFIG_NET is a bool)
+> I had already sent out the results for dm-ioband in a separate thread.
+> 
+> http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg07258.html
+> http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg07573.html
+> http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg08177.html
+> http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg08345.html
+> http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg08355.html
+> 
+> Here are some basic results with io-throttle. Andrea, please let me know
+> if you think this is procedural problem. Playing with io-throttle patches
+> for the first time.
+> 
+> I took V16 of your patches and trying it out with 2.6.30-rc4 with CFQ
+> scheduler.
+> 
+> I have got one SATA drive with one partition on it.
+> 
+> I am trying to create one cgroup and assignn 8MB/s limit to it and launch
+> on RT prio 0 task and one BE prio 7 task and see how this 8MB/s is divided
+> between these tasks. Following are the results.
+> 
+> Following is my test script.
+> 
+> *******************************************************************
+> #!/bin/bash
+> 
+> mount /dev/sdb1 /mnt/sdb
+> 
+> mount -t cgroup -o blockio blockio /cgroup/iot/
+> mkdir -p /cgroup/iot/test1 /cgroup/iot/test2
+> 
+> # Set bw limit of 8 MB/ps on sdb
+> echo "/dev/sdb:$((8 * 1024 * 1024)):0:0" >
+> /cgroup/iot/test1/blockio.bandwidth-max
+> 
+> sync
+> echo 3 > /proc/sys/vm/drop_caches
+> 
+> echo $$ > /cgroup/iot/test1/tasks
+> 
+> # Launch a normal prio reader.
+> ionice -c 2 -n 7 dd if=/mnt/sdb/zerofile1 of=/dev/zero &
+> pid1=$!
+> echo $pid1
+> 
+> # Launch an RT reader  
+> ionice -c 1 -n 0 dd if=/mnt/sdb/zerofile2 of=/dev/zero &
+> pid2=$!
+> echo $pid2
+> 
+> wait $pid2
+> echo "RT task finished"
+> **********************************************************************
+> 
+> Test1
+> =====
+> Test two readers (one RT class and one BE class) and see how BW is
+> allocated with-in cgroup
+> 
+> With io-throttle patches
+> ------------------------
+> - Two readers, first BE prio 7, second RT prio 0
+> 
+> 234179072 bytes (234 MB) copied, 55.8482 s, 4.2 MB/s
+> 234179072 bytes (234 MB) copied, 55.8975 s, 4.2 MB/s
+> RT task finished
+> 
+> Note: See, there is no difference in the performance of RT or BE task.
+> Looks like these got throttled equally.
 
-Thanks for the review.
+OK, this is coherent with the current io-throttle implementation. IO
+requests are throttled without the concept of the ioprio model.
 
-I have support for building tuxonice as modules that I'm not asking to
-be merged (at least not yet - it adds too many symbol exports at the
-moment). As a result, I did the simplification but left the
-tuxonice_core_objs definition. Is that what you'd do?
+We could try to distribute the throttle using a function of each task's
+ioprio, but ok, the obvious drawback is that it totally breaks the logic
+used by the underlying layers.
 
-Regards,
+BTW, I'm wondering, is it a very critical issue? I would say why not to
+move the RT task to a different cgroup with unlimited BW? or limited BW
+but with other tasks running at the same IO priority... could the cgroup
+subsystem be a more flexible and customizable framework respect to the
+current ioprio model?
 
-Nigel
+I'm not saying we have to ignore the problem, just trying to evaluate
+the impact and alternatives. And I'm still convinced that also providing
+per-cgroup ioprio would be an important feature.
+
+> 
+> 
+> Without io-throttle patches
+> ----------------------------
+> - Two readers, first BE prio 7, second RT prio 0
+> 
+> 234179072 bytes (234 MB) copied, 2.81801 s, 83.1 MB/s
+> RT task finished
+> 234179072 bytes (234 MB) copied, 5.28238 s, 44.3 MB/s
+> 
+> Note: Because I can't limit the BW without io-throttle patches, so don't
+>       worry about increased BW. But the important point is that RT task
+>       gets much more BW than a BE prio 7 task.
+> 
+> Test2
+> ====
+> - Test 2 readers (One BE prio 0 and one BE prio 7) and see how BW is
+> distributed among these.
+> 
+> With io-throttle patches
+> ------------------------
+> - Two readers, first BE prio 7, second BE prio 0
+> 
+> 234179072 bytes (234 MB) copied, 55.8604 s, 4.2 MB/s
+> 234179072 bytes (234 MB) copied, 55.8918 s, 4.2 MB/s
+> High prio reader finished
+
+Ditto.
+
+> 
+> Without io-throttle patches
+> ---------------------------
+> - Two readers, first BE prio 7, second BE prio 0
+> 
+> 234179072 bytes (234 MB) copied, 4.12074 s, 56.8 MB/s
+> High prio reader finished
+> 234179072 bytes (234 MB) copied, 5.36023 s, 43.7 MB/s
+> 
+> Note: There is no service differentiation between prio 0 and prio 7 task
+>       with io-throttle patches.
+> 
+> Test 3
+> ======
+> - Run the one RT reader and one BE reader in root cgroup without any
+>   limitations. I guess this should mean unlimited BW and behavior should
+>   be same as with CFQ without io-throttling patches.
+> 
+> With io-throttle patches
+> =========================
+> Ran the test 4 times because I was getting different results in different
+> runs.
+> 
+> - Two readers, one RT prio 0  other BE prio 7
+> 
+> 234179072 bytes (234 MB) copied, 2.74604 s, 85.3 MB/s
+> 234179072 bytes (234 MB) copied, 5.20995 s, 44.9 MB/s
+> RT task finished
+> 
+> 234179072 bytes (234 MB) copied, 4.54417 s, 51.5 MB/s
+> RT task finished
+> 234179072 bytes (234 MB) copied, 5.23396 s, 44.7 MB/s
+> 
+> 234179072 bytes (234 MB) copied, 5.17727 s, 45.2 MB/s
+> RT task finished
+> 234179072 bytes (234 MB) copied, 5.25894 s, 44.5 MB/s
+> 
+> 234179072 bytes (234 MB) copied, 2.74141 s, 85.4 MB/s
+> 234179072 bytes (234 MB) copied, 5.20536 s, 45.0 MB/s
+> RT task finished
+> 
+> Note: Out of 4 runs, looks like twice it is complete priority inversion
+>       and RT task finished after BE task. Rest of the two times, the
+>       difference between BW of RT and BE task is much less as compared to
+>       without patches. In fact once it was almost same.
+
+This is strange. If you don't set any limit there shouldn't be any
+difference respect to the other case (without io-throttle patches).
+
+At worst a small overhead given by the task_to_iothrottle(), under
+rcu_read_lock(). I'll repeat this test ASAP and see if I'll be able to
+reproduce this strange behaviour.
+
+> 
+> Without io-throttle patches.
+> ===========================
+> - Two readers, one RT prio 0  other BE prio 7 (4 runs)
+> 
+> 234179072 bytes (234 MB) copied, 2.80988 s, 83.3 MB/s
+> RT task finished
+> 234179072 bytes (234 MB) copied, 5.28228 s, 44.3 MB/s
+> 
+> 234179072 bytes (234 MB) copied, 2.80659 s, 83.4 MB/s
+> RT task finished
+> 234179072 bytes (234 MB) copied, 5.27874 s, 44.4 MB/s
+> 
+> 234179072 bytes (234 MB) copied, 2.79601 s, 83.8 MB/s
+> RT task finished
+> 234179072 bytes (234 MB) copied, 5.2542 s, 44.6 MB/s
+> 
+> 234179072 bytes (234 MB) copied, 2.78764 s, 84.0 MB/s
+> RT task finished
+> 234179072 bytes (234 MB) copied, 5.26009 s, 44.5 MB/s
+> 
+> Note, How consistent the behavior is without io-throttle patches.
+> 
+> In summary, I think a 2nd level solution can ensure one policy on cgroups but
+> it will break other semantics/properties of IO scheduler with-in cgroup as
+> 2nd level solution has no idea at run time what is the IO scheduler running
+> underneath and what kind of properties it has.
+> 
+> Andrea, please try it on your setup and see if you get similar results
+> on or. Hopefully it is not a configuration or test procedure issue on my
+> side.
+> 
+> Thanks
+> Vivek
+> 
+> > The only thing which concerns me is the fact that IO scheduler does not
+> > have the view of higher level logical device. So if somebody has setup a
+> > software RAID and wants to put max BW limit on software raid device, this
+> > solution will not work. One shall have to live with max bw limits on 
+> > individual disks (where io scheduler is actually running). Do your patches
+> > allow to put limit on software RAID devices also? 
+> > 
+> > Ryo, dm-ioband breaks the notion of classes and priority of CFQ because
+> > of FIFO dispatch of buffered bios. Apart from that it tries to provide
+> > fairness in terms of actual IO done and that would mean a seeky workload
+> > will can use disk for much longer to get equivalent IO done and slow down
+> > other applications. Implementing IO controller at IO scheduler level gives
+> > us tigher control. Will it not meet your requirements? If you got specific
+> > concerns with IO scheduler based contol patches, please highlight these and
+> > we will see how these can be addressed.
+> > 
+> > Thanks
+> > Vivek
+
+-Andrea
 
