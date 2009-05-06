@@ -1,88 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbZEFSMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760030AbZEFSQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759388AbZEFSMT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 14:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbZEFSMH
+	id S1760030AbZEFSQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 14:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbZEFSQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 14:12:07 -0400
-Received: from mga09.intel.com ([134.134.136.24]:43945 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753197AbZEFSME (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 14:12:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,303,1239001200"; 
-   d="scan'208";a="410060150"
-From: "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>
-To: "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       Anirban Chakraborty <anirban.chakraborty@qlogic.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Ma, Chinang" <chinang.ma@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
-       "Recalde, Luis F" <luis.f.recalde@intel.com>,
-       "Nelson, Doug" <doug.nelson@intel.com>,
-       "Cheng, Wu-sun" <wu-sun.cheng@intel.com>,
-       "Prickett, Terry O" <terry.o.prickett@intel.com>,
-       "Shunmuganathan, Rajalakshmi" <rajalakshmi.shunmuganathan@intel.com>,
-       "Garg, Anil K" <anil.k.garg@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>
-Date: Wed, 6 May 2009 12:12:02 -0600
-Subject: RE: Mainline kernel OLTP performance update
-Thread-Topic: Mainline kernel OLTP performance update
-Thread-Index: AcnM0E+Nwe+14GGkR56q7IVjkGSrWwBQ8EPlABOLQUAABHgAsAAASljg
-Message-ID: <CAC4B8726E86A142B27A9E9A2F2F1247AB7A82C5@rrsmsx505.amr.corp.intel.com>
-References: <D7C42C27E6CB1E4D8CBDF2F81EA92A260345BCC195@azsmsx501.amr.corp.intel.com>
- <C6267C73.F240%anirban.chakraborty@qlogic.com>
- <CAC4B8726E86A142B27A9E9A2F2F1247AB7A80EC@rrsmsx505.amr.corp.intel.com>
- <D7C42C27E6CB1E4D8CBDF2F81EA92A260345D49022@azsmsx501.amr.corp.intel.com>
-In-Reply-To: <D7C42C27E6CB1E4D8CBDF2F81EA92A260345D49022@azsmsx501.amr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
+	Wed, 6 May 2009 14:16:14 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:34723 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755193AbZEFSQN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 14:16:13 -0400
+Date: Wed, 6 May 2009 14:03:53 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Greg KH <greg@kroah.com>
+Cc: Eric Valette <eric.valette@free.fr>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: DMA debug trace pointing to rtl8187
+Message-ID: <20090506180353.GD30070@tuxdriver.com>
+References: <49FDB9F8.3080400@free.fr> <20090506133131F.fujita.tomonori@lab.ntt.co.jp> <4A012FC8.3020304@free.fr> <20090506064513.GA7460@kroah.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090506064513.GA7460@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n46ICOqu019463
 
-That's a more accurate simulation of our workload, but Anirban's setup doesn't have nearly as many spindles as ours, so he won't do as many IOPS and may not see the problem.
-
-All I'm trying to do is get something that will show the problem on his setup, and I think sequential IO is going to be the right answer here.  I could easily be wrong.
-
-Neither FIO nor dd is going to have the cache behaviour of the database (maybe Orion does?)  As far as I can tell, we come to the kernel cache-cold for every IO simply because the database uses as many cache entries as it can.  We could write a little program to just thrash through cachelines, or just run gcc at the same time as this -- apparently gcc will happily chew through all the cache it can too.
-
-> -----Original Message-----
-> From: Styner, Douglas W
-> Sent: Wednesday, May 06, 2009 11:05 AM
-> To: Wilcox, Matthew R; Anirban Chakraborty; linux-kernel@vger.kernel.org
-> Cc: Tripathi, Sharad C; arjan@linux.intel.com; Kleen, Andi; Siddha, Suresh
-> B; Ma, Chinang; Wang, Peter Xihong; Nueckel, Hubert; Recalde, Luis F;
-> Nelson, Doug; Cheng, Wu-sun; Prickett, Terry O; Shunmuganathan,
-> Rajalakshmi; Garg, Anil K; Chilukuri, Harita; chris.mason@oracle.com
-> Subject: RE: Mainline kernel OLTP performance update
+On Tue, May 05, 2009 at 11:45:13PM -0700, Greg KH wrote:
+> On Wed, May 06, 2009 at 08:35:52AM +0200, Eric Valette wrote:
+> > FUJITA Tomonori wrote:
+> > > CC'ed linux-usb,
+> > > 
+> > > The ehci_hcd driver uses buffers on the stack for DMA?
+> > > 
+> > > On Sun, 03 May 2009 17:36:24 +0200
+> > > Eric Valette <eric.valette@free.fr> wrote:
+> > > 
+> > >> ------------[ cut here ]------------
+> > >>
+> > >> WARNING: at /usr/src/linux-2.6.22.9/lib/dma-debug.c:609
+> > > 
+> > > Hmm, the kernel version is wired. lib/dma-debug.c was added in
+> > > 2.6.30-rc.
+> > 
+> > No that's the file path.  I use ketchup to apply patches...
+> > 
+> > > 
+> > >> check_for_stack+0x6b/0x8b()
+> > >> Hardware name: P5W DH Deluxe
+> > >>
+> > >> ehci_hcd 0000:00:1d.7: DMA-API: device driver maps memory fromstack
+> > >> [addr=ffff88007fa79968]
+> > >> Modules linked in:
+> > >>
+> > >> Pid: 297, comm: khubd Not tainted 2.6.30-rc4-git1 #32
+> > 
+> > Here is the real version.
 > 
-> Wilcox, Matthew R writes:
-> >I'm not sure that Orion is going to give useful results in your hardware
-> >setup.  I suspect you don't have enough spindles to get the IO rates that
-> >are required to see the problem.  How about doing lots of contiguous I/O
-> >instead?  Something as simple as:
-> >
-> >for i in sda sdb sdc (repeat ad nauseam); do \
-> >	dd if=/dev/$i of=/dev/null bs=4k iflag=direct & \
-> >done
-> >
+> The problem is in the rtl8187 driver.
 > 
-> A better workload emulator would be to use FIO to generate ~60%/40%
-> reads/writes with ~90-95% random i/o using 2k blksize.  There is some
-> sequential writing in our workload but only to a log file and there is not
-> much activity there.
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+> They are calling usb_control_msg and passing a pointer to a buffer on
+> the stack.  See drivers/net/wireless/rtl818x/rtl8187.h for where the
+> problem happens in numerous places.
+> 
+> Also it looks like rtl8225_write_8051() is incorrect.  You are passing a
+> pointer to a variable that was passed as an argument.  I don't know
+> where that is supposed to be on, somewhere on the stack I guess.
+> 
+> Larry, care to fix this up?
+
+I just sent '[RFT] rtl8187: use DMA-aware buffers with usb_control_msg'
+as a parallel reply to this message.  It is pretty ugly w.r.t. kmalloc
+failures, but it might be worth testing just to see if it helps the
+problem at hand...?
+
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
