@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761274AbZEFUj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761239AbZEFUjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761274AbZEFUj4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 16:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761070AbZEFUiw
+	id S1761239AbZEFUjk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 16:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761040AbZEFUit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 16:38:52 -0400
-Received: from kroah.org ([198.145.64.141]:33838 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 16:38:49 -0400
+Received: from kroah.org ([198.145.64.141]:33821 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761022AbZEFUiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 16:38:51 -0400
+	id S1761037AbZEFUis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 16:38:48 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Wed May  6 13:31:28 2009
-Message-Id: <20090506203128.525560962@blue.kroah.org>
+Message-Id: <20090506203128.303389365@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 13:30:14 -0700
+Date: Wed, 06 May 2009 13:30:13 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -25,13 +25,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ed Swierk <eswierk@aristanetworks.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
-       Chris Wright <chrisw@sous-sol.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 04/18] forcedeth: Fix resume from hibernation regression.
+       alan@lxorguk.ukuu.org.uk, Chuck Short <zulcss@ubuntu.com>,
+       Tim Gardner <tim.gardner@canonical.com>,
+       Stefan Bader <stefan.bader@canonical.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 03/18] USB: Unusual Device support for Gold MP3 Player Energy
 References: <20090506203010.615363711@blue.kroah.org>
-Content-Disposition: inline; filename=forcedeth-fix-resume-from-hibernation-regression.patch
+Content-Disposition: inline; filename=usb-unusual-device-support-for-gold-mp3-player-energy.patch
 In-Reply-To: <20090506203353.GA14624@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,33 +41,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ed Swierk <eswierk@aristanetworks.com>
+From: Chuck Short <zulcss@ubuntu.com>
 
-upstream commit: 35a7433c789ba6df6d96b70fa745ae9e6cac0038
+upstream commit: 46c6e93faa85d1362e1d127dc28cf9d0b304a6f1
 
-Reset phy state on resume, fixing a regression caused by powering down
-the phy on hibernate.
+Reported by Alessio Treglia on
+https://bugs.launchpad.net/ubuntu/+source/linux/+bug/125250
 
-Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Cc: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+User was getting the following errors in dmesg:
+
+[ 2158.139386] sd 5:0:0:1: ioctl_internal_command return code = 8000002
+[ 2158.139390] : Current: sense key: No Sense
+[ 2158.139393] Additional sense: No additional sense information
+
+Adds unusual device support.
+
+modified:   drivers/usb/storage/unusual_devs.h
+
+Signed-off-by: Chuck Short <zulcss@ubuntu.com>
+Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
+Cc: stable <stable@kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/net/forcedeth.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/usb/storage/unusual_devs.h |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/drivers/net/forcedeth.c
-+++ b/drivers/net/forcedeth.c
-@@ -5967,6 +5967,9 @@ static int nv_resume(struct pci_dev *pde
- 	for (i = 0;i <= np->register_size/sizeof(u32); i++)
- 		writel(np->saved_config_space[i], base+i*sizeof(u32));
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -2147,6 +2147,12 @@ UNUSUAL_DEV(  0xed06, 0x4500, 0x0001, 0x
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_CAPACITY_HEURISTICS),
  
-+	/* restore phy state, including autoneg */
-+	phy_init(dev);
++/* Reported by Alessio Treglia <quadrispro@ubuntu.com> */
++UNUSUAL_DEV( 0xed10, 0x7636, 0x0001, 0x0001,
++		"TGE",
++		"Digital MP3 Audio Player",
++		US_SC_DEVICE, US_PR_DEVICE, NULL, US_FL_NOT_LOCKABLE ),
 +
- 	netif_device_attach(dev);
- 	if (netif_running(dev)) {
- 		rc = nv_open(dev);
+ /* Control/Bulk transport for all SubClass values */
+ USUAL_DEV(US_SC_RBC, US_PR_CB, USB_US_TYPE_STOR),
+ USUAL_DEV(US_SC_8020, US_PR_CB, USB_US_TYPE_STOR),
 
 
