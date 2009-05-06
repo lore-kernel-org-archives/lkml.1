@@ -1,170 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761719AbZEFWfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761513AbZEFWgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761719AbZEFWfl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:35:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757295AbZEFWfU
+	id S1761513AbZEFWgX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760985AbZEFWgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 18:35:20 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:35252 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757961AbZEFWfR (ORCPT
+	Wed, 6 May 2009 18:36:08 -0400
+Received: from sentrion1.jpl.nasa.gov ([128.149.139.105]:62086 "EHLO
+	mail.jpl.nasa.gov" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757383AbZEFWgH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 18:35:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=i2358nNZk2FosldAU9jeNiyrbOpaRiglbedhw73mDdoiM8QIqLsEdC38hyhXZboPrQ
-         kxZk9NJdPtLJ5jkEXx/Djl/OshDC7KFinIbFl/+UB9X1jdX14KIsHIMY1QcR7/GQOu9Z
-         BzpV+uuZA5pJuG90QFpZxIZGUm1QUEZ+aqGHs=
-Date: Thu, 7 May 2009 00:35:13 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
-       m-ikeda@ds.jp.nec.com, peterz@infradead.org
-Subject: Re: IO scheduler based IO Controller V2
-Message-ID: <20090506223512.GE4282@linux>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <20090506023332.GA1212@redhat.com> <20090506203228.GH8180@redhat.com> <20090506213453.GC4282@linux> <20090506215235.GJ8180@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090506215235.GJ8180@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 6 May 2009 18:36:07 -0400
+Subject: Re: what are some more advanced error collection methods?
+From: Al Niessner <Al.Niessner@jpl.nasa.gov>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1241644672.8424.62.camel@morte.jpl.nasa.gov>
+References: <1241644672.8424.62.camel@morte.jpl.nasa.gov>
+Content-Type: text/plain
+Date: Wed, 06 May 2009 15:36:04 -0700
+Message-Id: <1241649364.8424.66.camel@morte.jpl.nasa.gov>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: morte.jpl.nasa.gov [137.78.15.44]
+X-Source-Sender: Al.Niessner@jpl.nasa.gov
+X-AUTH: Authorized
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 05:52:35PM -0400, Vivek Goyal wrote:
-> On Wed, May 06, 2009 at 11:34:54PM +0200, Andrea Righi wrote:
-> > On Wed, May 06, 2009 at 04:32:28PM -0400, Vivek Goyal wrote:
-> > > Hi Andrea and others,
-> > > 
-> > > I always had this doubt in mind that any kind of 2nd level controller will
-> > > have no idea about underlying IO scheduler queues/semantics. So while it
-> > > can implement a particular cgroup policy (max bw like io-throttle or
-> > > proportional bw like dm-ioband) but there are high chances that it will
-> > > break IO scheduler's semantics in one way or other.
-> > > 
-> > > I had already sent out the results for dm-ioband in a separate thread.
-> > > 
-> > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg07258.html
-> > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg07573.html
-> > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg08177.html
-> > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg08345.html
-> > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg08355.html
-> > > 
-> > > Here are some basic results with io-throttle. Andrea, please let me know
-> > > if you think this is procedural problem. Playing with io-throttle patches
-> > > for the first time.
-> > > 
-> > > I took V16 of your patches and trying it out with 2.6.30-rc4 with CFQ
-> > > scheduler.
-> > > 
-> > > I have got one SATA drive with one partition on it.
-> > > 
-> > > I am trying to create one cgroup and assignn 8MB/s limit to it and launch
-> > > on RT prio 0 task and one BE prio 7 task and see how this 8MB/s is divided
-> > > between these tasks. Following are the results.
-> > > 
-> > > Following is my test script.
-> > > 
-> > > *******************************************************************
-> > > #!/bin/bash
-> > > 
-> > > mount /dev/sdb1 /mnt/sdb
-> > > 
-> > > mount -t cgroup -o blockio blockio /cgroup/iot/
-> > > mkdir -p /cgroup/iot/test1 /cgroup/iot/test2
-> > > 
-> > > # Set bw limit of 8 MB/ps on sdb
-> > > echo "/dev/sdb:$((8 * 1024 * 1024)):0:0" >
-> > > /cgroup/iot/test1/blockio.bandwidth-max
-> > > 
-> > > sync
-> > > echo 3 > /proc/sys/vm/drop_caches
-> > > 
-> > > echo $$ > /cgroup/iot/test1/tasks
-> > > 
-> > > # Launch a normal prio reader.
-> > > ionice -c 2 -n 7 dd if=/mnt/sdb/zerofile1 of=/dev/zero &
-> > > pid1=$!
-> > > echo $pid1
-> > > 
-> > > # Launch an RT reader  
-> > > ionice -c 1 -n 0 dd if=/mnt/sdb/zerofile2 of=/dev/zero &
-> > > pid2=$!
-> > > echo $pid2
-> > > 
-> > > wait $pid2
-> > > echo "RT task finished"
-> > > **********************************************************************
-> > > 
-> > > Test1
-> > > =====
-> > > Test two readers (one RT class and one BE class) and see how BW is
-> > > allocated with-in cgroup
-> > > 
-> > > With io-throttle patches
-> > > ------------------------
-> > > - Two readers, first BE prio 7, second RT prio 0
-> > > 
-> > > 234179072 bytes (234 MB) copied, 55.8482 s, 4.2 MB/s
-> > > 234179072 bytes (234 MB) copied, 55.8975 s, 4.2 MB/s
-> > > RT task finished
-> > > 
-> > > Note: See, there is no difference in the performance of RT or BE task.
-> > > Looks like these got throttled equally.
-> > 
-> > OK, this is coherent with the current io-throttle implementation. IO
-> > requests are throttled without the concept of the ioprio model.
-> > 
-> > We could try to distribute the throttle using a function of each task's
-> > ioprio, but ok, the obvious drawback is that it totally breaks the logic
-> > used by the underlying layers.
-> > 
-> > BTW, I'm wondering, is it a very critical issue? I would say why not to
-> > move the RT task to a different cgroup with unlimited BW? or limited BW
-> > but with other tasks running at the same IO priority...
-> 
-> So one of hypothetical use case probably  could be following. Somebody
-> is having a hosted server and customers are going to get there
-> applications running in a particular cgroup with a limit on max bw.
-> 
-> 			root
-> 		  /      |      \
-> 	     cust1      cust2   cust3
-> 	   (20 MB/s)  (40MB/s)  (30MB/s)
-> 
-> Now all three customers will run their own applications/virtual machines
-> in their respective groups with upper limits. Will we say to these that
-> all your tasks will be considered as same class and same prio level.
-> 
-> Assume cust1 is running a hypothetical application which creates multiple
-> threads and assigns these threads different priorities based on its needs
-> at run time. How would we handle this thing?
-> 
-> You can't collect all the RT tasks from all customers and move these to a
-> single cgroup. Or ask customers to separate out their tasks based on
-> priority level and give them multiple groups of different priority.
 
-Clear.
+Using a volt meter, I verified that the 5V and 12V are good and the
+computer is running under a normal load. So, I am going to go with the
+power supply being alright for now.
 
-Unfortunately, I think, with absolute BW limits at a certain point, if
-we hit the limit, we need to block the IO request. That's the same
-either, when we dispatch or submit the request. And the risk is to break
-the logic of the IO priorities and fall in the classic priority
-inversion problem.
+I changed the CPU temperature by a couple of degrees with no failure.
+While I cannot rule this out, I am willing to lean toward a software
+problem; meaning, the kernel is hard locking.
 
-The difference is that probably working at the CFQ level gives a better
-control so we can handle these cases appropriately and avoid the
-priority inversion problems.
+Now I just need some way to get some helpful information out if it so
+that I can move toward a solution.
 
-Thanks,
--Andrea
+On Wed, 2009-05-06 at 14:17 -0700, Al Niessner wrote:
+> I am running 2.6.27 on an AMD 64 x2 dual core 6000+. I have the OS
+> installed its own disk (SATA) and have an mdraid (SATA) with 3 disks
+> being mirrored for my critical data. I also have an mdraid with 2 disks
+> being mirrored (USB but I wanted firewire) for very low rate data. Both
+> mdraids are nfs mounted and use automount on top of that -- nothing
+> peculiar about nfs and automount except that nfs is over two networks
+> each with their own NIC. My problem is that every 36 hours the machine
+> simply locks up. Here is what I find:
+> 
+> 1) num lock light is on but was off prior to lock up
+> 2) no response to beating the num and caps lock keys
+> 3) no response to beating the sysreq key plus any sequences
+> 4) nothing is recorded in kern.log, syslog, or any other log file
+> in /var/log
+> 5) cannot get to console because keyboard is dead
+> 6) have to hold power switch for 10 seconds to get computer to turn off
+> so the computer is not suspended (power management is not installed
+> anyway)
+> 7) when computer is rebooted, the mdraids are usually clean (no resync)
+> 8) did a memtest and it passes
+> 
+> Since nothing showed up in the logs and I could not read the console, I
+> found an old computer and connected the one I care about to it via
+> ttyS0. Now I have the console even though the keyboard is dead. However,
+> when the lock up occurs, there is absolutely no output to my RS232
+> console. I put a pulse onto the console via /dev/console and get stuff
+> right up until the change of state, but no panic shows up. On reboot, I
+> start getting characters from the kernel immediately. Hence, I have to
+> conclude that the serial connection is viable, but there is simply no
+> output from the kernel.
+> 
+> So, I have tried all of the simple stuff that I know about or found via
+> google. Now I would like some more advanced ways of trying to pry
+> helpful information from a dying kernel. Are there more advanced tools,
+> tricks, or secrets for collecting fault information?
+> 
+> Any and all help is appreciated in advance.
+> 
+> One last item, I am still working on determining if this is a hardware
+> or software problem. The voltages look resonable and the room is
+> thermally stable to +/- 1C. So, I am having a hard time blaming
+> hardware.
+> 
+-- 
+Al Niessner
+818.354.0859
+
+--------
+|  dS  | >= 0
+--------
+
