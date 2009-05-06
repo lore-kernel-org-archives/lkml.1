@@ -1,140 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbZEFJsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbZEFJyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758181AbZEFJsR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 05:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbZEFJsB
+	id S1755884AbZEFJyQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 05:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbZEFJyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 05:48:01 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49627 "EHLO hera.kernel.org"
+	Wed, 6 May 2009 05:54:00 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46677 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752032AbZEFJr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 05:47:59 -0400
-Date: Wed, 6 May 2009 09:46:01 GMT
-From: tip-bot for john stultz <johnstul@us.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, riel@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, akpm@linux-foundation.org, johnstul@us.ibm.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, riel@redhat.com,
-       linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <200905051956.n45JuVo9025575@imap1.linux-foundation.org>
-References: <200905051956.n45JuVo9025575@imap1.linux-foundation.org>
-Subject: [tip:timers/ntp] ntp: adjust SHIFT_PLL to improve NTP convergence
-Message-ID: <tip-22cfbbfd9f67b67fe073010f51cb71d3632387d5@git.kernel.org>
-Git-Commit-ID: 22cfbbfd9f67b67fe073010f51cb71d3632387d5
-X-Mailer: tip-git-log-daemon
+	id S1752981AbZEFJx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 05:53:59 -0400
+Date: Wed, 6 May 2009 11:53:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [PATCH] blktrace: correct remap names
+Message-ID: <20090506095343.GA15323@elte.hu>
+References: <20090430133627.D217.A69D9226@jp.fujitsu.com> <49F9D82D.50901@hp.com> <49F9D906.40300@hp.com> <49FE8165.80709@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 06 May 2009 09:46:07 +0000 (UTC)
+In-Reply-To: <49FE8165.80709@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  22cfbbfd9f67b67fe073010f51cb71d3632387d5
-Gitweb:     http://git.kernel.org/tip/22cfbbfd9f67b67fe073010f51cb71d3632387d5
-Author:     john stultz <johnstul@us.ibm.com>
-AuthorDate: Wed, 6 May 2009 11:43:57 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 6 May 2009 11:44:02 +0200
 
-ntp: adjust SHIFT_PLL to improve NTP convergence
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-The conversion to the ntpv4 reference model
-f19923937321244e7dc334767eb4b67e0e3d5c74 ("ntp: convert to the NTP4
-reference model") in 2.6.19 added nanosecond resolution the adjtimex
-interface, but also changed the "stiffness" of the frequency adjustments,
-causing NTP convergence time to greatly increase.
+> > Subject: [PATCH] blktrace: correct remap names
+> > 
+> > This attempts to clarify names utilized during block I/O remap operations
+> > (partition, volume manager). It correctly matches up the /from/ information for both device & sector. This takes in the concept from osaki Motohiro and extends it to include better naming for the "device_from" field.
+> > 
+> 
+> I also noticed this..
+> 
+> > Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > Cc: Li Zefan <lizf@cn.fujitsu.com>
+> > Cc: Jens Axboe <jens.axboe@oracle.com>
+> > Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> > Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
+> > ---
+> >  include/linux/blktrace_api.h |    4 ++--
+> >  include/trace/block.h        |    4 ++--
+> >  kernel/trace/blktrace.c      |   21 +++++++++++----------
+> >  3 files changed, 15 insertions(+), 14 deletions(-)
+> > 
+> > diff --git a/include/linux/blktrace_api.h b/include/linux/blktrace_api.h
+> > index d960889..da1a14e 100644
+> > --- a/include/linux/blktrace_api.h
+> > +++ b/include/linux/blktrace_api.h
+> > @@ -116,9 +116,9 @@ struct blk_io_trace {
+> >   * The remap event
+> >   */
+> >  struct blk_io_trace_remap {
+> > -	__be32 device;
+> >  	__be32 device_from;
+> > -	__be64 sector;
+> > +	__be32 device_to;
+> > +	__be64 sector_from;
+> >  };
+> >  
+> 
+> If we are really fine with this change, then:
+> 
+> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
 
-SHIFT_PLL, which reduces the stiffness of the freq adjustments, was
-designed to be inversely linked to HZ, and the reference value of 4 was
-designed for Unix systems using HZ=100.  However Linux's clock steering
-code mostly independent of HZ.
+is it acceptable to break the sector output ordering of all past 
+blktrace+blkparse binaries, as far as remap events go?
 
-So this patch reduces the SHIFT_PLL value from 4 to 2, which causes NTPd
-behavior to match kernels prior to 2.6.19, greatly reducing convergence
-times, and improving close synchronization through environmental thermal
-changes.
-
-The patch also changes some l's to L's in nearby code to avoid misreading
-50l as 501.
-
-[ Impact: tweak NTP algorithm for faster convergence ]
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-Acked-by: Rik van Riel <riel@redhat.com>
-Cc: zippel@linux-m68k.org
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <200905051956.n45JuVo9025575@imap1.linux-foundation.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/linux/timex.h |   42 +++++++++++++++++++++++++++++++-----------
- 1 files changed, 31 insertions(+), 11 deletions(-)
-
-diff --git a/include/linux/timex.h b/include/linux/timex.h
-index aa3475f..0daf961 100644
---- a/include/linux/timex.h
-+++ b/include/linux/timex.h
-@@ -170,17 +170,37 @@ struct timex {
- #include <asm/timex.h>
- 
- /*
-- * SHIFT_KG and SHIFT_KF establish the damping of the PLL and are chosen
-- * for a slightly underdamped convergence characteristic. SHIFT_KH
-- * establishes the damping of the FLL and is chosen by wisdom and black
-- * art.
-+ * SHIFT_PLL is used as a dampening factor to define how much we
-+ * adjust the frequency correction for a given offset in PLL mode.
-+ * It also used in dampening the offset correction, to define how
-+ * much of the current value in time_offset we correct for each
-+ * second. Changing this value changes the stiffness of the ntp
-+ * adjustment code. A lower value makes it more flexible, reducing
-+ * NTP convergence time. A higher value makes it stiffer, increasing
-+ * convergence time, but making the clock more stable.
-  *
-- * MAXTC establishes the maximum time constant of the PLL. With the
-- * SHIFT_KG and SHIFT_KF values given and a time constant range from
-- * zero to MAXTC, the PLL will converge in 15 minutes to 16 hours,
-- * respectively.
-+ * In David Mills' nanokenrel reference implmentation SHIFT_PLL is 4.
-+ * However this seems to increase convergence time much too long.
-+ *
-+ * https://lists.ntp.org/pipermail/hackers/2008-January/003487.html
-+ *
-+ * In the above mailing list discussion, it seems the value of 4
-+ * was appropriate for other Unix systems with HZ=100, and that
-+ * SHIFT_PLL should be decreased as HZ increases. However, Linux's
-+ * clock steering implementation is HZ independent.
-+ *
-+ * Through experimentation, a SHIFT_PLL value of 2 was found to allow
-+ * for fast convergence (very similar to the NTPv3 code used prior to
-+ * v2.6.19), with good clock stability.
-+ *
-+ *
-+ * SHIFT_FLL is used as a dampening factor to define how much we
-+ * adjust the frequency correction for a given offset in FLL mode.
-+ * In David Mills' nanokenrel reference implmentation SHIFT_PLL is 2.
-+ *
-+ * MAXTC establishes the maximum time constant of the PLL.
-  */
--#define SHIFT_PLL	4	/* PLL frequency factor (shift) */
-+#define SHIFT_PLL	2	/* PLL frequency factor (shift) */
- #define SHIFT_FLL	2	/* FLL frequency factor (shift) */
- #define MAXTC		10	/* maximum time constant (shift) */
- 
-@@ -192,10 +212,10 @@ struct timex {
- #define SHIFT_USEC 16		/* frequency offset scale (shift) */
- #define PPM_SCALE ((s64)NSEC_PER_USEC << (NTP_SCALE_SHIFT - SHIFT_USEC))
- #define PPM_SCALE_INV_SHIFT 19
--#define PPM_SCALE_INV ((1ll << (PPM_SCALE_INV_SHIFT + NTP_SCALE_SHIFT)) / \
-+#define PPM_SCALE_INV ((1LL << (PPM_SCALE_INV_SHIFT + NTP_SCALE_SHIFT)) / \
- 		       PPM_SCALE + 1)
- 
--#define MAXPHASE 500000000l	/* max phase error (ns) */
-+#define MAXPHASE 500000000L	/* max phase error (ns) */
- #define MAXFREQ 500000		/* max frequency error (ns/s) */
- #define MAXFREQ_SCALED ((s64)MAXFREQ << NTP_SCALE_SHIFT)
- #define MINSEC 256		/* min interval between updates (s) */
+	Ingo
