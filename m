@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbZEFE6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752205AbZEFFBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753974AbZEFE6e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 00:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbZEFE6L
+	id S1752205AbZEFFBl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 01:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbZEFFBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 00:58:11 -0400
-Received: from www.sr71.net ([198.145.64.142]:49495 "EHLO blackbird.sr71.net"
+	Wed, 6 May 2009 01:01:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55046 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752035AbZEFE6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 00:58:09 -0400
-Subject: Re: 2.6.30-rc2 soft lockups: ACPI?  clock source problem?
-From: Dave Hansen <dave@sr71.net>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, lenb@kernel.org
-In-Reply-To: <1240513827.7224.2.camel@localhost.localdomain>
-References: <1240335038.11194.11.camel@nimitz>
-	 <20090422204557.10c3cc37.akpm@linux-foundation.org>
-	 <1240511508.10627.159.camel@nimitz>
-	 <1240513827.7224.2.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 05 May 2009 21:58:08 -0700
-Message-Id: <1241585888.8010.22.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1750770AbZEFFBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 01:01:31 -0400
+Date: Wed, 6 May 2009 06:56:13 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, chrisw@sous-sol.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] ptrace: ptrace_attach: check PF_KTHREAD +
+	exit_state instead of ->mm
+Message-ID: <20090506045613.GB26214@redhat.com>
+References: <20090505224722.GA954@redhat.com> <20090505164733.54cd4ca4.akpm@linux-foundation.org> <20090505235736.GA7526@redhat.com> <20090505182444.de4e0143.akpm@linux-foundation.org> <20090506020617.7D417FC328@magilla.sf.frob.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090506020617.7D417FC328@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-23 at 12:10 -0700, john stultz wrote:
-> On Thu, 2009-04-23 at 11:31 -0700, Dave Hansen wrote:
-> > On Wed, 2009-04-22 at 20:45 -0700, Andrew Morton wrote:
-> > > (Is jstultz@us.ibm.com correct?)
-> > 
-> > Only I want it to go to the black hole which is Lotus Notes. :)
-> > 
-> > > On Tue, 21 Apr 2009 10:30:38 -0700 Dave Hansen <dave@sr71.net> wrote:
-> > > > This was during my first boot of 2.6.30-rc2.
-> > > 
-> > > Did it ever happen again?
-> > 
-> > I've seen it on three different boots, but the stack traces were a bit
-> > different each time.  So, I assume it is a true timekeeping thing
-> > instead of something *actually* locking up.
-> > 
-> > > I assume this is a post-2.6.29 regression?  (Yet another.  We've been
-> > > extra bad this time)
-> > 
-> > This laptop has been quite good to me and I haven't rebooted since the
-> > late 2.6.28 days.  It isn't anything special, though.  Just a Lenovo
-> > T61.  I wonder if my .config is a bit different.
-> 
-> I've got a T61 at home, so I'll try to test it out. Dave, can you send
-> me your .config? Also any chance you can bisect this down a tiny bit?
+On 05/05, Roland McGrath wrote:
+>
+> > I now have:
+> >
+> > #
+> > # ptrace
+> > #
+> > ptrace-remove-pt_dtrace-from-arch-h8300.patch
+> > ptrace-remove-pt_dtrace-from-avr32-mn10300-parisc-s390-sh-xtensa.patch
+> > ptrace-remove-pt_dtrace-from-m68k-m68knommu.patch
+> > ptrace-remove-pt_dtrace-from-arch-m32r.patch
+> > ptrace-mm_need_new_owner-use-real_parent-to-search-in-the-siblings.patch
+> > ptrace-tracehook_unsafe_exec-remove-the-stale-comment.patch
+> > ptrace-tracehook_unsafe_exec-remove-the-stale-comment-fix.patch
+> > ptrace-do-not-use-task-ptrace-directly-in-core-kernel.patch
+> > #
+> > # utrace
+> > #
+> > signals-tracehook_notify_jctl-change.patch
+> > utrace-core.patch
+> > utrace-core-kill-exclude_xtrace-logic.patch
+>
+> I'd swap these three to be after ...
+>
+> > #
+> > ptrace-ptrace_attach-check-pf_kthread-exit_state-instead-of-mm.patch
+> > ptrace-cleanup-check-set-of-pt_ptraced-during-attach.patch
+> > ptrace-do-not-use-task_lock-for-attach.patch
+> > ptrace_get_task_struct-s-tasklist-rcu-make-it-static.patch
 
-OK, so I got back to this.  It's actually fixed in -rc4!  I assume it
-was something in the ACPI merge that happened after -rc3.
+Yes, that was the plan.
 
-I did check that the clocksource was set as the hpet in all cases both
-before and after I saw the cpu lockup warning and on the good versions
-of the kernel.
+But, to do this, utrace-core-kill-exclude_xtrace-logic.patch should be
+folded into utrace-core.patch. Otherwise, utrace-core.patch alone can't
+be applied after this new series.
 
-I can still go back and bisect it if anyone thinks that would be
-valuable.
-
--- Dave
+Oleg.
 
