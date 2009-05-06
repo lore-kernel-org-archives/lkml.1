@@ -1,98 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757129AbZEFHVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbZEFHWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757129AbZEFHVU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 03:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757414AbZEFHUs
+	id S1758873AbZEFHWr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 03:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbZEFHWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 03:20:48 -0400
-Received: from smtp10.mail.tnz.yahoo.co.jp ([203.216.226.138]:22093 "HELO
-	smtp10.mail.tnz.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752032AbZEFHUp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 03:20:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=yj20050223; d=yahoo.co.jp;
-  h=Received:X-Apparently-From:Message-ID:From:To:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE;
-  b=Ip7gKkQ4dulUfuaKhcf1790AYLBeCBXywIrce8CZtzLQV1of48+cU+GaCGycb7go3Y3l8I3ogYuBdHFj+B7J3ArLxy/L47KwXr0EI0zjGgJmZOti6mnyqgRRkzAj0U+U  ;
-X-Apparently-From: <n0diamond@yahoo.co.jp>
-Message-ID: <507A39B029A94344AD588481FAAF019A@DIAMOND8600>
-From: "Norman Diamond" <n0diamond@yahoo.co.jp>
-To: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>
-Subject: Adaptec driver crashes (3/3)
-Date: Wed, 6 May 2009 16:13:53 +0900
+	Wed, 6 May 2009 03:22:34 -0400
+Received: from sous-sol.org ([216.99.217.87]:33103 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752381AbZEFHWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 03:22:33 -0400
+Date: Wed, 6 May 2009 00:22:12 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Chris Wright <chrisw@sous-sol.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+Message-ID: <20090506072212.GV3036@sequoia.sous-sol.org>
+References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-2022-jp";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5512
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A010927.6020207@novell.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A tougher non-100%-reproducible way to crash a Linux system is as follows.
+* Gregory Haskins (ghaskins@novell.com) wrote:
+> Chris Wright wrote:
+> > But a free-form hypercall(unsigned long nr, unsigned long *args, size_t count)
+> > means hypercall number and arg list must be the same in order for code
+> > to call hypercall() in a hypervisor agnostic way.
+> 
+> Yes, and that is exactly the intention.  I think its perhaps the point
+> you are missing.
 
-I don't remember exactly what I did, but for some reason I guessed it might 
-happen a second time, so I set the console to a text mode terminal before it 
-happened the second time (since Linux doesn't give Blue Screens of Death 
-otherwise).  This is with an Adaptec 1480 card, AIC7xxx driver.
+Yes, I was reading this as purely any hypercall, but it seems a bit
+more like:
+ pv_io_ops->iomap()
+ pv_io_ops->ioread()
+ pv_io_ops->iowrite()
 
-I wish I had a wooden table so I wouldn't have to read and type this stuff 
-back in by hand.  (In case anyone here doesn't read thedailywtf, ignore the 
-part about the wooden table.  I still wish I wouldn't have to read and type 
-this stuff back in by hand.) 
+<snip>
+> Today, there is no equivelent of a platform agnostic "iowrite32()" for
+> hypercalls so the driver would look like the pseudocode above except
+> substitute with kvm_hypercall(), lguest_hypercall(), etc.  The proposal
+> is to allow the hypervisor to assign a dynamic vector to resources in
+> the backend and convey this vector to the guest (such as in PCI
+> config-space as mentioned in my example use-case).  The provides the
+> "address negotiation" function that would normally be done for something
+> like a pio port-address.   The hypervisor agnostic driver can then use
+> this globally recognized address-token coupled with other device-private
+> ABI parameters to communicate with the device.  This can all occur
+> without the core hypervisor needing to understand the details beyond the
+> addressing.
 
-BUG: unable to handle kernel NULL pointer dereference at virtual address 0000000
-0
-printing eip: c04a50af *pde = 00000000
-Oops: 0000 [#1] SMP
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_
-device snd_pcm_oss snd_mixer_oss fuse lp pcspkr snd_intel8x0 snd_ac97_codec ac97
-_bus e100 snd_pcm snd_timer snd video mii iTCO_wdt soundcore serio_raw iTCO_vend
-or_support output psmouse evdev pcmcia intel_agp agpgart shpchp snd_page_alloc p
-arport_pc parport sg yenta_socket rsrc_nonstatic pcmcia_core aufs squashfs sqlzm
-a unlzma
+VF drivers can also have this issue (and typically use mmio).
+I at least have a better idea what your proposal is, thanks for
+explanation.  Are you able to demonstrate concrete benefit with it yet
+(improved latency numbers for example)?
 
-Pid: 3531, comm: klogs Not tainted (2.6.24.3 #1)
-EIP: 0060:[<c04a50af>] EFLAGS: 00010046 CPU: 0
-EIP is at ahc_handle_scsiint+0xdbf/0xef0
-EAX: 00000000 EBX: 00000007 ECX: 00000001 EDX: 0000000d
-ESI: ede17e00 EDI: 00000000 EBP: 00000000 ESP: ed507de4
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process klogd (pid: 3531, ti=ed506000 task=edd6aaa0 task.ti=ed506000)
-Stack: 00000001 00000041 00000001 ee6a6580 d662d853 41410000 000000a0 ead93024
-       c01806db 00a0ee08 00000041 00000007 00000000 00000001 00000000 00000000
-       ed53b541 00000001 ede17e00 00000064 00000082 0000000b c04b20f9 ede0cd60
-Call Trace:
- [<c01806db>] __link_path_walk+0xaab/0xe10
- [<c04b20f9>] ahc_linux_isr+0x1e9/0x260
- [<c0151025>] handle_IRQ_event+0x25/0x50
- [<c01529bc>] handle_level_irq+0x7c/0xf0
- [<c010748b>] do_IRQ+0x3b/0x70
- [<efbe3d90>] aufs_getattr+0x0/0xa0 [aufs]
- [<c01052d3>] common_interrupt+0x23/0x30
- [<efbe3d90>] aufs_getattr+0x0/0xa0 [aufs]
- [<efbe3d9e>] aufs_getattr+0xe/0xa0 [aufs]
- [<c017fa47>] getname+0xa7/0xc0
- [<c03b7acf>] security_inode_getattr+0x1f/0x30
- [<c017a4f8>] vfs_getattr+0x48/0x70
- [<c017a727>] vfs_stat_fd+0x37/0x60
- [<c017a82f>] sys_stat64+0xf/0x30
- [<c01775ee>] vfs_write+0x11e/0x140
- [<c0177c31>] sys_write+0x41/0x70
- [<c012cc1a>] sys_time+0xa/0x30
- [<c0104352>] syscall_call+0x7/0xb
- [<c0700000>] rpcb_getport_prepare+0x10/0x40
- =======================
-Code: 24 2c e8 c5 95 ff ff b9 14 00 00 00 89 f0 8d 54 24 2c c7 44 24 04 00 00 00
- 00 c7 04 24 b6 d1 80 c0 e8 56 e9 ff ff e9 8d f8 ff ff <8b> 07 89 fa 0f b6 58 1b
- 0f b6 c3 89 44 24 1c 89 f0 e8 5b a5 00
-EIP: [<c04a50af>] ahc_handle_scsiint+0xdbf/0xef0 SS:ESP 0068:ed507de4
-Kernel panic - not syncing : Fatal exception in interrupt
---------------------------------------
-Power up the Internet with Yahoo! Toolbar.
-http://pr.mail.yahoo.co.jp/toolbar/
+thanks,
+-chris
