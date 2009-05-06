@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbZEFQy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760159AbZEFQzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760608AbZEFQy0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 12:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755638AbZEFQyQ
+	id S1760159AbZEFQzb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 12:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbZEFQzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 12:54:16 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:45921 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754477AbZEFQyP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 12:54:15 -0400
-Date: Wed, 6 May 2009 17:36:51 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Chris Wright <chrisw@redhat.com>
-cc: Izik Eidus <ieidus@redhat.com>, Rik van Riel <riel@redhat.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       aarcange@redhat.com, alan@lxorguk.ukuu.org.uk, device@lanana.org,
-       linux-mm@kvack.org, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
-In-Reply-To: <20090506161424.GC15712@x200.localdomain>
-Message-ID: <Pine.LNX.4.64.0905061732220.5775@blonde.anvils>
-References: <1241475935-21162-1-git-send-email-ieidus@redhat.com>
- <1241475935-21162-2-git-send-email-ieidus@redhat.com>
- <1241475935-21162-3-git-send-email-ieidus@redhat.com>
- <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com>
- <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils>
- <4A01AC5E.6000906@redhat.com> <20090506161424.GC15712@x200.localdomain>
+	Wed, 6 May 2009 12:55:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56747 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751186AbZEFQzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 12:55:20 -0400
+Message-ID: <4A01C08F.8020607@kernel.org>
+Date: Wed, 06 May 2009 09:53:35 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: mel@csn.ul.ie,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: fix nodes_cover_memory
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 May 2009, Chris Wright wrote:
-> 
-> There's already locking issues w/ using madvise and ksm, so yes,
-> changes would need to be made.  Some question of how (whether) to handle
-> registration of unmapped ranges, closest to say ->mm->def_flags=VM_MERGE.
-> My hunch is there's 2 cases users might care about, a specific range
-> (qemu-kvm, CERN app, etc) or the entire vma space of a process.
 
-Good food for thought there, but not on my mind at this moment.
+found one system that missed one entry for one node in SRAT, and that SRAT is not
+rejected by nodes_cover_memory()
 
-> Another
-> question of what to do w/ VM_LOCKED, should that exclude VM_MERGE or
-> let user get what asked for?
+it turns out that we can not use absent_page_in_range to calaulate
+e820ram, bacause that will use early_node_map and that is AND result of
+e820 and SRAT.
 
-What's the issue with VM_LOCKED?  We wouldn't want to merge a page
-while it was under get_user_pages (unless KSM's own, but ignore that),
-but what's the deal with VM_LOCKED?
+revert back to use e820_hole_size instead.
 
-Is the phrase "covert channel" going to come up somehow?
+also change that difference checking to 1M instead of 4G,
+because e820ram, and pxmram are in pages.
 
-Hugh
+[ Impact: reject wrong SRAT tables ]
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Mel Gorman <mel@csn.ul.ie>
+
+---
+ arch/x86/mm/srat_64.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/arch/x86/mm/srat_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/srat_64.c
++++ linux-2.6/arch/x86/mm/srat_64.c
+@@ -345,9 +345,9 @@ static int __init nodes_cover_memory(con
+ 			pxmram = 0;
+ 	}
+ 
+-	e820ram = max_pfn - absent_pages_in_range(0, max_pfn);
++	e820ram = max_pfn - (e820_hole_size(0, max_pfn<<PAGE_SHIFT)>>PAGE_SHIFT);
+ 	/* We seem to lose 3 pages somewhere. Allow a bit of slack. */
+-	if ((long)(e820ram - pxmram) >= 1*1024*1024) {
++	if ((long)(e820ram - pxmram) >= (1<<(20 - PAGE_SHIFT))) {
+ 		printk(KERN_ERR
+ 	"SRAT: PXMs only cover %luMB of your %luMB e820 RAM. Not used.\n",
+ 			(pxmram << PAGE_SHIFT) >> 20,
