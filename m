@@ -1,139 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761234AbZEFUpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761698AbZEFUqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761234AbZEFUpq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 16:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761249AbZEFUjk
+	id S1761698AbZEFUqs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 16:46:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761426AbZEFUlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 16:39:40 -0400
-Received: from kroah.org ([198.145.64.141]:34058 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 16:41:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59833 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761150AbZEFUjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 16:39:39 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Wed May  6 13:31:31 2009
-Message-Id: <20090506203131.460521212@blue.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 13:30:27 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@linux.intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 17/18] proc: avoid information leaks to non-privileged processes
-References: <20090506203010.615363711@blue.kroah.org>
-Content-Disposition: inline; filename=proc-avoid-information-leaks-to-non-privileged-processes.patch
-In-Reply-To: <20090506203353.GA14624@kroah.com>
+	id S1761408AbZEFUlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 16:41:11 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+X-Fcc: ~/Mail/linus
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+Subject: Re: [PATCH] x86: ptrace debugreg checks rewrite
+In-Reply-To: Ingo Molnar's message of  Wednesday, 6 May 2009 11:56:29 +0200 <20090506095629.GC15323@elte.hu>
+References: <20090504001601.GL16631@x200.localdomain>
+	<20090504002431.GA17556@x200.localdomain>
+	<20090506095629.GC15323@elte.hu>
+X-Shopping-List: (1) Pelvic clairvoyant assumptions
+   (2) Regimented nutrition bacon
+   (3) Fatuous intrusions
+   (4) Cadaverous citations
+Message-Id: <20090506203852.D9AC9FC39E@magilla.sf.frob.com>
+Date: Wed,  6 May 2009 13:38:52 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+> > On Mon, May 04, 2009 at 04:16:01AM +0400, Alexey Dobriyan wrote:
+> > > +static int ptrace_check_debugreg(int _32bit,
+> > > +				 unsigned long dr0, unsigned long dr1,
+> > > +				 unsigned long dr2, unsigned long dr3,
+> > > +				 unsigned long dr6, unsigned long dr7)
+> > > +{
+> > > +	/* Breakpoint type: 00: --x, 01: -w-, 10: undefined, 11: rw- */
+> > > +	unsigned int rw[4];
+> > > +	/* Breakpoint length: 00: 1 byte, 01: 2 bytes, 10: 8 bytes, 11: bytes */
+> > 								        4 bytes, of course
+> 
+> Roland, Oleg, do you have any pending/planned changes in this area?
 
-------------------
-
-From: Jake Edge <jake@lwn.net>
-
-commit f83ce3e6b02d5e48b3a43b001390e2b58820389d upstream.
-
-By using the same test as is used for /proc/pid/maps and /proc/pid/smaps,
-only allow processes that can ptrace() a given process to see information
-that might be used to bypass address space layout randomization (ASLR).
-These include eip, esp, wchan, and start_stack in /proc/pid/stat as well
-as the non-symbolic output from /proc/pid/wchan.
-
-ASLR can be bypassed by sampling eip as shown by the proof-of-concept
-code at http://code.google.com/p/fuzzyaslr/ As part of a presentation
-(http://www.cr0.org/paper/to-jt-linux-alsr-leak.pdf) esp and wchan were
-also noted as possibly usable information leaks as well.  The
-start_stack address also leaks potentially useful information.
-
-Cc: Stable Team <stable@kernel.org>
-Signed-off-by: Jake Edge <jake@lwn.net>
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- fs/proc/array.c |   13 +++++++++----
- fs/proc/base.c  |    5 ++++-
- 2 files changed, 13 insertions(+), 5 deletions(-)
-
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -80,6 +80,7 @@
- #include <linux/delayacct.h>
- #include <linux/seq_file.h>
- #include <linux/pid_namespace.h>
-+#include <linux/ptrace.h>
- #include <linux/tracehook.h>
- 
- #include <asm/pgtable.h>
-@@ -347,6 +348,7 @@ static int do_task_stat(struct seq_file 
- 	char state;
- 	pid_t ppid = 0, pgid = -1, sid = -1;
- 	int num_threads = 0;
-+	int permitted;
- 	struct mm_struct *mm;
- 	unsigned long long start_time;
- 	unsigned long cmin_flt = 0, cmaj_flt = 0;
-@@ -359,11 +361,14 @@ static int do_task_stat(struct seq_file 
- 
- 	state = *get_task_state(task);
- 	vsize = eip = esp = 0;
-+	permitted = ptrace_may_access(task, PTRACE_MODE_READ);
- 	mm = get_task_mm(task);
- 	if (mm) {
- 		vsize = task_vsize(mm);
--		eip = KSTK_EIP(task);
--		esp = KSTK_ESP(task);
-+		if (permitted) {
-+			eip = KSTK_EIP(task);
-+			esp = KSTK_ESP(task);
-+		}
- 	}
- 
- 	get_task_comm(tcomm, task);
-@@ -419,7 +424,7 @@ static int do_task_stat(struct seq_file 
- 		unlock_task_sighand(task, &flags);
- 	}
- 
--	if (!whole || num_threads < 2)
-+	if (permitted && (!whole || num_threads < 2))
- 		wchan = get_wchan(task);
- 	if (!whole) {
- 		min_flt = task->min_flt;
-@@ -471,7 +476,7 @@ static int do_task_stat(struct seq_file 
- 		rsslim,
- 		mm ? mm->start_code : 0,
- 		mm ? mm->end_code : 0,
--		mm ? mm->start_stack : 0,
-+		(permitted && mm) ? mm->start_stack : 0,
- 		esp,
- 		eip,
- 		/* The signal information here is obsolete.
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -327,7 +327,10 @@ static int proc_pid_wchan(struct task_st
- 	wchan = get_wchan(task);
- 
- 	if (lookup_symbol_name(wchan, symname) < 0)
--		return sprintf(buffer, "%lu", wchan);
-+		if (!ptrace_may_access(task, PTRACE_MODE_READ))
-+			return 0;
-+		else
-+			return sprintf(buffer, "%lu", wchan);
- 	else
- 		return sprintf(buffer, "%s", symname);
- }
+I don't.  I expect the only future work on this arch debugreg stuff to be
+via the hw_breakpoint work, extending that and/or building new things on it.
 
 
+Thanks,
+Roland
