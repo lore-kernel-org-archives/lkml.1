@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbZEFHmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbZEFHpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757095AbZEFHmM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 03:42:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZEFHl6
+	id S1755679AbZEFHpx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 03:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZEFHpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 03:41:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39440 "EHLO mx3.mail.elte.hu"
+	Wed, 6 May 2009 03:45:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41043 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752381AbZEFHl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 03:41:57 -0400
-Date: Wed, 6 May 2009 09:41:01 +0200
+	id S1751372AbZEFHpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 03:45:44 -0400
+Date: Wed, 6 May 2009 09:44:21 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>,
-       chrisw@sous-sol.org, roland@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] ptrace: ptrace_attach: check PF_KTHREAD +
-	exit_state instead of ->mm
-Message-ID: <20090506074101.GD17457@elte.hu>
-References: <20090505224722.GA954@redhat.com> <20090505164733.54cd4ca4.akpm@linux-foundation.org> <20090506070837.GA3223@infradead.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] ptrace: cleanup check/set of PT_PTRACED during
+	attach
+Message-ID: <20090506074421.GE17457@elte.hu>
+References: <20090505224727.GA958@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090506070837.GA3223@infradead.org>
+In-Reply-To: <20090505224727.GA958@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,22 +37,32 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Christoph Hellwig <hch@infradead.org> wrote:
+* Oleg Nesterov <oleg@redhat.com> wrote:
 
-> On Tue, May 05, 2009 at 04:47:33PM -0700, Andrew Morton wrote:
-> > These patches make a mess of utrace-core.patch.  Do we really want to do that?
+> ptrace_attach() and ptrace_traceme() are the last functions which 
+> look as if the untraced task can have task->ptrace != 0, this must 
+> not be possible. Change the code to just check ->ptrace != 0 and 
+> s/|=/=/ to set PT_PTRACED.
 > 
-> Yes.  All these patches from Oleg are preparations for actually 
-> doing a utrace merge in a sane way.  I don't really think utrace 
-> should be in -mm at this point where active ptrace work is going 
-> on.
+> Also, a couple of trivial whitespace cleanups in ptrace_attach().
+> 
+> And move ptrace_traceme() up near ptrace_attach() to keep them 
+> close to each other.
 
-Yes, as i said it in earlier threads, lacking other in-tree use, 
-utrace is only acceptable for upstream if it materially cleans up 
-the ptrace code here and now - without any wide #ifdefs like some of 
-the earlier patches did.
+btw., while at it, please also fix the typos in 
+include/linux/ptrace.h's PT_* flags section:
 
-The latest patches from Oleg clearly go in this direction, which is 
-a very promising development!
+/*
+ * Ptrace flags
+ *
+ * The owner ship rules for task->ptrace which holds the ptrace
+ * flags is simple.  When a task is running it owns it's task->ptrace
+ * flags.  When the a task is stopped the ptracer owns task->ptrace.
+ */
+
+s/owner ship/ownership
+s/it's/its
+
+Thanks,
 
 	Ingo
