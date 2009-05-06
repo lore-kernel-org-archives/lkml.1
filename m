@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762140AbZEFV7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761009AbZEFWAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762140AbZEFV7q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 17:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761404AbZEFVyc
+	id S1761009AbZEFWAQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761427AbZEFVyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:54:32 -0400
-Received: from kroah.org ([198.145.64.141]:57003 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 17:54:33 -0400
+Received: from kroah.org ([198.145.64.141]:57010 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760832AbZEFVy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:54:28 -0400
+	id S1761168AbZEFVy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:54:29 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed May  6 14:47:57 2009
-Message-Id: <20090506214757.027833877@mini.kroah.org>
+Message-Id: <20090506214757.214311770@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 14:45:41 -0700
+Date: Wed, 06 May 2009 14:45:42 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -25,13 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 13/58] virtio-rng: Remove false BUG for spurious callbacks
+       alan@lxorguk.ukuu.org.uk, Michael Buesch <mb@bu3sch.de>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 14/58] b44: Use kernel DMA addresses for the kernel DMA API
 References: <20090506214528.660389067@mini.kroah.org>
-Content-Disposition: inline; filename=virtio-rng-remove-false-bug-for-spurious-callbacks.patch
+Content-Disposition: inline; filename=b44-use-kernel-dma-addresses-for-the-kernel-dma-api.patch
 In-Reply-To: <20090506215017.GA21981@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,36 +39,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Christian Borntraeger <borntraeger@de.ibm.com>
+From: Michael Buesch <mb@bu3sch.de>
 
-upstream commit: e5b89542ea18020961882228c26db3ba87f6e608
+commit 37efa239901493694a48f1d6f59f8de17c2c4509 upstream.
 
-The virtio-rng drivers checks for spurious callbacks. Since
-callbacks can be implemented via shared interrupts (e.g. PCI) this
-could lead to guest kernel oopses with lots of virtio devices.
+We must not use the device DMA addresses for the kernel DMA API, because
+device DMA addresses have an additional offset added for the SSB translation.
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
+Use the original dma_addr_t for the sync operation.
+
 Cc: stable@kernel.org
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- drivers/char/hw_random/virtio-rng.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
---- a/drivers/char/hw_random/virtio-rng.c
-+++ b/drivers/char/hw_random/virtio-rng.c
-@@ -37,9 +37,9 @@ static void random_recv_done(struct virt
- {
- 	int len;
+---
+ drivers/net/b44.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/net/b44.c
++++ b/drivers/net/b44.c
+@@ -750,7 +750,7 @@ static void b44_recycle_rx(struct b44 *b
+ 					     dest_idx * sizeof(dest_desc),
+ 					     DMA_BIDIRECTIONAL);
  
--	/* We never get spurious callbacks. */
-+	/* We can get spurious callbacks, e.g. shared IRQs + virtio_pci. */
- 	if (!vq->vq_ops->get_buf(vq, &len))
--		BUG();
-+		return;
- 
- 	data_left = len / sizeof(random_data[0]);
- 	complete(&have_data);
+-	ssb_dma_sync_single_for_device(bp->sdev, le32_to_cpu(src_desc->addr),
++	ssb_dma_sync_single_for_device(bp->sdev, dest_map->mapping,
+ 				       RX_PKT_BUF_SZ,
+ 				       DMA_FROM_DEVICE);
+ }
 
 
