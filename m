@@ -1,74 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759339AbZEFMG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759575AbZEFMGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759339AbZEFMG3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 08:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbZEFMGR
+	id S1759575AbZEFMGp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 08:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759173AbZEFMGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 08:06:17 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:60235 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752580AbZEFMGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 08:06:16 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-Subject: Re: [PATCH] fix blkid.h include
-Date: Wed, 6 May 2009 08:06:15 -0400
-User-Agent: KMail/1.11.2 (Linux/2.6.29.2; KDE/4.2.2; x86_64; ; )
-Cc: Karel Zak <kzak@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-References: <20090505214214.GC4460@nb.net.home> <20090506113550.GQ15802@pengutronix.de>
-In-Reply-To: <20090506113550.GQ15802@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart5592940.gQMm7z3cVd";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200905060806.16600.vapier@gentoo.org>
+	Wed, 6 May 2009 08:06:35 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:15088 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758061AbZEFMGe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 08:06:34 -0400
+Message-Id: <4A0199B8.76EA.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Wed, 06 May 2009 13:07:52 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86-64: improve e820_search_gap()
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart5592940.gQMm7z3cVd
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Impact: bug fix
 
-On Wednesday 06 May 2009 07:35:50 Robert Schwebel wrote:
-> The reason is that blkid.h comes from e2fsutils, which install the header
-> file into /usr/include/blkid/blkid.h; /usr/include is also what the .pc
-> file specifies for the include path for the CFLAGS. So IMHO the patch bel=
-ow
-> must be applied to make it work.
+Blindly putting the gap close after max_pfn is in conflict with that
+same memory range potentially being used by hotplugged memory.
 
-sounds like the .pc file is broken and you need to report this to your=20
-distributor.  works fine on Gentoo:
-$ pkg-config blkid --cflags
-=2DI/usr/include/blkid -I/usr/include/uuid
-=2Dmike
+Also, make the function static to ensure there are no other users that
+could depend on the previous behavior regarding the way start_addr gets
+specified.
 
---nextPart5592940.gQMm7z3cVd
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
+---
+ arch/x86/include/asm/e820.h |    2 --
+ arch/x86/kernel/e820.c      |   11 +++++++++--
+ 2 files changed, 9 insertions(+), 4 deletions(-)
 
-iQIcBAABAgAGBQJKAX04AAoJEEFjO5/oN/WBm5gP/3J7HUmlyBJPMVFt1VwCDOZb
-WV5ok3V0PEmie0IqvJQLRHgFadmKUzuwVVAQCDmnJ8pIBncPJdd/Iz1BRSvQxxVh
-/rGSZPXhCd70uii9gLsrClWceyJVgGihJYjjmMk0E7rM/12PbEz0HhMOZ5oiQWyf
-PN3RMH36YbDD5YLcQE6XZ7JFrR3iXHC5AVzLVf5Yz+rI4w82xVHBTWkxAl6DSFsC
-kgS7SeW06rFFFWwTKussu1qZSEBFXuJwWbJG+C0AvlzoTmM70rnyTYJNrO//F47m
-zV779txbIdFdn19EYS9w8H3t4vCosLX71tkqXGeiuHo15n4vD8C1tYmFnNDg1Ktt
-S/sJiWWwXtSxi4HGmahArDSaxxAYM3HnF/6FSI1Xr+xyxWvvEKvUtC4O3nSxProN
-Za3aXkiv7Lk/+zngydAcxVTPpgMwtCD6xIoY9dd9p5U6j1hfeuNm72o+MG/uyes0
-KtuCpBo4qDiiXAbwEB8ByffzxoE/Gx3HisnXdFVJw1bWQAl1WkJ+bzHgL3O7gQWL
-0lp/6XkmUlDWjygy+Y8PNZv5+sgMFTAaSNbKE8D0HDNJyH+9ZokcHpg4YgOZT4JS
-J8tBZ4DyiITe/pD/Z/Rw/uSTguWabgDP++BdNuKKexKZGdviEXZSNxHiHlyaY5Vb
-sju2HylEF5oZsPmSKw2l
-=5P8w
------END PGP SIGNATURE-----
+--- linux-2.6.30-rc4/arch/x86/include/asm/e820.h	2009-04-30 09:42:42.000000000 +0200
++++ 2.6.30-rc4-x86_64-e820-setup-gap/arch/x86/include/asm/e820.h	2009-04-27 12:03:48.000000000 +0200
+@@ -79,8 +79,6 @@ extern u64 e820_remove_range(u64 start, 
+ 			     int checktype);
+ extern void update_e820(void);
+ extern void e820_setup_gap(void);
+-extern int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
+-			unsigned long start_addr, unsigned long long end_addr);
+ struct setup_data;
+ extern void parse_e820_ext(struct setup_data *data, unsigned long pa_data);
+ 
+--- linux-2.6.30-rc4/arch/x86/kernel/e820.c	2009-04-30 09:42:42.000000000 +0200
++++ 2.6.30-rc4-x86_64-e820-setup-gap/arch/x86/kernel/e820.c	2009-04-27 12:03:48.000000000 +0200
+@@ -574,13 +574,19 @@ static void __init update_e820_saved(voi
+ /*
+  * Search for a gap in the e820 memory space from start_addr to end_addr.
+  */
+-__init int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
++static int __init
++e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
+ 		unsigned long start_addr, unsigned long long end_addr)
+ {
+ 	unsigned long long last;
+ 	int i = e820.nr_map;
+ 	int found = 0;
+ 
++#ifdef CONFIG_X86_64
++	if (start_addr >= MAX_GAP_END)
++		last = end_addr ?: (1UL << boot_cpu_data.x86_phys_bits);
++	else
++#endif
+ 	last = (end_addr && end_addr < MAX_GAP_END) ? end_addr : MAX_GAP_END;
+ 
+ 	while (--i >= 0) {
+@@ -626,11 +632,12 @@ __init void e820_setup_gap(void)
+ 
+ #ifdef CONFIG_X86_64
+ 	if (!found) {
+-		gapstart = (max_pfn << PAGE_SHIFT) + 1024*1024;
+ 		printk(KERN_ERR "PCI: Warning: Cannot find a gap in the 32bit "
+ 		       "address range\n"
+ 		       KERN_ERR "PCI: Unassigned devices with 32bit resource "
+ 		       "registers may break!\n");
++		found = e820_search_gap(&gapstart, &gapsize, MAX_GAP_END, 0);
++		WARN_ON(!found);
+ 	}
+ #endif
+ 
 
---nextPart5592940.gQMm7z3cVd--
+
+
