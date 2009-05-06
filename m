@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760310AbZEFV7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762140AbZEFV7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760310AbZEFV7Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 17:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761432AbZEFVyc
+	id S1762140AbZEFV7q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 17:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761404AbZEFVyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 6 May 2009 17:54:32 -0400
-Received: from kroah.org ([198.145.64.141]:56992 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:57003 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761415AbZEFVy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760832AbZEFVy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 May 2009 17:54:28 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed May  6 14:47:57 2009
-Message-Id: <20090506214756.871003674@mini.kroah.org>
+Message-Id: <20090506214757.027833877@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 14:45:40 -0700
+Date: Wed, 06 May 2009 14:45:41 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,13 +25,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Chuck Short <zulcss@ubuntu.com>,
-       Tim Gardner <tim.gardner@canonical.com>,
-       Stefan Bader <stefan.bader@canonical.com>,
+       alan@lxorguk.ukuu.org.uk,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 12/58] USB: Unusual Device support for Gold MP3 Player Energy
+Subject: [patch 13/58] virtio-rng: Remove false BUG for spurious callbacks
 References: <20090506214528.660389067@mini.kroah.org>
-Content-Disposition: inline; filename=usb-unusual-device-support-for-gold-mp3-player-energy.patch
+Content-Disposition: inline; filename=virtio-rng-remove-false-bug-for-spurious-callbacks.patch
 In-Reply-To: <20090506215017.GA21981@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,47 +41,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Chuck Short <zulcss@ubuntu.com>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-upstream commit: 46c6e93faa85d1362e1d127dc28cf9d0b304a6f1
+upstream commit: e5b89542ea18020961882228c26db3ba87f6e608
 
-Reported by Alessio Treglia on
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/125250
+The virtio-rng drivers checks for spurious callbacks. Since
+callbacks can be implemented via shared interrupts (e.g. PCI) this
+could lead to guest kernel oopses with lots of virtio devices.
 
-User was getting the following errors in dmesg:
-
-[ 2158.139386] sd 5:0:0:1: ioctl_internal_command return code = 8000002
-[ 2158.139390] : Current: sense key: No Sense
-[ 2158.139393] Additional sense: No additional sense information
-
-Adds unusual device support.
-
-modified:   drivers/usb/storage/unusual_devs.h
-
-Signed-off-by: Chuck Short <zulcss@ubuntu.com>
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
-Cc: stable <stable@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: stable@kernel.org
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/usb/storage/unusual_devs.h |    6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/char/hw_random/virtio-rng.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -2134,6 +2134,12 @@ UNUSUAL_DEV(  0xed06, 0x4500, 0x0001, 0x
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_CAPACITY_HEURISTICS),
+--- a/drivers/char/hw_random/virtio-rng.c
++++ b/drivers/char/hw_random/virtio-rng.c
+@@ -37,9 +37,9 @@ static void random_recv_done(struct virt
+ {
+ 	int len;
  
-+/* Reported by Alessio Treglia <quadrispro@ubuntu.com> */
-+UNUSUAL_DEV( 0xed10, 0x7636, 0x0001, 0x0001,
-+		"TGE",
-+		"Digital MP3 Audio Player",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL, US_FL_NOT_LOCKABLE ),
-+
- /* Control/Bulk transport for all SubClass values */
- USUAL_DEV(US_SC_RBC, US_PR_CB, USB_US_TYPE_STOR),
- USUAL_DEV(US_SC_8020, US_PR_CB, USB_US_TYPE_STOR),
+-	/* We never get spurious callbacks. */
++	/* We can get spurious callbacks, e.g. shared IRQs + virtio_pci. */
+ 	if (!vq->vq_ops->get_buf(vq, &len))
+-		BUG();
++		return;
+ 
+ 	data_left = len / sizeof(random_data[0]);
+ 	complete(&have_data);
 
 
