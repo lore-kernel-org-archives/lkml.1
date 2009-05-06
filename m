@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757793AbZEFJeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758458AbZEFJe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757793AbZEFJeH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 05:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZEFJdy
+	id S1758458AbZEFJe7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 05:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZEFJeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 05:33:54 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:57442 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbZEFJdy (ORCPT
+	Wed, 6 May 2009 05:34:50 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:52986 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752710AbZEFJeu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 05:33:54 -0400
-To: tj@kernel.org
-CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org,
-       fuse-devel@lists.sourceforge.net
-In-reply-to: <49F90941.2030405@kernel.org> (message from Tejun Heo on Thu, 30
-	Apr 2009 11:13:21 +0900)
-Subject: Re: [PATCHSET] CUSE: implement CUSE, take #3
-References: <1239674094-30894-1-git-send-email-tj@kernel.org> <E1Lwanr-00041r-RP@pomaz-ex.szeredi.hu> <49EFB1A9.3060503@kernel.org> <E1LwvrC-00068P-5r@pomaz-ex.szeredi.hu> <49F043A4.2060700@kernel.org> <E1LypSa-0004fR-J1@pomaz-ex.szeredi.hu> <49F908A1.70207@kernel.org> <49F90941.2030405@kernel.org>
-Message-Id: <E1M1dVf-00051D-JE@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 06 May 2009 11:33:51 +0200
+	Wed, 6 May 2009 05:34:50 -0400
+Date: Wed, 6 May 2009 11:34:45 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] w1-gpio: add external pull-up enable callback
+Message-ID: <20090506093445.GA31875@buzzloop.caiaq.de>
+References: <1241527413-22920-1-git-send-email-daniel@caiaq.de> <20090506093307.GC17782@sci.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090506093307.GC17782@sci.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Apr 2009, Tejun Heo wrote:
-> Tejun Heo wrote:
-> >> I'll post the updated libfuse patch as well.  Please let me know if
-> >> you find anything wrong with the current patches.
+On Wed, May 06, 2009 at 12:33:07PM +0300, Ville Syrjälä wrote:
+> On Tue, May 05, 2009 at 02:43:33PM +0200, Daniel Mack wrote:
+> > On embedded devices, sleep mode conditions can be tricky to handle,
+> > Especially when processors tend to pull-down the w1 bus during sleep.
+> > Bus slaves (such as the ds2760) may interpret this as a reason for
+> > power-down conditions and entirely switch off the device.
 > > 
-> > Looks good to me.  Much prettier with two inits merged.
+> > This patch adds a callback function pointer to let users switch on and
+> > off the external pull-up resistor. This lets the outside world know
+> > whether the processor is currently actively driving the bus or not.
 > 
-> Oh... what happened to CUSE_INIT_DONE?
+> Looks simple enough but I wonder if you could just do this from the
+> platform code. I suppose the downside would be that you would enable the
+> pullup even if w1-gpio is not loaded.
 
-By moving the CUSE_INIT reply processing into the ->end() callback,
-the device initialization becomes synchronous with the process writing
-the message into the cuse device.
-
-This means, that the process can simply wait for the write() on the
-device to complete before proceeding.
-
-I've updated the libfuse patch so it calls ->init_done() after sending
-the CUSE_INIT reply.
+That's right. Hence I put it where I believe it belongs to.
 
 Thanks,
-Miklos
+Daniel
