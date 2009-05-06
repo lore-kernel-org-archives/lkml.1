@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761216AbZEFV1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757731AbZEFVbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761216AbZEFV1F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 17:27:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760888AbZEFV0w
+	id S1757731AbZEFVbA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 17:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbZEFVau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:26:52 -0400
-Received: from sentrion2.jpl.nasa.gov ([128.149.139.106]:17283 "EHLO
-	mail.jpl.nasa.gov" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760819AbZEFV0u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:26:50 -0400
-X-Greylist: delayed 536 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 May 2009 17:26:50 EDT
-Subject: what are some more advanced error collection methods?
-From: Al Niessner <Al.Niessner@jpl.nasa.gov>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 06 May 2009 14:17:52 -0700
-Message-Id: <1241644672.8424.62.camel@morte.jpl.nasa.gov>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: morte.jpl.nasa.gov [137.78.15.44]
-X-Source-Sender: Al.Niessner@jpl.nasa.gov
-X-AUTH: Authorized
+	Wed, 6 May 2009 17:30:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56053 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752248AbZEFVat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:30:49 -0400
+Date: Wed, 6 May 2009 23:29:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Markus Gutschke =?utf-8?B?KOmhp+Wtn+WLpCk=?= <markus@google.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       linux-mips@linux-mips.org, sparclinux@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
+Message-ID: <20090506212913.GC4861@elte.hu>
+References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com> <20090228030413.5B915FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902271932520.3111@localhost.localdomain> <alpine.LFD.2.00.0902271948570.3111@localhost.localdomain> <20090228072554.CFEA6FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902280916470.3111@localhost.localdomain> <904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I am running 2.6.27 on an AMD 64 x2 dual core 6000+. I have the OS
-installed its own disk (SATA) and have an mdraid (SATA) with 3 disks
-being mirrored for my critical data. I also have an mdraid with 2 disks
-being mirrored (USB but I wanted firewire) for very low rate data. Both
-mdraids are nfs mounted and use automount on top of that -- nothing
-peculiar about nfs and automount except that nfs is over two networks
-each with their own NIC. My problem is that every 36 hours the machine
-simply locks up. Here is what I find:
+* Markus Gutschke (顧孟勤) <markus@google.com> wrote:
 
-1) num lock light is on but was off prior to lock up
-2) no response to beating the num and caps lock keys
-3) no response to beating the sysreq key plus any sequences
-4) nothing is recorded in kern.log, syslog, or any other log file
-in /var/log
-5) cannot get to console because keyboard is dead
-6) have to hold power switch for 10 seconds to get computer to turn off
-so the computer is not suspended (power management is not installed
-anyway)
-7) when computer is rebooted, the mdraids are usually clean (no resync)
-8) did a memtest and it passes
+> On Sat, Feb 28, 2009 at 10:23, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
 
-Since nothing showed up in the logs and I could not read the console, I
-found an old computer and connected the one I care about to it via
-ttyS0. Now I have the console even though the keyboard is dead. However,
-when the lock up occurs, there is absolutely no output to my RS232
-console. I put a pulse onto the console via /dev/console and get stuff
-right up until the change of state, but no panic shows up. On reboot, I
-start getting characters from the kernel immediately. Hence, I have to
-conclude that the serial connection is viable, but there is simply no
-output from the kernel.
+> > And I guess the seccomp interaction means that this is 
+> > potentially a 2.6.29 thing. Not that I know whether anybody 
+> > actually _uses_ seccomp. It does seem to be enabled in at least 
+> > Fedora kernels, but it might not be used anywhere.
+> 
+> In the Linux version of Google Chrome, we are currently working on 
+> code that will use seccomp for parts of our sandboxing solution.
 
-So, I have tried all of the simple stuff that I know about or found via
-google. Now I would like some more advanced ways of trying to pry
-helpful information from a dying kernel. Are there more advanced tools,
-tricks, or secrets for collecting fault information?
+That's a pretty interesting usage. What would be fallback mode you 
+are using if the kernel doesnt have seccomp built in? Completely 
+non-sandboxed? Or a ptrace/PTRACE_SYSCALL based sandbox?
 
-Any and all help is appreciated in advance.
-
-One last item, I am still working on determining if this is a hardware
-or software problem. The voltages look resonable and the room is
-thermally stable to +/- 1C. So, I am having a hard time blaming
-hardware.
-
--- 
-Al Niessner
-818.354.0859
-
-All opinions stated above are mine and do not necessarily reflect those
-of JPL or NASA.
-
---------
-|  dS  | >= 0
---------
-
-
+	Ingo
