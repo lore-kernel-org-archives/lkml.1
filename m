@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbZEFIRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbZEFIWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756352AbZEFIRW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 04:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbZEFIRI
+	id S1754958AbZEFIWX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 04:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbZEFIWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 04:17:08 -0400
-Received: from [212.69.161.110] ([212.69.161.110]:56984 "EHLO
-	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751660AbZEFIRF (ORCPT
+	Wed, 6 May 2009 04:22:10 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:11342 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbZEFIWJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 04:17:05 -0400
-From: Philipp Reisner <philipp.reisner@linbit.com>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH 00/16] DRBD: a block device for HA clusters
-Date: Wed, 6 May 2009 10:17:56 +0200
-User-Agent: KMail/1.11.0 (Linux/2.6.27-9-generic; KDE/4.2.0; i686; ; )
-Cc: david@lang.hm, Willy Tarreau <w@1wt.eu>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
-       Neil Brown <neilb@suse.de>, Sam Ravnborg <sam@ravnborg.org>,
-       Dave Jones <davej@redhat.com>, Nikanth Karthikesan <knikanth@suse.de>,
-       "Lars Marowsky-Bree" <lmb@suse.de>, Kyle Moffett <kyle@moffetthome.net>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>
-References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com> <200905052345.20515.philipp.reisner@linbit.com> <1241560437.3312.159.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1241560437.3312.159.camel@mulgrave.int.hansenpartnership.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 6 May 2009 04:22:09 -0400
+Date: Wed, 6 May 2009 10:22:02 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Michael Abbott <michael@araneidae.co.uk>
+Cc: linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.29.2] PXA I2C: Define log level for i2c PXA error
+ report
+Message-ID: <20090506102202.73d6045d@hyperion.delvare>
+In-Reply-To: <Pine.LNX.4.64.0905060829580.24668@venus.araneidae.co.uk>
+References: <Pine.LNX.4.64.0905060829580.24668@venus.araneidae.co.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905061017.56836.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[...]
->
-> Well, you have to agree that during a resync from the activity log,
-> which plays up the primary disk from one end to another, the secondary
-> is completely corrupt if a primary failure occurs before the resync
-> completes.  That's something that's triggered by a network outage, and
-> so is a far more common event than cascading dual failures.  It's all
-> really a question of where you focus your effort to eliminate the corner
-> cases.
->
+On Wed, 6 May 2009 08:32:09 +0100 (BST), Michael Abbott wrote:
+> All the i2c pxa error messages should probably be KERN_DEBUG
+> 
+> At least, all the printk messages should have a log level specfied,
+> and KERN_DEBUG seems appropriate.
+> 
+> Signed-off-by: Michael Abbott <michael.abbott@diamond.ac.uk>
+> ---
+>  drivers/i2c/busses/i2c-pxa.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/i2c/busses/i2c-pxa.c b/drivers/i2c/busses/i2c-pxa.c
+> index bdb1f75..8cb9160 100644
+> --- a/drivers/i2c/busses/i2c-pxa.c
+> +++ b/drivers/i2c/busses/i2c-pxa.c
+> @@ -210,11 +210,11 @@ static irqreturn_t i2c_pxa_handler(int this_irq, void *dev_id);
+>  static void i2c_pxa_scream_blue_murder(struct pxa_i2c *i2c, const char *why)
+>  {
+>  	unsigned int i;
+> -	printk("i2c: error: %s\n", why);
+> -	printk("i2c: msg_num: %d msg_idx: %d msg_ptr: %d\n",
+> +	printk(KERN_DEBUG "i2c: error: %s\n", why);
+> +	printk(KERN_DEBUG "i2c: msg_num: %d msg_idx: %d msg_ptr: %d\n",
+>  		i2c->msg_num, i2c->msg_idx, i2c->msg_ptr);
+> -	printk("i2c: ICR: %08x ISR: %08x\n"
+> -	       "i2c: log: ", readl(_ICR(i2c)), readl(_ISR(i2c)));
+> +	printk(KERN_DEBUG "i2c: ICR: %08x ISR: %08x\n"
+> +	       KERN_DEBUG "i2c: log: ", readl(_ICR(i2c)), readl(_ISR(i2c)));
+>  	for (i = 0; i < i2c->irqlogidx; i++)
+>  		printk("[%08x:%08x] ", i2c->isrlog[i], i2c->icrlog[i]);
+>  	printk("\n");
 
-I fully agree. Just not not leave this unanswered: With DRBD we provide
-a snapshot-resync-target handler. By using LVM's snapshotting
-mechanism a snapshot is taken before it becomes resync-target. In
-case the resync completes gracefully, the snapshot is automatically
-removed.
+Already fixed in Linus' tree:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=154d22b04ae1741c5fcfd5d747b813a9a279abff#patch4
 
-Which is still inferior to a full transaction log on the secondary.
-
--Phil
-
+-- 
+Jean Delvare
