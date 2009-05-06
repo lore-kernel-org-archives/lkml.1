@@ -1,77 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756762AbZEFJFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbZEFJGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756762AbZEFJFT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 05:05:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbZEFJFF
+	id S1756577AbZEFJGQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 05:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbZEFJF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 05:05:05 -0400
-Received: from mga09.intel.com ([134.134.136.24]:47309 "EHLO mga09.intel.com"
+	Wed, 6 May 2009 05:05:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55471 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752259AbZEFJFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 05:05:02 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,301,1239001200"; 
-   d="scan'208";a="512940251"
-Date: Wed, 6 May 2009 17:05:01 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>
-Subject: Re: kexec defunct -- sd-async-shutdown [mmotm 2009-04-30-17-55]
-Message-ID: <20090506090501.GA18677@sli10-desk.sh.intel.com>
-References: <200905010114.n411EV3X022247@imap1.linux-foundation.org> <4A000891.3070109@gmail.com> <20090506005101.GA25287@sli10-desk.sh.intel.com> <4A014F53.9000701@gmail.com>
+	id S1752940AbZEFJF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 05:05:58 -0400
+Date: Wed, 6 May 2009 11:05:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, jdike@addtoit.com,
+       utrace-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC, PATCH 0/2] utrace/ptrace: simplify/cleanup ptrace attach
+Message-ID: <20090506090512.GB24692@elte.hu>
+References: <20090503185537.GA17071@redhat.com> <20090504184951.623CEFC32F@magilla.sf.frob.com> <20090504193016.GA17076@redhat.com> <20090504194348.BC0EBFC32F@magilla.sf.frob.com> <20090504163154.f3672a83.akpm@linux-foundation.org> <20090505230642.GA980@redhat.com> <20090506081225.GD8098@elte.hu> <20090506082300.GA16989@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A014F53.9000701@gmail.com>
+In-Reply-To: <20090506082300.GA16989@infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 04:50:27PM +0800, Jiri Slaby wrote:
-> On 05/06/2009 02:51 AM, Shaohua Li wrote:
-> > On Tue, May 05, 2009 at 05:36:17PM +0800, Jiri Slaby wrote:
-> >> On 05/01/2009 02:55 AM, akpm@linux-foundation.org wrote:
-> >>> The mm-of-the-moment snapshot 2009-04-30-17-55 has been uploaded to
-> >> ...
-> >>> sd-async-shutdown.patch
-> >> Hi,
-> >>
-> >> this one causes kexec to hang.
-> > Can you give more info about the hang, like the log? Is patch
-> > synchronize-device-shutdown.patch applied? kexec takes the same way
-> > to shutdown device, so does shutdown work in the system?
-> 
-> Ah, I though it silently hangs, but no, I had forgotten to switch a
-> logging console. There is nobody-cared interrupt 19 followed by plenty
-> of sata ports resets. The same happens on reboot.
-> 
-> According to /proc/interrupts, irq 19 is usb specific:
->  19:          0          0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb7
-> 
-> But ahci enables the legacy one at 19 too:
-> ahci 0000:00:1f.2: version 3.0
->   alloc irq_desc for 19 on cpu 0 node 0
->   alloc kstat_irqs on cpu 0 node 0
-> ahci 0000:00:1f.2: PCI INT B -> GSI 19 (level, low) -> IRQ 19
->   alloc irq_desc for 27 on cpu 0 node 0
->   alloc kstat_irqs on cpu 0 node 0
-> ahci 0000:00:1f.2: irq 27 for MSI/MSI-X
-> ahci 0000:00:1f.2: AHCI 0001.0200 32 slots 6 ports ? Gbps 0x3f impl SATA
-> mode
-> ahci 0000:00:1f.2: flags: 64bit ncq sntf pm led clo pmp pio slum part ems
-> ahci 0000:00:1f.2: setting latency timer to 64
-> 
-> 
-> Is this that ahci frees msi and interrupts at all at the shutdown stage
-> and you "schedule" and wait for an interrupt afterwards? (And then the
-> interrupt comes, but usb says: no, it's not mine.)
-ok, maybe there is ordering issue, sd shutdown is after ahci shutdown, we can't
-simplifily make sd sync shutdown. Thanks for pointing out the patch is broken.
 
-Thanks,
-Shaohua
+* Christoph Hellwig <hch@infradead.org> wrote:
+
+> On Wed, May 06, 2009 at 10:12:25AM +0200, Ingo Molnar wrote:
+> > Yes. But realize the fundamental reason for that: _without_ 
+> > ptrace-over-utrace the utrace core code is a big chunk of dead code 
+> > only used on the fringes. I see and agree with all the future uses 
+> > of utrace, but it's easy to be problem-free if a facility is not 
+> > used by anything significant.
+> 
+> The ptrace cleanups might be required for utrace, but they by
+> themselves don't make utrace any more useful without another
+> user.
+> 
+> > So a clean ptrace-over-utrace plugin is absolutely needed for utrace 
+> > to go upstream in v2.6.31. The ftrace plugin alone does not justify 
+> > it. The real prize here is a (much!) cleaner ptrace code. Once 
+> > ptrace is driven via utrace and it works, its value (and trust 
+> > level) will skyrocket.
+> 
+> There are two blockers for utrace:
+> 
+>  - first all architectures need to be converted to the ptrace world
+>    order with regsets, tracehooks and so on.  I hope we are on track
+>    to get this done now after I've pinged all arch maintainers.
+
+It might be more effective if you also wrote patches and if you 
+would shop for maintainer Acks, instead of just "pinging" people? 
+;-) We've already got enough would-be-managers on lkml really.
+
+>  - we actually need a useful user of the utrace abstraction.  And just
+>    converting ptrace to make it slightly more complicated by using
+>    another abstraction just isn't it.  One useful bit that is in the
+>    queue is a in-kernel gdbstub for user process which would allow
+>    to get out of the ptrace and re-parenting mess for basic use
+>    cases.  But a really convincing user would be even better.
+> 
+> I don't think 2.6.31 is a very realistic target.  While a lot of 
+> arch maintainers are working on their ptrace code 2.6.31 is just a 
+> too short deadline, and I'm also not sure we'll have the ptrace 
+> code in shape by then.  2.6.32 is much more realistic.
+
+Really, the above isnt a blocker list, it's your personal wish-list 
+for the future. Cleaning up ptrace itself is already an upstream 
+advantage worth having - for years ptrace was barely maintained. It 
+interfaces to enough critical projects (gdb, strace, UML, etc.) to 
+be a realiable (and testable) basis for utrace.
+
+The new features you are suggesting look potentially interesting, 
+but they have zero usage right now and they will take time to 
+develop. So they should be decoupled, otherwise we will just have a 
+huge and problematic change-the-world merge down the line, instead 
+of a more manageable gradual approach.
+
+	Ingo
