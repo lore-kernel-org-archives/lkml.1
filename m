@@ -1,91 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760915AbZEFV0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761216AbZEFV1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760915AbZEFV0s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 17:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759516AbZEFV0h
+	id S1761216AbZEFV1F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 17:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760888AbZEFV0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:26:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48892 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759455AbZEFV0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:26:36 -0400
-Date: Wed, 6 May 2009 23:24:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
-       security@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [patch] random: make get_random_int() more random
-Message-ID: <20090506212405.GB4861@elte.hu>
-References: <m14ow0ynjm.fsf@fess.ebiederm.org> <20090505195246.GC21973@elte.hu> <20090505202219.GL31071@waste.org> <20090506103034.GA25203@elte.hu> <20090506162543.GT31071@waste.org> <alpine.LFD.2.01.0905060942340.4983@localhost.localdomain> <20090506200954.GA21484@elte.hu> <20090506204156.GB31071@waste.org> <20090506205145.GA1908@elte.hu> <20090506211020.GE31071@waste.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090506211020.GE31071@waste.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 6 May 2009 17:26:52 -0400
+Received: from sentrion2.jpl.nasa.gov ([128.149.139.106]:17283 "EHLO
+	mail.jpl.nasa.gov" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760819AbZEFV0u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:26:50 -0400
+X-Greylist: delayed 536 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 May 2009 17:26:50 EDT
+Subject: what are some more advanced error collection methods?
+From: Al Niessner <Al.Niessner@jpl.nasa.gov>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 06 May 2009 14:17:52 -0700
+Message-Id: <1241644672.8424.62.camel@morte.jpl.nasa.gov>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: morte.jpl.nasa.gov [137.78.15.44]
+X-Source-Sender: Al.Niessner@jpl.nasa.gov
+X-AUTH: Authorized
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Matt Mackall <mpm@selenic.com> wrote:
+I am running 2.6.27 on an AMD 64 x2 dual core 6000+. I have the OS
+installed its own disk (SATA) and have an mdraid (SATA) with 3 disks
+being mirrored for my critical data. I also have an mdraid with 2 disks
+being mirrored (USB but I wanted firewire) for very low rate data. Both
+mdraids are nfs mounted and use automount on top of that -- nothing
+peculiar about nfs and automount except that nfs is over two networks
+each with their own NIC. My problem is that every 36 hours the machine
+simply locks up. Here is what I find:
 
-> On Wed, May 06, 2009 at 10:51:45PM +0200, Ingo Molnar wrote:
-> > Linus's patch is a marked improvement, and it is really what we need 
-> > here mostly.
-> 
-> No one's arguing that it isn't an improvement. But -15 years of 
-> research- points to MD4 (let alone **half**MD4) being 
-> insufficient. To counter that, two non-cryptanalysts have 
-> presented nothing beyond "it seems strong enough to me" and "it 
-> passes a meaningless test". Pardon me if I'm not satisfied by 
-> that.
+1) num lock light is on but was off prior to lock up
+2) no response to beating the num and caps lock keys
+3) no response to beating the sysreq key plus any sequences
+4) nothing is recorded in kern.log, syslog, or any other log file
+in /var/log
+5) cannot get to console because keyboard is dead
+6) have to hold power switch for 10 seconds to get computer to turn off
+so the computer is not suspended (power management is not installed
+anyway)
+7) when computer is rebooted, the mdraids are usually clean (no resync)
+8) did a memtest and it passes
 
-So is it your point that mixing the cycle counter with a bad hash 
-function is not sufficient? Not sufficient in precisely what threat 
-model and against what attack vector? I'd like to hear specifics. 
-The URLs pasted in this thread were inapposite - they were using 
-information leaks from privileged contexts. If you have relevant 
-URLs then please share them.
+Since nothing showed up in the logs and I could not read the console, I
+found an old computer and connected the one I care about to it via
+ttyS0. Now I have the console even though the keyboard is dead. However,
+when the lock up occurs, there is absolutely no output to my RS232
+console. I put a pulse onto the console via /dev/console and get stuff
+right up until the change of state, but no panic shows up. On reboot, I
+start getting characters from the kernel immediately. Hence, I have to
+conclude that the serial connection is viable, but there is simply no
+output from the kernel.
 
-Are you worried about an attacker being able to run analysis code 
-locally, trigger get_random_int() and observe its results, and then 
-start a privileged context and know its address space layout?
+So, I have tried all of the simple stuff that I know about or found via
+google. Now I would like some more advanced ways of trying to pry
+helpful information from a dying kernel. Are there more advanced tools,
+tricks, or secrets for collecting fault information?
 
-I can tell you with near certainty that if we mix in the cycle 
-counter (and those other task local and call local details) that 
-then this attack vector is not practical on x86, at all.
+Any and all help is appreciated in advance.
 
-( This particular attack would probably not be feasible even if we 
-  used rot13 as the hash plus the cycle counter and the other values 
-  - although i certainly feel more confident about this argument 
-  with half-md4 in place as the hash. )
+One last item, I am still working on determining if this is a hardware
+or software problem. The voltages look resonable and the room is
+thermally stable to +/- 1C. So, I am having a hard time blaming
+hardware.
 
-> > We cannot afford true physical randomness (it's too expensive to 
-> > get and not all hw has it), and even a 'good' PRNG is pretty 
-> > expensive.
-> 
-> And what of my suggestion (multiple times now) to replace halfMD4 
-> with SHA1? Or AES. Or any cryptographic primitive that's not known 
-> to be completely worthless?
+-- 
+Al Niessner
+818.354.0859
 
-They are all rather expensive, while the existing usage pattern for 
-get_random_int() is really: "i want some randomness but also want it 
-to be fast".
+All opinions stated above are mine and do not necessarily reflect those
+of JPL or NASA.
 
-	Ingo
+--------
+|  dS  | >= 0
+--------
+
+
