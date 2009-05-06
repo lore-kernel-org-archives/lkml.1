@@ -1,46 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760846AbZEFXAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761115AbZEFXEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760846AbZEFXAt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 19:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbZEFXAk
+	id S1761115AbZEFXEl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 19:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbZEFXEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 19:00:40 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:34283 "EHLO crca.org.au"
+	Wed, 6 May 2009 19:04:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42155 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753945AbZEFXAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 19:00:39 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [RFC][PATCH 2/5] PM/Suspend: Do not shrink memory before
- suspend
-From: Nigel Cunningham <nigel@tuxonice.net>
-Reply-To: nigel@tuxonice.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <200905070042.01880.rjw@sisk.pl>
-References: <200905070040.08561.rjw@sisk.pl>
-	 <200905070042.01880.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Thu, 07 May 2009 09:01:36 +1000
-Message-Id: <1241650896.19600.125.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	id S1751915AbZEFXEb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 19:04:31 -0400
+Message-ID: <4A0216CA.3070106@ds.jp.nec.com>
+Date: Wed, 06 May 2009 19:01:30 -0400
+From: "IKEDA, Munehiro" <m-ikeda@ds.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 18/18] io-controller: Debug hierarchical IO scheduling
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-19-git-send-email-vgoyal@redhat.com> <4A0203DB.1090809@ds.jp.nec.com> <20090506215833.GK8180@redhat.com> <4A020CD5.2000308@ds.jp.nec.com> <20090506222458.GM8180@redhat.com>
+In-Reply-To: <20090506222458.GM8180@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Thu, 2009-05-07 at 00:42 +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+Vivek Goyal wrote:
+> On Wed, May 06, 2009 at 06:19:01PM -0400, IKEDA, Munehiro wrote:
+>> Hi,
+>>
+>> Vivek Goyal wrote:
+>>> Hi Ikeda,
+>>>
+>>> I think there is some issue with applying the patch. I think you have
+>>> forgotten to apply following patch and that's why seeing all the issues.
+>>>
+>>> "io-controller: Export disk time used and nr sectors dipatched through
+>>> cgroups"
+>>>
+>>> This patch changes elv_ioq_served() at the same time introduced additional
+>>> field of total_sector_service etc.
+>>>
+>>> Thanks
+>>> Vivek
+>> Oh!  you are right.  I missed it because it is out of the
+>> thread...
 > 
-> Remove the shrinking of memory from the suspend-to-RAM code, where
-> it is not really necessary.
+> That's strange. In "mutt" I see this patch (patch number 7) as part of the
+> thread. Which mail client are you using. Not sure if it is mail client
+> specific thing or some issue with my way of using "git-send-email".
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Nigel Cunningham <nigel@tuxonice.net>
+> Thanks
+> Vivek
 
+I'm using a little bit old Thunderbird (ver.2.0.0).
+I believe you are completely doing right because In-Reply-To
+in the mail header of patch #7 correctly points the first
+mail.
+
+The mail of patch #7 seems to have slightly earlier time stamp
+than the first mail.  Poor Thunderbird might be confused by this,
+in my wild guess.
+
+Sorry for confusing you.
+
+
+-- 
+IKEDA, Munehiro
+  NEC Corporation of America
+    m-ikeda@ds.jp.nec.com
 
