@@ -1,79 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760418AbZEFPKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760544AbZEFPOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760418AbZEFPKX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 11:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758432AbZEFPKF
+	id S1760544AbZEFPOY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 11:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbZEFPOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 11:10:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57501 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757731AbZEFPKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 11:10:04 -0400
-Message-ID: <4A01A7C8.5090701@kernel.org>
-Date: Wed, 06 May 2009 08:07:52 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 6 May 2009 11:14:11 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:60455 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753255AbZEFPOK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 11:14:10 -0400
+Message-ID: <4A01A7D6.3030808@cosmosbay.com>
+Date: Wed, 06 May 2009 17:08:06 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jesse Barnes <jesse.barnes@intel.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Subject: [PATCH 1/2] x86/pci: make pci_mem_start to be aligned only -v5
-References: <49EF9C10.6090107@kernel.org> <20090422154900.08f8f366@hobbes> <49EFBB0E.3030401@kernel.org> <20090422180505.2518e837@hobbes> <49EFCE15.3030605@kernel.org> <20090423132202.GB13984@jurassic.park.msu.ru> <49F08580.9050407@kernel.org> <20090423221936.GA24171@jurassic.park.msu.ru> <49F13690.3080902@kernel.org> <20090505115248.63d112f4@hobbes> <20090506123346.GA19541@elte.hu>
-In-Reply-To: <20090506123346.GA19541@elte.hu>
+To: Jiri Pirko <jpirko@redhat.com>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
+       davem@davemloft.net, shemminger@linux-foundation.org,
+       bridge@lists.linux-foundation.org, fubar@us.ibm.com,
+       bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com, ivecera@redhat.com
+Subject: Re: [PATCH net-next] net: bridge: use device address list instead
+ of	dev_addr (repost)
+References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090415081720.GA21342@psychotron.englab.brq.redhat.com> <20090415082118.GC21342@psychotron.englab.brq.redhat.com> <20090506144624.GI28637@psychotron.englab.brq.redhat.com>
+In-Reply-To: <20090506144624.GI28637@psychotron.englab.brq.redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 06 May 2009 17:08:07 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jiri Pirko a écrit :
+> (repost, no modifications)
 
-don't need to reserved one round after the gapstart.
+Well, some changes are welcome :)
 
-because have round up in via reserve stolen ram already.
+> 
+> This patch changes the handling of mac addresses of bridge port devices. Now
+> it uses previously introduced list of device addresses. It allows the bridge to
+> know more then one local mac address per port which is mandatory for the right
+> work in some cases.
+> 
+> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+> ---
+>  net/bridge/br_fdb.c     |  101 ++++++++++++++++++++++++++++++----------------
+>  net/bridge/br_if.c      |    2 +-
+>  net/bridge/br_notify.c  |    2 +-
+>  net/bridge/br_private.h |    4 +-
+>  4 files changed, 70 insertions(+), 39 deletions(-)
+> 
+> diff --git a/net/bridge/br_fdb.c b/net/bridge/br_fdb.c
+> index a48f5ef..1e63f76 100644
+> --- a/net/bridge/br_fdb.c
+> +++ b/net/bridge/br_fdb.c
+> @@ -77,10 +77,26 @@ static inline void fdb_delete(struct net_bridge_fdb_entry *f)
+>  	br_fdb_put(f);
+>  }
+>  
+> -void br_fdb_changeaddr(struct net_bridge_port *p, const unsigned char *newaddr)
+> +static bool another_port_has_addr(const struct net_bridge_port *p,
+> +				  struct net_bridge_fdb_entry *f)
+> +{
+> +	struct net_bridge *br = p->br;
+> +	struct net_bridge_port *op;
+> +
+> +	list_for_each_entry(op, &br->port_list, list) {
+> +		if (op != p && is_etherdev_addr(op->dev, f->addr.addr)) {
+> +			f->dst = op;
+> +			return 1;
+> +		}
+> +	}
+> +	return 0;
+> +}
+> +
+> +void br_fdb_changeaddr(struct net_bridge_port *p, struct net_device *dev)
+>  {
+>  	struct net_bridge *br = p->br;
+>  	int i;
+> +	struct netdev_hw_addr *ha;
+>  
+>  	spin_lock_bh(&br->hash_lock);
+>  
+> @@ -92,26 +108,23 @@ void br_fdb_changeaddr(struct net_bridge_port *p, const unsigned char *newaddr)
+>  
+>  			f = hlist_entry(h, struct net_bridge_fdb_entry, hlist);
+>  			if (f->dst == p && f->is_local) {
+> -				/* maybe another port has same hw addr? */
+> -				struct net_bridge_port *op;
+> -				list_for_each_entry(op, &br->port_list, list) {
+> -					if (op != p &&
+> -					    !compare_ether_addr(op->dev->dev_addr,
+> -								f->addr.addr)) {
+> -						f->dst = op;
+> -						goto insert;
+> -					}
+> -				}
+> -
+> -				/* delete old one */
+> -				fdb_delete(f);
+> -				goto insert;
+> +				/*
+> +				 * maybe another port has same hw addr?,
+> +				 * if not then delete it
+> +				 */
+> +				if (!another_port_has_addr(p, f))
+> +					fdb_delete(f);
+>  			}
+>  		}
+>  	}
+> - insert:
+> -	/* insert new address,  may fail if invalid address or dup. */
+> -	fdb_insert(br, p, newaddr);
+> +
+> +	/* insert device addresses, may fail if invalid address. */
+> +
+> +	rcu_read_lock();
 
-[Impact: make more big space below 4g for assigning to unassigned pci devices]
+Same problem than a previous patch Jiri.
 
-Reported-by: Yannick <yannick.roehlly@free.fr>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: Jesse Barnes <jesse.barnes@intel.com>
+You should not use rcu_read_lock()/rcu_read_unlock() at all in this context,
+since you already own a lock.
 
----
- arch/x86/kernel/e820.c |   11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
 
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -617,7 +617,7 @@ __init int e820_search_gap(unsigned long
-  */
- __init void e820_setup_gap(void)
- {
--	unsigned long gapstart, gapsize, round;
-+	unsigned long gapstart, gapsize;
- 	int found;
- 
- 	gapstart = 0x10000000;
-@@ -635,14 +635,9 @@ __init void e820_setup_gap(void)
- #endif
- 
- 	/*
--	 * See how much we want to round up: start off with
--	 * rounding to the next 1MB area.
-+	 * e820_reserve_resources_late protect stolen RAM already
- 	 */
--	round = 0x100000;
--	while ((gapsize >> 4) > round)
--		round += round;
--	/* Fun with two's complement */
--	pci_mem_start = (gapstart + round) & -round;
-+	pci_mem_start = gapstart;
- 
- 	printk(KERN_INFO
- 	       "Allocating PCI resources starting at %lx (gap: %lx:%lx)\n",
+> +	for_each_dev_addr(dev, ha) {
+> +		fdb_insert(br, p, ha->addr);
+> +	}
+> +	rcu_read_unlock();
+>  
+>  	spin_unlock_bh(&br->hash_lock);
+>  }
+> @@ -189,20 +202,9 @@ void br_fdb_delete_by_port(struct net_bridge *br,
+>  			 * then when one port is deleted, assign
+>  			 * the local entry to other port
+>  			 */
+> -			if (f->is_local) {
+> -				struct net_bridge_port *op;
+> -				list_for_each_entry(op, &br->port_list, list) {
+> -					if (op != p &&
+> -					    !compare_ether_addr(op->dev->dev_addr,
+> -								f->addr.addr)) {
+> -						f->dst = op;
+> -						goto skip_delete;
+> -					}
+> -				}
+> -			}
+> -
+> -			fdb_delete(f);
+> -		skip_delete: ;
+> +			if (!f->is_local ||
+> +			    !another_port_has_addr(p, f))
+> +				fdb_delete(f);
+>  		}
+>  	}
+>  	spin_unlock_bh(&br->hash_lock);
+> @@ -338,7 +340,7 @@ static struct net_bridge_fdb_entry *fdb_create(struct hlist_head *head,
+>  }
+>  
+>  static int fdb_insert(struct net_bridge *br, struct net_bridge_port *source,
+> -		  const unsigned char *addr)
+> +		      const unsigned char *addr)
+>  {
+>  	struct hlist_head *head = &br->hash[br_mac_hash(addr)];
+>  	struct net_bridge_fdb_entry *fdb;
+> @@ -366,13 +368,42 @@ static int fdb_insert(struct net_bridge *br, struct net_bridge_port *source,
+>  	return 0;
+>  }
+>  
+> +static int fdb_insert_dev(struct net_bridge *br, struct net_bridge_port *source,
+> +			  struct net_device *dev)
+> +{
+> +	struct netdev_hw_addr *ha, *ha2;
+> +	struct net_bridge_fdb_entry *fdb;
+> +	struct hlist_head *head;
+> +	int ret = 0;
+> +
+> +	rcu_read_lock();
+
+
+You should not use rcu_read_lock()/rcu_read_unlock() at all in this context
+
+
+> +	for_each_dev_addr(dev, ha) {
+> +		ret = fdb_insert(br, source, ha->addr);
+> +		if (ret)
+> +			goto unroll;
+> +	}
+> +	goto unlock;
+> +unroll:
+> +	for_each_dev_addr(dev, ha2) {
+> +		if (ha2 == ha)
+> +			break;
+> +		head = &br->hash[br_mac_hash(ha2->addr)];
+> +		fdb = fdb_find(head, ha2->addr);
+> +		if (fdb && fdb->is_local)
+> +			fdb_delete(fdb);
+> +	}
+> +unlock:
+> +	rcu_read_unlock();
+> +	return ret;
+> +}
+> +
+>  int br_fdb_insert(struct net_bridge *br, struct net_bridge_port *source,
+> -		  const unsigned char *addr)
+> +		  struct net_device *dev)
+>  {
+>  	int ret;
+>  
+>  	spin_lock_bh(&br->hash_lock);
+> -	ret = fdb_insert(br, source, addr);
+> +	ret = fdb_insert_dev(br, source, dev);
+>  	spin_unlock_bh(&br->hash_lock);
+>  	return ret;
+>  }
+> diff --git a/net/bridge/br_if.c b/net/bridge/br_if.c
+> index 8a96672..789cb30 100644
+> --- a/net/bridge/br_if.c
+> +++ b/net/bridge/br_if.c
+> @@ -392,7 +392,7 @@ int br_add_if(struct net_bridge *br, struct net_device *dev)
+>  	if (err)
+>  		goto err0;
+>  
+> -	err = br_fdb_insert(br, p, dev->dev_addr);
+> +	err = br_fdb_insert(br, p, dev);
+>  	if (err)
+>  		goto err1;
+>  
+> diff --git a/net/bridge/br_notify.c b/net/bridge/br_notify.c
+> index 763a3ec..1423541 100644
+> --- a/net/bridge/br_notify.c
+> +++ b/net/bridge/br_notify.c
+> @@ -48,7 +48,7 @@ static int br_device_event(struct notifier_block *unused, unsigned long event, v
+>  
+>  	case NETDEV_CHANGEADDR:
+>  		spin_lock_bh(&br->lock);
+> -		br_fdb_changeaddr(p, dev->dev_addr);
+> +		br_fdb_changeaddr(p, dev);
+>  		br_stp_recalculate_bridge_id(br);
+>  		spin_unlock_bh(&br->lock);
+>  		break;
+> diff --git a/net/bridge/br_private.h b/net/bridge/br_private.h
+> index b6c3b71..65ffe3d 100644
+> --- a/net/bridge/br_private.h
+> +++ b/net/bridge/br_private.h
+> @@ -148,7 +148,7 @@ extern int br_fdb_init(void);
+>  extern void br_fdb_fini(void);
+>  extern void br_fdb_flush(struct net_bridge *br);
+>  extern void br_fdb_changeaddr(struct net_bridge_port *p,
+> -			      const unsigned char *newaddr);
+> +			      struct net_device *dev);
+>  extern void br_fdb_cleanup(unsigned long arg);
+>  extern void br_fdb_delete_by_port(struct net_bridge *br,
+>  				  const struct net_bridge_port *p, int do_all);
+> @@ -161,7 +161,7 @@ extern int br_fdb_fillbuf(struct net_bridge *br, void *buf,
+>  			  unsigned long count, unsigned long off);
+>  extern int br_fdb_insert(struct net_bridge *br,
+>  			 struct net_bridge_port *source,
+> -			 const unsigned char *addr);
+> +			 struct net_device *dev);
+>  extern void br_fdb_update(struct net_bridge *br,
+>  			  struct net_bridge_port *source,
+>  			  const unsigned char *addr);
+> 
+> 
+
+
