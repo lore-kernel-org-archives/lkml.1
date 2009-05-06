@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761908AbZEFW2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762367AbZEFW23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761908AbZEFW2G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbZEFW1u
+	id S1762367AbZEFW23 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760798AbZEFW1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 18:27:50 -0400
-Received: from kroah.org ([198.145.64.141]:55566 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755518AbZEFW1t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 18:27:49 -0400
-Date: Wed, 6 May 2009 15:24:39 -0700
-From: Greg KH <greg@kroah.com>
-To: linux-usb@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: usbutils 0.82 release
-Message-ID: <20090506222439.GB22327@kroah.com>
+	Wed, 6 May 2009 18:27:55 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:44910 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761876AbZEFW1y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 18:27:54 -0400
+Date: Thu, 7 May 2009 00:27:53 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org
+Cc: Takashi Iwai <tiwai@suse.de>, alsa-devel@alsa-project.org
+Subject: Re: 2.6.29 regression: left audio channel broken after resume from
+	suspend with Intel HDA
+Message-ID: <20090506222753.GA6728@mac.home>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	Takashi Iwai <tiwai@suse.de>, alsa-devel@alsa-project.org
+References: <s5hmyab15bh.wl%tiwai@suse.de> <20090420194659.GA11399@dose.home.local> <s5h8wluinon.wl%tiwai@suse.de> <20090421073219.GA5866@dose.home.local> <s5hfxg2cv6m.wl%tiwai@suse.de> <20090421183936.GA21935@dose.home.local> <s5hws9a5ewr.wl%tiwai@suse.de> <20090424142113.GA18668@dose.home.local> <s5hskjy5d2t.wl%tiwai@suse.de> <20090428002309.GA29572@x61>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090428002309.GA29572@x61>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's the 0.82 release of usbutils.
+On Tue, Apr 28, 2009 at 02:23:09 +0200, Tino Keitel wrote:
 
-Many bugs with autoconf were resolved to hopefully make it easier for
-distros to find where the usb.ids file is dynamically.  Wireless USB
-device support was added, as well as other bugfixes.  The full shortlog
-is below.
+[...]
 
-The tarballs can be downloaded from sf.net at:
-	https://sourceforge.net/project/showfiles.php?group_id=3581
+> I just saw another, major problem: line in doesn't work anymore with
+> 2.6.29 and also 2.6.30-rc3 (no usable input level). It works with
+> 2.6.27.20.
 
-We've switched over to using git for development now, which makes things
-much easier than the old cvs tree.  The tree can be found on both
-kernel.org and github.com if you want to fork it and send us changes
-easier:
-	http://git.kernel.org/?p=linux/kernel/git/gregkh/usbutils.git
-	http://github.com/gregkh/usbutils/tree/master
+FYI: I just tried 2.6.28 and line-in was still broken. So the last
+working kernel is 2.6.27.
 
-thanks,
-
-greg k-h
-
------------
-
-Shortlog of changes since last release (0.81):
-
-
-Aurelien Jarno (3):
-      lsusb: fix parsing of /proc/bus/usb/devices
-      lsusb(8): also suggests usbview(8)
-      lsusb(8): explain that -t option overrides -v
-
-Greg Kroah-Hartman (1):
-      fix merge error that I missed.
-
-Kay Sievers (5):
-      configure: default to /usr
-      substitute usb.id location in man page and update script
-      use DISTCLEANFILES and 'g' for 'sed'
-      add usbutils.pc file to point to database file
-      add usbutils.pc to .gitignore
-
-Mike Frysinger (3):
-      configure: use AC_MSG_RESULT() rather than echo
-      fix handling of usb.ids.gz in the Makefile.am
-      add update-usbids.sh to EXTRA_DIST
-
-王神 (1):
-      lsusb: add WUSB definitions and descriptor dumping
-
+Regards,
+Tino
