@@ -1,48 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758458AbZEFJe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758635AbZEFJi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758458AbZEFJe7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 05:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZEFJeu
+	id S1758635AbZEFJi1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 05:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793AbZEFJiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 05:34:50 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:52986 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbZEFJeu (ORCPT
+	Wed, 6 May 2009 05:38:09 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51757 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754390AbZEFJiI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 05:34:50 -0400
-Date: Wed, 6 May 2009 11:34:45 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] w1-gpio: add external pull-up enable callback
-Message-ID: <20090506093445.GA31875@buzzloop.caiaq.de>
-References: <1241527413-22920-1-git-send-email-daniel@caiaq.de> <20090506093307.GC17782@sci.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090506093307.GC17782@sci.fi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 6 May 2009 05:38:08 -0400
+Date: Wed, 6 May 2009 10:38:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Norman Diamond" <n0diamond@yahoo.co.jp>
+Cc: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>
+Subject: Re: sg timeout problem
+Message-ID: <20090506103852.19cb69b9@lxorguk.ukuu.org.uk>
+In-Reply-To: <BB8F41726E2941CEB399F732BB3ED9E5@DIAMOND8600>
+References: <BB8F41726E2941CEB399F732BB3ED9E5@DIAMOND8600>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 12:33:07PM +0300, Ville Syrjälä wrote:
-> On Tue, May 05, 2009 at 02:43:33PM +0200, Daniel Mack wrote:
-> > On embedded devices, sleep mode conditions can be tricky to handle,
-> > Especially when processors tend to pull-down the w1 bus during sleep.
-> > Bus slaves (such as the ds2760) may interpret this as a reason for
-> > power-down conditions and entirely switch off the device.
-> > 
-> > This patch adds a callback function pointer to let users switch on and
-> > off the external pull-up resistor. This lets the outside world know
-> > whether the processor is currently actively driving the bus or not.
+> But if sg is running on top of an actual SCSI driver, someone aborts the
+> ioctl after 3 seconds.  The ioctl returns success even though the operation
+> didn't complete.  I tried this with two Adaptec drivers and one NinjaSCSI 
+> driver with 100% repro.
 > 
-> Looks simple enough but I wonder if you could just do this from the
-> platform code. I suppose the downside would be that you would enable the
-> pullup even if w1-gpio is not loaded.
+> What am I missing?  I need the call to run to completion. 
 
-That's right. Hence I put it where I believe it belongs to.
-
-Thanks,
-Daniel
+If you set it to the max of a signed int does it behave, or to a large
+value thats well under the limit. That will help tell if there is a
+problem with sign handling in the scsi code somewhere or it is getting
+multiplied up for some reason.
