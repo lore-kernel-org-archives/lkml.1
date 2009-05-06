@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbZEFOyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761016AbZEFOyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760904AbZEFOyc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 10:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760308AbZEFOtc
+	id S1761016AbZEFOyv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 10:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760258AbZEFOtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 10:49:32 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:38985 "EHLO crca.org.au"
+	Wed, 6 May 2009 10:49:36 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:47434 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760130AbZEFOs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759306AbZEFOs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 May 2009 10:48:59 -0400
 X-Bogosity: Ham, spamicity=0.000000
 From: Nigel Cunningham <nigel@tuxonice.net>
 To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        tuxonice-devel@lists.tuxonice.net
 Cc: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 11/19] TuxOnIce: Block I/O engine.
-Date: Thu,  7 May 2009 00:39:07 +1000
-Message-Id: <1241620755-22133-12-git-send-email-nigel@tuxonice.net>
+Subject: [PATCH 1/19] TuxOnIce: Documentation
+Date: Thu,  7 May 2009 00:38:57 +1000
+Message-Id: <1241620755-22133-2-git-send-email-nigel@tuxonice.net>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
@@ -24,1416 +24,1449 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch add's TuxOnIce's block I/O engine. It expects an allocator to
-pass it a list of one or more block devices and for each device a list
-of blocks on that device in which an image can be stored. It treats the
-whole lot as one big 'tape', and supports asynchronous, multithreaded
-I/O (readahead at resume time) to that storage. It excepts an image to
-consist of three parts - the header, pages atomically copied ('pageset
-1') and pages saved prior to the atomic copy ('pageset 2') and remembers
-where each section begins (this information is saved in the image
-header). Throughput is throttled to the amount done on average in 1/2s
-since we started I/O. Synchronous I/O is also supported - it's mainly
-used for reading the signature.
+This patch creates new Documentation/power files for describing
+TuxOnIce, and a MAINTAINERS entry for the code.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- kernel/power/tuxonice_block_io.c | 1319 ++++++++++++++++++++++++++++++++++++++
- kernel/power/tuxonice_block_io.h |   59 ++
- 2 files changed, 1378 insertions(+), 0 deletions(-)
- create mode 100644 kernel/power/tuxonice_block_io.c
- create mode 100644 kernel/power/tuxonice_block_io.h
+ Documentation/power/tuxonice-internals.txt |  477 ++++++++++++++
+ Documentation/power/tuxonice.txt           |  924 ++++++++++++++++++++++++++++
+ MAINTAINERS                                |    7 +
+ 3 files changed, 1408 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/power/tuxonice-internals.txt
+ create mode 100644 Documentation/power/tuxonice.txt
 
-diff --git a/kernel/power/tuxonice_block_io.c b/kernel/power/tuxonice_block_io.c
+diff --git a/Documentation/power/tuxonice-internals.txt b/Documentation/power/tuxonice-internals.txt
 new file mode 100644
-index 0000000..c1936f4
+index 0000000..7a96186
 --- /dev/null
-+++ b/kernel/power/tuxonice_block_io.c
-@@ -0,0 +1,1319 @@
-+/*
-+ * kernel/power/tuxonice_block_io.c
-+ *
-+ * Copyright (C) 2004-2008 Nigel Cunningham (nigel at tuxonice net)
-+ *
-+ * Distributed under GPLv2.
-+ *
-+ * This file contains block io functions for TuxOnIce. These are
-+ * used by the swapwriter and it is planned that they will also
-+ * be used by the NFSwriter.
-+ *
-+ */
-+
-+#include <linux/blkdev.h>
-+#include <linux/syscalls.h>
-+#include <linux/suspend.h>
-+
-+#include "tuxonice.h"
-+#include "tuxonice_sysfs.h"
-+#include "tuxonice_modules.h"
-+#include "tuxonice_prepare_image.h"
-+#include "tuxonice_block_io.h"
-+#include "tuxonice_ui.h"
-+#include "tuxonice_alloc.h"
-+#include "tuxonice_io.h"
-+
-+#define MEMORY_ONLY 1
-+#define THROTTLE_WAIT 2
-+
-+/* #define MEASURE_MUTEX_CONTENTION */
-+#ifndef MEASURE_MUTEX_CONTENTION
-+#define my_mutex_lock(index, the_lock) mutex_lock(the_lock)
-+#define my_mutex_unlock(index, the_lock) mutex_unlock(the_lock)
-+#else
-+unsigned long mutex_times[2][2][NR_CPUS];
-+#define my_mutex_lock(index, the_lock) do { \
-+	int have_mutex; \
-+	have_mutex = mutex_trylock(the_lock); \
-+	if (!have_mutex) { \
-+		mutex_lock(the_lock); \
-+		mutex_times[index][0][smp_processor_id()]++; \
-+	} else { \
-+		mutex_times[index][1][smp_processor_id()]++; \
-+	}
-+
-+#define my_mutex_unlock(index, the_lock) \
-+	mutex_unlock(the_lock); \
-+} while (0)
-+#endif
-+
-+static int target_outstanding_io = 1024;
-+static int max_outstanding_writes, max_outstanding_reads;
-+
-+static struct page *bio_queue_head, *bio_queue_tail;
-+static atomic_t toi_bio_queue_size;
-+static DEFINE_SPINLOCK(bio_queue_lock);
-+
-+static int free_mem_throttle, throughput_throttle;
-+static int more_readahead = 1;
-+static struct page *readahead_list_head, *readahead_list_tail;
-+static DECLARE_WAIT_QUEUE_HEAD(readahead_list_wait);
-+
-+static struct page *waiting_on;
-+
-+static atomic_t toi_io_in_progress, toi_io_done;
-+static DECLARE_WAIT_QUEUE_HEAD(num_in_progress_wait);
-+
-+static int extra_page_forward;
-+
-+static int current_stream;
-+/* 0 = Header, 1 = Pageset1, 2 = Pageset2, 3 = End of PS1 */
-+struct hibernate_extent_iterate_saved_state toi_writer_posn_save[4];
-+
-+/* Pointer to current entry being loaded/saved. */
-+struct toi_extent_iterate_state toi_writer_posn;
-+
-+/* Not static, so that the allocators can setup and complete
-+ * writing the header */
-+char *toi_writer_buffer;
-+int toi_writer_buffer_posn;
-+
-+static struct toi_bdev_info *toi_devinfo;
-+
-+static DEFINE_MUTEX(toi_bio_mutex);
-+static DEFINE_MUTEX(toi_bio_readahead_mutex);
-+
-+static struct task_struct *toi_queue_flusher;
-+static int toi_bio_queue_flush_pages(int dedicated_thread);
-+
-+#define TOTAL_OUTSTANDING_IO (atomic_read(&toi_io_in_progress) + \
-+	       atomic_read(&toi_bio_queue_size))
-+
-+/**
-+ * set_free_mem_throttle - set the point where we pause to avoid oom.
-+ *
-+ * Initially, this value is zero, but when we first fail to allocate memory,
-+ * we set it (plus a buffer) and thereafter throttle i/o once that limit is
-+ * reached.
-+ **/
-+static void set_free_mem_throttle(void)
-+{
-+	int new_throttle = nr_unallocated_buffer_pages() + 256;
-+
-+	if (new_throttle > free_mem_throttle)
-+		free_mem_throttle = new_throttle;
-+}
-+
-+#define NUM_REASONS 7
-+static atomic_t reasons[NUM_REASONS];
-+static char *reason_name[NUM_REASONS] = {
-+	"readahead not ready",
-+	"bio allocation",
-+	"synchronous I/O",
-+	"toi_bio_get_new_page",
-+	"memory low",
-+	"readahead buffer allocation",
-+	"throughput_throttle",
-+};
-+
-+/**
-+ * do_bio_wait - wait for some TuxOnIce I/O to complete
-+ * @reason: The array index of the reason we're waiting.
-+ *
-+ * Wait for a particular page of I/O if we're after a particular page.
-+ * If we're not after a particular page, wait instead for all in flight
-+ * I/O to be completed or for us to have enough free memory to be able
-+ * to submit more I/O.
-+ *
-+ * If we wait, we also update our statistics regarding why we waited.
-+ **/
-+static void do_bio_wait(int reason)
-+{
-+	struct page *was_waiting_on = waiting_on;
-+
-+	/* On SMP, waiting_on can be reset, so we make a copy */
-+	if (was_waiting_on) {
-+		if (PageLocked(was_waiting_on)) {
-+			wait_on_page_bit(was_waiting_on, PG_locked);
-+			atomic_inc(&reasons[reason]);
-+		}
-+	} else {
-+		atomic_inc(&reasons[reason]);
-+
-+		wait_event(num_in_progress_wait,
-+			!atomic_read(&toi_io_in_progress) ||
-+			nr_unallocated_buffer_pages() > free_mem_throttle);
-+	}
-+}
-+
-+/**
-+ * throttle_if_needed - wait for I/O completion if throttle points are reached
-+ * @flags: What to check and how to act.
-+ *
-+ * Check whether we need to wait for some I/O to complete. We always check
-+ * whether we have enough memory available, but may also (depending upon
-+ * @reason) check if the throughput throttle limit has been reached.
-+ **/
-+static int throttle_if_needed(int flags)
-+{
-+	int free_pages = nr_unallocated_buffer_pages();
-+
-+	/* Getting low on memory and I/O is in progress? */
-+	while (unlikely(free_pages < free_mem_throttle) &&
-+			atomic_read(&toi_io_in_progress)) {
-+		if (!(flags & THROTTLE_WAIT))
-+			return -ENOMEM;
-+		do_bio_wait(4);
-+		free_pages = nr_unallocated_buffer_pages();
-+	}
-+
-+	while (!(flags & MEMORY_ONLY) && throughput_throttle &&
-+		TOTAL_OUTSTANDING_IO >= throughput_throttle) {
-+		int result = toi_bio_queue_flush_pages(0);
-+		if (result)
-+			return result;
-+		atomic_inc(&reasons[6]);
-+		wait_event(num_in_progress_wait,
-+			!atomic_read(&toi_io_in_progress) ||
-+			TOTAL_OUTSTANDING_IO < throughput_throttle);
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * update_throughput_throttle - update the raw throughput throttle
-+ * @jif_index: The number of times this function has been called.
-+ *
-+ * This function is called twice per second by the core, and used to limit the
-+ * amount of I/O we submit at once, spreading out our waiting through the
-+ * whole job and letting userui get an opportunity to do its work.
-+ *
-+ * We don't start limiting I/O until 1/2s has gone so that we get a
-+ * decent sample for our initial limit, and keep updating it because
-+ * throughput may vary (on rotating media, eg) with our block number.
-+ *
-+ * We throttle to 1/10s worth of I/O.
-+ **/
-+static void update_throughput_throttle(int jif_index)
-+{
-+	int done = atomic_read(&toi_io_done);
-+	throughput_throttle = done / jif_index / 5;
-+}
-+
-+/**
-+ * toi_finish_all_io - wait for all outstanding i/o to complete
-+ *
-+ * Flush any queued but unsubmitted I/O and wait for it all to complete.
-+ **/
-+static int toi_finish_all_io(void)
-+{
-+	int result = toi_bio_queue_flush_pages(0);
-+	wait_event(num_in_progress_wait, !TOTAL_OUTSTANDING_IO);
-+	return result;
-+}
-+
-+/**
-+ * toi_end_bio - bio completion function.
-+ * @bio: bio that has completed.
-+ * @err: Error value. Yes, like end_swap_bio_read, we ignore it.
-+ *
-+ * Function called by the block driver from interrupt context when I/O is
-+ * completed. If we were writing the page, we want to free it and will have
-+ * set bio->bi_private to the parameter we should use in telling the page
-+ * allocation accounting code what the page was allocated for. If we're
-+ * reading the page, it will be in the singly linked list made from
-+ * page->private pointers.
-+ **/
-+static void toi_end_bio(struct bio *bio, int err)
-+{
-+	struct page *page = bio->bi_io_vec[0].bv_page;
-+
-+	BUG_ON(!test_bit(BIO_UPTODATE, &bio->bi_flags));
-+
-+	unlock_page(page);
-+	bio_put(bio);
-+
-+	if (waiting_on == page)
-+		waiting_on = NULL;
-+
-+	put_page(page);
-+
-+	if (bio->bi_private)
-+		toi__free_page((int) ((unsigned long) bio->bi_private) , page);
-+
-+	bio_put(bio);
-+
-+	atomic_dec(&toi_io_in_progress);
-+	atomic_inc(&toi_io_done);
-+
-+	wake_up(&num_in_progress_wait);
-+}
-+
-+/**
-+ * submit - submit BIO request
-+ * @writing: READ or WRITE.
-+ * @dev: The block device we're using.
-+ * @first_block: The first sector we're using.
-+ * @page: The page being used for I/O.
-+ * @free_group: If writing, the group that was used in allocating the page
-+ * 	and which will be used in freeing the page from the completion
-+ * 	routine.
-+ *
-+ * Based on Patrick Mochell's pmdisk code from long ago: "Straight from the
-+ * textbook - allocate and initialize the bio. If we're writing, make sure
-+ * the page is marked as dirty. Then submit it and carry on."
-+ *
-+ * If we're just testing the speed of our own code, we fake having done all
-+ * the hard work and all toi_end_bio immediately.
-+ **/
-+static int submit(int writing, struct block_device *dev, sector_t first_block,
-+		struct page *page, int free_group)
-+{
-+	struct bio *bio = NULL;
-+	int cur_outstanding_io, result;
-+
-+	/*
-+	 * Shouldn't throttle if reading - can deadlock in the single
-+	 * threaded case as pages are only freed when we use the
-+	 * readahead.
-+	 */
-+	if (writing) {
-+		result = throttle_if_needed(MEMORY_ONLY | THROTTLE_WAIT);
-+		if (result)
-+			return result;
-+	}
-+
-+	while (!bio) {
-+		bio = bio_alloc(TOI_ATOMIC_GFP, 1);
-+		if (!bio) {
-+			set_free_mem_throttle();
-+			do_bio_wait(1);
-+		}
-+	}
-+
-+	bio->bi_bdev = dev;
-+	bio->bi_sector = first_block;
-+	bio->bi_private = (void *) ((unsigned long) free_group);
-+	bio->bi_end_io = toi_end_bio;
-+
-+	if (bio_add_page(bio, page, PAGE_SIZE, 0) < PAGE_SIZE) {
-+		printk(KERN_DEBUG "ERROR: adding page to bio at %lld\n",
-+				(unsigned long long) first_block);
-+		bio_put(bio);
-+		return -EFAULT;
-+	}
-+
-+	bio_get(bio);
-+
-+	cur_outstanding_io = atomic_add_return(1, &toi_io_in_progress);
-+	if (writing) {
-+		if (cur_outstanding_io > max_outstanding_writes)
-+			max_outstanding_writes = cur_outstanding_io;
-+	} else {
-+		if (cur_outstanding_io > max_outstanding_reads)
-+			max_outstanding_reads = cur_outstanding_io;
-+	}
-+
-+
-+	if (unlikely(test_action_state(TOI_TEST_FILTER_SPEED))) {
-+		/* Fake having done the hard work */
-+		set_bit(BIO_UPTODATE, &bio->bi_flags);
-+		toi_end_bio(bio, 0);
-+	} else
-+		submit_bio(writing | (1 << BIO_RW_SYNCIO) |
-+				(1 << BIO_RW_UNPLUG), bio);
-+
-+	return 0;
-+}
-+
-+/**
-+ * toi_do_io: Prepare to do some i/o on a page and submit or batch it.
-+ *
-+ * @writing: Whether reading or writing.
-+ * @bdev: The block device which we're using.
-+ * @block0: The first sector we're reading or writing.
-+ * @page: The page on which I/O is being done.
-+ * @readahead_index: If doing readahead, the index (reset this flag when done).
-+ * @syncio: Whether the i/o is being done synchronously.
-+ *
-+ * Prepare and start a read or write operation.
-+ *
-+ * Note that we always work with our own page. If writing, we might be given a
-+ * compression buffer that will immediately be used to start compressing the
-+ * next page. For reading, we do readahead and therefore don't know the final
-+ * address where the data needs to go.
-+ **/
-+static int toi_do_io(int writing, struct block_device *bdev, long block0,
-+	struct page *page, int is_readahead, int syncio, int free_group)
-+{
-+	page->private = 0;
-+
-+	/* Do here so we don't race against toi_bio_get_next_page_read */
-+	lock_page(page);
-+
-+	if (is_readahead) {
-+		if (readahead_list_head)
-+			readahead_list_tail->private = (unsigned long) page;
-+		else
-+			readahead_list_head = page;
-+
-+		readahead_list_tail = page;
-+		wake_up(&readahead_list_wait);
-+	}
-+
-+	/* Done before submitting to avoid races. */
-+	if (syncio)
-+		waiting_on = page;
-+
-+	/* Submit the page */
-+	get_page(page);
-+
-+	if (submit(writing, bdev, block0, page, free_group))
-+		return -EFAULT;
-+
-+	if (syncio)
-+		do_bio_wait(2);
-+
-+	return 0;
-+}
-+
-+/**
-+ * toi_bdev_page_io - simpler interface to do directly i/o on a single page
-+ * @writing: Whether reading or writing.
-+ * @bdev: Block device on which we're operating.
-+ * @pos: Sector at which page to read or write starts.
-+ * @page: Page to be read/written.
-+ *
-+ * A simple interface to submit a page of I/O and wait for its completion.
-+ * The caller must free the page used.
-+ **/
-+static int toi_bdev_page_io(int writing, struct block_device *bdev,
-+		long pos, struct page *page)
-+{
-+	return toi_do_io(writing, bdev, pos, page, 0, 1, 0);
-+}
-+
-+/**
-+ * toi_bio_memory_needed - report the amount of memory needed for block i/o
-+ *
-+ * We want to have at least enough memory so as to have target_outstanding_io
-+ * or more transactions on the fly at once. If we can do more, fine.
-+ **/
-+static int toi_bio_memory_needed(void)
-+{
-+	return target_outstanding_io * (PAGE_SIZE + sizeof(struct request) +
-+				sizeof(struct bio));
-+}
-+
-+/**
-+ * toi_bio_print_debug_stats - put out debugging info in the buffer provided
-+ * @buffer: A buffer of size @size into which text should be placed.
-+ * @size: The size of @buffer.
-+ *
-+ * Fill a buffer with debugging info. This is used for both our debug_info sysfs
-+ * entry and for recording the same info in dmesg.
-+ **/
-+static int toi_bio_print_debug_stats(char *buffer, int size)
-+{
-+	int len = scnprintf(buffer, size, "- Max outstanding reads %d. Max "
-+			"writes %d.\n", max_outstanding_reads,
-+			max_outstanding_writes);
-+
-+	len += scnprintf(buffer + len, size - len,
-+		"  Memory_needed: %d x (%lu + %u + %u) = %d bytes.\n",
-+		target_outstanding_io,
-+		PAGE_SIZE, (unsigned int) sizeof(struct request),
-+		(unsigned int) sizeof(struct bio), toi_bio_memory_needed());
-+
-+#ifdef MEASURE_MUTEX_CONTENTION
-+	{
-+	int i;
-+
-+	len += scnprintf(buffer + len, size - len,
-+		"  Mutex contention while reading:\n  Contended      Free\n");
-+
-+	for_each_online_cpu(i)
-+		len += scnprintf(buffer + len, size - len,
-+		"  %9lu %9lu\n",
-+		mutex_times[0][0][i], mutex_times[0][1][i]);
-+
-+	len += scnprintf(buffer + len, size - len,
-+		"  Mutex contention while writing:\n  Contended      Free\n");
-+
-+	for_each_online_cpu(i)
-+		len += scnprintf(buffer + len, size - len,
-+		"  %9lu %9lu\n",
-+		mutex_times[1][0][i], mutex_times[1][1][i]);
-+
-+	}
-+#endif
-+
-+	return len + scnprintf(buffer + len, size - len,
-+		"  Free mem throttle point reached %d.\n", free_mem_throttle);
-+}
-+
-+/**
-+ * toi_set_devinfo - set the bdev info used for i/o
-+ * @info: Pointer to an array of struct toi_bdev_info - the list of
-+ * bdevs and blocks on them in which the image is stored.
-+ *
-+ * Set the list of bdevs and blocks in which the image will be stored.
-+ * Think of them (all together) as one long tape on which the data will be
-+ * stored.
-+ **/
-+static void toi_set_devinfo(struct toi_bdev_info *info)
-+{
-+	toi_devinfo = info;
-+}
-+
-+/**
-+ * dump_block_chains - print the contents of the bdev info array.
-+ **/
-+static void dump_block_chains(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < toi_writer_posn.num_chains; i++) {
-+		struct hibernate_extent *this;
-+
-+		this = (toi_writer_posn.chains + i)->first;
-+
-+		if (!this)
-+			continue;
-+
-+		printk(KERN_DEBUG "Chain %d:", i);
-+
-+		while (this) {
-+			printk(" [%lu-%lu]%s", this->start,
-+					this->end, this->next ? "," : "");
-+			this = this->next;
-+		}
-+
-+		printk("\n");
-+	}
-+
-+	for (i = 0; i < 4; i++)
-+		printk(KERN_DEBUG "Posn %d: Chain %d, extent %d, offset %lu.\n",
-+				i, toi_writer_posn_save[i].chain_num,
-+				toi_writer_posn_save[i].extent_num,
-+				toi_writer_posn_save[i].offset);
-+}
-+
-+static int total_header_bytes;
-+static int unowned;
-+
-+static int debug_broken_header(void)
-+{
-+	printk(KERN_DEBUG "Image header too big for size allocated!\n");
-+	print_toi_header_storage_for_modules();
-+	printk(KERN_DEBUG "Page flags : %d.\n", toi_pageflags_space_needed());
-+	printk(KERN_DEBUG "toi_header : %ld.\n", sizeof(struct toi_header));
-+	printk(KERN_DEBUG "Total unowned : %d.\n", unowned);
-+	printk(KERN_DEBUG "Total used : %d (%ld pages).\n", total_header_bytes,
-+			DIV_ROUND_UP(total_header_bytes, PAGE_SIZE));
-+	printk(KERN_DEBUG "Space needed now : %ld.\n",
-+			get_header_storage_needed());
-+	dump_block_chains();
-+	abort_hibernate(TOI_HEADER_TOO_BIG, "Header reservation too small.");
-+	return -EIO;
-+}
-+
-+/**
-+ * go_next_page - skip blocks to the start of the next page
-+ * @writing: Whether we're reading or writing the image.
-+ *
-+ * Go forward one page, or two if extra_page_forward is set. It only gets
-+ * set at the start of reading the image header, to skip the first page
-+ * of the header, which is read without using the extent chains.
-+ **/
-+static int go_next_page(int writing, int section_barrier)
-+{
-+	int i, chain_num = toi_writer_posn.current_chain,
-+	  max = (chain_num == -1) ? 1 : toi_devinfo[chain_num].blocks_per_page,
-+	  compare_to = 0, compare_chain, compare_offset;
-+
-+	/* Have we already used the last page of the stream? */
-+	switch (current_stream) {
-+	case 0:
-+		compare_to = 2;
-+		break;
-+	case 1:
-+		compare_to = 3;
-+		break;
-+	case 2:
-+		compare_to = 1;
-+		break;
-+	}
-+
-+	compare_chain = toi_writer_posn_save[compare_to].chain_num;
-+	compare_offset = toi_writer_posn_save[compare_to].offset;
-+
-+	if (section_barrier && chain_num == compare_chain &&
-+	    toi_writer_posn.current_offset == compare_offset) {
-+		if (writing) {
-+			if (!current_stream)
-+				return debug_broken_header();
-+		} else {
-+			more_readahead = 0;
-+			return -ENODATA;
-+		}
-+	}
-+
-+	/* Nope. Go foward a page - or maybe two */
-+	for (i = 0; i < max; i++)
-+		toi_extent_state_next(&toi_writer_posn);
-+
-+	if (toi_extent_state_eof(&toi_writer_posn)) {
-+		/* Don't complain if readahead falls off the end */
-+		if (writing && section_barrier) {
-+			printk(KERN_DEBUG "Extent state eof. "
-+				"Expected compression ratio too optimistic?\n");
-+			dump_block_chains();
-+		}
-+		return -ENODATA;
-+	}
-+
-+	if (extra_page_forward) {
-+		extra_page_forward = 0;
-+		return go_next_page(writing, section_barrier);
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * set_extra_page_forward - make us skip an extra page on next go_next_page
-+ *
-+ * Used in reading header, to jump to 2nd page after getting 1st page
-+ * direct from image header.
-+ **/
-+static void set_extra_page_forward(void)
-+{
-+	extra_page_forward = 1;
-+}
-+
-+/**
-+ * toi_bio_rw_page - do i/o on the next disk page in the image
-+ * @writing: Whether reading or writing.
-+ * @page: Page to do i/o on.
-+ * @is_readahead: Whether we're doing readahead
-+ * @free_group: The group used in allocating the page
-+ *
-+ * Submit a page for reading or writing, possibly readahead.
-+ * Pass the group used in allocating the page as well, as it should
-+ * be freed on completion of the bio if we're writing the page.
-+ **/
-+static int toi_bio_rw_page(int writing, struct page *page,
-+		int is_readahead, int free_group)
-+{
-+	struct toi_bdev_info *dev_info;
-+	int result = go_next_page(writing, 1);
-+
-+	if (result)
-+		return result;
-+
-+	dev_info = &toi_devinfo[toi_writer_posn.current_chain];
-+
-+	return toi_do_io(writing, dev_info->bdev,
-+		toi_writer_posn.current_offset <<
-+			dev_info->bmap_shift,
-+		page, is_readahead, 0, free_group);
-+}
-+
-+/**
-+ * toi_rw_init - prepare to read or write a stream in the image
-+ * @writing: Whether reading or writing.
-+ * @stream number: Section of the image being processed.
-+ *
-+ * Prepare to read or write a section ('stream') in the image.
-+ **/
-+static int toi_rw_init(int writing, int stream_number)
-+{
-+	if (stream_number)
-+		toi_extent_state_restore(&toi_writer_posn,
-+				&toi_writer_posn_save[stream_number]);
-+	else
-+		toi_extent_state_goto_start(&toi_writer_posn);
-+
-+	atomic_set(&toi_io_done, 0);
-+	toi_writer_buffer = (char *) toi_get_zeroed_page(11, TOI_ATOMIC_GFP);
-+	toi_writer_buffer_posn = writing ? 0 : PAGE_SIZE;
-+
-+	current_stream = stream_number;
-+
-+	more_readahead = 1;
-+
-+	return toi_writer_buffer ? 0 : -ENOMEM;
-+}
-+
-+/**
-+ * toi_read_header_init - prepare to read the image header
-+ *
-+ * Reset readahead indices prior to starting to read a section of the image.
-+ **/
-+static void toi_read_header_init(void)
-+{
-+	toi_writer_buffer = (char *) toi_get_zeroed_page(11, TOI_ATOMIC_GFP);
-+	more_readahead = 1;
-+}
-+
-+/**
-+ * toi_bio_queue_write - queue a page for writing
-+ * @full_buffer: Pointer to a page to be queued
-+ *
-+ * Add a page to the queue to be submitted. If we're the queue flusher,
-+ * we'll do this once we've dropped toi_bio_mutex, so other threads can
-+ * continue to submit I/O while we're on the slow path doing the actual
-+ * submission.
-+ **/
-+static void toi_bio_queue_write(char **full_buffer)
-+{
-+	struct page *page = virt_to_page(*full_buffer);
-+	unsigned long flags;
-+
-+	page->private = 0;
-+
-+	spin_lock_irqsave(&bio_queue_lock, flags);
-+	if (!bio_queue_head)
-+		bio_queue_head = page;
-+	else
-+		bio_queue_tail->private = (unsigned long) page;
-+
-+	bio_queue_tail = page;
-+	atomic_inc(&toi_bio_queue_size);
-+
-+	spin_unlock_irqrestore(&bio_queue_lock, flags);
-+	wake_up(&toi_io_queue_flusher);
-+
-+	*full_buffer = NULL;
-+}
-+
-+/**
-+ * toi_rw_cleanup - Cleanup after i/o.
-+ * @writing: Whether we were reading or writing.
-+ *
-+ * Flush all I/O and clean everything up after reading or writing a
-+ * section of the image.
-+ **/
-+static int toi_rw_cleanup(int writing)
-+{
-+	int i, result;
-+
-+	if (writing) {
-+		int result;
-+
-+		if (toi_writer_buffer_posn && !test_result_state(TOI_ABORTED))
-+			toi_bio_queue_write(&toi_writer_buffer);
-+
-+		result = toi_bio_queue_flush_pages(0);
-+
-+		if (result)
-+			return result;
-+
-+		if (current_stream == 2)
-+			toi_extent_state_save(&toi_writer_posn,
-+					&toi_writer_posn_save[1]);
-+		else if (current_stream == 1)
-+			toi_extent_state_save(&toi_writer_posn,
-+					&toi_writer_posn_save[3]);
-+	}
-+
-+	result = toi_finish_all_io();
-+
-+	while (readahead_list_head) {
-+		void *next = (void *) readahead_list_head->private;
-+		toi__free_page(12, readahead_list_head);
-+		readahead_list_head = next;
-+	}
-+
-+	readahead_list_tail = NULL;
-+
-+	if (!current_stream)
-+		return result;
-+
-+	for (i = 0; i < NUM_REASONS; i++) {
-+		if (!atomic_read(&reasons[i]))
-+			continue;
-+		printk(KERN_DEBUG "Waited for i/o due to %s %d times.\n",
-+				reason_name[i], atomic_read(&reasons[i]));
-+		atomic_set(&reasons[i], 0);
-+	}
-+
-+	current_stream = 0;
-+	return result;
-+}
-+
-+/**
-+ * toi_start_one_readahead - start one page of readahead
-+ * @dedicated_thread: Is this a thread dedicated to doing readahead?
-+ *
-+ * Start one new page of readahead. If this is being called by a thread
-+ * whose only just is to submit readahead, don't quit because we failed
-+ * to allocate a page.
-+ **/
-+static int toi_start_one_readahead(int dedicated_thread)
-+{
-+	char *buffer = NULL;
-+	int oom = 0, result;
-+
-+	result = throttle_if_needed(dedicated_thread ? THROTTLE_WAIT : 0);
-+	if (result)
-+		return result;
-+
-+	mutex_lock(&toi_bio_readahead_mutex);
-+
-+	while (!buffer) {
-+		buffer = (char *) toi_get_zeroed_page(12,
-+				TOI_ATOMIC_GFP);
-+		if (!buffer) {
-+			if (oom && !dedicated_thread) {
-+				mutex_unlock(&toi_bio_readahead_mutex);
-+				return -ENOMEM;
-+			}
-+
-+			oom = 1;
-+			set_free_mem_throttle();
-+			do_bio_wait(5);
-+		}
-+	}
-+
-+	result = toi_bio_rw_page(READ, virt_to_page(buffer), 1, 0);
-+	mutex_unlock(&toi_bio_readahead_mutex);
-+	return result;
-+}
-+
-+/**
-+ * toi_start_new_readahead - start new readahead
-+ * @dedicated_thread: Are we dedicated to this task?
-+ *
-+ * Start readahead of image pages.
-+ *
-+ * We can be called as a thread dedicated to this task (may be helpful on
-+ * systems with lots of CPUs), in which case we don't exit until there's no
-+ * more readahead.
-+ *
-+ * If this is not called by a dedicated thread, we top up our queue until
-+ * there's no more readahead to submit, we've submitted the number given
-+ * in target_outstanding_io or the number in progress exceeds the target
-+ * outstanding I/O value.
-+ *
-+ * No mutex needed because this is only ever called by the first cpu.
-+ **/
-+static int toi_start_new_readahead(int dedicated_thread)
-+{
-+	int last_result, num_submitted = 0;
-+
-+	/* Start a new readahead? */
-+	if (!more_readahead)
-+		return 0;
-+
-+	do {
-+		last_result = toi_start_one_readahead(dedicated_thread);
-+
-+		if (last_result) {
-+			if (last_result == -ENOMEM || last_result == -ENODATA)
-+				return 0;
-+
-+			printk(KERN_DEBUG
-+				"Begin read chunk returned %d.\n",
-+				last_result);
-+		} else
-+			num_submitted++;
-+
-+	} while (more_readahead && !last_result &&
-+		 (dedicated_thread ||
-+		  (num_submitted < target_outstanding_io &&
-+		   atomic_read(&toi_io_in_progress) < target_outstanding_io)));
-+
-+	return last_result;
-+}
-+
-+/**
-+ * bio_io_flusher - start the dedicated I/O flushing routine
-+ * @writing: Whether we're writing the image.
-+ **/
-+static int bio_io_flusher(int writing)
-+{
-+
-+	if (writing)
-+		return toi_bio_queue_flush_pages(1);
-+	else
-+		return toi_start_new_readahead(1);
-+}
-+
-+/**
-+ * toi_bio_get_next_page_read - read a disk page, perhaps with readahead
-+ * @no_readahead: Whether we can use readahead
-+ *
-+ * Read a page from disk, submitting readahead and cleaning up finished i/o
-+ * while we wait for the page we're after.
-+ **/
-+static int toi_bio_get_next_page_read(int no_readahead)
-+{
-+	unsigned long *virt;
-+	struct page *next;
-+
-+	/*
-+	 * When reading the second page of the header, we have to
-+	 * delay submitting the read until after we've gotten the
-+	 * extents out of the first page.
-+	 */
-+	if (unlikely(no_readahead && toi_start_one_readahead(0))) {
-+		printk(KERN_DEBUG "No readahead and toi_start_one_readahead "
-+				"returned non-zero.\n");
-+		return -EIO;
-+	}
-+
-+	if (unlikely(!readahead_list_head)) {
-+		BUG_ON(!more_readahead);
-+		if (unlikely(toi_start_one_readahead(0))) {
-+			printk(KERN_DEBUG "No readahead and "
-+			 "toi_start_one_readahead returned non-zero.\n");
-+			return -EIO;
-+		}
-+	}
-+
-+	if (PageLocked(readahead_list_head)) {
-+		waiting_on = readahead_list_head;
-+		do_bio_wait(0);
-+	}
-+
-+	virt = page_address(readahead_list_head);
-+	memcpy(toi_writer_buffer, virt, PAGE_SIZE);
-+
-+	next = (struct page *) readahead_list_head->private;
-+	toi__free_page(12, readahead_list_head);
-+	readahead_list_head = next;
-+	return 0;
-+}
-+
-+/**
-+ * toi_bio_queue_flush_pages - flush the queue of pages queued for writing
-+ * @dedicated_thread: Whether we're a dedicated thread
-+ *
-+ * Flush the queue of pages ready to be written to disk.
-+ *
-+ * If we're a dedicated thread, stay in here until told to leave,
-+ * sleeping in wait_event.
-+ *
-+ * The first thread is normally the only one to come in here. Another
-+ * thread can enter this routine too, though, via throttle_if_needed.
-+ * Since that's the case, we must be careful to only have one thread
-+ * doing this work at a time. Otherwise we have a race and could save
-+ * pages out of order.
-+ *
-+ * If an error occurs, free all remaining pages without submitting them
-+ * for I/O.
-+ **/
-+
-+int toi_bio_queue_flush_pages(int dedicated_thread)
-+{
-+	unsigned long flags;
-+	int result = 0;
-+	static int busy;
-+
-+	if (busy)
-+		return 0;
-+
-+	busy = 1;
-+
-+top:
-+	spin_lock_irqsave(&bio_queue_lock, flags);
-+	while (bio_queue_head) {
-+		struct page *page = bio_queue_head;
-+		bio_queue_head = (struct page *) page->private;
-+		if (bio_queue_tail == page)
-+			bio_queue_tail = NULL;
-+		atomic_dec(&toi_bio_queue_size);
-+		spin_unlock_irqrestore(&bio_queue_lock, flags);
-+		if (!result)
-+			result = toi_bio_rw_page(WRITE, page, 0, 11);
-+		if (result)
-+			toi__free_page(11 , page);
-+		spin_lock_irqsave(&bio_queue_lock, flags);
-+	}
-+	spin_unlock_irqrestore(&bio_queue_lock, flags);
-+
-+	if (dedicated_thread) {
-+		wait_event(toi_io_queue_flusher, bio_queue_head ||
-+				toi_bio_queue_flusher_should_finish);
-+		if (likely(!toi_bio_queue_flusher_should_finish))
-+			goto top;
-+		toi_bio_queue_flusher_should_finish = 0;
-+	}
-+
-+	busy = 0;
-+	return result;
-+}
-+
-+/**
-+ * toi_bio_get_new_page - get a new page for I/O
-+ * @full_buffer: Pointer to a page to allocate.
-+ **/
-+static int toi_bio_get_new_page(char **full_buffer)
-+{
-+	int result = throttle_if_needed(THROTTLE_WAIT);
-+	if (result)
-+		return result;
-+
-+	while (!*full_buffer) {
-+		*full_buffer = (char *) toi_get_zeroed_page(11, TOI_ATOMIC_GFP);
-+		if (!*full_buffer) {
-+			set_free_mem_throttle();
-+			do_bio_wait(3);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * toi_rw_buffer - combine smaller buffers into PAGE_SIZE I/O
-+ * @writing:		Bool - whether writing (or reading).
-+ * @buffer:		The start of the buffer to write or fill.
-+ * @buffer_size:	The size of the buffer to write or fill.
-+ * @no_readahead:	Don't try to start readhead (when getting extents).
-+ **/
-+static int toi_rw_buffer(int writing, char *buffer, int buffer_size,
-+		int no_readahead)
-+{
-+	int bytes_left = buffer_size, result = 0;
-+
-+	while (bytes_left) {
-+		char *source_start = buffer + buffer_size - bytes_left;
-+		char *dest_start = toi_writer_buffer + toi_writer_buffer_posn;
-+		int capacity = PAGE_SIZE - toi_writer_buffer_posn;
-+		char *to = writing ? dest_start : source_start;
-+		char *from = writing ? source_start : dest_start;
-+
-+		if (bytes_left <= capacity) {
-+			memcpy(to, from, bytes_left);
-+			toi_writer_buffer_posn += bytes_left;
-+			return 0;
-+		}
-+
-+		/* Complete this page and start a new one */
-+		memcpy(to, from, capacity);
-+		bytes_left -= capacity;
-+
-+		if (!writing) {
-+			/*
-+			 * Perform actual I/O:
-+			 * read readahead_list_head into toi_writer_buffer
-+			 */
-+			int result = toi_bio_get_next_page_read(no_readahead);
-+			if (result)
-+				return result;
-+		} else {
-+			toi_bio_queue_write(&toi_writer_buffer);
-+			result = toi_bio_get_new_page(&toi_writer_buffer);
-+			if (result)
-+				return result;
-+		}
-+
-+		toi_writer_buffer_posn = 0;
-+		toi_cond_pause(0, NULL);
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * toi_bio_read_page - read a page of the image
-+ * @pfn:		The pfn where the data belongs.
-+ * @buffer_page:	The page containing the (possibly compressed) data.
-+ * @buf_size:		The number of bytes on @buffer_page used (PAGE_SIZE).
-+ *
-+ * Read a (possibly compressed) page from the image, into buffer_page,
-+ * returning its pfn and the buffer size.
-+ **/
-+static int toi_bio_read_page(unsigned long *pfn, struct page *buffer_page,
-+		unsigned int *buf_size)
-+{
-+	int result = 0;
-+	char *buffer_virt = kmap(buffer_page);
-+
-+	/*
-+	 * Only call start_new_readahead if we don't have a dedicated thread
-+	 * and we're the queue flusher.
-+	 */
-+	if (current == toi_queue_flusher) {
-+		int result2 = toi_start_new_readahead(0);
-+		if (result2) {
-+			printk(KERN_DEBUG "Queue flusher and "
-+			 "toi_start_one_readahead returned non-zero.\n");
-+			result = -EIO;
-+			goto out;
-+		}
-+	}
-+
-+	my_mutex_lock(0, &toi_bio_mutex);
-+
-+	/*
-+	 * Structure in the image:
-+	 *	[destination pfn|page size|page data]
-+	 * buf_size is PAGE_SIZE
-+	 */
-+	if (toi_rw_buffer(READ, (char *) pfn, sizeof(unsigned long), 0) ||
-+	    toi_rw_buffer(READ, (char *) buf_size, sizeof(int), 0) ||
-+	    toi_rw_buffer(READ, buffer_virt, *buf_size, 0)) {
-+		abort_hibernate(TOI_FAILED_IO, "Read of data failed.");
-+		result = 1;
-+	}
-+
-+	my_mutex_unlock(0, &toi_bio_mutex);
-+out:
-+	kunmap(buffer_page);
-+	return result;
-+}
-+
-+/**
-+ * toi_bio_write_page - write a page of the image
-+ * @pfn:		The pfn where the data belongs.
-+ * @buffer_page:	The page containing the (possibly compressed) data.
-+ * @buf_size:	The number of bytes on @buffer_page used.
-+ *
-+ * Write a (possibly compressed) page to the image from the buffer, together
-+ * with it's index and buffer size.
-+ **/
-+static int toi_bio_write_page(unsigned long pfn, struct page *buffer_page,
-+		unsigned int buf_size)
-+{
-+	char *buffer_virt;
-+	int result = 0, result2 = 0;
-+
-+	if (unlikely(test_action_state(TOI_TEST_FILTER_SPEED)))
-+		return 0;
-+
-+	my_mutex_lock(1, &toi_bio_mutex);
-+
-+	if (test_result_state(TOI_ABORTED)) {
-+		my_mutex_unlock(1, &toi_bio_mutex);
-+		return -EIO;
-+	}
-+
-+	buffer_virt = kmap(buffer_page);
-+
-+	/*
-+	 * Structure in the image:
-+	 *	[destination pfn|page size|page data]
-+	 * buf_size is PAGE_SIZE
-+	 */
-+	if (toi_rw_buffer(WRITE, (char *) &pfn, sizeof(unsigned long), 0) ||
-+	    toi_rw_buffer(WRITE, (char *) &buf_size, sizeof(int), 0) ||
-+	    toi_rw_buffer(WRITE, buffer_virt, buf_size, 0)) {
-+		printk(KERN_DEBUG "toi_rw_buffer returned non-zero to "
-+				"toi_bio_write_page.\n");
-+		result = -EIO;
-+	}
-+
-+	kunmap(buffer_page);
-+	my_mutex_unlock(1, &toi_bio_mutex);
-+
-+	if (current == toi_queue_flusher)
-+		result2 = toi_bio_queue_flush_pages(0);
-+
-+	return result ? result : result2;
-+}
-+
-+/**
-+ * _toi_rw_header_chunk - read or write a portion of the image header
-+ * @writing:		Whether reading or writing.
-+ * @owner:		The module for which we're writing.
-+ *			Used for confirming that modules
-+ *			don't use more header space than they asked for.
-+ * @buffer:		Address of the data to write.
-+ * @buffer_size:	Size of the data buffer.
-+ * @no_readahead:	Don't try to start readhead (when getting extents).
-+ *
-+ * Perform PAGE_SIZE I/O. Start readahead if needed.
-+ **/
-+static int _toi_rw_header_chunk(int writing, struct toi_module_ops *owner,
-+		char *buffer, int buffer_size, int no_readahead)
-+{
-+	int result = 0;
-+
-+	if (owner) {
-+		owner->header_used += buffer_size;
-+		toi_message(TOI_HEADER, TOI_LOW, 1,
-+			"Header: %s : %d bytes (%d/%d).\n",
-+			owner->name,
-+			buffer_size, owner->header_used,
-+			owner->header_requested);
-+		if (owner->header_used > owner->header_requested) {
-+			printk(KERN_EMERG "TuxOnIce module %s is using more "
-+				"header space (%u) than it requested (%u).\n",
-+				owner->name,
-+				owner->header_used,
-+				owner->header_requested);
-+			return buffer_size;
-+		}
-+	} else {
-+		unowned += buffer_size;
-+		toi_message(TOI_HEADER, TOI_LOW, 1,
-+			"Header: (No owner): %d bytes (%d total so far)\n",
-+			buffer_size, unowned);
-+	}
-+
-+	if (!writing && !no_readahead)
-+		result = toi_start_new_readahead(0);
-+
-+	if (!result)
-+		result = toi_rw_buffer(writing, buffer, buffer_size,
-+				no_readahead);
-+
-+	total_header_bytes += buffer_size;
-+	return result;
-+}
-+
-+static int toi_rw_header_chunk(int writing, struct toi_module_ops *owner,
-+		char *buffer, int size)
-+{
-+	return _toi_rw_header_chunk(writing, owner, buffer, size, 0);
-+}
-+
-+static int toi_rw_header_chunk_noreadahead(int writing,
-+		struct toi_module_ops *owner, char *buffer, int size)
-+{
-+	return _toi_rw_header_chunk(writing, owner, buffer, size, 1);
-+}
-+
-+/**
-+ * write_header_chunk_finish - flush any buffered header data
-+ **/
-+static int write_header_chunk_finish(void)
-+{
-+	int result = 0;
-+
-+	if (toi_writer_buffer_posn)
-+		toi_bio_queue_write(&toi_writer_buffer);
-+
-+	result = toi_finish_all_io();
-+
-+	unowned = 0;
-+	total_header_bytes = 0;
-+	return result;
-+}
-+
-+/**
-+ * toi_bio_storage_needed - get the amount of storage needed for my fns
-+ **/
-+static int toi_bio_storage_needed(void)
-+{
-+	return sizeof(int);
-+}
-+
-+/**
-+ * toi_bio_save_config_info - save block I/O config to image header
-+ * @buf:	PAGE_SIZE'd buffer into which data should be saved.
-+ **/
-+static int toi_bio_save_config_info(char *buf)
-+{
-+	int *ints = (int *) buf;
-+	ints[0] = target_outstanding_io;
-+	return sizeof(int);
-+}
-+
-+/**
-+ * toi_bio_load_config_info - restore block I/O config
-+ * @buf:	Data to be reloaded.
-+ * @size:	Size of the buffer saved.
-+ **/
-+static void toi_bio_load_config_info(char *buf, int size)
-+{
-+	int *ints = (int *) buf;
-+	target_outstanding_io  = ints[0];
-+}
-+
-+/**
-+ * toi_bio_initialise - initialise bio code at start of some action
-+ * @starting_cycle:	Whether starting a hibernation cycle, or just reading or
-+ *			writing a sysfs value.
-+ **/
-+static int toi_bio_initialise(int starting_cycle)
-+{
-+	if (starting_cycle) {
-+		max_outstanding_writes = 0;
-+		max_outstanding_reads = 0;
-+		toi_queue_flusher = current;
-+#ifdef MEASURE_MUTEX_CONTENTION
-+		{
-+		int i, j, k;
-+
-+		for (i = 0; i < 2; i++)
-+			for (j = 0; j < 2; j++)
-+				for_each_online_cpu(k)
-+					mutex_times[i][j][k] = 0;
-+		}
-+#endif
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * toi_bio_cleanup - cleanup after some action
-+ * @finishing_cycle:	Whether completing a cycle.
-+ **/
-+static void toi_bio_cleanup(int finishing_cycle)
-+{
-+	if (toi_writer_buffer) {
-+		toi_free_page(11, (unsigned long) toi_writer_buffer);
-+		toi_writer_buffer = NULL;
-+	}
-+}
-+
-+struct toi_bio_ops toi_bio_ops = {
-+	.bdev_page_io = toi_bdev_page_io,
-+	.finish_all_io = toi_finish_all_io,
-+	.update_throughput_throttle = update_throughput_throttle,
-+	.forward_one_page = go_next_page,
-+	.set_extra_page_forward = set_extra_page_forward,
-+	.set_devinfo = toi_set_devinfo,
-+	.read_page = toi_bio_read_page,
-+	.write_page = toi_bio_write_page,
-+	.rw_init = toi_rw_init,
-+	.rw_cleanup = toi_rw_cleanup,
-+	.read_header_init = toi_read_header_init,
-+	.rw_header_chunk = toi_rw_header_chunk,
-+	.rw_header_chunk_noreadahead = toi_rw_header_chunk_noreadahead,
-+	.write_header_chunk_finish = write_header_chunk_finish,
-+	.io_flusher = bio_io_flusher,
-+};
-+
-+static struct toi_sysfs_data sysfs_params[] = {
-+	SYSFS_INT("target_outstanding_io", SYSFS_RW, &target_outstanding_io,
-+			0, 16384, 0, NULL),
-+};
-+
-+static struct toi_module_ops toi_blockwriter_ops = {
-+	.name					= "lowlevel i/o",
-+	.type					= MISC_HIDDEN_MODULE,
-+	.directory				= "block_io",
-+	.module					= THIS_MODULE,
-+	.print_debug_info			= toi_bio_print_debug_stats,
-+	.memory_needed				= toi_bio_memory_needed,
-+	.storage_needed				= toi_bio_storage_needed,
-+	.save_config_info			= toi_bio_save_config_info,
-+	.load_config_info			= toi_bio_load_config_info,
-+	.initialise				= toi_bio_initialise,
-+	.cleanup				= toi_bio_cleanup,
-+
-+	.sysfs_data		= sysfs_params,
-+	.num_sysfs_entries	= sizeof(sysfs_params) /
-+		sizeof(struct toi_sysfs_data),
-+};
-+
-+/**
-+ * toi_block_io_load - load time routine for block I/O module
-+ *
-+ * Register block i/o ops and sysfs entries.
-+ **/
-+static __init int toi_block_io_load(void)
-+{
-+	return toi_register_module(&toi_blockwriter_ops);
-+}
-+
-+late_initcall(toi_block_io_load);
-diff --git a/kernel/power/tuxonice_block_io.h b/kernel/power/tuxonice_block_io.h
++++ b/Documentation/power/tuxonice-internals.txt
+@@ -0,0 +1,477 @@
++		   TuxOnIce 3.0 Internal Documentation.
++			Updated to 26 March 2009
++
++1.  Introduction.
++
++    TuxOnIce 3.0 is an addition to the Linux Kernel, designed to
++    allow the user to quickly shutdown and quickly boot a computer, without
++    needing to close documents or programs. It is equivalent to the
++    hibernate facility in some laptops. This implementation, however,
++    requires no special BIOS or hardware support.
++
++    The code in these files is based upon the original implementation
++    prepared by Gabor Kuti and additional work by Pavel Machek and a
++    host of others. This code has been substantially reworked by Nigel
++    Cunningham, again with the help and testing of many others, not the
++    least of whom is Michael Frank. At its heart, however, the operation is
++    essentially the same as Gabor's version.
++
++2.  Overview of operation.
++
++    The basic sequence of operations is as follows:
++
++	a. Quiesce all other activity.
++	b. Ensure enough memory and storage space are available, and attempt
++	   to free memory/storage if necessary.
++	c. Allocate the required memory and storage space.
++	d. Write the image.
++	e. Power down.
++
++    There are a number of complicating factors which mean that things are
++    not as simple as the above would imply, however...
++
++    o The activity of each process must be stopped at a point where it will
++    not be holding locks necessary for saving the image, or unexpectedly
++    restart operations due to something like a timeout and thereby make
++    our image inconsistent.
++
++    o It is desirous that we sync outstanding I/O to disk before calculating
++    image statistics. This reduces corruption if one should suspend but
++    then not resume, and also makes later parts of the operation safer (see
++    below).
++
++    o We need to get as close as we can to an atomic copy of the data.
++    Inconsistencies in the image will result in inconsistent memory contents at
++    resume time, and thus in instability of the system and/or file system
++    corruption. This would appear to imply a maximum image size of one half of
++    the amount of RAM, but we have a solution... (again, below).
++
++    o In 2.6, we choose to play nicely with the other suspend-to-disk
++    implementations.
++
++3.  Detailed description of internals.
++
++    a. Quiescing activity.
++
++    Safely quiescing the system is achieved using three separate but related
++    aspects.
++
++    First, we note that the vast majority of processes don't need to run during
++    suspend. They can be 'frozen'. We therefore implement a refrigerator
++    routine, which processes enter and in which they remain until the cycle is
++    complete. Processes enter the refrigerator via try_to_freeze() invocations
++    at appropriate places.  A process cannot be frozen in any old place. It
++    must not be holding locks that will be needed for writing the image or
++    freezing other processes. For this reason, userspace processes generally
++    enter the refrigerator via the signal handling code, and kernel threads at
++    the place in their event loops where they drop locks and yield to other
++    processes or sleep.
++
++    The task of freezing processes is complicated by the fact that there can be
++    interdependencies between processes. Freezing process A before process B may
++    mean that process B cannot be frozen, because it stops at waiting for
++    process A rather than in the refrigerator. This issue is seen where
++    userspace waits on freezeable kernel threads or fuse filesystem threads. To
++    address this issue, we implement the following algorithm for quiescing
++    activity:
++
++	- Freeze filesystems (including fuse - userspace programs starting
++		new requests are immediately frozen; programs already running
++		requests complete their work before being frozen in the next
++		step)
++	- Freeze userspace
++	- Thaw filesystems (this is safe now that userspace is frozen and no
++		fuse requests are outstanding).
++	- Invoke sys_sync (noop on fuse).
++	- Freeze filesystems
++	- Freeze kernel threads
++
++    If we need to free memory, we thaw kernel threads and filesystems, but not
++    userspace. We can then free caches without worrying about deadlocks due to
++    swap files being on frozen filesystems or such like.
++
++    b. Ensure enough memory & storage are available.
++
++    We have a number of constraints to meet in order to be able to successfully
++    suspend and resume.
++
++    First, the image will be written in two parts, described below. One of these
++    parts needs to have an atomic copy made, which of course implies a maximum
++    size of one half of the amount of system memory. The other part ('pageset')
++    is not atomically copied, and can therefore be as large or small as desired.
++
++    Second, we have constraints on the amount of storage available. In these
++    calculations, we may also consider any compression that will be done. The
++    cryptoapi module allows the user to configure an expected compression ratio.
++
++    Third, the user can specify an arbitrary limit on the image size, in
++    megabytes. This limit is treated as a soft limit, so that we don't fail the
++    attempt to suspend if we cannot meet this constraint.
++
++    c. Allocate the required memory and storage space.
++
++    Having done the initial freeze, we determine whether the above constraints
++    are met, and seek to allocate the metadata for the image. If the constraints
++    are not met, or we fail to allocate the required space for the metadata, we
++    seek to free the amount of memory that we calculate is needed and try again.
++    We allow up to four iterations of this loop before aborting the cycle. If we
++    do fail, it should only be because of a bug in TuxOnIce's calculations.
++
++    These steps are merged together in the prepare_image function, found in
++    prepare_image.c. The functions are merged because of the cyclical nature
++    of the problem of calculating how much memory and storage is needed. Since
++    the data structures containing the information about the image must
++    themselves take memory and use storage, the amount of memory and storage
++    required changes as we prepare the image. Since the changes are not large,
++    only one or two iterations will be required to achieve a solution.
++
++    The recursive nature of the algorithm is miminised by keeping user space
++    frozen while preparing the image, and by the fact that our records of which
++    pages are to be saved and which pageset they are saved in use bitmaps (so
++    that changes in number or fragmentation of the pages to be saved don't
++    feedback via changes in the amount of memory needed for metadata). The
++    recursiveness is thus limited to any extra slab pages allocated to store the
++    extents that record storage used, and the effects of seeking to free memory.
++
++    d. Write the image.
++
++    We previously mentioned the need to create an atomic copy of the data, and
++    the half-of-memory limitation that is implied in this. This limitation is
++    circumvented by dividing the memory to be saved into two parts, called
++    pagesets.
++
++    Pageset2 contains most of the page cache - the pages on the active and
++    inactive LRU lists that aren't needed or modified while TuxOnIce is
++    running, so they can be safely written without an atomic copy. They are
++    therefore saved first and reloaded last. While saving these pages,
++    TuxOnIce carefully ensures that the work of writing the pages doesn't make
++    the image inconsistent. With the support for Kernel (Video) Mode Setting
++    going into the kernel at the time of writing, we need to check for pages
++    on the LRU that are used by KMS, and exclude them from pageset2. They are
++    atomically copied as part of pageset 1.
++
++    Once pageset2 has been saved, we prepare to do the atomic copy of remaining
++    memory. As part of the preparation, we power down drivers, thereby providing
++    them with the opportunity to have their state recorded in the image. The
++    amount of memory allocated by drivers for this is usually negligible, but if
++    DRI is in use, video drivers may require significants amounts. Ideally we
++    would be able to query drivers while preparing the image as to the amount of
++    memory they will need. Unfortunately no such mechanism exists at the time of
++    writing. For this reason, TuxOnIce allows the user to set an
++    'extra_pages_allowance', which is used to seek to ensure sufficient memory
++    is available for drivers at this point. TuxOnIce also lets the user set this
++    value to 0. In this case, a test driver suspend is done while preparing the
++    image, and the difference (plus a margin) used instead. TuxOnIce will also
++    automatically restart the hibernation process (twice at most) if it finds
++    that the extra pages allowance is not sufficient. It will then use what was
++    actually needed (plus a margin, again). Failure to hibernate should thus
++    be an extremely rare occurence.
++
++    Having suspended the drivers, we save the CPU context before making an
++    atomic copy of pageset1, resuming the drivers and saving the atomic copy.
++    After saving the two pagesets, we just need to save our metadata before
++    powering down.
++
++    As we mentioned earlier, the contents of pageset2 pages aren't needed once
++    they've been saved. We therefore use them as the destination of our atomic
++    copy. In the unlikely event that pageset1 is larger, extra pages are
++    allocated while the image is being prepared. This is normally only a real
++    possibility when the system has just been booted and the page cache is
++    small.
++
++    This is where we need to be careful about syncing, however. Pageset2 will
++    probably contain filesystem meta data. If this is overwritten with pageset1
++    and then a sync occurs, the filesystem will be corrupted - at least until
++    resume time and another sync of the restored data. Since there is a
++    possibility that the user might not resume or (may it never be!) that
++    TuxOnIce might oops, we do our utmost to avoid syncing filesystems after
++    copying pageset1.
++
++    e. Power down.
++
++    Powering down uses standard kernel routines. TuxOnIce supports powering down
++    using the ACPI S3, S4 and S5 methods or the kernel's non-ACPI power-off.
++    Supporting suspend to ram (S3) as a power off option might sound strange,
++    but it allows the user to quickly get their system up and running again if
++    the battery doesn't run out (we just need to re-read the overwritten pages)
++    and if the battery does run out (or the user removes power), they can still
++    resume.
++
++4.  Data Structures.
++
++    TuxOnIce uses three main structures to store its metadata and configuration
++    information:
++
++    a) Pageflags bitmaps.
++
++    TuxOnIce records which pages will be in pageset1, pageset2, the destination
++    of the atomic copy and the source of the atomically restored image using
++    bitmaps. The code used is that written for swsusp, with small improvements
++    to match TuxOnIce's requirements.
++
++    The pageset1 bitmap is thus easily stored in the image header for use at
++    resume time.
++
++    As mentioned above, using bitmaps also means that the amount of memory and
++    storage required for recording the above information is constant. This
++    greatly simplifies the work of preparing the image. In earlier versions of
++    TuxOnIce, extents were used to record which pages would be stored. In that
++    case, however, eating memory could result in greater fragmentation of the
++    lists of pages, which in turn required more memory to store the extents and
++    more storage in the image header. These could in turn require further
++    freeing of memory, and another iteration. All of this complexity is removed
++    by having bitmaps.
++
++    Bitmaps also make a lot of sense because TuxOnIce only ever iterates
++    through the lists. There is therefore no cost to not being able to find the
++    nth page in order 0 time. We only need to worry about the cost of finding
++    the n+1th page, given the location of the nth page. Bitwise optimisations
++    help here.
++
++    b) Extents for block data.
++
++    TuxOnIce supports writing the image to multiple block devices. In the case
++    of swap, multiple partitions and/or files may be in use, and we happily use
++    them all (with the exception of compcache pages, which we allocate but do
++    not use). This use of multiple block devices is accomplished as follows:
++
++    Whatever the actual source of the allocated storage, the destination of the
++    image can be viewed in terms of one or more block devices, and on each
++    device, a list of sectors. To simplify matters, we only use contiguous,
++    PAGE_SIZE aligned sectors, like the swap code does.
++
++    Since sector numbers on each bdev may well not start at 0, it makes much
++    more sense to use extents here. Contiguous ranges of pages can thus be
++    represented in the extents by contiguous values.
++
++    Variations in block size are taken account of in transforming this data
++    into the parameters for bio submission.
++
++    We can thus implement a layer of abstraction wherein the core of TuxOnIce
++    doesn't have to worry about which device we're currently writing to or
++    where in the device we are. It simply requests that the next page in the
++    pageset or header be written, leaving the details to this lower layer.
++    The lower layer remembers where in the sequence of devices and blocks each
++    pageset starts. The header always starts at the beginning of the allocated
++    storage.
++
++    So extents are:
++
++    struct extent {
++      unsigned long minimum, maximum;
++      struct extent *next;
++    }
++
++    These are combined into chains of extents for a device:
++
++    struct extent_chain {
++      int size; /* size of the extent ie sum (max-min+1) */
++      int allocs, frees;
++      char *name;
++      struct extent *first, *last_touched;
++    };
++
++    For each bdev, we need to store a little more info:
++
++    struct suspend_bdev_info {
++       struct block_device *bdev;
++       dev_t dev_t;
++       int bmap_shift;
++       int blocks_per_page;
++    };
++
++    The dev_t is used to identify the device in the stored image. As a result,
++    we expect devices at resume time to have the same major and minor numbers
++    as they had while suspending.  This is primarily a concern where the user
++    utilises LVM for storage, as they will need to dmsetup their partitions in
++    such a way as to maintain this consistency at resume time.
++
++    bmap_shift and blocks_per_page apply the effects of variations in blocks
++    per page settings for the filesystem and underlying bdev. For most
++    filesystems, these are the same, but for xfs, they can have independant
++    values.
++
++    Combining these two structures together, we have everything we need to
++    record what devices and what blocks on each device are being used to
++    store the image, and to submit i/o using bio_submit.
++
++    The last elements in the picture are a means of recording how the storage
++    is being used.
++
++    We do this first and foremost by implementing a layer of abstraction on
++    top of the devices and extent chains which allows us to view however many
++    devices there might be as one long storage tape, with a single 'head' that
++    tracks a 'current position' on the tape:
++
++    struct extent_iterate_state {
++      struct extent_chain *chains;
++      int num_chains;
++      int current_chain;
++      struct extent *current_extent;
++      unsigned long current_offset;
++    };
++
++    That is, *chains points to an array of size num_chains of extent chains.
++    For the filewriter, this is always a single chain. For the swapwriter, the
++    array is of size MAX_SWAPFILES.
++
++    current_chain, current_extent and current_offset thus point to the current
++    index in the chains array (and into a matching array of struct
++    suspend_bdev_info), the current extent in that chain (to optimise access),
++    and the current value in the offset.
++
++    The image is divided into three parts:
++    - The header
++    - Pageset 1
++    - Pageset 2
++
++    The header always starts at the first device and first block. We know its
++    size before we begin to save the image because we carefully account for
++    everything that will be stored in it.
++
++    The second pageset (LRU) is stored first. It begins on the next page after
++    the end of the header.
++
++    The first pageset is stored second. It's start location is only known once
++    pageset2 has been saved, since pageset2 may be compressed as it is written.
++    This location is thus recorded at the end of saving pageset2. It is page
++    aligned also.
++
++    Since this information is needed at resume time, and the location of extents
++    in memory will differ at resume time, this needs to be stored in a portable
++    way:
++
++    struct extent_iterate_saved_state {
++        int chain_num;
++        int extent_num;
++        unsigned long offset;
++    };
++
++    We can thus implement a layer of abstraction wherein the core of TuxOnIce
++    doesn't have to worry about which device we're currently writing to or
++    where in the device we are. It simply requests that the next page in the
++    pageset or header be written, leaving the details to this layer, and
++    invokes the routines to remember and restore the position, without having
++    to worry about the details of how the data is arranged on disk or such like.
++
++    c) Modules
++
++    One aim in designing TuxOnIce was to make it flexible. We wanted to allow
++    for the implementation of different methods of transforming a page to be
++    written to disk and different methods of getting the pages stored.
++
++    In early versions (the betas and perhaps Suspend1), compression support was
++    inlined in the image writing code, and the data structures and code for
++    managing swap were intertwined with the rest of the code. A number of people
++    had expressed interest in implementing image encryption, and alternative
++    methods of storing the image.
++
++    In order to achieve this, TuxOnIce was given a modular design.
++
++    A module is a single file which encapsulates the functionality needed
++    to transform a pageset of data (encryption or compression, for example),
++    or to write the pageset to a device. The former type of module is called
++    a 'page-transformer', the later a 'writer'.
++
++    Modules are linked together in pipeline fashion. There may be zero or more
++    page transformers in a pipeline, and there is always exactly one writer.
++    The pipeline follows this pattern:
++
++		---------------------------------
++		|          TuxOnIce Core        |
++		---------------------------------
++				|
++				|
++		---------------------------------
++		|	Page transformer 1	|
++		---------------------------------
++				|
++				|
++		---------------------------------
++		|	Page transformer 2	|
++		---------------------------------
++				|
++				|
++		---------------------------------
++		|            Writer		|
++		---------------------------------
++
++    During the writing of an image, the core code feeds pages one at a time
++    to the first module. This module performs whatever transformations it
++    implements on the incoming data, completely consuming the incoming data and
++    feeding output in a similar manner to the next module.
++
++    All routines are SMP safe, and the final result of the transformations is
++    written with an index (provided by the core) and size of the output by the
++    writer. As a result, we can have multithreaded I/O without needing to
++    worry about the sequence in which pages are written (or read).
++
++    During reading, the pipeline works in the reverse direction. The core code
++    calls the first module with the address of a buffer which should be filled.
++    (Note that the buffer size is always PAGE_SIZE at this time). This module
++    will in turn request data from the next module and so on down until the
++    writer is made to read from the stored image.
++
++    Part of definition of the structure of a module thus looks like this:
++
++        int (*rw_init) (int rw, int stream_number);
++        int (*rw_cleanup) (int rw);
++        int (*write_chunk) (struct page *buffer_page);
++        int (*read_chunk) (struct page *buffer_page, int sync);
++
++    It should be noted that the _cleanup routine may be called before the
++    full stream of data has been read or written. While writing the image,
++    the user may (depending upon settings) choose to abort suspending, and
++    if we are in the midst of writing the last portion of the image, a portion
++    of the second pageset may be reread. This may also happen if an error
++    occurs and we seek to abort the process of writing the image.
++
++    The modular design is also useful in a number of other ways. It provides
++    a means where by we can add support for:
++
++    - providing overall initialisation and cleanup routines;
++    - serialising configuration information in the image header;
++    - providing debugging information to the user;
++    - determining memory and image storage requirements;
++    - dis/enabling components at run-time;
++    - configuring the module (see below);
++
++    ...and routines for writers specific to their work:
++    - Parsing a resume= location;
++    - Determining whether an image exists;
++    - Marking a resume as having been attempted;
++    - Invalidating an image;
++
++    Since some parts of the core - the user interface and storage manager
++    support - have use for some of these functions, they are registered as
++    'miscellaneous' modules as well.
++
++    d) Sysfs data structures.
++
++    This brings us naturally to support for configuring TuxOnIce. We desired to
++    provide a way to make TuxOnIce as flexible and configurable as possible.
++    The user shouldn't have to reboot just because they want to now hibernate to
++    a file instead of a partition, for example.
++
++    To accomplish this, TuxOnIce implements a very generic means whereby the
++    core and modules can register new sysfs entries. All TuxOnIce entries use
++    a single _store and _show routine, both of which are found in
++    tuxonice_sysfs.c in the kernel/power directory. These routines handle the
++    most common operations - getting and setting the values of bits, integers,
++    longs, unsigned longs and strings in one place, and allow overrides for
++    customised get and set options as well as side-effect routines for all
++    reads and writes.
++
++    When combined with some simple macros, a new sysfs entry can then be defined
++    in just a couple of lines:
++
++        SYSFS_INT("progress_granularity", SYSFS_RW, &progress_granularity, 1,
++                        2048, 0, NULL),
++
++    This defines a sysfs entry named "progress_granularity" which is rw and
++    allows the user to access an integer stored at &progress_granularity, giving
++    it a value between 1 and 2048 inclusive.
++
++    Sysfs entries are registered under /sys/power/tuxonice, and entries for
++    modules are located in a subdirectory named after the module.
++
+diff --git a/Documentation/power/tuxonice.txt b/Documentation/power/tuxonice.txt
 new file mode 100644
-index 0000000..b18298c
+index 0000000..bfc0df5
 --- /dev/null
-+++ b/kernel/power/tuxonice_block_io.h
-@@ -0,0 +1,59 @@
-+/*
-+ * kernel/power/tuxonice_block_io.h
-+ *
-+ * Copyright (C) 2004-2008 Nigel Cunningham (nigel at tuxonice net)
-+ * Copyright (C) 2006 Red Hat, inc.
-+ *
-+ * Distributed under GPLv2.
-+ *
-+ * This file contains declarations for functions exported from
-+ * tuxonice_block_io.c, which contains low level io functions.
-+ */
++++ b/Documentation/power/tuxonice.txt
+@@ -0,0 +1,924 @@
++	--- TuxOnIce, version 3.0 ---
 +
-+#include <linux/buffer_head.h>
-+#include "tuxonice_extent.h"
++1.  What is it?
++2.  Why would you want it?
++3.  What do you need to use it?
++4.  Why not just use the version already in the kernel?
++5.  How do you use it?
++6.  What do all those entries in /sys/power/tuxonice do?
++7.  How do you get support?
++8.  I think I've found a bug. What should I do?
++9.  When will XXX be supported?
++10  How does it work?
++11. Who wrote TuxOnIce?
 +
-+struct toi_bdev_info {
-+	struct block_device *bdev;
-+	dev_t dev_t;
-+	int bmap_shift;
-+	int blocks_per_page;
-+	int ignored;
-+};
++1. What is it?
 +
-+/*
-+ * Our exported interface so the swapwriter and filewriter don't
-+ * need these functions duplicated.
-+ */
-+struct toi_bio_ops {
-+	int (*bdev_page_io) (int rw, struct block_device *bdev, long pos,
-+			struct page *page);
-+	void (*check_io_stats) (void);
-+	void (*reset_io_stats) (void);
-+	void (*update_throughput_throttle) (int jif_index);
-+	int (*finish_all_io) (void);
-+	int (*forward_one_page) (int writing, int section_barrier);
-+	void (*set_extra_page_forward) (void);
-+	void (*set_devinfo) (struct toi_bdev_info *info);
-+	int (*read_page) (unsigned long *index, struct page *buffer_page,
-+			unsigned int *buf_size);
-+	int (*write_page) (unsigned long index, struct page *buffer_page,
-+			unsigned int buf_size);
-+	void (*read_header_init) (void);
-+	int (*rw_header_chunk) (int rw, struct toi_module_ops *owner,
-+			char *buffer, int buffer_size);
-+	int (*rw_header_chunk_noreadahead) (int rw,
-+			struct toi_module_ops *owner,
-+			char *buffer, int buffer_size);
-+	int (*write_header_chunk_finish) (void);
-+	int (*rw_init) (int rw, int stream_number);
-+	int (*rw_cleanup) (int rw);
-+	int (*io_flusher) (int rw);
-+};
++   Imagine you're sitting at your computer, working away. For some reason, you
++   need to turn off your computer for a while - perhaps it's time to go home
++   for the day. When you come back to your computer next, you're going to want
++   to carry on where you left off. Now imagine that you could push a button and
++   have your computer store the contents of its memory to disk and power down.
++   Then, when you next start up your computer, it loads that image back into
++   memory and you can carry on from where you were, just as if you'd never
++   turned the computer off. You have far less time to start up, no reopening of
++   applications or finding what directory you put that file in yesterday.
++   That's what TuxOnIce does.
 +
-+extern struct toi_bio_ops toi_bio_ops;
++   TuxOnIce has a long heritage. It began life as work by Gabor Kuti, who,
++   with some help from Pavel Machek, got an early version going in 1999. The
++   project was then taken over by Florent Chabaud while still in alpha version
++   numbers. Nigel Cunningham came on the scene when Florent was unable to
++   continue, moving the project into betas, then 1.0, 2.0 and so on up to
++   the present series. During the 2.0 series, the name was contracted to
++   Suspend2 and the website suspend2.net created. Beginning around July 2007,
++   a transition to calling the software TuxOnIce was made, to seek to help
++   make it clear that TuxOnIce is more concerned with hibernation than suspend
++   to ram.
 +
-+extern char *toi_writer_buffer;
-+extern int toi_writer_buffer_posn;
-+extern struct hibernate_extent_iterate_saved_state toi_writer_posn_save[4];
-+extern struct toi_extent_iterate_state toi_writer_posn;
++   Pavel Machek's swsusp code, which was merged around 2.5.17 retains the
++   original name, and was essentially a fork of the beta code until Rafael
++   Wysocki came on the scene in 2005 and began to improve it further.
++
++2. Why would you want it?
++
++   Why wouldn't you want it?
++
++   Being able to save the state of your system and quickly restore it improves
++   your productivity - you get a useful system in far less time than through
++   the normal boot process. You also get to be completely 'green', using zero
++   power, or as close to that as possible (the computer may still provide
++   minimal power to some devices, so they can initiate a power on, but that
++   will be the same amount of power as would be used if you told the computer
++   to shutdown.
++
++3. What do you need to use it?
++
++   a. Kernel Support.
++
++   i) The TuxOnIce patch.
++
++   TuxOnIce is part of the Linux Kernel. This version is not part of Linus's
++   2.6 tree at the moment, so you will need to download the kernel source and
++   apply the latest patch. Having done that, enable the appropriate options in
++   make [menu|x]config (under Power Management Options - look for "Enhanced
++   Hibernation"), compile and install your kernel. TuxOnIce works with SMP,
++   Highmem, preemption, fuse filesystems, x86-32, PPC and x86_64.
++
++   TuxOnIce patches are available from http://tuxonice.net.
++
++   ii) Compression support.
++
++   Compression support is implemented via the cryptoapi. You will therefore want
++   to select any Cryptoapi transforms that you want to use on your image from
++   the Cryptoapi menu while configuring your kernel. We recommend the use of the
++   LZO compression method - it is very fast and still achieves good compression.
++
++   You can also tell TuxOnIce to write its image to an encrypted and/or
++   compressed filesystem/swap partition. In that case, you don't need to do
++   anything special for TuxOnIce when it comes to kernel configuration.
++
++   iii) Configuring other options.
++
++   While you're configuring your kernel, try to configure as much as possible
++   to build as modules. We recommend this because there are a number of drivers
++   that are still in the process of implementing proper power management
++   support. In those cases, the best way to work around their current lack is
++   to build them as modules and remove the modules while hibernating. You might
++   also bug the driver authors to get their support up to speed, or even help!
++
++   b. Storage.
++
++   i) Swap.
++
++   TuxOnIce can store the hibernation image in your swap partition, a swap file or
++   a combination thereof. Whichever combination you choose, you will probably
++   want to create enough swap space to store the largest image you could have,
++   plus the space you'd normally use for swap. A good rule of thumb would be
++   to calculate the amount of swap you'd want without using TuxOnIce, and then
++   add the amount of memory you have. This swapspace can be arranged in any way
++   you'd like. It can be in one partition or file, or spread over a number. The
++   only requirement is that they be active when you start a hibernation cycle.
++
++   There is one exception to this requirement. TuxOnIce has the ability to turn
++   on one swap file or partition at the start of hibernating and turn it back off
++   at the end. If you want to ensure you have enough memory to store a image
++   when your memory is fully used, you might want to make one swap partition or
++   file for 'normal' use, and another for TuxOnIce to activate & deactivate
++   automatically. (Further details below).
++
++   ii) Normal files.
++
++   TuxOnIce includes a 'file allocator'. The file allocator can store your
++   image in a simple file. Since Linux has the concept of everything being a
++   file, this is more powerful than it initially sounds. If, for example, you
++   were to set up a network block device file, you could hibernate to a network
++   server. This has been tested and works to a point, but nbd itself isn't
++   stateless enough for our purposes.
++
++   Take extra care when setting up the file allocator. If you just type
++   commands without thinking and then try to hibernate, you could cause
++   irreversible corruption on your filesystems! Make sure you have backups.
++
++   Most people will only want to hibernate to a local file. To achieve that, do
++   something along the lines of:
++
++   echo "TuxOnIce" > /hibernation-file
++   dd if=/dev/zero bs=1M count=512 >> hibernation-file
++
++   This will create a 512MB file called /hibernation-file. To get TuxOnIce to use
++   it:
++
++   echo /hibernation-file > /sys/power/tuxonice/file/target
++
++   Then
++
++   cat /sys/power/tuxonice/resume
++
++   Put the results of this into your bootloader's configuration (see also step
++   C, below):
++
++   ---EXAMPLE-ONLY-DON'T-COPY-AND-PASTE---
++   # cat /sys/power/tuxonice/resume
++   file:/dev/hda2:0x1e001
++
++   In this example, we would edit the append= line of our lilo.conf|menu.lst
++   so that it included:
++
++   resume=file:/dev/hda2:0x1e001
++   ---EXAMPLE-ONLY-DON'T-COPY-AND-PASTE---
++
++   For those who are thinking 'Could I make the file sparse?', the answer is
++   'No!'. At the moment, there is no way for TuxOnIce to fill in the holes in
++   a sparse file while hibernating. In the longer term (post merge!), I'd like
++   to change things so that the file could be dynamically resized and have
++   holes filled as needed. Right now, however, that's not possible and not a
++   priority.
++
++   c. Bootloader configuration.
++
++   Using TuxOnIce also requires that you add an extra parameter to
++   your lilo.conf or equivalent. Here's an example for a swap partition:
++
++   append="resume=swap:/dev/hda1"
++
++   This would tell TuxOnIce that /dev/hda1 is a swap partition you
++   have. TuxOnIce will use the swap signature of this partition as a
++   pointer to your data when you hibernate. This means that (in this example)
++   /dev/hda1 doesn't need to be _the_ swap partition where all of your data
++   is actually stored. It just needs to be a swap partition that has a
++   valid signature.
++
++   You don't need to have a swap partition for this purpose. TuxOnIce
++   can also use a swap file, but usage is a little more complex. Having made
++   your swap file, turn it on and do
++
++   cat /sys/power/tuxonice/swap/headerlocations
++
++   (this assumes you've already compiled your kernel with TuxOnIce
++   support and booted it). The results of the cat command will tell you
++   what you need to put in lilo.conf:
++
++   For swap partitions like /dev/hda1, simply use resume=/dev/hda1.
++   For swapfile `swapfile`, use resume=swap:/dev/hda2:0x242d.
++
++   If the swapfile changes for any reason (it is moved to a different
++   location, it is deleted and recreated, or the filesystem is
++   defragmented) then you will have to check
++   /sys/power/tuxonice/swap/headerlocations for a new resume_block value.
++
++   Once you've compiled and installed the kernel and adjusted your bootloader
++   configuration, you should only need to reboot for the most basic part
++   of TuxOnIce to be ready.
++
++   If you only compile in the swap allocator, or only compile in the file
++   allocator, you don't need to add the "swap:" part of the resume=
++   parameters above. resume=/dev/hda2:0x242d will work just as well. If you
++   have compiled both and your storage is on swap, you can also use this
++   format (the swap allocator is the default allocator).
++
++   When compiling your kernel, one of the options in the 'Power Management
++   Support' menu, just above the 'Enhanced Hibernation (TuxOnIce)' entry is
++   called 'Default resume partition'. This can be used to set a default value
++   for the resume= parameter.
++
++   d. The hibernate script.
++
++   Since the driver model in 2.6 kernels is still being developed, you may need
++   to do more than just configure TuxOnIce. Users of TuxOnIce usually start the
++   process via a script which prepares for the hibernation cycle, tells the
++   kernel to do its stuff and then restore things afterwards. This script might
++   involve:
++
++   - Switching to a text console and back if X doesn't like the video card
++     status on resume.
++   - Un/reloading drivers that don't play well with hibernation.
++
++   Note that you might not be able to unload some drivers if there are
++   processes using them. You might have to kill off processes that hold
++   devices open. Hint: if your X server accesses an USB mouse, doing a
++   'chvt' to a text console releases the device and you can unload the
++   module.
++
++   Check out the latest script (available on tuxonice.net).
++
++   e. The userspace user interface.
++
++   TuxOnIce has very limited support for displaying status if you only apply
++   the kernel patch - it can printk messages, but that is all. In addition,
++   some of the functions mentioned in this document (such as cancelling a cycle
++   or performing interactive debugging) are unavailable. To utilise these
++   functions, or simply get a nice display, you need the 'userui' component.
++   Userui comes in three flavours, usplash, fbsplash and text. Text should
++   work on any console. Usplash and fbsplash require the appropriate
++   (distro specific?) support.
++
++   To utilise a userui, TuxOnIce just needs to be told where to find the
++   userspace binary:
++
++   echo "/usr/local/sbin/tuxoniceui_fbsplash" > /sys/power/tuxonice/user_interface/program
++
++   The hibernate script can do this for you, and a default value for this
++   setting can be configured when compiling the kernel. This path is also
++   stored in the image header, so if you have an initrd or initramfs, you can
++   use the userui during the first part of resuming (prior to the atomic
++   restore) by putting the binary in the same path in your initrd/ramfs.
++   Alternatively, you can put it in a different location and do an echo
++   similar to the above prior to the echo > do_resume. The value saved in the
++   image header will then be ignored.
++
++4. Why not just use the version already in the kernel?
++
++   The version in the vanilla kernel has a number of drawbacks. The most
++   serious of these are:
++	- it has a maximum image size of 1/2 total memory;
++	- it doesn't allocate storage until after it has snapshotted memory.
++	  This means that you can't be sure hibernating will work until you
++	  see it start to write the image;
++	- it does not allow you to press escape to cancel a cycle;
++	- it does not allow you to press escape to cancel resuming;
++	- it does not allow you to automatically swapon a file when
++	  starting a cycle;
++	- it does not allow you to use multiple swap partitions or files;
++	- it does not allow you to use ordinary files;
++	- it just invalidates an image and continues to boot if you
++	  accidentally boot the wrong kernel after hibernating;
++	- it doesn't support any sort of nice display while hibernating;
++	- it is moving toward requiring that you have an initrd/initramfs
++	  to ever have a hope of resuming (uswsusp). While uswsusp will
++	  address some of the concerns above, it won't address all of them,
++          and will be more complicated to get set up;
++        - it doesn't have support for suspend-to-both (write a hibernation
++	  image, then suspend to ram; I think this is known as ReadySafe
++	  under M$).
++
++5. How do you use it?
++
++   A hibernation cycle can be started directly by doing:
++
++	echo > /sys/power/tuxonice/do_hibernate
++
++   In practice, though, you'll probably want to use the hibernate script
++   to unload modules, configure the kernel the way you like it and so on.
++   In that case, you'd do (as root):
++
++	hibernate
++
++   See the hibernate script's man page for more details on the options it
++   takes.
++
++   If you're using the text or splash user interface modules, one feature of
++   TuxOnIce that you might find useful is that you can press Escape at any time
++   during hibernating, and the process will be aborted.
++
++   Due to the way hibernation works, this means you'll have your system back and
++   perfectly usable almost instantly. The only exception is when it's at the
++   very end of writing the image. Then it will need to reload a small (usually
++   4-50MBs, depending upon the image characteristics) portion first.
++
++   Likewise, when resuming, you can press escape and resuming will be aborted.
++   The computer will then powerdown again according to settings at that time for
++   the powerdown method or rebooting.
++
++   You can change the settings for powering down while the image is being
++   written by pressing 'R' to toggle rebooting and 'O' to toggle between
++   suspending to ram and powering down completely).
++
++   If you run into problems with resuming, adding the "noresume" option to
++   the kernel command line will let you skip the resume step and recover your
++   system. This option shouldn't normally be needed, because TuxOnIce modifies
++   the image header prior to the atomic restore, and will thus prompt you
++   if it detects that you've tried to resume an image before (this flag is
++   removed if you press Escape to cancel a resume, so you won't be prompted
++   then).
++
++   Recent kernels (2.6.24 onwards) add support for resuming from a different
++   kernel to the one that was hibernated (thanks to Rafael for his work on
++   this - I've just embraced and enhanced the support for TuxOnIce). This
++   should further reduce the need for you to use the noresume option.
++
++6. What do all those entries in /sys/power/tuxonice do?
++
++   /sys/power/tuxonice is the directory which contains files you can use to
++   tune and configure TuxOnIce to your liking. The exact contents of
++   the directory will depend upon the version of TuxOnIce you're
++   running and the options you selected at compile time. In the following
++   descriptions, names in brackets refer to compile time options.
++   (Note that they're all dependant upon you having selected CONFIG_TUXONICE
++   in the first place!).
++
++   Since the values of these settings can open potential security risks, the
++   writeable ones are accessible only to the root user. You may want to
++   configure sudo to allow you to invoke your hibernate script as an ordinary
++   user.
++
++   - alt_resume_param
++
++   Instead of powering down after writing a hibernation image, TuxOnIce
++   supports resuming from a different image. This entry lets you set the
++   location of the signature for that image (the resume= value you'd use
++   for it). Using an alternate image and keep_image mode, you can do things
++   like using an alternate image to power down an uninterruptible power
++   supply.
++
++   - block_io/target_outstanding_io
++
++   This value controls the amount of memory that the block I/O code says it
++   needs when the core code is calculating how much memory is needed for
++   hibernating and for resuming. It doesn't directly control the amount of
++   I/O that is submitted at any one time - that depends on the amount of
++   available memory (we may have more available than we asked for), the
++   throughput that is being achieved and the ability of the CPU to keep up
++   with disk throughput (particularly where we're compressing pages).
++
++   - compression/algorithm
++
++   Set the cryptoapi algorithm used for compressing the image.
++
++   - compression/expected_compression
++
++   These values allow you to set an expected compression ratio, which TuxOnice
++   will use in calculating whether it meets constraints on the image size. If
++   this expected compression ratio is not attained, the hibernation cycle will
++   abort, so it is wise to allow some spare. You can see what compression
++   ratio is achieved in the logs after hibernating.
++
++   - debug_info:
++
++   This file returns information about your configuration that may be helpful
++   in diagnosing problems with hibernating.
++
++   - did_suspend_to_both:
++
++   This file can be used when you hibernate with powerdown method 3 (ie suspend
++   to ram after writing the image). There can be two outcomes in this case. We
++   can resume from the suspend-to-ram before the battery runs out, or we can run
++   out of juice and and up resuming like normal. This entry lets you find out,
++   post resume, which way we went. If the value is 1, we resumed from suspend
++   to ram. This can be useful when actions need to be run post suspend-to-ram
++   that don't need to be run if we did the normal resume from power off.
++
++   - do_hibernate:
++
++   When anything is written to this file, the kernel side of TuxOnIce will
++   begin to attempt to write an image to disk and power down. You'll normally
++   want to run the hibernate script instead, to get modules unloaded first.
++
++   - do_resume:
++
++   When anything is written to this file TuxOnIce will attempt to read and
++   restore an image. If there is no image, it will return almost immediately.
++   If an image exists, the echo > will never return. Instead, the original
++   kernel context will be restored and the original echo > do_hibernate will
++   return.
++
++   - */enabled
++
++   These option can be used to temporarily disable various parts of TuxOnIce.
++
++   - extra_pages_allowance
++
++   When TuxOnIce does its atomic copy, it calls the driver model suspend
++   and resume methods. If you have DRI enabled with a driver such as fglrx,
++   this can result in the driver allocating a substantial amount of memory
++   for storing its state. Extra_pages_allowance tells TuxOnIce how much
++   extra memory it should ensure is available for those allocations. If
++   your attempts at hibernating end with a message in dmesg indicating that
++   insufficient extra pages were allowed, you need to increase this value.
++
++   - file/target:
++
++   Read this value to get the current setting. Write to it to point TuxOnice
++   at a new storage location for the file allocator. See section 3.b.ii above
++   for details of how to set up the file allocator.
++
++   - freezer_test
++
++   This entry can be used to get TuxOnIce to just test the freezer and prepare
++   an image without actually doing a hibernation cycle. It is useful for
++   diagnosing freezing and image preparation issues.
++
++   - full_pageset2
++
++   TuxOnIce divides the pages that are stored in an image into two sets. The
++   difference between the two sets is that pages in pageset 1 are atomically
++   copied, and pages in pageset 2 are written to disk without being copied
++   first. A page CAN be written to disk without being copied first if and only
++   if its contents will not be modified or used at any time after userspace
++   processes are frozen. A page MUST be in pageset 1 if its contents are
++   modified or used at any time after userspace processes have been frozen.
++
++   Normally (ie if this option is enabled), TuxOnIce will put all pages on the
++   per-zone LRUs in pageset2, then remove those pages used by any userspace
++   user interface helper and TuxOnIce storage manager that are running,
++   together with pages used by the GEM memory manager introduced around 2.6.28
++   kernels.
++
++   If this option is disabled, a much more conservative approach will be taken.
++   The only pages in pageset2 will be those belonging to userspace processes,
++   with the exclusion of those belonging to the TuxOnIce userspace helpers
++   mentioned above. This will result in a much smaller pageset2, and will
++   therefore result in smaller images than are possible with this option
++   enabled.
++
++   - ignore_rootfs
++
++   TuxOnIce records which device is mounted as the root filesystem when
++   writing the hibernation image. It will normally check at resume time that
++   this device isn't already mounted - that would be a cause of filesystem
++   corruption. In some particular cases (RAM based root filesystems), you
++   might want to disable this check. This option allows you to do that.
++
++   - image_exists:
++
++   Can be used in a script to determine whether a valid image exists at the
++   location currently pointed to by resume=. Returns up to three lines.
++   The first is whether an image exists (-1 for unsure, otherwise 0 or 1).
++   If an image eixsts, additional lines will return the machine and version.
++   Echoing anything to this entry removes any current image.
++
++   - image_size_limit:
++
++   The maximum size of hibernation image written to disk, measured in megabytes
++   (1024*1024).
++
++   - last_result:
++
++   The result of the last hibernation cycle, as defined in
++   include/linux/suspend-debug.h with the values SUSPEND_ABORTED to
++   SUSPEND_KEPT_IMAGE. This is a bitmask.
++
++   - late_cpu_hotplug:
++
++   This sysfs entry controls whether cpu hotplugging is done - as normal - just
++   before (unplug) and after (replug) the atomic copy/restore (so that all
++   CPUs/cores are available for multithreaded I/O). The alternative is to
++   unplug all secondary CPUs/cores at the start of hibernating/resuming, and
++   replug them at the end of resuming. No multithreaded I/O will be possible in
++   this configuration, but the odd machine has been reported to require it.
++
++   - lid_file:
++
++   This determines which ACPI button file we look in to determine whether the
++   lid is open or closed after resuming from suspend to disk or power off.
++   If the entry is set to "lid/LID", we'll open /proc/acpi/button/lid/LID/state
++   and check its contents at the appropriate moment. See post_wake_state below
++   for more details on how this entry is used.
++
++   - log_everything (CONFIG_PM_DEBUG):
++
++   Setting this option results in all messages printed being logged. Normally,
++   only a subset are logged, so as to not slow the process and not clutter the
++   logs. Useful for debugging. It can be toggled during a cycle by pressing
++   'L'.
++
++   - no_load_direct:
++
++   This is a debugging option. If, when loading the atomically copied pages of
++   an image, TuxOnIce finds that the destination address for a page is free,
++   it will normally allocate the image, load the data directly into that
++   address and skip it in the atomic restore. If this option is disabled, the
++   page will be loaded somewhere else and atomically restored like other pages.
++
++   - no_flusher_thread:
++
++   When doing multithreaded I/O (see below), the first online CPU can be used
++   to _just_ submit compressed pages when writing the image, rather than
++   compressing and submitting data. This option is normally disabled, but has
++   been included because Nigel would like to see whether it will be more useful
++   as the number of cores/cpus in computers increases.
++
++   - no_multithreaded_io:
++
++   TuxOnIce will normally create one thread per cpu/core on your computer,
++   each of which will then perform I/O. This will generally result in
++   throughput that's the maximum the storage medium can handle. There
++   shouldn't be any reason to disable multithreaded I/O now, but this option
++   has been retained for debugging purposes.
++
++   - no_pageset2
++
++   See the entry for full_pageset2 above for an explanation of pagesets.
++   Enabling this option causes TuxOnIce to do an atomic copy of all pages,
++   thereby limiting the maximum image size to 1/2 of memory, as swsusp does.
++
++   - no_pageset2_if_unneeded
++
++   See the entry for full_pageset2 above for an explanation of pagesets.
++   Enabling this option causes TuxOnIce to act like no_pageset2 was enabled
++   if and only it isn't needed anyway. This option may still make TuxOnIce
++   less reliable because pageset2 pages are normally used to store the
++   atomic copy - drivers that want to do allocations of larger amounts of
++   memory in one shot will be more likely to find that those amounts aren't
++   available if this option is enabled.
++
++   - pause_between_steps (CONFIG_PM_DEBUG):
++
++   This option is used during debugging, to make TuxOnIce pause between
++   each step of the process. It is ignored when the nice display is on.
++
++   - post_wake_state:
++
++   TuxOnIce provides support for automatically waking after a user-selected
++   delay, and using a different powerdown method if the lid is still closed.
++   (Yes, we're assuming a laptop).  This entry lets you choose what state
++   should be entered next. The values are those described under
++   powerdown_method, below. It can be used to suspend to RAM after hibernating,
++   then powerdown properly (say) 20 minutes. It can also be used to power down
++   properly, then wake at (say) 6.30am and suspend to RAM until you're ready
++   to use the machine.
++
++   - powerdown_method:
++
++   Used to select a method by which TuxOnIce should powerdown after writing the
++   image. Currently:
++
++   0: Don't use ACPI to power off.
++   3: Attempt to enter Suspend-to-ram.
++   4: Attempt to enter ACPI S4 mode.
++   5: Attempt to power down via ACPI S5 mode.
++
++   Note that these options are highly dependant upon your hardware & software:
++
++   3: When succesful, your machine suspends to ram instead of powering off.
++      The advantage of using this mode is that it doesn't matter whether your
++      battery has enough charge to make it through to your next resume. If it
++      lasts, you will simply resume from suspend to ram (and the image on disk
++      will be discarded). If the battery runs out, you will resume from disk
++      instead. The disadvantage is that it takes longer than a normal
++      suspend-to-ram to enter the state, since the suspend-to-disk image needs
++      to be written first.
++   4/5: When successful, your machine will be off and comsume (almost) no power.
++      But it might still react to some external events like opening the lid or
++      trafic on  a network or usb device. For the bios, resume is then the same
++      as warm boot, similar to a situation where you used the command `reboot'
++      to reboot your machine. If your machine has problems on warm boot or if
++      you want to protect your machine with the bios password, this is probably
++      not the right choice. Mode 4 may be necessary on some machines where ACPI
++      wake up methods need to be run to properly reinitialise hardware after a
++      hibernation cycle.
++   0: Switch the machine completely off. The only possible wakeup is the power
++      button. For the bios, resume is then the same as a cold boot, in
++      particular you would  have to provide your bios boot password if your
++      machine uses that feature for booting.
++
++   - progressbar_granularity_limit:
++
++   This option can be used to limit the granularity of the progress bar
++   displayed with a bootsplash screen. The value is the maximum number of
++   steps. That is, 10 will make the progress bar jump in 10% increments.
++
++   - reboot:
++
++   This option causes TuxOnIce to reboot rather than powering down
++   at the end of saving an image. It can be toggled during a cycle by pressing
++   'R'.
++
++   - resume:
++
++   This sysfs entry can be used to read and set the location in which TuxOnIce
++   will look for the signature of an image - the value set using resume= at
++   boot time or CONFIG_PM_STD_PARTITION ("Default resume partition"). By
++   writing to this file as well as modifying your bootloader's configuration
++   file (eg menu.lst), you can set or reset the location of your image or the
++   method of storing the image without rebooting.
++
++   - replace_swsusp (CONFIG_TOI_REPLACE_SWSUSP):
++
++   This option makes
++
++     echo disk > /sys/power/state
++
++   activate TuxOnIce instead of swsusp. Regardless of whether this option is
++   enabled, any invocation of swsusp's resume time trigger will cause TuxOnIce
++   to check for an image too. This is due to the fact that at resume time, we
++   can't know whether this option was enabled until we see if an image is there
++   for us to resume from. (And when an image exists, we don't care whether we
++   did replace swsusp anyway - we just want to resume).
++
++   - resume_commandline:
++
++   This entry can be read after resuming to see the commandline that was used
++   when resuming began. You might use this to set up two bootloader entries
++   that are the same apart from the fact that one includes a extra append=
++   argument "at_work=1". You could then grep resume_commandline in your
++   post-resume scripts and configure networking (for example) differently
++   depending upon whether you're at home or work. resume_commandline can be
++   set to arbitrary text if you wish to remove sensitive contents.
++
++   - swap/swapfilename:
++
++   This entry is used to specify the swapfile or partition that
++   TuxOnIce will attempt to swapon/swapoff automatically. Thus, if
++   I normally use /dev/hda1 for swap, and want to use /dev/hda2 for specifically
++   for my hibernation image, I would
++
++   echo /dev/hda2 > /sys/power/tuxonice/swap/swapfile
++
++   /dev/hda2 would then be automatically swapon'd and swapoff'd. Note that the
++   swapon and swapoff occur while other processes are frozen (including kswapd)
++   so this swap file will not be used up when attempting to free memory. The
++   parition/file is also given the highest priority, so other swapfiles/partitions
++   will only be used to save the image when this one is filled.
++
++   The value of this file is used by headerlocations along with any currently
++   activated swapfiles/partitions.
++
++   - swap/headerlocations:
++
++   This option tells you the resume= options to use for swap devices you
++   currently have activated. It is particularly useful when you only want to
++   use a swap file to store your image. See above for further details.
++
++   - test_bio
++
++   This is a debugging option. When enabled, TuxOnIce will not hibernate.
++   Instead, when asked to write an image, it will skip the atomic copy,
++   just doing the writing of the image and then returning control to the
++   user at the point where it would have powered off. This is useful for
++   testing throughput in different configurations.
++
++   - test_filter_speed
++
++   This is a debugging option. When enabled, TuxOnIce will not hibernate.
++   Instead, when asked to write an image, it will not write anything or do
++   an atomic copy, but will only run any enabled compression algorithm on the
++   data that would have been written (the source pages of the atomic copy in
++   the case of pageset 1). This is useful for comparing the performance of
++   compression algorithms and for determining the extent to which an upgrade
++   to your storage method would improve hibernation speed.
++
++   - user_interface/debug_sections (CONFIG_PM_DEBUG):
++
++   This value, together with the console log level, controls what debugging
++   information is displayed. The console log level determines the level of
++   detail, and this value determines what detail is displayed. This value is
++   a bit vector, and the meaning of the bits can be found in the kernel tree
++   in include/linux/tuxonice.h. It can be overridden using the kernel's
++   command line option suspend_dbg.
++
++   - user_interface/default_console_level (CONFIG_PM_DEBUG):
++
++   This determines the value of the console log level at the start of a
++   hibernation cycle. If debugging is compiled in, the console log level can be
++   changed during a cycle by pressing the digit keys. Meanings are:
++
++   0: Nice display.
++   1: Nice display plus numerical progress.
++   2: Errors only.
++   3: Low level debugging info.
++   4: Medium level debugging info.
++   5: High level debugging info.
++   6: Verbose debugging info.
++
++   - user_interface/enable_escape:
++
++   Setting this to "1" will enable you abort a hibernation cycle or resuming by
++   pressing escape, "0" (default) disables this feature. Note that enabling
++   this option means that you cannot initiate a hibernation cycle and then walk
++   away from your computer, expecting it to be secure. With feature disabled,
++   you can validly have this expectation once TuxOnice begins to write the
++   image to disk. (Prior to this point, it is possible that TuxOnice might
++   about because of failure to freeze all processes or because constraints
++   on its ability to save the image are not met).
++
++   - user_interface/program
++
++   This entry is used to tell TuxOnice what userspace program to use for
++   providing a user interface while hibernating. The program uses a netlink
++   socket to pass messages back and forward to the kernel, allowing all of the
++   functions formerly implemented in the kernel user interface components.
++
++   - version:
++
++   The version of TuxOnIce you have compiled into the currently running kernel.
++
++   - wake_alarm_dir:
++
++   As mentioned above (post_wake_state), TuxOnIce supports automatically waking
++   after some delay. This entry allows you to select which wake alarm to use.
++   It should contain the value "rtc0" if you're wanting to use
++   /sys/class/rtc/rtc0.
++
++   - wake_delay:
++
++   This value determines the delay from the end of writing the image until the
++   wake alarm is triggered. You can set an absolute time by writing the desired
++   time into /sys/class/rtc/<wake_alarm_dir>/wakealarm and leaving these values
++   empty.
++
++   Note that for the wakeup to actually occur, you may need to modify entries
++   in /proc/acpi/wakeup. This is done by echoing the name of the button in the
++   first column (eg PBTN) into the file.
++
++7. How do you get support?
++
++   Glad you asked. TuxOnIce is being actively maintained and supported
++   by Nigel (the guy doing most of the kernel coding at the moment), Bernard
++   (who maintains the hibernate script and userspace user interface components)
++   and its users.
++
++   Resources availble include HowTos, FAQs and a Wiki, all available via
++   tuxonice.net.  You can find the mailing lists there.
++
++8. I think I've found a bug. What should I do?
++
++   By far and a way, the most common problems people have with TuxOnIce
++   related to drivers not having adequate power management support. In this
++   case, it is not a bug with TuxOnIce, but we can still help you. As we
++   mentioned above, such issues can usually be worked around by building the
++   functionality as modules and unloading them while hibernating. Please visit
++   the Wiki for up-to-date lists of known issues and work arounds.
++
++   If this information doesn't help, try running:
++
++   hibernate --bug-report
++
++   ..and sending the output to the users mailing list.
++
++   Good information on how to provide us with useful information from an
++   oops is found in the file REPORTING-BUGS, in the top level directory
++   of the kernel tree. If you get an oops, please especially note the
++   information about running what is printed on the screen through ksymoops.
++   The raw information is useless.
++
++9. When will XXX be supported?
++
++   If there's a feature missing from TuxOnIce that you'd like, feel free to
++   ask. We try to be obliging, within reason.
++
++   Patches are welcome. Please send to the list.
++
++10. How does it work?
++
++   TuxOnIce does its work in a number of steps.
++
++   a. Freezing system activity.
++
++   The first main stage in hibernating is to stop all other activity. This is
++   achieved in stages. Processes are considered in fours groups, which we will
++   describe in reverse order for clarity's sake: Threads with the PF_NOFREEZE
++   flag, kernel threads without this flag, userspace processes with the
++   PF_SYNCTHREAD flag and all other processes. The first set (PF_NOFREEZE) are
++   untouched by the refrigerator code. They are allowed to run during hibernating
++   and resuming, and are used to support user interaction, storage access or the
++   like. Other kernel threads (those unneeded while hibernating) are frozen last.
++   This leaves us with userspace processes that need to be frozen. When a
++   process enters one of the *_sync system calls, we set a PF_SYNCTHREAD flag on
++   that process for the duration of that call. Processes that have this flag are
++   frozen after processes without it, so that we can seek to ensure that dirty
++   data is synced to disk as quickly as possible in a situation where other
++   processes may be submitting writes at the same time. Freezing the processes
++   that are submitting data stops new I/O from being submitted. Syncthreads can
++   then cleanly finish their work. So the order is:
++
++   - Userspace processes without PF_SYNCTHREAD or PF_NOFREEZE;
++   - Userspace processes with PF_SYNCTHREAD (they won't have NOFREEZE);
++   - Kernel processes without PF_NOFREEZE.
++
++   b. Eating memory.
++
++   For a successful hibernation cycle, you need to have enough disk space to store the
++   image and enough memory for the various limitations of TuxOnIce's
++   algorithm. You can also specify a maximum image size. In order to attain
++   to those constraints, TuxOnIce may 'eat' memory. If, after freezing
++   processes, the constraints aren't met, TuxOnIce will thaw all the
++   other processes and begin to eat memory until its calculations indicate
++   the constraints are met. It will then freeze processes again and recheck
++   its calculations.
++
++   c. Allocation of storage.
++
++   Next, TuxOnIce allocates the storage that will be used to save
++   the image.
++
++   The core of TuxOnIce knows nothing about how or where pages are stored. We
++   therefore request the active allocator (remember you might have compiled in
++   more than one!) to allocate enough storage for our expect image size. If
++   this request cannot be fulfilled, we eat more memory and try again. If it
++   is fulfiled, we seek to allocate additional storage, just in case our
++   expected compression ratio (if any) isn't achieved. This time, however, we
++   just continue if we can't allocate enough storage.
++
++   If these calls to our allocator change the characteristics of the image
++   such that we haven't allocated enough memory, we also loop. (The allocator
++   may well need to allocate space for its storage information).
++
++   d. Write the first part of the image.
++
++   TuxOnIce stores the image in two sets of pages called 'pagesets'.
++   Pageset 2 contains pages on the active and inactive lists; essentially
++   the page cache. Pageset 1 contains all other pages, including the kernel.
++   We use two pagesets for one important reason: We need to make an atomic copy
++   of the kernel to ensure consistency of the image. Without a second pageset,
++   that would limit us to an image that was at most half the amount of memory
++   available. Using two pagesets allows us to store a full image. Since pageset
++   2 pages won't be needed in saving pageset 1, we first save pageset 2 pages.
++   We can then make our atomic copy of the remaining pages using both pageset 2
++   pages and any other pages that are free. While saving both pagesets, we are
++   careful not to corrupt the image. Among other things, we use lowlevel block
++   I/O routines that don't change the pagecache contents.
++
++   The next step, then, is writing pageset 2.
++
++   e. Suspending drivers and storing processor context.
++
++   Having written pageset2, TuxOnIce calls the power management functions to
++   notify drivers of the hibernation, and saves the processor state in preparation
++   for the atomic copy of memory we are about to make.
++
++   f. Atomic copy.
++
++   At this stage, everything else but the TuxOnIce code is halted. Processes
++   are frozen or idling, drivers are quiesced and have stored (ideally and where
++   necessary) their configuration in memory we are about to atomically copy.
++   In our lowlevel architecture specific code, we have saved the CPU state.
++   We can therefore now do our atomic copy before resuming drivers etc.
++
++   g. Save the atomic copy (pageset 1).
++
++   TuxOnice can then write the atomic copy of the remaining pages. Since we
++   have copied the pages into other locations, we can continue to use the
++   normal block I/O routines without fear of corruption our image.
++
++   f. Save the image header.
++
++   Nearly there! We save our settings and other parameters needed for
++   reloading pageset 1 in an 'image header'. We also tell our allocator to
++   serialise its data at this stage, so that it can reread the image at resume
++   time.
++
++   g. Set the image header.
++
++   Finally, we edit the header at our resume= location. The signature is
++   changed by the allocator to reflect the fact that an image exists, and to
++   point to the start of that data if necessary (swap allocator).
++
++   h. Power down.
++
++   Or reboot if we're debugging and the appropriate option is selected.
++
++   Whew!
++
++   Reloading the image.
++   --------------------
++
++   Reloading the image is essentially the reverse of all the above. We load
++   our copy of pageset 1, being careful to choose locations that aren't going
++   to be overwritten as we copy it back (We start very early in the boot
++   process, so there are no other processes to quiesce here). We then copy
++   pageset 1 back to its original location in memory and restore the process
++   context. We are now running with the original kernel. Next, we reload the
++   pageset 2 pages, free the memory and swap used by TuxOnIce, restore
++   the pageset header and restart processes. Sounds easy in comparison to
++   hibernating, doesn't it!
++
++   There is of course more to TuxOnIce than this, but this explanation
++   should be a good start. If there's interest, I'll write further
++   documentation on range pages and the low level I/O.
++
++11. Who wrote TuxOnIce?
++
++   (Answer based on the writings of Florent Chabaud, credits in files and
++   Nigel's limited knowledge; apologies to anyone missed out!)
++
++   The main developers of TuxOnIce have been...
++
++   Gabor Kuti
++   Pavel Machek
++   Florent Chabaud
++   Bernard Blackham
++   Nigel Cunningham
++
++   Significant portions of swsusp, the code in the vanilla kernel which
++   TuxOnIce enhances, have been worked on by Rafael Wysocki. Thanks should
++   also be expressed to him.
++
++   The above mentioned developers have been aided in their efforts by a host
++   of hundreds, if not thousands of testers and people who have submitted bug
++   fixes & suggestions. Of special note are the efforts of Michael Frank, who
++   had his computers repetitively hibernate and resume for literally tens of
++   thousands of cycles and developed scripts to stress the system and test
++   TuxOnIce far beyond the point most of us (Nigel included!) would consider
++   testing. His efforts have contributed as much to TuxOnIce as any of the
++   names above.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 2b349ba..d43cd3a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5630,6 +5630,13 @@ S:	Maintained
+ F:	drivers/tc/
+ F:	include/linux/tc.h
+ 
++TUXONICE (ENHANCED HIBERNATION)
++P:	Nigel Cunningham
++M:	nigel@tuxonice.net
++L:	tuxonice-devel@tuxonice.net
++W:	http://tuxonice.net
++S:	Maintained
++
+ U14-34F SCSI DRIVER
+ P:	Dario Ballabio
+ M:	ballabio_dario@emc.com
 -- 
 1.5.6.3
 
