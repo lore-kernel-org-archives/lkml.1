@@ -1,41 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760556AbZEFPkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760195AbZEFPlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760556AbZEFPkX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 11:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbZEFPkJ
+	id S1760195AbZEFPlV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 11:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbZEFPlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 11:40:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57898 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753715AbZEFPkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 11:40:07 -0400
-Date: Wed, 6 May 2009 08:36:50 -0700
-From: Chris Wright <chrisw@redhat.com>
-To: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Izik Eidus <ieidus@redhat.com>,
-       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, chrisw@redhat.com,
-       alan@lxorguk.ukuu.org.uk, device@lanana.org, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
-Message-ID: <20090506153650.GA15712@x200.localdomain>
-References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com> <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils> <20090506133434.GX16078@random.random> <Pine.LNX.4.64.0905061453320.21067@blonde.anvils> <20090506144558.GZ16078@random.random>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090506144558.GZ16078@random.random>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 6 May 2009 11:41:06 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46128 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753306AbZEFPlF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 11:41:05 -0400
+Date: Wed, 6 May 2009 16:41:41 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jason Wessel <jason.wessel@windriver.com>, greg@kroah.com,
+       <linux-usb@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/5] usb_debug: EXPERIMENTAL - poll hcd device to force
+ writes
+Message-ID: <20090506164141.55c8978c@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.44L0.0905061058230.3227-100000@iolanthe.rowland.org>
+References: <1241575205-12199-6-git-send-email-jason.wessel@windriver.com>
+	<Pine.LNX.4.44L0.0905061058230.3227-100000@iolanthe.rowland.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrea Arcangeli (aarcange@redhat.com) wrote:
-> On Wed, May 06, 2009 at 03:25:25PM +0100, Hugh Dickins wrote:
-> > silently ignore may fit better with whether module has been loaded yet
-> > (we can keep a list of what's registered, for when module is loaded).
+> > The question is what is the right way to force the controller to catch
+> > up, and ideally let the kernel do some other things in the mean time?
 > 
-> NOTE: it will not fail if the module isn't loaded yet. It must
-> succeed! Otherwise it would also need to fail after it succeeded if we
-> unload the module later...
+> What do standard serial port drivers do?
 
-I actually see little value in it even being modular.
+Stuff data into the chip and if need be maintain an internal buffer. One
+of the problems with the serial stuff is that the buffering algorithms
+you need to packetize serial streams without poor behaviour or overruns
+are non trivial and the USB serial layer doesn't provide anything
+remotely resembling sanity.
+
+Secondly most USB serial drivers lie about their write room which causes
+overruns.
+
+What should happen is something like this
+
+	foo_write_room()
+	{
+		if(no_urbs_left) return 0;
+		if(one_urb_left) return bytes_in_urb_left;
+		else return size_of_one_urb;
+	}
+
+	foo_write()
+	{
+		stuff bytes into urb
+		if (urbs_left > 1 &&
+		some_function_of_bytes_queued_and_speed())
+			send_urb_now();
+	}
+
+In other words never lie in the write_room method. Try to send data as
+early as possible, but don't queue data inefficiently when the port has
+plenty left to send.
+
+The rules for write_room are simple
+
+	If you say you have space for X bytes you can't say you have room
+	for less bytes unless those bytes have actually been written - no
+	window shrinking so to speak.
+
+If your write_room method works properly, and you fix the buffering logic
+then the rest will work. Probably we need usb/serial/buffer.c which has a
+generic implementation in then that can be used to replace the completely
+bogus hacks in most of the drivers.
+
+Alan
